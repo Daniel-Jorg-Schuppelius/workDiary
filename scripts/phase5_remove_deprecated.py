@@ -9,7 +9,6 @@ Approach:
 - Skip if the const block is NOT preceded by a @deprecated marker.
 """
 import re
-import sys
 from pathlib import Path
 
 ROOT = Path('/home/schuppeliusd/workDiary')

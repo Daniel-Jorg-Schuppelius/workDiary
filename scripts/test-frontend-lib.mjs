@@ -83,7 +83,9 @@ eq("html Schachtelung nicht doppelt",
    "<div><span>a&amp;b</span></div>");
 eq("html Array verbunden", html`${["a", "b", "c"]}`, "abc");
 eq("html Array escaped", html`${["<a>", "<b>"]}`, "&lt;a&gt;&lt;b&gt;");
-eq("html null/undefined leer", html`x${null}${undefined}y`, "xy");
+// Über ein Array: CodeQL hält Literale im Tagged Template für String-Konversion.
+const [none, missing] = [null, undefined];
+eq("html null/undefined leer", html`x${none}${missing}y`, "xy");
 eq("html false leer (für && )", html`x${false}y`, "xy");
 eq("html 0 bleibt", html`${0}`, "0");
 eq("html verschachtelte Arrays", html`${[html`<i>${"&"}</i>`, "&"]}`, "<i>&amp;</i>&amp;");
