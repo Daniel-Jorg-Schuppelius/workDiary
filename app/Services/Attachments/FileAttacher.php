@@ -119,6 +119,23 @@ final class FileAttacher {
             $ext = 'bin';
         }
 
+        $size = strlen($content);
+        $orgId = $parent->getAttribute('organization_id');
+        if ($orgId !== null) {
+            try {
+                app(\App\Services\Licensing\LimitGuard::class)->ensureCanStoreAttachment(
+                    \App\Models\Organization::query()->withoutGlobalScopes()->findOrFail((int) $orgId),
+                    $size,
+                );
+            } catch (\App\Exceptions\LimitExceededException $e) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['file' => $e->getMessage()]);
+            }
+        }
+
+        $storedMime = $detected !== false
+            ? $detected
+            : (($mime !== null && $mime !== '') ? $mime : 'application/octet-stream');
+
         $path = ($folder ?? 'attachments') . '/' . now()->format('Y/m') . '/' . Str::uuid()->toString() . '.' . $ext;
         \Illuminate\Support\Facades\Storage::disk('local')->put($path, $content);
 
@@ -128,8 +145,8 @@ final class FileAttacher {
             'disk' => 'local',
             'path' => $path,
             'original_name' => File::sanitizeDisplayName($originalName),
-            'mime' => $mime ?? '',
-            'size' => strlen($content),
+            'mime' => $storedMime,
+            'size' => $size,
         ], $extra));
 
         return $attachment;

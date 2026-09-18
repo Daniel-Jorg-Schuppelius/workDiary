@@ -16,6 +16,7 @@ import { request } from "./lib/http.js";
 
 let _cfg = null; // window.__scheduleConfig
 let _dragShiftId = null; // shift id being dragged
+let _prevShiftTypeDefaults = { start: "", end: "" }; // last applied type defaults
 
 /* ──────────────────── Notify helper ──────────────────────────── */
 
@@ -217,8 +218,19 @@ function applyShiftTypeDefaults(event) {
     );
     const ds = (t.default_start_time ?? "").slice(0, 5);
     const de = (t.default_end_time ?? "").slice(0, 5);
-    if (startEl && ds) startEl.value = ds;
-    if (endEl && de) endEl.value = de;
+
+    if (startEl && ds) {
+        const current = startEl.value ?? "";
+        const canOverwrite = !current || current === _prevShiftTypeDefaults.start;
+        if (canOverwrite) startEl.value = ds;
+    }
+    if (endEl && de) {
+        const current = endEl.value ?? "";
+        const canOverwrite = !current || current === _prevShiftTypeDefaults.end;
+        if (canOverwrite) endEl.value = de;
+    }
+
+    _prevShiftTypeDefaults = { start: ds, end: de };
 }
 
 /* ────────────────────── Drag & Drop ──────────────────────────── */

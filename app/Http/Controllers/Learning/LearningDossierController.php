@@ -105,6 +105,9 @@ class LearningDossierController extends Controller {
 
         [$from, $to] = $this->period();
         $users = $this->users($this->team($request));
+        $named = $this->namedRequested($request);
+
+        abort_unless($named, 403);
 
         $this->recordNamedAccess($request, $users->count(), $from, $to);
 

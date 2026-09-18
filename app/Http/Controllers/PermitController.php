@@ -16,7 +16,7 @@ use App\Http\Requests\SavePermitRequest;
 use App\Models\{Event, Permit, User};
 use App\Services\Attachments\FileAttacher;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
-use Illuminate\Support\Facades\{Auth, Gate, Storage};
+use Illuminate\Support\Facades\{Auth, DB, Gate, Storage};
 use Illuminate\View\View;
 
 class PermitController extends Controller {
@@ -89,11 +89,22 @@ class PermitController extends Controller {
         $payload['organization_id'] = (int) $this->currentOrganization()->id;
         $payload['created_by'] = $user->id;
 
-        $permit = Permit::query()->create($payload);
+        DB::beginTransaction();
 
-        $error = $this->storeEvidence($permit, $request);
-        if ($error !== null) {
-            return back()->withErrors(['evidence_document' => $error])->withInput();
+        try {
+            $permit = Permit::query()->create($payload);
+
+            $error = $this->storeEvidence($permit, $request);
+            if ($error !== null) {
+                DB::rollBack();
+
+                return back()->withErrors(['evidence_document' => $error])->withInput();
+            }
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
 
         return redirect()->route('permits.index')->with('success', __('permit.messages.created'));

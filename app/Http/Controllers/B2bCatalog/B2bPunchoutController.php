@@ -192,7 +192,15 @@ class B2bPunchoutController extends Controller {
             return null;
         }
 
-        $access = B2bCatalogAccess::query()->active()->find((int) ($payload['a'] ?? 0));
+        $organization = $this->organization($request);
+        if ((int) ($payload['o'] ?? 0) !== (int) $organization->id) {
+            return null;
+        }
+
+        $access = B2bCatalogAccess::query()
+            ->active()
+            ->where('organization_id', $organization->id)
+            ->find((int) ($payload['a'] ?? 0));
         if (! $access instanceof B2bCatalogAccess) {
             return null;
         }
