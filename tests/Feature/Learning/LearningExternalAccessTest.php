@@ -111,6 +111,22 @@ class LearningExternalAccessTest extends TestCase {
             ->assertSee($course->title);
     }
 
+    /**
+     * Sicherheitsaudit 2026-09-17 (learning-ext-1): Widerruf und Ablauf wirkten
+     * erst mit dem Ende der Sitzung — die laufende Seite blieb offen.
+     */
+    public function test_widerruf_beendet_die_laufende_sitzung(): void {
+        [$enrollment] = $this->externalEnrollment();
+        $token = $this->service()->issue($enrollment);
+
+        $this->get(route('learning.external.enter', $token))->assertRedirect(route('learning.external.show'));
+        $this->get(route('learning.external.show'))->assertOk();
+
+        $this->service()->revoke($enrollment);
+
+        $this->get(route('learning.external.show'))->assertForbidden();
+    }
+
     public function test_ungueltiger_link_antwortet_neutral(): void {
         $this->get(route('learning.external.enter', str_repeat('x', 48)))
             ->assertRedirect(route('learning.external.denied'));

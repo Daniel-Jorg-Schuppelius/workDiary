@@ -41,6 +41,9 @@ class LogbookTest extends TestCase {
         parent::setUp();
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        // Fahrzeuge anlegen und ändern verlangt seit dem Audit 2026-09-17
+        // (authz-vehicle-1) das Recht „Fuhrpark verwalten".
+        $this->user->givePermissionTo(\App\Enums\User\Permission::VehicleManage->value);
         Carbon::setTestNow('2030-06-15 12:00:00');
     }
 

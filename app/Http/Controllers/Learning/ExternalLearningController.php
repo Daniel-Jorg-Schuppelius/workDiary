@@ -41,6 +41,13 @@ class ExternalLearningController extends Controller {
     ) {}
 
     /** Einstieg über den Link: Token einlösen und in die Session legen. */
+    /**
+     * Über LTI gestarteter Zugang: dort gibt es keinen Zugangslink, der Launch
+     * der Plattform ist der Nachweis. Der Wert ist die Einschreibung, damit ein
+     * alter Marker keine andere öffnet (Audit 2026-09-17, learning-ext-1).
+     */
+    public const LTI_SESSION_KEY = 'learning.external.lti_enrollment';
+
     public function enter(Request $request, string $token): RedirectResponse {
         $enrollment = $this->access->resolve($token);
 
@@ -51,6 +58,8 @@ class ExternalLearningController extends Controller {
         }
 
         $request->session()->put(self::SESSION_KEY, $enrollment->id);
+        // Einstieg über den Link: ein früherer LTI-Marker gilt nicht mehr.
+        $request->session()->forget(self::LTI_SESSION_KEY);
         $request->session()->regenerate();
 
         return redirect()->route('learning.external.show');
@@ -110,7 +119,7 @@ class ExternalLearningController extends Controller {
         // Der Zugang wird bei JEDEM Request neu geprüft: Widerruf, Ablauf der
         // Einschreibung oder des Gastzugangs endeten sonst erst mit der Sitzung
         // (Sicherheitsaudit 2026-09-17, learning-ext-1).
-        if (! $this->accessStillValid($enrollment)) {
+        if (! $this->accessStillValid($enrollment, $request)) {
             $request->session()->forget(self::SESSION_KEY);
             abort(403);
         }
@@ -132,7 +141,7 @@ class ExternalLearningController extends Controller {
      * Einschreibung, einen nicht widerrufenen Gast und mindestens einen
      * gültigen Zugangslink.
      */
-    private function accessStillValid(LearningEnrollment $enrollment): bool {
+    private function accessStillValid(LearningEnrollment $enrollment, Request $request): bool {
         if ($enrollment->isAccessExpired()) {
             return false;
         }
@@ -140,6 +149,12 @@ class ExternalLearningController extends Controller {
         $participant = $enrollment->externalParticipant;
         if ($participant === null || ! $participant->isUsable()) {
             return false;
+        }
+
+        // LTI-Start: der Launch der Plattform ist der Nachweis, einen
+        // Zugangslink gibt es dort nicht.
+        if ((int) $request->session()->get(self::LTI_SESSION_KEY, 0) === (int) $enrollment->getKey()) {
+            return true;
         }
 
         return \App\Models\Learning\LearningAccessToken::query()

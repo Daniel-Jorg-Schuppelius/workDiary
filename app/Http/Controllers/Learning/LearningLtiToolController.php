@@ -49,6 +49,9 @@ final class LearningLtiToolController extends Controller {
 
         if ($result['kind'] === 'launch') {
             $request->session()->put(ExternalLearningController::SESSION_KEY, $result['enrollment']->id);
+            // Nachweis des Zugangs für die laufende Prüfung im externen Bereich
+            // (Audit 2026-09-17, learning-ext-1).
+            $request->session()->put(ExternalLearningController::LTI_SESSION_KEY, $result['enrollment']->id);
             $request->session()->regenerate();
 
             return redirect()->route('learning.external.show');
