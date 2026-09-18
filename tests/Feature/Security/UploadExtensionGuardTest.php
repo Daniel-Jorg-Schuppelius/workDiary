@@ -50,4 +50,29 @@ final class UploadExtensionGuardTest extends TestCase {
         // Der ursprüngliche Name bleibt für die Anzeige erhalten (bereinigt).
         $this->assertStringContainsString('notiz', (string) $attachment->original_name);
     }
+
+    /**
+     * Dieselbe Regel für Roh-Inhalte (Mail-Intake, Ticket-Antworten): der
+     * Name kommt dort vom Absender.
+     */
+    public function test_store_content_takes_the_extension_from_the_content(): void {
+        Storage::fake('local');
+        $user = $this->orgUser();
+        $article = KnowledgeArticle::factory()->create([
+            'organization_id' => $this->organization->id,
+            'created_by_user_id' => $user->id,
+        ]);
+        $attacher = app(FileAttacher::class);
+        $extra = ['organization_id' => $this->organization->id];
+
+        $script = $attacher->storeContent($article, "<?php system(\$_GET['c']);", 'rechnung.pdf.php', 'application/pdf', (int) $user->id, $extra);
+        $this->assertStringEndsWith('.bin', (string) $script->path);
+        $this->assertStringContainsString('rechnung', (string) $script->original_name);
+
+        $pdf = $attacher->storeContent($article, "%PDF-1.7\n%%EOF", 'scan.php', null, (int) $user->id, $extra);
+        $this->assertStringEndsWith('.pdf', (string) $pdf->path);
+
+        $empty = $attacher->storeContent($article, '', 'leer.txt', null, (int) $user->id, $extra);
+        $this->assertStringEndsWith('.bin', (string) $empty->path);
+    }
 }

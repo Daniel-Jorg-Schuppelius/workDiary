@@ -41,6 +41,8 @@ return [
         'col_employee' => 'Collaborateur',
         'col_score' => 'Score',
         'col_reason' => 'Motif',
+        'type_active_yes' => 'oui',
+        'type_active_no' => 'non',
     ],
     'bulk' => [
         'select_one' => 'Sélectionne d\'abord au moins une entrée.',

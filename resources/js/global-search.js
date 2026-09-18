@@ -26,7 +26,6 @@ const searchUrl = () => {
 let activeIndex = -1;
 let flatItems = [];
 let debounceTimer = null;
-let requestSeq = 0;
 let lastQuery = "";
 
 const setStatus = (root, text, { loading = false } = {}) => {
@@ -169,13 +168,14 @@ const updateActive = (root) => {
     });
 };
 
-const fetchResults = async (root, term, requestId) => {
+const fetchResults = async (root, term) => {
     setStatus(root, __("Suche …"), { loading: true });
     try {
         const { ok, data: json } = await getJson(
             `${searchUrl()}?q=${encodeURIComponent(term)}`,
         );
-        if (requestId !== requestSeq) return;
+        // Veraltete Antwort (neuere, gekürzte oder geleerte Eingabe) nicht rendern.
+        if (term !== lastQuery) return;
         if (!ok || !json) {
             setStatus(root, __("Suche fehlgeschlagen."));
             return;
@@ -183,7 +183,7 @@ const fetchResults = async (root, term, requestId) => {
         setStatus(root, "");
         renderResults(root, json.groups || [], json.allUrl || null);
     } catch (e) {
-        if (requestId !== requestSeq) return;
+        if (term !== lastQuery) return;
         setStatus(root, __("Suche fehlgeschlagen."));
     }
 };
@@ -206,10 +206,7 @@ const onInput = (root) => {
         return;
     }
     debounceTimer = setTimeout(() => {
-        if (lastQuery === term) {
-            const requestId = ++requestSeq;
-            fetchResults(root, term, requestId);
-        }
+        if (lastQuery === term) fetchResults(root, term);
     }, DEBOUNCE_MS);
 };
 
@@ -254,11 +251,14 @@ const openDialog = () => {
     );
     if (input) {
         input.value = "";
-        if (root)
+        lastQuery = "";
+        if (root) {
+            setStatus(root, "");
             renderHint(
                 root,
                 __("Tippe mindestens 2 Zeichen, um Ergebnisse zu sehen."),
             );
+        }
         setTimeout(() => input.focus(), 30);
     }
 };

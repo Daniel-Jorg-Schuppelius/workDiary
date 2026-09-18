@@ -46,6 +46,8 @@ return [
         'col_employee' => 'Mitarbeiter',
         'col_score' => 'Score',
         'col_reason' => 'Begründung',
+        'type_active_yes' => 'ja',
+        'type_active_no' => 'nein',
     ],
     'bulk' => [
         'select_one' => 'Bitte zuerst mindestens einen Eintrag auswählen.',

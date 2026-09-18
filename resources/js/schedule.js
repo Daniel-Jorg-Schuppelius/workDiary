@@ -803,10 +803,17 @@ function updateTypeRow(id, type) {
     );
     if (statusBadge) {
         const isActive = Boolean(type.is_active);
-        statusBadge.textContent = isActive ? __("ja") : __("nein");
+        statusBadge.textContent = isActive
+            ? __("js.schedule_ui.type_active_yes")
+            : __("js.schedule_ui.type_active_no");
         statusBadge.classList.toggle("badge-success", isActive);
         statusBadge.classList.toggle("badge-ghost", !isActive);
     }
+    // Sonst öffnete der Bearbeiten-Dialog beim nächsten Mal die alten Werte.
+    row.querySelector("[data-type-edit]")?.setAttribute(
+        "data-type-payload",
+        JSON.stringify(type),
+    );
 }
 
 function addTypeRow(type) {
@@ -838,7 +845,9 @@ function addTypeRow(type) {
                     class="badge badge-sm ${type.is_active
                         ? "badge-success"
                         : "badge-ghost"}"
-                    >${type.is_active ? "ja" : "nein"}</span
+                    >${type.is_active
+                        ? __("js.schedule_ui.type_active_yes")
+                        : __("js.schedule_ui.type_active_no")}</span
                 >
             </td>
             <td class="text-right">
