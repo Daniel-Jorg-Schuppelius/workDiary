@@ -25,4 +25,10 @@ parameters:
         # die Analyse darf ohne das Paket nicht brechen. Auf Maschinen MIT
         # Paket matchen diese Ignores nicht (reportUnmatchedIgnoredErrors=false).
         - '#CommonToolkit\\FinancialFormats#'
+        # Ohne das Paket ist BankFormatDetector::detect() mixed — der erschöpfende
+        # match über BankFormat gälte dann als unvollständig. Mit Paket prüft
+        # PHPStan ihn weiter (neuer BankFormat-Fall = Fehler); kein default-Arm.
+        -
+            message: '#^Match expression does not handle remaining value: mixed$#'
+            path: app/Services/Finance/Banking/BankStatementParser.php
     reportUnmatchedIgnoredErrors: false

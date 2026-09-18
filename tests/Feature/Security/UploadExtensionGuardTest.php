@@ -68,11 +68,17 @@ final class UploadExtensionGuardTest extends TestCase {
         $script = $attacher->storeContent($article, "<?php system(\$_GET['c']);", 'rechnung.pdf.php', 'application/pdf', (int) $user->id, $extra);
         $this->assertStringEndsWith('.bin', (string) $script->path);
         $this->assertStringContainsString('rechnung', (string) $script->original_name);
+        // Auch der Typ kommt vom Inhalt, nicht vom Absender (Code-Quality-Befund 2026-09-18).
+        $this->assertNotSame('application/pdf', $script->mime);
+
+        $video = $attacher->storeContent($article, "%PDF-1.7\n%%EOF", 'clip.mp4', 'video/mp4', (int) $user->id, $extra);
+        $this->assertSame('application/pdf', $video->mime);
 
         $pdf = $attacher->storeContent($article, "%PDF-1.7\n%%EOF", 'scan.php', null, (int) $user->id, $extra);
         $this->assertStringEndsWith('.pdf', (string) $pdf->path);
 
-        $empty = $attacher->storeContent($article, '', 'leer.txt', null, (int) $user->id, $extra);
+        $empty = $attacher->storeContent($article, '', 'leer.txt', 'text/plain', (int) $user->id, $extra);
         $this->assertStringEndsWith('.bin', (string) $empty->path);
+        $this->assertSame('text/plain', $empty->mime, 'Ohne erkennbaren Inhalt bleibt die Angabe als Hinweis.');
     }
 }

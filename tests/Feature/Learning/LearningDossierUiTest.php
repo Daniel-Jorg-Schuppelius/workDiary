@@ -184,11 +184,29 @@ class LearningDossierUiTest extends TestCase {
         $this->assertSame('application/pdf', $pdf->headers->get('Content-Type'));
         $this->assertStringStartsWith('%PDF', $pdf->getContent());
 
-        $json = $this->actingAs($manager)->get(route('learning.dossier.json'));
+        $json = $this->actingAs($manager)->get(route('learning.dossier.json', ['named' => 1, 'reason' => 'Audit BG']));
         $json->assertOk();
         $payload = json_decode($json->streamedContent(), true);
         $this->assertSame('2026-06-01', $payload['as_of'] ?? null);
         $this->assertNotEmpty($payload['hash'] ?? null);
+    }
+
+    public function test_json_ist_namentlich_und_braucht_deshalb_einen_anlass(): void {
+        // Das JSON-Format IST die namentliche Mappe — ohne Anlass gab es sie
+        // trotzdem heraus (Code-Quality-Befund 2026-09-18).
+        $this->workerWithProof('Petra Meier', '2027-01-01');
+        $manager = $this->manager();
+
+        $this->actingAs($manager)->get(route('learning.dossier.json'))->assertForbidden();
+        $this->actingAs($manager)->get(route('learning.dossier.json', ['named' => 1, 'reason' => '  ']))->assertForbidden();
+        $this->assertSame(0, \App\Models\AuditLog::query()->where('event', 'learning.dossierDisclosed')->count());
+
+        $this->actingAs($manager)->get(route('learning.dossier.index'))
+            ->assertOk()
+            ->assertDontSee(route('learning.dossier.json'), false);
+        $this->actingAs($manager)->get(route('learning.dossier.index', ['named' => 1, 'reason' => 'Audit BG']))
+            ->assertOk()
+            ->assertSee(route('learning.dossier.json'), false);
     }
 
     public function test_ohne_verwaltungsrecht_kein_zugriff(): void {

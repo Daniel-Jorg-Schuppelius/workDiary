@@ -99,9 +99,14 @@ class LearningDossierController extends Controller {
         ]);
     }
 
-    /** Maschinenlesbar für Auditoren — reproduzierbar über den Hash. */
+    /**
+     * Maschinenlesbar für Auditoren — reproduzierbar über den Hash. Das Format
+     * ist die namentliche Mappe (eine aggregierte Variante gibt es nicht),
+     * also nur mit Anlass; die Seite zeigt den Knopf erst dann.
+     */
     public function json(Request $request): StreamedResponse {
         Gate::authorize(Permission::LearningManage->value);
+        abort_unless($this->namedRequested($request), 403);
 
         [$from, $to] = $this->period();
         $users = $this->users($this->team($request));

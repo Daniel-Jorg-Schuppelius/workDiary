@@ -107,6 +107,7 @@ final class FileAttacher {
      * Roh-Inhalte (z. B. Mail-Intake-Übernahmen) mit demselben Ablage-Rezept
      * ab — gleicher Ordner, UUID-Name, File::sanitizeDisplayName, morphMany-create.
      *
+     * @param  string|null  $mime  Angabe des Absenders — nur Hinweis, wenn am Inhalt nichts erkennbar ist
      * @param  array<string, mixed>  $extra
      */
     public function storeContent(Model $parent, string $content, string $originalName, ?string $mime, ?int $userId, array $extra = [], ?string $folder = null): Attachment {
@@ -128,7 +129,9 @@ final class FileAttacher {
             'disk' => 'local',
             'path' => $path,
             'original_name' => File::sanitizeDisplayName($originalName),
-            'mime' => $mime ?? '',
+            // Wie store() (getMimeType am Inhalt): der Absender bestimmt weder
+            // Endung noch Typ — sonst stünde neben „.bin" ein behauptetes video/*.
+            'mime' => $detected !== false ? $detected : ($mime ?? ''),
             'size' => strlen($content),
         ], $extra));
 

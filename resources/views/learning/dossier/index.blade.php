@@ -21,9 +21,11 @@
                 <x-icon-btn icon="picture_as_pdf" tone="ghost" size="sm"
                             :href="route('learning.dossier.pdf', request()->query())"
                             show-label>{{ __('learning.action.dossier_pdf') }}</x-icon-btn>
-                <x-icon-btn icon="download" tone="ghost" size="sm"
-                            :href="route('learning.dossier.json', request()->query())"
-                            show-label>{{ __('learning.action.dossier_json') }}</x-icon-btn>
+                @if ($named)
+                    <x-icon-btn icon="download" tone="ghost" size="sm"
+                                :href="route('learning.dossier.json', request()->query())"
+                                show-label>{{ __('learning.action.dossier_json') }}</x-icon-btn>
+                @endif
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

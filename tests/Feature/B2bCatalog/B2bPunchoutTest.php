@@ -196,6 +196,25 @@ class B2bPunchoutTest extends TestCase {
             ->assertSee('name="NEW_ITEM-QUANTITY[2]" value="10"', false);
     }
 
+    public function test_token_of_one_tenant_is_useless_under_another_tenant_url(): void {
+        // Code-Quality-Befund 2026-09-18 unterstellte, das Token sei nicht an den
+        // Mandanten der URL gebunden. Ist es: die Route bindet currentOrganization,
+        // der OrganizationScope findet den fremden Zugang dort nicht → 410.
+        $data = $this->issueAccess();
+        $article = Article::factory()->create(['organization_id' => $this->organization->id, 'number' => 'WD-1001']);
+        $item = $this->release($data['access'], $article);
+        $other = Organization::factory()->create();
+
+        $location = (string) $this->punchout(['PASSWORD' => $data['secret']])->headers->get('Location');
+        parse_str((string) parse_url($location, PHP_URL_QUERY), $query);
+        $token = (string) $query['t'];
+
+        $this->get('/b2b-katalog/' . $other->slug . '/katalog?t=' . urlencode($token))->assertStatus(410);
+        $this->post('/b2b-katalog/' . $other->slug . '/warenkorb', ['t' => $token, 'qty' => [$item->sqid => '1']])
+            ->assertStatus(410);
+        $this->get($location)->assertOk()->assertSee('WD-1001');
+    }
+
     public function test_tampered_or_missing_token_yields_410(): void {
         $this->get('/b2b-katalog/' . $this->organization->slug . '/katalog?t=manipuliert')
             ->assertStatus(410);

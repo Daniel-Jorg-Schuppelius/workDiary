@@ -85,16 +85,17 @@ class PermitController extends Controller {
             abort(403);
         }
 
+        $error = $this->evidenceError($request);
+        if ($error !== null) {
+            return back()->withErrors(['evidence_document' => $error])->withInput();
+        }
+
         $payload = $request->validated();
         $payload['organization_id'] = (int) $this->currentOrganization()->id;
         $payload['created_by'] = $user->id;
 
         $permit = Permit::query()->create($payload);
-
-        $error = $this->storeEvidence($permit, $request);
-        if ($error !== null) {
-            return back()->withErrors(['evidence_document' => $error])->withInput();
-        }
+        $this->storeEvidence($permit, $request);
 
         return redirect()->route('permits.index')->with('success', __('permit.messages.created'));
     }
@@ -113,16 +114,17 @@ class PermitController extends Controller {
         Gate::authorize('update', $permit);
         $user = $request->user();
 
+        $error = $this->evidenceError($request);
+        if ($error !== null) {
+            return back()->withErrors(['evidence_document' => $error])->withInput();
+        }
+
         $payload = $request->validated();
         if ($user instanceof User) {
             $payload['updated_by'] = $user->id;
         }
         $permit->update($payload);
-
-        $error = $this->storeEvidence($permit, $request);
-        if ($error !== null) {
-            return back()->withErrors(['evidence_document' => $error])->withInput();
-        }
+        $this->storeEvidence($permit, $request);
 
         return redirect()->route('permits.index')->with('success', __('permit.messages.updated'));
     }
@@ -136,11 +138,11 @@ class PermitController extends Controller {
     }
 
     /**
-     * Speichert ein hochgeladenes Nachweis-Dokument als Anhang (meta_type=evidence)
-     * und ersetzt ein vorhandenes. Gibt eine Fehlermeldung zurück oder null bei Erfolg
-     * bzw. wenn keine Datei gesendet wurde.
+     * Prüft ein hochgeladenes Nachweis-Dokument VOR dem Speichern: bei Ablehnung
+     * erst hinterher blieb die neue Genehmigung liegen, der zweite Versuch legte
+     * sie doppelt an. Fehlermeldung oder null (auch ohne Datei).
      */
-    private function storeEvidence(Permit $permit, Request $request): ?string {
+    private function evidenceError(Request $request): ?string {
         $file = $request->file('evidence_document');
         if (! $file instanceof UploadedFile) {
             return null;
@@ -154,6 +156,19 @@ class PermitController extends Controller {
         $mime = $file->getMimeType() ?? '';
         if (! in_array($ext, self::EVIDENCE_EXTENSIONS, true) || ! in_array($mime, self::EVIDENCE_MIMES, true)) {
             return __('permit.evidence.invalid_type');
+        }
+
+        return null;
+    }
+
+    /**
+     * Speichert das (per {@see evidenceError()} geprüfte) Nachweis-Dokument als
+     * Anhang (meta_type=evidence) und ersetzt ein vorhandenes.
+     */
+    private function storeEvidence(Permit $permit, Request $request): void {
+        $file = $request->file('evidence_document');
+        if (! $file instanceof UploadedFile) {
+            return;
         }
 
         // Vorhandenen Nachweis ersetzen (Datei + Datensatz).
@@ -170,8 +185,6 @@ class PermitController extends Controller {
             'organization_id' => $permit->organization_id,
             'meta_type' => Permit::EVIDENCE_META,
         ]);
-
-        return null;
     }
 
     private function normalizeStatus(string $value): ?string {

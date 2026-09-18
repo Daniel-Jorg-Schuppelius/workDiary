@@ -125,6 +125,32 @@ class PermitControllerTest extends TestCase {
         $this->assertSame('bescheid.pdf', $permit->evidence()?->original_name);
     }
 
+    public function test_rejected_evidence_creates_no_permit_and_changes_nothing(): void {
+        // Abgelehnt wurde der Nachweis erst NACH dem Anlegen — jeder erneute
+        // Versuch legte eine weitere Genehmigung an (Code-Quality-Befund 2026-09-18).
+        Storage::fake('local');
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+
+        $this->actingAs($user)->post(route('permits.store'), [
+            'title' => 'Mit falschem Nachweis',
+            'status' => PermitStatus::Granted->value,
+            'evidence_document' => UploadedFile::fake()->create('bescheid.exe', 10, 'application/x-msdownload'),
+        ])->assertSessionHasErrors('evidence_document');
+        $this->assertSame(0, Permit::query()->where('title', 'Mit falschem Nachweis')->count());
+
+        $permit = Permit::factory()->create([
+            'organization_id' => $this->organization->id,
+            'title' => 'Bleibt',
+            'status' => PermitStatus::Required->value,
+        ]);
+        $this->actingAs($user)->put(route('permits.update', $permit), [
+            'title' => 'Geändert',
+            'status' => PermitStatus::Granted->value,
+            'evidence_document' => UploadedFile::fake()->create('bescheid.exe', 10, 'application/x-msdownload'),
+        ])->assertSessionHasErrors('evidence_document');
+        $this->assertSame('Bleibt', $permit->refresh()->title);
+    }
+
     public function test_update_changes_status(): void {
         $user = $this->userWithRole(UserRole::Teamleitung->value);
         $permit = Permit::factory()->create([
