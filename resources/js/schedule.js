@@ -455,9 +455,6 @@ async function onShiftDialogSave(event) {
     const saveBtn = /** @type {HTMLButtonElement | null} */ (
         document.getElementById("shift-dialog-save")
     );
-    const compEl = document.getElementById("shift-dialog-compliance");
-    const compList = document.getElementById("shift-dialog-compliance-list");
-    const overrideRow = document.getElementById("shift-dialog-override-row");
     const overrideEl = /** @type {HTMLInputElement | null} */ (
         document.getElementById("shift-dialog-override")
     );
@@ -788,7 +785,6 @@ function removeTypeOption(id) {
 function updateTypeRow(id, type) {
     const row = document.querySelector(`[data-type-row="${id}"]`);
     if (!row) return;
-    const q = (sel) => row.querySelector(sel);
     const colorSwatch = /** @type {HTMLElement | null} */ (
         row.querySelector("span.inline-block")
     );

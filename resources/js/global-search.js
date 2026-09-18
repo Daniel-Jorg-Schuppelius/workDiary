@@ -11,7 +11,7 @@
  */
 
 import { __ } from "./i18n.js";
-import { escHtml, safeUrl, sameOriginPath, html, setHtml, clearHtml } from "./lib/html.js";
+import { safeUrl, sameOriginPath, html, setHtml, clearHtml } from "./lib/html.js";
 import { getJson } from "./lib/http.js";
 
 const DIALOG_ID = "global-search-dialog";

@@ -148,7 +148,14 @@ export function sameOriginPath(value) {
         }
 
         // Konstantes Präfix: das Ergebnis kann nie mit einem Schema beginnen.
-        return "/" + (parsed.pathname + parsed.search + parsed.hash).replace(/^\/+/, "");
+        // Übrige HTML-Metazeichen (nach dem URL-Parser nur noch `'`) werden
+        // prozentkodiert — gleiches Ziel, für CodeQL erkennbar (Code-Scanning #3/#4).
+        return (
+            "/" +
+            (parsed.pathname + parsed.search + parsed.hash)
+                .replace(/^\/+/, "")
+                .replace(/[<>"']/g, (c) => "%" + c.charCodeAt(0).toString(16).toUpperCase())
+        );
     } catch (_e) {
         return null;
     }

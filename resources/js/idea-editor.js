@@ -27,7 +27,7 @@ export function registerIdeaEditor(Alpine) {
         collapsed: {},
         busy: false,
         error: null,
-        conflict: null, // {node(sqid), mine(payload), current(server-node)}
+        conflict: null, // Konflikt: Knoten-Sqid, eigener Stand, Server-Stand
         lastDeleted: null,
         canvasDirty: false, // Canvas hat gespeichert, während die Gliederung verborgen war
         editing: [], // Präsenz (MVP-108): Namen anderer aktiver Bearbeiter

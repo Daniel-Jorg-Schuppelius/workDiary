@@ -31,16 +31,9 @@ use Illuminate\View\View;
  * Token unbekannt, abgelaufen oder widerrufen ist, verrät die Seite nicht.
  */
 class ExternalLearningController extends Controller {
-    /** Session-Schlüssel der freigeschalteten Einschreibung. */
-    /** Auch der LTI-Start legt die Einschreibung hier ab. */
+    /** Session-Schlüssel der freigeschalteten Einschreibung; auch der LTI-Start legt sie hier ab. */
     public const SESSION_KEY = 'learning.external_enrollment_id';
 
-    public function __construct(
-        private readonly LearningAccessService $access,
-        private readonly LearningEnrollmentService $enrollments,
-    ) {}
-
-    /** Einstieg über den Link: Token einlösen und in die Session legen. */
     /**
      * Über LTI gestarteter Zugang: dort gibt es keinen Zugangslink, der Launch
      * der Plattform ist der Nachweis. Der Wert ist die Einschreibung, damit ein
@@ -48,6 +41,12 @@ class ExternalLearningController extends Controller {
      */
     public const LTI_SESSION_KEY = 'learning.external.lti_enrollment';
 
+    public function __construct(
+        private readonly LearningAccessService $access,
+        private readonly LearningEnrollmentService $enrollments,
+    ) {}
+
+    /** Einstieg über den Link: Token einlösen und in die Session legen. */
     public function enter(Request $request, string $token): RedirectResponse {
         $enrollment = $this->access->resolve($token);
 

@@ -211,10 +211,9 @@ function initTabs(root) {
 }
 
 /**
- * @param {HTMLElement} root
  * @param {HTMLElement} list
  */
-function initSorting(root, list) {
+function initSorting(list) {
     /** @type {HTMLElement | null} */
     let dragRow = null;
 
@@ -338,7 +337,7 @@ function init() {
     );
     if (!list) return;
 
-    initSorting(root, list);
+    initSorting(list);
     initTabs(root);
 }
 
