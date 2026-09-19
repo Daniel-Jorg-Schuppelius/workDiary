@@ -854,6 +854,12 @@ class AppServiceProvider extends ServiceProvider {
             return app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled($code);
         });
 
+        // Endet TLS vor dem Webserver und fehlt TRUSTED_PROXIES, sieht PHP nur
+        // http — erzeugte http-URLs blockt der Browser als Mixed Content.
+        if (str_starts_with((string) config('app.url'), 'https://')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         // Pro-Request-Nonce für @vite-Script-Tags; derselbe Nonce dient
         // Inline-Scripts (@cspNonce) und dem CSP-Header.
         \Illuminate\Support\Facades\Vite::useCspNonce();

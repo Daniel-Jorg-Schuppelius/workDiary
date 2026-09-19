@@ -56,13 +56,16 @@ class InstallController extends Controller {
 
     public function application(): View {
         $env = $this->installer->env();
+        $appUrl = $env->get('APP_URL');
 
         return view('install.application', [
             'step' => 'application',
             'steps' => self::STEPS,
             'values' => [
                 'app_name' => $env->get('APP_NAME') ?? 'WorkDiary',
-                'app_url' => $env->get('APP_URL') ?? 'http://localhost',
+                // Vorlagenwert der .env.example zählt als „nicht gesetzt“; url()
+                // folgt dem Schema, das PrepareInstaller beim Browser erkennt.
+                'app_url' => in_array($appUrl, [null, '', 'http://localhost'], true) ? url('/') : $appUrl,
                 'app_env' => $env->get('APP_ENV') ?? 'production',
                 'locale' => $env->get('APP_LOCALE') ?? 'de',
                 'timezone' => $env->get('APP_TIMEZONE') ?? 'Europe/Berlin',

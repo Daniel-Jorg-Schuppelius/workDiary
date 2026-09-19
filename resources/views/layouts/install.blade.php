@@ -11,6 +11,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ __('Installation') }} — {{ config('app.name', 'WorkDiary') }}</title>
+    @unless (str_starts_with(url('/'), 'https://'))
+        {{-- TLS endet vor dem Webserver und kein Proxy-Header verrät es: Die
+             http-URLs dieser Seite blockt der Browser. Das Secure-Cookie meldet
+             TLS an PrepareInstaller, der Reload holt die Seite mit https-URLs. --}}
+        <script @cspNonce>
+            if (location.protocol === 'https:' && ! document.cookie.split('; ').includes(@js(\App\Http\Middleware\PrepareInstaller::TLS_COOKIE . '=1'))) {
+                document.cookie = @js(\App\Http\Middleware\PrepareInstaller::TLS_COOKIE . '=1; path=/; Secure; SameSite=Lax');
+                location.reload();
+            }
+        </script>
+    @endunless
     @if (is_file(public_path('build/manifest.json')))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @else

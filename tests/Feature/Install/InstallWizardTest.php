@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Install;
 
+use App\Http\Middleware\PrepareInstaller;
 use App\Services\Install\{EnvWriter, InstallationManager};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -135,5 +136,29 @@ class InstallWizardTest extends TestCase {
             'app_url' => 'not-a-url',
             'app_env' => 'invalid',
         ])->assertSessionHasErrors(['app_name', 'app_url', 'app_env']);
+    }
+
+    public function test_without_tls_signal_urls_stay_http_and_page_probes_tls(): void {
+        $this->bootFreshInstall();
+
+        $this->get('/install')->assertOk()
+            ->assertSee('action="http://localhost/install"', false)
+            ->assertSee(PrepareInstaller::TLS_COOKIE, false);
+    }
+
+    public function test_forwarded_proto_yields_https_urls_without_trusted_proxies(): void {
+        $this->bootFreshInstall();
+
+        $this->withHeader('X-Forwarded-Proto', 'https')->get('/install')->assertOk()
+            ->assertSee('action="https://localhost/install"', false)
+            ->assertDontSee(PrepareInstaller::TLS_COOKIE, false);
+    }
+
+    public function test_tls_cookie_yields_https_urls_and_app_url_prefill(): void {
+        $this->bootFreshInstall();
+
+        $this->withUnencryptedCookie(PrepareInstaller::TLS_COOKIE, '1')->get('/install/application')->assertOk()
+            ->assertSee('value="https://localhost"', false)
+            ->assertSee('action="https://localhost/install/application"', false);
     }
 }
