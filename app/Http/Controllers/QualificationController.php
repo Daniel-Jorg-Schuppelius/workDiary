@@ -56,7 +56,7 @@ class QualificationController extends Controller {
 
         Qualification::create($data);
 
-        return redirect()->route('qualifications.index')
+        return redirect()->toList('qualifications.index')
             ->with('success', __('Qualifikation wurde angelegt.'));
     }
 
@@ -74,7 +74,7 @@ class QualificationController extends Controller {
 
         $qualification->update($this->validated($request, $qualification));
 
-        return redirect()->route('qualifications.index')
+        return redirect()->toList('qualifications.index')
             ->with('success', __('Qualifikation wurde gespeichert.'));
     }
 
@@ -83,7 +83,7 @@ class QualificationController extends Controller {
 
         $qualification->delete();
 
-        return redirect()->route('qualifications.index')
+        return redirect()->toList('qualifications.index')
             ->with('success', __('Qualifikation wurde gelöscht.'));
     }
 

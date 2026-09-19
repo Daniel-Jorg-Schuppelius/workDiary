@@ -359,7 +359,7 @@ class DiaryController extends Controller {
 
         $diary->delete();
 
-        return redirect()->route('diary.index')->with('success', __('Eintrag gelöscht.'));
+        return redirect()->toList('diary.index')->with('success', __('Eintrag gelöscht.'));
     }
 
     /**

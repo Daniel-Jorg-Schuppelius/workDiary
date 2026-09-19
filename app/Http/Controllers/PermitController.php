@@ -97,7 +97,7 @@ class PermitController extends Controller {
         $permit = Permit::query()->create($payload);
         $this->storeEvidence($permit, $request);
 
-        return redirect()->route('permits.index')->with('success', __('permit.messages.created'));
+        return redirect()->toList('permits.index')->with('success', __('permit.messages.created'));
     }
 
     public function edit(Permit $permit): View {
@@ -126,7 +126,7 @@ class PermitController extends Controller {
         $permit->update($payload);
         $this->storeEvidence($permit, $request);
 
-        return redirect()->route('permits.index')->with('success', __('permit.messages.updated'));
+        return redirect()->toList('permits.index')->with('success', __('permit.messages.updated'));
     }
 
     public function destroy(Permit $permit): RedirectResponse {
@@ -134,7 +134,7 @@ class PermitController extends Controller {
 
         $permit->delete();
 
-        return redirect()->route('permits.index')->with('success', __('permit.messages.deleted'));
+        return redirect()->toList('permits.index')->with('success', __('permit.messages.deleted'));
     }
 
     /**

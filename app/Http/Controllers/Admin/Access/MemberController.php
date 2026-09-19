@@ -149,7 +149,7 @@ class MemberController extends Controller {
             $group->audit('user_group.member_removed', ['member_id' => $member->id, 'member_name' => $member->name]);
         }
 
-        return redirect()->route('admin.access.members.index')
+        return redirect()->toList('admin.access.members.index')
             ->with('success', __('access.flash.member_updated'));
     }
 

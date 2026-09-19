@@ -49,7 +49,7 @@ class UserBookmarkController extends Controller {
             'sort_order' => (int) ($request->input('sort_order') ?? 0),
         ]);
 
-        return redirect()->route('bookmarks.index')->with('status', __('Lesezeichen gespeichert.'));
+        return redirect()->toList('bookmarks.index')->with('status', __('Lesezeichen gespeichert.'));
     }
 
     public function edit(UserBookmark $bookmark): View {
@@ -68,13 +68,13 @@ class UserBookmarkController extends Controller {
             'sort_order' => (int) ($request->input('sort_order') ?? $bookmark->sort_order),
         ]);
 
-        return redirect()->route('bookmarks.index')->with('status', __('Lesezeichen aktualisiert.'));
+        return redirect()->toList('bookmarks.index')->with('status', __('Lesezeichen aktualisiert.'));
     }
 
     public function destroy(UserBookmark $bookmark): RedirectResponse {
         Gate::authorize('delete', $bookmark);
         $bookmark->delete();
 
-        return redirect()->route('bookmarks.index')->with('status', __('Lesezeichen entfernt.'));
+        return redirect()->toList('bookmarks.index')->with('status', __('Lesezeichen entfernt.'));
     }
 }

@@ -64,7 +64,7 @@ class InvoiceMailTemplateController extends Controller {
             return $tpl;
         });
 
-        return redirect()->route('admin.invoice-mail-templates.index')
+        return redirect()->toList('admin.invoice-mail-templates.index')
             ->with('status', __('Template gespeichert.'));
     }
 
@@ -87,7 +87,7 @@ class InvoiceMailTemplateController extends Controller {
             $this->ensureSingleDefault($invoiceMailTemplate);
         });
 
-        return redirect()->route('admin.invoice-mail-templates.index')
+        return redirect()->toList('admin.invoice-mail-templates.index')
             ->with('status', __('Template aktualisiert.'));
     }
 
@@ -95,7 +95,7 @@ class InvoiceMailTemplateController extends Controller {
         $this->authorizeBilling();
         $invoiceMailTemplate->delete();
 
-        return redirect()->route('admin.invoice-mail-templates.index')
+        return redirect()->toList('admin.invoice-mail-templates.index')
             ->with('status', __('Template gelöscht.'));
     }
 

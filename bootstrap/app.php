@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Middleware\{AssignRequestId, AuthenticateScim, EnforceMaintenanceMode, EnforceSupportImpersonation, EnforceTenantStatus, EnsureNewSystemAccess, EnsureValidLicense, ForcePasswordChange, HandleDatabaseUnavailable, PrepareInstaller, RedirectIfNotInstalled, RequireTwoFactorSetup, RequiresFeature, SecurityHeaders, SetLocale, SetOrganizationContext};
+use App\Http\Middleware\{AssignRequestId, AuthenticateScim, EnforceMaintenanceMode, EnforceSupportImpersonation, EnforceTenantStatus, EnsureNewSystemAccess, EnsureValidLicense, ForcePasswordChange, HandleDatabaseUnavailable, PrepareInstaller, RedirectIfNotInstalled, RememberListUrl, RequireTwoFactorSetup, RequiresFeature, SecurityHeaders, SetLocale, SetOrganizationContext};
 use App\Legacy\Http\Middleware\{EnsureLegacyAccess, EnsureLegacyCallcenterAuthenticated, EnsureLegacyWriteAllowed};
 use App\Support\DatabaseHealth;
 use Illuminate\Database\QueryException;
@@ -132,6 +132,8 @@ return Application::configure(basePath: dirname(__DIR__))
             // Optionale IP-Allowlist für Plattform-Admins in admin.*-Routen
             // (Feature 096, MVP-446); leer = aus.
             \App\Http\Middleware\EnforcePlatformAdminIpAllowlist::class,
+            // Listen-URL samt Filtern für redirect()->toList() merken.
+            RememberListUrl::class,
         ]);
 
         // Auch der API-Stack (Sanctum-Tokens) MUSS die Organisation an den

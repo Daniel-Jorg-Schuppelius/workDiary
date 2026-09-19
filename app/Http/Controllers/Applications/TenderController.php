@@ -118,7 +118,7 @@ class TenderController extends Controller {
         $opportunity->requirements()->delete();
         $opportunity->delete();
 
-        return redirect()->route('tenders.index')->with('success', __('Akte gelöscht.'));
+        return redirect()->toList('tenders.index')->with('success', __('Akte gelöscht.'));
     }
 
     // ── Unterlagen-Checkliste (MVP-185) ──────────────────────────────────

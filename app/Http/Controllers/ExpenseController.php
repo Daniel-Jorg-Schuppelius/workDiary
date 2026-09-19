@@ -146,11 +146,11 @@ class ExpenseController extends Controller {
         if ($request->boolean('submit_after_save')) {
             $this->service->submitForApproval($expense);
 
-            return redirect()->route('expenses.index')
+            return redirect()->toList('expenses.index')
                 ->with('success', __('Spese erfasst und zur Genehmigung eingereicht.'));
         }
 
-        return redirect()->route('expenses.index')
+        return redirect()->toList('expenses.index')
             ->with('success', __('Spese als Entwurf gespeichert.'));
     }
 
@@ -275,7 +275,7 @@ class ExpenseController extends Controller {
             return back()->with('error', __('Der Gegenbeleg konnte nicht angelegt werden — es wurde nichts geändert.'));
         }
 
-        return redirect()->route('expenses.index')
+        return redirect()->toList('expenses.index')
             ->with('success', __('Gegenbeleg angelegt. Die korrigierte Auslage liegt als Entwurf bereit (#:id).', ['id' => $draft->id]));
     }
 
@@ -287,11 +287,11 @@ class ExpenseController extends Controller {
         if ($request->boolean('submit_after_save') && $expense->fresh()?->status === ExpenseStatus::Draft) {
             $this->service->submitForApproval($expense);
 
-            return redirect()->route('expenses.index')
+            return redirect()->toList('expenses.index')
                 ->with('success', __('Spese gespeichert und zur Genehmigung eingereicht.'));
         }
 
-        return redirect()->route('expenses.index')
+        return redirect()->toList('expenses.index')
             ->with('success', __('Spese aktualisiert.'));
     }
 
@@ -300,7 +300,7 @@ class ExpenseController extends Controller {
 
         $this->service->delete($expense);
 
-        return redirect()->route('expenses.index')
+        return redirect()->toList('expenses.index')
             ->with('success', __('Spese gelöscht.'));
     }
 
@@ -309,7 +309,7 @@ class ExpenseController extends Controller {
 
         $this->service->submitForApproval($expense);
 
-        return redirect()->route('expenses.index')
+        return redirect()->toList('expenses.index')
             ->with('success', __('Spese zur Genehmigung eingereicht.'));
     }
 
@@ -318,7 +318,7 @@ class ExpenseController extends Controller {
 
         $this->service->cancel($expense);
 
-        return redirect()->route('expenses.index')
+        return redirect()->toList('expenses.index')
             ->with('success', __('Spese storniert.'));
     }
 

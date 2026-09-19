@@ -147,7 +147,7 @@ class SupplierAssessmentController extends Controller {
         $actor = Auth::user();
         $this->service->delete($supplier, $actor);
 
-        return redirect()->route('isms.suppliers.index')->with('success', __('isms.flash.supplier_deleted'));
+        return redirect()->toList('isms.suppliers.index')->with('success', __('isms.flash.supplier_deleted'));
     }
 
     /**

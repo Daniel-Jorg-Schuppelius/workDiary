@@ -342,7 +342,7 @@ class ProjectController extends Controller {
 
         $project->delete();
 
-        return redirect()->route('projects.index')
+        return redirect()->toList('projects.index')
             ->with('success', __('Projekt gelöscht.'));
     }
 

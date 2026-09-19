@@ -110,7 +110,7 @@ class PassengerSettlementController extends Controller {
         $settlement->forceFill(['difference' => $settlement->computeDifference()])->save();
         $settlement->audit('passenger.settlement_created', []);
 
-        return redirect()->route('passenger-settlements.index')->with('status', (string) __('passenger.flash.settlement_saved'));
+        return redirect()->toList('passenger-settlements.index')->with('status', (string) __('passenger.flash.settlement_saved'));
     }
 
     public function update(Request $request, PassengerShiftSettlement $settlement): RedirectResponse {
@@ -126,7 +126,7 @@ class PassengerSettlementController extends Controller {
         $settlement->forceFill(['difference' => $settlement->computeDifference()])->save();
         $settlement->audit('passenger.settlement_updated', []);
 
-        return redirect()->route('passenger-settlements.index')->with('status', (string) __('passenger.flash.settlement_saved'));
+        return redirect()->toList('passenger-settlements.index')->with('status', (string) __('passenger.flash.settlement_saved'));
     }
 
     /**
@@ -156,7 +156,7 @@ class PassengerSettlementController extends Controller {
         ])->save();
         $settlement->audit('passenger.settlement_closed', ['status' => $settlement->status, 'difference' => $difference]);
 
-        return redirect()->route('passenger-settlements.index')->with('status', (string) __('passenger.flash.settlement_closed'));
+        return redirect()->toList('passenger-settlements.index')->with('status', (string) __('passenger.flash.settlement_closed'));
     }
 
     /**
@@ -211,7 +211,7 @@ class PassengerSettlementController extends Controller {
             'amount' => (string) $settlement->cash_total,
         ]);
 
-        return redirect()->route('passenger-settlements.index')->with('status', (string) __('passenger.flash.cash_posted'));
+        return redirect()->toList('passenger-settlements.index')->with('status', (string) __('passenger.flash.cash_posted'));
     }
 
     /** @return array<string, mixed> */

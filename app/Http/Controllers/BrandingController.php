@@ -28,7 +28,7 @@ class BrandingController extends Controller {
     public function edit(): View|RedirectResponse {
         $organization = $this->currentOrganizationOrUserOrganization();
         if (! $organization instanceof Organization) {
-            return redirect()->route('admin.organizations.index')
+            return redirect()->toList('admin.organizations.index')
                 ->with('warning', __('Bitte zuerst eine Organisation anlegen bzw. dem aktuellen Benutzer zuweisen.'));
         }
         Gate::authorize('manageBranding', $organization);
@@ -42,7 +42,7 @@ class BrandingController extends Controller {
     public function update(Request $request): RedirectResponse {
         $organization = $this->currentOrganizationOrUserOrganization();
         if (! $organization instanceof Organization) {
-            return redirect()->route('admin.organizations.index')
+            return redirect()->toList('admin.organizations.index')
                 ->with('warning', __('Bitte zuerst eine Organisation anlegen bzw. dem aktuellen Benutzer zuweisen.'));
         }
         Gate::authorize('manageBranding', $organization);

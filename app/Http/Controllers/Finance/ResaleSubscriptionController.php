@@ -278,7 +278,7 @@ class ResaleSubscriptionController extends Controller {
             $planner->sync($parent);
         }
 
-        return redirect()->route('finance.resale.index')->with('success', __('resale.flash.deleted'));
+        return redirect()->toList('finance.resale.index')->with('success', __('resale.flash.deleted'));
     }
 
     /**
@@ -382,7 +382,7 @@ class ResaleSubscriptionController extends Controller {
         } catch (\Throwable $e) {
             Log::error('resale.import failed', ['organization_id' => $organization->id, 'exception' => $e]);
 
-            return redirect()->route('finance.resale.index')->with('error', __('resale.general.failed'));
+            return redirect()->toList('finance.resale.index')->with('error', __('resale.general.failed'));
         }
         $summary = [];
         $unassigned = 0;

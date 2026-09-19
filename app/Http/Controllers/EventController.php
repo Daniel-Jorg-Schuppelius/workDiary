@@ -198,7 +198,7 @@ class EventController extends Controller {
         Gate::authorize('delete', $event);
         $event->delete();
 
-        return redirect()->route('events.index')
+        return redirect()->toList('events.index')
             ->with('success', __('Veranstaltung gelöscht.'));
     }
 

@@ -265,7 +265,7 @@ class TimeExportController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return redirect()->route('exports.index')->with('status', __('Export gelöscht — Begründung im Audit-Protokoll.'));
+        return redirect()->toList('exports.index')->with('status', __('Export gelöscht — Begründung im Audit-Protokoll.'));
     }
 
     /**

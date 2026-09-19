@@ -95,14 +95,14 @@ class GuaranteeController extends Controller {
         ]);
         $guarantee->audit('guarantee.created');
 
-        return redirect()->route('guarantees.index')->with('status', __('guarantee.created'));
+        return redirect()->toList('guarantees.index')->with('status', __('guarantee.created'));
     }
 
     public function update(SaveGuaranteeRequest $request, Guarantee $guarantee): RedirectResponse {
         $this->authorizeBilling();
         $guarantee->update($request->validated());
 
-        return redirect()->route('guarantees.index')->with('status', __('guarantee.updated'));
+        return redirect()->toList('guarantees.index')->with('status', __('guarantee.updated'));
     }
 
     public function returned(Request $request, Guarantee $guarantee): RedirectResponse {

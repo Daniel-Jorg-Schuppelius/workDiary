@@ -97,7 +97,7 @@ class BranchProfileController extends Controller {
             $request->boolean('force'),
         );
 
-        return redirect()->route('admin.branch-profiles.index')
+        return redirect()->toList('admin.branch-profiles.index')
             ->with('success', __('Profil ":profile" installiert: :classifications Klassifikationen, :requirements Pflichtregeln, :tags Tags.', [
                 'profile' => $result['profile_code'],
                 'classifications' => $result['created']['classifications'] + $result['updated']['classifications'],
@@ -153,7 +153,7 @@ class BranchProfileController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return redirect()->route('admin.branch-profiles.index')
+        return redirect()->toList('admin.branch-profiles.index')
             ->with('success', __('Profil ":label" (v:version) importiert und installiert.', [
                 'label' => (string) $profile['label'],
                 'version' => (string) $result['version'],

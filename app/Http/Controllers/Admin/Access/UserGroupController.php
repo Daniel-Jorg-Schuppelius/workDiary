@@ -154,7 +154,7 @@ class UserGroupController extends Controller {
 
         $group->delete();
 
-        return redirect()->route('admin.access.groups.index')
+        return redirect()->toList('admin.access.groups.index')
             ->with('success', __('access.flash.group_deleted'));
     }
 

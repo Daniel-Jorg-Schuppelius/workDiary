@@ -124,7 +124,7 @@ class SiteController extends Controller {
         Gate::authorize('delete', $site);
         $site->delete();
 
-        return redirect()->route('sites.index')->with('success', __('Standort gelöscht.'));
+        return redirect()->toList('sites.index')->with('success', __('Standort gelöscht.'));
     }
 
     /** @return array<string, mixed> */

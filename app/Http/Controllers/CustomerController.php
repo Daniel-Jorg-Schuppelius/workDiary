@@ -189,7 +189,7 @@ class CustomerController extends Controller {
         $customer->projects()->where('is_default', true)->delete();
         $customer->delete();
 
-        return redirect()->route('customers.index')
+        return redirect()->toList('customers.index')
             ->with('success', __('Kunde gelöscht.'));
     }
 
@@ -312,10 +312,10 @@ class CustomerController extends Controller {
         ]);
 
         if ($result['errors'] !== []) {
-            return redirect()->route('customers.index')
+            return redirect()->toList('customers.index')
                 ->with('error', $message . ' Fehler: ' . implode(' | ', array_slice($result['errors'], 0, 5)));
         }
 
-        return redirect()->route('customers.index')->with('success', $message);
+        return redirect()->toList('customers.index')->with('success', $message);
     }
 }

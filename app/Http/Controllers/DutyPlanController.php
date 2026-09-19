@@ -67,7 +67,7 @@ class DutyPlanController extends Controller {
 
         DutyPlan::create($data);
 
-        return redirect()->route('duty-plans.index')
+        return redirect()->toList('duty-plans.index')
             ->with('success', __('Dienstplan wurde angelegt.'));
     }
 
@@ -118,7 +118,7 @@ class DutyPlanController extends Controller {
 
         $dutyPlan->delete();
 
-        return redirect()->route('duty-plans.index')
+        return redirect()->toList('duty-plans.index')
             ->with('success', __('Dienstplan wurde gelöscht.'));
     }
 

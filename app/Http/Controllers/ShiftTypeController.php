@@ -55,7 +55,7 @@ class ShiftTypeController extends Controller {
 
         ShiftType::create($data);
 
-        return redirect()->route('shift-types.index')
+        return redirect()->toList('shift-types.index')
             ->with('success', __('Schichttyp gespeichert.'));
     }
 
@@ -74,7 +74,7 @@ class ShiftTypeController extends Controller {
 
         $shiftType->update($data);
 
-        return redirect()->route('shift-types.index')
+        return redirect()->toList('shift-types.index')
             ->with('success', __('Schichttyp aktualisiert.'));
     }
 
@@ -82,13 +82,13 @@ class ShiftTypeController extends Controller {
         Gate::authorize('delete', $shiftType);
 
         if ($shiftType->scheduledShifts()->exists()) {
-            return redirect()->route('shift-types.index')
+            return redirect()->toList('shift-types.index')
                 ->with('error', __('Schichttyp wird noch verwendet und kann nicht gelöscht werden.'));
         }
 
         $shiftType->delete();
 
-        return redirect()->route('shift-types.index')
+        return redirect()->toList('shift-types.index')
             ->with('success', __('Schichttyp gelöscht.'));
     }
 

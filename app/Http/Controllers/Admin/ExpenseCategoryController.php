@@ -51,7 +51,7 @@ class ExpenseCategoryController extends Controller {
 
         ExpenseCategory::create($request->validated());
 
-        return redirect()->route('admin.expense-categories.index')
+        return redirect()->toList('admin.expense-categories.index')
             ->with('success', __('Spesenkategorie wurde angelegt.'));
     }
 
@@ -68,7 +68,7 @@ class ExpenseCategoryController extends Controller {
 
         $expenseCategory->update($request->validated());
 
-        return redirect()->route('admin.expense-categories.index')
+        return redirect()->toList('admin.expense-categories.index')
             ->with('success', __('Spesenkategorie wurde aktualisiert.'));
     }
 
@@ -76,13 +76,13 @@ class ExpenseCategoryController extends Controller {
         Gate::authorize('delete', $expenseCategory);
 
         if ($expenseCategory->expenses()->exists()) {
-            return redirect()->route('admin.expense-categories.index')
+            return redirect()->toList('admin.expense-categories.index')
                 ->with('error', __('Kategorie wird noch von Spesen verwendet und kann nicht gelöscht werden.'));
         }
 
         $expenseCategory->delete();
 
-        return redirect()->route('admin.expense-categories.index')
+        return redirect()->toList('admin.expense-categories.index')
             ->with('success', __('Spesenkategorie wurde gelöscht.'));
     }
 }

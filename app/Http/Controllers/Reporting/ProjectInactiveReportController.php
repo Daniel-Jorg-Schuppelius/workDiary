@@ -85,7 +85,7 @@ class ProjectInactiveReportController extends Controller {
         $ids = array_values(array_unique($ids));
 
         if (count($ids) === 0) {
-            return redirect()->route('reports.project-inactive')
+            return redirect()->toList('reports.project-inactive')
                 ->with('error', __('Keine Projekte ausgewählt.'));
         }
 
@@ -113,7 +113,7 @@ class ProjectInactiveReportController extends Controller {
             $archived++;
         }
 
-        return redirect()->route('reports.project-inactive')
+        return redirect()->toList('reports.project-inactive')
             ->with('success', __(':n Projekt(e) archiviert.', ['n' => $archived]));
     }
 

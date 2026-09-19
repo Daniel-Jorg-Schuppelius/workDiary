@@ -263,7 +263,7 @@ class PluginController extends Controller {
             return response()->json(['redirect' => route('admin.plugins.index')]);
         }
 
-        return redirect()->route('admin.plugins.index');
+        return redirect()->toList('admin.plugins.index');
     }
 
     /**

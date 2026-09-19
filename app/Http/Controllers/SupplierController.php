@@ -216,7 +216,7 @@ class SupplierController extends Controller {
 
         $supplier->delete();
 
-        return redirect()->route('suppliers.index')
+        return redirect()->toList('suppliers.index')
             ->with('success', __('Lieferant gelöscht.'));
     }
 

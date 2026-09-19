@@ -84,7 +84,7 @@ class ExpenseApprovalController extends Controller {
         $approver = Auth::user();
         $this->service->approve($expense, $approver);
 
-        return redirect()->route('expense-approvals.inbox')
+        return redirect()->toList('expense-approvals.inbox')
             ->with('success', __('Spese genehmigt.'));
     }
 
@@ -107,7 +107,7 @@ class ExpenseApprovalController extends Controller {
         $approver = Auth::user();
         $this->service->reject($expense, $approver, $data['reject_reason'] ?? null);
 
-        return redirect()->route('expense-approvals.inbox')
+        return redirect()->toList('expense-approvals.inbox')
             ->with('success', __('Spese abgelehnt.'));
     }
 
@@ -160,7 +160,7 @@ class ExpenseApprovalController extends Controller {
             $msg .= ' ' . __(':n übersprungen (Status oder Berechtigung).', ['n' => $skipped]);
         }
 
-        return redirect()->route('expense-approvals.inbox')->with('success', $msg);
+        return redirect()->toList('expense-approvals.inbox')->with('success', $msg);
     }
 
     /**
@@ -199,6 +199,6 @@ class ExpenseApprovalController extends Controller {
             $msg .= ' ' . __(':n übersprungen (Status oder Berechtigung).', ['n' => $skipped]);
         }
 
-        return redirect()->route('expense-approvals.inbox')->with('success', $msg);
+        return redirect()->toList('expense-approvals.inbox')->with('success', $msg);
     }
 }

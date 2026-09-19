@@ -346,6 +346,22 @@ class AppServiceProvider extends ServiceProvider {
             return $this->foreignId('organization_id')->nullable()->constrained('organizations')->nullOnDelete();
         });
 
+        // Rücksprung auf eine Liste mit ihren zuletzt gesetzten Filtern
+        // (RememberListUrl). Übernommen wird nur der Query-String und nur für
+        // denselben Pfad — andere Routenparameter führen auf die nackte Route.
+        \Illuminate\Routing\Redirector::macro('toList', function (string $route, array $parameters = []): \Illuminate\Http\RedirectResponse {
+            /** @var \Illuminate\Routing\Redirector $this */
+            $target = route($route, $parameters);
+            $remembered = ((array) session()->get(\App\Http\Middleware\RememberListUrl::SESSION_KEY, []))[$route] ?? null;
+            if (is_string($remembered) && ! str_contains($target, '?')
+                && parse_url($remembered, PHP_URL_PATH) === parse_url($target, PHP_URL_PATH)) {
+                $query = parse_url($remembered, PHP_URL_QUERY);
+                $target .= is_string($query) && $query !== '' ? '?' . $query : '';
+            }
+
+            return $this->to($target);
+        });
+
         // Mandanten-Hygiene im langlebigen Queue-Worker (Whitebox 2026-07-10,
         // J1/J2): Jeder Job startet mit sauberem Container, sonst verschleppt
         // ein gebundenes 'currentOrganization' in den nächsten Job (org-gescopte

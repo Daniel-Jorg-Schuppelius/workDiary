@@ -110,7 +110,7 @@ class InvoiceScheduleController extends Controller {
 
         $invoiceSchedule->delete();
 
-        return redirect()->route('invoice-schedules.index')
+        return redirect()->toList('invoice-schedules.index')
             ->with('status', __('Abrechnungsplan gelöscht — bereits erzeugte Entwürfe bleiben erhalten.'));
     }
 

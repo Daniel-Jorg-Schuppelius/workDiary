@@ -216,7 +216,7 @@ class SchedulerController extends Controller {
             expression: $validated['expression'] ?? null,
         ), $request->user()?->id);
 
-        return redirect()->route('admin.scheduler.index')
+        return redirect()->toList('admin.scheduler.index')
             ->with('status', __('scheduler.flash.rescheduled', ['job' => $definition->label()]));
     }
 
@@ -226,7 +226,7 @@ class SchedulerController extends Controller {
         $definition = $this->definitionOr404($job);
         $this->overrides->pause($job, $request->user()?->id);
 
-        return redirect()->route('admin.scheduler.index')
+        return redirect()->toList('admin.scheduler.index')
             ->with('status', __('scheduler.flash.paused', ['job' => $definition->label()]));
     }
 
@@ -236,7 +236,7 @@ class SchedulerController extends Controller {
         $definition = $this->definitionOr404($job);
         $this->overrides->resume($job, $request->user()?->id);
 
-        return redirect()->route('admin.scheduler.index')
+        return redirect()->toList('admin.scheduler.index')
             ->with('status', __('scheduler.flash.resumed', ['job' => $definition->label()]));
     }
 
@@ -246,7 +246,7 @@ class SchedulerController extends Controller {
         $definition = $this->definitionOr404($job);
         $this->overrides->reset($job);
 
-        return redirect()->route('admin.scheduler.index')
+        return redirect()->toList('admin.scheduler.index')
             ->with('status', __('scheduler.flash.reset', ['job' => $definition->label()]));
     }
 
@@ -257,7 +257,7 @@ class SchedulerController extends Controller {
 
         $cooldownKey = 'scheduler.testrun.' . $definition->key;
         if (Cache::get($cooldownKey) !== null) {
-            return redirect()->route('admin.scheduler.index')
+            return redirect()->toList('admin.scheduler.index')
                 ->with('error', __('scheduler.flash.test_run_cooldown', ['minutes' => self::TEST_RUN_COOLDOWN_MINUTES]));
         }
         Cache::put($cooldownKey, true, now()->addMinutes(self::TEST_RUN_COOLDOWN_MINUTES));
@@ -267,7 +267,7 @@ class SchedulerController extends Controller {
 
         $this->writeTestRunAudit($request->user(), $definition->key);
 
-        return redirect()->route('admin.scheduler.index')
+        return redirect()->toList('admin.scheduler.index')
             ->with('status', __('scheduler.flash.test_run_queued', ['job' => $definition->label()]));
     }
 

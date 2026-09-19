@@ -40,7 +40,7 @@ class EventCategoryController extends Controller {
         Gate::authorize('create', EventCategory::class);
         EventCategory::create($this->validateCategory($request));
 
-        return redirect()->route('event-categories.index')->with('success', __('Kategorie angelegt.'));
+        return redirect()->toList('event-categories.index')->with('success', __('Kategorie angelegt.'));
     }
 
     public function edit(EventCategory $category): View {
@@ -53,14 +53,14 @@ class EventCategoryController extends Controller {
         Gate::authorize('update', $category);
         $category->update($this->validateCategory($request));
 
-        return redirect()->route('event-categories.index')->with('success', __('Kategorie aktualisiert.'));
+        return redirect()->toList('event-categories.index')->with('success', __('Kategorie aktualisiert.'));
     }
 
     public function destroy(EventCategory $category): RedirectResponse {
         Gate::authorize('delete', $category);
         $category->delete();
 
-        return redirect()->route('event-categories.index')->with('success', __('Kategorie gelöscht.'));
+        return redirect()->toList('event-categories.index')->with('success', __('Kategorie gelöscht.'));
     }
 
     /** @return array<string, mixed> */

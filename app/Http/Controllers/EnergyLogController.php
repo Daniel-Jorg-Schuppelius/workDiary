@@ -118,7 +118,7 @@ class EnergyLogController extends Controller {
 
         $this->service->create($data);
 
-        return redirect()->route('energy-logs.index')
+        return redirect()->toList('energy-logs.index')
             ->with('success', __('Tankung/Ladung erfasst.'));
     }
 
@@ -143,7 +143,7 @@ class EnergyLogController extends Controller {
 
         $this->service->update($energyLog, $request->validated());
 
-        return redirect()->route('energy-logs.index')
+        return redirect()->toList('energy-logs.index')
             ->with('success', __('Eintrag aktualisiert.'));
     }
 
@@ -152,7 +152,7 @@ class EnergyLogController extends Controller {
 
         $this->service->delete($energyLog);
 
-        return redirect()->route('energy-logs.index')
+        return redirect()->toList('energy-logs.index')
             ->with('success', __('Eintrag gelöscht.'));
     }
 

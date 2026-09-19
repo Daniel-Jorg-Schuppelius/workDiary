@@ -146,6 +146,24 @@ class SchedulerAdminControllerTest extends TestCase {
         $index(['sort' => 'last_run', 'dir' => 'asc'])->assertSeeInOrder([$edit('audit.verify'), $edit('billbee.sync'), $edit('toggl.import')], false);
     }
 
+    /** Rückmeldung 2026-09-19: Ein Testlauf aus der gefilterten Liste setzte Filter und Sortierung zurück. */
+    public function test_actions_return_to_the_filtered_and_sorted_list(): void {
+        Queue::fake();
+        $admin = User::factory()->platformAdmin()->create();
+        $list = ['dir' => 'desc', 'sort' => 'next_due', 'status' => 'never_ran']; // fullUrl() sortiert die Query
+
+        $this->actingAs($admin)->get(route('admin.scheduler.index', $list))->assertOk();
+
+        $this->actingAs($admin)
+            ->post(route('admin.scheduler.test-run', ['job' => 'plugin.healthcheck']))
+            ->assertRedirect(route('admin.scheduler.index', $list));
+
+        $this->actingAs($admin)->get(route('admin.scheduler.edit', ['job' => 'toggl.import']))->assertOk();
+        $this->actingAs($admin)
+            ->put(route('admin.scheduler.update', ['job' => 'toggl.import']), ['cadence_type' => 'hourly'])
+            ->assertRedirect(route('admin.scheduler.index', $list));
+    }
+
     public function test_index_without_operating_window_hints_at_the_setting(): void {
         $admin = User::factory()->platformAdmin()->create();
 

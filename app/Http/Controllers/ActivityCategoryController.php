@@ -61,7 +61,7 @@ class ActivityCategoryController extends Controller {
 
         ActivityCategory::create($request->validated());
 
-        return redirect()->route('activity-categories.index')
+        return redirect()->toList('activity-categories.index')
             ->with('success', __('Tätigkeit angelegt.'));
     }
 
@@ -70,7 +70,7 @@ class ActivityCategoryController extends Controller {
 
         $activityCategory->update($request->validated());
 
-        return redirect()->route('activity-categories.index')
+        return redirect()->toList('activity-categories.index')
             ->with('success', __('Tätigkeit aktualisiert.'));
     }
 
@@ -79,7 +79,7 @@ class ActivityCategoryController extends Controller {
 
         $activityCategory->delete();
 
-        return redirect()->route('activity-categories.index')
+        return redirect()->toList('activity-categories.index')
             ->with('success', __('Tätigkeit gelöscht.'));
     }
 }

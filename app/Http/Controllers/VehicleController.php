@@ -113,7 +113,7 @@ class VehicleController extends Controller {
 
         $vehicle = $this->service->create($data);
 
-        return redirect()->route('vehicles.index')
+        return redirect()->toList('vehicles.index')
             ->with('success', __('Fahrzeug erfasst: :label.', ['label' => $vehicle->displayName()]));
     }
 
@@ -138,7 +138,7 @@ class VehicleController extends Controller {
 
         $this->service->update($vehicle, $request->validated());
 
-        return redirect()->route('vehicles.index')
+        return redirect()->toList('vehicles.index')
             ->with('success', __('Fahrzeug aktualisiert.'));
     }
 
@@ -147,7 +147,7 @@ class VehicleController extends Controller {
 
         $this->service->archive($vehicle);
 
-        return redirect()->route('vehicles.index')
+        return redirect()->toList('vehicles.index')
             ->with('success', __('Fahrzeug archiviert.'));
     }
 

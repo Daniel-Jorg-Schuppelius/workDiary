@@ -66,7 +66,7 @@ class GlobalTaskController extends Controller {
             'created_by' => Auth::id(),
         ]));
 
-        return redirect()->route('tasks.global.index')
+        return redirect()->toList('tasks.global.index')
             ->with('success', __('Globale Aufgabe angelegt.'));
     }
 
@@ -90,7 +90,7 @@ class GlobalTaskController extends Controller {
 
         $task->update(array_merge($request->validated(), ['is_global' => true, 'project_id' => null]));
 
-        return redirect()->route('tasks.global.index')
+        return redirect()->toList('tasks.global.index')
             ->with('success', __('Globale Aufgabe aktualisiert.'));
     }
 
@@ -100,7 +100,7 @@ class GlobalTaskController extends Controller {
 
         $task->delete();
 
-        return redirect()->route('tasks.global.index')
+        return redirect()->toList('tasks.global.index')
             ->with('success', __('Globale Aufgabe gelöscht.'));
     }
 }

@@ -401,7 +401,7 @@ class ImportController extends Controller {
         }
         $import->delete();
 
-        return redirect()->route('admin.imports.index')
+        return redirect()->toList('admin.imports.index')
             ->with('success', __('Import wurde verworfen.'));
     }
 

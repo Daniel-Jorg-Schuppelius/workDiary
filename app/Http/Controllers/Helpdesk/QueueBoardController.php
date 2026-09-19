@@ -138,7 +138,7 @@ class QueueBoardController extends Controller {
             $assigned++;
         }
 
-        return redirect()->route('helpdesk.board.index')
+        return redirect()->toList('helpdesk.board.index')
             ->with('success', $this->bulkMessage(__(':n Tickets zugewiesen.', ['n' => $assigned]), $skipped));
     }
 
@@ -182,7 +182,7 @@ class QueueBoardController extends Controller {
             $moved++;
         }
 
-        return redirect()->route('helpdesk.board.index')
+        return redirect()->toList('helpdesk.board.index')
             ->with('success', $this->bulkMessage(__(':n Tickets verschoben.', ['n' => $moved]), $skipped));
     }
 

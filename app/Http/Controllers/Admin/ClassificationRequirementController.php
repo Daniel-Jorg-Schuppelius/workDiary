@@ -134,7 +134,7 @@ class ClassificationRequirementController extends Controller {
             $validated,
         ));
 
-        return redirect()->route('admin.classification-requirements.index')
+        return redirect()->toList('admin.classification-requirements.index')
             ->with('success', __('Pflichtregel wurde angelegt.'));
     }
 
@@ -163,7 +163,7 @@ class ClassificationRequirementController extends Controller {
         $validated = $this->input->validated($request, $this->currentOrganization(), $classificationRequirement);
         $classificationRequirement->update($validated);
 
-        return redirect()->route('admin.classification-requirements.index')
+        return redirect()->toList('admin.classification-requirements.index')
             ->with('success', __('Pflichtregel wurde aktualisiert.'));
     }
 
@@ -173,7 +173,7 @@ class ClassificationRequirementController extends Controller {
 
         $classificationRequirement->delete();
 
-        return redirect()->route('admin.classification-requirements.index')
+        return redirect()->toList('admin.classification-requirements.index')
             ->with('success', __('Pflichtregel wurde gelöscht.'));
     }
 

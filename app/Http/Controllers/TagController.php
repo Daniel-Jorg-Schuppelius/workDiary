@@ -56,7 +56,7 @@ class TagController extends Controller {
             'created_by' => Auth::id(),
         ]);
 
-        return redirect()->route('tags.index')->with('success', __('Tag angelegt.'));
+        return redirect()->toList('tags.index')->with('success', __('Tag angelegt.'));
     }
 
     public function edit(Request $request, Tag $tag): View {
@@ -75,7 +75,7 @@ class TagController extends Controller {
 
         $tag->update($data);
 
-        return redirect()->route('tags.index')->with('success', __('Tag aktualisiert.'));
+        return redirect()->toList('tags.index')->with('success', __('Tag aktualisiert.'));
     }
 
     public function destroy(Tag $tag): RedirectResponse {
@@ -83,6 +83,6 @@ class TagController extends Controller {
 
         $tag->delete();
 
-        return redirect()->route('tags.index')->with('success', __('Tag gelöscht.'));
+        return redirect()->toList('tags.index')->with('success', __('Tag gelöscht.'));
     }
 }

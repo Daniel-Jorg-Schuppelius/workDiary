@@ -49,7 +49,7 @@ class MaterialController extends Controller {
         Gate::authorize('create', Material::class);
         Material::create($request->validated());
 
-        return redirect()->route('materials.index')->with('success', __('Material angelegt.'));
+        return redirect()->toList('materials.index')->with('success', __('Material angelegt.'));
     }
 
     public function edit(Material $material): View {
@@ -62,13 +62,13 @@ class MaterialController extends Controller {
         Gate::authorize('update', $material);
         $material->update($request->validated());
 
-        return redirect()->route('materials.index')->with('success', __('Material aktualisiert.'));
+        return redirect()->toList('materials.index')->with('success', __('Material aktualisiert.'));
     }
 
     public function destroy(Material $material): RedirectResponse {
         Gate::authorize('delete', $material);
         $material->delete();
 
-        return redirect()->route('materials.index')->with('success', __('Material gelöscht.'));
+        return redirect()->toList('materials.index')->with('success', __('Material gelöscht.'));
     }
 }

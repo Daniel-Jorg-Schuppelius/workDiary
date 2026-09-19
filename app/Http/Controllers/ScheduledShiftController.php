@@ -39,7 +39,7 @@ class ScheduledShiftController extends Controller {
     public function update(UpdateScheduledShiftRequest $request, ScheduledShift $shift): RedirectResponse {
         $shift->update($request->validated());
 
-        return redirect()->route('schedule.index')
+        return redirect()->toList('schedule.index')
             ->with('success', __('Schicht aktualisiert.'));
     }
 
@@ -48,7 +48,7 @@ class ScheduledShiftController extends Controller {
 
         $shift->delete();
 
-        return redirect()->route('schedule.index')
+        return redirect()->toList('schedule.index')
             ->with('success', __('Schicht gelöscht.'));
     }
 }

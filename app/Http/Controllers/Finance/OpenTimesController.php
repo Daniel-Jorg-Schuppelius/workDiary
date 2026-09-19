@@ -204,7 +204,7 @@ class OpenTimesController extends Controller {
             ->when($customerId !== null, fn($q) => $q->whereHas('project', fn($p) => $p->where('customer_id', $customerId)))
             ->update(['exported' => true]);
 
-        return redirect()->route('finance.open-times.index')
+        return redirect()->toList('finance.open-times.index')
             ->with('success', trans_choice('finance.open_times.mark_billed.flash', $count, [
                 'count' => $count,
                 'date' => $cutoff->format(Formats::date()),

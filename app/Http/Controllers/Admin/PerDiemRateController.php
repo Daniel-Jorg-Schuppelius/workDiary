@@ -55,7 +55,7 @@ class PerDiemRateController extends Controller {
 
         PerDiemRate::create($request->validated());
 
-        return redirect()->route('admin.per-diem-rates.index')
+        return redirect()->toList('admin.per-diem-rates.index')
             ->with('success', __('Pauschalensatz angelegt.'));
     }
 
@@ -72,7 +72,7 @@ class PerDiemRateController extends Controller {
 
         $perDiemRate->update($request->validated());
 
-        return redirect()->route('admin.per-diem-rates.index')
+        return redirect()->toList('admin.per-diem-rates.index')
             ->with('success', __('Pauschalensatz aktualisiert.'));
     }
 
@@ -81,7 +81,7 @@ class PerDiemRateController extends Controller {
 
         $perDiemRate->delete();
 
-        return redirect()->route('admin.per-diem-rates.index')
+        return redirect()->toList('admin.per-diem-rates.index')
             ->with('success', __('Pauschalensatz gelöscht.'));
     }
 }

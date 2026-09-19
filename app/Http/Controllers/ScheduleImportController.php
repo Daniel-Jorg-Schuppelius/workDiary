@@ -162,7 +162,7 @@ class ScheduleImportController extends Controller {
             Session::flash('import_errors', $errors);
         }
 
-        return redirect()->route('schedule.index')->with('success', $message);
+        return redirect()->toList('schedule.index')->with('success', $message);
     }
 
     // ── Private helpers ──────────────────────────────────────────────────────

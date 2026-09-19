@@ -58,7 +58,7 @@ class ProductController extends Controller {
 
         Product::query()->create($request->validated());
 
-        return redirect()->route('products.index')
+        return redirect()->toList('products.index')
             ->with('success', __('products.flash.created'));
     }
 
@@ -76,7 +76,7 @@ class ProductController extends Controller {
 
         $product->update($request->validated());
 
-        return redirect()->route('products.index')
+        return redirect()->toList('products.index')
             ->with('success', __('products.flash.updated'));
     }
 
@@ -86,7 +86,7 @@ class ProductController extends Controller {
         // FKs stehen auf nullOnDelete — Artikel/Assets bleiben, verlieren nur den Typ.
         $product->delete();
 
-        return redirect()->route('products.index')
+        return redirect()->toList('products.index')
             ->with('success', __('products.flash.deleted'));
     }
 

@@ -128,7 +128,7 @@ class TravelLogController extends Controller {
             return back()->withInput()->withErrors($e->errors);
         }
 
-        return redirect()->route('travel-logs.index')
+        return redirect()->toList('travel-logs.index')
             ->with('success', __('Fahrt erfasst (:km km).', ['km' => NumberHelper::toGermanFormat((float) $log->distance_km, 2, withThousandsSeparator: true)]))
             ->with('warning', $this->chainWarning($log));
     }
@@ -137,7 +137,7 @@ class TravelLogController extends Controller {
         Gate::authorize('update', $travelLog);
 
         if ($travelLog->isLocked()) {
-            return redirect()->route('travel-logs.index')->with('error', (new TravelLogLockedException($travelLog))->getMessage());
+            return redirect()->toList('travel-logs.index')->with('error', (new TravelLogLockedException($travelLog))->getMessage());
         }
 
         return view('travel-logs._form_dialog', array_merge($this->formOptions(), [
@@ -156,12 +156,12 @@ class TravelLogController extends Controller {
         try {
             $log = $this->service->update($travelLog, $data);
         } catch (TravelLogLockedException $e) {
-            return redirect()->route('travel-logs.index')->with('error', $e->getMessage());
+            return redirect()->toList('travel-logs.index')->with('error', $e->getMessage());
         } catch (LogbookViolationException $e) {
             return back()->withInput()->withErrors($e->errors);
         }
 
-        return redirect()->route('travel-logs.index')
+        return redirect()->toList('travel-logs.index')
             ->with('success', __('Fahrt aktualisiert.'))
             ->with('warning', $this->chainWarning($log));
     }
@@ -172,10 +172,10 @@ class TravelLogController extends Controller {
         try {
             $this->service->delete($travelLog);
         } catch (TravelLogLockedException $e) {
-            return redirect()->route('travel-logs.index')->with('error', $e->getMessage());
+            return redirect()->toList('travel-logs.index')->with('error', $e->getMessage());
         }
 
-        return redirect()->route('travel-logs.index')
+        return redirect()->toList('travel-logs.index')
             ->with('success', __('Fahrt gelöscht.'));
     }
 
@@ -184,14 +184,14 @@ class TravelLogController extends Controller {
         Gate::authorize('update', $travelLog);
 
         if (! $travelLog->isLogbook()) {
-            return redirect()->route('travel-logs.index')->with('error', __('Nur Fahrten eines Fahrzeugs im Fahrtenbuch-Modus werden festgeschrieben.'));
+            return redirect()->toList('travel-logs.index')->with('error', __('Nur Fahrten eines Fahrzeugs im Fahrtenbuch-Modus werden festgeschrieben.'));
         }
 
         /** @var User $user */
         $user = Auth::user();
         $this->service->lock($travelLog, $user);
 
-        return redirect()->route('travel-logs.index')->with('success', __('Fahrt festgeschrieben.'));
+        return redirect()->toList('travel-logs.index')->with('success', __('Fahrt festgeschrieben.'));
     }
 
     public function export(Request $request): StreamedResponse {

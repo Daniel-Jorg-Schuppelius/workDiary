@@ -117,7 +117,7 @@ class FloorController extends Controller {
         Gate::authorize('delete', $floor);
         $floor->delete();
 
-        return redirect()->route('floors.index')->with('success', __('Geschoss gelöscht.'));
+        return redirect()->toList('floors.index')->with('success', __('Geschoss gelöscht.'));
     }
 
     /** @return array<string, mixed> */

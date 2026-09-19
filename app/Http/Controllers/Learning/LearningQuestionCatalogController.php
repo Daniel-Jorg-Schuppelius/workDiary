@@ -92,7 +92,7 @@ class LearningQuestionCatalogController extends Controller {
 
         $this->editor->create($this->currentOrganization()->id, $data, $image instanceof UploadedFile ? $image : null, $this->actor());
 
-        return redirect()->route('learning.questions.index')->with('success', __('learning.flash.question_added'));
+        return redirect()->toList('learning.questions.index')->with('success', __('learning.flash.question_added'));
     }
 
     public function edit(LearningQuestion $question): View {
@@ -112,7 +112,7 @@ class LearningQuestionCatalogController extends Controller {
 
         $this->editor->update($question, $data, $image instanceof UploadedFile ? $image : null, $this->actor());
 
-        return redirect()->route('learning.questions.index')->with('success', __('learning.flash.question_updated'));
+        return redirect()->toList('learning.questions.index')->with('success', __('learning.flash.question_updated'));
     }
 
     public function duplicate(LearningQuestion $question): RedirectResponse {
@@ -120,7 +120,7 @@ class LearningQuestionCatalogController extends Controller {
 
         $this->editor->duplicate($question, $this->actor());
 
-        return redirect()->route('learning.questions.index')->with('success', __('learning.flash.question_duplicated'));
+        return redirect()->toList('learning.questions.index')->with('success', __('learning.flash.question_duplicated'));
     }
 
     public function destroy(LearningQuestion $question): RedirectResponse {
@@ -128,7 +128,7 @@ class LearningQuestionCatalogController extends Controller {
 
         $this->catalog->delete($question);
 
-        return redirect()->route('learning.questions.index')->with('success', __('learning.flash.question_deleted'));
+        return redirect()->toList('learning.questions.index')->with('success', __('learning.flash.question_deleted'));
     }
 
     public function storeCategory(Request $request): RedirectResponse {
@@ -137,7 +137,7 @@ class LearningQuestionCatalogController extends Controller {
 
         $this->catalog->createCategory($this->currentOrganization(), $data['name']);
 
-        return redirect()->route('learning.questions.index')->with('success', __('learning.flash.category_saved'));
+        return redirect()->toList('learning.questions.index')->with('success', __('learning.flash.category_saved'));
     }
 
     public function updateCategory(Request $request, LearningQuestionCategory $category): RedirectResponse {
@@ -146,7 +146,7 @@ class LearningQuestionCatalogController extends Controller {
 
         $this->catalog->renameCategory($category, $data['name']);
 
-        return redirect()->route('learning.questions.index')->with('success', __('learning.flash.category_saved'));
+        return redirect()->toList('learning.questions.index')->with('success', __('learning.flash.category_saved'));
     }
 
     public function destroyCategory(LearningQuestionCategory $category): RedirectResponse {
@@ -154,7 +154,7 @@ class LearningQuestionCatalogController extends Controller {
 
         $this->catalog->deleteCategory($category);
 
-        return redirect()->route('learning.questions.index')->with('success', __('learning.flash.category_deleted'));
+        return redirect()->toList('learning.questions.index')->with('success', __('learning.flash.category_deleted'));
     }
 
     /**

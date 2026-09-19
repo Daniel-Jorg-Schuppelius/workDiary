@@ -132,7 +132,7 @@ class SecurityIncidentController extends Controller {
         $actor = Auth::user();
         $this->service->delete($incident, $actor);
 
-        return redirect()->route('isms.incidents.index')->with('success', __('isms.flash.incident_deleted'));
+        return redirect()->toList('isms.incidents.index')->with('success', __('isms.flash.incident_deleted'));
     }
 
     /**

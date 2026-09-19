@@ -75,7 +75,7 @@ class RoomController extends Controller {
         Gate::authorize('create', Room::class);
         Room::create($this->validateRoom($request));
 
-        return redirect()->route('rooms.index')->with('success', __('Raum angelegt.'));
+        return redirect()->toList('rooms.index')->with('success', __('Raum angelegt.'));
     }
 
     public function edit(Room $room): View {
@@ -98,14 +98,14 @@ class RoomController extends Controller {
         Gate::authorize('update', $room);
         $room->update($this->validateRoom($request));
 
-        return redirect()->route('rooms.index')->with('success', __('Raum aktualisiert.'));
+        return redirect()->toList('rooms.index')->with('success', __('Raum aktualisiert.'));
     }
 
     public function destroy(Room $room): RedirectResponse {
         Gate::authorize('delete', $room);
         $room->delete();
 
-        return redirect()->route('rooms.index')->with('success', __('Raum gelöscht.'));
+        return redirect()->toList('rooms.index')->with('success', __('Raum gelöscht.'));
     }
 
     /** @return array<string, mixed> */

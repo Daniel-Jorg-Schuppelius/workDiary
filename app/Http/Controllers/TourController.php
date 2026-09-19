@@ -235,7 +235,7 @@ class TourController extends Controller {
         $this->tours->releaseEntries(DiaryEntry::query()->where('tour_id', $tour->id));
         $tour->delete();
 
-        return redirect()->route('tours.index')
+        return redirect()->toList('tours.index')
             ->with('success', __('Tour gelöscht.'));
     }
 

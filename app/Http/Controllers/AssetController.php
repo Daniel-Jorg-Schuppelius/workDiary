@@ -204,7 +204,7 @@ class AssetController extends Controller {
 
         $asset->syncTagsFromInput($tagIds, $newTags);
 
-        return redirect()->route('assets.index')->with('success', __('Asset angelegt.'));
+        return redirect()->toList('assets.index')->with('success', __('Asset angelegt.'));
     }
 
     public function edit(Asset $asset): View {

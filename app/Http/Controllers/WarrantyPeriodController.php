@@ -101,7 +101,7 @@ class WarrantyPeriodController extends Controller {
             return back()->withInput()->with('error', $e->getMessage());
         }
 
-        return redirect()->route('warranties.index')->with('status', __('warranty.created'));
+        return redirect()->toList('warranties.index')->with('status', __('warranty.created'));
     }
 
     public function close(Request $request, WarrantyPeriod $warranty): RedirectResponse {

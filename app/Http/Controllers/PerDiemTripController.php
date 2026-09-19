@@ -147,7 +147,7 @@ class PerDiemTripController extends Controller {
 
         $this->service->delete($perDiemTrip);
 
-        return redirect()->route('per-diem-trips.index')
+        return redirect()->toList('per-diem-trips.index')
             ->with('success', __('Reise gelöscht.'));
     }
 
@@ -167,7 +167,7 @@ class PerDiemTripController extends Controller {
 
         $expense = $this->service->convertToExpense($perDiemTrip);
 
-        return redirect()->route('expenses.index')
+        return redirect()->toList('expenses.index')
             ->with('success', __('Spese :id aus Reise erzeugt und zur Genehmigung eingereicht.', ['id' => $expense->id]));
     }
 
@@ -176,7 +176,7 @@ class PerDiemTripController extends Controller {
 
         $this->service->cancel($perDiemTrip);
 
-        return redirect()->route('per-diem-trips.index')
+        return redirect()->toList('per-diem-trips.index')
             ->with('success', __('Reise storniert.'));
     }
 

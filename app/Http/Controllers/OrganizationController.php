@@ -100,7 +100,7 @@ class OrganizationController extends Controller {
             $user->forceFill(['organization_id' => $organization->id])->save();
         }
 
-        return redirect()->route('admin.organizations.index')
+        return redirect()->toList('admin.organizations.index')
             ->with('success', __('Organisation wurde erstellt.'));
     }
 
@@ -251,7 +251,7 @@ class OrganizationController extends Controller {
             ]);
         }
 
-        return redirect()->route('admin.organizations.index')
+        return redirect()->toList('admin.organizations.index')
             ->with('success', __('Organisation wurde aktualisiert.'));
     }
 
@@ -284,7 +284,7 @@ class OrganizationController extends Controller {
             ->where('is_active', true)
             ->count();
         if ($remaining === 0) {
-            return redirect()->route('admin.organizations.index')
+            return redirect()->toList('admin.organizations.index')
                 ->with('error', __('Die letzte aktive Organisation kann nicht deaktiviert werden.'));
         }
 
@@ -299,7 +299,7 @@ class OrganizationController extends Controller {
             $session->forget(OrganizationSwitchController::SESSION_KEY);
         }
 
-        return redirect()->route('admin.organizations.index')
+        return redirect()->toList('admin.organizations.index')
             ->with('success', __('Organisation wurde deaktiviert.'));
     }
 
@@ -312,7 +312,7 @@ class OrganizationController extends Controller {
         $actor = Auth::user();
         $lifecycle->reactivate($organization, $actor instanceof User ? $actor : null);
 
-        return redirect()->route('admin.organizations.index')
+        return redirect()->toList('admin.organizations.index')
             ->with('success', __('Organisation wurde reaktiviert.'));
     }
 
@@ -357,23 +357,23 @@ class OrganizationController extends Controller {
         ]);
 
         if (trim((string) $data['confirm_slug']) !== (string) $organization->slug) {
-            return redirect()->route('admin.organizations.index')
+            return redirect()->toList('admin.organizations.index')
                 ->with('error', __('Bestätigung fehlgeschlagen: der eingegebene Slug stimmt nicht überein.'));
         }
 
         if ($organization->is_active) {
-            return redirect()->route('admin.organizations.index')
+            return redirect()->toList('admin.organizations.index')
                 ->with('error', __('Aktive Organisationen können nicht endgültig gelöscht werden. Bitte zuerst deaktivieren.'));
         }
 
         // Legal Hold (MVP-801): Ein Vermerk darf nicht mit dem ganzen Mandanten verschwinden.
         if (app(\App\Services\Privacy\LegalHoldService::class)->organizationHasActiveHolds($organization)) {
-            return redirect()->route('admin.organizations.index')
+            return redirect()->toList('admin.organizations.index')
                 ->with('error', __('Die Organisation hat aktive Legal Holds — endgültiges Löschen ist erst nach deren Aufhebung möglich.'));
         }
 
         if (! $lifecycle->isPurgeAllowed($organization)) {
-            return redirect()->route('admin.organizations.index')
+            return redirect()->toList('admin.organizations.index')
                 ->with('error', __('Endgültiges Löschen ist erst :h Stunden nach Deaktivierung möglich.', [
                     'h' => $lifecycle->cooldownHours(),
                 ]));
@@ -386,7 +386,7 @@ class OrganizationController extends Controller {
             ->where('is_active', true)
             ->count();
         if ($remaining === 0) {
-            return redirect()->route('admin.organizations.index')
+            return redirect()->toList('admin.organizations.index')
                 ->with('error', __('Es muss mindestens eine andere aktive Organisation verbleiben.'));
         }
 
@@ -405,7 +405,7 @@ class OrganizationController extends Controller {
             }
         }
 
-        return redirect()->route('admin.organizations.index')
+        return redirect()->toList('admin.organizations.index')
             ->with('success', __('Organisation ":name" wurde endgültig gelöscht.', ['name' => $deletedName]));
     }
 

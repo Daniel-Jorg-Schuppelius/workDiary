@@ -167,7 +167,7 @@ class ConstructionNoticeController extends Controller {
         Gate::authorize('create', Project::class);
         $this->notices->delete($notice);
 
-        return redirect()->route('construction-notices.index')->with('status', __('construction.deleted'));
+        return redirect()->toList('construction-notices.index')->with('status', __('construction.deleted'));
     }
 
     private function kindFromRequest(Request $request): RenderDocumentKind {

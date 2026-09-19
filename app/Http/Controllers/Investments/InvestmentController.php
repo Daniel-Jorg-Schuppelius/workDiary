@@ -115,7 +115,7 @@ class InvestmentController extends Controller {
         $case->options()->delete();
         $case->delete();
 
-        return redirect()->route('investments.index')->with('success', __('Akte gelöscht.'));
+        return redirect()->toList('investments.index')->with('success', __('Akte gelöscht.'));
     }
 
     public function updateStatus(UpdateInvestmentStatusRequest $request, InvestmentCase $case): RedirectResponse {

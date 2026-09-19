@@ -117,7 +117,7 @@ class BuildingController extends Controller {
         Gate::authorize('delete', $building);
         $building->delete();
 
-        return redirect()->route('buildings.index')->with('success', __('Gebäude gelöscht.'));
+        return redirect()->toList('buildings.index')->with('success', __('Gebäude gelöscht.'));
     }
 
     /** @return array<string, mixed> */

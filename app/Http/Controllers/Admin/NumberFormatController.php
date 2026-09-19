@@ -32,7 +32,7 @@ class NumberFormatController extends Controller {
 
         $organization = $this->currentOrganizationOrUserOrganization();
         if (! $organization instanceof Organization) {
-            return redirect()->route('admin.organizations.index')
+            return redirect()->toList('admin.organizations.index')
                 ->with('warning', __('Bitte zuerst eine Organisation anlegen bzw. dem aktuellen Benutzer zuweisen.'));
         }
 
@@ -58,7 +58,7 @@ class NumberFormatController extends Controller {
 
         $organization = $this->currentOrganizationOrUserOrganization();
         if (! $organization instanceof Organization) {
-            return redirect()->route('admin.organizations.index')
+            return redirect()->toList('admin.organizations.index')
                 ->with('warning', __('Bitte zuerst eine Organisation anlegen bzw. dem aktuellen Benutzer zuweisen.'));
         }
 

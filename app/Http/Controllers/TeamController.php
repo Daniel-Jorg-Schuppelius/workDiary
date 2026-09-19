@@ -131,7 +131,7 @@ class TeamController extends Controller {
 
         $team->delete();
 
-        return redirect()->route('teams.index')
+        return redirect()->toList('teams.index')
             ->with('success', __('Team wurde gelöscht.'));
     }
 

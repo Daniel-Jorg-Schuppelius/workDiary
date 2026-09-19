@@ -281,7 +281,7 @@ class ResaleReportController extends Controller {
         $key = $result['local'] ? 'resale.draft_flash.created_local' : 'resale.draft_flash.created';
         $net = Money::ofFloat($result['net'], $recipient->currency, 2)->format();
 
-        return redirect()->route('finance.resale.periods.index')->with('success', __($key, ['customer' => $recipient->name, 'lines' => $result['lines'], 'net' => $net, 'id' => $result['draft_id']]));
+        return redirect()->toList('finance.resale.periods.index')->with('success', __($key, ['customer' => $recipient->name, 'lines' => $result['lines'], 'net' => $net, 'id' => $result['draft_id']]));
     }
 
     /**

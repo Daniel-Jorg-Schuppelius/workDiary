@@ -159,7 +159,7 @@ class ArticleController extends Controller {
 
         $article->delete();
 
-        return redirect()->route('articles.index')
+        return redirect()->toList('articles.index')
             ->with('success', __('article.flash.deleted'));
     }
 

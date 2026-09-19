@@ -53,7 +53,7 @@ class EntryTypeController extends Controller {
 
         EntryType::create($request->validated());
 
-        return redirect()->route('admin.entry-types.index')
+        return redirect()->toList('admin.entry-types.index')
             ->with('success', __('Eintragstyp wurde angelegt.'));
     }
 
@@ -72,7 +72,7 @@ class EntryTypeController extends Controller {
 
         $entryType->update($request->validated());
 
-        return redirect()->route('admin.entry-types.index')
+        return redirect()->toList('admin.entry-types.index')
             ->with('success', __('Eintragstyp wurde aktualisiert.'));
     }
 
@@ -80,13 +80,13 @@ class EntryTypeController extends Controller {
         Gate::authorize('delete', $entryType);
 
         if ($entryType->diaryEntries()->exists()) {
-            return redirect()->route('admin.entry-types.index')
+            return redirect()->toList('admin.entry-types.index')
                 ->with('error', __('Typ wird noch von Einträgen verwendet und kann nicht gelöscht werden.'));
         }
 
         $entryType->delete();
 
-        return redirect()->route('admin.entry-types.index')
+        return redirect()->toList('admin.entry-types.index')
             ->with('success', __('Eintragstyp wurde gelöscht.'));
     }
 

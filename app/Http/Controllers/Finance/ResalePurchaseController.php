@@ -123,10 +123,10 @@ class ResalePurchaseController extends Controller {
         $net = Money::ofFloat($request->netAmount(), $document->currency);
         $result = $allocator->allocateVoucher($organization, $document, $request->provider(), $net, $request->month(), $request->user());
         if ($result['entries'] === 0) {
-            return redirect()->route('finance.resale.purchases.index')->with('error', __('resale.purchase.flash.no_periods', ['month' => $request->month()->format('Y-m')]));
+            return redirect()->toList('finance.resale.purchases.index')->with('error', __('resale.purchase.flash.no_periods', ['month' => $request->month()->format('Y-m')]));
         }
 
-        return redirect()->route('finance.resale.purchases.index')->with('success', __('resale.purchase_flash.allocated', ['entries' => $result['entries'], 'amount' => Money::ofFloat($result['allocated'], $document->currency, 2)->format(), 'voucher' => $document->reference()]));
+        return redirect()->toList('finance.resale.purchases.index')->with('success', __('resale.purchase_flash.allocated', ['entries' => $result['entries'], 'amount' => Money::ofFloat($result['allocated'], $document->currency, 2)->format(), 'voucher' => $document->reference()]));
     }
 
     public function importCreate(): View {
@@ -141,7 +141,7 @@ class ResalePurchaseController extends Controller {
     public function importStore(ResalePurchaseImportRequest $request, ProviderInvoiceImport $import): RedirectResponse {
         $organization = $this->currentOrganizationOrAbort(404);
         $result = $import->run($organization, $request->uploads(), $request->user());
-        $redirect = redirect()->route('finance.resale.purchases.index')->with($result['failed'] ? 'error' : 'success', implode(' · ', $result['summary']));
+        $redirect = redirect()->toList('finance.resale.purchases.index')->with($result['failed'] ? 'error' : 'success', implode(' · ', $result['summary']));
         if ($result['issues'] !== []) {
             $redirect->with('warning', trans_choice('resale.purchase_issues.count', count($result['issues']), ['count' => count($result['issues'])]))
                 ->with('resale_purchase_issues', $result['issues']);
@@ -161,6 +161,6 @@ class ResalePurchaseController extends Controller {
             $entry->delete();
         }
 
-        return redirect()->route('finance.resale.purchases.index')->with('success', __('resale.purchase.flash.removed'));
+        return redirect()->toList('finance.resale.purchases.index')->with('success', __('resale.purchase.flash.removed'));
     }
 }

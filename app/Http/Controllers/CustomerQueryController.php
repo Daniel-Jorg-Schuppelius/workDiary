@@ -112,7 +112,7 @@ class CustomerQueryController extends Controller {
         $actor = Auth::user();
         $this->service->answer($customerQuery, $actor, $data['answer']);
 
-        return redirect()->route('customer-queries.index')
+        return redirect()->toList('customer-queries.index')
             ->with('success', __('customer-query.answered'));
     }
 
@@ -121,7 +121,7 @@ class CustomerQueryController extends Controller {
 
         $this->service->close($customerQuery);
 
-        return redirect()->route('customer-queries.index')
+        return redirect()->toList('customer-queries.index')
             ->with('success', __('customer-query.closed'));
     }
 

@@ -123,7 +123,7 @@ class OrgMemberController extends Controller {
         // (supportzugriff-grundsaetze.md §4.1). Neuer User → immer echte Vergabe.
         $this->auditAssignedRole($user, $role);
 
-        return redirect()->route('org.members.index')
+        return redirect()->toList('org.members.index')
             ->with('success', __('Mitglied wurde angelegt.'));
     }
 
@@ -248,7 +248,7 @@ class OrgMemberController extends Controller {
             }
         }
 
-        return redirect()->route('org.members.index')->with($created > 0 ? 'success' : 'error', $summary);
+        return redirect()->toList('org.members.index')->with($created > 0 ? 'success' : 'error', $summary);
     }
 
     public function edit(User $member): View {
@@ -289,7 +289,7 @@ class OrgMemberController extends Controller {
             $this->fillUserPayrollFields($member, $data, $auth);
             $member->save();
 
-            return redirect()->route('org.members.index')
+            return redirect()->toList('org.members.index')
                 ->with('success', __('Personaldaten wurden aktualisiert.'));
         }
 
@@ -358,7 +358,7 @@ class OrgMemberController extends Controller {
         // auditieren; unveränderte Rolle erzeugt kein Event.
         $this->syncRolesAudited($member, [$role]);
 
-        return redirect()->route('org.members.index')
+        return redirect()->toList('org.members.index')
             ->with('success', __('Mitglied wurde aktualisiert.'));
     }
 
@@ -404,7 +404,7 @@ class OrgMemberController extends Controller {
         app(\App\Services\Org\UserOffboardingService::class)
             ->initiate($member, \Carbon\CarbonImmutable::parse($data['left_at']), $auth);
 
-        return redirect()->route('org.members.index')
+        return redirect()->toList('org.members.index')
             ->with('success', $member->fresh()?->isDeactivated()
                 ? __(':name ist ausgeschieden — das Konto ist deaktiviert, der Lizenzsitz ist frei.', ['name' => $member->name])
                 : __('Austritt von :name zum :date vorgemerkt.', ['name' => $member->name, 'date' => \Carbon\CarbonImmutable::parse($data['left_at'])->format('d.m.Y')]));
@@ -449,7 +449,7 @@ class OrgMemberController extends Controller {
 
         $member->delete();
 
-        return redirect()->route('org.members.index')
+        return redirect()->toList('org.members.index')
             ->with('success', __('Mitglied wurde entfernt.'));
     }
 

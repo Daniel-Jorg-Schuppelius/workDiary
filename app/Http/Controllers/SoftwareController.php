@@ -85,7 +85,7 @@ class SoftwareController extends Controller {
 
         Software::query()->create($payload);
 
-        return redirect()->route('software.index')->with('success', __('Software angelegt.'));
+        return redirect()->toList('software.index')->with('success', __('Software angelegt.'));
     }
 
     public function edit(Software $software): View {
@@ -105,7 +105,7 @@ class SoftwareController extends Controller {
         $payload['is_active'] = (bool) ($payload['is_active'] ?? false);
         $software->update($payload);
 
-        return redirect()->route('software.index')->with('success', __('Software aktualisiert.'));
+        return redirect()->toList('software.index')->with('success', __('Software aktualisiert.'));
     }
 
     public function destroy(Software $software): RedirectResponse {
@@ -119,7 +119,7 @@ class SoftwareController extends Controller {
 
         $software->delete();
 
-        return redirect()->route('software.index')->with('success', __('Software gelöscht.'));
+        return redirect()->toList('software.index')->with('success', __('Software gelöscht.'));
     }
 
     private function normalizeKind(string $value): ?string {
