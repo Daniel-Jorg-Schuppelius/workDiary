@@ -27,6 +27,9 @@ return [
         'time' => 'Uhrzeit',
         'day' => 'Tag',
         'expression' => 'Cron-Ausdruck',
+        'criticality' => 'Einstufung',
+        'last_status' => 'Ergebnis',
+        'source' => 'Planquelle',
     ],
     'action' => [
         'reschedule' => 'Umplanen',
@@ -41,12 +44,26 @@ return [
         'success' => 'Erfolgreich',
         'failed' => 'Fehlgeschlagen',
         'never_ran' => 'Noch nie gelaufen',
+        'running' => 'Läuft',
+        'skipped' => 'Übersprungen',
     ],
     'source' => [
         'default' => 'Standardplan',
         'setting' => 'Aus Einstellung',
         'override' => 'Manuell umgeplant',
         'shifted' => 'Verschoben aus :time',
+    ],
+    'filter' => [
+        'search_placeholder' => 'Name, Schlüssel oder Befehl …',
+        'all_criticalities' => 'Alle Einstufungen',
+        'all_statuses' => 'Alle Ergebnisse',
+        'all_sources' => 'Alle Planquellen',
+        'shifted' => 'Vom Betriebsfenster verschoben',
+        'only_paused' => 'Nur pausierte',
+    ],
+    'empty' => [
+        'title' => 'Keine Jobs gefunden',
+        'message' => 'Kein Job passt zu den gewählten Filtern.',
     ],
     'window' => [
         'active' => 'Betriebsfenster :window (:timezone): Tageszeit-Jobs außerhalb laufen gesammelt zu Fensterbeginn, in ihrer Reihenfolge.',

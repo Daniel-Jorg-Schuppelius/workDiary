@@ -165,7 +165,7 @@
                         @endif
                     </td>
                     <td class="text-right tabular-nums">{{ $run->invoice !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($run->invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) . ' ' . $run->invoice->currency->value : '—' }}</td>
-                    <td>{{ $run->invoice?->status ?? '—' }}</td>
+                    <td>{{ $run->invoice !== null ? __('values.' . $run->invoice->status) : '—' }}</td>
                 </tr>
             @empty
                 <x-table.empty icon="event_repeat" :colspan="4" :title="__('Noch keine Läufe')" compact />

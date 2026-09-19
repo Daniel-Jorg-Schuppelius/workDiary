@@ -300,4 +300,16 @@ return [
     'procedure_negotiated_procedure_call' => 'Verhandlungsverfahren mit Teilnahmewettbewerb',
     'procedure_competitive_dialogue' => 'Wettbewerblicher Dialog',
     'procedure_innovation_partnership' => 'Innovationspartnerschaft',
+    // Chargen (StockLot)
+    'blocked' => 'Gesperrt',
+    'merged' => 'Zusammengeführt',
+    // Belegversand (DocumentDispatch): Status und Kanal
+    'queued' => 'In Warteschlange',
+    'failed' => 'Fehlgeschlagen',
+    'download' => 'Download',
+    'peppol' => 'Peppol',
+    'storage' => 'Ablage',
+    'manual' => 'Manuell',
+    // Artikel-Mapping (ExternalArticleMapping.sync_status)
+    'synced' => 'Synchronisiert',
 ];

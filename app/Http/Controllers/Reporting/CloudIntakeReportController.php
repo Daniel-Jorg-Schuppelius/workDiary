@@ -69,8 +69,8 @@ class CloudIntakeReportController extends Controller {
      *     perPeriod: list<array{x: string, y: int}>,
      *     byProvider: list<array{x: string, y: int}>,
      *     byReason: list<array{reason: string, count: int}>,
-     *     connections: list<array{label: string, provider: string, imported: int, rejected: int, lastRun: string|null, status: string}>,
-     *     rows: list<array{date: string, provider: string, path: string, status: string, reason: string}>,
+     *     connections: list<array{label: string, provider: string, imported: int, rejected: int, lastRun: string|null, status_label: string}>,
+     *     rows: list<array{date: string, provider: string, path: string, status_label: string, reason: string}>,
      * }
      */
     private function build(CarbonImmutable $from, CarbonImmutable $to): array {
@@ -131,7 +131,7 @@ class CloudIntakeReportController extends Controller {
                     'date' => $createdAt?->format('d.m.Y H:i') ?? '—',
                     'provider' => $providerLabel,
                     'path' => (string) $item->source_path,
-                    'status' => $item->status->label(),
+                    'status_label' => $item->status->label(),
                     'reason' => (string) ($item->status_reason ?? ''),
                 ];
             }
@@ -171,7 +171,7 @@ class CloudIntakeReportController extends Controller {
      * eine Verbindung, die nichts geliefert hat, ist das interessante Signal.
      *
      * @param  array<int, array{imported: int, rejected: int}>  $perConnection
-     * @return list<array{label: string, provider: string, imported: int, rejected: int, lastRun: string|null, status: string}>
+     * @return list<array{label: string, provider: string, imported: int, rejected: int, lastRun: string|null, status_label: string}>
      */
     private function connectionRows(array $perConnection): array {
         $rows = [];
@@ -183,7 +183,7 @@ class CloudIntakeReportController extends Controller {
                 'imported' => $counts['imported'],
                 'rejected' => $counts['rejected'],
                 'lastRun' => $connection->last_run_at?->format('d.m.Y H:i'),
-                'status' => $connection->status->label(),
+                'status_label' => $connection->status->label(),
             ];
         }
 
@@ -191,7 +191,7 @@ class CloudIntakeReportController extends Controller {
     }
 
     /**
-     * @param  list<array{date: string, provider: string, path: string, status: string, reason: string}>  $rows
+     * @param  list<array{date: string, provider: string, path: string, status_label: string, reason: string}>  $rows
      */
     private function export(Request $request, array $rows, CarbonImmutable $from, CarbonImmutable $to): Response {
         $csv = [[
@@ -202,7 +202,7 @@ class CloudIntakeReportController extends Controller {
             (string) __('cloud_intake.report.column.reason'),
         ]];
         foreach ($rows as $row) {
-            $csv[] = [$row['date'], $row['provider'], $row['path'], $row['status'], $row['reason']];
+            $csv[] = [$row['date'], $row['provider'], $row['path'], $row['status_label'], $row['reason']];
         }
 
         return $this->csvWithMetadata(

@@ -89,10 +89,10 @@
                     <h3 class="text-sm font-semibold mb-1">{{ __('construction.section.delivery') }}</h3>
                     @forelse ($dispatches as $dispatch)
                         <p class="text-sm">
-                            <span class="font-medium">{{ $dispatch->channel }}</span> ·
+                            <span class="font-medium">{{ __('values.' . $dispatch->channel) }}</span> ·
                             {{ $dispatch->recipient }} ·
                             {{ $dispatch->created_at?->format('d.m.Y H:i') }}
-                            <x-status-badge :tone="$dispatch->status === 'sent' ? 'success' : 'ghost'" size="sm">{{ $dispatch->status }}</x-status-badge>
+                            <x-status-badge :tone="$dispatch->status === 'sent' ? 'success' : 'ghost'" size="sm">{{ __('values.' . $dispatch->status) }}</x-status-badge>
                         </p>
                     @empty
                         <p class="text-sm text-muted">{{ __('construction.delivery.none') }}</p>

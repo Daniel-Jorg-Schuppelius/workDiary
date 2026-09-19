@@ -72,8 +72,15 @@
                                             'resolved_remote' => 'badge-success',
                                             default => 'badge-ghost',
                                         };
+                                        $statusLabel = match ($conflict->status) {
+                                            'open' => __('Offen'),
+                                            'resolved_local' => __('Lokal gewählt'),
+                                            'resolved_remote' => __('Remote gewählt'),
+                                            'dismissed' => __('Verworfen'),
+                                            default => \App\Support\Trans::or('inventory.conflict.status.' . $conflict->status, $conflict->status),
+                                        };
                                     @endphp
-                                    <span class="badge badge-sm {{ $statusBadge }}">{{ $conflict->status }}</span>
+                                    <span class="badge badge-sm {{ $statusBadge }}">{{ $statusLabel }}</span>
                                 </td>
                                 <td class="text-right">
                                     @if ($conflict->isOpen())

@@ -29,7 +29,7 @@
         <x-card :title="__('domain.section.overview')" class="lg:col-span-2">
             <x-detail-grid>
                 <x-detail-grid.row :label="__('domain.field.registrar')" :value="$domain->registrar ?? '—'" />
-                <x-detail-grid.row :label="__('domain.field.status')" :value="$domain->status ?? '—'" />
+                <x-detail-grid.row :label="__('domain.field.status')" :value="$domain->status !== null ? \App\Support\Trans::or('values.' . $domain->status, $domain->status) : '—'" />
                 <x-detail-grid.row :label="__('domain.field.expiration')" class="tabular-nums" :value="$domain->expiration_at?->format('d.m.Y') ?? '—'" />
                 <x-detail-grid.row :label="__('domain.field.renewal_mode')" :value="$domain->renewal_mode?->label() ?? '—'" />
                 <x-detail-grid.row :label="__('domain.field.transferlock')" :value="$domain->transferlock ? __('domain.yes') : __('domain.no')" />

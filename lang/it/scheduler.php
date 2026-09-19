@@ -27,6 +27,9 @@ return [
         'time' => 'Ora',
         'day' => 'Giorno',
         'expression' => 'Espressione cron',
+        'criticality' => 'Criticità',
+        'last_status' => 'Esito',
+        'source' => 'Origine del piano',
     ],
     'action' => [
         'reschedule' => 'Ripianifica',
@@ -41,12 +44,26 @@ return [
         'success' => 'Riuscito',
         'failed' => 'Non riuscito',
         'never_ran' => 'Mai eseguito',
+        'running' => 'In esecuzione',
+        'skipped' => 'Saltato',
     ],
     'source' => [
         'default' => 'Piano predefinito',
         'setting' => 'Da impostazione',
         'override' => 'Ripianificato manualmente',
         'shifted' => 'Spostato da :time',
+    ],
+    'filter' => [
+        'search_placeholder' => 'Nome, chiave o comando …',
+        'all_criticalities' => 'Tutte le criticità',
+        'all_statuses' => 'Tutti gli esiti',
+        'all_sources' => 'Tutte le origini',
+        'shifted' => 'Spostato dalla finestra operativa',
+        'only_paused' => 'Solo sospesi',
+    ],
+    'empty' => [
+        'title' => 'Nessun job trovato',
+        'message' => 'Nessun job corrisponde ai filtri selezionati.',
     ],
     'window' => [
         'active' => 'Finestra operativa :window (:timezone): i job a orario fisso al di fuori vengono eseguiti all\'inizio della finestra, nel loro ordine originale.',

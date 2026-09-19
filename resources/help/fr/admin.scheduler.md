@@ -25,6 +25,15 @@ dernière exécution avec son résultat, un compteur d'erreurs et la
 prochaine échéance. Vous repérez ainsi d'un coup d'œil si un job est
 bloqué ou échoue durablement.
 
+**Filtrer et trier :** Au-dessus du tableau, vous restreignez la liste
+par nom, clé ou commande, par criticité, dernier résultat et origine du
+plan – par exemple aux jobs en échec, jamais exécutés ou décalés par la
+plage de fonctionnement. L'interrupteur **Suspendues uniquement** montre
+ce qui est actuellement à l'arrêt. Les colonnes Tâche, Dernière
+exécution, Prochaine échéance et Échecs consécutifs se trient d'un clic ;
+les jobs sans valeur (jamais exécutés, suspendus) restent toujours à la
+fin.
+
 **Replanifier avec des garde-fous :** Chaque job définit les cadences qui
 lui sont autorisées (p. ex. toutes les heures ou quotidiennement à une
 heure donnée). La replanification n'est possible qu'à l'intérieur de ces

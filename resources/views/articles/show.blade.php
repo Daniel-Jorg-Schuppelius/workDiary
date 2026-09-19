@@ -263,7 +263,7 @@
                     </tr>
                 </x-slot:head>
                 @foreach ($article->externalMappings as $map)
-                    <tr><td>{{ $map->plugin_id }}</td><td class="font-mono">{{ $map->external_id }}</td><td>{{ $map->sync_status }}</td></tr>
+                    <tr><td>{{ $map->plugin_id }}</td><td class="font-mono">{{ $map->external_id }}</td><td>{{ \App\Support\Trans::or('values.' . $map->sync_status, $map->sync_status) }}</td></tr>
                 @endforeach
             </x-table>
         </x-card>

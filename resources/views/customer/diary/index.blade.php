@@ -22,7 +22,7 @@
             <tr>
                 <td class="whitespace-nowrap">{{ optional($entry->start_at)->fdate() }}</td>
                 <td><a class="link link-hover" href="{{ route('customer.diary.show', $entry) }}">{{ $entry->title }}</a></td>
-                <td>{{ $entry->status }}</td>
+                <td>{{ $entry->status?->label() }}</td>
             </tr>
         @empty
             <x-table.empty :colspan="3" :title="__('Keine Einträge vorhanden.')" />

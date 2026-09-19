@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\Scheduling\JobRunStatus;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -22,19 +23,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $job_key
  * @property \Carbon\CarbonImmutable $started_at
  * @property \Carbon\CarbonImmutable|null $finished_at
- * @property string $status
+ * @property JobRunStatus $status
  * @property int|null $duration_ms
  * @property int|null $exit_code
  */
 class ScheduledJobRun extends Model {
-    public const STATUS_RUNNING = 'running';
-
-    public const STATUS_SUCCESS = 'success';
-
-    public const STATUS_FAILED = 'failed';
-
-    public const STATUS_SKIPPED = 'skipped';
-
     protected $table = 'scheduled_job_runs';
 
     protected $fillable = ['job_key', 'started_at', 'finished_at', 'status', 'duration_ms', 'exit_code'];
@@ -45,5 +38,6 @@ class ScheduledJobRun extends Model {
         'finished_at' => 'immutable_datetime',
         'duration_ms' => 'integer',
         'exit_code' => 'integer',
+        'status' => JobRunStatus::class,
     ];
 }

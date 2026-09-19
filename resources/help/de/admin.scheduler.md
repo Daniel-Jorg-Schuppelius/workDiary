@@ -23,6 +23,14 @@ Kommandos kannst du über diese Seite bewusst nicht einplanen.
 Ergebnis, einen Fehlerzähler und die nächste Fälligkeit. So erkennst
 du auf einen Blick, ob ein Job hängt oder dauerhaft fehlschlägt.
 
+**Filtern und Sortieren:** Über der Tabelle grenzt du die Liste nach
+Name, Schlüssel oder Befehl, nach Einstufung, letztem Ergebnis und
+Planquelle ein – etwa auf alle fehlgeschlagenen, noch nie gelaufenen
+oder vom Betriebsfenster verschobenen Jobs. Der Schalter **Nur
+pausierte** zeigt, was gerade ruht. Die Spalten Job, Letzter Lauf,
+Nächste Fälligkeit und Fehler in Folge sortieren per Klick; Jobs ohne
+Wert (noch nie gelaufen, pausiert) stehen dabei immer am Ende.
+
 **Umplanen mit Leitplanken:** Jeder Job definiert, welche Kadenzen
 für ihn erlaubt sind (z. B. stündlich oder täglich zu einer Uhrzeit).
 Umplanen ist nur innerhalb dieser erlaubten Kadenzen möglich – so

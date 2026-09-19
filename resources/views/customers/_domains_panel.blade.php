@@ -37,7 +37,7 @@
                     <td><a href="{{ route('domains.show', $domain) }}" class="link link-hover">{{ $domain->external_domain }}</a></td>
                     <td class="text-sm">{{ $domain->foreignCustomer?->name ?? '—' }}</td>
                     <td class="text-sm">{{ $domain->registrar ?? '—' }}</td>
-                    <td class="text-sm">{{ $domain->status ?? '—' }}</td>
+                    <td class="text-sm">{{ $domain->status !== null ? \App\Support\Trans::or('values.' . $domain->status, $domain->status) : '—' }}</td>
                     <td class="tabular-nums text-sm">{{ $domain->expiration_at?->fdate() ?? '—' }}</td>
                 </tr>
             @empty
@@ -64,7 +64,7 @@
                             <td><a href="{{ route('domains.show', $domain) }}" class="link link-hover">{{ $domain->external_domain }}</a></td>
                             <td class="text-sm">{{ $domain->foreignCustomer?->name ?? '—' }}</td>
                             <td class="text-sm">{{ $domain->registrar ?? '—' }}</td>
-                            <td class="text-sm">{{ $domain->status ?? '—' }}</td>
+                            <td class="text-sm">{{ $domain->status !== null ? \App\Support\Trans::or('values.' . $domain->status, $domain->status) : '—' }}</td>
                             <td class="tabular-nums text-sm">{{ $domain->expiration_at?->fdate() ?? '—' }}</td>
                         </tr>
                     @endforeach

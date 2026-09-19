@@ -19,7 +19,7 @@
                 <li class="rounded-box border border-error/40 bg-error/5 px-3 py-2">
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <span class="min-w-0 truncate font-medium">{{ $state->plugin_id }}</span>
-                        <x-status-badge size="xs" tone="error">{{ $state->last_health_status }}</x-status-badge>
+                        <x-status-badge size="xs" tone="error">{{ \App\Enums\Plugin\PluginHealthStatus::tryFrom((string) $state->last_health_status)?->label() ?? __('Zustand unbekannt') }}</x-status-badge>
                     </div>
                     @if ($state->last_health_message)
                         <p class="text-xs text-muted">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($state->last_health_message, 80) }}</p>

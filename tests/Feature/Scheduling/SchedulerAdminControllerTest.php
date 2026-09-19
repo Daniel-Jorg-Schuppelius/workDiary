@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Scheduling;
 
-use App\Models\{ScheduledJobOverride, User};
+use App\Enums\Scheduling\JobRunStatus;
+use App\Models\{ScheduledJobOverride, ScheduledJobState, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
@@ -86,6 +87,63 @@ class SchedulerAdminControllerTest extends TestCase {
             ->assertSee('Täglich um 08:37')           // audit.verify, 02:30 verschoben
             ->assertSee('Jeden Montag um 09:40')      // finance.open_times_digest, 06:40 verschoben
             ->assertSee('Monatlich am 15. um 10:30'); // inventory.cycle_counts, Override
+    }
+
+    /** Produktionsmeldung 2026-09-19: „running“ stand roh (englisch) im Ergebnis-Badge. */
+    public function test_run_status_badges_are_translated(): void {
+        foreach (JobRunStatus::cases() as $status) {
+            $this->assertStringNotContainsString('scheduler.', $status->label());
+        }
+        ScheduledJobState::query()->create(['job_key' => 'toggl.import', 'last_started_at' => now(), 'last_status' => JobRunStatus::Running]);
+        ScheduledJobState::query()->create(['job_key' => 'billbee.sync', 'last_started_at' => now(), 'last_status' => JobRunStatus::Skipped]);
+        $admin = User::factory()->platformAdmin()->create();
+
+        $this->actingAs($admin)
+            ->get(route('admin.scheduler.index'))
+            ->assertOk()
+            ->assertSee(JobRunStatus::Running->label())
+            ->assertSee(JobRunStatus::Skipped->label());
+    }
+
+    public function test_index_filters_by_search_criticality_status_source_and_pause(): void {
+        $admin = User::factory()->platformAdmin()->create();
+        ScheduledJobState::query()->create([
+            'job_key' => 'audit.verify',
+            'last_started_at' => now(),
+            'last_status' => JobRunStatus::Failed,
+            'consecutive_failures' => 2,
+        ]);
+        $this->actingAs($admin)->post(route('admin.scheduler.pause', ['job' => 'toggl.import']));
+        $this->actingAs($admin)->put(route('admin.scheduler.update', ['job' => 'finance.open_times_digest']), [
+            'cadence_type' => 'dailyAt',
+            'time' => '10:00',
+        ]);
+
+        $edit = static fn(string $job): string => route('admin.scheduler.edit', ['job' => $job]);
+        $index = fn(array $query) => $this->actingAs($admin)->get(route('admin.scheduler.index', $query))->assertOk();
+
+        $index(['q' => 'toggl'])->assertSee($edit('toggl.import'), false)->assertDontSee($edit('audit.verify'), false);
+        $index(['criticality' => 'integration'])->assertSee($edit('billbee.sync'), false)->assertDontSee($edit('audit.verify'), false);
+        $index(['status' => 'failed'])->assertSee($edit('audit.verify'), false)->assertDontSee($edit('billbee.sync'), false);
+        $index(['status' => 'never_ran'])->assertSee($edit('billbee.sync'), false)->assertDontSee($edit('audit.verify'), false);
+        $index(['source' => 'override'])->assertSee($edit('finance.open_times_digest'), false)->assertDontSee($edit('audit.verify'), false);
+        $index(['paused' => 1])->assertSee($edit('toggl.import'), false)->assertDontSee($edit('billbee.sync'), false);
+        $index(['q' => 'gibt-es-nicht'])->assertSee(__('scheduler.empty.title'));
+    }
+
+    public function test_index_sorts_server_side_with_jobs_without_value_last(): void {
+        $admin = User::factory()->platformAdmin()->create();
+        ScheduledJobState::query()->create(['job_key' => 'audit.verify', 'last_started_at' => now()->subDay(), 'consecutive_failures' => 1]);
+        ScheduledJobState::query()->create(['job_key' => 'billbee.sync', 'last_started_at' => now(), 'consecutive_failures' => 4]);
+
+        $edit = static fn(string $job): string => route('admin.scheduler.edit', ['job' => $job]);
+        $index = fn(array $query) => $this->actingAs($admin)->get(route('admin.scheduler.index', $query))->assertOk();
+
+        $index(['sort' => 'failures', 'dir' => 'desc'])->assertSeeInOrder([$edit('billbee.sync'), $edit('audit.verify')], false);
+        $index(['sort' => 'failures', 'dir' => 'asc'])->assertSeeInOrder([$edit('audit.verify'), $edit('billbee.sync')], false);
+        // toggl.import lief nie — steht in beiden Richtungen hinter den gelaufenen Jobs.
+        $index(['sort' => 'last_run', 'dir' => 'desc'])->assertSeeInOrder([$edit('billbee.sync'), $edit('audit.verify'), $edit('toggl.import')], false);
+        $index(['sort' => 'last_run', 'dir' => 'asc'])->assertSeeInOrder([$edit('audit.verify'), $edit('billbee.sync'), $edit('toggl.import')], false);
     }
 
     public function test_index_without_operating_window_hints_at_the_setting(): void {

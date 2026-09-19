@@ -104,20 +104,9 @@
                     $isAutoDisabled = $state && $state->isAutoDisabled();
                     // Deaktivierte Plugins haben keinen Zustand (Review 2026-08, E1):
                     // ein stehen gebliebener Health-Status wäre eine falsche Aussage.
-                    $health = $isEnabled || $isAutoDisabled ? $state?->last_health_status : null;
-                    $healthClass = match ($health) {
-                        'ok' => 'badge-success',
-                        'degraded' => 'badge-warning',
-                        'failing' => 'badge-error',
-                        default => 'badge-ghost',
-                    };
-                    $healthLabel = match (true) {
-                        $health === 'ok' => __('Zustand ok'),
-                        $health === 'degraded' => __('Zustand eingeschränkt'),
-                        $health === 'failing' => __('Zustand fehlerhaft'),
-                        ! $isEnabled && ! $isAutoDisabled => __('Deaktiviert'),
-                        default => __('Zustand unbekannt'),
-                    };
+                    $health = $isEnabled || $isAutoDisabled ? \App\Enums\Plugin\PluginHealthStatus::tryFrom((string) $state?->last_health_status) : null;
+                    $healthClass = 'badge-' . ($health?->tone() ?? 'ghost');
+                    $healthLabel = $health?->label() ?? (! $isEnabled && ! $isAutoDisabled ? __('Deaktiviert') : __('Zustand unbekannt'));
                     $failureCount = (int) ($state?->failure_count ?? 0);
                     $openErrors = (int) ($errorCounts[$plugin->id()] ?? 0);
                     $checkedAt = $isEnabled || $isAutoDisabled ? $state?->last_health_check_at : null;
@@ -238,14 +227,8 @@
         degraded: '{{ __('Healthcheck: eingeschränkt') }}',
         failing:  '{{ __('Healthcheck: fehlerhaft') }}'
     };
-    var STATUS_LABEL = {
-        ok:       '{{ __('Zustand ok') }}',
-        degraded: '{{ __('Zustand eingeschränkt') }}',
-        failing:  '{{ __('Zustand fehlerhaft') }}'
-    };
-    var STATUS_BADGE = {
-        ok: 'badge-success', degraded: 'badge-warning', failing: 'badge-error'
-    };
+    var STATUS_LABEL = @json(\App\Enums\Plugin\PluginHealthStatus::options());
+    var STATUS_BADGE = @json(collect(\App\Enums\Plugin\PluginHealthStatus::cases())->mapWithKeys(static fn ($s) => [$s->value => 'badge-' . $s->tone()]));
     var BADGE_CLASSES = ['badge-success', 'badge-warning', 'badge-error', 'badge-ghost'];
 
     function updateRow(pluginId, data) {

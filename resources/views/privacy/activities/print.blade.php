@@ -29,7 +29,7 @@
         <div class="act">
             <h2>{{ $a['name'] }}</h2>
             <div class="row"><span class="k">{{ __('Zweck') }}:</span> {{ $a['purpose'] ?? '—' }}</div>
-            <div class="row"><span class="k">{{ __('Rolle') }}:</span> {{ $a['controller_role'] }} · <span class="k">{{ __('Status') }}:</span> {{ $a['status'] }} · <span class="k">{{ __('Review') }}:</span> {{ $a['review_due_at'] ?? '—' }}</div>
+            <div class="row"><span class="k">{{ __('Rolle') }}:</span> {{ \App\Enums\Privacy\ControllerRole::tryFrom((string) $a['controller_role'])?->label() ?? $a['controller_role'] }} · <span class="k">{{ __('Status') }}:</span> {{ \App\Enums\Privacy\ProcessingActivityStatus::tryFrom((string) $a['status'])?->label() ?? $a['status'] }} · <span class="k">{{ __('Review') }}:</span> {{ $a['review_due_at'] ?? '—' }}</div>
             @php $p = $a['current_version']['payload'] ?? []; @endphp
             @if ($p)
                 <div class="row"><span class="k">{{ __('Datenkategorien') }}:</span> {{ $p['data_categories'] ?? '—' }}</div>

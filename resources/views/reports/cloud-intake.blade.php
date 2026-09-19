@@ -64,7 +64,7 @@
                     <tr>
                         <td class="truncate">{{ $connection['label'] }}</td>
                         <td>{{ $connection['provider'] }}</td>
-                        <td>{{ $connection['status'] }}</td>
+                        <td>{{ $connection['status_label'] }}</td>
                         <td class="text-right tabular-nums">{{ $connection['imported'] }}</td>
                         <td class="text-right tabular-nums">{{ $connection['rejected'] }}</td>
                         <td>{{ $connection['lastRun'] ?? '—' }}</td>
@@ -116,7 +116,7 @@
                         <td class="whitespace-nowrap">{{ $row['date'] }}</td>
                         <td>{{ $row['provider'] }}</td>
                         <td class="truncate">{{ $row['path'] }}</td>
-                        <td>{{ $row['status'] }}</td>
+                        <td>{{ $row['status_label'] }}</td>
                         <td class="text-base-content/70">{{ $row['reason'] }}</td>
                     </tr>
                 @endforeach

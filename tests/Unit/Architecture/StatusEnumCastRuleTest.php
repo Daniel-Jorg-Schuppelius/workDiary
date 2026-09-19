@@ -102,7 +102,6 @@ class StatusEnumCastRuleTest extends TestCase {
         'App\Models\Rental\RentalCaseAsset',
         'App\Models\Rental\RentalConditionItem',
         'App\Models\Rental\RentalReservation',
-        'App\Models\ScheduledJobRun',
         'App\Models\ServiceRequest',
         'App\Models\SharepointConnection',
         'App\Models\StockLot',

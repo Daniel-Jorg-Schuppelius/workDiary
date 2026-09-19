@@ -118,8 +118,8 @@
                     @forelse ($event->participants as $p)
                         <tr class="hover">
                             <td class="font-semibold">{{ $p->name }}</td>
-                            <td>{{ $p->pivot->role }}</td>
-                            <td><x-status-badge :status="$p->pivot->status" :label="$p->pivot->status" /></td>
+                            <td>{{ $p->pivot->role?->label() }}</td>
+                            <td><x-status-badge :tone="$p->pivot->status?->tone() ?? 'ghost'" :label="$p->pivot->status?->label()" /></td>
                             <td @if ($p->pivot->certificate_expires_at) data-sort-value="{{ \Carbon\Carbon::parse($p->pivot->certificate_expires_at)->format('Y-m-d') }}" @endif>
                                 @if ($p->pivot->certificate_expires_at)
                                     {{ \Carbon\Carbon::parse($p->pivot->certificate_expires_at)->isoFormat('LL') }}

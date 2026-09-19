@@ -69,9 +69,9 @@ trait ScansSourceTree {
         return (string) preg_replace('~^\s*(//|#(?!\[)).*$~m', '', $source);
     }
 
-    /** Entfernt Blade-Kommentare {{-- … --}}. */
+    /** Entfernt Blade-Kommentare {{-- … --}}; Zeilenumbrüche bleiben, damit lineOf() stimmt. */
     protected function stripBladeComments(string $source): string {
-        return (string) preg_replace('~\{\{--.*?--\}\}~s', '', $source);
+        return (string) preg_replace_callback('~\{\{--.*?--\}\}~s', static fn(array $m): string => str_repeat("\n", substr_count($m[0], "\n")), $source);
     }
 
     /**

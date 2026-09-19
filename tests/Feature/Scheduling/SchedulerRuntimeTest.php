@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Scheduling;
 
+use App\Enums\Scheduling\JobRunStatus;
 use App\Models\{Organization, PluginSetting, ScheduledJobRun, ScheduledJobState};
 use App\Models\ScheduledJobOverride;
 use App\Scheduling\ScheduleRunRecorder;
@@ -50,19 +51,19 @@ class SchedulerRuntimeTest extends TestCase {
 
         $this->assertDatabaseHas('scheduled_job_runs', [
             'job_key' => 'toggl.import',
-            'status' => ScheduledJobRun::STATUS_RUNNING,
+            'status' => JobRunStatus::Running->value,
         ]);
 
         $task->exitCode = 0;
         $this->recorder()->handleFinished(new ScheduledTaskFinished($task, 1.5));
 
         $run = ScheduledJobRun::query()->where('job_key', 'toggl.import')->latest('id')->firstOrFail();
-        $this->assertSame(ScheduledJobRun::STATUS_SUCCESS, $run->status);
+        $this->assertSame(JobRunStatus::Success, $run->status);
         $this->assertSame(1500, $run->duration_ms);
         $this->assertSame(0, $run->exit_code);
 
         $state = ScheduledJobState::query()->where('job_key', 'toggl.import')->firstOrFail();
-        $this->assertSame(ScheduledJobRun::STATUS_SUCCESS, $state->last_status);
+        $this->assertSame(JobRunStatus::Success, $state->last_status);
         $this->assertNotNull($state->last_success_at);
         $this->assertSame(0, $state->consecutive_failures);
     }
@@ -99,13 +100,13 @@ class SchedulerRuntimeTest extends TestCase {
         $this->recorder()->handleStarting(new ScheduledTaskStarting($task));
         $this->recorder()->handleFinished(new ScheduledTaskFinished($task, 0.01));
 
-        $this->assertDatabaseHas('scheduled_job_runs', ['job_key' => 'archive.run', 'status' => ScheduledJobRun::STATUS_RUNNING]);
+        $this->assertDatabaseHas('scheduled_job_runs', ['job_key' => 'archive.run', 'status' => JobRunStatus::Running->value]);
 
         $task->exitCode = 0;
         $this->recorder()->handleBackgroundFinished(new \Illuminate\Console\Events\ScheduledBackgroundTaskFinished($task));
 
         $run = ScheduledJobRun::query()->where('job_key', 'archive.run')->latest('id')->firstOrFail();
-        $this->assertSame(ScheduledJobRun::STATUS_SUCCESS, $run->status);
+        $this->assertSame(JobRunStatus::Success, $run->status);
         $this->assertNotNull($run->duration_ms);
     }
 
@@ -143,7 +144,7 @@ class SchedulerRuntimeTest extends TestCase {
             'job_key' => 'toggl.import',
             'last_started_at' => CarbonImmutable::now()->subHours(3),
             'last_success_at' => CarbonImmutable::now()->subHours(3),
-            'last_status' => ScheduledJobRun::STATUS_FAILED,
+            'last_status' => JobRunStatus::Failed,
         ]);
 
         $this->assertSame(1, Artisan::call('scheduler:watchdog', ['--fail' => true]));
@@ -176,7 +177,7 @@ class SchedulerRuntimeTest extends TestCase {
             'job_key' => 'plans.purge',
             'last_started_at' => CarbonImmutable::now()->subHours(11),
             'last_success_at' => CarbonImmutable::now()->subHours(11),
-            'last_status' => ScheduledJobRun::STATUS_SUCCESS,
+            'last_status' => JobRunStatus::Success,
         ]);
 
         $this->assertSame(1, Artisan::call('scheduler:watchdog', ['--fail' => true]), '22:10 Ortszeit (20:10 UTC) ist um 23:30 Ortszeit überfällig');
@@ -206,7 +207,7 @@ class SchedulerRuntimeTest extends TestCase {
             'job_key' => 'plans.purge',
             'last_started_at' => CarbonImmutable::parse('2026-09-18 07:00:00', 'UTC'),
             'last_success_at' => CarbonImmutable::parse('2026-09-18 07:00:00', 'UTC'),
-            'last_status' => ScheduledJobRun::STATUS_SUCCESS,
+            'last_status' => JobRunStatus::Success,
         ]);
 
         $this->assertSame(0, Artisan::call('scheduler:watchdog', ['--fail' => true]), 'der heutige Slot 08:52 steht noch aus');
@@ -222,7 +223,7 @@ class SchedulerRuntimeTest extends TestCase {
         ScheduledJobState::query()->create([
             'job_key' => 'toggl.import',
             'last_success_at' => CarbonImmutable::now(),
-            'last_status' => ScheduledJobRun::STATUS_SUCCESS,
+            'last_status' => JobRunStatus::Success,
         ]);
 
         $this->assertSame(0, Artisan::call('scheduler:watchdog', ['--fail' => true]));
@@ -240,7 +241,7 @@ class SchedulerRuntimeTest extends TestCase {
         ScheduledJobRun::query()->create([
             'job_key' => 'toggl.import',
             'started_at' => CarbonImmutable::now()->subDays(60),
-            'status' => ScheduledJobRun::STATUS_SUCCESS,
+            'status' => JobRunStatus::Success,
         ]);
 
         $this->assertSame(0, Artisan::call('scheduler:watchdog', ['--fail' => true]));
@@ -260,12 +261,12 @@ class SchedulerRuntimeTest extends TestCase {
             'job_key' => 'toggl.import',
             'last_started_at' => CarbonImmutable::now()->startOfHour(),
             'last_success_at' => CarbonImmutable::now()->subHours(3),
-            'last_status' => ScheduledJobRun::STATUS_RUNNING,
+            'last_status' => JobRunStatus::Running,
         ]);
         ScheduledJobRun::query()->create([
             'job_key' => 'toggl.import',
             'started_at' => CarbonImmutable::now()->startOfHour(),
-            'status' => ScheduledJobRun::STATUS_RUNNING,
+            'status' => JobRunStatus::Running,
         ]);
 
         $this->assertSame(0, Artisan::call('scheduler:watchdog', ['--fail' => true]));
@@ -288,7 +289,7 @@ class SchedulerRuntimeTest extends TestCase {
             'job_key' => 'toggl.import',
             'last_started_at' => CarbonImmutable::now()->subHours(3),
             'last_success_at' => CarbonImmutable::now()->subHours(3),
-            'last_status' => ScheduledJobRun::STATUS_FAILED,
+            'last_status' => JobRunStatus::Failed,
         ]);
 
         $this->assertSame(0, Artisan::call('scheduler:watchdog', ['--fail' => true]));

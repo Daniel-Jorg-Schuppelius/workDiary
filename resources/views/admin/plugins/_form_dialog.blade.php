@@ -9,12 +9,7 @@
 {{-- Variablen: $plugin, $setting, $schema, $state --}}
 @php
     $action = route('admin.plugins.update', $plugin->id());
-    $healthClass = match ($state?->last_health_status) {
-        'ok' => 'badge-success',
-        'degraded' => 'badge-warning',
-        'failing' => 'badge-error',
-        default => 'badge-ghost',
-    };
+    $health = \App\Enums\Plugin\PluginHealthStatus::tryFrom((string) $state?->last_health_status);
 @endphp
 
 <x-modal
@@ -54,7 +49,7 @@
 
     @if ($state && $state->last_health_status)
         <div class="text-sm">
-            <span class="badge {{ $healthClass }} badge-sm">{{ $state->last_health_status }}</span>
+            <x-status-badge :tone="$health?->tone() ?? 'ghost'">{{ $health?->label() ?? __('Zustand unbekannt') }}</x-status-badge>
             @if ($state->last_health_message)
                 <span class="text-base-content/70 ml-1">{{ $state->last_health_message }}</span>
             @endif

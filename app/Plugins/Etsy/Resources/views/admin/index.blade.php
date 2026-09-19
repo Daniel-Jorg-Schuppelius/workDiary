@@ -110,7 +110,7 @@
                     @forelse ($receipts as $receipt)
                         <tr>
                             <td class="font-mono text-xs">{{ $receipt->receipt_id }}</td>
-                            <td><span class="badge badge-ghost badge-sm">{{ $receipt->status ?? '—' }}</span></td>
+                            <td><span class="badge badge-ghost badge-sm">{{ $receipt->status !== null ? \App\Support\Trans::or('values.' . $receipt->status, $receipt->status) : '—' }}</span></td>
                             <td>{{ data_get($receipt->buyer, 'name') ?? data_get($receipt->buyer, 'email') ?? '—' }}</td>
                             <td>
                                 @if ($receipt->customer)

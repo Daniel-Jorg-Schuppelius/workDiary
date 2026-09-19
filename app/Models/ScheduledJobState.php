@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\Scheduling\JobRunStatus;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -25,7 +26,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Carbon\CarbonImmutable|null $last_failure_at
  * @property int $consecutive_failures
  * @property int|null $last_duration_ms
- * @property string|null $last_status
+ * @property JobRunStatus|null $last_status
  * @property \Carbon\CarbonImmutable|null $overdue_notified_at
  */
 class ScheduledJobState extends Model {
@@ -49,6 +50,7 @@ class ScheduledJobState extends Model {
         'last_failure_at' => 'immutable_datetime',
         'consecutive_failures' => 'integer',
         'last_duration_ms' => 'integer',
+        'last_status' => JobRunStatus::class,
         'overdue_notified_at' => 'immutable_datetime',
     ];
 

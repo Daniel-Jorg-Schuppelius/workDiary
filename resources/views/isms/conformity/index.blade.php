@@ -79,7 +79,7 @@
                 @if ($reconstruction['norm_statuses'] !== [])
                     <ul class="mt-1 space-y-0.5 text-xs text-base-content/70">
                         @foreach ($reconstruction['norm_statuses'] as $entry)
-                            <li>{{ $entry['norm'] }} {{ $entry['edition'] }} — {{ $entry['status'] }}</li>
+                            <li>{{ $entry['norm'] }} {{ $entry['edition'] }} — {{ $entry['status_label'] }}</li>
                         @endforeach
                     </ul>
                 @endif

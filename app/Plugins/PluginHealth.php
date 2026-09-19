@@ -10,6 +10,7 @@
 
 namespace App\Plugins;
 
+use App\Enums\Plugin\PluginHealthStatus;
 use Throwable;
 
 /**
@@ -23,11 +24,11 @@ use Throwable;
  *  - failing   : Plugin kann seine Hauptfunktion NICHT erfüllen (Auth, Netz, Config defekt)
  */
 final class PluginHealth {
-    public const STATUS_OK = 'ok';
+    public const STATUS_OK = PluginHealthStatus::Ok->value;
 
-    public const STATUS_DEGRADED = 'degraded';
+    public const STATUS_DEGRADED = PluginHealthStatus::Degraded->value;
 
-    public const STATUS_FAILING = 'failing';
+    public const STATUS_FAILING = PluginHealthStatus::Failing->value;
 
     public function __construct(
         public readonly string $status,

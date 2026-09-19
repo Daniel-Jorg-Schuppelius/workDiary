@@ -12,14 +12,17 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\Scheduling\JobRunStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\{RequiresPlatformOperator, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, ScheduledJobOverride, ScheduledJobState, User};
-use App\Scheduling\{Cadence, CadenceType, JobDefinition, JobRegistry, SchedulerOverrideService, SchedulerRegistrar};
+use App\Scheduling\{Cadence, CadenceType, JobCriticality, JobDefinition, JobRegistry, SchedulerOverrideService, SchedulerRegistrar};
+use App\Support\SortableQuery;
 use Carbon\CarbonImmutable;
 use Cron\CronExpression;
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\{Collection, Str};
 use Illuminate\Support\Facades\{Artisan, Cache, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -29,6 +32,9 @@ use Illuminate\View\View;
  * Effektivplan + Herkunft, letztem Lauf, Fehlerzähler und nächster
  * Fälligkeit; Aktionen pausieren/fortsetzen/umplanen/zurücksetzen/
  * Testlauf — ausschließlich für allowlistete Registry-Jobs.
+ *
+ * @phpstan-type JobRow array{definition: JobDefinition, enabled: bool, cadence: Cadence, expression: string, source: string, state: ScheduledJobState|null, next_due_at: CarbonImmutable|null, shifted_from: Cadence|null}
+ * @phpstan-type JobFilters array{q: string, criticality: JobCriticality|null, status: string|null, source: string|null, paused: bool}
  */
 class SchedulerController extends Controller {
     use RequiresPlatformOperator;
@@ -36,6 +42,16 @@ class SchedulerController extends Controller {
     use ResolvesCurrentOrganization;
 
     private const TEST_RUN_COOLDOWN_MINUTES = 5;
+
+    private const SORTS = ['job', 'last_run', 'next_due', 'failures'];
+
+    /** Filterwert für Jobs ohne Laufnachweis (zugleich Übersetzungs-Key unter scheduler.state). */
+    private const STATUS_NEVER = 'never_ran';
+
+    /** Planquelle „vom Betriebsfenster verschoben“ — quer zu default/setting/override. */
+    private const SOURCE_SHIFTED = 'shifted';
+
+    private const SOURCES = ['default', 'setting', 'override', self::SOURCE_SHIFTED];
 
     public function __construct(
         private readonly JobRegistry $registry,
@@ -46,6 +62,17 @@ class SchedulerController extends Controller {
     public function index(Request $request): View {
         Gate::authorize(Permission::PlatformSchedulerManage->value);
         $this->assertPlatformOperator();
+
+        [$sort, $dir] = SortableQuery::resolve($request, self::SORTS, 'job', 'asc');
+        $status = $request->string('status')->toString();
+        $source = $request->string('source')->toString();
+        $filters = [
+            'q' => trim($request->string('q')->toString()),
+            'criticality' => JobCriticality::tryFrom($request->string('criticality')->toString()),
+            'status' => in_array($status, [...JobRunStatus::values(), self::STATUS_NEVER], true) ? $status : null,
+            'source' => in_array($source, self::SOURCES, true) ? $source : null,
+            'paused' => $request->boolean('paused'),
+        ];
 
         $overrideMap = ScheduledJobOverride::systemMap();
         $states = ScheduledJobState::query()->get()->keyBy('job_key');
@@ -79,12 +106,76 @@ class SchedulerController extends Controller {
                 // Vom Betriebsfenster verschoben: eingestellte Zeit zur Erklärung.
                 'shifted_from' => $configured->cronExpression() !== $expression ? $configured : null,
             ];
-        })->sortBy(fn(array $job) => $job['definition']->key)->values();
+        })->filter(fn(array $job): bool => $this->matchesFilters($job, $filters));
 
         return view('admin.scheduler.index', [
-            'jobs' => $jobs,
+            'jobs' => $this->sortJobs($jobs, $sort, $dir),
+            'filters' => $filters,
+            'statusOptions' => JobRunStatus::options() + [self::STATUS_NEVER => __('scheduler.state.' . self::STATUS_NEVER)],
+            'sourceOptions' => collect(self::SOURCES)
+                ->mapWithKeys(static fn(string $s): array => [$s => __($s === self::SOURCE_SHIFTED ? 'scheduler.filter.shifted' : 'scheduler.source.' . $s)]),
+            'sort' => $sort,
+            'dir' => $dir,
             'operatingWindow' => $this->registrar->operatingWindow(),
         ]);
+    }
+
+    /**
+     * @param JobRow $job
+     * @param JobFilters $filters
+     */
+    private function matchesFilters(array $job, array $filters): bool {
+        $definition = $job['definition'];
+        $state = $job['state'];
+
+        if ($filters['q'] !== '') {
+            $haystack = implode(' ', [$definition->label(), $definition->key, $definition->command]);
+            if (mb_stripos($haystack, $filters['q']) === false) {
+                return false;
+            }
+        }
+        if ($filters['criticality'] !== null && $definition->criticality !== $filters['criticality']) {
+            return false;
+        }
+        if ($filters['status'] !== null && ($state?->last_status->value ?? self::STATUS_NEVER) !== $filters['status']) {
+            return false;
+        }
+        if ($filters['source'] !== null
+            && ! ($filters['source'] === self::SOURCE_SHIFTED ? $job['shifted_from'] !== null : $job['source'] === $filters['source'])) {
+            return false;
+        }
+
+        return ! $filters['paused'] || ! $job['enabled'];
+    }
+
+    /**
+     * Jobs ohne Wert (nie gelaufen, pausiert ohne Fälligkeit) stehen in
+     * beiden Richtungen hinten — sonst verdeckten sie beim Absteigend-
+     * Sortieren nach letztem Lauf die jüngsten Läufe.
+     *
+     * @param Collection<string, JobRow> $jobs
+     * @return Collection<int, JobRow>
+     */
+    private function sortJobs(Collection $jobs, string $sort, string $dir): Collection {
+        /** @param JobRow $job */
+        $value = static fn(array $job): int|string|null => match ($sort) {
+            'last_run' => $job['state']?->last_started_at?->getTimestamp(),
+            'next_due' => $job['next_due_at']?->getTimestamp(),
+            'failures' => $job['state']->consecutive_failures ?? 0,
+            default => Str::lower(Str::ascii($job['definition']->label())),
+        };
+
+        return $jobs->sort(static function (array $a, array $b) use ($value, $dir): int {
+            [$x, $y] = [$value($a), $value($b)];
+            $cmp = match (true) {
+                $x === null && $y === null => 0,
+                $x === null => 1,
+                $y === null => -1,
+                default => $dir === 'asc' ? $x <=> $y : $y <=> $x,
+            };
+
+            return $cmp !== 0 ? $cmp : strcmp($a['definition']->key, $b['definition']->key);
+        })->values();
     }
 
     public function edit(string $job): View {

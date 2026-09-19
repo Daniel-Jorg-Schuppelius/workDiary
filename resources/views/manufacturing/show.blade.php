@@ -162,7 +162,7 @@
                                     </x-action-form>
                                 </span>
                             @else
-                                <x-status-badge size="sm" :tone="$substitute->status->value === 'approved' ? 'success' : 'error'">{{ $substitute->status->value }}</x-status-badge>
+                                <x-status-badge size="sm" :tone="$substitute->status === \App\Enums\Manufacturing\SubstituteStatus::Approved ? 'success' : 'error'">{{ $substitute->status->label() }}</x-status-badge>
                             @endif
                         </li>
                     @endforeach

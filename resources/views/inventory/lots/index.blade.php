@@ -47,7 +47,7 @@
             </x-slot:head>
             @forelse ($lots as $lot)
                 <tr>
-                    <td class="font-mono">{{ $lot->lot_no }} <span class="badge badge-xs">{{ $lot->status }}</span></td>
+                    <td class="font-mono">{{ $lot->lot_no }} <span class="badge badge-xs">{{ __('values.' . $lot->status) }}</span></td>
                     <td>{{ $lot->variant?->article?->name }}</td>
                     <td>{{ $lot->best_before?->format('d.m.Y') ?? '—' }}</td>
                     <td class="text-right tabular-nums">{{ $onHand[$lot->id] }}</td>

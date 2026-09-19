@@ -27,6 +27,9 @@ return [
         'time' => 'Time',
         'day' => 'Day',
         'expression' => 'Cron expression',
+        'criticality' => 'Criticality',
+        'last_status' => 'Result',
+        'source' => 'Plan source',
     ],
     'action' => [
         'reschedule' => 'Reschedule',
@@ -41,12 +44,26 @@ return [
         'success' => 'Successful',
         'failed' => 'Failed',
         'never_ran' => 'Never ran',
+        'running' => 'Running',
+        'skipped' => 'Skipped',
     ],
     'source' => [
         'default' => 'Default plan',
         'setting' => 'From setting',
         'override' => 'Manually rescheduled',
         'shifted' => 'Moved from :time',
+    ],
+    'filter' => [
+        'search_placeholder' => 'Name, key or command …',
+        'all_criticalities' => 'All criticalities',
+        'all_statuses' => 'All results',
+        'all_sources' => 'All plan sources',
+        'shifted' => 'Moved by the operating window',
+        'only_paused' => 'Paused only',
+    ],
+    'empty' => [
+        'title' => 'No jobs found',
+        'message' => 'No job matches the selected filters.',
     ],
     'window' => [
         'active' => 'Operating window :window (:timezone): time-of-day jobs outside it run at the start of the window, in their original order.',

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Scheduling;
 
+use App\Enums\Scheduling\JobRunStatus;
 use App\Models\{ScheduledJobOverride, ScheduledJobRun, ScheduledJobState};
 use App\Scheduling\{JobRegistry, SchedulerRegistrar};
 use App\Support\Setting;
@@ -103,7 +104,7 @@ class SchedulerWatchdogCommand extends Command {
                 'last_success_at' => $state->last_success_at?->toIso8601String(),
                 // Unterscheidet die Ursachen: skipped = Überlappungssperre oder
                 // Wartungsfenster, running = Lauf hängt, failed = Kommando bricht ab.
-                'last_status' => $state->last_status,
+                'last_status' => $state->last_status?->value,
                 'criticality' => $definition->criticality->value,
             ]);
             $this->warn("Überfällig: {$key} (fällig {$due->toIso8601String()})");
@@ -168,7 +169,7 @@ class SchedulerWatchdogCommand extends Command {
     private function runInProgressSince(string $jobKey, CarbonImmutable $due): bool {
         return ScheduledJobRun::query()
             ->where('job_key', $jobKey)
-            ->where('status', ScheduledJobRun::STATUS_RUNNING)
+            ->where('status', JobRunStatus::Running)
             ->where('started_at', '>=', $due)
             ->exists();
     }

@@ -27,6 +27,9 @@ return [
         'time' => 'Hora',
         'day' => 'Día',
         'expression' => 'Expresión cron',
+        'criticality' => 'Criticidad',
+        'last_status' => 'Resultado',
+        'source' => 'Origen del plan',
     ],
     'action' => [
         'reschedule' => 'Reprogramar',
@@ -41,12 +44,26 @@ return [
         'success' => 'Correcto',
         'failed' => 'Fallido',
         'never_ran' => 'Nunca ejecutado',
+        'running' => 'En ejecución',
+        'skipped' => 'Omitido',
     ],
     'source' => [
         'default' => 'Plan predeterminado',
         'setting' => 'Desde una configuración',
         'override' => 'Reprogramado manualmente',
         'shifted' => 'Desplazado desde :time',
+    ],
+    'filter' => [
+        'search_placeholder' => 'Nombre, clave o comando …',
+        'all_criticalities' => 'Todas las criticidades',
+        'all_statuses' => 'Todos los resultados',
+        'all_sources' => 'Todos los orígenes',
+        'shifted' => 'Desplazado por la ventana de funcionamiento',
+        'only_paused' => 'Solo pausados',
+    ],
+    'empty' => [
+        'title' => 'No se encontraron trabajos',
+        'message' => 'Ningún trabajo coincide con los filtros seleccionados.',
     ],
     'window' => [
         'active' => 'Ventana de funcionamiento :window (:timezone): las tareas con hora fija fuera de ella se ejecutan al inicio de la ventana, en su orden original.',

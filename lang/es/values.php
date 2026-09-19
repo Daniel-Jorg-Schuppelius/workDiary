@@ -270,4 +270,16 @@ return [
     'procedure_negotiated_procedure_call' => 'Procedimiento negociado con convocatoria',
     'procedure_competitive_dialogue' => 'Diálogo competitivo',
     'procedure_innovation_partnership' => 'Asociación para la innovación',
+    // Chargen (StockLot)
+    'blocked' => 'Bloqueado',
+    'merged' => 'Fusionado',
+    // Belegversand (DocumentDispatch): Status und Kanal
+    'queued' => 'En cola',
+    'failed' => 'Fallido',
+    'download' => 'Descarga',
+    'peppol' => 'Peppol',
+    'storage' => 'Almacenamiento',
+    'manual' => 'Manual',
+    // Artikel-Mapping (ExternalArticleMapping.sync_status)
+    'synced' => 'Sincronizado',
 ];

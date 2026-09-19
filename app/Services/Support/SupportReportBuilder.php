@@ -558,7 +558,7 @@ class SupportReportBuilder {
                     'cron' => $registrar->resolvedCadence($definition)->cronExpression(),
                     'source' => ($override['cadence'] ?? null) !== null ? 'override' : ($definition->cadenceSettingKey !== null ? 'setting' : 'default'),
                     'enabled' => $override['enabled'] ?? true,
-                    'last_status' => $state?->last_status,
+                    'last_status' => $state?->last_status?->value,
                     'last_success_at' => $state?->last_success_at?->toIso8601String(),
                     'consecutive_failures' => $state !== null ? (int) $state->consecutive_failures : 0,
                 ];

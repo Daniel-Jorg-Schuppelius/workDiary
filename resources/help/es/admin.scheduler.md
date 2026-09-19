@@ -25,6 +25,15 @@ ejecución con su resultado, un contador de errores y el próximo
 vencimiento. Así reconoce de un vistazo si un trabajo está bloqueado o
 falla de forma persistente.
 
+**Filtrar y ordenar:** Encima de la tabla puede acotar la lista por
+nombre, clave o comando, por criticidad, último resultado y origen del
+plan – por ejemplo, a todos los trabajos fallidos, nunca ejecutados o
+desplazados por la ventana de funcionamiento. El interruptor **Solo
+pausados** muestra lo que está detenido en este momento. Las columnas
+Trabajo, Última ejecución, Próximo vencimiento y Fallos consecutivos se
+ordenan con un clic; los trabajos sin valor (nunca ejecutados, pausados)
+quedan siempre al final.
+
 **Reprogramar con barreras de seguridad:** Cada trabajo define qué
 cadencias están permitidas para él (p. ej. cada hora o diariamente a
 una hora determinada). Reprogramar solo es posible dentro de esas

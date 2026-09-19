@@ -25,6 +25,14 @@ manuale), l'ultima esecuzione con il relativo esito, un contatore
 degli errori e la prossima scadenza. Così si riconosce a colpo
 d'occhio se un job è bloccato o fallisce in modo persistente.
 
+**Filtrare e ordinare:** sopra la tabella è possibile restringere
+l'elenco per nome, chiave o comando, per criticità, ultimo esito e
+origine del piano – ad esempio a tutti i job non riusciti, mai eseguiti
+o spostati dalla finestra operativa. L'interruttore **Solo sospesi**
+mostra ciò che è attualmente fermo. Le colonne Job, Ultima esecuzione,
+Prossima scadenza ed Errori consecutivi si ordinano con un clic; i job
+senza valore (mai eseguiti, sospesi) restano sempre in fondo.
+
 **Ripianificare con binari di sicurezza:** ogni job definisce quali
 cadenze sono ammesse per esso (ad es. ogni ora oppure ogni giorno a un
 orario preciso). La ripianificazione è possibile solo entro queste

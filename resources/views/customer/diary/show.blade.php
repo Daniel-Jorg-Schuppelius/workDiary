@@ -17,7 +17,7 @@
     <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
             <h1 class="text-2xl font-semibold">{{ $diary->title }}</h1>
-            <p class="text-sm opacity-70">{{ optional($diary->start_at)->fdate() }} · {{ $diary->status }}</p>
+            <p class="text-sm opacity-70">{{ optional($diary->start_at)->fdate() }} · {{ $diary->status?->label() }}</p>
         </div>
         <a href="{{ $pdfUrl }}" class="btn btn-outline btn-sm">{{ __('Fallakte als PDF') }}</a>
     </div>

@@ -23,7 +23,7 @@
             <tr>
                 <td>{{ $invoice->number }}</td>
                 <td class="whitespace-nowrap">{{ optional($invoice->issued_on)->fdate() }}</td>
-                <td>{{ $invoice->status }}</td>
+                <td>{{ __('values.' . $invoice->status) }}</td>
                 <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
             </tr>
         @empty

@@ -161,7 +161,7 @@
                                 @if ($statement->retainerInvoice)
                                     <span class="tabular-nums">{{ $statement->retainerInvoice->number }}</span>
                                     <x-status-badge :tone="$statement->retainerInvoice->status === \App\Models\Invoice::STATUS_PAID ? 'success' : 'ghost'">
-                                        {{ $statement->retainerInvoice->status }}
+                                        {{ __('values.' . $statement->retainerInvoice->status) }}
                                     </x-status-badge>
                                 @elseif ($statement->lexofficeVoucher)
                                     {{-- Direkt in Lexoffice geführter Beleg (verknüpft, nicht gepusht). --}}

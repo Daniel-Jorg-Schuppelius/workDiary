@@ -33,14 +33,53 @@
         </div>
     </div>
 
-    <x-table scroll="flex" :pinRows="true">
+    <x-filter-bar :action="route('admin.scheduler.index')" :reset="route('admin.scheduler.index')">
+        <x-filter-field :label="__('Suche')" for="sch-q" class="flex-1 min-w-60">
+            <input id="sch-q" type="search" name="q" value="{{ $filters['q'] }}"
+                   placeholder="{{ __('scheduler.filter.search_placeholder') }}"
+                   class="input input-sm input-bordered w-full">
+        </x-filter-field>
+        <x-filter-field :label="__('scheduler.field.criticality')" for="sch-criticality" class="min-w-44 shrink-0">
+            <select id="sch-criticality" name="criticality" class="select select-sm select-bordered w-full" data-autosubmit>
+                <option value="">{{ __('scheduler.filter.all_criticalities') }}</option>
+                @foreach (\App\Scheduling\JobCriticality::cases() as $criticality)
+                    <option value="{{ $criticality->value }}" @selected($filters['criticality'] === $criticality)>{{ $criticality->label() }}</option>
+                @endforeach
+            </select>
+        </x-filter-field>
+        <x-filter-field :label="__('scheduler.field.last_status')" for="sch-status" class="min-w-44 shrink-0">
+            <select id="sch-status" name="status" class="select select-sm select-bordered w-full" data-autosubmit>
+                <option value="">{{ __('scheduler.filter.all_statuses') }}</option>
+                @foreach ($statusOptions as $value => $label)
+                    <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+        </x-filter-field>
+        <x-filter-field :label="__('scheduler.field.source')" for="sch-source" class="min-w-52 shrink-0">
+            <select id="sch-source" name="source" class="select select-sm select-bordered w-full" data-autosubmit>
+                <option value="">{{ __('scheduler.filter.all_sources') }}</option>
+                @foreach ($sourceOptions as $value => $label)
+                    <option value="{{ $value }}" @selected($filters['source'] === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+        </x-filter-field>
+
+        <x-filter-toggle name="paused" id="sch-paused"
+                         :label="__('scheduler.filter.only_paused')"
+                         :checked="$filters['paused']" data-autosubmit />
+    </x-filter-bar>
+
+    <x-table scroll="flex" :pinRows="true" table-sort="server"
+             :route="route('admin.scheduler.index')" :current-sort="$sort" :current-dir="$dir"
+             :sort-params="request()->except(['sort', 'dir', 'page'])"
+             :empty-title="__('scheduler.empty.title')" :empty-message="__('scheduler.empty.message')">
         <x-slot:head>
             <tr>
-                <th>{{ __('scheduler.field.job') }}</th>
+                <x-table.th sort="job" default="asc">{{ __('scheduler.field.job') }}</x-table.th>
                 <th>{{ __('scheduler.field.plan') }}</th>
-                <th>{{ __('scheduler.field.last_run') }}</th>
-                <th>{{ __('scheduler.field.next_due') }}</th>
-                <th class="text-center">{{ __('scheduler.field.failures') }}</th>
+                <x-table.th sort="last_run">{{ __('scheduler.field.last_run') }}</x-table.th>
+                <x-table.th sort="next_due">{{ __('scheduler.field.next_due') }}</x-table.th>
+                <x-table.th sort="failures" align="center">{{ __('scheduler.field.failures') }}</x-table.th>
                 <th class="text-right">{{ __('scheduler.field.actions') }}</th>
             </tr>
         </x-slot:head>
@@ -51,7 +90,7 @@
                 /** @var \App\Models\ScheduledJobState|null $state */
                 $state = $job['state'];
             @endphp
-            <tr @class(['opacity-60' => ! $job['enabled']])>
+            <tr @class(['hover', 'opacity-60' => ! $job['enabled']])>
                 <td>
                     <div class="font-medium">{{ $definition->label() }}</div>
                     <div class="text-xs font-mono text-muted">{{ $definition->key }} · {{ $definition->command }}</div>
@@ -74,15 +113,11 @@
                     @if ($state?->last_started_at)
                         <div>{{ $state->last_started_at->timezone(config('app.schedule_timezone', config('app.timezone')))->format('d.m.Y H:i') }}</div>
                         <div class="mt-1 flex flex-wrap items-center gap-1">
-                            @if ($state->last_status === \App\Models\ScheduledJobRun::STATUS_SUCCESS)
-                                <x-status-badge size="xs" tone="success">{{ __('scheduler.state.success') }}</x-status-badge>
-                            @elseif ($state->last_status === \App\Models\ScheduledJobRun::STATUS_FAILED)
-                                <x-status-badge size="xs" tone="error">{{ __('scheduler.state.failed') }}</x-status-badge>
-                            @elseif ($state->last_status !== null)
-                                <x-status-badge size="xs" tone="neutral">{{ $state->last_status }}</x-status-badge>
+                            @if ($state->last_status !== null)
+                                <x-status-badge size="xs" :tone="$state->last_status->tone()">{{ $state->last_status->label() }}</x-status-badge>
                             @endif
                             @if ($state->last_duration_ms !== null)
-                                <span class="text-xs text-muted">{{ number_format($state->last_duration_ms / 1000, 1) }}s</span>
+                                <span class="text-xs text-muted">{{ \App\Support\DocumentNumber::decimal($state->last_duration_ms / 1000, 1) }} s</span>
                             @endif
                         </div>
                     @else

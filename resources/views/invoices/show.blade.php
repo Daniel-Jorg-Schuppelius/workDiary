@@ -174,7 +174,7 @@
     @endif
 
     <x-slot:toolbar>
-        <x-page-toolbar :title="$invoice->documentLabel() . ' ' . $invoice->number" :badge="__($invoice->status)" badge-tone="outline">
+        <x-page-toolbar :title="$invoice->documentLabel() . ' ' . $invoice->number" :badge="__('values.' . $invoice->status)" badge-tone="outline">
             <div class="text-sm text-base-content/70">{{ $invoice->customer->name }}</div>
             @if ($invoice->hasServicePeriod())
                 <div class="text-sm text-base-content/70">{{ $invoice->dateLabelPeriod() }}: {{ $invoice->serviceDateFrom()->fdate() }} – {{ $invoice->serviceDateTo()->fdate() }}</div>
@@ -535,10 +535,10 @@
                         @foreach ($dispatches as $dispatch)
                             <tr>
                                 <td>{{ $dispatch->created_at->fdatetime() }}</td>
-                                <td>{{ __($dispatch->channel) }}</td>
+                                <td>{{ __('values.' . $dispatch->channel) }}</td>
                                 <td>{{ $dispatch->format ?? '—' }}</td>
                                 <td class="max-w-xs truncate">{{ $dispatch->recipient ?? '—' }}</td>
-                                <td>{{ __($dispatch->status) }}</td>
+                                <td>{{ __('values.' . $dispatch->status) }}</td>
                                 <td class="font-mono text-xs">{{ $dispatch->sha256 !== null ? substr($dispatch->sha256, 0, 16) . '…' : '—' }}</td>
                             </tr>
                         @endforeach

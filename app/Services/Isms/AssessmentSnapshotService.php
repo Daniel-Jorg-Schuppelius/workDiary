@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Isms;
 
+use App\Enums\Isms\NormConformityStatus;
 use App\Models\Isms\{IsmsApplicabilityStatement, IsmsNormStatus, IsmsScope};
 use Carbon\CarbonInterface;
 use CommonToolkit\Helper\Data\JsonHelper;
@@ -68,7 +69,7 @@ class AssessmentSnapshotService {
     /**
      * Bewertungsstand zu Datum T: je Subjekt der letzte Snapshot ≤ T.
      *
-     * @return array{as_of: string, statements: array{total: int, applicable: int}, norm_statuses: list<array{norm: string, edition: string, status: string}>}
+     * @return array{as_of: string, statements: array{total: int, applicable: int}, norm_statuses: list<array{norm: string, edition: string, status: string, status_label: string}>}
      */
     public function stateAt(IsmsScope $scope, CarbonInterface $asOf): array {
         $rows = DB::table('isms_assessment_snapshots')
@@ -101,6 +102,7 @@ class AssessmentSnapshotService {
                     'norm' => (string) $payload['norm'],
                     'edition' => (string) $payload['edition'],
                     'status' => (string) $payload['status'],
+                    'status_label' => NormConformityStatus::tryFrom((string) $payload['status'])?->label() ?? (string) $payload['status'],
                 ];
             }
         }

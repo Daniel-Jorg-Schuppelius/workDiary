@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Scheduling;
 
+use App\Enums\Scheduling\JobRunStatus;
 use App\Models\{ScheduledJobRun, ScheduledJobState};
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Events\{ScheduledBackgroundTaskFinished, ScheduledTaskFailed, ScheduledTaskFinished, ScheduledTaskSkipped, ScheduledTaskStarting};
@@ -36,11 +37,11 @@ class ScheduleRunRecorder {
             ScheduledJobRun::create([
                 'job_key' => $jobKey,
                 'started_at' => $now,
-                'status' => ScheduledJobRun::STATUS_RUNNING,
+                'status' => JobRunStatus::Running,
             ]);
             $state = ScheduledJobState::forJob($jobKey);
             $state->last_started_at = $now;
-            $state->last_status = ScheduledJobRun::STATUS_RUNNING;
+            $state->last_status = JobRunStatus::Running;
             $state->save();
         });
     }
@@ -60,7 +61,7 @@ class ScheduleRunRecorder {
             $success = $exitCode === null || $exitCode === 0;
             $this->finishRun(
                 $jobKey,
-                $success ? ScheduledJobRun::STATUS_SUCCESS : ScheduledJobRun::STATUS_FAILED,
+                $success ? JobRunStatus::Success : JobRunStatus::Failed,
                 (int) round($event->runtime * 1000),
                 $exitCode,
             );
@@ -78,7 +79,7 @@ class ScheduleRunRecorder {
             $success = $exitCode === null || $exitCode === 0;
             $run = ScheduledJobRun::query()
                 ->where('job_key', $jobKey)
-                ->where('status', ScheduledJobRun::STATUS_RUNNING)
+                ->where('status', JobRunStatus::Running)
                 ->latest('id')
                 ->first();
             $durationMs = $run?->started_at !== null
@@ -86,7 +87,7 @@ class ScheduleRunRecorder {
                 : null;
             $this->finishRun(
                 $jobKey,
-                $success ? ScheduledJobRun::STATUS_SUCCESS : ScheduledJobRun::STATUS_FAILED,
+                $success ? JobRunStatus::Success : JobRunStatus::Failed,
                 $durationMs,
                 $exitCode,
             );
@@ -99,7 +100,7 @@ class ScheduleRunRecorder {
             if ($jobKey === null) {
                 return;
             }
-            $this->finishRun($jobKey, ScheduledJobRun::STATUS_FAILED, null, null);
+            $this->finishRun($jobKey, JobRunStatus::Failed, null, null);
         });
     }
 
@@ -113,17 +114,17 @@ class ScheduleRunRecorder {
                 'job_key' => $jobKey,
                 'started_at' => CarbonImmutable::now(),
                 'finished_at' => CarbonImmutable::now(),
-                'status' => ScheduledJobRun::STATUS_SKIPPED,
+                'status' => JobRunStatus::Skipped,
             ]);
         });
     }
 
-    private function finishRun(string $jobKey, string $status, ?int $durationMs, ?int $exitCode): void {
+    private function finishRun(string $jobKey, JobRunStatus $status, ?int $durationMs, ?int $exitCode): void {
         $now = CarbonImmutable::now();
 
         $run = ScheduledJobRun::query()
             ->where('job_key', $jobKey)
-            ->where('status', ScheduledJobRun::STATUS_RUNNING)
+            ->where('status', JobRunStatus::Running)
             ->latest('id')
             ->first();
         if ($run !== null) {
@@ -138,7 +139,7 @@ class ScheduleRunRecorder {
         $state = ScheduledJobState::forJob($jobKey);
         $state->last_status = $status;
         $state->last_duration_ms = $durationMs;
-        if ($status === ScheduledJobRun::STATUS_SUCCESS) {
+        if ($status === JobRunStatus::Success) {
             $state->last_success_at = $now;
             $state->consecutive_failures = 0;
             $state->overdue_notified_at = null;

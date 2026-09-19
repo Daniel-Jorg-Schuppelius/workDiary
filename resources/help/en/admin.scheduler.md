@@ -22,6 +22,14 @@ arbitrary commands through this page.
 with its result, an error counter and the next due time. This lets
 you spot at a glance whether a job is stuck or failing persistently.
 
+**Filtering and sorting:** Above the table you narrow the list by
+name, key or command, by criticality, last result and plan source –
+for example to all failed jobs, jobs that never ran or jobs moved by
+the operating window. The **Paused only** switch shows what is
+currently on hold. The columns Job, Last run, Next due and Consecutive
+failures sort with a click; jobs without a value (never ran, paused)
+always stay at the end.
+
 **Rescheduling with guard rails:** Each job defines which cadences
 are allowed for it (e.g. hourly or daily at a given time).
 Rescheduling is only possible within these allowed cadences – so a

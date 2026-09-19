@@ -227,7 +227,7 @@
                                 <td class="text-xs">{{ $export['kind'] }}</td>
                                 <td class="font-mono text-xs">{{ $export['subject'] ?? '—' }}</td>
                                 <td class="font-mono text-xs">{{ $export['format'] ?? '—' }}</td>
-                                <td class="font-mono text-xs">{{ $export['status'] ?? '—' }}</td>
+                                <td class="text-xs">{{ $export['status_label'] ?? '—' }}</td>
                                 <td class="text-right font-mono text-xs">{{ $export['rows'] ?? 0 }}</td>
                                 <td class="text-xs">{{ $export['user'] ?? '—' }}</td>
                                 <td class="font-mono text-xs">{{ $fmt($export['created_at']) }}</td>

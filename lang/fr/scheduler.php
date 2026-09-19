@@ -27,6 +27,9 @@ return [
         'time' => 'Heure',
         'day' => 'Jour',
         'expression' => 'Expression cron',
+        'criticality' => 'Criticité',
+        'last_status' => 'Résultat',
+        'source' => 'Origine du plan',
     ],
     'action' => [
         'reschedule' => 'Replanifier',
@@ -41,12 +44,26 @@ return [
         'success' => 'Réussie',
         'failed' => 'Échouée',
         'never_ran' => 'Jamais exécutée',
+        'running' => 'En cours',
+        'skipped' => 'Ignorée',
     ],
     'source' => [
         'default' => 'Plan par défaut',
         'setting' => 'Depuis un paramètre',
         'override' => 'Replanifiée manuellement',
         'shifted' => 'Décalé depuis :time',
+    ],
+    'filter' => [
+        'search_placeholder' => 'Nom, clé ou commande …',
+        'all_criticalities' => 'Toutes les criticités',
+        'all_statuses' => 'Tous les résultats',
+        'all_sources' => 'Toutes les origines',
+        'shifted' => 'Décalée par la plage de fonctionnement',
+        'only_paused' => 'Suspendues uniquement',
+    ],
+    'empty' => [
+        'title' => 'Aucune tâche trouvée',
+        'message' => 'Aucune tâche ne correspond aux filtres sélectionnés.',
     ],
     'window' => [
         'active' => 'Plage de fonctionnement :window (:timezone) : les tâches à heure fixe situées en dehors s\'exécutent au début de la plage, dans leur ordre d\'origine.',
