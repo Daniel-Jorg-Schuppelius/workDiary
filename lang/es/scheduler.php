@@ -46,6 +46,12 @@ return [
         'default' => 'Plan predeterminado',
         'setting' => 'Desde una configuración',
         'override' => 'Reprogramado manualmente',
+        'shifted' => 'Desplazado desde :time',
+    ],
+    'window' => [
+        'active' => 'Ventana de funcionamiento :window (:timezone): las tareas con hora fija fuera de ella se ejecutan al inicio de la ventana, en su orden original.',
+        'none' => 'No hay ventana de funcionamiento configurada: el planificador supone un servidor que funciona las 24 horas. Si se apaga por la noche, indique el inicio y el fin; las tareas del periodo de inactividad se ejecutarán al inicio de la ventana.',
+        'configure' => 'Configurar ventana de funcionamiento',
     ],
     'cadence' => [
         'everyMinute' => 'Cada minuto',

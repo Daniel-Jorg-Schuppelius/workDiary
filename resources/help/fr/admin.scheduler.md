@@ -33,6 +33,16 @@ inadvertance sur un rythme inadapté. Les expressions cron libres restent
 réservées à l'exploitant. Via **Réinitialiser**, un job revient à tout
 moment à son plan par défaut.
 
+**Plage de fonctionnement :** si le serveur ne tourne pas 24 h/24 –
+par exemple parce qu'il s'arrête la nuit –, renseignez le début et la
+fin de la plage de fonctionnement dans les **Paramètres** (une fin à
+00:00 correspond à minuit). Les tâches à heure fixe situées en dehors
+de la plage s'exécutent alors regroupées dans les deux premières
+heures de fonctionnement, dans leur ordre d'origine et jamais plus tôt
+que prévu. La vue d'ensemble affiche l'heure effective et indique
+l'heure d'origine d'une tâche décalée ; le watchdog se base sur cette
+heure. Les rythmes horaires et plus courts restent inchangés.
+
 **Mettre en pause et exécution de test :** Les jobs peuvent être mis en
 pause puis repris – un job en pause n'arrive plus à échéance, mais reste
 visible dans la vue d'ensemble. Une **exécution de test** lance le job

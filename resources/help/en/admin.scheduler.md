@@ -29,6 +29,16 @@ critical job cannot accidentally be put on an unsuitable rhythm.
 Free cron expressions remain an operator-level function. **Reset**
 returns a job to its default plan at any time.
 
+**Operating window:** If the server does not run around the clock –
+for example because it shuts down at night – set the start and end of
+the operating window under **Settings** (an end of 00:00 means
+midnight). Jobs with a fixed time outside the window then run
+together within the first two operating hours, in their original
+order and never earlier than planned. The overview shows the
+effective time and notes which time a job was moved from; the
+watchdog checks against that time. Hourly and shorter intervals stay
+unchanged.
+
 **Pausing and test runs:** Jobs can be paused and resumed later – a
 paused job no longer becomes due but stays visible in the overview.
 A **test run** starts the job immediately, out of schedule; a short

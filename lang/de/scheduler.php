@@ -46,6 +46,12 @@ return [
         'default' => 'Standardplan',
         'setting' => 'Aus Einstellung',
         'override' => 'Manuell umgeplant',
+        'shifted' => 'Verschoben aus :time',
+    ],
+    'window' => [
+        'active' => 'Betriebsfenster :window (:timezone): Tageszeit-Jobs außerhalb laufen gesammelt zu Fensterbeginn, in ihrer Reihenfolge.',
+        'none' => 'Kein Betriebsfenster eingestellt — der Scheduler rechnet mit einem Server, der rund um die Uhr läuft. Schaltet er nachts ab, Beginn und Ende hinterlegen; Jobs in der Ruhezeit laufen dann zu Fensterbeginn.',
+        'configure' => 'Betriebsfenster einstellen',
     ],
     'cadence' => [
         'everyMinute' => 'Jede Minute',

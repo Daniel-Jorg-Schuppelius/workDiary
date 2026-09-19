@@ -46,6 +46,12 @@ return [
         'default' => 'Plan par défaut',
         'setting' => 'Depuis un paramètre',
         'override' => 'Replanifiée manuellement',
+        'shifted' => 'Décalé depuis :time',
+    ],
+    'window' => [
+        'active' => 'Plage de fonctionnement :window (:timezone) : les tâches à heure fixe situées en dehors s\'exécutent au début de la plage, dans leur ordre d\'origine.',
+        'none' => 'Aucune plage de fonctionnement définie — le planificateur suppose un serveur actif 24 h/24. S\'il s\'arrête la nuit, renseignez le début et la fin ; les tâches de la période d\'arrêt s\'exécuteront alors au début de la plage.',
+        'configure' => 'Définir la plage de fonctionnement',
     ],
     'cadence' => [
         'everyMinute' => 'Chaque minute',

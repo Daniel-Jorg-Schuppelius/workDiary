@@ -46,6 +46,12 @@ return [
         'default' => 'Default plan',
         'setting' => 'From setting',
         'override' => 'Manually rescheduled',
+        'shifted' => 'Moved from :time',
+    ],
+    'window' => [
+        'active' => 'Operating window :window (:timezone): time-of-day jobs outside it run at the start of the window, in their original order.',
+        'none' => 'No operating window set — the scheduler assumes a server that runs around the clock. If it shuts down at night, set start and end; jobs in the downtime then run at the start of the window.',
+        'configure' => 'Set operating window',
     ],
     'cadence' => [
         'everyMinute' => 'Every minute',

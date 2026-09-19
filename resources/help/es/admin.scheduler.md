@@ -33,6 +33,16 @@ descuido en un ritmo inadecuado. Las expresiones cron libres quedan
 reservadas al operador. Mediante **Restablecer**, un trabajo vuelve en
 cualquier momento a su plan estándar.
 
+**Ventana de funcionamiento:** si el servidor no funciona las 24
+horas –por ejemplo, porque se apaga por la noche–, indica en
+**Ajustes** el inicio y el fin de la ventana de funcionamiento (un fin
+de 00:00 significa medianoche). Las tareas con hora fija fuera de la
+ventana se ejecutan entonces agrupadas en las dos primeras horas de
+funcionamiento, en su orden original y nunca antes de lo previsto. La
+vista general muestra la hora efectiva e indica desde qué hora se
+desplazó una tarea; el watchdog comprueba con esa hora. Los intervalos
+horarios y más cortos no cambian.
+
 **Pausar y ejecución de prueba:** Los trabajos pueden pausarse y
 reanudarse más tarde — un trabajo pausado deja de vencer, pero sigue
 visible en la vista general. Una **ejecución de prueba** inicia el

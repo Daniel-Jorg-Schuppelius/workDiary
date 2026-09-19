@@ -31,6 +31,16 @@ Rhythmus gestellt werden. Freie Cron-Ausdrücke bleiben dem Betreiber
 vorbehalten. Über **Zurücksetzen** kehrt ein Job jederzeit zu seinem
 Standard-Plan zurück.
 
+**Betriebsfenster:** Läuft der Server nicht rund um die Uhr – etwa
+weil er nachts abschaltet –, hinterlegst du unter **Einstellungen**
+Beginn und Ende des Betriebsfensters (Ende 00:00 steht für
+Mitternacht). Jobs mit fester Uhrzeit außerhalb des Fensters laufen
+dann gesammelt in den ersten beiden Betriebsstunden, in ihrer
+ursprünglichen Reihenfolge und nie früher als geplant. Die Übersicht
+zeigt die wirksame Zeit und vermerkt, aus welcher Uhrzeit ein Job
+verschoben wurde; der Watchdog prüft gegen diese Zeit. Stündliche und
+kürzere Takte bleiben unverändert.
+
 **Pausieren und Testlauf:** Jobs lassen sich pausieren und später
 fortsetzen – ein pausierter Job wird nicht mehr fällig, bleibt aber
 in der Übersicht sichtbar. Ein **Testlauf** startet den Job sofort

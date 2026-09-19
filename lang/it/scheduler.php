@@ -46,6 +46,12 @@ return [
         'default' => 'Piano predefinito',
         'setting' => 'Da impostazione',
         'override' => 'Ripianificato manualmente',
+        'shifted' => 'Spostato da :time',
+    ],
+    'window' => [
+        'active' => 'Finestra operativa :window (:timezone): i job a orario fisso al di fuori vengono eseguiti all\'inizio della finestra, nel loro ordine originale.',
+        'none' => 'Nessuna finestra operativa impostata: lo scheduler presuppone un server attivo 24 ore su 24. Se si spegne di notte, indicare inizio e fine; i job del periodo di inattività verranno eseguiti all\'inizio della finestra.',
+        'configure' => 'Imposta finestra operativa',
     ],
     'cadence' => [
         'everyMinute' => 'Ogni minuto',

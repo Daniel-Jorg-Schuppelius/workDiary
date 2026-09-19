@@ -241,6 +241,23 @@ class SchedulerRegistrationTest extends TestCase {
         $this->assertSame('45 4 * * *', $commands['archive:run']['expression']);
     }
 
+    /**
+     * Produktionsmeldung 2026-09-19: Server mit Betriebsfenster 08–24 Uhr —
+     * Nachtjobs rücken an den Fensterbeginn, Tages- und Taktjobs bleiben.
+     */
+    public function test_operating_window_moves_night_jobs_to_the_start_of_the_window(): void {
+        Setting::set('scheduler.operating_window_start', '08:00', SettingScope::System);
+        Setting::set('scheduler.operating_window_end', '00:00', SettingScope::System);
+
+        $commands = $this->registeredCommands();
+
+        $this->assertSame('37 8 * * *', $commands['audit:verify']['expression'], '02:30 → 08:37');
+        $this->assertSame('21 9 1 * *', $commands['customer-billing:generate-invoices']['expression'], 'Monatserster 05:25 → 09:21');
+        $this->assertSame('50 21 * * *', $commands['search:reconcile']['expression'], 'im Fenster unverändert');
+        $this->assertSame('*/5 * * * *', $commands['mail:poll']['expression']);
+        $this->assertSame('0 * * * *', $commands['scheduler:watchdog']['expression']);
+    }
+
     public function test_invalid_setting_time_falls_back_to_default(): void {
         config(['archive.schedule_at' => 'kaputt']);
 

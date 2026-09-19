@@ -54,6 +54,7 @@ class SchedulerController extends Controller {
         $jobs = collect($this->registry->all())->map(function ($definition) use ($overrideMap, $states, $now) {
             $override = $overrideMap[$definition->key] ?? null;
             $enabled = $override['enabled'] ?? true;
+            $configured = $this->registrar->configuredCadence($definition);
             $cadence = $this->registrar->resolvedCadence($definition);
             $expression = $cadence->cronExpression();
             $nextDue = null;
@@ -75,11 +76,14 @@ class SchedulerController extends Controller {
                 'source' => ($override['cadence'] ?? null) !== null ? 'override' : ($definition->cadenceSettingKey !== null ? 'setting' : 'default'),
                 'state' => $states->get($definition->key),
                 'next_due_at' => $nextDue,
+                // Vom Betriebsfenster verschoben: eingestellte Zeit zur Erklärung.
+                'shifted_from' => $configured->cronExpression() !== $expression ? $configured : null,
             ];
         })->sortBy(fn(array $job) => $job['definition']->key)->values();
 
         return view('admin.scheduler.index', [
             'jobs' => $jobs,
+            'operatingWindow' => $this->registrar->operatingWindow(),
         ]);
     }
 
@@ -90,7 +94,9 @@ class SchedulerController extends Controller {
 
         return view('admin.scheduler._form_dialog', [
             'definition' => $definition,
-            'cadence' => $this->registrar->resolvedCadence($definition),
+            // Eingestellte, nicht die ins Betriebsfenster verschobene Zeit — sonst
+            // schriebe jedes Speichern die Verschiebung als Override fest.
+            'cadence' => $this->registrar->configuredCadence($definition),
         ]);
     }
 

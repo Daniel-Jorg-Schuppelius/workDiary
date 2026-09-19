@@ -47,6 +47,10 @@ return [
 
     // --- Scheduler (config/scheduler.php) ---
     'scheduler.retention_days' => ['type' => 'integer', 'scopes' => ['system'], 'rules' => 'min:7|max:365', 'affects' => ['scheduler.watchdog']],
+    // Betriebsfenster (Ortszeit app.schedule_timezone): Tageszeit-Jobs außerhalb
+    // rücken an den Beginn. Beginn = Ende oder leer = rund um die Uhr; Ende 00:00 = Mitternacht.
+    'scheduler.operating_window_start' => ['type' => 'time', 'scopes' => ['system'], 'affects' => ['scheduler.*']],
+    'scheduler.operating_window_end' => ['type' => 'time', 'scopes' => ['system'], 'affects' => ['scheduler.*']],
 
     // --- Betrieb (Feature 041, MVP-056–058) ---
     // Betreiber-Organisation für installationsweite Aufgaben/Meldungen

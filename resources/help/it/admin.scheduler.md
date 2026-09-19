@@ -33,6 +33,16 @@ errore su un ritmo inadeguato. Le espressioni cron libere restano
 riservate al gestore. Tramite **Ripristina** un job torna in qualsiasi
 momento al suo piano predefinito.
 
+**Finestra operativa:** se il server non funziona 24 ore su 24 – ad
+esempio perché si spegne di notte –, imposta in **Impostazioni**
+l'inizio e la fine della finestra operativa (una fine alle 00:00
+indica la mezzanotte). I job a orario fisso al di fuori della finestra
+vengono quindi eseguiti insieme nelle prime due ore di funzionamento,
+nel loro ordine originale e mai prima del previsto. La panoramica
+mostra l'orario effettivo e indica da quale orario un job è stato
+spostato; il watchdog verifica rispetto a quell'orario. Le cadenze
+orarie e più brevi restano invariate.
+
 **Pausa ed esecuzione di prova:** i job possono essere messi in pausa
 e ripresi in seguito – un job in pausa non va più in scadenza, ma
 resta visibile nella panoramica. Un'**esecuzione di prova** avvia il

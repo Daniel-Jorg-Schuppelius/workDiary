@@ -190,6 +190,32 @@ class SchedulerRuntimeTest extends TestCase {
         $this->assertSame(0, Artisan::call('scheduler:watchdog', ['--fail' => true]));
     }
 
+    /**
+     * Produktionsmeldung 2026-09-19: plans.purge (03:30) lief auf einem Server
+     * mit Betriebsfenster 08–24 Uhr nie zur Soll-Zeit und stand jeden Morgen
+     * als überfällig. Mit Fenster gilt der verschobene Slot 08:52.
+     */
+    public function test_watchdog_evaluates_the_slot_shifted_into_the_operating_window(): void {
+        config(['app.schedule_timezone' => 'Europe/Berlin']);
+        \App\Support\Setting::set('scheduler.operating_window_start', '08:00', \App\Settings\SettingScope::System);
+        \App\Support\Setting::set('scheduler.operating_window_end', '00:00', \App\Settings\SettingScope::System);
+        // 2026-09-19 06:30 UTC = 08:30 Europe/Berlin, kurz nach dem Hochfahren.
+        $this->travelTo(CarbonImmutable::parse('2026-09-19 06:30:00', 'UTC'));
+        // Gestern 09:00 Ortszeit gelaufen — nach dem verschobenen Slot 08:52.
+        ScheduledJobState::query()->create([
+            'job_key' => 'plans.purge',
+            'last_started_at' => CarbonImmutable::parse('2026-09-18 07:00:00', 'UTC'),
+            'last_success_at' => CarbonImmutable::parse('2026-09-18 07:00:00', 'UTC'),
+            'last_status' => ScheduledJobRun::STATUS_SUCCESS,
+        ]);
+
+        $this->assertSame(0, Artisan::call('scheduler:watchdog', ['--fail' => true]), 'der heutige Slot 08:52 steht noch aus');
+
+        // Gegenprobe ohne Fenster: 03:30 ist heute verstrichen, der Job gilt als überfällig.
+        \App\Support\Setting::reset('scheduler.operating_window_start', \App\Settings\SettingScope::System);
+        $this->assertSame(1, Artisan::call('scheduler:watchdog', ['--fail' => true]));
+    }
+
     public function test_watchdog_ignores_fresh_and_never_started_jobs(): void {
         $this->enableTogglPlugin();
         // Frischer Erfolg → kein Befund; nie gestartete Jobs → kein Befund.

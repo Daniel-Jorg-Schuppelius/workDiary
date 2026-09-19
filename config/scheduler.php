@@ -26,6 +26,13 @@ return [
     // via Settings-Registry (scheduler.retention_days) übersteuerbar.
     'retention_days' => (int) env('SCHEDULER_RUNS_RETENTION_DAYS', 30),
 
+    // Betriebsfenster des Servers in app.schedule_timezone, z. B. 08:00/00:00
+    // für einen Server, der um Mitternacht abschaltet. Tageszeit-Jobs außerhalb
+    // rücken an den Fensterbeginn (App\Scheduling\OperatingWindow); leer =
+    // rund um die Uhr. Via Settings-Registry übersteuerbar.
+    'operating_window_start' => env('SCHEDULER_OPERATING_WINDOW_START'),
+    'operating_window_end' => env('SCHEDULER_OPERATING_WINDOW_END'),
+
     'jobs' => [
         // --- Reklamations-Fristeneskalation (Feature 072, MVP-255) ---
         'claims.escalate' => [

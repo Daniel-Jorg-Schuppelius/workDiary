@@ -44,6 +44,38 @@ class SchedulerAdminControllerTest extends TestCase {
             ->assertSee('archive:run');
     }
 
+    /**
+     * Liste zeigt die wirksame, verschobene Zeit samt Herkunft; der Umplanen-
+     * Dialog die eingestellte — sonst schriebe Speichern die Verschiebung fest.
+     */
+    public function test_operating_window_is_explained_and_dialog_keeps_the_configured_time(): void {
+        \App\Support\Setting::set('scheduler.operating_window_start', '08:00', \App\Settings\SettingScope::System);
+        \App\Support\Setting::set('scheduler.operating_window_end', '00:00', \App\Settings\SettingScope::System);
+        $admin = User::factory()->platformAdmin()->create();
+
+        $this->actingAs($admin)
+            ->get(route('admin.scheduler.index'))
+            ->assertOk()
+            ->assertSee('08:00–24:00')
+            ->assertSee('37 8 * * *')
+            ->assertSee(__('scheduler.source.shifted', ['time' => '02:30']));
+
+        $this->actingAs($admin)
+            ->get(route('admin.scheduler.edit', ['job' => 'audit.verify']))
+            ->assertOk()
+            ->assertSee('value="02:30"', false);
+    }
+
+    public function test_index_without_operating_window_hints_at_the_setting(): void {
+        $admin = User::factory()->platformAdmin()->create();
+
+        $this->actingAs($admin)
+            ->get(route('admin.scheduler.index'))
+            ->assertOk()
+            ->assertSee(__('scheduler.window.none'))
+            ->assertDontSee(__('scheduler.source.shifted', ['time' => '02:30']));
+    }
+
     public function test_pause_resume_and_reset_roundtrip(): void {
         $admin = User::factory()->platformAdmin()->create();
 

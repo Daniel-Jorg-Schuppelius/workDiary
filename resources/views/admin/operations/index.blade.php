@@ -79,13 +79,13 @@
                     <td>
                         <x-status-badge size="xs" :tone="$task->status->tone()">{{ $task->status->label() }}</x-status-badge>
                         @if ($task->status === \App\Enums\Operations\OperationsTaskStatus::Snoozed && $task->snoozed_until)
-                            <div class="text-xs text-muted">{{ __('operations.field.snooze_until') }} {{ $task->snoozed_until->format('d.m.Y') }}</div>
+                            <div class="text-xs text-muted">{{ __('operations.field.snooze_until') }} {{ $task->snoozed_until->fdate() }}</div>
                         @endif
                         @if ($task->note)
                             <div class="text-xs text-muted" title="{{ $task->note }}">{{ \Illuminate\Support\Str::limit($task->note, 40) }}</div>
                         @endif
                     </td>
-                    <td class="text-sm">{{ $task->last_seen_at->format('d.m.Y H:i') }}</td>
+                    <td class="text-sm">{{ $task->last_seen_at->fdatetime() }}</td>
                     <td class="text-right">
                         @if ($canManage)
                             <div class="inline-flex items-center gap-1">

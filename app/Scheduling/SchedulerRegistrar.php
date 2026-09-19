@@ -33,10 +33,15 @@ class SchedulerRegistrar {
     /** Selbstüberwachung — wird bewusst als letzter Job eingehängt. */
     public const WATCHDOG_KEY = 'scheduler.watchdog';
 
+    private ?OperatingWindow $window = null;
+
+    private bool $windowResolved = false;
+
     public function __construct(private readonly JobRegistry $registry) {}
 
     public function register(Schedule $schedule): void {
         $overrides = \App\Models\ScheduledJobOverride::systemMap();
+        $window = $this->operatingWindow();
         $watchdog = null;
 
         foreach ($this->registry->all() as $definition) {
@@ -55,11 +60,11 @@ class SchedulerRegistrar {
                 continue;
             }
 
-            $this->registerJob($schedule, $definition, $override);
+            $this->registerJob($schedule, $definition, $override, $window);
         }
 
         if ($watchdog !== null) {
-            $this->registerJob($schedule, $watchdog[0], $watchdog[1]);
+            $this->registerJob($schedule, $watchdog[0], $watchdog[1], $window);
         }
 
         // Heartbeat-Writer (schließt die Diagnose-Lücke: die Diagnose-
@@ -73,9 +78,10 @@ class SchedulerRegistrar {
     }
 
     /** @param array<string, mixed>|null $override */
-    private function registerJob(Schedule $schedule, JobDefinition $definition, ?array $override): void {
+    private function registerJob(Schedule $schedule, JobDefinition $definition, ?array $override, ?OperatingWindow $window): void {
+        $cadence = $this->resolveCadence($definition, $override['cadence'] ?? null);
         $event = $schedule->command($definition->command);
-        $event->cron($this->resolveCadence($definition, $override['cadence'] ?? null)->cronExpression());
+        $event->cron(($window?->apply($cadence) ?? $cadence)->cronExpression());
 
         // Wartungsfenster-Kopplung (MVP-055): Jobs mit
         // runs_in_maintenance=false pausieren im aktiven System-Fenster.
@@ -106,11 +112,38 @@ class SchedulerRegistrar {
         return max(30, $definition->expectedRuntimeMinutes * 6);
     }
 
-    /** Effektive Kadenz inkl. System-Override (für Adminseite/Watchdog). */
+    /** Effektive Kadenz inkl. System-Override und Betriebsfenster (für Adminseite/Watchdog). */
     public function resolvedCadence(JobDefinition $definition): Cadence {
+        $cadence = $this->configuredCadence($definition);
+
+        return $this->operatingWindow()?->apply($cadence) ?? $cadence;
+    }
+
+    /** Eingestellte Kadenz vor der Verschiebung ins Betriebsfenster (Umplanen-Dialog). */
+    public function configuredCadence(JobDefinition $definition): Cadence {
         $overrides = \App\Models\ScheduledJobOverride::systemMap();
 
         return $this->resolveCadence($definition, $overrides[$definition->key]['cadence'] ?? null);
+    }
+
+    /**
+     * Betriebsfenster aus den Einstellungen; je Instanz einmal gelesen —
+     * der Registrar ist kein Singleton, lebt also nur einen Lauf/Request.
+     * Ein Lesefehler darf den Scheduler nicht stoppen: dann rund um die Uhr.
+     */
+    public function operatingWindow(): ?OperatingWindow {
+        if ($this->windowResolved) {
+            return $this->window;
+        }
+        $this->windowResolved = true;
+
+        try {
+            return $this->window = OperatingWindow::fromSettings();
+        } catch (\Throwable $e) {
+            Log::warning('scheduler.operating_window_failed', ['message' => $e->getMessage()]);
+
+            return $this->window = null;
+        }
     }
 
     /** @param array<string, mixed>|null $overrideCadence */

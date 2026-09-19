@@ -20,6 +20,16 @@
         <div>
             <h3 class="font-semibold">{{ __('scheduler.title.help') }}</h3>
             <div class="text-sm">{{ __('scheduler.title.help_text') }}</div>
+            <div class="mt-1 text-sm">
+                @if ($operatingWindow)
+                    {{ __('scheduler.window.active', ['window' => $operatingWindow->label(), 'timezone' => config('app.schedule_timezone', config('app.timezone'))]) }}
+                @else
+                    {{ __('scheduler.window.none') }}
+                @endif
+                @can(\App\Enums\User\Permission::PlatformSettingsManage->value)
+                    <a href="{{ route('admin.settings.index', ['q' => 'scheduler.operating_window']) }}" class="link">{{ __('scheduler.window.configure') }}</a>
+                @endcan
+            </div>
         </div>
     </div>
 
@@ -56,6 +66,9 @@
                     <div>{{ $job['cadence']->type->label() }}</div>
                     <div class="text-xs font-mono text-muted">{{ $job['expression'] }}</div>
                     <x-status-badge size="xs" tone="ghost">{{ __('scheduler.source.' . $job['source']) }}</x-status-badge>
+                    @if ($job['shifted_from'])
+                        <x-status-badge size="xs" tone="info">{{ __('scheduler.source.shifted', ['time' => $job['shifted_from']->time ?? $job['shifted_from']->cronExpression()]) }}</x-status-badge>
+                    @endif
                 </td>
                 <td class="text-sm">
                     @if ($state?->last_started_at)
