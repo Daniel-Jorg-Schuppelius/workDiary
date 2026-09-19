@@ -51,6 +51,25 @@ class MetricsPageTest extends TestCase {
             ->assertSee((string) config('app.version'));
     }
 
+    /**
+     * Produktionslog 2026-09-19: Der ByteSize-Cast (seit 2026-07-27) lieferte
+     * size_bytes als Objekt, die Backup-Kachel castete es nach int → 500.
+     */
+    public function test_backup_tile_renders_heartbeat_size(): void {
+        \App\Models\BackupHeartbeat::query()->create([
+            'occurred_at' => now()->subHour(),
+            'size_bytes' => 5 * 1024 * 1024,
+            'source' => 'cron',
+        ]);
+        $admin = User::factory()->platformAdmin()->create();
+
+        $this->actingAs($admin)
+            ->get(route('admin.metrics.index'))
+            ->assertOk()
+            ->assertSee(\Illuminate\Support\Number::fileSize(5 * 1024 * 1024, precision: 1))
+            ->assertSee('cron');
+    }
+
     public function test_transparency_section_lists_counter_catalogue_with_descriptions(): void {
         $admin = User::factory()->platformAdmin()->create();
 

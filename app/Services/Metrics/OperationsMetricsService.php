@@ -179,7 +179,8 @@ class OperationsMetricsService {
             ->get()
             ->map(static fn(BackupHeartbeat $hb): array => [
                 'occurred_at' => $hb->occurred_at,
-                'size_bytes' => $hb->size_bytes,
+                // Rohe Bytes wie in BackupStatusService — der Cast liefert ein ByteSize-Objekt.
+                'size_bytes' => $hb->size_bytes?->getBytes(),
                 'source' => $hb->source,
             ])
             ->all());
