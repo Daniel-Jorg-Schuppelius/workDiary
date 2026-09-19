@@ -66,6 +66,28 @@ class SchedulerAdminControllerTest extends TestCase {
             ->assertSee('value="02:30"', false);
     }
 
+    /** Produktionsmeldung 2026-09-19: Die Spalte zeigte nur „Täglich um“ — ohne Zeit und Tag. */
+    public function test_index_shows_the_complete_plan_with_time_and_day(): void {
+        \App\Support\Setting::set('scheduler.operating_window_start', '08:00', \App\Settings\SettingScope::System);
+        \App\Support\Setting::set('scheduler.operating_window_end', '00:00', \App\Settings\SettingScope::System);
+        $admin = User::factory()->platformAdmin()->create();
+
+        $this->actingAs($admin)
+            ->put(route('admin.scheduler.update', ['job' => 'inventory.cycle_counts']), [
+                'cadence_type' => 'monthlyOn',
+                'day' => 15,
+                'time' => '10:30',
+            ])
+            ->assertRedirect(route('admin.scheduler.index'));
+
+        $this->actingAs($admin)
+            ->get(route('admin.scheduler.index'))
+            ->assertOk()
+            ->assertSee('Täglich um 08:37')           // audit.verify, 02:30 verschoben
+            ->assertSee('Jeden Montag um 09:40')      // finance.open_times_digest, 06:40 verschoben
+            ->assertSee('Monatlich am 15. um 10:30'); // inventory.cycle_counts, Override
+    }
+
     public function test_index_without_operating_window_hints_at_the_setting(): void {
         $admin = User::factory()->platformAdmin()->create();
 

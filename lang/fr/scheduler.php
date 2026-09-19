@@ -64,6 +64,11 @@ return [
         'monthlyOn' => 'Chaque mois le',
         'cron' => 'Expression cron',
     ],
+    'cadence_label' => [
+        'dailyAt' => 'Chaque jour à :time',
+        'weeklyOn' => 'Chaque :weekday à :time',
+        'monthlyOn' => 'Chaque mois, le :day à :time',
+    ],
     'criticality' => [
         'core' => 'Fonctionnement central',
         'integration' => 'Intégration',

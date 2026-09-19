@@ -63,7 +63,7 @@
                     </div>
                 </td>
                 <td>
-                    <div>{{ $job['cadence']->type->label() }}</div>
+                    <div>{{ $job['cadence']->label() }}</div>
                     <div class="text-xs font-mono text-muted">{{ $job['expression'] }}</div>
                     <x-status-badge size="xs" tone="ghost">{{ __('scheduler.source.' . $job['source']) }}</x-status-badge>
                     @if ($job['shifted_from'])

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Scheduling;
 
+use CommonToolkit\Enums\Weekday;
 use InvalidArgumentException;
 
 /**
@@ -56,6 +57,21 @@ final readonly class Cadence {
             'day' => $this->day,
             'expression' => $this->expression,
         ], static fn(mixed $v): bool => $v !== null);
+    }
+
+    /** Vollständiger Plan („Täglich um 07:55“) — CadenceType::label() ist nur die Auswahl im Dialog. */
+    public function label(): string {
+        return match ($this->type) {
+            CadenceType::DailyAt, CadenceType::MonthlyOn => __('scheduler.cadence_label.' . $this->type->value, [
+                'time' => $this->time,
+                'day' => $this->day,
+            ]),
+            CadenceType::WeeklyOn => __('scheduler.cadence_label.weeklyOn', [
+                'time' => $this->time,
+                'weekday' => Weekday::from((int) $this->day % 7)->getName(app()->getLocale()),
+            ]),
+            default => $this->type->label(),
+        };
     }
 
     /**
