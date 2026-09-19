@@ -49,7 +49,7 @@
             <tr>
                 <td>{{ $delivery->sku_snapshot }}</td>
                 <td>{{ $delivery->name_snapshot }}</td>
-                <td style="text-align: right;">{{ rtrim(rtrim((string) $delivery->quantity, '0'), '.') }}</td>
+                <td style="text-align: right;">{{ rtrim(rtrim((string) $delivery->quantity?->getNumericValue(), '0'), '.') }}</td>
                 <td>{{ $delivery->unit }}</td>
             </tr>
         </tbody>

@@ -166,6 +166,45 @@ final class InvestmentLifecycleTest extends TestCase {
         $this->assertSame(2500.0, $projection['remaining']);
     }
 
+    /**
+     * Wertobjekt-Audit 2026-09-19: Die Mittelbindung rechnete (float) auf
+     * unit_price (Money) — crashte — und las die nicht existente Spalte
+     * quantity statt ordered_qty (war dadurch immer 0).
+     */
+    public function test_projection_commits_linked_purchase_order_lines(): void {
+        $supplier = \App\Models\Supplier::factory()->create(['organization_id' => $this->organization->id]);
+        $warehouse = \App\Models\Warehouse::factory()->create(['organization_id' => $this->organization->id]);
+        $order = app(\App\Services\Procurement\PurchaseOrderService::class)->createDraft($this->organization, $supplier, $warehouse);
+        $article = \App\Models\Article::factory()->create(['organization_id' => $this->organization->id, 'purchasable' => true]);
+        $variant = \App\Models\ArticleVariant::factory()->create([
+            'organization_id' => $this->organization->id,
+            'article_id' => $article->id,
+            'is_default' => true,
+            'option_signature' => 'default',
+        ]);
+        $order->lines()->create([
+            'organization_id' => $this->organization->id,
+            'article_id' => $article->id,
+            'article_variant_id' => $variant->id,
+            'description' => 'Laptop',
+            'ordered_qty' => '3',
+            'unit' => 'Stk',
+            'unit_price' => '1250.0000',
+            'currency' => 'EUR',
+        ]);
+        $case = $this->makeCase();
+        $case->links()->create([
+            'organization_id' => $this->organization->id,
+            'linkable_type' => $order->getMorphClass(),
+            'linkable_id' => $order->id,
+            'created_by' => $this->admin->id,
+        ]);
+
+        $projection = app(InvestmentService::class)->projection($case->refresh());
+
+        $this->assertSame(3750.0, $projection['committed']);
+    }
+
     public function test_ui_flow_review_and_access_control(): void {
         // Anlage über die UI (Buchhaltung darf führen + freigeben).
         $accounting = $this->userWithRole(UserRole::Buchhaltung->value);

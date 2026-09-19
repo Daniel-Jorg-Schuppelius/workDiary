@@ -26,6 +26,7 @@ use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\JsonHelper;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Console\Command;
+use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Throwable;
@@ -240,10 +241,19 @@ class SystemHealthCommand extends Command {
     /** @return array{0: string, 1: bool, 2: string} */
     private function checkMigrations(): array {
         try {
-            // migrate:status --pending liefert FAILURE, sobald Migrationen ausstehen oder die Tabelle fehlt.
-            $exit = $this->callSilently('migrate:status', ['--pending' => true]);
+            // Direkt über den Migrator (wie migrate:status --pending): die Komponentenseite ruft
+            // runChecks() ohne Konsolen-Anwendung auf (callSilently → „find() on null"), und ein
+            // verschachteltes Artisan::call() überschriebe die Ausgabe, die SupportHealthSummary liest.
+            /** @var Migrator $migrator */
+            $migrator = app('migrator');
+            $pending = $migrator->repositoryExists()
+                ? array_diff(
+                    array_keys($migrator->getMigrationFiles([database_path('migrations'), ...$migrator->paths()])),
+                    $migrator->getRepository()->getRan(),
+                )
+                : ['migrations-table'];
 
-            return $exit === self::SUCCESS
+            return $pending === []
                 ? ['Migrationen', true, 'Keine ausstehenden Migrationen']
                 : ['Migrationen', false, 'Ausstehende Migrationen — php artisan migrate ausführen'];
         } catch (Throwable $e) {

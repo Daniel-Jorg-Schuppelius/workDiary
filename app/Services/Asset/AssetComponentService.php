@@ -116,7 +116,7 @@ class AssetComponentService {
             'organization_id' => $asset->organization_id,
             'asset_id' => $asset->id,
             'label' => (string) ($usage->description ?? '—'),
-            'quantity' => (string) $usage->quantity,
+            'quantity' => $usage->quantity?->getNumericValue(),
             'unit' => $usage->unit,
             'installed_on' => CarbonImmutable::today()->toDateString(),
             'created_by' => $actor?->id,

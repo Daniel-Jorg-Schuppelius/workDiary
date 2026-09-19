@@ -27,6 +27,7 @@ return [
         'communication' => 'Communication',
         'document' => 'Documents',
         'procedure' => 'Procédures',
+        'asset' => 'Objets et actifs',
         'order' => 'Missions',
         'invoice' => 'Factures',
         'quote' => 'Devis',

@@ -40,7 +40,7 @@
                         </td>
                         <td class="text-right tabular-nums text-sm opacity-70">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($request->purchase_price_snapshot?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}</td>
                         <td class="text-right tabular-nums font-medium">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($request->suggested_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}</td>
-                        <td class="text-right tabular-nums">{{ rtrim(rtrim($request->margin_snapshot, '0'), '.') }} %</td>
+                        <td class="text-right tabular-nums">{{ rtrim(rtrim((string) $request->margin_snapshot?->getNumericValue(), '0'), '.') }} %</td>
                         <td class="text-sm">
                             {{ $request->requestedBy?->name ?: '—' }}
                             <div class="text-xs opacity-60">{{ $request->created_at?->format('d.m.Y H:i') }}</div>

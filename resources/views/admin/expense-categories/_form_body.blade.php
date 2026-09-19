@@ -111,7 +111,7 @@
     <x-filter-field show-label :label="__('Steuersatz (Default, %)')" for="expcat-tax-rate">
         <input type="number" id="expcat-tax-rate" name="default_tax_rate"
                min="0" max="99.99" step="0.01"
-               value="{{ old('default_tax_rate', $category->default_tax_rate ?? 19) }}"
+               value="{{ old('default_tax_rate', $category->default_tax_rate?->getNumericValue() ?? 19) }}"
                class="input input-bordered input-sm w-full tabular-nums">
     </x-filter-field>
 

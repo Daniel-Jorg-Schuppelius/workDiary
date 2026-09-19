@@ -128,7 +128,7 @@ class NavigationGoldenTest extends TestCase {
     /**
      * Alle Link-Ziele eines HTML-Ausschnitts, normalisiert auf den Pfad:
      * Host + Query entfernt, numerische Segmente (IDs variieren mit der
-     * Testreihenfolge) durch {n} ersetzt. Sortiert + dedupliziert.
+     * Testreihenfolge) durch {n}, Sqids durch {sqid} ersetzt. Sortiert + dedupliziert.
      *
      * @return list<string>
      */
@@ -144,7 +144,9 @@ class NavigationGoldenTest extends TestCase {
             if ($path === '') {
                 continue;
             }
-            $paths[] = (string) preg_replace('#/\d+(?=/|$)#', '/{n}', $path);
+            $path = (string) preg_replace('#/\d+(?=/|$)#', '/{n}', $path);
+            // Sqids (≥ 10 Zeichen, gemischt) variieren wie IDs; Slugs sind kleingeschrieben.
+            $paths[] = (string) preg_replace('#/(?=[A-Za-z0-9]*[A-Z0-9])(?=[A-Za-z0-9]*[a-z])[A-Za-z0-9]{10,}(?=/|$)#', '/{sqid}', $path);
         }
 
         $paths = array_values(array_unique($paths));

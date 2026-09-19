@@ -89,10 +89,10 @@
     <x-form-group :legend="__('article.group.pricing')" icon="payments" tone="primary" cols="3">
         <x-input-field name="default_purchase_price" type="number" step="0.0001" min="0"
                        :label="__('article.field.default_purchase_price')"
-                       :value="old('default_purchase_price', $article?->default_purchase_price)" />
+                       :value="old('default_purchase_price', $article?->default_purchase_price?->getAmount())" />
         <x-input-field name="default_sale_price" type="number" step="0.0001" min="0"
                        :label="__('article.field.default_sale_price')"
-                       :value="old('default_sale_price', $article?->default_sale_price)" />
+                       :value="old('default_sale_price', $article?->default_sale_price?->getAmount())" />
         <x-select-field name="currency" :label="__('article.field.currency')">
             <x-currency-options :selected="old('currency', $article?->currency?->value ?? 'EUR')" />
         </x-select-field>

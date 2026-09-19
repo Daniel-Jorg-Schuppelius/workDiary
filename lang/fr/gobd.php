@@ -28,6 +28,11 @@ return [
         'cash_entries' => 'Livre de caisse',
         'cash_daily_closings' => 'Clôtures de caisse journalières',
         'incoming_einvoices' => 'Factures électroniques entrantes',
+        'ledger_accounts' => 'Comptes généraux (plan comptable)',
+        'ledger_entries' => 'Journal des écritures',
+        'ledger_entry_lines' => 'Lignes d\'écriture',
+        'ledger_open_items' => 'Postes ouverts',
+        'ledger_periods' => 'Périodes comptables',
         'expenses' => 'Frais',
     ],
     'preflight' => [

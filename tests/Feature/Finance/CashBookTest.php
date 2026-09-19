@@ -113,6 +113,46 @@ class CashBookTest extends TestCase {
         $this->record(['booked_on' => '2030-06-01']);
     }
 
+    /** Wertobjekt-Audit 2026-09-19: (float) auf Invoice::total (Money) ließ den Dialog crashen. */
+    public function test_entry_dialog_lists_open_invoices_with_total(): void {
+        $customer = Customer::create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Offene Rechnung GmbH',
+            'currency' => 'EUR',
+            'created_by' => $this->admin->id,
+        ]);
+        Invoice::create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'number' => 'R2030-0042',
+            'status' => Invoice::STATUS_ISSUED,
+            'issued_on' => '2030-06-01',
+            'currency' => 'EUR',
+            'tax_rate' => '19.00',
+            'subtotal' => '1000.00',
+            'tax_amount' => '190.00',
+            'total' => '1190.00',
+            'created_by' => $this->admin->id,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('cash-registers.entries.create', $this->register))
+            ->assertOk()
+            ->assertSee('R2030-0042 (1.190,00', false);
+    }
+
+    /** Wertobjekt-Audit 2026-09-19: Z3-Export crashte an (float) auf opening_balance (Money). */
+    public function test_gdpdu_closing_rows_carry_the_opening_balance(): void {
+        $this->record();
+        app(CashBookService::class)->closeDay($this->register, Carbon::parse('2030-06-01'), 150.00, null, (int) $this->admin->id);
+
+        $section = app(\App\Services\Finance\Gdpdu\CashDailyClosingsSection::class);
+        $rows = iterator_to_array($section->rows($this->organization, Carbon::parse('2030-06-01'), Carbon::parse('2030-06-30')), false);
+
+        $this->assertCount(1, $rows);
+        $this->assertSame('100,00', $rows[0][2]);
+    }
+
     public function test_cash_payment_marks_invoice_paid_on_full_cover(): void {
         $customer = Customer::create([
             'organization_id' => $this->organization->id,

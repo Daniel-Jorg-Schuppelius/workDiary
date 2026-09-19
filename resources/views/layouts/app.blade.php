@@ -701,7 +701,7 @@
                                 <div tabindex="0" class="dropdown-content header-dropdown-panel z-50 mt-2 w-[min(20rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-0 shadow-lg overflow-hidden">
                                     <div class="px-4 py-2 border-b border-base-200 flex items-center justify-between gap-2">
                                         <span class="text-xs uppercase tracking-wider opacity-60">{{ __('Lesezeichen') }}</span>
-                                        <x-button href="{{ route('bookmarks.create') }}?url={{ urlencode(request()->fullUrl()) }}"
+                                        <x-button :href="route('bookmarks.create', ['url' => request()->fullUrl()])"
                                            data-entry-modal-trigger
                                            tone="ghost" size="xs"
                                            title="{{ __('Diese Seite merken') }}">

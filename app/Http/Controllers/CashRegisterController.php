@@ -133,7 +133,7 @@ class CashRegisterController extends Controller {
                 ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID])
                 ->orderByDesc('issued_on')
                 ->limit(100)
-                ->get(['id', 'number', 'total']),
+                ->get(['id', 'number', 'total', 'currency']),
         ]);
     }
 

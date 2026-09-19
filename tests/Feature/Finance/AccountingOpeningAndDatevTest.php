@@ -80,6 +80,23 @@ class AccountingOpeningAndDatevTest extends TestCase {
         $this->assertSame(0, \App\Models\Accounting\AccountingEntry::query()->count());
     }
 
+    /**
+     * common-toolkit 2.0: Money::of('') wirft. Leere Soll-/Haben-Zellen sind
+     * im Eröffnungsimport der Normalfall (0), ein unlesbarer Betrag wird als
+     * Zeilenfehler gemeldet statt still als 0 gebucht.
+     */
+    public function test_empty_cells_count_as_zero_and_unreadable_amounts_are_reported(): void {
+        $path = $this->csv("account;debit;credit\r\n1200;5000,00;\r\n9000;;5000,00\r\n1200;fünf;\r\n");
+
+        $result = $this->service()->dryRun($this->org, $path);
+        unlink($path);
+
+        $this->assertSame('5000.00', $result['debit']);
+        $this->assertCount(1, $result['errors']);
+        $this->assertStringContainsString('4', $result['errors'][0], 'Zeilennummer der unlesbaren Zeile');
+        $this->assertSame(__('accounting.opening.error.invalid_amount', ['line' => '4']), $result['errors'][0]);
+    }
+
     public function test_dry_run_names_unknown_accounts(): void {
         $path = $this->csv("account;debit;credit\r\n9999;100,00;0\r\n");
 

@@ -62,6 +62,23 @@ final class AgileFoundationTest extends TestCase {
         );
     }
 
+    /** UI-Crawl 2026-09-19: Backlog/Sprints antworten ohne Board 404 — vorher nicht verlinken. */
+    public function test_inactive_board_links_neither_backlog_nor_sprints(): void {
+        $this->actingAs($this->lead)
+            ->get(route('agile.board', $this->project))
+            ->assertOk()
+            ->assertDontSee(route('agile.backlog', $this->project))
+            ->assertDontSee(route('agile.sprints', $this->project));
+
+        app(AgileBoardService::class)->activate($this->project, AgileBoard::METHOD_SCRUM, $this->lead);
+
+        $this->actingAs($this->lead)
+            ->get(route('agile.board', $this->project))
+            ->assertOk()
+            ->assertSee(route('agile.backlog', $this->project))
+            ->assertSee(route('agile.sprints', $this->project));
+    }
+
     public function test_board_page_activates_and_renders(): void {
         $this->actingAs($this->lead)
             ->post(route('agile.activate', $this->project), ['method' => 'kanban'])

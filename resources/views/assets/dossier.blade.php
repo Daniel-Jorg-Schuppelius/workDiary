@@ -296,7 +296,7 @@
             <tbody>
                 @foreach ($materialUsages as $usage)
                     <tr>
-                        <td>{{ rtrim(rtrim((string) $usage->quantity, '0'), '.') }} {{ $usage->unit }}</td>
+                        <td>{{ rtrim(rtrim((string) $usage->quantity?->getNumericValue(), '0'), '.') }} {{ $usage->unit }}</td>
                         <td>{{ $usage->description }}</td>
                     </tr>
                 @endforeach
@@ -349,7 +349,8 @@
                 @foreach ($timelineItems as $item)
                     <tr>
                         <td>{{ isset($item['occurred_at']) ? \Illuminate\Support\Carbon::parse($item['occurred_at'])->fdatetime() : '—' }}</td>
-                        <td>{{ __('asset.dossier.event.' . ($item['kind'] ?? 'unknown')) }}</td>
+                        {{-- Ereignis-Keys enthalten Punkte (asset.audit) — per Array statt Punkt-Notation nachschlagen. --}}
+                        <td>{{ ((array) __('asset.dossier.event'))[$item['kind'] ?? 'unknown'] ?? __('asset.dossier.event.unknown') }}</td>
                     </tr>
                 @endforeach
             </tbody>

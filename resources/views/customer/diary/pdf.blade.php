@@ -55,7 +55,7 @@
             @foreach ($materials as $usage)
                 <tr>
                     <td>{{ $usage->description }}</td>
-                    <td>{{ rtrim(rtrim((string) $usage->quantity, '0'), '.') }} {{ $usage->unit }}</td>
+                    <td>{{ rtrim(rtrim((string) $usage->quantity?->getNumericValue(), '0'), '.') }} {{ $usage->unit }}</td>
                 </tr>
             @endforeach
         </table>

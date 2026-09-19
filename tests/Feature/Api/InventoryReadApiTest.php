@@ -64,10 +64,13 @@ final class InventoryReadApiTest extends TestCase {
         $this->assertSame($warehouse->sqid, $row['warehouse']['id']);
         $this->assertSame($variant->sqid, $row['variant']['id']);
         $this->assertSame($article->sqid, $row['variant']['article']['id']);
-        $this->assertSame('7.0000', $row['balances']['physical']);
-        $this->assertSame('1.0000', $row['balances']['reserved']);
-        $this->assertSame('6.0000', $row['available']);
-        $this->assertSame([['id' => $bin->sqid, 'code' => 'A-01', 'name' => $bin->name, 'qty' => '5.0000']], $row['bins']);
+        // Mengen als Quantity-Objekt in der Basiseinheit des Artikels (Entscheid 2026-09-19).
+        $unit = (string) $article->base_unit;
+        $qty = static fn(string $value): array => ['value' => $value, 'scale' => 4, 'unit' => $unit];
+        $this->assertSame($qty('7.0000'), $row['balances']['physical']);
+        $this->assertSame($qty('1.0000'), $row['balances']['reserved']);
+        $this->assertSame($qty('6.0000'), $row['available']);
+        $this->assertSame([['id' => $bin->sqid, 'code' => 'A-01', 'name' => $bin->name, 'qty' => $qty('5.0000')]], $row['bins']);
 
         $byVariant = $this->getJson(route('api.inventory.index', ['variant' => $other->sqid]))->assertOk();
         $this->assertCount(1, $byVariant->json('data'));

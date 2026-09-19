@@ -69,7 +69,7 @@
         <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
                 <div class="font-mono text-sm opacity-70">{{ $order->number ?? '—' }}</div>
-                <div class="text-sm opacity-70 mt-1">{{ __('manufacturing.order.field.target_qty') }}: <strong>{{ $order->target_qty }} {{ $order->unit }}</strong>
+                <div class="text-sm opacity-70 mt-1">{{ __('manufacturing.order.field.target_qty') }}: <strong>{{ $order->target_qty?->getNumericValue() }} {{ $order->unit }}</strong>
                     · {{ __('manufacturing.order.field.good') }}: <strong>{{ $order->goodTotal() }}</strong></div>
             </div>
             <span class="badge badge-sm">{{ $order->status->label() }}</span>
@@ -289,7 +289,7 @@
                 @foreach ($order->deliveries as $delivery)
                     <tr>
                         <td>{{ $delivery->name_snapshot }}</td>
-                        <td class="text-right tabular-nums">{{ $delivery->quantity }} {{ $delivery->unit }}</td>
+                        <td class="text-right tabular-nums">{{ $delivery->quantity?->getNumericValue() }} {{ $delivery->unit }}</td>
                         <td><span class="badge badge-sm">{{ $delivery->facturation_status->label() }}</span></td>
                         <td class="text-right">
                             <div class="flex items-center justify-end gap-2">

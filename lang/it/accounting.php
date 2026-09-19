@@ -770,6 +770,7 @@ return [
         ],
         'error' => [
             'missing_account' => 'Riga :line senza conto.',
+            'invalid_amount' => 'Riga :line: Dare o Avere non è un importo leggibile.',
             'unknown_account' => 'Il conto :account (riga :line) non esiste.',
             'both_sides' => 'La riga :line porta Dare e Avere.',
             'unbalanced' => 'Dare (:debit) e Avere (:credit) non coincidono.',

@@ -91,7 +91,10 @@ class ComponentsPageTest extends TestCase {
             ->get(route('admin.components.index'))
             ->assertOk()
             ->assertSee(__('isms.components.health.title'))
-            ->assertSee(__('isms.components.health.run_after_update'));
+            ->assertSee(__('isms.components.health.run_after_update'))
+            // UI-Crawl 2026-09-19: callSilently() ohne Konsolen-Anwendung → „find() on null".
+            ->assertDontSee('on null')
+            ->assertSee('Keine ausstehenden Migrationen');
     }
 
     public function test_admin_generates_and_downloads_release_manifest(): void {

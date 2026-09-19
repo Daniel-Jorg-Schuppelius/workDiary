@@ -103,13 +103,13 @@
             <x-input-field name="hourly_rate"
                            :label="__('Stundensatz (EUR)')"
                            type="number"
-                           value="{{ old('hourly_rate', $task?->hourly_rate) }}"
+                           value="{{ old('hourly_rate', $task?->hourly_rate?->getAmount()) }}"
                            step="0.01"
                            min="0" />
             <x-input-field name="internal_rate"
                            :label="__('Interner Satz (EUR)')"
                            type="number"
-                           value="{{ old('internal_rate', $task?->internal_rate) }}"
+                           value="{{ old('internal_rate', $task?->internal_rate?->getAmount()) }}"
                            step="0.01"
                            min="0" />
             <x-input-field name="time_budget"
@@ -121,7 +121,7 @@
             <x-input-field name="budget"
                            :label="__('Geldbudget (EUR)')"
                            type="number"
-                           value="{{ old('budget', $task?->budget) }}"
+                           value="{{ old('budget', $task?->budget?->getAmount()) }}"
                            step="0.01"
                            min="0" />
             <x-select-field name="budget_type" :label="__('Budget-Typ')">

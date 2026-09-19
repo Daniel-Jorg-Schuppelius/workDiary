@@ -770,6 +770,7 @@ return [
         ],
         'error' => [
             'missing_account' => 'Zeile :line ohne Konto.',
+            'invalid_amount' => 'Zeile :line: Soll oder Haben ist kein lesbarer Betrag.',
             'unknown_account' => 'Konto :account (Zeile :line) existiert nicht.',
             'both_sides' => 'Zeile :line trägt Soll und Haben.',
             'unbalanced' => 'Soll (:debit) und Haben (:credit) stimmen nicht überein.',

@@ -29,11 +29,11 @@
                   :to="old('valid_to', optional($rate->valid_to)->format('Y-m-d'))"
                   :from-label="__('Gültig ab')" :to-label="__('Gültig bis')" />
     <x-input-field type="number" step="0.01" min="0" name="full_day_amount" :label="__('Vollständiger Tag (Pauschale)')" required
-                   :value="old('full_day_amount', $rate->full_day_amount ?? '28.00')" />
+                   :value="old('full_day_amount', $rate->full_day_amount?->getAmount() ?? '28.00')" />
     <x-input-field type="number" step="0.01" min="0" name="partial_day_amount" :label="__('Teilweiser Tag (An-/Abreise)')" required
-                   :value="old('partial_day_amount', $rate->partial_day_amount ?? '14.00')" />
+                   :value="old('partial_day_amount', $rate->partial_day_amount?->getAmount() ?? '14.00')" />
     <x-input-field type="number" step="0.01" min="0" name="overnight_amount" :label="__('Übernachtungspauschale')"
-                   :value="old('overnight_amount', $rate->overnight_amount)" />
+                   :value="old('overnight_amount', $rate->overnight_amount?->getAmount())" />
     <x-input-field name="source" :label="__('Quelle / Anmerkung')" maxlength="255" span="2"
                    :value="old('source', $rate->source)"
                    :placeholder="__('z. B. BMF-Schreiben 2025')" />

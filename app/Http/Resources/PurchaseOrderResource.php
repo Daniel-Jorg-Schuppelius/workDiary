@@ -14,6 +14,7 @@ namespace App\Http\Resources;
 
 use App\Models\{Article, ArticleVariant, PurchaseOrder, PurchaseOrderLine};
 use App\Support\Sqid;
+use CommonToolkit\ValueObjects\Quantity;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -39,7 +40,7 @@ class PurchaseOrderResource extends JsonResource {
                 'name' => $this->warehouse->name,
             ]),
             'currency' => $this->currency->value,
-            'freight_cost' => $this->freight_cost?->getAmount(),
+            'freight_cost' => $this->freight_cost,
             'ordered_at' => $this->ordered_at?->toIso8601String(),
             'expected_at' => $this->expected_at?->toDateString(),
             'note' => $this->note,
@@ -50,10 +51,10 @@ class PurchaseOrderResource extends JsonResource {
                 'description' => $line->description,
                 'supplier_sku' => $line->supplier_sku,
                 'unit' => $line->unit,
-                'ordered_qty' => $line->ordered_qty?->getNumericValue(),
-                'received_qty' => $line->received_qty?->getNumericValue(),
-                'open_qty' => $line->openQty(),
-                'unit_price' => $line->unit_price?->getAmount(),
+                'ordered_qty' => $line->ordered_qty,
+                'received_qty' => $line->received_qty,
+                'open_qty' => Quantity::of($line->openQty(), $line->ordered_qty?->getUnit() ?? (string) $line->unit, 4),
+                'unit_price' => $line->unit_price,
             ])->all()),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),

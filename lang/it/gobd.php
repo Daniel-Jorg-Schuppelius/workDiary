@@ -28,6 +28,11 @@ return [
         'cash_entries' => 'Libro di cassa',
         'cash_daily_closings' => 'Chiusure di cassa giornaliere',
         'incoming_einvoices' => 'Fatture elettroniche in entrata',
+        'ledger_accounts' => 'Conti di contabilità generale (piano dei conti)',
+        'ledger_entries' => 'Giornale delle registrazioni',
+        'ledger_entry_lines' => 'Righe di registrazione',
+        'ledger_open_items' => 'Partite aperte',
+        'ledger_periods' => 'Periodi contabili',
         'expenses' => 'Spese',
     ],
     'preflight' => [

@@ -28,6 +28,11 @@ return [
         'cash_entries' => 'Kassenbuch',
         'cash_daily_closings' => 'Kassenabschlüsse',
         'incoming_einvoices' => 'Eingangs-E-Rechnungen',
+        'ledger_accounts' => 'Sachkonten (Kontenplan)',
+        'ledger_entries' => 'Buchungsjournal',
+        'ledger_entry_lines' => 'Buchungszeilen',
+        'ledger_open_items' => 'Offene Posten',
+        'ledger_periods' => 'Buchungsperioden',
         'expenses' => 'Spesen',
     ],
     'preflight' => [

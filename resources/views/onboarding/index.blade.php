@@ -87,7 +87,7 @@
                 <div class="flex items-center justify-end gap-3 border-t border-base-300/70 pt-3">
                     <div class="flex flex-wrap items-center justify-end gap-2">
                         @if (! empty($step['href']) && ! empty($step['label']))
-                            <x-button href="{{ $step['href'] }}" tone="outline" size="sm">{{ $step['label'] }}</x-button>
+                            <x-button :href="$step['href']" tone="outline" size="sm">{{ $step['label'] }}</x-button>
                         @endif
                         @if (! $step['done'] && $step['skippable'])
                             <form method="POST" action="{{ route('onboarding.steps.skip', ['step' => $step['code']]) }}" class="flex items-center gap-2">

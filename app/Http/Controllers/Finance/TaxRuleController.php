@@ -103,7 +103,7 @@ class TaxRuleController extends Controller {
         }
 
         $rule->save();
-        $rule->audit('tax_rule.created', ['country' => $rule->country, 'category' => $rule->category, 'rate' => (string) $rule->rate]);
+        $rule->audit('tax_rule.created', ['country' => $rule->country, 'category' => $rule->category, 'rate' => $rule->rate?->getNumericValue()]);
 
         return back()->with('status', __('Steuerregel angelegt (Org-Override).'));
     }

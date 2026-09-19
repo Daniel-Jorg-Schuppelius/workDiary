@@ -145,6 +145,24 @@ class ProblemReportTest extends TestCase {
         $this->assertSame($rid, $report->page_context['error_request_id']);
     }
 
+    /**
+     * UI-Crawl 2026-09-19: href="{{ … }}" an <x-button> (href ist Prop, Ausgabe
+     * erneut per {{ }}) escapte doppelt — Melde- und Zurück-Link trugen &amp;amp;,
+     * der Browser schickte „amp;code" statt „code" und die rid ging verloren.
+     */
+    public function test_error_page_links_are_escaped_only_once(): void {
+        $user = User::factory()->user()->create();
+
+        $html = $this->actingAs($user)
+            ->withHeader('referer', url('/dashboard?a=1&b=2'))
+            ->get('/gibt-es-nicht-' . uniqid())
+            ->assertNotFound()
+            ->getContent();
+
+        $this->assertStringNotContainsString('&amp;amp;', (string) $html);
+        $this->assertStringContainsString('context=error&amp;code=404', (string) $html);
+    }
+
     public function test_invalid_error_request_id_is_ignored(): void {
         $user = User::factory()->user()->create();
 

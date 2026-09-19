@@ -87,7 +87,7 @@ final class PriceComparisonService {
                 'item_id' => (int) $item->id,
                 'reference' => (string) $item->reference_no,
                 'short_text' => $item->short_text,
-                'quantity' => $item->quantity === null ? null : (string) $item->quantity,
+                'quantity' => $item->quantity?->getNumericValue(),
                 'unit' => $item->unit,
                 'prices' => $prices,
                 'cheapest_import_id' => $this->cheapest($prices),

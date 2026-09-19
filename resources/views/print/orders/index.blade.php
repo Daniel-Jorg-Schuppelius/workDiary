@@ -59,7 +59,7 @@
             <tr>
                 <td><a href="{{ route('print-orders.show', $order) }}" class="link font-mono">{{ $mo->number ?? '—' }}</a></td>
                 <td>{{ $mo->article->name ?? '—' }}</td>
-                <td class="text-right tabular-nums">{{ $mo?->target_qty }}</td>
+                <td class="text-right tabular-nums">{{ $mo?->target_qty?->getNumericValue() }}</td>
                 <td><x-status-badge size="md" outline :tone="$order->status->tone()">{{ $order->status->label() }}</x-status-badge></td>
                 <td><x-status-badge size="md" outline :tone="$order->preflight_status->tone()">{{ $order->preflight_status->label() }}</x-status-badge></td>
                 <td>{{ $order->output_kind->label() }}</td>

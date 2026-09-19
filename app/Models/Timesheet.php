@@ -221,7 +221,7 @@ class Timesheet extends Model {
      */
     public function getTotalMaterialNetAttribute(): float {
         if ($this->relationLoaded('materialUsages')) {
-            return (float) $this->materialUsages->sum('line_total_net');
+            return (float) $this->materialUsages->sum(fn (MaterialUsage $u): float => $u->line_total_net?->toFloat() ?? 0.0);
         }
 
         return (float) $this->totals_material_net;

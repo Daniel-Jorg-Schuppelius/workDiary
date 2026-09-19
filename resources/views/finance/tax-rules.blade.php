@@ -80,7 +80,7 @@
                             <td>{{ $rule->country }}@if ($rule->region)/{{ $rule->region }}@endif</td>
                             <td>{{ __("values.{$rule->category}") }}</td>
                             <td>{{ __("values.{$rule->rate_type}") }}</td>
-                            <td class="text-right tabular-nums">{{ rtrim(rtrim((string) $rule->rate, '0'), '.') }}</td>
+                            <td class="text-right tabular-nums">{{ rtrim(rtrim((string) $rule->rate?->getNumericValue(), '0'), '.') }}</td>
                             <td>{{ $rule->valid_from->fdate() }} – {{ optional($rule->valid_to)->fdate() ?? '∞' }}</td>
                             <td class="max-w-xs truncate text-xs text-base-content/70" title="{{ $rule->source }}">{{ $rule->source ?? '—' }}</td>
                             <td>{{ $rule->organization_id !== null ? __('Org-Override') : __('Katalog') }}</td>

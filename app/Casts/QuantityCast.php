@@ -37,6 +37,11 @@ class QuantityCast extends ValueObjectCast {
         return Quantity::tryFrom($raw, $this->unit($model, $attributes), $this->scaleOption());
     }
 
+    /** Numerisch: Rohtext in einer DECIMAL-Spalte wäre ein stiller Datenfehler. */
+    protected function rejectsUnparseable(): bool {
+        return true;
+    }
+
     protected function toStorage(object $value): string {
         /** @var Quantity $value */
         return $value->getNumericValue();

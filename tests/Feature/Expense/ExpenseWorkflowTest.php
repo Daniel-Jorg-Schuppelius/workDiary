@@ -65,6 +65,31 @@ class ExpenseWorkflowTest extends TestCase {
         $this->assertEquals(119.00, $expense->amount_gross?->toFloat());
     }
 
+    /**
+     * Wertobjekt-Audit 2026-09-19: (string) auf dem Percentage-Default der Kategorie
+     * ergab „7.00 %" — der Cast las es als null (Netto = Brutto), MariaDB strict
+     * lehnte den Rohwert in der DECIMAL-Spalte ab.
+     */
+    public function test_tax_rate_falls_back_to_the_category_default(): void {
+        $this->actingAs($this->user);
+        $this->category->update(['default_tax_rate' => '7.00']);
+
+        $expense = app(ExpenseService::class)->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->user->id,
+            'expense_category_id' => $this->category->id,
+            'date' => now()->toDateString(),
+            'vendor' => 'Buchhandlung',
+            'description' => 'Fachbuch',
+            'payment_method' => \App\Enums\Expense\PaymentMethod::PrivatePaid->value,
+            'amount_gross' => '107.00',
+        ]);
+
+        $expense->refresh();
+        $this->assertSame('7.00', $expense->tax_rate?->getNumericValue());
+        $this->assertEquals(100.00, $expense->amount_net?->toFloat());
+    }
+
     public function test_submit_changes_status_and_sends_notification(): void {
         $expense = Expense::factory()->create([
             'organization_id' => $this->organization->id,

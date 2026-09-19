@@ -28,6 +28,11 @@ return [
         'cash_entries' => 'Cash book',
         'cash_daily_closings' => 'Daily cash closings',
         'incoming_einvoices' => 'Incoming e-invoices',
+        'ledger_accounts' => 'General ledger accounts (chart of accounts)',
+        'ledger_entries' => 'Posting journal',
+        'ledger_entry_lines' => 'Posting lines',
+        'ledger_open_items' => 'Open items',
+        'ledger_periods' => 'Accounting periods',
         'expenses' => 'Expenses',
     ],
     'preflight' => [

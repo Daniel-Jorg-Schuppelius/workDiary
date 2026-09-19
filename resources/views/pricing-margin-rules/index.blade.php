@@ -62,13 +62,13 @@
                         </td>
                         <td class="text-right tabular-nums">
                             @if ($rule->target_margin !== null)
-                                {{ __('procurement.margin.target') }} {{ rtrim(rtrim($rule->target_margin, '0'), '.') }} %
+                                {{ __('procurement.margin.target') }} {{ rtrim(rtrim((string) $rule->target_margin?->getNumericValue(), '0'), '.') }} %
                             @elseif ($rule->markup_percent !== null)
-                                {{ __('procurement.margin.markup') }} {{ rtrim(rtrim($rule->markup_percent, '0'), '.') }} %
+                                {{ __('procurement.margin.markup') }} {{ rtrim(rtrim((string) $rule->markup_percent?->getNumericValue(), '0'), '.') }} %
                             @else — @endif
                         </td>
                         <td class="text-right tabular-nums text-sm opacity-70">
-                            {{ $rule->min_margin !== null ? rtrim(rtrim($rule->min_margin, '0'), '.') . ' %' : '—' }}
+                            {{ $rule->min_margin !== null ? rtrim(rtrim($rule->min_margin->getNumericValue(), '0'), '.') . ' %' : '—' }}
                         </td>
                         <td class="text-sm">{{ $rule->rounding->label() }}</td>
                         <td class="text-right tabular-nums">{{ $rule->priority }}</td>

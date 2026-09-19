@@ -84,6 +84,17 @@ class PlanIstSummaryReportTest extends TestCase {
         $this->assertCount(2, $summary['rows']);
     }
 
+    /** UI-Crawl 2026-09-19: Team-Tab ohne angelegtes Team lieferte 404. */
+    public function test_team_view_without_any_team_shows_empty_state(): void {
+        $lead = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $lead->givePermissionTo(P::ReportPresenceTeam->value);
+
+        $this->actingAs($lead)
+            ->get(route('reports.plan-ist.team'))
+            ->assertOk()
+            ->assertSee(__('Keine Mitarbeitenden im gewählten Bereich.'));
+    }
+
     public function test_team_and_org_views_enforce_permissions(): void {
         $plain = User::factory()->user()->create(['organization_id' => $this->organization->id]);
 

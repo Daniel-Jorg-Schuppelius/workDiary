@@ -99,11 +99,11 @@ class PlanIstReportController extends Controller {
             $team = $teams->first(fn (Team $t): bool => (int) $t->id === (int) $teamId);
         }
         $team ??= $teams->first();
-        abort_if($team === null, 404, 'Kein Team verfügbar.');
 
         [$from, $to] = $this->range($request);
 
-        $users = $team->members()->orderBy('name')->get();
+        // Ohne Team leerer Zustand statt 404: der Tab steht jedem mit Teamrecht offen.
+        $users = $team?->members()->orderBy('name')->get() ?? collect();
         $summary = $this->builder->presenceSummaryFor($users, $from, $to);
 
         return view('reports.plan-ist.summary', [

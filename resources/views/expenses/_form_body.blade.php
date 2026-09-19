@@ -16,7 +16,7 @@
             <option value="">—</option>
             @foreach ($categories as $cat)
                 <option value="{{ $cat->sqid }}"
-                        data-tax-rate="{{ $cat->default_tax_rate }}"
+                        data-tax-rate="{{ $cat->default_tax_rate?->getNumericValue() }}"
                         data-billable-default="{{ $cat->default_billable ? '1' : '0' }}"
                         data-slug="{{ $cat->slug }}"
                         @selected((string) old('expense_category_id', \App\Support\Sqid::encode(\App\Models\ExpenseCategory::class, $expense?->expense_category_id)) === $cat->sqid)>
@@ -47,9 +47,9 @@
 </x-form-group>
 
 <x-form-group :legend="__('Betrag')" icon="payments" tone="info" cols="3">
-    <x-input-field name="amount_gross" type="number" :label="__('Brutto')" required step="0.01" min="0" data-expense-gross :value="old('amount_gross', $expense?->amount_gross)" />
-    <x-input-field name="tax_rate" type="number" :label="__('Steuersatz (%)')" step="0.01" min="0" max="100" data-expense-tax-rate placeholder="{{ __('Aus Kategorie') }}" :value="old('tax_rate', $expense?->tax_rate)" />
-    <x-input-field name="amount_net" type="number" :label="__('Netto (optional)')" step="0.01" min="0" placeholder="{{ __('Wird ausgerechnet') }}" :value="old('amount_net', $expense?->amount_net)" />
+    <x-input-field name="amount_gross" type="number" :label="__('Brutto')" required step="0.01" min="0" data-expense-gross :value="old('amount_gross', $expense?->amount_gross?->getAmount())" />
+    <x-input-field name="tax_rate" type="number" :label="__('Steuersatz (%)')" step="0.01" min="0" max="100" data-expense-tax-rate placeholder="{{ __('Aus Kategorie') }}" :value="old('tax_rate', $expense?->tax_rate?->getNumericValue())" />
+    <x-input-field name="amount_net" type="number" :label="__('Netto (optional)')" step="0.01" min="0" placeholder="{{ __('Wird ausgerechnet') }}" :value="old('amount_net', $expense?->amount_net?->getAmount())" />
     <x-select-field name="currency" :label="__('Währung')">
         <x-currency-options :selected="old('currency', $expense?->currency?->value ?? 'EUR')" />
     </x-select-field>

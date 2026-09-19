@@ -56,8 +56,8 @@ class CashDailyClosingsSection extends AbstractGdpduSection {
             ->lazy() as $closing) {
             yield [
                 $this->str($closing->register?->name),
-                $this->str($closing->register?->currency),
-                $this->num($closing->register?->opening_balance, 2),
+                $this->str($closing->register?->currency?->value),
+                $this->num($closing->register?->opening_balance?->toFloat(), 2),
                 $this->date($closing->register?->opened_on),
                 $this->date($closing->closing_date),
                 $this->num($closing->expected_balance?->toFloat(), 2),

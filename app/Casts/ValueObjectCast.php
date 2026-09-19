@@ -10,10 +10,12 @@
 
 namespace App\Casts;
 
+use App\Exceptions\UnparseableValueObjectException;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Str;
 
 /**
  * Basis für Casts auf `CommonToolkit\ValueObjects\*`.
@@ -75,11 +77,28 @@ abstract class ValueObjectCast implements CastsAttributes {
 
         // Ungültige Eingaben werden getrimmt durchgereicht statt verworfen —
         // Pflicht zur Gültigkeit gehört in den Form-Request, nicht in den Cast.
-        $stored = is_object($value)
-            ? $this->toStorage($value)
-            : $this->storeScalar(trim((string) $value), $model, $attributes);
+        // Ausnahme: numerische Casts (rejectsUnparseable), deren Rohtext sonst
+        // still in einer DECIMAL-Spalte landete (Wertobjekt-Audit 2026-09-19).
+        if (is_object($value)) {
+            $stored = $this->toStorage($value);
+        } else {
+            $raw = trim((string) $value);
+            if ($this->rejectsUnparseable() && $this->toValueObject($raw, $model, $attributes) === null) {
+                throw new UnparseableValueObjectException($key, $raw, Str::before(class_basename(static::class), 'Cast'));
+            }
+            $stored = $this->storeScalar($raw, $model, $attributes);
+        }
 
         return [$key => $this->write($stored)];
+    }
+
+    /**
+     * Nicht deutbare Skalare beim Schreiben ablehnen statt roh durchreichen.
+     * Für Kennungen (IBAN, USt-IdNr. …) bewusst aus: Altbestand und Importe
+     * dürfen Ungültiges tragen, geprüft wird im Form-Request.
+     */
+    protected function rejectsUnparseable(): bool {
+        return false;
     }
 
     /**

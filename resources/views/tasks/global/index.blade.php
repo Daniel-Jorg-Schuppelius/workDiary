@@ -54,7 +54,7 @@
                         <td class="font-semibold">{{ $task->title }}</td>
                         <td><x-status-badge :tone="$task->statusTone()">{{ $task->statusLabel() }}</x-status-badge></td>
                         <td><x-status-badge :tone="$task->priorityTone()">{{ $task->priorityLabel() }}</x-status-badge></td>
-                        <td class="text-right tabular-nums">{{ $task->hourly_rate ?? '–' }}</td>
+                        <td class="text-right tabular-nums">{{ $task->hourly_rate?->format() ?? '–' }}</td>
                         <td class="text-right tabular-nums">{{ $task->time_budget ?? '–' }}</td>
                         <td class="text-center">
                             @if ($task->billable)

@@ -15,6 +15,7 @@ namespace App\Services\Accounting;
 use App\Models\Accounting\{AccountingAccount, AccountingEntry};
 use App\Models\{Organization, User};
 use App\Support\Toolkit\CsvFacade;
+use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Validation\ValidationException;
 
@@ -55,11 +56,17 @@ class OpeningBalanceImportService {
 
         foreach (CsvFacade::streamAssoc($absolutePath) as $lineNumber => $row) {
             $number = trim((string) ($row['account'] ?? ''));
-            $rowDebit = Money::of((string) ($row['debit'] ?? '0'), $currency);
-            $rowCredit = Money::of((string) ($row['credit'] ?? '0'), $currency);
 
             if ($number === '') {
                 $errors[] = (string) __('accounting.opening.error.missing_account', ['line' => (string) $lineNumber]);
+
+                continue;
+            }
+
+            $rowDebit = self::cellAmount($row['debit'] ?? null, $currency);
+            $rowCredit = self::cellAmount($row['credit'] ?? null, $currency);
+            if ($rowDebit === null || $rowCredit === null) {
+                $errors[] = (string) __('accounting.opening.error.invalid_amount', ['line' => (string) $lineNumber]);
 
                 continue;
             }
@@ -142,5 +149,16 @@ class OpeningBalanceImportService {
         ], $entry, $actor);
 
         return $entry;
+    }
+
+    /**
+     * Leere Zelle = 0 (je Zeile ist nur Soll ODER Haben befüllt); ein unlesbarer
+     * Betrag ergibt null und wird als Zeilenfehler gemeldet — bis common-toolkit 2.0
+     * machte Money::of() daraus still 0.
+     */
+    private static function cellAmount(mixed $raw, CurrencyCode $currency): ?Money {
+        $raw = trim((string) ($raw ?? ''));
+
+        return $raw === '' ? Money::zero($currency) : Money::ofNullable($raw, $currency);
     }
 }

@@ -770,6 +770,7 @@ return [
         ],
         'error' => [
             'missing_account' => 'Line :line without account.',
+            'invalid_amount' => 'Line :line: debit or credit is not a readable amount.',
             'unknown_account' => 'Account :account (line :line) does not exist.',
             'both_sides' => 'Line :line carries debit and credit.',
             'unbalanced' => 'Debit (:debit) and credit (:credit) do not match.',

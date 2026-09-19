@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{Article, ArticleVariant, Warehouse, WarehouseBin};
 use App\Services\Inventory\InventoryLedger;
 use App\Support\Sqid;
+use CommonToolkit\ValueObjects\Quantity;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use OpenApi\Attributes as OA;
@@ -82,7 +83,7 @@ class InventoryApiController extends Controller {
             $variants = ArticleVariant::query()
                 ->whereKey($variantIds)
                 ->when($articleId !== null, fn($q) => $q->where('article_id', $articleId))
-                ->with('article:id,name,number')
+                ->with('article:id,name,number,base_unit')
                 ->get()
                 ->keyBy('id');
             $bins = WarehouseBin::query()->where('warehouse_id', $warehouse->id)->get()->keyBy('id');
@@ -106,6 +107,10 @@ class InventoryApiController extends Controller {
                     continue;
                 }
 
+                // Mengen als Quantity-Objekt {value, scale, unit} in der Basiseinheit des Artikels.
+                $unit = (string) ($variant->article->base_unit ?? '');
+                $qtyOf = static fn(string $value): Quantity => Quantity::of($value, $unit !== '' ? $unit : 'Stk', InventoryLedger::SCALE);
+
                 $binRows = [];
                 foreach ($binBalances[$id] ?? [] as $binId => $qty) {
                     if ($binId === 0 || bccomp($qty, '0', InventoryLedger::SCALE) === 0) {
@@ -116,7 +121,7 @@ class InventoryApiController extends Controller {
                         'id' => $bin?->sqid,
                         'code' => $bin?->code,
                         'name' => $bin?->name,
-                        'qty' => $qty,
+                        'qty' => $qtyOf($qty),
                     ];
                 }
 
@@ -131,8 +136,8 @@ class InventoryApiController extends Controller {
                             'number' => $variant->article->number ?? null,
                         ],
                     ],
-                    'balances' => $states,
-                    'available' => bcsub($physical, $reserved, InventoryLedger::SCALE),
+                    'balances' => array_map($qtyOf, $states),
+                    'available' => $qtyOf(bcsub($physical, $reserved, InventoryLedger::SCALE)),
                     'bins' => $binRows,
                 ];
             }

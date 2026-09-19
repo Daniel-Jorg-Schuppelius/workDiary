@@ -29,6 +29,11 @@ class DecimalCast extends ValueObjectCast {
         return Decimal::ofNullable($raw, $this->scaleOption());
     }
 
+    /** Numerisch: Rohtext in einer DECIMAL-Spalte wäre ein stiller Datenfehler. */
+    protected function rejectsUnparseable(): bool {
+        return true;
+    }
+
     protected function toStorage(object $value): string {
         /** @var Decimal $value */
         return $value->getValue();

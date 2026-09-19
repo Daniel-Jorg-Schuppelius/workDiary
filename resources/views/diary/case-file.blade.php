@@ -123,7 +123,7 @@
             <tbody>
                 @foreach ($materials as $usage)
                     <tr>
-                        <td>{{ rtrim(rtrim((string) $usage->quantity, '0'), '.') }} {{ $usage->unit }}</td>
+                        <td>{{ rtrim(rtrim((string) $usage->quantity?->getNumericValue(), '0'), '.') }} {{ $usage->unit }}</td>
                         <td>{{ $usage->description }}</td>
                         <td>{{ $usage->billed ? __('timeline.case.yes') : __('timeline.case.no') }}</td>
                     </tr>

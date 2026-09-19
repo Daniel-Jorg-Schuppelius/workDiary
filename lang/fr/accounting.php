@@ -770,6 +770,7 @@ return [
         ],
         'error' => [
             'missing_account' => 'Ligne :line sans compte.',
+            'invalid_amount' => 'Ligne :line : le débit ou le crédit n\'est pas un montant lisible.',
             'unknown_account' => 'Le compte :account (ligne :line) n\'existe pas.',
             'both_sides' => 'La ligne :line porte débit et crédit.',
             'unbalanced' => 'Le débit (:debit) et le crédit (:credit) ne correspondent pas.',

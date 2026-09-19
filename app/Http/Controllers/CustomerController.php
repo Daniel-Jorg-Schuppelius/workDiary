@@ -236,7 +236,7 @@ class CustomerController extends Controller {
                     $c->address_city,
                     $c->country,
                     $c->currency->value,
-                    $c->hourly_rate,
+                    $c->hourly_rate?->getAmount(),
                     $c->billable ? 'ja' : 'nein',
                     $c->archived_at?->format('Y-m-d') ?? '',
                     $c->created_at?->format('Y-m-d') ?? '',

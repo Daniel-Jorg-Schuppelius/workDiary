@@ -48,6 +48,18 @@ class OrganizationAccessControlTest extends TestCase {
         $this->assertDatabaseHas('organizations', ['id' => $foreign->id, 'is_active' => true]);
     }
 
+    /** UI-Crawl 2026-09-19: Der Menüeintrag „Organisation" verlinkte die numerische ID → 404. */
+    public function test_org_local_admin_menu_links_own_org_by_sqid(): void {
+        $admin = User::factory()->admin()->create();
+        $own = Organization::query()->findOrFail($admin->organization_id);
+
+        $this->actingAs($admin)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee(route('admin.organizations.edit', $own), false)
+            ->assertDontSee('/admin/organizations/' . $own->id . '/edit', false);
+    }
+
     public function test_org_local_admin_can_edit_own_org(): void {
         $admin = User::factory()->admin()->create();
         $own = Organization::query()->findOrFail($admin->organization_id);

@@ -38,8 +38,12 @@ class PerDiemRateAccessTest extends TestCase {
         $admin = User::factory()->admin()->create();
         $rate = PerDiemRate::factory()->create();
 
-        // Lesen erlaubt.
-        $this->actingAs($admin)->get(route('admin.per-diem-rates.index'))->assertOk();
+        // Lesen erlaubt — ohne Pflege-Buttons, die ins 403 führten (UI-Crawl 2026-09-19).
+        $this->actingAs($admin)->get(route('admin.per-diem-rates.index'))
+            ->assertOk()
+            ->assertDontSee(route('admin.per-diem-rates.create'), false)
+            ->assertDontSee(route('admin.per-diem-rates.edit', $rate), false)
+            ->assertDontSee(route('admin.per-diem-rates.destroy', $rate), false);
 
         // Schreiben verboten.
         $this->actingAs($admin)->post(route('admin.per-diem-rates.store'), $this->payload())->assertForbidden();

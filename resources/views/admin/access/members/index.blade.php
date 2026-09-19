@@ -59,10 +59,13 @@
                     </div>
                 </td>
                 <td class="text-right">
-                    <x-icon-btn icon="manage_accounts" size="xs"
-                                data-entry-modal-trigger
-                                :href="route('admin.access.members.edit', $member)"
-                                :title="__('access.action.edit_assignments')" />
+                    {{-- Plattform-Admins verwaltet nur ein Plattform-Admin (MemberController::ensureMayManagePlatformAdmin). --}}
+                    @if (! $member->isGlobalAdmin() || auth()->user()?->isGlobalAdmin())
+                        <x-icon-btn icon="manage_accounts" size="xs"
+                                    data-entry-modal-trigger
+                                    :href="route('admin.access.members.edit', $member)"
+                                    :title="__('access.action.edit_assignments')" />
+                    @endif
                 </td>
             </tr>
         @empty

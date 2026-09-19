@@ -48,7 +48,7 @@
             <x-detail-grid class="grid-cols-2">
                 <x-detail-grid.row :label="__('Nummer')">{{ $mo->number ?? '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('print.field.article')">{{ $mo->article->name ?? '—' }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('print.field.quantity')">{{ $mo?->target_qty }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('print.field.quantity')">{{ $mo?->target_qty?->getNumericValue() }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('print.field.due_at')">{{ optional($mo?->due_at)->fdatetime() }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Kunde')">{{ $mo->customer->name ?? __('print.field.walk_in') }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('print.field.good_total')">{{ $mo?->goodTotal() }}</x-detail-grid.row>

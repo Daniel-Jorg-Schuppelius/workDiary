@@ -23,7 +23,9 @@ use OpenApi\Attributes as OA;
     description: 'REST-API für workDiary. Authentifizierung via Sanctum Bearer Token. '
         . 'Kanonische Basis-URL ist /api/v1; die unversionierten Pfade unter /api bleiben als Kompatibilitäts-Alias '
         . 'erreichbar und tragen die Header Deprecation: true und Sunset (Abschaltdatum). '
-        . 'IDs sind Sqids (kurze alphanumerische Kennungen), Token-Scopes stehen je Operation im security-Block.',
+        . 'IDs sind Sqids (kurze alphanumerische Kennungen), Token-Scopes stehen je Operation im security-Block. '
+        . 'Geldbeträge, Mengen und Prozentsätze in Antworten sind Objekte (Schemas Money, Quantity, Percentage) '
+        . 'mit Dezimalwert als String; nicht gesetzte Werte sind null. Eingaben bleiben Zahlen.',
     contact: new OA\Contact(name: 'workDiary Support', email: 'support@example.org'),
     license: new OA\License(name: 'AGPL-3.0-or-later', url: 'https://www.gnu.org/licenses/agpl-3.0.html'),
 )]

@@ -35,8 +35,8 @@ class ArticleVariantResource extends JsonResource {
             'status' => $this->status->value,
             'is_default' => (bool) $this->is_default,
             'currency' => $this->currency?->value,
-            'purchase_price' => $this->purchase_price?->getAmount(),
-            'sale_price' => $this->sale_price?->getAmount(),
+            'purchase_price' => $this->purchase_price,
+            'sale_price' => $this->sale_price,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];

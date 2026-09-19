@@ -68,7 +68,7 @@ class PricingMarginRuleController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', __('procurement.approval.flash.approved', ['price' => $priceRequest->suggested_price]));
+        return back()->with('success', __('procurement.approval.flash.approved', ['price' => $priceRequest->suggested_price?->format()]));
     }
 
     /** Lehnt einen Preisfreigabe-Antrag mit optionaler Begründung ab. */

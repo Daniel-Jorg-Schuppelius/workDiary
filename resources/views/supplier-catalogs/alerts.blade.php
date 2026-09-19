@@ -76,9 +76,9 @@
                                     {{ $impacts['availability']['old'] ?? '—' }} → {{ $impacts['availability']['new'] ?? '—' }}
                                 </span>
                             @elseif ($alert->new_margin !== null)
-                                <span class="text-error font-medium">{{ rtrim(rtrim($alert->new_margin, '0'), '.') }} %</span>
+                                <span class="text-error font-medium">{{ rtrim(rtrim((string) $alert->new_margin?->getNumericValue(), '0'), '.') }} %</span>
                                 @if ($alert->min_margin !== null)
-                                    <span class="opacity-50 text-xs">(min {{ rtrim(rtrim($alert->min_margin, '0'), '.') }} %)</span>
+                                    <span class="opacity-50 text-xs">(min {{ rtrim(rtrim((string) $alert->min_margin?->getNumericValue(), '0'), '.') }} %)</span>
                                 @endif
                             @else
                                 —

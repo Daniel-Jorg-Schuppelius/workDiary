@@ -81,9 +81,12 @@ final class PurchaseOrderReadApiTest extends TestCase {
         $response->assertJsonPath('data.id', $order->sqid)
             ->assertJsonPath('data.status', 'draft')
             ->assertJsonPath('data.supplier.id', $this->supplier->sqid)
-            ->assertJsonPath('data.lines.0.ordered_qty', '3.0000')
-            ->assertJsonPath('data.lines.0.open_qty', '3.0000')
-            ->assertJsonPath('data.lines.0.unit_price', '12.5000');
+            // Wertobjekte als JSON-Objekte (Entscheid 2026-09-19, OpenAPI-Schemas Quantity/Money).
+            ->assertJsonPath('data.lines.0.ordered_qty.value', '3.0000')
+            ->assertJsonPath('data.lines.0.ordered_qty.scale', 4)
+            ->assertJsonPath('data.lines.0.open_qty.value', '3.0000')
+            ->assertJsonPath('data.lines.0.open_qty.unit', $response->json('data.lines.0.ordered_qty.unit'))
+            ->assertJsonPath('data.lines.0.unit_price', ['amount' => '12.5000', 'currency' => 'EUR']);
         $this->assertNotEmpty($response->json('data.lines.0.article_id'));
     }
 

@@ -85,8 +85,8 @@ class ExpenseApiController extends Controller {
             'category' => $expense->category->label ?? null,
             'status' => $expense->status->value,
             'billable' => (bool) $expense->billable,
-            'amount_net' => (string) $expense->amount_net,
-            'amount_gross' => (string) $expense->amount_gross,
+            'amount_net' => $expense->amount_net,
+            'amount_gross' => $expense->amount_gross,
             'currency' => $expense->currency->value,
         ];
     }

@@ -10,7 +10,8 @@
 
 namespace Tests\Unit\Casts;
 
-use App\Casts\{BicCast, DecimalCast, GermanTaxIdCast, GermanTaxNumberCast, GtinCast, IbanCast, MoneyCast, VatNumberCast};
+use App\Casts\{BicCast, ByteSizeCast, DecimalCast, GermanTaxIdCast, GermanTaxNumberCast, GtinCast, IbanCast, MoneyCast, PercentageCast, QuantityCast, VatNumberCast};
+use App\Exceptions\UnparseableValueObjectException;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\{Bic, Decimal, GermanTaxNumber, Gtin, Iban, Money};
 use Illuminate\Database\Eloquent\Model;
@@ -152,5 +153,41 @@ class ValueObjectCastRoundTripTest extends TestCase {
         $this->assertFalse($cast->compare($model, 'amount', null, '0.00'));
         $this->assertTrue($cast->compare($model, 'amount', 'kein-betrag', 'kein-betrag'), 'Fremdwert nur bei exakter Gleichheit');
         $this->assertFalse($cast->compare($model, 'amount', 'kein-betrag', '0.00'));
+    }
+
+    /**
+     * Wertobjekt-Audit 2026-09-19: Numerische Casts schrieben unlesbaren
+     * Rohtext („19.00 %" vor 2.0, „abc") still in DECIMAL-Spalten. Jetzt lesen
+     * sie die eigene Textform und lehnen Unlesbares beim Schreiben ab.
+     */
+    public function test_numeric_casts_read_own_text_form_and_reject_garbage(): void {
+        $model = $this->model();
+
+        $this->assertSame(['tax_rate' => '19.00'], (new PercentageCast('2'))->set($model, 'tax_rate', '19.00 %', []));
+        $this->assertSame(['quantity' => '2.500'], (new QuantityCast('3'))->set($model, 'quantity', '2.500 Stk', []));
+
+        foreach ([[new PercentageCast('2'), 'tax_rate'], [new QuantityCast('3'), 'quantity'], [new DecimalCast('2'), 'amount'], [new ByteSizeCast, 'size_bytes']] as [$cast, $key]) {
+            try {
+                $cast->set($model, $key, 'abc', []);
+                $this->fail($cast::class . ' hätte „abc" ablehnen müssen.');
+            } catch (UnparseableValueObjectException $e) {
+                $this->assertSame($key, $e->attribute);
+            }
+        }
+    }
+
+    public function test_identifier_casts_keep_passing_invalid_values_through(): void {
+        $this->assertSame(['vat_id' => 'KEINE'], (new VatNumberCast)->set($this->model(), 'vat_id', 'KEINE', []));
+    }
+
+    public function test_money_cast_is_strict_on_write_and_lenient_on_read(): void {
+        $model = $this->model();
+        $cast = new MoneyCast;
+
+        $this->assertSame(['price' => '12.34'], $cast->set($model, 'price', '12.34 EUR', []));
+        $this->assertNull($cast->get($model, 'price', 'kaputt', []), 'Altbestand mit Müll sprengt keine Liste');
+
+        $this->expectException(UnparseableValueObjectException::class);
+        $cast->set($model, 'price', 'zwölf Euro', []);
     }
 }

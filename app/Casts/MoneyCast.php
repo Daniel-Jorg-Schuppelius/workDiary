@@ -10,6 +10,7 @@
 
 namespace App\Casts;
 
+use App\Exceptions\UnparseableValueObjectException;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Contracts\Database\Eloquent\{CastsAttributes, ComparesCastableAttributes};
@@ -49,7 +50,9 @@ class MoneyCast implements CastsAttributes, ComparesCastableAttributes {
             return null;
         }
 
-        return Money::of((string) $value, $this->currency($model, $attributes), $this->scale());
+        // Lesen bleibt nachsichtig (wie ValueObjectCast): ein unlesbarer Altwert
+        // darf keine Liste unrenderbar machen — er ergibt null.
+        return Money::ofNullable((string) $value, $this->currency($model, $attributes), $this->scale());
     }
 
     /**
@@ -61,9 +64,15 @@ class MoneyCast implements CastsAttributes, ComparesCastableAttributes {
             return [$key => null];
         }
 
-        $money = $value instanceof Money
-            ? $value
-            : Money::of((string) $value, $this->currency($model, $attributes), $this->scale());
+        // Schreiben ist streng: Money::of() wirft seit common-toolkit 2.0 bei
+        // unlesbarer Eingabe, statt still 0 zu speichern.
+        try {
+            $money = $value instanceof Money
+                ? $value
+                : Money::of((string) $value, $this->currency($model, $attributes), $this->scale());
+        } catch (\InvalidArgumentException) {
+            throw new UnparseableValueObjectException($key, (string) $value, 'Money');
+        }
 
         return [$key => $money->getAmount()];
     }

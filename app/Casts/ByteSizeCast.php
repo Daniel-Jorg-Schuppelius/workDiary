@@ -29,6 +29,11 @@ class ByteSizeCast extends ValueObjectCast {
         return ctype_digit($raw) ? ByteSize::ofBytes((int) $raw) : null;
     }
 
+    /** Numerisch: Rohtext in einer DECIMAL-Spalte wäre ein stiller Datenfehler. */
+    protected function rejectsUnparseable(): bool {
+        return true;
+    }
+
     protected function toStorage(object $value): string {
         /** @var ByteSize $value */
         return (string) $value->getBytes();

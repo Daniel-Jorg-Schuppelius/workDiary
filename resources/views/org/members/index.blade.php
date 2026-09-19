@@ -72,6 +72,10 @@
                             @endif
                         </td>
                         <td class="text-right">
+                            @php
+                                // Plattform-Admins verwaltet nur ein Plattform-Admin (OrgMemberController::ensureMayManagePlatformAdmin).
+                                $mayManageMember = ! $member->isGlobalAdmin() || (bool) auth()->user()?->isGlobalAdmin();
+                            @endphp
                             <div class="flex justify-end gap-1">
                                 @can('viewAny', [\App\Models\FlexEligibility::class, $member])
                                     <x-icon-btn icon="schedule"
@@ -84,10 +88,12 @@
                                                 :href="route('org.members.personnel-file.index', $member)"
                                                 :label="__('hr.personnel_file.title')" />
                                 @endcan
-                                <x-icon-btn icon="edit"
-                                            data-entry-modal-trigger
-                                            :href="route('org.members.edit', $member)"
-                                            :label="__('Bearbeiten')" />
+                                @if ($mayManageMember)
+                                    <x-icon-btn icon="edit"
+                                                data-entry-modal-trigger
+                                                :href="route('org.members.edit', $member)"
+                                                :label="__('Bearbeiten')" />
+                                @endif
                                 {{-- Support-Impersonation (Rang 64): nur mit user.impersonate;
                                      der Server verlangt zusätzlich eine aktive Supportfreigabe. --}}
                                 @if (Gate::allows(\App\Enums\User\Permission::UserImpersonate->value) && ! session()->has(\App\Http\Controllers\Admin\SupportImpersonationController::SESSION_KEY) && $member->id !== auth()->id())
@@ -97,12 +103,12 @@
                                         <x-icon-btn icon="switch_account" tone="warning" type="submit" :label="__('Als Nutzer anmelden (Support)')" />
                                     </x-action-form>
                                 @endif
-                                @if (($canManageMembers ?? true) && ! $member->isDeactivated() && $member->id !== auth()->id())
+                                @if (($canManageMembers ?? true) && $mayManageMember && ! $member->isDeactivated() && $member->id !== auth()->id())
                                     {{-- Feature 126 (H1/E4): Regelweg Austritt — deaktiviert, Nachweise bleiben. --}}
                                     <x-icon-btn icon="logout" tone="warning" data-entry-modal-trigger
                                                 :href="route('org.members.offboard.dialog', $member)" :label="__('Austritt')" />
                                 @endif
-                                @if ($canManageMembers ?? true)
+                                @if (($canManageMembers ?? true) && $mayManageMember)
                                     <x-action-form :action="route('org.members.destroy', $member)" method="DELETE"
                                           :confirm="__('Mitarbeiter wirklich entfernen? Nur ohne aufbewahrungspflichtige Nachweise möglich — sonst den Austritt nutzen.')"
                                           :confirm-label="__('Entfernen')">

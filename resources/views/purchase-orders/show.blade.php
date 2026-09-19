@@ -112,8 +112,8 @@
                         {{ $line->description }}
                         @if (trim((string) $line->note) !== '')<div class="text-xs opacity-60">{{ $line->note }}</div>@endif
                     </td>
-                    <td class="text-right tabular-nums">{{ $line->ordered_qty }} {{ $line->unit }}</td>
-                    <td class="text-right tabular-nums">{{ $line->received_qty }}</td>
+                    <td class="text-right tabular-nums">{{ $line->ordered_qty?->getNumericValue() }} {{ $line->unit }}</td>
+                    <td class="text-right tabular-nums">{{ $line->received_qty?->getNumericValue() }}</td>
                     @if ($canManage && in_array($status, ['ordered', 'partially_received'], true))
                         <td class="text-right">
                             <form method="POST" action="{{ route('purchase-orders.receive', $order) }}" class="flex flex-wrap items-center justify-end gap-1">

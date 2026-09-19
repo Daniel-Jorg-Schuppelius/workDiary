@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "title": "workDiary REST API",
-        "description": "REST-API für workDiary. Authentifizierung via Sanctum Bearer Token. Kanonische Basis-URL ist /api/v1; die unversionierten Pfade unter /api bleiben als Kompatibilitäts-Alias erreichbar und tragen die Header Deprecation: true und Sunset (Abschaltdatum). IDs sind Sqids (kurze alphanumerische Kennungen), Token-Scopes stehen je Operation im security-Block.",
+        "description": "REST-API für workDiary. Authentifizierung via Sanctum Bearer Token. Kanonische Basis-URL ist /api/v1; die unversionierten Pfade unter /api bleiben als Kompatibilitäts-Alias erreichbar und tragen die Header Deprecation: true und Sunset (Abschaltdatum). IDs sind Sqids (kurze alphanumerische Kennungen), Token-Scopes stehen je Operation im security-Block. Geldbeträge, Mengen und Prozentsätze in Antworten sind Objekte (Schemas Money, Quantity, Percentage) mit Dezimalwert als String; nicht gesetzte Werte sind null. Eingaben bleiben Zahlen.",
         "contact": {
             "name": "workDiary Support",
             "email": "support@example.org"
@@ -5500,6 +5500,74 @@
         }
     },
     "components": {
+        "schemas": {
+            "Money": {
+                "description": "Geldbetrag.",
+                "required": [
+                    "amount",
+                    "currency"
+                ],
+                "properties": {
+                    "amount": {
+                        "description": "JSON-Form der Toolkit-Wertobjekte (jsonSerialize). Die API gibt Beträge,\nMengen und Prozentsätze einheitlich so aus (Entscheid 2026-09-19); nicht\ngesetzte Werte sind null. Dezimalwerte stehen als String, damit keine\nNachkommastelle durch float verloren geht.",
+                        "type": "string",
+                        "pattern": "^-?\\d+(\\.\\d+)?$",
+                        "example": "85.00"
+                    },
+                    "currency": {
+                        "description": "ISO 4217",
+                        "type": "string",
+                        "example": "EUR"
+                    }
+                },
+                "type": "object"
+            },
+            "Quantity": {
+                "description": "Menge mit Einheit.",
+                "required": [
+                    "value",
+                    "scale",
+                    "unit"
+                ],
+                "properties": {
+                    "value": {
+                        "type": "string",
+                        "pattern": "^-?\\d+(\\.\\d+)?$",
+                        "example": "2.500"
+                    },
+                    "scale": {
+                        "description": "Nachkommastellen",
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "unit": {
+                        "type": "string",
+                        "example": "Stk"
+                    }
+                },
+                "type": "object"
+            },
+            "Percentage": {
+                "description": "Prozentsatz (19 % = value \"19.00\").",
+                "required": [
+                    "value",
+                    "scale"
+                ],
+                "properties": {
+                    "value": {
+                        "type": "string",
+                        "pattern": "^-?\\d+(\\.\\d+)?$",
+                        "example": "19.00"
+                    },
+                    "scale": {
+                        "description": "Nachkommastellen",
+                        "type": "integer",
+                        "example": 2
+                    }
+                },
+                "type": "object"
+            }
+        },
         "securitySchemes": {
             "bearerAuth": {
                 "type": "http",

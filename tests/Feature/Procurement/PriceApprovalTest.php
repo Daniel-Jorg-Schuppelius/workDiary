@@ -69,6 +69,15 @@ final class PriceApprovalTest extends TestCase {
         $this->organization->update(['settings' => ['pricing' => ['approval_mode' => 'four_eyes']]]);
     }
 
+    /** Wertobjekt-Audit 2026-09-19: Percentage::__toString trägt „%" selbst — die Liste zeigte „50.000 % %". */
+    public function test_margin_rule_list_shows_plain_percentages(): void {
+        $this->actingAs($this->admin)
+            ->get(route('pricing-margin-rules.index'))
+            ->assertOk()
+            ->assertSee('50 %')
+            ->assertDontSee('% %');
+    }
+
     public function test_direct_mode_applies_immediately(): void {
         $item = $this->linkedItem(); // EK 50, Zielmarge 50 % → VK 100.00
 

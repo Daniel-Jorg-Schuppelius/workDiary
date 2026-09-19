@@ -11,7 +11,7 @@
 @php
     $canManagePayroll = $canManagePayroll ?? false;
     $minWage = app(\App\Services\Payroll\MinimumWageService::class)->currentFor();
-    $wageVal = old('payroll_hourly_wage', $member?->payroll_hourly_wage);
+    $wageVal = old('payroll_hourly_wage', $member?->payroll_hourly_wage?->getAmount());
     $belowMin = $minWage !== null && $wageVal !== null && $wageVal !== '' && (float) $wageVal < $minWage;
     $employmentHint = $member ? app(\App\Services\Payroll\PayrollClassifier::class)->mismatchHint($member) : null;
 @endphp
@@ -32,7 +32,7 @@
          sitzen — sonst verschwände nur das Input, nicht das Label). --}}
     <div x-show="is('pauschal')" x-cloak>
         <x-input-field name="flat_amount" type="number" :label="__('Pauschalbetrag (€)')" step="0.01" min="0"
-                       :value="old('flat_amount', $member?->flat_amount)" :disabled="! $canManagePayroll" />
+                       :value="old('flat_amount', $member?->flat_amount?->getAmount())" :disabled="! $canManagePayroll" />
     </div>
     <div x-show="is('pauschal')" x-cloak>
         <x-select-field name="flat_interval" :label="__('Intervall')" :disabled="! $canManagePayroll">
@@ -46,7 +46,7 @@
     {{-- Nach Zeitaufwand --}}
     <div x-show="is('nach_zeitaufwand')" x-cloak>
         <x-input-field name="compensation_rate" type="number" :label="__('Stundensatz (Vergütung, €)')" step="0.01" min="0"
-                       :value="old('compensation_rate', $member?->compensation_rate)"
+                       :value="old('compensation_rate', $member?->compensation_rate?->getAmount())"
                        x-bind:required="is('nach_zeitaufwand')" :disabled="! $canManagePayroll"
                        :hint="__('Wird auf die erfasste Zeit angewandt (nicht der Kundensatz).')" />
     </div>

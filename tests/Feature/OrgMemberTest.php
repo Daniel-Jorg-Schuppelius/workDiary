@@ -59,6 +59,30 @@ class OrgMemberTest extends TestCase {
             ->assertViewIs('org.members.index');
     }
 
+    /**
+     * UI-Crawl 2026-09-19: Plattform-Admins verwaltet nur ein Plattform-Admin —
+     * Liste und Zugriffsverwaltung boten dem Org-Admin trotzdem Links ins 403.
+     */
+    public function test_org_admin_gets_no_actions_for_platform_admins(): void {
+        $admin = $this->orgAdmin();
+        $member = $this->orgUser();
+        $operator = User::factory()->platformAdmin()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($admin)
+            ->get(route('org.members.index'))
+            ->assertOk()
+            ->assertSee(route('org.members.edit', $member), false)
+            ->assertDontSee(route('org.members.edit', $operator), false)
+            ->assertDontSee(route('org.members.offboard.dialog', $operator), false)
+            ->assertDontSee(route('org.members.destroy', $operator), false);
+
+        $this->actingAs($admin)
+            ->get(route('admin.access.members.index'))
+            ->assertOk()
+            ->assertSee(route('admin.access.members.edit', $member), false)
+            ->assertDontSee(route('admin.access.members.edit', $operator), false);
+    }
+
     public function test_management_can_view_member_list_for_hourly_wage_maintenance(): void {
         $management = $this->management();
         $this->orgUser();

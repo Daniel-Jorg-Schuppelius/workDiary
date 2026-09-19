@@ -147,7 +147,7 @@ final class GaebInvoiceExportService {
         if ($invoice->tax_amount !== null) {
             $shares[] = new GaebInvoiceShare(
                 GaebInvoiceShareType::Vat,
-                (string) __('gaeb.invoice.share_vat', ['rate' => (string) ($invoice->tax_rate ?? '')]),
+                (string) __('gaeb.invoice.share_vat', ['rate' => (string) $invoice->tax_rate?->getNumericValue()]),
                 $invoice->tax_amount,
             );
         }

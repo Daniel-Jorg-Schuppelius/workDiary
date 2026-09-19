@@ -73,6 +73,17 @@ class OpenTimesWorklistTest extends TestCase {
             ->assertSee($entry->user?->name);
     }
 
+    /** UI-Crawl 2026-09-19: Kunde ohne slug geladen → Link zeigte auf /projects/intern/… (404). */
+    public function test_project_link_carries_the_customer_slug(): void {
+        $this->openEntry(['description' => 'Verlinkter Eintrag']);
+
+        $this->actingAs($this->accountant)
+            ->get(route('finance.open-times.index'))
+            ->assertOk()
+            ->assertSee('/projects/' . $this->customer->slug . '/' . $this->project->slug, false)
+            ->assertDontSee('/projects/intern/', false);
+    }
+
     public function test_plain_user_gets_403(): void {
         $plain = User::factory()->user()->create(['organization_id' => $this->organization->id]);
 

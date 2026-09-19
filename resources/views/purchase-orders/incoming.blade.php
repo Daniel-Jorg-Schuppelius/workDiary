@@ -40,8 +40,8 @@
                     <td><a href="{{ route('purchase-orders.show', $line->purchaseOrder) }}" class="link link-hover font-mono">{{ $line->purchaseOrder?->number }}</a></td>
                     <td>{{ $line->purchaseOrder?->supplier?->name }}</td>
                     <td>{{ $line->description }}</td>
-                    <td class="text-right tabular-nums">{{ $line->ordered_qty }} {{ $line->unit }}</td>
-                    <td class="text-right tabular-nums">{{ $line->received_qty }}</td>
+                    <td class="text-right tabular-nums">{{ $line->ordered_qty?->getNumericValue() }} {{ $line->unit }}</td>
+                    <td class="text-right tabular-nums">{{ $line->received_qty?->getNumericValue() }}</td>
                     <td class="text-right tabular-nums font-semibold">{{ $line->openQty() }}</td>
                 </tr>
             @empty

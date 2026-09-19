@@ -1724,9 +1724,9 @@ class NavigationRegistry {
                 if ($isPlatformAdmin) {
                     // Mandantenliste (Cross-Tenant) nur für Plattform-Betreiber.
                     $adminNavItems[] = ['route' => 'admin.organizations.index', 'label' => __('Organisationen'), 'icon' => 'corporate_fare', 'modal' => false];
-                } elseif ($user->organization_id !== null) {
-                    // Org-lokaler Admin: direkter Einstieg in die EIGENE Org.
-                    $adminNavItems[] = ['route' => 'admin.organizations.edit', 'route_params' => [$user->organization_id], 'label' => __('Organisation'), 'icon' => 'corporate_fare', 'modal' => false];
+                } elseif ($user->organization !== null) {
+                    // Org-lokaler Admin: direkter Einstieg in die EIGENE Org (Route bindet per Sqid, nicht per ID).
+                    $adminNavItems[] = ['route' => 'admin.organizations.edit', 'route_params' => [$user->organization->sqid], 'label' => __('Organisation'), 'icon' => 'corporate_fare', 'modal' => false];
                 }
                 $adminNavItems[] = ['route' => 'admin.branding.edit', 'label' => __('Branding'), 'icon' => 'palette', 'modal' => false];
                 // Such-Synonyme (Feature 153): wirken auf die Suche der ganzen Organisation.

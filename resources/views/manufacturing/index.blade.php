@@ -48,7 +48,7 @@
                 <tr>
                     <td><a href="{{ route('manufacturing-orders.show', $order) }}" class="link link-hover font-mono">{{ $order->number ?? '—' }}</a></td>
                     <td>{{ $order->article?->name }}{{ $order->variant ? ' — ' . ($order->variant->name ?? $order->variant->option_signature) : '' }}</td>
-                    <td class="text-right tabular-nums">{{ $order->target_qty }} {{ $order->unit }}</td>
+                    <td class="text-right tabular-nums">{{ $order->target_qty?->getNumericValue() }} {{ $order->unit }}</td>
                     <td><span class="badge badge-sm">{{ $order->status->label() }}</span></td>
                 </tr>
             @endforeach

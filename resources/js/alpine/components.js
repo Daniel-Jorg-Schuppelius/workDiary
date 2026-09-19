@@ -1428,13 +1428,18 @@ export function registerAlpineComponents(Alpine) {
             this.customerRole = d.role || "";
             this.customerEmail = d.email || "";
 
-            const SignaturePadClass = window.SignaturePad;
-            if (!SignaturePadClass) {
-                console.error("[signature-pad] window.SignaturePad fehlt");
-                return;
-            }
+            // signature.js (Lazy-Entry) läuft als Modul erst NACH app.js/Alpine.start(),
+            // in nachgeladenen Dialogen gar nicht — fehlt die Klasse, als eigenen Chunk nachladen.
+            const ready = window.SignaturePad
+                ? Promise.resolve(window.SignaturePad)
+                : import("signature_pad").then((m) => (window.SignaturePad = m.default));
+            ready
+                .then((SignaturePadClass) => this.mount(SignaturePadClass))
+                .catch((e) => console.error("[signature-pad] Laden fehlgeschlagen", e));
+        },
+        mount(SignaturePadClass) {
             const c = this.$refs.canvas;
-            if (!c) {
+            if (!c || this.pad || !this.$el.isConnected) {
                 return;
             }
             this.pad = new SignaturePadClass(c, {

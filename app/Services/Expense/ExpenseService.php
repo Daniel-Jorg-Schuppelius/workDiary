@@ -195,7 +195,8 @@ class ExpenseService {
 
         if (! array_key_exists('tax_rate', $attributes) || $attributes['tax_rate'] === null || $attributes['tax_rate'] === '') {
             if ($category !== null) {
-                $attributes['tax_rate'] = (string) $category->default_tax_rate;
+                // (string) auf dem Percentage ergäbe „19.00 %" — den liest der Cast nicht zurück.
+                $attributes['tax_rate'] = $category->default_tax_rate?->getNumericValue();
             } else {
                 $attributes['tax_rate'] = $existing !== null
                     ? $existing->tax_rate

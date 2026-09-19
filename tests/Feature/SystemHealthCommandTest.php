@@ -10,6 +10,8 @@
 
 namespace Tests\Feature;
 
+use App\Console\Commands\SystemHealthCommand;
+use App\Services\Licensing\LicenseService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -20,6 +22,29 @@ class SystemHealthCommandTest extends TestCase {
         $this->artisan('system:health')
             ->expectsOutputToContain('Alle Checks bestanden.')
             ->assertExitCode(0);
+    }
+
+    /**
+     * UI-Crawl 2026-09-19: Die Komponentenseite ruft runChecks() ohne Konsolen-
+     * Anwendung auf — der Migrationscheck darf dort nicht an callSilently() scheitern.
+     */
+    public function test_migration_check_works_outside_the_console_and_detects_pending_ones(): void {
+        $checks = fn(): array => collect(app(SystemHealthCommand::class)->runChecks(app(LicenseService::class)))
+            ->keyBy(0)->all();
+
+        $this->assertSame([true, 'Keine ausstehenden Migrationen'], array_slice($checks()['Migrationen'], 1));
+
+        $dir = sys_get_temp_dir() . '/health-pending-' . uniqid();
+        mkdir($dir);
+        touch($dir . '/2099_01_01_000000_pending_probe.php');
+        app('migrator')->path($dir);
+
+        try {
+            $this->assertFalse($checks()['Migrationen'][1], 'Ausstehende Migration wird erkannt');
+        } finally {
+            unlink($dir . '/2099_01_01_000000_pending_probe.php');
+            rmdir($dir);
+        }
     }
 
     public function test_system_health_fails_without_app_key(): void {

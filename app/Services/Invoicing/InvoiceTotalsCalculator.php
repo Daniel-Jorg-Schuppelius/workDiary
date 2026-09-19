@@ -152,7 +152,7 @@ class InvoiceTotalsCalculator {
             return $value;
         }
 
-        return $value === null ? Money::zero($currency) : Money::of((string) $value, $currency);
+        return $value === null || $value === '' ? Money::zero($currency) : Money::of((string) $value, $currency);
     }
 
     /** Rohwert (Spaltenstring, Prozentsatz als Zahl) auf Percentage; null bleibt null. */

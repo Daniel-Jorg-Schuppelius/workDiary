@@ -27,11 +27,11 @@ class MaterialUsageResource extends JsonResource {
             'id' => $this->sqid,
             'material_id' => Sqid::encodeOrNull(Material::class, $this->material_id),
             'description' => $this->description,
-            'quantity' => (string) $this->quantity,
+            'quantity' => $this->quantity,
             'unit' => $this->unit,
-            'unit_price' => $this->unit_price?->getAmount(),
-            'tax_rate' => $this->tax_rate?->getNumericValue(),
-            'line_total_net' => $this->line_total_net?->getAmount(),
+            'unit_price' => $this->unit_price,
+            'tax_rate' => $this->tax_rate,
+            'line_total_net' => $this->line_total_net,
             'created_at' => optional($this->created_at)->toIso8601String(),
         ];
     }

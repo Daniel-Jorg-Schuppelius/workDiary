@@ -103,6 +103,19 @@ final class PurchaseOrderGaebExportTest extends TestCase {
         $this->assertSame([], (new GaebSchemaValidator)->validate($result['content']));
     }
 
+    /**
+     * Wertobjekt-Audit 2026-09-19: (string) auf unit_price (Money) ergab
+     * „98.5000 EUR", Money::of() machte daraus still 0 — jede Bestellung ging
+     * mit Nullpreisen raus.
+     */
+    public function test_order_carries_the_real_unit_price_and_quantity(): void {
+        $result = app(GaebOrderExportService::class)->export($this->orderWithLine());
+
+        $this->assertMatchesRegularExpression('/>98\.50?</', $result['content']);
+        $this->assertStringContainsString('<Qty>12</Qty>', $result['content']);
+        $this->assertDoesNotMatchRegularExpression('/<(UP|NetPrice)>0(\.0+)?</', $result['content']);
+    }
+
     /** Die Preisanfrage fragt ohne Preis; erst das Angebot des Händlers nennt einen. */
     public function test_price_inquiry_carries_no_prices(): void {
         $result = app(GaebOrderExportService::class)->export($this->orderWithLine(), GaebPhase::PriceInquiry);

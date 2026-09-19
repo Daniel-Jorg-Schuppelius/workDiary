@@ -50,7 +50,7 @@
                        :value="old('match_key', $rule?->match_criteria ? array_key_first($rule->match_criteria) : '')" />
         <x-input-field name="match_value" type="text" maxlength="64"
                        :label="__('accounting.rules.field.match_value')"
-                       :value="old('match_value', $rule?->match_criteria ? (string) reset($rule->match_criteria) : '')" />
+                       :value="old('match_value', $rule?->match_criteria ? (string) (array_values($rule->match_criteria)[0] ?? '') : '')" />
     </div>
 
     <div class="grid gap-3 sm:grid-cols-3">

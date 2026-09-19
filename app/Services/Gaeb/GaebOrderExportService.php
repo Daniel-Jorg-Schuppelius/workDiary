@@ -92,9 +92,10 @@ final class GaebOrderExportService {
             // bliebe nur der Text, und den liest keine Warenwirtschaft.
             catalogArticleNo: (string) ($line->supplier_sku ?? $line->article_id ?? '—'),
             description: $line->description,
-            quantity: $line->ordered_qty === null ? null : (string) $line->ordered_qty,
+            quantity: $line->ordered_qty?->getNumericValue(),
             unit: $line->unit,
-            price: $price === null ? null : Money::of((string) $price, $currency),
+            // (string) auf Money ergäbe „12.3400 EUR", Money::of() machte daraus still 0.
+            price: $price === null ? null : Money::of($price->getAmount(), $currency),
             deliveryDate: $order->expected_at?->format('Y-m-d'),
             supplierArticleNo: $line->supplier_sku,
         );

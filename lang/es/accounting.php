@@ -770,6 +770,7 @@ return [
         ],
         'error' => [
             'missing_account' => 'Línea :line sin cuenta.',
+            'invalid_amount' => 'Línea :line: el Debe o el Haber no es un importe legible.',
             'unknown_account' => 'La cuenta :account (línea :line) no existe.',
             'both_sides' => 'La línea :line lleva Debe y Haber.',
             'unbalanced' => 'El Debe (:debit) y el Haber (:credit) no coinciden.',

@@ -12,6 +12,8 @@ namespace App\Http\Resources;
 
 use App\Models\{Project, Timesheet};
 use App\Support\Sqid;
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -30,7 +32,8 @@ class TimesheetResource extends JsonResource {
             'customer_email' => $this->customer_email,
             'notes' => $this->notes,
             'total_minutes' => (int) $this->totals_minutes,
-            'total_material_net' => (string) $this->totals_material_net,
+            // Summenspalte ohne Cast (decimal:2) — Währung wie MoneyCast-Fallback.
+            'total_material_net' => Money::of((string) ($this->totals_material_net ?? '0'), CurrencyCode::Euro, 2),
             'signed_at' => optional($this->signed_at)->toIso8601String(),
             'signed_ip' => $this->signed_ip,
             'signature_hash' => $this->signature_hash,

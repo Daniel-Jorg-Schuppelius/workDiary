@@ -51,7 +51,7 @@ class OpenTimesController extends Controller {
         $query = $this->baseQuery($filters);
 
         $entries = (clone $query)
-            ->with(['project.customer:id,name', 'user:id,name'])
+            ->with(['project.customer:id,name,slug', 'user:id,name'])
             ->paginate(50)
             ->withQueryString();
 
@@ -126,7 +126,7 @@ class OpenTimesController extends Controller {
 
         $filters = $this->filters($request);
         $entries = $this->baseQuery($filters)
-            ->with(['project.customer:id,name', 'user:id,name'])
+            ->with(['project.customer:id,name,slug', 'user:id,name'])
             ->get();
 
         $rows = [];
