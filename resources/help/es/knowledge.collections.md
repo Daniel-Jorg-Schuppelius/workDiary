@@ -1,7 +1,7 @@
 ---
 title: "Colecciones"
 topic: knowledge.collections
-version: 5
+version: 6
 audience: []
 related:
     - knowledge.articles
@@ -46,6 +46,10 @@ de ideas y documentos cuelgan encima como pestañas, y las colecciones son su
 modo de gestión. Cada pestaña conserva sus columnas y acciones propias: los
 plazos y la publicación siguen en los documentos, la publicación de artículos
 sigue en la base de conocimiento.
+
+El cambio conserva el filtro: si eliges un cliente y pasas a **Documentos**,
+ves sus documentos. Solo viaja lo que la pestaña puede aplicar: un artículo
+no pertenece a ningún cliente, así que allí la selección se queda fuera.
 
 Marca varios contenidos y pulsa **Añadir** para ponerlos a la vez en una
 colección; lo mismo funciona en los resultados de la **Búsqueda** para notas,

@@ -34,15 +34,35 @@ use Illuminate\Support\Facades\Gate;
  * Kurs, eine Sammlung von Bausteinen ordnet nichts.
  */
 final class CollectableTypes {
-    /** @var array<string, array{class: class-string<Model>, module: string|null, icon: string}> */
+    /**
+     * `list` ist die Typansicht im Wissensbereich (MVP-821): ihre Route und die
+     * Filter, die sie auswertet. `null` für Lerninhalte — sie haben ihre eigene
+     * Sektion und stehen nicht in der Typleiste.
+     *
+     * @var array<string, array{class: class-string<Model>, module: string|null, icon: string, list: array{route: string, filters: list<string>}|null}>
+     */
     public const TYPES = [
-        'note' => ['class' => CommunicationNote::class, 'module' => null, 'icon' => 'sticky_note_2'],
-        'idea_map' => ['class' => IdeaMap::class, 'module' => 'module.ideas', 'icon' => 'emoji_objects'],
-        'knowledge_article' => ['class' => KnowledgeArticle::class, 'module' => 'module.knowledge', 'icon' => 'school'],
-        'document' => ['class' => Document::class, 'module' => 'module.documents', 'icon' => 'description'],
-        'learning_course' => ['class' => LearningCourse::class, 'module' => 'module.lms', 'icon' => 'cast_for_education'],
-        'learning_path' => ['class' => LearningPath::class, 'module' => 'module.lms', 'icon' => 'route'],
+        'note' => ['class' => CommunicationNote::class, 'module' => null, 'icon' => 'sticky_note_2', 'list' => ['route' => 'communication-notes.index', 'filters' => ['q', 'tag', 'customer']]],
+        'idea_map' => ['class' => IdeaMap::class, 'module' => 'module.ideas', 'icon' => 'emoji_objects', 'list' => ['route' => 'ideas.index', 'filters' => []]],
+        'knowledge_article' => ['class' => KnowledgeArticle::class, 'module' => 'module.knowledge', 'icon' => 'school', 'list' => ['route' => 'knowledge.index', 'filters' => ['q', 'tag', 'collection']]],
+        'document' => ['class' => Document::class, 'module' => 'module.documents', 'icon' => 'description', 'list' => ['route' => 'documents.index', 'filters' => ['q', 'tag', 'customer']]],
+        'learning_course' => ['class' => LearningCourse::class, 'module' => 'module.lms', 'icon' => 'cast_for_education', 'list' => null],
+        'learning_path' => ['class' => LearningPath::class, 'module' => 'module.lms', 'icon' => 'route', 'list' => null],
     ];
+
+    /**
+     * Die Achsen, die überall dasselbe bedeuten und deshalb beim Wechsel der
+     * Ansicht erhalten bleiben — der Einstieg kennt sie alle.
+     *
+     * `type` gehört ausdrücklich **nicht** dazu: im Einstieg ist es der
+     * Inhaltstyp, in der Dokumentenliste die Dokumentart. Mitgeschleppt würde
+     * es dort das Falsche filtern und den Einstieg beim Rückweg in einen
+     * Validierungsfehler laufen lassen. Ebenso bleiben Sortierung, Status und
+     * Darstellung bei ihrer Liste.
+     *
+     * @var list<string>
+     */
+    public const SHARED_FILTERS = ['q', 'tag', 'collection', 'customer'];
 
     public function __construct(
         private readonly FeatureFlagResolver $modules,
@@ -81,6 +101,42 @@ final class CollectableTypes {
 
     public function icon(string $key): string {
         return self::TYPES[$key]['icon'] ?? 'article';
+    }
+
+    /** Route der Typansicht — `null`, wo der Typ keine eigene Liste im Wissensbereich hat. */
+    public function listRoute(string $key): ?string {
+        return self::TYPES[$key]['list']['route'] ?? null;
+    }
+
+    /**
+     * Filter, die diese Typansicht auswertet.
+     *
+     * @return list<string>
+     */
+    public function listFilters(string $key): array {
+        return self::TYPES[$key]['list']['filters'] ?? [];
+    }
+
+    /**
+     * Die aktiven Filter auf das eindampfen, was das Ziel auch anwendet. Ein
+     * Filter, den die Zielliste nicht kennt, bliebe sonst in der Adresse
+     * stehen, ohne zu wirken — die Liste zeigte mehr, als ihre Filterleiste
+     * behauptet.
+     *
+     * @param  list<string>  $filters
+     * @param  array<string, mixed>  $query
+     * @return array<string, string>
+     */
+    public function carry(array $filters, array $query): array {
+        $carried = [];
+        foreach ($filters as $name) {
+            $value = $query[$name] ?? null;
+            if (is_string($value) && trim($value) !== '') {
+                $carried[$name] = trim($value);
+            }
+        }
+
+        return $carried;
     }
 
     public function label(string $key): string {

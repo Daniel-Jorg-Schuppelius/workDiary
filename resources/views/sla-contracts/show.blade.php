@@ -25,10 +25,12 @@
     <x-slot:toolbar>
         <x-page-toolbar>
             <x-slot:title>{{ $contract->label }}</x-slot:title>
-            <x-slot:subtitle>
+            {{-- Der Vertragscode steht in Monospace, also Markup: Standard-Slot statt
+                 :subtitle — den setzt die Toolbar zusätzlich als title-Attribut. --}}
+            <span class="text-xs">
                 <span class="font-mono">{{ $contract->code }}</span> ·
                 {{ $contract->customer?->name ?? __('Standard (alle Kunden)') }}
-            </x-slot:subtitle>
+            </span>
             <x-slot:actions>
                 @if ($contract->is_default)
                     <x-status-badge tone="info" size="sm">{{ __('Standard') }}</x-status-badge>

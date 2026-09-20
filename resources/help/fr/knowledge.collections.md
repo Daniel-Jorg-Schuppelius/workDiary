@@ -1,7 +1,7 @@
 ---
 title: "Collections"
 topic: knowledge.collections
-version: 5
+version: 6
 audience: []
 related:
     - knowledge.articles
@@ -46,6 +46,11 @@ connaissances, cartes d'idées, documents) sont désormais des onglets de cette
 page, et les collections en sont le mode de gestion. Chaque onglet garde ses
 colonnes et ses actions : les échéances et la publication restent aux
 documents, la publication des articles reste à la base de connaissances.
+
+Le changement conserve le filtre : choisissez un client, passez aux
+**Documents**, et vous voyez ses documents. Seul ce que l'onglet sait
+appliquer est repris — un article de la base n'appartient à aucun client, la
+sélection y reste donc sans effet.
 
 Cochez plusieurs contenus et cliquez sur **Ajouter** pour les placer d'un coup
 dans une collection — cela fonctionne aussi dans les résultats de la

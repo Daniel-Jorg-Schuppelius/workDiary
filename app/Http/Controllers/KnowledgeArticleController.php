@@ -12,7 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Knowledge\ArticleStatus;
 use App\Enums\User\Permission as P;
-use App\Models\{Asset, ContentCollection, ContentCollectionItem, ContentReference, Customer, DiaryEntry, KnowledgeArticle, Protocol, User};
+use App\Models\{Asset, ContentCollection, ContentCollectionItem, ContentReference, Customer, DiaryEntry, KnowledgeArticle, Protocol, Tag, User};
 use App\Services\Attachments\FileAttacher;
 use App\Services\Collections\ContentCollectionService;
 use App\Services\Knowledge\KnowledgeArticleService;
@@ -54,11 +54,26 @@ class KnowledgeArticleController extends Controller {
         $filters = [
             'q' => trim((string) $request->query('q', '')),
             'collection' => (string) $request->query('collection', ''),
+            // Schlagwort (MVP-821): dieselbe Achse wie im Einstieg, damit der
+            // Wechsel in diese Typansicht den Filter nicht verliert.
+            'tag' => (string) $request->query('tag', ''),
             'status' => (string) $request->query('status', 'all'),
             'sort' => (string) $request->query('sort', 'newest'),
         ];
 
-        $query = KnowledgeArticle::query()->with(['creator', 'tags']);
+        // Einmal formuliert, zweimal gebraucht: für die Liste und für die
+        // Schlagwortauswahl der Filterleiste — sonst verriete sie Stichworte
+        // aus fremden Entwürfen.
+        $visibleToViewer = static function (Builder $articles) use ($canModerate, $user): void {
+            if ($canModerate) {
+                return;
+            }
+            $articles->where(static fn (Builder $w) => $w
+                ->where('status', ArticleStatus::Published->value)
+                ->orWhere('created_by_user_id', $user->id));
+        };
+
+        $query = KnowledgeArticle::query()->with(['creator', 'tags'])->where($visibleToViewer);
 
         if ($canModerate) {
             if (ArticleStatus::tryFrom($filters['status']) !== null) {
@@ -66,10 +81,6 @@ class KnowledgeArticleController extends Controller {
             }
         } else {
             $filters['status'] = 'all';
-            $query->where(function (Builder $q) use ($user): void {
-                $q->where('status', ArticleStatus::Published->value)
-                    ->orWhere('created_by_user_id', $user->id);
-            });
         }
 
         if ($filters['q'] !== '') {
@@ -91,6 +102,13 @@ class KnowledgeArticleController extends Controller {
             $filters['collection'] = '';
         }
 
+        $tagId = Sqid::decode(Tag::class, $filters['tag']);
+        if ($tagId !== null) {
+            $query->whereHas('tags', static fn (Builder $tag) => $tag->whereKey($tagId));
+        } else {
+            $filters['tag'] = '';
+        }
+
         if ($filters['sort'] === 'helpful') {
             $query->orderByDesc('helpful_count')->orderByDesc('created_at');
         } else {
@@ -102,6 +120,7 @@ class KnowledgeArticleController extends Controller {
 
         $hasActiveFilters = $filters['q'] !== ''
             || $filters['collection'] !== ''
+            || $filters['tag'] !== ''
             || $filters['status'] !== 'all'
             || $filters['sort'] !== 'newest';
 
@@ -113,6 +132,10 @@ class KnowledgeArticleController extends Controller {
             'hasActiveFilters' => $hasActiveFilters,
             'canCreate' => Gate::allows('create', KnowledgeArticle::class),
             'canModerate' => $canModerate,
+            'tags' => Tag::query()
+                ->whereHas('knowledgeArticles', $visibleToViewer)
+                ->orderBy('name')
+                ->get(['id', 'name']),
         ]);
     }
 

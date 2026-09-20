@@ -23,6 +23,10 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
  *      danach — dann greift der Scroll nicht oder quetscht Inhalt weg (I10)
  *  V4  Erfolgs-Flash in der View, obwohl layouts.app ihn bereits rendert (I4)
  *  V5  <x-pagination> auf Index-Seiten ohne `standing` (I18)
+ *  V6  Markup im `:subtitle` von <x-page-toolbar>/<x-index-page> — die
+ *      Toolbar gibt den Untertitel zusätzlich als `title`-Attribut aus, wo
+ *      ein Tag den Attributwert aufbräche (MVP-820). Markup gehört in den
+ *      Standard-Slot darunter.
  *
  * Altfälle stehen mit Welle-Verweis in den Allow-Listen; neue Views müssen die
  * Konvention erfüllen.
@@ -108,6 +112,12 @@ class ViewConventionRuleTest extends TestCase {
         'resources/views/whistleblowing/internal/show.blade.php' => 'Welle 4 (I4).',
     ];
 
+    /**
+     * @var array<string, string> V6 — bewusste Ausnahmen brauchen einen Grund,
+     *      warum der Untertitel Markup tragen muss statt des Slots darunter.
+     */
+    private const SUBTITLE_ALLOW = [];
+
     /** @var list<array{0: string, 1: string}> Von→Bis-Namenspaare (Teilstring-Ersetzung) */
     private const RANGE_PAIRS = [
         ['from', 'to'],
@@ -167,11 +177,56 @@ class ViewConventionRuleTest extends TestCase {
                 && ! str_contains($m[0][0], 'standing')) {
                 $violations[] = sprintf('%s:%d  V5 <x-pagination> ohne standing auf einer Index-Seite', $relative, $this->lineOf($source, (int) $m[0][1]));
             }
+
+            // V6 — Untertitel ist Klartext. Blade-Direktiven im Slot sind unkritisch:
+            // sie sind vor dem Rendern aufgelöst, übrig bleibt Text.
+            if (! $this->isAllowListed($relative, self::SUBTITLE_ALLOW)) {
+                foreach ($this->subtitleMarkup($source) as [$offset, $snippet]) {
+                    $violations[] = sprintf(
+                        '%s:%d  V6 Markup im Untertitel (%s) — in den Standard-Slot der Toolbar verschieben',
+                        $relative,
+                        $this->lineOf($source, $offset),
+                        $snippet,
+                    );
+                }
+            }
         }
 
         sort($violations);
 
         $this->assertSame([], $violations, "View-Konvention verletzt (ux-pattern-katalog / Memory-Konventionen):\n\n" . implode("\n", $violations));
+    }
+
+    /**
+     * Stellen, an denen der Untertitel ein Tag trägt — als Slot oder als Attribut.
+     *
+     * @return list<array{0: int, 1: string}> Offset und das erste gefundene Tag
+     */
+    private function subtitleMarkup(string $source): array {
+        $found = [];
+
+        if (preg_match_all('~<x-slot:subtitle>(.*?)</x-slot:subtitle>~s', $source, $slots, PREG_OFFSET_CAPTURE | PREG_SET_ORDER) > 0) {
+            foreach ($slots as $slot) {
+                if (preg_match('~<[a-zA-Z/]~', $slot[1][0], $tag, PREG_OFFSET_CAPTURE) === 1) {
+                    $found[] = [(int) $slot[1][1] + (int) $tag[0][1], $this->tagName($slot[1][0], (int) $tag[0][1])];
+                }
+            }
+        }
+
+        if (preg_match_all('~\bsubtitle="([^"]*)"~', $source, $attrs, PREG_OFFSET_CAPTURE | PREG_SET_ORDER) > 0) {
+            foreach ($attrs as $attr) {
+                if (preg_match('~<[a-zA-Z/]~', $attr[1][0], $tag, PREG_OFFSET_CAPTURE) === 1) {
+                    $found[] = [(int) $attr[1][1] + (int) $tag[0][1], $this->tagName($attr[1][0], (int) $tag[0][1])];
+                }
+            }
+        }
+
+        return $found;
+    }
+
+    /** Der Tag-Name ab $offset, für eine lesbare Fundstelle. */
+    private function tagName(string $haystack, int $offset): string {
+        return preg_match('~<(/?[a-zA-Z][\w:.-]*)~', substr($haystack, $offset, 40), $m) === 1 ? '<' . $m[1] . '>' : '<…>';
     }
 
     /**

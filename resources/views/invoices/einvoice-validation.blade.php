@@ -20,14 +20,12 @@
     <x-slot:toolbar>
         <x-page-toolbar>
             <x-slot:title>{{ $invoice->number }}</x-slot:title>
-            <x-slot:subtitle>
-                @if ($report['valid'] && $report['preflight_errors'] === [])
-                    <x-status-badge tone="success" size="xs">{{ __('Bereit zur Ausstellung') }}</x-status-badge>
-                @else
-                    <x-status-badge tone="error" size="xs">{{ __('Nicht bestanden') }}</x-status-badge>
-                @endif
-            </x-slot:subtitle>
             <x-slot:actions>
+                @if ($report['valid'] && $report['preflight_errors'] === [])
+                    <x-status-badge tone="success" size="sm">{{ __('Bereit zur Ausstellung') }}</x-status-badge>
+                @else
+                    <x-status-badge tone="error" size="sm">{{ __('Nicht bestanden') }}</x-status-badge>
+                @endif
                 <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('invoices.show', $invoice)" show-label>{{ __('Zur Rechnung') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>

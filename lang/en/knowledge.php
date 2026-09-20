@@ -46,6 +46,7 @@ return [
 
     'filter' => [
         'all' => 'All',
+        'all_tags' => 'All tags',
         'search' => 'Search',
         'search_placeholder' => 'Search title, problem or solution',
         'sort' => 'Sort',

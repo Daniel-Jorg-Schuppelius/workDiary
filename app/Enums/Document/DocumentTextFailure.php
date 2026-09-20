@@ -29,6 +29,26 @@ enum DocumentTextFailure: string {
     /** Auslesen selbst ist gescheitert (Toolkit-Fehler, defekte Datei). */
     case Failed = 'failed';
 
+    /**
+     * Kann ein zweiter Versuch etwas ändern? Die Datei kann zurückkehren und
+     * ein fehlendes Werkzeug nachinstalliert werden; Format und leeres
+     * Ergebnis bleiben dagegen, was sie sind.
+     */
+    public function retryable(): bool {
+        return match ($this) {
+            self::VersionMissing, self::Failed => true,
+            self::Unsupported, self::Empty => false,
+        };
+    }
+
+    /** @return list<string> Gründe, die der Nachlauf erneut versucht. */
+    public static function retryableValues(): array {
+        return array_values(array_map(
+            static fn (self $case): string => $case->value,
+            array_filter(self::cases(), static fn (self $case): bool => $case->retryable()),
+        ));
+    }
+
     /** Der KI-Vorschlagsdienst meldet den Grund als Text an die Person. */
     public function aiMessageKey(): string {
         return match ($this) {

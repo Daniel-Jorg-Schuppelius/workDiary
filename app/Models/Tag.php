@@ -140,4 +140,14 @@ class Tag extends Model {
     public function learningCourses(): MorphToMany {
         return $this->morphedByMany(\App\Models\Learning\LearningCourse::class, 'taggable');
     }
+
+    /** @return MorphToMany<Document, $this> */
+    public function documents(): MorphToMany {
+        return $this->morphedByMany(Document::class, 'taggable');
+    }
+
+    /** @return MorphToMany<KnowledgeArticle, $this> */
+    public function knowledgeArticles(): MorphToMany {
+        return $this->morphedByMany(KnowledgeArticle::class, 'taggable');
+    }
 }

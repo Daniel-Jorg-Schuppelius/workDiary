@@ -11,6 +11,11 @@
   als gleichrangige Menüpunkte nebeneinander und zeigten teils denselben
   Bestand — die Sidebar führt jetzt nur noch den Einstieg.
 
+  Der Wechsel nimmt die Filter mit (MVP-821): Wer im Einstieg einen Kunden
+  wählt und auf „Dokumente" geht, sieht dessen Dokumente. Mitgenommen wird
+  je Ziel nur, was es auch auswertet — die Zuordnung steht in
+  CollectableTypes, nicht hier.
+
   Jeder Tab erscheint nur mit Recht UND Modul, wie die Sidebar es prüft.
   Lerninhalte fehlen bewusst: sie haben ihre eigene Sektion und sind im
   Einstieg über den Typfilter erreichbar.
@@ -19,40 +24,51 @@
     $tabsUser = auth()->user();
     $tabsTypes = app(\App\Services\Collections\CollectableTypes::class);
     $tabsAvailable = $tabsUser instanceof \App\Models\User ? $tabsTypes->availableKeys($tabsUser) : [];
+    $tabsQuery = request()->query();
+    $tabsCarry = fn (?string $key): array => $tabsTypes->carry(
+        $key === null ? \App\Services\Collections\CollectableTypes::SHARED_FILTERS : $tabsTypes->listFilters($key),
+        $tabsQuery,
+    );
+    $tabsShows = fn (string $key): bool => in_array($key, $tabsAvailable, true) && $tabsTypes->listRoute($key) !== null;
 @endphp
 
 @if ($tabsAvailable !== [])
     <x-tab-nav data-knowledge-tabs :items="[
         [
             'route' => 'knowledge-hub.index',
+            'params' => $tabsCarry(null),
             'routeIs' => ['knowledge-hub.*', 'collections.*', 'knowledge-imports.*'],
             'icon' => 'hub',
             'label' => __('collections.hub.all_contents'),
         ],
         [
-            'when' => in_array('note', $tabsAvailable, true),
-            'route' => 'communication-notes.index',
+            'when' => $tabsShows('note'),
+            'route' => $tabsTypes->listRoute('note'),
+            'params' => $tabsCarry('note'),
             'routeIs' => 'communication-notes.*',
             'icon' => 'sticky_note_2',
             'label' => __('communication.title.notes'),
         ],
         [
-            'when' => in_array('knowledge_article', $tabsAvailable, true),
-            'route' => 'knowledge.index',
+            'when' => $tabsShows('knowledge_article'),
+            'route' => $tabsTypes->listRoute('knowledge_article'),
+            'params' => $tabsCarry('knowledge_article'),
             'routeIs' => 'knowledge.*',
             'icon' => 'school',
             'label' => __('knowledge.title.index'),
         ],
         [
-            'when' => in_array('idea_map', $tabsAvailable, true),
-            'route' => 'ideas.index',
+            'when' => $tabsShows('idea_map'),
+            'route' => $tabsTypes->listRoute('idea_map'),
+            'params' => $tabsCarry('idea_map'),
             'routeIs' => 'ideas.*',
             'icon' => 'emoji_objects',
             'label' => __('ideas.title.index'),
         ],
         [
-            'when' => in_array('document', $tabsAvailable, true),
-            'route' => 'documents.index',
+            'when' => $tabsShows('document'),
+            'route' => $tabsTypes->listRoute('document'),
+            'params' => $tabsCarry('document'),
             'routeIs' => 'documents.*',
             'icon' => 'folder_open',
             'label' => __('document.title.index'),

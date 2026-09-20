@@ -75,6 +75,17 @@
                 </select>
             </x-filter-field>
 
+            @if ($tags->isNotEmpty())
+                <x-filter-field :label="__('document.field.tags')" for="document-tag" class="min-w-40">
+                    <select id="document-tag" name="tag" class="select select-sm select-bordered w-full" data-autosubmit>
+                        <option value="">{{ __('document.filter.all_tags') }}</option>
+                        @foreach ($tags as $filterTag)
+                            <option value="{{ $filterTag->sqid }}" @selected($filters['tag'] === $filterTag->sqid)>{{ $filterTag->name }}</option>
+                        @endforeach
+                    </select>
+                </x-filter-field>
+            @endif
+
             <x-filter-field :label="__('document.filter.expiring')" for="document-expiring" class="min-w-40">
                 <select id="document-expiring" name="expiring" class="select select-sm select-bordered w-full">
                     <option value="all">{{ __('document.filter.all') }}</option>

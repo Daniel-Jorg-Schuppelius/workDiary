@@ -11,7 +11,7 @@
 namespace Tests\Feature\Document;
 
 use App\Enums\User\Permission as P;
-use App\Models\{Customer, Document, User};
+use App\Models\{Customer, Document, Tag, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -56,6 +56,23 @@ final class DocumentConfidentialityTest extends TestCase {
         $this->actingAs($stranger)
             ->get(route('documents.show', $this->document))
             ->assertForbidden();
+    }
+
+    public function test_tag_choices_do_not_leak_words_from_confidential_documents(): void {
+        $this->document->syncTagNames('gehaltsband');
+        $tag = Tag::query()->where('name', 'gehaltsband')->firstOrFail();
+        $stranger = User::factory()->user()->create(['organization_id' => $this->creator->organization_id]);
+
+        // Der Schlagwortfilter (MVP-821) zeigt nur Wörter sichtbarer Dokumente —
+        // sonst stünde das Stichwort einer vertraulichen Akte in der Auswahl.
+        $this->assertStringNotContainsString(
+            (string) $tag->sqid,
+            (string) $this->actingAs($stranger)->get(route('documents.index'))->assertOk()->getContent(),
+        );
+        $this->assertStringContainsString(
+            '<option value="' . $tag->sqid . '"',
+            (string) $this->actingAs($this->creator)->get(route('documents.index'))->assertOk()->getContent(),
+        );
     }
 
     public function test_creator_still_sees_own_confidential_document(): void {

@@ -19,7 +19,9 @@
 
     Corporate-Design-Standard (Index-Seiten):
       - KEIN `title` (der Seitentitel kommt aus @section('nav-title') im Layout).
-      - `:subtitle` als kurze Beschreibung ist Pflicht.
+      - `:subtitle` als kurze Beschreibung ist Pflicht — reiner Text; Markup
+        gehört in den Standard-Slot darunter (der Untertitel wird zusätzlich
+        als Tooltip gesetzt).
       - Rechte Aktionen via Slot `actions` (z. B. <x-icon-btn icon="add">).
 
     Für Index-Seiten bevorzugt <x-index-page> verwenden, das diese Toolbar
@@ -50,7 +52,11 @@
             </div>
         @endif
         @if ($subtitle)
-            <p class="text-xs text-muted md:truncate" title="{{ $subtitle }}">{{ $subtitle }}</p>
+            {{-- Der Tooltip zeigt denselben Text, wenn die Zeile abgeschnitten wird.
+                 Er muss reiner Text sein: ein Slot mit Markup (Htmlable) landete sonst
+                 roh im Attribut, beendete es am ersten Anführungszeichen und der Rest
+                 erschien sichtbar auf der Seite. --}}
+            <p class="text-xs text-muted md:truncate" title="{{ trim(strip_tags((string) $subtitle)) }}">{{ $subtitle }}</p>
         @endif
         @if (trim($slot) !== '')
             <div class="text-sm text-base-content/70">{{ $slot }}</div>

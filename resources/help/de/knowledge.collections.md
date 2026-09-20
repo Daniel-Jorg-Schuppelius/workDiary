@@ -1,7 +1,7 @@
 ---
 title: "Sammlungen"
 topic: knowledge.collections
-version: 5
+version: 6
 audience: []
 related:
     - knowledge.articles
@@ -45,6 +45,11 @@ Ideenlandkarten und Dokumente hängen als Reiter darüber, die Sammlungen sind
 der Verwaltungsmodus. Jeder Reiter behält seine eigenen Spalten und Aktionen —
 Fristen und Freigabe stehen also weiter bei den Dokumenten, die Freigabe von
 Artikeln weiter im Wissensarchiv.
+
+Der Wechsel nimmt den Filter mit: Wer einen Kunden gewählt hat und auf
+**Dokumente** geht, sieht dessen Dokumente. Übernommen wird, was der Reiter
+auch auswerten kann — ein Wissensartikel gehört keinem Kunden, dort bleibt
+die Auswahl also außen vor.
 
 Mehrere Inhalte markieren und **Hinzufügen** legt sie auf einmal in eine
 Sammlung — das geht genauso in der Trefferliste der **Suche** für Notizen,

@@ -25,9 +25,11 @@
     <x-slot:toolbar>
         <x-page-toolbar>
             <x-slot:title>{{ $protocol->title }}</x-slot:title>
-            <x-slot:subtitle>
+            {{-- Der Glossarbegriff ist Markup und gehört deshalb in den Standard-Slot,
+                 nicht in :subtitle — den setzt die Toolbar zusätzlich als title-Attribut. --}}
+            <span class="text-xs">
                 <x-term :glossary="$protocol->type === \App\Enums\Protocol\ProtocolType::Acceptance ? 'abnahme' : null">{{ $protocol->type->label() }}</x-term> · {{ \App\Support\EntityType::label($protocol->subject_type) }}@if ($subjectLabel !== null): {{ $subjectLabel }}@endif
-            </x-slot:subtitle>
+            </span>
             <x-slot:actions>
                 <x-status-badge size="sm">{{ $protocol->status->label() }}</x-status-badge>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm" :href="route('protocols.pdf', $protocol)" show-label>{{ __('PDF') }}</x-icon-btn>

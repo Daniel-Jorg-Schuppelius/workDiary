@@ -47,6 +47,7 @@ return [
     'filter' => [
         'all' => 'Tutti',
         'all_customers' => 'Tutti i clienti',
+        'all_tags' => 'Tutti i tag',
         'search' => 'Ricerca',
         'search_placeholder' => 'Cerca nei titoli',
         'expiring' => 'Scade',

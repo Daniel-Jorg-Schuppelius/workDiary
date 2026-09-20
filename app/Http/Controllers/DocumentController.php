@@ -11,7 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
-use App\Models\{Asset, Customer, DiaryEntry, Document, DocumentVersion, Project, User};
+use App\Models\{Asset, Customer, DiaryEntry, Document, DocumentVersion, Project, Tag, User};
 use App\Services\Attachments\FileAttacher;
 use App\Services\Content\ContentSubjectResolver;
 use App\Services\Document\DocumentService;
@@ -61,6 +61,9 @@ class DocumentController extends Controller {
             // Kundenfilter über die volle Trägerkette (MVP-818): Kunde, seine
             // Projekte, Aufträge, Anlagen und Entsorgungsaufträge.
             'customer' => (string) $request->query('customer', ''),
+            // Schlagwort (MVP-821): dieselbe Achse wie im Einstieg, damit der
+            // Wechsel in diese Typansicht den Filter nicht verliert.
+            'tag' => (string) $request->query('tag', ''),
             'expiring' => (string) $request->query('expiring', 'all'),
         ];
 
@@ -91,6 +94,12 @@ class DocumentController extends Controller {
         } else {
             $filters['customer'] = '';
         }
+        $tagId = Sqid::decode(Tag::class, $filters['tag']);
+        if ($tagId !== null) {
+            $query->whereHas('tags', static fn (Builder $tag) => $tag->whereKey($tagId));
+        } else {
+            $filters['tag'] = '';
+        }
         if (in_array($filters['expiring'], ['30', '60', '90'], true)) {
             $query->expiringWithin((int) $filters['expiring']);
         }
@@ -102,6 +111,7 @@ class DocumentController extends Controller {
             || $filters['status'] !== 'all'
             || $filters['ref'] !== 'all'
             || $filters['customer'] !== ''
+            || $filters['tag'] !== ''
             || $filters['expiring'] !== 'all';
 
         return view('documents.index', [
@@ -110,6 +120,12 @@ class DocumentController extends Controller {
             'hasActiveFilters' => $hasActiveFilters,
             'canCreate' => Gate::allows('create', Document::class),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
+            // Nur Schlagwörter an sichtbaren Dokumenten — sonst verriete die
+            // Auswahl Stichworte aus vertraulichen Dokumenten.
+            'tags' => Tag::query()
+                ->whereHas('documents', static fn (Builder $document) => $document->visibleTo($viewer))
+                ->orderBy('name')
+                ->get(['id', 'name']),
         ]);
     }
 

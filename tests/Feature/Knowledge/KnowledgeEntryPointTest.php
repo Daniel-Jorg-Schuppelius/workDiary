@@ -11,7 +11,8 @@
 namespace Tests\Feature\Knowledge;
 
 use App\Enums\User\Permission;
-use App\Models\{SafetyEvent, User};
+use App\Models\{Customer, SafetyEvent, User};
+use App\Services\Collections\ContentCollectionService;
 use App\Services\Licensing\FeatureFlagResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};
@@ -71,6 +72,48 @@ final class KnowledgeEntryPointTest extends TestCase {
                 );
             }
         }
+    }
+
+    public function test_the_type_bar_carries_shared_filters_into_the_type_view(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+
+        $html = (string) $this->actingAs($this->admin)
+            ->get(route('knowledge-hub.index', ['customer' => $customer->sqid]))
+            ->assertOk()
+            ->getContent();
+
+        // „Alle Dokumente dieses Kunden" ist damit ein Klick statt eines zweiten Filtervorgangs.
+        $this->assertStringContainsString('href="' . e(route('documents.index', ['customer' => $customer->sqid])) . '"', $html);
+        $this->assertStringContainsString('href="' . e(route('communication-notes.index', ['customer' => $customer->sqid])) . '"', $html);
+        // Ein Wissensartikel gehört keinem Kunden — dort bliebe der Filter wirkungslos.
+        $this->assertStringContainsString('href="' . route('knowledge.index') . '"', $html);
+    }
+
+    public function test_filters_only_travel_where_they_mean_the_same(): void {
+        $collection = app(ContentCollectionService::class)->create($this->organization, $this->admin, ['title' => 'Handbücher']);
+
+        $html = (string) $this->actingAs($this->admin)
+            ->get(route('knowledge-hub.index', ['type' => 'document', 'collection' => $collection->sqid]))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('href="' . e(route('knowledge.index', ['collection' => $collection->sqid])) . '"', $html);
+        // Die Dokumentenliste kennt weder die Sammlung noch denselben `type`:
+        // dort ist es die Dokumentart, im Einstieg der Inhaltstyp. Mitgenommen
+        // würde er das Falsche filtern.
+        $this->assertStringContainsString('href="' . route('documents.index') . '"', $html);
+    }
+
+    public function test_the_entry_point_tab_carries_the_filter_back(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+
+        $html = (string) $this->actingAs($this->admin)
+            ->get(route('documents.index', ['customer' => $customer->sqid]))
+            ->assertOk()
+            ->getContent();
+
+        // Auch der Rückweg hält den Filter — sonst begänne die Suche von vorn.
+        $this->assertStringContainsString('href="' . e(route('knowledge-hub.index', ['customer' => $customer->sqid])) . '"', $html);
     }
 
     public function test_a_type_without_module_leaves_the_bar(): void {

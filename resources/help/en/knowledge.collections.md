@@ -1,7 +1,7 @@
 ---
 title: "Collections"
 topic: knowledge.collections
-version: 5
+version: 6
 audience: []
 related:
     - knowledge.articles
@@ -45,6 +45,11 @@ the top — title, kind and customer — and the tag badges narrow further.
 and documents hang above it as tabs, and collections are its management mode.
 Every tab keeps its own columns and actions — deadlines and release stay with
 the documents, article publishing stays in the knowledge base.
+
+Switching keeps the filter: pick a customer and go to **Documents**, and you
+see that customer's documents. Only what the tab can actually apply travels
+along — a knowledge article belongs to no customer, so the choice stays
+behind there.
 
 Select several items and use **Add** to put them into a collection at once —
 this also works in the **Search** results for notes, knowledge articles and

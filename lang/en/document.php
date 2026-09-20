@@ -47,6 +47,7 @@ return [
     'filter' => [
         'all' => 'All',
         'all_customers' => 'All customers',
+        'all_tags' => 'All tags',
         'search' => 'Search',
         'search_placeholder' => 'Search titles',
         'expiring' => 'Expiring',

@@ -11,7 +11,7 @@
 namespace Tests\Feature\Knowledge;
 
 use App\Enums\Knowledge\ArticleStatus;
-use App\Models\{KnowledgeArticle, User};
+use App\Models\{KnowledgeArticle, Tag, User};
 use App\Services\Collections\ContentCollectionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -221,6 +221,39 @@ class KnowledgeArticleTest extends TestCase {
         $this->assertSame(1, $article->helpful_count);
         $this->assertSame(1, $article->not_helpful_count);
         $this->assertSame(2, $article->feedback()->count());
+    }
+
+    public function test_index_filters_by_tag_and_keeps_words_of_foreign_drafts_out(): void {
+        $author = User::factory()->admin()->create();
+        app()->instance('currentOrganization', $author->organization);
+
+        KnowledgeArticle::factory()->published()->create([
+            'title' => 'VPN-Verbindung bricht ab',
+            'created_by_user_id' => $author->id,
+        ])->syncTagNames('netzwerk');
+        KnowledgeArticle::factory()->published()->create([
+            'title' => 'Papierstau am Drucker',
+            'created_by_user_id' => $author->id,
+        ]);
+        KnowledgeArticle::factory()->create([
+            'title' => 'Entwurf Standortwechsel',
+            'created_by_user_id' => $author->id,
+        ])->syncTagNames('umzugsplanung');
+
+        $reader = User::factory()->user()->create(['organization_id' => $author->organization_id]);
+
+        // Der Entwurf eines anderen bleibt draußen — mit ihm sein Stichwort,
+        // das sonst in der Filterauswahl stünde.
+        $html = (string) $this->actingAs($reader)->get(route('knowledge.index'))->assertOk()->getContent();
+        $this->assertStringNotContainsString('umzugsplanung', $html);
+        $this->assertStringContainsString('netzwerk', $html);
+
+        $tag = Tag::query()->where('name', 'netzwerk')->firstOrFail();
+        $this->actingAs($reader)
+            ->get(route('knowledge.index', ['tag' => $tag->sqid]))
+            ->assertOk()
+            ->assertSee('VPN-Verbindung bricht ab')
+            ->assertDontSee('Papierstau am Drucker');
     }
 
     public function test_index_search_and_collection_filter(): void {

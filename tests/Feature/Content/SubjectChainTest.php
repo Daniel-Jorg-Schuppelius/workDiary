@@ -128,6 +128,37 @@ final class SubjectChainTest extends TestCase {
             ->assertDontSee('Heizung entlüften');
     }
 
+    public function test_document_page_renders_the_chain_without_breaking_markup(): void {
+        $asset = \App\Models\Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+            'name' => 'ZR-DB-SRV01A',
+        ]);
+        $document = $this->document('Bedienungsanleitung', $asset);
+
+        $html = (string) $this->actingAs($this->admin)
+            ->get(route('documents.show', $document))
+            ->assertOk()
+            ->getContent();
+
+        // Die Kette stand zunächst im :subtitle, den die Toolbar zusätzlich als
+        // title-Attribut setzt: das Markup beendete das Attribut am ersten
+        // Anführungszeichen, `">` wurde sichtbar und der Kopf erschien doppelt.
+        $this->assertSame(
+            0,
+            preg_match('/title="[^"]*</', $html),
+            'Kein Markup in einem title-Attribut — sonst bricht das Attribut auf.',
+        );
+        // Sichtbarer Text zwischen den Tags; das zusätzliche aria-label der
+        // Kette (Typ + Name) ist gewollt und zählt hier nicht mit.
+        $this->assertSame(
+            1,
+            substr_count($html, '>ZR-DB-SRV01A<'),
+            'Der Bezug steht genau einmal sichtbar im Kopf, nicht doppelt.',
+        );
+        $this->assertStringContainsString('Müller Haustechnik', $html);
+    }
+
     public function test_resolver_walks_from_document_to_customer(): void {
         $entry = $this->diaryEntry('Heizungstausch');
         $entry->project()->associate($this->project('Dachsanierung'))->save();

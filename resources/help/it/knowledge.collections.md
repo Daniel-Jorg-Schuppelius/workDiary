@@ -1,7 +1,7 @@
 ---
 title: "Raccolte"
 topic: knowledge.collections
-version: 5
+version: 6
 audience: []
 related:
     - knowledge.articles
@@ -46,6 +46,10 @@ ulteriormente; si filtra anche per cliente.
 documenti sono schede di questa pagina e le raccolte ne sono la modalità di
 gestione. Ogni scheda mantiene colonne e azioni proprie: scadenze e rilascio
 restano ai documenti, la pubblicazione degli articoli alla knowledge base.
+
+Il passaggio mantiene il filtro: scegli un cliente e vai su **Documenti** per
+vedere i suoi documenti. Viene portato solo ciò che la scheda sa applicare —
+un articolo non appartiene a nessun cliente, quindi lì la scelta resta fuori.
 
 Seleziona più contenuti e usa **Aggiungi** per metterli insieme in una raccolta;
 lo stesso vale nei risultati della **Ricerca** per note, articoli e corsi.

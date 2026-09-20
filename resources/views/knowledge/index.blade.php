@@ -48,6 +48,17 @@
                 </x-filter-field>
             @endif
 
+            @if ($tags->isNotEmpty())
+                <x-filter-field :label="__('knowledge.field.tags')" for="knowledge-tag" class="min-w-40">
+                    <select id="knowledge-tag" name="tag" class="select select-sm select-bordered w-full" data-autosubmit>
+                        <option value="">{{ __('knowledge.filter.all_tags') }}</option>
+                        @foreach ($tags as $filterTag)
+                            <option value="{{ $filterTag->sqid }}" @selected($filters['tag'] === $filterTag->sqid)>{{ $filterTag->name }}</option>
+                        @endforeach
+                    </select>
+                </x-filter-field>
+            @endif
+
             @if ($canModerate)
                 <x-filter-field :label="__('knowledge.field.status')" for="knowledge-status" class="min-w-40">
                     <select id="knowledge-status" name="status" class="select select-sm select-bordered w-full">

@@ -22,16 +22,14 @@
     <x-slot:toolbar>
         <x-page-toolbar>
             <x-slot:title>{{ $document->title }}</x-slot:title>
-            <x-slot:subtitle>
-                {{-- Bezug als verlinkte Kette (MVP-818): vom Dokument zum Kunden, nicht nur der Trägername. --}}
-                <span class="inline-flex flex-wrap items-center gap-1">
-                    {{ $document->document_type->label() }}
-                    @unless (app(\App\Services\Content\ContentSubjectResolver::class)->resolve($document)->isEmpty())
-                        <span class="text-muted" aria-hidden="true">·</span>
-                        <x-subject-link :for="$document" />
-                    @endunless
-                </span>
-            </x-slot:subtitle>
+            <x-slot:subtitle>{{ $document->document_type->label() }}</x-slot:subtitle>
+            {{-- Bezug als verlinkte Kette (MVP-818): vom Dokument zum Kunden, nicht nur
+                 der Trägername. Gehört in den Standard-Slot, nicht in :subtitle — den
+                 setzt die Toolbar zusätzlich als title-Attribut, wo Markup das Attribut
+                 aufbräche. --}}
+            @unless (app(\App\Services\Content\ContentSubjectResolver::class)->resolve($document)->isEmpty())
+                <x-subject-link :for="$document" class="text-xs" />
+            @endunless
             <x-slot:actions>
                 <x-status-badge size="sm" :tone="$document->effectiveStatus()->tone()">{{ $document->effectiveStatus()->label() }}</x-status-badge>
                 <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('documents.index')" show-label>{{ __('Zur Übersicht') }}</x-icon-btn>
