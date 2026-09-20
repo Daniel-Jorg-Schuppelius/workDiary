@@ -58,6 +58,8 @@ return [
         'parent' => 'Colección superior',
         'no_parent' => '— nivel superior —',
         'visibility' => 'Visibilidad',
+        'subject' => 'Referencia',
+        'customer' => 'Cliente',
         'collection' => 'Colección',
     ],
     'flash' => [
@@ -119,6 +121,7 @@ return [
         'subtitle' => 'Notas, mapas de ideas, artículos de conocimiento, documentos y contenidos de aprendizaje en un solo lugar, ordenados por colecciones y etiquetas.',
         'search' => 'Buscar en títulos …',
         'all_types' => 'Todos los tipos',
+        'all_customers' => 'Todos los clientes',
         'all_contents' => 'Todos los contenidos',
         'view_list' => 'Lista',
         'view_tiles' => 'Mosaico',

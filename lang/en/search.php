@@ -28,6 +28,7 @@ return [
         'knowledge_article' => 'Knowledge article',
         'remote_session' => 'Remote session (unassigned)',
         'learning_course' => 'Learning course',
+        'document' => 'Document',
     ],
 
     'field' => [

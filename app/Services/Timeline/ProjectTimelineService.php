@@ -32,7 +32,7 @@ class ProjectTimelineService {
         $items = array_merge(
             $this->entryItems($project),
             $this->milestoneItems($project),
-            $this->documentItems($project),
+            $this->documentItems($project, $viewer),
             $this->communicationItems($project, $viewer),
             $this->ticketItems($project),
         );
@@ -108,9 +108,10 @@ class ProjectTimelineService {
     }
 
     /** @return list<TimelineItem> */
-    private function documentItems(Project $project): array {
+    private function documentItems(Project $project, User $viewer): array {
         $items = [];
         $documents = Document::query()
+            ->visibleTo($viewer)
             ->where('documentable_type', $project->getMorphClass())
             ->where('documentable_id', $project->id)
             ->orderByDesc('created_at')

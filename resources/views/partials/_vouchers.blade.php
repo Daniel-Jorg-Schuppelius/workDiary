@@ -2,12 +2,19 @@
   Created on   : Mon Jun 29 2026
   Author       : Daniel Jörg Schuppelius
   Author Uri   : https://schuppelius.org
-  Filename     : _documents.blade.php
+  Filename     : _vouchers.blade.php
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{--
-    Kombinierte Beleg-/Rechnungssicht eines Kontakts (Kunde ODER Lieferant):
+    Kombinierte Beleg-/Rechnungssicht eines Kontakts (Kunde ODER Lieferant).
+
+    Hieß bis MVP-820 `_documents` und stand damit in der Akte neben dem
+    Dokumente-Panel — zwei Karten, die nach demselben aussahen. Die Begriffe
+    sind seither getrennt: **Beleg** ist Buchhaltung (hier), **Dokument** ist
+    die verwaltete, versionierte Datei (`documents/_panel`), **Anhang** die
+    lose Datei am Vorgang (`attachments._panel`).
+
     lokale Rechnungen (App\Models\Invoice) UND Lexoffice-Belege
     (Rechnungen/Angebote/Aufträge/Lieferscheine …) in einer Tabelle, nach Typ
     gruppiert und auf den globalen Header-Zeitraum eingegrenzt.

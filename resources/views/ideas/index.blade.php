@@ -26,6 +26,8 @@
         @endcan
     </x-slot:actions>
 
+    <x-knowledge-tabs />
+
     @error('file')
         <div class="alert alert-error mb-4" role="alert">
             <x-icon name="error" />

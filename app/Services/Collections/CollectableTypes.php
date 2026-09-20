@@ -17,6 +17,7 @@ use App\Enums\User\Permission;
 use App\Models\{CommunicationNote, Document, IdeaMap, KnowledgeArticle, User};
 use App\Models\Concerns\HasTags;
 use App\Models\Learning\{LearningCourse, LearningPath};
+use App\Services\Content\ContentSubjectResolver;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Support\Sqid;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -43,7 +44,10 @@ final class CollectableTypes {
         'learning_path' => ['class' => LearningPath::class, 'module' => 'module.lms', 'icon' => 'route'],
     ];
 
-    public function __construct(private readonly FeatureFlagResolver $modules) {}
+    public function __construct(
+        private readonly FeatureFlagResolver $modules,
+        private readonly ContentSubjectResolver $subjects,
+    ) {}
 
     /** @return list<string> */
     public function keys(): array {
@@ -133,8 +137,14 @@ final class CollectableTypes {
         }
 
         $query = $this->scopedQuery($key, $user);
+        if ($query === null) {
+            return [];
+        }
+        // Bezugskette gleich mitladen (MVP-818) — die Listen zeigen sie, und
+        // ohne das liefe jede Zeile in eine eigene Abfrage.
+        $query->with($this->subjects->eagerLoad($query->getModel()::class));
 
-        return $query === null ? [] : $this->authorized($key, $user, $query->whereKey($ids)->get()->all());
+        return $this->authorized($key, $user, $query->whereKey($ids)->get()->all());
     }
 
     /**

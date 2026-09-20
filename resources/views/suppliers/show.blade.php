@@ -139,7 +139,7 @@
 
     {{-- Rechnungen & Belege (Eingangsrechnungen/Aufträge/Angebote …), zeitraumgefiltert.
          Lieferanten haben keine lokalen Rechnungen → nur Lexoffice-Belege. --}}
-    @include('partials._documents', [
+    @include('partials._vouchers', [
         'invoices' => collect(),
         'vouchers' => $lexofficeVoucherCache,
         'plugin' => $lexofficePlugin,

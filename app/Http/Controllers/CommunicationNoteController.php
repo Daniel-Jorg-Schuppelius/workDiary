@@ -15,8 +15,7 @@ use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesCurrentOrganization
 use App\Models\{CommunicationNote, Customer, DiaryEntry, Organization, Project, Tag, User};
 use App\Services\Communication\CommunicationNoteService;
 use App\Services\Ideas\NodeConversionService;
-use App\Services\Search\SearchResultLinker;
-use App\Support\{Sqid, Tz};
+use App\Support\{EntityUrl, Sqid, Tz};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -59,7 +58,7 @@ class CommunicationNoteController extends Controller {
     ) {}
 
     /** Zentrale Notizliste (Feature 154): alle für den Nutzer sichtbaren Notizen der Organisation. */
-    public function index(Request $request, SearchResultLinker $linker): View {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', CommunicationNote::class);
 
         /** @var User $user */
@@ -112,7 +111,7 @@ class CommunicationNoteController extends Controller {
                 ->orderBy('name')
                 ->get(['id', 'name']),
             'contextUrls' => $notes->getCollection()->mapWithKeys(static fn(CommunicationNote $note): array => [
-                $note->id => $note->isOrganizationNote() ? null : $linker->subjectUrl($note->notable_type, (int) $note->notable_id),
+                $note->id => $note->isOrganizationNote() ? null : EntityUrl::byType($note->notable_type, (int) $note->notable_id),
             ])->all(),
             'filters' => [
                 'q' => $search,
@@ -128,7 +127,7 @@ class CommunicationNoteController extends Controller {
         ]);
     }
 
-    public function show(CommunicationNote $note, SearchResultLinker $linker): View {
+    public function show(CommunicationNote $note): View {
         Gate::authorize('view', $note);
         $this->guardPrivate($note);
 
@@ -138,7 +137,7 @@ class CommunicationNoteController extends Controller {
 
         return view('communication-notes._show_dialog', [
             'note' => $note->load(['notable', 'creator:id,name', 'participants', 'nextActionUser:id,name', 'nextActionCompletedBy:id,name']),
-            'contextUrl' => $note->isOrganizationNote() ? null : $linker->subjectUrl($note->notable_type, (int) $note->notable_id),
+            'contextUrl' => $note->isOrganizationNote() ? null : EntityUrl::byType($note->notable_type, (int) $note->notable_id),
         ]);
     }
 

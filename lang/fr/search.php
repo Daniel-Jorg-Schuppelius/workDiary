@@ -28,6 +28,7 @@ return [
         'knowledge_article' => 'Article de connaissances',
         'remote_session' => 'Télémaintenance (non attribuée)',
         'learning_course' => 'Cours d’apprentissage',
+        'document' => 'Document',
     ],
 
     'field' => [

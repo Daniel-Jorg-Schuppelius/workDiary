@@ -11,7 +11,7 @@
 namespace Tests\Feature\Document;
 
 use App\Enums\User\Permission as P;
-use App\Models\{Document, User};
+use App\Models\{Customer, Document, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -86,5 +86,36 @@ final class DocumentConfidentialityTest extends TestCase {
             'auditable_type' => Document::class,
             'auditable_id' => $this->document->id,
         ]);
+    }
+
+    /**
+     * MVP-817: Das Dokumente-Panel der Detailseiten baute seine Abfrage ohne
+     * visibleTo() — ein vertrauliches Dokument Dritter leckte dort Titel, Typ,
+     * Status und Version, obwohl Datei und Versionsdialog 403 gaben.
+     */
+    public function test_panel_of_a_carrier_hides_confidential_documents_of_others(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->creator->organization_id]);
+
+        $this->actingAs($this->creator)->post(route('documents.store'), [
+            'title' => 'Abfindung Vertraulich',
+            'document_type' => \App\Enums\Document\DocumentType::Other->value,
+            'confidential' => 1,
+            'documentable_kind' => 'customer',
+            'documentable_id' => \App\Support\Sqid::encode(Customer::class, (int) $customer->id),
+            'file' => UploadedFile::fake()->create('abfindung.pdf', 40, 'application/pdf'),
+        ])->assertRedirect();
+
+        $stranger = User::factory()->user()->create(['organization_id' => $this->creator->organization_id]);
+
+        $this->actingAs($stranger)
+            ->get(route('customers.show', $customer))
+            ->assertOk()
+            ->assertDontSee('Abfindung Vertraulich');
+
+        // Der Erfasser sieht sein eigenes vertrauliches Dokument in der Akte weiter.
+        $this->actingAs($this->creator)
+            ->get(route('customers.show', $customer))
+            ->assertOk()
+            ->assertSee('Abfindung Vertraulich');
     }
 }

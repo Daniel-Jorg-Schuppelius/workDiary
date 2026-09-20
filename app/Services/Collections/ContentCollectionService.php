@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Collections;
 
 use App\Models\{ContentCollection, ContentCollectionItem, Organization, User};
+use App\Services\Content\ContentSubjectResolver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -22,7 +23,10 @@ use Illuminate\Validation\ValidationException;
  * Inhalte einer Sammlung so ausgeben, wie die Person sie sehen darf.
  */
 class ContentCollectionService {
-    public function __construct(private readonly CollectableTypes $types) {}
+    public function __construct(
+        private readonly CollectableTypes $types,
+        private readonly ContentSubjectResolver $subjects,
+    ) {}
 
     /**
      * @param  array{title: string, description?: string|null, parent_id?: int|null, visibility?: string|null}  $attributes
@@ -170,7 +174,7 @@ class ContentCollectionService {
      * Inhalte der Sammlung, soweit die Person sie sehen darf. Verborgene
      * Einträge fallen still weg — auch ihre Anzahl wird nicht verraten.
      *
-     * @return list<array{entry: ContentCollectionItem, model: Model, type: string, title: string, url: string, icon: string, label: string}>
+     * @return list<array{entry: ContentCollectionItem, model: Model, type: string, title: string, url: string, icon: string, label: string, subject: \App\Services\Content\ContentSubject}>
      */
     public function visibleItems(ContentCollection $collection, User $viewer): array {
         $entries = $collection->items()->with('adder:id,name')->orderBy('position')->get();
@@ -205,6 +209,7 @@ class ContentCollectionService {
                 'url' => $this->types->url($model),
                 'icon' => $this->types->icon($key),
                 'label' => $this->types->label($key),
+                'subject' => $this->subjects->resolve($model),
             ];
         }
 

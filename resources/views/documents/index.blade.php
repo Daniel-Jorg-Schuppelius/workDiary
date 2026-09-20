@@ -25,7 +25,7 @@
             @endif
         </x-slot:actions>
 
-        @include('documents._tabs')
+        <x-knowledge-tabs />
 
         <x-filter-bar :action="route('documents.index')"
                       :reset="$hasActiveFilters ? route('documents.index') : null">
@@ -66,6 +66,15 @@
                 </select>
             </x-filter-field>
 
+            <x-filter-field :label="__('document.ref.customer')" for="document-customer" class="min-w-44">
+                <select id="document-customer" name="customer" class="select select-sm select-bordered w-full" data-autosubmit>
+                    <option value="">{{ __('document.filter.all_customers') }}</option>
+                    @foreach ($customers as $filterCustomer)
+                        <option value="{{ $filterCustomer->sqid }}" @selected($filters['customer'] === $filterCustomer->sqid)>{{ $filterCustomer->name }}</option>
+                    @endforeach
+                </select>
+            </x-filter-field>
+
             <x-filter-field :label="__('document.filter.expiring')" for="document-expiring" class="min-w-40">
                 <select id="document-expiring" name="expiring" class="select select-sm select-bordered w-full">
                     <option value="all">{{ __('document.filter.all') }}</option>
@@ -96,17 +105,6 @@
                         && $document->valid_until !== null
                         && $document->status !== \App\Enums\Document\DocumentStatus::Archived
                         && $document->valid_until->lte(now()->addDays(30));
-                    $refLabel = match ($document->documentable_type) {
-                        \App\Models\Customer::class => __('document.ref.customer'),
-                        \App\Models\Project::class => __('document.ref.project'),
-                        \App\Models\DiaryEntry::class => __('document.ref.diary'),
-                        \App\Models\Asset::class => __('document.ref.asset'),
-                        \App\Models\User::class => __('document.ref.user'),
-                        default => null,
-                    };
-                    $refName = $document->documentable?->name
-                        ?? $document->documentable?->title
-                        ?? null;
                 @endphp
                 <tr class="hover" id="document-{{ $document->id }}">
                     <td>
@@ -117,15 +115,16 @@
                         @if ($document->description)
                             <span class="block max-w-md truncate text-xs text-muted">{{ $document->description }}</span>
                         @endif
-                    </td>
-                    <td><x-status-badge tone="ghost" outline>{{ $document->document_type->label() }}</x-status-badge></td>
-                    <td class="text-base-content/70">
-                        @if ($refLabel !== null)
-                            {{ $refLabel }}@if ($refName): {{ $refName }}@endif
-                        @else
-                            —
+                        @if ($document->tags->isNotEmpty())
+                            <span class="mt-1 flex flex-wrap gap-1">
+                                @foreach ($document->tags as $documentTag)
+                                    <x-status-badge tone="ghost" outline>{{ $documentTag->name }}</x-status-badge>
+                                @endforeach
+                            </span>
                         @endif
                     </td>
+                    <td><x-status-badge tone="ghost" outline>{{ $document->document_type->label() }}</x-status-badge></td>
+                    <td class="text-base-content/70"><x-subject-link :for="$document" /></td>
                     <td>
                         @if ($document->valid_until === null)
                             <span class="text-muted">—</span>

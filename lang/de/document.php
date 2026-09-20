@@ -19,6 +19,7 @@ return [
 
     'field' => [
         'title' => 'Titel',
+        'tags' => 'Tags',
         'confidential' => 'Vertraulich (nur Erfasser + Verwaltungsrecht)',
         'type' => 'Typ',
         'status' => 'Status',
@@ -45,6 +46,7 @@ return [
 
     'filter' => [
         'all' => 'Alle',
+        'all_customers' => 'Alle Kunden',
         'search' => 'Suche',
         'search_placeholder' => 'Titel durchsuchen',
         'expiring' => 'Läuft ab',
@@ -79,7 +81,13 @@ return [
         'valid_until_before_from' => 'Das Ende der Gültigkeit muss nach deren Beginn liegen.',
     ],
 
+    // Dokumente-Panel der Detailseiten (MVP-817): gekappte Liste.
+    'panel' => [
+        'truncated' => 'Es werden die :shown zuletzt geänderten von :total Dokumenten gezeigt.',
+    ],
+
     'hint' => [
+        'tags' => 'Komma-getrennt, z. B. wartungsvertrag, 2026',
         'upload' => 'Erlaubt: PDF, Bilder, Office-Dateien, Text/CSV, ZIP — max. :mb MB.',
     ],
 

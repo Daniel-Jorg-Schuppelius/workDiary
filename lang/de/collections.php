@@ -58,6 +58,8 @@ return [
         'parent' => 'Obersammlung',
         'no_parent' => '— oberste Ebene —',
         'visibility' => 'Sichtbarkeit',
+        'subject' => 'Bezug',
+        'customer' => 'Kunde',
         'collection' => 'Sammlung',
     ],
     'flash' => [
@@ -119,6 +121,7 @@ return [
         'subtitle' => 'Notizen, Ideenlandkarten, Wissensartikel, Dokumente und Lerninhalte an einer Stelle — geordnet nach Sammlungen und Schlagwörtern.',
         'search' => 'Titel durchsuchen …',
         'all_types' => 'Alle Arten',
+        'all_customers' => 'Alle Kunden',
         'all_contents' => 'Alle Inhalte',
         'view_list' => 'Liste',
         'view_tiles' => 'Kacheln',

@@ -44,6 +44,8 @@
     </x-page-toolbar>
     </x-slot:toolbar>
 
+    <x-knowledge-tabs />
+
     <x-filter-bar :action="route('knowledge-hub.index')" :reset="route('knowledge-hub.index')">
         @foreach (['collection', 'tag', 'view'] as $kept)
             @if ($filters[$kept] !== null && ! ($kept === 'view' && $filters['view'] === 'list'))
@@ -57,6 +59,13 @@
             <option value="">{{ __('collections.hub.all_types') }}</option>
             @foreach ($types as $type)
                 <option value="{{ $type['key'] }}" @selected($filters['type'] === $type['key'])>{{ $type['label'] }}</option>
+            @endforeach
+        </select>
+        {{-- Kundenfilter über die Trägerkette (MVP-818). --}}
+        <select name="customer" class="select select-sm select-bordered w-48 shrink-0" aria-label="{{ __('collections.field.customer') }}" data-autosubmit>
+            <option value="">{{ __('collections.hub.all_customers') }}</option>
+            @foreach ($customers as $hubCustomer)
+                <option value="{{ $hubCustomer->sqid }}" @selected($filters['customer'] === $hubCustomer->sqid)>{{ $hubCustomer->name }}</option>
             @endforeach
         </select>
     </x-filter-bar>
@@ -139,6 +148,9 @@
                                 @endif
                             </div>
                             <a class="link link-hover mt-1 block font-medium" href="{{ $row['url'] }}">{{ $row['title'] }}</a>
+                            @unless ($row['subject']->isEmpty())
+                                <x-subject-link :subject="$row['subject']" class="mt-1 text-xs text-base-content/70" />
+                            @endunless
                             <p class="mt-2 flex flex-wrap items-center gap-1 text-xs text-muted">
                                 <span>{{ $row['updated_at']?->fdate() }}</span>
                                 @foreach ($row['tags'] as $tag)
@@ -162,6 +174,7 @@
                                 @endif
                                 <th>{{ __('collections.field.type') }}</th>
                                 <th>{{ __('collections.field.title') }}</th>
+                                <th>{{ __('collections.field.subject') }}</th>
                                 <th>{{ __('collections.hub.updated') }}</th>
                             </tr>
                         </x-slot:head>
@@ -183,10 +196,11 @@
                                         <span class="badge badge-ghost badge-xs">{{ $tag['name'] }}</span>
                                     @endforeach
                                 </td>
+                                <td class="text-sm text-base-content/70"><x-subject-link :subject="$row['subject']" /></td>
                                 <td class="whitespace-nowrap text-sm text-base-content/70">{{ $row['updated_at']?->fdate() ?? '—' }}</td>
                             </tr>
                         @empty
-                            <x-table.empty icon="menu_book" :colspan="$mayCollect && $tree !== [] ? 4 : 3" :title="__('collections.hub.empty')" :message="__('collections.hub.empty_hint')" compact />
+                            <x-table.empty icon="menu_book" :colspan="$mayCollect && $tree !== [] ? 5 : 4" :title="__('collections.hub.empty')" :message="__('collections.hub.empty_hint')" compact />
                         @endforelse
                     </x-table>
                 </x-card>

@@ -19612,6 +19612,19 @@ CREATE UNIQUE INDEX "org_sso_domain_org_unique" on "organization_sso_domains"(
   "domain",
   "organization_id"
 );
+CREATE TABLE IF NOT EXISTS "document_version_texts"(
+  "id" integer primary key autoincrement not null,
+  "document_version_id" integer not null,
+  "text" text,
+  "extracted_at" datetime,
+  "failure_reason" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("document_version_id") references "document_versions"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "doc_version_texts_version_unique" on "document_version_texts"(
+  "document_version_id"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -20436,3 +20449,4 @@ INSERT INTO migrations VALUES(820,'2027_02_22_100500_create_content_references',
 INSERT INTO migrations VALUES(821,'2027_02_22_100600_move_knowledge_categories_to_collections',36);
 INSERT INTO migrations VALUES(822,'2027_02_22_100700_create_msgraph_onenote_connections',37);
 INSERT INTO migrations VALUES(823,'2027_02_22_100800_sso_domain_unique_per_organization',38);
+INSERT INTO migrations VALUES(824,'2027_02_22_100900_create_document_version_texts',39);

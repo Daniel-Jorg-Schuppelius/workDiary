@@ -128,7 +128,7 @@ class CustomerDetailAssembler {
 
         // Tatsächlich fakturierter Umsatz im Zeitraum (Lexoffice-Belege + lokale
         // Rechnungen) — ergänzt den kalkulatorischen Umsatz aus erfassten Zeiten.
-        // Gleiche Logik wie die Rechnungssumme in partials/_documents.
+        // Gleiche Logik wie die Rechnungssumme in partials/_vouchers.
         $invoicedRange = 0.0;
         foreach ($localInvoices as $inv) {
             if (in_array($inv->type, CustomerTrendBuilder::INVOICE_TYPES, true) && ! in_array($inv->status, CustomerTrendBuilder::VOID_STATUSES, true)) {

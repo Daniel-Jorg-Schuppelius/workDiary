@@ -28,6 +28,7 @@ return [
         'knowledge_article' => 'Wissensartikel',
         'remote_session' => 'Fernwartung (nicht zugeordnet)',
         'learning_course' => 'Lernkurs',
+        'document' => 'Dokument',
     ],
 
     'field' => [

@@ -14,7 +14,7 @@ namespace App\Services\Search;
 
 use App\Enums\Search\SearchSourceType;
 use App\Enums\User\Permission;
-use App\Models\{CommunicationNote, KnowledgeArticle, SearchDocument, User};
+use App\Models\{CommunicationNote, Document, KnowledgeArticle, SearchDocument, User};
 use App\Plugins\PluginManager;
 use App\Plugins\RemoteSupport\RemoteSupportPlugin;
 use App\Services\Licensing\FeatureFlagResolver;
@@ -36,6 +36,8 @@ use Illuminate\Support\Facades\Gate;
  * - Wissen: Veröffentlichtes + eigene Entwürfe; alles mit `knowledge.publish` (Modul Wissen).
  * - Offene Fernwartung: nur Admins bei aktivem Plugin.
  * - Lernkurse: eigene Einschreibung; alle mit `learning.viewAny` (Modul Lernplattform).
+ * - Dokumente: `document.viewAny`; vertrauliche nur Erfasser oder `document.confidential.manage`
+ *   (Modul Dokumente). Personalakten stehen gar nicht im Index.
  *
  * Admins sehen alles ihrer Organisation; die Organisation filtert der Aufrufer.
  */
@@ -113,6 +115,9 @@ final class ActivitySearchVisibility {
             SearchSourceType::LearningCourse => ! $this->features->isEnabled('module.lms')
                 ? false
                 : ($admin || $user->can(Permission::LearningViewAny->value) ? true : self::enrolled($me)),
+            SearchSourceType::Document => ! ($this->features->isEnabled('module.documents') && Gate::forUser($user)->allows('viewAny', Document::class))
+                ? false
+                : ($admin || $user->can(Permission::DocumentConfidentialManage->value) ? true : self::unrestrictedOrOwn($me)),
         };
     }
 

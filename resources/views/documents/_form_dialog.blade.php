@@ -54,6 +54,10 @@
             <textarea name="description" rows="3" maxlength="4000"
                       class="textarea textarea-bordered w-full">{{ old('description', $document?->description) }}</textarea>
         </label>
+        {{-- Schlagwörter (MVP-819): dieselbe kommagetrennte Eingabe wie im Wissensarchiv. --}}
+        <x-input-field name="tags" :label="__('document.field.tags')" maxlength="500"
+                       :value="old('tags', $document?->tags->pluck('name')->implode(', ') ?? '')"
+                       :placeholder="__('document.hint.tags')" :span="2" />
         {{-- Vertraulichkeitsmerkmal (Vollaudit 2026-07, N10). --}}
         <label class="label cursor-pointer justify-start gap-2 sm:col-span-2">
             <input type="hidden" name="confidential" value="0">

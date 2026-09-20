@@ -256,6 +256,7 @@ class DiaryEntryTimelineService {
         $entryIds = DiaryEntry::query()->where('customer_id', $customer->id)->select('id');
         $items = [];
         $documents = Document::query()
+            ->visibleTo($viewer)
             ->where(function ($q) use ($customer, $entryIds): void {
                 $q->where(fn($sub) => $sub->where('documentable_type', Customer::class)->where('documentable_id', $customer->id))
                     ->orWhere(fn($sub) => $sub->where('documentable_type', DiaryEntry::class)->whereIn('documentable_id', $entryIds));
@@ -709,6 +710,7 @@ class DiaryEntryTimelineService {
 
         $items = [];
         $documents = Document::query()
+            ->visibleTo($viewer)
             ->where('documentable_type', $entry->getMorphClass())
             ->where('documentable_id', $entry->getKey())
             ->with('creator:id,name')

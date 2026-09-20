@@ -12,9 +12,9 @@ namespace App\Http\Controllers;
 
 use App\Enums\Procedure\{ProcedureDeviationProposedAction, ProcedureDeviationSeverity, ProcedureDeviationType, ProcedureStepRunStatus};
 use App\Exceptions\{ProcedureDeviationValidationException, ProcedureRunIncompleteException, ProcedureSecondPersonException, ProcedureStepBlockedException};
-use App\Models\{Attachment, DiaryEntry, ManufacturingOrder, ProcedureRun, ProcedureStepRun, ProcedureTemplate, User};
+use App\Models\{Attachment, DiaryEntry, ProcedureRun, ProcedureStepRun, ProcedureTemplate, User};
 use App\Services\Procedure\{DeviationRecorder, ProcedureApplicabilityResolver, ProcedureExecutionService, SecondPersonGate, WaitStepService};
-use Illuminate\Database\Eloquent\Model;
+use App\Support\EntityUrl;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
@@ -97,7 +97,7 @@ class ProcedureRunController extends Controller {
             'run' => $run,
             'steps' => $steps,
             'subject' => $subject,
-            'backUrl' => $this->subjectUrl($subject) ?? route('diary.index'),
+            'backUrl' => EntityUrl::for($subject) ?? route('diary.index'),
             'progressTotal' => $total,
             'progressDone' => $done,
             'canExecute' => Gate::allows('execute', $run),
@@ -279,7 +279,7 @@ class ProcedureRunController extends Controller {
         $execution->abort($run, $actor, $reason);
 
         $subject = $run->subject;
-        $target = $this->subjectUrl($subject) ?? route('diary.index');
+        $target = EntityUrl::for($subject) ?? route('diary.index');
 
         return redirect($target)->with('success', __('procedure.flash.runAborted'));
     }
@@ -316,7 +316,7 @@ class ProcedureRunController extends Controller {
             ->keyBy('procedure_step_run_id');
 
         $subject = $run->subject;
-        $backUrl = $this->subjectUrl($subject);
+        $backUrl = EntityUrl::for($subject);
 
         return view('procedures.runs.print', [
             'run' => $run,
@@ -359,18 +359,6 @@ class ProcedureRunController extends Controller {
         }
 
         return redirect()->route('procedure-runs.show', $run)->with('success', __('procedure.flash.runStarted'));
-    }
-
-    /**
-     * Kontext-URL des Subjekts, auf dem der Lauf gestartet wurde (Fallakte
-     * bzw. Fertigungsauftrag, MVP-063). Unbekannte Subjekte liefern null.
-     */
-    private function subjectUrl(?Model $subject): ?string {
-        return match (true) {
-            $subject instanceof DiaryEntry => route('diary.show', $subject),
-            $subject instanceof ManufacturingOrder => route('manufacturing-orders.show', $subject),
-            default => null,
-        };
     }
 
     /**

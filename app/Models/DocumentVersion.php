@@ -14,7 +14,7 @@ use App\Models\Concerns\{AppendOnly, HasSqid};
 use Database\Factories\DocumentVersionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasOne};
 
 /**
  * Unveränderliche Datei-Version eines Dokuments (MVP-031). Append-only:
@@ -70,6 +70,17 @@ class DocumentVersion extends Model {
     /** @return BelongsTo<Document, $this> */
     public function document(): BelongsTo {
         return $this->belongsTo(Document::class);
+    }
+
+    /**
+     * Ausgelesener Text für den Tätigkeitsindex (MVP-819) — eigene Tabelle,
+     * weil die Version append-only ist und abgeleitetes Material dort nichts
+     * verloren hat.
+     *
+     * @return HasOne<DocumentVersionText, $this>
+     */
+    public function extractedText(): HasOne {
+        return $this->hasOne(DocumentVersionText::class, 'document_version_id');
     }
 
     /** @return BelongsTo<User, $this> */

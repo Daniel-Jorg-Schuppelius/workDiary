@@ -13,10 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Search;
 
 use App\Enums\Search\SearchSourceType;
-use App\Models\{Asset, CommunicationNote, Customer, DiaryEntry, ForeignCustomer, KnowledgeArticle, Lead, OpenIssue, Project, Protocol, SafetyEvent, SearchDocument, ServiceTicket, TimeEntry, Timesheet};
-use App\Support\Sqid;
+use App\Models\{CommunicationNote, DiaryEntry, Document, KnowledgeArticle, OpenIssue, Protocol, SearchDocument, ServiceTicket, TimeEntry, Timesheet};
+use App\Support\{EntityUrl, Sqid};
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};
 
@@ -55,10 +54,11 @@ final class SearchResultLinker {
                 SearchSourceType::KnowledgeArticle => route('knowledge.show', Sqid::encode(KnowledgeArticle::class, $id)),
                 SearchSourceType::RemoteSession => route('admin.remote-support.pending.index'),
                 SearchSourceType::OpenIssue => isset($issues[$id])
-                    ? self::withAnchor($this->subjectUrl($issues[$id]->subject_type, (int) $issues[$id]->subject_id), '#open-issues')
+                    ? self::withAnchor(EntityUrl::byType($issues[$id]->subject_type, (int) $issues[$id]->subject_id), '#open-issues')
                     : null,
                 SearchSourceType::CommunicationNote => isset($notes[$id]) ? $this->noteUrl($notes[$id]) : null,
                 SearchSourceType::LearningCourse => $this->learningCourseUrl($id, $enrollments),
+                SearchSourceType::Document => route('documents.show', Sqid::encode(Document::class, $id)),
             };
         }
 
@@ -76,27 +76,6 @@ final class SearchResultLinker {
             : null;
     }
 
-    public function subjectUrl(?string $type, ?int $id): ?string {
-        if ($type === null || $id === null) {
-            return null;
-        }
-
-        $class = Relation::getMorphedModel($type) ?? $type;
-
-        return match ($class) {
-            DiaryEntry::class => route('diary.show', Sqid::encode(DiaryEntry::class, $id)),
-            Customer::class => route('customers.show', Sqid::encode(Customer::class, $id)),
-            ForeignCustomer::class => route('foreign-customers.show', Sqid::encode(ForeignCustomer::class, $id)),
-            Project::class => route('projects.show', Sqid::encode(Project::class, $id)),
-            Asset::class => route('assets.show', Sqid::encode(Asset::class, $id)),
-            SafetyEvent::class => route('safety-events.show', Sqid::encode(SafetyEvent::class, $id)),
-            Protocol::class => route('protocols.show', Sqid::encode(Protocol::class, $id)),
-            Lead::class => route('leads.show', Sqid::encode(Lead::class, $id)),
-            \App\Models\Learning\LearningEnrollment::class => route('learning.my.show', Sqid::encode(\App\Models\Learning\LearningEnrollment::class, $id)),
-            default => null,
-        };
-    }
-
     /**
      * Sprung über `search.open` (setzt den Header-Zeitraum auf den Eintragstag).
      *
@@ -112,7 +91,7 @@ final class SearchResultLinker {
             return route('communication-notes.index', ['note' => Sqid::encode(CommunicationNote::class, (int) $note->id)]);
         }
 
-        return self::withAnchor($this->subjectUrl($note->notable_type, (int) $note->notable_id), '#communication-note-' . $note->id);
+        return self::withAnchor(EntityUrl::byType($note->notable_type, (int) $note->notable_id), '#communication-note-' . $note->id);
     }
 
     private static function withAnchor(?string $url, string $anchor): ?string {

@@ -14,6 +14,7 @@ use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\{Asset, Customer, DiaryEntry, FormSubmission, FormTemplate, Project, User};
 use App\Services\Attachments\FileAttacher;
+use App\Services\Content\ContentSubjectResolver;
 use App\Services\Form\{FormService, FormSubmissionPdfRenderer};
 use App\Support\Sqid;
 use Illuminate\Database\Eloquent\Model;
@@ -44,6 +45,7 @@ class FormSubmissionController extends Controller {
 
     public function __construct(
         private readonly FormService $service,
+        private readonly ContentSubjectResolver $subjects,
     ) {}
 
     public function index(Request $request): View {
@@ -64,7 +66,8 @@ class FormSubmissionController extends Controller {
         $range = $this->globalDateRange();
 
         $query = FormSubmission::query()
-            ->with(['template', 'submitter', 'subject'])
+            ->with(['template', 'submitter'])
+            ->with($this->subjects->eagerLoad(FormSubmission::class))
             ->whereBetween('submitted_at', [$range['from']->startOfDay(), $range['to']->endOfDay()])
             ->orderByDesc('submitted_at');
 

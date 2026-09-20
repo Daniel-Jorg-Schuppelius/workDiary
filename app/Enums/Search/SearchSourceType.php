@@ -14,7 +14,7 @@ namespace App\Enums\Search;
 
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
-use App\Models\{CommunicationNote, DiaryEntry, KnowledgeArticle, OpenIssue, Protocol, RemotePendingSession, ServiceTicket, TimeEntry, Timesheet};
+use App\Models\{CommunicationNote, DiaryEntry, Document, KnowledgeArticle, OpenIssue, Protocol, RemotePendingSession, ServiceTicket, TimeEntry, Timesheet};
 
 /**
  * Quellen des Tätigkeitsindex (Feature 153). Der Wert steht in
@@ -34,6 +34,8 @@ enum SearchSourceType: string implements HasLabel {
     case RemoteSession = 'remote_session';
     /** Freigegebene Lernkurse (Feature 149, MVP-789). */
     case LearningCourse = 'learning_course';
+    /** Verwaltete Dokumente samt ausgelesenem Dateitext (MVP-819). */
+    case Document = 'document';
 
     public function label(): string {
         return (string) __('search.source.' . $this->value);
@@ -51,6 +53,7 @@ enum SearchSourceType: string implements HasLabel {
             self::KnowledgeArticle => 'school',
             self::RemoteSession => 'screen_share',
             self::LearningCourse => 'menu_book',
+            self::Document => 'folder_open',
         };
     }
 
@@ -67,6 +70,7 @@ enum SearchSourceType: string implements HasLabel {
             self::KnowledgeArticle => KnowledgeArticle::class,
             self::RemoteSession => RemotePendingSession::class,
             self::LearningCourse => \App\Models\Learning\LearningCourse::class,
+            self::Document => Document::class,
         };
     }
 

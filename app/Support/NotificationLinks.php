@@ -11,37 +11,16 @@
 namespace App\Support;
 
 use App\Models\OpenIssue;
-use Illuminate\Database\Eloquent\Model;
-use Throwable;
 
 /**
- * Best-effort-Links für Benachrichtigungs-Payloads (MVP-018).
- * Offene Punkte haben keine eigene Detailseite — sie leben im Panel ihrer
- * Subjekt-Seite (Tagebucheintrag, Projekt, Kunde, Asset).
+ * Links für Benachrichtigungs-Payloads (MVP-018). Offene Punkte haben keine
+ * eigene Detailseite — sie leben im Panel ihres Subjekts, dessen Seite hier
+ * samt Nachladen der Relation aufgelöst wird.
  */
 final class NotificationLinks {
     public static function openIssueUrl(OpenIssue $issue): ?string {
         $issue->loadMissing('subject');
 
-        return self::subjectUrl($issue->subject);
-    }
-
-    public static function subjectUrl(?Model $subject): ?string {
-        if ($subject === null) {
-            return null;
-        }
-
-        try {
-            return match ($subject::class) {
-                \App\Models\DiaryEntry::class => route('diary.show', $subject),
-                \App\Models\Project::class => route('projects.show', $subject),
-                \App\Models\Customer::class => route('customers.show', $subject),
-                \App\Models\Asset::class => route('assets.show', $subject),
-                \App\Models\SafetyEvent::class => route('safety-events.show', $subject),
-                default => null,
-            };
-        } catch (Throwable) {
-            return null;
-        }
+        return EntityUrl::for($issue->subject);
     }
 }

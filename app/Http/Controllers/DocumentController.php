@@ -13,6 +13,7 @@ namespace App\Http\Controllers;
 use App\Enums\Document\{DocumentStatus, DocumentType};
 use App\Models\{Asset, Customer, DiaryEntry, Document, DocumentVersion, Project, User};
 use App\Services\Attachments\FileAttacher;
+use App\Services\Content\ContentSubjectResolver;
 use App\Services\Document\DocumentService;
 use App\Services\Hr\PersonnelFileService;
 use App\Support\Sqid;
@@ -46,6 +47,7 @@ class DocumentController extends Controller {
     public function __construct(
         private readonly DocumentService $service,
         private readonly PersonnelFileService $personnelFiles,
+        private readonly ContentSubjectResolver $subjects,
     ) {}
 
     public function index(Request $request): View {
@@ -56,6 +58,9 @@ class DocumentController extends Controller {
             'type' => (string) $request->query('type', 'all'),
             'status' => (string) $request->query('status', 'all'),
             'ref' => (string) $request->query('ref', 'all'),
+            // Kundenfilter über die volle Trägerkette (MVP-818): Kunde, seine
+            // Projekte, Aufträge, Anlagen und Entsorgungsaufträge.
+            'customer' => (string) $request->query('customer', ''),
             'expiring' => (string) $request->query('expiring', 'all'),
         ];
 
@@ -64,7 +69,8 @@ class DocumentController extends Controller {
         $query = Document::query()
             // Vertrauliche Dokumente Dritter ausblenden (Vollaudit 2026-07, N10).
             ->visibleTo($viewer)
-            ->with(['currentVersion', 'documentable', 'creator'])
+            ->with(['currentVersion', 'creator', 'tags:id,name'])
+            ->with($this->subjects->eagerLoad(Document::class))
             ->latest('updated_at');
 
         if ($filters['q'] !== '') {
@@ -79,6 +85,12 @@ class DocumentController extends Controller {
         if ($filters['ref'] !== 'all') {
             $this->applyRefFilter($query, $filters['ref']);
         }
+        $customerId = Sqid::decode(Customer::class, $filters['customer']);
+        if ($customerId !== null) {
+            $this->subjects->filterByCustomer($query, (int) $viewer->organization_id, $customerId);
+        } else {
+            $filters['customer'] = '';
+        }
         if (in_array($filters['expiring'], ['30', '60', '90'], true)) {
             $query->expiringWithin((int) $filters['expiring']);
         }
@@ -89,6 +101,7 @@ class DocumentController extends Controller {
             || $filters['type'] !== 'all'
             || $filters['status'] !== 'all'
             || $filters['ref'] !== 'all'
+            || $filters['customer'] !== ''
             || $filters['expiring'] !== 'all';
 
         return view('documents.index', [
@@ -96,6 +109,7 @@ class DocumentController extends Controller {
             'filters' => $filters,
             'hasActiveFilters' => $hasActiveFilters,
             'canCreate' => Gate::allows('create', Document::class),
+            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -114,6 +128,7 @@ class DocumentController extends Controller {
             'documentable',
             'creator:id,name',
             'customerReleaser:id,name',
+            'tags:id,name',
         ]);
 
         return view('documents.show', [
@@ -369,6 +384,8 @@ class DocumentController extends Controller {
             'valid_from' => ['nullable', 'date'],
             'valid_until' => ['nullable', 'date', 'after_or_equal:valid_from'],
             'description' => ['nullable', 'string', 'max:4000'],
+            // Schlagwörter (MVP-819), kommagetrennt wie im Wissensarchiv.
+            'tags' => ['nullable', 'string', 'max:500'],
             // Vertraulichkeitsmerkmal (Vollaudit 2026-07, N10).
             'confidential' => ['nullable', 'boolean'],
         ];

@@ -25,6 +25,8 @@
             @endif
         </x-slot:actions>
 
+        <x-knowledge-tabs />
+
         <x-filter-bar :action="route('knowledge.index')"
                       :reset="$hasActiveFilters ? route('knowledge.index') : null">
             <x-filter-field :label="__('knowledge.filter.search')" for="knowledge-q" class="flex-1 min-w-60">

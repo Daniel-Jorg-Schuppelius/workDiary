@@ -1,7 +1,7 @@
 ---
 title: "Colecciones"
 topic: knowledge.collections
-version: 4
+version: 5
 audience: []
 related:
     - knowledge.articles
@@ -19,7 +19,8 @@ lo que no pertenece a un único caso.
 
 Procedimiento habitual:
 
-1. Crea una colección en **Colecciones**, si quieres como subcolección de otra.
+1. Crea una colección desde la entrada **Conocimiento**, con **Gestionar
+   colecciones**, si quieres como subcolección de otra.
    Las colecciones se anidan hasta cinco niveles y se pueden mover después.
 2. En la página de detalle de un contenido elige **Añadir a colección**. Un
    contenido puede estar en varias colecciones; no se crea ninguna copia.
@@ -37,9 +38,14 @@ Una colección **privada** solo la ve quien la creó.
 La página **Conocimiento** muestra notas, mapas de ideas, artículos de
 conocimiento, documentos, cursos y rutas de aprendizaje en una lista, o en
 mosaico. A la izquierda está el árbol de colecciones (una colección incluye sus
-subcolecciones); arriba filtran el título y el tipo, y las etiquetas acotan aún
-más. Las entradas existentes de notas, base de conocimiento, mapas de ideas y
-colecciones se mantienen.
+subcolecciones); arriba filtran el título, el tipo y el cliente, y las
+etiquetas acotan aún más.
+
+**Conocimiento** es la única puerta al área: notas, base de conocimiento, mapas
+de ideas y documentos cuelgan encima como pestañas, y las colecciones son su
+modo de gestión. Cada pestaña conserva sus columnas y acciones propias: los
+plazos y la publicación siguen en los documentos, la publicación de artículos
+sigue en la base de conocimiento.
 
 Marca varios contenidos y pulsa **Añadir** para ponerlos a la vez en una
 colección; lo mismo funciona en los resultados de la **Búsqueda** para notas,

@@ -35,6 +35,8 @@
             <a href="{{ route('communication-notes.show', $openNote) }}" data-entry-modal-autoopen="note" hidden></a>
         @endif
 
+        <x-knowledge-tabs />
+
         <x-filter-bar :action="route('communication-notes.index')" :reset="route('communication-notes.index')">
             <x-filter-field :label="__('communication.filter.search')" for="notes-q" class="flex-1 min-w-60">
                 <input id="notes-q" type="search" name="q" value="{{ $filters['q'] }}"

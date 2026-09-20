@@ -19,6 +19,7 @@ return [
 
     'field' => [
         'title' => 'Titolo',
+        'tags' => 'Tag',
         'confidential' => 'Riservato (solo autore + diritto di gestione)',
         'type' => 'Tipo',
         'status' => 'Stato',
@@ -45,6 +46,7 @@ return [
 
     'filter' => [
         'all' => 'Tutti',
+        'all_customers' => 'Tutti i clienti',
         'search' => 'Ricerca',
         'search_placeholder' => 'Cerca nei titoli',
         'expiring' => 'Scade',
@@ -79,7 +81,13 @@ return [
         'valid_until_before_from' => 'La fine della validità deve essere successiva al suo inizio.',
     ],
 
+    // Pannello Documenti nelle pagine di dettaglio (MVP-817): elenco troncato.
+    'panel' => [
+        'truncated' => 'Vengono mostrati i :shown documenti modificati più di recente su :total.',
+    ],
+
     'hint' => [
+        'tags' => 'Separati da virgola, ad es. contratto-manutenzione, 2026',
         'upload' => 'Consentiti: PDF, immagini, file Office, testo/CSV, ZIP — max. :mb MB.',
     ],
 

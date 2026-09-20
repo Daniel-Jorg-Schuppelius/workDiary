@@ -43,7 +43,6 @@
             @endcan
         </x-slot:actions>
 
-        @include('documents._tabs')
 
         <x-filter-bar :action="route('form-submissions.index')"
                       :reset="$hasActiveFilters ? route('form-submissions.index') : null">
@@ -76,14 +75,7 @@
                             {{ optional($submission->template)->name ?? '—' }}
                         </a>
                     </td>
-                    <td class="text-base-content/70">
-                        @php $subjectModel = $submission->subject; @endphp
-                        @if ($subjectModel !== null)
-                            {{ $subjectModel->getAttribute('title') ?? $subjectModel->getAttribute('name') ?? ('#' . $subjectModel->getKey()) }}
-                        @else
-                            —
-                        @endif
-                    </td>
+                    <td class="text-base-content/70"><x-subject-link :for="$submission" /></td>
                     <td class="text-base-content/70">{{ optional($submission->submitter)->name ?? '—' }}</td>
                     <td class="text-base-content/70">{{ $submission->submitted_at?->fdatetime() ?? '—' }}</td>
                     <td class="text-right">

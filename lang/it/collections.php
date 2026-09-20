@@ -58,6 +58,8 @@ return [
         'parent' => 'Raccolta superiore',
         'no_parent' => '— livello superiore —',
         'visibility' => 'Visibilità',
+        'subject' => 'Riferimento',
+        'customer' => 'Cliente',
         'collection' => 'Raccolta',
     ],
     'flash' => [
@@ -119,6 +121,7 @@ return [
         'subtitle' => 'Note, mappe di idee, articoli della knowledge base, documenti e contenuti formativi in un unico posto, ordinati per raccolte e tag.',
         'search' => 'Cerca nei titoli …',
         'all_types' => 'Tutti i tipi',
+        'all_customers' => 'Tutti i clienti',
         'all_contents' => 'Tutti i contenuti',
         'view_list' => 'Elenco',
         'view_tiles' => 'Riquadri',

@@ -105,7 +105,7 @@ class CustomerQueryService {
                 [
                     'title' => (string) __('notification.message.customer_query_raised'),
                     'message' => \Illuminate\Support\Str::limit($query->question, 160),
-                    'url' => \App\Support\NotificationLinks::subjectUrl($subject),
+                    'url' => \App\Support\EntityUrl::for($subject),
                 ],
             );
         });

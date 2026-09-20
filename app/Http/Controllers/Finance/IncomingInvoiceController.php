@@ -38,6 +38,7 @@ class IncomingInvoiceController extends Controller {
 
         return view('finance.incoming-invoices.index', [
             'documents' => Document::query()
+                ->visibleTo($this->authUser())
                 ->where('document_type', DocumentType::Invoice->value)
                 ->with(['currentVersion', 'creator'])
                 ->orderByDesc('created_at')

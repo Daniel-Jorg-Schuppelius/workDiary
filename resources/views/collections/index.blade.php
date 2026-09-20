@@ -31,6 +31,8 @@
     </x-page-toolbar>
     </x-slot:toolbar>
 
+    <x-knowledge-tabs />
+
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-[18rem_1fr]">
         <x-card :title="__('collections.title.tree')" icon="account_tree" padding="p-3">
             @if ($tree === [])
@@ -93,6 +95,7 @@
                         <tr>
                             <th>{{ __('collections.field.type') }}</th>
                             <th>{{ __('collections.field.title') }}</th>
+                            <th>{{ __('collections.field.subject') }}</th>
                             <th>{{ __('collections.field.added_by') }}</th>
                             <th class="text-right">{{ __('collections.field.actions') }}</th>
                         </tr>
@@ -103,6 +106,7 @@
                                 <span class="inline-flex items-center gap-1"><x-icon :name="$row['icon']" class="text-muted" /> {{ $row['label'] }}</span>
                             </td>
                             <td class="font-medium"><a class="link link-hover" href="{{ $row['url'] }}">{{ $row['title'] }}</a></td>
+                            <td class="text-sm text-base-content/70"><x-subject-link :subject="$row['subject']" /></td>
                             <td class="text-sm text-base-content/70">
                                 {{ $row['entry']->adder?->name ?? '—' }} · {{ $row['entry']->created_at?->fdate() }}
                             </td>
@@ -117,7 +121,7 @@
                             </td>
                         </tr>
                     @empty
-                        <x-table.empty icon="inventory_2" :colspan="4" :title="__('collections.empty.items')" :message="__('collections.help.add_from_detail')" compact />
+                        <x-table.empty icon="inventory_2" :colspan="5" :title="__('collections.empty.items')" :message="__('collections.help.add_from_detail')" compact />
                     @endforelse
                 </x-table>
             </x-card>

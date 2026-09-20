@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Ai\Suggestions;
 
-use App\Enums\Document\DocumentType;
+use App\Enums\Document\{DocumentTextFailure, DocumentType};
+use App\Exceptions\DocumentTextUnavailableException;
 use App\Models\Ai\AiTextSuggestion;
 use App\Models\{Document, Organization, User};
 use App\Services\Ai\AiInvocationService;
@@ -20,21 +21,18 @@ use App\Services\Ai\Dto\{AiExtractionResult, ExtractRequest};
 use App\Services\Ai\Exceptions\AiException;
 use App\Services\Ai\Suggestions\Concerns\DecidesSuggestions;
 use App\Services\Ai\Support\CustomerNameMasker;
-use App\Services\Document\DocumentService;
+use App\Services\Document\{DocumentService, DocumentTextExtractor};
 use CommonToolkit\Helper\Data\JsonHelper;
-use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Support\{Carbon, Str};
-use Illuminate\Support\Facades\Storage;
-use PDFToolkit\Readers\TesseractReader;
-use PDFToolkit\Registries\PDFReaderRegistry;
 use Throwable;
 
 /**
  * KI-Welle 3 — DMS: Dokumenttyp erkennen, Metadaten und Fristen extrahieren
- * (Feature 148, MVP-732; Feature 031). Der Text der aktuellen Version kommt
- * über das php-pdf-toolkit DIREKT (PDF: {@see PDFReaderRegistry} inkl. OCR
- * für Scans, Bilder: {@see TesseractReader}) — keine App-Fassade um den
- * Toolkit-Aufruf.
+ * (Feature 148, MVP-732; Feature 031). Den Text der aktuellen Version liefert
+ * {@see DocumentTextExtractor} — seit MVP-819 braucht ihn auch der
+ * Tätigkeitsindex, und die Formatweiche samt Fehlergründen ist keine Fassade
+ * um einen Einzelaufruf, sondern Logik, die sonst zweimal dastünde. Die
+ * Toolkit-Aufrufe selbst stehen dort weiterhin direkt.
  *
  * Bewusst EIN Aufruf statt Classify + Extract: der Dokumenttyp ist ein Feld
  * des abschließenden Zielschemas mit fester Werteliste, das Rückmapping auf
@@ -62,6 +60,7 @@ class DocumentMetadataSuggestionService {
         private readonly AiInvocationService $invocation,
         private readonly CustomerNameMasker $masker,
         private readonly DocumentService $documents,
+        private readonly DocumentTextExtractor $textExtractor,
     ) {}
 
     /**
@@ -209,47 +208,20 @@ class DocumentMetadataSuggestionService {
     }
 
     /**
-     * Text der aktuellen Version über das php-pdf-toolkit (PDF inkl. OCR,
-     * Bilder über Tesseract, Klartext direkt) — andere Formate liefern
-     * keinen Text und damit keinen Vorschlag.
+     * Text der aktuellen Version über den gemeinsamen Extractor (MVP-819);
+     * dessen Fehlergrund wird hier zur Meldung für die Person.
      */
     private function documentText(Document $document): string {
         $version = $document->currentVersion;
         if ($version === null) {
-            throw new AiException((string) __('ai.error.document_version_missing'));
+            throw new AiException((string) __(DocumentTextFailure::VersionMissing->aiMessageKey()));
         }
-
-        $disk = Storage::disk((string) $version->disk);
-        if (! $disk->exists((string) $version->path)) {
-            throw new AiException((string) __('ai.error.document_version_missing'));
-        }
-        $path = $disk->path((string) $version->path);
-
-        $extension = mb_strtolower(pathinfo((string) $version->original_name, PATHINFO_EXTENSION));
-        $mime = mb_strtolower((string) $version->mime);
 
         try {
-            $text = match (true) {
-                $extension === 'pdf' || $mime === 'application/pdf' => PDFReaderRegistry::getInstance()
-                    ->extractText($path, ['language' => 'deu+eng', 'qualityCheck' => true])
-                    ->getTextOrDefault(),
-                in_array($extension, ['jpg', 'jpeg', 'png', 'tif', 'tiff'], true) || str_starts_with($mime, 'image/') => (string) (new TesseractReader())
-                    ->extractTextFromImage($path, ['language' => 'deu+eng', 'qualityCheck' => true]),
-                in_array($extension, ['txt', 'md', 'csv'], true) || str_starts_with($mime, 'text/') => ToolkitFile::read($path),
-                default => throw new AiException((string) __('ai.error.document_text_unsupported')),
-            };
-        } catch (AiException $e) {
-            throw $e;
-        } catch (Throwable $e) {
-            throw new AiException((string) __('ai.error.document_text_failed'), 0, $e);
+            return $this->textExtractor->extract($version);
+        } catch (DocumentTextUnavailableException $e) {
+            throw new AiException((string) __($e->reason->aiMessageKey()), 0, $e);
         }
-
-        $text = trim($text);
-        if ($text === '') {
-            throw new AiException((string) __('ai.error.document_text_empty'));
-        }
-
-        return $text;
     }
 
     private function openDocumentOf(AiTextSuggestion $suggestion): Document {

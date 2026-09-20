@@ -11,6 +11,7 @@
 namespace App\Services\Document;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
+use App\Jobs\ExtractDocumentTextJob;
 use App\Models\{Document, DocumentVersion, User};
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Database\Eloquent\Model;
@@ -93,6 +94,9 @@ class DocumentService {
             ]);
 
             $this->storeVersion($document, $creator, $file, 1, $attributes['version_note'] ?? null);
+            if (array_key_exists('tags', $attributes)) {
+                $document->syncTagNames((string) $attributes['tags']);
+            }
 
             return $document->fresh(['currentVersion']) ?? $document;
         });
@@ -197,6 +201,8 @@ class DocumentService {
                 'source' => $source,
             ]);
 
+            $this->queueTextExtraction($version);
+
             return $version;
         });
     }
@@ -236,6 +242,12 @@ class DocumentService {
                     ? (bool) $attributes['confidential']
                     : $document->confidential),
             ]);
+
+            // Schlagwörter (MVP-819) ordnen, sie ändern den Inhalt nicht — sie
+            // bleiben auch an archivierten Dokumenten pflegbar.
+            if (array_key_exists('tags', $attributes)) {
+                $document->syncTagNames((string) $attributes['tags']);
+            }
 
             return $document;
         });
@@ -355,7 +367,24 @@ class DocumentService {
             'original_name' => $version->original_name,
         ]);
 
+        $this->queueTextExtraction($version);
+
         return $version;
+    }
+
+    /**
+     * Dateitext für den Tätigkeitsindex auslesen lassen (MVP-819) — in der
+     * Medien-Warteschlange, weil OCR bei Scans minutenlang läuft.
+     *
+     * Der Text existiert ausschließlich für den Index; ist die Indizierung
+     * abgeschaltet, unterbleibt auch die Extraktion.
+     */
+    private function queueTextExtraction(DocumentVersion $version): void {
+        if (! config('search.indexing', true)) {
+            return;
+        }
+
+        ExtractDocumentTextJob::dispatch((int) $version->id)->afterCommit();
     }
 
     /**

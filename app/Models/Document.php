@@ -12,7 +12,8 @@ namespace App\Models;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
 use App\Enums\Hr\HrDocumentCategory;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, HasTags};
+use App\Services\Content\ContentSubjectResolver;
 use Database\Factories\DocumentFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -51,8 +52,14 @@ class Document extends Model {
     /** @use HasFactory<DocumentFactory> */
     use HasFactory;
     use HasSqid;
+    // Schlagwörter (MVP-819): bis dahin fiel das Dokument aus der
+    // Schlagwortordnung — der Filter der Wissenszentrale übersprang den Typ.
+    use HasTags;
 
     use SoftDeletes;
+
+    /** Höchstzahl der Einträge im Dokumente-Panel einer Detailseite (MVP-817); darüber führt der Link in die Liste. */
+    public const PANEL_LIMIT = 25;
 
     protected $fillable = [
         'organization_id',
@@ -149,45 +156,45 @@ class Document extends Model {
      * @return Builder<self>
      */
     public function scopeVisibleToCustomer(Builder $query, int $organizationId, int $customerId): Builder {
+        $query->where('organization_id', $organizationId)->where('customer_visible', true);
+        // Die Trägerkette (Kunde, Projekte, Aufträge, Anlagen, Entsorgungsaufträge)
+        // steht seit MVP-818 nur noch im Resolver — dieselbe, die die internen
+        // Listen für ihren Kundenfilter nutzen.
+        app(ContentSubjectResolver::class)
+            ->whereCarrierOfCustomer($query, 'documentable_type', 'documentable_id', $organizationId, $customerId);
+
+        return $query;
+    }
+
+    /**
+     * Dokumente einer Akte (MVP-818): beim Kunden die volle Kette — seine
+     * eigenen Dokumente plus die an seinen Projekten, Aufträgen, Anlagen und
+     * Entsorgungsaufträgen. Bis dahin zeigte die Kundenakte nur die direkte
+     * Kante, während das Kundenportal die Kette längst kannte; der Kunde sah
+     * also mehr als die eigene Mannschaft.
+     *
+     * Jede andere Akte bleibt bei ihrer direkten Kante — ein Projekt führt
+     * nicht die Dokumente seiner Aufträge.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeOfCarrier(Builder $query, Model $carrier): Builder {
+        if ($carrier instanceof Customer) {
+            app(ContentSubjectResolver::class)->whereCarrierOfCustomer(
+                $query,
+                'documentable_type',
+                'documentable_id',
+                (int) $carrier->organization_id,
+                (int) $carrier->getKey(),
+            );
+
+            return $query;
+        }
+
         return $query
-            ->where('organization_id', $organizationId)
-            ->where('customer_visible', true)
-            ->where(function (Builder $outer) use ($organizationId, $customerId): void {
-                $outer
-                    ->where(function (Builder $q) use ($customerId): void {
-                        $q->where('documentable_type', Customer::class)
-                            ->where('documentable_id', $customerId);
-                    })
-                    ->orWhere(function (Builder $q) use ($organizationId, $customerId): void {
-                        $q->where('documentable_type', Project::class)
-                            ->whereIn('documentable_id', Project::query()
-                                ->where('organization_id', $organizationId)
-                                ->where('customer_id', $customerId)
-                                ->select('id'));
-                    })
-                    ->orWhere(function (Builder $q) use ($organizationId, $customerId): void {
-                        $q->where('documentable_type', DiaryEntry::class)
-                            ->whereIn('documentable_id', DiaryEntry::query()
-                                ->where('organization_id', $organizationId)
-                                ->where('customer_id', $customerId)
-                                ->select('id'));
-                    })
-                    ->orWhere(function (Builder $q) use ($organizationId, $customerId): void {
-                        $q->where('documentable_type', Asset::class)
-                            ->whereIn('documentable_id', Asset::query()
-                                ->where('organization_id', $organizationId)
-                                ->where('customer_id', $customerId)
-                                ->select('id'));
-                    })
-                    // Entsorgungsakte (Feature 100): Kundennachweis + Belege.
-                    ->orWhere(function (Builder $q) use ($organizationId, $customerId): void {
-                        $q->where('documentable_type', \App\Models\Disposal\DisposalJob::class)
-                            ->whereIn('documentable_id', \App\Models\Disposal\DisposalJob::query()
-                                ->where('organization_id', $organizationId)
-                                ->where('customer_id', $customerId)
-                                ->select('id'));
-                    });
-            });
+            ->where('documentable_type', $carrier->getMorphClass())
+            ->where('documentable_id', $carrier->getKey());
     }
 
     /**

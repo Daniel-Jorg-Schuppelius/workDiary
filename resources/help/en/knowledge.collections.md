@@ -1,7 +1,7 @@
 ---
 title: "Collections"
 topic: knowledge.collections
-version: 4
+version: 5
 audience: []
 related:
     - knowledge.articles
@@ -19,7 +19,8 @@ not belong to a single case.
 
 Typical workflow:
 
-1. Create a collection under **Collections**, optionally as a sub-collection
+1. Create a collection from the **Knowledge** entry via **Manage
+   collections**, optionally as a sub-collection
    of another one. Collections can be nested up to five levels deep and moved
    later.
 2. On an item's detail page choose **Add to collection**. An item may sit in
@@ -38,8 +39,12 @@ module stay hidden — not even their number is shown. Only the creator sees a
 The **Knowledge** page lists notes, idea maps, knowledge articles, documents,
 courses and learning paths in one list — or as tiles. The collection tree is on
 the left (a collection includes its sub-collections); title and kind filter at
-the top, and the tag badges narrow further. The existing entries under notes,
-knowledge base, idea maps and collections remain.
+the top — title, kind and customer — and the tag badges narrow further.
+
+**Knowledge** is the single door to the area: notes, knowledge base, idea maps
+and documents hang above it as tabs, and collections are its management mode.
+Every tab keeps its own columns and actions — deadlines and release stay with
+the documents, article publishing stays in the knowledge base.
 
 Select several items and use **Add** to put them into a collection at once —
 this also works in the **Search** results for notes, knowledge articles and

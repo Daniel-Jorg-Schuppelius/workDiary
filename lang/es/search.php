@@ -28,6 +28,7 @@ return [
         'knowledge_article' => 'Artículo de conocimiento',
         'remote_session' => 'Asistencia remota (sin asignar)',
         'learning_course' => 'Curso de aprendizaje',
+        'document' => 'Documento',
     ],
 
     'field' => [

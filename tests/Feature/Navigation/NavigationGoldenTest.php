@@ -35,6 +35,15 @@ use Tests\TestCase;
  * Vereinheitlichung des System-Menü-Gatings über NavGate — dadurch wird
  * z. B. `admin.surcharge-rules` im free-Plan korrekt versteckt (die Route
  * hängt an `module.lohn`), statt nur inline nach Recht geprüft zu werden.
+ *
+ * Neu aufgenommen 2026-09-20 (`MVP-820`, Zuschnitt A der Analyse
+ * „Wissen & Doku"). Delta in `enterprise_admin/sidebar`: `/collections`,
+ * `/documents`, `/ideas` und `/knowledge` verschwinden als eigene Menüpunkte —
+ * sie hängen jetzt als Typansichten an der Leiste `<x-knowledge-tabs>` unter
+ * dem Einstieg `/wissen`. Neu erscheint `/form-submissions`, weil der bis
+ * dahin zweideutige Eintrag „Dokumente & Formulare" (Ziel wechselte je nach
+ * Recht) in zwei klare Einträge zerfällt. `/safety-events` bleibt erreichbar,
+ * steht aber in der Sektion Arbeitsschutz statt unter „Wissen & Doku".
  */
 class NavigationGoldenTest extends TestCase {
     use RefreshDatabase;

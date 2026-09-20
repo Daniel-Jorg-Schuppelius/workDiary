@@ -1,7 +1,7 @@
 ---
 title: "Raccolte"
 topic: knowledge.collections
-version: 4
+version: 5
 audience: []
 related:
     - knowledge.articles
@@ -19,7 +19,8 @@ non appartiene a un singolo caso.
 
 Procedura tipica:
 
-1. Crea una raccolta in **Raccolte**, se serve come sottoraccolta di un'altra.
+1. Crea una raccolta dall'accesso **Conoscenza** con **Gestisci raccolte**,
+   se serve come sottoraccolta di un'altra.
    Le raccolte si annidano fino a cinque livelli e si possono spostare in
    seguito.
 2. Nella pagina di dettaglio di un contenuto scegli **Aggiungi a raccolta**. Un
@@ -39,8 +40,12 @@ La pagina **Conoscenza** mostra note, mappe di idee, articoli della knowledge
 base, documenti, corsi e percorsi formativi in un unico elenco, oppure a
 riquadri. A sinistra c'è l'albero delle raccolte (una raccolta include le sue
 sottoraccolte); in alto filtrano titolo e tipo, i badge dei tag restringono
-ulteriormente. Gli accessi esistenti a note, knowledge base, mappe di idee e
-raccolte restano invariati.
+ulteriormente; si filtra anche per cliente.
+
+**Conoscenza** è l'unica porta dell'area: note, knowledge base, mappe di idee e
+documenti sono schede di questa pagina e le raccolte ne sono la modalità di
+gestione. Ogni scheda mantiene colonne e azioni proprie: scadenze e rilascio
+restano ai documenti, la pubblicazione degli articoli alla knowledge base.
 
 Seleziona più contenuti e usa **Aggiungi** per metterli insieme in una raccolta;
 lo stesso vale nei risultati della **Ricerca** per note, articoli e corsi.

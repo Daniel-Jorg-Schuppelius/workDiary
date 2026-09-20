@@ -221,6 +221,11 @@ class TenantTraitCoverageTest extends TestCase {
         // Mandantengrenze transitiv über das tenant-gebundene Document
         // (documents.organization_id). Siehe Allow-List im Audit-Doc.
         \App\Models\DocumentVersion::class,
+        // Ausgelesener Dateitext einer Version (MVP-819) — abgeleitetes
+        // Material für den Tätigkeitsindex, Kind der Version und damit
+        // transitiv an documents.organization_id gebunden. Siehe Allow-List im
+        // Audit-Doc.
+        \App\Models\DocumentVersionText::class,
         // Wissensbasis (Feature 011): Feedback ist Kind-Tabelle des
         // tenant-gebundenen KnowledgeArticle — Mandantengrenze transitiv
         // (knowledge_articles.organization_id). Siehe Allow-List im Audit-Doc.

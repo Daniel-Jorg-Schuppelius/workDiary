@@ -58,6 +58,8 @@ return [
         'parent' => 'Parent collection',
         'no_parent' => '— top level —',
         'visibility' => 'Visibility',
+        'subject' => 'Reference',
+        'customer' => 'Customer',
         'collection' => 'Collection',
     ],
     'flash' => [
@@ -119,6 +121,7 @@ return [
         'subtitle' => 'Notes, idea maps, knowledge articles, documents and learning content in one place — organised by collections and tags.',
         'search' => 'Search titles …',
         'all_types' => 'All kinds',
+        'all_customers' => 'All customers',
         'all_contents' => 'All content',
         'view_list' => 'List',
         'view_tiles' => 'Tiles',

@@ -6754,6 +6754,22 @@ CREATE TABLE `document_render_snapshots` (
   CONSTRAINT `drs_version_fk` FOREIGN KEY (`profile_version_id`) REFERENCES `document_render_profile_versions` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `document_version_texts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `document_version_texts` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `document_version_id` bigint(20) unsigned NOT NULL,
+  `text` longtext DEFAULT NULL,
+  `extracted_at` timestamp NULL DEFAULT NULL,
+  `failure_reason` varchar(64) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `doc_version_texts_version_unique` (`document_version_id`),
+  CONSTRAINT `document_version_texts_document_version_id_foreign` FOREIGN KEY (`document_version_id`) REFERENCES `document_versions` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `document_versions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -21941,3 +21957,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (820,'2027_02_22_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (821,'2027_02_22_100600_move_knowledge_categories_to_collections',87);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (822,'2027_02_22_100700_create_msgraph_onenote_connections',88);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (823,'2027_02_22_100800_sso_domain_unique_per_organization',89);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (824,'2027_02_22_100900_create_document_version_texts',90);

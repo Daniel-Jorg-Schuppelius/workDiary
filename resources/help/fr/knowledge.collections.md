@@ -1,7 +1,7 @@
 ---
 title: "Collections"
 topic: knowledge.collections
-version: 4
+version: 5
 audience: []
 related:
     - knowledge.articles
@@ -19,7 +19,8 @@ librement, pour tout ce qui ne relève pas d'un seul dossier.
 
 Déroulement type :
 
-1. Créez une collection sous **Collections**, au besoin comme sous-collection
+1. Créez une collection depuis l'entrée **Connaissances** via **Gérer les
+   collections**, au besoin comme sous-collection
    d'une autre. Les collections s'imbriquent sur cinq niveaux au maximum et se
    déplacent par la suite.
 2. Sur la page de détail d'un contenu, choisissez **Ajouter à une
@@ -41,7 +42,10 @@ connaissances, documents, cours et parcours de formation dans une seule liste �
 ou en vignettes. L'arbre des collections se trouve à gauche (une collection
 inclut ses sous-collections) ; le titre et le type filtrent en haut, les badges
 de mots-clés affinent encore. Les entrées existantes (notes, base de
-connaissances, cartes d'idées, collections) restent disponibles.
+connaissances, cartes d'idées, documents) sont désormais des onglets de cette
+page, et les collections en sont le mode de gestion. Chaque onglet garde ses
+colonnes et ses actions : les échéances et la publication restent aux
+documents, la publication des articles reste à la base de connaissances.
 
 Cochez plusieurs contenus et cliquez sur **Ajouter** pour les placer d'un coup
 dans une collection — cela fonctionne aussi dans les résultats de la

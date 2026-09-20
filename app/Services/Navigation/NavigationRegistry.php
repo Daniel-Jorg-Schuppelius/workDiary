@@ -360,6 +360,13 @@ class NavigationRegistry {
         $user = Auth::user();
         $isGlobalAdmin = $user instanceof User && $user->isAdmin();
 
+        // Einstieg „Wissen" (MVP-820): trägt die Fachlisten als Typansichten,
+        // erscheint aber nur, wenn die Person überhaupt einen Inhaltstyp sieht.
+        $knowledgeHubAvailable = $user instanceof User
+            && app(\App\Services\Collections\CollectableTypes::class)->availableKeys($user) !== [];
+        $documentsAvailable = $this->features->isEnabled('module.documents')
+            && Gate::allows('viewAny', \App\Models\Document::class);
+
         $sidebarSections = [];
         $sidebarSections[] = [
             'key' => 'work',
@@ -389,30 +396,33 @@ class NavigationRegistry {
                     'key' => 'work-knowledge',
                     'label' => __('Wissen & Doku'),
                     'icon' => 'menu_book',
+                    // Ein Einstieg statt fünf Punkten (MVP-820): Wissenszentrale,
+                    // Wissensbasis, Sammlungen, Ideenkarten und Dokumente standen
+                    // gleichrangig nebeneinander und zeigten teils denselben
+                    // Bestand. Die Fachlisten hängen jetzt als Typansichten an
+                    // der Leiste `<x-knowledge-tabs>`, die Sammlungen sind der
+                    // Verwaltungsmodus des Einstiegs. Sicherheitsereignisse sind
+                    // in den Arbeitsschutz gezogen — ein Meldewesen ist keine
+                    // Wissensordnung.
                     'items' => $this->compactItems([
-                        // Dokumente & Formulare per Tab zusammengelegt → ein Eintrag. Route zeigt auf die
-                        // zugängliche Seite, bleibt sichtbar, wenn nur eines von beiden (Recht/Modul) verfügbar ist.
-                        [
-                            'route' => (Gate::allows('viewAny', \App\Models\Document::class)
-                                && $this->features->isEnabled('module.documents'))
-                                ? 'documents.index' : 'form-submissions.index',
-                            'label' => __('document.title.index') . ' & ' . __('form.title.submissions'),
-                            'icon' => 'folder_open',
-                            'modal' => false,
-                            'matches' => ['documents.*', 'form-submissions.*'],
-                        ],
-                        // Einstieg „Wissen“ (MVP-813): nur, wenn mindestens ein Inhaltstyp sichtbar ist.
-                        $user instanceof User && app(\App\Services\Collections\CollectableTypes::class)->availableKeys($user) !== []
-                            ? ['route' => 'knowledge-hub.index', 'label' => __('collections.hub.title'), 'icon' => 'hub', 'modal' => false, 'matches' => ['knowledge-hub.*']]
+                        $knowledgeHubAvailable
+                            ? [
+                                'route' => 'knowledge-hub.index',
+                                'label' => __('collections.hub.title'),
+                                'icon' => 'hub',
+                                'modal' => false,
+                                'matches' => ['knowledge-hub.*', 'collections.*', 'knowledge.*', 'ideas.*', 'documents.*', 'knowledge-imports.*', 'references.*'],
+                            ]
                             : null,
-                        ['route' => 'knowledge.index', 'label' => __('knowledge.title.index'), 'icon' => 'school', 'modal' => false, 'matches' => ['knowledge.*']],
-                        // Sammlungen (MVP-809): Ordnung über Notizen, Ideenkarten, Artikeln, Dokumenten und Lerninhalten.
-                        ['route' => 'collections.index', 'label' => __('collections.title.index'), 'icon' => 'folder_special', 'modal' => false, 'matches' => ['collections.*']],
-                        ['route' => 'ideas.index', 'label' => __('ideas.title.index'), 'icon' => 'emoji_objects', 'modal' => false, 'matches' => ['ideas.*']],
-                        // Sicherheitsereignisse: sichtbar für Melder (create) und Register-Berechtigte (viewAny).
-                        (Gate::allows('viewAny', \App\Models\SafetyEvent::class)
-                            || Gate::allows('create', \App\Models\SafetyEvent::class))
-                            ? ['route' => 'safety-events.index', 'label' => __('safety.title.index'), 'icon' => 'health_and_safety', 'modal' => false, 'matches' => ['safety-events.*']]
+                        // Fällt der Einstieg mangels sichtbarer Inhaltstypen weg,
+                        // bleiben die Dokumente über ihren eigenen Punkt erreichbar.
+                        ! $knowledgeHubAvailable && $documentsAvailable
+                            ? ['route' => 'documents.index', 'label' => __('document.title.index'), 'icon' => 'folder_open', 'modal' => false, 'matches' => ['documents.*']]
+                            : null,
+                        // Formulare bleiben eigenständig: ein ausgefülltes Formular
+                        // ist ein Nachweis am Vorgang, kein Wissensinhalt.
+                        $this->features->isEnabled('module.forms') && Gate::allows('viewAny', \App\Models\FormSubmission::class)
+                            ? ['route' => 'form-submissions.index', 'label' => __('form.title.submissions'), 'icon' => 'edit_note', 'modal' => false, 'matches' => ['form-submissions.*']]
                             : null,
                     ]),
                 ],
@@ -723,17 +733,26 @@ class NavigationRegistry {
             ];
         }
         // Arbeitsschutz-Register (Feature 132): GBU, Unterweisung, Vorsorge — safety.viewAny/manage,
-        // Kernmodul ohne Plan-Gate (wie die Sicherheitsereignisse unter „Wissen & Doku").
-        // Trainingsmanagement (Feature 145) hängt in derselben Sektion, hat aber
-        // eigene Rechte — Personalverwaltung sieht Schulungen ohne GBU-Zugriff.
+        // Kernmodul ohne Plan-Gate. Trainingsmanagement (Feature 145) hängt in
+        // derselben Sektion, hat aber eigene Rechte — Personalverwaltung sieht
+        // Schulungen ohne GBU-Zugriff.
         $showSafetyRegister = Gate::allows('viewAny', \App\Models\Safety\HazardAssessment::class);
         $showTraining = Gate::allows('viewAny', \App\Models\Training\TrainingCourse::class);
-        if ($showSafetyRegister || $showTraining) {
+        // Sicherheitsereignisse: sichtbar für Melder (create) und Register-Berechtigte
+        // (viewAny). Standen bis MVP-820 unter „Wissen & Doku" — ein Meldewesen
+        // gehört zum Arbeitsschutz, nicht in die Wissensordnung. Das eigene Recht
+        // öffnet die Sektion auch für Melder ohne GBU-Zugriff.
+        $showSafetyEvents = Gate::allows('viewAny', \App\Models\SafetyEvent::class)
+            || Gate::allows('create', \App\Models\SafetyEvent::class);
+        if ($showSafetyRegister || $showTraining || $showSafetyEvents) {
             $sidebarSections[] = [
                 'key' => 'safety',
                 'label' => __('safety.register.section'),
                 'collapsible' => true,
                 'items' => $this->compactItems([
+                    $showSafetyEvents
+                        ? ['route' => 'safety-events.index', 'label' => __('safety.title.index'), 'icon' => 'health_and_safety', 'modal' => false, 'matches' => ['safety-events.*']]
+                        : null,
                     $showSafetyRegister
                         ? ['route' => 'safety.assessments.index', 'label' => __('safety.register.nav.assessments'), 'icon' => 'checklist', 'modal' => false, 'matches' => ['safety.assessments.*']]
                         : null,

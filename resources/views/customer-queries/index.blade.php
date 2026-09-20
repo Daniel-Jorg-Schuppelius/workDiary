@@ -42,7 +42,7 @@
                                 </span>
                             </div>
                             {{-- Subject-Kontext direkt erreichbar (MVP-512). --}}
-                            @php $subjectUrl = $query->subject !== null ? \App\Support\NotificationLinks::subjectUrl($query->subject) : null; @endphp
+                            @php $subjectUrl = $query->subject !== null ? \App\Support\EntityUrl::for($query->subject) : null; @endphp
                             @if ($query->subject !== null)
                                 <div class="mt-1 text-xs text-muted">
                                     @if ($subjectUrl)

@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{ContentCollection, Tag, User};
+use App\Models\{ContentCollection, Customer, Tag, User};
 use App\Services\Collections\{CollectableTypes, ContentCollectionService, KnowledgeHubService};
 use App\Support\Sqid;
 use Illuminate\Http\Request;
@@ -44,6 +44,7 @@ class KnowledgeHubController extends Controller {
             'type' => ['nullable', Rule::in($available)],
             'tag' => ['nullable', 'string', 'max:64'],
             'collection' => ['nullable', 'string', 'max:64'],
+            'customer' => ['nullable', 'string', 'max:64'],
             'view' => ['nullable', Rule::in(['list', 'tiles'])],
             'page' => ['nullable', 'integer', 'min:1'],
         ]);
@@ -56,6 +57,11 @@ class KnowledgeHubController extends Controller {
             abort_if($selected === null, 404);
         }
         $tagId = filled($data['tag'] ?? null) ? Sqid::decodeOrNumeric(Tag::class, (string) $data['tag']) : null;
+        // Kundenfilter über die Trägerkette (MVP-818); ein unbekannter Kunde
+        // filtert auf nichts statt auf alles.
+        $customerId = filled($data['customer'] ?? null)
+            ? Sqid::decode(Customer::class, (string) $data['customer'])
+            : null;
 
         $rows = $this->hub->items(
             $user,
@@ -63,6 +69,7 @@ class KnowledgeHubController extends Controller {
             isset($data['type']) ? (string) $data['type'] : null,
             $tagId,
             $selected !== null ? (int) $selected->id : null,
+            $customerId,
         );
         $facets = $this->hub->tagFacets($rows);
 
@@ -94,9 +101,11 @@ class KnowledgeHubController extends Controller {
                 'type' => $data['type'] ?? null,
                 'tag' => $tagId !== null ? Sqid::encode(Tag::class, $tagId) : null,
                 'collection' => $selected?->sqid,
+                'customer' => $customerId !== null ? Sqid::encode(Customer::class, $customerId) : null,
                 'view' => ($data['view'] ?? 'list') === 'tiles' ? 'tiles' : 'list',
             ],
             'tagFacets' => $facets,
+            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
             'activeTagId' => $tagId,
             'activeTagName' => $activeTagName,
             'mayCollect' => Gate::allows('create', ContentCollection::class),

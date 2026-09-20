@@ -1,7 +1,7 @@
 ---
 title: "Sammlungen"
 topic: knowledge.collections
-version: 4
+version: 5
 audience: []
 related:
     - knowledge.articles
@@ -19,9 +19,9 @@ Ordnung für alles, was sich keinem einzelnen Vorgang zuordnen lässt.
 
 Typischer Ablauf:
 
-1. Unter **Sammlungen** eine Sammlung anlegen, bei Bedarf als Untersammlung
-   einer anderen. Sammlungen lassen sich bis zu fünf Ebenen tief schachteln
-   und später umhängen.
+1. Im Einstieg **Wissen** über **Sammlungen verwalten** eine Sammlung
+   anlegen, bei Bedarf als Untersammlung einer anderen. Sammlungen lassen sich
+   bis zu fünf Ebenen tief schachteln und später umhängen.
 2. Auf der Detailseite eines Inhalts **Zur Sammlung hinzufügen** wählen.
    Ein Inhalt darf in mehreren Sammlungen liegen; es entsteht keine Kopie.
 3. Nicht mehr benötigte Sammlungen **archivieren** statt löschen — die
@@ -38,8 +38,13 @@ Lernplattform bleiben verborgen — auch ihre Anzahl wird nicht angezeigt.
 Die Seite **Wissen** zeigt Notizen, Ideenlandkarten, Wissensartikel, Dokumente,
 Lernkurse und Lernpfade in einer Liste — wahlweise als Kacheln. Links steht der
 Sammlungsbaum (eine Sammlung schließt ihre Untersammlungen ein), oben filtern
-Titel und Art, die Schlagwort-Badges grenzen weiter ein. Die bisherigen
-Einstiege unter Notizen, Wissensarchiv, Ideenlandkarten und Sammlungen bleiben.
+Titel, Art und Kunde, die Schlagwort-Badges grenzen weiter ein.
+
+**Wissen** ist die einzige Tür zum Bereich: Notizen, Wissensarchiv,
+Ideenlandkarten und Dokumente hängen als Reiter darüber, die Sammlungen sind
+der Verwaltungsmodus. Jeder Reiter behält seine eigenen Spalten und Aktionen —
+Fristen und Freigabe stehen also weiter bei den Dokumenten, die Freigabe von
+Artikeln weiter im Wissensarchiv.
 
 Mehrere Inhalte markieren und **Hinzufügen** legt sie auf einmal in eine
 Sammlung — das geht genauso in der Trefferliste der **Suche** für Notizen,

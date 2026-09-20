@@ -185,6 +185,10 @@
 {{-- Formulare (Feature 032): ausgefüllte Formulare + „Formular ausfüllen" --}}
 @include('forms._panel', ['subject' => $diary, 'subjectKind' => 'diary'])
 
+{{-- Verwaltete Dokumente am Auftrag (MVP-818): der Auftrag war bis dahin der
+     einzige erlaubte Träger ohne eigenes Panel — auffindbar nur über die Liste. --}}
+@include('documents._panel', ['documentable' => $diary, 'documentableKind' => 'diary'])
+
 {{-- VOB/B-Schreiben (Feature 062, MVP-728): Anzeige der Schreiben, deren Anlass dieser Eintrag ist --}}
 @include('construction-notices._diary_panel', ['diary' => $diary])
 

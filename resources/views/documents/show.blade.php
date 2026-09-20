@@ -17,15 +17,20 @@
 @section('content')
 @php
     /** @var \App\Models\Document $document */
-    $documentable = $document->documentable;
-    $refLabel = $documentable?->title ?? $documentable?->name;
 @endphp
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar>
             <x-slot:title>{{ $document->title }}</x-slot:title>
             <x-slot:subtitle>
-                {{ $document->document_type->label() }}@if ($refLabel !== null) · {{ \App\Support\EntityType::label($document->documentable_type) }}: {{ $refLabel }}@endif
+                {{-- Bezug als verlinkte Kette (MVP-818): vom Dokument zum Kunden, nicht nur der Trägername. --}}
+                <span class="inline-flex flex-wrap items-center gap-1">
+                    {{ $document->document_type->label() }}
+                    @unless (app(\App\Services\Content\ContentSubjectResolver::class)->resolve($document)->isEmpty())
+                        <span class="text-muted" aria-hidden="true">·</span>
+                        <x-subject-link :for="$document" />
+                    @endunless
+                </span>
             </x-slot:subtitle>
             <x-slot:actions>
                 <x-status-badge size="sm" :tone="$document->effectiveStatus()->tone()">{{ $document->effectiveStatus()->label() }}</x-status-badge>

@@ -122,6 +122,7 @@ class DiaryCaseFileController extends Controller {
 
         $documents = Gate::allows('viewAny', Document::class) && $featureFlags->isEnabled('module.documents')
             ? Document::query()
+            ->visibleTo($viewer)
             ->where('documentable_type', $diary->getMorphClass())
             ->where('documentable_id', $diary->getKey())
             ->with(['creator:id,name', 'currentVersion'])

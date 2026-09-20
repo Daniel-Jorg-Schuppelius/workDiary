@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Collections;
 
 use App\Models\{Tag, User};
+use App\Services\Content\{ContentSubject, ContentSubjectResolver};
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\{Builder, Model};
 
@@ -32,12 +33,13 @@ class KnowledgeHubService {
     public function __construct(
         private readonly CollectableTypes $types,
         private readonly ContentCollectionService $collections,
+        private readonly ContentSubjectResolver $subjects,
     ) {}
 
     /**
-     * @return list<array{type: string, model: Model, title: string, url: string, icon: string, label: string, updated_at: CarbonInterface|null, tags: list<array{id: int, name: string}>}>
+     * @return list<array{type: string, model: Model, title: string, url: string, icon: string, label: string, updated_at: CarbonInterface|null, tags: list<array{id: int, name: string}>, subject: ContentSubject}>
      */
-    public function items(User $viewer, string $query = '', ?string $type = null, ?int $tagId = null, ?int $collectionId = null): array {
+    public function items(User $viewer, string $query = '', ?string $type = null, ?int $tagId = null, ?int $collectionId = null, ?int $customerId = null): array {
         $collectionIds = $collectionId !== null
             ? $this->collections->visibleSubtreeIds($viewer, $viewer->organization_id, $collectionId)
             : null;
@@ -60,7 +62,11 @@ class KnowledgeHubService {
             }
 
             $this->filter($builder, $key, $query, $tagId, $collectionIds);
+            if ($customerId !== null) {
+                $this->subjects->filterByCustomer($builder, (int) $viewer->organization_id, $customerId);
+            }
             $models = $builder
+                ->with($this->subjects->eagerLoad($builder->getModel()::class))
                 ->when($withTags, static fn (Builder $q) => $q->with('tags:id,name'))
                 ->latest($builder->getModel()->qualifyColumn('updated_at'))
                 ->limit(self::CANDIDATES_PER_TYPE)
@@ -78,6 +84,9 @@ class KnowledgeHubService {
                     'label' => $this->types->label($key),
                     'updated_at' => $updatedAt instanceof CarbonInterface ? $updatedAt : null,
                     'tags' => $withTags ? $this->tagsOf($model) : [],
+                    // Zugehörigkeit zu Kunde/Projekt/Träger (MVP-818) — die führende
+                    // Achse, die dem Einstieg bis dahin fehlte.
+                    'subject' => $this->subjects->resolve($model),
                 ];
             }
         }

@@ -19,6 +19,7 @@ return [
 
     'field' => [
         'title' => 'Title',
+        'tags' => 'Tags',
         'confidential' => 'Confidential (creator + management right only)',
         'type' => 'Type',
         'status' => 'Status',
@@ -45,6 +46,7 @@ return [
 
     'filter' => [
         'all' => 'All',
+        'all_customers' => 'All customers',
         'search' => 'Search',
         'search_placeholder' => 'Search titles',
         'expiring' => 'Expiring',
@@ -79,7 +81,13 @@ return [
         'valid_until_before_from' => 'The end of validity must be after its start.',
     ],
 
+    // Document panel on detail pages (MVP-817): truncated list.
+    'panel' => [
+        'truncated' => 'Showing the :shown most recently changed of :total documents.',
+    ],
+
     'hint' => [
+        'tags' => 'Comma separated, e.g. maintenance-contract, 2026',
         'upload' => 'Allowed: PDF, images, Office files, text/CSV, ZIP — max. :mb MB.',
     ],
 

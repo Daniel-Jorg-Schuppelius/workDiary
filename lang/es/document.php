@@ -19,6 +19,7 @@ return [
 
     'field' => [
         'title' => 'Título',
+        'tags' => 'Etiquetas',
         'confidential' => 'Confidencial (solo creador + derecho de gestión)',
         'type' => 'Tipo',
         'status' => 'Estado',
@@ -45,6 +46,7 @@ return [
 
     'filter' => [
         'all' => 'Todos',
+        'all_customers' => 'Todos los clientes',
         'search' => 'Búsqueda',
         'search_placeholder' => 'Buscar en títulos',
         'expiring' => 'Vence',
@@ -79,7 +81,13 @@ return [
         'valid_until_before_from' => 'El fin de la validez debe ser posterior a su inicio.',
     ],
 
+    // Panel de documentos en las páginas de detalle (MVP-817): lista recortada.
+    'panel' => [
+        'truncated' => 'Se muestran los :shown documentos modificados más recientemente de :total.',
+    ],
+
     'hint' => [
+        'tags' => 'Separadas por comas, p. ej. contrato-mantenimiento, 2026',
         'upload' => 'Permitido: PDF, imágenes, archivos de Office, texto/CSV, ZIP — máx. :mb MB.',
     ],
 

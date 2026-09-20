@@ -473,7 +473,7 @@
         @endcan
     @endif
 
-    @include('partials._documents', [
+    @include('partials._vouchers', [
         'invoices' => $localInvoices,
         'vouchers' => $lexofficeVoucherCache,
         'plugin' => $lexofficePlugin,

@@ -8,6 +8,7 @@
 
   Dokumente-Panel (MVP-031) für Detailseiten.
   Erwartet: $documentable (Model), $documentableKind ('customer'|'project'|'diary'|'asset')
+  Beim Kunden zeigt das Panel die volle Kette (MVP-818) und je Zeile deren Herkunft.
 --}}
 @php
     $canViewAnyDocuments = \Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Document::class)
@@ -16,17 +17,29 @@
 
 @if ($canViewAnyDocuments)
 @php
+    /** @var \App\Models\User $panelViewer */
+    $panelViewer = \Illuminate\Support\Facades\Auth::user();
+    // Vertrauliche Dokumente Dritter ausblenden — wie in der Liste (Vollaudit
+    // 2026-07 N10); das Panel hatte den Filter bis MVP-817 nicht.
+    // Beim Kunden die volle Kette (MVP-818): auch die Dokumente an seinen
+    // Projekten, Aufträgen und Anlagen — jede andere Akte bleibt bei ihrer
+    // direkten Kante.
+    $panelQuery = \App\Models\Document::query()
+        ->visibleTo($panelViewer)
+        ->ofCarrier($documentable);
+    $panelTotal = (clone $panelQuery)->count();
+    $panelChained = $documentable instanceof \App\Models\Customer;
     /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Document> $panelDocuments */
-    $panelDocuments = \App\Models\Document::query()
-        ->where('documentable_type', get_class($documentable))
-        ->where('documentable_id', $documentable->getKey())
+    $panelDocuments = $panelQuery
         ->with(['currentVersion'])
+        ->when($panelChained, fn ($q) => $q->with(app(\App\Services\Content\ContentSubjectResolver::class)->eagerLoad(\App\Models\Document::class)))
         ->latest('updated_at')
+        ->limit(\App\Models\Document::PANEL_LIMIT)
         ->get();
     $canCreateDocument = \Illuminate\Support\Facades\Gate::allows('create', \App\Models\Document::class);
 @endphp
 
-<x-card as="section" id="documents" :title="__('document.title.index')" icon="folder_open" :count="$panelDocuments->count()">
+<x-card as="section" id="documents" :title="__('document.title.index')" icon="folder_open" :count="$panelTotal">
     @if ($canCreateDocument)
         <x-slot:actions>
             <x-icon-btn icon="note_add" tone="primary" size="sm"
@@ -50,9 +63,16 @@
                     <div class="min-w-0">
                         <span class="flex items-center gap-2 font-medium">
                             <x-icon :name="$panelDocument->document_type->icon()" class="text-muted" />
-                            {{ $panelDocument->title }}
+                            @can('view', $panelDocument)
+                                <a class="link link-hover" href="{{ route('documents.show', $panelDocument) }}">{{ $panelDocument->title }}</a>
+                            @else
+                                {{ $panelDocument->title }}
+                            @endcan
                             <x-status-badge :tone="$panelEffective->tone()" size="sm">{{ $panelEffective->label() }}</x-status-badge>
                         </span>
+                        @if ($panelChained && $panelDocument->documentable_type !== \App\Models\Customer::class)
+                            <x-subject-link :for="$panelDocument" class="block text-xs" />
+                        @endif
                         <span class="block text-xs text-muted">
                             {{ $panelDocument->document_type->label() }}
                             · v{{ $panelDocument->currentVersion?->version_no ?? '—' }}
@@ -81,6 +101,11 @@
                 </li>
             @endforeach
         </ul>
+        @if ($panelTotal > $panelDocuments->count())
+            <p class="pt-3 text-xs text-muted">
+                {{ __('document.panel.truncated', ['shown' => $panelDocuments->count(), 'total' => $panelTotal]) }}
+            </p>
+        @endif
     @endif
 </x-card>
 @endif
