@@ -174,7 +174,21 @@ if [ -f package-lock.json ]; then
 else
     npm install
 fi
-npm run build
+# Die Assets des laufenden Stands bleiben liegen (KEEP_PREVIOUS_ASSETS, siehe
+# vite.config.js): Die vorgerenderte Wartungsseite verweist auf ihre
+# Hash-Namen. Leerte Vite public/build, fiel die Anfrage nach dem alten CSS
+# auf index.php durch und bekam selbst den 503 des Wartungsmodus. Weg kommt
+# nur, was der letzte erfolgreiche Build nicht geschrieben hat — Vite schreibt
+# bei jedem Lauf alle Dateien neu. Der Stempel rückt erst nach Erfolg nach,
+# sonst räumte der Folgelauf nach einem Abbruch genau die Dateien weg, auf die
+# die Wartungsseite noch zeigt.
+BUILD_STAMP="$PWD/storage/framework/cache/vite-build.stamp"
+if [ -f "$BUILD_STAMP" ] && [ -d public/build/assets ]; then
+    find public/build/assets -type f ! -newer "$BUILD_STAMP" -delete
+fi
+touch "$BUILD_STAMP.next"
+KEEP_PREVIOUS_ASSETS=1 npm run build
+mv "$BUILD_STAMP.next" "$BUILD_STAMP"
 
 echo "→ Storage-Link sicherstellen (public/storage → storage/app/public)"
 # Ohne den Symlink sind öffentliche Uploads (Logos, Anhänge) per URL nicht

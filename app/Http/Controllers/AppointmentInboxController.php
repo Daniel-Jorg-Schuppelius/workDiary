@@ -28,23 +28,42 @@ use RuntimeException;
  * entscheidet über Termine), Modul module.planung.
  */
 class AppointmentInboxController extends Controller {
-    public function index(): View {
+    public function index(Request $request): View {
         Gate::authorize(Permission::DispatchViewAny->value);
 
+        $tab = in_array($request->query('tab'), ['decided', 'services'], true) ? (string) $request->query('tab') : 'open';
+
         return view('appointments.index', [
-            'requests' => AppointmentRequest::query()
-                ->where('status', AppointmentRequest::STATUS_REQUESTED)
-                ->with(['customer:id,name', 'bookableService:id,title'])
-                ->orderBy('start_at')
-                ->get(),
-            'decided' => AppointmentRequest::query()
-                ->whereIn('status', [AppointmentRequest::STATUS_CONFIRMED, AppointmentRequest::STATUS_DECLINED, AppointmentRequest::STATUS_CANCELED])
-                ->with(['customer:id,name', 'bookableService:id,title'])
-                ->orderByDesc('decided_at')
-                ->limit(20)
-                ->get(),
-            'services' => BookableService::query()->orderBy('title')->get(),
+            'tab' => $tab,
+            'openCount' => AppointmentRequest::query()->where('status', AppointmentRequest::STATUS_REQUESTED)->count(),
+            'serviceCount' => BookableService::query()->where('active', true)->count(),
+            'requests' => $tab === 'open'
+                ? AppointmentRequest::query()
+                    ->where('status', AppointmentRequest::STATUS_REQUESTED)
+                    ->with(['customer:id,name', 'bookableService:id,title'])
+                    ->orderBy('start_at')
+                    ->get()
+                : collect(),
+            'decided' => $tab === 'decided'
+                ? AppointmentRequest::query()
+                    ->whereIn('status', [AppointmentRequest::STATUS_CONFIRMED, AppointmentRequest::STATUS_DECLINED, AppointmentRequest::STATUS_CANCELED])
+                    ->with(['customer:id,name', 'bookableService:id,title', 'decidedBy:id,name'])
+                    ->orderByDesc('decided_at')
+                    ->paginate(25)
+                    ->withQueryString()
+                : null,
+            'services' => $tab === 'services'
+                ? BookableService::query()->with(['site:id,name', 'requiredQualification:id,name'])->orderBy('title')->get()
+                : collect(),
             'canManage' => Gate::allows(Permission::DispatchManage->value),
+        ]);
+    }
+
+    /** Anlege-Dialog der buchbaren Leistungsart (modal-first). */
+    public function createService(): View {
+        Gate::authorize(Permission::DispatchManage->value);
+
+        return view('appointments._service_dialog', [
             'sites' => Site::query()->orderBy('name')->get(['id', 'name']),
             'qualifications' => \App\Models\Qualification::query()->orderBy('name')->get(['id', 'name']),
         ]);
@@ -122,7 +141,8 @@ class AppointmentInboxController extends Controller {
         ]);
         $service->audit('appointment.service_created', []);
 
-        return back()->with('success', __('Leistungsart „:title" ist jetzt buchbar.', ['title' => $service->title]));
+        return redirect()->route('appointments.index', ['tab' => 'services'])
+            ->with('success', __('Leistungsart „:title" ist jetzt buchbar.', ['title' => $service->title]));
     }
 
     public function toggleService(BookableService $bookableService): RedirectResponse {

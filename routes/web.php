@@ -1032,6 +1032,7 @@ Route::middleware('auth')->group(function () {
         Route::get('terminanfragen', [\App\Http\Controllers\AppointmentInboxController::class, 'index'])->name('appointments.index');
         Route::post('terminanfragen/{appointmentRequest}/bestaetigen', [\App\Http\Controllers\AppointmentInboxController::class, 'confirm'])->name('appointments.confirm');
         Route::post('terminanfragen/{appointmentRequest}/ablehnen', [\App\Http\Controllers\AppointmentInboxController::class, 'decline'])->name('appointments.decline');
+        Route::get('terminanfragen/leistungsarten/neu', [\App\Http\Controllers\AppointmentInboxController::class, 'createService'])->name('appointments.services.create');
         Route::post('terminanfragen/leistungsarten', [\App\Http\Controllers\AppointmentInboxController::class, 'storeService'])->name('appointments.services.store');
         Route::post('terminanfragen/leistungsarten/{bookableService}/aktiv', [\App\Http\Controllers\AppointmentInboxController::class, 'toggleService'])->name('appointments.services.toggle');
 

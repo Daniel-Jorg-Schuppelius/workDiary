@@ -59,6 +59,11 @@ class BookableService extends Model {
         return $this->belongsTo(Site::class);
     }
 
+    /** @return BelongsTo<Qualification, $this> */
+    public function requiredQualification(): BelongsTo {
+        return $this->belongsTo(Qualification::class, 'required_qualification_id');
+    }
+
     /** Frühester buchbarer Zeitpunkt nach Vorlauf. */
     public function earliestStart(): Carbon {
         return Carbon::now()->addHours($this->lead_time_hours);

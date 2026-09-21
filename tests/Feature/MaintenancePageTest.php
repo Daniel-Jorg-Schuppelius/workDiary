@@ -64,4 +64,21 @@ class MaintenancePageTest extends TestCase {
 
         $this->assertStringContainsString('--render="errors::503"', $deploy, 'deploy.sh muss die Wartungsseite vorrendern, sonst fehlt sie, während Composer/Vite die App umbauen.');
     }
+
+    public function test_deploy_build_laesst_die_assets_der_vorgerenderten_wartungsseite_liegen(): void {
+        $deploy = (string) file_get_contents(base_path('deploy.sh'));
+        $vite = (string) file_get_contents(base_path('vite.config.js'));
+
+        $this->assertStringContainsString('env.KEEP_PREVIOUS_ASSETS', $vite, 'vite.config.js muss emptyOutDir am Flag abschalten.');
+        $this->assertDoesNotMatchRegularExpression('/^\s*npm run build/m', $deploy, 'Ein Build ohne KEEP_PREVIOUS_ASSETS leert public/build — die Wartungsseite verliert CSS und Fonts (503).');
+
+        $build = strpos($deploy, 'KEEP_PREVIOUS_ASSETS=1 npm run build');
+        $prune = strpos($deploy, '! -newer "$BUILD_STAMP" -delete');
+        $advance = strpos($deploy, 'mv "$BUILD_STAMP.next" "$BUILD_STAMP"');
+        $this->assertNotFalse($build);
+        $this->assertNotFalse($prune);
+        $this->assertNotFalse($advance);
+        $this->assertLessThan($build, $prune, 'Aufgeräumt wird vor dem Build, gegen den Stempel des letzten erfolgreichen Builds.');
+        $this->assertGreaterThan($build, $advance, 'Der Stempel darf erst nach erfolgreichem Build nachrücken.');
+    }
 }

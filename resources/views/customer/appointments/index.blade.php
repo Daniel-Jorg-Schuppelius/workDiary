@@ -74,15 +74,7 @@
                 <td class="whitespace-nowrap">{{ $request->start_at?->orgTz()->format('d.m.Y H:i') ?? '—' }}</td>
                 <td>{{ $request->service_label ?? '—' }}</td>
                 <td>
-                    @php($statusMap = [
-                        'requested' => ['badge-info', __('angefragt')],
-                        'confirmed' => ['badge-success', __('bestätigt')],
-                        'declined' => ['badge-error', __('abgelehnt')],
-                        'canceled' => ['badge-ghost', __('storniert')],
-                        'superseded' => ['badge-ghost', __('ersetzt')],
-                    ])
-                    @php([$tone, $label] = $statusMap[$request->status] ?? ['badge-ghost', $request->status])
-                    <span class="badge {{ $tone }} badge-sm">{{ $label }}</span>
+                    <x-status-badge :tone="$request->statusTone()" size="sm">{{ $request->statusLabel() }}</x-status-badge>
                     @if ($request->status === 'declined' && $request->decline_reason)
                         <span class="block text-xs text-muted">{{ $request->decline_reason }}</span>
                     @endif

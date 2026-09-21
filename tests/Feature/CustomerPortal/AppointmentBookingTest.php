@@ -168,5 +168,37 @@ final class AppointmentBookingTest extends TestCase {
         $fresh = $request->fresh();
         $this->assertSame(AppointmentRequest::STATUS_DECLINED, $fresh?->status);
         $this->assertSame('Kein Personal an dem Tag', $fresh?->decline_reason);
+
+        $this->actingAs($this->admin)
+            ->get(route('appointments.index', ['tab' => 'decided']))
+            ->assertOk()
+            ->assertSee('Kein Personal an dem Tag')
+            ->assertSee(__('abgelehnt'));
+    }
+
+    /** Reiter Leistungsarten und Anlege-Dialog; Anlegen springt zurück auf den Reiter. */
+    public function test_services_tab_and_create_dialog(): void {
+        $this->actingAs($this->admin)
+            ->get(route('appointments.index', ['tab' => 'services']))
+            ->assertOk()
+            ->assertSee('Wartungstermin')
+            ->assertSee(__('Aktiv'));
+
+        $this->actingAs($this->admin)
+            ->get(route('appointments.services.create'))
+            ->assertOk()
+            ->assertSee('name="duration_minutes"', false);
+
+        $this->actingAs($this->admin)
+            ->post(route('appointments.services.store'), [
+                'title' => 'Erstberatung',
+                'duration_minutes' => 30,
+                'buffer_minutes' => 0,
+                'lead_time_hours' => 48,
+                'cancel_hours' => 24,
+            ])
+            ->assertRedirect(route('appointments.index', ['tab' => 'services']));
+
+        $this->assertDatabaseHas('bookable_services', ['title' => 'Erstberatung', 'duration_minutes' => 30]);
     }
 }

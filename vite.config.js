@@ -41,6 +41,13 @@ export default defineConfig(({ mode }) => {
             tailwindcss(),
         ],
         build: {
+            // deploy.sh setzt KEEP_PREVIOUS_ASSETS=1: Die vorgerenderte
+            // Wartungsseite verweist auf die Hash-Namen des laufenden Stands,
+            // ein geleertes public/build ließe sie ohne CSS und Fonts stehen.
+            // Ältere Stände räumt deploy.sh selbst weg.
+            emptyOutDir: !["1", "true"].includes(
+                String(env.KEEP_PREVIOUS_ASSETS ?? "").toLowerCase(),
+            ),
             rollupOptions: {
                 // Rolldown (Vite 8) warnt, wenn Plugins viel Build-Zeit
                 // beanspruchen. Hier dominieren @tailwindcss/vite und das

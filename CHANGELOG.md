@@ -992,6 +992,14 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 
 ### Fixed
 
+- Deploy: Während des Updates stand die Wartungsseite ohne CSS und Schriften da.
+  Sie wird beim `artisan down` vorgerendert und verweist auf die Hash-Namen des
+  laufenden Builds; `npm run build` leerte `public/build`, die Anfrage nach dem
+  alten Stylesheet fiel auf `index.php` durch und bekam selbst den 503 des
+  Wartungsmodus. `deploy.sh` baut jetzt mit `KEEP_PREVIOUS_ASSETS=1` (Vite leert
+  das Verzeichnis nicht) und räumt beim nächsten Deploy nur weg, was der letzte
+  erfolgreiche Build nicht mehr geschrieben hat. Offene Tabs finden ihre
+  nachgeladenen Chunks damit ebenfalls bis zum nächsten Update.
 - E-Rechnung (`MVP-805`, erechnung-toolkit v0.14): XRechnung-Gutschriften in UBL
   waren schemaungültig (`cbc:DueDate` ist in einer CreditNote nicht erlaubt);
   das in ZUGFeRD-PDFs eingebettete CII verletzte die Elementreihenfolge des

@@ -135,6 +135,34 @@ class AppointmentRequest extends Model {
         return $this->status === self::STATUS_REQUESTED;
     }
 
+    public function statusLabel(): string {
+        return match ($this->status) {
+            self::STATUS_REQUESTED => __('angefragt'),
+            self::STATUS_CONFIRMED => __('bestätigt'),
+            self::STATUS_DECLINED => __('abgelehnt'),
+            self::STATUS_CANCELED => __('storniert'),
+            self::STATUS_SUPERSEDED => __('ersetzt'),
+            default => __('Unbekannt'),
+        };
+    }
+
+    public function statusTone(): string {
+        return match ($this->status) {
+            self::STATUS_REQUESTED => 'info',
+            self::STATUS_CONFIRMED => 'success',
+            self::STATUS_DECLINED => 'error',
+            default => 'ghost',
+        };
+    }
+
+    public function sourceLabel(): string {
+        return match ($this->source) {
+            self::SOURCE_PORTAL => __('Kundenportal'),
+            self::SOURCE_CALENDLY => 'Calendly',
+            default => __('Unbekannt'),
+        };
+    }
+
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);

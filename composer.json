@@ -15,7 +15,7 @@
         "daniel-jorg-schuppelius/datev-php-sdk": "^1.1",
         "daniel-jorg-schuppelius/lexoffice-php-sdk": "^1.1",
         "daniel-jorg-schuppelius/orgamax-php-sdk": "^1.0",
-        "daniel-jorg-schuppelius/php-api-toolkit": "^2.10",
+        "daniel-jorg-schuppelius/php-api-toolkit": "^2.10.3",
         "daniel-jorg-schuppelius/php-elearning-toolkit": "^0.1.2",
         "daniel-jorg-schuppelius/php-erechnung-toolkit": "^0.15",
         "daniel-jorg-schuppelius/php-pdf-toolkit": "^0.17",
