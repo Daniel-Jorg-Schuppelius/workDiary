@@ -19,6 +19,7 @@ use App\Models\Customer;
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use App\Services\Reselling\Mirror\InvoiceMirror;
 use App\Services\Reselling\Register\{LinkProposer, PeriodLinker, RecipientReconciler};
+use App\Support\ErrorText;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Validation\ValidationException;
@@ -105,7 +106,7 @@ class ResaleReconcileController extends Controller {
             $proposer->propose($this->currentOrganizationOrAbort(404));
         } catch (RuntimeException $e) {
             // Lauf läuft schon: der Halterwechsel ist gespeichert, die Vorschläge kommen mit dem nächsten Lauf.
-            $redirect->with('warning', $e->getMessage());
+            $redirect->with('warning', ErrorText::for($e));
         }
 
         return $redirect;
@@ -122,7 +123,7 @@ class ResaleReconcileController extends Controller {
         try {
             $link = $this->linker->attach($period, $line, $request->months(), $request->note(), $request->user()?->id);
         } catch (\InvalidArgumentException $e) {
-            throw ValidationException::withMessages(['months' => $e->getMessage()]);
+            throw ValidationException::withMessages(['months' => ErrorText::for($e)]);
         }
 
         return redirect($target)->with('success', __('resale.link.flash.linked', ['voucher' => (string) $link->voucher_number]));

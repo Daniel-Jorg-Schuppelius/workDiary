@@ -15,7 +15,7 @@ use App\Enums\Tour\TourStatus;
 use App\Enums\Travel\TravelLogVehicle;
 use App\Models\{DiaryEntry, Tour, User};
 use App\Services\Routing\TourService;
-use App\Support\Sqid;
+use App\Support\{Sqid, Tz};
 use Carbon\CarbonImmutable;
 use Database\Seeders\EntryTypeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -221,8 +221,8 @@ class TourTest extends TestCase {
         $order->refresh();
         $this->assertSame(Mode::Fixed, $order->mode);
         $this->assertSame('2026-06-01', $order->scheduled_for?->toDateString());
-        $this->assertSame('2026-06-01 08:00:00', $order->start_at?->toDateTimeString());
-        $this->assertSame('2026-06-01 08:45:00', $order->end_at?->toDateTimeString());
+        $this->assertSame('2026-06-01 08:00:00', $order->start_at?->setTimezone(Tz::ofOrganization($this->organization))->toDateTimeString());
+        $this->assertSame('2026-06-01 08:45:00', $order->end_at?->setTimezone(Tz::ofOrganization($this->organization))->toDateTimeString());
     }
 
     public function test_assigning_flex_order_respects_existing_time_window(): void {
@@ -246,8 +246,10 @@ class TourTest extends TestCase {
 
         $order->refresh();
         $this->assertSame(Mode::Fixed, $order->mode);
-        $this->assertSame('2026-06-02 14:30:00', $order->start_at?->toDateTimeString());
-        $this->assertSame('2026-06-02 15:30:00', $order->end_at?->toDateTimeString());
+        // Zeitfenster sind Ortszeit, gespeichert wird UTC.
+        $this->assertSame('2026-06-02 14:30:00', $order->start_at?->setTimezone(Tz::ofOrganization($this->organization))->toDateTimeString());
+        $this->assertSame('2026-06-02 12:30:00', $order->getRawOriginal('start_at'));
+        $this->assertSame('2026-06-02 15:30:00', $order->end_at?->setTimezone(Tz::ofOrganization($this->organization))->toDateTimeString());
     }
 
     public function test_recalculate_uses_osrm_table_and_persists_geometry(): void {

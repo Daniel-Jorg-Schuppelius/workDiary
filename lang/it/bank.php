@@ -151,7 +151,7 @@ return [
     'empty' => [
         'statements' => 'Nessun estratto conto importato finora.',
         'transactions' => 'Nessun movimento in questo estratto conto.',
-        'suggestions' => 'Nessuna proposta – assegna manualmente o accantona.',
+        'suggestions' => 'Nessuna proposta – assegni manualmente o accantoni.',
         'accounts' => 'Nessun conto bancario creato finora.',
     ],
 ];

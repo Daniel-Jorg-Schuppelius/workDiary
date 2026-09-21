@@ -79,7 +79,7 @@
                         <option value="published" @selected($timeScope === PortalVisibility::TIME_SCOPE_PUBLISHED)>{{ __('Nur veröffentlichte Einträge (empfohlen)') }}</option>
                         <option value="all" @selected($timeScope === PortalVisibility::TIME_SCOPE_ALL)>{{ __('Alle kundenbezogenen Zeiten (Kompatibilitätsoption)') }}</option>
                     </select>
-                    <p class="mt-1 text-xs text-muted">{{ __('Einzelne Zeiten veröffentlichst du über die Massenaktion im Projekt-Zeittab; Beschreibungen erscheinen nur für veröffentlichte Einträge.') }}</p>
+                    <p class="mt-1 text-xs text-muted">{{ __('Einzelne Zeiten veröffentlichen Sie über die Massenaktion im Projekt-Zeittab; Beschreibungen erscheinen nur für veröffentlichte Einträge.') }}</p>
                 </div>
             </div>
 

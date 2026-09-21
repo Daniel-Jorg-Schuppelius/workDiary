@@ -29,9 +29,7 @@ class OrgaMaxServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function registerPlugin(): void {
-        if ($this->app->runningInConsole()) {
-            $this->commands([OrgaMaxSyncCommand::class]);
-        }
+        $this->commands([OrgaMaxSyncCommand::class]);
     }
 
     protected function bootPlugin(): void {

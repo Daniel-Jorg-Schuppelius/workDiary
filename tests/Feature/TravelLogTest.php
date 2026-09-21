@@ -67,6 +67,28 @@ class TravelLogTest extends TestCase {
         $this->assertSame(60, $entry->minutes);
     }
 
+    /** UI-Fuzz 2026-09-21: die Fahrt (Ortszeit) wurde roh in den Zeiteintrag (UTC) kopiert — er erschien um den Versatz verschoben. */
+    public function test_paired_time_entry_is_stored_in_utc(): void {
+        $this->organization->update(['timezone' => 'Europe/Berlin']);
+
+        $this->postAsUser('travel-logs.store', [
+            'date' => '2030-07-10',
+            'started_at' => '2030-07-10T08:00',
+            'ended_at' => '2030-07-10T09:00',
+            'from_address' => 'Berlin',
+            'to_address' => 'Potsdam',
+            'distance_km' => 30,
+            'vehicle' => TravelLogVehicle::Private_->value,
+            'purpose' => 'Kundentermin',
+        ])->assertRedirect(route('travel-logs.index'));
+
+        $log = TravelLog::query()->firstOrFail();
+        $entry = TimeEntry::query()->where('travel_log_id', $log->id)->firstOrFail();
+        $this->assertSame('2030-07-10 08:00:00', $log->getRawOriginal('started_at'));
+        $this->assertSame('2030-07-10 06:00:00', $entry->getRawOriginal('started_at'));
+        $this->assertSame('2030-07-10 07:00:00', $entry->getRawOriginal('ended_at'));
+    }
+
     public function test_store_without_timestamps_does_not_create_time_entry(): void {
         $this->postAsUser('travel-logs.store', [
             'date' => CarbonImmutable::today()->toDateString(),

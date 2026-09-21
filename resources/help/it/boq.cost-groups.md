@@ -83,7 +83,7 @@ Sotto si trova il **monitoraggio dei costi**: importo del computo, varianti,
 misurato e residuo. Le varianti contano separatamente dall’importo del computo —
 l’uno era a gara, l’altro si è aggiunto. Un misurato superiore alla quantità
 prevista dà un **residuo negativo**; viene mostrato, non appianato. Il **budget**
-proviene dalla stima dei costi sul progetto (vedi sotto); lo **stato fatturato**
+proviene dalla stima dei costi sul progetto (si veda sotto); lo **stato fatturato**
 manca volutamente — risiede nel sistema di fatturazione di riferimento.
 
 ## Stima dei costi e budget

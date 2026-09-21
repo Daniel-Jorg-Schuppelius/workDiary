@@ -27,7 +27,7 @@
                 <span class="text-base-content/70">
                     {{ __('isms.review.approved_by_at', [
                         'name' => optional($review->approvedBy)->name ?? '—',
-                        'date' => $review->approved_at?->format('d.m.Y H:i') ?? '—',
+                        'date' => $review->approved_at?->orgTz()->format('d.m.Y H:i') ?? '—',
                     ]) }}
                 </span>
             @endif

@@ -22,8 +22,8 @@ personne concernée.
 alerte à temps ; une prolongation est possible, mais doit être motivée et
 communiquée à la personne.
 
-**Identité :** Vérifie l'identité avant de communiquer des données — en cas de
-doute, demande plutôt que de répondre. Une communication à la mauvaise personne
+**Identité :** Vérifiez l'identité avant de communiquer des données — en cas de
+doute, demandez plutôt que de répondre. Une communication à la mauvaise personne
 constitue elle-même une violation de données.
 
 **À ne pas confondre :** Ce portail n'est pas celui des lanceurs d'alerte.

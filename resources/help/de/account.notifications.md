@@ -9,20 +9,20 @@ related:
     - work.overview
 ---
 
-Im Benachrichtigungszentrum siehst du alle an dich gerichteten
-Hinweise gebündelt. Es zeigt ausschließlich deine eigenen
+Im Benachrichtigungszentrum sehen Sie alle an Sie gerichteten
+Hinweise gebündelt. Es zeigt ausschließlich Ihre eigenen
 Benachrichtigungen; eine besondere Berechtigung ist dafür nicht nötig.
 Die Liste ist seitenweise blätterbar, und die Anzahl ungelesener
 Einträge wird gesondert ausgewiesen.
 
-Du kannst einzelne Benachrichtigungen als gelesen markieren oder alle
+Sie können einzelne Benachrichtigungen als gelesen markieren oder alle
 auf einmal als gelesen kennzeichnen. Verweist eine Benachrichtigung auf
-ein Ziel innerhalb von WorkDiary, gelangst du beim Öffnen direkt
+ein Ziel innerhalb von WorkDiary, gelangen Sie beim Öffnen direkt
 dorthin; externe Verweise werden aus Sicherheitsgründen nicht gefolgt.
 
-Ob du zusätzlich Benachrichtigungen per E-Mail erhältst und zu welchen
-Zeiten still bleiben soll, steuerst du über die
-Benachrichtigungseinstellungen in deinem Profil. Die Sammlung im
+Ob Sie zusätzlich Benachrichtigungen per E-Mail erhalten und zu welchen
+Zeiten still bleiben soll, steuern Sie über die
+Benachrichtigungseinstellungen in Ihrem Profil. Die Sammlung im
 Benachrichtigungszentrum bleibt davon unberührt.
 
 **Kurznachrichten (SMS):** Für wirklich kritische Meldungen — etwa Alarme aus

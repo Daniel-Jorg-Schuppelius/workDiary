@@ -8,9 +8,9 @@ related:
     - scope.overview
 ---
 
-En **Personalizar menú** ocultas secciones, subgrupos y entradas
-individuales de la navegación lateral que no necesites, incluidos los grupos
-del menú «Nuevo …». El ajuste solo te afecta a ti y se guarda en el servidor
+En **Personalizar menú** oculta secciones, subgrupos y entradas
+individuales de la navegación lateral que no necesite, incluidos los grupos
+del menú «Nuevo …». El ajuste solo le afecta a usted y se guarda en el servidor
 (igual en todos los dispositivos).
 
 **Importante:** ocultar es solo presentación. Los permisos, la búsqueda
@@ -27,4 +27,4 @@ La página **Todas las funciones** es la válvula de seguridad: lista cada
   página «Alcance funcional»;
 - **sin licencia** — con una breve descripción del módulo.
 
-Nada desaparece sin remedio, por muy ligero que sea tu menú.
+Nada desaparece sin remedio, por muy ligero que sea su menú.

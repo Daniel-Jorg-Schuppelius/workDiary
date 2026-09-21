@@ -8,9 +8,9 @@ related:
     - scope.overview
 ---
 
-Unter **Menü anpassen** blendest du Bereiche, Untergruppen und einzelne
-Einträge der Seitennavigation aus, die du persönlich nicht brauchst — auch
-Gruppen des „Neu …“-Menüs. Die Einstellung gilt nur für dich und wird
+Unter **Menü anpassen** blenden Sie Bereiche, Untergruppen und einzelne
+Einträge der Seitennavigation aus, die Sie persönlich nicht brauchen — auch
+Gruppen des „Neu …“-Menüs. Die Einstellung gilt nur für Sie und wird
 serverseitig gespeichert (auf allen Geräten gleich).
 
 **Wichtig:** Ausblenden ist reine Darstellung. Berechtigungen, globale
@@ -27,4 +27,4 @@ Bereich mit seinem Zustand —
   Seite „Funktionsumfang“;
 - **nicht lizenziert** — mit kurzer Beschreibung des Moduls.
 
-So verschwindet nichts unauffindbar, egal wie schlank dein Menü ist.
+So verschwindet nichts unauffindbar, egal wie schlank Ihr Menü ist.

@@ -22,8 +22,8 @@ I **sottotitoli** si possono fornire in due modi:
 
 La rilettura è obbligatoria per scelta: la trascrizione automatica fraintende
 spesso termini tecnici, nomi e numeri — e un sottotitolo sbagliato è peggio di
-nessuno, perché simula affidabilità. Durante la rilettura puoi modificare il
+nessuno, perché simula affidabilità. Durante la rilettura può modificare il
 testo, scartarlo del tutto o approvarlo.
 
 **Accessibilità:** Nei corsi obbligatori i sottotitoli non sono un extra.
-Prevedi la rilettura prima di pubblicare un corso.
+Preveda la rilettura prima di pubblicare un corso.

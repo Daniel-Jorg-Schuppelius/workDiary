@@ -25,10 +25,10 @@ sua pratica e reperibile nel fascicolo.
 
 ## Procedura consigliata
 
-1. Apri il fascicolo e scegli **«Genera verbale»** nel menu Azioni.
-2. Scegli il **modello**.
-3. Compila i **punti del verbale**: testo, scelta, foto, misura.
-4. Allega le **foto prima/dopo** al punto corrispondente.
+1. Apra il fascicolo e scelga **«Genera verbale»** nel menu Azioni.
+2. Scelga il **modello**.
+3. Compili i **punti del verbale**: testo, scelta, foto, misura.
+4. Alleghi le **foto prima/dopo** al punto corrispondente.
 5. **Salvare** lascia il verbale in **bozza**; per il collaudo passa
    poi alla finestra di firma.
 
@@ -52,5 +52,5 @@ finestra di firma — tutto documentato prima di ripartire.
 ## Effetti e prossimi passi
 
 Il salvataggio lascia una bozza nel fascicolo; la firma la trasforma
-in prova opponibile. Poi: raccogliere la firma (vedi «Firmare un
+in prova opponibile. Poi: raccogliere la firma (si veda «Firmare un
 verbale») e portare avanti lo stato della commessa.

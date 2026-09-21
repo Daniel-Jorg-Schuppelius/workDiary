@@ -119,6 +119,20 @@ class TimeEntryTest extends TestCase {
         $this->assertDatabaseMissing('time_entries', ['description' => 'Range kaputt']);
     }
 
+    /** UI-Fuzz 2026-09-21: im Zeitraum-Modus fehlte die 24-h-Grenze des Dauer-Modus (Eintrag mit 10.199 Minuten). */
+    public function test_range_longer_than_a_day_is_rejected(): void {
+        $this->actingAs($this->user)
+            ->from(route('projects.time-entries.create', $this->project))
+            ->post(route('projects.time-entries.store', $this->project), [
+                'started_at' => '2030-01-15T08:00',
+                'ended_at' => '2030-01-22T09:00',
+                'description' => 'Eine Woche am Stück',
+            ])
+            ->assertSessionHasErrors(['ended_at']);
+
+        $this->assertDatabaseMissing('time_entries', ['description' => 'Eine Woche am Stück']);
+    }
+
     public function test_owner_can_update_time_entry(): void {
         $entry = TimeEntry::create([
             'organization_id' => $this->organization->id,

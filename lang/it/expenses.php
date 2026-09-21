@@ -27,7 +27,7 @@ return [
         'linked' => 'Documento :number collegato.',
         'unlinked' => 'Collegamento rimosso.',
         'title' => 'File del giustificativo',
-        'hint' => 'Allega la ricevuta alla nota spese — senza di essa non è verificabile né trasferibile alla contabilità.',
+        'hint' => 'Alleghi la ricevuta alla nota spese — senza di essa non è verificabile né trasferibile alla contabilità.',
     ],
     'title' => [
         'index' => 'Spese',
@@ -85,7 +85,7 @@ return [
     ],
     'help' => [
         'color' => 'Definisce il colore d\'accento per icona, badge ed evidenziazioni negli elenchi.',
-        'gross_first' => 'Inserisci l\'importo lordo dal giustificativo. Importo netto e imposta vengono calcolati automaticamente.',
+        'gross_first' => 'Inserisca l\'importo lordo dal giustificativo. Importo netto e imposta vengono calcolati automaticamente.',
         'requires_receipt' => 'Se attivo, è richiesto almeno un giustificativo (foto/PDF) durante la registrazione.',
     ],
     'empty' => [

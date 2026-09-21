@@ -18,7 +18,6 @@
                         show-label>{{ __('Zurück') }}</x-icon-btn>
         </x-slot:actions>
 
-        @if (session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif
 
         @if ($measure->currentVersion)
             <x-card class="text-sm space-y-1">

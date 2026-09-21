@@ -16,6 +16,7 @@ use App\Models\{Customer, LexofficeVoucher, Supplier, User};
 use App\Plugins\Lexoffice\Jobs\SyncVouchersJob;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeDunningService, LexofficeVoucherFileService, LexofficeVoucherSync};
 use App\Services\Billing\RetainerVoucherReconciler;
+use App\Support\ErrorText;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -95,7 +96,7 @@ class LexofficeVoucherController extends Controller {
                 'updated' => $result['updated'],
             ]));
         } catch (\Throwable $e) {
-            return back()->with('error', __('Sync fehlgeschlagen: :msg', ['msg' => $e->getMessage()]));
+            return back()->with('error', __('Sync fehlgeschlagen: :msg', ['msg' => ErrorText::for($e)]));
         }
     }
 
@@ -111,7 +112,7 @@ class LexofficeVoucherController extends Controller {
         try {
             $reference = $dunnings->push($voucher);
         } catch (\Throwable $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Mahnung in Lexoffice angelegt (ID :id).', [

@@ -53,7 +53,7 @@
             <x-empty-state framed
                 icon="menu_book"
                 :title="__('Keine Einträge gefunden')"
-                :message="array_filter($filters) ? __('Versuche, die Filter zu erweitern.') : null">
+                :message="array_filter($filters) ? __('Versuchen Sie, die Filter zu erweitern.') : null">
                 @if (array_filter($filters))
                     <x-slot:action>
                         <x-icon-btn icon="restart_alt" size="sm" :href="route('diary.index')" show-label>{{ __('Filter zurücksetzen') }}</x-icon-btn>

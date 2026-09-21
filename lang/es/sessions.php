@@ -94,7 +94,7 @@ return [
     ],
 
     'error' => [
-        'own_current_session' => 'Tu propia sesión actual no se puede cerrar aquí — usa el cierre de sesión normal.',
+        'own_current_session' => 'Su propia sesión actual no se puede cerrar aquí — use el cierre de sesión normal.',
         'session_gone' => 'La sesión ya no existe.',
         'token_gone' => 'El token ya no existe.',
         'device_gone' => 'El dispositivo ya no existe o ya está desconectado.',

@@ -41,9 +41,6 @@
     </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if (session('status'))
-        <div class="alert alert-success rounded-2xl px-5 py-3 text-sm shadow-xs">{{ session('status') }}</div>
-    @endif
 
     {{-- Alternativenvergleich (MVP-230) --}}
     <x-card :title="__('Vergleich')">

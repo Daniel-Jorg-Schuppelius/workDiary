@@ -20,12 +20,12 @@ salvataggio non vengono più mostrate in chiaro.
 **Prenotazioni in arrivo:** I nuovi appuntamenti arrivano prima nella **posta
 in arrivo degli appuntamenti**, non direttamente nel calendario. Lì vengono
 associati a un cliente: le corrispondenze univoche in automatico, i casi
-dubbi restano in attesa della tua decisione. Solo dopo nasce l'appuntamento.
+dubbi restano in attesa della sua decisione. Solo dopo nasce l'appuntamento.
 
 **Disdette e spostamenti** vengono recepiti se la pagina di prenotazione li
 comunica. Un appuntamento già acquisito non viene cancellato in silenzio, ma
 contrassegnato come disdetto.
 
 **Limiti:** L'integrazione legge le prenotazioni; non crea pagine di
-prenotazione e non modifica le disponibilità, che continui a gestire dove
-amministri la pagina.
+prenotazione e non modifica le disponibilità, che continua a gestire dove
+amministra la pagina.

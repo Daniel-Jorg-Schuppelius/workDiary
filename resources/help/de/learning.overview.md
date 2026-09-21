@@ -117,7 +117,7 @@ Fragenübersicht zeigt beantwortete und gemerkte Fragen.
 
 Prüfende sehen die **Prüfungsakte** eines Versuchs (Fragen der eingefrorenen
 Kopie, gegebene Antworten, Punkte, Korrekturen) — jede Einsicht wird
-protokolliert. Je Prüfung gibt es eine **Statistik** (Versuche, Bestehensquote,
+protokolliert. Je Prüfung gibt es eine **Statistik** (Versuchszahl, Bestehensquote,
 Zeitbedarf, Fehlerquote je Frage — Quoten erst ab der Mindestgruppe). Aus der
 Teilnehmerliste lässt sich ein **weiterer Versuch freigeben**, trotz
 Versuchsgrenze oder Sperrfrist, genau einmal und mit Begründung.

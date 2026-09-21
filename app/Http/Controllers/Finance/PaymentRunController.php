@@ -18,7 +18,7 @@ use App\Models\Finance\{BankAccount, PaymentRun, PaymentRunItem, SepaMandate};
 use App\Models\IncomingEInvoice;
 use App\Services\Finance\FinancialFormatsSupport;
 use App\Services\Finance\Sepa\{PaymentProposalService, PaymentRunService};
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Gate;
@@ -100,7 +100,7 @@ class PaymentRunController extends Controller {
                 $data['label'] ?? null,
             );
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('finance.payment-runs.show', $run)->with('status', __('sepa.run_created'));
@@ -139,7 +139,7 @@ class PaymentRunController extends Controller {
                 filled($data['execution_date'] ?? null) ? CarbonImmutable::parse((string) $data['execution_date']) : null,
             );
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('finance.payment-runs.show', $run)->with('status', __('sepa.direct_debit_created'));
@@ -191,7 +191,7 @@ class PaymentRunController extends Controller {
         try {
             $this->runs->release($run, $actor);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('status', __('sepa.run_released'));
@@ -209,7 +209,7 @@ class PaymentRunController extends Controller {
         try {
             $xml = $this->runs->export($run, $actor);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return response($xml, 200, [
@@ -224,7 +224,7 @@ class PaymentRunController extends Controller {
         try {
             $this->runs->cancel($run);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('status', __('sepa.run_cancelled'));
@@ -237,7 +237,7 @@ class PaymentRunController extends Controller {
         try {
             $this->runs->removeItem($item);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('status', __('sepa.item_removed'));
@@ -262,7 +262,7 @@ class PaymentRunController extends Controller {
         try {
             $this->runs->adjustItem($item, (float) $data['amount'], $data['deduction_reason'] ?? null);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('finance.payment-runs.show', $run)->with('status', __('sepa.item_adjusted'));

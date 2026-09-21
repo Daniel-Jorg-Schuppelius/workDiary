@@ -15,10 +15,10 @@ Verpflegungsmehraufwand bei Reisen, getrennt nach Land und optional nach
 Region. Jeder Satz gilt ab einem Datum und kann ein Gültigkeitsende haben,
 sodass mehrere Zeiträume nebeneinander bestehen.
 
-Pflege je Satz den vollen Tagessatz und den anteiligen Satz; ein optionaler
+Pflegen Sie je Satz den vollen Tagessatz und den anteiligen Satz; ein optionaler
 Übernachtungsbetrag kann ergänzt werden. Land und Währung werden über
 Ländercode und Währungscode hinterlegt, die Quelle dient der Nachweisbarkeit.
 
 Über den Länderfilter und die Spaltensortierung lassen sich die passenden
-Sätze schnell finden. Bei gesetzlichen Anpassungen lege neue Sätze mit
+Sätze schnell finden. Bei gesetzlichen Anpassungen legen Sie neue Sätze mit
 entsprechendem Gültigkeitsbeginn an, statt bestehende zu überschreiben.

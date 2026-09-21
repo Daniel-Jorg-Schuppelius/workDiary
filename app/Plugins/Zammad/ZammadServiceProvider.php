@@ -32,11 +32,9 @@ class ZammadServiceProvider extends PluginServiceProviderBase {
     protected function registerPlugin(): void {
         $this->app->singleton(ZammadGatewayFactory::class, ClientGatewayFactory::class);
 
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                Console\ZammadSyncCommand::class,
-            ]);
-        }
+        $this->commands([
+            Console\ZammadSyncCommand::class,
+        ]);
     }
 
     protected function bootPlugin(): void {

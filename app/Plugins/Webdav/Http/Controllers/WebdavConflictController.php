@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{IntegrationInboxItem, User};
 use App\Plugins\Support\Mirror\DocumentConflictResolver;
 use App\Plugins\Webdav\{WebdavMirrorTarget, WebdavPlugin};
+use App\Support\ErrorText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Throwable;
@@ -48,7 +49,7 @@ class WebdavConflictController extends Controller {
         try {
             $action();
         } catch (Throwable $e) {
-            return back()->with('error', __('webdav.conflict.flash.failed', ['reason' => $e->getMessage()]));
+            return back()->with('error', __('webdav.conflict.flash.failed', ['reason' => ErrorText::for($e)]));
         }
 
         return back()->with('success', $success);

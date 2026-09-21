@@ -83,7 +83,7 @@
         </tr>
         <tr>
             <th>{{ __('construction.pdf.weather_source') }}</th>
-            <td>{{ $notice->weatherSnapshot->provider }} — {{ $notice->weatherSnapshot->fetched_at?->format('d.m.Y H:i') }}</td>
+            <td>{{ $notice->weatherSnapshot->provider }} — {{ $notice->weatherSnapshot->fetched_at?->orgTz()->format('d.m.Y H:i') }}</td>
         </tr>
     </table>
 @endif

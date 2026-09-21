@@ -60,6 +60,7 @@ return [
         'disconnected' => 'CalDAV-Anbindung getrennt. Bereits publizierte Termine bleiben extern erhalten.',
         'no_connection' => 'Keine aktive CalDAV-Anbindung vorhanden.',
         'invalid_url' => 'Die Basis-URL muss mit http:// oder https:// beginnen.',
+        'path_outside_base' => 'Die Kalender-URL liegt nicht unter der Basis-URL. Bitte den Pfad relativ zur Basis-URL angeben.',
         'password_required' => 'Für eine neue Anbindung ist ein App-Passwort erforderlich.',
     ],
 ];

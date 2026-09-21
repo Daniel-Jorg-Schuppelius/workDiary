@@ -17,7 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{Asset, User};
 use App\Models\Rental\{RentalCase, RentalProfile, RentalRequest};
 use App\Services\Rental\RentalRequestService;
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -71,7 +71,7 @@ class RentalRequestController extends Controller {
         try {
             $accepted = $this->service->accept($rentalRequest, $this->actor(), $asset);
         } catch (RentalConflictException|RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Anfrage angenommen — Verleihakte :number als Entwurf angelegt und Zeitraum vorgemerkt.', [
@@ -87,7 +87,7 @@ class RentalRequestController extends Controller {
         try {
             $this->service->decline($rentalRequest, $this->actor(), (string) $data['reason']);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Anfrage abgelehnt — der Kunde wurde informiert.'));

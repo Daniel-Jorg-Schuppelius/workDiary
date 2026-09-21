@@ -23,6 +23,7 @@ use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use App\Services\Reselling\Register\{LicenseArticleClassifier, ResaleInvoiceDraftService, ResaleLocalDraftRun, ResaleMarginReport, ResalePriceCheck, ResaleRenewalReport, ResaleUnbilledReport};
 use App\Settings\SettingScope;
 use App\Support\{CsvExport, Setting, XlsxExport};
+use App\Support\ErrorText;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -272,7 +273,7 @@ class ResaleReportController extends Controller {
             $result = $drafts->draft($organization, $recipient, $request->user());
         } catch (\Throwable $e) {
             if ($e::class === RuntimeException::class) {
-                throw ValidationException::withMessages(['customer_id' => $e->getMessage()]);
+                throw ValidationException::withMessages(['customer_id' => ErrorText::for($e)]);
             }
             Log::warning('resale: Rechnungsentwurf fehlgeschlagen', ['customer_id' => $recipient->id, 'exception' => $e::class, 'message' => $e->getMessage()]);
             throw ValidationException::withMessages(['customer_id' => (string) __('resale.draft_flash.failed')]);

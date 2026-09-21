@@ -29,7 +29,7 @@ return [
     ],
     'flash' => [
         'synced' => 'Sincronizzazione Billbee completata: :imported nuovi, :staged assegnazioni aperte.',
-        'sync_failed' => 'Sincronizzazione Billbee non riuscita — vedi il log.',
+        'sync_failed' => 'Sincronizzazione Billbee non riuscita — dettagli nel log.',
     ],
     'open_inbox' => ':count assegnazioni aperte',
     'last_sync' => 'Ultima sincronizzazione :at',

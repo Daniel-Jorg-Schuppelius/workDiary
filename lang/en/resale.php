@@ -126,6 +126,7 @@ return [
         'customer_required' => 'Please choose a customer.',
         'foreign_required' => 'Please choose an end customer.',
         'ends_on_required' => 'A cancelled renewal needs an end date.',
+        'amount_too_large' => 'Quantity × unit price exceeds the largest period amount that can be stored.',
     ],
     'kind' => [
         'license' => 'Licence',

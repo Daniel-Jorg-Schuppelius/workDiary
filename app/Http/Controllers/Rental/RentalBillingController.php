@@ -16,6 +16,7 @@ use App\Enums\Rental\RentalChargeKind;
 use App\Http\Controllers\Controller;
 use App\Models\Rental\{RentalCharge, RentalDeposit};
 use App\Services\Rental\RentalBillingService;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -43,7 +44,7 @@ class RentalBillingController extends Controller {
         try {
             $this->billing->addCharge($rental, $request->user() ?? abort(401), $data);
         } catch (\InvalidArgumentException $e) {
-            return back()->withErrors(['reason_text' => $e->getMessage()]);
+            return back()->withErrors(['reason_text' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Position erfasst.'));
@@ -72,7 +73,7 @@ class RentalBillingController extends Controller {
         try {
             $this->billing->releaseCharge($charge, $request->user() ?? abort(401));
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['charge' => $e->getMessage()]);
+            return back()->withErrors(['charge' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Position freigegeben.'));
@@ -86,7 +87,7 @@ class RentalBillingController extends Controller {
         try {
             $this->billing->cancelCharge($charge, $request->user() ?? abort(401), $data['reason'] ?? null);
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['charge' => $e->getMessage()]);
+            return back()->withErrors(['charge' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Position storniert.'));
@@ -99,7 +100,7 @@ class RentalBillingController extends Controller {
         try {
             $invoice = $this->billing->invoiceReleasedCharges($rental, $request->user() ?? abort(401));
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['charges' => $e->getMessage()]);
+            return back()->withErrors(['charges' => ErrorText::for($e)]);
         }
 
         if ($invoice === null) {
@@ -117,7 +118,7 @@ class RentalBillingController extends Controller {
         try {
             $this->billing->recordExternalReference($charge, $data['external_reference']);
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['external_reference' => $e->getMessage()]);
+            return back()->withErrors(['external_reference' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Externe Belegnummer hinterlegt.'));
@@ -142,7 +143,7 @@ class RentalBillingController extends Controller {
         try {
             $this->billing->markDepositReceived($deposit, $request->user() ?? abort(401));
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['deposit' => $e->getMessage()]);
+            return back()->withErrors(['deposit' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Kaution als erhalten markiert.'));
@@ -164,7 +165,7 @@ class RentalBillingController extends Controller {
                 $data['reason'] ?? null,
             );
         } catch (\RuntimeException|\InvalidArgumentException $e) {
-            return back()->withErrors(['retained_amount' => $e->getMessage()]);
+            return back()->withErrors(['retained_amount' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Kaution abgerechnet.'));

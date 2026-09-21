@@ -19,12 +19,12 @@ lo que no pertenece a un único caso.
 
 Procedimiento habitual:
 
-1. Crea una colección desde la entrada **Conocimiento**, con **Gestionar
-   colecciones**, si quieres como subcolección de otra.
+1. Cree una colección desde la entrada **Conocimiento**, con **Gestionar
+   colecciones**, si quiere como subcolección de otra.
    Las colecciones se anidan hasta cinco niveles y se pueden mover después.
-2. En la página de detalle de un contenido elige **Añadir a colección**. Un
+2. En la página de detalle de un contenido elija **Añadir a colección**. Un
    contenido puede estar en varias colecciones; no se crea ninguna copia.
-3. **Archiva** las colecciones que ya no necesites en lugar de borrarlas: las
+3. **Archive** las colecciones que ya no necesite en lugar de borrarlas: las
    asignaciones se conservan y se pueden restaurar.
 
 **Una colección no concede acceso.** Cada persona solo ve lo que puede ver de
@@ -47,11 +47,11 @@ modo de gestión. Cada pestaña conserva sus columnas y acciones propias: los
 plazos y la publicación siguen en los documentos, la publicación de artículos
 sigue en la base de conocimiento.
 
-El cambio conserva el filtro: si eliges un cliente y pasas a **Documentos**,
-ves sus documentos. Solo viaja lo que la pestaña puede aplicar: un artículo
+El cambio conserva el filtro: si elige un cliente y pasa a **Documentos**,
+ve sus documentos. Solo viaja lo que la pestaña puede aplicar: un artículo
 no pertenece a ningún cliente, así que allí la selección se queda fuera.
 
-Marca varios contenidos y pulsa **Añadir** para ponerlos a la vez en una
+Marque varios contenidos y pulse **Añadir** para ponerlos a la vez en una
 colección; lo mismo funciona en los resultados de la **Búsqueda** para notas,
 artículos de conocimiento y cursos.
 
@@ -72,7 +72,7 @@ lectura, sin escribir de vuelta y sin sincronización continua. La entrada
 
 - **Importar Obsidian** lee un almacén de Obsidian mediante una conexión de
   carpeta existente de la entrada de documentos en la nube (Nextcloud, OneDrive,
-  Dropbox, Google Drive). Indica la ruta del almacén relativa a la carpeta raíz
+  Dropbox, Google Drive). Indique la ruta del almacén relativa a la carpeta raíz
   de la conexión. Las subcarpetas pasan a ser colecciones, las etiquetas del
   encabezado YAML y las `#etiquetas` del texto se conservan, y los `[[wikilinks]]`
   pasan a ser referencias. `.obsidian/` y `.trash/` quedan fuera.
@@ -95,7 +95,7 @@ a qué remite un contenido y dónde se menciona:
 
 - **Añadir referencia** une el contenido con una nota, un mapa de ideas, un
   artículo de conocimiento, un documento, un curso o una ruta de aprendizaje.
-  Puedes acotar la lista con el campo de búsqueda.
+  Puede acotar la lista con el campo de búsqueda.
 - **Mencionado en** lista, agrupado por tipo, todo lo que apunta a la página,
   también los vínculos de la base de conocimiento y los destinos convertidos o
   vinculados desde nodos de ideas. Clientes, proyectos y pedidos muestran esta
@@ -104,7 +104,7 @@ a qué remite un contenido y dónde se menciona:
   vínculos de la base de conocimiento y de los mapas de ideas se gestionan allí.
 
 Como con las colecciones, una referencia no concede acceso: una fuente solo
-aparece si puedes abrirla de todos modos.
+aparece si puede abrirla de todos modos.
 
 Para crear y llenar colecciones y añadir referencias hace falta el permiso
 «Gestionar colecciones y referencias»; para ver las colecciones, «Ver

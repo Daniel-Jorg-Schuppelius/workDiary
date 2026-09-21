@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Isms\IsmsAdvisory;
 use App\Models\{Organization, User};
 use App\Services\Isms\AdvisoryImportService;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
@@ -113,7 +114,7 @@ class AdvisoryController extends Controller {
             );
         } catch (\Throwable $e) {
             return redirect()->route('isms.advisories.index')
-                ->with('error', __('Feed-Abruf fehlgeschlagen: :message', ['message' => $e->getMessage()]));
+                ->with('error', __('Feed-Abruf fehlgeschlagen: :message', ['message' => ErrorText::for($e)]));
         }
 
         return redirect()->route('isms.advisories.index')

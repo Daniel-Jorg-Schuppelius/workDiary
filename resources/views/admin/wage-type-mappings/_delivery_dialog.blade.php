@@ -25,7 +25,7 @@
     {{-- Toggle-Umschaltung je Gruppe via Alpine.data("reveal") (components.js) — CSP-Build-konform. --}}
     <div class="space-y-4">
         <x-form-group :legend="__('wage_types.field.mail')" icon="mail" tone="primary" cols="1"
-                      x-data="reveal(@js($mailEnabled))">
+                      x-data="reveal({{ \Illuminate\Support\Js::from($mailEnabled) }})">
             <div class="fieldset">
                 <label class="label cursor-pointer justify-start gap-3">
                     <input type="hidden" name="mail_enabled" value="0">
@@ -48,7 +48,7 @@
         </x-form-group>
 
         <x-form-group :legend="__('wage_types.field.sftp')" icon="cloud_upload" tone="primary" cols="2"
-                      x-data="reveal(@js($sftpEnabled))">
+                      x-data="reveal({{ \Illuminate\Support\Js::from($sftpEnabled) }})">
             <div class="fieldset md:col-span-2">
                 <label class="label cursor-pointer justify-start gap-3">
                     <input type="hidden" name="sftp_enabled" value="0">

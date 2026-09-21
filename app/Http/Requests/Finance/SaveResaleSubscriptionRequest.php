@@ -23,6 +23,7 @@ use App\Models\Reselling\ResaleSubscription;
 use App\Rules\ExistsInCurrentOrganization;
 use Carbon\CarbonImmutable;
 use Illuminate\Validation\{Rule, Validator};
+use Illuminate\Validation\Rules\Unique;
 
 /**
  * Abo im Reselling-Register anlegen/ändern (Feature 152). Genau ein Halter:
@@ -65,6 +66,20 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
         ];
     }
 
+    /** Unique-Index resale_subs_org_provider_ext_uq als Meldung statt 500 (UI-Fuzz 2026-09-21). */
+    private function uniqueExternalId(): Unique {
+        $subscription = $this->subscription();
+        $provider = $subscription !== null && self::lockedFieldsFor($subscription)['provider']
+            ? $subscription->provider->value
+            : (string) $this->input('provider');
+        $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+
+        return Rule::unique('resale_subscriptions', 'external_id')
+            ->where('organization_id', $organization?->id)
+            ->where('provider', $provider)
+            ->ignore($subscription?->getKey());
+    }
+
     protected function subscription(): ?ResaleSubscription {
         $subscription = $this->route('subscription');
 
@@ -83,7 +98,7 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
             // Domains kommen nur über den Domain-Sync; ein Datei-/Hand-Abo würde er nachts beenden.
             'provider' => $locked['provider'] ? ['nullable', Rule::in($providers)] : ['required', Rule::enum(SubscriptionProvider::class), Rule::notIn([SubscriptionProvider::DomainReselling->value])],
             'label' => ['required', 'string', 'max:190'],
-            'external_id' => ['nullable', 'string', 'max:120'],
+            'external_id' => $locked['external_id'] ? ['nullable', 'string', 'max:120'] : ['nullable', 'string', 'max:120', $this->uniqueExternalId()],
             'external_order_id' => ['nullable', 'string', 'max:120'],
             'holder' => ['required', Rule::in(['customer', 'foreign', 'own', 'none'])],
             'customer_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('customers')],
@@ -117,6 +132,11 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
             }
             if (is_numeric($data['contract_id'] ?? null) && ! $validator->errors()->hasAny(['contract_id', 'customer_id', 'foreign_customer_id'])) {
                 $this->validateContract($validator, (int) $data['contract_id'], (string) ($data['holder'] ?? 'none'), $data);
+            }
+            // Periodensoll (resale_periods, decimal(12,2)) = Menge × Stückpreis (UI-Fuzz 2026-09-21: 1264).
+            $price = max((float) ($data['purchase_unit_price'] ?? 0), (float) ($data['sale_unit_price'] ?? 0));
+            if (! $validator->errors()->hasAny(['quantity', 'purchase_unit_price', 'sale_unit_price']) && (float) ($data['quantity'] ?? 0) * $price > 9999999999.99) {
+                $validator->errors()->add('quantity', (string) __('resale.error.amount_too_large'));
             }
         });
     }

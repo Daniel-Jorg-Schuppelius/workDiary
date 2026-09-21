@@ -28,11 +28,11 @@ y estado. La entrada ancla actas, tiempos y la facturación posterior
 
 ## Procedimiento recomendado
 
-1. Abre **«Nueva entrada»** en la barra superior o la acción rápida
+1. Abra **«Nueva entrada»** en la barra superior o la acción rápida
    del panel.
-2. Registra el **cliente** (obligatorio) y, si procede, el
+2. Registre el **cliente** (obligatorio) y, si procede, el
    **proyecto**.
-3. Elige el **tipo de entrada** y describe el **contenido** en una o
+3. Elija el **tipo de entrada** y describa el **contenido** en una o
    dos frases.
 4. Opcional: una **duración prevista** en minutos.
 5. Las transiciones de estado pasan después por la **ventana de

@@ -12,11 +12,11 @@ related:
     - glossary.core
 ---
 
-Nel registro degli **incidenti di sicurezza** registri, valuti e documenti
-gli incidenti di sicurezza delle informazioni. Inserisci l'incidente con
-titolo, categoria, criticità e responsabile, poi conducilo lungo la catena
+Nel registro degli **incidenti di sicurezza** registra, valuta e documenta
+gli incidenti di sicurezza delle informazioni. Inserisca l'incidente con
+titolo, categoria, criticità e responsabile, poi lo conduca lungo la catena
 degli stati da "Segnalato" fino a "Chiuso"; la chiusura richiede
-obbligatoriamente **analisi delle cause** e **lezioni apprese**. Collega
+obbligatoriamente **analisi delle cause** e **lezioni apprese**. Colleghi
 l'incidente a rischi e misure interessati perché le conoscenze rientrino
 nelle valutazioni. Se sono coinvolti dati personali, la spunta è solo un
 **avviso**: la notifica privacy obbligatoria corre separatamente nella

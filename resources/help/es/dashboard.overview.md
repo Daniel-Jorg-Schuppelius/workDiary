@@ -13,9 +13,9 @@ related:
 
 ## Objetivo y contexto
 
-El panel es tu página de inicio personal: reúne en mosaicos los
-indicadores, tareas abiertas y avisos más importantes para ti. Lo que
-aparece depende de tus permisos y de los módulos activados — alguien
+El panel es su página de inicio personal: reúne en mosaicos los
+indicadores, tareas abiertas y avisos más importantes para usted. Lo que
+aparece depende de sus permisos y de los módulos activados — alguien
 con derechos de análisis ve mosaicos distintos que alguien sin ellos.
 Los mosaicos ocultos dejan de consultar datos: un panel ordenado
 también carga más rápido.
@@ -26,17 +26,17 @@ también carga más rápido.
   especiales.
 - Para los valores predeterminados de la organización: el derecho a
   gestionarla.
-- En el perfil puedes fijar la página de inicio personal como página
+- En el perfil puede fijar la página de inicio personal como página
   predeterminada tras iniciar sesión.
 
 ## Procedimiento recomendado
 
-1. Abre la **personalización** y activa los mosaicos que necesitas a
+1. Abra la **personalización** y active los mosaicos que necesita a
    diario — fichaje, recordatorios, plazos, partidas abiertas, estado
    de las copias y más están disponibles y al principio ocultos.
-2. Ordena los mosaicos arrastrándolos o con las flechas y ponlos a
+2. Ordene los mosaicos arrastrándolos o con las flechas y póngalos a
    media o a todo lo ancho.
-3. Guarda la configuración — la selección solo vale para tu cuenta y
+3. Guarde la configuración — la selección solo vale para su cuenta y
    se conserva.
 4. Quien gestiona la organización puede guardar su disposición como
    **predeterminada para todos**; se aplica a cuentas sin selección
@@ -57,11 +57,11 @@ con un vistazo a los plazos que vencen — sin un solo clic en submenús.
   entierran lo esencial. Aquí menos es más.
 - **Confundir predeterminado y vista propia:** el predeterminado de
   la organización solo aplica a cuentas sin selección propia;
-  «Restablecer al predeterminado» te devuelve allí cuando quieras.
+  «Restablecer al predeterminado» le devuelve allí cuando quiera.
 
 ## Efectos y próximos pasos
 
-La selección de mosaicos solo afecta a tu cuenta y no cambia datos.
+La selección de mosaicos solo afecta a su cuenta y no cambia datos.
 Próximos pasos útiles: la ayuda contextual de cada mosaico (tecla `?`)
 y revisar los ajustes de notificaciones para que avisos del panel y
 correos encajen.

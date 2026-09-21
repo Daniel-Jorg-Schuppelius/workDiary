@@ -301,7 +301,7 @@ return [
             'transfer' => 'Traslado',
         ],
         'title' => 'Escanear',
-        'subtitle' => 'Escanea un código y registra',
+        'subtitle' => 'Escanee un código y registre',
         'code' => 'Código',
         'qty' => 'Cantidad',
         'book' => 'Registrar',

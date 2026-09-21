@@ -17,6 +17,7 @@ use App\Http\Controllers\Concerns\{RequiresPlatformOperator, ResolvesCurrentOrga
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, Organization, SystemSetting};
 use App\Settings\{SettingDefinition, SettingScope, SettingType, SettingsRegistry};
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -79,7 +80,7 @@ class SettingsController extends Controller {
         } catch (ValidationException $e) {
             return $this->redirectBack($request)->with('error', implode(' ', $e->validator->errors()->all()));
         } catch (\InvalidArgumentException $e) {
-            return $this->redirectBack($request)->with('error', $e->getMessage());
+            return $this->redirectBack($request)->with('error', ErrorText::for($e));
         }
 
         return $this->redirectBack($request)->with('status', __('settingsregistry.flash.saved', ['key' => $key]));

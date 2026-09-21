@@ -17,7 +17,7 @@ Bedingungen, werden die zugeordneten Aktionen ausgeführt. Die Regeln
 gelten je Organisation und sind streng auf den eigenen Mandanten
 beschränkt.
 
-In der Übersicht siehst du alle Regeln, sortiert nach Priorität und
+In der Übersicht sehen Sie alle Regeln, sortiert nach Priorität und
 Name. Pro Regel stehen folgende Aktionen bereit:
 
 - **Anlegen**: Name, Auslöse-Ereignis, Bedingungen und Aktionen.

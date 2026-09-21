@@ -31,8 +31,8 @@ trait OpensXlsxDocuments {
     /**
      * @param  string  $unreadableKey  Übersetzungsschlüssel mit :file und :reason für sonstige Parserfehler
      */
-    protected static function openXlsx(string $file, int $maxRows, string $unreadableKey): Document {
-        $name = basename($file);
+    protected static function openXlsx(string $file, int $maxRows, string $unreadableKey, ?string $name = null): Document {
+        $name ??= basename($file);
         try {
             return XLSXDocumentParser::fromFile($file, true, maxRows: $maxRows);
         } catch (DocumentLimitExceededException $e) {

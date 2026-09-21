@@ -59,7 +59,7 @@
             </x-slot:head>
             @foreach ($handovers as $h)
                 <tr class="hover">
-                    <td class="font-mono text-xs">{{ $h->occurred_at?->translatedFormat('d.m.Y H:i') }}</td>
+                    <td class="font-mono text-xs">{{ $h->occurred_at?->orgTz()->translatedFormat('d.m.Y H:i') }}</td>
                     <td>
                         @if ($h->asset)
                             <x-icon name="key" class="text-[14px] align-middle" />

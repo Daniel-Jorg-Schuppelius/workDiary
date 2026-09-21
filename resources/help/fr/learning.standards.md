@@ -10,7 +10,7 @@ related:
 ---
 
 Outre ses propres unités, la plateforme comprend les formats d'échange
-courants : tu peux importer des cours achetés et lancer tes cours dans
+courants : vous pouvez importer des cours achetés et lancer vos cours dans
 d'autres systèmes.
 
 **SCORM 1.2 et 2004** — Un paquet SCORM est un ZIP accompagné d'un manifeste.

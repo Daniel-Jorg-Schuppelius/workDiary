@@ -1341,6 +1341,13 @@
                     {{ session('success') }}
                 </div>
             @endif
+            {{-- status: gleichrangige Erfolgsmeldung (with('status')); war nur in
+                 einzelnen Views gerendert und ging sonst verloren. --}}
+            @if (session('status'))
+                <div role="status" class="alert alert-success mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
+                    {{ session('status') }}
+                </div>
+            @endif
             @if (session('error'))
                 <div role="alert" class="alert alert-error mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
                     {{ session('error') }}
@@ -1478,7 +1485,7 @@
                  iconWrapId="action-confirm-icon-wrap"
                  iconId="action-confirm-icon"
                  titleId="action-confirm-title">
-            <p id="action-confirm-message" class="text-sm text-base-content/75">{{ __('Möchtest du diese Aktion wirklich ausführen?') }}</p>
+            <p id="action-confirm-message" class="text-sm text-base-content/75">{{ __('Möchten Sie diese Aktion wirklich ausführen?') }}</p>
 
             <x-slot:actions>
                 <x-button type="button" tone="ghost" class="gap-2" data-entry-modal-close icon="close">{{ __('Abbrechen') }}</x-button>
@@ -1510,7 +1517,7 @@
                 themeUpdateUrl: @json(route('account.theme.update')),
                 i18n: {
                     confirmTitle: @json(__('Aktion bestätigen')),
-                    confirmMessage: @json(__('Möchtest du diese Aktion wirklich ausführen?')),
+                    confirmMessage: @json(__('Möchten Sie diese Aktion wirklich ausführen?')),
                     confirmLabel: @json(__('Ausführen')),
                     notifyInfo: @json(__('Hinweis')),
                     notifySuccess: @json(__('Erfolg')),

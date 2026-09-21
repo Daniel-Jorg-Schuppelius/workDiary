@@ -8,15 +8,15 @@ related:
     - reports.customer-analysis
 ---
 
-Klicke auf eine Zeile in der Zeiterfassungs-Liste, um den Eintrag zu
+Klicken Sie auf eine Zeile in der Zeiterfassungs-Liste, um den Eintrag zu
 bearbeiten. Änderungen werden im Audit-Log mit Person, Zeitpunkt und
 vorherigem Wert protokolliert.
 
 Wichtig:
 
 - **Bereits freigegebene** Einträge sind gesperrt. Für nachträgliche
-  Korrekturen nutze die **Korrekturanträge**.
-- Ändere niemals nur das Ende einer Schicht – passe **immer** Beginn,
+  Korrekturen nutzen Sie die **Korrekturanträge**.
+- Ändern Sie niemals nur das Ende einer Schicht – passen Sie **immer** Beginn,
   Ende, Pause als Set an, sonst werden Auswertungen inkonsistent.
 - Wechsel des Projekts ist erlaubt, sofern die alte Projektzuordnung nicht
   bereits abgerechnet wurde.

@@ -16,7 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveChangeRequest;
 use App\Models\{Asset, Change, ChangeTemplate, Problem, ProcedureTemplate, ServiceTicket, User};
 use App\Services\ServiceTicket\ChangeService;
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\ValidationException;
@@ -144,7 +144,7 @@ class ChangeController extends Controller {
                 'problem_id' => $data['problem_id'] ?? null,
             ], $user, $this->buildApprovalChain((array) ($data['approval_steps'] ?? [])), $template);
         } catch (\RuntimeException|\InvalidArgumentException $e) {
-            throw ValidationException::withMessages(['change_type' => $e->getMessage()]);
+            throw ValidationException::withMessages(['change_type' => ErrorText::for($e)]);
         }
 
         // Verknüpfungen: Org-Grenze ist validiert (ExistsInCurrentOrganization);
@@ -175,7 +175,7 @@ class ChangeController extends Controller {
         try {
             $this->changes->implement($change, $this->actor(), $procedureTemplateId);
         } catch (\RuntimeException|\InvalidArgumentException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('servicedesk.changes.show', $change)
@@ -204,7 +204,7 @@ class ChangeController extends Controller {
         try {
             $this->changes->complete($change, $this->actor(), $data['outcome'], $data['pir_notes'] ?? null);
         } catch (\RuntimeException|\InvalidArgumentException $e) {
-            return back()->withErrors(['pir_notes' => $e->getMessage()]);
+            return back()->withErrors(['pir_notes' => ErrorText::for($e)]);
         }
 
         return redirect()->route('servicedesk.changes.show', $change)

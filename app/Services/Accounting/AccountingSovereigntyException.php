@@ -14,6 +14,8 @@ namespace App\Services\Accounting;
 
 use App\Enums\Finance\AccountingSovereignty;
 use Carbon\CarbonInterface;
+use Illuminate\Http\{JsonResponse, Request};
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Für diesen Zeitraum darf lokal nicht festgeschrieben werden (Feature 125,
@@ -30,5 +32,14 @@ class AccountingSovereigntyException extends \RuntimeException {
             'date' => $date->format(\App\Support\Formats::date()),
             'holder' => $provider !== null && $provider !== '' ? $provider : $sovereignty->label(),
         ]));
+    }
+
+    /** Fachliche Sperre, kein Serverfehler: Meldung statt 500 (Dialoge per JSON). */
+    public function render(Request $request): Response {
+        if ($request->expectsJson()) {
+            return new JsonResponse(['message' => $this->getMessage()], Response::HTTP_CONFLICT);
+        }
+
+        return back()->withInput()->with('error', $this->getMessage());
     }
 }

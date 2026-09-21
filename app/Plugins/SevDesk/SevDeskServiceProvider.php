@@ -26,11 +26,9 @@ class SevDeskServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function registerPlugin(): void {
-        if ($this->app->runningInConsole()) {
-            // Beleg-Rückabruf (Feature 122, MVP-611).
-            $this->commands([
-                Console\SevDeskPullVouchersCommand::class,
-            ]);
-        }
+        // Beleg-Rückabruf (Feature 122, MVP-611).
+        $this->commands([
+            Console\SevDeskPullVouchersCommand::class,
+        ]);
     }
 }

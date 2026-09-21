@@ -113,7 +113,7 @@ return [
     'customer.panel_hint' => 'Sonderdesign dieses Kunden: das gewählte Profil gewinnt bei seinen Belegen vor dem org-weiten Design (vormals Rechnungsvorlage).',
     'customer.profile_label' => 'Design-Profil',
     'customer.profile_none' => '— org-weites Design —',
-    'editor.activate_confirm_warnings' => 'Entwurf aktivieren? Der Preflight meldet :n Warnung(en) — mit der Bestätigung nimmst du sie bewusst in Kauf. Aktivierte Versionen sind unveränderlich.',
+    'editor.activate_confirm_warnings' => 'Entwurf aktivieren? Der Preflight meldet :n Warnung(en) — mit der Bestätigung nehmen Sie sie bewusst in Kauf. Aktivierte Versionen sind unveränderlich.',
     'editor.section_margins' => 'Seitenränder & Druckbereiche',
     'editor.section_address' => 'Empfängerfenster & Absenderzeile',
     'editor.section_blocked' => 'Sperrflächen',
@@ -175,6 +175,6 @@ return [
     'editor.manage_assets' => 'Firmenbögen verwalten',
     'link.feed' => 'Dokumentdesign',
     'link.feed_title' => 'Aussehen der PDF-Belege: Firmenbogen, Tabellenstil, Texte',
-    'link.branding_hint' => 'Firmenbogen, Druckbereiche, Tabellenstil (Kopfzeile, Zebrazeilen) und Kopf-/Fußtexte der PDF-Dokumente pflegst du im Dokumentdesign.',
+    'link.branding_hint' => 'Firmenbogen, Druckbereiche, Tabellenstil (Kopfzeile, Zebrazeilen) und Kopf-/Fußtexte der PDF-Dokumente pflegen Sie im Dokumentdesign.',
     'link.open' => 'Dokumentdesign öffnen',
 ];

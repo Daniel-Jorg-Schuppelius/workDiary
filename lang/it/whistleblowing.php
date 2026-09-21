@@ -42,7 +42,7 @@ return [
     'reporter_status' => [
         'received' => 'Ricevuta e in fase di verifica',
         'in_progress' => 'In lavorazione',
-        'awaiting_you' => 'In attesa di un Suo riscontro',
+        'awaiting_you' => 'In attesa di un suo riscontro',
         'closed' => 'Chiusa',
     ],
     'priority' => [

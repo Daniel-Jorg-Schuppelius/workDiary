@@ -18,6 +18,7 @@ use App\Http\Requests\SaveWarrantyPeriodRequest;
 use App\Models\{Customer, Project, Protocol, Supplier, User};
 use App\Models\Warranty\WarrantyPeriod;
 use App\Services\Warranty\WarrantyService;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -98,7 +99,7 @@ class WarrantyPeriodController extends Controller {
                     + ['organization_id' => $this->currentOrganization()->id],
             );
         } catch (RuntimeException $e) {
-            return back()->withInput()->with('error', $e->getMessage());
+            return back()->withInput()->with('error', ErrorText::for($e));
         }
 
         return redirect()->toList('warranties.index')->with('status', __('warranty.created'));

@@ -13,7 +13,7 @@ related:
     - privacy.overview
 ---
 
-Hier konfigurierst du das öffentliche Meldeportal deiner Organisation
+Hier konfigurieren Sie das öffentliche Meldeportal Ihrer Organisation
 (`/compliance/portal`). Pro Organisation gibt es genau ein Portal.
 Die Verwaltung erfordert die Berechtigung
 **whistleblowing.settings.manage** sowie die Zwei-Faktor-
@@ -32,9 +32,9 @@ Einstellungen:
 
 **Portal-Link (Slug)**: Der öffentliche Link enthält einen zufälligen
 Slug (z. B. `wb-xxxxxxxxxxxx`) und ist **nicht** aus dem
-Organisationsnamen ableitbar. Über **Link rotieren** erzeugst du
+Organisationsnamen ableitbar. Über **Link rotieren** erzeugen Sie
 einen neuen Slug.
 
 Risiko: Nach dem Rotieren sind **bereits verteilte Links sofort
-ungültig**. Verwende das nur, wenn ein Link nicht mehr genutzt werden
-soll, und kommuniziere den neuen Link anschließend aktiv.
+ungültig**. Verwenden Sie das nur, wenn ein Link nicht mehr genutzt werden
+soll, und kommunizieren Sie den neuen Link anschließend aktiv.

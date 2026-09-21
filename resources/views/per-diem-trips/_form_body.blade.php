@@ -31,7 +31,7 @@
                   from-id="started_at" to-id="ended_at" required
                   :from-label="__('Beginn')" :to-label="__('Ende')"
                   :from="old('started_at', $trip ? $trip->started_at->orgTz()->format('Y-m-d\\TH:i') : $date . 'T08:00')"
-                  :to="old('ended_at', $trip ? $trip->ended_at->format('Y-m-d\\TH:i') : $date . 'T18:00')"
+                  :to="old('ended_at', $trip ? $trip->ended_at->orgTz()->format('Y-m-d\\TH:i') : $date . 'T18:00')"
                   :from-error="$errors->first('started_at') ?: null"
                   :to-error="$errors->first('ended_at') ?: null" />
     <x-checkbox-field name="accommodation_provided" :label="__('Übernachtung wurde vom Arbeitgeber gestellt')" :checked="old('accommodation_provided', $trip?->accommodation_provided ?? false)" :toggle="false" span="2" />

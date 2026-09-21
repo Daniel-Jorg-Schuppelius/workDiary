@@ -15,7 +15,7 @@ use App\Enums\User\Permission as P;
 use App\Http\Controllers\Controller;
 use App\Models\{MonthClosure, User};
 use App\Services\TimeApproval\{MonthClosureService, MonthClosureWorkflowException};
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -150,7 +150,7 @@ class MonthApprovalInboxController extends Controller {
         try {
             $result = $bundler->package($monthClosure, $user);
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return response($result['content'], 200, [

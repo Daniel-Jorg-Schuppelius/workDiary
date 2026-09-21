@@ -16,6 +16,7 @@ use App\Models\{CommunicationNote, Customer, DiaryEntry, Organization, Project, 
 use App\Services\Communication\CommunicationNoteService;
 use App\Services\Ideas\NodeConversionService;
 use App\Support\{EntityUrl, Sqid, Tz};
+use App\Support\ErrorText;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -309,7 +310,7 @@ class CommunicationNoteController extends Controller {
         try {
             $reference = $conversions->convertNoteToKnowledgeArticle($note, $actor);
         } catch (\RuntimeException $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->with('error', ErrorText::for($e));
         }
 
         return redirect()
@@ -389,12 +390,12 @@ class CommunicationNoteController extends Controller {
         $rules = [
             'type' => ['required', 'string', 'in:' . implode(',', array_column(CommunicationNoteType::cases(), 'value'))],
             'direction' => ['required', 'string', 'in:' . implode(',', array_column(CommunicationDirection::cases(), 'value'))],
-            'occurred_at' => ['required', 'date'],
+            'occurred_at' => ['required', 'date', new \App\Rules\TimestampRange()],
             'subject' => ['required', 'string', 'min:3', 'max:180'],
             'body' => ['required', 'string', 'max:8000'],
             'result' => ['nullable', 'string', 'max:8000'],
             'next_action' => ['nullable', 'string', 'max:180'],
-            'next_action_due_at' => ['nullable', 'date', 'required_with:next_action_user_id'],
+            'next_action_due_at' => ['nullable', 'date', 'required_with:next_action_user_id', new \App\Rules\TimestampRange()],
             'next_action_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
             'visibility' => ['nullable', 'string', 'in:' . implode(',', array_column(CommunicationVisibility::cases(), 'value'))],
             'confidential' => ['nullable', 'boolean'],

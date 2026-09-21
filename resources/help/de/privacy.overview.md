@@ -12,7 +12,7 @@ related:
     - privacy.portal
 ---
 
-Das Datenschutzmodul unterstützt die operative Datenschutzarbeit deiner
+Das Datenschutzmodul unterstützt die operative Datenschutzarbeit Ihrer
 Organisation. Es wird laufend weiterentwickelt – die Grundbausteine:
 
 - **Verarbeitungstätigkeiten (VVT)**: Verzeichnis nach Art. 30 DSGVO
@@ -42,13 +42,13 @@ kann der Fall-Schlüssel vernichtet werden (Crypto-Shredding) – die
 verschlüsselten Inhalte sind dann **unwiederbringlich**. Freigegebene
 VVT-Versionen sind nicht mehr änderbar.
 
-Nächste Schritte: Nachweise (AVV-Dokumente, Zertifikate) verwaltest du
+Nächste Schritte: Nachweise (AVV-Dokumente, Zertifikate) verwalten Sie
 im Modul **Dokumente**.
 
 **Aufbewahrung, Löschung und Legal Hold:** Unter **Aufbewahrung & Löschung**
 schlägt das Löschkonzept fristüberfällige Daten vor; gelöscht oder
 anonymisiert wird erst nach zweistufiger Bestätigung. Läuft ein Betroffenen-
-oder Rechtsverfahren, setzt du unter **Legal Hold** einen Sperrvermerk an die
+oder Rechtsverfahren, setzen Sie unter **Legal Hold** einen Sperrvermerk an die
 Person oder den Kunden – mit Pflichtbegründung und optionalem Aktenzeichen. Solange
 er aktiv ist, entstehen keine Löschvorschläge, bestätigte Löschungen,
 Anonymisierung und Löschen von Konten oder Kunden werden abgewiesen, und die

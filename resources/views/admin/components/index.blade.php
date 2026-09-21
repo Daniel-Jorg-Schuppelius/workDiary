@@ -181,15 +181,17 @@
                 </p>
             @endif
             <div class="flex flex-wrap gap-2">
-                <form method="POST" action="{{ route('admin.components.sbom.generate') }}">
-                    @csrf
-                    <x-icon-btn icon="autorenew" tone="primary" size="sm" type="submit"
-                                show-label>{{ __('isms.components.action.generate') }}</x-icon-btn>
-                </form>
-                @if ($sbom !== null)
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('admin.components.sbom.download')"
-                                show-label>{{ __('isms.components.action.download') }}</x-icon-btn>
+                @if ($isPlatformOperator)
+                    <form method="POST" action="{{ route('admin.components.sbom.generate') }}">
+                        @csrf
+                        <x-icon-btn icon="autorenew" tone="primary" size="sm" type="submit"
+                                    show-label>{{ __('isms.components.action.generate') }}</x-icon-btn>
+                    </form>
+                    @if ($sbom !== null)
+                        <x-icon-btn icon="download" tone="outline" size="sm"
+                                    :href="route('admin.components.sbom.download')"
+                                    show-label>{{ __('isms.components.action.download') }}</x-icon-btn>
+                    @endif
                 @endif
                 {{-- CSAF-VEX für dieses Release (Nachtrag 044c). --}}
                 <form method="POST" action="{{ route('admin.components.vex') }}">
@@ -251,18 +253,20 @@
                     {{ __('isms.components.manifest.missing', ['command' => 'php artisan release:manifest']) }}
                 </p>
             @endif
-            <div class="flex flex-wrap gap-2">
-                <form method="POST" action="{{ route('admin.components.manifest.generate') }}">
-                    @csrf
-                    <x-icon-btn icon="autorenew" tone="primary" size="sm" type="submit"
-                                show-label>{{ __('isms.components.manifest.action_generate') }}</x-icon-btn>
-                </form>
-                @if ($manifest !== null)
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('admin.components.manifest.download')"
-                                show-label>{{ __('isms.components.manifest.action_download') }}</x-icon-btn>
-                @endif
-            </div>
+            @if ($isPlatformOperator)
+                <div class="flex flex-wrap gap-2">
+                    <form method="POST" action="{{ route('admin.components.manifest.generate') }}">
+                        @csrf
+                        <x-icon-btn icon="autorenew" tone="primary" size="sm" type="submit"
+                                    show-label>{{ __('isms.components.manifest.action_generate') }}</x-icon-btn>
+                    </form>
+                    @if ($manifest !== null)
+                        <x-icon-btn icon="download" tone="outline" size="sm"
+                                    :href="route('admin.components.manifest.download')"
+                                    show-label>{{ __('isms.components.manifest.action_download') }}</x-icon-btn>
+                    @endif
+                </div>
+            @endif
         </x-card>
     </div>
 
@@ -280,6 +284,7 @@
                     @endif
                 </p>
             </div>
+            @if ($isPlatformOperator)
             <div class="flex flex-wrap items-center gap-2">
                 @if ($updatesMode !== 'disabled')
                     <form method="POST" action="{{ route('admin.components.updates.check') }}">
@@ -293,6 +298,7 @@
                     <x-icon-btn icon="upload_file" tone="outline" size="sm" type="submit" show-label>{{ __('updates.action.import') }}</x-icon-btn>
                 </form>
             </div>
+            @endif
         </div>
 
         <x-table :empty-title="__('updates.empty')">
@@ -333,7 +339,7 @@
                                     </div>
                                 </td>
                                 <td class="text-right">
-                                    @unless ($update->isSecurityRelevant())
+                                    @if ($isPlatformOperator && ! $update->isSecurityRelevant())
                                         <div class="inline-flex items-center gap-1">
                                             <form method="POST" action="{{ route('admin.components.updates.snooze', $update) }}">
                                                 @csrf
@@ -344,7 +350,7 @@
                                                 <x-icon-btn icon="notifications_off" type="submit" :label="__('updates.action.acknowledge')" />
                                             </form>
                                         </div>
-                                    @endunless
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

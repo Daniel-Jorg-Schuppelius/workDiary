@@ -17,6 +17,7 @@ use App\Enums\User\Permission;
 use App\Models\{AccessMedium, Site, User};
 use App\Services\Access\AccessMediumService;
 use App\Services\SqidEncoder;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -138,7 +139,7 @@ class AccessMediumController extends Controller {
             'holder_user' => ['nullable', 'string'],
             'holder_name' => ['nullable', 'string', 'max:160'],
             'holder_company' => ['nullable', 'string', 'max:160'],
-            'expected_return_at' => ['nullable', 'date'],
+            'expected_return_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
             'signature_token' => ['nullable', 'string', 'max:64'],
         ]);
 
@@ -157,7 +158,7 @@ class AccessMediumController extends Controller {
                 'signature_token' => $data['signature_token'] ?? null,
             ], $this->actor());
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Medium ausgegeben an :holder.', ['holder' => (string) $accessMedium->fresh()?->holderDisplay()]));
@@ -170,7 +171,7 @@ class AccessMediumController extends Controller {
         try {
             $this->service->takeBack($accessMedium, $this->actor(), (string) $request->input('condition', '') ?: null);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Medium zurückgenommen — es liegt wieder im Lager.'));
@@ -183,7 +184,7 @@ class AccessMediumController extends Controller {
         try {
             $task = $this->service->reportLost($accessMedium, $this->actor(), (string) $request->input('note', '') ?: null);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Verlust gemeldet. Sperr-Aufgabe angelegt: „:title" (fällig :due).', [
@@ -199,7 +200,7 @@ class AccessMediumController extends Controller {
         try {
             $this->service->confirmBlocked($accessMedium, $this->actor());
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Sperrung in der Anlage bestätigt — der Nachweis hängt an der Sperr-Aufgabe.'));
@@ -212,7 +213,7 @@ class AccessMediumController extends Controller {
         try {
             $this->service->retire($accessMedium, $this->actor());
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Medium ausgemustert.'));

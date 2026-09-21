@@ -17,6 +17,7 @@ use App\Exceptions\{AssetNotUsableException, RentalConflictException};
 use App\Models\Asset;
 use App\Models\Rental\{RentalProfile, RentalReservation};
 use App\Services\Asset\AssetUsageGuard;
+use App\Support\CarbonFmt;
 use Illuminate\Support\Carbon;
 
 /**
@@ -96,8 +97,8 @@ class RentalAvailabilityService {
             throw new RentalConflictException(
                 (string) __(':asset ist von :from bis :to bereits belegt (:kind).', [
                     'asset' => $asset->name,
-                    'from' => $conflict->blockedFrom()->format('d.m.Y H:i'),
-                    'to' => $conflict->blockedUntil()->format('d.m.Y H:i'),
+                    'from' => CarbonFmt::fdatetime($conflict->blockedFrom()),
+                    'to' => CarbonFmt::fdatetime($conflict->blockedUntil()),
                     'kind' => $conflict->kind->label(),
                 ]),
                 $conflict,

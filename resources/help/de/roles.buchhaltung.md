@@ -1,5 +1,5 @@
 ---
-title: "Dein Tag in WorkDiary: Buchhaltung"
+title: "Ihr Tag in WorkDiary: Buchhaltung"
 topic: roles.buchhaltung
 version: 1
 audience:
@@ -11,7 +11,7 @@ related:
     - glossary.core
 ---
 
-Als Buchhaltung verantwortest du Kundenstammdaten, Abrechnung und die
+Als Buchhaltung verantworten Sie Kundenstammdaten, Abrechnung und die
 Übergabe an die Faktura- bzw. Lohnsysteme.
 
 Typischer Ablauf:
@@ -26,7 +26,7 @@ Typischer Ablauf:
    (Monatsfreigabe vorausgesetzt).
 5. **Rechnungen** verwalten, sofern keine externe Faktura führend ist.
 
-Was du darfst:
+Was Sie dürfen:
 
 - **Kunden** vollständig verwalten, **Rechnungen** anlegen, stellen und
   als bezahlt markieren.

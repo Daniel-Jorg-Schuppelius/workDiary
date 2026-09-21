@@ -35,7 +35,7 @@ return [
         'title' => 'Participantes externos',
         'invite' => 'Invitar',
         'empty' => 'Aún no se ha invitado a ningún participante externo.',
-        'link_once' => 'Copia este enlace una sola vez y envíalo al participante externo — no se volverá a mostrar.',
+        'link_once' => 'Copie este enlace una sola vez y envíelo al participante externo — no se volverá a mostrar.',
     ],
     'col' => [
         'name' => 'Nombre',

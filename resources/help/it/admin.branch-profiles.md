@@ -13,7 +13,7 @@ I profili di settore installano in un solo passaggio un pacchetto
 curato di modelli per il proprio mestiere: tipi di commessa, categorie,
 regole obbligatorie, liste di controllo, requisiti dei locali, tag
 standard e altro. Nel catalogo cerchi il mestiere adatto, controlli
-l'**anteprima dei contenuti** sulla scheda e scegli **Installa**.
+l'**anteprima dei contenuti** sulla scheda e scelga **Installa**.
 L'installazione è **idempotente**: ripeterla non crea duplicati e non
 sovrascrive dati personalizzati; **Riapplica** riporta i modelli
 importati allo stato del profilo, ma le liste di controllo pubblicate

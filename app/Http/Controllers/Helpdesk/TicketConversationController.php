@@ -17,6 +17,7 @@ use App\Http\Controllers\{AttachmentController, Controller};
 use App\Models\{ServiceTicket, User};
 use App\Services\Attachments\FileAttacher;
 use App\Services\ServiceTicket\TicketConversationService;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\ValidationException;
@@ -48,7 +49,7 @@ class TicketConversationController extends Controller {
         try {
             $this->conversation->reply($ticket, $author, $data['body'], $data['to'] ?? [], $data['subject'] ?? null, files: $files);
         } catch (\InvalidArgumentException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('service-tickets.show', $ticket)
@@ -69,7 +70,7 @@ class TicketConversationController extends Controller {
         try {
             $this->conversation->note($ticket, $author, $data['body'], $files);
         } catch (\InvalidArgumentException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('service-tickets.show', $ticket)

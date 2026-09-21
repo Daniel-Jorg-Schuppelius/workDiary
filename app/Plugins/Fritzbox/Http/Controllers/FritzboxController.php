@@ -15,6 +15,7 @@ use App\Models\{IntegrationInboxItem, Organization};
 use App\Plugins\Fritzbox\{FritzboxConfig, FritzboxImportService, FritzboxPlugin};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Services\Contacts\ExternalPhoneContactDirectory;
+use App\Support\ErrorText;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
@@ -129,7 +130,7 @@ class FritzboxController extends Controller {
         try {
             $result = $this->service->importFromCsv($this->organization($admin), $content, $config);
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['csv' => $e->getMessage()]);
+            return back()->withErrors(['csv' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('FRITZ!Box-Import: :created gebucht, :linked verschmolzen, :stamped gestempelt, :pending offen (Inbox), :skipped übersprungen, :ignored ausgefiltert, :locked gesperrt.', [

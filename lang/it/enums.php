@@ -520,7 +520,7 @@ return [
                 'queryRaised' => 'Il cliente ha posto una domanda',
             ],
             'ideaMap' => [
-                'shared' => 'Mappa delle idee condivisa con te',
+                'shared' => 'Mappa delle idee condivisa con Lei',
             ],
             'shipment' => [
                 'deliveryProblem' => 'Problema di consegna di una spedizione',

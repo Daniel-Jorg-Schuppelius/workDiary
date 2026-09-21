@@ -33,7 +33,7 @@ class ExternalParticipantInvitedMail extends Mailable {
     }
 
     public function content(): Content {
-        return new Content(view: 'mail.external-participant-invited', with: [
+        return new Content(markdown: 'mail.external-participant-invited', with: [
             'participant' => $this->participant,
             'accessUrl' => $this->accessUrl,
         ]);

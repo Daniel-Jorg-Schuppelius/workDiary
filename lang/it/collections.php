@@ -14,7 +14,7 @@ return [
         'index' => 'Raccolte',
         'tree' => 'Albero delle raccolte',
     ],
-    'subtitle' => 'Ordina insieme note, mappe di idee, articoli, documenti e contenuti formativi: un contenuto può stare in più raccolte.',
+    'subtitle' => 'Ordini insieme note, mappe di idee, articoli, documenti e contenuti formativi: un contenuto può stare in più raccolte.',
     'action' => [
         'show_archived' => 'Mostra archiviate',
         'hide_archived' => 'Nascondi archiviate',
@@ -31,14 +31,14 @@ return [
     'empty' => [
         'tree' => 'Ancora nessuna raccolta.',
         'selection' => 'Nessuna raccolta selezionata.',
-        'items' => 'Questa raccolta è vuota oppure contiene solo contenuti che non puoi vedere.',
+        'items' => 'Questa raccolta è vuota oppure contiene solo contenuti che non può vedere.',
     ],
     'help' => [
         'intro' => 'Una raccolta ordina i contenuti, non concede accessi: ognuno vede solo ciò che può già vedere.',
-        'add_from_detail' => 'Aggiungi i contenuti con «Aggiungi a raccolta» nella loro pagina di dettaglio.',
+        'add_from_detail' => 'Aggiunga i contenuti con «Aggiungi a raccolta» nella loro pagina di dettaglio.',
         'parent' => 'Al massimo :max livelli di profondità.',
         'visibility' => 'Una raccolta privata la vede solo chi l’ha creata.',
-        'create_first' => 'Crea prima una raccolta in «Raccolte».',
+        'create_first' => 'Crei prima una raccolta in «Raccolte».',
         'multiple_membership' => 'Un contenuto può stare in più raccolte senza copie.',
     ],
     'visibility' => [
@@ -75,7 +75,7 @@ return [
         'too_deep' => 'Le raccolte si possono annidare al massimo per :max livelli.',
         'cycle' => 'Una raccolta non può stare sotto sé stessa o sotto una sua sottoraccolta.',
         'type_not_allowed' => 'Questo tipo di contenuto non si può aggiungere a una raccolta.',
-        'item_not_found' => 'Il contenuto non esiste o non è visibile per te.',
+        'item_not_found' => 'Il contenuto non esiste o non è visibile per Lei.',
         'parent_invalid' => 'La raccolta superiore scelta non esiste (più).',
     ],
     'type' => [
@@ -104,7 +104,7 @@ return [
             'mentioned' => 'citato',
         ],
         'empty' => 'Ancora nessun riferimento: né da qui né verso qui.',
-        'empty_picker' => 'Nessun altro contenuto a cui puoi rimandare.',
+        'empty_picker' => 'Nessun altro contenuto a cui può rimandare.',
         'help' => 'Un riferimento collega due contenuti senza dare accesso: vede l’altro lato solo chi può aprirlo.',
         'confirm_remove' => 'Rimuovere questo riferimento? Entrambi i contenuti restano.',
         'flash' => [
@@ -132,7 +132,7 @@ return [
         'select_item' => 'Seleziona «:title»',
         'updated' => 'Modificato',
         'empty' => 'Nessun contenuto trovato.',
-        'empty_hint' => 'Allenta i filtri o scegli un’altra raccolta.',
+        'empty_hint' => 'Allenti i filtri o scelga un’altra raccolta.',
         'add_hits' => 'Aggiungi alla raccolta',
     ],
     'import' => [
@@ -150,7 +150,7 @@ return [
             'title' => 'Importa da Obsidian',
             'action' => 'Importa Obsidian',
             'intro' => 'Legge una cartella Obsidian tramite una connessione cartella esistente dell’acquisizione documenti (Nextcloud, OneDrive, Dropbox, Google Drive). Le sottocartelle diventano raccolte, i tag YAML e i #tag vengono mantenuti, i [[wikilink]] diventano riferimenti.',
-            'none' => 'Nessuna connessione cartella attiva. Configura prima in Amministrazione › Acquisizione documenti cloud una connessione che raggiunga la cartella del vault Obsidian.',
+            'none' => 'Nessuna connessione cartella attiva. Configuri prima in Amministrazione › Acquisizione documenti cloud una connessione che raggiunga la cartella del vault Obsidian.',
             'connection' => 'Connessione cartella',
             'vault_path' => 'Percorso del vault',
             'vault_path_hint' => 'Relativo alla cartella radice della connessione; vuoto = l’intera cartella radice. .obsidian/ e .trash/ restano esclusi.',
@@ -160,7 +160,7 @@ return [
             'action' => 'Importa OneNote',
             'intro' => 'Importa un blocco appunti tramite la connessione OneNote in sola lettura: gruppi di sezioni e sezioni diventano raccolte, ogni pagina una nota o un articolo. Il contenuto della pagina viene importato come testo.',
             'none' => 'Nessun blocco appunti trovato.',
-            'error' => 'OneNote al momento non è raggiungibile: controlla la connessione nel pannello Microsoft 365.',
+            'error' => 'OneNote al momento non è raggiungibile: controlli la connessione nel pannello Microsoft 365.',
             'notebook' => 'Blocco appunti',
         ],
         'flash' => [

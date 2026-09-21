@@ -19,7 +19,7 @@
     <h1 style="font-size:14pt;margin:0 0 2mm 0">{{ __('Rundgangsbericht: :name', ['name' => (string) $run->route?->name]) }}</h1>
     <p style="font-size:9pt;color:#555;margin:0 0 4mm 0">
         {{ __('Durchgeführt von :name', ['name' => $run->starter?->name ?? '—']) }}
-        · {{ $run->started_at->format('d.m.Y H:i') }}–{{ $run->finished_at?->format('H:i') ?? '—' }}
+        · {{ $run->started_at->orgTz()->format('d.m.Y H:i') }}–{{ $run->finished_at?->orgTz()->format('H:i') ?? '—' }}
         @if ($run->route?->site) · {{ $run->route->site->name }} @endif
     </p>
 
@@ -41,7 +41,7 @@
                     <td style="text-align:right;padding:1mm;border-bottom:1px solid #eee">{{ $checkpoint->position }}</td>
                     <td style="padding:1mm;border-bottom:1px solid #eee">{{ $checkpoint->label }}</td>
                     <td style="text-align:right;padding:1mm;border-bottom:1px solid #eee">+{{ $checkpoint->expected_offset_minutes }} min ± {{ $checkpoint->tolerance_minutes }}</td>
-                    <td style="text-align:right;padding:1mm;border-bottom:1px solid #eee">{{ $scan?->scanned_at?->format('H:i') ?? '—' }}</td>
+                    <td style="text-align:right;padding:1mm;border-bottom:1px solid #eee">{{ $scan?->scanned_at?->orgTz()->format('H:i') ?? '—' }}</td>
                     <td style="text-align:right;padding:1mm;border-bottom:1px solid #eee">{{ $scan !== null ? (($scan->delta_minutes > 0 ? '+' : '') . $scan->delta_minutes . ' min') : '—' }}</td>
                     <td style="padding:1mm;border-bottom:1px solid #eee">
                         @if ($scan === null)

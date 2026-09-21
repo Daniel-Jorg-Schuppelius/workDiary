@@ -13,8 +13,8 @@ return [
     'intro' => 'Connessioni corriere per etichette di spedizione e tracciamento delle spedizioni (DHL Paket, UPS, FedEx). Una connessione per corriere e organizzazione; le credenziali sono memorizzate cifrate.',
 
     'form_heading' => 'Aggiungi / modifica connessione',
-    'form_hint' => 'Scegli il corriere e inserisci le sue credenziali. Salvando di nuovo con lo stesso corriere si aggiorna la connessione esistente.',
-    'secret_hint' => 'La password e la chiave API vengono memorizzate cifrate e non vengono più mostrate. Lasciale vuote durante la modifica per mantenere i valori salvati.',
+    'form_hint' => 'Scelga il corriere e inserisca le relative credenziali. Salvando di nuovo con lo stesso corriere si aggiorna la connessione esistente.',
+    'secret_hint' => 'La password e la chiave API vengono memorizzate cifrate e non vengono più mostrate. Le lasci vuote durante la modifica per mantenere i valori salvati.',
     'connections_heading' => 'Connessioni esistenti',
     'no_connections' => 'Nessuna connessione corriere ancora configurata.',
 

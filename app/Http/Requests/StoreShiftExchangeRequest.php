@@ -35,7 +35,7 @@ class StoreShiftExchangeRequest extends FormRequest {
             'scheduled_shift_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('scheduled_shifts')],
             'target_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
             'offered_shift_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('scheduled_shifts')],
-            'reason' => ['nullable', 'string', 'max:500'],
+            'reason' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

@@ -12,13 +12,13 @@ related:
     - glossary.core
 ---
 
-Nel **registro delle vulnerabilità** gestisci le vulnerabilità note con
-criticità, responsabilità e scadenze e decidi consapevolmente sulla loro
-sfruttabilità. Registra la vulnerabilità con titolo, eventuale numero CVE,
+Nel **registro delle vulnerabilità** gestisce le vulnerabilità note con
+criticità, responsabilità e scadenze e decide consapevolmente sulla loro
+sfruttabilità. Registri la vulnerabilità con titolo, eventuale numero CVE,
 valore CVSS e componente interessato; la criticità è derivata dal CVSS ma
-può essere modificata. Cura lo stato da "Aperta" a "Risolta", oppure
+può essere modificata. Curi lo stato da "Aperta" a "Risolta", oppure
 "Accettata" o "Non interessato"; le decisioni "sfruttabile"/"non
-sfruttabile" richiedono una **motivazione obbligatoria**. Puoi importare
+sfruttabile" richiedono una **motivazione obbligatoria**. Può importare
 advisory leggibili da macchina (CSAF/VEX) come JSON: l'import confronta i
 componenti con l'inventario software e l'ultima SBOM e crea una voce per
 ogni corrispondenza, senza considerarla automaticamente sfruttabile né

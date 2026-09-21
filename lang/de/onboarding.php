@@ -44,71 +44,71 @@ return [
         'org' => [
             'profile' => [
                 'title' => 'Organisationsdaten vervollständigen',
-                'description' => 'Pflege Name, Zeitzone und lokale Grundeinstellungen der Organisation.',
+                'description' => 'Pflegen Sie Name, Zeitzone und lokale Grundeinstellungen der Organisation.',
                 'link' => 'Organisation öffnen',
             ],
             'branch_profile' => [
                 'title' => 'Branchenprofil wählen',
-                'description' => 'Wähle ein Branchenprofil, damit passende Defaults für Klassifikationen bereitstehen.',
+                'description' => 'Wählen Sie ein Branchenprofil, damit passende Defaults für Klassifikationen bereitstehen.',
                 'link' => 'Branchenprofile öffnen',
             ],
             'scope' => [
                 'title' => 'Funktionsumfang wählen',
-                'description' => 'Wähle ein Funktionsumfang-Preset oder passe die aktiven Module an — nicht Benötigtes bleibt ausgeblendet, ohne dass Daten verloren gehen.',
+                'description' => 'Wählen Sie ein Funktionsumfang-Preset oder passen Sie die aktiven Module an — nicht Benötigtes bleibt ausgeblendet, ohne dass Daten verloren gehen.',
                 'link' => 'Funktionsumfang öffnen',
             ],
             'workspaces' => [
                 'title' => 'Arbeitsbereiche einrichten',
-                'description' => 'Lege fest, welche Arbeitsbereiche im Umschalter erscheinen und welcher der Standard ist — jede Person kann jederzeit wechseln.',
+                'description' => 'Legen Sie fest, welche Arbeitsbereiche im Umschalter erscheinen und welcher der Standard ist — jede Person kann jederzeit wechseln.',
                 'link' => 'Arbeitsbereiche öffnen',
             ],
         ],
         'users' => [
             'invite' => [
                 'title' => 'Erste Nutzer einladen',
-                'description' => 'Lade mindestens eine weitere aktive Person in deine Organisation ein.',
+                'description' => 'Laden Sie mindestens eine weitere aktive Person in Ihre Organisation ein.',
                 'link' => 'Mitglieder öffnen',
             ],
         ],
         'roles' => [
             'check' => [
                 'title' => 'Rollen prüfen',
-                'description' => 'Prüfe, dass mindestens ein Org-Admin und ein Operator zugewiesen sind.',
+                'description' => 'Prüfen Sie, dass mindestens ein Org-Admin und ein Operator zugewiesen sind.',
                 'link' => 'Rechteverwaltung öffnen',
             ],
         ],
         'classification' => [
             'check' => [
                 'title' => 'Klassifikationen prüfen',
-                'description' => 'Bestätige oder überschreibe mindestens eine Klassifikationsdomäne für die Organisation.',
+                'description' => 'Bestätigen oder überschreiben Sie mindestens eine Klassifikationsdomäne für die Organisation.',
                 'link' => 'Klassifikationen öffnen',
             ],
         ],
         'customer' => [
             'first' => [
                 'title' => 'Ersten Kunden anlegen',
-                'description' => 'Lege den ersten Kunden manuell an oder nutze den CSV-Import.',
+                'description' => 'Legen Sie den ersten Kunden manuell an oder nutzen Sie den CSV-Import.',
                 'link' => 'Kunden öffnen',
             ],
         ],
         'work' => [
             'first' => [
                 'title' => 'Erstes Projekt oder Auftrag',
-                'description' => 'Erzeuge ein erstes Projekt oder starte den ersten Auftrag im Auftragsbuch.',
+                'description' => 'Erzeugen Sie ein erstes Projekt oder starten Sie den ersten Auftrag im Auftragsbuch.',
                 'link' => 'Projekte öffnen',
             ],
         ],
         'time' => [
             'first' => [
                 'title' => 'Erste Zeiterfassung',
-                'description' => 'Erfasse mindestens einen Zeiteintrag, um die Arbeitszeiterfassung zu aktivieren.',
+                'description' => 'Erfassen Sie mindestens einen Zeiteintrag, um die Arbeitszeiterfassung zu aktivieren.',
                 'link' => 'Zeiterfassung öffnen',
             ],
         ],
         'protocol' => [
             'first_signed' => [
                 'title' => 'Erstes Protokoll signieren',
-                'description' => 'Erstelle ein Protokoll und schließe die Signatur ab.',
+                'description' => 'Erstellen Sie ein Protokoll und schließen Sie die Signatur ab.',
                 'link' => 'Auftragsbuch öffnen',
             ],
         ],

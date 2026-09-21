@@ -33,7 +33,7 @@ class StoreProtocolRequest extends BaseFormRequest {
             'title' => ['required', 'string', 'max:180'],
             'description' => ['nullable', 'string', 'max:10000'],
             'state_initial' => ['nullable', 'string', 'max:10000'],
-            'occurred_at' => ['nullable', 'date'],
+            'occurred_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
             'visibility' => ['nullable', 'string', \Illuminate\Validation\Rule::enum(ProtocolVisibility::class)],
             'tag_ids' => ['nullable', 'array'],
             'tag_ids.*' => ['nullable', 'string', 'max:64'],

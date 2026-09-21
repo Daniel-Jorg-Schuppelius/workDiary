@@ -47,6 +47,24 @@ class RecurrenceMaterializationTest extends TestCase {
         $this->assertSame(3, Event::query()->where('series_id', $master->id)->count());
     }
 
+    /** MVP-823: gespeichert wird UTC, die Serie rechnet in der Termin-Zeitzone — 9 Uhr bleibt über den Zeitwechsel 9 Uhr. */
+    public function test_weekly_series_keeps_local_time_across_daylight_saving_change(): void {
+        $master = Event::factory()->recurring('FREQ=WEEKLY;COUNT=3')->create([
+            'organization_id' => $this->organization->id,
+            'responsible_user_id' => $this->user->id,
+            'timezone' => 'Europe/Berlin',
+            'started_at' => '2030-10-20 07:00:00', // 09:00 MESZ
+            'ended_at' => '2030-10-20 08:00:00',
+        ]);
+
+        $this->svc->materialize($master, \Illuminate\Support\Carbon::parse('2030-11-30'));
+
+        $starts = Event::query()->where('series_id', $master->id)->orderBy('started_at')->get()
+            ->map(fn (Event $e): string => $e->getRawOriginal('started_at'))->all();
+        // 27.10. und 03.11. liegen in der Winterzeit: 09:00 MEZ = 08:00 UTC.
+        $this->assertSame(['2030-10-27 08:00:00', '2030-11-03 08:00:00'], $starts);
+    }
+
     public function test_materialize_is_idempotent(): void {
         $master = Event::factory()->recurring('FREQ=WEEKLY;COUNT=3')->create([
             'organization_id' => $this->organization->id,

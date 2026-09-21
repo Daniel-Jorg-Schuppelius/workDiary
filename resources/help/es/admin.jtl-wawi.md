@@ -28,13 +28,13 @@ tenant del portal de socios de JTL.
 la app en la Wawi. La clave API se emite **una sola vez** y se guarda
 cifrada — nunca aparece en registros ni diagnósticos.
 
-**Asignaciones:** Tras la primera sincronización, asigna los almacenes
+**Asignaciones:** Tras la primera sincronización, asigne los almacenes
 JTL a los almacenes de WorkDiary (1:1 para los asientos). Los
 artículos se asignan automáticamente por SKU y GTIN; los casos dudosos
-llegan a la bandeja de integraciones donde tú decides — WorkDiary
+llegan a la bandeja de integraciones donde usted decide — WorkDiary
 nunca crea artículos automáticamente.
 
-**Liderazgo de existencias:** En «Liderazgo de existencias» eliges
+**Liderazgo de existencias:** En «Liderazgo de existencias» elige
 quién lidera: *local* (WorkDiary), *externo* (lidera JTL, WorkDiary
 devuelve por la outbox) o *solo lectura*. Volver a «local» importa las
 existencias de JTL como inventario de apertura.

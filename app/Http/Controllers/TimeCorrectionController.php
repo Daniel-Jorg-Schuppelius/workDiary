@@ -15,10 +15,11 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\{Attendance, TimeCorrectionRequest, TimeEntry, User};
 use App\Services\TimeApproval\{TimeCorrectionService, TimeCorrectionWorkflowException};
-use App\Support\Sqid;
-use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\JsonHelper;
-use Illuminate\Http\{RedirectResponse, Request};
+use App\Support\{CarbonFmt, Formats, Sqid};
+use App\Support\Query\DateRange;
+use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Helper\Data\{JsonHelper, StringHelper};
+use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
@@ -104,6 +105,41 @@ class TimeCorrectionController extends Controller {
         ]);
     }
 
+    /**
+     * Auswahl für „Ziel“ im Antragsdialog: Zeitbuchungen und Anwesenheiten des
+     * Bezugstags — statt einer internen Ziel-ID (UI-Fuzz 2026-09-21).
+     */
+    public function targets(Request $request): JsonResponse {
+        Gate::authorize('create', TimeCorrectionRequest::class);
+        /** @var User $user */
+        $user = Auth::user();
+        $date = CarbonImmutable::parse($this->resolveDateParam($request, 'date', static fn (): CarbonImmutable => CarbonImmutable::now()->subDay())->toDateString());
+
+        $owner = $user;
+        $ownerId = $request->filled('user') ? Sqid::decodeOrNumeric(User::class, (string) $request->input('user')) : null;
+        if ($ownerId !== null && (int) $ownerId !== (int) $user->id) {
+            Gate::authorize(Permission::CorrectionCreateForOthers->value);
+            $owner = User::query()->where('organization_id', $user->organization_id)->findOrFail((int) $ownerId);
+        }
+
+        $span = static fn (?CarbonInterface $from, ?CarbonInterface $to): string => ($from !== null ? CarbonFmt::ftime($from) : '…')
+            . '–' . ($to !== null ? CarbonFmt::ftime($to) : '…');
+
+        return response()->json([
+            TimeEntry::class => TimeEntry::query()->where('user_id', $owner->id)->whereBetween('date', DateRange::days($date, $date))->with('project:id,name')->orderBy('started_at')->get()
+                ->map(static fn (TimeEntry $e): array => [
+                    'id' => $e->sqid,
+                    'label' => implode(' · ', array_filter([
+                        $e->started_at !== null ? $span($e->started_at, $e->ended_at) : Formats::duration((int) $e->minutes, 'clock'),
+                        $e->project?->name,
+                        StringHelper::truncate((string) $e->description, 60),
+                    ])),
+                ])->values(),
+            Attendance::class => Attendance::query()->where('user_id', $owner->id)->whereBetween('date', DateRange::days($date, $date))->orderBy('started_at')->get()
+                ->map(static fn (Attendance $a): array => ['id' => $a->sqid, 'label' => $span($a->started_at, $a->ended_at)])->values(),
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse {
         Gate::authorize('create', TimeCorrectionRequest::class);
         /** @var User $user */
@@ -113,6 +149,14 @@ class TimeCorrectionController extends Controller {
         if ($request->filled('user_id')) {
             $request->merge(['user_id' => Sqid::decodeOrNumeric(User::class, $request->input('user_id'))]);
         }
+        $request->merge(['items' => array_map(static function (mixed $row): mixed {
+            if (! is_array($row) || ! in_array($row['target_type'] ?? null, [TimeEntry::class, Attendance::class], true) || ($row['target_id'] ?? '') === '') {
+                return $row;
+            }
+            $row['target_id'] = Sqid::decodeOrNumeric($row['target_type'], (string) $row['target_id']);
+
+            return $row;
+        }, (array) $request->input('items', []))]);
 
         $data = $request->validate([
             'user_id' => ['nullable', 'integer'],

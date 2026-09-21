@@ -83,7 +83,7 @@
                     <x-button type="button" tone="outline" size="sm" icon="thumb_down" class="btn-error" data-help-feedback="0">
                         {{ __('Nein') }}
                     </x-button>
-                    <span class="ml-2 text-xs text-muted hidden" data-help-feedback-thanks>{{ __('Danke für dein Feedback.') }}</span>
+                    <span class="ml-2 text-xs text-muted hidden" data-help-feedback-thanks>{{ __('Danke für Ihr Feedback.') }}</span>
                 </div>
                 {{-- Tastenkürzel-Übersicht (Feature 037, MVP-721): Topic-Link, gleiche Naht wie jeder Help-Trigger. --}}
                 <button type="button"

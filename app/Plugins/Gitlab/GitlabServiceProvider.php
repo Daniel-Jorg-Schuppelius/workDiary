@@ -27,11 +27,9 @@ class GitlabServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function registerPlugin(): void {
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                Console\GitlabSyncCommand::class,
-            ]);
-        }
+        $this->commands([
+            Console\GitlabSyncCommand::class,
+        ]);
     }
 
     protected function bootPlugin(): void {

@@ -59,6 +59,7 @@ return [
             'deleted' => 'Webhook deleted.',
             'secret_rotated' => 'Signing key rotated.',
             'test_sent' => 'Test event queued.',
+            'test_failed' => 'The test event could not be delivered — see the delivery history for details.',
         ],
         'event' => [
             'openIssue.assigned' => 'Open issue assigned',

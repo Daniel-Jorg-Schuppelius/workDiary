@@ -29,13 +29,13 @@ return [
     'profile' => [
         'heading' => 'Ventana emergente de llamada',
         'extension_label' => 'Mi extensión',
-        'extension_help' => 'Cuando alguien llame a este número recibirás una ventana emergente con el llamante y —si se conoce— un enlace a la ficha del cliente. Déjalo vacío para no recibir ventanas.',
+        'extension_help' => 'Cuando alguien llame a este número recibirá una ventana emergente con el llamante y —si se conoce— un enlace a la ficha del cliente. Déjelo vacío para no recibir ventanas.',
         'extension_placeholder' => 'p. ej. +49 30 1234-56',
-        'invalid' => 'Introduce un número de teléfono válido.',
+        'invalid' => 'Introduzca un número de teléfono válido.',
     ],
 
     'new_heading' => 'Nueva URL de webhook',
-    'new_hint' => 'Introdúcela ahora en la centralita/el proveedor — el token se muestra solo esta vez.',
+    'new_hint' => 'Introdúzcala ahora en la centralita/el proveedor — el token se muestra solo esta vez.',
 
     'issue_heading' => 'Emitir una conexión',
     'connections_heading' => 'Conexiones',
@@ -70,9 +70,9 @@ return [
 
     'dial' => [
         'action' => 'Llamar',
-        'confirm' => '¿Iniciar una llamada a :number? La centralita llama primero a tu extensión.',
-        'started' => 'La llamada a :number se está estableciendo — descuelga tu extensión.',
-        'no_connection' => 'No hay ninguna conexión telefónica con marcación configurada (activa click-to-dial en los ajustes CTI).',
+        'confirm' => '¿Iniciar una llamada a :number? La centralita llama primero a su extensión.',
+        'started' => 'La llamada a :number se está estableciendo — descuelgue su extensión.',
+        'no_connection' => 'No hay ninguna conexión telefónica con marcación configurada (active click-to-dial en los ajustes CTI).',
         'not_configured' => 'A esta conexión le faltan el acceso API o la extensión.',
         'no_base_url' => 'No hay dirección API guardada para esta centralita.',
         'invalid_number' => 'Ese número no se puede marcar.',
@@ -80,7 +80,7 @@ return [
         'settings' => 'Click-to-dial',
         'enabled' => 'Iniciar llamadas desde workDiary',
         'api_token' => 'Token de API',
-        'api_token_help' => 'Déjalo vacío para conservar el token guardado.',
+        'api_token_help' => 'Déjelo vacío para conservar el token guardado.',
         'api_base_url' => 'Dirección API',
         'extension' => 'Extensión propia',
         'extension_help' => 'Las llamadas salen de esta extensión; la centralita la llama primero.',

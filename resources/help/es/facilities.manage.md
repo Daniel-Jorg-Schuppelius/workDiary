@@ -12,8 +12,8 @@ related:
 
 La estructura inmobiliaria organiza jerárquicamente ubicaciones,
 edificios, plantas y salas, y sirve de referencia para activos e
-intervenciones. Crea los niveles de fuera hacia dentro con nombres o
-números únicos. Antes de eliminar un nivel, reubica los registros
+intervenciones. Cree los niveles de fuera hacia dentro con nombres o
+números únicos. Antes de eliminar un nivel, reubique los registros
 subordinados o vinculados; para referencias históricas suele ser mejor
 archivar. Cada sala puede tener varios requisitos técnicos (nivel de
 higiene, restricción de acceso, inventario TI, etc.), que se mantienen

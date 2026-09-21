@@ -31,13 +31,13 @@ del registro de tiempos a la entrega DATEV — funcionan sin retrabajo.
 
 ## Procedimiento recomendado
 
-1. **Buscar antes de crear:** comprueba si el socio comercial ya
+1. **Buscar antes de crear:** compruebe si el socio comercial ya
    existe — así no nacen duplicados. Los duplicados existentes se
    pueden fusionar; el historial acompaña.
-2. Crea el contacto con nombre, dirección e interlocutores.
-3. Completa datos de pago y facturación e identificadores externos —
+2. Cree el contacto con nombre, dirección e interlocutores.
+3. Complete datos de pago y facturación e identificadores externos —
    dirigen la facturación y la entrega contable.
-4. Vincula proyectos, ubicaciones y acuerdos según vayan surgiendo.
+4. Vincule proyectos, ubicaciones y acuerdos según vayan surgiendo.
 
 ![Lista de clientes con números, datos de contacto, tarifas horarias y número de proyectos](media/kunden/kundenliste.png)
 *La lista de clientes: datos maestros, tarifa horaria y proyectos vinculados por socio.*

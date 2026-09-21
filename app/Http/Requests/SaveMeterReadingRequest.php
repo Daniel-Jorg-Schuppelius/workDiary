@@ -23,8 +23,8 @@ class SaveMeterReadingRequest extends BaseFormRequest {
     public function rules(): array {
         return [
             'asset_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('assets')],
-            'read_at' => ['nullable', 'date'],
-            'value' => ['required', 'numeric', 'min:0'],
+            'read_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
+            'value' => ['required', 'numeric', 'min:0', 'max:99999999999999.9999'],
             'unit' => ['required', 'string', 'max:16'],
             'notes' => ['nullable', 'string', 'max:5000'],
             'is_estimated' => ['nullable', 'boolean'],

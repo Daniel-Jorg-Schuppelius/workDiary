@@ -21,5 +21,5 @@ valutazione complessiva "pronto per l'audit interno?" con l'elenco delle
 lacune bloccanti. Il risultato è esclusivamente un'autovalutazione e una
 raccomandazione: WorkDiary non attesta mai automaticamente la conformità
 alla norma né certifica — la certificazione spetta solo a un organismo
-indipendente. Usa la valutazione per chiudere i domini rossi prima di un
+indipendente. Usi la valutazione per chiudere i domini rossi prima di un
 audit interno.

@@ -50,7 +50,7 @@
             </x-slot:head>
             @forelse ($runs as $run)
                 <tr>
-                    <td class="whitespace-nowrap text-sm" data-sort-value="{{ optional($run->ran_at)->format('Y-m-d H:i:s') ?? '' }}">{{ optional($run->ran_at)->format('d.m.Y H:i:s') }}</td>
+                    <td class="whitespace-nowrap text-sm" data-sort-value="{{ $run->ran_at?->orgTz()->format('Y-m-d H:i:s') ?? '' }}">{{ $run->ran_at?->orgTz()->format('d.m.Y H:i:s') }}</td>
                     <td class="text-xs font-mono">{{ \App\Support\EntityType::label($run->subject_type) }}#{{ $run->subject_id }}</td>
                     <td>
                         @php($cls = match($run->decision) { 'matched' => 'badge-success', 'error' => 'badge-error', default => 'badge-ghost' })

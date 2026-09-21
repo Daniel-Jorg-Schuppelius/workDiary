@@ -50,8 +50,8 @@
                                 {{ implode(', ', (array) $token->abilities) }}
                             @endif
                         </td>
-                        <td data-sort-value="{{ optional($token->created_at)->format('Y-m-d H:i:s') }}">{{ optional($token->created_at)->fdatetime() }}</td>
-                        <td data-sort-value="{{ optional($token->last_used_at)->format('Y-m-d H:i:s') }}">{{ $token->last_used_at ? $token->last_used_at->diffForHumans() : '—' }}</td>
+                        <td data-sort-value="{{ $token->created_at?->orgTz()->format('Y-m-d H:i:s') }}">{{ optional($token->created_at)->fdatetime() }}</td>
+                        <td data-sort-value="{{ $token->last_used_at?->orgTz()->format('Y-m-d H:i:s') }}">{{ $token->last_used_at ? $token->last_used_at->diffForHumans() : '—' }}</td>
                         <td class="text-right whitespace-nowrap">
                             <x-action-form :action="route('profile.api-tokens.destroy', \App\Support\Sqid::encode(\Laravel\Sanctum\PersonalAccessToken::class, $token->id))" method="DELETE"
                                   data-confirm-title="{{ __('Token widerrufen') }}"

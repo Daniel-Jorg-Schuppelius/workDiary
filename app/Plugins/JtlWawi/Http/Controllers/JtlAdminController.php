@@ -20,6 +20,7 @@ use App\Plugins\JtlWawi\Api\JtlUrlGuard;
 use App\Plugins\JtlWawi\JtlWawiPlugin;
 use App\Plugins\JtlWawi\Services\{JtlRegistrationService, JtlScopePreflight, JtlSyncService, JtlTakeoverService};
 use App\Services\Inventory\InventoryProviderResolver;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -94,7 +95,7 @@ class JtlAdminController extends Controller {
             try {
                 JtlUrlGuard::assertAcceptable((string) $data['base_url'], $allowPrivate);
             } catch (RuntimeException $e) {
-                return back()->withInput()->with('error', $e->getMessage());
+                return back()->withInput()->with('error', ErrorText::for($e));
             }
         }
 
@@ -152,7 +153,7 @@ class JtlAdminController extends Controller {
         try {
             $registration->start($connection);
         } catch (Throwable $e) {
-            return back()->with('error', $e instanceof RuntimeException ? $e->getMessage() : __('jtl_wawi.flash.registration_failed'));
+            return back()->with('error', $e instanceof RuntimeException ? ErrorText::for($e) : __('jtl_wawi.flash.registration_failed'));
         }
 
         return back()->with('success', __('jtl_wawi.flash.registration_started'));
@@ -166,7 +167,7 @@ class JtlAdminController extends Controller {
         try {
             $status = $registration->check($connection);
         } catch (Throwable $e) {
-            return back()->with('error', $e instanceof RuntimeException ? $e->getMessage() : __('jtl_wawi.flash.registration_failed'));
+            return back()->with('error', $e instanceof RuntimeException ? ErrorText::for($e) : __('jtl_wawi.flash.registration_failed'));
         }
 
         return match ($status) {

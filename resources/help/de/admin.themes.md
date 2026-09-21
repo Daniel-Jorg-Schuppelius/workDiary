@@ -11,12 +11,12 @@ related:
     - admin.license
 ---
 
-Themes sind Design-Presets deiner Organisation für die Oberfläche.
+Themes sind Design-Presets Ihrer Organisation für die Oberfläche.
 Sie definieren die Farb- und Geometriepalette (helles oder dunkles
-Schema). Neben den mitgelieferten Themes kannst du eigene Themes
+Schema). Neben den mitgelieferten Themes können Sie eigene Themes
 anlegen.
 
-Je Theme legst du fest:
+Je Theme legen Sie fest:
 
 - **Schlüssel und Bezeichnung**: eindeutiger Schlüssel (nach dem
   Anlegen unveränderlich) und Anzeigename.
@@ -31,7 +31,7 @@ Seitenleiste und Panels lesbar bleiben.
 
 Standard festlegen:
 
-- Du kannst je Modus einen Standard setzen (Standard hell / Standard
+- Sie können je Modus einen Standard setzen (Standard hell / Standard
   dunkel). Er gilt für alle Mitglieder ohne eigene Theme-Auswahl.
 
 Lizenz/Module: Eigene Themes gehören zum Modul **Theming** und sind
@@ -42,5 +42,5 @@ Bearbeiten wird gesperrt. Details im Kapitel **Lizenz**.
 Berechtigung: Themes verwalten dürfen Organisations-Administratoren.
 
 Risiken: Das Löschen eines genutzten Themes setzt betroffene Nutzer
-auf ein Fallback-Theme zurück. Prüfe Farbänderungen auf Lesbarkeit,
-bevor du ein Theme als Standard setzt.
+auf ein Fallback-Theme zurück. Prüfen Sie Farbänderungen auf Lesbarkeit,
+bevor Sie ein Theme als Standard setzen.

@@ -186,7 +186,8 @@ class InvoiceScheduleController extends Controller {
         ]);
 
         $data = $request->validate([
-            'customer_id' => ['required', new \App\Rules\ExistsInCurrentOrganization('customers')],
+            // Beim Bearbeiten zeigt der Dialog den Kunden nur an (kein Feld) — Pflicht nur beim Anlegen.
+            'customer_id' => $existing === null ? ['required', new \App\Rules\ExistsInCurrentOrganization('customers')] : ['exclude'],
             'contract_id' => ['nullable', new \App\Rules\ExistsInCurrentOrganization('contracts')],
             'title' => ['required', 'string', 'max:180'],
             'interval_unit' => ['required', 'in:' . implode(',', InvoiceSchedule::UNITS)],

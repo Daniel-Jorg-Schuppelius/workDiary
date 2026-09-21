@@ -18,12 +18,12 @@ Durchschnittspreis und Bestandswert sowie der Meldebestand. Aktive
 Reservierungen und Varianten unter Meldebestand werden gesondert
 ausgewiesen.
 
-Mit Buchungsrecht erfasst du manuelle Bewegungen (Eingang, Entnahme,
-Reservierung, Freigabe) inklusive Eigentumsart und kannst Mindest- und
+Mit Buchungsrecht erfassen Sie manuelle Bewegungen (Eingang, Entnahme,
+Reservierung, Freigabe) inklusive Eigentumsart und können Mindest- und
 Meldebestände je Variante und Lagerort setzen. Entnahmen ins Negative
-sind nur möglich, wenn du sie ausdrücklich zulässt.
+sind nur möglich, wenn Sie sie ausdrücklich zulassen.
 
-Chargen (Lots) führst du in der Chargenliste mit Restbestand; dort lassen
+Chargen (Lots) führen Sie in der Chargenliste mit Restbestand; dort lassen
 sich Lose teilen und zusammenführen. Die Scan-Ansicht löst einen Code
 (Seriennummer, Charge, GTIN oder SKU) auf und bucht direkt eine Aktion
 (Eingang, Entnahme, Umlagerung). Alle Bewegungen schreiben in das

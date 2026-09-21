@@ -18,6 +18,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\{InteractsWithQueue, SerializesModels};
+use Illuminate\Queue\Jobs\SyncJob;
 use Illuminate\Support\{Carbon, Str};
 use Throwable;
 
@@ -202,15 +203,19 @@ class WebhookDeliveryJob implements ShouldQueue {
 
         $endpoint->forceFill(['last_delivery_at' => Carbon::now()])->saveQuietly();
 
+        // QUEUE_CONNECTION=sync kennt keine Wiederholung: der Wurf landete als 500 in der
+        // auslösenden Aktion (Webhook testen) — der Versuch ist dort der letzte (UI-Fuzz 2026-09-21).
+        $final = $this->attempts() >= $this->tries || $this->job instanceof SyncJob;
+
         // Nur beim endgültigen Fehlschlag zählen; Zwischen-Retries lassen den Zähler unberührt.
-        if ($this->attempts() >= $this->tries) {
+        if ($final) {
             $this->registerEndpointFailure($endpoint);
+
+            return;
         }
 
         // Exception werfen, damit die Queue den Retry-Mechanismus auslöst.
-        if ($this->attempts() < $this->tries) {
-            throw new \RuntimeException('webhook delivery failed: ' . $reason);
-        }
+        throw new \RuntimeException('webhook delivery failed: ' . $reason);
     }
 
     /** Erhöht den Fehlerzähler und deaktiviert den Endpunkt bei Erreichen der Schwelle. */

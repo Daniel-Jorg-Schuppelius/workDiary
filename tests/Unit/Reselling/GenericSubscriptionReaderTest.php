@@ -88,6 +88,22 @@ class GenericSubscriptionReaderTest extends TestCase {
         }
     }
 
+    /** UI-Fuzz 2026-09-21: Meldungen nannten den Speicher-/Tempnamen statt der hochgeladenen Datei. */
+    public function test_messages_name_the_uploaded_file_not_the_storage_name(): void {
+        $rows = [['Firma', 'Produkt', 'Beginn']];
+        foreach (['A', 'B', 'C'] as $company) {
+            $rows[] = [$company . ' GmbH', 'Prod', new DateTimeImmutable('2026-02-01')];
+        }
+        $path = self::xlsxFixture([['Abos', $rows]]);
+        try {
+            $this->expectException(RuntimeException::class);
+            $this->expectExceptionMessage(__('resale_import.file.too_large', ['file' => 'Abos Kunde.xlsx', 'rows' => 2, 'mb' => 256]));
+            (new GenericSubscriptionReader(maxRows: 2))->read($path, SubscriptionProvider::Other, 'Abos Kunde.xlsx');
+        } finally {
+            @unlink($path);
+        }
+    }
+
     public function test_xlsx_missing_required_column_is_reported_translated(): void {
         $path = self::xlsxFixture([['Abos', [['Firma', 'Produkt'], ['A', 'B']]]]);
         try {

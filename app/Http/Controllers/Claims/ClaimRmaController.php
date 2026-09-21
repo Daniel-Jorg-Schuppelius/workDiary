@@ -17,7 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Claims\{ClaimCase, ClaimInspection, ClaimRmaReturn};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Claims\ClaimRmaService;
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -103,7 +103,7 @@ class ClaimRmaController extends Controller {
         try {
             $this->service->decideDisposition($rma, $request->user() ?? abort(401), ClaimRmaDisposition::from($data['disposition']), $data['disposition_note'] ?? null);
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['disposition' => $e->getMessage()]);
+            return back()->withErrors(['disposition' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Verwendungsentscheidung gebucht.'));

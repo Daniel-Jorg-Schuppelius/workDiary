@@ -15,6 +15,7 @@ use App\Models\Learning\{LearningCourse, LearningQuestion, LearningQuestionCateg
 use App\Models\{Organization, User};
 use App\Services\Learning\{LearningCourseService, LearningEnrollmentService, LearningQuestionCatalogService, LearningQuestionEditorService, LearningQuizService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Validation\ValidationException;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -260,6 +261,23 @@ class LearningQuestionCatalogTest extends TestCase {
             ->delete(route('learning.courses.units.quiz.draw-rules.destroy', [$course, $unit, $rule]))
             ->assertRedirect();
         $this->assertSame(0, LearningQuizDrawRule::query()->count());
+    }
+
+    /** UI-Fuzz 2026-09-21: jede Optionszeile wird eine eigene Option (label varchar(500)) — eine lange Zeile endete in 1406. */
+    public function test_ueberlange_optionszeile_ist_ein_feldfehler(): void {
+        Exceptions::fake();
+
+        $this->actingAs($this->author())
+            ->post(route('learning.questions.store'), [
+                'kind' => 'single',
+                'prompt' => 'Was gilt?',
+                'points' => 1,
+                'options' => '*' . str_repeat('Lange Antwort ', 40) . "\nkurz",
+            ])
+            ->assertSessionHasErrors('options');
+
+        $this->assertSame(0, LearningQuestion::query()->count());
+        Exceptions::assertNothingReported();
     }
 
     public function test_fremde_frage_ist_im_katalog_unsichtbar(): void {

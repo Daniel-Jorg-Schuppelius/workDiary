@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Services\Import\Specs\Concerns;
 
-use App\Models\Organization;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Throwable;
@@ -62,10 +61,6 @@ trait ParsesLocalDateTime {
         }
 
         return trim($value); // ungültiges Format → validateRow markiert es
-    }
-
-    protected function orgTimezone(Organization $organization): string {
-        return Tz::isValid($organization->timezone) ? (string) $organization->timezone : Tz::FALLBACK;
     }
 
     /**

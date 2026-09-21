@@ -24,7 +24,7 @@ in modo reale, così nessuna registrazione reale finisce per errore in un
 test.
 
 **Credenziali:** Login e password vengono memorizzati cifrati e non
-compaiono mai in URL, log o diagnostiche. Facoltativamente indica un utente
+compaiono mai in URL, log o diagnostiche. Facoltativamente indichi un utente
 predefinito (s_user): il contesto sotto cui vengono eseguiti i comandi di un
 subutente autorizzato.
 
@@ -34,7 +34,7 @@ portafoglio attuale (domini, scadenze, modalità di rinnovo,
 rivenditori/subutenti) nelle proiezioni locali. La sincronizzazione è in
 sola lettura e idempotente.
 
-**Confermare il pilota:** Dopo un test reale riuscito confermi il pilota;
+**Confermare il pilota:** Dopo un test reale riuscito conferma il pilota;
 solo allora la connessione può passare in produzione. Finché il pilota
 resta aperto, il controllo di stato segnala «pilota aperto».
 

@@ -85,7 +85,7 @@ class TimesheetController extends Controller {
             'title' => __('Stundenzettel anlegen'),
             'eyebrow' => __('Stundenzettel'),
             'icon' => 'description',
-            'description' => __('Wähle ein Projekt, für das der Stundenzettel erstellt werden soll.'),
+            'description' => __('Wählen Sie ein Projekt, für das der Stundenzettel erstellt werden soll.'),
             'isDialog' => true,
         ]);
     }

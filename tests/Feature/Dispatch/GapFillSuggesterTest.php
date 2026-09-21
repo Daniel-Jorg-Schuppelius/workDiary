@@ -83,6 +83,23 @@ final class GapFillSuggesterTest extends TestCase {
         $this->assertSame([['start' => '08:00', 'end' => '09:00', 'net_minutes' => 60], ['start' => '12:00', 'end' => '17:00', 'net_minutes' => 300]], $slots);
     }
 
+    /** MVP-823: start_at ist UTC — ein Auftrag 09:00–11:00 Ortszeit (07:00–09:00 UTC) blockt 09–11 Uhr, nicht 07–09 Uhr. */
+    public function test_utc_assignment_blocks_its_local_hours(): void {
+        $this->organization->update(['timezone' => 'Europe/Berlin']);
+        $date = CarbonImmutable::parse('2026-07-13');
+        $this->makeEntry([
+            'assigned_user_id' => $this->worker->id,
+            'mode' => Mode::Fixed->value,
+            'scheduled_for' => $date->toDateString(),
+            'start_at' => '2026-07-13 07:00:00',
+            'end_at' => '2026-07-13 09:00:00',
+        ]);
+
+        $slots = app(GapFillSuggester::class)->freeSlots($this->worker, $date);
+
+        $this->assertSame([['start' => '08:00', 'end' => '09:00', 'net_minutes' => 60], ['start' => '11:00', 'end' => '17:00', 'net_minutes' => 360]], $slots);
+    }
+
     public function test_suggestions_respect_duration_qualification_and_corridor(): void {
         $date = CarbonImmutable::parse('2026-07-13');
 

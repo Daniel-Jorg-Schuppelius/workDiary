@@ -29,11 +29,11 @@ class SavePerDiemRateRequest extends BaseFormRequest {
             'region_label' => ['nullable', 'string', 'max:100'],
             'valid_from' => ['required', 'date'],
             'valid_to' => ['nullable', 'date', 'after_or_equal:valid_from'],
-            'full_day_amount' => ['required', 'numeric', 'min:0'],
-            'partial_day_amount' => ['required', 'numeric', 'min:0'],
-            'overnight_amount' => ['nullable', 'numeric', 'min:0'],
+            'full_day_amount' => ['required', 'numeric', 'min:0', 'max:999999.99'],
+            'partial_day_amount' => ['required', 'numeric', 'min:0', 'max:999999.99'],
+            'overnight_amount' => ['nullable', 'numeric', 'min:0', 'max:999999.99'],
             'currency' => ['required', \Illuminate\Validation\Rule::enum(\CommonToolkit\Enums\CurrencyCode::class)],
-            'source' => ['nullable', 'string', 'max:255'],
+            'source' => ['nullable', 'string', 'max:100'],
         ];
     }
 }

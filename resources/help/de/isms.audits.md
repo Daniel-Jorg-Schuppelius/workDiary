@@ -12,7 +12,7 @@ related:
     - glossary.core
 ---
 
-Hier planst und dokumentierst du interne, externe und Lieferantenaudits
+Hier planen und dokumentieren Sie interne, externe und Lieferantenaudits
 inklusive Feststellungen, Korrekturmaßnahmen und Managementbewertung.
 
 Audit-Lebenszyklus: **„Geplant" → „Vorbereitung" → „In Durchführung" →

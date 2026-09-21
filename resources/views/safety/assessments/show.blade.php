@@ -62,7 +62,7 @@
                     <x-detail-grid.row :label="__('safety.register.field.created_by')" :value="$assessment->createdBy?->name ?? '–'" />
                     @if ($assessment->approved_at)
                         <x-detail-grid.row :label="__('safety.register.field.approved_by')" :value="$assessment->approvedBy?->name ?? '–'" />
-                        <x-detail-grid.row :label="__('safety.register.field.approved_at')" :value="$assessment->approved_at->format('d.m.Y H:i')" />
+                        <x-detail-grid.row :label="__('safety.register.field.approved_at')" :value="$assessment->approved_at->orgTz()->format('d.m.Y H:i')" />
                     @endif
                     @if ($assessment->supersedes)
                         <x-detail-grid.row :label="__('safety.register.field.supersedes')">

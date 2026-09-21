@@ -39,6 +39,6 @@ viaggio.
 
 ## Prima di sollecitare
 
-Controllate la **riconciliazione bancaria**. Il sollecito evitabile più
+Controlli la **riconciliazione bancaria**. Il sollecito evitabile più
 frequente arriva a chi ha già pagato da tempo — l’incasso semplicemente non
 era ancora stato abbinato.

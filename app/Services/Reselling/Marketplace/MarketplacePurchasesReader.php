@@ -57,8 +57,8 @@ final class MarketplacePurchasesReader {
         'assigned users',
     ];
 
-    public function read(string $file): PurchasesImport {
-        $name = basename($file);
+    public function read(string $file, ?string $displayName = null): PurchasesImport {
+        $name = $displayName ?? basename($file);
         if (! File::isReadable($file, false)) {
             throw new RuntimeException((string) __('resale_import.file.unreadable', ['file' => $name]));
         }

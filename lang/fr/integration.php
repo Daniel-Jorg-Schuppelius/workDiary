@@ -59,6 +59,7 @@ return [
             'deleted' => 'Webhook supprimé.',
             'secret_rotated' => 'Clé de signature renouvelée.',
             'test_sent' => 'Événement de test mis en file d’attente.',
+            'test_failed' => 'L’événement de test n’a pas pu être livré — détails dans l’historique des livraisons.',
         ],
         'event' => [
             'openIssue.assigned' => 'Point ouvert assigné',

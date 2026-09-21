@@ -29,7 +29,7 @@
     <x-card class="mb-4">
         <x-slot:title>{{ __('Einwilligung') }}</x-slot:title>
         <p class="text-sm text-base-content/70 mb-3">
-            {{ __('Ohne deine Einwilligung werden keine Standortdaten angenommen oder gespeichert.') }}
+            {{ __('Ohne Ihre Einwilligung werden keine Standortdaten angenommen oder gespeichert.') }}
         </p>
         <x-action-form :action="route('location.devices.consent')">
             <input type="hidden" name="enabled" value="{{ $optedIn ? 0 : 1 }}">
@@ -47,7 +47,7 @@
     @if (session('location_device_url'))
         <x-card tone="warning" class="mb-4">
             <x-slot:title>{{ __('Push-URL (nur jetzt sichtbar)') }}</x-slot:title>
-            <p class="text-sm mb-2">{{ __('Trage diese URL in OwnTracks/Traccar ein. Sie wird nicht erneut angezeigt.') }}</p>
+            <p class="text-sm mb-2">{{ __('Tragen Sie diese URL in OwnTracks/Traccar ein. Sie wird nicht erneut angezeigt.') }}</p>
             <code class="block break-all bg-base-200 rounded p-2 text-sm">{{ session('location_device_url') }}</code>
         </x-card>
     @endif
@@ -78,7 +78,7 @@
             @forelse ($tokens as $device)
                 <tr class="hover">
                     <td class="font-semibold">{{ $device->label }}</td>
-                    <td>{{ $device->last_used_at?->translatedFormat('d.m.Y H:i') ?? '—' }}</td>
+                    <td>{{ $device->last_used_at?->orgTz()->translatedFormat('d.m.Y H:i') ?? '—' }}</td>
                     <td class="text-end">
                         @if ($device->isActive())
                             <x-status-badge tone="success" size="sm">{{ __('aktiv') }}</x-status-badge>

@@ -13,6 +13,7 @@ namespace App\Plugins\Toggl;
 use App\Models\{Customer, ExternalReference, ForeignCustomer, Organization, Project};
 use App\Plugins\Support\{ImportedTimeEntry, MatchingTimeImportService, RemoteSyncWindow};
 use App\Plugins\Toggl\Sources\{TogglApiClient, TogglCsvParser, TogglEntry};
+use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -97,7 +98,7 @@ class TogglImportService extends MatchingTimeImportService {
      * @return array{created: int, skipped: int, unmatched: int, unresolved_users: int, updated: int, conflicts: int, removed: int}
      */
     public function importFromCsv(Organization $organization, string $csvContent, array $config): array {
-        return $this->ingest($organization, $this->mapEntries($this->csvParser->parse($csvContent)), $config);
+        return $this->ingest($organization, $this->mapEntries($this->csvParser->parse($csvContent, Tz::ofOrganization($organization))), $config);
     }
 
     /**

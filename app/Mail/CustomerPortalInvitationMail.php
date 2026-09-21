@@ -36,7 +36,7 @@ class CustomerPortalInvitationMail extends Mailable {
     }
 
     public function content(): Content {
-        return new Content(view: 'mail.customer-portal-invitation', with: [
+        return new Content(markdown: 'mail.customer-portal-invitation', with: [
             'portalUser' => $this->portalUser,
             'acceptUrl' => $this->acceptUrl,
             'brandName' => $this->brandName(),

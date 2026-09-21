@@ -18,7 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\{AuditLog, KnowledgeArticle, Problem, ServiceQueue, ServiceTicket, SlaClockSegment, TicketSatisfaction};
 use App\Services\ServiceTicket\HelpdeskMetricsService;
-use App\Support\Sqid;
+use App\Support\{CarbonFmt, Sqid, Tz};
 use Illuminate\Http\{Request, Response};
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
@@ -170,7 +170,7 @@ class HelpdeskReportExportController extends Controller {
             ->paginate(50)->withQueryString()
             ->through(fn(ServiceTicket $ticket): array => [
                 'ticket' => $ticket,
-                'at' => $ticket->reported_at?->isoFormat('L LT'),
+                'at' => Tz::toLocal($ticket->reported_at)?->isoFormat('L LT'),
                 'detail' => $ticket->queue->name ?? '—',
             ]);
 
@@ -195,7 +195,7 @@ class HelpdeskReportExportController extends Controller {
             ->paginate(50)->withQueryString()
             ->through(fn(ServiceTicket $ticket): array => [
                 'ticket' => $ticket,
-                'at' => $ticket->reported_at?->isoFormat('L LT'),
+                'at' => Tz::toLocal($ticket->reported_at)?->isoFormat('L LT'),
                 'detail' => __(':days Tage offen', ['days' => $ticket->reported_at !== null ? round($ticket->reported_at->diffInMinutes($now) / 1440, 1) : '—']),
             ]);
 
@@ -237,7 +237,7 @@ class HelpdeskReportExportController extends Controller {
             ->paginate(50)->withQueryString()
             ->through(fn(ServiceTicket $ticket): array => [
                 'ticket' => $ticket,
-                'at' => $ticket->resolved_at?->isoFormat('L LT'),
+                'at' => Tz::toLocal($ticket->resolved_at)?->isoFormat('L LT'),
                 'detail' => $key === 'reopened' ? (string) __('Wiedereröffnet') : (string) __('Weitergeleitet (Queue-Wechsel)'),
             ]);
 
@@ -261,7 +261,7 @@ class HelpdeskReportExportController extends Controller {
             ->paginate(50)->withQueryString()
             ->through(fn(TicketSatisfaction $entry): array => [
                 'ticket' => $entry->ticket,
-                'at' => $entry->answered_at->isoFormat('L LT'),
+                'at' => CarbonFmt::orgTz($entry->answered_at)->isoFormat('L LT'),
                 'detail' => $entry->comment ?? '—',
             ]);
 
@@ -302,7 +302,7 @@ class HelpdeskReportExportController extends Controller {
             ->paginate(50)->withQueryString()
             ->through(fn(ServiceTicket $ticket): array => [
                 'ticket' => $ticket,
-                'at' => $ticket->reported_at?->isoFormat('L LT'),
+                'at' => Tz::toLocal($ticket->reported_at)?->isoFormat('L LT'),
                 'detail' => __('Gemeldet nach Publikation am :date', ['date' => $article->published_at?->isoFormat('L')]),
             ]);
 

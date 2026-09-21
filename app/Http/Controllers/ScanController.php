@@ -14,7 +14,7 @@ use App\Enums\Inventory\ScanAction;
 use App\Enums\User\Permission as P;
 use App\Models\Warehouse;
 use App\Services\Inventory\{BarcodeResolver, ScanActionService};
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -71,7 +71,7 @@ class ScanController extends Controller {
         try {
             $this->scan->book((string) $data['code'], $action, $warehouse, (string) $data['qty'], $options);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('inventory.scan.booked'));

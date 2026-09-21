@@ -131,6 +131,32 @@ final class ActivitySearchTest extends TestCase {
         $this->assertSame(0, $this->search($this->admin, 'postfix')->hits->total(), 'Deaktivierte Gruppen wirken nicht.');
     }
 
+    /** UI-Fuzz 2026-09-21: ein Zahlbegriff in einer Synonymgruppe legte jede Suche der Organisation lahm (TypeError). */
+    public function test_numeric_synonym_terms_do_not_break_the_search(): void {
+        $this->partnerScenario();
+        SearchSynonymGroup::query()->create(['terms' => ['4711', 'Mailrelay'], 'active' => true]);
+
+        $result = $this->search($this->admin, 'mailrelay');
+
+        $this->assertSame(['4711'], $result->parsed->synonyms['mailrelay']);
+    }
+
+    /** UI-Fuzz 2026-09-21: ein Jahr 1239 im Tagebuch brach die Neuindizierung ab — das Projekt ließ sich nicht mehr speichern. */
+    public function test_implausible_source_dates_do_not_block_reindexing(): void {
+        $s = $this->partnerScenario();
+        $diary = DiaryEntry::factory()->create([
+            'project_id' => $s['project']->id,
+            'user_id' => $this->admin->id,
+            'start_at' => '1239-07-09 00:00:00',
+            'end_at' => '1239-07-09 01:00:00',
+        ]);
+
+        $s['project']->update(['name' => 'Exchange-Migration 2']);
+
+        $document = SearchDocument::query()->where('source_type', SearchSourceType::DiaryEntry->value)->where('source_id', $diary->id)->firstOrFail();
+        $this->assertNull($document->occurred_at);
+    }
+
     public function test_renaming_the_context_reindexes_the_documents(): void {
         $s = $this->partnerScenario();
 

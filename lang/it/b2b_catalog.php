@@ -13,7 +13,7 @@ declare(strict_types=1);
 // Accesso catalogo B2B (funzionalità 099): punchout OCI in uscita + ricezione ordini openTRANS.
 return [
     'title' => 'Accesso catalogo B2B',
-    'intro' => 'I sistemi d\'acquisto dei vostri clienti B2B accedono via OCI 4.0 al catalogo articoli rilasciato e restituiscono gli ordini come openTRANS 2.1 ORDER.',
+    'intro' => 'I sistemi d\'acquisto dei suoi clienti B2B accedono via OCI 4.0 al catalogo articoli rilasciato e restituiscono gli ordini come openTRANS 2.1 ORDER.',
     'punchout_url' => 'URL punchout (per il sistema d\'acquisto del cliente)',
 
     'access_new_heading' => 'Emetti nuovo accesso',
@@ -23,7 +23,7 @@ return [
     'access_title' => 'Accesso: :label',
 
     'new_secret_heading' => 'Nuovo secret punchout',
-    'new_secret_hint' => 'Copialo ora e registralo nel sistema d\'acquisto del cliente — il testo in chiaro viene mostrato solo questa volta.',
+    'new_secret_hint' => 'Lo copi ora e lo registri nel sistema d\'acquisto del cliente — il testo in chiaro viene mostrato solo questa volta.',
 
     'items_heading' => 'Articoli rilasciati',
     'items_hint' => 'Solo gli articoli esplicitamente rilasciati sono visibili nel punchout. Senza prezzo cliente vale il prezzo di vendita standard.',
@@ -89,7 +89,7 @@ return [
 
     'error' => [
         'not_opentrans' => 'Il file non è un openTRANS 2.1 ORDER leggibile: :reason',
-        'customer_required' => 'Seleziona un cliente.',
+        'customer_required' => 'Selezioni un cliente.',
         'not_open' => 'L\'ordine non è più aperto.',
     ],
 
@@ -103,7 +103,7 @@ return [
     'copper_surcharge_label' => 'maggiorazione rame per unità',
     'public' => [
         'title' => 'Catalogo B2B',
-        'footer' => 'Catalogo punchout — il carrello viene consegnato al vostro sistema d\'acquisto; l\'ordine passa dal vostro sistema.',
+        'footer' => 'Catalogo punchout — il carrello viene consegnato al suo sistema d\'acquisto; l\'ordine passa dal suo sistema.',
         'search_placeholder' => 'Numero articolo o denominazione …',
         'search' => 'Cerca',
         'empty' => 'Nessun articolo rilasciato trovato.',
@@ -117,12 +117,12 @@ return [
         'next' => 'Avanti',
         'to_cart' => 'Trasferisci carrello',
         'transfer_title' => 'Consegna al sistema d\'acquisto',
-        'transfer_hint' => 'Il carrello viene trasferito al vostro sistema d\'acquisto. Se il reindirizzamento non parte automaticamente, usa il pulsante.',
+        'transfer_hint' => 'Il carrello viene trasferito al suo sistema d\'acquisto. Se il reindirizzamento non parte automaticamente, usi il pulsante.',
         'transfer_submit' => 'Trasferisci ora il carrello',
         'error_title' => 'Accesso catalogo',
         'error_hook_url' => 'HOOK_URL non valida — sono ammessi solo indirizzi HTTPS.',
         'error_credentials' => 'Credenziali non valide o accesso disattivato.',
-        'error_session' => 'La sessione catalogo è scaduta. Riavvia il punchout dal tuo sistema d\'acquisto.',
+        'error_session' => 'La sessione catalogo è scaduta. Riavvii il punchout dal suo sistema d\'acquisto.',
         'error_empty_cart' => 'Nessuna posizione con quantità selezionata.',
     ],
 ];

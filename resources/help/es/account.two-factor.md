@@ -7,14 +7,14 @@ related:
     - admin.security
 ---
 
-La autenticación de dos factores protege tu cuenta además de la
-contraseña: al iniciar sesión confirmas tu identidad con un segundo
+La autenticación de dos factores protege su cuenta además de la
+contraseña: al iniciar sesión confirma su identidad con un segundo
 método independiente. Están disponibles la **aplicación de
 autenticación** (escanear el código QR y confirmar con el código de un
 solo uso), el **código por correo electrónico** y la **passkey o llave
 de seguridad**. Tras la primera activación se muestran los **códigos de
-recuperación**: guárdalos fuera de WorkDiary; cada uno solo puede
-usarse una vez. Puedes registrar varios métodos y eliminarlos; si tu
+recuperación**: guárdelos fuera de WorkDiary; cada uno solo puede
+usarse una vez. Puede registrar varios métodos y eliminarlos; si su
 organización exige el segundo factor, el último factor activo no puede
-eliminarse. No compartas nunca el código QR, la clave manual ni los
+eliminarse. No comparta nunca el código QR, la clave manual ni los
 códigos con otras personas.

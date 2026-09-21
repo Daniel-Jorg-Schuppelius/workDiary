@@ -10,6 +10,10 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Timesheet;
+use Carbon\CarbonImmutable;
+use Illuminate\Validation\Validator;
+
 class SaveTimesheetRequest extends BaseFormRequest {
     /** @return array<string, mixed> */
     public function rules(): array {
@@ -22,5 +26,30 @@ class SaveTimesheetRequest extends BaseFormRequest {
             'customer_email' => ['nullable', 'email', 'max:255'],
             'notes' => ['nullable', 'string', 'max:5000'],
         ];
+    }
+
+    /**
+     * Anlegen führt TimesheetResolver auf den offenen Zettel des Tages zusammen;
+     * beim Umdatieren gibt es das nicht — timesheets_open_day_unique warf 500 (UI-Fuzz 2026-09-21).
+     */
+    public function withValidator(Validator $validator): void {
+        $validator->after(function (Validator $v): void {
+            $timesheet = $this->route('timesheet');
+            if (! $timesheet instanceof Timesheet || $timesheet->isSigned() || $v->errors()->has('work_date')) {
+                return;
+            }
+
+            $taken = Timesheet::query()
+                ->unsigned()
+                ->whereKeyNot($timesheet->getKey())
+                ->where('project_id', $timesheet->project_id)
+                ->where('user_id', $timesheet->user_id)
+                ->where('work_date', CarbonImmutable::parse((string) $this->input('work_date'))->startOfDay())
+                ->exists();
+
+            if ($taken) {
+                $v->errors()->add('work_date', __('Für diesen Tag gibt es bereits einen offenen Stundenzettel.'));
+            }
+        });
     }
 }

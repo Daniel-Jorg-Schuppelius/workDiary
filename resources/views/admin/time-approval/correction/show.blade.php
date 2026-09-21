@@ -18,9 +18,6 @@
                         :href="route('admin.corrections.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
         </x-slot:actions>
 
-        @if (session('status'))
-            <div class="alert alert-success">{{ session('status') }}</div>
-        @endif
         <div class="card bg-base-200">
             <div class="card-body space-y-2">
                 <div class="flex items-center gap-3 flex-wrap">

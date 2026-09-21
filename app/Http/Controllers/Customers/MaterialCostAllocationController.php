@@ -18,6 +18,7 @@ use App\Http\Requests\{IssueStockForCustomerRequest, SaveMaterialCostAllocationR
 use App\Models\{ArticleVariant, Customer, LexofficeVoucher, MaterialCostAllocation, Warehouse};
 use App\Services\Inventory\CustomerStockAllocationService;
 use App\Services\Licensing\FeatureFlagResolver;
+use App\Support\ErrorText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -136,7 +137,7 @@ class MaterialCostAllocationController extends Controller {
                 Auth::id() !== null ? (int) Auth::id() : null,
             );
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()

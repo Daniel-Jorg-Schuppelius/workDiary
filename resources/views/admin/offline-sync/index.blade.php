@@ -66,8 +66,8 @@
                 <tr class="hover">
                     {{-- captured_at = Gerätezeit der Offline-Erfassung; die Spanne
                          zur Übertragung ist die Offline-Latenz. --}}
-                    <td class="whitespace-nowrap text-sm">{{ $command->captured_at?->format('d.m.Y H:i') ?? '—' }}</td>
-                    <td class="whitespace-nowrap text-sm">{{ $command->created_at?->format('d.m.Y H:i') }}</td>
+                    <td class="whitespace-nowrap text-sm">{{ $command->captured_at?->orgTz()->format('d.m.Y H:i') ?? '—' }}</td>
+                    <td class="whitespace-nowrap text-sm">{{ $command->created_at?->orgTz()->format('d.m.Y H:i') }}</td>
                     <td class="text-sm">{{ $command->user?->name ?? '—' }}</td>
                     <td class="font-mono text-xs">{{ $command->type }}</td>
                     <td><x-status-badge :tone="$command->result_status->tone()" size="sm">{{ $command->result_status->label() }}</x-status-badge></td>

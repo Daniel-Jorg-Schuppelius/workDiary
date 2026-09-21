@@ -49,13 +49,13 @@ final class QualityHostingContractsReader {
 
     private const END_PATTERN = '/(gek(?:ü|ue)ndigt|beendet|endet|l(?:ä|ae)uft aus|bis zum)[^0-9]*(\d{1,2}\.\d{1,2}\.\d{4})/iu';
 
-    public function read(string $file): PurchasesImport {
-        $name = basename($file);
+    public function read(string $file, ?string $displayName = null): PurchasesImport {
+        $name = $displayName ?? basename($file);
         if (! File::isReadable($file, false)) {
             throw new RuntimeException((string) __('resale_import.file.unreadable', ['file' => $name]));
         }
 
-        $sheet = self::openXlsx($file, self::XLSX_MAX_ROWS, 'resale_import.file.xlsx_unreadable')->getFirstSheet();
+        $sheet = self::openXlsx($file, self::XLSX_MAX_ROWS, 'resale_import.file.xlsx_unreadable', $name)->getFirstSheet();
         if ($sheet === null) {
             throw new RuntimeException((string) __('resale_import.file.no_sheet', ['file' => $name]));
         }

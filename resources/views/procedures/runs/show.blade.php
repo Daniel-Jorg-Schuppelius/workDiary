@@ -94,7 +94,7 @@
                             @if ($isFinal)
                                 <div class="mt-2 text-xs text-muted">
                                     @if ($sr->executedBy){{ __('procedure.print.executedBy') }}: {{ $sr->executedBy->name }}@endif
-                                    @if ($sr->executed_at) · {{ $sr->executed_at->format('d.m.Y H:i') }}@endif
+                                    @if ($sr->executed_at) · {{ $sr->executed_at->orgTz()->format('d.m.Y H:i') }}@endif
                                     @if (data_get($sr->value_json, 'value')) · {{ __('procedure.run.value') }}: {{ data_get($sr->value_json, 'value') }}@endif
                                     @if ($sr->second_person_signed_at) · {{ __('procedure.field.secondPerson') }}: {{ $sr->secondPerson?->name }}@endif
                                 </div>

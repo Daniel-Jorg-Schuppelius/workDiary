@@ -23,7 +23,7 @@
     :submit-label="__('Ausgeben')">
 
     <p class="mb-2 text-sm text-base-content/70">
-        {{ __('Gib das Asset an eine Person oder ein Team aus. Mindestens eines von beiden ist erforderlich.') }}
+        {{ __('Geben Sie das Asset an eine Person oder ein Team aus. Mindestens eines von beiden ist erforderlich.') }}
     </p>
 
     <div class="grid gap-3 sm:grid-cols-2">

@@ -11,8 +11,8 @@ related:
     - glossary.core
 ---
 
-Mit Formularen füllst du konfigurierbare Checklisten und Erfassungen
-aus, die deine Organisation als Vorlagen definiert hat.
+Mit Formularen füllen Sie konfigurierbare Checklisten und Erfassungen
+aus, die Ihre Organisation als Vorlagen definiert hat.
 
 Typischer Ablauf:
 
@@ -23,18 +23,18 @@ Typischer Ablauf:
    teils mit Hilfetext und Einheit.
 3. Optional ein **Bezugsobjekt** wählen (Auftrag, Kunde, Asset,
    Projekt).
-4. **Speichern** – die Ausfüllung wird mit Zeitstempel und deinem
+4. **Speichern** – die Ausfüllung wird mit Zeitstempel und Ihrem
    Namen abgelegt.
 
 Versionssicherheit: Beim Speichern wird die Felddefinition der Vorlage
 als **Snapshot eingefroren**. Anzeige und Druck nutzen immer diesen
 Snapshot – spätere Änderungen an der Vorlage (oder sogar deren
-Löschung) verändern deine Ausfüllung nie nachträglich.
+Löschung) verändern Ihre Ausfüllung nie nachträglich.
 
 Berechtigungen: Formulare dürfen von entsprechend berechtigten
 Mitarbeitenden ausgefüllt werden. In der Übersicht sehen Teamleitungen
 alle Ausfüllungen ihres Zuständigkeitsbereichs, andere Personen nur die
 eigenen.
 
-Nächste Schritte: Fehlt ein Feld oder eine Vorlage? Wende dich an die
+Nächste Schritte: Fehlt ein Feld oder eine Vorlage? Wenden Sie sich an die
 Teamleitung – sie pflegt die **Formularvorlagen**.

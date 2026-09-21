@@ -17,5 +17,5 @@ en Lexoffice y una sincronización pull mantiene actualizada la caché
 local. Cada entrada muestra denominación, número de artículo, tipo,
 unidad, precio unitario neto y tipo impositivo, con búsqueda, filtros
 por tipo y estado, y una vista de detalle en diálogo. Con permisos
-suficientes puedes iniciar la sincronización manualmente, siempre que
+suficientes puede iniciar la sincronización manualmente, siempre que
 Lexoffice esté configurado para la organización.

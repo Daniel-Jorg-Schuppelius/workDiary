@@ -37,7 +37,7 @@ class SaveMeterBillingAgreementRequest extends BaseFormRequest {
             'title' => ['required', 'string', 'max:191'],
             'base_price' => ['nullable', 'numeric', 'min:0', 'max:1000000'],
             'unit_price' => ['required', 'numeric', 'min:0', 'max:100000'],
-            'free_units' => ['nullable', 'numeric', 'min:0'],
+            'free_units' => ['nullable', 'numeric', 'min:0', 'max:99999999999.999'],
             'unit' => ['nullable', 'string', 'max:32'],
             'interval_unit' => ['required', Rule::in(['monthly', 'quarterly', 'yearly'])],
             'interval_count' => ['nullable', 'integer', 'min:1', 'max:12'],

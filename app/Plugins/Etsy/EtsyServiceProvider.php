@@ -28,9 +28,7 @@ class EtsyServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function registerPlugin(): void {
-        if ($this->app->runningInConsole()) {
-            $this->commands([EtsySyncCommand::class]);
-        }
+        $this->commands([EtsySyncCommand::class]);
     }
 
     protected function bootPlugin(): void {

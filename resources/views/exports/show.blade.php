@@ -36,9 +36,6 @@
         @endcan
     </x-slot:actions>
 
-    @if (session('status'))
-        <div role="alert" class="alert alert-success"><span>{{ session('status') }}</span></div>
-    @endif
     <div class="grid gap-4 lg:grid-cols-3">
         <x-card class="lg:col-span-2 flex flex-col gap-2 space-y-2">
             <h3 class="card-title text-base">{{ __('Stammdaten') }}</h3>

@@ -18,6 +18,6 @@ Mitarbeitende erfassen den vollständigen Zeitraum. Zuständige prüfen
 Überschneidungen, Vertretung und Restanspruch und genehmigen, lehnen ab
 oder fordern eine Korrektur an.
 
-Gesundheitsdaten sind besonders schutzbedürftig. Erfasse nur notwendige
-Angaben, beschränke Anhänge auf erforderliche Nachweise und beachte die
+Gesundheitsdaten sind besonders schutzbedürftig. Erfassen Sie nur notwendige
+Angaben, beschränken Sie Anhänge auf erforderliche Nachweise und beachten Sie die
 vorgegebenen Zugriffs- und Aufbewahrungsregeln.

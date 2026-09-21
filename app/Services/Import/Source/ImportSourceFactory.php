@@ -45,7 +45,7 @@ final class ImportSourceFactory {
             return new IcalImportSource(
                 $absolutePath,
                 $mapper,
-                $this->timezone($organization),
+                Tz::ofOrganization($organization),
                 $this->categoryAllowlist($options),
             );
         }
@@ -69,10 +69,6 @@ final class ImportSourceFactory {
             ImportEntity::ProjectTimes => new ProjectTimeIcalMapper(),
             default => null,
         };
-    }
-
-    private function timezone(Organization $organization): string {
-        return Tz::isValid($organization->timezone) ? (string) $organization->timezone : Tz::FALLBACK;
     }
 
     /**

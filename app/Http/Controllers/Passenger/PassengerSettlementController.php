@@ -18,8 +18,8 @@ use App\Models\Organization;
 use App\Models\Passenger\PassengerShiftSettlement;
 use App\Models\{User, Vehicle};
 use App\Services\Passenger\PassengerRideService;
+use App\Support\{ErrorText, Sqid};
 use App\Support\Query\DateRange;
-use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -201,7 +201,7 @@ class PassengerSettlementController extends Controller {
                 'created_by' => $actor->id,
             ]);
         } catch (\InvalidArgumentException $exception) {
-            throw ValidationException::withMessages(['cash_register_id' => $exception->getMessage()]);
+            throw ValidationException::withMessages(['cash_register_id' => ErrorText::for($exception)]);
         }
 
         $settlement->forceFill(['cash_entry_id' => $entry->id])->save();

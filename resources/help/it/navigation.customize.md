@@ -8,9 +8,9 @@ related:
     - scope.overview
 ---
 
-In **Personalizza menu** nascondi sezioni, sottogruppi e singole voci della
-navigazione laterale che non ti servono, compresi i gruppi del menu
-«Nuovo …». L'impostazione vale solo per te ed è salvata sul server (uguale
+In **Personalizza menu** nasconde sezioni, sottogruppi e singole voci della
+navigazione laterale che non le servono, compresi i gruppi del menu
+«Nuovo …». L'impostazione vale solo per Lei ed è salvata sul server (uguale
 su tutti i dispositivi).
 
 **Importante:** nascondere è solo presentazione. Permessi, ricerca globale,
@@ -27,4 +27,4 @@ con il suo stato —
   porta alla pagina «Ambito funzionale»;
 - **senza licenza** — con una breve descrizione del modulo.
 
-Nulla sparisce irraggiungibile, per quanto snello sia il tuo menu.
+Nulla sparisce irraggiungibile, per quanto snello sia il suo menu.

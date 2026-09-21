@@ -194,7 +194,7 @@ return [
         'hint' => [
             'frozen' => 'Questa versione è approvata e congelata. Le modifiche avvengono tramite una versione successiva.',
             'approve_requires_items' => 'L’approvazione richiede almeno un pericolo.',
-            'sign_self' => 'Conferma la tua partecipazione — nome, ora e indirizzo IP vengono registrati come prova.',
+            'sign_self' => 'Confermi la sua partecipazione — nome, ora e indirizzo IP vengono registrati come prova.',
             'no_health_data' => 'Non vengono memorizzati referti o diagnosi — solo tipo, data e se il certificato è disponibile.',
             'after_optional' => 'Rischio dopo la misura facoltativo — inserire entrambi i valori insieme.',
             'pdf_not_in_mvp' => 'La prova in PDF seguirà in una fase successiva.',

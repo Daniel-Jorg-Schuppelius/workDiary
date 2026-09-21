@@ -18,7 +18,7 @@
     <p class="mb-4 text-sm text-muted">
         {{ $ticket->ticket_no }} · {{ $ticket->status->label() }}
         @if ($ticket->resolution_due_at)
-            · {{ __('Lösung zugesagt bis :date', ['date' => $ticket->resolution_due_at->isoFormat('L LT')]) }}
+            · {{ __('Lösung zugesagt bis :date', ['date' => $ticket->resolution_due_at->orgTz()->isoFormat('L LT')]) }}
         @endif
     </p>
 

@@ -15,6 +15,7 @@ namespace App\Plugins\Kimai\Sources;
 use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Plugins\Kimai\Exceptions\KimaiApiException;
 use App\Plugins\Support\{GuardsPluginApiResponses, PluginApiClient, PluginApiException, PluginHttpFactory, RemoteTimeWriter, StartStopFingerprint};
+use App\Support\Tz;
 use Carbon\CarbonImmutable;
 
 /**
@@ -33,9 +34,11 @@ class KimaiApiClient implements RemoteTimeWriter {
 
     private ?PluginApiClient $api = null;
 
+    /** @param  ?string  $timezone  Zeitzone, in der Kimai Zeiten ohne Offset liest und schreibt (datetime-local) */
     public function __construct(
         private readonly ?string $apiToken,
         private readonly ?string $baseUrl,
+        private readonly ?string $timezone = null,
     ) {}
 
     public function isConfigured(): bool {
@@ -73,10 +76,10 @@ class KimaiApiClient implements RemoteTimeWriter {
                 $query['user'] = 'all';
             }
             if ($begin !== null) {
-                $query['begin'] = $begin->format('Y-m-d\TH:i:s');
+                $query['begin'] = $begin->setTimezone($this->timezone ?? Tz::current())->format('Y-m-d\TH:i:s');
             }
             if ($end !== null) {
-                $query['end'] = $end->format('Y-m-d\TH:i:s');
+                $query['end'] = $end->setTimezone($this->timezone ?? Tz::current())->format('Y-m-d\TH:i:s');
             }
 
             $response = $this->api()->getResponse($this->url('/api/timesheets'), $query);
@@ -160,8 +163,8 @@ class KimaiApiClient implements RemoteTimeWriter {
 
         return $this->api()->requestResponse('patch', $this->url('/api/timesheets/' . (int) $externalId), [
             'json' => [
-                'begin' => $entry['started_at']->format('Y-m-d\TH:i:s'),
-                'end' => $entry['ended_at']->format('Y-m-d\TH:i:s'),
+                'begin' => $entry['started_at']->setTimezone($this->timezone ?? Tz::current())->format('Y-m-d\TH:i:s'),
+                'end' => $entry['ended_at']->setTimezone($this->timezone ?? Tz::current())->format('Y-m-d\TH:i:s'),
                 'description' => (string) $entry['description'],
                 'billable' => $entry['billable'],
             ],

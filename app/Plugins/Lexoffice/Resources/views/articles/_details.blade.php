@@ -102,7 +102,7 @@
             </div>
             <div>
                 <dt class="text-xs text-muted">{{ __('Zuletzt synchronisiert') }}</dt>
-                <dd>{{ optional($article->synced_at)->format('d.m.Y H:i') ?: '—' }}</dd>
+                <dd>{{ $article->synced_at?->orgTz()->format('d.m.Y H:i') ?: '—' }}</dd>
             </div>
         </dl>
     </div>

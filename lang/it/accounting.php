@@ -290,7 +290,7 @@ return [
             'batch' => 'Lotto: :prepared accettati, :posted registrati, :failed aperti.',
         ],
         'error' => [
-            'four_eyes' => 'Principio dei quattro occhi: questa registrazione è stata preparata da lei — deve registrarla un altro.',
+            'four_eyes' => 'Principio dei quattro occhi: questa registrazione è stata preparata da Lei — deve registrarla un altro.',
         ],
         'blocker' => [
             'missing_rule' => 'Nessuna regola contabile per :role:criteria.',
@@ -844,7 +844,7 @@ return [
     'clearing' => [
         'title' => 'Scrittura in sospeso',
         'memo' => 'Caso da chiarire: :purpose',
-        'no_account' => 'Nessun conto transitorio configurato. Contrassegna un conto del piano dei conti come conto transitorio.',
+        'no_account' => 'Nessun conto transitorio configurato. Contrassegni un conto del piano dei conti come conto transitorio.',
         'action' => [
             'post' => 'Registrare su conto transitorio',
             'post_submit' => 'Crea la scrittura in sospeso',

@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Plugins\CalDav;
 
+use App\Enums\Plugin\PluginHealthStatus;
 use App\Models\{CalDavConnection, Event, ExternalReference};
+use App\Models\PluginState;
 use App\Plugins\CalDav\CalDavPlugin;
 use App\Plugins\CalDav\Contracts\{CalDavGateway, CalDavGatewayFactory};
 use App\Plugins\Contracts\{CalendarPublisher, PluginCapability};
@@ -67,6 +69,45 @@ final class CalDavPluginTest extends TestCase {
             'started_at' => now()->addDay(),
             'ended_at' => now()->addDay()->addHour(),
         ]);
+    }
+
+    /** UI-Fuzz 2026-09-21: eine eingefügte volle Kalender-URL wurde hinter die Basis-URL gehängt (https://…/https://…). */
+    public function test_full_calendar_url_is_stored_as_path_below_the_base_url(): void {
+        $this->bindGateway();
+        $admin = $this->orgAdmin();
+        $payload = [
+            'name' => 'Nextcloud',
+            'base_url' => 'https://cloud.example.com/remote.php/dav/',
+            'username' => 'svc',
+            'app_password' => 'secret',
+            'calendar_path' => 'https://cloud.example.com/remote.php/dav/calendars/team/plan/',
+        ];
+
+        $this->actingAs($admin)->post(route('admin.caldav.connection.store'), $payload)->assertSessionHasNoErrors();
+        $this->assertSame('calendars/team/plan', CalDavConnection::query()->firstOrFail()->calendar_path);
+
+        $this->actingAs($admin)
+            ->post(route('admin.caldav.connection.store'), ['calendar_path' => 'https://andere.example.org/dav/calendars/x'] + $payload)
+            ->assertSessionHasErrors('calendar_path');
+        $this->assertSame('calendars/team/plan', CalDavConnection::query()->firstOrFail()->calendar_path);
+    }
+
+    /** UI-Fuzz 2026-09-21: die Adminseite pingte beim Aufruf synchron — ein hängender Server blockierte sie. */
+    public function test_admin_page_shows_the_stored_health_without_pinging(): void {
+        $this->bindGateway(pingOk: false);
+        $this->connection();
+        PluginState::query()->create([
+            'plugin_id' => CalDavPlugin::ID,
+            'organization_id' => $this->organization->id,
+            'last_health_status' => PluginHealthStatus::Ok->value,
+            'last_health_check_at' => now()->subMinutes(5),
+        ]);
+
+        $this->actingAs($this->orgAdmin())
+            ->get(route('admin.caldav.index'))
+            ->assertOk()
+            ->assertSee(PluginHealthStatus::Ok->label())
+            ->assertSee('x-data="pluginHealthCheck(', false);
     }
 
     public function test_is_discovered_and_announces_calendar_publish(): void {

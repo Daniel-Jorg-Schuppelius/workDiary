@@ -30,9 +30,7 @@ class JtlWawiServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function registerPlugin(): void {
-        if ($this->app->runningInConsole()) {
-            $this->commands([JtlSyncCommand::class]);
-        }
+        $this->commands([JtlSyncCommand::class]);
     }
 
     protected function bootPlugin(): void {

@@ -10,8 +10,8 @@ related:
     - planning.availability
 ---
 
-Con lo scambio turni cedi un tuo turno o lo scambi con un altro; il piano
-cambia solo dopo l'approvazione della direzione del team. Richiedi la
+Con lo scambio turni cede un suo turno o lo scambia con un altro; il piano
+cambia solo dopo l'approvazione della direzione del team. Richieda la
 cessione o lo scambio, opzionalmente indicando un collega e un turno in
 cambio; il collega accetta, poi la direzione approva verificando
 automaticamente riposi, orario massimo, sovrapposizioni e assenze. Solo

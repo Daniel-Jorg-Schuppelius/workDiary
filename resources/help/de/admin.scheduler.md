@@ -16,14 +16,14 @@ Fristen-Eskalationen.
 **Registry statt Wildwuchs:** Alle planbaren Jobs stammen aus einer
 zentralen Registry mit fest hinterlegtem **Standard-Plan**. Nur dort
 registrierte Jobs erscheinen hier und lassen sich steuern – beliebige
-Kommandos kannst du über diese Seite bewusst nicht einplanen.
+Kommandos können Sie über diese Seite bewusst nicht einplanen.
 
-**Übersicht:** Je Job siehst du den effektiven Plan samt **Herkunft**
+**Übersicht:** Je Job sehen Sie den effektiven Plan samt **Herkunft**
 (Standard, Einstellung oder manuelle Umplanung), den letzten Lauf mit
-Ergebnis, einen Fehlerzähler und die nächste Fälligkeit. So erkennst
-du auf einen Blick, ob ein Job hängt oder dauerhaft fehlschlägt.
+Ergebnis, einen Fehlerzähler und die nächste Fälligkeit. So erkennen
+Sie auf einen Blick, ob ein Job hängt oder dauerhaft fehlschlägt.
 
-**Filtern und Sortieren:** Über der Tabelle grenzt du die Liste nach
+**Filtern und Sortieren:** Über der Tabelle grenzen Sie die Liste nach
 Name, Schlüssel oder Befehl, nach Einstufung, letztem Ergebnis und
 Planquelle ein – etwa auf alle fehlgeschlagenen, noch nie gelaufenen
 oder vom Betriebsfenster verschobenen Jobs. Der Schalter **Nur
@@ -40,7 +40,7 @@ vorbehalten. Über **Zurücksetzen** kehrt ein Job jederzeit zu seinem
 Standard-Plan zurück.
 
 **Betriebsfenster:** Läuft der Server nicht rund um die Uhr – etwa
-weil er nachts abschaltet –, hinterlegst du unter **Einstellungen**
+weil er nachts abschaltet –, hinterlegen Sie unter **Einstellungen**
 Beginn und Ende des Betriebsfensters (Ende 00:00 steht für
 Mitternacht). Jobs mit fester Uhrzeit außerhalb des Fensters laufen
 dann gesammelt in den ersten beiden Betriebsstunden, in ihrer
@@ -64,6 +64,6 @@ Bleiben fällige Läufe aus oder häufen sich Fehler, entstehen daraus
 Betriebsaufgaben bzw. Warnungen. So fällt auch ein komplett stehender
 Scheduler auf – nicht erst, wenn Auswertungen fehlen.
 
-**Empfehlung:** Ändere Pläne zurückhaltend und beobachte nach jeder
+**Empfehlung:** Ändern Sie Pläne zurückhaltend und beobachten Sie nach jeder
 Umplanung die nächsten Läufe. Ein dauerhaft erhöhter Fehlerzähler ist
 ein Fall für die Diagnose, nicht fürs Pausieren.

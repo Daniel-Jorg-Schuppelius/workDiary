@@ -86,6 +86,31 @@ class Feature103DeltasTest extends TestCase {
         $this->assertSame(1, OnCallShift::query()->where('user_id', $user->id)->count());
     }
 
+    /** UI-Fuzz 2026-09-21: Rollplan-Uhrzeiten landeten als Ortszeit in den UTC-Spalten — das Dashboard zeigte sie um den Versatz verschoben. */
+    public function test_rotation_on_call_times_are_stored_in_utc(): void {
+        $this->organization->update(['timezone' => 'Europe/Berlin']);
+        $user = $this->orgUser();
+        $late = ShiftType::create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Spätdienst mit Rufbereitschaft',
+            'abbreviation' => 'SR',
+            'default_start_time' => '13:48',
+            'default_end_time' => '22:00',
+            'on_call_start_time' => '22:00',
+            'on_call_end_time' => '06:00',
+            'is_active' => true,
+        ]);
+        $rotation = ShiftRotation::create(['organization_id' => $this->organization->id, 'name' => 'SR-Woche', 'weeks_count' => 1, 'is_active' => true]);
+        $rotation->entries()->create(['week_index' => 0, 'iso_weekday' => 1, 'shift_type_id' => $late->id]);
+        $rotation->assignments()->create(['organization_id' => $this->organization->id, 'user_id' => $user->id, 'anchor_date' => '2026-06-15']);
+
+        app(ShiftRotationRoller::class)->rollForward($this->organization, CarbonImmutable::parse('2026-06-15'), 1);
+
+        $onCall = OnCallShift::query()->where('user_id', $user->id)->firstOrFail();
+        $this->assertSame('2026-06-15 20:00:00', $onCall->getRawOriginal('start_at'));
+        $this->assertSame('2026-06-16 04:00:00', $onCall->getRawOriginal('end_at'));
+    }
+
     public function test_wage_items_import_command(): void {
         $user = $this->orgUser(['personnel_number' => 'P-100']);
         $csv = tempnam(sys_get_temp_dir(), 'ewi') . '.csv';

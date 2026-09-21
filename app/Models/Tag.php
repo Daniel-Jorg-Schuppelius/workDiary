@@ -11,6 +11,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\{BelongsToOrganization, GeneratesUniqueSlug, HasSqid};
+use CommonToolkit\Helper\Data\StringHelper;
 use Database\Factories\TagFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -50,8 +51,11 @@ class Tag extends Model {
             ->exists());
     }
 
+    /** name/slug sind varchar(255): Freitext-Schlagwörter (Kommaliste bis 500) liefen sonst über; Luft für „-2“. */
+    private const MAX_NAME = 191;
+
     public static function findOrCreateByName(string $name, ?int $userId = null): self {
-        $name = trim($name);
+        $name = StringHelper::truncate(trim($name), self::MAX_NAME, '');
         $slug = static::uniqueSlug($name);
 
         $existing = static::query()->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])->first();
@@ -73,7 +77,7 @@ class Tag extends Model {
      * organization_id=NULL anlegen.
      */
     public static function findOrCreateByNameForOrganization(string $name, int $organizationId, ?int $userId = null): self {
-        $name = trim($name);
+        $name = StringHelper::truncate(trim($name), self::MAX_NAME, '');
 
         $existing = static::query()->withoutGlobalScopes()
             ->where('organization_id', $organizationId)

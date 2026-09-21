@@ -14,6 +14,7 @@ use App\Enums\Manufacturing\ProcurementMode;
 use App\Models\{Article, ManufacturingOrder, Supplier, User, Warehouse, WorkCenter};
 use App\Services\Manufacturing\ManufacturingOrderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Exceptions;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -67,6 +68,24 @@ final class E7UiTest extends TestCase {
 
         $this->assertSame($wc->id, $order->fresh()->work_center_id);
         $this->assertSame(120, $order->fresh()->planned_minutes);
+    }
+
+    /** UI-Fuzz 2026-09-21: Minuten ohne Obergrenze sprengten int unsigned (1264). */
+    public function test_minutes_beyond_the_column_are_field_errors(): void {
+        Exceptions::fake();
+        $wc = WorkCenter::query()->create(['organization_id' => $this->organization->id, 'name' => 'Fräse', 'capacity_minutes' => 480]);
+        $order = $this->draft();
+
+        $this->actingAs($this->admin)->post(route('manufacturing-orders.work-center', $order), [
+            'work_center' => $wc->sqid, 'minutes' => '999999999999',
+        ])->assertSessionHasErrors('minutes');
+        $this->actingAs($this->admin)->post(route('work-centers.store'), [
+            'name' => 'Presse', 'capacity_minutes' => '999999999999', 'setup_minutes' => '999999999999',
+        ])->assertSessionHasErrors(['capacity_minutes', 'setup_minutes']);
+
+        $this->assertNull($order->fresh()->work_center_id);
+        $this->assertSame(0, WorkCenter::query()->where('name', 'Presse')->count());
+        Exceptions::assertNothingReported();
     }
 
     public function test_capacity_board_and_create(): void {

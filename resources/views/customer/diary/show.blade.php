@@ -22,9 +22,6 @@
         <a href="{{ $pdfUrl }}" class="btn btn-outline btn-sm">{{ __('Fallakte als PDF') }}</a>
     </div>
 
-    @if (session('status'))
-        <div class="alert alert-success mb-3 text-sm">{{ session('status') }}</div>
-    @endif
     <x-validation-errors first class="mb-3" />
 
     <div class="space-y-6">

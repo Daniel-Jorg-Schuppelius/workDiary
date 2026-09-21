@@ -17,6 +17,7 @@ use App\Models\{Customer, Expense, ExpenseCategory, Project, User};
 use App\Services\Billing\ExpenseLinkProviderResolver;
 use App\Services\Expense\ExpenseService;
 use App\Support\{CsvExport, SortableQuery};
+use App\Support\ErrorText;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -207,7 +208,7 @@ class ExpenseController extends Controller {
         try {
             $voucher = $providers->current()->link($expense, (string) $request->input('voucher'));
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
         $expense->audit('expense.voucher_linked', ['voucher_number' => $voucher->number]);
 
@@ -222,7 +223,7 @@ class ExpenseController extends Controller {
         } catch (\RuntimeException $e) {
             // Gepushte Verknüpfung (Feature 106): der Beleg existiert
             // unwiderruflich - die Verknüpfung bleibt.
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
         $expense->audit('expense.voucher_unlinked', []);
 
@@ -243,7 +244,7 @@ class ExpenseController extends Controller {
         try {
             $voucher = $providers->current()->pushVoucher($expense);
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         } catch (\Throwable $e) {
             report($e);
 
@@ -268,7 +269,7 @@ class ExpenseController extends Controller {
         try {
             $draft = $corrections->correct($expense, (string) $data['correction_reason'], $request->user() ?? abort(401));
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         } catch (\Throwable $e) {
             report($e);
 

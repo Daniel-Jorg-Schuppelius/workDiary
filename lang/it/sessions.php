@@ -94,7 +94,7 @@ return [
     ],
 
     'error' => [
-        'own_current_session' => 'La propria sessione attuale non può essere terminata qui — usa il logout normale.',
+        'own_current_session' => 'La propria sessione attuale non può essere terminata qui — usi il logout normale.',
         'session_gone' => 'La sessione non esiste più.',
         'token_gone' => 'Il token non esiste più.',
         'device_gone' => 'Il dispositivo non esiste più o è già scollegato.',

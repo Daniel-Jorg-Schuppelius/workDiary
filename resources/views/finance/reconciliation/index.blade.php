@@ -60,7 +60,7 @@
 
             @forelse ($statements as $statement)
                 <tr>
-                    <td>{{ $statement->created_at?->format('d.m.Y H:i') }}</td>
+                    <td>{{ $statement->created_at?->orgTz()->format('d.m.Y H:i') }}</td>
                     <td><x-status-badge :tone="$statement->source_format->tone()" :label="$statement->source_format->label()" /></td>
                     <td>{{ $statement->bankAccount?->label ?? '—' }}</td>
                     <td>

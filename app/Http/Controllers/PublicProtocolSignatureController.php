@@ -13,6 +13,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Services\Customer\CustomerQueryService;
 use App\Services\Protocol\ProtocolSignatureTokenService;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 use RuntimeException;
@@ -30,7 +31,7 @@ class PublicProtocolSignatureController extends Controller {
         try {
             $record = $this->tokens->open($token);
         } catch (RuntimeException $e) {
-            return response()->view('public.protocol-sign-error', ['message' => $e->getMessage()], 410);
+            return response()->view('public.protocol-sign-error', ['message' => ErrorText::for($e)], 410);
         }
 
         $protocol = $record->protocol()->with(['items', 'subject'])->firstOrFail();
@@ -76,7 +77,7 @@ class PublicProtocolSignatureController extends Controller {
                 'user_agent' => substr((string) $request->userAgent(), 0, 255),
             ]);
         } catch (RuntimeException $e) {
-            return response()->view('public.protocol-sign-error', ['message' => $e->getMessage()], 410);
+            return response()->view('public.protocol-sign-error', ['message' => ErrorText::for($e)], 410);
         }
 
         return redirect()->route('protocols.public-sign', ['token' => $token])
@@ -104,7 +105,7 @@ class PublicProtocolSignatureController extends Controller {
                 'user_agent' => substr((string) $request->userAgent(), 0, 255),
             ]);
         } catch (RuntimeException $e) {
-            return response()->view('public.protocol-sign-error', ['message' => $e->getMessage()], 410);
+            return response()->view('public.protocol-sign-error', ['message' => ErrorText::for($e)], 410);
         }
 
         return redirect()->route('protocols.public-sign', ['token' => $token])

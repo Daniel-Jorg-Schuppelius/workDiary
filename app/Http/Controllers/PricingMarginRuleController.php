@@ -16,6 +16,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Requests\SavePricingMarginRuleRequest;
 use App\Models\{PriceChangeRequest, PricingMarginRule, Supplier, User};
 use App\Services\Procurement\PriceApprovalService;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -65,7 +66,7 @@ class PricingMarginRuleController extends Controller {
         try {
             $approvals->approve($priceRequest, $approver);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('procurement.approval.flash.approved', ['price' => $priceRequest->suggested_price?->format()]));
@@ -84,7 +85,7 @@ class PricingMarginRuleController extends Controller {
         try {
             $approvals->reject($priceRequest, $approver, $note);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('procurement.approval.flash.rejected'));

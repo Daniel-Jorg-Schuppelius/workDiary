@@ -13,7 +13,7 @@ related:
     - privacy.overview
 ---
 
-Aquí configuras el portal público de denuncias de tu organización
+Aquí configura el portal público de denuncias de su organización
 (`/compliance/portal`); hay exactamente un portal por organización y su
 gestión requiere el permiso **whistleblowing.settings.manage** y la
 autenticación de dos factores del canal de denuncias. Ajustes: **activo
@@ -21,6 +21,6 @@ autenticación de dos factores del canal de denuncias. Ajustes: **activo
 texto de introducción, idioma por defecto y **retención (meses)** para
 la eliminación controlada de casos cerrados. El enlace público contiene
 un slug aleatorio no deducible del nombre de la organización; con
-**«Rotar enlace»** generas uno nuevo. Atención: tras rotar, los enlaces
-ya distribuidos quedan inválidos de inmediato — comunica el nuevo
+**«Rotar enlace»** genera uno nuevo. Atención: tras rotar, los enlaces
+ya distribuidos quedan inválidos de inmediato — comunique el nuevo
 enlace activamente.

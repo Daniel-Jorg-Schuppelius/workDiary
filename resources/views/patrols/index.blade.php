@@ -29,7 +29,7 @@
             <div>
                 @foreach ($openRuns as $run)
                     <a class="link" href="{{ route('patrols.runs.show', $run) }}">{{ $run->route?->name }}</a>
-                    ({{ $run->starter?->name }}, {{ __('seit :time', ['time' => $run->started_at->format('H:i')]) }})@if(!$loop->last), @endif
+                    ({{ $run->starter?->name }}, {{ __('seit :time', ['time' => $run->started_at->orgTz()->format('H:i')]) }})@if(!$loop->last), @endif
                 @endforeach
             </div>
         </div>

@@ -172,7 +172,7 @@
                 <div class="py-8 text-center text-muted">
                     <x-icon name="storefront" class="text-3xl" />
                     <p class="mt-2 font-medium">{{ __('Noch kein Servicekatalog angelegt') }}</p>
-                    <p class="text-sm">{{ __('Lege zuerst einen Fachdienst an, dann Angebote und bestellbare Katalogeinträge.') }}</p>
+                    <p class="text-sm">{{ __('Legen Sie zuerst einen Fachdienst an, dann Angebote und bestellbare Katalogeinträge.') }}</p>
                 </div>
             </x-card>
         @endforelse

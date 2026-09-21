@@ -222,7 +222,7 @@
     <x-card :title="__('Post Implementation Review (PIR)')" icon="fact_check">
         @if ($change->pir_notes)
             <div class="prose prose-sm max-w-none whitespace-pre-wrap">{{ $change->pir_notes }}</div>
-            <p class="text-xs text-muted mt-2">{{ __('Dokumentiert am') }} {{ $change->pir_done_at?->translatedFormat('d.m.Y H:i') ?? '—' }}</p>
+            <p class="text-xs text-muted mt-2">{{ __('Dokumentiert am') }} {{ $change->pir_done_at?->orgTz()->translatedFormat('d.m.Y H:i') ?? '—' }}</p>
         @else
             <p class="text-sm text-muted">
                 {{ $change->change_type === 'emergency'

@@ -36,13 +36,13 @@ esterno.
 
 ## Procedura consigliata
 
-1. Apri **Finanze → Configura contabilità** e scegli il profilo.
-2. Imposta valuta base, esercizio e inizio delle scritture.
-3. Esegui il **preflight**: verifica che l'organizzazione possa
+1. Apra **Finanze → Configura contabilità** e scelga il profilo.
+2. Imposti valuta base, esercizio e inizio delle scritture.
+3. Esegua il **preflight**: verifichi che l'organizzazione possa
    scrivere senza lacune dalla data di taglio.
-4. **Attiva** la contabilità locale solo quando nessun punto è più
+4. **Attivi** la contabilità locale solo quando nessun punto è più
    rosso.
-5. Da lì le scritture passano dal giornale (vedi «Scritture»), la
+5. Da lì le scritture passano dal giornale (si veda «Scritture»), la
    chiusura dalla pagina di chiusura.
 
 ![Configurazione della contabilità locale con scelta del profilo e preflight](media/buchhaltung/buchhaltung-einrichtung.png)

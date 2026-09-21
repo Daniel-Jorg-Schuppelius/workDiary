@@ -200,7 +200,7 @@ class SafetyEventController extends Controller {
         $rules = [
             'kind' => ['required', 'string', 'in:' . implode(',', SafetyEventKind::values())],
             'severity' => ['required', 'string', 'in:' . implode(',', SafetyEventSeverity::values())],
-            'occurred_at' => ['required', 'date'],
+            'occurred_at' => ['required', 'date', new \App\Rules\TimestampRange()],
             'location' => ['nullable', 'string', 'max:180'],
             'affected_person' => ['nullable', 'string', 'max:180'],
             'description' => ['required', 'string', 'max:10000'],

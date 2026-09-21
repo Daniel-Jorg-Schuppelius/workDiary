@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Applications\{ApplicationContractNegotiation, ApplicationOpportunity, JobApplication};
 use App\Models\User;
 use App\Services\Applications\ContractNegotiationService;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 
@@ -57,7 +58,7 @@ class ContractNegotiationController extends Controller {
                 $this->actor(),
             );
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Vertragsversion abgelegt.'));
@@ -74,7 +75,7 @@ class ContractNegotiationController extends Controller {
         try {
             $this->negotiations->addReviewItem($negotiation, $data['label'], $data['severity'], $data['note'] ?? null, $this->actor());
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Review-Punkt erfasst.'));
@@ -97,7 +98,7 @@ class ContractNegotiationController extends Controller {
         try {
             $this->negotiations->resolveReviewItem($negotiation, $itemId, $data['resolution'], $data['note'] ?? null, $this->actor());
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Review-Punkt entschieden.'));
@@ -109,7 +110,7 @@ class ContractNegotiationController extends Controller {
         try {
             $result = $this->negotiations->approve($negotiation, $this->actor(), $request->input('reason'));
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', $result === 'approved_all'
@@ -127,7 +128,7 @@ class ContractNegotiationController extends Controller {
         try {
             $this->negotiations->conclude($negotiation, $data['decision'], $data['note'] ?? null, $this->actor());
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Verhandlung abgeschlossen.'));
@@ -142,7 +143,7 @@ class ContractNegotiationController extends Controller {
         try {
             $this->negotiations->open($parent, $data['title'], $data['due_on'] ?? null, $this->actor());
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Vertragsverhandlung eröffnet.'));

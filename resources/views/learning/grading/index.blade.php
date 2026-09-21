@@ -69,7 +69,7 @@
                 <td class="font-medium">{{ $submission->enrollment?->learnerName() }}</td>
                 <td class="text-sm text-base-content/70">{{ $submission->assignment?->unit?->course?->title }}</td>
                 <td class="text-sm">{{ $submission->assignment?->title }}</td>
-                <td class="text-sm">{{ $submission->submitted_at?->translatedFormat('d.m.Y H:i') }}</td>
+                <td class="text-sm">{{ $submission->submitted_at?->orgTz()->translatedFormat('d.m.Y H:i') }}</td>
                 <td class="text-right">
                     <div class="flex justify-end gap-1">
                         <x-icon-btn icon="grading" tone="primary" size="xs"

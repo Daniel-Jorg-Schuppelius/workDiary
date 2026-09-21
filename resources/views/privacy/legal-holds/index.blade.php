@@ -22,7 +22,6 @@
                             show-label>{{ __('Legal Hold setzen') }}</x-icon-btn>
             </x-slot:actions>
         @endif
-        @if (session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif
         <x-table scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>

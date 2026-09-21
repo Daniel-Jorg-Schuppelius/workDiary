@@ -14,11 +14,11 @@ related:
 Touren bündeln Stopps und Einsätze in einer geplanten Reihenfolge. Die
 Kartenansicht unterstützt Prüfung und Optimierung der Route.
 
-Lege zuerst die benötigten Kunden- oder Einsatzadressen fest. Ordne
-danach Stopps, Zuständigkeit und geplante Zeiten zu, prüfe die Route und
-starte die Tour erst mit vollständigen Angaben.
+Legen Sie zuerst die benötigten Kunden- oder Einsatzadressen fest. Ordnen Sie
+danach Stopps, Zuständigkeit und geplante Zeiten zu, prüfen Sie die Route und
+starten Sie die Tour erst mit vollständigen Angaben.
 
-Eine automatische Optimierung ist ein Planungsvorschlag. Prüfe
+Eine automatische Optimierung ist ein Planungsvorschlag. Prüfen Sie
 Zeitfenster, Prioritäten und reale Anfahrtsbedingungen vor der
 Übernahme. Änderungen an laufenden Touren sollten mit den Beteiligten
 abgestimmt werden.

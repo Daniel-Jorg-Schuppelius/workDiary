@@ -39,8 +39,8 @@ return [
         'permissions' => 'Autorizzazioni disponibili',
     ],
     'hint' => [
-        'hub' => 'Gestisci ruoli, gruppi utenti e assegnazioni di membri per l\'organizzazione attualmente attiva. I ruoli a livello di piattaforma vengono inoltre gestiti globalmente.',
-        'permissions_readonly' => 'Le autorizzazioni sono definite dal sistema e non possono essere create a runtime. Per concederle per ruolo, passa alla modifica del ruolo.',
+        'hub' => 'Gestisca ruoli, gruppi utenti e assegnazioni di membri per l\'organizzazione attualmente attiva. I ruoli a livello di piattaforma vengono inoltre gestiti globalmente.',
+        'permissions_readonly' => 'Le autorizzazioni sono definite dal sistema e non possono essere create a runtime. Per concederle per ruolo, passi alla modifica del ruolo.',
         'global_roles' => 'I ruoli globali si applicano a tutte le organizzazioni e sono gestiti esclusivamente dal sistema.',
         'effective_permissions' => 'Unione di autorizzazioni dirette, autorizzazioni di ruolo e autorizzazioni di gruppo.',
     ],
@@ -85,7 +85,7 @@ return [
     ],
     'help' => [
         'role_name' => 'Solo lettere minuscole, cifre, punto, trattino e trattino basso. Non può essere modificato dopo la creazione.',
-        'role_permissions' => 'Seleziona le autorizzazioni che questo ruolo deve concedere.',
+        'role_permissions' => 'Selezioni le autorizzazioni che questo ruolo deve concedere.',
         'group_roles' => 'I membri di questo gruppo ottengono anche tutte le autorizzazioni dei ruoli selezionati.',
         'group_permissions' => 'Le autorizzazioni dirette vengono ereditate dai membri in aggiunta a quelle basate sui ruoli.',
     ],

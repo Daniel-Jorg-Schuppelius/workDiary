@@ -19,7 +19,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
 use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem};
 use App\Models\User;
-use App\Support\{CarbonFmt, ChartBucket};
+use App\Support\{CarbonFmt, ChartBucket, Tz};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
@@ -182,7 +182,7 @@ class CloudIntakeReportController extends Controller {
                 'provider' => $connection->provider->label(),
                 'imported' => $counts['imported'],
                 'rejected' => $counts['rejected'],
-                'lastRun' => $connection->last_run_at?->format('d.m.Y H:i'),
+                'lastRun' => Tz::toLocal($connection->last_run_at)?->format('d.m.Y H:i'),
                 'status_label' => $connection->status->label(),
             ];
         }

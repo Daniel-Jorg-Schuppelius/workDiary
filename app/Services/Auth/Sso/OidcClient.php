@@ -53,8 +53,13 @@ class OidcClient {
             "sso.oidc.discovery.{$connection->id}",
             self::DISCOVERY_TTL_SECONDS,
             function () use ($issuer): array {
-                $response = $this->http->coreClient('sso-oidc', $issuer)
-                    ->getResponse($issuer . '/.well-known/openid-configuration');
+                try {
+                    $response = $this->http->coreClient('sso-oidc', $issuer)
+                        ->getResponse($issuer . '/.well-known/openid-configuration');
+                } catch (Throwable) {
+                    // IdP nicht erreichbar: Meldung statt 500 — beim Login wie bei „Verbindung testen" (UI-Fuzz 2026-09-21).
+                    throw new SsoLoginException(__('sso.error.discovery_failed'));
+                }
 
                 if (! $response->successful() || ! is_array($response->json())) {
                     throw new SsoLoginException(__('sso.error.discovery_failed'));

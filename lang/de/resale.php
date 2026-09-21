@@ -120,12 +120,13 @@ return [
         'created' => 'Abo angelegt, Perioden geplant.',
         'updated' => 'Abo gespeichert, Perioden neu geplant.',
         'deleted' => 'Abo gelöscht.',
-        'has_decisions' => 'Dieses Abo hat entschiedene Perioden und kann nicht gelöscht werden. Setze es auf „beendet“.',
+        'has_decisions' => 'Dieses Abo hat entschiedene Perioden und kann nicht gelöscht werden. Setzen Sie es auf „beendet“.',
     ],
     'error' => [
         'customer_required' => 'Bitte einen Kunden wählen.',
         'foreign_required' => 'Bitte einen Fremdkunden wählen.',
         'ends_on_required' => 'Bei gekündigter Verlängerung braucht das Abo ein Ende.',
+        'amount_too_large' => 'Menge × Stückpreis übersteigt den höchsten speicherbaren Periodenbetrag.',
     ],
     'kind' => [
         'license' => 'Lizenz',
@@ -328,7 +329,7 @@ return [
         'action' => 'Lexoffice-Entwurf',
         'dialog_title' => 'Rechnungsentwurf in Lexoffice anlegen',
         'submit' => 'Entwurf anlegen',
-        'hint' => 'Alle offenen Perioden des Empfängers werden Positionen eines Lexoffice-Entwurfs: eine Position je Abo und Zeitraum, Endkunde in der Beschreibung, Menge in Monaten. Nichts wird festgeschrieben — du prüfst und schließt in Lexoffice ab.',
+        'hint' => 'Alle offenen Perioden des Empfängers werden Positionen eines Lexoffice-Entwurfs: eine Position je Abo und Zeitraum, Endkunde in der Beschreibung, Menge in Monaten. Nichts wird festgeschrieben — Sie prüfen und schließen in Lexoffice ab.',
         'title' => 'Rechnung',
         'introduction' => 'Lizenzen und Abos, :count Positionen — Zeiträume und Endkunden je Position.',
         'end_customer' => 'Endkunde :name',
@@ -687,7 +688,7 @@ return [
     // Review 2026-09-10 (Serienlauf)
     'auto_draft' => [
         'title' => 'Serienrechnung (lokale Rechnungshoheit)',
-        'description' => 'Täglich im Zeitplan entsteht je Rechnungsempfänger mit lokaler Rechnungshoheit ein Rechnungsentwurf aus den fälligen Perioden — derselbe Entwurf wie per Klick, mit Positionen je Abo und Zeitraum und vorgeschlagenen Bezügen. Empfänger mit Lexoffice-/DATEV-Hoheit bleiben unberührt. Entwürfe schließt du in der Rechnungsliste ab.',
+        'description' => 'Täglich im Zeitplan entsteht je Rechnungsempfänger mit lokaler Rechnungshoheit ein Rechnungsentwurf aus den fälligen Perioden — derselbe Entwurf wie per Klick, mit Positionen je Abo und Zeitraum und vorgeschlagenen Bezügen. Empfänger mit Lexoffice-/DATEV-Hoheit bleiben unberührt. Entwürfe schließen Sie in der Rechnungsliste ab.',
         'enabled' => 'Serienrechnung aktiv',
         'lead_days' => 'Vorlauf (Tage)',
         'lead_days_hint' => '0 = nur fällige Perioden; 7 = Perioden entwerfen, die in den nächsten 7 Tagen beginnen.',

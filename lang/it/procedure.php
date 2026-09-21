@@ -42,7 +42,7 @@ return [
         'criticalRiskAccepted' => 'Lo scostamento critico è stato accettato.',
     ],
     'validation' => [
-        'versionLocked' => 'Le versioni pubblicate del modello sono immutabili. Crea una nuova versione.',
+        'versionLocked' => 'Le versioni pubblicate del modello sono immutabili. Crei una nuova versione.',
         'runIncomplete' => 'Impossibile completare l\'esecuzione: ci sono ancora fasi obbligatorie aperte.',
         'backupInvalid' => 'Il record di backup non è valido (motivo: :reason).',
         'backupMissingOrExpired' => 'Manca un record di backup valido (o l\'ultimo backup è troppo vecchio).',
@@ -73,7 +73,7 @@ return [
         'panel' => 'Procedure',
     ],
     'subtitle' => [
-        'templates' => 'Gestisci flussi obbligatori con passi richiesti, prova di backup e approvazione a quattro occhi.',
+        'templates' => 'Gestisca flussi obbligatori con passi richiesti, prova di backup e approvazione a quattro occhi.',
     ],
     'field' => [
         'name' => 'Nome',
@@ -130,7 +130,7 @@ return [
         'domain' => 'it | hvac | electric …',
         'applicability' => 'I modelli vengono proposti automaticamente per le commesse il cui tipo o tag corrispondono. Vuoto = applicabile ovunque.',
         'commaList' => 'Separato da virgole',
-        'condition' => 'Opzionale: applica il passo solo se un altro passo ha un valore/stato dato (se-allora).',
+        'condition' => 'Opzionale: applicare il passo solo se un altro passo ha un valore/stato dato (se-allora).',
         'conditionStep' => 'Codice del passo di riferimento',
         'conditionEquals' => 'valore atteso (opzionale)',
     ],
@@ -139,14 +139,14 @@ return [
         'publish' => 'Pubblicare questa versione? I passi diventano immutabili in seguito.',
     ],
     'notice' => [
-        'noDraft' => 'Tutte le versioni sono pubblicate e quindi immutabili. Crea una nuova versione per modificare i passi.',
+        'noDraft' => 'Tutte le versioni sono pubblicate e quindi immutabili. Crei una nuova versione per modificare i passi.',
     ],
     'panel' => [
         'suggested' => 'Procedure suggerite per questa commessa:',
     ],
     'run' => [
         'navTitle' => 'Esecuzione procedura',
-        'deviationHint' => 'Invece di «non riuscito»: registra uno scostamento con motivo e azione successiva.',
+        'deviationHint' => 'Invece di «non riuscito»: registri uno scostamento con motivo e azione successiva.',
         'deviationType' => 'Tipo di scostamento',
         'deviationSeverity' => 'Gravità',
         'deviationSeverityDefault' => 'Gravità automatica',
@@ -179,7 +179,7 @@ return [
     ],
     'empty' => [
         'title' => 'Nessun modello di procedura',
-        'message' => 'Crea la prima procedura obbligatoria.',
+        'message' => 'Crei la prima procedura obbligatoria.',
         'filtered' => 'Nessun modello corrisponde al filtro.',
     ],
     // Report delle deviazioni (Feature 026, MVP-713).

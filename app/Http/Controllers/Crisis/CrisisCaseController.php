@@ -18,6 +18,7 @@ use App\Http\Requests\Crisis\{AddCrisisLinkRequest, AssignCrisisTeamRequest, Mar
 use App\Models\Crisis\{CrisisCase, CrisisCommunication, CrisisRole, CrisisTeamAssignment};
 use App\Models\User;
 use App\Services\Crisis\{CrisisAlertService, CrisisDeadlineService};
+use App\Support\ErrorText;
 use App\Support\Query\DateRange;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -205,7 +206,7 @@ class CrisisCaseController extends Controller {
         try {
             $this->alerts->acknowledge($assignment, $this->actor());
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('status', __('Alarm quittiert.'));

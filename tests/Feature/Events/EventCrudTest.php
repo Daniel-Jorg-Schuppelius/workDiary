@@ -32,6 +32,23 @@ class EventCrudTest extends TestCase {
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }
 
+    /** MVP-823: Eingaben sind Ortszeit des Termins, gespeichert wird UTC, das Formular zeigt wieder Ortszeit. */
+    public function test_times_are_stored_in_utc_and_edited_in_the_event_timezone(): void {
+        $this->postAsAdmin('events.store', [
+            'title' => 'Sommerfest',
+            'event_type' => EventType::Training->value,
+            'status' => EventStatus::Planned->value,
+            'visibility' => EventVisibility::Internal->value,
+            'started_at' => '2030-07-10T09:00',
+            'ended_at' => '2030-07-10T11:00',
+            'timezone' => 'Europe/Berlin',
+        ])->assertRedirect();
+
+        $event = Event::query()->where('title', 'Sommerfest')->firstOrFail();
+        $this->assertSame('2030-07-10 07:00:00', $event->getRawOriginal('started_at'));
+        $this->assertSame('Europe/Berlin', $event->timezone);
+        $this->actingAs($this->admin)->get(route('events.edit', $event))->assertOk()->assertSee('2030-07-10T09:00');
+    }
     public function test_admin_can_create_event_with_room_and_participants(): void {
         $room = Room::factory()->create(['organization_id' => $this->organization->id]);
         $category = EventCategory::factory()->create(['organization_id' => $this->organization->id]);
@@ -67,6 +84,22 @@ class EventCrudTest extends TestCase {
         $this->assertSame($this->organization->id, $event->organization_id);
         $this->assertSame(1, $event->rooms()->count());
         $this->assertSame(1, $event->participants()->count());
+    }
+
+    public function test_invalid_recurrence_rule_is_a_validation_error_not_a_server_error(): void {
+        $start = now()->addDay()->setTime(10, 0);
+
+        $this->postAsAdmin('events.store', [
+            'title' => 'Serie mit Freitext-Regel',
+            'event_type' => EventType::Training->value,
+            'status' => EventStatus::Planned->value,
+            'visibility' => EventVisibility::Internal->value,
+            'started_at' => $start->format('Y-m-d H:i:s'),
+            'ended_at' => (clone $start)->addHour()->format('Y-m-d H:i:s'),
+            'recurrence_rule' => 'jeden Montag',
+        ])->assertSessionHasErrors('recurrence_rule');
+
+        $this->assertDatabaseMissing('events', ['title' => 'Serie mit Freitext-Regel']);
     }
 
     public function test_regular_user_cannot_create_event(): void {

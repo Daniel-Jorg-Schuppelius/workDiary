@@ -17,7 +17,6 @@
                         show-label>{{ $agreement->processor?->name }}</x-icon-btn>
         </x-slot:actions>
 
-        @if (session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif
 
         <div class="grid md:grid-cols-3 gap-4">
             <x-card class="md:col-span-2">

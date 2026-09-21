@@ -30,6 +30,6 @@ class TwoFactorCodeMail extends Mailable {
     }
 
     public function content(): Content {
-        return new Content(view: 'emails.two-factor-code');
+        return new Content(markdown: 'emails.two-factor-code');
     }
 }

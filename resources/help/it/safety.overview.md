@@ -10,7 +10,7 @@ related:
 
 Il registro degli eventi di sicurezza documenta in modo tracciabile
 infortuni, quasi incidenti, pericoli e difetti, come base per audit,
-responsabilità e miglioramento continuo. Con **"Segnala evento"** registri
+responsabilità e miglioramento continuo. Con **"Segnala evento"** registra
 tipo, gravità, momento, luogo, persona coinvolta, descrizione e misura
 immediata; gli eventi critici notificano subito la direzione. Lo stato segue
 il ciclo *Segnalato → In indagine → Misure definite → Chiuso*; la chiusura

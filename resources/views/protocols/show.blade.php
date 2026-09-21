@@ -37,9 +37,6 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if (session('status'))
-        <div class="alert alert-success text-sm">{{ session('status') }}</div>
-    @endif
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Stammdaten')" icon="badge">
             <x-detail-grid>

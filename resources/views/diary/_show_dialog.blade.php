@@ -37,7 +37,7 @@
         @can('delete', $diary)
             <x-action-form :action="route('diary.destroy', $diary)" method="DELETE"
                 data-confirm-title="{{ __('Eintrag löschen') }}"
-                :confirm="__('Der Eintrag wird dauerhaft gelöscht. Möchtest du fortfahren?')"
+                :confirm="__('Der Eintrag wird dauerhaft gelöscht. Möchten Sie fortfahren?')"
                 :confirm-label="__('Löschen')">
                 <x-button type="submit" tone="ghost" class="gap-2 text-error" icon="delete">{{ __('Löschen') }}</x-button>
             </x-action-form>

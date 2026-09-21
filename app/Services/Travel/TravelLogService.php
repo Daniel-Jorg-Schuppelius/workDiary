@@ -14,6 +14,8 @@ use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Enums\Travel\TravelLogVehicle;
 use App\Exceptions\{LogbookViolationException, TravelLogLockedException};
 use App\Models\{TimeEntry, TravelLog, User, Vehicle};
+use App\Support\Tz;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -239,6 +241,7 @@ class TravelLogService {
             return;
         }
 
+        $tz = $log->organization !== null ? Tz::ofOrganization($log->organization) : Tz::current();
         $payload = [
             'organization_id' => $log->organization_id,
             'user_id' => $log->user_id,
@@ -248,8 +251,9 @@ class TravelLogService {
             'attendance_id' => $log->attendance_id,
             'travel_log_id' => $log->id,
             'date' => $log->date,
-            'started_at' => $log->started_at,
-            'ended_at' => $log->ended_at,
+            // Fahrtenbuch führt Ortszeit, Zeiteinträge UTC (UI-Fuzz 2026-09-21).
+            'started_at' => CarbonImmutable::parse($log->started_at->format('Y-m-d H:i:s'), $tz)->utc(),
+            'ended_at' => CarbonImmutable::parse($log->ended_at->format('Y-m-d H:i:s'), $tz)->utc(),
             'minutes' => $log->duration_minutes,
             'kind' => TimeEntryKind::Travel->value,
             'activity_type' => TimeEntryActivityType::Travel->value,

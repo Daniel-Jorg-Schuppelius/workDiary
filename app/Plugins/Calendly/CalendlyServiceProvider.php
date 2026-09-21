@@ -31,10 +31,8 @@ class CalendlyServiceProvider extends PluginServiceProviderBase {
         // Calendly-Termins wird best effort gegen Calendly abgeglichen.
         DiaryEntry::observe(CalendlyDiaryEntryObserver::class);
 
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                CalendlyBackfillCommand::class,
-            ]);
-        }
+        $this->commands([
+            CalendlyBackfillCommand::class,
+        ]);
     }
 }

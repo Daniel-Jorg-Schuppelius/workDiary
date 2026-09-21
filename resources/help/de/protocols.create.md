@@ -25,13 +25,13 @@ Vorgang zugeordnet und in der Fallakte auffindbar.
 
 ## Empfohlener Ablauf
 
-1. Öffne die Fallakte und wähle **„Protokoll erzeugen"** im
+1. Öffnen Sie die Fallakte und wählen Sie **„Protokoll erzeugen"** im
    Aktionen-Menü.
-2. Wähle die **Vorlage**.
-3. Arbeite die **Protokollpunkte** ab: Text, Auswahl, Foto, Messwert.
-4. Hänge **Vorher-/Nachher-Fotos** an den jeweiligen Punkt.
+2. Wählen Sie die **Vorlage**.
+3. Arbeiten Sie die **Protokollpunkte** ab: Text, Auswahl, Foto, Messwert.
+4. Hängen Sie **Vorher-/Nachher-Fotos** an den jeweiligen Punkt.
 5. **Speichern** lässt das Protokoll im Status **Entwurf**; für die
-   Abnahme wechsle anschließend in den Signatur-Dialog.
+   Abnahme wechseln Sie anschließend in den Signatur-Dialog.
 
 ## Beispiel aus der Praxis
 

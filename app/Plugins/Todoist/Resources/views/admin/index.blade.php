@@ -41,9 +41,9 @@
                     </span>
                 </div>
                 <div><span class="opacity-60">{{ __('todoist.connection.account') }}:</span> <strong>{{ $connection->todoist_user_email ?? '—' }}</strong></div>
-                <div><span class="opacity-60">{{ __('todoist.connection.connected_at') }}:</span> {{ $connection->connected_at?->format('d.m.Y H:i') ?? '—' }}</div>
+                <div><span class="opacity-60">{{ __('todoist.connection.connected_at') }}:</span> {{ $connection->connected_at?->orgTz()->format('d.m.Y H:i') ?? '—' }}</div>
                 @if ($connection->last_sync_at)
-                    <div><span class="opacity-60">{{ __('todoist.connection.last_sync') }}:</span> {{ $connection->last_sync_at->format('d.m.Y H:i') }}</div>
+                    <div><span class="opacity-60">{{ __('todoist.connection.last_sync') }}:</span> {{ $connection->last_sync_at->orgTz()->format('d.m.Y H:i') }}</div>
                 @endif
                 @if ($connection->last_error)
                     <div class="text-error text-xs">{{ $connection->last_error }}</div>
@@ -100,7 +100,7 @@
                         <td class="text-sm">{{ __('todoist.mode.' . $link->sync_mode) }}</td>
                         <td><span @class(['badge badge-sm', 'badge-success' => $link->status === 'active', 'badge-warning' => $link->status === 'paused'])>{{ __('todoist.link_status.' . $link->status) }}</span></td>
                         <td class="text-sm">
-                            {{ $link->last_run_at?->format('d.m.Y H:i') ?? '—' }}
+                            {{ $link->last_run_at?->orgTz()->format('d.m.Y H:i') ?? '—' }}
                             @if (is_array($link->last_run_counters))
                                 <div class="text-xs opacity-60">
                                     +{{ $link->last_run_counters['created'] ?? 0 }}

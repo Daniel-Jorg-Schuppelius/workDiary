@@ -160,7 +160,7 @@
                 </x-slot:head>
                 @foreach ($imports as $import)
                     <tr>
-                        <td class="text-sm">{{ $import->created_at?->format('d.m.Y H:i') }}</td>
+                        <td class="text-sm">{{ $import->created_at?->orgTz()->format('d.m.Y H:i') }}</td>
                         <td>{{ $import->phase?->label() ?: '—' }}</td>
                         <td class="text-right tabular-nums">{{ $import->item_count }}</td>
                         <td><span class="badge badge-sm badge-ghost">{{ $import->status->label() }}</span></td>

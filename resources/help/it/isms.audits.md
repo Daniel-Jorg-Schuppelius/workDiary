@@ -12,7 +12,7 @@ related:
     - glossary.core
 ---
 
-Qui pianifichi e documenti audit interni, esterni e di fornitori con rilievi,
+Qui pianifica e documenta audit interni, esterni e di fornitori con rilievi,
 azioni correttive e riesame della direzione. Ciclo di vita dell'audit:
 "Pianificato" → "Preparazione" → "In esecuzione" → "Rapporto redatto" →
 "Concluso". I rilievi (non conformità maggiore/minore, osservazione,

@@ -43,7 +43,7 @@ reservadas al operador. Mediante **Restablecer**, un trabajo vuelve en
 cualquier momento a su plan estándar.
 
 **Ventana de funcionamiento:** si el servidor no funciona las 24
-horas –por ejemplo, porque se apaga por la noche–, indica en
+horas –por ejemplo, porque se apaga por la noche–, indique en
 **Ajustes** el inicio y el fin de la ventana de funcionamiento (un fin
 de 00:00 significa medianoche). Las tareas con hora fija fuera de la
 ventana se ejecutan entonces agrupadas en las dos primeras horas de

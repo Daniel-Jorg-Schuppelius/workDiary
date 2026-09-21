@@ -38,9 +38,6 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
-    @endif
     <x-validation-errors />
 
     <div class="grid gap-4 lg:grid-cols-2">

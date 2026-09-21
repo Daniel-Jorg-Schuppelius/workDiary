@@ -63,7 +63,7 @@ return [
 
     'warn' => [
         'no_heartbeat_title' => 'Kein Backup registriert',
-        'no_heartbeat_body' => 'Es ist bisher kein Backup-Heartbeat eingegangen. Prüfe, ob das externe Backup-Skript läuft und den Heartbeat-Endpoint mit gültigem Token aufruft.',
+        'no_heartbeat_body' => 'Es ist bisher kein Backup-Heartbeat eingegangen. Prüfen Sie, ob das externe Backup-Skript läuft und den Heartbeat-Endpoint mit gültigem Token aufruft.',
         'overdue_title' => 'Backup überfällig',
         'overdue_body' => 'Mindestens eine Quelle hat seit mehr als :hours Stunden keinen Heartbeat gemeldet. Letzte Sicherung prüfen.',
         'restore_overdue_title' => 'Überfälliger Restore-Test',

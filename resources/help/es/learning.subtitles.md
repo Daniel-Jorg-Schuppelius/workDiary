@@ -22,7 +22,7 @@ Los **subtítulos** pueden añadirse de dos formas:
 
 La revisión es obligatoria a propósito: la transcripción automática confunde a
 menudo términos técnicos, nombres y cifras, y un subtítulo erróneo es peor que
-ninguno porque aparenta fiabilidad. Al revisar puedes editar el texto,
+ninguno porque aparenta fiabilidad. Al revisar puede editar el texto,
 descartarlo por completo o aprobarlo.
 
 **Accesibilidad:** En los cursos obligatorios los subtítulos no son opcionales.

@@ -9,7 +9,7 @@ related:
     - payroll.overview
 ---
 
-Qui gestisci i membri della tua organizzazione: nome, matricola, e-mail e
+Qui gestisce i membri della sua organizzazione: nome, matricola, e-mail e
 ruolo (amministrazione, utente, contabilità). Alla creazione viene
 impostata una password iniziale che la persona deve cambiare al primo
 accesso; l'elenco è legato al tenant e mostra solo i membri della

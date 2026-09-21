@@ -20,7 +20,6 @@
                         show-label>{{ __('Neue Maßnahme') }}</x-icon-btn>
         </x-slot:actions>
 
-        @if (session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif
 
         <x-table scroll="flex" :pinRows="true">
             <x-slot:head>

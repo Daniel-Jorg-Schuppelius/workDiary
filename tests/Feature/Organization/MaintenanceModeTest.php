@@ -103,7 +103,7 @@ final class MaintenanceModeTest extends TestCase {
             'timezone' => $this->organization->timezone ?? 'Europe/Berlin',
             'is_active' => 1,
             'settings' => ['maintenance' => ['enabled' => '1', 'message' => 'Kurz weg.']],
-        ])->assertRedirect(route('admin.organizations.index'));
+        ])->assertRedirect(route('admin.organizations.edit', $this->organization));
 
         $this->assertTrue($this->organization->refresh()->inMaintenance());
         $this->assertSame(1, AuditLog::query()->where('event', 'organization.maintenance_toggled')->count());

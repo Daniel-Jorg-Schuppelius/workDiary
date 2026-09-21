@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\Integration\WebhookEvent;
+use App\Enums\Integration\{WebhookDeliveryStatus, WebhookEvent};
 use App\Http\Controllers\Controller;
 use App\Models\Integration\WebhookEndpoint;
 use App\Services\Integration\WebhookDispatchService;
@@ -110,7 +110,11 @@ class WebhookEndpointController extends Controller {
     public function test(WebhookEndpoint $webhook, WebhookDispatchService $service): RedirectResponse {
         Gate::authorize('update', $webhook);
 
-        $service->sendTest($webhook);
+        // Unter QUEUE_CONNECTION=sync steht das Ergebnis schon fest — dann nicht „eingereiht" melden.
+        if ($service->sendTest($webhook)->refresh()->status === WebhookDeliveryStatus::Failed) {
+            return redirect()->route('admin.webhooks.index')
+                ->with('error', __('integration.webhook.flash.test_failed'));
+        }
 
         return redirect()->route('admin.webhooks.index')
             ->with('success', __('integration.webhook.flash.test_sent'));

@@ -72,7 +72,7 @@ class OrganizationAccessControlTest extends TestCase {
             'locale' => $own->locale ?? 'de',
             'timezone' => $own->timezone ?? 'Europe/Berlin',
             'is_active' => 1,
-        ])->assertRedirect();
+        ])->assertRedirect(route('admin.organizations.edit', $own)); // nicht die Mandantenliste (403, UI-Fuzz 2026-09-21)
 
         $this->assertSame('Eigen umbenannt', $own->refresh()->name);
     }

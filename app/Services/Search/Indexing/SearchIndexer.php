@@ -225,7 +225,14 @@ final class SearchIndexer {
         ];
     }
 
+    // TIMESTAMP-Spalten fassen nur 1970–2038: ein vertipptes Jahr in der Quelle
+    // (DATETIME) brach sonst die Indizierung ab — und damit deren Speichern.
     private static function utc(?CarbonInterface $value): ?string {
-        return $value === null ? null : CarbonImmutable::instance($value)->utc()->format('Y-m-d H:i:s');
+        if ($value === null) {
+            return null;
+        }
+        $utc = CarbonImmutable::instance($value)->utc();
+
+        return $utc->timestamp < 1 || $utc->timestamp > 2147483647 ? null : $utc->format('Y-m-d H:i:s');
     }
 }

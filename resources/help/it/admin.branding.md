@@ -10,9 +10,9 @@ related:
     - invoices.manage
 ---
 
-Nel branding definisci l'aspetto white-label dell'organizzazione
+Nel branding definisce l'aspetto white-label dell'organizzazione
 corrente; le impostazioni valgono per organizzazione e influiscono
-soprattutto sui PDF generati, ad esempio le fatture. Puoi gestire
+soprattutto sui PDF generati, ad esempio le fatture. Può gestire
 **dati anagrafici** (nome app, slogan), **contatti**, **dati legali**
 (partita IVA, IBAN/BIC, banca, piè di pagina), **colori** primario e
 di accento e **opzioni PDF per tipo di documento** (variante del logo,

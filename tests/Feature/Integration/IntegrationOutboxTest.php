@@ -118,6 +118,23 @@ final class IntegrationOutboxTest extends TestCase {
         $this->assertSame(1, $entry->attempts);
     }
 
+    /**
+     * UI-Fuzz 2026-09-21: Unter QUEUE_CONNECTION=sync gibt es keine Wiederholung —
+     * der Weiterwurf endete als 500 in der auslösenden Nutzeraktion (PDF-Import
+     * mit fehlschlagender Cloud-Spiegelung). Stattdessen sofort kompensieren.
+     */
+    public function test_sync_connection_compensates_instead_of_failing_the_request(): void {
+        $entry = $this->enqueueEntry('op:sync');
+        $this->registerDispatcher(function (): bool {
+            throw new RuntimeException('Ablage nicht erreichbar');
+        });
+
+        IntegrationOutboxDeliveryJob::dispatchSync($entry->id);
+
+        $this->assertSame(IntegrationOutboxStatus::CompensationRequired, $entry->refresh()->status);
+        $this->assertTrue(IntegrationInboxItem::withoutGlobalScopes()->where('dedupe_key', 'outbox-failed:op:sync')->exists());
+    }
+
     public function test_terminal_failure_compensates_with_inbox_item(): void {
         Queue::fake();
         $entry = $this->enqueueEntry('op:terminal');

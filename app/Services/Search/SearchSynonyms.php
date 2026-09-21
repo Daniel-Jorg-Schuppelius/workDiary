@@ -54,7 +54,8 @@ final class SearchSynonyms {
             foreach (array_keys($keys) as $key) {
                 foreach (array_keys($keys) as $other) {
                     if ($other !== $key) {
-                        $map[$key][$other] = explode(' ', $other);
+                        // Zahlbegriffe ("4711") werden als Array-Schlüssel zu int.
+                        $map[$key][$other] = explode(' ', (string) $other);
                     }
                 }
             }

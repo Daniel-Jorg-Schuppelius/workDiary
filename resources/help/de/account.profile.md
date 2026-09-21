@@ -9,24 +9,24 @@ related:
     - account.calendar
 ---
 
-Im Profil pflegst du deine persönlichen Daten: Name, E-Mail-Adresse,
+Im Profil pflegen Sie Ihre persönlichen Daten: Name, E-Mail-Adresse,
 Avatar sowie Kontaktangaben wie Anschrift und Bankverbindung. Hier
-legst du außerdem Darstellung und Verhalten der Oberfläche fest – etwa
+legen Sie außerdem Darstellung und Verhalten der Oberfläche fest – etwa
 Design, Sprache, Zeitzone, Datums- und Zeitformat sowie die Startseite
 nach der Anmeldung. Auch globale Benachrichtigungseinstellungen wie
 der Mailversand und Ruhezeiten werden hier verwaltet.
 
-Zur Auswahl stehen nur Seiten, die du öffnen darfst. Ohne eigene Wahl gilt die
-Startseite, die deine Organisation für deine Rolle festgelegt hat.
+Zur Auswahl stehen nur Seiten, die Sie öffnen dürfen. Ohne eigene Wahl gilt die
+Startseite, die Ihre Organisation für Ihre Rolle festgelegt hat.
 
 Die Passwortänderung erfolgt in einem eigenen Dialog. Für eine
-reguläre Änderung musst du dein aktuelles Passwort bestätigen; muss das
+reguläre Änderung müssen Sie Ihr aktuelles Passwort bestätigen; muss das
 Passwort erstmalig oder erzwungen gesetzt werden, entfällt diese
 Abfrage. Mit dem Speichern wird das Konto auf das neue System
 umgestellt.
 
-Über das Arbeitszeitmodell hinterlegst du deine persönlichen Soll-
+Über das Arbeitszeitmodell hinterlegen Sie Ihre persönlichen Soll-
 Zeiten als Grundlage für Zeitkonten und Auswertungen. Das Kalender-Abo
-stellt deine Termine als ICS-Feed bereit, den du in einem externen
-Kalender abonnieren kannst. Den Zugangslink kannst du jederzeit neu
+stellt Ihre Termine als ICS-Feed bereit, den Sie in einem externen
+Kalender abonnieren können. Den Zugangslink können Sie jederzeit neu
 erzeugen oder widerrufen, etwa bei Geräteverlust.

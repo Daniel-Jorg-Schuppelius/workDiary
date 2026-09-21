@@ -77,8 +77,8 @@
         <tr><th>{{ __('procedure.field.status') }}</th><td>{{ $run->status->label() }}</td></tr>
         <tr><th>{{ __('procedure.print.assignee') }}</th><td>{{ optional($run->assignee)->name ?? '—' }}</td></tr>
         <tr><th>{{ __('procedure.print.createdBy') }}</th><td>{{ optional($run->createdBy)->name ?? '—' }}</td></tr>
-        <tr><th>{{ __('procedure.print.startedAt') }}</th><td>{{ optional($run->started_at)->format('Y-m-d H:i') ?? '—' }}</td></tr>
-        <tr><th>{{ __('procedure.print.completedAt') }}</th><td>{{ optional($run->completed_at)->format('Y-m-d H:i') ?? '—' }}</td></tr>
+        <tr><th>{{ __('procedure.print.startedAt') }}</th><td>{{ $run->started_at?->orgTz()->format('Y-m-d H:i') ?? '—' }}</td></tr>
+        <tr><th>{{ __('procedure.print.completedAt') }}</th><td>{{ $run->completed_at?->orgTz()->format('Y-m-d H:i') ?? '—' }}</td></tr>
         @if ($run->abort_reason)
             <tr><th>{{ __('procedure.print.abortReason') }}</th><td class="pre">{{ $run->abort_reason }}</td></tr>
         @endif
@@ -122,11 +122,11 @@
                     </td>
                     <td>{{ $def?->step_type?->label() ?? '—' }}</td>
                     <td><span class="badge {{ $statusClass }}">{{ $sr->status->label() }}</span></td>
-                    <td>{{ optional($sr->executedBy)->name ?? '—' }}<br><span class="muted" style="font-size:9px">{{ optional($sr->executed_at)->format('Y-m-d H:i') }}</span></td>
+                    <td>{{ optional($sr->executedBy)->name ?? '—' }}<br><span class="muted" style="font-size:9px">{{ $sr->executed_at?->orgTz()->format('Y-m-d H:i') }}</span></td>
                     <td>
                         @if ($sr->second_person_user_id)
                             {{ optional($sr->secondPerson)->name ?? '—' }}<br>
-                            <span class="muted" style="font-size:9px">{{ $sr->second_person_signed_at ? __('procedure.print.signedAt') . ' ' . $sr->second_person_signed_at->format('Y-m-d H:i') : __('procedure.print.notSigned') }}</span>
+                            <span class="muted" style="font-size:9px">{{ $sr->second_person_signed_at ? __('procedure.print.signedAt') . ' ' . $sr->second_person_signed_at->orgTz()->format('Y-m-d H:i') : __('procedure.print.notSigned') }}</span>
                         @else
                             <span class="muted">—</span>
                         @endif
@@ -191,7 +191,7 @@
                     <tr class="step">
                         <td>{{ $proof->source_label }}</td>
                         <td>{{ $proof->backup_scope->label() }}</td>
-                        <td>{{ $proof->taken_at->format('Y-m-d H:i') }}</td>
+                        <td>{{ $proof->taken_at->orgTz()->format('Y-m-d H:i') }}</td>
                         <td>{{ $proof->size_bytes?->format() ?? '—' }}</td>
                         <td>
                             @if ($proof->verified)

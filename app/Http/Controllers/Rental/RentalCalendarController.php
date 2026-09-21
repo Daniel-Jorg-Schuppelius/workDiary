@@ -18,7 +18,7 @@ use App\Models\Asset;
 use App\Models\Rental\{RentalCase, RentalProfile, RentalReservation};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Rental\RentalAvailabilityService;
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid, Tz};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
@@ -65,8 +65,9 @@ class RentalCalendarController extends Controller {
         // Belegungsfenster (inkl. Puffer) auf Kalendertage verteilen.
         $itemsByDay = [];
         foreach ($reservations as $reservation) {
-            $cursor = $reservation->blockedFrom()->copy()->startOfDay();
-            $last = $reservation->blockedUntil();
+            // Kalendertage sind Ortszeit, die Belegung UTC (MVP-823).
+            $cursor = $reservation->blockedFrom()->copy()->setTimezone(Tz::current())->startOfDay();
+            $last = $reservation->blockedUntil()->copy()->setTimezone(Tz::current());
 
             while ($cursor <= $last) {
                 if ($cursor->isSameMonth($month)) {
@@ -108,7 +109,7 @@ class RentalCalendarController extends Controller {
             'kind' => ['required', Rule::enum(RentalReservationKind::class)],
             'starts_at' => ['required', 'date'],
             'ends_at' => ['required', 'date', 'after:starts_at'],
-            'note' => ['nullable', 'string', 'max:1000'],
+            'note' => ['nullable', 'string', 'max:255'],
         ]);
 
         $kind = RentalReservationKind::from($data['kind']);
@@ -120,13 +121,13 @@ class RentalCalendarController extends Controller {
             $this->availability->createWindow(
                 $asset,
                 $kind,
-                Carbon::parse($data['starts_at']),
-                Carbon::parse($data['ends_at']),
+                Carbon::instance(Tz::parse((string) $data['starts_at'])),
+                Carbon::instance(Tz::parse((string) $data['ends_at'])),
                 $data['note'] ?? null,
                 $request->user()?->id,
             );
         } catch (\InvalidArgumentException $e) {
-            return back()->withErrors(['kind' => $e->getMessage()]);
+            return back()->withErrors(['kind' => ErrorText::for($e)]);
         } catch (\App\Exceptions\RentalConflictException $e) {
             return back()->withErrors(['starts_at' => $e->getMessage()]);
         }

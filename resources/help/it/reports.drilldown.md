@@ -14,5 +14,5 @@ attivi. Le **colonne** mostrano cliente, tipo di voce, stato e durata
 pianificata/effettiva; l'ordinamento standard è per data decrescente e
 l'**esportazione** in CSV o PDF crea un'istantanea con filtri e momento
 di generazione nel nome del file. Il drilldown rispetta i limiti del
-tenant e gli stati visibili: ciò che non puoi vedere nella lista non
+tenant e gli stati visibili: ciò che non può vedere nella lista non
 viene conteggiato nemmeno nel report superiore.

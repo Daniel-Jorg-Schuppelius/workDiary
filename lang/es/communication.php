@@ -110,7 +110,7 @@ return [
 
     'hint' => [
 
-        'tags' => 'Separa varias con comas, p. ej. mantenimiento, calefacción.',
+        'tags' => 'Separe varias con comas, p. ej. mantenimiento, calefacción.',
         'customer_not_published' => 'La nota aparece en la ficha del cliente, pero no en el portal de clientes.',
     ],
 

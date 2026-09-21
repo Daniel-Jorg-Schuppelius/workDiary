@@ -15,6 +15,7 @@ use App\Models\{Customer, ExternalReference, User};
 use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
+use App\Support\ErrorText;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Log};
@@ -44,7 +45,7 @@ class LexofficeCustomerController extends Controller {
         } catch (Throwable $e) {
             Log::error('Lexoffice contact push failed', ['customer' => $customer->id, 'message' => $e->getMessage()]);
 
-            return back()->with('error', __('Übertragung fehlgeschlagen: :msg', ['msg' => $e->getMessage()]));
+            return back()->with('error', __('Übertragung fehlgeschlagen: :msg', ['msg' => ErrorText::for($e)]));
         }
     }
 
@@ -80,7 +81,7 @@ class LexofficeCustomerController extends Controller {
         } catch (Throwable $e) {
             Log::error('Lexoffice time export failed', ['customer' => $customer->id, 'message' => $e->getMessage()]);
 
-            return back()->with('error', __('Übertragung fehlgeschlagen: :msg', ['msg' => $e->getMessage()]));
+            return back()->with('error', __('Übertragung fehlgeschlagen: :msg', ['msg' => ErrorText::for($e)]));
         }
     }
 

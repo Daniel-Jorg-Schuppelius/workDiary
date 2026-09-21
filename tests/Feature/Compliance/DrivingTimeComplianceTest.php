@@ -88,6 +88,20 @@ class DrivingTimeComplianceTest extends TestCase {
         $this->assertSame(270, $finding->threshold_value);
     }
 
+    /** UI-Fuzz 2026-09-21: Fahrten sind Ortszeit — die Auswertung rechnete sie wie UTC um und verschob sie in den Folgetag. */
+    public function test_trip_times_are_read_as_local_wall_time(): void {
+        config()->set('app.display_timezone', 'Europe/Berlin');
+        $this->organization->forceFill(['timezone' => 'Europe/Berlin'])->save();
+        // Montag 23:00 bis Dienstag 04:00 Ortszeit = 5 h ohne Fahrtunterbrechung.
+        $this->trip('2026-06-08 23:00:00', '2026-06-09 04:00:00');
+
+        $this->scan();
+
+        $finding = ComplianceFinding::query()->where('category', DrivingTimeComplianceChecker::CATEGORY)->firstOrFail();
+        $this->assertSame(DrivingTimeComplianceChecker::KIND_BREAK_MISSING, $finding->rule_code);
+        $this->assertSame('2026-06-08', $finding->scope_date->toDateString());
+    }
+
     public function test_vehicle_without_flag_is_ignored(): void {
         $van = Vehicle::factory()->create(['organization_id' => $this->organization->id]);
         $this->trip('2026-06-08 06:00:00', '2026-06-08 11:00:00', $van);

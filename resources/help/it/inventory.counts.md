@@ -11,11 +11,11 @@ related:
     - articles.master
 ---
 
-In questa pagina esegui gli inventari per singolo magazzino: puoi aprire un
+In questa pagina esegue gli inventari per singolo magazzino: può aprire un
 inventario completo o un conteggio ciclico parziale per classe ABC che
-include solo le varianti in scadenza. Nella vista di dettaglio registri le
+include solo le varianti in scadenza. Nella vista di dettaglio registra le
 quantità contate per riga, anche tramite scansione; finché l'inventario è
 aperto i risultati restano modificabili. La registrazione delle differenze
 crea scritture di rettifica nello stock e chiude l'inventario: l'azione
-richiede un permesso di approvazione dedicato e non è reversibile, verifica
+richiede un permesso di approvazione dedicato e non è reversibile, verifichi
 quindi i valori contati prima di applicare le differenze.

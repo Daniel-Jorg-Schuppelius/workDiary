@@ -18,6 +18,7 @@ use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\Agile\{AgileBoard, AgileEvent, AgileSprint};
 use App\Models\Project;
 use App\Services\Agile\AgileMetricsService;
+use App\Support\CarbonFmt;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -198,7 +199,7 @@ class AgileReportExportController extends Controller {
             }
             $rows[] = [
                 'title' => $event->workItem?->task?->title,
-                'at' => $event->created_at->isoFormat('L LT'),
+                'at' => CarbonFmt::orgTz($event->created_at)->isoFormat('L LT'),
                 'detail' => null,
             ];
         }
@@ -222,7 +223,7 @@ class AgileReportExportController extends Controller {
                 if ((string) ($open[$itemId]->payload['reason'] ?? '') === $reason) {
                     $rows[] = [
                         'title' => $event->workItem?->task?->title,
-                        'at' => $open[$itemId]->created_at->isoFormat('L LT'),
+                        'at' => CarbonFmt::orgTz($open[$itemId]->created_at)->isoFormat('L LT'),
                         'detail' => __(':hours h blockiert', ['hours' => round($open[$itemId]->created_at->diffInMinutes($event->created_at) / 60, 1)]),
                     ];
                 }
@@ -251,7 +252,7 @@ class AgileReportExportController extends Controller {
             }
             $rows[] = [
                 'title' => $event->workItem?->task?->title,
-                'at' => $event->created_at->isoFormat('L LT'),
+                'at' => CarbonFmt::orgTz($event->created_at)->isoFormat('L LT'),
                 'detail' => $isReopen ? __('Wiederöffnung') : $event->event . ' — ' . (string) ($event->payload['reason'] ?? ''),
             ];
         }

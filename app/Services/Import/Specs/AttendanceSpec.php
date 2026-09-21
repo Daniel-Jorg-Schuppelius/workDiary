@@ -18,6 +18,7 @@ use App\Models\{Attendance, ImportValueMapping, Organization, User};
 use App\Services\Import\{HasMappableValues, ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\Concerns\{BindsTimeImportReference, ParsesLocalDateTime, ResolvesImportUsers};
 use App\Services\TimeApproval\DayCloseService;
+use App\Support\Tz;
 use CommonToolkit\Helper\Data\EmailHelper;
 use Throwable;
 
@@ -157,7 +158,7 @@ class AttendanceSpec extends AbstractEntitySpec implements HasMappableValues {
                 ];
             }
 
-            $tz = $this->orgTimezone($organization);
+            $tz = Tz::ofOrganization($organization);
             $startedAt = $this->localToUtc($date, (string) $row['start_time'], $tz);
 
             $endedAt = null;

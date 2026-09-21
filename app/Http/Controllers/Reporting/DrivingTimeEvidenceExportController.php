@@ -87,8 +87,8 @@ class DrivingTimeEvidenceExportController extends Controller {
                         return;
                     }
                     $tripsByUser[(int) $t->user_id][] = [
-                        'started_at' => CarbonImmutable::parse($t->started_at->toIso8601String())->setTimezone($tz),
-                        'ended_at' => CarbonImmutable::parse($t->ended_at->toIso8601String())->setTimezone($tz),
+                        'started_at' => CarbonImmutable::parse($t->started_at->toIso8601String())->shiftTimezone($tz),
+                        'ended_at' => CarbonImmutable::parse($t->ended_at->toIso8601String())->shiftTimezone($tz),
                         'vehicle_id' => (int) $t->vehicle_id,
                     ];
                 });

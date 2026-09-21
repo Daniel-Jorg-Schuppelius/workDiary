@@ -61,5 +61,5 @@ traitement puis à la conservation. L'application constitue cette documentation
 à partir de l'état réel du système : modules actifs, plages de numérotation,
 durées de conservation, rôles et journalisation. Ce qui change en exploitation
 change donc aussi dans la documentation, contrairement à un texte rédigé une
-fois pour toutes. Relis-la avant chaque contrôle et complète les parties
+fois pour toutes. Relisez-la avant chaque contrôle et complétez les parties
 organisationnelles qu'aucun système ne peut connaître.

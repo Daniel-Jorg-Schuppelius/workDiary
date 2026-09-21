@@ -15,7 +15,7 @@ mostra solo gli ambiti pertinenti. È **puramente estetico** — non cambiano
 permessi, moduli o dati, e tutto resta raggiungibile tramite la ricerca globale
 e **Tutte le funzioni**.
 
-## Cosa imposti qui
+## Cosa si imposta qui
 
 - **Aree offerte:** quali ambiti compaiono nel selettore. «Mostra tutto» è
   sempre disponibile.

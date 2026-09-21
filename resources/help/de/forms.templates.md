@@ -36,5 +36,5 @@ Berechtigungen: Formularvorlagen werden von Teamleitungen oder anderen
 ausdrücklich berechtigten Personen angelegt, bearbeitet, aktiviert,
 archiviert und gelöscht.
 
-Tipp: Stabile Feld-Schlüssel beibehalten, wenn du Auswertungen über
-mehrere Vorlagen-Generationen hinweg vergleichen willst.
+Tipp: Stabile Feld-Schlüssel beibehalten, wenn Sie Auswertungen über
+mehrere Vorlagen-Generationen hinweg vergleichen wollen.

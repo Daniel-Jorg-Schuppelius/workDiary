@@ -45,7 +45,7 @@ class LearningTrainerQuestionMail extends Mailable {
     }
 
     public function content(): Content {
-        return new Content(view: 'mail.learning-trainer-question', with: [
+        return new Content(markdown: 'mail.learning-trainer-question', with: [
             'learner' => $this->learner,
             'courseTitle' => $this->courseTitle,
             'question' => $this->question,

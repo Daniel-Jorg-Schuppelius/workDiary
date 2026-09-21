@@ -18,6 +18,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Learning\{LearningQuestion, LearningQuestionCategory, LearningQuiz};
 use App\Models\User;
+use App\Rules\MaxLineLength;
 use App\Services\Learning\{LearningQuestionCatalogService, LearningQuestionEditorService};
 use App\Support\Sqid;
 use Illuminate\Contracts\Database\Eloquent\Builder;
@@ -171,7 +172,7 @@ class LearningQuestionCatalogController extends Controller {
             'feedback_correct' => ['nullable', 'string', 'max:1000'],
             'feedback_incorrect' => ['nullable', 'string', 'max:1000'],
             'points' => ['required', 'integer', 'min:1', 'max:100'],
-            'options' => ['nullable', 'string', 'max:5000'],
+            'options' => ['nullable', 'string', 'max:5000', new MaxLineLength(500)],
             'partial_credit' => ['nullable', 'boolean'],
             // Aufsatz (MVP-793): Text, Datei oder beides.
             'submission_kind' => ['nullable', 'string', 'in:text,upload,both'],

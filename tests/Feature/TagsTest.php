@@ -50,6 +50,13 @@ class TagsTest extends TestCase {
         $this->assertSame(1, Tag::count());
     }
 
+    /** UI-Fuzz 2026-09-21: ein überlanges Freitext-Schlagwort sprengte tags.name varchar(255) (HTTP 500). */
+    public function test_overlong_free_text_tag_is_shortened(): void {
+        $tag = Tag::findOrCreateByName(str_repeat('Schlagwort', 40));
+
+        $this->assertSame(191, mb_strlen((string) $tag->refresh()->name));
+    }
+
     public function test_unique_slug_avoids_collisions(): void {
         Tag::create(['name' => 'Alpha', 'slug' => 'alpha']);
         $slug = Tag::uniqueSlug('Alpha');

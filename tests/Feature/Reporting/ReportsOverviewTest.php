@@ -67,6 +67,27 @@ class ReportsOverviewTest extends TestCase {
         $response->assertSee('<figure', false);
     }
 
+    /** UI-Fuzz 2026-09-21: eine interne Zeit ohne Projekt ließ /reports mit TypeError (500) abbrechen. */
+    public function test_time_without_project_does_not_break_the_overview(): void {
+        foreach ([$this->project->id, null] as $projectId) {
+            TimeEntry::create([
+                'organization_id' => $this->organization->id,
+                'project_id' => $projectId,
+                'user_id' => $this->user->id,
+                'date' => '2030-03-11',
+                'started_at' => '2030-03-11 09:00:00',
+                'ended_at' => '2030-03-11 10:00:00',
+                'kind' => TimeEntryKind::Work->value,
+            ]);
+        }
+
+        $this->actingAs($this->user)
+            ->withSession($this->dateRangeMonth(2030, 3))
+            ->get(route('reports.index'))
+            ->assertOk()
+            ->assertSee('Overview-Projekt', false);
+    }
+
     public function test_link_list_mirrors_navigation_registry_groups(): void {
         $response = $this->actingAs($this->user)
             ->withSession($this->dateRangeMonth(2030, 3))

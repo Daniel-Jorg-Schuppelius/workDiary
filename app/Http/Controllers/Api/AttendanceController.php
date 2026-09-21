@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\{Attendance, User};
 use App\Services\Attendance\AttendanceClockService;
-use App\Support\Setting;
+use App\Support\{ErrorText, Setting};
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use OpenApi\Attributes as OA;
@@ -78,7 +78,7 @@ class AttendanceController extends Controller {
         try {
             $a = $this->clock->clockIn($user, $data);
         } catch (RuntimeException $e) {
-            return response()->json(['message' => $e->getMessage()], 409);
+            return response()->json(['message' => ErrorText::for($e)], 409);
         }
 
         return response()->json($this->serialize($a), 201);

@@ -20,7 +20,7 @@ ne sont plus affichés en clair après l'enregistrement.
 **Réservations entrantes :** Les nouveaux rendez-vous arrivent d'abord dans la
 **boîte de réception des rendez-vous**, pas directement dans l'agenda. Ils y
 sont rattachés à un client — automatiquement en cas de correspondance nette,
-sinon en attente de ta décision. Le rendez-vous n'est créé qu'ensuite.
+sinon en attente de votre décision. Le rendez-vous n'est créé qu'ensuite.
 
 **Annulations et reports** sont repris si la page de réservation les signale.
 Un rendez-vous déjà repris n'est pas supprimé en silence, mais marqué annulé.

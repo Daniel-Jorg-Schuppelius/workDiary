@@ -30,9 +30,7 @@ class BillbeeServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function registerPlugin(): void {
-        if ($this->app->runningInConsole()) {
-            $this->commands([BillbeeSyncCommand::class]);
-        }
+        $this->commands([BillbeeSyncCommand::class]);
     }
 
     protected function bootPlugin(): void {

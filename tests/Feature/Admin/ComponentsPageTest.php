@@ -41,6 +41,19 @@ class ComponentsPageTest extends TestCase {
             ->assertSee('php artisan sbom:generate');
     }
 
+    /** UI-Fuzz 2026-09-21: Org-Admins sahen Update-Import, SBOM- und Manifest-Erzeugung — die Aktionen endeten in 403. */
+    public function test_update_actions_are_offered_to_the_platform_operator_only(): void {
+        Storage::fake('local');
+        $operatorOnly = [route('admin.components.updates.import'), route('admin.components.sbom.generate'), route('admin.components.manifest.generate')];
+
+        $orgAdmin = $this->actingAs(User::factory()->admin()->create())->get(route('admin.components.index'))->assertOk();
+        $operator = $this->actingAs(User::factory()->platformAdmin()->create())->get(route('admin.components.index'))->assertOk();
+        foreach ($operatorOnly as $action) {
+            $orgAdmin->assertDontSee($action, false);
+            $operator->assertSee($action, false);
+        }
+    }
+
     public function test_non_admin_cannot_access_components_page(): void {
         Storage::fake('local');
         $user = User::factory()->user()->create();

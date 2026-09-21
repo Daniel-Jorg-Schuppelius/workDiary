@@ -58,7 +58,7 @@ return [
         'title' => 'Questo articolo è stato utile?',
         'helpful' => 'È stato utile',
         'not_helpful' => 'Non è stato utile',
-        'already_voted' => 'Hai già votato — votare di nuovo cambia il tuo voto.',
+        'already_voted' => 'Ha già votato — votare di nuovo cambia il suo voto.',
     ],
 
     'link_kind' => [
@@ -82,7 +82,7 @@ return [
         'published' => 'Articolo pubblicato.',
         'archived' => 'Articolo archiviato.',
         'deleted' => 'Articolo eliminato.',
-        'feedback_saved' => 'Grazie per la tua valutazione.',
+        'feedback_saved' => 'Grazie per la sua valutazione.',
         'linked' => 'Articolo collegato.',
         'unlinked' => 'Collegamento rimosso.',
     ],

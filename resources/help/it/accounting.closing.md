@@ -29,5 +29,5 @@ definitive nascono l'**analisi di gestione** (ricavi, costi e risultato per
 gruppi), il **confronto con il budget** per conto e centro di costo — i valori
 dell'anno precedente possono essere ripresi come punto di partenza — e la
 **previsione di liquidità**. Tutte e tre sono analisi, non una seconda
-contabilità: ciò che vedi lì è quanto risulta dal giornale. Le correzioni si
+contabilità: ciò che vede lì è quanto risulta dal giornale. Le correzioni si
 fanno perciò sempre sulla registrazione, mai sul rapporto.

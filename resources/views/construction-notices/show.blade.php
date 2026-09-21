@@ -81,7 +81,7 @@
                             {{ $notice->weatherSnapshot->precipitation_mm }} mm ·
                             {{ $notice->weatherSnapshot->wind_gust_kmh }} km/h
                         </p>
-                        <p class="text-xs text-muted">{{ $notice->weatherSnapshot->provider }} — {{ $notice->weatherSnapshot->fetched_at?->format('d.m.Y H:i') }}</p>
+                        <p class="text-xs text-muted">{{ $notice->weatherSnapshot->provider }} — {{ $notice->weatherSnapshot->fetched_at?->orgTz()->format('d.m.Y H:i') }}</p>
                     </x-card>
                 @endif
 
@@ -91,7 +91,7 @@
                         <p class="text-sm">
                             <span class="font-medium">{{ __('values.' . $dispatch->channel) }}</span> ·
                             {{ $dispatch->recipient }} ·
-                            {{ $dispatch->created_at?->format('d.m.Y H:i') }}
+                            {{ $dispatch->created_at?->orgTz()->format('d.m.Y H:i') }}
                             <x-status-badge :tone="$dispatch->status === 'sent' ? 'success' : 'ghost'" size="sm">{{ __('values.' . $dispatch->status) }}</x-status-badge>
                         </p>
                     @empty

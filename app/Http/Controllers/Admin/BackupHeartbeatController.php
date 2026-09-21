@@ -39,7 +39,7 @@ class BackupHeartbeatController extends Controller {
             'manifest_sha256' => ['nullable', 'string', 'regex:/^[A-Fa-f0-9]{64}$/'],
             'size_bytes' => ['nullable', 'integer', 'min:0'],
             'source' => ['nullable', 'string', 'max:191'],
-            'occurred_at' => ['nullable', 'date'],
+            'occurred_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
         ]);
 
         $occurredAt = isset($validated['occurred_at'])

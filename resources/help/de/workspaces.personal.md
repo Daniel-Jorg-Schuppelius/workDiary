@@ -7,9 +7,9 @@ related:
     - workspaces.overview
     - navigation.customize
 ---
-Ein **eigener Arbeitsbereich** ist deine persönliche Zusammenstellung von
+Ein **eigener Arbeitsbereich** ist Ihre persönliche Zusammenstellung von
 Menüpunkten. Er erscheint im Umschalter (oben im Kopf) neben den vorgegebenen
-Fokus-Ansichten — nur bei dir, niemand sonst sieht ihn.
+Fokus-Ansichten — nur bei Ihnen, niemand sonst sieht ihn.
 
 ## Was er tut — und was nicht
 
@@ -17,7 +17,7 @@ Ein Arbeitsbereich blendet **nur aus**. Er ändert keine Rechte, schaltet kein
 Modul frei und löscht nichts. Ausgeblendetes bleibt über die globale Suche,
 über Deep-Links und unter **Alle Funktionen** erreichbar.
 
-Deshalb bietet der Editor auch nur an, was du ohnehin sehen darfst — und der
+Deshalb bietet der Editor auch nur an, was Sie ohnehin sehen dürfen — und der
 Server prüft die Auswahl beim Speichern noch einmal gegen dieselbe Liste.
 
 ## Anlegen
@@ -40,7 +40,7 @@ Zwei gleichwertige Wege:
 
 ## Wechseln und Aufräumen
 
-Im Umschalter wählst du den Arbeitsbereich wie jede andere Fokus-Ansicht; in
-der Liste schaltet die Schaltfläche mit dem Pfeil direkt darauf um. Löschst du
+Im Umschalter wählen Sie den Arbeitsbereich wie jede andere Fokus-Ansicht; in
+der Liste schaltet die Schaltfläche mit dem Pfeil direkt darauf um. Löschen Sie
 den gerade aktiven Arbeitsbereich, springt die Ansicht automatisch zurück auf
 **Alles anzeigen**.

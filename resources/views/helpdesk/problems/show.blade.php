@@ -64,8 +64,8 @@
 
     <x-card :title="__('Wirksamkeitsprüfung')" icon="fact_check">
         <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-            <div><dt class="text-muted">{{ __('Fällig am') }}</dt><dd>{{ $problem->effectiveness_check_due_at?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
-            <div><dt class="text-muted">{{ __('Geprüft am') }}</dt><dd>{{ $problem->effectiveness_checked_at?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Fällig am') }}</dt><dd>{{ $problem->effectiveness_check_due_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Geprüft am') }}</dt><dd>{{ $problem->effectiveness_checked_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
         </dl>
         @if ($problem->effectiveness_result)
             <div class="mt-3">

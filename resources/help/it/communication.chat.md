@@ -12,9 +12,9 @@ related:
 
 La chat serve al coordinamento interno rapido in canali e conversazioni
 dirette; risposte, reazioni, menzioni e messaggi fissati mantengono le
-decisioni rintracciabili nel contesto. Usa la chat per il coordinamento
+decisioni rintracciabili nel contesto. Usi la chat per il coordinamento
 a breve termine: le informazioni che appartengono stabilmente a un
 cliente, progetto o commessa vanno documentate anche sul relativo
-record. Non condividere credenziali o dati personali non necessari;
+record. Non condivida credenziali o dati personali non necessari;
 messaggi eliminati o modificati possono restare tracciabili in base a
 permessi e requisiti di audit.

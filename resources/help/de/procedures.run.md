@@ -13,7 +13,7 @@ Eine Prozedur (Arbeitsanweisung mit Pflichtschritten) wird auf einem
 - **Pflichtschritte** müssen in der definierten Reihenfolge bearbeitet
   werden.
 - **Backup-Schritte** verlangen den Nachweis (Hash + Größe oder externer
-  Ablage-Link), bevor du weiterklicken kannst.
+  Ablage-Link), bevor Sie weiterklicken können.
 - **Vier-Augen-Schritte** brauchen die Bestätigung einer **zweiten Person**
   mit passender Rolle. Die Bestätigung erscheint asynchron in deren
   Aufgabenliste.

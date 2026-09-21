@@ -7,10 +7,11 @@
  * License      : AGPL-3.0-or-later
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
-/*
- * Italian translation placeholders. Strings are copied from English as a
- * working fallback until proper translations are provided. Keys must
- * remain in sync with lang/en/passwords.php.
- */
 
-return require __DIR__ . '/../en/passwords.php';
+return [
+    'reset' => 'La sua password è stata reimpostata.',
+    'sent' => 'Le abbiamo inviato via e-mail il link per reimpostare la password.',
+    'throttled' => 'Attenda prima di riprovare.',
+    'token' => 'Questo token per reimpostare la password non è valido.',
+    'user' => 'Non è stato trovato alcun utente con questo indirizzo e-mail.',
+];

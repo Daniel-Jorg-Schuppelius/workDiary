@@ -53,7 +53,7 @@
             </x-slot:head>
             @foreach ($readings as $r)
                 <tr class="hover">
-                    <td class="font-mono text-xs">{{ $r->read_at?->translatedFormat('d.m.Y H:i') }}</td>
+                    <td class="font-mono text-xs">{{ $r->read_at?->orgTz()->translatedFormat('d.m.Y H:i') }}</td>
                     <td>
                         @if ($r->asset)
                             <x-icon name="speed" class="text-[14px] align-middle" />

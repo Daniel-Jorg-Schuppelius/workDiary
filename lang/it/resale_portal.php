@@ -14,7 +14,7 @@ declare(strict_types=1);
 return [
     'title' => 'I miei abbonamenti',
     'menu' => 'Abbonamenti',
-    'subtitle' => 'I tuoi abbonamenti e licenze — inclusi quelli dei tuoi clienti finali. Prezzi e importi sono riportati sulle tue fatture.',
+    'subtitle' => 'I suoi abbonamenti e licenze — inclusi quelli dei suoi clienti finali. Prezzi e importi sono riportati sulle sue fatture.',
     'field' => [
         'product' => 'Denominazione / prodotto',
         'holder' => 'Titolare',
@@ -51,7 +51,7 @@ return [
     ],
     'periods' => [
         'title' => 'Periodi di fatturazione',
-        'hint' => 'I periodi derivano da inizio, durata e intervallo; «fatturato» significa che hai ricevuto la relativa fattura.',
+        'hint' => 'I periodi derivano da inizio, durata e intervallo; «fatturato» significa che ha ricevuto la relativa fattura.',
         'empty' => 'Nessun periodo ancora pianificato.',
     ],
     'empty' => 'Nessun abbonamento registrato.',

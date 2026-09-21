@@ -17,6 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{SupportAccessGrant, User};
 use App\Rules\ExistsInCurrentOrganization;
+use App\Support\CarbonFmt;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -115,7 +116,7 @@ class SupportAccessGrantController extends Controller {
 
         return redirect()->route('admin.support.grants.index')
             ->with('success', __('Supportfreigabe wurde erteilt (gültig bis :until).', [
-                'until' => $grant->expires_at->translatedFormat('d.m.Y H:i'),
+                'until' => CarbonFmt::orgTz($grant->expires_at)->translatedFormat('d.m.Y H:i'),
             ]));
     }
 

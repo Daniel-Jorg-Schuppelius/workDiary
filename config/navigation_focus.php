@@ -30,7 +30,7 @@ return [
     'focuses' => [
         'time' => [
             'label' => 'Zeit & Alltag',
-            'description' => 'Erfassen, planen, abrechnen — dein täglicher Arbeitsablauf.',
+            'description' => 'Erfassen, planen, abrechnen — Ihr täglicher Arbeitsablauf.',
             'icon' => 'schedule',
             'keys' => [
                 'section:work',
@@ -156,7 +156,7 @@ return [
         // jeden, der einen Fokus gewaehlt hatte.
         'people' => [
             'label' => 'Personal & Qualifikation',
-            'description' => 'Unterweisungen, Schulungen und Nachweise deiner Leute.',
+            'description' => 'Unterweisungen, Schulungen und Nachweise Ihrer Leute.',
             'icon' => 'school',
             'keys' => [
                 'section:safety',

@@ -11,8 +11,8 @@ related:
 ---
 
 La asistencia de IA es opcional y está desactivada por defecto. En
-**Administración → Servicios de IA** conectas proveedores (nube o
-local, p. ej. Ollama), activas capacidades individuales y defines por
+**Administración → Servicios de IA** conecta proveedores (nube o
+local, p. ej. Ollama), activa capacidades individuales y define por
 capacidad qué conexiones están permitidas y cuál es la predeterminada.
 
 **Privacidad:** La vista previa del flujo de datos muestra por
@@ -24,10 +24,10 @@ muestran.
 
 **Memoria de IA:** Términos de glosario, reglas de estilo y pares de
 ejemplo por organización, cliente o capacidad mejoran las sugerencias —
-sin entrenar modelos de terceros. Solo se aprende tras tu confirmación
+sin entrenar modelos de terceros. Solo se aprende tras su confirmación
 (diálogo «¿Recordar?»).
 
 **Textos de posición:** En borradores de facturas y presupuestos la IA
 crea sugerencias de texto por posición (incluidas traducciones). Nada
-se aplica hasta que haces clic — cantidades, precios e impuestos
+se aplica hasta que hace clic — cantidades, precios e impuestos
 permanecen intactos.

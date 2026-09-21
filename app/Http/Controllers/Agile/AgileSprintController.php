@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Agile\{AgileBoard, AgileSprint, AgileWorkItem};
 use App\Models\{Project, User};
 use App\Services\Agile\AgileSprintService;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -86,7 +87,7 @@ class AgileSprintController extends Controller {
         try {
             $this->sprints->assign($sprint, $item, $actor);
         } catch (RuntimeException|InvalidArgumentException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('agile.sprints', $project)
@@ -102,7 +103,7 @@ class AgileSprintController extends Controller {
         try {
             $this->sprints->remove($sprint, $item, $actor);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('agile.sprints', $project)
@@ -128,7 +129,7 @@ class AgileSprintController extends Controller {
                 $data['capacity_adjustment_reason'] ?? null,
             );
         } catch (RuntimeException|InvalidArgumentException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('agile.sprints', $project)
@@ -157,7 +158,7 @@ class AgileSprintController extends Controller {
         try {
             $this->sprints->complete($sprint, $decisions, $actor);
         } catch (RuntimeException|InvalidArgumentException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('agile.sprints', $project)
@@ -175,7 +176,7 @@ class AgileSprintController extends Controller {
         try {
             $this->sprints->cancel($sprint, $data['reason'], $actor);
         } catch (RuntimeException|InvalidArgumentException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('agile.sprints', $project)

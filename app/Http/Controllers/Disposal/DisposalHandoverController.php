@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Disposal\SaveDisposalHandoverRequest;
 use App\Models\Disposal\{DisposalHandover, DisposalJob};
 use App\Services\Disposal\DisposalJobService;
+use App\Support\ErrorText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Throwable;
@@ -38,7 +39,7 @@ class DisposalHandoverController extends Controller {
         try {
             $this->service->addHandover($disposalJob, $actor, $data, $proofFile);
         } catch (Throwable $exception) {
-            return back()->withErrors(['handovers' => $exception->getMessage()]);
+            return back()->withErrors(['handovers' => ErrorText::for($exception)]);
         }
 
         return redirect()->route('disposal.show', $disposalJob)
@@ -54,7 +55,7 @@ class DisposalHandoverController extends Controller {
         try {
             $this->service->removeHandover($disposalHandover, $actor);
         } catch (Throwable $exception) {
-            return back()->withErrors(['handovers' => $exception->getMessage()]);
+            return back()->withErrors(['handovers' => ErrorText::for($exception)]);
         }
 
         return redirect()->route('disposal.show', $job)

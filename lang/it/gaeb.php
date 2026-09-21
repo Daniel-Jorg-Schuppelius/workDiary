@@ -234,7 +234,7 @@ return [
         'unusually_low_hint' => 'Un’offerta anomalamente bassa richiede chiarimenti, non l’esclusione (§ 16d VOB/A, § 60 VgV).',
         'incomplete_hint' => 'Non tutti gli offerenti hanno quotato ogni voce — i prezzi mancanti sono lacune, non zeri.',
         'empty_title' => 'Nessuna offerta',
-        'empty_hint' => 'Importa le offerte (X84) di questa gara per confrontarle.',
+        'empty_hint' => 'Importi le offerte (X84) di questa gara per confrontarle.',
         'button' => 'Confronto prezzi',
     ],
 ];

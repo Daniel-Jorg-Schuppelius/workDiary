@@ -77,7 +77,7 @@
         <div class="alert alert-info">
             <x-icon name="inbox" />
             <span>
-                {{ __(':n Sitzungen konnten keinem Gerät zugeordnet werden und liegen in der Fernwartungs-Inbox. Ordne die Geräte-IDs einem Asset zu, um sie als Zeiteinträge zu buchen.', ['n' => $run->rows_skipped]) }}
+                {{ __(':n Sitzungen konnten keinem Gerät zugeordnet werden und liegen in der Fernwartungs-Inbox. Ordnen Sie die Geräte-IDs einem Asset zu, um sie als Zeiteinträge zu buchen.', ['n' => $run->rows_skipped]) }}
             </span>
             <x-button :href="route('admin.remote-support.pending.index')" tone="primary" size="sm" icon="arrow_forward">{{ __('Zur Inbox') }}</x-button>
         </div>
@@ -128,7 +128,7 @@
     @if ($pendingValues !== [] && $pendingColumn === 'user_email')
         <x-card :title="__('Unbekannte Benutzer zuordnen')" icon="person" :count="count($pendingValues)">
             <p class="mb-3 text-sm text-muted">
-                {{ __('Diese E-Mail-Adressen gehören zu keinem Benutzerkonto der Organisation. Ordne sie einem Benutzer zu oder überspringe die Zeilen — Entscheidungen werden je Organisation gemerkt, Wiederholimporte lösen automatisch auf. Der Import startet erst nach vollständiger Zuordnung.') }}
+                {{ __('Diese E-Mail-Adressen gehören zu keinem Benutzerkonto der Organisation. Ordnen Sie sie einem Benutzer zu oder überspringen Sie die Zeilen — Entscheidungen werden je Organisation gemerkt, Wiederholimporte lösen automatisch auf. Der Import startet erst nach vollständiger Zuordnung.') }}
             </p>
             <form method="POST" action="{{ route('admin.imports.mapping', $run) }}" class="space-y-2">
                 @csrf

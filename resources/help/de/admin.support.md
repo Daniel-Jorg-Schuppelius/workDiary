@@ -10,7 +10,7 @@ related:
     - admin.handbook
 ---
 
-Der **Supportbericht** bündelt den technischen Zustand deiner
+Der **Supportbericht** bündelt den technischen Zustand Ihrer
 Installation, damit der Support ein Problem analysieren kann — **ohne
 dass Kundendaten das Haus verlassen**.
 
@@ -36,7 +36,7 @@ ausschließlich explizit freigegebene, technische Felder (Whitelist).
 Kundennamen, personenbezogene Daten, Klartext-Zugangsdaten und Secrets
 tauchen nie auf.
 
-So erzeugst du den Bericht:
+So erzeugen Sie den Bericht:
 
 - **Admin-Seite** „Supportbericht": ZIP-Bundle (optional mit Passwort),
   reine JSON-Datei oder Vorschau im Browser.

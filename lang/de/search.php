@@ -90,7 +90,7 @@ return [
     ],
 
     'empty' => [
-        'start' => 'Wonach suchst du?',
+        'start' => 'Wonach suchen Sie?',
         'start_hint' => 'Stichwörter reichen, z. B. „smtp exchange“. Alle Wörter müssen vorkommen — egal ob im Eintrag, im Projekt oder beim Kunden.',
         'none' => 'Keine Treffer.',
         'none_hint' => 'Weniger Wörter versuchen oder „Ähnliche Schreibweisen“ einschalten.',

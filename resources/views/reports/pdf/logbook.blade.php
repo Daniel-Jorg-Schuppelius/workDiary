@@ -64,7 +64,7 @@
                         @if ($r['superseded'])
                             storniert
                         @elseif ($log->isLocked())
-                            festgeschrieben {{ $log->locked_at?->format('d.m.Y H:i') }}
+                            festgeschrieben {{ $log->locked_at?->orgTz()->format('d.m.Y H:i') }}
                         @else
                             offen
                         @endif

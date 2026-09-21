@@ -17,8 +17,8 @@ registrati localmente (impostazioni del plugin). Due vie:
 **import API** con token e intervallo di date, oppure **import da
 file** con report dettagliato CSV o archivio di export del workspace.
 I clienti/progetti Toggl senza corrispondenza automatica si raccolgono
-nella posta in arrivo, dove li assegni a clienti/progetti esistenti,
-ne crei di nuovi o li scarti; le assegnazioni salvate valgono per gli
+nella posta in arrivo, dove li assegna a clienti/progetti esistenti,
+ne crea di nuovi o li scarta; le assegnazioni salvate valgono per gli
 import futuri e si possono modificare o eliminare. Import ripetuti
 dello stesso periodo possono generare duplicati se i dati di origine
 sono cambiati; lo scarto delle voci è definitivo.
@@ -29,14 +29,14 @@ workspace: prima le assegnazioni salvate («Gestisci associazioni»), poi
 l'uguaglianza dell'e-mail. Gli utenti Toggl sconosciuti o non
 consultabili non vengono mai registrati in silenzio sull'utente
 principale: restano come caso aperto nella posta di assegnazione, dove
-scegli l'utente; la scelta viene memorizzata. Solo nella modalità
+sceglie l'utente; la scelta viene memorizzata. Solo nella modalità
 utente singolo attivata espressamente (impostazione del plugin) le voci
 senza segnale utente vengono registrate sull'utente predefinito. Le
 vecchie importazioni assegnate male si riparano con
 `toggl:repair-entry-users` (prima simulazione, scrivere con `--apply`);
 i tempi fatturati o firmati non vengono mai modificati automaticamente.
 
-Per l'importazione una tantum del workspace (cartella/ZIP o API) scegli
+Per l'importazione una tantum del workspace (cartella/ZIP o API) scelga
 esplicitamente l'assegnazione degli utenti: assegnare solo a utenti
 esistenti (le voci sconosciute restano visibilmente non registrate e
 vengono elencate per e-mail), creare gli utenti mancanti per e-mail,

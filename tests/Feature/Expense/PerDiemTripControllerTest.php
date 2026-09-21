@@ -55,6 +55,53 @@ class PerDiemTripControllerTest extends TestCase {
         $this->assertEqualsWithDelta(56.0, (float) $trip->totalAmount(), 0.01);
     }
 
+    /** UI-Fuzz 2026-09-21: das Ende stand im Formular in UTC — jedes Speichern zog es um den Zeitzonenversatz vor. */
+    public function test_edit_form_shows_start_and_end_in_local_time(): void {
+        $this->postAsUser('per-diem-trips.store', [
+            'country' => 'DE',
+            'location' => 'Frankfurt',
+            'purpose' => 'Workshop',
+            'started_at' => '2025-07-10T08:00',
+            'ended_at' => '2025-07-11T18:00',
+            'accommodation_provided' => 0,
+        ]);
+        $trip = PerDiemTrip::query()->where('user_id', $this->user->id)->firstOrFail();
+
+        $this->actingAs($this->user)->get(route('per-diem-trips.edit', $trip))
+            ->assertOk()
+            ->assertSee('2025-07-10T08:00')
+            ->assertSee('2025-07-11T18:00');
+    }
+
+    /** UI-Fuzz 2026-09-21: eine Reise vor dem ältesten Verpflegungssatz endete in 500. */
+    public function test_trip_without_rate_is_a_field_error(): void {
+        $this->postAsUser('per-diem-trips.store', [
+            'country' => 'DE',
+            'location' => 'Frankfurt',
+            'purpose' => 'Nachtrag',
+            'started_at' => '1990-05-10T08:00',
+            'ended_at' => '1990-05-10T18:00',
+            'accommodation_provided' => 0,
+        ])->assertSessionHasErrors('started_at');
+
+        $this->assertSame(0, PerDiemTrip::query()->where('user_id', $this->user->id)->count());
+    }
+
+    /** UI-Fuzz 2026-09-21: der Arbeitsort-Schlüssel (varchar(100)) wird aus dem Ort (255) abgeleitet — langer Ort endete in 1406. */
+    public function test_long_location_shortens_the_workplace_key(): void {
+        $this->postAsUser('per-diem-trips.store', [
+            'country' => 'DE',
+            'location' => str_repeat('Frankfurt am Main ', 12),
+            'purpose' => 'Messe',
+            'started_at' => '2025-03-10T08:00',
+            'ended_at' => '2025-03-10T18:00',
+            'accommodation_provided' => 0,
+        ])->assertSessionHasNoErrors();
+
+        $trip = PerDiemTrip::query()->where('user_id', $this->user->id)->firstOrFail();
+        $this->assertSame(100, mb_strlen((string) $trip->workplace_key));
+    }
+
     public function test_convert_creates_expense_and_sets_status(): void {
         $this->postAsUser('per-diem-trips.store', [
             'country' => 'DE',

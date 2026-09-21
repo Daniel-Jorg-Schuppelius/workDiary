@@ -31,7 +31,7 @@
                             <div class="rounded-lg border border-base-300 p-3">
                                 <div class="flex flex-wrap items-center justify-between gap-2 text-sm">
                                     <div class="min-w-0">
-                                        <span class="font-medium">{{ $request->start_at?->format('d.m.Y H:i') }}–{{ $request->end_at?->format('H:i') }}</span>
+                                        <span class="font-medium">{{ $request->start_at?->orgTz()->format('d.m.Y H:i') }}–{{ $request->end_at?->orgTz()->format('H:i') }}</span>
                                         · {{ $request->customer?->name ?? $request->invitee_name }}
                                         · {{ $request->service_label }}
                                     </div>
@@ -65,7 +65,7 @@
                     <ul class="space-y-1 text-sm">
                         @foreach ($decided as $request)
                             <li class="flex justify-between gap-2">
-                                <span class="min-w-0 truncate">{{ $request->start_at?->format('d.m.Y H:i') }} · {{ $request->customer?->name ?? $request->invitee_name }}</span>
+                                <span class="min-w-0 truncate">{{ $request->start_at?->orgTz()->format('d.m.Y H:i') }} · {{ $request->customer?->name ?? $request->invitee_name }}</span>
                                 <span class="shrink-0 text-muted">{{ [
                                     'confirmed' => __('bestätigt'),
                                     'declined' => __('abgelehnt'),

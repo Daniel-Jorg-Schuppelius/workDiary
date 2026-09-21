@@ -13,9 +13,9 @@ related:
 
 ## Zweck und Hintergrund
 
-Das Dashboard ist deine persönliche Startseite: Es fasst die für dich
+Das Dashboard ist Ihre persönliche Startseite: Es fasst die für Sie
 wichtigsten Kennzahlen, offenen Aufgaben und Hinweise in Kacheln
-zusammen. Welche Inhalte erscheinen, hängt von deinen Berechtigungen
+zusammen. Welche Inhalte erscheinen, hängt von Ihren Berechtigungen
 und den freigeschalteten Modulen ab — eine Person mit
 Auswertungsrechten sieht andere Kacheln als jemand ohne. Ausgeblendete
 Kacheln stellen keine Abfragen mehr; ein aufgeräumtes Dashboard lädt
@@ -31,13 +31,13 @@ deshalb auch schneller.
 
 ## Empfohlener Ablauf
 
-1. Öffne die **Anpassung** und blende die Kacheln ein, die du täglich
-   brauchst — Stempeluhr, Erinnerungen, Fristen, offene Posten, Zustand
+1. Öffnen Sie die **Anpassung** und blenden Sie die Kacheln ein, die Sie täglich
+   brauchen — Stempeluhr, Erinnerungen, Fristen, offene Posten, Zustand
    der Sicherungen und mehr stehen bereit und sind zunächst
    ausgeblendet.
-2. Sortiere die Kacheln per Ziehen oder mit den Pfeiltasten und stelle
+2. Sortieren Sie die Kacheln per Ziehen oder mit den Pfeiltasten und stellen Sie
    sie wahlweise auf halbe oder volle Breite.
-3. Sichere die Konfiguration — die Auswahl gilt nur für dein eigenes
+3. Sichern Sie die Konfiguration — die Auswahl gilt nur für Ihr eigenes
    Konto und bleibt erhalten.
 4. Wer die Organisation verwalten darf, kann die eigene Anordnung als
    **Vorgabe für alle** hinterlegen; sie greift bei allen ohne eigene
@@ -63,7 +63,7 @@ Fristen — ohne einen einzigen Klick in Untermenüs.
 
 ## Auswirkungen und nächste Schritte
 
-Die Kachelauswahl wirkt nur auf dein Konto und verändert keine Daten.
+Die Kachelauswahl wirkt nur auf Ihr Konto und verändert keine Daten.
 Als nächste Schritte lohnen sich die Kontexthilfe der einzelnen Kacheln
 (Taste `?`) und ein Blick in die Benachrichtigungs-Einstellungen, damit
 Hinweise auf dem Dashboard und per Mail zusammenpassen.

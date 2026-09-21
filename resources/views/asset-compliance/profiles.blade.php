@@ -13,9 +13,6 @@
 
 @section('content')
 <x-index-page :subtitle="__('Prüfprofile als Katalogdaten (P1): globale Vorlagen + Organisations-Overrides; Zuweisung erzeugt Prüfpflichten mit Fälligkeit und Sperrwirkung.')">
-    @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
-    @endif
     <x-validation-errors />
 
     @foreach ($profiles as $profile)

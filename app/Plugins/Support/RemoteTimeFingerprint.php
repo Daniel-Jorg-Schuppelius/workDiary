@@ -36,6 +36,21 @@ final class RemoteTimeFingerprint {
     }
 
     /**
+     * Abdruck in der Semantik vor MVP-824: die CSV-Parser lasen die Ortszeit als
+     * UTC. Erkennt Bestandsabdrücke, damit die Umstellung keinen Scheinkonflikt
+     * auslöst.
+     */
+    public static function ofWallTime(ImportedTimeEntry $entry, string $timezone): string {
+        return self::fromParts(
+            $entry->startedAt->setTimezone($timezone)->shiftTimezone('UTC'),
+            $entry->endedAt->setTimezone($timezone)->shiftTimezone('UTC'),
+            $entry->description,
+            $entry->projectId,
+            $entry->billable,
+        );
+    }
+
+    /**
      * Gleiche Bildung aus Einzelteilen — für den frisch geholten Fremdstand,
      * der noch nicht durch die Import-Normalisierung gelaufen ist.
      */

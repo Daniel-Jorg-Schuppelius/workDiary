@@ -32,5 +32,5 @@ entstehen die **betriebswirtschaftliche Auswertung** (Erlöse, Kosten und
 Ergebnis nach Gruppen), der **Budget-Abgleich** je Konto und Kostenstelle — die
 Vorjahreswerte lassen sich als Ausgangspunkt übernehmen — sowie die
 **Liquiditätsvorschau**. Alle drei sind Auswertungen, keine zweite
-Datenhaltung: Was du dort siehst, steht so im Journal. Korrekturen erfolgen
+Datenhaltung: Was Sie dort sehen, steht so im Journal. Korrekturen erfolgen
 deshalb immer an der Buchung, nie am Bericht.

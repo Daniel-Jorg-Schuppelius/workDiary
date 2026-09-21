@@ -16,6 +16,6 @@ cada tarifa rige desde una fecha y puede tener un fin de validez, de
 modo que coexisten varios períodos. Para cada tarifa se mantienen el
 importe diario completo y el importe parcial, más un importe opcional de
 alojamiento; el país y la moneda se indican con códigos y la fuente
-sirve como evidencia. Usa el filtro por país y la ordenación por
-columnas para localizar tarifas; ante cambios legales, crea tarifas
+sirve como evidencia. Use el filtro por país y la ordenación por
+columnas para localizar tarifas; ante cambios legales, cree tarifas
 nuevas con su fecha de inicio en lugar de sobrescribir las existentes.

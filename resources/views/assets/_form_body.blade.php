@@ -34,7 +34,7 @@
         @endforeach
     </x-select-field>
 
-    <x-input-field name="name" :label="__('Name')" required span="2" :value="old('name', $asset->name)" />
+    <x-input-field name="name" :label="__('Name')" required maxlength="180" span="2" :value="old('name', $asset->name)" />
 
     <x-select-field name="category_code" :label="__('Kategorie')">
         <option value="">{{ __('— ohne Kategorie —') }}</option>

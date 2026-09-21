@@ -50,7 +50,7 @@ class ProviderInvoiceImport {
         foreach ($uploads as $upload) {
             $name = (string) $upload->getClientOriginalName();
             try {
-                $invoice = $this->read($upload->getRealPath() ?: $upload->getPathname());
+                $invoice = $this->read($upload->getRealPath() ?: $upload->getPathname(), $name);
                 if ($invoice->number === '' || $invoice->lines === []) {
                     $failed = true;
                     $summary[] = (string) __('resale.purchase.import.unreadable', ['file' => $name]);
@@ -74,8 +74,8 @@ class ProviderInvoiceImport {
     }
 
     /** PDF lesen — einzige Naht zum Reader (Tests liefern hier ein Text-Fixture). */
-    protected function read(string $path): ProviderInvoice {
-        return $this->reader->read($path);
+    protected function read(string $path, string $name): ProviderInvoice {
+        return $this->reader->read($path, $name);
     }
 
     /**

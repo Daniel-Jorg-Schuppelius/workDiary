@@ -35,11 +35,9 @@ class OpenProjectServiceProvider extends PluginServiceProviderBase {
     protected function bootPlugin(): void {
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new OpenProjectOutboxDispatcher);
 
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                OpenProjectSyncCommand::class,
-                OpenProjectPushCommand::class,
-            ]);
-        }
+        $this->commands([
+            OpenProjectSyncCommand::class,
+            OpenProjectPushCommand::class,
+        ]);
     }
 }

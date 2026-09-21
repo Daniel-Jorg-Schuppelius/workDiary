@@ -12,8 +12,8 @@ related:
 La vista semanal sitúa en el calendario las **entradas del diario de
 encargos**, las **guardias** y los **servicios de emergencia**; sirve
 para la visión general y la planificación, no para registrar tiempos de
-trabajo. Elige el periodo en la cabecera, cambia entre **Mi semana** y
-**Semana del equipo** (con filtro por personas), haz clic en una
+trabajo. Elija el periodo en la cabecera, cambie entre **Mi semana** y
+**Semana del equipo** (con filtro por personas), haga clic en una
 entrada para ver sus detalles o en un hueco libre para crear una nueva.
 Los colores indican el estado de los encargos, por ejemplo **Abierto**,
 **Problema**, **Confirmado** o **Terminado**. Para registrar tiempos

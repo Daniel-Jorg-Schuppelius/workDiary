@@ -28,13 +28,13 @@ App in der Wawi freigeben. Der API-Schlüssel wird **nur einmal**
 ausgegeben und verschlüsselt gespeichert — er erscheint nie in Logs
 oder Diagnosen.
 
-**Zuordnungen:** Nach der ersten Synchronisation ordnest du die
+**Zuordnungen:** Nach der ersten Synchronisation ordnen Sie die
 JTL-Lager den WorkDiary-Lagern zu (für Buchungen 1:1). Artikel werden
 über SKU und GTIN automatisch zugeordnet; unklare Fälle landen in der
 Integrations-Inbox und werden dort entschieden — WorkDiary legt nie
 automatisch Artikel an.
 
-**Bestandsführung:** Unter „Bestandsführung“ wählst du, wer die
+**Bestandsführung:** Unter „Bestandsführung“ wählen Sie, wer die
 Bestände führt: *lokal* (WorkDiary), *extern* (JTL führt, WorkDiary
 bucht über die Outbox zurück) oder *nur lesen*. Der Wechsel zurück auf
 „lokal“ übernimmt die JTL-Bestände als Eröffnungs-Inventur.

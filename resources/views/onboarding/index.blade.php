@@ -94,7 +94,7 @@
                                 @csrf
                                 <input aria-label="{{ __('onboarding.action.skip_placeholder') }}" type="text"
                                        name="reason"
-                                       maxlength="1000"
+                                       maxlength="500"
                                        required
                                        class="input input-bordered input-sm w-64"
                                        placeholder="{{ __('onboarding.action.skip_placeholder') }}">

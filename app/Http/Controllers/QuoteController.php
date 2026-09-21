@@ -15,6 +15,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Models\{Customer, Quote, QuoteItem, User};
 use App\Services\Invoicing\QuoteService;
+use App\Support\ErrorText;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -180,7 +181,7 @@ class QuoteController extends Controller {
         try {
             $this->quotes->approve($quote, $this->actor());
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('quotes.show', $quote)->with('status', __('Angebot freigegeben.'));
@@ -196,7 +197,7 @@ class QuoteController extends Controller {
         try {
             ['acceptance_token' => $token] = $this->quotes->send($quote, $this->actor());
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('quotes.show', $quote)
@@ -230,7 +231,7 @@ class QuoteController extends Controller {
                 $this->quotes->reject($quote, $data['reason'] ?? null);
             }
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('quotes.show', $quote)->with('status', __('Entscheidung dokumentiert.'));
@@ -241,7 +242,7 @@ class QuoteController extends Controller {
         try {
             $next = $this->quotes->newVersion($quote, $this->actor());
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('quotes.show', $next)->with('status', __('Version :v angelegt.', ['v' => $next->version]));
@@ -252,7 +253,7 @@ class QuoteController extends Controller {
         try {
             $invoice = $this->quotes->convertToInvoice($quote, $this->actor());
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('invoices.show', $invoice)
@@ -301,7 +302,7 @@ class QuoteController extends Controller {
             }
         } catch (\RuntimeException $e) {
             return redirect()->route('quotes.portal.show', ['quote' => $quote->getRouteKey(), 'token' => $token])
-                ->with('error', $e->getMessage());
+                ->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('quotes.portal.show', ['quote' => $quote->getRouteKey(), 'token' => $token])

@@ -37,7 +37,7 @@ class SaveProjectBillingRuleRequest extends FormRequest {
             'item_type' => ['nullable', 'string', Rule::in(['service', 'material', 'custom'])],
             'unit_name' => ['nullable', 'string', 'max:50'],
             'vat_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'net_unit_price' => ['nullable', 'numeric', 'min:0'],
+            'net_unit_price' => ['nullable', 'numeric', 'min:0', 'max:99999999.9999'],
             'priority' => ['nullable', 'integer', 'min:0', 'max:1000'],
         ];
     }

@@ -14,7 +14,7 @@ namespace App\Http\Controllers;
 
 use App\Models\{Quote, User};
 use App\Services\Invoicing\QuoteFollowUpService;
-use App\Support\Setting;
+use App\Support\{ErrorText, Setting};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -115,7 +115,7 @@ class QuoteFollowUpController extends Controller {
         try {
             $this->followUps->record($quote, $user, (string) $data['result'], $data['next_at'] ?? null);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('status', __('quotes.follow_up.recorded'));

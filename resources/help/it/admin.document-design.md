@@ -12,26 +12,26 @@ related:
 ---
 
 Il design dei documenti adatta i PDF generati all'aspetto della
-tua organizzazione: carta intestata, aree di stampa e aree bloccate,
+sua organizzazione: carta intestata, aree di stampa e aree bloccate,
 blocchi informativi e preset di stile tabella curati.
 
 Procedura:
 
-1. **Carica la carta intestata** (PDF, JPG o PNG, A4 verticale) — un asset
+1. **Carichi la carta intestata** (PDF, JPG o PNG, A4 verticale) — un asset
    per la prima pagina e, facoltativamente, uno per le pagine successive.
    I PDF vengono ridotti a una pagina raster sicura e non interattiva;
    l'originale resta archiviato come prova.
-2. **Crea un profilo** e definisci nell'editor aree di stampa, finestra
+2. **Crei un profilo** e definisca nell'editor aree di stampa, finestra
    indirizzo, riga mittente e aree bloccate in millimetri — visivamente o
    numericamente, anche da tastiera.
-3. **Dichiara i blocchi informativi**: `dinamico` (WorkDiary stampa),
+3. **Dichiari i blocchi informativi**: `dinamico` (WorkDiary stampa),
    `fornito dalla carta intestata` (con conferma per versione di profilo)
    oppure `non applicabile`. I blocchi obbligatori dei tipi di documento
    assegnati e i dati variabili sono protetti.
-4. **Genera un documento di prova** per tipo di documento con testi lunghi,
+4. **Generi un documento di prova** per tipo di documento con testi lunghi,
    molte posizioni e più aliquote; il preflight mostra sovrapposizioni,
    blocchi obbligatori mancanti e problemi di contrasto.
-5. **Attiva la versione** — solo con preflight senza errori. Le versioni
+5. **Attivi la versione** — solo con preflight senza errori. Le versioni
    attivate sono immutabili; le modifiche passano da una nuova bozza. I
    documenti finalizzati mantengono lo stato congelato.
 
@@ -42,7 +42,7 @@ strutturata resta vincolante.
 
 Design base CI ed ereditarietà:
 
-- Il profilo standard dell'organizzazione è il tuo **design base CI**.
+- Il profilo standard dell'organizzazione è il suo **design base CI**.
   Le varianti per singoli tipi di documento (ad es. offerta, fattura,
   nota di credito, sollecito) o intere famiglie (vendite, acquisti,
   attestazioni) **ereditano** tutte le sezioni non sovrascritte — per

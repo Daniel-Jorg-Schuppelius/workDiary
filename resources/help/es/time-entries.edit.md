@@ -8,11 +8,11 @@ related:
     - reports.customer-analysis
 ---
 
-Haz clic en una fila de la lista de registro de tiempos para editar la
+Haga clic en una fila de la lista de registro de tiempos para editar la
 entrada; los cambios quedan en el registro de auditoría con persona,
 momento y valor anterior. Las entradas **ya aprobadas** están
-bloqueadas: usa las **solicitudes de corrección**. No cambies nunca
-solo el fin de un turno — ajusta siempre inicio, fin y pausa como
+bloqueadas: use las **solicitudes de corrección**. No cambie nunca
+solo el fin de un turno — ajuste siempre inicio, fin y pausa como
 conjunto para no volver inconsistentes los informes. Cambiar de
 proyecto está permitido mientras la asignación anterior no se haya
 facturado.

@@ -26,7 +26,7 @@ return [
     'target' => [
         'nav' => 'Valores objetivo',
         'title' => 'Valores objetivo & referencias',
-        'subtitle' => 'Define valores objetivo por indicador – los informes muestran objetivo, real y la desviación.',
+        'subtitle' => 'Defina valores objetivo por indicador – los informes muestran objetivo, real y la desviación.',
         'create' => 'Añadir valor objetivo',
         'edit' => 'Editar valor objetivo',
         'empty' => 'Aún no hay valores objetivo definidos.',

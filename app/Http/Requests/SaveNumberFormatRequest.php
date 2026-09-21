@@ -24,7 +24,7 @@ class SaveNumberFormatRequest extends BaseFormRequest {
             'year_separator' => ['nullable', 'string', 'max:4'],
             'padding' => ['required', 'integer', 'min:1', 'max:10'],
             'reset_per_year' => ['sometimes', 'boolean'],
-            'starts_at' => ['required', 'integer', 'min:0'],
+            'starts_at' => ['required', 'integer', 'min:0', 'max:999999999999'],
         ];
     }
 }

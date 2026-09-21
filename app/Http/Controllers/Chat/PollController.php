@@ -38,7 +38,7 @@ class PollController extends Controller {
             'options' => ['required', 'array', 'min:2', 'max:20'],
             'options.*' => ['required', 'string', 'max:200'],
             'multiple' => ['sometimes', 'boolean'],
-            'closes_at' => ['nullable', 'date'],
+            'closes_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
         ]);
 
         $message = DB::transaction(function () use ($channel, $user, $data, $request) {

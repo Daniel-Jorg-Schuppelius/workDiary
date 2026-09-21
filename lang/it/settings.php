@@ -45,7 +45,7 @@ return [
         'warn_heat_c' => 'Caldo da massima di (°C)',
         'warn_hint' => 'Predefinito: 20 mm/giorno, 60 km/h, 0 °C, 30 °C.',
     ],
-    'hint' => 'Lascia vuoto per usare il valore predefinito del sistema.',
+    'hint' => 'Lasci vuoto per usare il valore predefinito del sistema.',
     'pagination' => [
         'heading' => 'Dimensioni pagina',
         'description' => 'Numero di elementi per pagina negli elenchi.',

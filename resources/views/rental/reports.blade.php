@@ -24,9 +24,6 @@
         <x-date-range :from="$from->toDateString()" :to="$to->toDateString()" />
     </x-filter-bar>
 
-    @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
-    @endif
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <x-kpi-tile :label="__('Verleihvorgänge')" :value="$caseCount" />

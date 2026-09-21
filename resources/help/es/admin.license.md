@@ -15,8 +15,8 @@ la **fecha de expiración**. La licencia es la fuente del plan y de los
 módulos adicionales; las licencias por organización pueden instalarse
 y eliminarse, y sin licencia de organización se aplica la global como
 respaldo. Sin licencia válida, la instalación funciona en el plan Free.
-Además puedes sobrescribir **feature flags**, emitir nuevas licencias
-(si tu instalación está autorizada) y gestionar el **estado del
+Además puede sobrescribir **feature flags**, emitir nuevas licencias
+(si su instalación está autorizada) y gestionar el **estado del
 inquilino** (prueba/activo/bloqueado): en estado bloqueado se
 desactivan las acciones de escritura y el límite de usuarios se aplica
 al crear miembros. Las licencias se introducen como claves firmadas,

@@ -17,6 +17,7 @@ use App\Http\Requests\SavePurchaseOrderRequest;
 use App\Models\{Article, PurchaseOrder, PurchaseOrderAdvice, PurchaseOrderLine, Supplier, Warehouse};
 use App\Services\Procurement\{AdviceService, DespatchAdviceImportService, GoodsReceiptService, ProcurementSuggestionService, PurchaseOrderExportService, PurchaseOrderPdfRenderer, PurchaseOrderService, UglInvoiceReconciler};
 use App\Services\SqidEncoder;
+use App\Support\ErrorText;
 use CommonToolkit\Helper\FileSystem\File;
 use ERechnungToolkit\Parsers\UglInvoiceParser;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -217,7 +218,7 @@ class PurchaseOrderController extends Controller {
                 'created_by' => Auth::id(),
             ]);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('procurement.advice.flash.announced'));
@@ -244,7 +245,7 @@ class PurchaseOrderController extends Controller {
         try {
             $import->import($xml, Auth::id(), $purchaseOrder);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('procurement.advice.flash.imported'));
@@ -286,7 +287,7 @@ class PurchaseOrderController extends Controller {
         try {
             app(AdviceService::class)->receive($advice, Auth::id() !== null ? (int) Auth::id() : null);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('procurement.advice.flash.received'));
@@ -389,7 +390,7 @@ class PurchaseOrderController extends Controller {
                 serialNo: $data['serial_no'] ?? null,
             );
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('procurement.flash.received'));
@@ -428,7 +429,7 @@ class PurchaseOrderController extends Controller {
         try {
             $action();
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('purchase-orders.show', $order)->with('success', __($successKey));

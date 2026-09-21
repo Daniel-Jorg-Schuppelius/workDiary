@@ -21,7 +21,7 @@
         <x-empty-state icon="receipt_long" :title="__('Keine passenden Spesen')" :message="__('Keine genehmigten, weiterberechenbaren Spesen für diesen Kunden gefunden.')" tone="info" compact />
     @else
         <p class="text-sm text-base-content/70">
-            {{ __('Wähle die Spesen, die als Position der Rechnung hinzugefügt werden sollen. Brutto-Betrag wird als Einzelpreis übernommen.') }}
+            {{ __('Wählen Sie die Spesen, die als Position der Rechnung hinzugefügt werden sollen. Brutto-Betrag wird als Einzelpreis übernommen.') }}
         </p>
 
         <x-table class="mt-3">

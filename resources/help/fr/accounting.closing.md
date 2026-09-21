@@ -30,5 +30,5 @@ alimentent l'**analyse de gestion** (produits, charges et résultat par groupe),
 la **comparaison budgétaire** par compte et centre de coûts — les montants de
 l'exercice précédent peuvent servir de point de départ — ainsi que la
 **prévision de trésorerie**. Les trois sont des analyses, non une seconde
-comptabilité : ce que tu y vois figure tel quel au journal. Les corrections se
+comptabilité : ce que vous y voyez figure tel quel au journal. Les corrections se
 font donc toujours sur l'écriture, jamais sur le rapport.

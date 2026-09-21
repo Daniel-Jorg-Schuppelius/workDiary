@@ -12,7 +12,7 @@ related:
 
 Las plantillas de correo de facturas definen los textos de e-mail para
 el envío de facturas; cada plantilla consta de nombre, asunto y un
-contenido HTML y otro de texto. Puedes **crear/editar**, **buscar**,
+contenido HTML y otro de texto. Puede **crear/editar**, **buscar**,
 **eliminar** y **definir como predeterminada** una plantilla —solo una
 es la predeterminada por ámbito. En asunto y contenido se pueden usar
 **marcadores de posición** que se sustituyen al enviar, como

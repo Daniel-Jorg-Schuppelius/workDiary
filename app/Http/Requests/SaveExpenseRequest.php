@@ -36,7 +36,7 @@ class SaveExpenseRequest extends BaseFormRequest {
             'task_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('tasks')],
             'attendance_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('attendances')],
             'vendor' => ['nullable', 'string', 'max:160'],
-            'description' => ['required', 'string', 'max:500'],
+            'description' => ['required', 'string', 'max:255'],
             'payment_method' => ['required', Rule::enum(PaymentMethod::class)->only(PaymentMethod::allowed())],
             'currency' => ['nullable', \Illuminate\Validation\Rule::enum(\CommonToolkit\Enums\CurrencyCode::class)],
             'amount_net' => ['nullable', 'numeric', 'min:0', 'max:1000000'],

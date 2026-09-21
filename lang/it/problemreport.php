@@ -77,7 +77,7 @@ return [
     ],
     'empty' => [
         'title' => 'Nessuna segnalazione',
-        'message' => 'Non hai ancora segnalato alcun problema tecnico.',
+        'message' => 'Non ha ancora segnalato alcun problema tecnico.',
         'inbox_title' => 'Nessuna segnalazione',
         'inbox_message' => 'Al momento non ci sono segnalazioni tecniche.',
     ],

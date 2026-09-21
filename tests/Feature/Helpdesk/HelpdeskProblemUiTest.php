@@ -272,4 +272,11 @@ final class HelpdeskProblemUiTest extends TestCase {
             ->post(route('servicedesk.problems.transition', $foreign->sqid), ['status' => 'analyzing'])
             ->assertNotFound();
     }
+
+    /** UI-Fuzz 2026-09-21: Validierung erlaubte 255 Zeichen, problems.title fasst 200 (HTTP 500). */
+    public function test_title_longer_than_the_column_is_a_validation_error(): void {
+        $this->actingAs($this->manager)
+            ->post(route('servicedesk.problems.store'), ['title' => str_repeat('P', 201)])
+            ->assertSessionHasErrors('title');
+    }
 }

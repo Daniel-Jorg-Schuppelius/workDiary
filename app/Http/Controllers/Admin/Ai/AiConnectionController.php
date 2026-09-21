@@ -20,6 +20,7 @@ use App\Services\Ai\{AiCapabilityRegistry, AiConnectionTester};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -60,7 +61,8 @@ class AiConnectionController extends Controller {
         Gate::authorize('create', AiProviderConnection::class);
 
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:120'],
+            // Unique-Index aipc_org_name_uq — ohne Regel endete ein doppelter Name in 500.
+            'name' => ['required', 'string', 'max:120', Rule::unique('ai_provider_connections', 'name')->where('organization_id', $this->currentOrganizationId())],
             'family' => ['required', 'string', 'in:' . implode(',', array_column(AiFamily::cases(), 'value'))],
             // Nur anlegbare Typen (Audit 2026-08: google_translate hat keinen
             // Adapter und crashte sonst erst beim ersten Prüflauf).
@@ -130,7 +132,7 @@ class AiConnectionController extends Controller {
         Gate::authorize('update', $connection);
 
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:120'],
+            'name' => ['required', 'string', 'max:120', Rule::unique('ai_provider_connections', 'name')->where('organization_id', $this->currentOrganizationId())->ignore($connection->getKey())],
             'base_url' => ['nullable', 'string', 'max:500', 'url'],
             'model' => ['nullable', 'string', 'max:120'],
         ]);

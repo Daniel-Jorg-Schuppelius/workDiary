@@ -15,5 +15,5 @@ stato attivo per il software attualmente utilizzato. La panoramica mostra il
 numero di installazioni per software, è ricercabile per nome e produttore,
 filtrabile per tipo e ordinabile; creazione e modifica avvengono in una
 finestra di dialogo. Un software con installazioni ancora assegnate non può
-essere eliminato: rimuovi prima le assegnazioni. Questo modulo è
+essere eliminato: rimuova prima le assegnazioni. Questo modulo è
 indipendente dalla rilevazione software nell'ISMS.

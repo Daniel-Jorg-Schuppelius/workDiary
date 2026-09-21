@@ -29,7 +29,7 @@ class SyncCommandController extends Controller {
             'commands.*.client_uuid' => ['required', 'uuid'],
             'commands.*.type' => ['required', 'string', Rule::in(SyncCommandService::TYPES)],
             'commands.*.payload' => ['nullable', 'array'],
-            'commands.*.captured_at' => ['nullable', 'date'],
+            'commands.*.captured_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
         ]);
 
         $user = $request->user();

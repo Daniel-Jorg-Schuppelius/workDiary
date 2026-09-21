@@ -10,7 +10,7 @@ related:
     - invoices.manage
 ---
 
-Hier löst du Synchronisationskonflikte mit Lexoffice. Ein Konflikt
+Hier lösen Sie Synchronisationskonflikte mit Lexoffice. Ein Konflikt
 entsteht, wenn ein lokaler Datensatz (WorkDiary) und der zugehörige
 Datensatz in Lexoffice in einem oder mehreren Feldern auseinander­
 laufen und die Synchronisation eine manuelle Prüfung verlangt.
@@ -32,6 +32,6 @@ Lösungswege je Konflikt:
   unterschiedlichen Daten); er wird als erledigt markiert.
 
 Risiken: „Lokal übernehmen" und „Extern übernehmen" überschreiben
-Werte. Prüfe die gegenübergestellten Daten genau, bevor du
-entscheidest. Beachte, dass bei Rechnungen die Faktura-Hoheit beim
+Werte. Prüfen Sie die gegenübergestellten Daten genau, bevor Sie
+entscheiden. Beachten Sie, dass bei Rechnungen die Faktura-Hoheit beim
 externen Programm liegt – WorkDiary liefert dorthin zu.

@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Disposal\{SaveDataMediaTreatmentRequest, SaveDisposalItemRequest};
 use App\Models\Disposal\{DataMediaTreatment, DisposalItem, DisposalJob};
 use App\Services\Disposal\DisposalJobService;
+use App\Support\ErrorText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Throwable;
@@ -36,7 +37,7 @@ class DisposalItemController extends Controller {
         try {
             $this->service->addItem($disposalJob, $actor, $request->validated());
         } catch (Throwable $exception) {
-            return back()->withErrors(['items' => $exception->getMessage()]);
+            return back()->withErrors(['items' => ErrorText::for($exception)]);
         }
 
         return redirect()->route('disposal.show', $disposalJob)
@@ -52,7 +53,7 @@ class DisposalItemController extends Controller {
         try {
             $this->service->updateItem($disposalItem, $actor, $request->validated());
         } catch (Throwable $exception) {
-            return back()->withErrors(['items' => $exception->getMessage()]);
+            return back()->withErrors(['items' => ErrorText::for($exception)]);
         }
 
         return redirect()->route('disposal.show', $job)
@@ -68,7 +69,7 @@ class DisposalItemController extends Controller {
         try {
             $this->service->removeItem($disposalItem, $actor);
         } catch (Throwable $exception) {
-            return back()->withErrors(['items' => $exception->getMessage()]);
+            return back()->withErrors(['items' => ErrorText::for($exception)]);
         }
 
         return redirect()->route('disposal.show', $job)
@@ -84,7 +85,7 @@ class DisposalItemController extends Controller {
         try {
             $this->service->addTreatment($disposalItem, $actor, $request->validated());
         } catch (Throwable $exception) {
-            return back()->withErrors(['treatments' => $exception->getMessage()]);
+            return back()->withErrors(['treatments' => ErrorText::for($exception)]);
         }
 
         return redirect()->route('disposal.show', $job)
@@ -101,7 +102,7 @@ class DisposalItemController extends Controller {
         try {
             $this->service->removeTreatment($dataMediaTreatment, $actor);
         } catch (Throwable $exception) {
-            return back()->withErrors(['treatments' => $exception->getMessage()]);
+            return back()->withErrors(['treatments' => ErrorText::for($exception)]);
         }
 
         return redirect()->route('disposal.show', $job)

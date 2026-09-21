@@ -8,7 +8,7 @@ related:
     - auth.login
 ---
 
-El asistente de instalación te guía paso a paso por la configuración
+El asistente de instalación le guía paso a paso por la configuración
 inicial de WorkDiary; cada paso guarda sus valores de inmediato, por lo
 que puede repetirse sin riesgo tras una interrupción. Los pasos:
 **requisitos** del servidor, **aplicación** (nombre, URL, idioma, zona

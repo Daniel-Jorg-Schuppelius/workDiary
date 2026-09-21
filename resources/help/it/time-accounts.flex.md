@@ -11,7 +11,7 @@ related:
 
 Il conto ore confronta tempo dovuto, tempo effettivo computabile e assenze;
 l'approvazione mensile chiude un periodo verificato a ulteriori modifiche ed
-esportazioni. Prima dell'invio controlla registrazioni aperte, pause, ferie,
+esportazioni. Prima dell'invio controlli registrazioni aperte, pause, ferie,
 malattia e correzioni approvate; il capo team o la contabilità verifica gli
 scostamenti e approva il mese o lo respinge con motivazione. Dopo
 l'approvazione o l'esportazione le modifiche dirette sono limitate: gli

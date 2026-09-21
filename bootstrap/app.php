@@ -134,6 +134,8 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\EnforcePlatformAdminIpAllowlist::class,
             // Listen-URL samt Filtern für redirect()->toList() merken.
             RememberListUrl::class,
+            // Dialog-fetch: Redirect → {redirect}/422, damit der Flash nicht verpufft.
+            \App\Http\Middleware\DialogRedirectAsJson::class,
         ]);
 
         // Auch der API-Stack (Sanctum-Tokens) MUSS die Organisation an den
@@ -340,6 +342,29 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             return null;
+        });
+
+        // Werte, die die Validierung passieren, aber nicht in die Spalte passen
+        // (zu lang, Zahlenüberlauf, Datum außerhalb TIMESTAMP 1970–2038):
+        // Meldung am Feld statt 500 (UI-Fuzz 2026-09-21). Gemeldet wird weiter —
+        // der Befund zeigt eine fehlende Validierungsgrenze.
+        $exceptions->render(function (QueryException $e, Request $request) {
+            $state = (string) ($e->errorInfo[0] ?? '');
+            if (! in_array($state, ['22001', '22003', '22007', '22008'], true)) {
+                return null;
+            }
+            $column = preg_match('/for column [`\']?(?:\w+[`\']?\.[`\']?)*(\w+)[`\']?/', $e->getMessage(), $m) === 1 ? $m[1] : 'value';
+            $message = match ($state) {
+                '22001' => (string) __('Der Text ist zu lang für dieses Feld.'),
+                '22003' => (string) __('Der Wert liegt außerhalb des zulässigen Bereichs.'),
+                default => (string) __('Das Datum liegt außerhalb des zulässigen Bereichs.'),
+            };
+
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $message, 'errors' => [$column => [$message]]], 422);
+            }
+
+            return back()->withInput()->withErrors([$column => $message])->with('error', $message);
         });
 
         // Datenbank nicht erreichbar (Connection refused / timeout / Auth-Fehler):

@@ -43,10 +43,8 @@ class PeppolAccessPointServiceProvider extends PluginServiceProviderBase {
             ->needs(ValidatorInterface::class)
             ->give(static fn (): BisValidator => new BisValidator);
 
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                PeppolReceiveCommand::class,
-            ]);
-        }
+        $this->commands([
+            PeppolReceiveCommand::class,
+        ]);
     }
 }

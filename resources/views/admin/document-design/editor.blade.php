@@ -221,7 +221,7 @@
                         {{ __('document_design.editor.letterhead_blocks_note') }}
                         <span x-text="letterheadBlockLabels().join(', ')"></span>
                     </p>
-                    <iframe :src="previewSrc()" title="{{ __('document_design.editor.pdf_preview_heading') }}"
+                    <iframe data-design-preview title="{{ __('document_design.editor.pdf_preview_heading') }}"
                             class="h-160 w-full rounded border border-base-300 bg-white"></iframe>
                 </x-card>
             </x-card>

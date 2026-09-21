@@ -15,6 +15,7 @@ use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesCurrentOrganization
 use App\Http\Requests\SaveArticleRequest;
 use App\Models\{Article, ArticleOptionDefinition, ArticleOptionValue, ArticleVariant};
 use App\Services\Article\{ArticleService, VariantResolver};
+use App\Support\ErrorText;
 use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -260,7 +261,7 @@ class ArticleController extends Controller {
             );
             $this->articles->assignVariantSku($variant);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('article.flash.variant_added'));

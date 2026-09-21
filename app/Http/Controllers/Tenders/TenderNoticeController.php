@@ -17,6 +17,7 @@ use App\Models\Applications\ApplicationOpportunity;
 use App\Models\Tenders\{TenderFilterProfile, TenderNoticeMatch};
 use App\Models\User;
 use App\Services\Tenders\TenderNoticeConverter;
+use App\Support\ErrorText;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -136,7 +137,7 @@ class TenderNoticeController extends Controller {
         try {
             $opportunity = $converter->convert($match, $this->actor());
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('tenders.show', $opportunity)

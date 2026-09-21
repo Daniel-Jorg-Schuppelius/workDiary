@@ -26,7 +26,7 @@
         <div data-global-search-status class="px-4 py-2 text-xs text-muted border-b border-base-200 hidden"></div>
         <div data-global-search-results class="max-h-[60vh] overflow-y-auto py-2">
             <div data-global-search-hint class="px-4 py-8 text-center text-sm text-muted">
-                {{ __('Tippe mindestens 2 Zeichen, um Ergebnisse zu sehen.') }}
+                {{ __('Geben Sie mindestens 2 Zeichen ein, um Ergebnisse zu sehen.') }}
             </div>
         </div>
         <div class="border-t border-base-300 px-4 py-2 text-[0.65rem] uppercase tracking-wider text-muted flex items-center justify-between">

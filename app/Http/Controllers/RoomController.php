@@ -32,7 +32,7 @@ class RoomController extends Controller {
 
         $view = $request->query('view', 'list');
         // Guard statt Roh-Parse (Vollscan 2026-08-23, B10).
-        $day = Carbon::instance($this->resolveDateParam($request, 'day', static fn (): \Carbon\CarbonImmutable => \Carbon\CarbonImmutable::today()));
+        $day = Carbon::instance($this->resolveDateParam($request, 'day', static fn (): \Carbon\CarbonImmutable => \App\Support\Tz::now()->startOfDay()));
 
         ['search' => $search, 'sort' => $sort, 'dir' => $dir]
             = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'name');

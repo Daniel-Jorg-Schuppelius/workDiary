@@ -69,7 +69,7 @@
                                         <span class="text-error">{{ __('(verwaist)') }}</span>
                                     @endif
                                 </td>
-                                <td class="text-xs text-muted">{{ optional($ref->synced_at)->format('d.m.Y H:i') }}</td>
+                                <td class="text-xs text-muted">{{ $ref->synced_at?->orgTz()->format('d.m.Y H:i') }}</td>
                                 <td class="text-right">
                                     <form method="POST" action="{{ route('admin.integration.mappings.destroy', $ref) }}"
                                           data-confirm-dialog data-confirm-message="{{ __('Diese Verknüpfung wirklich lösen?') }}">

@@ -15,6 +15,7 @@ use App\Plugins\Msgraph\Api\{MsgraphMailClient, MsgraphMailOAuth};
 use App\Plugins\Msgraph\MsgraphConfig;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
+use App\Support\ErrorText;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Throwable;
@@ -142,7 +143,7 @@ class MsgraphMailController extends ConnectionOAuthController {
         try {
             (new MsgraphMailClient($connection))->sendMail($message, (bool) $connection->save_to_sent_items);
         } catch (Throwable $e) {
-            return back()->with('error', __('msgraph_mail.flash.test_failed', ['error' => $e->getMessage()]));
+            return back()->with('error', __('msgraph_mail.flash.test_failed', ['error' => ErrorText::for($e)]));
         }
 
         $connection->audit('msgraph_mail.test_sent', ['by_user_id' => (int) $admin->id, 'to' => $to]);

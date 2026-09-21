@@ -20,7 +20,7 @@
             @foreach ($logs as $log)
                 <li class="rounded-lg border border-base-300/60 p-2">
                     <div class="flex items-center justify-between text-xs text-muted">
-                        <span>{{ $log->created_at?->format('d.m.Y H:i') }}</span>
+                        <span>{{ $log->created_at?->orgTz()->format('d.m.Y H:i') }}</span>
                         <span>{{ $log->event }}</span>
                     </div>
                     <pre class="mt-1 max-h-24 overflow-auto text-xs">{{ json_encode($log->getAttribute('changes'), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>

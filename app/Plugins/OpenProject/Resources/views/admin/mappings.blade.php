@@ -37,16 +37,13 @@
                 {{ __('Gemerkte Zuordnungen zwischen OpenProject (Projekt, Work Package, Benutzer) und workDiary. Hier lassen sie sich auf ein anderes Ziel umlegen oder entfernen.') }}
             </p>
 
-            @if (session('status'))
-                <div class="alert alert-success mb-3 text-sm">{{ session('status') }}</div>
-            @endif
             @if ($errors->any())
                 <div class="alert alert-error mb-3 text-sm">{{ $errors->first() }}</div>
             @endif
 
             @if ($mappings->isEmpty())
                 <p class="rounded-box border border-base-300 p-6 text-center text-sm text-muted">
-                    {{ __('Noch keine Zuordnungen. Starte einen Struktur-Abgleich.') }}
+                    {{ __('Noch keine Zuordnungen. Starten Sie einen Struktur-Abgleich.') }}
                 </p>
             @else
                 <div class="overflow-x-auto">

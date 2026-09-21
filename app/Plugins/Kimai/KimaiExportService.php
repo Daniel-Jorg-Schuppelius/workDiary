@@ -16,6 +16,7 @@ use App\Models\{ExternalReference, Organization, Project, TimeEntry};
 use App\Plugins\Kimai\Exceptions\KimaiApiException;
 use App\Plugins\Kimai\Sources\KimaiApiClient;
 use App\Plugins\Support\AbstractTimeEntryPushService;
+use App\Support\Tz;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -49,6 +50,7 @@ class KimaiExportService extends AbstractTimeEntryPushService {
         $this->client = new KimaiApiClient(
             is_string($config['api_token'] ?? null) ? $config['api_token'] : null,
             is_string($config['base_url'] ?? null) ? $config['base_url'] : null,
+            Tz::ofOrganization($organization),
         );
         if (! $this->client->isConfigured()) {
             return (string) __('Kimai-API ist nicht konfiguriert (Basis-URL und API-Token in den Plugin-Einstellungen hinterlegen).');
@@ -89,8 +91,8 @@ class KimaiExportService extends AbstractTimeEntryPushService {
         assert($this->client instanceof KimaiApiClient && $this->activityId !== null);
 
         $created = $this->client->createTimesheet([
-            'begin' => $entry->started_at?->format('Y-m-d\TH:i:s'),
-            'end' => $entry->ended_at?->format('Y-m-d\TH:i:s'),
+            'begin' => $entry->started_at?->copy()->setTimezone(Tz::ofOrganization($organization))->format('Y-m-d\TH:i:s'),
+            'end' => $entry->ended_at?->copy()->setTimezone(Tz::ofOrganization($organization))->format('Y-m-d\TH:i:s'),
             'project' => $this->projectMap[(int) $entry->project_id],
             'activity' => $this->activityId,
             'description' => (string) ($entry->description ?? ''),

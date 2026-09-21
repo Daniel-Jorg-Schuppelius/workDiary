@@ -40,7 +40,7 @@ class LearningAccessLinkMail extends Mailable {
     }
 
     public function content(): Content {
-        return new Content(view: 'mail.learning-access-link', with: [
+        return new Content(markdown: 'mail.learning-access-link', with: [
             'participant' => $this->participant,
             'courseTitle' => $this->courseTitle,
             'accessUrl' => $this->accessUrl,

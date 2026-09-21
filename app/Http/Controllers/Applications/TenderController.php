@@ -18,7 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Applications\{ApplicationOpportunity, ApplicationRequirement, TenderCompetitorBid};
 use App\Models\{Customer, Project, User};
 use App\Services\Applications\{TenderService, TenderSubmissionPreflight};
-use App\Support\SortableQuery;
+use App\Support\{ErrorText, SortableQuery, Tz};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -193,7 +193,7 @@ class TenderController extends Controller {
         try {
             $this->tenders->decideGo($opportunity, $data['decision'], $data['note'] ?? null, $this->actor());
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Go-/No-go-Entscheidung dokumentiert.'));
@@ -229,7 +229,7 @@ class TenderController extends Controller {
         try {
             $submission = $this->tenders->submit($opportunity, $data['channel'], $data['note'] ?? null, $this->actor());
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Einreichung V:version dokumentiert (SHA-256 :hash…).', [
@@ -296,7 +296,7 @@ class TenderController extends Controller {
         try {
             $this->tenders->decide($opportunity, $data['decision'], $data['reason'] ?? null, $this->actor());
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Entscheidung dokumentiert.'));
@@ -317,7 +317,7 @@ class TenderController extends Controller {
         try {
             $project = $this->tenders->transferToProject($opportunity, $existing, $this->actor());
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('projects.show', $project)
@@ -340,7 +340,7 @@ class TenderController extends Controller {
             )))]);
         }
 
-        return $request->validate([
+        $data = $request->validate([
             'title' => ['required', 'string', 'max:200'],
             'kind' => ['required', 'in:' . implode(',', ApplicationOpportunity::KINDS)],
             'source' => ['nullable', 'string', 'max:200'],
@@ -370,9 +370,15 @@ class TenderController extends Controller {
             'external_reference' => ['nullable', 'string', 'max:120'],
             'notice_url' => ['nullable', 'url', 'max:2000'],
             'participation_deadline' => ['nullable', 'date'],
-            'opening_at' => ['nullable', 'date'],
+            'opening_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
             'binding_until' => ['nullable', 'date'],
         ]);
+        // Submissionstermin ist Ortszeit, gespeichert wird UTC (MVP-823).
+        if (! empty($data['opening_at'])) {
+            $data['opening_at'] = Tz::parse((string) $data['opening_at'])->format('Y-m-d H:i:s');
+        }
+
+        return $data;
     }
 
     private function actor(): User {

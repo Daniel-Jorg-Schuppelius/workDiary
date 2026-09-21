@@ -161,13 +161,13 @@
         <x-card :title="__('Prüfung und Freigabe')">
             <x-detail-grid>
                 <x-detail-grid.row :label="__('Status')">{{ $incoming->statusLabel() }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Empfangen')">{{ $incoming->received_at->isoFormat('L LT') }} · {{ $incoming->source }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Empfangen')">{{ $incoming->received_at->orgTz()->isoFormat('L LT') }} · {{ $incoming->source }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('SHA-256')"><span class="font-mono text-xs">{{ $incoming->sha256 }}</span></x-detail-grid.row>
                 @if ($incoming->decision_note)
                     <x-detail-grid.row :label="__('Anmerkung')">{{ $incoming->decision_note }}</x-detail-grid.row>
                 @endif
                 @if ($incoming->transferred_at)
-                    <x-detail-grid.row :label="__('Buchhaltungs-Übergabe')">{{ $incoming->transferred_at->isoFormat('L LT') }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Buchhaltungs-Übergabe')">{{ $incoming->transferred_at->orgTz()->isoFormat('L LT') }}</x-detail-grid.row>
                 @endif
             </x-detail-grid>
             <form method="POST" action="{{ route('finance.incoming-invoices.decide', $incoming) }}" class="mt-2 flex flex-wrap items-end gap-2">

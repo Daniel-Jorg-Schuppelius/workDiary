@@ -43,7 +43,7 @@
                         <td>{{ $source->supplier?->name }}</td>
                         <td><span class="badge badge-sm badge-ghost">{{ $source->format->label() }}</span></td>
                         <td class="text-right tabular-nums">{{ $source->items_count }}</td>
-                        <td class="text-sm opacity-70">{{ optional($source->last_imported_at)->format('d.m.Y H:i') ?: '—' }}</td>
+                        <td class="text-sm opacity-70">{{ $source->last_imported_at?->orgTz()->format('d.m.Y H:i') ?: '—' }}</td>
                         <td class="text-right">
                             <div class="flex justify-end gap-1">
                                 <x-icon-btn icon="edit" size="xs" data-entry-modal-trigger

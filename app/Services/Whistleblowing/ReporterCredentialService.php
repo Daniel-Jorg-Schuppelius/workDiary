@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Whistleblowing;
 
-use RuntimeException;
+use App\Exceptions\ModuleKeyMissingException;
 use SensitiveParameter;
 
 /**
@@ -100,7 +100,7 @@ class ReporterCredentialService {
 
         $moduleKey = (string) config('whistleblowing.key');
         if ($moduleKey === '') {
-            throw new RuntimeException('Weder WHISTLEBLOWING_LOOKUP_KEY noch WHISTLEBLOWING_KEY sind gesetzt.');
+            throw new ModuleKeyMissingException('Weder WHISTLEBLOWING_LOOKUP_KEY noch WHISTLEBLOWING_KEY sind gesetzt.');
         }
 
         return hash_hmac('sha256', 'lookup', $moduleKey);

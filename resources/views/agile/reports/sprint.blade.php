@@ -117,7 +117,7 @@
                     <x-detail-grid.row :label="__('Erledigte Punkte')">{{ $sprint->completion_snapshot['done_points'] ?? 0 }}</x-detail-grid.row>
                     <x-detail-grid.row :label="__('Offen übergeben')">{{ __(':items Elemente, :points Punkte', ['items' => $sprint->completion_snapshot['open_items'] ?? 0, 'points' => $sprint->completion_snapshot['open_points'] ?? 0]) }}</x-detail-grid.row>
                     <x-detail-grid.row :label="__('Scope-Zugänge nach Start')">{{ $sprint->completion_snapshot['scope_added'] ?? 0 }}</x-detail-grid.row>
-                    <x-detail-grid.row :label="__('Abgeschlossen am')">{{ $sprint->completed_at?->isoFormat('L LT') ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Abgeschlossen am')">{{ $sprint->completed_at?->orgTz()->isoFormat('L LT') ?? '—' }}</x-detail-grid.row>
                 </x-detail-grid>
             </x-card>
         @endif

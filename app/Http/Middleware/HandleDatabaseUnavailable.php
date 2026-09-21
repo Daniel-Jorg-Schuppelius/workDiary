@@ -11,7 +11,7 @@
 namespace App\Http\Middleware;
 
 use App\Legacy\LegacyBridge;
-use App\Support\DatabaseHealth;
+use App\Support\{DatabaseHealth, ErrorText};
 use Closure;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -63,7 +63,7 @@ class HandleDatabaseUnavailable {
                     : $defaultConnection,
                 'path' => $request->path(),
                 'exception' => $e::class,
-                'message' => $e->getMessage(),
+                'message' => ErrorText::for($e),
             ]);
 
             return $this->renderUnavailable($request, $e);

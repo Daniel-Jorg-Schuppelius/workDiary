@@ -1,5 +1,5 @@
 ---
-title: "Dein Tag in WorkDiary: Teamleitung"
+title: "Ihr Tag in WorkDiary: Teamleitung"
 topic: roles.teamleitung
 version: 1
 audience:
@@ -11,8 +11,8 @@ related:
     - glossary.core
 ---
 
-Als Teamleitung führst du Personalplanung, Zeitfreigaben und die operative
-Auftragssteuerung deines Bereichs.
+Als Teamleitung führen Sie Personalplanung, Zeitfreigaben und die operative
+Auftragssteuerung Ihres Bereichs.
 
 Typischer Ablauf:
 
@@ -27,7 +27,7 @@ Typischer Ablauf:
 5. **Stundenzettel sperren/entsperren** (Monatsabschluss vorbereiten) und
    **Auswertungen** für den eigenen Bereich lesen.
 
-Was du darfst:
+Was Sie dürfen:
 
 - **Projekte** anlegen, bearbeiten und archivieren; Aufgaben und
   Meilensteine pflegen.
@@ -36,5 +36,5 @@ Was du darfst:
 - **Zeitkonten (Flex)** des Teams einsehen und verwalten.
 - **Benachrichtigungsregeln** mitgestalten (z. B. Fristen, Eskalationen).
 
-Nicht in deinem Profil: Rechnungen, Kundenstammdaten-Pflege,
+Nicht in Ihrem Profil: Rechnungen, Kundenstammdaten-Pflege,
 Plattform-Administration.

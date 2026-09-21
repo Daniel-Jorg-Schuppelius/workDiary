@@ -43,13 +43,13 @@ final class QualityHostingPriceListReader {
     /** Stückpreise (je Monat/Intervall) mit vier Nachkommastellen (B19). */
     private const UNIT_SCALE = 4;
 
-    public function read(string $file): PriceList {
-        $name = basename($file);
+    public function read(string $file, ?string $displayName = null): PriceList {
+        $name = $displayName ?? basename($file);
         if (! File::isReadable($file, false)) {
             throw new RuntimeException((string) __('resale_import.pricelist.unreadable', ['file' => $name]));
         }
 
-        $document = self::openXlsx($file, self::XLSX_MAX_ROWS, 'resale_import.pricelist.unreadable_reason');
+        $document = self::openXlsx($file, self::XLSX_MAX_ROWS, 'resale_import.pricelist.unreadable_reason', $name);
 
         $sheet = null;
         foreach ($document->getSheets() as $candidate) {

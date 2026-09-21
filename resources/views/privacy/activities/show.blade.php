@@ -20,7 +20,6 @@
                         show-label>{{ __('Zurück') }}</x-icon-btn>
         </x-slot:actions>
 
-        @if (session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif
 
         <x-card>
             <div class="space-y-1 text-sm">

@@ -14,7 +14,7 @@ use App\Enums\Inventory\OwnershipType;
 use App\Enums\User\Permission as P;
 use App\Models\{ArticleVariant, Customer, StockLevelSetting, StockMovement, StockReservation, Warehouse, WarehouseBin};
 use App\Services\Inventory\{CustomerStockAllocationService, InventoryLedger, ReservationService, StockLevelService, ValuationService};
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -218,7 +218,7 @@ class StockController extends Controller {
                 default => throw new RuntimeException('Unbekannte Bewegungsart.'),
             };
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('inventory.stock', ['warehouse' => $warehouse->sqid])

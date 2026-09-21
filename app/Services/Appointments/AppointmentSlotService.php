@@ -14,6 +14,7 @@ namespace App\Services\Appointments;
 
 use App\Models\{BookableService, User};
 use App\Services\Dispatch\GapFillSuggester;
+use App\Support\Tz;
 use Carbon\CarbonImmutable;
 
 /**
@@ -62,12 +63,14 @@ class AppointmentSlotService {
             });
         }
 
+        // Schicht-/Verfügbarkeitszeiten sind Ortszeit der Organisation (MVP-823).
+        $tz = $service->organization !== null ? Tz::ofOrganization($service->organization) : Tz::current();
         $windows = [];
         foreach ($users as $user) {
             // freeSlots liefert Uhrzeiten als H:i-Strings des Tages.
             foreach ($this->gaps->freeSlots($user, $date) as $slot) {
-                $start = $date->setTimeFromTimeString((string) $slot['start']);
-                $end = $date->setTimeFromTimeString((string) $slot['end']);
+                $start = CarbonImmutable::parse($date->toDateString() . ' ' . $slot['start'], $tz);
+                $end = CarbonImmutable::parse($date->toDateString() . ' ' . $slot['end'], $tz);
                 if ($end->lessThanOrEqualTo($start)) {
                     continue;
                 }

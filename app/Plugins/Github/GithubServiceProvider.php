@@ -27,11 +27,9 @@ class GithubServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function registerPlugin(): void {
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                Console\GithubSyncCommand::class,
-            ]);
-        }
+        $this->commands([
+            Console\GithubSyncCommand::class,
+        ]);
     }
 
     protected function bootPlugin(): void {

@@ -28,7 +28,7 @@ puede destruirse (crypto-shredding) y el contenido queda
 **Conservación, borrado y retención legal:** En **Conservación y borrado**, el
 concepto de borrado propone datos vencidos; nada se elimina ni anonimiza sin una
 confirmación en dos pasos. Si hay un procedimiento en curso de un interesado o
-judicial, estableces en **Retención legal** un bloqueo sobre la persona o el
+judicial, establece en **Retención legal** un bloqueo sobre la persona o el
 cliente, con motivo obligatorio y referencia de expediente opcional. Mientras
 esté activo no se generan propuestas de borrado, se rechazan los borrados
 confirmados, la anonimización y la eliminación de cuentas o clientes, y se

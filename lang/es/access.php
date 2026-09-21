@@ -39,8 +39,8 @@ return [
         'permissions' => 'Permisos disponibles',
     ],
     'hint' => [
-        'hub' => 'Gestiona roles, grupos de usuarios y asignaciones de miembros para la organización activa. Los roles a nivel de plataforma se gestionan además de forma global.',
-        'permissions_readonly' => 'Los permisos los define el sistema y no se pueden crear en tiempo de ejecución. Para concederlos por rol, cambia a la edición de rol.',
+        'hub' => 'Gestione roles, grupos de usuarios y asignaciones de miembros para la organización activa. Los roles a nivel de plataforma se gestionan además de forma global.',
+        'permissions_readonly' => 'Los permisos los define el sistema y no se pueden crear en tiempo de ejecución. Para concederlos por rol, cambie a la edición de rol.',
         'global_roles' => 'Los roles globales se aplican a todas las organizaciones y los gestiona exclusivamente el sistema.',
         'effective_permissions' => 'Unión de permisos directos, permisos de rol y permisos de grupo.',
     ],
@@ -85,7 +85,7 @@ return [
     ],
     'help' => [
         'role_name' => 'Solo letras minúsculas, dígitos, punto, guion y guion bajo. No se puede cambiar tras la creación.',
-        'role_permissions' => 'Selecciona los permisos que debe conceder este rol.',
+        'role_permissions' => 'Seleccione los permisos que debe conceder este rol.',
         'group_roles' => 'Los miembros de este grupo también obtienen todos los permisos de los roles seleccionados.',
         'group_permissions' => 'Los permisos directos los heredan los miembros además de los permisos basados en roles.',
     ],

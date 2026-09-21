@@ -14,7 +14,7 @@
     'icon' => 'database_off',
     'tone' => 'warning',
     'title' => __('Datenbank vorübergehend nicht erreichbar'),
-    'message' => __('Wir können die Datenbank gerade nicht erreichen. Bitte versuche es in wenigen Augenblicken erneut. Falls das Problem bestehen bleibt, wende dich an deine Administration.'),
+    'message' => __('Wir können die Datenbank gerade nicht erreichen. Bitte versuchen Sie es in wenigen Augenblicken erneut. Falls das Problem bestehen bleibt, wenden Sie sich an Ihre Administration.'),
     'actions' => [
         ['label' => __('Erneut versuchen'), 'reload' => true, 'icon' => 'refresh'],
     ],

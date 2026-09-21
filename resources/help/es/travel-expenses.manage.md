@@ -44,7 +44,7 @@ nada para la contabilidad.
 
 ### Corrección con contracomprobante
 
-Si algo no cuadra en un gasto ya transferido, lo corriges en el diálogo del
+Si algo no cuadra en un gasto ya transferido, lo corrige en el diálogo del
 comprobante **con un contracomprobante**, indicando obligatoriamente el motivo.
 Se transfiere una nota de abono de compra por el mismo importe que anula el
 comprobante original en contabilidad. Al mismo tiempo se crea un nuevo gasto como
@@ -57,14 +57,14 @@ solo debe reembolsarse la diferencia.
 
 ## Escanear el comprobante en vez de teclearlo
 
-En lugar de introducir importe, fecha y comercio a mano, puedes **fotografiar
+En lugar de introducir importe, fecha y comercio a mano, puede **fotografiar
 el comprobante o subirlo como PDF**. El reconocimiento lee los campos
 habituales y rellena el formulario.
 
-El resultado es una **propuesta**, no un asiento terminado: comprueba importe,
+El resultado es una **propuesta**, no un asiento terminado: compruebe importe,
 fecha, tipo impositivo y comercio antes de guardar. Las fotos mal iluminadas,
 el papel térmico y los comprobantes manuscritos son las fuentes más frecuentes
 de lecturas erróneas.
 
 El comprobante original queda adjunto sin cambios: el reconocimiento no lo
-sustituye, solo te ahorra teclear.
+sustituye, solo le ahorra teclear.

@@ -45,4 +45,41 @@ class BladeCompilationTest extends TestCase {
 
         $this->assertSame([], $broken, "Blade-Kompilate mit PHP-Syntaxfehlern:\n" . implode("\n", $broken));
     }
+
+    /**
+     * Stille Variante (UI-Fuzz 2026-09-21): Eine Blade-Direktive im Attribut
+     * eines Komponenten-Tags kompiliert ohne PHP-Fehler, landet aber wörtlich
+     * im HTML — `@if … @endif` lässt das ganze <x-input-field> roh stehen
+     * (Feld fehlt), `x-data="reveal(@js(…))"` legt die Alpine-Komponente still.
+     * Statt Direktiven gebundene Attribute nutzen (`:readonly`, `{{ Js::from() }}`).
+     */
+    public function test_component_tags_leave_no_literal_blade_in_output(): void {
+        $compiler = $this->app['blade.compiler'];
+        $leftovers = [];
+
+        foreach ([resource_path('views'), app_path('Plugins')] as $root) {
+            foreach (File::allFiles($root) as $file) {
+                if (! str_ends_with($file->getFilename(), '.blade.php')) {
+                    continue;
+                }
+
+                $compiled = $compiler->compileString(File::get($file->getPathname()));
+
+                foreach (token_get_all($compiled) as $token) {
+                    if (! is_array($token)) {
+                        continue;
+                    }
+                    [$id, $text] = $token;
+                    if ($id === T_INLINE_HTML && preg_match('/<x-[a-z][\w.:-]*/i', $text, $m) === 1) {
+                        $leftovers[] = $file->getRelativePathname() . ' — rohes ' . $m[0];
+                    }
+                    if ($id === T_CONSTANT_ENCAPSED_STRING && preg_match('/@(js|json)\s*\(/', $text, $m) === 1) {
+                        $leftovers[] = $file->getRelativePathname() . ' — wörtliches ' . $m[0];
+                    }
+                }
+            }
+        }
+
+        $this->assertSame([], $leftovers, "Blade-Direktiven im Komponenten-Tag wurden nicht kompiliert:\n" . implode("\n", $leftovers));
+    }
 }

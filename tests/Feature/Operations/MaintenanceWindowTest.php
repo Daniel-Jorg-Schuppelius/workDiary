@@ -14,7 +14,7 @@ use App\Models\{MaintenanceWindow, User};
 use App\Services\Operations\MaintenanceWindowService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\{Artisan, Exceptions};
 use InvalidArgumentException;
 use Tests\TestCase;
 
@@ -142,9 +142,10 @@ class MaintenanceWindowTest extends TestCase {
     public function test_admin_can_plan_window_via_ui(): void {
         $this->actingAs($this->admin)->post(route('admin.maintenance-windows.store'), [
             'scope' => 'system',
-            'starts_at' => now()->addDay()->format('Y-m-d H:i:s'),
-            'ends_at' => now()->addDay()->addHours(2)->format('Y-m-d H:i:s'),
-            'announce_from' => now()->addHours(2)->format('Y-m-d H:i:s'),
+            // Formulareingaben sind Ortszeit.
+            'starts_at' => \App\Support\Tz::now()->addDay()->format('Y-m-d H:i:s'),
+            'ends_at' => \App\Support\Tz::now()->addDay()->addHours(2)->format('Y-m-d H:i:s'),
+            'announce_from' => \App\Support\Tz::now()->addHours(2)->format('Y-m-d H:i:s'),
             'message' => 'Release 1.4',
             'read_only' => '1',
         ])->assertRedirect(route('admin.maintenance-windows.index'));
@@ -158,5 +159,49 @@ class MaintenanceWindowTest extends TestCase {
 
         $regular = User::factory()->user()->create(['organization_id' => $this->admin->organization_id]);
         $this->actingAs($regular)->get(route('admin.maintenance-windows.index'))->assertForbidden();
+    }
+
+    /** MVP-823: die Eingabe ist Ortszeit, gespeichert wird UTC — vorher griff ein Fenster „22–23 Uhr“ erst um Mitternacht. */
+    public function test_planned_window_is_stored_in_utc_and_shown_in_local_time(): void {
+        config()->set('app.display_timezone', 'Europe/Berlin');
+
+        $this->actingAs($this->admin)->post(route('admin.maintenance-windows.store'), [
+            'scope' => 'system',
+            'starts_at' => '2030-07-10 22:00',
+            'ends_at' => '2030-07-10 23:00',
+        ])->assertRedirect(route('admin.maintenance-windows.index'));
+
+        $window = MaintenanceWindow::query()->firstOrFail();
+        $this->assertSame('2030-07-10 20:00:00', $window->getRawOriginal('starts_at'));
+        $this->actingAs($this->admin)->get(route('admin.maintenance-windows.index'))->assertOk()->assertSee('10.07.2030 22:00');
+
+        $this->travelTo(\Carbon\CarbonImmutable::parse('2030-07-10 20:30:00', 'UTC'));
+        $this->assertTrue($window->refresh()->isEffectiveNow());
+    }
+
+    /** UI-Fuzz 2026-09-21: 2099 passte in die date-Regel, aber nicht in die TIMESTAMP-Spalte (SQLSTATE 22007). */
+    public function test_dates_beyond_the_timestamp_range_are_field_errors(): void {
+        Exceptions::fake();
+
+        $this->actingAs($this->admin)->post(route('admin.maintenance-windows.store'), [
+            'scope' => 'system',
+            'starts_at' => '2099-12-31 22:00:00',
+            'ends_at' => '2099-12-31 23:00:00',
+        ])->assertSessionHasErrors(['starts_at', 'ends_at']);
+
+        $this->assertSame(0, MaintenanceWindow::query()->count());
+        Exceptions::assertNothingReported();
+    }
+
+    /** UI-Fuzz 2026-09-21: Org-Admins bekamen „System“ vorausgewählt — das Speichern endete in 403. */
+    public function test_org_admin_dialog_offers_only_the_own_organization(): void {
+        $orgAdmin = User::factory()->admin()->create(['organization_id' => $this->admin->organization_id]);
+
+        $this->actingAs($orgAdmin)->get(route('admin.maintenance-windows.create'))
+            ->assertOk()
+            ->assertDontSee('value="system"', false)
+            ->assertSee('value="organization"', false);
+        $this->actingAs($this->admin)->get(route('admin.maintenance-windows.create'))
+            ->assertSee('value="system"', false);
     }
 }

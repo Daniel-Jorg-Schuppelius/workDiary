@@ -19,12 +19,9 @@
                 <a href="{{ route('admin.toggl.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurück zum Import') }}</a>
             </div>
             <p class="mb-4 text-sm text-muted">
-                {{ __('Importiert die Workspaces des hinterlegten API-Tokens ohne Datei-Export. Stammdaten kommen aus der Track-API (v9), die Zeiteinträge aller Benutzer aus der Reports-API (v3). Je gefundenem Workspace legst du fest, was passieren soll.') }}
+                {{ __('Importiert die Workspaces des hinterlegten API-Tokens ohne Datei-Export. Stammdaten kommen aus der Track-API (v9), die Zeiteinträge aller Benutzer aus der Reports-API (v3). Je gefundenem Workspace legen Sie fest, was passieren soll.') }}
             </p>
 
-            @if (session('status'))
-                <div class="alert alert-success mb-3 text-sm">{{ session('status') }}</div>
-            @endif
             @if ($errors->any())
                 <div class="alert alert-error mb-3 text-sm">{{ $errors->first() }}</div>
             @endif

@@ -57,7 +57,7 @@
                     <td class="font-mono text-xs">{{ $advisory->document_id_ref ?? '—' }}</td>
                     <td class="text-center">{{ $advisory->vulnerabilities_count }}</td>
                     <td class="text-base-content/70">{{ optional($advisory->importedBy)->name ?? '—' }}</td>
-                    <td class="text-base-content/70">{{ $advisory->created_at?->format('d.m.Y H:i') ?? '—' }}</td>
+                    <td class="text-base-content/70">{{ $advisory->created_at?->orgTz()->format('d.m.Y H:i') ?? '—' }}</td>
                     <td class="font-mono text-xs" title="{{ $advisory->file_hash }}">{{ \Illuminate\Support\Str::limit($advisory->file_hash, 12, '…') }}</td>
                 </tr>
             @empty

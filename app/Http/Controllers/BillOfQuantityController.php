@@ -16,6 +16,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Models\{Article, BillOfQuantity, BoqItem, Material, Project};
 use App\Services\Gaeb\{BoqCostingService, BoqExportService, BoqImportConflictException, BoqProgressService, BoqWorkflowException, BoqWorkflowService, GaebImportService};
 use App\Services\SqidEncoder;
+use App\Support\ErrorText;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\Helper\FileSystem\File;
 use ERechnungToolkit\Enums\GaebFormat;
@@ -383,7 +384,7 @@ class BillOfQuantityController extends Controller {
         try {
             $assignments->assign($split, $catalog, $data['code'] ?? null);
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Zuordnung gespeichert.'));
@@ -405,7 +406,7 @@ class BillOfQuantityController extends Controller {
         try {
             $assignments->assign($boqItem, $catalog, $data['code'] ?? null);
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Zuordnung gespeichert.'));
@@ -445,7 +446,7 @@ class BillOfQuantityController extends Controller {
         try {
             $count = $assignments->assignMany($items, $catalog, $data['code'] ?? null);
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __(':count Positionen zugeordnet.', ['count' => $count]));
@@ -612,7 +613,7 @@ class BillOfQuantityController extends Controller {
                 $project,
             );
         } catch (\InvalidArgumentException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Kostenermittlung „:name" übernommen (:count Elemente).', [

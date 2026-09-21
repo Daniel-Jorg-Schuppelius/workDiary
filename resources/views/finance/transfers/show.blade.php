@@ -75,7 +75,7 @@
                     @if ($transfer->transferred_at !== null)
                         <div class="flex gap-2">
                             <dt class="text-muted">{{ __('finance.field.transferred_at') }}:</dt>
-                            <dd>{{ $transfer->transferred_at->format('d.m.Y H:i') }}</dd>
+                            <dd>{{ $transfer->transferred_at->orgTz()->format('d.m.Y H:i') }}</dd>
                         </div>
                     @endif
                 </dl>
@@ -483,7 +483,7 @@
         <ul class="space-y-1 text-sm">
             @foreach ($transfer->events as $event)
                 <li class="flex flex-wrap items-center gap-2">
-                    <span class="font-mono text-xs text-muted">{{ $event->created_at?->format('d.m.Y H:i:s') }}</span>
+                    <span class="font-mono text-xs text-muted">{{ $event->created_at?->orgTz()->format('d.m.Y H:i:s') }}</span>
                     <x-status-badge tone="ghost" outline>{{ \App\Support\Trans::or('finance.event.' . $event->event, $event->event) }}</x-status-badge>
                     @if (data_get($event->payload, 'failure_reason'))
                         <span class="text-error">{{ data_get($event->payload, 'failure_reason') }}</span>

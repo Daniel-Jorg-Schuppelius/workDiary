@@ -16,6 +16,7 @@ use App\Http\Controllers\Concerns\{ResolvesGlobalDateRange, ResolvesRequestedUse
 use App\Http\Requests\SaveTourRequest;
 use App\Models\{Customer, DiaryEntry, Site, Tour, User, Vehicle};
 use App\Services\Routing\TourService;
+use App\Support\ErrorText;
 use App\Support\Query\DateRange;
 use App\Support\{Setting, SortableQuery};
 use Carbon\CarbonImmutable;
@@ -256,7 +257,7 @@ class TourController extends Controller {
         try {
             $this->tours->start($tour);
         } catch (RuntimeException $e) {
-            return back()->withErrors(['status' => $e->getMessage()]);
+            return back()->withErrors(['status' => ErrorText::for($e)]);
         }
 
         return back()->with('success', __('Tour gestartet.'));
@@ -267,7 +268,7 @@ class TourController extends Controller {
         try {
             $this->tours->complete($tour);
         } catch (RuntimeException $e) {
-            return back()->withErrors(['status' => $e->getMessage()]);
+            return back()->withErrors(['status' => ErrorText::for($e)]);
         }
 
         return back()->with('success', __('Tour abgeschlossen.'));

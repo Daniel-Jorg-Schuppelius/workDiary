@@ -38,7 +38,7 @@ geplant), Abgelöst (Nachfolger bei einem anderen Anbieter) und Beendet.
 Beendete und abgelöste Abos bekommen keine neuen Perioden.
 
 **Löschen:** Ein Abo mit entschiedenen Perioden lässt sich nicht löschen —
-setze es auf „beendet". Rechte: Sehen mit *Reselling-Register sehen*,
+setzen Sie es auf „beendet". Rechte: Sehen mit *Reselling-Register sehen*,
 Pflegen mit *Reselling-Register pflegen*.
 
 **Abgleich je Rechnungsempfänger:** Wenn Perioden offen bleiben und unklar
@@ -80,7 +80,7 @@ aktualisiert statt zu verdoppeln. Der Anbieter kommt aus der Spalte oder
 aus dem Dialog; eine CSV-Vorlage liegt im Import-Dialog.
 
 **Lizenzen abtreten:** Sitzen zwei Firmen im selben Haus und nutzt die
-zweite einen Teil der Lizenzen eines Vertrags, trittst du diese Lizenzen am
+zweite einen Teil der Lizenzen eines Vertrags, treten Sie diese Lizenzen am
 Vertrag ab („Lizenzen abtreten": Halter, Menge, Zeitraum, Verkaufspreis).
 Es entsteht ein eigenes Abo für den anderen Halter mit eigenen
 Abrechnungsperioden; der Vertrag plant seine Perioden mit dem Rest. Jeder
@@ -93,7 +93,7 @@ Zeitraum an den früheren Halter; der Abgleich bietet das an einer Rechnung
 des anderen Kunden als „Periode an … abtreten" vorbelegt an.
 
 **Posteingang:** Importierte Abos, deren Firma das Register noch keinem
-Halter zuordnen kann, landen im Posteingang. Je Firma entscheidest du einmal:
+Halter zuordnen kann, landen im Posteingang. Je Firma entscheiden Sie einmal:
 Kunde, Endkunde eines Partners (Fremdkunde) oder eigener Bestand — der
 Vorschlag kommt aus dem Namensvergleich mit Kunden und Fremdkunden. Die
 Entscheidung wird gemerkt, der nächste Import ordnet dieselbe Firma sofort
@@ -104,9 +104,9 @@ der Meldung, die Einzelheiten aufklappbar in der Liste.
 **Perioden:** Die Periodenseite zeigt die fälligen Perioden aller Abos mit
 Status-Kacheln (offen, berechnet, teilweise, verzichtet, strittig).
 „Vorschläge berechnen" gleicht die offenen Perioden mit den Lizenzpositionen
-der gespiegelten Rechnungen ab und legt Vorschläge an; du bestätigst sie,
-ordnest von Hand eine Position zu (nur Rechnungen desselben Empfängers, nur
-freie Lizenzmonate) oder verzichtest mit Grund („Kulanz"). Entschiedene
+der gespiegelten Rechnungen ab und legt Vorschläge an; Sie bestätigen sie,
+ordnen von Hand eine Position zu (nur Rechnungen desselben Empfängers, nur
+freie Lizenzmonate) oder verzichten mit Grund („Kulanz"). Entschiedene
 Perioden fasst die Planung nicht mehr an; „Zurücknehmen" öffnet sie wieder.
 Wird eine zugeordnete Rechnung später in Lexoffice storniert, setzt der
 nächste Lauf den Bezug auf null Monate, vermerkt den Storno und öffnet die
@@ -114,7 +114,7 @@ Periode wieder, damit die Ersatzrechnung zugeordnet werden kann.
 
 **Rechnungsentwurf:** Aus allen offenen Perioden eines Rechnungsempfängers
 entsteht per Klick ein Entwurf — bei Lexoffice-Rechnungshoheit als Entwurf
-in Lexoffice (nichts wird abgeschlossen; du prüfst und stellst dort aus),
+in Lexoffice (nichts wird abgeschlossen; Sie prüfen und stellen dort aus),
 bei lokaler Rechnungshoheit als lokaler Rechnungsentwurf mit Positionen und
 vorgeschlagenen Bezügen. Eine Position je Abo und Zeitraum, Endkunde in der
 Beschreibung, Menge in Monaten bei Monatsartikeln. Die Perioden merken sich
@@ -134,7 +134,7 @@ Perioden als Vorschlag verknüpft und gestempelt. Der *Vorlauf* in Tagen
 nimmt Perioden schon vor ihrem Beginn mit (0 = nur fällige). Empfänger
 mit Lexoffice-/DATEV-Hoheit lässt der Lauf unberührt, Perioden ohne
 Verkaufspreis werden übersprungen, eigener Bestand nie berechnet. Die
-Entwürfe schließt du in der Rechnungsliste ab; der Wochen-Digest nennt,
+Entwürfe schließen Sie in der Rechnungsliste ab; der Wochen-Digest nennt,
 wie viele Entwürfe der letzten sieben Tage noch offen sind. Einmalig oder
 zur Probe: `php artisan resale:draft-local --organization=… --dry-run`
 (`--force` übergeht den Schalter).
@@ -144,14 +144,14 @@ Quellen: (1) Anbieterrechnungen und Gutschriften als PDF (Quality Hosting,
 deutsches und englisches Layout) — jede Position nennt Vertrag, Endkunde und
 Laufzeit, der Betrag geht exakt an die Periode; Gutschriftpositionen ohne
 Vertrag gelten der Firma. (2) Eingangsbelege aus dem Belegspiegel pro rata:
-für Sammelrechnungen ohne Positionen (Telekom) nennst du den Anteil des
+für Sammelrechnungen ohne Positionen (Telekom) nennen Sie den Anteil des
 Anbieters und den Leistungsmonat, der Betrag wird auf alle Perioden des
 Monats verteilt, gewichtet mit ihrem monatlichen Soll-Einkauf. (3) Domain-
 Buchungen aus der Domainverwaltung automatisch. Beim PDF-Import prüft das
 Register die Summe: weicht die Summe der Positionen von der Belegsumme ab
 (etwa weil eine Seite nicht gelesen wurde), wird trotzdem importiert und
 der Unterschied als Hinweis gezeigt. Die Einkaufsseite filtert nach
-Anbieter, Quelle, Zeitraum und Suchbegriff; eine Zuteilung löst du immer
+Anbieter, Quelle, Zeitraum und Suchbegriff; eine Zuteilung lösen Sie immer
 als Ganzes je Beleg.
 
 **Margenbericht:** Je Produkt und je Rechnungsempfänger stehen die
@@ -171,7 +171,7 @@ der zuletzt importierten Preisliste gegen die Verkaufspreise der Abos
 unter UVP", „Vertrag teurer als Katalog", „Kein Verkaufspreis".
 
 **Produkt-Einstufung:** Welche Lexoffice-Artikel Abo-Produkte sind, erkennt
-das Register am Namen. Je Artikel kannst du übersteuern: „Abo-Produkt"
+das Register am Namen. Je Artikel können Sie übersteuern: „Abo-Produkt"
 erzwingt die Erkennung, „Nie Abo-Position" hält Dienstleistungen mit einem
 Produktnamen im Text (Wartung an Exchange) aus Vorschlägen, Rechnungslisten
 und „Positionen ohne Abo" heraus. Dieselbe Einstufung gibt es für die

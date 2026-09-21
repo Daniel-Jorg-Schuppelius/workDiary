@@ -17,6 +17,7 @@ use App\Enums\User\Permission;
 use App\Models\{Customer, Lead, User};
 use App\Services\Sales\LeadService;
 use App\Services\SqidEncoder;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -132,7 +133,7 @@ class LeadController extends Controller {
         try {
             $this->service->transition($lead, $to, $data['reason'] ?? null);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Lead ist jetzt: :status', ['status' => $to->label()]));
@@ -158,7 +159,7 @@ class LeadController extends Controller {
         try {
             $customer = $this->service->convert($lead, $this->actor(), $existing);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('customers.show', $customer)

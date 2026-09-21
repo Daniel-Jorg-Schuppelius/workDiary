@@ -11,7 +11,7 @@ related:
     - articles.master
 ---
 
-Aquí gestionas plantillas de etiquetas y generas etiquetas imprimibles
+Aquí gestiona plantillas de etiquetas y genera etiquetas imprimibles
 para variantes, lotes y números de serie. Una plantilla define el
 tamaño de papel (A6, A7, A8), la orientación, el código QR opcional y
 los campos mostrados; por organización solo puede haber una plantilla

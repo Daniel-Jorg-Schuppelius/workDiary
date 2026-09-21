@@ -14,6 +14,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, User};
 use App\Services\Classification\BranchProfileInstaller;
+use App\Support\ErrorText;
 use CommonToolkit\Helper\FileSystem\Folder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\{Arr, Collection};
@@ -150,7 +151,7 @@ class BranchProfileController extends Controller {
         try {
             $result = $this->installer->installProfile($this->currentOrganization(), $profile, $actor, force: false);
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->toList('admin.branch-profiles.index')

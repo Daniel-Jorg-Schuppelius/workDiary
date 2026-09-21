@@ -39,7 +39,7 @@
 @endphp
 
 @section('content')
-<x-index-page :subtitle="__('Doppelte Kunden (z. B. nach dem Toggl-Import) werden hier gegenübergestellt. Pro Paar entscheidest du, welcher Datensatz bestehen bleibt — alle Projekte, Zeiten, Rechnungen und Referenzen werden auf ihn umgehängt, der andere wird gelöscht.')">
+<x-index-page :subtitle="__('Doppelte Kunden (z. B. nach dem Toggl-Import) werden hier gegenübergestellt. Pro Paar entscheiden Sie, welcher Datensatz bestehen bleibt — alle Projekte, Zeiten, Rechnungen und Referenzen werden auf ihn umgehängt, der andere wird gelöscht.')">
     <x-slot:actions>
         <form method="GET" action="{{ route('customers.duplicates.index') }}" class="flex items-center gap-2">
             <select name="confidence" class="select select-sm select-bordered" data-autosubmit>

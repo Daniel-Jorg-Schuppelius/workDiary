@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{IntegrationInboxItem, User};
 use App\Plugins\Sharepoint\{SharepointMirrorTarget, SharepointPlugin};
 use App\Plugins\Support\Mirror\DocumentConflictResolver;
+use App\Support\ErrorText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Throwable;
@@ -49,7 +50,7 @@ class SharepointConflictController extends Controller {
         try {
             $action();
         } catch (Throwable $e) {
-            return back()->with('error', __('sharepoint.conflict.flash.failed', ['reason' => $e->getMessage()]));
+            return back()->with('error', __('sharepoint.conflict.flash.failed', ['reason' => ErrorText::for($e)]));
         }
 
         return back()->with('success', $success);

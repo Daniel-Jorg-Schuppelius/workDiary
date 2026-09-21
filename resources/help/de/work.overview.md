@@ -20,6 +20,6 @@ Typischer Ablauf:
 3. Im **Kanban** Einträge nach Status filtern und in den nächsten
    zulässigen Status verschieben.
 
-Fehlen Einträge, prüfe zuerst Zeitraum, Filter und aktive Organisation.
+Fehlen Einträge, prüfen Sie zuerst Zeitraum, Filter und aktive Organisation.
 Statuswechsel unterliegen den gleichen Berechtigungen und
 Pflichtangaben wie in der Arbeitsliste.

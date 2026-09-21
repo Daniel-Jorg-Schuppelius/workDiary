@@ -16,6 +16,7 @@ use App\Enums\Invoicing\{RetentionBase, RetentionKind};
 use App\Models\{Invoice, User};
 use App\Models\Invoicing\InvoiceRetention;
 use App\Services\Invoicing\RetentionService;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -65,7 +66,7 @@ class InvoiceRetentionController extends Controller {
                 RetentionBase::tryFrom((string) ($data['base_kind'] ?? '')) ?? RetentionBase::Net,
             );
         } catch (RuntimeException $e) {
-            return back()->withInput()->with('error', $e->getMessage());
+            return back()->withInput()->with('error', ErrorText::for($e));
         }
 
         return back()->with('status', __('invoicing.retention.added'));
@@ -80,7 +81,7 @@ class InvoiceRetentionController extends Controller {
         try {
             $this->retentions->release($retention, $request->user());
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('status', __('invoicing.retention.released'));

@@ -74,7 +74,7 @@
                         <td class="text-sm">{{ $map->owner?->name ?: '—' }}</td>
                         <td><span class="badge badge-sm">{{ $map->visibility->label() }}</span></td>
                         <td class="text-right tabular-nums">{{ $map->nodes_count }}</td>
-                        <td class="text-sm">{{ $map->updated_at?->format('d.m.Y H:i') }}</td>
+                        <td class="text-sm">{{ $map->updated_at?->orgTz()->format('d.m.Y H:i') }}</td>
                         <td class="text-right">
                             <div class="flex items-center justify-end gap-1">
                                 @if ($filter === 'trashed')

@@ -195,8 +195,8 @@
                               label-class="label text-xs py-1"
                               :from-label="__('dispatch.vehicle.from')"
                               :to-label="__('dispatch.vehicle.to')"
-                              :from="optional($diary->start_at)->format('Y-m-d\TH:i')"
-                              :to="optional($diary->end_at)->format('Y-m-d\TH:i')"
+                              :from="$diary->start_at?->orgTz()->format('Y-m-d\TH:i')"
+                              :to="$diary->end_at?->orgTz()->format('Y-m-d\TH:i')"
                               :from-error="$errors->first('reserved_from') ?: null"
                               :to-error="$errors->first('reserved_to') ?: null" />
                 <x-button type="submit" tone="primary" size="sm">{{ __('dispatch.vehicle.reserve') }}</x-button>

@@ -13,9 +13,6 @@
 
 @section('content')
 <x-index-page :subtitle="__('Leihfähige Geräte und Maschinen mit Gerätegruppe, Pufferzeiten, Prüfpflicht und Standard-Preisliste.')">
-    @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
-    @endif
     <x-validation-errors />
 
     <x-filter-bar :action="route('rental.profiles.index')" :reset="route('rental.profiles.index')">
@@ -114,7 +111,7 @@
                         <span class="label-text text-sm">{{ __('Prüfpflicht: überfällige Prüfung blockiert Verleih') }}</span>
                     </label>
                 </div>
-                <x-textarea-field name="accessories" :label="__('Zubehör (eine Position je Zeile)')" rows="3">{{ old('accessories') }}</x-textarea-field>
+                <x-textarea-field name="accessories" :label="__('Zubehör (eine Position je Zeile)')" rows="3">{{ is_array(old('accessories')) ? implode("\n", old('accessories')) : old('accessories') }}</x-textarea-field>
                 <x-textarea-field name="notes" :label="__('Notizen')" rows="3">{{ old('notes') }}</x-textarea-field>
                 <div class="sm:col-span-2">
                     <button type="submit" class="btn btn-sm btn-primary">{{ __('Profil speichern') }}</button>

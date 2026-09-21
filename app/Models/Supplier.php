@@ -130,7 +130,9 @@ class Supplier extends Model {
     protected static function booted(): void {
         self::registerSequentialNumberHook();
 
-        static::saving(function (self $supplier): void {
+        // creating statt saving: erst BelongsToOrganization::creating setzt die
+        // organization_id — saving liefe davor und prüfte gegen NULL.
+        $assignSlug = function (self $supplier): void {
             if ($supplier->slug === null || $supplier->slug === '') {
                 $supplier->slug = self::uniqueSlug(
                     (string) $supplier->name,
@@ -138,7 +140,9 @@ class Supplier extends Model {
                     $supplier->exists ? $supplier->id : null,
                 );
             }
-        });
+        };
+        static::creating($assignSlug);
+        static::updating($assignSlug);
     }
 
     /**

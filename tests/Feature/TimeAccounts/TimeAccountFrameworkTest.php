@@ -18,6 +18,7 @@ use App\Services\TimeAccount\TimeAccountPostingService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Exceptions;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -169,6 +170,37 @@ class TimeAccountFrameworkTest extends TestCase {
         // Idempotent: zweiter Lauf kappt nicht erneut.
         $stats = $this->runPosting();
         $this->assertSame(0, $stats['capped']);
+    }
+
+    /** UI-Fuzz 2026-09-21: Schwellen, Kappung und Buchungsmenge ohne Obergrenze sprengten decimal(12,2) (1264). */
+    public function test_amounts_beyond_the_column_are_field_errors(): void {
+        Exceptions::fake();
+        $account = $this->account();
+        $admin = $this->orgAdmin();
+
+        $this->actingAs($admin)
+            ->post(route('admin.time-accounts.manual', $account), [
+                'user_id' => $this->user->sqid,
+                'booking_date' => '2026-06-01',
+                'quantity' => '-999999999999.00',
+                'note' => 'Grenzwert',
+            ])
+            ->assertSessionHasErrors('quantity');
+        $this->actingAs($admin)
+            ->post(route('admin.time-accounts.store'), [
+                'code' => 'grenz',
+                'name' => 'Grenzwert',
+                'unit' => TimeAccountUnit::Minutes->value,
+                'warn_threshold' => '999999999999.00',
+                'critical_threshold' => '999999999999.00',
+                'carryover_policy' => CarryoverPolicy::Cap->value,
+                'cap_amount' => '999999999999.00',
+            ])
+            ->assertSessionHasErrors(['warn_threshold', 'critical_threshold', 'cap_amount']);
+
+        $this->assertSame(0, TimeAccountEntry::query()->count());
+        $this->assertSame(0, TimeAccount::query()->where('code', 'grenz')->count());
+        Exceptions::assertNothingReported();
     }
 
     public function test_manual_entry_requires_admin_and_is_audited(): void {

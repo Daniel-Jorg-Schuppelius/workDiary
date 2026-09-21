@@ -129,6 +129,31 @@ final class ChatWebhookTest extends TestCase {
         $fake->assertSent(fn ($request): bool => (string) $request->getUri() === 'https://hooks.teams.example/matrix');
     }
 
+    /** Der beim Erzeugen gerenderte Text trägt UTC — Chat bekommt Key+Parameter in der Zeitzone der Organisation. */
+    public function test_dispatcher_renders_chat_times_in_the_organization_timezone(): void {
+        $fake = FakePluginHttp::fake(['*' => FakePluginHttp::response('1', 200)]);
+        $this->organization->forceFill(['timezone' => 'Asia/Tokyo'])->save();
+        app()->forgetInstance('currentOrganization');
+        $event = NotificationEvent::cases()[0];
+        NotificationRule::query()->create([
+            'organization_id' => $this->organization->id,
+            'event' => $event,
+            'enabled' => true,
+            'channels' => ['inApp', 'teams'],
+        ]);
+        $this->webhook(ChatWebhook::KIND_TEAMS, 'https://hooks.teams.example/tz');
+        $subject = Customer::factory()->create(['organization_id' => $this->organization->id]);
+
+        app(NotificationDispatcher::class)->notify($event, $subject, null, [
+            'title' => 'Rückgabe',
+            'message' => 'Rückgabe war bis 10.07.2030 08:00 vereinbart.',
+            'message_key' => 'Rückgabe war bis :date vereinbart.',
+            'message_params' => ['date' => '2030-07-10T08:00:00+00:00'],
+        ]);
+
+        $fake->assertSent(fn ($request): bool => str_contains((string) $request->getBody(), '17:00'));
+    }
+
     public function test_dispatcher_skips_channel_when_matrix_disabled(): void {
         $fake = FakePluginHttp::fake(['*' => FakePluginHttp::response('1', 200)]);
         $event = NotificationEvent::cases()[0];

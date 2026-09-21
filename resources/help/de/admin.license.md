@@ -9,7 +9,7 @@ related:
     - admin.tenants
 ---
 
-Die Lizenzseite zeigt, was deine Installation darf: **Plan**
+Die Lizenzseite zeigt, was Ihre Installation darf: **Plan**
 (free/pro/enterprise), **Benutzer-/Organisations-Limits**,
 freigeschaltete **Module** und das **Ablaufdatum**.
 
@@ -27,7 +27,7 @@ Typische Aktionen:
 
 1. Lizenzstatus und Module prüfen.
 2. **Feature-Flags** gezielt übersteuern (Override-Schalter).
-3. Org-Lizenz **installieren/entfernen** oder – sofern deine
+3. Org-Lizenz **installieren/entfernen** oder – sofern Ihre
    Installation dazu berechtigt ist – neue Lizenzen **ausstellen**
    (Lizenznehmer, E-Mail, Plan, Add-ons, Ablauf, Limits, Organisation,
    Domain).

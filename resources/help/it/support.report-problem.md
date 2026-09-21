@@ -11,9 +11,9 @@ related:
 dalla pagina interessata — senza cercare file di log né inviare
 screenshot via e-mail.
 
-Aprite la barra laterale della guida, fate clic su *Segnala un problema*
-e descrivete cosa vi aspettavate e cosa è successo. La sezione
+Apra la barra laterale della guida, faccia clic su *Segnala un problema*
+e descriva cosa si aspettava e cosa è successo. La sezione
 *Dati trasmessi* mostra esattamente quali informazioni tecniche vengono
-inviate — mai dati di clienti o commesse. Potete allegare un estratto
-diagnostico anonimizzato (con anteprima). Dopo l'invio ricevete un
-numero di riferimento e seguite lo stato in *Le mie segnalazioni*.
+inviate — mai dati di clienti o commesse. Può allegare un estratto
+diagnostico anonimizzato (con anteprima). Dopo l'invio riceve un
+numero di riferimento e segue lo stato in *Le mie segnalazioni*.

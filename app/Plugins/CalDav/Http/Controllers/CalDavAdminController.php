@@ -11,13 +11,12 @@
 namespace App\Plugins\CalDav\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\CalDavConnection;
-use App\Plugins\CalDav\Contracts\CalDavGatewayFactory;
+use App\Models\{CalDavConnection, PluginState};
+use App\Plugins\CalDav\CalDavPlugin;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
-use Throwable;
 
 /**
  * CalDAV-Admin-Panel (Feature 058, MVP-126): eine Anbindung je Organisation
@@ -37,9 +36,8 @@ class CalDavAdminController extends Controller {
 
         return view('caldav::admin.index', [
             'connection' => $connection,
-            'health' => $connection instanceof CalDavConnection && $connection->isActive()
-                ? $this->probe($connection)
-                : null,
+            // Gespeicherter Stand statt Ping beim Seitenaufruf (UI-Fuzz 2026-09-21).
+            'healthState' => PluginState::forContext(CalDavPlugin::ID, $organization->id),
         ]);
     }
 
@@ -65,6 +63,17 @@ class CalDavAdminController extends Controller {
             return back()->with('error', __('caldav.flash.invalid_url'))->withInput();
         }
 
+        // Nextclouds „Link kopieren" liefert die volle Kalender-URL; hinter die Basis-URL
+        // gehängt ergab sie https://…/https://… (UI-Fuzz 2026-09-21).
+        $calendarPath = trim((string) $data['calendar_path']);
+        if (preg_match('#^https?://#i', $calendarPath) === 1) {
+            $prefix = rtrim($baseUrl, '/') . '/';
+            if (! str_starts_with(strtolower($calendarPath), strtolower($prefix))) {
+                return back()->withErrors(['calendar_path' => __('caldav.flash.path_outside_base')])->withInput();
+            }
+            $calendarPath = substr($calendarPath, strlen($prefix));
+        }
+
         /** @var CalDavConnection $connection */
         $connection = CalDavConnection::query()->firstOrNew(['organization_id' => $organization->id]);
 
@@ -72,7 +81,7 @@ class CalDavAdminController extends Controller {
             'name' => (string) $data['name'],
             'base_url' => rtrim($baseUrl, '/'),
             'username' => (string) $data['username'],
-            'calendar_path' => trim((string) $data['calendar_path'], '/'),
+            'calendar_path' => trim($calendarPath, '/'),
             // Nur bekannte Scopes übernehmen; leer = nur Termine (Default via Model).
             'scopes' => array_values(array_intersect(CalDavConnection::SCOPES, (array) ($data['scopes'] ?? []))),
             'active' => (bool) ($data['active'] ?? false),
@@ -124,14 +133,5 @@ class CalDavAdminController extends Controller {
         }
 
         return back()->with('success', __('caldav.flash.disconnected'));
-    }
-
-    /** @return array{ok: bool} */
-    private function probe(CalDavConnection $connection): array {
-        try {
-            return ['ok' => app(CalDavGatewayFactory::class)->for($connection)->ping()];
-        } catch (Throwable) {
-            return ['ok' => false];
-        }
     }
 }

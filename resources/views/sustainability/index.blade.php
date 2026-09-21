@@ -31,9 +31,6 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if (session('status'))
-        <div class="alert alert-success rounded-2xl px-5 py-3 text-sm shadow-xs">{{ session('status') }}</div>
-    @endif
 
     {{-- Kennzahlen --}}
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

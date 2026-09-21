@@ -15,6 +15,6 @@ processo di richiesta e approvazione; le malattie vengono documentate
 con periodo e giustificativi necessari. I collaboratori registrano il
 periodo completo, i responsabili verificano sovrapposizioni,
 sostituzioni e ferie residue e approvano, rifiutano o richiedono una
-correzione. I dati sanitari sono particolarmente sensibili: registra
-solo le informazioni necessarie e rispetta le regole di accesso e
+correzione. I dati sanitari sono particolarmente sensibili: registri
+solo le informazioni necessarie e rispetti le regole di accesso e
 conservazione.

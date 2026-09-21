@@ -24,7 +24,7 @@ dieser Übersicht.
 
 **Zwei-Faktor-Authentifizierung**: Nutzer können mehrere Methoden
 parallel hinterlegen – **TOTP** (Authenticator-App), **E-Mail-Code**
-und **WebAuthn** (FIDO2-Sicherheitsschlüssel/Passkey). Empfiehl
+und **WebAuthn** (FIDO2-Sicherheitsschlüssel/Passkey). Empfehlen Sie
 mindestens zwei Methoden, damit der Verlust eines Faktors nicht zur
 Aussperrung führt.
 
@@ -39,7 +39,7 @@ sind die Daten unwiederbringlich.
 
 **Audit-Kette prüfen**: `php artisan audit:verify` validiert die
 SHA-256-Hash-Ketten der revisionssicheren Audit-Protokolle und endet
-mit Exit-Code 1 bei einem Bruch – ideal für Cron/CI. Halte den Befehl
+mit Exit-Code 1 bei einem Bruch – ideal für Cron/CI. Halten Sie den Befehl
 dauerhaft grün.
 
 **Systemzustand**: `php artisan system:health` prüft Datenbank,

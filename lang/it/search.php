@@ -90,10 +90,10 @@ return [
     ],
 
     'empty' => [
-        'start' => 'Cosa stai cercando?',
+        'start' => 'Cosa sta cercando?',
         'start_hint' => 'Bastano parole chiave, es. «smtp exchange». Tutte le parole devono comparire — nella registrazione, nel progetto o nel cliente.',
         'none' => 'Nessun risultato.',
-        'none_hint' => 'Prova con meno parole o attiva «Grafie simili».',
+        'none_hint' => 'Provi con meno parole o attivi «Grafie simili».',
     ],
 
     'entities' => [

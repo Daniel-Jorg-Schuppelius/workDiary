@@ -13,7 +13,7 @@ return [
     'intro' => 'Terminales RFID/NFC fijos permiten a los empleados sin dispositivo de empresa fichar entrada y salida. Los eventos entran en la misma lógica de presencia que los fichajes por navegador (correcciones, informes). Los tokens de dispositivo y los identificadores de credencial se almacenan solo como hash.',
 
     'new_heading' => 'URL de ingesta del terminal',
-    'new_hint' => 'Introdúcela en el terminal ahora — el token se muestra solo esta vez.',
+    'new_hint' => 'Introdúzcala en el terminal ahora — el token se muestra solo esta vez.',
 
     'terminals_heading' => 'Terminales',
     'no_terminals' => 'Aún no hay ningún terminal registrado.',
@@ -82,12 +82,12 @@ return [
         'status_disabled' => 'Indicador de estado desactivado.',
     ],
     'kiosk' => [
-        'pin_toggle' => '¿Olvidaste la tarjeta? Ficha con PIN',
+        'pin_toggle' => '¿Olvidó la tarjeta? Fiche con PIN',
         'pin_submit' => 'Fichar',
         'heading' => 'Dirección del quiosco',
-        'hint' => 'Ábrela en el navegador de una tableta y la tableta se convierte en terminal de fichaje. Contiene el mismo token; solo se muestra una vez.',
+        'hint' => 'Ábrala en el navegador de una tableta y la tableta se convierte en terminal de fichaje. Contiene el mismo token; solo se muestra una vez.',
         'title' => 'Terminal de fichaje',
-        'intro' => 'Acerca tu tarjeta al lector.',
+        'intro' => 'Acerque su tarjeta al lector.',
         'mode' => 'Tipo de fichaje',
         'mode_work' => 'Entrada / Salida',
         'mode_break' => 'Pausa',
@@ -107,7 +107,7 @@ return [
             'rejected' => 'Fichaje rechazado',
             'invalid_token' => 'Terminal bloqueado',
             'unavailable' => 'Ahora no es posible fichar',
-            'network' => 'Sin conexión: inténtalo de nuevo',
+            'network' => 'Sin conexión: inténtelo de nuevo',
             'nfc_unavailable' => 'NFC no está disponible en este dispositivo',
             'error' => 'Error al fichar',
         ],
@@ -136,7 +136,7 @@ return [
             'location_check' => 'Un código puede fotografiarse. Con radio, el dispositivo debe estar cerca al fichar; sin coordenadas propias se usan las de la ubicación. La posición no se guarda.',
         ],
         'error' => [
-            'radius_without_center' => 'El radio necesita una ubicación: introduce coordenadas o elige una ubicación con coordenadas.',
+            'radius_without_center' => 'El radio necesita una ubicación: introduzca coordenadas o elija una ubicación con coordenadas.',
             'vehicle' => 'No se encontró el vehículo.',
         ],
         'flash' => [
@@ -146,13 +146,13 @@ return [
         ],
         'qr' => [
             'alt' => 'Código QR para el check-in «:name»',
-            'hint' => 'Escanea con el móvil, inicia sesión y confirma entrada o salida.',
-            'nfc_hint' => 'Para una etiqueta NFC, graba esta dirección como dirección web (URL) con una app NFC.',
+            'hint' => 'Escanee con el móvil, inicie sesión y confirme entrada o salida.',
+            'nfc_hint' => 'Para una etiqueta NFC, grabe esta dirección como dirección web (URL) con una app NFC.',
         ],
     ],
     'pin' => [
         'heading' => 'PIN de terminal',
-        'intro' => '¿Olvidaste la tarjeta? Con número de personal y PIN se puede fichar igualmente en el terminal y el quiosco. Solo se guarda un hash; tras 5 intentos fallidos el PIN se bloquea 15 minutos.',
+        'intro' => '¿Olvidó la tarjeta? Con número de personal y PIN se puede fichar igualmente en el terminal y el quiosco. Solo se guarda un hash; tras 5 intentos fallidos el PIN se bloquea 15 minutos.',
         'empty' => 'Aún no hay PIN asignados.',
         'action' => [
             'set' => 'Establecer PIN',
@@ -165,7 +165,7 @@ return [
             'personnel_number' => 'Número de personal',
         ],
         'help' => [
-            'dialog' => 'De 4 a 8 dígitos. La persona conoce el PIN por ti; después ya no se puede consultar.',
+            'dialog' => 'De 4 a 8 dígitos. La persona conoce el PIN por usted; después ya no se puede consultar.',
             'personnel_number' => 'Solo personas con número de personal: es la segunda parte del acceso en el terminal.',
         ],
         'status' => [

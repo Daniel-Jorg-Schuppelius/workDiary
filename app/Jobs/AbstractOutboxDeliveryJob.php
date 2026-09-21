@@ -20,6 +20,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\{InteractsWithQueue, SerializesModels};
+use Illuminate\Queue\Jobs\SyncJob;
 use RuntimeException;
 use Throwable;
 
@@ -121,7 +122,9 @@ abstract class AbstractOutboxDeliveryJob implements ShouldQueue {
 
             throw new RuntimeException('extern nicht bestätigt');
         } catch (Throwable $e) {
-            if ($this->attempts() < $this->tries) {
+            // QUEUE_CONNECTION=sync kennt keine Wiederholung: der Wurf landete
+            // als 500 in der auslösenden Nutzeraktion — gleich kompensieren.
+            if ($this->attempts() < $this->tries && ! $this->job instanceof SyncJob) {
                 $outbox->markFailed($entry, $e->getMessage());
 
                 throw $e; // Queue-Wiederholung auslösen

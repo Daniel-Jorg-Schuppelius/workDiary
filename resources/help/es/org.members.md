@@ -9,7 +9,7 @@ related:
     - payroll.overview
 ---
 
-Aquí gestionas los miembros de tu organización: nombre, número de
+Aquí gestiona los miembros de su organización: nombre, número de
 personal, correo electrónico y rol (administración, usuario,
 contabilidad). Al crear un miembro se establece una contraseña inicial
 que la persona debe cambiar en el primer inicio de sesión; la lista solo

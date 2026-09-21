@@ -33,7 +33,7 @@
        draggable="false"
        class="block cursor-grab rounded-lg border border-base-300 bg-base-100 p-2 pe-8 text-sm shadow-xs transition hover:shadow-md active:cursor-grabbing">
         <div class="flex items-center justify-between gap-2 text-[0.65rem] uppercase tracking-wider text-muted">
-            <span>{{ $entry->start_at?->format('d.m. H:i') }}</span>
+            <span>{{ $entry->start_at?->orgTz()->format('d.m. H:i') }}</span>
             @if ($entry->user)
                 <span class="font-medium">{{ $entry->user->name }}</span>
             @endif

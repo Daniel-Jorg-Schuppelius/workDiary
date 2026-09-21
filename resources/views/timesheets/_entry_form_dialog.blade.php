@@ -99,7 +99,7 @@
         <x-input-field name="description" :label="__('Beschreibung')" maxlength="500"
                        list="{{ $descriptionListId }}"
                        autocomplete="off"
-                       :placeholder="__('Woran hast du gearbeitet?')"
+                       :placeholder="__('Woran haben Sie gearbeitet?')"
                        :value="old('description')" />
         @if (! empty($recentDescriptions))
             <datalist id="{{ $descriptionListId }}">

@@ -66,7 +66,7 @@
 
     <x-form-group :legend="__('Profilbild')" icon="account_circle" tone="primary" cols="1"
                   :description="__('PNG, JPG oder WEBP. Max. :max KB.', ['max' => $avatarMaxKb])"
-                  x-data="fileUpload({{ $avatarMaxKb }}, @js(__('Datei ist größer als das Limit.')))">
+                  x-data="fileUpload({{ $avatarMaxKb }}, {{ \Illuminate\Support\Js::from(__('Datei ist größer als das Limit.')) }})">
         <div class="flex items-start gap-4">
             <div class="shrink-0">
                 @if ($avatarPreview)
@@ -138,7 +138,7 @@
             <x-timezone-select id="preferences-timezone" name="preferences[timezone]"
                                :selected="old('preferences.timezone', $prefs['timezone'] ?? null)"
                                include-blank :blank-label="__('Organisation übernehmen')" />
-            <p class="mt-1 text-xs text-muted">{{ __('Überschreibt die Zeitzone der Organisation für deine Ansichten.') }}</p>
+            <p class="mt-1 text-xs text-muted">{{ __('Überschreibt die Zeitzone der Organisation für Ihre Ansichten.') }}</p>
             @error('preferences.timezone')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 

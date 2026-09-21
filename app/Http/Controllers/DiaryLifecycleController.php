@@ -13,6 +13,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\{ClassificationRequirementException, InvalidOrderTransitionException};
 use App\Models\{DiaryEntry, Protocol, User};
 use App\Services\Diary\OrderService;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use InvalidArgumentException;
@@ -37,7 +38,7 @@ class DiaryLifecycleController extends Controller {
                 default => abort(404),
             };
         } catch (ClassificationRequirementException|InvalidOrderTransitionException|InvalidArgumentException $e) {
-            return back()->withErrors(['lifecycle' => $e->getMessage()]);
+            return back()->withErrors(['lifecycle' => ErrorText::for($e)]);
         }
 
         return back()->with('success', __('Auftragsstatus aktualisiert.'));

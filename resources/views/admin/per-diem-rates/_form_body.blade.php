@@ -34,7 +34,7 @@
                    :value="old('partial_day_amount', $rate->partial_day_amount?->getAmount() ?? '14.00')" />
     <x-input-field type="number" step="0.01" min="0" name="overnight_amount" :label="__('Übernachtungspauschale')"
                    :value="old('overnight_amount', $rate->overnight_amount?->getAmount())" />
-    <x-input-field name="source" :label="__('Quelle / Anmerkung')" maxlength="255" span="2"
+    <x-input-field name="source" :label="__('Quelle / Anmerkung')" maxlength="100" span="2"
                    :value="old('source', $rate->source)"
                    :placeholder="__('z. B. BMF-Schreiben 2025')" />
 </x-form-group>

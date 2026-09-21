@@ -7,7 +7,7 @@ related:
     - procedures.run
 ---
 
-Im **Prozedur-Designer** legst du verbindliche Abläufe (Arbeitsanweisungen,
+Im **Prozedur-Designer** legen Sie verbindliche Abläufe (Arbeitsanweisungen,
 Checklisten) an, die später auf Aufträgen ausgeführt werden.
 
 ## Vorlage und Versionen
@@ -15,7 +15,7 @@ Checklisten) an, die später auf Aufträgen ausgeführt werden.
 - Eine **Vorlage** hat einen eindeutigen **Code**, einen Namen und einen
   optionalen Bereich (z. B. `it`, `hvac`).
 - Schritte gehören immer zu einer **Version**. Solange eine Version ein
-  **Entwurf** ist, kannst du Schritte frei bearbeiten.
+  **Entwurf** ist, können Sie Schritte frei bearbeiten.
 - Mit **Veröffentlichen** wird die Version gültig gesetzt und **unveränderlich**.
   Korrekturen erzeugen eine **neue Version** – laufende/alte Aufträge behalten
   ihre damalige Version.
@@ -35,6 +35,6 @@ Backup-Nachweis, Unterschrift, Freigabe …). Zusätzlich steuerbar:
 
 ## Automatische Zuordnung
 
-Über **Auftragstypen** und **Tags** legst du fest, für welche Aufträge die
+Über **Auftragstypen** und **Tags** legen Sie fest, für welche Aufträge die
 Vorlage automatisch vorgeschlagen wird. Auf der Auftragsdetailseite erscheinen
 passende, veröffentlichte Vorlagen als Start-Button.

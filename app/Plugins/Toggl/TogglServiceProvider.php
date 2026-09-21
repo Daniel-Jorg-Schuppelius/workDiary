@@ -34,14 +34,12 @@ class TogglServiceProvider extends PluginServiceProviderBase {
         // gehen über die Integrations-Outbox zurück nach Toggl.
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new TogglOutboxDispatcher);
 
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                TogglImportCommand::class,
-                TogglPushCommand::class,
-                TogglBackfillReferencesCommand::class,
-                TogglRepairEntryUsersCommand::class,
-                TogglRepairEntryBillableCommand::class,
-            ]);
-        }
+        $this->commands([
+            TogglImportCommand::class,
+            TogglPushCommand::class,
+            TogglBackfillReferencesCommand::class,
+            TogglRepairEntryUsersCommand::class,
+            TogglRepairEntryBillableCommand::class,
+        ]);
     }
 }

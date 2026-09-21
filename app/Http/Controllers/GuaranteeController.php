@@ -19,7 +19,7 @@ use App\Models\{Customer, Project, Supplier, User};
 use App\Models\Guarantee\Guarantee;
 use App\Models\Invoicing\InvoiceRetention;
 use App\Services\Guarantee\GuaranteeService;
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -112,7 +112,7 @@ class GuaranteeController extends Controller {
         try {
             $this->guarantees->markReturned($guarantee, $request->user(), $data['note'] ?? null);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('status', __('guarantee.returned'));
@@ -125,7 +125,7 @@ class GuaranteeController extends Controller {
         try {
             $this->guarantees->markDrawn($guarantee, $request->user(), $data['note'] ?? null);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('status', __('guarantee.drawn'));
@@ -144,7 +144,7 @@ class GuaranteeController extends Controller {
         try {
             $this->guarantees->secureRetention($guarantee, $retention, $request->user());
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('status', __('guarantee.secured'));

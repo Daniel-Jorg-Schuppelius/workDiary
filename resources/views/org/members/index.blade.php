@@ -31,7 +31,7 @@
         <x-empty-state framed
             icon="group"
             :title="__('Noch keine Mitarbeiter')"
-            :message="__('Lege das erste Teammitglied an.')"
+            :message="__('Legen Sie das erste Teammitglied an.')"
         />
     @else
         <x-table scroll="flex" :pinRows="true" table-sort="server"

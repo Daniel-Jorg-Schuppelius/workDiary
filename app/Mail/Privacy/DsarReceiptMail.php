@@ -40,7 +40,7 @@ class DsarReceiptMail extends Mailable implements ShouldQueue {
     }
 
     public function content(): Content {
-        return new Content(view: 'mail.privacy.dsar-receipt', with: [
+        return new Content(markdown: 'mail.privacy.dsar-receipt', with: [
             'requestNumber' => $this->requestNumber,
             'organizationName' => $this->organizationName,
             'deadlineDate' => $this->deadlineDate,

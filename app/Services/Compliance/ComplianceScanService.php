@@ -160,10 +160,10 @@ final class ComplianceScanService {
                 if (! $t->started_at || ! $t->ended_at) {
                     return;
                 }
-                // Wandzeit der Anzeige-Zeitzone: Kalendertag/ISO-Woche müssen lokal stimmen.
+                // Das Fahrtenbuch führt Ortszeit (Festschreibung, GoBD): Wandzeit behalten, Zeitzone zuordnen.
                 $tripsByUser[(int) $t->user_id][] = [
-                    'started_at' => CarbonImmutable::parse($t->started_at->toIso8601String())->setTimezone($tz),
-                    'ended_at' => CarbonImmutable::parse($t->ended_at->toIso8601String())->setTimezone($tz),
+                    'started_at' => CarbonImmutable::parse($t->started_at->toIso8601String())->shiftTimezone($tz),
+                    'ended_at' => CarbonImmutable::parse($t->ended_at->toIso8601String())->shiftTimezone($tz),
                 ];
             });
 

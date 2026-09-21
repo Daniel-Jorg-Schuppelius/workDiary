@@ -13,8 +13,8 @@ return [
     'intro' => 'Conexiones de transportista para etiquetas de envío y seguimiento de envíos (DHL Paket, UPS, FedEx). Una conexión por transportista y organización; las credenciales se almacenan cifradas.',
 
     'form_heading' => 'Añadir / editar conexión',
-    'form_hint' => 'Elige el transportista e introduce sus credenciales. Guardar de nuevo con el mismo transportista actualiza la conexión existente.',
-    'secret_hint' => 'La contraseña y la clave API se almacenan cifradas y no se vuelven a mostrar. Déjalas vacías al editar para mantener los valores guardados.',
+    'form_hint' => 'Elija el transportista e introduzca sus credenciales. Guardar de nuevo con el mismo transportista actualiza la conexión existente.',
+    'secret_hint' => 'La contraseña y la clave API se almacenan cifradas y no se vuelven a mostrar. Déjelas vacías al editar para mantener los valores guardados.',
     'connections_heading' => 'Conexiones existentes',
     'no_connections' => 'Aún no hay ninguna conexión de transportista configurada.',
 

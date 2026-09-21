@@ -145,7 +145,11 @@ class AccountingBudgetService {
 
         $rows = [];
         if ($data['mode'] === self::MODE_YEAR) {
-            $rows[0] = $this->normalize($data['year_amount'] ?? null) ?? '0.00';
+            // Leer heißt „nicht geplant“, nicht 0,00 — sonst erschiene jede Buchung als Abweichung (UI-Fuzz 2026-09-21).
+            $yearAmount = $this->normalize($data['year_amount'] ?? null);
+            if ($yearAmount !== null) {
+                $rows[0] = $yearAmount;
+            }
         } else {
             foreach ($data['months'] ?? [] as $month => $value) {
                 $normalized = $this->normalize($value);

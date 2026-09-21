@@ -40,7 +40,7 @@
                     <td>{{ $report->summary }}</td>
                     <td><x-status-badge size="xs" :tone="$report->severity->tone()">{{ $report->severity->label() }}</x-status-badge></td>
                     <td><x-status-badge size="xs" :tone="$report->status->tone()">{{ $report->status->label() }}</x-status-badge></td>
-                    <td class="text-sm">{{ $report->created_at?->format('d.m.Y H:i') }}</td>
+                    <td class="text-sm">{{ $report->created_at?->orgTz()->format('d.m.Y H:i') }}</td>
                 </tr>
             @endforeach
         </x-table>

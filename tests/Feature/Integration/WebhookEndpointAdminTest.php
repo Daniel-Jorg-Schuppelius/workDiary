@@ -16,6 +16,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 class WebhookEndpointAdminTest extends TestCase {
@@ -41,6 +42,20 @@ class WebhookEndpointAdminTest extends TestCase {
         $this->actingAs($admin)
             ->get(route('admin.webhooks.index'))
             ->assertOk();
+    }
+
+    /** UI-Fuzz 2026-09-21: unter QUEUE_CONNECTION=sync warf der Retry-Auslöser des Jobs in die Testaktion (HTTP 500). */
+    public function test_failed_test_delivery_is_reported_instead_of_crashing(): void {
+        FakePluginHttp::fake(['*' => FakePluginHttp::response('boom', 500)]);
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $endpoint = WebhookEndpoint::factory()
+            ->subscribedTo([WebhookEvent::OpenIssueAssigned])
+            ->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.webhooks.test', $endpoint))
+            ->assertRedirect(route('admin.webhooks.index'))
+            ->assertSessionHas('error', __('integration.webhook.flash.test_failed'));
     }
 
     public function test_admin_can_create_endpoint_and_secret_shown_once(): void {

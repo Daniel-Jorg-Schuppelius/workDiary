@@ -56,7 +56,7 @@
                     @endif
                 </td>
                 <td class="text-center text-sm">{{ $booking->seats }}</td>
-                <td class="text-sm">{{ $booking->requested_at?->translatedFormat('d.m.Y H:i') }}</td>
+                <td class="text-sm">{{ $booking->requested_at?->orgTz()->translatedFormat('d.m.Y H:i') }}</td>
                 <td class="text-right">
                     <div class="flex justify-end gap-1">
                         @if ($booking->status->isOpen())

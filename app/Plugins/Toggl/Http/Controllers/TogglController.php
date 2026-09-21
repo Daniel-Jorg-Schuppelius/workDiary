@@ -14,7 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem, Organization, TimeEntry};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Toggl\Services\TogglUserMappingService;
-use App\Plugins\Toggl\Sources\{ApiWorkspaceSource, TogglApiClient, TogglWorkspaceReader};
+use App\Plugins\Toggl\Sources\{ApiWorkspaceSource, TogglApiClient, TogglCsvParser, TogglWorkspaceReader};
 use App\Plugins\Toggl\{TogglArchiveException, TogglConfig, TogglExportArchiveService, TogglExportImporter, TogglExportService, TogglImportService, TogglOptionBuilder, TogglPlugin};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -197,6 +197,9 @@ class TogglController extends Controller {
         ]);
 
         $content = ToolkitFile::read((string) $request->file('csv')->getRealPath());
+        if (! (new TogglCsvParser)->recognizes($content)) {
+            return back()->withErrors(['csv' => __('Kein Toggl-Zeitexport erkannt: Die Spalten „Start date“, „Start time“ und „Duration“ fehlen.')]);
+        }
         $config = TogglConfig::resolve($admin->organization_id);
 
         $result = $this->service->importFromCsv($this->organization($admin), $content, $config);

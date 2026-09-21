@@ -33,11 +33,9 @@ class TodoistServiceProvider extends PluginServiceProviderBase {
     protected function registerPlugin(): void {
         $this->app->singleton(TodoistOAuth::class, fn (): TodoistOAuth => new TodoistOAuth());
 
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                Console\TodoistSyncCommand::class,
-            ]);
-        }
+        $this->commands([
+            Console\TodoistSyncCommand::class,
+        ]);
     }
 
     protected function bootPlugin(): void {

@@ -20,7 +20,7 @@ use App\Models\{Customer, DiaryEntry, ExternalContact, Site, User};
 use App\Models\Disposal\DisposalJob;
 use App\Services\Classification\ClassificationResolver;
 use App\Services\Disposal\{DisposalJobService, DisposalRecordPdfRenderer};
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Gate;
@@ -135,7 +135,7 @@ class DisposalJobController extends Controller {
         try {
             $this->service->update($disposalJob, $actor, $request->validated());
         } catch (Throwable $exception) {
-            return back()->withErrors(['status' => $exception->getMessage()]);
+            return back()->withErrors(['status' => ErrorText::for($exception)]);
         }
 
         return redirect()->route('disposal.show', $disposalJob)
@@ -164,7 +164,7 @@ class DisposalJobController extends Controller {
         try {
             $this->service->sign($disposalJob, $actor, (string) $data['signer_name'], (string) $data['signature']);
         } catch (Throwable $exception) {
-            return back()->withErrors(['signature' => $exception->getMessage()]);
+            return back()->withErrors(['signature' => ErrorText::for($exception)]);
         }
 
         return redirect()->route('disposal.show', $disposalJob)
@@ -180,7 +180,7 @@ class DisposalJobController extends Controller {
         try {
             $this->service->complete($disposalJob, $actor);
         } catch (Throwable $exception) {
-            return back()->withErrors(['status' => $exception->getMessage()]);
+            return back()->withErrors(['status' => ErrorText::for($exception)]);
         }
 
         return redirect()->route('disposal.show', $disposalJob)
@@ -196,7 +196,7 @@ class DisposalJobController extends Controller {
         try {
             $this->service->cancel($disposalJob, $actor, $reason);
         } catch (Throwable $exception) {
-            return back()->withErrors(['status' => $exception->getMessage()]);
+            return back()->withErrors(['status' => ErrorText::for($exception)]);
         }
 
         return redirect()->route('disposal.show', $disposalJob)
@@ -223,7 +223,7 @@ class DisposalJobController extends Controller {
         try {
             $this->service->transition($disposalJob, $actor, $target, $note !== '' ? $note : null);
         } catch (Throwable $exception) {
-            return back()->withErrors(['status' => $exception->getMessage()]);
+            return back()->withErrors(['status' => ErrorText::for($exception)]);
         }
 
         return redirect()->route('disposal.show', $disposalJob)->with('status', $message);

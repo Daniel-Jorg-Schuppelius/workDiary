@@ -26,7 +26,7 @@ return [
     'target' => [
         'nav' => 'Valori obiettivo',
         'title' => 'Valori obiettivo & benchmark',
-        'subtitle' => 'Definisci valori obiettivo per indicatore – i report mostrano obiettivo, valore effettivo e scostamento.',
+        'subtitle' => 'Definisca valori obiettivo per indicatore – i report mostrano obiettivo, valore effettivo e scostamento.',
         'create' => 'Aggiungi valore obiettivo',
         'edit' => 'Modifica valore obiettivo',
         'empty' => 'Nessun valore obiettivo ancora definito.',
@@ -81,7 +81,7 @@ return [
         ],
         'metric_label' => 'Indicatore',
         'window' => 'Finestra di confronto (giorni)',
-        'choose' => 'Seleziona una formazione.',
+        'choose' => 'Selezioni una formazione.',
         'member' => 'Dipendente',
         'acquired_on' => 'Acquisita il',
         'before' => 'Prima',

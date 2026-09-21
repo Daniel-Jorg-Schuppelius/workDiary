@@ -27,12 +27,9 @@
             <a href="{{ route('admin.toggl.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurück zum Import') }}</a>
         </div>
         <p class="mb-4 text-sm text-muted">
-            {{ __('Diese Zuordnungen entscheiden, welchem Kunden bzw. Projekt ein Toggl-Client/-Projekt bei künftigen Importen automatisch zugewiesen wird. Hier kannst du sie umbiegen oder entfernen.') }}
+            {{ __('Diese Zuordnungen entscheiden, welchem Kunden bzw. Projekt ein Toggl-Client/-Projekt bei künftigen Importen automatisch zugewiesen wird. Hier können Sie sie umbiegen oder entfernen.') }}
         </p>
 
-        @if (session('status'))
-            <div class="alert alert-success mb-3 text-sm">{{ session('status') }}</div>
-        @endif
         @if ($errors->any())
             <div class="alert alert-error mb-3 text-sm">{{ $errors->first() }}</div>
         @endif

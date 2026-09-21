@@ -12,7 +12,7 @@
 @section('nav-title', __('Plugin-Fehler'))
 
 @section('content')
-<x-index-page :subtitle="__(':plugin · :phase · :time', ['plugin' => $error->plugin_id, 'phase' => $error->phase, 'time' => $error->occurred_at->format('d.m.Y H:i')])">
+<x-index-page :subtitle="__(':plugin · :phase · :time', ['plugin' => $error->plugin_id, 'phase' => $error->phase, 'time' => $error->occurred_at->orgTz()->format('d.m.Y H:i')])">
     <x-slot:actions>
         <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
                     :href="route('admin.plugin-errors.index')"
@@ -68,7 +68,7 @@
             <div>
                 <div class="text-xs uppercase text-muted">{{ __('Bestätigt') }}</div>
                 <div class="text-sm">
-                    {{ $error->acknowledged_at?->format('d.m.Y H:i') }}
+                    {{ $error->acknowledged_at?->orgTz()->format('d.m.Y H:i') }}
                     @if ($error->acknowledger)
                         — {{ $error->acknowledger->name }}
                     @endif

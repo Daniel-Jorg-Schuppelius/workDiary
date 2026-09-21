@@ -14,7 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveMeterReadingRequest;
 use App\Models\{Asset, MeterReading, User};
 use App\Services\MeterReading\MeterReadingService;
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -91,7 +91,7 @@ class MeterReadingController extends Controller {
         } catch (InvalidArgumentException $e) {
             return back()
                 ->withInput()
-                ->withErrors(['value' => __($e->getMessage())]);
+                ->withErrors(['value' => __(ErrorText::for($e))]);
         }
 
         return redirect()

@@ -75,6 +75,24 @@ class AdminTimeEntryTest extends TestCase {
             ->assertSessionHasErrors('activity_type');
     }
 
+    /**
+     * UI-Fuzz 2026-09-21: `@if ($isEdit) readonly @endif` im <x-input-field>
+     * ließ Blade das Tag roh stehen — das Pflichtfeld „Schlüssel“ fehlte, weder
+     * Anlegen noch Bearbeiten war möglich.
+     */
+    public function test_category_dialog_renders_key_field_and_locks_it_on_edit(): void {
+        $this->actingAs($this->admin);
+
+        $this->get(route('activity-categories.create'))
+            ->assertOk()
+            ->assertSee('name="key"', false)
+            ->assertDontSee('<x-input-field', false);
+
+        $category = ActivityCategory::query()->firstOrFail();
+        $html = $this->get(route('activity-categories.edit', $category))->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('/<input[^>]*name="key"[^>]*readonly/s', (string) $html);
+    }
+
     public function test_activity_categories_index_requires_admin_for_writes(): void {
         $this->actingAs($this->user);
 

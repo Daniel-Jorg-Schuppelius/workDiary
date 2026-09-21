@@ -12,10 +12,12 @@ namespace App\Plugins\CardDav\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\{CardDavCard, CardDavConnection};
+use App\Models\PluginState;
+use App\Plugins\CardDav\CardDavPlugin;
 use App\Plugins\CardDav\Contracts\CardDavGatewayFactory;
 use App\Plugins\CardDav\Services\CardDavAddressbook;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
-use App\Support\UrlSafety;
+use App\Support\{ErrorText, UrlSafety};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
@@ -48,9 +50,8 @@ class CardDavAdminController extends Controller {
 
         return view('carddav::admin.index', [
             'connection' => $connection,
-            'health' => $connection instanceof CardDavConnection && $connection->isActive()
-                ? $this->probe($connection)
-                : null,
+            // Gespeicherter Stand statt Ping beim Seitenaufruf (UI-Fuzz 2026-09-21).
+            'healthState' => PluginState::forContext(CardDavPlugin::ID, $organization->id),
             'addressbooks' => (array) session(self::SESSION_BOOKS, []),
         ]);
     }
@@ -178,7 +179,7 @@ class CardDavAdminController extends Controller {
                 $connection->allowsPrivateNetwork(),
             );
         } catch (\Throwable $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         // Quellen-Wechsel: Sync-Stand und Spiegel gehören zum alten Adressbuch.
@@ -230,14 +231,5 @@ class CardDavAdminController extends Controller {
         }
 
         return back()->with('success', __('carddav.flash.disconnected'));
-    }
-
-    /** @return array{ok: bool} */
-    private function probe(CardDavConnection $connection): array {
-        try {
-            return ['ok' => app(CardDavGatewayFactory::class)->for($connection)->ping()];
-        } catch (Throwable) {
-            return ['ok' => false];
-        }
     }
 }

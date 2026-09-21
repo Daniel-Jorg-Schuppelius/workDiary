@@ -22,9 +22,6 @@
                         show-label>{{ __('Export (JSON)') }}</x-icon-btn>
         </x-slot:actions>
 
-        @if (session('status'))
-            <div class="alert alert-success">{{ session('status') }}</div>
-        @endif
 
         <div class="grid md:grid-cols-3 gap-4">
             <x-card class="md:col-span-2">
@@ -178,7 +175,7 @@
             <ul class="timeline timeline-vertical">
                 @foreach ($events as $e)
                     <li>
-                        <div class="timeline-start text-xs text-muted">{{ $e->created_at?->format('d.m.Y H:i') }}</div>
+                        <div class="timeline-start text-xs text-muted">{{ $e->created_at?->orgTz()->format('d.m.Y H:i') }}</div>
                         <div class="timeline-middle">●</div>
                         <div class="timeline-end timeline-box text-sm">{{ $e->event }}</div>
                     </li>

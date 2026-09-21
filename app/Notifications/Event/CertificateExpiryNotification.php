@@ -18,7 +18,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 class CertificateExpiryNotification extends DirectNotification {
     private const TITLE_KEY = 'Zertifikat läuft in :days Tagen ab';
 
-    private const MESSAGE_KEY = 'Dein Zertifikat für „:title" läuft am :date ab.';
+    private const MESSAGE_KEY = 'Ihr Zertifikat für „:title" läuft am :date ab.';
 
     public function __construct(
         public readonly int $eventId,
@@ -33,7 +33,7 @@ class CertificateExpiryNotification extends DirectNotification {
         return (new MailMessage)
             ->subject(__('Zertifikat läuft in :days Tagen ab', ['days' => $this->daysRemaining]))
             ->greeting(__('Hallo :name,', ['name' => $notifiable->name ?? '']))
-            ->line(__('Dein Zertifikat für „:title" läuft am :date ab.', [
+            ->line(__('Ihr Zertifikat für „:title" läuft am :date ab.', [
                 'title' => $this->eventTitle,
                 'date' => $this->expiresAt->isoFormat('LL'),
             ]))

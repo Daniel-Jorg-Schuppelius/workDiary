@@ -13,7 +13,7 @@ return [
     'focus' => [
         'admin' => [
             'title' => 'Aree di lavoro',
-            'subtitle' => 'Scegli quali aree di lavoro l’organizzazione offre nel selettore, rinominale e imposta una predefinita.',
+            'subtitle' => 'Scelga quali aree di lavoro l’organizzazione offre nel selettore, le rinomini e ne imposti una predefinita.',
             'hint' => 'Solo un suggerimento: l’area predefinita non è mai imposta — chiunque può cambiare in qualsiasi momento. Nascondere non modifica alcun permesso.',
             'list_heading' => 'Aree offerte',
             'configured_at' => 'Ultima modifica: :date',
@@ -32,8 +32,8 @@ return [
         'reveal_off' => 'Mostra solo il focus',
         'dialog' => [
             'eyebrow' => 'Focalizza la vista',
-            'title' => 'A cosa stai lavorando?',
-            'subtitle' => 'Scegli un’area di lavoro — la navigazione mostrerà solo gli ambiti pertinenti. Nulla viene eliminato o bloccato; puoi cambiare in qualsiasi momento.',
+            'title' => 'A cosa sta lavorando?',
+            'subtitle' => 'Scelga un’area di lavoro — la navigazione mostrerà solo gli ambiti pertinenti. Nulla viene eliminato o bloccato; può cambiare in qualsiasi momento.',
             'footnote' => 'Gli ambiti nascosti restano raggiungibili tramite la ricerca globale e «Mostra tutto».',
         ],
         'flash' => [
@@ -42,14 +42,14 @@ return [
         ],
         'personal' => [
             'title' => 'Area di lavoro personale',
-            'description' => 'La tua selezione di voci di menu.',
+            'description' => 'La sua selezione di voci di menu.',
             'heading' => 'Aree di lavoro personali',
             'manage' => 'Gestisci le aree di lavoro personali',
         ],
     ],
     'workspace' => [
         'title' => 'Aree di lavoro personali',
-        'subtitle' => 'Componi le tue aree di lavoro con le voci di menu. Compaiono nel selettore accanto alle viste predefinite e si limitano a nascondere — non cambiano mai i permessi.',
+        'subtitle' => 'Componga le sue aree di lavoro con le voci di menu. Compaiono nel selettore accanto alle viste predefinite e si limitano a nascondere — non cambiano mai i permessi.',
         'create' => 'Nuova area di lavoro',
         'edit' => 'Modifica area di lavoro',
         'empty' => 'Nessuna area di lavoro personale',
@@ -59,19 +59,19 @@ return [
         'items' => 'Voci di menu',
         'available' => 'Disponibili',
         'selected' => 'Selezionate',
-        'items_hint' => 'Vengono offerte solo le voci che puoi già vedere. Definisci l’ordine trascinando o con i pulsanti.',
+        'items_hint' => 'Vengono offerte solo le voci che può già vedere. Definisca l’ordine trascinando o con i pulsanti.',
         'add' => 'Aggiungi',
         'remove' => 'Rimuovi',
         'move_up' => 'Sposta su',
         'move_down' => 'Sposta giù',
-        'drag_hint' => 'Trascina per ordinare — oppure usa i pulsanti «Sposta su»/«Sposta giù».',
+        'drag_hint' => 'Trascini per ordinare — oppure usi i pulsanti «Sposta su»/«Sposta giù».',
         'count' => ':count voci di menu',
         'active' => 'Attiva',
         'delete_title' => 'Elimina area di lavoro',
         'delete_confirm' => 'L’area di lavoro verrà rimossa. Voci di menu e permessi restano invariati.',
         'error' => [
-            'no_items' => 'Seleziona almeno una voce di menu.',
-            'unknown_item' => 'Almeno una voce di menu non è disponibile per te.',
+            'no_items' => 'Selezioni almeno una voce di menu.',
+            'unknown_item' => 'Almeno una voce di menu non è disponibile per Lei.',
         ],
         'flash' => [
             'created' => 'Area di lavoro creata.',
@@ -87,12 +87,12 @@ return [
         'functions' => 'Tutte le funzioni',
     ],
     'page' => [
-        'subtitle' => 'Definisci l\'ambito funzionale visibile dell\'organizzazione: preset per partire subito oppure moduli singoli.',
+        'subtitle' => 'Definisca l\'ambito funzionale visibile dell\'organizzazione: preset per partire subito oppure moduli singoli.',
         'no_data_loss' => 'La disattivazione nasconde soltanto i moduli e blocca le loro pagine: nessun dato viene eliminato. Alla riattivazione torna tutto disponibile.',
     ],
     'presets' => [
         'heading' => 'Preset',
-        'hint' => 'Un preset è una scorciatoia: imposta in un solo passaggio la lista dei moduli qui sotto. Dopo puoi rifinire singolarmente.',
+        'hint' => 'Un preset è una scorciatoia: imposta in un solo passaggio la lista dei moduli qui sotto. Dopo può rifinire singolarmente.',
         'apply' => 'Applica il preset «:preset»',
         'all_modules' => 'Tutti i moduli con licenza',
         'module_count' => '{1} :count modulo aggiuntivo|[2,*] :count moduli aggiuntivi',
@@ -118,8 +118,8 @@ return [
         'no_recommendation' => 'Per questa organizzazione non esiste una raccomandazione del profilo di settore.',
     ],
     'customize' => [
-        'subtitle' => 'Attiva ciò che deve comparire nel menu — disattiva ciò che non ti serve. Vale solo per te, su tutti i dispositivi.',
-        'cosmetic_hint' => 'Nascondere non cambia i permessi: ricerca, segnalibri e link diretti continuano a funzionare. Con «Tutte le funzioni» recuperi tutto.',
+        'subtitle' => 'Attivi ciò che deve comparire nel menu — disattivi ciò che non le serve. Vale solo per Lei, su tutti i dispositivi.',
+        'cosmetic_hint' => 'Nascondere non cambia i permessi: ricerca, segnalibri e link diretti continuano a funzionare. Con «Tutte le funzioni» recupera tutto.',
         'sidebar_heading' => 'Navigazione laterale',
         'hide_section' => 'nascondi l\'intera sezione',
         'hide_group' => 'nascondi sottogruppo',

@@ -20,9 +20,6 @@
         <x-slot:subtitle>{{ __('Zeiteinträge aus einem Clockify-Detailed-Report übernehmen.') }}</x-slot:subtitle>
     </x-page-toolbar>
 
-    @if (session('status'))
-        <div class="alert alert-success text-sm">{{ session('status') }}</div>
-    @endif
     @if ($errors->any())
         <div class="alert alert-error text-sm">{{ $errors->first() }}</div>
     @endif

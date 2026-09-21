@@ -27,7 +27,7 @@ class UpdateProtocolRequest extends BaseFormRequest {
             'description' => ['sometimes', 'nullable', 'string', 'max:10000'],
             'state_initial' => ['sometimes', 'nullable', 'string', 'max:10000'],
             'state_final' => ['sometimes', 'nullable', 'string', 'max:10000'],
-            'occurred_at' => ['sometimes', 'nullable', 'date'],
+            'occurred_at' => ['sometimes', 'nullable', 'date', new \App\Rules\TimestampRange()],
             // Rule::enum statt Handliste (Vollaudit 2026-07, N48).
             'visibility' => ['sometimes', 'nullable', 'string', \Illuminate\Validation\Rule::enum(ProtocolVisibility::class)],
             'type' => ['sometimes', 'nullable', 'string', \Illuminate\Validation\Rule::enum(ProtocolType::class)],

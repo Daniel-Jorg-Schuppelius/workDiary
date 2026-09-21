@@ -17,7 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\{TravelLog, User, Vehicle};
-use App\Support\Sqid;
+use App\Support\{Sqid, Tz};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
@@ -165,7 +165,7 @@ class LogbookReportController extends Controller {
                 (string) $log->to_address,
                 (string) $log->purpose,
                 $log->user->name ?? '',
-                $log->locked_at?->format('Y-m-d H:i') ?? '',
+                Tz::toLocal($log->locked_at)?->format('Y-m-d H:i') ?? '',
                 $r['superseded'] ? 'ja' : '',
                 $log->corrects?->date?->toDateString() ?? '',
                 (string) $log->correction_reason,

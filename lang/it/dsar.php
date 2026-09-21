@@ -67,7 +67,7 @@ return [
         'deadline' => 'Il termine di legge decorre dalla ricezione e scade il :date.',
         'confirm_button' => 'Conferma indirizzo e-mail',
         'confirm_note' => 'La conferma attesta che questo indirizzo è raggiungibile. Non sostituisce la verifica della sua identità: il titolare la contatterà separatamente. Il clic non incide sul termine.',
-        'not_you' => 'Se non ha presentato lei questa richiesta, ignori questa e-mail. Nessuna informazione viene fornita senza verifica dell’identità.',
+        'not_you' => 'Se non ha presentato Lei questa richiesta, ignori questa e-mail. Nessuna informazione viene fornita senza verifica dell’identità.',
     ],
 
     'subject' => [

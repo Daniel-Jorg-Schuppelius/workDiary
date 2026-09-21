@@ -55,7 +55,7 @@
             </x-slot:head>
             @foreach ($entries as $entry)
                 <tr>
-                    <td class="whitespace-nowrap text-sm">{{ optional($entry->created_at)->format('Y-m-d H:i') }}</td>
+                    <td class="whitespace-nowrap text-sm">{{ $entry->created_at?->orgTz()->format('Y-m-d H:i') }}</td>
                     <td class="font-mono text-xs">{{ $entry->event }}</td>
                     <td class="text-sm">
                         @if ($entry->user_id && $actors->has($entry->user_id))

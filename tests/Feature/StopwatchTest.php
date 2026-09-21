@@ -132,7 +132,7 @@ class StopwatchTest extends TestCase {
             ->get(route('today.show'))
             ->assertOk()
             ->assertSee('Doku-Timer')
-            ->assertDontSee(__('Woran arbeitest du?'));
+            ->assertDontSee(__('Woran arbeiten Sie?'));
     }
 
     public function test_web_start_rejects_raw_integer_project_id(): void {

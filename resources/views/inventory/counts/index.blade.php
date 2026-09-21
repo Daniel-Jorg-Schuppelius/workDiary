@@ -82,7 +82,7 @@
                 </x-slot:head>
                 @forelse ($counts as $count)
                     <tr>
-                        <td>{{ $count->counted_at?->format('d.m.Y H:i') }}</td>
+                        <td>{{ $count->counted_at?->orgTz()->format('d.m.Y H:i') }}</td>
                         <td><span class="badge badge-sm">{{ $count->status->label() }}</span></td>
                         <td class="text-right"><a href="{{ route('inventory.counts.show', $count) }}" class="link">{{ __('Öffnen') }}</a></td>
                     </tr>

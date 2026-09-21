@@ -66,6 +66,21 @@ class SafetyEventTest extends TestCase {
         ]);
     }
 
+    /** UI-Fuzz 2026-09-21: Formular und Anzeige zeigten UTC — jedes Speichern zog den Zeitpunkt um den Zeitzonenversatz vor. */
+    public function test_occurred_at_roundtrips_in_local_time(): void {
+        $lead = $this->lead();
+        $this->actingAs($lead)->post(route('safety-events.store'), [
+            'kind' => SafetyEventKind::Hazard->value,
+            'severity' => SafetyEventSeverity::Low->value,
+            'occurred_at' => '2030-07-10T08:00',
+            'description' => 'Ölspur am Boden',
+        ])->assertRedirect();
+        $event = SafetyEvent::query()->firstOrFail();
+
+        $this->actingAs($lead)->get(route('safety-events.edit', $event))->assertOk()->assertSee('2030-07-10T08:00');
+        $this->actingAs($lead)->get(route('safety-events.show', $event))->assertOk()->assertSee('10.07.2030 08:00');
+    }
+
     public function test_event_no_runs_per_organization(): void {
         $lead = $this->lead();
         $service = app(SafetyEventService::class);

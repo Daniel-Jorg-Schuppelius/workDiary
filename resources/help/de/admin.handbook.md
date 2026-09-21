@@ -36,6 +36,6 @@ Empfohlene Reihenfolge bei der Ersteinrichtung:
 4. Regeln (Benachrichtigungen, Zuschläge) konfigurieren,
 5. Sicherheit und Backup-Überwachung scharf schalten.
 
-Grundsatz: Nutze für fachliche Korrekturen immer den fachlichen Weg
+Grundsatz: Nutzen Sie für fachliche Korrekturen immer den fachlichen Weg
 (Korrekturantrag, Storno, neue Version) statt Admin-Durchgriff – das
 hält Audit-Spur und Nachvollziehbarkeit intakt.

@@ -210,7 +210,7 @@ return [
     'datev' => [
         'title' => 'Lotto di registrazioni DATEV',
         'menu' => 'Lotto di registrazioni DATEV',
-        'subtitle' => 'Trasmetti le fatture emesse, le note di credito e le spese approvate di un periodo concluso come lotto di registrazioni DATEV (V700) verificabile.',
+        'subtitle' => 'Trasmetta le fatture emesse, le note di credito e le spese approvate di un periodo concluso come lotto di registrazioni DATEV (V700) verificabile.',
         'empty' => 'Nessun lotto di registrazioni ancora creato.',
         'empty_sources' => 'Nessuna registrazione contabile in questo lotto.',
         'field' => [
@@ -264,8 +264,8 @@ return [
         ],
         'hint' => [
             'period_sources' => 'Vengono considerate le fatture emesse/pagate con data documento nel periodo che non sono ancora incluse in alcun lotto finalizzato.',
-            'include_expenses' => 'Opzionale: includi inoltre le spese approvate come registrazione di costo (MVP — conti semplificati).',
-            'include_reversals' => 'Opzionale: trasmetti i documenti stornati e già trasferiti come registrazioni di storno generale.',
+            'include_expenses' => 'Opzionale: includere inoltre le spese approvate come registrazione di costo (MVP — conti semplificati).',
+            'include_reversals' => 'Opzionale: trasmettere i documenti stornati e già trasferiti come registrazioni di storno generale.',
         ],
         'flash' => [
             'created' => 'Lotto di registrazioni creato come bozza.',

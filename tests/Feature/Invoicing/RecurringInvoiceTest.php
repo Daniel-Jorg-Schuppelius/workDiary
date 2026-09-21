@@ -165,4 +165,23 @@ class RecurringInvoiceTest extends TestCase {
             ->get(route('invoice-schedules.show', $schedule))
             ->assertNotFound();
     }
+
+    /** UI-Fuzz 2026-09-21: Der Bearbeiten-Dialog zeigt den Kunden nur an — die Pflichtregel ließ jedes Speichern scheitern. */
+    public function test_update_without_customer_field_saves(): void {
+        $schedule = $this->makeSchedule();
+
+        $this->actingAs($this->admin)
+            ->put(route('invoice-schedules.update', $schedule), [
+                'title' => 'Wartungsvertrag Quartal',
+                'interval_unit' => InvoiceSchedule::UNIT_MONTH,
+                'interval_count' => 3,
+                'billing_period_mode' => InvoiceSchedule::MODE_PREVIOUS,
+                'next_run_on' => '2030-06-01',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $schedule->refresh();
+        $this->assertSame('Wartungsvertrag Quartal', $schedule->title);
+        $this->assertSame($this->customer->id, $schedule->customer_id);
+    }
 }

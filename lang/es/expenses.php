@@ -27,7 +27,7 @@ return [
         'linked' => 'Comprobante :number vinculado.',
         'unlinked' => 'Vínculo eliminado.',
         'title' => 'Archivo del recibo',
-        'hint' => 'Adjunta el recibo al gasto — sin él no se puede verificar ni trasladar después a contabilidad.',
+        'hint' => 'Adjunte el recibo al gasto — sin él no se puede verificar ni trasladar después a contabilidad.',
     ],
     'title' => [
         'index' => 'Gastos',
@@ -85,7 +85,7 @@ return [
     ],
     'help' => [
         'color' => 'Define el color de acento para el icono, la insignia y los resaltados en las listas.',
-        'gross_first' => 'Introduce el importe bruto del justificante. El importe neto y el impuesto se calculan automáticamente.',
+        'gross_first' => 'Introduzca el importe bruto del justificante. El importe neto y el impuesto se calculan automáticamente.',
         'requires_receipt' => 'Si está activo, se requiere al menos un justificante (foto/PDF) al registrar.',
     ],
     'empty' => [

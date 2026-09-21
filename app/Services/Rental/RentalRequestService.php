@@ -19,6 +19,7 @@ use App\Mail\RentalRequestDecisionMail;
 use App\Models\{Asset, Customer, Organization, User};
 use App\Models\Rental\{RentalProfile, RentalRequest};
 use App\Services\Notification\NotificationDispatcher;
+use App\Support\CarbonFmt;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{DB, Log, Mail};
@@ -130,8 +131,8 @@ class RentalRequestService {
             throw new RentalConflictException(
                 (string) __(':asset ist von :from bis :to bereits belegt (:kind).', [
                     'asset' => $asset->name,
-                    'from' => $conflict->blockedFrom()->format('d.m.Y H:i'),
-                    'to' => $conflict->blockedUntil()->format('d.m.Y H:i'),
+                    'from' => CarbonFmt::fdatetime($conflict->blockedFrom()),
+                    'to' => CarbonFmt::fdatetime($conflict->blockedUntil()),
                     'kind' => $conflict->kind->label(),
                 ]),
                 $conflict,

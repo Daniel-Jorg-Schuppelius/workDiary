@@ -22,6 +22,7 @@ use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Plugins\OrgaMax\Services\{OrgaMaxConnectionService, OrgaMaxScopePreflight, OrgaMaxSyncService};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Services\Integration\IntegrationOutboxService;
+use App\Support\ErrorText;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Auth;
@@ -96,7 +97,7 @@ class OrgaMaxAdminController extends Controller {
                 $data['api_secret'] ?? null,
             );
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         // Die Callback-URL (inkl. State) wird in orgaMAX als Erweiterungs-URL
@@ -122,7 +123,7 @@ class OrgaMaxAdminController extends Controller {
             return redirect()->route('admin.orgamax.index')
                 ->with('error', __('orgamax.error.token_exchange_failed', ['status' => $e->getCode()]));
         } catch (RuntimeException $e) {
-            return redirect()->route('admin.orgamax.index')->with('error', $e->getMessage());
+            return redirect()->route('admin.orgamax.index')->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('admin.orgamax.index')->with('success', __('orgamax.connect.confirm_account'));
@@ -137,7 +138,7 @@ class OrgaMaxAdminController extends Controller {
         try {
             $connection = $this->connections->confirm($connection, $admin);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with(

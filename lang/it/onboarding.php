@@ -41,78 +41,78 @@ return [
         'org' => [
             'profile' => [
                 'title' => 'Completa i dati dell\'organizzazione',
-                'description' => 'Inserisci nome, fuso orario e impostazioni di base locali dell\'organizzazione.',
+                'description' => 'Inserisca nome, fuso orario e impostazioni di base locali dell\'organizzazione.',
                 'link' => 'Apri organizzazione',
             ],
             'branch_profile' => [
                 'title' => 'Scegli il profilo di settore',
-                'description' => 'Seleziona un profilo di settore per avere valori predefiniti adatti alle classificazioni.',
+                'description' => 'Selezioni un profilo di settore per avere valori predefiniti adatti alle classificazioni.',
                 'link' => 'Apri profili di settore',
             ],
             'scope' => [
                 'title' => 'Scegliere l\'ambito funzionale',
-                'description' => 'Scegli un preset di ambito funzionale o adatta i moduli attivi: ciò che non serve resta nascosto senza perdere dati.',
+                'description' => 'Scelga un preset di ambito funzionale o adatti i moduli attivi: ciò che non serve resta nascosto senza perdere dati.',
                 'link' => 'Apri l\'ambito funzionale',
             ],
             'workspaces' => [
                 'title' => 'Configura le aree di lavoro',
-                'description' => 'Scegli quali aree compaiono nel selettore e quale è predefinita — chiunque può cambiare in qualsiasi momento.',
+                'description' => 'Scelga quali aree compaiono nel selettore e quale è predefinita — chiunque può cambiare in qualsiasi momento.',
                 'link' => 'Apri le aree di lavoro',
             ],
         ],
         'users' => [
             'invite' => [
                 'title' => 'Invita i primi utenti',
-                'description' => 'Invita almeno un\'altra persona attiva nella tua organizzazione.',
+                'description' => 'Inviti almeno un\'altra persona attiva nella sua organizzazione.',
                 'link' => 'Apri membri',
             ],
         ],
         'roles' => [
             'check' => [
                 'title' => 'Verifica i ruoli',
-                'description' => 'Assicurati che siano assegnati almeno un amministratore dell\'organizzazione e un operatore.',
+                'description' => 'Si assicuri che siano assegnati almeno un amministratore dell\'organizzazione e un operatore.',
                 'link' => 'Apri gestione accessi',
             ],
         ],
         'classification' => [
             'check' => [
                 'title' => 'Verifica le classificazioni',
-                'description' => 'Conferma o sostituisci almeno un dominio di classificazione per l\'organizzazione.',
+                'description' => 'Confermi o sostituisca almeno un dominio di classificazione per l\'organizzazione.',
                 'link' => 'Apri classificazioni',
             ],
         ],
         'customer' => [
             'first' => [
                 'title' => 'Crea il primo cliente',
-                'description' => 'Aggiungi il primo cliente manualmente o tramite importazione CSV.',
+                'description' => 'Aggiunga il primo cliente manualmente o tramite importazione CSV.',
                 'link' => 'Apri clienti',
             ],
         ],
         'work' => [
             'first' => [
                 'title' => 'Primo progetto o commessa',
-                'description' => 'Crea un primo progetto o avvia la prima registrazione nel registro.',
+                'description' => 'Crei un primo progetto o avvii la prima registrazione nel registro.',
                 'link' => 'Apri progetti',
             ],
         ],
         'time' => [
             'first' => [
                 'title' => 'Prima registrazione di tempo',
-                'description' => 'Registra almeno una voce di tempo per attivare il monitoraggio del tempo.',
+                'description' => 'Registri almeno una voce di tempo per attivare il monitoraggio del tempo.',
                 'link' => 'Apri monitoraggio del tempo',
             ],
         ],
         'protocol' => [
             'first_signed' => [
                 'title' => 'Firma il primo protocollo',
-                'description' => 'Crea un protocollo e completa la firma.',
+                'description' => 'Crei un protocollo e completi la firma.',
                 'link' => 'Apri registro',
             ],
         ],
         'backup' => [
             'heartbeat' => [
                 'title' => 'Heartbeat di backup',
-                'description' => 'Configura l\'esecuzione del backup in modo che vengano scritti regolarmente heartbeat riusciti.',
+                'description' => 'Configuri l\'esecuzione del backup in modo che vengano scritti regolarmente heartbeat riusciti.',
                 'link' => 'Apri registro di audit',
             ],
         ],

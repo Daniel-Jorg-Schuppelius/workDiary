@@ -8,7 +8,7 @@ related:
     - auth.login
 ---
 
-L'assistente di installazione ti guida passo per passo nella prima
+L'assistente di installazione la guida passo per passo nella prima
 configurazione di WorkDiary; ogni passo salva subito i propri valori, quindi
 un'interruzione è ripetibile senza rischi. I passi: **requisiti** (verifica
 server e PHP), **applicazione** (nome, URL, lingua, fuso orario, chiave

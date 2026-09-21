@@ -10,7 +10,7 @@ related:
 ---
 
 Oltre alle proprie unità, la piattaforma riconosce i formati di scambio più
-diffusi: puoi importare corsi acquistati e avviare i tuoi corsi in altri
+diffusi: può importare corsi acquistati e avviare i suoi corsi in altri
 sistemi.
 
 **SCORM 1.2 e 2004** — Un pacchetto SCORM è uno ZIP con un manifesto. Al

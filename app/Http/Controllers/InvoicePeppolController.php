@@ -14,6 +14,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Invoice;
 use App\Services\Peppol\PeppolInvoiceDispatcher;
+use App\Support\ErrorText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use RuntimeException;
@@ -33,7 +34,7 @@ class InvoicePeppolController extends Controller {
         try {
             $dispatch = $dispatcher->send($invoice);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         $meta = $dispatch->meta ?? [];

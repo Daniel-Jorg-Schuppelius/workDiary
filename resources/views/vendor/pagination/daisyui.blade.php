@@ -28,7 +28,7 @@
                     @if ($page == $paginator->currentPage())
                         <button type="button" class="join-item btn btn-sm btn-primary no-animation pointer-events-none" aria-current="page">{{ $page }}</button>
                     @else
-                        <a href="{{ $url }}" class="join-item btn btn-sm btn-outline" aria-label="{{ __('Gehe zu Seite :page', ['page' => $page]) }}">{{ $page }}</a>
+                        <a href="{{ $url }}" class="join-item btn btn-sm btn-outline" aria-label="{{ __('Zu Seite :page', ['page' => $page]) }}">{{ $page }}</a>
                     @endif
                 @endforeach
             @endif

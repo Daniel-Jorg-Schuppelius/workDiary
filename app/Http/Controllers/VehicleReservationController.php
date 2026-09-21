@@ -14,6 +14,7 @@ use App\Exceptions\{AssetNotUsableException, DriverLicenseCheckOverdueException,
 use App\Http\Requests\StoreVehicleReservationRequest;
 use App\Models\{DiaryEntry, User, Vehicle, VehicleReservation};
 use App\Services\Dispatch\VehicleReservationService;
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -36,8 +37,9 @@ class VehicleReservationController extends Controller {
 
         $vehicle = null;
         if ($request->filled('vehicle')) {
-            $vehicle = Vehicle::query()->where('sqid', $request->string('vehicle'))->first()
-                ?? Vehicle::query()->find($request->integer('vehicle'));
+            // sqid ist keine Spalte (where('sqid') warf 1054) — dekodieren, numerisch als Fallback.
+            $vehicleId = Sqid::decodeOrNumeric(Vehicle::class, (string) $request->input('vehicle'));
+            $vehicle = $vehicleId !== null ? Vehicle::query()->find($vehicleId) : null;
             if ($vehicle !== null) {
                 $query->where('vehicle_id', $vehicle->getKey());
             }

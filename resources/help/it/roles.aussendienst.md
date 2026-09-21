@@ -1,5 +1,5 @@
 ---
-title: "La tua giornata in WorkDiary: Servizio esterno"
+title: "La sua giornata in WorkDiary: Servizio esterno"
 topic: roles.aussendienst
 version: 1
 audience:
@@ -11,15 +11,15 @@ related:
     - glossary.core
 ---
 
-Come servizio esterno registri in mobilità tempi, incarichi, giri e
-spese, sempre sui tuoi interventi. Flusso tipico: avviare la
+Come servizio esterno registra in mobilità tempi, incarichi, giri e
+spese, sempre sui suoi interventi. Flusso tipico: avviare la
 **rilevazione tempi** (cronometro o «Nuova voce») con progetto/cliente
 e categoria di attività, documentare l'incarico con foto e allegati nel
 fascicolo, generare il **verbale** e farlo **firmare** al cliente in
 loco, gestire giro e libro di bordo, e chiudere la giornata inserendo
-le pause. Puoi creare, modificare ed eliminare le tue voci di tempo
+le pause. Può creare, modificare ed eliminare le sue voci di tempo
 fino all'approvazione — poi ogni correzione passa da una **richiesta di
-correzione** — oltre a gestire i tuoi incarichi, richiedere ferie e
-consultare il tuo conto ore. Clienti e progetti sono in sola lettura;
+correzione** — oltre a gestire i suoi incarichi, richiedere ferie e
+consultare il suo conto ore. Clienti e progetti sono in sola lettura;
 approvazioni, report su altre persone e pagine di amministrazione non
-fanno parte del tuo profilo.
+fanno parte del suo profilo.

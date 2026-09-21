@@ -19,13 +19,13 @@ non appartiene a un singolo caso.
 
 Procedura tipica:
 
-1. Crea una raccolta dall'accesso **Conoscenza** con **Gestisci raccolte**,
+1. Crei una raccolta dall'accesso **Conoscenza** con **Gestisci raccolte**,
    se serve come sottoraccolta di un'altra.
    Le raccolte si annidano fino a cinque livelli e si possono spostare in
    seguito.
-2. Nella pagina di dettaglio di un contenuto scegli **Aggiungi a raccolta**. Un
+2. Nella pagina di dettaglio di un contenuto scelga **Aggiungi a raccolta**. Un
    contenuto può stare in più raccolte; non viene creata alcuna copia.
-3. **Archivia** le raccolte che non servono più invece di eliminarle: le
+3. **Archivi** le raccolte che non servono più invece di eliminarle: le
    assegnazioni restano e si possono ripristinare.
 
 **Una raccolta non concede accessi.** Ognuno vede solo ciò che può già vedere:
@@ -47,11 +47,11 @@ documenti sono schede di questa pagina e le raccolte ne sono la modalità di
 gestione. Ogni scheda mantiene colonne e azioni proprie: scadenze e rilascio
 restano ai documenti, la pubblicazione degli articoli alla knowledge base.
 
-Il passaggio mantiene il filtro: scegli un cliente e vai su **Documenti** per
+Il passaggio mantiene il filtro: scelga un cliente e vada su **Documenti** per
 vedere i suoi documenti. Viene portato solo ciò che la scheda sa applicare —
 un articolo non appartiene a nessun cliente, quindi lì la scelta resta fuori.
 
-Seleziona più contenuti e usa **Aggiungi** per metterli insieme in una raccolta;
+Selezioni più contenuti e usi **Aggiungi** per metterli insieme in una raccolta;
 lo stesso vale nei risultati della **Ricerca** per note, articoli e corsi.
 
 ## Convertire una nota in articolo
@@ -70,7 +70,7 @@ lettura, senza riscrittura e senza sincronizzazione continua. L'accesso
 
 - **Importa Obsidian** legge un vault Obsidian tramite una connessione cartella
   esistente dell'acquisizione documenti cloud (Nextcloud, OneDrive, Dropbox,
-  Google Drive). Indica il percorso del vault relativo alla cartella radice
+  Google Drive). Indichi il percorso del vault relativo alla cartella radice
   della connessione. Le sottocartelle diventano raccolte, i tag dell'intestazione
   YAML e i `#tag` nel testo vengono mantenuti, i `[[wikilink]]` diventano
   riferimenti. `.obsidian/` e `.trash/` restano esclusi.
@@ -92,7 +92,7 @@ cosa rimanda un contenuto e dove viene citato:
 
 - **Aggiungi riferimento** collega il contenuto a una nota, una mappa di idee,
   un articolo della knowledge base, un documento, un corso o un percorso
-  formativo. Con il campo di ricerca puoi restringere l'elenco.
+  formativo. Con il campo di ricerca può restringere l'elenco.
 - **Citato in** elenca, raggruppato per tipo, tutto ciò che punta alla pagina,
   compresi i collegamenti della knowledge base e le destinazioni convertite o
   collegate dai nodi delle idee. Clienti, progetti e ordini mostrano questo
@@ -101,7 +101,7 @@ cosa rimanda un contenuto e dove viene citato:
   collegamenti della knowledge base e delle mappe di idee si gestiscono lì.
 
 Come per le raccolte, un riferimento non concede accessi: una fonte compare solo
-se puoi già aprirla.
+se può già aprirla.
 
 Per creare e riempire raccolte e aggiungere riferimenti serve il diritto
 «Gestire raccolte e riferimenti»; per vedere le raccolte, «Vedere le raccolte».

@@ -122,7 +122,7 @@
                     @if (! $activeChannel->isDirect())
                         <x-action-form :action="route('chat.channels.leave', $activeChannel)"
                               data-confirm-title="{{ __('Kanal verlassen?') }}"
-                              :confirm="__('Du erhältst keine neuen Nachrichten dieses Kanals mehr.')"
+                              :confirm="__('Sie erhalten keine neuen Nachrichten dieses Kanals mehr.')"
                               :confirm-label="__('Verlassen')"
                               confirm-icon="logout">
                             <button class="btn btn-xs btn-ghost btn-square text-error" title="{{ __('Verlassen') }}" aria-label="{{ __('Verlassen') }}"><x-icon name="logout" size="1.1rem" /></button>
@@ -191,7 +191,7 @@
             <x-empty-state class="m-3 min-h-0 flex-1"
                            icon="forum"
                            :title="__('Kein Kanal ausgewählt')"
-                           :message="__('Wähle links einen Kanal oder erstelle einen neuen.')" />
+                           :message="__('Wählen Sie links einen Kanal oder erstellen Sie einen neuen.')" />
         @endif
     </section>
 

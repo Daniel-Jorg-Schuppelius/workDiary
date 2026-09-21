@@ -12,8 +12,8 @@ related:
     - glossary.core
 ---
 
-Im **Schwachstellenregister** führst du bekannte Schwachstellen mit
-Kritikalität, Verantwortung und Fristen und entscheidest bewusst über
+Im **Schwachstellenregister** führen Sie bekannte Schwachstellen mit
+Kritikalität, Verantwortung und Fristen und entscheiden bewusst über
 ihre Ausnutzbarkeit.
 
 Typischer Ablauf:
@@ -21,16 +21,16 @@ Typischer Ablauf:
 1. **Schwachstelle erfassen**: Titel, optional eine Kennung (z. B. eine
    CVE-Nummer), den CVSS-Wert und die betroffene Komponente. Die
    Kritikalität wird aus dem CVSS-Wert abgeleitet, lässt sich aber
-   übersteuern. Optional verknüpfst du ein Produkt aus dem
-   Softwareinventar und setzt eine Frist.
+   übersteuern. Optional verknüpfen Sie ein Produkt aus dem
+   Softwareinventar und setzen eine Frist.
 2. **Status pflegen**: von „Offen" über „In Prüfung" und „In Behebung"
    bis „Behoben"; alternativ „Akzeptiert" (bewusstes Restrisiko) oder
    „Nicht betroffen".
-3. **Ausnutzbarkeit entscheiden**: Lege fest, ob die Schwachstelle in der
+3. **Ausnutzbarkeit entscheiden**: Legen Sie fest, ob die Schwachstelle in der
    konkreten Konfiguration ausnutzbar ist. „Ausnutzbar" und „Nicht
    ausnutzbar" erfordern eine **Pflichtbegründung**.
 
-**Advisories importieren** (CSAF/VEX): Lade ein maschinenlesbares Advisory
+**Advisories importieren** (CSAF/VEX): Laden Sie ein maschinenlesbares Advisory
 als JSON hoch. Der Import gleicht die betroffenen Komponenten gegen das
 Softwareinventar und die letzte Release-Stückliste (SBOM) ab und legt je
 Treffer einen Schwachstelleneintrag an.

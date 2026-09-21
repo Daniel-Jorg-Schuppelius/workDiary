@@ -30,7 +30,8 @@
             'parent' => $customerSqids[(int) $s->customer_id] ?? '',
         ])->values();
     @endphp
-    <div x-data="dependentSelect(@js((string) old('customer_id', $job?->customer?->sqid ?? '')), @js($siteOptions))"
+    <div x-data="dependentSelect(@js((string) old('customer_id', $job?->customer?->sqid ?? '')))"
+         data-items="{{ json_encode($siteOptions) }}"
          class="space-y-4">
         <x-form-group :legend="__('disposal.form.group_assignment')" icon="recycling" tone="primary" cols="2">
             <x-select-field name="customer_id" :label="__('Kunde')" required x-model="parent">

@@ -16,7 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{Asset, User};
 use App\Models\Rental\RentalRequest;
 use App\Services\Rental\RentalRequestService;
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid, Tz};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -87,12 +87,12 @@ class RentalRequestController extends Controller {
                 $user,
                 $asset,
                 $group,
-                Carbon::parse((string) $data['from']),
-                Carbon::parse((string) $data['to']),
+                Carbon::instance(Tz::parse((string) $data['from'])),
+                Carbon::instance(Tz::parse((string) $data['to'])),
                 $data['note'] ?? null,
             );
         } catch (RuntimeException $e) {
-            return back()->withInput()->with('error', $e->getMessage());
+            return back()->withInput()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('customer.rentals.requests.index')
@@ -110,7 +110,7 @@ class RentalRequestController extends Controller {
         try {
             $this->service->withdrawFromPortal($rentalRequest, $user);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Verleih-Anfrage zurückgenommen.'));
@@ -147,7 +147,7 @@ class RentalRequestController extends Controller {
                 return null;
             }
             try {
-                return Carbon::parse($raw);
+                return Carbon::instance(Tz::parse($raw));
             } catch (\Carbon\Exceptions\InvalidFormatException) {
                 return null;
             }

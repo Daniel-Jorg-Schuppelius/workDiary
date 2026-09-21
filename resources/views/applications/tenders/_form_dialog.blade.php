@@ -79,7 +79,7 @@
         <x-input-field name="notice_url" type="url" :label="__('Bekanntmachung (URL)')" span="2" :value="old('notice_url', $opportunity->notice_url ?? '')" />
         <x-input-field name="participation_deadline" type="date" :label="__('Teilnahmefrist')" :value="old('participation_deadline', optional($opportunity->participation_deadline)->toDateString())" />
         <x-input-field name="opening_at" type="datetime-local" :label="__('Eröffnungstermin')"
-                       :value="old('opening_at', optional($opportunity->opening_at)->format('Y-m-d\TH:i'))" />
+                       :value="old('opening_at', $opportunity->opening_at?->orgTz()->format('Y-m-d\TH:i'))" />
         <x-input-field name="binding_until" type="date" :label="__('Bindefrist')"
                        :hint="__('Bis wann das Angebot bindet — danach ist der Bieter frei.')"
                        :value="old('binding_until', optional($opportunity->binding_until)->toDateString())" />

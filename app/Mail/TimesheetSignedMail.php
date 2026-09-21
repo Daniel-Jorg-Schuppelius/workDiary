@@ -29,7 +29,7 @@ class TimesheetSignedMail extends Mailable {
     }
 
     public function content(): Content {
-        return new Content(view: 'mail.timesheet-signed', with: [
+        return new Content(markdown: 'mail.timesheet-signed', with: [
             'timesheet' => $this->timesheet,
         ]);
     }

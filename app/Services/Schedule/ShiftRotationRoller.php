@@ -16,6 +16,7 @@ use App\Enums\Shift\ScheduledShiftStatus;
 use App\Enums\Vacation\VacationStatus;
 use App\Models\{OnCallShift, Organization, ScheduledShift, ShiftRotationAssignment, SickLeave, Vacation};
 use App\Support\Query\DateRange;
+use App\Support\Tz;
 use Carbon\CarbonImmutable;
 
 /**
@@ -157,17 +158,23 @@ final class ShiftRotationRoller {
      * idempotent über ein exaktes Zeitfenster-Match.
      */
     private function createOnCallShift(Organization $organization, int $userId, CarbonImmutable $day, string $startTime, string $endTime): void {
-        $start = $day->setTimeFromTimeString($startTime);
-        $end = $day->setTimeFromTimeString($endTime);
+        // Rollplan-Uhrzeiten sind Ortszeit, start_at/end_at UTC wie beim manuellen Anlegen (UI-Fuzz 2026-09-21).
+        $tz = Tz::ofOrganization($organization);
+        $start = CarbonImmutable::parse($day->toDateString() . ' ' . $startTime, $tz);
+        $end = CarbonImmutable::parse($day->toDateString() . ' ' . $endTime, $tz);
         if ($end->lessThanOrEqualTo($start)) {
             $end = $end->addDay();
         }
 
+        // Vor dem Fix vorausgerollte Dienste tragen die Ortszeit roh — sie gelten als vorhanden, sonst entstünden Dubletten.
         $exists = OnCallShift::query()
             ->where('user_id', $userId)
-            ->where('start_at', $start->toDateTimeString())
-            ->where('end_at', $end->toDateTimeString())
+            ->where(fn ($q) => $q
+                ->where(fn ($w) => $w->where('start_at', $start->utc()->toDateTimeString())->where('end_at', $end->utc()->toDateTimeString()))
+                ->orWhere(fn ($w) => $w->where('start_at', $start->toDateTimeString())->where('end_at', $end->toDateTimeString())))
             ->exists();
+        $start = $start->utc();
+        $end = $end->utc();
         if ($exists) {
             return;
         }

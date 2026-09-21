@@ -34,9 +34,6 @@
             </x-page-toolbar>
         </x-slot:toolbar>
 
-        @if (session('status'))
-            <div class="alert alert-success">{{ session('status') }}</div>
-        @endif
 
         <div class="alert alert-info rounded-2xl px-5 py-3 text-sm shadow-xs">
             <x-icon name="info" class="text-base" />

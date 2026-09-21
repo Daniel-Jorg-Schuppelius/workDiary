@@ -159,8 +159,8 @@ class MonthClosureBundleService {
         foreach ($attendances as $attendance) {
             $rows[] = [
                 (string) $attendance->date?->toDateString(),
-                (string) ($attendance->started_at?->format('H:i') ?? ''),
-                (string) ($attendance->ended_at?->format('H:i') ?? ''),
+                (string) (Tz::toLocal($attendance->started_at)?->format('H:i') ?? ''),
+                (string) (Tz::toLocal($attendance->ended_at)?->format('H:i') ?? ''),
                 (string) (int) $attendance->duration_minutes,
                 (string) ($attendance->status->value ?? ''),
             ];

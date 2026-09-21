@@ -15,6 +15,7 @@ use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, Organization, Project, TimeEntry, User};
 use App\Plugins\Support\AttachesImportedTags;
 use App\Plugins\Toggl\Sources\{FolderWorkspaceSource, TogglEntry, TogglWorkspaceReader, WorkspaceSourceInterface};
+use App\Support\Tz;
 use CommonToolkit\Helper\Data\EmailHelper;
 use CommonToolkit\Helper\FileSystem\Folder;
 use Illuminate\Support\Facades\DB;
@@ -104,7 +105,7 @@ class TogglExportImporter {
             if ($path === null || ! Folder::exists($path)) {
                 continue;
             }
-            $sources[(string) $folder] = new FolderWorkspaceSource($path, $this->reader);
+            $sources[(string) $folder] = new FolderWorkspaceSource($path, $this->reader, Tz::ofOrganization($organization));
         }
 
         return $this->run($organization, $sources, $workspaceModes, $userMode, $dryRun, $userMap);
@@ -569,9 +570,9 @@ class TogglExportImporter {
             'organization_id' => $organization->id,
             'project_id' => $project->id,
             'user_id' => $user->id,
-            'date' => $entry->startedAt->toDateString(),
-            'started_at' => $entry->startedAt,
-            'ended_at' => $entry->endedAt,
+            'date' => $entry->startedAt->setTimezone(Tz::ofOrganization($organization))->toDateString(),
+            'started_at' => $entry->startedAt->utc(),
+            'ended_at' => $entry->endedAt->utc(),
             'kind' => TimeEntryKind::Work,
             'description' => $description,
         ];

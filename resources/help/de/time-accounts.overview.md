@@ -9,12 +9,12 @@ related:
 
 Zusatz-Zeitkonten führen ausgewählte Zeitgrößen als eigene Konten — zum
 Beispiel einen Zähler geleisteter Nachtdienste, ein Freizeitkonto für
-Mehrarbeit oder gesammelte Zulagenstunden. Gleitzeit und Urlaub findest du
+Mehrarbeit oder gesammelte Zulagenstunden. Gleitzeit und Urlaub finden Sie
 weiterhin im Arbeitszeitkonto.
 
 Die Übersicht zeigt je Konto den aktuellen Stand mit Ampel (Schwellen legt
 die Organisation fest), den durchschnittlichen Monatsumsatz und einen
-einfachen Trend. Über „Journal ansehen" siehst du jede einzelne Buchung
+einfachen Trend. Über „Journal ansehen" sehen Sie jede einzelne Buchung
 mit Datum, Menge, Quelle und Anmerkung — Korrekturen erscheinen als
 Storno-Gegenbuchung, nichts wird überschrieben.
 

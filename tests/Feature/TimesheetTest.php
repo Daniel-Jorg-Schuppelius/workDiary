@@ -18,7 +18,7 @@ use App\Models\{Material, Project, TimeEntry, Timesheet, User};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\{Mail, Storage};
+use Illuminate\Support\Facades\{Exceptions, Mail, Storage};
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -169,6 +169,23 @@ class TimesheetTest extends TestCase {
 
         $this->assertSame('15.00', $usage->fresh()->line_total_net?->getAmount());
         $this->assertSame('15.00', (string) $ts->fresh()->totals_material_net);
+    }
+
+    /** UI-Fuzz 2026-09-21: Menge × Preis mehrerer Zeilen sprengte totals_material_net decimal(12,2) (1264). */
+    public function test_material_lines_cannot_exceed_the_timesheet_total(): void {
+        Exceptions::fake();
+        $ts = $this->makeTimesheet();
+        $line = ['description' => 'Großteil', 'quantity' => '99999.999', 'unit' => 'Stk', 'unit_price' => '99999.9999'];
+
+        $this->actingAs($this->user)
+            ->post(route('projects.timesheets.materials.store', [$this->project, $ts]), $line)
+            ->assertSessionHasNoErrors();
+        $this->actingAs($this->user)
+            ->post(route('projects.timesheets.materials.store', [$this->project, $ts]), $line)
+            ->assertSessionHasErrors('quantity');
+
+        $this->assertSame(1, $ts->materialUsages()->count());
+        Exceptions::assertNothingReported();
     }
 
     public function test_signature_locks_editing_and_dispatches_mail(): void {
@@ -428,6 +445,27 @@ class TimesheetTest extends TestCase {
         $sheets = Timesheet::query()->where('work_date', '2030-04-03 00:00:00')->get();
         $this->assertCount(2, $sheets);
         $this->assertSame(TimesheetStatus::Signed, $signed->fresh()->status);
+    }
+
+    /** UI-Fuzz 2026-09-21: Umdatieren auf den Tag eines anderen offenen Zettels warf timesheets_open_day_unique (500). */
+    public function test_redating_onto_another_open_sheet_is_a_field_error(): void {
+        $this->makeTimesheet(['work_date' => '2030-04-05']);
+        $moved = $this->makeTimesheet(['work_date' => '2030-04-06']);
+        $this->makeTimesheet(['work_date' => '2030-04-07', 'status' => TimesheetStatus::Signed->value]);
+
+        $this->actingAs($this->user)
+            ->put(route('projects.timesheets.update', [$this->project, $moved]), ['work_date' => '2030-04-05'])
+            ->assertSessionHasErrors('work_date');
+        $this->assertSame('2030-04-06', $moved->fresh()->work_date->toDateString());
+
+        // Ein signierter Zettel am Zieltag blockiert nicht, das eigene Datum erneut zu speichern auch nicht.
+        $this->actingAs($this->user)
+            ->put(route('projects.timesheets.update', [$this->project, $moved]), ['work_date' => '2030-04-07'])
+            ->assertSessionHasNoErrors();
+        $this->actingAs($this->user)
+            ->put(route('projects.timesheets.update', [$this->project, $moved->fresh()]), ['work_date' => '2030-04-07'])
+            ->assertSessionHasNoErrors();
+        $this->assertSame('2030-04-07', $moved->fresh()->work_date->toDateString());
     }
 
     public function test_stopwatch_start_reuses_the_open_sheet_of_the_day(): void {

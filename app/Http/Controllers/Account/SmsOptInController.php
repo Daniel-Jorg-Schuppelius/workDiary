@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Account;
 use App\Http\Controllers\Controller;
 use App\Models\{Organization, User};
 use App\Services\Notification\Sms\{SmsOptInService, SmsProviderResolver};
-use App\Support\PhoneSearchKey;
+use App\Support\{ErrorText, PhoneSearchKey};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use RuntimeException;
@@ -51,7 +51,7 @@ class SmsOptInController extends Controller {
         try {
             $this->optIn->startVerification($this->user());
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('sms.code_sent'));

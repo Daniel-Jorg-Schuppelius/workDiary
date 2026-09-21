@@ -10,9 +10,9 @@
 
 namespace App\Services\Expense;
 
+use App\Exceptions\PerDiemRateMissingException;
 use App\Models\PerDiemRate;
 use Carbon\CarbonImmutable;
-use RuntimeException;
 
 class PerDiemRateLookup {
     /**
@@ -35,12 +35,7 @@ class PerDiemRateLookup {
     public function forOrFail(string $country, CarbonImmutable $date, ?string $region = null): PerDiemRate {
         $rate = $this->for($country, $date, $region);
         if ($rate === null) {
-            throw new RuntimeException(sprintf(
-                'Kein Per-Diem-Satz für Land %s%s am %s hinterlegt.',
-                $country,
-                $region !== null ? ' (Region '.$region.')' : '',
-                $date->toDateString()
-            ));
+            throw new PerDiemRateMissingException($country, $date, $region);
         }
 
         return $rate;

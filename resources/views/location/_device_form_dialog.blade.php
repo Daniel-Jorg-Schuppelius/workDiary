@@ -24,6 +24,6 @@
     </x-form-group>
 
     <p class="text-sm text-base-content/70">
-        {{ __('Nach dem Erzeugen wird einmalig eine Push-URL für OwnTracks/Traccar angezeigt. Das Verbinden aktiviert deine Einwilligung.') }}
+        {{ __('Nach dem Erzeugen wird einmalig eine Push-URL für OwnTracks/Traccar angezeigt. Das Verbinden aktiviert Ihre Einwilligung.') }}
     </p>
 </x-modal>

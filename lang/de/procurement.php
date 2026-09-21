@@ -289,7 +289,7 @@ return [
                 'discovered' => 'shopinfo.xml ausgewertet: :count Spalten zugeordnet (Vorschlag unten vorbefüllt).',
             ],
         ],
-        'mapping_hint' => 'Ordne die Zielfelder den Spaltennamen aus der CSV zu (Pflicht: Artikelnummer, Bezeichnung).',
+        'mapping_hint' => 'Ordnen Sie die Zielfelder den Spaltennamen aus der CSV zu (Pflicht: Artikelnummer, Bezeichnung).',
         'link_hint' => 'Der Katalogpreis wird als Bezugsquelle des Artikels übernommen.',
         'action' => [
             'new_source' => 'Katalogquelle',

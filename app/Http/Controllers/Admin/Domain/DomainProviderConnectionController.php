@@ -11,11 +11,13 @@
 namespace App\Http\Controllers\Admin\Domain;
 
 use App\Enums\Domain\{DomainConnectionStatus, DomainProviderEnvironment};
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Domain\DomainProviderConnection;
 use App\Services\Domain\{DomainConnectionService, DomainSyncService};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -25,6 +27,8 @@ use Illuminate\View\View;
  * in URLs/Logs.
  */
 class DomainProviderConnectionController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(): View {
         Gate::authorize('viewAny', DomainProviderConnection::class);
 
@@ -53,7 +57,9 @@ class DomainProviderConnectionController extends Controller {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:190'],
             'environment' => ['required', 'string', 'in:ote,production'],
-            'login' => ['required', 'string', 'max:190'],
+            // Unique-Index dpc_org_endpoint_login_uq — ohne Regel endete ein doppelt verbundenes Konto in 500.
+            'login' => ['required', 'string', 'max:190', Rule::unique('domain_provider_connections', 'login')
+                ->where('organization_id', $this->currentOrganizationId())->where('endpoint', 'domainreselling')],
             'password' => ['required', 'string', 'max:512'],
             'default_user' => ['nullable', 'string', 'max:190'],
         ]);

@@ -58,7 +58,7 @@ return [
         'team' => 'Scorta team',
     ],
     'subtitle' => [
-        'warehouses' => 'Gestisci i magazzini del tenant.',
+        'warehouses' => 'Gestisca i magazzini del tenant.',
         'stock' => 'Disponibilità e movimenti per magazzino.',
         'bins' => 'Gestire le ubicazioni del magazzino :warehouse.',
     ],
@@ -241,7 +241,7 @@ return [
 
         'verify' => [
             'title' => 'Passaporto dispositivo / verifica di autenticità',
-            'subtitle' => 'Inserisci un numero di serie per verificarne stato e origine.',
+            'subtitle' => 'Inserisca un numero di serie per verificarne stato e origine.',
             'placeholder' => 'Numero di serie …',
             'not_found' => 'Nessun numero di serie trovato – autenticità non confermata.',
             'found' => 'Numero di serie trovato.',

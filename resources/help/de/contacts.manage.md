@@ -31,13 +31,13 @@ Nacharbeit funktionieren.
 
 ## Empfohlener Ablauf
 
-1. **Vor der Neuanlage suchen:** Prüfe, ob der Geschäftspartner schon
+1. **Vor der Neuanlage suchen:** Prüfen Sie, ob der Geschäftspartner schon
    existiert — so entstehen keine Dubletten. Vorhandene Dubletten
    lassen sich zusammenführen, dabei wandert die Historie mit.
-2. Lege den Kontakt mit Name, Anschrift und Ansprechpartnern an.
-3. Ergänze Zahlungs- und Abrechnungsdaten sowie externe Kennungen
+2. Legen Sie den Kontakt mit Name, Anschrift und Ansprechpartnern an.
+3. Ergänzen Sie Zahlungs- und Abrechnungsdaten sowie externe Kennungen
    vollständig — sie steuern Faktura und Buchhaltungsübergabe.
-4. Verknüpfe Projekte, Standorte und Vereinbarungen, sobald sie
+4. Verknüpfen Sie Projekte, Standorte und Vereinbarungen, sobald sie
    entstehen.
 
 ![Kundenliste mit Nummern, Kontaktdaten, Stundensätzen und Projektzahl](media/kunden/kundenliste.png)

@@ -12,7 +12,7 @@ related:
     - glossary.core
 ---
 
-**Maßnahmen** sind normneutral: Sie beschreiben, WIE deine Organisation
+**Maßnahmen** sind normneutral: Sie beschreiben, WIE Ihre Organisation
 etwas umsetzt – ohne Normreferenz. Die Zuordnung zu Normanforderungen
 und Risiken erfolgt über Verknüpfungen (jeweils mehrere möglich).
 
@@ -26,7 +26,7 @@ Typischer Ablauf:
 
 Warum normneutral? Eine Maßnahme (z. B. „zentrales Patch-Management")
 kann gleichzeitig mehrere Anforderungen aus verschiedenen Normen
-erfüllen und mehrere Risiken vermindern – du pflegst sie nur einmal.
+erfüllen und mehrere Risiken vermindern – Sie pflegen sie nur einmal.
 
 Berechtigungen: ISMS-Leserechte erlauben die Einsicht. Anlage und
 Bearbeitung erfordern ISMS-Pflegerechte.

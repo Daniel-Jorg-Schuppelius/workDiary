@@ -53,9 +53,6 @@
             </x-page-toolbar>
         </x-slot:toolbar>
 
-        @if (session('status'))
-            <div class="alert alert-success">{{ session('status') }}</div>
-        @endif
 
         @if ($hasOrgDefault && ! $hasOwnLayout)
             <div class="alert alert-info">
@@ -325,7 +322,7 @@
     @push('page-footer')
         <div class="shrink-0 mt-(--sidebar-gap) max-md:px-1">
             <div class="flex flex-wrap items-center justify-between gap-3 rounded-(--panel-radius) border border-base-300 bg-base-100 px-4 py-2.5 shadow-xs">
-                <span class="text-xs text-muted">{{ __('Die Auswahl gilt für dein Konto, auf allen Geräten.') }}</span>
+                <span class="text-xs text-muted">{{ __('Die Auswahl gilt für Ihr Konto, auf allen Geräten.') }}</span>
                 <div class="flex flex-wrap items-center gap-3">
                     @if ($canManageOrgDefault)
                         <label class="label cursor-pointer gap-2">

@@ -19,6 +19,7 @@ use App\Services\Isms\SbomGenerator;
 use App\Services\Licensing\{FeatureFlagResolver, LicenseService};
 use App\Services\Release\{ReleaseManifestService, ReleaseVerifier};
 use App\Services\Updates\UpdateCheckService;
+use App\Support\ErrorText;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
@@ -77,6 +78,8 @@ class ComponentsController extends Controller {
             'updates' => app(UpdateCheckService::class)->pending(),
             'updatesMode' => app(UpdateCheckService::class)->mode(),
             'updatesLastCheckedAt' => app(UpdateCheckService::class)->lastCheckedAt(),
+            // Updates prüfen/importieren/bestätigen sowie SBOM/Manifest erzeugen und laden sind Betreiber-Aktionen (assertPlatformOperator).
+            'isPlatformOperator' => $this->isPlatformOperator(),
             'appVersion' => (string) config('app.version', '0.1.0-dev'),
             'gitHash' => $generator->resolveGitHash(),
             'phpVersion' => PHP_VERSION,
@@ -328,7 +331,7 @@ class ComponentsController extends Controller {
                 ->with('status', __('updates.flash.checked', ['count' => $open]));
         } catch (\Throwable $e) {
             return redirect()->route('admin.components.index')
-                ->with('error', $e->getMessage());
+                ->with('error', ErrorText::for($e));
         }
     }
 
@@ -347,7 +350,7 @@ class ComponentsController extends Controller {
                 ->with('status', __('updates.flash.imported', ['count' => $open]));
         } catch (\Throwable $e) {
             return redirect()->route('admin.components.index')
-                ->with('error', $e->getMessage());
+                ->with('error', ErrorText::for($e));
         }
     }
 

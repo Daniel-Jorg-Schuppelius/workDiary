@@ -16,6 +16,7 @@ use App\Enums\Document\DocumentType;
 use App\Http\Controllers\Controller;
 use App\Models\{Document, User};
 use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
+use App\Support\CarbonFmt;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -75,7 +76,7 @@ class IncomingInvoiceController extends Controller {
         if ($result['status'] === 'duplicate' && $incoming !== null) {
             return redirect()->route('finance.incoming-invoices.show', $incoming->document_id)
                 ->with('error', __('Diese E-Rechnung wurde bereits am :date erfasst (Dublette).', [
-                    'date' => $incoming->received_at->isoFormat('L LT'),
+                    'date' => CarbonFmt::orgTz($incoming->received_at)->isoFormat('L LT'),
                 ]));
         }
         if ($result['status'] !== 'created' || $incoming === null || $result['document'] === null) {
@@ -137,7 +138,7 @@ class IncomingInvoiceController extends Controller {
         if ($incoming->transferred_at !== null) {
             return redirect()->route('finance.incoming-invoices.show', $incoming->document_id)
                 ->with('success', __('Bereits am :date übergeben — kein erneuter Übergabevorgang.', [
-                    'date' => $incoming->transferred_at->isoFormat('L LT'),
+                    'date' => CarbonFmt::orgTz($incoming->transferred_at)->isoFormat('L LT'),
                 ]));
         }
 

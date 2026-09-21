@@ -12,13 +12,13 @@ namespace App\Plugins\Zammad\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\{Organization, Project, ZammadConnection};
+use App\Models\PluginState;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
-use App\Plugins\Zammad\Contracts\ZammadGatewayFactory;
+use App\Plugins\Zammad\ZammadPlugin;
 use App\Services\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
-use Throwable;
 
 /**
  * Zammad-Admin-Panel (Feature 060, MVP-129): eine Anbindung je Organisation
@@ -56,9 +56,8 @@ class ZammadAdminController extends Controller {
             'defaultProjectSqid' => $connection?->default_project_id !== null
                 ? $sqids->encode(Project::class, (int) $connection->default_project_id)
                 : null,
-            'health' => $connection instanceof ZammadConnection && $connection->isActive()
-                ? $this->probe($connection)
-                : null,
+            // Gespeicherter Stand statt Ping beim Seitenaufruf (UI-Fuzz 2026-09-21).
+            'healthState' => PluginState::forContext(ZammadPlugin::ID, $organization->id),
         ]);
     }
 
@@ -183,14 +182,5 @@ class ZammadAdminController extends Controller {
         return Project::query()->whereKey($decoded)->where('organization_id', $organization->id)->exists()
             ? $decoded
             : null;
-    }
-
-    /** @return array{ok: bool} */
-    private function probe(ZammadConnection $connection): array {
-        try {
-            return ['ok' => app(ZammadGatewayFactory::class)->for($connection)->ping()];
-        } catch (Throwable) {
-            return ['ok' => false];
-        }
     }
 }

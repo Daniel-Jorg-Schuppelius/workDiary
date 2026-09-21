@@ -32,7 +32,7 @@ class CustomerQueryAnsweredMail extends Mailable {
     }
 
     public function content(): Content {
-        return new Content(view: 'mail.customer-query-answered', with: [
+        return new Content(markdown: 'mail.customer-query-answered', with: [
             'query' => $this->query,
         ]);
     }

@@ -18,13 +18,13 @@ principios básicos.
 **Terminales de fichaje, quiosco y puntos de check-in:** Al registrar un
 terminal se muestran dos direcciones una sola vez: la de ingesta para terminales
 físicos y la del quiosco, que convierte el navegador de una tableta en terminal.
-Ambas contienen el mismo token; si se pierde, rota el token o bloquea el
+Ambas contienen el mismo token; si se pierde, rote el token o bloquee el
 terminal. Las tarjetas leídas con el chip NFC de la propia tableta (Chrome en
 Android) deben registrarse como identificador hexadecimal sin separadores. Los
 puntos de check-in son códigos QR o etiquetas NFC en ubicaciones y vehículos: la
 vista de impresión ofrece el código y la misma dirección puede grabarse en una
 etiqueta con una app NFC. Un código puede fotografiarse: para acreditar la
-presencia, fija un radio. La posición solo se comprueba, no se guarda.
+presencia, fije un radio. La posición solo se comprueba, no se guarda.
 
 Las tarjetas pueden sustituirse por un **PIN de terminal**: la administración lo
 asigna por persona con número de personal; solo se guarda un hash y, tras cinco
@@ -74,7 +74,7 @@ sobre ella.
 ## Qué integraciones existen
 
 La oferta crece; la siguiente lista nombra las integraciones disponibles por
-finalidad, para que no tengas que adivinar dónde encaja cada cosa:
+finalidad, para que no tenga que adivinar dónde encaja cada cosa:
 
 - **Contabilidad y facturación:** lexoffice, orgaMAX, sevDesk, easybill,
   BuchhaltungsButler, InvoicePlane y el punto de acceso Peppol para enviar

@@ -13,9 +13,6 @@
 
 @section('content')
 <x-page-shell>
-    @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
-    @endif
 
     @if ($invoice->isCancelled())
         <div class="alert alert-error">

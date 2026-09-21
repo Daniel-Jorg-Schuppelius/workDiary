@@ -46,6 +46,6 @@ Risiken und unumkehrbare Aktionen:
 - Der vollständige **Prüfer-Link wird nur einmal angezeigt** (beim
   Erstellen) – danach ist nur noch Widerruf möglich.
 
-Berechtigungen: Einsicht erfordert ISMS-Leserechte; Erstellung und
-Pflege erfordern ISMS-Pflegerechte. Die Prüfer-Ansicht und der Download laufen
+Berechtigungen: Einsicht erfordert ISMS-Leserechte; Erstellung
+und Pflege erfordern ISMS-Pflegerechte. Die Prüfer-Ansicht und der Download laufen
 über einen geschützten Link, ohne WorkDiary-Konto.

@@ -15,7 +15,7 @@ return [
         'title_mine' => 'Il mio fascicolo personale',
         'nav' => 'Il mio fascicolo personale',
         'subtitle' => 'Fascicolo personale di :name — riservato, visibile solo alla cerchia HR e alla persona interessata.',
-        'subtitle_mine' => 'Il tuo fascicolo personale (accesso personale, sola lettura).',
+        'subtitle_mine' => 'Il suo fascicolo personale (accesso personale, sola lettura).',
         'back' => 'Torna all\'elenco del personale',
         'empty' => 'Nessun documento nel fascicolo personale.',
         'confidential_fixed' => 'I fascicoli personali sono sempre riservati — l\'interruttore è omesso, il contrassegno è imposto.',

@@ -16817,7 +16817,7 @@ CREATE TABLE IF NOT EXISTS "invoice_items"(
   "id" integer primary key autoincrement not null,
   "invoice_id" integer not null,
   "time_entry_id" integer,
-  "description" varchar not null,
+  "description" text not null,
   "quantity" numeric not null default('1'),
   "unit" varchar not null default('h'),
   "unit_price" numeric not null default('0'),
@@ -20450,3 +20450,6 @@ INSERT INTO migrations VALUES(821,'2027_02_22_100600_move_knowledge_categories_t
 INSERT INTO migrations VALUES(822,'2027_02_22_100700_create_msgraph_onenote_connections',37);
 INSERT INTO migrations VALUES(823,'2027_02_22_100800_sso_domain_unique_per_organization',38);
 INSERT INTO migrations VALUES(824,'2027_02_22_100900_create_document_version_texts',39);
+INSERT INTO migrations VALUES(825,'2027_02_22_101000_widen_invoice_item_description',40);
+INSERT INTO migrations VALUES(826,'2027_02_22_101100_convert_local_times_to_utc',41);
+INSERT INTO migrations VALUES(827,'2027_02_22_101200_convert_imported_sync_times_to_utc',42);

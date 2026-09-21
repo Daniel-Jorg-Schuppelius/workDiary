@@ -17,6 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\{AccountingFiscalYear, AccountingPeriod};
 use App\Services\Accounting\{FixedAssetService, LedgerDatevExportService, OpeningBalanceImportService, PeriodClosingService};
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -189,7 +190,7 @@ class PeriodClosingController extends Controller {
             try {
                 $result = $this->datev->buildExtf($organization, $from, $to);
             } catch (\RuntimeException $e) {
-                return back()->with('error', $e->getMessage());
+                return back()->with('error', ErrorText::for($e));
             }
 
             return response($result['content'], 200, [

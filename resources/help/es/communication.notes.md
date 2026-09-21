@@ -11,9 +11,9 @@ related:
 
 Las notas de comunicación documentan eventos de comunicación externos al
 sistema —llamadas, correos, reuniones presenciales, decisiones— de forma
-estructurada en la orden, el cliente o el proyecto. Crea la nota en el
+estructurada en la orden, el cliente o el proyecto. Cree la nota en el
 modal con **tipo**, **dirección**, **fecha y hora** y **asunto**
-(obligatorio, 3–180 caracteres), y añade opcionalmente
+(obligatorio, 3–180 caracteres), y añada opcionalmente
 **resultado/acuerdo**, **participantes** y una **acción de seguimiento**
 con plazo y responsable, que aparece en el panel y en la página de la
 orden. La visibilidad estándar es **«Interna»**; la publicación como
@@ -33,7 +33,7 @@ otras personas solo aparecen con el permiso correspondiente.
 
 Las **etiquetas** se asignan en el diálogo de la nota, varias separadas por
 comas. La lista filtra por ellas y la búsqueda encuentra una nota también por
-su etiqueta. El filtro solo ofrece etiquetas de notas que puedes ver.
+su etiqueta. El filtro solo ofrece etiquetas de notas que puede ver.
 
 ## Captura rápida
 

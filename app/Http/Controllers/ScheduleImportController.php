@@ -12,13 +12,13 @@ namespace App\Http\Controllers;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\{ScheduledShift, ShiftType, User};
-use App\Support\Setting;
+use App\Support\{ErrorText, Setting};
 use Carbon\Carbon;
 use CommonToolkit\Entities\XLSX\Cell;
 use CommonToolkit\Parsers\{CSVDocumentParser, XLSXDocumentParser};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\{Auth, Session};
+use Illuminate\Support\Facades\{Auth, Session, Storage};
 use Illuminate\View\View;
 
 class ScheduleImportController extends Controller {
@@ -48,8 +48,12 @@ class ScheduleImportController extends Controller {
         $file = $request->file('file');
         $extension = strtolower($file->getClientOriginalExtension());
         $path = $file->store('schedule-imports', 'local');
+        if ($path === false) {
+            return back()->withErrors(['file' => __('Die Datei konnte nicht gespeichert werden.')]);
+        }
 
-        $rows = $this->parseFile(storage_path("app/{$path}"), $extension);
+        // Die local-Disk liegt unter storage/app/private — storage_path("app/…") ging daneben.
+        $rows = $this->parseFile(Storage::disk('local')->path($path), $extension);
 
         if (empty($rows)) {
             return back()->withErrors(['file' => __('Die Datei enthält keine verwertbaren Zeilen.')]);
@@ -92,10 +96,16 @@ class ScheduleImportController extends Controller {
 
         $mapping = $request->validate([
             'map' => ['required', 'array'],
-            'map.*' => ['required', 'string'],
+            'map.*' => ['required', 'string', 'in:skip,date,user,shift_type,start_time,end_time,note'],
         ])['map'];
 
-        $rows = $this->parseFile(storage_path("app/{$import['path']}"), $import['extension']);
+        // Ohne Datum und Mitarbeiter scheiterte jede Zeile einzeln — gleich melden.
+        if (! in_array('date', $mapping, true) || ! in_array('user', $mapping, true)) {
+            return redirect()->route('schedule.import')
+                ->withErrors(['file' => __('Datum und Mitarbeiter müssen einer Spalte zugeordnet sein.')]);
+        }
+
+        $rows = $this->parseFile(Storage::disk('local')->path($import['path']), $import['extension']);
         $data = array_slice($rows, 1); // skip header
 
         $users = User::inCurrentOrganization()->pluck('id', 'name');
@@ -151,11 +161,12 @@ class ScheduleImportController extends Controller {
 
                 $imported++;
             } catch (\Throwable $e) {
-                $errors[] = __('Zeile :line: :msg', ['line' => $line, 'msg' => $e->getMessage()]);
+                $errors[] = __('Zeile :line: :msg', ['line' => $line, 'msg' => ErrorText::for($e)]);
             }
         }
 
         Session::forget('schedule_import');
+        Storage::disk('local')->delete($import['path']);
 
         $message = __(':count Schichten importiert.', ['count' => $imported]);
         if (! empty($errors)) {

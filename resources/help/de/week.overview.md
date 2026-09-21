@@ -13,18 +13,18 @@ Die Wochenansicht ordnet **Auftragsbucheinträge**, **Bereitschaften** und
 **Notdienste** zeitlich im Kalender ein. Sie dient der Übersicht und
 Planung, nicht der Erfassung von Arbeitszeiten.
 
-So verwendest du die Ansicht:
+So verwenden Sie die Ansicht:
 
-1. Wähle den gewünschten Zeitraum im Kopfbereich.
-2. Wechsle zwischen **Meine Woche** und **Team-Woche**. In der
-   Teamansicht kannst du zusätzlich nach Mitarbeitenden filtern.
-3. Klicke einen vorhandenen Eintrag an, um dessen Details zu öffnen.
-4. Klicke in einen freien Zeitbereich, um dort einen Auftragsbucheintrag,
+1. Wählen Sie den gewünschten Zeitraum im Kopfbereich.
+2. Wechseln Sie zwischen **Meine Woche** und **Team-Woche**. In der
+   Teamansicht können Sie zusätzlich nach Mitarbeitenden filtern.
+3. Klicken Sie einen vorhandenen Eintrag an, um dessen Details zu öffnen.
+4. Klicken Sie in einen freien Zeitbereich, um dort einen Auftragsbucheintrag,
    eine Bereitschaft oder einen Notdienst anzulegen.
 
 Die Farben zeigen den Status der Aufträge, etwa **Offen**, **Problem**,
 **Bestätigt** oder **Erledigt**. Hinterlegte Kern- und erweiterte
 Arbeitszeiten dienen nur als visuelle Orientierung.
 
-Für tatsächliche Arbeitszeitbuchungen nutze die Zeiterfassung oder eine
+Für tatsächliche Arbeitszeitbuchungen nutzen Sie die Zeiterfassung oder eine
 laufende Stopuhr.

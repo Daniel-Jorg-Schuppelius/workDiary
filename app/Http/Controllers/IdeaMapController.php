@@ -16,6 +16,7 @@ use App\Http\Requests\SaveIdeaMapRequest;
 use App\Models\{AuditLog, IdeaMap, IdeaMapShare, IdeaNode, Team, User};
 use App\Services\Ideas\{IdeaMapImportService, IdeaMapService};
 use App\Services\SqidEncoder;
+use App\Support\{ErrorText, Tz};
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Cache, Gate};
@@ -101,7 +102,7 @@ class IdeaMapController extends Controller {
         try {
             $map = $import->import($this->currentOrganization(), $user, $content, $file->getClientOriginalName());
         } catch (RuntimeException $e) {
-            return back()->withErrors(['file' => $e->getMessage()]);
+            return back()->withErrors(['file' => ErrorText::for($e)]);
         }
 
         return redirect()->route('ideas.show', $map)->with('success', __('ideas.import.done'));
@@ -226,7 +227,7 @@ class IdeaMapController extends Controller {
                 $changes = is_array($log->changes) ? $log->changes : [];
 
                 return [
-                    'at' => $log->created_at?->format('d.m.Y H:i'),
+                    'at' => Tz::toLocal($log->created_at)?->format('d.m.Y H:i'),
                     'user' => $log->user?->name,
                     'event' => (string) $log->event,
                     'subject' => (string) ($changes['title'] ?? ($changes['after']['title'] ?? '')) ?: ($log->auditable_type === $nodeMorph ? null : ''),

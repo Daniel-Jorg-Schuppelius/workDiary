@@ -54,8 +54,8 @@ return [
         'title' => 'Check-in',
         'subtitle' => 'Entrada y salida con el código de la ubicación o del vehículo.',
         'state' => [
-            'in' => 'Has fichado la entrada a las :time.',
-            'out' => 'Ahora no tienes la entrada fichada.',
+            'in' => 'Ha fichado la entrada a las :time.',
+            'out' => 'Ahora no tiene la entrada fichada.',
         ],
         'action' => [
             'in' => 'Entrada',
@@ -67,11 +67,11 @@ return [
             'out' => 'Salida en «:name» registrada.',
         ],
         'error' => [
-            'already_in' => 'Ya has fichado la entrada.',
-            'not_in' => 'No has fichado la entrada.',
-            'no_center' => 'Este punto tiene radio pero no ubicación. Contacta con la administración.',
-            'location_required' => 'Este punto requiere tu posición.',
-            'too_far' => 'Estás a :distance m; se permiten :radius m.',
+            'already_in' => 'Ya ha fichado la entrada.',
+            'not_in' => 'No ha fichado la entrada.',
+            'no_center' => 'Este punto tiene radio pero no ubicación. Contacte con la administración.',
+            'location_required' => 'Este punto requiere su posición.',
+            'too_far' => 'Está a :distance m; se permiten :radius m.',
             'location_denied' => 'No se pudo determinar la posición. Permite el acceso a la ubicación.',
         ],
     ],

@@ -13,6 +13,6 @@ Cada indicador de los informes es clicable: el drilldown muestra las
 activos. Las columnas muestran cliente, tipo de entrada, estado y
 duración plan/real, ordenadas por fecha descendente; la exportación a
 CSV o PDF genera una instantánea con los filtros y la fecha de creación
-en el nombre del archivo. El drilldown respeta tu límite de
-organización y los estados visibles: lo que no puedes ver en la lista
+en el nombre del archivo. El drilldown respeta su límite de
+organización y los estados visibles: lo que no puede ver en la lista
 tampoco cuenta en el informe superior.

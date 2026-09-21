@@ -24,7 +24,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 class ExpenseDecidedNotification extends DirectNotification {
     private const TITLE_KEY = 'Spese :status: :amount';
 
-    private const MESSAGE_KEY = 'Deine Spese wurde :status.';
+    private const MESSAGE_KEY = 'Ihre Spese wurde :status.';
 
     /**
      * @param  list<string>  $channels
@@ -43,7 +43,7 @@ class ExpenseDecidedNotification extends DirectNotification {
         $mail = (new MailMessage)
             ->subject(__('Spese :status: :amount', ['status' => $status, 'amount' => $amount]))
             ->greeting(__('Hallo :name,', ['name' => $notifiable->name ?? '']))
-            ->line(__('Deine Spese wurde :status.', ['status' => $status]))
+            ->line(__('Ihre Spese wurde :status.', ['status' => $status]))
             ->line(\App\Support\MailText::plain($this->expense->description));
 
         if ($this->expense->status === ExpenseStatus::Rejected && $this->expense->reject_reason) {

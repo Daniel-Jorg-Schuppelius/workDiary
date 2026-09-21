@@ -77,7 +77,7 @@
                      Quick-Pick (MVP): Tippen schlägt die letzten Buchungstexte vor —
                      Übernahme vervollständigt den Text und wählt Projekt + Kunde. --}}
                 <div class="relative min-w-40 basis-40 flex-1" @click.outside="closeDescMenu()">
-                    <input aria-label="{{ __('Woran arbeitest du?') }}" type="text" name="description" maxlength="500"
+                    <input aria-label="{{ __('Woran arbeiten Sie?') }}" type="text" name="description" maxlength="500"
                            x-model="description"
                            @focus="descFocus()"
                            @input="descInput()"
@@ -86,7 +86,7 @@
                            @keydown.arrow-up.prevent="descMove(-1)"
                            @keydown.escape="closeDescMenu()"
                            class="input input-bordered input-sm w-full"
-                           placeholder="{{ __('Woran arbeitest du?') }}"
+                           placeholder="{{ __('Woran arbeiten Sie?') }}"
                            value="{{ old('description') }}">
                     <ul x-show="showDescMenu" x-cloak x-transition.opacity
                         class="menu menu-sm absolute z-30 mt-1 w-full max-h-72 flex-nowrap overflow-y-auto rounded-box border border-base-300 bg-base-100 shadow-lg">

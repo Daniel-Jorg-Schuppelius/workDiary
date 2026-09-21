@@ -36,12 +36,12 @@ return [
 
     'target' => [
         'heading' => 'Destinazione: sito + raccolta documenti',
-        'help' => 'Cerca prima un sito, poi scegli la raccolta documenti. Entrambi vengono convalidati lato server tramite Microsoft Graph — con Sites.Selected compaiono solo i siti autorizzati.',
+        'help' => 'Cerchi prima un sito, poi scelga la raccolta documenti. Entrambi vengono convalidati lato server tramite Microsoft Graph — con Sites.Selected compaiono solo i siti autorizzati.',
         'current' => 'Destinazione attuale',
         'search' => 'Cerca sito',
         'search_placeholder' => 'Nome del sito o parola chiave',
         'search_action' => 'Cerca',
-        'no_sites' => 'Nessun sito trovato (verifica il termine di ricerca; con Sites.Selected l\'amministratore del tenant deve autorizzare il sito).',
+        'no_sites' => 'Nessun sito trovato (verifichi il termine di ricerca; con Sites.Selected l\'amministratore del tenant deve autorizzare il sito).',
         'selected' => 'Selezionato',
         'drive' => 'Raccolta documenti',
         'no_drives' => 'Nessuna raccolta documenti trovata in questo sito.',
@@ -94,7 +94,7 @@ return [
         'state_invalid' => 'Il flusso OAuth è scaduto o non è valido — riconnettersi.',
         'oauth_denied' => 'Microsoft non ha restituito un codice di autorizzazione (flusso annullato?).',
         'oauth_failed' => 'Scambio del token non riuscito (:class).',
-        'connected' => 'Connesso con Microsoft 365. Ora scegli sito + raccolta.',
+        'connected' => 'Connesso con Microsoft 365. Ora scelga sito + raccolta.',
         'disconnected' => 'Connessione SharePoint disconnessa. I file già replicati restano all\'esterno.',
         'no_connection' => 'Nessuna connessione SharePoint attiva disponibile.',
         'site_invalid' => 'Il sito scelto non è raggiungibile o non è autorizzato.',

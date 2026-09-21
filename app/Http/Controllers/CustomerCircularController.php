@@ -16,6 +16,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Models\Communication\CustomerCircular;
 use App\Models\Customer;
 use App\Services\Communication\CustomerCircularService;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -92,7 +93,7 @@ class CustomerCircularController extends Controller {
         try {
             $this->circulars->approve($circular, $actor);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('status', __('circular.approved'));
@@ -106,7 +107,7 @@ class CustomerCircularController extends Controller {
         try {
             $this->circulars->send($circular, $actor);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('status', __('circular.sent'));

@@ -13,7 +13,7 @@ namespace App\Http\Controllers;
 use App\Enums\User\Permission;
 use App\Models\{MinimumWage, MinimumWageReference, Organization, User};
 use App\Services\Payroll\{EurostatMinimumWageImporter, MinimumWageService};
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use CommonToolkit\Enums\CountryCode;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
@@ -97,7 +97,7 @@ class PayrollController extends Controller {
         try {
             $count = $importer->import();
         } catch (Throwable $e) {
-            return back()->withErrors(['eurostat' => __('Eurostat-Import fehlgeschlagen: :error', ['error' => $e->getMessage()])]);
+            return back()->withErrors(['eurostat' => __('Eurostat-Import fehlgeschlagen: :error', ['error' => ErrorText::for($e)])]);
         }
 
         return redirect()->route('payroll.index')

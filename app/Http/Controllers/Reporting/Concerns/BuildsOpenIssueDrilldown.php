@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Reporting\Concerns;
 use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Models\{DiaryEntry, OpenIssue, Protocol};
+use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -101,7 +102,7 @@ trait BuildsOpenIssueDrilldown {
                 $protocol->title,
                 $protocol->status->label(),
                 $protocol->type->label(),
-                $protocol->occurred_at->format('Y-m-d H:i'),
+                Tz::toLocal($protocol->occurred_at)?->format('Y-m-d H:i'),
                 $protocol->creator->name ?? '',
                 $protocol->subject_id,
             ];

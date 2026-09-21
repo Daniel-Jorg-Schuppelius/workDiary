@@ -18,7 +18,7 @@
 @endphp
 
 @section('content')
-    <x-index-page overflow="clip" :subtitle="__('Verwalte deine persönlichen Lesezeichen für schnellen Zugriff.')">
+    <x-index-page overflow="clip" :subtitle="__('Verwalten Sie Ihre persönlichen Lesezeichen für schnellen Zugriff.')">
         <x-slot:actions>
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger

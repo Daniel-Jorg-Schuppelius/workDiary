@@ -79,8 +79,8 @@ return [
         'internal_not_publishable' => 'La comunicazione interna non può essere pubblicata per i clienti.',
         'no_followup' => 'Questa nota non ha un\'azione di follow-up.',
         'organization_note_not_publishable' => 'Le note interne dell\'organizzazione non possono essere condivise con i clienti.',
-        'call_requires_external_direction' => 'Per una telefonata indica se era in entrata o in uscita.',
-        'direction_required' => 'Scegli una direzione.',
+        'call_requires_external_direction' => 'Per una telefonata indichi se era in entrata o in uscita.',
+        'direction_required' => 'Scelga una direzione.',
     ],
 
     'badge' => [
@@ -89,7 +89,7 @@ return [
     ],
 
     'subtitle' => [
-        'notes' => 'Annota rapidamente e ritrova le note – internamente o presso un cliente.',
+        'notes' => 'Annoti rapidamente e ritrovi le note – internamente o presso un cliente.',
     ],
 
     'storage' => [
@@ -110,7 +110,7 @@ return [
 
     'hint' => [
 
-        'tags' => 'Separa più tag con una virgola, ad es. manutenzione, riscaldamento.',
+        'tags' => 'Separi più tag con una virgola, ad es. manutenzione, riscaldamento.',
         'customer_not_published' => 'La nota compare nella scheda cliente, ma non nel portale clienti.',
     ],
 

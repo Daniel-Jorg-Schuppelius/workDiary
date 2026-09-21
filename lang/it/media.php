@@ -53,7 +53,7 @@ return [
     ],
     'flash' => [
         'subtitle_added' => 'Traccia di sottotitoli aggiunta.',
-        'transcription_queued' => 'I sottotitoli sono in elaborazione. A seconda della durata servono alcuni minuti; riceverai una notifica.',
+        'transcription_queued' => 'I sottotitoli sono in elaborazione. A seconda della durata servono alcuni minuti; riceverà una notifica.',
         'subtitle_reviewed' => 'Traccia di sottotitoli segnata come revisionata.',
         'subtitle_removed' => 'Traccia di sottotitoli rimossa.',
     ],

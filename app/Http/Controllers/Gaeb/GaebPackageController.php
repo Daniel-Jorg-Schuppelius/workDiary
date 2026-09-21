@@ -20,6 +20,7 @@ use App\Models\Applications\ApplicationOpportunity;
 use App\Models\{GaebImport, Project, User};
 use App\Services\Gaeb\{BoqImportConflictException, GaebImportService, GaebPackageIntakeService};
 use App\Services\SqidEncoder;
+use App\Support\ErrorText;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -85,7 +86,7 @@ class GaebPackageController extends Controller {
                 $opportunity,
             );
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __(':gaeb GAEB-Dateien erkannt, :documents Dokumente abgelegt, :skipped übergangen.', [

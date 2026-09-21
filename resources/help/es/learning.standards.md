@@ -10,8 +10,8 @@ related:
 ---
 
 Además de sus propias unidades, la plataforma admite los formatos de
-intercambio habituales, de modo que puedes importar cursos adquiridos y lanzar
-tus cursos en otros sistemas.
+intercambio habituales, de modo que puede importar cursos adquiridos y lanzar
+sus cursos en otros sistemas.
 
 **SCORM 1.2 y 2004** — Un paquete SCORM es un ZIP con un manifiesto. Al
 subirlo se comprueba y se extrae; los archivos ejecutables y las rutas que

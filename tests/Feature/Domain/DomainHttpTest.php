@@ -63,6 +63,17 @@ class DomainHttpTest extends TestCase {
         $this->assertSame(DomainConnectionStatus::Active, $connection->status);
     }
 
+    /** UI-Fuzz 2026-09-21: dasselbe Konto ein zweites Mal verbinden endete in 1062 dpc_org_endpoint_login_uq (500). */
+    public function test_connecting_the_same_login_twice_is_a_validation_error(): void {
+        FakeDomainResellingTransport::fake(['StatusUser' => "code=200\ndescription=ok\nEOF\n"]);
+        $payload = ['name' => 'DR Test', 'environment' => 'ote', 'login' => 'reseller1', 'password' => 'secret-pw'];
+
+        $this->actingAs($this->admin)->post(route('admin.domain-provider.store'), $payload)->assertSessionHasNoErrors();
+        $this->actingAs($this->admin)->post(route('admin.domain-provider.store'), $payload)->assertSessionHasErrors('login');
+
+        $this->assertSame(1, DomainProviderConnection::query()->where('login', 'reseller1')->count());
+    }
+
     public function test_portfolio_index_and_detail_render(): void {
         $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
         $domain = DomainProjection::factory()->create([

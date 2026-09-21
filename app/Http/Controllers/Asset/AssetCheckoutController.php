@@ -14,7 +14,7 @@ use App\Exceptions\AssetValidationException;
 use App\Http\Controllers\Controller;
 use App\Models\{Asset, AssetAssignment, DiaryEntry, Team, User};
 use App\Services\Asset\AssetAssignmentService;
-use App\Support\{OrganizationContext, Sqid};
+use App\Support\{OrganizationContext, Sqid, Tz};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -50,7 +50,7 @@ class AssetCheckoutController extends Controller {
             'assigned_to_user_id' => ['nullable', 'string'],
             'assigned_to_team_id' => ['nullable', 'string'],
             'diary_entry_id' => ['nullable', 'string'],
-            'expected_return_at' => ['nullable', 'date'],
+            'expected_return_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
             'condition_out' => ['nullable', 'string', 'max:180'],
             'note' => ['nullable', 'string', 'max:5000'],
         ]);
@@ -59,7 +59,7 @@ class AssetCheckoutController extends Controller {
         $targetTeam = $this->resolveTeam($validated['assigned_to_team_id'] ?? null);
         $diaryEntry = $this->resolveDiaryEntry($validated['diary_entry_id'] ?? null);
         $expectedReturnAt = ! empty($validated['expected_return_at'])
-            ? Carbon::parse((string) $validated['expected_return_at'])
+            ? Carbon::instance(Tz::parse((string) $validated['expected_return_at']))
             : null;
 
         try {

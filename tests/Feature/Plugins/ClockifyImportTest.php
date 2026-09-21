@@ -83,6 +83,8 @@ class ClockifyImportTest extends TestCase {
         $this->assertSame(90, $entry->minutes);
         $this->assertTrue($entry->billable);
         $this->assertSame('Website — Development — Feature', $entry->description);
+        // Export-Uhrzeit ist Ortszeit (Berlin, Sommerzeit), gespeichert wird UTC (MVP-824).
+        $this->assertSame('2026-06-01 07:00:00', $entry->getRawOriginal('started_at'));
     }
 
     public function test_us_date_format_and_am_pm_times(): void {

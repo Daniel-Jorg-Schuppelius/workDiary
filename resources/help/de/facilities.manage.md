@@ -14,8 +14,8 @@ Die Liegenschaftsstruktur ordnet Standorte, Gebäude, Geschosse und Räume
 hierarchisch. Sie dient als Bezug für Assets, Einsätze und weitere
 betriebliche Daten.
 
-Lege die Ebenen von außen nach innen an: Standort, Gebäude, Geschoss,
-Raum. Verwende eindeutige Namen oder Nummern und pflege Adressen sowie
+Legen Sie die Ebenen von außen nach innen an: Standort, Gebäude, Geschoss,
+Raum. Verwenden Sie eindeutige Namen oder Nummern und pflegen Sie Adressen sowie
 Nutzungsangaben dort, wo sie fachlich benötigt werden.
 
 Vor dem Löschen einer Ebene müssen untergeordnete oder verknüpfte

@@ -40,7 +40,7 @@
                     <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Anlage / System') }}</dt><dd>{{ $medium->system_name ?? '—' }}</dd></div>
                     <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Inhaber') }}</dt><dd>{{ $medium->holderDisplay() ?? '—' }}</dd></div>
                     @if ($medium->blocked_at)
-                        <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Gesperrt am') }}</dt><dd>{{ $medium->blocked_at->format('d.m.Y H:i') }}</dd></div>
+                        <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Gesperrt am') }}</dt><dd>{{ $medium->blocked_at->orgTz()->format('d.m.Y H:i') }}</dd></div>
                     @endif
                 </dl>
                 @if ($medium->notes)
@@ -71,7 +71,7 @@
                         </x-slot:head>
                         @foreach ($handovers as $handover)
                             <tr>
-                                <td class="whitespace-nowrap text-sm">{{ $handover->occurred_at->format('d.m.Y H:i') }}</td>
+                                <td class="whitespace-nowrap text-sm">{{ $handover->occurred_at->orgTz()->format('d.m.Y H:i') }}</td>
                                 <td class="text-sm">{{ $handover->direction === 'issue' ? __('Ausgabe') : __('Rückgabe') }}</td>
                                 <td class="text-sm">{{ $handover->holderUser?->name ?? trim(($handover->holder_name ?? '') . ' ' . ($handover->holder_company ? '· ' . $handover->holder_company : '')) ?: '—' }}</td>
                                 <td class="whitespace-nowrap text-sm">{{ $handover->expected_return_at?->format('d.m.Y') ?? '—' }}</td>

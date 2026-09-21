@@ -60,6 +60,6 @@ exige describir *cómo* se generan: desde el registro y el tratamiento hasta la
 conservación. La aplicación compone esa documentación a partir del estado real
 del sistema: módulos activos, rangos de numeración, plazos de conservación,
 roles y registro de auditoría. Lo que cambia en la operación cambia también en
-la documentación, a diferencia de un texto redactado una sola vez. Revísala
-antes de cada inspección y añade las partes organizativas que ningún sistema
+la documentación, a diferencia de un texto redactado una sola vez. Revísela
+antes de cada inspección y añada las partes organizativas que ningún sistema
 puede conocer.

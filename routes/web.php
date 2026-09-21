@@ -3939,6 +3939,8 @@ Route::middleware('auth')->group(function () {
             ->name('corrections.index');
         Route::get('corrections/create', [\App\Http\Controllers\TimeCorrectionController::class, 'create'])
             ->name('corrections.create');
+        Route::get('corrections/targets', [\App\Http\Controllers\TimeCorrectionController::class, 'targets'])
+            ->name('corrections.targets');
         Route::post('corrections', [\App\Http\Controllers\TimeCorrectionController::class, 'store'])
             ->name('corrections.store');
         Route::get('corrections/{correction}', [\App\Http\Controllers\TimeCorrectionController::class, 'show'])

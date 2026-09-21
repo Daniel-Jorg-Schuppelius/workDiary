@@ -17,8 +17,7 @@ use App\Http\Controllers\Concerns\RequiresPlatformOperator;
 use App\Http\Controllers\Controller;
 use App\Models\{MaintenanceWindow, Organization};
 use App\Services\Operations\MaintenanceWindowService;
-use App\Support\Setting;
-use Carbon\CarbonImmutable;
+use App\Support\{ErrorText, Setting, Tz};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -58,7 +57,8 @@ class MaintenanceWindowController extends Controller {
     public function create(): View {
         Gate::authorize(Permission::PlatformOperationsManage->value);
 
-        return view('admin.maintenance-windows._form_dialog');
+        // System-Fenster sind Betreiber-Sache (store prüft das) — Org-Admins bekamen sie vorausgewählt und landeten auf 403.
+        return view('admin.maintenance-windows._form_dialog', ['systemScope' => $this->isPlatformOperator()]);
     }
 
     public function store(Request $request): RedirectResponse {
@@ -66,9 +66,10 @@ class MaintenanceWindowController extends Controller {
 
         $validated = $request->validate([
             'scope' => ['required', Rule::in([MaintenanceWindow::SCOPE_SYSTEM, MaintenanceWindow::SCOPE_ORGANIZATION])],
-            'starts_at' => ['required', 'date', 'after:now'],
-            'ends_at' => ['required', 'date', 'after:starts_at'],
-            'announce_from' => ['nullable', 'date', 'before:starts_at'],
+            // Eingabe ist Ortszeit: „nach jetzt“ gegen die lokale Uhr prüfen, gespeichert wird UTC (MVP-823).
+            'starts_at' => ['required', 'date', 'after:' . Tz::now()->toDateTimeString(), new \App\Rules\TimestampRange()],
+            'ends_at' => ['required', 'date', 'after:starts_at', new \App\Rules\TimestampRange()],
+            'announce_from' => ['nullable', 'date', 'before:starts_at', new \App\Rules\TimestampRange()],
             'message' => ['nullable', 'string', 'max:300'],
             'read_only' => ['nullable', 'boolean'],
             'block_ingest' => ['nullable', 'boolean'],
@@ -85,9 +86,9 @@ class MaintenanceWindowController extends Controller {
             'organization_id' => $validated['scope'] === MaintenanceWindow::SCOPE_ORGANIZATION && $organization instanceof Organization
                 ? $organization->id
                 : null,
-            'starts_at' => CarbonImmutable::parse($validated['starts_at']),
-            'ends_at' => CarbonImmutable::parse($validated['ends_at']),
-            'announce_from' => isset($validated['announce_from']) ? CarbonImmutable::parse($validated['announce_from']) : null,
+            'starts_at' => Tz::parse($validated['starts_at']),
+            'ends_at' => Tz::parse($validated['ends_at']),
+            'announce_from' => isset($validated['announce_from']) ? Tz::parse($validated['announce_from']) : null,
             'message' => $validated['message'] ?? null,
             'read_only' => (bool) ($validated['read_only'] ?? false),
             'block_ingest' => (bool) ($validated['block_ingest'] ?? false),
@@ -112,14 +113,14 @@ class MaintenanceWindowController extends Controller {
                 'complete' => $this->service->complete($maintenanceWindow),
                 'extend' => $this->service->extend(
                     $maintenanceWindow,
-                    CarbonImmutable::parse((string) $request->validate(['ends_at' => ['required', 'date']])['ends_at']),
+                    Tz::parse((string) $request->validate(['ends_at' => ['required', 'date', new \App\Rules\TimestampRange()]])['ends_at']),
                 ),
                 'rollback' => $this->service->rollback($maintenanceWindow, $request->input('notes')),
                 'cancel' => $this->service->cancel($maintenanceWindow),
                 default => abort(404),
             };
         } catch (\InvalidArgumentException $e) {
-            return redirect()->route('admin.maintenance-windows.index')->with('error', $e->getMessage());
+            return redirect()->route('admin.maintenance-windows.index')->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('admin.maintenance-windows.index')

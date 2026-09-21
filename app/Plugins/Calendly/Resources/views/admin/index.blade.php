@@ -43,12 +43,6 @@
         @endif
     </x-slot:actions>
 
-    @if (session('success'))
-        <div class="alert alert-success text-sm">{{ session('success') }}</div>
-    @endif
-    @if (session('error'))
-        <div class="alert alert-error text-sm">{{ session('error') }}</div>
-    @endif
     @if ($errors->any())
         <div class="alert alert-error text-sm">{{ $errors->first() }}</div>
     @endif
@@ -115,7 +109,7 @@
             @foreach ($requests as $request)
                 <tr>
                     <td class="whitespace-nowrap">
-                        {{ optional($request->start_at)->timezone(config('app.timezone'))->format('d.m.Y H:i') ?? '—' }}
+                        {{ $request->start_at?->orgTz()->format('d.m.Y H:i') ?? '—' }}
                         <div class="text-xs text-muted">{{ $request->service_label }}</div>
                     </td>
                     <td>

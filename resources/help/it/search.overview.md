@@ -37,10 +37,10 @@ i suoi clienti finali), cliente finale e ordinamento. Senza termine di ricerca
 ma con cliente, cliente finale o progetto compaiono le attività più recenti.
 
 «Tag nei risultati» conta i tag delle voci trovate; un clic restringe a un tag e
-la crocetta sul filtro lo rimuove. Se puoi vedere le raccolte, la barra dei
+la crocetta sul filtro lo rimuove. Se può vedere le raccolte, la barra dei
 filtri offre anche **Raccolta**, che include le sue sottoraccolte. Entrambi i
 filtri funzionano anche senza termine di ricerca. Vengono contate solo le voci
-che puoi aprire, quindi i tag di contenuti riservati di altri non compaiono.
+che può aprire, quindi i tag di contenuti riservati di altri non compaiono.
 
 ## Punti di accesso
 

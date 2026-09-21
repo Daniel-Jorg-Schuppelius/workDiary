@@ -10,11 +10,11 @@ related:
     - invoices.manage
 ---
 
-Qui risolvi i conflitti di sincronizzazione con Lexoffice, che nascono
+Qui risolve i conflitti di sincronizzazione con Lexoffice, che nascono
 quando un record locale e quello corrispondente in Lexoffice divergono
-in uno o più campi. Per ogni conflitto scegli **Applica locale**
+in uno o più campi. Per ogni conflitto scelga **Applica locale**
 (mantiene i valori di WorkDiary), **Applica esterno** (adotta i valori
-di Lexoffice) o **Scarta** (ignora il conflitto). Confronta con cura
+di Lexoffice) o **Scarta** (ignora il conflitto). Confronti con cura
 i dati affiancati prima di decidere, perché le prime due opzioni
 sovrascrivono valori; per le fatture la sovranità resta al programma
 esterno.

@@ -56,7 +56,7 @@
             <x-empty-state framed
                 icon="search_off"
                 :title="__('Keine passenden Hilfethemen gefunden.')"
-                :message="__('Prüfe die Schreibweise oder versuche einen allgemeineren Begriff.')">
+                :message="__('Prüfen Sie die Schreibweise oder versuchen Sie einen allgemeineren Begriff.')">
                 <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
                     <x-button tone="outline" size="sm" :href="route('help.center.index')">
                         {{ __('Suche zurücksetzen') }}
@@ -177,7 +177,7 @@
             </div>
         @endif
         <p class="text-center text-xs text-muted">
-            {{ __(':count Artikel in deiner Sprache verfügbar.', ['count' => $totalCount]) }}
+            {{ __(':count Artikel in Ihrer Sprache verfügbar.', ['count' => $totalCount]) }}
         </p>
     @endif
 </x-index-page>

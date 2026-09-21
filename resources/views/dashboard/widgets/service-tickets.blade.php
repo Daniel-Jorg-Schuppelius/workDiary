@@ -15,7 +15,7 @@
 
     @if ($tickets->isEmpty())
         <x-empty-state compact icon="confirmation_number"
-                       :title="__('Keine offenen Tickets')" :message="__('Dir ist derzeit kein offenes Ticket zugewiesen.')" />
+                       :title="__('Keine offenen Tickets')" :message="__('Ihnen ist derzeit kein offenes Ticket zugewiesen.')" />
     @else
         <ul class="space-y-2 text-sm">
             @foreach ($tickets as $ticket)

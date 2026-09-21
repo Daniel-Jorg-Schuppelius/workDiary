@@ -39,7 +39,7 @@ class RentalRequestDecisionMail extends Mailable {
     }
 
     public function content(): Content {
-        return new Content(view: 'mail.rental-request-decision', with: [
+        return new Content(markdown: 'mail.rental-request-decision', with: [
             'request' => $this->request,
             'accepted' => $this->request->status === RentalRequestStatus::Accepted,
         ]);

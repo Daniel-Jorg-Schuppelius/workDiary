@@ -14,9 +14,9 @@ related:
 Veranstaltungen bündeln Termin, Ort, Verantwortliche, Teilnehmende,
 Erinnerungen und benötigte Ressourcen.
 
-Lege zuerst Zeitraum, Sichtbarkeit und Veranstaltungsart fest. Ergänze
+Legen Sie zuerst Zeitraum, Sichtbarkeit und Veranstaltungsart fest. Ergänzen Sie
 danach Teilnehmende, Rollen, Ort, Material und Erinnerungen. Bei
-wiederkehrenden Terminen prüfe die erzeugten Einzeltermine, bevor
+wiederkehrenden Terminen prüfen Sie die erzeugten Einzeltermine, bevor
 Einladungen oder Erinnerungen versendet werden.
 
 Änderungen an Zeit oder Ort betreffen alle eingeladenen Personen.

@@ -15,6 +15,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, ForeignCustomer, IntegrationInboxItem, Organization, Project, TimeEntry, User};
 use App\Services\Integration\{InboxActionService, InboxGroupBookerRegistry, MatchProfileRegistry};
+use App\Support\ErrorText;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{MorphTo, Relation};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -274,7 +275,7 @@ class IntegrationInboxController extends Controller {
         } catch (\RuntimeException $e) {
             // Ziel-Typ ohne Anlege-Profil (oder fachliche Sperre) — als
             // Meldung zeigen, nicht als Fehlerseite (Muster acceptRemote).
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Neuer Datensatz angelegt und zugeordnet (#:id).', ['id' => $model->getKey()]));
@@ -288,7 +289,7 @@ class IntegrationInboxController extends Controller {
         } catch (\RuntimeException $e) {
             // Fachliche Sperre (z. B. bereits abgerechnet) — als Meldung zeigen,
             // nicht als Fehlerseite.
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Konflikt zugunsten der Remote-Werte gelöst.'));

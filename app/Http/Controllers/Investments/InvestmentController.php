@@ -19,7 +19,7 @@ use App\Models\CostCenter;
 use App\Models\Investments\{InvestmentBudgetRequest, InvestmentCase, InvestmentDeviation, InvestmentOption};
 use App\Models\{Supplier, User};
 use App\Services\Investments\InvestmentService;
-use App\Support\SortableQuery;
+use App\Support\{ErrorText, SortableQuery};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -195,7 +195,7 @@ class InvestmentController extends Controller {
         try {
             $this->investments->submitBudget($case->refresh(), $data, $this->actor());
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Budgetantrag eingereicht — Freigabekette gestartet.'));
@@ -208,7 +208,7 @@ class InvestmentController extends Controller {
         try {
             $result = $this->investments->approveBudget($budgetRequest, $this->actor(), $request->input('reason'));
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', $result === 'approved_all'
@@ -224,7 +224,7 @@ class InvestmentController extends Controller {
         try {
             $this->investments->rejectBudget($budgetRequest, $this->actor(), $data['reason']);
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Budgetantrag abgelehnt.'));
@@ -312,7 +312,7 @@ class InvestmentController extends Controller {
         try {
             $this->investments->decideDeviation($deviation, $data['decision'], $data['note'] ?? null, $this->actor());
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Abweichung entschieden.'));
@@ -326,7 +326,7 @@ class InvestmentController extends Controller {
         try {
             $this->investments->supplementBudget($case, $deviation, $data, $this->actor());
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Nachtrag eingereicht — Freigabekette gestartet.'));

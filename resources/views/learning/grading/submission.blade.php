@@ -91,7 +91,7 @@
                 <x-detail-grid>
                     <x-detail-grid.row :label="__('learning.field.learner')" :value="$submission->enrollment?->learnerName() ?? '–'" />
                     <x-detail-grid.row :label="__('learning.field.course')" :value="$submission->assignment?->unit?->course?->title ?? '–'" />
-                    <x-detail-grid.row :label="__('learning.field.submitted_at')" :value="$submission->submitted_at?->translatedFormat('d.m.Y H:i') ?? '–'" />
+                    <x-detail-grid.row :label="__('learning.field.submitted_at')" :value="$submission->submitted_at?->orgTz()->translatedFormat('d.m.Y H:i') ?? '–'" />
                     <x-detail-grid.row :label="__('learning.field.attempt')" :value="$submission->attempt_no" />
                     <x-detail-grid.row :label="__('learning.field.pass_percent')" :value="($submission->assignment?->pass_percent ?? 0) . ' %'" />
                 </x-detail-grid>

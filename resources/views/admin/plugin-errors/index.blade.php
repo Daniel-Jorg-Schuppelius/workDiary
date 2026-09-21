@@ -109,7 +109,7 @@
                         @endunless
                     </td>
                     <td class="text-xs text-base-content/70 whitespace-nowrap" title="{{ $err->occurred_at->toDayDateTimeString() }}">
-                        {{ $err->occurred_at->format('d.m.Y H:i') }}
+                        {{ $err->occurred_at->orgTz()->format('d.m.Y H:i') }}
                         @if ($err->last_occurred_at && ! $err->last_occurred_at->equalTo($err->occurred_at))
                             <span class="block text-muted">{{ __('zuletzt :time', ['time' => $err->last_occurred_at->diffForHumans()]) }}</span>
                         @endif

@@ -11,13 +11,13 @@ related:
     - articles.master
 ---
 
-Hier verwaltest du Etikettenvorlagen und erzeugst druckbare Etiketten für
+Hier verwalten Sie Etikettenvorlagen und erzeugen druckbare Etiketten für
 Varianten, Chargen und Seriennummern.
 
 Eine Vorlage legt Papiergröße (A6, A7, A8), Ausrichtung (Hoch- oder
 Querformat), den optionalen QR-Code und die dargestellten Felder fest. Je
 Organisation kann höchstens eine Vorlage als Standard markiert sein;
-setzt du eine neue als Standard, wird die bisherige automatisch
+setzen Sie eine neue als Standard, wird die bisherige automatisch
 zurückgesetzt. Anlegen und Bearbeiten laufen als Dialog; das Verwalten
 von Vorlagen erfordert Konfigurationsrecht.
 

@@ -58,7 +58,7 @@
             <div><dt class="opacity-60">{{ __('inventory.serial.field.warehouse') }}</dt><dd>{{ $serial->warehouse?->name ?? '—' }}</dd></div>
             <div><dt class="opacity-60">{{ __('inventory.serial.field.customer') }}</dt><dd>{{ $serial->customer?->name ?? '—' }}</dd></div>
             <div><dt class="opacity-60">{{ __('inventory.serial.field.order') }}</dt><dd class="font-mono">{{ $serial->manufacturingOrder?->number ?? '—' }}</dd></div>
-            <div><dt class="opacity-60">{{ __('inventory.serial.field.shipped_at') }}</dt><dd>{{ $serial->shipped_at?->format('d.m.Y H:i') ?? '—' }}</dd></div>
+            <div><dt class="opacity-60">{{ __('inventory.serial.field.shipped_at') }}</dt><dd>{{ $serial->shipped_at?->orgTz()->format('d.m.Y H:i') ?? '—' }}</dd></div>
         </dl>
     </x-card>
 </x-page-shell>

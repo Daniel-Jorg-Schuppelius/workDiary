@@ -33,7 +33,7 @@
 
     <div class="grid gap-3 sm:grid-cols-2">
         <x-input-field name="occurred_at" type="datetime-local" :label="__('safety.field.occurred_at')" required
-                       :value="old('occurred_at', optional($event?->occurred_at)->format('Y-m-d\TH:i') ?? now()->format('Y-m-d\TH:i'))" />
+                       :value="old('occurred_at', $event?->occurred_at?->orgTz()->format('Y-m-d\TH:i') ?? now()->orgTz()->format('Y-m-d\TH:i'))" />
         <x-input-field name="location" :label="__('safety.field.location')" maxlength="180"
                        :value="old('location', $event?->location)" />
     </div>

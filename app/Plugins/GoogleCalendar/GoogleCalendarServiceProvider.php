@@ -27,11 +27,9 @@ class GoogleCalendarServiceProvider extends PluginServiceProviderBase {
     protected function registerPlugin(): void {
         $this->app->singleton(GoogleCalendarOAuth::class, fn(): GoogleCalendarOAuth => new GoogleCalendarOAuth());
 
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                Console\GoogleCalendarPublishCommand::class,
-                Console\GoogleCalendarImportCommand::class,
-            ]);
-        }
+        $this->commands([
+            Console\GoogleCalendarPublishCommand::class,
+            Console\GoogleCalendarImportCommand::class,
+        ]);
     }
 }

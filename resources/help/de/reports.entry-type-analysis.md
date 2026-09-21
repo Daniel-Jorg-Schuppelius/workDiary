@@ -18,6 +18,6 @@ Die Auftragstyp-Analyse vergleicht Plan- und Ist-Dauern je Eintragstyp
 - **Nacharbeit-Quote**
 - **Top-Ursachen** (sofern als Klassifikation gepflegt)
 
-So erkennst du Auftragstypen, in denen die Plan-Annahmen unrealistisch
+So erkennen Sie Auftragstypen, in denen die Plan-Annahmen unrealistisch
 sind oder das Team systematisch Mehraufwand hat – beides Hinweise auf
 Schulungs- oder Pricing-Bedarf.

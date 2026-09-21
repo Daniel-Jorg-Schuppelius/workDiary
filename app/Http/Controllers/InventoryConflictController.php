@@ -13,6 +13,7 @@ namespace App\Http\Controllers;
 use App\Enums\User\Permission as P;
 use App\Models\{PendingExternalConflict, User};
 use App\Services\Inventory\InventoryConflictResolver;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -60,7 +61,7 @@ class InventoryConflictController extends Controller {
         try {
             $this->resolver->keepLocal($conflict, Auth::id() !== null ? (int) Auth::id() : null);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('inventory.conflict.flash.kept_local'));
@@ -72,7 +73,7 @@ class InventoryConflictController extends Controller {
         try {
             $this->resolver->compensate($conflict, Auth::id() !== null ? (int) Auth::id() : null);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('inventory.conflict.flash.compensated'));

@@ -54,8 +54,8 @@ return [
         'title' => 'Check-in',
         'subtitle' => 'Entrata e uscita con il codice presso la sede o il veicolo.',
         'state' => [
-            'in' => 'Hai timbrato l\'entrata alle :time.',
-            'out' => 'Al momento non hai timbrato l\'entrata.',
+            'in' => 'Ha timbrato l\'entrata alle :time.',
+            'out' => 'Al momento non ha timbrato l\'entrata.',
         ],
         'action' => [
             'in' => 'Entrata',
@@ -67,12 +67,12 @@ return [
             'out' => 'Uscita presso «:name» registrata.',
         ],
         'error' => [
-            'already_in' => 'Hai già timbrato l\'entrata.',
-            'not_in' => 'Non hai timbrato l\'entrata.',
-            'no_center' => 'Questo punto ha un raggio ma nessuna posizione. Contatta l\'amministrazione.',
-            'location_required' => 'Questo punto richiede la tua posizione.',
-            'too_far' => 'Sei a :distance m; sono consentiti :radius m.',
-            'location_denied' => 'Impossibile determinare la posizione. Consenti l\'accesso alla posizione.',
+            'already_in' => 'Ha già timbrato l\'entrata.',
+            'not_in' => 'Non ha timbrato l\'entrata.',
+            'no_center' => 'Questo punto ha un raggio ma nessuna posizione. Contatti l\'amministrazione.',
+            'location_required' => 'Questo punto richiede la sua posizione.',
+            'too_far' => 'È a :distance m; sono consentiti :radius m.',
+            'location_denied' => 'Impossibile determinare la posizione. Consenta l\'accesso alla posizione.',
         ],
     ],
 ];

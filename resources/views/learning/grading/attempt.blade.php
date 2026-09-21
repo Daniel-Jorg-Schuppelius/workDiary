@@ -75,8 +75,8 @@
                 <x-detail-grid>
                     <x-detail-grid.row :label="__('learning.field.learner')" :value="$enrollment->learnerName()" />
                     <x-detail-grid.row :label="__('learning.field.attempt')" :value="'#' . $attempt->attempt_no" />
-                    <x-detail-grid.row :label="__('learning.field.started_at')" :value="$attempt->started_at?->translatedFormat('d.m.Y H:i') ?? '–'" />
-                    <x-detail-grid.row :label="__('learning.field.submitted_at')" :value="$attempt->submitted_at?->translatedFormat('d.m.Y H:i') ?? '–'" />
+                    <x-detail-grid.row :label="__('learning.field.started_at')" :value="$attempt->started_at?->orgTz()->translatedFormat('d.m.Y H:i') ?? '–'" />
+                    <x-detail-grid.row :label="__('learning.field.submitted_at')" :value="$attempt->submitted_at?->orgTz()->translatedFormat('d.m.Y H:i') ?? '–'" />
                     <x-detail-grid.row :label="__('learning.field.score')" :value="$attempt->score_points . ' / ' . $attempt->max_points . ' (' . ($attempt->score_percent ?? 0) . ' %)'" />
                     <x-detail-grid.row :label="__('learning.field.device')" :value="trim(($attempt->client_ip ?? '') . ' ' . \Illuminate\Support\Str::limit((string) $attempt->user_agent, 60)) ?: '–'" />
                 </x-detail-grid>

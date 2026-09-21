@@ -13,7 +13,7 @@
     'title' => __('Wartungsarbeiten'),
     'message' => $message ?? __('Dieser Bereich wird gerade gewartet. Bitte versuchen Sie es später erneut.'),
     'extraNote' => (($until ?? null) instanceof \Carbon\CarbonInterface)
-        ? __('Voraussichtlich wieder verfügbar: :at', ['at' => $until->translatedFormat('d.m.Y H:i')])
+        ? __('Voraussichtlich wieder verfügbar: :at', ['at' => $until->orgTz()->translatedFormat('d.m.Y H:i')])
         : null,
     'reportable' => false,
     'actions' => [

@@ -38,7 +38,7 @@ entonces), sustituida (sucesor en otro proveedor) y terminada. Las
 suscripciones terminadas y sustituidas no reciben nuevos periodos.
 
 **Eliminar:** una suscripción con periodos decididos no se puede eliminar —
-ponla en «terminada». Permisos: ver con *Ver el registro de reventa*,
+póngala en «terminada». Permisos: ver con *Ver el registro de reventa*,
 gestionar con *Gestionar el registro de reventa*.
 
 **Conciliación por destinatario de factura:** cuando quedan periodos
@@ -97,7 +97,7 @@ periodo a …», ya rellenado.
 
 **Bandeja de entrada:** las suscripciones importadas cuya empresa el
 registro aún no puede asignar a un titular llegan a la bandeja de entrada.
-Por empresa decides una vez: cliente, cliente final de un socio o parque
+Por empresa decide una vez: cliente, cliente final de un socio o parque
 propio — la sugerencia viene de la comparación de nombres con clientes y
 clientes finales. La decisión se memoriza; la siguiente importación asigna
 enseguida la misma empresa. Las filas que la importación no pudo procesar
@@ -109,8 +109,8 @@ desplegables en la lista.
 las suscripciones con mosaicos de estado (abierto, facturado, parcial,
 renunciado, en disputa). «Calcular propuestas» compara los periodos
 abiertos con las posiciones de licencia de las facturas reflejadas y crea
-propuestas; tú las confirmas, vinculas a mano una posición (solo facturas
-del mismo destinatario, solo meses de licencia libres) o renuncias con un
+propuestas; usted las confirma, vincula a mano una posición (solo facturas
+del mismo destinatario, solo meses de licencia libres) o renuncia con un
 motivo («cortesía»). La planificación ya no toca los periodos decididos;
 «reabrir» los abre de nuevo. Si una factura vinculada se anula después en
 Lexoffice, la siguiente ejecución pone el vínculo a cero meses, anota la
@@ -119,7 +119,7 @@ sustitución.
 
 **Borrador de factura:** de todos los periodos abiertos de un destinatario
 de factura surge con un clic un borrador — con facturación Lexoffice como
-borrador en Lexoffice (nada se finaliza; revisas y emites allí), con
+borrador en Lexoffice (nada se finaliza; revisa y emite allí), con
 facturación local como borrador de factura local con posiciones y vínculos
 propuestos. Una posición por suscripción y periodo, cliente final en la
 descripción, cantidad en meses para artículos mensuales. Los periodos
@@ -150,7 +150,7 @@ procede de tres fuentes: (1) facturas y abonos del proveedor en PDF
 cliente final y plazo, el importe va exactamente al periodo; las posiciones
 de abono sin contrato corresponden a la empresa. (2) Comprobantes recibidos
 del espejo de comprobantes a prorrata: para facturas agrupadas sin
-posiciones (Telekom) indicas la parte del proveedor y el mes de servicio,
+posiciones (Telekom) indica la parte del proveedor y el mes de servicio,
 el importe se reparte entre todos los periodos del mes, ponderado con su
 compra prevista mensual. (3) Asientos de dominios de la gestión de
 dominios, automáticamente. En la importación PDF el registro comprueba el
@@ -178,7 +178,7 @@ mediana, máximo). Avisos: «venta por debajo de compra», «venta por debajo
 del PVP», «contrato más caro que el catálogo», «sin precio de venta».
 
 **Clasificación de productos:** qué artículos de Lexoffice son productos de
-suscripción lo reconoce el registro por el nombre. Por artículo puedes
+suscripción lo reconoce el registro por el nombre. Por artículo puede
 forzar: «producto de suscripción» impone el reconocimiento, «nunca posición
 de suscripción» mantiene fuera de propuestas, listas de facturas y
 «posiciones sin suscripción» los servicios con un nombre de producto en el

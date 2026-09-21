@@ -14,12 +14,12 @@ use App\Enums\Integration\WebhookEvent;
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Jobs\Notification\{CalendarEventPublishJob, ChatWebhookDeliveryJob};
 use App\Jobs\Notification\WebPushDeliveryJob;
-use App\Models\{ChatWebhook, User};
+use App\Models\{ChatWebhook, Organization, User};
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
 use App\Notifications\GenericEventNotification;
 use App\Services\Integration\WebhookDispatchService;
 use App\Services\Notification\Sms\SmsChannelService;
-use App\Support\{NotificationText, Setting};
+use App\Support\{NotificationText, Setting, Tz};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\{Carbon, Collection};
 use Illuminate\Support\Facades\Log;
@@ -463,6 +463,20 @@ class NotificationDispatcher {
     }
 
     /**
+     * Text für Kanäle außerhalb der App (Chat, Kalender): aus Key und Parametern
+     * in der Zeitzone der Organisation — der beim Erzeugen gerenderte Text trägt
+     * Zeitpunkte in UTC.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    private function externalMessage(array $payload, int $organizationId): ?string {
+        $organization = Organization::query()->withoutGlobalScopes()->find($organizationId);
+        $text = NotificationText::message($payload, $organization instanceof Organization ? Tz::ofOrganization($organization) : null);
+
+        return $text !== '' ? $text : null;
+    }
+
+    /**
      * Additiver Team-Messenger-Hook (Feature 056, MVP-119): fächert das Ereignis
      * an die aktiven, ausgehenden Chat-Kanäle (Teams/Mattermost) der Organisation
      * — org-weit (eine Kanal-URL je Kanal), nicht empfängerbezogen. Ausgewählt
@@ -495,7 +509,7 @@ class NotificationDispatcher {
 
                 ChatWebhookDeliveryJob::dispatch((int) $webhook->id, (string) $event->label(), [
                     'title' => (string) $payload['title'],
-                    'message' => isset($payload['message']) ? (string) $payload['message'] : null,
+                    'message' => $this->externalMessage($payload, $organizationId),
                     'url' => isset($payload['url']) && $payload['url'] !== '' ? (string) $payload['url'] : null,
                 ]);
             }
@@ -545,7 +559,7 @@ class NotificationDispatcher {
                 $subject->getMorphClass(),
                 (int) $subject->getKey(),
                 (string) $payload['title'],
-                isset($payload['message']) && $payload['message'] !== '' ? (string) $payload['message'] : null,
+                $this->externalMessage($payload, $organizationId),
                 $dueAtIso,
             );
         } catch (Throwable $e) {

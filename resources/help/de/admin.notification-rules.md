@@ -29,7 +29,7 @@ Typischer Ablauf:
 Wichtig zu wissen:
 
 - Ohne eigene Regel greifen die **Code-Defaults** des Ereignisses
-  (Kanäle, Betroffenen-Flag, Rollen) – du musst nur abweichende Fälle
+  (Kanäle, Betroffenen-Flag, Rollen) – Sie müssen nur abweichende Fälle
   konfigurieren.
 - Eskalation gibt es nur für Überfälligkeits-/Ablauf-Ereignisse.
 - Einige Ereignisse werden sofort ausgelöst (z. B. Zuweisung), andere

@@ -210,7 +210,7 @@
                             @foreach ($unitNotes as $note)
                                 <li class="rounded-box border border-base-300 bg-base-200 px-3 py-2 text-sm">
                                     <p class="whitespace-pre-line">{{ $note->body }}</p>
-                                    <p class="mt-1 text-xs text-muted">{{ $note->occurred_at?->translatedFormat('d.m.Y H:i') }} · {{ __('learning.badge.private_note') }}</p>
+                                    <p class="mt-1 text-xs text-muted">{{ $note->occurred_at?->orgTz()->translatedFormat('d.m.Y H:i') }} · {{ __('learning.badge.private_note') }}</p>
                                 </li>
                             @endforeach
                         </ul>
@@ -232,8 +232,8 @@
                     @if ($unit->kind === \App\Enums\Learning\LearningUnitKind::Event && $unit->event)
                         <p class="mt-3 text-sm text-base-content/80">
                             <x-icon name="calendar_month" class="text-muted" />
-                            {{ $unit->event->started_at?->translatedFormat('d.m.Y H:i') }}
-                            @if ($unit->event->ended_at) – {{ $unit->event->ended_at->translatedFormat('H:i') }} @endif
+                            {{ $unit->event->started_at?->orgTz()->translatedFormat('d.m.Y H:i') }}
+                            @if ($unit->event->ended_at) – {{ $unit->event->ended_at->orgTz()->translatedFormat('H:i') }} @endif
                         </p>
                         <p class="mt-1 text-xs text-muted">{{ __('learning.help.event_attendance') }}</p>
                     @endif
@@ -302,7 +302,7 @@
                 @if ($openSession)
                     <p class="mb-3 text-sm">
                         {{ __('learning.field.time_running') }}
-                        <span class="font-mono">{{ $openSession->started_at?->translatedFormat('H:i') }}</span>
+                        <span class="font-mono">{{ $openSession->started_at?->orgTz()->translatedFormat('H:i') }}</span>
                     </p>
                     <form method="POST" action="{{ route('learning.my.time.stop', $enrollment) }}">
                         @csrf
@@ -377,7 +377,7 @@
                                     <div class="min-w-0">
                                         <p class="font-medium">{{ $note->subject }}</p>
                                         <p class="whitespace-pre-line text-base-content/80">{{ $note->body }}</p>
-                                        <p class="mt-1 text-xs text-muted">{{ $note->occurred_at?->translatedFormat('d.m.Y H:i') }}</p>
+                                        <p class="mt-1 text-xs text-muted">{{ $note->occurred_at?->orgTz()->translatedFormat('d.m.Y H:i') }}</p>
                                     </div>
                                     <form method="POST" action="{{ route('learning.my.notes.destroy', [$enrollment, $note]) }}"
                                           data-confirm-dialog data-confirm-message="{{ __('learning.confirm.delete_note') }}">

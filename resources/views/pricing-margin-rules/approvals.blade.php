@@ -43,12 +43,12 @@
                         <td class="text-right tabular-nums">{{ rtrim(rtrim((string) $request->margin_snapshot?->getNumericValue(), '0'), '.') }} %</td>
                         <td class="text-sm">
                             {{ $request->requestedBy?->name ?: '—' }}
-                            <div class="text-xs opacity-60">{{ $request->created_at?->format('d.m.Y H:i') }}</div>
+                            <div class="text-xs opacity-60">{{ $request->created_at?->orgTz()->format('d.m.Y H:i') }}</div>
                         </td>
                         <td>
                             <span class="badge badge-sm">{{ __('procurement.approval.status.' . $request->status) }}</span>
                             @if (! $open && $request->decidedBy)
-                                <div class="text-xs opacity-60 mt-0.5">{{ $request->decidedBy->name }} · {{ $request->decided_at?->format('d.m.Y H:i') }}</div>
+                                <div class="text-xs opacity-60 mt-0.5">{{ $request->decidedBy->name }} · {{ $request->decided_at?->orgTz()->format('d.m.Y H:i') }}</div>
                             @endif
                             @if ($request->decision_note)
                                 <div class="text-xs opacity-60">{{ $request->decision_note }}</div>

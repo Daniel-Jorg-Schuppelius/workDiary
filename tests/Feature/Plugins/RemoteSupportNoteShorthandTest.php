@@ -87,19 +87,20 @@ class RemoteSupportNoteShorthandTest extends TestCase {
         $this->assertSame('2026-07-20 08:30:00', $entry->started_at?->format('Y-m-d H:i:s'));
     }
 
+    /** Sitzung 10:00 UTC = 12:00 Ortszeit (Berlin); „seit 8h“ meint 08:00 Ortszeit = 06:00 UTC. */
     public function test_seit_sets_absolute_start(): void {
         $entry = $this->bookWithNote('läuft seit 8h', 'n5');
-        $this->assertSame('2026-07-20 08:00:00', $entry->started_at?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-07-20 06:00:00', $entry->started_at?->format('Y-m-d H:i:s'));
     }
 
     public function test_seit_with_minutes(): void {
         $entry = $this->bookWithNote('seit 8:30 dran', 'n6');
-        $this->assertSame('2026-07-20 08:30:00', $entry->started_at?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-07-20 06:30:00', $entry->started_at?->format('Y-m-d H:i:s'));
     }
 
     public function test_seit_wins_over_duration(): void {
         $entry = $this->bookWithNote('seit 8h +1h', 'n7');
-        $this->assertSame('2026-07-20 08:00:00', $entry->started_at?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-07-20 06:00:00', $entry->started_at?->format('Y-m-d H:i:s'));
     }
 
     public function test_seit_after_session_start_is_ignored(): void {

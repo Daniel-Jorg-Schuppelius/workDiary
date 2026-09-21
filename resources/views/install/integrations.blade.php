@@ -69,7 +69,7 @@
         btn.addEventListener('click', async function () {
             btn.disabled = true;
             const original = btn.innerHTML;
-            btn.textContent = @json(__('Generiere …'));
+            btn.textContent = @json(__('Wird generiert …'));
             try {
                 const res = await fetch(@json(route('install.integrations.vapid')), {
                     method: 'POST',

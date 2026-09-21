@@ -23,7 +23,7 @@
 
 <div>
     <label for="inhalt" class="mb-2 block text-sm font-medium text-base-content">{{ __('Inhalt') }}<span class="text-error">*</span></label>
-    <textarea id="inhalt" name="inhalt" rows="8" class="textarea textarea-bordered textarea-sm w-full @error('inhalt') ring-2 ring-error/30 @enderror" placeholder="{{ __('Beschreibe den Vorgang...') }}">{{ old('inhalt', $entry?->inhalt) }}</textarea>
+    <textarea id="inhalt" name="inhalt" rows="8" class="textarea textarea-bordered textarea-sm w-full @error('inhalt') ring-2 ring-error/30 @enderror" placeholder="{{ __('Beschreiben Sie den Vorgang...') }}">{{ old('inhalt', $entry?->inhalt) }}</textarea>
     @error('inhalt')
         <p class="mt-2 text-sm text-error">{{ $message }}</p>
     @enderror

@@ -24,7 +24,7 @@ freigeschaltet. So landet keine echte Registrierung versehentlich in einem
 Test.
 
 **Zugangsdaten:** Login und Passwort werden verschlüsselt gespeichert und
-erscheinen nie in URLs, Logs oder Diagnosen. Optional trägst du einen
+erscheinen nie in URLs, Logs oder Diagnosen. Optional tragen Sie einen
 Standard-Benutzer (s_user) ein — den Kontext, unter dem Befehle eines
 berechtigten Subusers laufen.
 
@@ -33,7 +33,7 @@ die API, ohne etwas zu verändern. „Abgleichen“ holt das aktuelle Portfolio
 (Domains, Laufzeiten, Renewal-Modi, Reseller/Subuser) in die lokalen
 Projektionen. Der Abgleich ist lesend und idempotent.
 
-**Pilot bestätigen:** Nach einem erfolgreichen realen Test bestätigst du
+**Pilot bestätigen:** Nach einem erfolgreichen realen Test bestätigen Sie
 den Piloten; erst danach kann die Verbindung produktiv geschaltet werden.
 Solange der Pilot offen ist, meldet der Healthcheck „Pilot offen“.
 

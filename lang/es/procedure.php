@@ -42,7 +42,7 @@ return [
         'criticalRiskAccepted' => 'La desviación crítica ha sido aceptada.',
     ],
     'validation' => [
-        'versionLocked' => 'Las versiones publicadas de la plantilla son inmutables. Crea una nueva versión.',
+        'versionLocked' => 'Las versiones publicadas de la plantilla son inmutables. Cree una nueva versión.',
         'runIncomplete' => 'No se puede completar la ejecución: todavía hay pasos obligatorios abiertos.',
         'backupInvalid' => 'El registro de copia de seguridad no es válido (motivo: :reason).',
         'backupMissingOrExpired' => 'Falta un registro de copia de seguridad válido (o la última copia es demasiado antigua).',
@@ -73,7 +73,7 @@ return [
         'panel' => 'Procedimientos',
     ],
     'subtitle' => [
-        'templates' => 'Gestiona flujos obligatorios con pasos requeridos, prueba de copia de seguridad y aprobación de cuatro ojos.',
+        'templates' => 'Gestione flujos obligatorios con pasos requeridos, prueba de copia de seguridad y aprobación de cuatro ojos.',
     ],
     'field' => [
         'name' => 'Nombre',
@@ -139,7 +139,7 @@ return [
         'publish' => '¿Publicar esta versión? Los pasos se vuelven inmutables después.',
     ],
     'notice' => [
-        'noDraft' => 'Todas las versiones están publicadas y, por tanto, son inmutables. Crea una nueva versión para cambiar los pasos.',
+        'noDraft' => 'Todas las versiones están publicadas y, por tanto, son inmutables. Cree una nueva versión para cambiar los pasos.',
     ],
     'panel' => [
         'suggested' => 'Procedimientos sugeridos para este pedido:',
@@ -179,7 +179,7 @@ return [
     ],
     'empty' => [
         'title' => 'Sin plantillas de procedimiento',
-        'message' => 'Crea el primer procedimiento obligatorio.',
+        'message' => 'Cree el primer procedimiento obligatorio.',
         'filtered' => 'Ninguna plantilla coincide con el filtro.',
     ],
     // Informe de desviaciones (Feature 026, MVP-713).

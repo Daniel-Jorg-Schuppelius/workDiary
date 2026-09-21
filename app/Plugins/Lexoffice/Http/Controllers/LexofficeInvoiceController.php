@@ -13,6 +13,7 @@ namespace App\Plugins\Lexoffice\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\{ExternalReference, Invoice};
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
+use App\Support\ErrorText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -56,7 +57,7 @@ class LexofficeInvoiceController extends Controller {
         } catch (\Throwable $e) {
             report($e);
 
-            return back()->with('error', __('Lexoffice-Übertragung fehlgeschlagen: :msg', ['msg' => $e->getMessage()]));
+            return back()->with('error', __('Lexoffice-Übertragung fehlgeschlagen: :msg', ['msg' => ErrorText::for($e)]));
         }
 
         return redirect()->route('invoices.show', $invoice)

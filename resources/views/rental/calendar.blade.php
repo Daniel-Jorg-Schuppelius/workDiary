@@ -35,9 +35,6 @@
         </select>
     </x-filter-bar>
 
-    @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
-    @endif
     <x-validation-errors />
 
     <x-month-calendar :month="$month" :items-by-day="$itemsByDay" item-view="rental.partials._calendar_day" />
@@ -60,7 +57,7 @@
                 </x-select-field>
                 <x-input-field name="starts_at" type="datetime-local" :label="__('Beginn')" required />
                 <x-input-field name="ends_at" type="datetime-local" :label="__('Ende')" required />
-                <x-input-field name="note" :label="__('Notiz')" />
+                <x-input-field name="note" :label="__('Notiz')" maxlength="255" />
                 <button type="submit" class="btn btn-sm btn-primary">{{ __('Eintragen') }}</button>
             </form>
         </x-card>

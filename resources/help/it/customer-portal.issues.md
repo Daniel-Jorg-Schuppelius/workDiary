@@ -8,9 +8,9 @@ related:
     - customer-portal.diary
 ---
 
-Sotto **Punti aperti** vedete le questioni legate alla vostra azienda che
-sono state espressamente condivise con voi, ossia solo i punti assegnati a
-un vostro incarico, progetto o voce del registro. Ogni punto mostra
+Sotto **Punti aperti** vede le questioni legate alla sua azienda che
+sono state espressamente condivise con Lei, ossia solo i punti assegnati a
+un suo incarico, progetto o voce del registro. Ogni punto mostra
 **stato** (aperto, in lavorazione, bloccato, completato), **urgenza** ed
 eventualmente **categoria** e **data di scadenza**, oltre a titolo,
 descrizione e responsabile della lavorazione. I punti aperti sono elencati

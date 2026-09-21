@@ -92,7 +92,7 @@
         <x-empty-state framed
             icon="download"
             :title="__('Noch keine Exporte vorhanden')"
-            :message="__('Erstelle oben einen Export, um ihn hier wiederzufinden.')" />
+            :message="__('Erstellen Sie oben einen Export, um ihn hier wiederzufinden.')" />
     @else
         <x-table scroll="flex" :pinRows="true">
             <x-slot:head>

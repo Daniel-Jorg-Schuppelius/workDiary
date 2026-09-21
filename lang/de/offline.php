@@ -12,7 +12,7 @@
 return [
     'title' => 'Offline-Änderungen',
     'subtitle' => 'Auf diesem Gerät offline erfasste Aktionen — ausstehend, im Konflikt oder abgelehnt.',
-    'notice' => 'Diese Liste liegt nur auf diesem Gerät. Ausstehende Einträge werden automatisch übertragen, sobald eine Verbindung besteht; abgelehnte Einträge kannst du erneut anwenden oder verwerfen. Konflikte brauchen eine Entscheidung: Jemand anderes hat denselben Datensatz geändert.',
+    'notice' => 'Diese Liste liegt nur auf diesem Gerät. Ausstehende Einträge werden automatisch übertragen, sobald eine Verbindung besteht; abgelehnte Einträge können Sie erneut anwenden oder verwerfen. Konflikte brauchen eine Entscheidung: Jemand anderes hat denselben Datensatz geändert.',
     'empty' => 'Keine offline erfassten Änderungen vorhanden.',
     'section' => [
         'pending' => 'Ausstehend',

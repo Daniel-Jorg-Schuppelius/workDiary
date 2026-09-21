@@ -34,10 +34,10 @@ class SaveManufacturingOrderRequest extends BaseFormRequest {
             'variant' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('article_variants')],
             'warehouse' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('warehouses')],
             'customer' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],
-            'target_qty' => ['required', 'numeric', 'gt:0'],
+            'target_qty' => ['required', 'numeric', 'gt:0', 'max:99999999999999.9999'],
             'unit' => ['required', 'string', 'max:20'],
-            'priority' => ['nullable', 'integer', 'min:1'],
-            'due_at' => ['nullable', 'date'],
+            'priority' => ['nullable', 'integer', 'min:1', 'max:999999999'],
+            'due_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
         ];
     }
 }

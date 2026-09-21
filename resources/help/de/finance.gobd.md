@@ -55,5 +55,5 @@ Verarbeitung bis zur Aufbewahrung. Die Anwendung stellt diese Dokumentation
 aus dem tatsächlichen Systemzustand zusammen: eingesetzte Module, Nummernkreise,
 Aufbewahrungsfristen, Rollen und Protokollierung. Was sich im Betrieb ändert,
 ändert sich damit auch in der Dokumentation — anders als bei einem einmal
-geschriebenen Textdokument. Prüfe den Stand vor jeder Betriebsprüfung und
-ergänze die organisatorischen Teile, die kein System kennen kann.
+geschriebenen Textdokument. Prüfen Sie den Stand vor jeder Betriebsprüfung und
+ergänzen Sie die organisatorischen Teile, die kein System kennen kann.

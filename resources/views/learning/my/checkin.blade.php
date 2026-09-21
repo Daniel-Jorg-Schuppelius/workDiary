@@ -27,8 +27,8 @@
     <x-card>
         <h3 class="text-sm font-semibold">{{ $event->title }}</h3>
         <p class="mt-1 text-xs text-muted">
-            {{ $event->started_at?->translatedFormat('d.m.Y H:i') }}
-            @if ($event->ended_at) – {{ $event->ended_at->translatedFormat('H:i') }} @endif
+            {{ $event->started_at?->orgTz()->translatedFormat('d.m.Y H:i') }}
+            @if ($event->ended_at) – {{ $event->ended_at->orgTz()->translatedFormat('H:i') }} @endif
         </p>
 
         @if ($open)

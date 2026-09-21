@@ -31,17 +31,17 @@ spezifischsten zur allgemeinsten Regel aufgelöst:
 **Priorität als Stichentscheid:** Kommen auf derselben Stufe mehrere
 Regeln infrage (z. B. weil eine Person in mehreren Teams mit eigener
 Regel ist), gewinnt die Regel mit der **höchsten Priorität**; bei
-gleicher Priorität die zuerst angelegte. Vergib daher sprechende
-Prioritätsabstände (z. B. 100er-Schritte), damit du später Regeln
-dazwischenschieben kannst.
+gleicher Priorität die zuerst angelegte. Vergeben Sie daher sprechende
+Prioritätsabstände (z. B. 100er-Schritte), damit Sie später Regeln
+dazwischenschieben können.
 
-**Zusammenspiel mit den Stammdaten:** Kostenstellen führst du als
+**Zusammenspiel mit den Stammdaten:** Kostenstellen führen Sie als
 Stammdaten mit Code und Bezeichnung je Organisation. Die Regeln
-speichern derzeit den Code als Text – achte deshalb darauf, dass die
-Codes in den Regeln mit den Stammdaten übereinstimmen und passe die
-Regeln an, wenn du Kostenstellen umbenennst oder deaktivierst.
+speichern derzeit den Code als Text – achten Sie deshalb darauf, dass die
+Codes in den Regeln mit den Stammdaten übereinstimmen, und passen Sie die
+Regeln an, wenn Sie Kostenstellen umbenennen oder deaktivieren.
 
-**Empfehlung:** Starte mit einem Organisations-Standard, ergänze
-Team-Regeln für Abteilungen mit eigener Kostenstelle und nutze
-Benutzer-Regeln nur für echte Ausnahmen. Prüfe nach Änderungen einen
+**Empfehlung:** Starten Sie mit einem Organisations-Standard, ergänzen Sie
+Team-Regeln für Abteilungen mit eigener Kostenstelle und nutzen Sie
+Benutzer-Regeln nur für echte Ausnahmen. Prüfen Sie nach Änderungen einen
 Probe-Export, bevor die Daten ans Lohnbüro gehen.

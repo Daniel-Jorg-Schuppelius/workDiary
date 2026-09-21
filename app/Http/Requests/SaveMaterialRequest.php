@@ -23,7 +23,7 @@ class SaveMaterialRequest extends BaseFormRequest {
             'sku' => ['nullable', 'string', 'max:64', Rule::unique('materials', 'sku')->ignore($materialId)->where(fn($q) => $q->where('organization_id', $this->user()?->organization_id))],
             'name' => ['required', 'string', 'max:255'],
             'unit' => ['required', 'string', 'max:20'],
-            'default_unit_price' => ['nullable', 'numeric', 'min:0'],
+            'default_unit_price' => ['nullable', 'numeric', 'min:0', 'max:999999.9999'],
             'tax_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'is_active' => ['nullable', 'boolean'],
         ];

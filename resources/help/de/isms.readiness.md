@@ -14,7 +14,7 @@ related:
 
 Das **Reifegrad-/Readiness-Assessment** leitet aus den bestehenden
 ISMS-Registern je Geltungsbereich eine **begründete Selbsteinschätzung**
-deiner Auditbereitschaft ab.
+Ihrer Auditbereitschaft ab.
 
 Je Domäne (SoA-Abdeckung, Risikomanagement, Nachweise, Audits &
 Korrekturen, Betrieb, Lieferanten) wird ein Reifegrad als Ampel und
@@ -28,6 +28,6 @@ Liste der blockierenden Lücken.
 > Konformitätsbewertung und Zertifizierung erfolgen ausschließlich durch
 > eine unabhängige Zertifizierungsstelle.
 
-Nutze die Einschätzung, um vor einem internen Audit gezielt die roten
+Nutzen Sie die Einschätzung, um vor einem internen Audit gezielt die roten
 Domänen zu schließen. Die Kennzahlen sind dieselben wie im
 Auditbereitschafts-Dashboard, hier jedoch zu einem Reifegrad verdichtet.

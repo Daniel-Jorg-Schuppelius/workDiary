@@ -17,6 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{TaxRule, User};
 use App\Services\Invoicing\TaxResolver;
+use App\Support\ErrorText;
 use CommonToolkit\Enums\CountryCode;
 use CommonToolkit\Helper\FileSystem\File;
 use CommonToolkit\Parsers\CSVDocumentParser;
@@ -99,7 +100,7 @@ class TaxRuleController extends Controller {
         try {
             $this->resolver->assertNoOverlap($rule);
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         $rule->save();
@@ -131,7 +132,7 @@ class TaxRuleController extends Controller {
         try {
             $rows = $csv !== '' ? CSVDocumentParser::fromString($csv, ';', '"', false)->getRows() : [];
         } catch (\RuntimeException $e) {
-            return back()->with('error', (string) __('CSV nicht lesbar: :error', ['error' => $e->getMessage()]));
+            return back()->with('error', (string) __('CSV nicht lesbar: :error', ['error' => ErrorText::for($e)]));
         }
 
         $imported = 0;
@@ -167,7 +168,7 @@ class TaxRuleController extends Controller {
                 $rule->save();
                 $imported++;
             } catch (\RuntimeException $e) {
-                $errors[] = (string) __('Zeile :line: :error', ['line' => $index + 1, 'error' => $e->getMessage()]);
+                $errors[] = (string) __('Zeile :line: :error', ['line' => $index + 1, 'error' => ErrorText::for($e)]);
             }
         }
 

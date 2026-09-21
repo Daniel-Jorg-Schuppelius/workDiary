@@ -35,7 +35,7 @@ class StoreOpenIssueRequest extends BaseFormRequest {
             // Rule::enum statt Handliste (Vollaudit 2026-07, N48).
             'severity' => ['nullable', 'string', \Illuminate\Validation\Rule::enum(OpenIssueSeverity::class)],
             'assignee_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
-            'due_at' => ['nullable', 'date'],
+            'due_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
             'visibility' => ['nullable', 'string', \Illuminate\Validation\Rule::enum(OpenIssueVisibility::class)],
         ];
     }

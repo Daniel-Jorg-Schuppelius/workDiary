@@ -52,7 +52,11 @@ abstract class PluginServiceProviderBase extends ServiceProvider {
         $this->bootPlugin();
     }
 
-    /** Hook für individuelle register()-Logik (Container-Bindings, Console-Commands, …). */
+    /**
+     * Hook für individuelle register()-Logik (Container-Bindings, Console-Commands, …).
+     * Commands ohne runningInConsole()-Wächter: die Admin-Oberfläche stößt sie per
+     * Artisan::call/queue im Web-Prozess an (UI-Fuzz 2026-09-21).
+     */
     protected function registerPlugin(): void {}
 
     /** Hook für individuelle boot()-Logik (Observer, Dispatcher-/Registry-Anmeldungen, …). */

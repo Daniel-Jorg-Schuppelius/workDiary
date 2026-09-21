@@ -18,6 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Agile\{AgileAcceptanceCriterion, AgileBoard, AgileWorkItem};
 use App\Models\{Project, Task, User};
 use App\Services\Agile\{AgileConflictException, AgileWorkItemService};
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -153,7 +154,7 @@ class AgileBacklogController extends Controller {
         } catch (AgileConflictException $e) {
             abort(409, $e->getMessage());
         } catch (InvalidArgumentException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('agile.backlog', $project);
@@ -200,7 +201,7 @@ class AgileBacklogController extends Controller {
         try {
             $this->items->assignEpic($item, $epic, $actor);
         } catch (InvalidArgumentException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('agile.backlog', $project)

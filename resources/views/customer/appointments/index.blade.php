@@ -71,7 +71,7 @@
         </x-slot:head>
         @forelse ($requests as $request)
             <tr>
-                <td class="whitespace-nowrap">{{ $request->start_at?->format('d.m.Y H:i') ?? '—' }}</td>
+                <td class="whitespace-nowrap">{{ $request->start_at?->orgTz()->format('d.m.Y H:i') ?? '—' }}</td>
                 <td>{{ $request->service_label ?? '—' }}</td>
                 <td>
                     @php($statusMap = [

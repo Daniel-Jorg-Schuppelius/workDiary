@@ -7,10 +7,9 @@
  * License      : AGPL-3.0-or-later
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
-/*
- * Italian translation placeholders. Strings are copied from English as a
- * working fallback until proper translations are provided. Keys must
- * remain in sync with lang/en/auth.php.
- */
 
-return require __DIR__ . '/../en/auth.php';
+return [
+    'failed' => 'Queste credenziali non corrispondono ai nostri dati.',
+    'password' => 'La password inserita non è corretta.',
+    'throttle' => 'Troppi tentativi di accesso. Riprovi tra :seconds secondi.',
+];

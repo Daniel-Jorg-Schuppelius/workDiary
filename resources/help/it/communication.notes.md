@@ -11,7 +11,7 @@ related:
 
 Le note di comunicazione documentano in modo strutturato eventi avvenuti
 fuori dal sistema — telefonate, e-mail, colloqui in loco, decisioni —
-collegandoli a commessa, cliente o progetto. Crei la nota nel dialogo
+collegandoli a commessa, cliente o progetto. La nota si crea nel dialogo
 indicando **tipo**, **direzione**, **data/ora** e **oggetto**
 (obbligatorio, 3–180 caratteri), più eventualmente **esito/accordo**,
 **partecipanti** e un'**azione di follow-up** con scadenza e
@@ -31,9 +31,9 @@ o a un progetto. Filtri: collocazione (interna o cliente), cliente, tipo e
 follow-up aperti; la ricerca considera oggetto e contenuto. Le note riservate di
 altre persone compaiono solo con l'autorizzazione corrispondente.
 
-Assegna i **tag** nella finestra della nota, più tag separati da una virgola.
+Assegni i **tag** nella finestra della nota, più tag separati da una virgola.
 L'elenco li usa come filtro e la ricerca trova una nota anche tramite il suo
-tag. Il filtro propone solo tag di note che puoi vedere.
+tag. Il filtro propone solo tag di note che può vedere.
 
 ## Inserimento rapido
 

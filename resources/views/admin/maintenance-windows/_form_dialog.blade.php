@@ -21,7 +21,9 @@
         <div class="fieldset">
             <span class="fieldset-label">{{ __('maintenance.window.field.scope') }}</span>
             <select name="scope" class="select select-bordered w-full">
-                <option value="system">{{ __('maintenance.window.scope.system') }}</option>
+                @if ($systemScope ?? false)
+                    <option value="system">{{ __('maintenance.window.scope.system') }}</option>
+                @endif
                 <option value="organization">{{ __('maintenance.window.scope.organization') }}</option>
             </select>
         </div>

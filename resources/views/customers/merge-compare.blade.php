@@ -44,7 +44,7 @@
 @endphp
 
 @section('content')
-<x-index-page :subtitle="__('Wähle pro Feld, ob der Wert des zu löschenden Kunden den Ziel-Wert ersetzen soll. Nicht angehakte, leere Ziel-Felder werden ohnehin aus der Quelle aufgefüllt; befüllte Ziel-Felder bleiben unangetastet.')">
+<x-index-page :subtitle="__('Wählen Sie pro Feld, ob der Wert des zu löschenden Kunden den Ziel-Wert ersetzen soll. Nicht angehakte, leere Ziel-Felder werden ohnehin aus der Quelle aufgefüllt; befüllte Ziel-Felder bleiben unangetastet.')">
     <x-slot:actions>
         <x-icon-btn icon="arrow_back" size="sm" :href="route('customers.duplicates.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
     </x-slot:actions>

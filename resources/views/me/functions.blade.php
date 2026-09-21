@@ -31,9 +31,6 @@
             </x-page-toolbar>
         </x-slot:toolbar>
 
-        @if (session('status'))
-            <div class="alert alert-success">{{ session('status') }}</div>
-        @endif
 
         {{-- Aktiver Arbeitsbereich (Feature 082, MVP-380): Hinweis + Rückweg zur
              Vollansicht. Fokus-ausgeblendete Einträge sind unten markiert, bleiben

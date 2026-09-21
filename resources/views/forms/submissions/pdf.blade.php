@@ -36,7 +36,7 @@
 <body>
     <h1>{{ optional($submission->template)->name ?? __('form.title.submission') }}</h1>
     <div class="meta">
-        {{ __('form.field.submitted_at') }}: {{ optional($submission->submitted_at)->format('d.m.Y H:i') }}
+        {{ __('form.field.submitted_at') }}: {{ $submission->submitted_at?->orgTz()->format('d.m.Y H:i') }}
         — {{ __('form.field.submitted_by') }}: {{ optional($submission->submitter)->name ?? '—' }}
         @if ($subjectLabel !== null)
             — {{ $subjectLabel }}

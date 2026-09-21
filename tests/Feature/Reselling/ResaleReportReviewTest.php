@@ -257,7 +257,7 @@ TXT;
 
         // Reader ist final: die Naht `read()` des Import-Services antwortet mit dem Text-Fixture statt PDF-Textextraktion.
         app()->instance(ProviderInvoiceImport::class, new class(app(PurchaseAllocator::class), new QualityHostingInvoiceReader) extends ProviderInvoiceImport {
-            protected function read(string $path): ProviderInvoice {
+            protected function read(string $path, string $name): ProviderInvoice {
                 return $this->reader->parse(ResaleReportReviewTest::INVOICE_TEXT);
             }
         });

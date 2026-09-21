@@ -115,8 +115,8 @@ return [
         ],
         'portal' => [
             'title' => 'Documenti',
-            'subtitle' => 'I documenti rilasciati per te.',
-            'empty' => 'Non è ancora stato rilasciato alcun documento per te.',
+            'subtitle' => 'I documenti rilasciati per Lei.',
+            'empty' => 'Non è ancora stato rilasciato alcun documento per Lei.',
         ],
     ],
 

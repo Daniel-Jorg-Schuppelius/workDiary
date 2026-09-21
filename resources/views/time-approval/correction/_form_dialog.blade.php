@@ -53,10 +53,11 @@
     </x-form-group>
 
     <x-form-group :legend="__('Items')" icon="checklist" tone="info">
-        <div x-data="repeater"
+        <div x-data="correctionItems"
              data-prefix="items"
              data-items="{{ json_encode($itemItems) }}"
              data-template="{{ json_encode($itemTemplate) }}"
+             data-targets-url="{{ route('corrections.targets') }}"
              class="space-y-3">
             <template x-for="(it, i) in items" :key="i">
                 <div class="rounded-box border border-base-300 bg-base-200/40 p-3 space-y-2">
@@ -71,9 +72,14 @@
                             </select>
                         </div>
                         <div class="fieldset">
-                            <label :for="fieldName(i, 'target_id')" class="fieldset-label">{{ __('Ziel-ID (leer für create)') }}</label>
-                            <input type="number" :id="fieldName(i, 'target_id')" :name="fieldName(i, 'target_id')" x-model="it.target_id"
-                                   class="input input-sm input-bordered w-full">
+                            <label :for="fieldName(i, 'target_id')" class="fieldset-label">{{ __('Betroffener Eintrag') }}</label>
+                            <select :id="fieldName(i, 'target_id')" :name="fieldName(i, 'target_id')" x-model="it.target_id"
+                                    class="select select-sm select-bordered w-full">
+                                <option value="">{{ __('— neuer Eintrag —') }}</option>
+                                <template x-for="c in optionsFor(it)" :key="c.id">
+                                    <option :value="c.id" x-text="c.label" :selected="c.id === it.target_id"></option>
+                                </template>
+                            </select>
                         </div>
                         <div class="fieldset">
                             <label :for="fieldName(i, 'action')" class="fieldset-label">{{ __('Aktion') }}</label>

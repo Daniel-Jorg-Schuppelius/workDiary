@@ -12,6 +12,7 @@ namespace Tests\Feature\Onboarding;
 
 use App\Models\{OnboardingProgress, Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Exceptions;
 use Tests\TestCase;
 
 class OnboardingPageTest extends TestCase {
@@ -54,6 +55,20 @@ class OnboardingPageTest extends TestCase {
                 'reason' => 'Vorübergehend alleiniger Admin',
             ])
             ->assertForbidden();
+    }
+
+    /** UI-Fuzz 2026-09-21: Begründung max:1000 gegen skipped_reason varchar(500) (1406). */
+    public function test_skip_reason_longer_than_the_column_is_a_field_error(): void {
+        Exceptions::fake();
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->from(route('onboarding.index'))
+            ->post(route('onboarding.steps.skip', ['step' => 'users.invite']), ['reason' => str_repeat('Begründung ', 50)])
+            ->assertSessionHasErrors('reason');
+
+        $this->assertDatabaseMissing('onboarding_progress', ['step_code' => 'users.invite', 'state' => 'skipped']);
+        Exceptions::assertNothingReported();
     }
 
     public function test_admin_can_skip_non_hard_step_with_reason(): void {

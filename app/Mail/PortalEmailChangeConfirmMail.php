@@ -36,7 +36,7 @@ class PortalEmailChangeConfirmMail extends Mailable {
     }
 
     public function content(): Content {
-        return new Content(view: 'mail.portal-email-change-confirm', with: [
+        return new Content(markdown: 'mail.portal-email-change-confirm', with: [
             'portalUser' => $this->portalUser,
             'newEmail' => $this->newEmail,
             'confirmUrl' => $this->confirmUrl,

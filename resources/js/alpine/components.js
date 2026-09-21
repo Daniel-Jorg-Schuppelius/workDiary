@@ -6,7 +6,7 @@
  * Standard-Build, daher migrierbar OHNE Build-Wechsel.
  */
 import { clearHtml, setHtml, trustedServerHtml } from "../lib/html.js";
-import { patchJson, postJson, request } from "../lib/http.js";
+import { getJson, patchJson, postJson, request } from "../lib/http.js";
 import { __ } from "../i18n.js";
 
 export function registerAlpineComponents(Alpine) {
@@ -147,9 +147,14 @@ export function registerAlpineComponents(Alpine) {
     // Elternauswahl passt (Vollscan 2026-08-23, I1 — die Inline-Variante
     // nutzte eine Arrow-Funktion, die der CSP-Evaluator nicht kennt).
     // items: [{id, name, parent}], parent: initial gewählte Eltern-ID.
-    Alpine.data("dependentSelect", (parent, items) => ({
+    // Optionen per data-items: ein Array-Argument im x-data macht Js::from zu
+    // JSON.parse(…), das der CSP-Evaluator nicht kennt (Komponente tot).
+    Alpine.data("dependentSelect", (parent) => ({
         parent: parent,
-        items: Array.isArray(items) ? items : [],
+        items: [],
+        init() {
+            this.items = JSON.parse(this.$el.dataset.items || "[]");
+        },
         filtered() {
             return this.items.filter((item) => item.parent === this.parent);
         },
@@ -1539,6 +1544,61 @@ export function registerAlpineComponents(Alpine) {
         },
     }));
 
+    // Zeitkorrektur-Antrag: Positionen wie „repeater“, das Ziel wählt man aus den
+    // Buchungen/Anwesenheiten des Bezugstags statt über eine interne ID. Lädt neu,
+    // wenn Bezugsdatum oder Mitarbeiter:in im Dialog wechseln.
+    Alpine.data("correctionItems", () => ({
+        items: [],
+        prefix: "items",
+        template: {},
+        candidates: {},
+        init() {
+            const d = this.$el.dataset;
+            this.items = JSON.parse(d.items || "[]");
+            this.prefix = d.prefix || "items";
+            this.template = JSON.parse(d.template || "{}");
+            const form = this.$el.closest("form");
+            if (form) {
+                form.addEventListener("change", (e) => {
+                    const name = e.target && e.target.getAttribute("name");
+                    if (name === "scope_date" || name === "user_id") {
+                        this.load(form, d.targetsUrl);
+                    }
+                });
+                this.load(form, d.targetsUrl);
+            }
+        },
+        async load(form, url) {
+            if (!url) {
+                return;
+            }
+            const date = form.querySelector('[name="scope_date"]');
+            const user = form.querySelector('[name="user_id"]');
+            const params = new URLSearchParams({ date: date ? date.value : "" });
+            if (user && user.value) {
+                params.set("user", user.value);
+            }
+            try {
+                const res = await getJson(url + "?" + params.toString());
+                this.candidates = res.ok && res.data ? res.data : {};
+            } catch {
+                this.candidates = {};
+            }
+        },
+        optionsFor(it) {
+            return this.candidates[it.target_type] || [];
+        },
+        add() {
+            this.items.push(JSON.parse(JSON.stringify(this.template)));
+        },
+        remove(i) {
+            this.items.splice(i, 1);
+        },
+        fieldName(i, field) {
+            return this.prefix + "[" + i + "][" + field + "]";
+        },
+    }));
+
     // Bedingungslogik Formular-Ausfüllen (Feature 032, Rang 33): spiegelt
     // FormFieldDefinition::isVisible clientseitig. Config via data-Attribute
     // (JSON): data-conditions {key: {field,op,value}}, data-initial {key: string}
@@ -1618,22 +1678,18 @@ export function registerAlpineComponents(Alpine) {
             if (!r) {
                 return "";
             }
-            const msg = r.message ? " — " + r.message : "";
             const lat = r.latency_ms != null ? " (" + r.latency_ms + "ms)" : "";
-            return r.status + msg + lat;
+            return [r.label, r.message].filter(Boolean).join(" — ") + lat;
         },
         run() {
             this.testing = true;
             this.result = null;
             postJson(url)
                 .then((res) => {
-                    this.result = res.data ?? {
-                        status: "failing",
-                        message: failMsg,
-                    };
+                    this.result = res.data ?? { message: failMsg };
                 })
                 .catch(() => {
-                    this.result = { status: "failing", message: failMsg };
+                    this.result = { message: failMsg };
                 })
                 .finally(() => {
                     this.testing = false;
@@ -1983,21 +2039,32 @@ export function registerAlpineComponents(Alpine) {
     // Überspringen, Merken, Zwischenspeichern je Antwort, Countdown mit
     // Abgabe bei 0. Ohne JavaScript bleiben alle Fragen sichtbar (x-show
     // greift erst nach dem Start) — der Server prüft Frist und Pflicht.
-    Alpine.data("quizRunner", (options) => ({
-        total: Number(options?.total || 0),
-        single: Boolean(options?.single),
-        allowBack: options?.allowBack !== false,
-        allowSkip: options?.allowSkip !== false,
-        expiresAt: options?.expiresAt ? new Date(options.expiresAt).getTime() : null,
-        saveUrl: options?.saveUrl || "",
-        ids: Array.isArray(options?.ids) ? options.ids.map(Number) : [],
-        answered: new Set((options?.answered || []).map(Number)),
-        flagged: new Set((options?.flagged || []).map(Number)),
+    // Optionen per data-options (Array-Argument → JSON.parse(…) im CSP-Build tot).
+    Alpine.data("quizRunner", () => ({
+        total: 0,
+        single: false,
+        allowBack: true,
+        allowSkip: true,
+        expiresAt: null,
+        saveUrl: "",
+        ids: [],
+        answered: new Set(),
+        flagged: new Set(),
         current: 0,
         remaining: "",
         submitted: false,
         timer: null,
         init() {
+            const options = JSON.parse(this.$el.dataset.options || "{}");
+            this.total = Number(options.total || 0);
+            this.single = Boolean(options.single);
+            this.allowBack = options.allowBack !== false;
+            this.allowSkip = options.allowSkip !== false;
+            this.expiresAt = options.expiresAt ? new Date(options.expiresAt).getTime() : null;
+            this.saveUrl = options.saveUrl || "";
+            this.ids = Array.isArray(options.ids) ? options.ids.map(Number) : [];
+            this.answered = new Set((options.answered || []).map(Number));
+            this.flagged = new Set((options.flagged || []).map(Number));
             if (this.single) {
                 const firstOpen = this.ids.findIndex((id) => !this.answered.has(id));
                 this.current = firstOpen >= 0 ? firstOpen : 0;

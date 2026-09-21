@@ -29,7 +29,7 @@ return [
     'profile' => [
         'heading' => 'Anrufer-Pop-up',
         'extension_label' => 'Eigene Durchwahl',
-        'extension_help' => 'Bei einem eingehenden Anruf auf diese Nummer erhältst du ein Pop-up mit dem Anrufer und – falls bekannt – einen Link zur Kundenakte. Leer lassen = kein Pop-up.',
+        'extension_help' => 'Bei einem eingehenden Anruf auf diese Nummer erhalten Sie ein Pop-up mit dem Anrufer und – falls bekannt – einen Link zur Kundenakte. Leer lassen = kein Pop-up.',
         'extension_placeholder' => 'z. B. +49 30 1234-56',
         'invalid' => 'Bitte eine gültige Telefonnummer angeben.',
     ],

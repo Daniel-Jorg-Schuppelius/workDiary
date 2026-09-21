@@ -17,6 +17,7 @@ use App\Models\Customer;
 use App\Plugins\Contracts\ContactSyncer;
 use App\Plugins\PluginManager;
 use App\Services\Finance\Accounting\ContactPushService;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Throwable;
@@ -47,7 +48,7 @@ class AccountingContactController extends Controller {
         try {
             $externalId = $this->contacts->push($customer, $pluginId);
         } catch (Throwable $e) {
-            return back()->with('error', __('accounting.flash.failed', ['msg' => $e->getMessage()]));
+            return back()->with('error', __('accounting.flash.failed', ['msg' => ErrorText::for($e)]));
         }
 
         return back()->with('status', __('accounting.flash.pushed', ['id' => $externalId]));

@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Location\LocationDeviceToken;
 use App\Models\Patrol\{PatrolCheckpoint, PatrolRun};
 use App\Services\Patrol\PatrolService;
+use App\Support\ErrorText;
 use Illuminate\Http\{JsonResponse, Request};
 use OpenApi\Attributes as OA;
 use RuntimeException;
@@ -97,7 +98,7 @@ class PatrolScanController extends Controller {
         try {
             $service->scan($run, (string) $data['checkpoint']);
         } catch (RuntimeException $e) {
-            return response()->json(['error' => 'scan_rejected', 'message' => $e->getMessage()], 422);
+            return response()->json(['error' => 'scan_rejected', 'message' => ErrorText::for($e)], 422);
         }
 
         $device->forceFill(['last_used_at' => now()])->save();

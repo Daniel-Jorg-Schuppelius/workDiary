@@ -151,7 +151,7 @@ return [
     'empty' => [
         'statements' => 'Aún no se han importado extractos bancarios.',
         'transactions' => 'No hay movimientos en este extracto.',
-        'suggestions' => 'Sin sugerencias: asigna manualmente o aparta.',
+        'suggestions' => 'Sin sugerencias: asigne manualmente o aparte.',
         'accounts' => 'Aún no se han creado cuentas bancarias.',
     ],
 ];

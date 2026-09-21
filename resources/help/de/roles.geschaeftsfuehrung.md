@@ -1,5 +1,5 @@
 ---
-title: "Dein Tag in WorkDiary: Geschäftsführung"
+title: "Ihr Tag in WorkDiary: Geschäftsführung"
 topic: roles.geschaeftsfuehrung
 version: 1
 audience:
@@ -11,7 +11,7 @@ related:
     - glossary.core
 ---
 
-Als Geschäftsführung hast du die Management-Sicht: lesender Zugriff auf
+Als Geschäftsführung haben Sie die Management-Sicht: lesender Zugriff auf
 praktisch alle Bereiche, ohne operative Schreibrechte.
 
 Typischer Ablauf:
@@ -24,7 +24,7 @@ Typischer Ablauf:
 4. **Compliance**: Audit-Log und Zugriffshistorie prüfen; ISMS- und
    Konformitätsstand verfolgen.
 
-Was du darfst:
+Was Sie dürfen:
 
 - **Alles lesen**: Aufträge, Zeiten, Kunden, Projekte, Rechnungen,
   Dienstpläne, Abwesenheiten, Berichte.

@@ -23,7 +23,7 @@
     @if ($roots->isEmpty())
         <x-empty-state compact
                        :title="__('Keine aktiven Projekte')"
-                       :message="__('Lege zuerst ein Projekt an, um fortfahren zu können.')">
+                       :message="__('Legen Sie zuerst ein Projekt an, um fortfahren zu können.')">
             <x-slot:action>
                 <x-icon-btn icon="add" tone="primary"
                             :href="route('projects.create')"

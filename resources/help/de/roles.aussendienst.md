@@ -1,5 +1,5 @@
 ---
-title: "Dein Tag in WorkDiary: Außendienst"
+title: "Ihr Tag in WorkDiary: Außendienst"
 topic: roles.aussendienst
 version: 1
 audience:
@@ -11,8 +11,8 @@ related:
     - glossary.core
 ---
 
-Als Außendienst erfasst du unterwegs Zeiten, Aufträge, Touren und Spesen –
-alles an deinen eigenen Einsätzen.
+Als Außendienst erfassen Sie unterwegs Zeiten, Aufträge, Touren und Spesen –
+alles an Ihren eigenen Einsätzen.
 
 Typischer Ablauf:
 
@@ -25,7 +25,7 @@ Typischer Ablauf:
 4. **Tour und Fahrtenbuch** pflegen (Fahrzeug-/Energie-Log), Spesen erfassen.
 5. **Tagesabschluss**: Pausen eintragen, offene Zeiteinträge beenden.
 
-Was du darfst:
+Was Sie dürfen:
 
 - Eigene **Zeiteinträge** anlegen, bearbeiten und löschen – bis zur
   Freigabe; danach läuft jede Korrektur über einen **Korrekturantrag**.
@@ -35,5 +35,5 @@ Was du darfst:
 - Kunden und Projekte **lesen** – Stammdatenpflege liegt bei Buchhaltung
   bzw. Teamleitung.
 
-Nicht in deinem Profil: Freigaben, Auswertungen über andere Personen,
+Nicht in Ihrem Profil: Freigaben, Auswertungen über andere Personen,
 Stammdaten- und Administrationsseiten.

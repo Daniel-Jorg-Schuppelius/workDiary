@@ -12,12 +12,12 @@ related:
     - admin.remote-support
 ---
 
-Hier verwaltest du die installierten Plugins und Integrationen.
+Hier verwalten Sie die installierten Plugins und Integrationen.
 Plugins erweitern WorkDiary um externe Anbindungen (z. B. Toggl,
 OpenProject, Lexoffice, Fernwartung).
 
 Wichtig: Plugins werden **pro Organisation** gesteuert. Aktivierung,
-Einstellungen, Health-Status und Fehler gelten jeweils für deine
+Einstellungen, Health-Status und Fehler gelten jeweils für Ihre
 Organisation – ein Plugin kann in einer anderen Organisation einen
 ganz anderen Zustand haben.
 
@@ -45,8 +45,8 @@ Health-Check und Auto-Deaktivierung:
 - Treten wiederholt Fehler auf, wird das Plugin nach Erreichen der
   Schwelle **automatisch deaktiviert** – nur für die betroffene
   Organisation. So bleibt der Betrieb für andere unberührt.
-- Nach Behebung der Ursache setzt du den Fehlerzähler zurück und
-  reaktivierst das Plugin.
+- Nach Behebung der Ursache setzen Sie den Fehlerzähler zurück und
+  reaktivieren das Plugin.
 
 Fehlerprotokoll (Plugin-Fehler):
 
@@ -62,4 +62,4 @@ benötigen einen Organisationskontext.
 
 Risiken: Ein deaktiviertes Plugin stellt seine Synchronisation ein –
 Importe/Exporte und Health-Checks pausieren, bis es reaktiviert ist.
-Prüfe nach jeder Konfigurationsänderung den Health-Status.
+Prüfen Sie nach jeder Konfigurationsänderung den Health-Status.

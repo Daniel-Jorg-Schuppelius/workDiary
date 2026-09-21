@@ -134,8 +134,8 @@
                             @endif
                         </td>
                         <td class="whitespace-nowrap">
-                            <div class="text-sm">{{ $event->started_at?->isoFormat('LLL') }}</div>
-                            <div class="text-xs opacity-70">– {{ $event->ended_at?->isoFormat('LLL') }}</div>
+                            <div class="text-sm">{{ $event->started_at?->orgTz()->isoFormat('LLL') }}</div>
+                            <div class="text-xs opacity-70">– {{ $event->ended_at?->orgTz()->isoFormat('LLL') }}</div>
                         </td>
                         <td>
                             <div class="flex flex-wrap gap-1">

@@ -15,6 +15,7 @@ namespace App\Http\Controllers\Privacy;
 use App\Http\Controllers\Controller;
 use App\Models\Privacy\{Dpia, DpiaStep, ProcessingActivity};
 use App\Services\Privacy\DpiaWorkflowService;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Gate;
 use RuntimeException;
@@ -88,7 +89,7 @@ class DpiaController extends Controller {
             $workflow->complete($step, $actor, $data['content'] ?? null, $data['outcome'] ?? null, $data['residual_risk'] ?? null);
         } catch (RuntimeException $e) {
             return redirect()->route('dataprotection.activities.show', $activity)
-                ->with('error', $e->getMessage());
+                ->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('dataprotection.activities.show', $activity)

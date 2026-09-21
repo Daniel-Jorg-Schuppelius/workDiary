@@ -28,7 +28,7 @@ Automatik: Liegt das EOL-Datum in der Vergangenheit, wird der
 Support-Status beim Speichern automatisch auf **„End-of-Life"**
 gesetzt – so fallen veraltete Produkte sofort auf.
 
-Abgrenzung: Das Inventar beschreibt die Software **deiner
+Abgrenzung: Das Inventar beschreibt die Software **Ihrer
 Organisation**. Die Komponenten der WorkDiary-Installation selbst
 (SBOM im CycloneDX-Format) findet der Plattform-Admin in der
 Komponentenübersicht der Administration.

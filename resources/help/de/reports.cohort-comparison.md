@@ -12,7 +12,7 @@ dem Erwerb einer Fortbildung verbessert hat.
 
 So funktioniert es:
 
-- Wähle eine **Fortbildung/Qualifikation** und eine **Kennzahl**
+- Wählen Sie eine **Fortbildung/Qualifikation** und eine **Kennzahl**
   (abrechenbare Quote oder Nacharbeitsanteil) sowie ein **Vergleichsfenster**
   in Tagen (Standard 90).
 - Für jeden Mitarbeitenden, der diese Qualifikation besitzt, wird die Kennzahl

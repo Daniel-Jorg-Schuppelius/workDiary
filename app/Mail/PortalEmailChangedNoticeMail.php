@@ -36,7 +36,7 @@ class PortalEmailChangedNoticeMail extends Mailable {
     }
 
     public function content(): Content {
-        return new Content(view: 'mail.portal-email-changed-notice', with: [
+        return new Content(markdown: 'mail.portal-email-changed-notice', with: [
             'portalUser' => $this->portalUser,
             'oldEmail' => $this->oldEmail,
             'newEmail' => $this->newEmail,

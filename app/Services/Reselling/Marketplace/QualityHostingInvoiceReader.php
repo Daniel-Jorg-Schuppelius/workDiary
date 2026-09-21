@@ -51,8 +51,9 @@ final class QualityHostingInvoiceReader {
      * Textlayer, zuletzt OCR (C17, MVP-808). Toolkit-Fehler tragen den
      * Serverpfad — nach außen nur der Dateiname.
      */
-    public function read(string $path): ProviderInvoice {
-        $name = basename($path);
+    public function read(string $path, ?string $displayName = null): ProviderInvoice {
+        // Uploads liegen unter einem Temp-/Speichernamen — gemeldet wird der Originalname.
+        $name = $displayName ?? basename($path);
 
         try {
             $provider = new PDFTextProvider($path);

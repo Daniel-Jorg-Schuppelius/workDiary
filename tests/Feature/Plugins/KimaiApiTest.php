@@ -131,6 +131,21 @@ class KimaiApiTest extends TestCase {
         $fake->assertSent(fn (RequestInterface $r): bool => $r->getHeaderLine('Authorization') === 'Bearer secret-token');
     }
 
+    /** MVP-824: Kimai liefert Ortszeit mit Offset — Eloquent speicherte deren Wanduhr statt UTC. */
+    public function test_api_import_stores_utc(): void {
+        $config = $this->enableKimaiApi();
+        $project = $this->customerWithProject('Acme', 'Website');
+        FakePluginHttp::fake([
+            self::BASE . '/api/timesheets*' => FakePluginHttp::response([$this->apiRow(102)]),
+        ]);
+
+        (new KimaiImportService)->importFromApi($this->organization, $config);
+
+        $entry = TimeEntry::query()->where('project_id', $project->id)->firstOrFail();
+        $this->assertSame('2026-06-01 07:00:00', $entry->getRawOriginal('started_at'));
+        $this->assertSame('2026-06-01', $entry->date->toDateString());
+    }
+
     public function test_api_import_is_idempotent_and_skips_running_timesheets(): void {
         $config = $this->enableKimaiApi();
         $this->customerWithProject('Acme', 'Website');
@@ -230,8 +245,9 @@ class KimaiApiTest extends TestCase {
 
             return ($body['project'] ?? null) === 7
                 && ($body['activity'] ?? null) === 5
-                && ($body['begin'] ?? null) === '2026-06-02T09:00:00'
-                && ($body['end'] ?? null) === '2026-06-02T10:00:00'
+                // Gespeichert UTC, Kimai erwartet Ortszeit ohne Offset (MVP-824).
+                && ($body['begin'] ?? null) === '2026-06-02T11:00:00'
+                && ($body['end'] ?? null) === '2026-06-02T12:00:00'
                 && ($body['billable'] ?? null) === true;
         });
 

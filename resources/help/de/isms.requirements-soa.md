@@ -12,7 +12,7 @@ related:
     - glossary.core
 ---
 
-Hier verwaltest du den Anforderungskatalog und das **Statement of
+Hier verwalten Sie den Anforderungskatalog und das **Statement of
 Applicability (SoA)** je Geltungsbereich.
 
 Typischer Ablauf:
@@ -41,6 +41,6 @@ Je SoA-Aussage:
 Berechtigungen: ISMS-Leserechte erlauben die Einsicht. Katalog-Import
 und Pflege erfordern ISMS-Pflegerechte.
 
-Nächste Schritte: Verknüpfe Anforderungen mit normneutralen
+Nächste Schritte: Verknüpfen Sie Anforderungen mit normneutralen
 **Maßnahmen** – so entsteht die Brücke vom „Was" der Norm zum „Wie"
-deiner Umsetzung.
+Ihrer Umsetzung.

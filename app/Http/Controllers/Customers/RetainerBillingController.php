@@ -14,7 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Billing\CustomerBillingStatement;
 use App\Models\{Customer, LexofficeVoucher};
 use App\Services\Billing\{RetainerLexofficeService, RetainerVoucherReconciler};
-use App\Support\Tz;
+use App\Support\{ErrorText, Tz};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -44,7 +44,7 @@ class RetainerBillingController extends Controller {
         } catch (\Throwable $e) {
             report($e);
 
-            return back()->with('error', __('customer-billing.retainer_push_failed', ['msg' => $e->getMessage()]));
+            return back()->with('error', __('customer-billing.retainer_push_failed', ['msg' => ErrorText::for($e)]));
         }
 
         return redirect()->route('customers.show', $customer)
@@ -62,7 +62,7 @@ class RetainerBillingController extends Controller {
         } catch (\Throwable $e) {
             report($e);
 
-            return back()->with('error', __('customer-billing.retainer_push_failed', ['msg' => $e->getMessage()]));
+            return back()->with('error', __('customer-billing.retainer_push_failed', ['msg' => ErrorText::for($e)]));
         }
 
         return redirect()->route('customers.show', $customer)

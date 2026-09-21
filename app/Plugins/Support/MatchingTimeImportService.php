@@ -14,6 +14,7 @@ namespace App\Plugins\Support;
 
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{ExternalReference, IntegrationInboxItem, Organization, Project, TimeEntry};
+use App\Support\Tz;
 
 /**
  * Gemeinsame Import-Pipeline der Zeit-Migrations-Plugins (Kimai, Clockify, …)
@@ -197,6 +198,14 @@ abstract class MatchingTimeImportService {
             return 'unchanged'; // Altbestand ohne Fingerabdruck bleibt unberührt
         }
 
+        // Derselbe Fremdstand, nur in der alten CSV-Semantik gebildet (MVP-824): umschreiben statt „geändert“.
+        if ($entry->source === ImportedTimeEntry::SOURCE_CSV && $known === RemoteTimeFingerprint::ofWallTime($entry, Tz::ofOrganization($organization))) {
+            $reference->payload = array_merge((array) $reference->payload, ['fingerprint' => $current]);
+            $reference->save();
+
+            return 'unchanged';
+        }
+
         $timeEntry = $reference->referenceable;
         if (! $timeEntry instanceof TimeEntry) {
             return 'unchanged';
@@ -209,8 +218,8 @@ abstract class MatchingTimeImportService {
         }
 
         $timeEntry->forceFill([
-            'started_at' => $entry->startedAt,
-            'ended_at' => $entry->endedAt,
+            'started_at' => $entry->startedAt->utc(),
+            'ended_at' => $entry->endedAt->utc(),
             'minutes' => $entry->minutes(),
             'description' => $entry->description,
         ])->save();
@@ -288,9 +297,10 @@ abstract class MatchingTimeImportService {
             // Mitarbeiter-Zeile der Quelle gewinnt: E-Mail → Org-Benutzer,
             // sonst der Standard-/Buchungs-Benutzer.
             'user_id' => $this->resolveEntryUserId($organization, $entry->userEmail, $userId),
-            'date' => $entry->startedAt->toDateString(),
-            'started_at' => $entry->startedAt,
-            'ended_at' => $entry->endedAt,
+            // Eloquent speichert die Wanduhr des Offsets (Kimai-API liefert Ortszeit): UTC erzwingen, Datum in Ortszeit.
+            'date' => $entry->startedAt->setTimezone(Tz::ofOrganization($organization))->toDateString(),
+            'started_at' => $entry->startedAt->utc(),
+            'ended_at' => $entry->endedAt->utc(),
             'kind' => TimeEntryKind::Work,
             'description' => $description,
         ];

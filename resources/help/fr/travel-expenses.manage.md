@@ -45,7 +45,7 @@ pour la comptabilité.
 
 ### Correction par contre-justificatif
 
-Si quelque chose ne va pas dans un frais déjà transmis, tu le corriges dans la
+Si quelque chose ne va pas dans un frais déjà transmis, vous le corrigez dans la
 boîte de dialogue du justificatif **par un contre-justificatif** – motif
 obligatoire. Un avoir d'achat du même montant est transmis et annule le
 justificatif d'origine en comptabilité. En même temps, un nouveau frais est créé
@@ -58,14 +58,14 @@ que seule la différence doit être remboursée.
 
 ## Scanner le justificatif au lieu de le saisir
 
-Au lieu de saisir montant, date et commerçant à la main, tu peux
+Au lieu de saisir montant, date et commerçant à la main, vous pouvez
 **photographier le justificatif ou le déposer en PDF**. La reconnaissance lit
 les champs habituels et préremplit le formulaire.
 
-Le résultat est une **proposition**, pas une écriture finie : vérifie montant,
+Le résultat est une **proposition**, pas une écriture finie : vérifiez montant,
 date, taux de taxe et commerçant avant d'enregistrer. Les photos mal éclairées,
 le papier thermique et les justificatifs manuscrits sont les sources d'erreur
 les plus fréquentes.
 
 Le justificatif d'origine reste attaché tel quel — la reconnaissance ne le
-remplace pas, elle t'épargne seulement la saisie.
+remplace pas, elle vous épargne seulement la saisie.

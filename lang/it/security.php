@@ -92,7 +92,7 @@ return [
         'advisories' => 'Fonte: OSV.dev per composer.lock/package-lock.json — recupero giornaliero (security:advisories-pull); valutazione (VEX) manuale.',
         'sessions_driver' => 'Driver di sessione «:driver» — nessuna panoramica del database disponibile. Solo il driver «database» fornisce un elenco di sessioni.',
         'tokens_no_secret' => 'Vengono mostrati solo i metadati — mai il valore del token né il suo hash.',
-        'support_access' => "Origine: registro di audit, prefisso evento «support.» (vedi i principi di accesso del supporto).",
+        'support_access' => "Origine: registro di audit, prefisso evento «support.» (si vedano i principi di accesso del supporto).",
         'two_factor' => 'Semplice conteggio dei fattori confermati — nessun segreto viene letto.',
         'encryption' => "Questi campi vengono cifrati tramite «php artisan :command». La cifratura dipende dall'APP_KEY.",
     ],

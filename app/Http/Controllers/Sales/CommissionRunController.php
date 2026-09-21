@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateCommissionRunRequest;
 use App\Models\Sales\CommissionSettlementRun;
 use App\Services\Sales\CommissionSettlementService;
+use App\Support\ErrorText;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Http\{RedirectResponse, Response};
 use Illuminate\Support\Carbon;
@@ -79,7 +80,7 @@ class CommissionRunController extends Controller {
                 Auth::user(),
             );
         } catch (RuntimeException $e) {
-            return back()->withInput()->with('error', $e->getMessage());
+            return back()->withInput()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('commission-runs.show', $run)->with('success', __('commission.flash.run_created'));
@@ -105,7 +106,7 @@ class CommissionRunController extends Controller {
         try {
             $this->settlement->close($run, Auth::user());
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('commission-runs.show', $run)->with('success', __('commission.flash.run_closed'));

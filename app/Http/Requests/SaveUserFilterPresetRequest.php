@@ -24,7 +24,7 @@ class SaveUserFilterPresetRequest extends FormRequest {
             'name' => ['required', 'string', 'max:120'],
             'query' => ['nullable', 'array'],
             'is_default' => ['nullable', 'boolean'],
-            'sort_order' => ['nullable', 'integer', 'min:0'],
+            'sort_order' => ['nullable', 'integer', 'min:0', 'max:999999999'],
         ];
     }
 }

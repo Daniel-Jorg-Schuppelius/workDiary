@@ -180,7 +180,7 @@
             {{-- Integrationen --}}
             <section class="mt-16 text-center">
                 <div class="badge badge-ghost badge-sm uppercase tracking-[0.24em]">{{ __('Integrationen') }}</div>
-                <h2 class="mt-3 font-['Space_Grotesk'] text-3xl font-bold tracking-tight text-base-content">{{ __('Spricht mit euren Systemen') }}</h2>
+                <h2 class="mt-3 font-['Space_Grotesk'] text-3xl font-bold tracking-tight text-base-content">{{ __('Spricht mit Ihren Systemen') }}</h2>
                 <p class="mx-auto mt-3 max-w-2xl text-base text-base-content/70">{{ __('Buchhaltung, Cloud-Speicher, Aufgaben- und Ticketsysteme anbinden – Import-Drehscheibe, REST-API und Webhooks inklusive.') }}</p>
 
                 <div class="mx-auto mt-8 flex max-w-4xl flex-wrap items-center justify-center gap-2">
@@ -194,7 +194,7 @@
             <section class="mt-16 rounded-box border border-base-300 bg-base-100 p-8 shadow-xs sm:p-10">
                 <div class="text-center">
                     <div class="badge badge-ghost badge-sm uppercase tracking-[0.24em]">{{ __('Workflow') }}</div>
-                    <h2 class="mt-3 font-['Space_Grotesk'] text-3xl font-bold tracking-tight text-base-content">{{ __('So arbeitest du damit') }}</h2>
+                    <h2 class="mt-3 font-['Space_Grotesk'] text-3xl font-bold tracking-tight text-base-content">{{ __('So arbeiten Sie damit') }}</h2>
                 </div>
 
                 <div class="mt-9 grid gap-6 md:grid-cols-3">

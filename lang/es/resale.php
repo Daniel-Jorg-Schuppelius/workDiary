@@ -120,12 +120,13 @@ return [
         'created' => 'Suscripción creada, periodos planificados.',
         'updated' => 'Suscripción guardada, periodos replanificados.',
         'deleted' => 'Suscripción eliminada.',
-        'has_decisions' => 'Esta suscripción tiene periodos decididos y no se puede eliminar. Ponla en «terminada».',
+        'has_decisions' => 'Esta suscripción tiene periodos decididos y no se puede eliminar. Póngala en «terminada».',
     ],
     'error' => [
-        'customer_required' => 'Elige un cliente.',
-        'foreign_required' => 'Elige un cliente final.',
+        'customer_required' => 'Elija un cliente.',
+        'foreign_required' => 'Elija un cliente final.',
         'ends_on_required' => 'Una renovación cancelada necesita una fecha de fin.',
+        'amount_too_large' => 'Cantidad × precio unitario supera el importe de período máximo que se puede guardar.',
     ],
     'kind' => [
         'license' => 'Licencia',
@@ -189,7 +190,7 @@ return [
             'generic' => 'Lista de suscripciones',
         ],
         'flash' => [
-            'no_files' => 'Elige al menos un archivo.',
+            'no_files' => 'Elija al menos un archivo.',
             'done' => 'Importación terminada.',
             'line' => ':kind: :created nuevas, :updated cambiadas, :unchanged sin cambios, :unassigned sin titular',
         ],
@@ -328,7 +329,7 @@ return [
         'action' => 'Borrador Lexoffice',
         'dialog_title' => 'Crear borrador de factura en Lexoffice',
         'submit' => 'Crear borrador',
-        'hint' => 'Todos los periodos abiertos del destinatario se convierten en líneas de un borrador de Lexoffice: una línea por suscripción y periodo, cliente final en la descripción, cantidad en meses. Nada se finaliza — revisa y termina en Lexoffice.',
+        'hint' => 'Todos los periodos abiertos del destinatario se convierten en líneas de un borrador de Lexoffice: una línea por suscripción y periodo, cliente final en la descripción, cantidad en meses. Nada se finaliza — revise y termine en Lexoffice.',
         'title' => 'Factura',
         'introduction' => 'Licencias y suscripciones, :count líneas — periodos y clientes finales por línea.',
         'end_customer' => 'Cliente final :name',
@@ -336,15 +337,15 @@ return [
         'note' => 'Borrador Lexoffice :id del :date (:user)',
         'local_note' => 'Borrador de factura local :number',
         'flash' => [
-            'created' => 'Borrador para :customer creado: :lines líneas, :net € neto (id Lexoffice :id). Revisa y finaliza en Lexoffice.',
-            'created_local' => 'Borrador :id para :customer creado: :lines líneas, :net € neto. Los periodos quedan vinculados como propuesta — confirma al emitir.',
+            'created' => 'Borrador para :customer creado: :lines líneas, :net € neto (id Lexoffice :id). Revise y finalice en Lexoffice.',
+            'created_local' => 'Borrador :id para :customer creado: :lines líneas, :net € neto. Los periodos quedan vinculados como propuesta — confirme al emitir.',
         ],
         'error' => [
             'lexoffice' => 'Lexoffice no está activo para esta organización o no tiene clave API.',
             'nothing_open' => 'No hay periodos abiertos con precio de venta para este destinatario.',
         ],
-        'already_drafted' => 'Ya hay un borrador pendiente para este destinatario (:reference del :date). Termínalo primero en Lexoffice o localmente, o decide el periodo.', // Review 2026-09-10
-        'no_target' => 'Para el modo de facturación «:mode» de este destinatario no hay registrado ningún destino de borrador — activa el plugin o pon al cliente en facturación local.', // Review 2026-09-11
+        'already_drafted' => 'Ya hay un borrador pendiente para este destinatario (:reference del :date). Termínelo primero en Lexoffice o localmente, o decida el periodo.', // Review 2026-09-10
+        'no_target' => 'Para el modo de facturación «:mode» de este destinatario no hay registrado ningún destino de borrador — active el plugin o ponga al cliente en facturación local.', // Review 2026-09-11
     ],
     'purchase' => [
         'title' => 'Documentos de compra',
@@ -412,7 +413,7 @@ return [
         'assign' => 'Asignar periodo',
         'remaining' => 'aún :amount libres',
         'empty' => 'No hay líneas de licencia en el espejo de este destinatario.',
-        'empty_pending' => 'Líneas aún no reflejadas — ejecuta lexoffice:sync-voucher-lines.',
+        'empty_pending' => 'Líneas aún no reflejadas — ejecute lexoffice:sync-voucher-lines.',
     ],
     'reconcile' => [
         'title' => 'Conciliación por destinatario de factura',
@@ -550,7 +551,7 @@ return [
     ],
     // Review 2026-09-10
     'propose' => [
-        'locked' => 'El cálculo de propuestas ya está en curso — espera un momento.',
+        'locked' => 'El cálculo de propuestas ya está en curso — espere un momento.',
     ],
     // Review 2026-09-10 (Import)
     'import_issues' => [

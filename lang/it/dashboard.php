@@ -32,10 +32,10 @@ return [
             'description' => 'Voci aperte e in corso del team, archiviate oggi, numero di collaboratori.',
         ],
         'today_shifts' => [
-            'description' => 'I tuoi turni di oggi.',
+            'description' => 'I suoi turni di oggi.',
         ],
         'upcoming_shifts' => [
-            'description' => 'Le tue prossime reperibilità e turni.',
+            'description' => 'Le sue prossime reperibilità e turni.',
         ],
         'emergencies' => [
             'description' => 'Interventi di reperibilità in arrivo.',
@@ -44,16 +44,16 @@ return [
             'description' => 'Piano turni dei prossimi sette giorni.',
         ],
         'open_issues' => [
-            'description' => 'Punti aperti assegnati a te — per scadenza.',
+            'description' => 'Punti aperti assegnati a Lei — per scadenza.',
         ],
         'recent_entries' => [
-            'description' => 'Le tue voci modificate di recente.',
+            'description' => 'Le sue voci modificate di recente.',
         ],
         'recent_comments' => [
-            'description' => 'Nuovi commenti sulle tue voci.',
+            'description' => 'Nuovi commenti sulle sue voci.',
         ],
         'recent_attachments' => [
-            'description' => 'Nuovi allegati sulle tue voci.',
+            'description' => 'Nuovi allegati sulle sue voci.',
         ],
         'team_activity' => [
             'description' => 'Gli ultimi commenti del team.',
@@ -71,7 +71,7 @@ return [
             'description' => 'Timbratura di entrata e uscita, pause e stati intermedi.',
         ],
         'bookmarks' => [
-            'description' => 'I tuoi segnalibri salvati.',
+            'description' => 'I suoi segnalibri salvati.',
         ],
         'data_protection' => [
             'description' => 'Revisioni del registro scadute e richieste degli interessati aperte.',
@@ -86,25 +86,25 @@ return [
             'description' => 'Saldo dell\'orario flessibile dell\'ultimo mese chiuso, con semaforo.',
         ],
         'time_accounts' => [
-            'description' => 'Saldi dei tuoi conti ore (straordinari, conti speciali).',
+            'description' => 'Saldi dei suoi conti ore (straordinari, conti speciali).',
         ],
         'time_corrections' => [
-            'description' => 'Le tue richieste di correzione ancora in lavorazione o inviate.',
+            'description' => 'Le sue richieste di correzione ancora in lavorazione o inviate.',
         ],
         'reminders' => [
             'description' => 'Cose da fare da spese, trasferte e ferie — le stesse della campanella.',
         ],
         'kanban_status' => [
-            'description' => 'Quanti dei tuoi ordini si trovano in ciascuna colonna Kanban.',
+            'description' => 'Quanti dei suoi ordini si trovano in ciascuna colonna Kanban.',
         ],
         'service_tickets' => [
-            'description' => 'Ticket aperti assegnati a te.',
+            'description' => 'Ticket aperti assegnati a Lei.',
         ],
         'chat_unread' => [
             'description' => 'Messaggi non letti per canale.',
         ],
         'approvals' => [
-            'description' => 'Spese e richieste di ferie in attesa della tua decisione.',
+            'description' => 'Spese e richieste di ferie in attesa della sua decisione.',
         ],
         'asset_compliance' => [
             'description' => 'Verifiche scadute e in scadenza dal calendario dei controlli.',
@@ -122,10 +122,10 @@ return [
             'description' => 'Revisioni in scadenza delle valutazioni dei rischi e delle visite mediche.',
         ],
         'training_due' => [
-            'description' => 'I tuoi obblighi formativi e di istruzione aperti.',
+            'description' => 'I suoi obblighi formativi e di istruzione aperti.',
         ],
         'learning_due' => [
-            'description' => 'I tuoi corsi aperti sulla piattaforma di apprendimento — prima quelli scaduti.',
+            'description' => 'I suoi corsi aperti sulla piattaforma di apprendimento — prima quelli scaduti.',
         ],
         'learning_grading_queue' => [
             'description' => 'Consegne, elaborati e approvazioni del tempo di apprendimento in attesa di valutazione.',

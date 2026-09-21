@@ -8,11 +8,11 @@ related:
     - protocols.create
 ---
 
-Tippe auf den Auftragstitel in der Auftragsbuch-Liste, um die Detailansicht
+Tippen Sie auf den Auftragstitel in der Auftragsbuch-Liste, um die Detailansicht
 (Fallakte) zu öffnen. Direkt-Bearbeitung erfolgt über die einzelnen
 Sektionen (Kommentare, Anhänge, Zeiten, Protokolle).
 
-Beachte:
+Beachten Sie:
 
 - Pflichtklassifikationen müssen vor dem Statuswechsel auf **Erledigt**
   ausgefüllt sein.

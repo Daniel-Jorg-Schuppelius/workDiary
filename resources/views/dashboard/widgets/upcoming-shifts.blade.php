@@ -16,7 +16,7 @@
         <ul class="space-y-2 text-sm">
             @foreach ($shifts as $shift)
                 <li class="flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200 px-3 py-2">
-                    <span>{{ $shift->start_at->format('d.m. H:i') }} – {{ $shift->end_at->format('d.m. H:i') }}</span>
+                    <span>{{ $shift->start_at->orgTz()->format('d.m. H:i') }} – {{ $shift->end_at->orgTz()->format('d.m. H:i') }}</span>
                     @if ($shift->note)<span class="text-muted">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($shift->note, 50) }}</span>@endif
                 </li>
             @endforeach

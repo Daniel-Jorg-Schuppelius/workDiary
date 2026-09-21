@@ -12,8 +12,8 @@ related:
     - glossary.core
 ---
 
-Im Register der **Sicherheitsvorfälle** erfasst, bewertest und
-dokumentierst du Informationssicherheitsvorfälle – unabhängig davon, ob
+Im Register der **Sicherheitsvorfälle** erfassen, bewerten und
+dokumentieren Sie Informationssicherheitsvorfälle – unabhängig davon, ob
 personenbezogene Daten betroffen sind.
 
 Typischer Ablauf:
@@ -29,14 +29,14 @@ Typischer Ablauf:
 3. **Abschließen**: Der Abschluss verlangt eine **Ursachenanalyse** und
    **Lessons Learned** – ohne diese Angaben lässt sich ein Vorfall nicht
    schließen.
-4. **Rückführen**: Verknüpfe den Vorfall mit betroffenen Risiken und
+4. **Rückführen**: Verknüpfen Sie den Vorfall mit betroffenen Risiken und
    Maßnahmen, damit Erkenntnisse in die Risiko- und Maßnahmenbewertung
    zurückfließen.
 
-Datenschutz: Sind personenbezogene Daten betroffen, setze den
+Datenschutz: Sind personenbezogene Daten betroffen, setzen Sie den
 entsprechenden Haken. Das ist ein **Hinweis** – die meldepflichtige
 Datenschutzmeldung läuft getrennt im Datenschutzmanagement. Die Fallakten
-werden bewusst **nicht zusammengelegt**; optional kannst du einen Verweis
+werden bewusst **nicht zusammengelegt**; optional können Sie einen Verweis
 auf den zugehörigen Datenschutzvorfall hinterlegen.
 
 Berechtigungen: Einsicht erfordert ISMS-Leserechte, das Anlegen und

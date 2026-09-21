@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Concerns;
 
 use App\Models\User;
+use App\Support\ErrorText;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
@@ -110,7 +111,7 @@ trait MergesDuplicates {
         try {
             $merge($source, $target, $overrides);
         } catch (\InvalidArgumentException $e) {
-            throw ValidationException::withMessages(['source' => $e->getMessage()]);
+            throw ValidationException::withMessages(['source' => ErrorText::for($e)]);
         }
 
         return redirect()

@@ -30,7 +30,7 @@ return [
     ],
     'reservations' => [
         'title' => 'Prenotazioni veicoli',
-        'subtitle' => 'Gestisci le prenotazioni per veicolo.',
+        'subtitle' => 'Gestisca le prenotazioni per veicolo.',
         'all_vehicles' => 'Tutti i veicoli',
         'reserved_by' => 'Prenotato da',
         'empty' => 'Nessuna prenotazione disponibile.',

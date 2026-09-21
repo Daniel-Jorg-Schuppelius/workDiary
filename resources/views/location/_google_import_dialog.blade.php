@@ -28,7 +28,7 @@
     </x-form-group>
 
     <p class="text-sm text-base-content/70">
-        {{ __('Lade einen Google-Standortverlauf (JSON-Export vom Handy) hoch. Der Import aktiviert deine Einwilligung.') }}
+        {{ __('Laden Sie einen Google-Standortverlauf (JSON-Export vom Handy) hoch. Der Import aktiviert Ihre Einwilligung.') }}
         {{ __('Export auf dem Handy: Google Maps → Zeitachse → Einstellungen → Zeitachsendaten exportieren.') }}
     </p>
 </x-modal>

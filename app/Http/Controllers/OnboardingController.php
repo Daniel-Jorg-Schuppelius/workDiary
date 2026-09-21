@@ -106,7 +106,7 @@ class OnboardingController extends Controller {
         }
 
         $data = $request->validate([
-            'reason' => ['required', 'string', 'max:1000'],
+            'reason' => ['required', 'string', 'max:500'],
         ]);
 
         $organization = $user->organization;

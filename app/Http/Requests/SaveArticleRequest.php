@@ -82,8 +82,8 @@ class SaveArticleRequest extends BaseFormRequest {
             ],
             'tax_class' => ['nullable', 'string', 'max:40'],
             'status' => ['required', Rule::enum(ArticleStatus::class)],
-            'default_purchase_price' => ['nullable', 'numeric', 'min:0'],
-            'default_sale_price' => ['nullable', 'numeric', 'min:0'],
+            'default_purchase_price' => ['nullable', 'numeric', 'min:0', 'max:999999999.9999'],
+            'default_sale_price' => ['nullable', 'numeric', 'min:0', 'max:999999999.9999'],
             'currency' => ['nullable', \Illuminate\Validation\Rule::enum(\CommonToolkit\Enums\CurrencyCode::class)],
             // Org-Bindung läuft über die Eltern-Vorlage (Versions-Tabelle
             // selbst trägt keine organization_id).

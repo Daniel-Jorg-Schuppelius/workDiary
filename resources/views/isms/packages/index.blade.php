@@ -89,7 +89,7 @@
                     <td class="text-base-content/70 text-xs">
                         @if ($package->isFinalized())
                             {{ $package->finalizedBy?->name ?? '—' }}<br>
-                            {{ $package->finalized_at?->format('d.m.Y H:i') }}
+                            {{ $package->finalized_at?->orgTz()->format('d.m.Y H:i') }}
                         @else
                             —
                         @endif
@@ -114,9 +114,9 @@
                                                 @endif
                                             </div>
                                             <p>
-                                                {{ __('isms.field.token_expires_at') }}: {{ $token->expires_at->format('d.m.Y H:i') }}
+                                                {{ __('isms.field.token_expires_at') }}: {{ $token->expires_at->orgTz()->format('d.m.Y H:i') }}
                                                 · {{ __('isms.field.token_last_accessed') }}:
-                                                {{ $token->last_accessed_at?->format('d.m.Y H:i') ?? '—' }}
+                                                {{ $token->last_accessed_at?->orgTz()->format('d.m.Y H:i') ?? '—' }}
                                             </p>
                                             @if ($canManage && $token->revoked_at === null)
                                                 <x-action-form :action="route('isms.packages.tokens.revoke', $token)"

@@ -95,6 +95,9 @@ class RemoteSessionImportTest extends TestCase {
         $entry = TimeEntry::query()->where('project_id', $project->id)->first();
         $this->assertNotNull($entry);
         $this->assertSame(61, $entry->minutes); // 09:42:09 – 10:44:08
+        // AnyDesk exportiert Ortszeit (Berlin, Sommerzeit) — gebucht wird UTC.
+        $this->assertSame('2026-05-28 07:42:09', $entry->getRawOriginal('started_at'));
+        $this->assertSame('2026-05-28', $entry->date->toDateString());
 
         $this->assertDatabaseHas('remote_pending_sessions', [
             'organization_id' => $this->organization->id,

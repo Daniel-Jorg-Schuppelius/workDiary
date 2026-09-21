@@ -12,8 +12,8 @@ related:
 
 La struttura immobiliare organizza gerarchicamente sedi, edifici, piani e
 locali e serve da riferimento per asset, interventi e altri dati operativi.
-Crea i livelli dall'esterno verso l'interno con nomi o numeri univoci; prima
-di eliminare un livello sposta i record subordinati o collegati — spesso è
+Crei i livelli dall'esterno verso l'interno con nomi o numeri univoci; prima
+di eliminare un livello sposti i record subordinati o collegati — spesso è
 preferibile archiviare invece di eliminare. Ogni locale può portare più
 requisiti specialistici (livello di igiene, pulizia speciale, restrizione di
 accesso, inventario IT, verifica tecnica, obbligo del gestore), gestiti nella

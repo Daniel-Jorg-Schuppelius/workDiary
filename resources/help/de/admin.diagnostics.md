@@ -34,5 +34,5 @@ Ergebnis wird zurückgemeldet.
 
 Aufrufe der Diagnose und ausgelöste Tests werden im Audit-Log
 protokolliert. Das Anzeigen erfordert das Diagnose-Recht, das Auslösen
-von Prüfungen ein eigenes Recht. Betriebskennzahlen findest du unter
+von Prüfungen ein eigenes Recht. Betriebskennzahlen finden Sie unter
 **Metriken**.

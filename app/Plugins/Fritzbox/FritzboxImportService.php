@@ -82,7 +82,7 @@ class FritzboxImportService {
     public function importFromCsv(Organization $organization, string $csvContent, array $config): array {
         $calls = (new FritzboxCsvParser)->parse(
             $csvContent,
-            $this->orgTimezone($organization),
+            Tz::ofOrganization($organization),
             (bool) ($config['type3_outgoing'] ?? false),
         );
 
@@ -793,12 +793,8 @@ class FritzboxImportService {
             });
     }
 
-    private function orgTimezone(Organization $organization): string {
-        return Tz::isValid($organization->timezone) ? (string) $organization->timezone : Tz::FALLBACK;
-    }
-
     /** Lokaler Kalendertag (Org-Zeitzone) eines UTC-Zeitpunkts — für Monatsabschluss und `date`. */
     private function localDay(Organization $organization, CarbonImmutable $utc): CarbonImmutable {
-        return $utc->setTimezone($this->orgTimezone($organization));
+        return $utc->setTimezone(Tz::ofOrganization($organization));
     }
 }

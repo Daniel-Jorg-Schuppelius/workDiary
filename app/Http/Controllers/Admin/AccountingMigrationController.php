@@ -18,6 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Migration\{AccountingMigrationItem, AccountingMigrationRun};
 use App\Models\{Organization, User};
 use App\Services\AccountingMigration\AccountingMigrationService;
+use App\Support\ErrorText;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
@@ -89,7 +90,7 @@ class AccountingMigrationController extends Controller {
                 MigrationProvider::from((string) $data['target']),
             );
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('admin.accounting-migration.index')
@@ -104,7 +105,7 @@ class AccountingMigrationController extends Controller {
         try {
             $this->service->analyze($run, $user);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Analyse abgeschlossen — es wurde nichts in ein Fremdsystem geschrieben.'));
@@ -128,7 +129,7 @@ class AccountingMigrationController extends Controller {
         try {
             $this->service->decideItem($item, (string) $data['status'], $user, $data['note'] ?? null);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Entscheidung gespeichert.'));

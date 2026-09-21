@@ -20,7 +20,8 @@ use App\Models\Rental\{RentalCase, RentalConditionItem};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Rental\RentalCaseService;
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid, Tz};
+use Carbon\Carbon;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -43,7 +44,7 @@ class RentalHandoverController extends Controller {
         try {
             $report = $this->service->handover($rental, $asset, $actor, $data);
         } catch (AssetNotUsableException|\RuntimeException $e) {
-            return back()->withErrors(['asset_id' => $e->getMessage()]);
+            return back()->withErrors(['asset_id' => ErrorText::for($e)]);
         }
 
         foreach ((array) $request->file('photos', []) as $photo) {
@@ -63,7 +64,7 @@ class RentalHandoverController extends Controller {
         try {
             $report = $this->service->returnAsset($rental, $asset, $actor, $data);
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['asset_id' => $e->getMessage()]);
+            return back()->withErrors(['asset_id' => ErrorText::for($e)]);
         }
 
         foreach ((array) $request->file('photos', []) as $photo) {
@@ -81,7 +82,7 @@ class RentalHandoverController extends Controller {
 
         $rules = [
             'asset_id' => ['required', 'integer', new ExistsInCurrentOrganization('assets')],
-            'reported_at' => ['nullable', 'date'],
+            'reported_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
             'condition' => ['required', Rule::enum(RentalCondition::class)],
             'checklist' => ['sometimes', 'array'],
             'meter_value' => ['nullable', 'numeric', 'min:0'],
@@ -115,6 +116,9 @@ class RentalHandoverController extends Controller {
 
         $data = $request->validate($rules);
 
+        if (! empty($data['reported_at'])) {
+            $data['reported_at'] = Carbon::instance(Tz::parse((string) $data['reported_at']));
+        }
         if ($data['signature_name'] ?? null) {
             $data['signed_at'] = now();
         }

@@ -179,7 +179,9 @@ class Customer extends Model {
     protected static function booted(): void {
         self::registerSequentialNumberHook();
 
-        static::saving(function (self $customer): void {
+        // creating statt saving: erst BelongsToOrganization::creating setzt die
+        // organization_id — saving liefe davor und prüfte gegen NULL.
+        $assignSlug = function (self $customer): void {
             if ($customer->slug === null || $customer->slug === '') {
                 $customer->slug = self::uniqueSlug(
                     (string) $customer->name,
@@ -187,7 +189,9 @@ class Customer extends Model {
                     $customer->exists ? $customer->id : null,
                 );
             }
-        });
+        };
+        static::creating($assignSlug);
+        static::updating($assignSlug);
     }
 
     /**

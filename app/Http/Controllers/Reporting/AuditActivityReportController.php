@@ -14,7 +14,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{AuditLog, User};
-use App\Support\ChartBucket;
+use App\Support\{ChartBucket, Tz};
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
@@ -301,7 +301,7 @@ class AuditActivityReportController extends Controller {
         $rows[] = ['Zeitpunkt', 'User', 'Event', 'Typ', 'ID', 'IP'];
         foreach ($recent as $log) {
             $rows[] = [
-                $log->created_at?->format('Y-m-d H:i:s') ?? '',
+                Tz::toLocal($log->created_at)?->format('Y-m-d H:i:s') ?? '',
                 $log->user !== null ? $log->user->name : '—',
                 $log->event,
                 $this->shortType((string) $log->auditable_type),

@@ -26,7 +26,7 @@
             </span>
             @if ($organization->demo_seeded_at)
                 <span class="opacity-70">
-                    {{ __('Seed: :at', ['at' => $organization->demo_seeded_at->translatedFormat('d.m.Y H:i')]) }}
+                    {{ __('Seed: :at', ['at' => $organization->demo_seeded_at->orgTz()->translatedFormat('d.m.Y H:i')]) }}
                 </span>
             @endif
         </div>

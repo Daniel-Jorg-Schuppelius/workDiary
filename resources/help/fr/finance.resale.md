@@ -142,7 +142,7 @@ abonnement et période, périodes liées comme proposition et marquées.
 L’*anticipation* en jours prend aussi les périodes avant leur début (0 =
 périodes échues uniquement). Les destinataires facturés via
 Lexoffice/DATEV ne sont pas concernés, les périodes sans prix de vente
-sont ignorées, le parc propre n’est jamais facturé. Tu finalises les
+sont ignorées, le parc propre n’est jamais facturé. Vous finalisez les
 brouillons dans la liste des factures ; la synthèse hebdomadaire indique
 combien de brouillons des sept derniers jours sont encore ouverts. Une
 fois ou en essai : `php artisan resale:draft-local --organization=…

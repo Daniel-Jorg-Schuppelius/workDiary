@@ -90,7 +90,7 @@ class MessageController extends Controller {
             'body' => ['nullable', 'string', 'max:10000', 'required_without:files'],
             'parent_id' => ['nullable', 'string'],
             'quoted_id' => ['nullable', 'string'],
-            'scheduled_at' => ['nullable', 'date'],
+            'scheduled_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
             'files' => ['sometimes', 'array', 'max:10'],
             'files.*' => ['file', 'max:' . FileAttacher::maxKb()],
         ]);

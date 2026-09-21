@@ -13,6 +13,7 @@ namespace App\Services\Reporting;
 use App\Models\{Attendance, DiaryEntry, Project, ScheduledShift, Site, TimeEntry, User, WorkSchedule};
 use App\Models\Location\LocationVisit;
 use App\Support\Query\DateRange;
+use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -100,7 +101,8 @@ class PlanIstReportBuilder {
             $actualMinutes = (int) $dayAttendances->sum('duration_minutes');
             /** @var Attendance|null $firstAtt */
             $firstAtt = $dayAttendances->sortBy('started_at')->first();
-            $actualStart = $firstAtt?->started_at?->format('H:i');
+            // Stempelzeit liegt in UTC, der Kernzeitbeginn ist Ortszeit.
+            $actualStart = Tz::toLocal($firstAtt?->started_at)?->format('H:i');
 
             $delta = $actualMinutes - $planMinutes;
             $lateStart = null;

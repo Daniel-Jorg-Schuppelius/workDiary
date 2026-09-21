@@ -139,7 +139,7 @@ return [
         'publish' => 'Diese Version veröffentlichen? Schritte werden danach unveränderlich.',
     ],
     'notice' => [
-        'noDraft' => 'Alle Versionen sind veröffentlicht und damit unveränderlich. Lege eine neue Version an, um Schritte zu ändern.',
+        'noDraft' => 'Alle Versionen sind veröffentlicht und damit unveränderlich. Legen Sie eine neue Version an, um Schritte zu ändern.',
     ],
     'panel' => [
         'suggested' => 'Für diesen Auftrag vorgeschlagene Prozeduren:',
@@ -179,7 +179,7 @@ return [
     ],
     'empty' => [
         'title' => 'Keine Prozedurvorlagen',
-        'message' => 'Lege die erste verbindliche Prozedur an.',
+        'message' => 'Legen Sie die erste verbindliche Prozedur an.',
         'filtered' => 'Keine Vorlage passt zum Filter.',
     ],
     // Abweichungs-Report (Feature 026, MVP-713).

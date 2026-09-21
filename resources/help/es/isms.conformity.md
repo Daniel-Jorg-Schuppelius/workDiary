@@ -12,10 +12,10 @@ related:
     - glossary.core
 ---
 
-En la página **«Certificaciones»** gestionas el estado de conformidad
+En la página **«Certificaciones»** gestiona el estado de conformidad
 por norma y alcance, desde el análisis de brechas hasta el certificado
-archivado. Registra la norma, avanza el estado por la cadena («No
-evaluado» → … → **«Certificado»**) y deposita el certificado con todos
+archivado. Registre la norma, avance el estado por la cadena («No
+evaluado» → … → **«Certificado»**) y deposite el certificado con todos
 sus datos (entidad certificadora, número, validez, PDF opcional). El
 cambio a **«Certificado»** solo es posible con un certificado vigente
 hoy y con todos los campos obligatorios; nunca se activa

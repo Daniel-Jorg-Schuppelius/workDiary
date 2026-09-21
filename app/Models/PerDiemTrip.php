@@ -12,7 +12,7 @@ namespace App\Models;
 
 use App\Enums\Expense\PerDiemTripStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use Database\Factories\PerDiemTripFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -81,7 +81,8 @@ class PerDiemTrip extends Model {
         static::saving(function (self $trip): void {
             $trip->country = strtoupper((string) $trip->country);
             if (empty($trip->workplace_key) && ! empty($trip->location)) {
-                $trip->workplace_key = strtolower(trim($trip->location));
+                // Ort ist varchar(255), der Schlüssel nur 100 (UI-Fuzz 2026-09-21: 1406).
+                $trip->workplace_key = StringHelper::truncate(strtolower($trip->location), 100, '', true);
             }
         });
     }

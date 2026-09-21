@@ -289,7 +289,7 @@ return [
                 'discovered' => 'shopinfo.xml analizado: :count columnas asignadas (sugerencia rellenada abajo).',
             ],
         ],
-        'mapping_hint' => 'Asigna los campos de destino a los nombres de columna del CSV (obligatorio: número de artículo, nombre).',
+        'mapping_hint' => 'Asigne los campos de destino a los nombres de columna del CSV (obligatorio: número de artículo, nombre).',
         'link_hint' => 'El precio del catálogo se adopta como fuente de suministro del artículo.',
         'action' => [
             'new_source' => 'Fuente de catálogo',

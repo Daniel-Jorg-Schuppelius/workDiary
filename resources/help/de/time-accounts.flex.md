@@ -13,7 +13,7 @@ Das Arbeitszeitkonto vergleicht Sollzeit, anrechenbare Istzeit und
 Abwesenheiten. Monatsfreigaben schließen einen geprüften Zeitraum für
 weitere Änderungen und Exporte.
 
-Prüfe vor dem Einreichen offene Zeitbuchungen, Pausen, Urlaub,
+Prüfen Sie vor dem Einreichen offene Zeitbuchungen, Pausen, Urlaub,
 Krankheit und genehmigte Korrekturen. Teamleitung oder Abrechnung prüft
 Abweichungen und gibt den Monat frei oder weist ihn mit Begründung
 zurück.

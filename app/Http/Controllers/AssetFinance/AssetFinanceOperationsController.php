@@ -18,7 +18,7 @@ use App\Models\AssetFinance\{AssetFinanceContract, AssetFinanceDeadline, AssetFi
 use App\Models\IncomingEInvoice;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\AssetFinance\AssetFinanceService;
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -93,7 +93,7 @@ class AssetFinanceOperationsController extends Controller {
         try {
             $this->service->linkIncomingInvoice($schedule, IncomingEInvoice::query()->whereKey($data['incoming_einvoice_id'])->firstOrFail());
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['incoming_einvoice_id' => $e->getMessage()]);
+            return back()->withErrors(['incoming_einvoice_id' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Eingangsrechnung referenziert.'));
@@ -124,7 +124,7 @@ class AssetFinanceOperationsController extends Controller {
         try {
             $this->service->recordUsage($limit, $request->user() ?? abort(401), isset($data['actual_value']) ? (float) $data['actual_value'] : null);
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['actual_value' => $e->getMessage()]);
+            return back()->withErrors(['actual_value' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Ist-Wert erfasst.'));
@@ -152,7 +152,7 @@ class AssetFinanceOperationsController extends Controller {
         try {
             $this->service->exerciseOption($option, $request->user() ?? abort(401));
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['option' => $e->getMessage()]);
+            return back()->withErrors(['option' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Option ausgeübt (auditiert).'));
@@ -193,7 +193,7 @@ class AssetFinanceOperationsController extends Controller {
         try {
             $this->service->completeEndProcess($endProcess, $request->user() ?? abort(401));
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['end_process' => $e->getMessage()]);
+            return back()->withErrors(['end_process' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Ende-Prozess abgeschlossen — Aktenstatus aktualisiert.'));

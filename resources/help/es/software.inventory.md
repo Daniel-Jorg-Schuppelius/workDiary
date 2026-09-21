@@ -14,5 +14,5 @@ licencia, además de un estado activo. La vista general muestra el
 número de instalaciones por software, permite buscar por nombre y
 fabricante, filtrar por tipo y ordenar por columnas; crear y editar se
 hacen en un diálogo. Mientras un software tenga instalaciones asignadas
-no puede eliminarse; retira antes las asignaciones. Este módulo es
+no puede eliminarse; retire antes las asignaciones. Este módulo es
 independiente del registro de software del SGSI.

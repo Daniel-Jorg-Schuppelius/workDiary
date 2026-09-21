@@ -10,7 +10,7 @@ related:
     - planning.exchange
 ---
 
-Pflege hier deine eigene Verfügbarkeit und deine Wunschdienste. Die
+Pflegen Sie hier Ihre eigene Verfügbarkeit und Ihre Wunschdienste. Die
 Planung berücksichtigt diese Angaben bei den Besetzungsvorschlägen.
 
 Verfügbarkeitsfenster:
@@ -25,4 +25,4 @@ ich vermeiden).
 
 Die Angaben sind reine Hinweise: Die endgültige Besetzung entscheidet
 die Planung. Ein als „nicht verfügbar" markiertes Fenster oder eine
-Abneigung schließt dich aus den Vorschlägen aus.
+Abneigung schließt Sie aus den Vorschlägen aus.

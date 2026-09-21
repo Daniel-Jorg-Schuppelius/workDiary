@@ -10,7 +10,7 @@ related:
     - admin.roles
 ---
 
-Hier verwaltest du Organisationen (Mandanten). Jede Organisation ist
+Hier verwalten Sie Organisationen (Mandanten). Jede Organisation ist
 eine abgeschottete Einheit – sämtliche Daten gehören genau einem
 Mandanten.
 

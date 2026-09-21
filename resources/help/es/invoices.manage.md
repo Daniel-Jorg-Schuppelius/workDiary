@@ -49,7 +49,7 @@ WorkDiary o exactamente un sistema externo — nunca ambos a la vez.
    No nace ningún documento nuevo.
 
 **Factura electrónica.** La XRechnung se genera en sintaxis UBL; si un
-destinatario exige CII, elige en el cliente o al enviar el formato de entrega
+destinatario exige CII, elija en el cliente o al enviar el formato de entrega
 «XRechnung (XML, sintaxis CII)». Por Peppol siempre se envía UBL. Sin número
 de IVA — por ejemplo como pequeña empresa según el § 19 UStG — basta el número
 fiscal de los datos maestros de factura electrónica: se añade también como

@@ -14,8 +14,8 @@ related:
     - glossary.core
 ---
 
-Das ISMS-Modul bündelt alles, was du für ein gelebtes
-Informationssicherheits-Managementsystem brauchst – ohne Normtexte zu
+Das ISMS-Modul bündelt alles, was Sie für ein gelebtes
+Informationssicherheits-Managementsystem brauchen – ohne Normtexte zu
 kopieren. Die Zertifizierung selbst erfolgt immer durch unabhängige
 Stellen.
 
@@ -50,6 +50,6 @@ Korrekturmaßnahmen, offenen Nichtkonformitäten und Zertifikatsterminen
 Register-Seiten (Risiken, Anforderungen & SoA, Maßnahmen) stehen
 zusätzlich JSON-/CSV-Exporte mit ausgewiesenem Datenstand bereit.
 
-Nächste Schritte: Für Prüfer erstellst du unter **Auditpakete** einen
+Nächste Schritte: Für Prüfer erstellen Sie unter **Auditpakete** einen
 finalisierten Daten-Snapshot, das **Softwareinventar** dokumentiert
 eingesetzte Produkte samt End-of-Life.

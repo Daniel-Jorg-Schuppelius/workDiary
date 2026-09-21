@@ -18,6 +18,7 @@ use App\Models\{CostCenter, Organization, User};
 use App\Services\Accounting\Posting\PostingInboxService;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Helper\Data\StringHelper;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -77,7 +78,8 @@ class JournalService {
                 'booked_on' => $bookedOn->toDateString(),
                 'document_on' => ($data['document_on'] ?? null)?->toDateString(),
                 'status' => AccountingEntryStatus::Draft,
-                'memo' => $data['memo'],
+                // varchar(191): zusammengesetzte Texte (z. B. „Skonto zu … — Notiz“) liefen sonst über.
+                'memo' => StringHelper::truncate((string) $data['memo'], 191, '…'),
                 'document_reference' => $data['document_reference'] ?? null,
                 'currency' => $this->baseCurrency($organization),
                 'source_type' => $data['source_type'] ?? null,
@@ -189,9 +191,13 @@ class JournalService {
      * @param  EntryDraftData  $data
      */
     public function postDirect(Organization $organization, array $data, User $actor): AccountingEntry {
-        $entry = $this->draft($organization, $data, $actor);
+        // Atomar: scheitert das Festschreiben (z. B. Buchungshoheit), bleibt
+        // kein verwaister Entwurf zurück.
+        return DB::transaction(function () use ($organization, $data, $actor): AccountingEntry {
+            $entry = $this->draft($organization, $data, $actor);
 
-        return $entry->status->isPosted() ? $entry : $this->post($entry, $actor);
+            return $entry->status->isPosted() ? $entry : $this->post($entry, $actor);
+        });
     }
 
     /**

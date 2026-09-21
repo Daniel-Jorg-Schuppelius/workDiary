@@ -11,7 +11,7 @@
 @section('nav-title', __('Fernwartung – Inbox'))
 
 @section('content')
-<x-index-page :subtitle="__('Diese AnyDesk-/TeamViewer-IDs tauchten in den Reports auf, sind aber keinem Gerät zugeordnet. Weise jede ID einem bestehenden Gerät zu oder lege ein neues an — die gespeicherten Sitzungen werden dann sofort als Zeiteinträge gebucht. Bei Mehrkundengeräten bleiben sie offen und werden im Reiter „Sitzungen zuordnen“ je Kunde gebucht; Sitzungen eigener Geräte ohne Kunden buchen auf das interne Wartungsprojekt.')">
+<x-index-page :subtitle="__('Diese AnyDesk-/TeamViewer-IDs tauchten in den Reports auf, sind aber keinem Gerät zugeordnet. Weisen Sie jede ID einem bestehenden Gerät zu oder legen Sie ein neues an — die gespeicherten Sitzungen werden dann sofort als Zeiteinträge gebucht. Bei Mehrkundengeräten bleiben sie offen und werden im Reiter „Sitzungen zuordnen“ je Kunde gebucht; Sitzungen eigener Geräte ohne Kunden buchen auf das interne Wartungsprojekt.')">
     <x-slot:actions>
         <a href="{{ route('admin.imports.create', ['entity' => \App\Enums\Import\ImportEntity::RemoteSessions->value]) }}"
            class="btn btn-sm btn-primary">
@@ -268,7 +268,7 @@
             <div class="mb-3">
                 <h2 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Mehrkundengeräte – Sitzungen zuordnen') }}</h2>
                 <p class="text-sm text-muted">
-                    {{ __('Diese Rechner werden für mehrere Kunden genutzt. Markiere die Sitzungen, wähle den Kunden (und optional ein Projekt) und buche sie gesammelt.') }}
+                    {{ __('Diese Rechner werden für mehrere Kunden genutzt. Markieren Sie die Sitzungen, wählen Sie den Kunden (und optional ein Projekt) und buchen Sie sie gesammelt.') }}
                 </p>
             </div>
 
@@ -337,8 +337,8 @@
                                                        aria-label="{{ __('Sitzung auswählen') }}">
                                             </td>
                                             <td class="whitespace-nowrap text-sm">
-                                                {{ \Illuminate\Support\Carbon::parse($session->started_at)->isoFormat('L HH:mm') }}
-                                                – {{ \Illuminate\Support\Carbon::parse($session->ended_at)->isoFormat('HH:mm') }}
+                                                {{ \Illuminate\Support\Carbon::parse($session->started_at)->orgTz()->isoFormat('L HH:mm') }}
+                                                – {{ \Illuminate\Support\Carbon::parse($session->ended_at)->orgTz()->isoFormat('HH:mm') }}
                                             </td>
                                             <td class="text-right text-sm">{{ $session->minutes() }}</td>
                                             <td class="text-sm">{{ ucfirst($session->provider) }}</td>

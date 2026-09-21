@@ -11,8 +11,8 @@ related:
     - invoices.manage
 ---
 
-Im Dokumentdesign passt du erzeugte PDF-Dokumente an das
-Erscheinungsbild deiner Organisation an: Firmenbogen hinterlegen,
+Im Dokumentdesign passen Sie erzeugte PDF-Dokumente an das
+Erscheinungsbild Ihrer Organisation an: Firmenbogen hinterlegen,
 Druck- und Sperrbereiche festlegen, Informationsblöcke deklarieren und
 ein kuratiertes Tabellenstil-Preset wählen.
 
@@ -42,7 +42,7 @@ strukturierte Rechnung bleibt fachlich führend.
 
 CI-Basisdesign und Vererbung:
 
-- Das org-weite Standardprofil ist dein **CI-Basisdesign**. Varianten für
+- Das org-weite Standardprofil ist Ihr **CI-Basisdesign**. Varianten für
   einzelne Dokumentarten (z. B. Angebot, Rechnung, Gutschrift, Mahnung)
   oder ganze Dokumentfamilien (Vertrieb, Einkauf, Nachweis) **erben** alle
   nicht überschriebenen Sektionen — je Sektion ist sichtbar, ob sie
@@ -63,13 +63,13 @@ CI-Basisdesign und Vererbung:
 - **Kopf-/Fußtexte** der Vertriebsbelege (vormals Rechnungsvorlagen) sind
   eine eigene, vererbbare Profil-Sektion — versioniert und bei
   finalisierten Belegen eingefroren. **Kunden-Sonderdesigns** sind
-  reguläre Profile, die du in der Kundenakte (Panel „Dokumentdesign")
+  reguläre Profile, die Sie in der Kundenakte (Panel „Dokumentdesign")
   zuweist; als „Kunden-Sonderprofil" markierte Profile wirken
   ausschließlich über diese Zuweisung.
 - **Feinschliff:** Vererbung gilt je Einstellungsgruppe (Ränder,
   Adressfenster, Sperrflächen, Kopf-/Fußzeilen, Typografie, Firmenbogen,
   Blöcke, Tabellenstil, Texte). Preflight-**Warnungen** blockieren die
-  Aktivierung, bis du sie im Dialog bewusst bestätigst. Neu sind außerdem
+  Aktivierung, bis Sie sie im Dialog bewusst bestätigen. Neu sind außerdem
   per-Seite-**Kopf-/Fußzeilen** und die vollständigen Tabellenstil-Schalter
   (Raster, Abstände, Farben, Kopfzeilen-Wiederholung, Summenbetonung).
 

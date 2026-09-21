@@ -18,13 +18,13 @@ base.
 **Terminali di timbratura, chiosco e punti di check-in:** Registrando un
 terminale compaiono due indirizzi una sola volta: quello di ingest per i
 terminali hardware e quello del chiosco, che trasforma il browser di un tablet
-in un terminale. Entrambi contengono lo stesso token; se va perso, ruota il
-token o disattiva il terminale. I badge letti dal chip NFC del tablet (Chrome su
+in un terminale. Entrambi contengono lo stesso token; se va perso, ruoti il
+token o disattivi il terminale. I badge letti dal chip NFC del tablet (Chrome su
 Android) devono essere registrati come identificativo esadecimale senza
 separatori. I punti di check-in sono codici QR o adesivi NFC presso sedi e
 veicoli: la vista di stampa fornisce il codice e lo stesso indirizzo può essere
 scritto su un adesivo con un'app NFC. Un codice può essere fotografato: per
-dimostrare la presenza sul posto imposta un raggio. La posizione viene solo
+dimostrare la presenza sul posto imposti un raggio. La posizione viene solo
 verificata, non salvata.
 
 I badge possono essere sostituiti da un **PIN del terminale**: l'amministrazione
@@ -75,7 +75,7 @@ automatizzati basati su di esso.
 ## Quali integrazioni esistono
 
 L'offerta cresce; l'elenco seguente indica le integrazioni disponibili per
-scopo, così non devi indovinare dove va cosa:
+scopo, così non deve indovinare dove va cosa:
 
 - **Contabilità e fatturazione:** lexoffice, orgaMAX, sevDesk, easybill,
   BuchhaltungsButler, InvoicePlane e il punto di accesso Peppol per l'invio di
@@ -91,5 +91,5 @@ scopo, così non devi indovinare dove va cosa:
   Kimai, Zammad.
 - **Commercio e gestionale:** JTL-Wawi, Billbee, Etsy.
 
-Un'integrazione assente da questo elenco non esiste: nel dubbio chiedi, invece
+Un'integrazione assente da questo elenco non esiste: nel dubbio chieda, invece
 di salvare credenziali in un punto non previsto.

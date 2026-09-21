@@ -21,7 +21,7 @@ use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Claims\ClaimCaseService;
 use App\Services\Classification\ClassificationResolver;
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -144,7 +144,7 @@ class ClaimCaseController extends Controller {
         try {
             $this->service->decide($claim, $request->user() ?? abort(401), $data['decision'], $data['justification']);
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['decision' => $e->getMessage()]);
+            return back()->withErrors(['decision' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Entscheidung dokumentiert.'));
@@ -163,7 +163,7 @@ class ClaimCaseController extends Controller {
                 $this->service->transition($claim, $target);
             }
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['status' => $e->getMessage()]);
+            return back()->withErrors(['status' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Status aktualisiert.'));

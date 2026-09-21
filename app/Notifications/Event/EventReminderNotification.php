@@ -10,9 +10,9 @@
 
 namespace App\Notifications\Event;
 
-use App\Models\Event;
+use App\Models\{Event, Organization, User};
 use App\Notifications\DirectNotification;
-use App\Support\NotificationText;
+use App\Support\{NotificationText, Tz};
 use Illuminate\Notifications\Messages\MailMessage;
 
 class EventReminderNotification extends DirectNotification {
@@ -31,7 +31,10 @@ class EventReminderNotification extends DirectNotification {
     }
 
     public function toMail(object $notifiable): MailMessage {
-        $when = optional($this->event->started_at)->isoFormat('LLLL');
+        // Mails entstehen im Scheduler ohne Anmeldung: Zeitzone des Empfängers, sonst der Organisation.
+        $tz = $notifiable instanceof User && Tz::isValid($notifiable->timezone) ? (string) $notifiable->timezone
+            : ($this->event->organization instanceof Organization ? Tz::ofOrganization($this->event->organization) : Tz::current());
+        $when = $this->event->started_at->copy()->setTimezone($tz)->isoFormat('LLLL');
 
         return (new MailMessage)
             ->subject(__('Erinnerung: :title', ['title' => $this->event->title]))

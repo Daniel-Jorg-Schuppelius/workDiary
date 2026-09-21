@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Install;
 
 use App\Http\Controllers\Controller;
 use App\Services\Install\InstallationManager;
+use App\Support\ErrorText;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
@@ -147,7 +148,7 @@ class InstallController extends Controller {
             $this->installer->seedRolesAndPermissions();
         } catch (Throwable $e) {
             return back()->withInput()->withErrors([
-                'database' => __('Migration fehlgeschlagen: :msg', ['msg' => $e->getMessage()]),
+                'database' => __('Migration fehlgeschlagen: :msg', ['msg' => ErrorText::for($e)]),
             ]);
         }
 
@@ -176,7 +177,7 @@ class InstallController extends Controller {
             $this->installer->createOrganizationAndAdmin($data);
         } catch (Throwable $e) {
             return back()->withInput()->withErrors([
-                'email' => __('Admin-Anlage fehlgeschlagen: :msg', ['msg' => $e->getMessage()]),
+                'email' => __('Admin-Anlage fehlgeschlagen: :msg', ['msg' => ErrorText::for($e)]),
             ]);
         }
 

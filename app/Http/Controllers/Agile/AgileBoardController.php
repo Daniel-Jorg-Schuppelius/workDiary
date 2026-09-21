@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Agile\AgileBoard;
 use App\Models\{Project, User};
 use App\Services\Agile\{AgileBoardService, AgileConflictException};
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -111,7 +112,7 @@ class AgileBoardController extends Controller {
         } catch (AgileConflictException $e) {
             abort(409, $e->getMessage());
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('agile.board', $project)
@@ -193,7 +194,7 @@ class AgileBoardController extends Controller {
         try {
             $this->boards->saveColumn($board, $data, $column, $actor);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('agile.board', $project)
@@ -211,7 +212,7 @@ class AgileBoardController extends Controller {
         try {
             $this->boards->deleteColumn($column, $actor);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('agile.board', $project)

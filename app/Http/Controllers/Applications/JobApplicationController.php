@@ -18,7 +18,7 @@ use App\Models\Applications\{EmployeeDraft, JobApplication, JobRequisition};
 use App\Models\User;
 use App\Services\Applications\RecruitingService;
 use App\Services\Document\DocumentService;
-use App\Support\SortableQuery;
+use App\Support\{ErrorText, SortableQuery};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -124,7 +124,7 @@ class JobApplicationController extends Controller {
         Gate::authorize('update', $application);
         $request->merge(['interviewer_id' => \App\Support\Sqid::decodeOrNumeric(User::class, $request->input('interviewer_id'))]);
         $data = $request->validate([
-            'scheduled_at' => ['required', 'date'],
+            'scheduled_at' => ['required', 'date', new \App\Rules\TimestampRange()],
             'mode' => ['required', 'in:onsite,remote,phone'],
             'interviewer_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('users')],
             'notes' => ['nullable', 'string', 'max:5000'],
@@ -184,7 +184,7 @@ class JobApplicationController extends Controller {
         Gate::authorize('update', $application);
         $request->validate([
             'file' => ['required', 'file', 'max:20480'],
-            'label' => ['nullable', 'string', 'max:200'],
+            'label' => ['nullable', 'string', 'max:180'],
         ]);
 
         $document = $documents->create(null, $this->actor(), [
@@ -215,7 +215,7 @@ class JobApplicationController extends Controller {
         try {
             $this->recruiting->decide($application, $data['decision'], $data['note'] ?? null, $this->actor(), (bool) ($data['talent_pool_consent'] ?? false));
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Entscheidung dokumentiert.'));
@@ -279,7 +279,7 @@ class JobApplicationController extends Controller {
         try {
             $this->recruiting->createEmployeeDraft($application, $this->actor(), $qualifications);
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Mitarbeiter-Entwurf angelegt (kein Live-Konto).'));
@@ -292,7 +292,7 @@ class JobApplicationController extends Controller {
         try {
             $user = $this->recruiting->inviteFromDraft($draft, $this->actor());
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Konto für :name angelegt (Passwort-Änderung beim ersten Login erzwungen).', ['name' => $user->name]));

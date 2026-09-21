@@ -16,6 +16,7 @@ use App\Exceptions\ServiceTicketException;
 use App\Models\{DiaryEntry, Organization, ServiceQueue, ServiceTicket, SlaClockSegment, SlaContract, User};
 use App\Services\Integration\LifecycleWebhookPublisher;
 use App\Services\Numbering\NumberSequenceService;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -69,7 +70,8 @@ class ServiceTicketService {
             'asset_id' => isset($payload['asset_id']) ? (int) $payload['asset_id'] : null,
             'project_id' => $projectId,
             'diary_entry_id' => $diaryEntryId,
-            'title' => (string) ($payload['title'] ?? __('Neues Ticket')),
+            // varchar(200): Titel aus Portal/Mail/Problem-Meldung („[Ref] Zusammenfassung“) liefen sonst über.
+            'title' => StringHelper::truncate((string) ($payload['title'] ?? __('Neues Ticket')), 200, '…'),
             'description' => $payload['description'] ?? null,
             'status' => ServiceTicketStatus::Reported->value,
             'priority' => $priority->value,

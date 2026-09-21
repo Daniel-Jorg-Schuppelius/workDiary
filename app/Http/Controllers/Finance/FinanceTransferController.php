@@ -18,8 +18,8 @@ use App\Models\Finance\BillingTransfer;
 use App\Services\Ai\Suggestions\{ItemTextSuggestionService, SuggestionViewData};
 use App\Services\Finance\{BillingModeResolver, BillingPositionBuilder, BillingTransferException, BillingTransferService};
 use App\Services\Finance\Targets\{FacturationTargetRegistry, FileTarget};
+use App\Support\{ErrorText, Sqid};
 use App\Support\Query\DateRange;
-use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
@@ -265,7 +265,7 @@ class FinanceTransferController extends Controller {
         } catch (Throwable $e) {
             $this->service->markFailed($transfer, mb_substr($e->getMessage(), 0, 1000), $this->actor());
 
-            return back()->withErrors(['transfer' => __('finance.flash.failed') . ' ' . $e->getMessage()]);
+            return back()->withErrors(['transfer' => __('finance.flash.failed') . ' ' . ErrorText::for($e)]);
         }
 
         $this->service->markTransferred($transfer, $result->externalReference, $result->filePath, $this->actor());

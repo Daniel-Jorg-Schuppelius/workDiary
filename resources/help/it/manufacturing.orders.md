@@ -22,8 +22,8 @@ lavorazione, in attesa, bloccato, completato, annullato): il materiale si
 blocca con "Riservare", le conferme parziali registrano quantità
 prodotte, buone, di scarto e di rilavorazione, e i prodotti finiti si
 caricano a magazzino con "Consegnare" (variante e magazzino devono
-essere impostati). Dalla pagina di dettaglio assegni l'ordine a un
-centro di lavoro o lo affidi in conto lavoro a un fornitore; la vista di
+essere impostati). Dalla pagina di dettaglio assegna l'ordine a un
+centro di lavoro o lo affida in conto lavoro a un fornitore; la vista di
 pianificazione mostra l'MRP multilivello e gli indicatori di qualità.
 L'annullamento è irreversibile; creare, confermare e consegnare
 richiedono l'autorizzazione alle registrazioni di magazzino.

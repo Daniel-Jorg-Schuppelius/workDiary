@@ -12,13 +12,12 @@ namespace App\Plugins\Webdav\Http\Controllers;
 
 use App\Enums\Document\DocumentType;
 use App\Http\Controllers\Controller;
-use App\Models\WebdavConnection;
+use App\Models\{PluginState, WebdavConnection};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
-use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
+use App\Plugins\Webdav\WebdavPlugin;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
-use Throwable;
 
 /**
  * WebDAV-Admin-Panel (Feature 058, MVP-127): eine Ablage je Organisation
@@ -39,9 +38,8 @@ class WebdavAdminController extends Controller {
         return view('webdav::admin.index', [
             'connection' => $connection,
             'documentTypes' => DocumentType::cases(),
-            'health' => $connection instanceof WebdavConnection && $connection->isActive()
-                ? $this->probe($connection)
-                : null,
+            // Gespeicherter Stand statt Ping beim Seitenaufruf (UI-Fuzz 2026-09-21).
+            'healthState' => PluginState::forContext(WebdavPlugin::ID, $organization->id),
         ]);
     }
 
@@ -148,14 +146,5 @@ class WebdavAdminController extends Controller {
         }
 
         return $map;
-    }
-
-    /** @return array{ok: bool} */
-    private function probe(WebdavConnection $connection): array {
-        try {
-            return ['ok' => app(WebdavGatewayFactory::class)->for($connection)->ping()];
-        } catch (Throwable) {
-            return ['ok' => false];
-        }
     }
 }

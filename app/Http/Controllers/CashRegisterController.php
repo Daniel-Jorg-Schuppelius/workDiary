@@ -18,7 +18,7 @@ use App\Services\Accounting\AccountingSovereigntyResolver;
 use App\Services\Accounting\Posting\PostingInboxService;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Finance\CashBookService;
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -166,7 +166,7 @@ class CashRegisterController extends Controller {
                 'created_by' => (int) $auth->id,
             ]);
         } catch (InvalidArgumentException $e) {
-            return redirect()->route('cash-registers.show', $cashRegister)->with('error', $e->getMessage());
+            return redirect()->route('cash-registers.show', $cashRegister)->with('error', ErrorText::for($e));
         }
 
         // Beleg-Anhang (MVP-414-Datenmodell, Vollaudit 2026-07 M37): append-only —
@@ -199,7 +199,7 @@ class CashRegisterController extends Controller {
         try {
             $this->cashBook->reverse($entry, $data['reason'], (int) $auth->id);
         } catch (InvalidArgumentException $e) {
-            return redirect()->route('cash-registers.show', $cashRegister)->with('error', $e->getMessage());
+            return redirect()->route('cash-registers.show', $cashRegister)->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('cash-registers.show', $cashRegister)->with('status', __('Storno-Gegenbuchung erfasst.'));
@@ -236,7 +236,7 @@ class CashRegisterController extends Controller {
                 (int) $auth->id,
             );
         } catch (InvalidArgumentException $e) {
-            return redirect()->route('cash-registers.show', $cashRegister)->with('error', $e->getMessage());
+            return redirect()->route('cash-registers.show', $cashRegister)->with('error', ErrorText::for($e));
         }
 
         $message = ($closing->difference?->toFloat() ?? 0.0) === 0.0

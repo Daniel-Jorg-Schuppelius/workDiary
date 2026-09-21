@@ -23,7 +23,7 @@
 >
     {{-- Quell-Umschaltung via Alpine.data("reveal") (components.js) — CSP-Build-konform. --}}
     <x-form-group :legend="__('costcenter.field.basics')" icon="account_balance" tone="primary" cols="2"
-                  x-data="reveal(@js($sourceValue))">
+                  x-data="reveal({{ \Illuminate\Support\Js::from($sourceValue) }})">
         <div class="fieldset">
             <label class="fieldset-label" for="ccr-source">{{ __('costcenter.field.source') }}</label>
             <select id="ccr-source" name="source" class="select select-bordered w-full" required x-model="value">

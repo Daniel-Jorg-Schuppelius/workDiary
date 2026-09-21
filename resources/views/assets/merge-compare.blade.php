@@ -12,7 +12,7 @@
 
 @section('content')
 @if ($target === null)
-    <x-index-page :subtitle="__('Wähle das Zielgerät, in das „:name“ überführt werden soll. Alle Verknüpfungen (Sitzungen, Wartungen, Anhänge, Geräte-IDs …) wandern aufs Ziel; das Duplikat wird gelöscht.', ['name' => $source->name ?: $source->asset_no])">
+    <x-index-page :subtitle="__('Wählen Sie das Zielgerät, in das „:name“ überführt werden soll. Alle Verknüpfungen (Sitzungen, Wartungen, Anhänge, Geräte-IDs …) wandern aufs Ziel; das Duplikat wird gelöscht.', ['name' => $source->name ?: $source->asset_no])">
         <x-slot:actions>
             <x-icon-btn icon="arrow_back" size="sm" :href="route('assets.show', $source)" show-label>{{ __('Zurück') }}</x-icon-btn>
         </x-slot:actions>
@@ -61,7 +61,7 @@
         ];
     @endphp
 
-    <x-index-page :subtitle="__('Wähle pro Feld, ob der Wert des zu löschenden Geräts den Ziel-Wert ersetzen soll. Leere Ziel-Felder werden ohnehin aus der Quelle aufgefüllt; befüllte Ziel-Felder bleiben unangetastet.')">
+    <x-index-page :subtitle="__('Wählen Sie pro Feld, ob der Wert des zu löschenden Geräts den Ziel-Wert ersetzen soll. Leere Ziel-Felder werden ohnehin aus der Quelle aufgefüllt; befüllte Ziel-Felder bleiben unangetastet.')">
         <x-slot:actions>
             <x-icon-btn icon="arrow_back" size="sm" :href="route('assets.show', $source)" show-label>{{ __('Zurück') }}</x-icon-btn>
         </x-slot:actions>

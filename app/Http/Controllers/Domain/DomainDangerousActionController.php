@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Domain;
 use App\Http\Controllers\Controller;
 use App\Models\Domain\{DomainProjection, DomainProviderCommand};
 use App\Services\Domain\{DomainActionException, DomainCommandService, DomainDangerousActionService};
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use RuntimeException;
@@ -57,7 +58,7 @@ class DomainDangerousActionController extends Controller {
             $service->approve($command, ($request->user() ?? abort(401)));
             $service->dispatch($command);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('domain.flash.dangerous_approved'));

@@ -11,7 +11,7 @@ related:
 
 Los días festivos y de descanso se integran en la planificación y la
 gestión del tiempo; la vista muestra, para el año elegido, los festivos
-legales junto con las entradas propias. Al crear una entrada eliges el
+legales junto con las entradas propias. Al crear una entrada elige el
 tipo de repetición: única en una fecha fija, anual en la misma fecha o
 relativa, por ejemplo «tercer lunes del mes», indicando día de la
 semana, semana y opcionalmente el mes. Los festivos fijos duplicados se

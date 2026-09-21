@@ -60,5 +60,5 @@ trattamento fino alla conservazione. L'applicazione compone questa
 documentazione dallo stato reale del sistema: moduli attivi, intervalli di
 numerazione, termini di conservazione, ruoli e registrazione. Ciò che cambia
 nell'operatività cambia quindi anche nella documentazione, a differenza di un
-testo scritto una volta sola. Verificala prima di ogni controllo e integra le
+testo scritto una volta sola. La verifichi prima di ogni controllo e integri le
 parti organizzative che nessun sistema può conoscere.

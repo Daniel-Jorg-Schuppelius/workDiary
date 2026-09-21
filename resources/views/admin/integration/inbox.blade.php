@@ -29,7 +29,7 @@
 @endphp
 
 @section('content')
-<x-index-page :subtitle="__('Eingegangene Importe, die nicht automatisch zugeordnet werden konnten. Pro Eintrag entscheidest du: einem bestehenden Datensatz zuordnen, neu anlegen oder verwerfen — nichts wird blind angelegt.')">
+<x-index-page :subtitle="__('Eingegangene Importe, die nicht automatisch zugeordnet werden konnten. Pro Eintrag entscheiden Sie: einem bestehenden Datensatz zuordnen, neu anlegen oder verwerfen — nichts wird blind angelegt.')">
     <x-slot:actions>
         <a href="{{ route('admin.integration.mappings.index') }}" class="btn btn-sm btn-outline">{{ __('Zuordnungen verwalten') }}</a>
         <form method="GET" action="{{ route('admin.integration.inbox') }}" class="flex flex-nowrap items-center gap-2">
@@ -440,7 +440,7 @@
                         @unless ($item->isOpen())
                             <span class="badge badge-sm badge-success">{{ $statusLabels[$item->status] ?? $item->status }}</span>
                         @endunless
-                        <span class="ml-auto text-xs text-muted">{{ optional($item->created_at)->format('d.m.Y H:i') }}</span>
+                        <span class="ml-auto text-xs text-muted">{{ $item->created_at?->orgTz()->format('d.m.Y H:i') }}</span>
                     </div>
 
                     <div class="mb-3">
@@ -469,7 +469,7 @@
                         <div class="mb-3 flex flex-wrap items-baseline gap-x-2 rounded bg-base-200/40 p-2 text-sm">
                             <span class="font-medium tabular-nums">{{ $timeEntry->date?->format('d.m.Y') }}</span>
                             @if ($timeEntry->started_at)
-                                <span class="tabular-nums">{{ $timeEntry->started_at->format('H:i') }}–{{ $timeEntry->ended_at?->format('H:i') ?? '…' }}</span>
+                                <span class="tabular-nums">{{ $timeEntry->started_at->orgTz()->format('H:i') }}–{{ $timeEntry->ended_at?->orgTz()->format('H:i') ?? '…' }}</span>
                             @endif
                             <span class="tabular-nums">· {{ \App\Support\Formats::duration((int) $timeEntry->minutes, 'clock') }}</span>
                             @if ($timeEntry->project)
@@ -641,7 +641,7 @@
                         </div>
                     @else
                         <div class="text-right text-xs text-muted">
-                            {{ optional($item->resolved_at)->format('d.m.Y H:i') }}
+                            {{ $item->resolved_at?->orgTz()->format('d.m.Y H:i') }}
                         </div>
                     @endif
                 </x-card>

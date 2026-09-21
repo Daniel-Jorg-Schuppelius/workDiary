@@ -13,9 +13,6 @@
 
 @section('content')
 <x-index-page :subtitle="__('Versionierte Rate Cards (D10): Verleihakten frieren die angewendete Version ein — alte Fälle werden nie umbewertet.')">
-    @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
-    @endif
     <x-validation-errors />
 
     @can('create', \App\Models\Rental\RentalRateCard::class)

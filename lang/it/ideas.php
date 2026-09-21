@@ -14,7 +14,7 @@ return [
     ],
     'subtitle' => 'Mappe delle idee private e condivise — visibili solo al proprietario e alle persone esplicitamente autorizzate.',
     'empty' => 'Ancora nessuna mappa delle idee.',
-    'privacy_hint' => 'Le nuove mappe sono private: visibili solo a te finché non le condividi esplicitamente con persone o team.',
+    'privacy_hint' => 'Le nuove mappe sono private: visibili solo a Lei finché non le condivide esplicitamente con persone o team.',
     'confirm_delete' => 'Spostare la mappa nel cestino?',
 
     'action' => [
@@ -121,7 +121,7 @@ return [
     ],
 
     'notification' => [
-        'shared' => ':actor ha condiviso con te una mappa delle idee.',
+        'shared' => ':actor ha condiviso con Lei una mappa delle idee.',
     ],
 
     'export' => [
@@ -149,7 +149,7 @@ return [
         'saving' => 'Salvataggio …',
         'undo_delete' => 'Annulla eliminazione',
         'keys_hint' => 'Invio: nuovo nodo · Tab: rientro · Alt+↑/↓: sposta · F2: rinomina',
-        'conflict_title' => 'Modifica simultanea rilevata — la tua versione era obsoleta.',
+        'conflict_title' => 'Modifica simultanea rilevata — la sua versione era obsoleta.',
         'conflict_take_server' => 'Usa la versione del server',
         'conflict_retry_mine' => 'Riapplica la mia modifica',
         'new_node' => 'Nuova idea',
@@ -189,7 +189,7 @@ return [
     ],
 
     'error' => [
-        'conflict' => 'Il nodo è stato modificato nel frattempo — verifica lo stato attuale.',
+        'conflict' => 'Il nodo è stato modificato nel frattempo — verifichi lo stato attuale.',
         'cycle' => 'Un nodo non può essere spostato sotto un proprio discendente.',
         'root_immovable' => 'Il nodo radice non può essere spostato né eliminato.',
         'foreign_node' => 'Il nodo non appartiene a questa mappa.',

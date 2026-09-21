@@ -17,7 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Privacy\{Incident, Measure};
 use App\Services\Privacy\{IncidentService, SupervisoryAuthorityDirectory};
-use App\Support\Sqid;
+use App\Support\{Sqid, Tz};
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -62,7 +62,7 @@ class IncidentController extends Controller {
             'type' => ['required', Rule::enum(IncidentType::class)],
             'summary' => ['required', 'string', 'max:20000'],
             'affected' => ['nullable', 'string', 'max:20000'],
-            'occurred_at' => ['nullable', 'date'],
+            'occurred_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
             'controller_role' => ['nullable', 'in:controller,processor'],
             'controller_name' => ['nullable', 'string', 'max:255'],
             'controller_customer_id' => [
@@ -81,7 +81,7 @@ class IncidentController extends Controller {
             IncidentType::from($data['type']),
             $data['summary'],
             $data['affected'] ?? null,
-            isset($data['occurred_at']) ? Carbon::parse($data['occurred_at']) : null,
+            isset($data['occurred_at']) ? Carbon::instance(Tz::parse((string) $data['occurred_at'])) : null,
             $request->user(),
             \App\Enums\Privacy\ControllerRole::from($data['controller_role'] ?? 'controller'),
             $data['controller_name'] ?? null,
@@ -141,7 +141,7 @@ class IncidentController extends Controller {
             'report_type' => ['required', 'in:initial,follow_up'],
             'report_reference' => ['nullable', 'string', 'max:255'],
             'case_number' => ['nullable', 'string', 'max:255'],
-            'reported_at' => ['nullable', 'date'],
+            'reported_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
         ]);
 
         $knownAuthority = $this->authorityDirectory->find($data['authority_key'] ?? null);
@@ -157,7 +157,7 @@ class IncidentController extends Controller {
             $data['report_type'],
             $data['report_reference'] ?? null,
             $data['case_number'] ?? null,
-            isset($data['reported_at']) ? Carbon::parse($data['reported_at']) : null,
+            isset($data['reported_at']) ? Carbon::instance(Tz::parse((string) $data['reported_at'])) : null,
             $request->user(),
         );
 
@@ -167,10 +167,10 @@ class IncidentController extends Controller {
     /** AV-Vorfall: Verantwortlichen/Kunden informiert (Art. 33 Abs. 2). */
     public function notifyController(Request $request, Incident $incident): RedirectResponse {
         Gate::authorize('update', $incident);
-        $data = $request->validate(['notified_at' => ['nullable', 'date']]);
+        $data = $request->validate(['notified_at' => ['nullable', 'date', new \App\Rules\TimestampRange()]]);
         $this->service->notifyController(
             $incident,
-            isset($data['notified_at']) ? Carbon::parse($data['notified_at']) : null,
+            isset($data['notified_at']) ? Carbon::instance(Tz::parse((string) $data['notified_at'])) : null,
             $request->user(),
         );
 
@@ -227,8 +227,8 @@ class IncidentController extends Controller {
                 '',
                 __('Aktenzeichen') . ': ' . $incident->incident_number,
                 __('Art des Vorfalls') . ': ' . $incident->type->label(),
-                __('Zeitpunkt der Entdeckung') . ': ' . $incident->discovered_at?->format('d.m.Y H:i'),
-                __('Meldefrist (72 h)') . ': ' . $incident->authority_deadline_at?->format('d.m.Y H:i'),
+                __('Zeitpunkt der Entdeckung') . ': ' . Tz::toLocal($incident->discovered_at)?->format('d.m.Y H:i'),
+                __('Meldefrist (72 h)') . ': ' . Tz::toLocal($incident->authority_deadline_at)?->format('d.m.Y H:i'),
                 __('Risikoeinstufung') . ': ' . ($incident->risk_level ?? '—'),
                 __('Zahl betroffener Personen (ca.)') . ': ' . ($incident->affected_count ?? '—'),
                 '',

@@ -11,9 +11,9 @@
 namespace App\Plugins\Sharepoint\Http\Controllers;
 
 use App\Enums\Document\DocumentType;
-use App\Models\SharepointConnection;
+use App\Models\{PluginState, SharepointConnection};
 use App\Plugins\Sharepoint\Api\{SharepointDriveClient, SharepointOAuth};
-use App\Plugins\Sharepoint\SharepointConfig;
+use App\Plugins\Sharepoint\{SharepointConfig, SharepointPlugin};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -44,7 +44,6 @@ class SharepointAdminController extends ConnectionOAuthController {
         $selectedSiteId = trim((string) $request->query('site_id', (string) ($connection->site_id ?? '')));
         $sites = [];
         $drives = [];
-        $health = null;
         if ($connection instanceof SharepointConnection && trim((string) $connection->access_token) !== '') {
             $client = new SharepointDriveClient($connection);
             if ($siteSearch !== '') {
@@ -61,13 +60,6 @@ class SharepointAdminController extends ConnectionOAuthController {
                     $drives = [];
                 }
             }
-            if ($connection->isActive()) {
-                try {
-                    $health = ['ok' => $client->ping()];
-                } catch (Throwable) {
-                    $health = ['ok' => false];
-                }
-            }
         }
 
         return view('sharepoint::admin.index', [
@@ -78,7 +70,8 @@ class SharepointAdminController extends ConnectionOAuthController {
             'selectedSiteId' => $selectedSiteId,
             'sites' => $sites,
             'drives' => $drives,
-            'health' => $health,
+            // Gespeicherter Stand statt Ping beim Seitenaufruf (UI-Fuzz 2026-09-21).
+            'healthState' => PluginState::forContext(SharepointPlugin::ID, $organization->id),
         ]);
     }
 

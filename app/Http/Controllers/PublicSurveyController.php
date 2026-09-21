@@ -15,6 +15,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Models\Survey\SurveyInvitation;
 use App\Services\Survey\SurveyService;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 use RuntimeException;
@@ -63,7 +64,7 @@ class PublicSurveyController extends Controller {
         try {
             $service->submit($invitation, $answers);
         } catch (RuntimeException $e) {
-            return back()->withInput()->with('error', $e->getMessage());
+            return back()->withInput()->with('error', ErrorText::for($e));
         }
 
         return view('public.survey-thanks', ['survey' => $survey]);

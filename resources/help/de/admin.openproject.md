@@ -28,8 +28,8 @@ Posteingang (unzugeordnete Einträge):
 
 - OpenProject-Projekte ohne automatische Zuordnung sammeln sich hier
   (mit Anzahl, Dauer und Zeitraum).
-- Du ordnest sie einem bestehenden Projekt zu, legst ein neues an
-  oder verwirfst sie. Künftige Importe ordnen anhand der gespeicher­
+- Sie ordnen sie einem bestehenden Projekt zu, legen ein neues an
+  oder verwerfen sie. Künftige Importe ordnen anhand der gespeicher­
   ten Zuordnungen automatisch zu.
 
 Rückbuchung (Push):
@@ -47,5 +47,5 @@ Zuordnungen (Mappings):
   ändern oder löschen.
 
 Risiken: Die Rückbuchung verändert Daten im verbundenen OpenProject-
-System. Prüfe vor dem ersten Push die Mappings und die
+System. Prüfen Sie vor dem ersten Push die Mappings und die
 Standard-Aktivität, um Fehlbuchungen zu vermeiden.

@@ -14,7 +14,7 @@ return [
         'index' => 'Colecciones',
         'tree' => 'Árbol de colecciones',
     ],
-    'subtitle' => 'Ordena juntos notas, mapas de ideas, artículos, documentos y contenidos de aprendizaje; un contenido puede estar en varias colecciones.',
+    'subtitle' => 'Ordene juntos notas, mapas de ideas, artículos, documentos y contenidos de aprendizaje; un contenido puede estar en varias colecciones.',
     'action' => [
         'show_archived' => 'Mostrar archivadas',
         'hide_archived' => 'Ocultar archivadas',
@@ -31,14 +31,14 @@ return [
     'empty' => [
         'tree' => 'Aún no hay ninguna colección.',
         'selection' => 'Ninguna colección seleccionada.',
-        'items' => 'Esta colección está vacía o solo contiene contenidos que no puedes ver.',
+        'items' => 'Esta colección está vacía o solo contiene contenidos que no puede ver.',
     ],
     'help' => [
         'intro' => 'Una colección ordena contenidos, no concede acceso: cada persona solo ve lo que puede ver de todos modos.',
-        'add_from_detail' => 'Añade contenidos con «Añadir a colección» en su página de detalle.',
+        'add_from_detail' => 'Añada contenidos con «Añadir a colección» en su página de detalle.',
         'parent' => 'Como máximo :max niveles de profundidad.',
         'visibility' => 'Una colección privada solo la ve quien la creó.',
-        'create_first' => 'Primero crea una colección en «Colecciones».',
+        'create_first' => 'Primero cree una colección en «Colecciones».',
         'multiple_membership' => 'Un contenido puede estar en varias colecciones sin copiarse.',
     ],
     'visibility' => [
@@ -75,7 +75,7 @@ return [
         'too_deep' => 'Las colecciones se pueden anidar como máximo :max niveles.',
         'cycle' => 'Una colección no puede estar debajo de sí misma ni de una de sus subcolecciones.',
         'type_not_allowed' => 'Este tipo de contenido no se puede añadir a una colección.',
-        'item_not_found' => 'El contenido no existe o no es visible para ti.',
+        'item_not_found' => 'El contenido no existe o no es visible para usted.',
         'parent_invalid' => 'La colección superior elegida no existe (ya).',
     ],
     'type' => [
@@ -104,7 +104,7 @@ return [
             'mentioned' => 'mencionado',
         ],
         'empty' => 'Aún no hay referencias: ni desde aquí ni hacia aquí.',
-        'empty_picker' => 'No hay más contenidos a los que puedas remitir.',
+        'empty_picker' => 'No hay más contenidos a los que pueda remitir.',
         'help' => 'Una referencia une dos contenidos sin dar acceso: solo ve el otro lado quien puede abrirlo.',
         'confirm_remove' => '¿Quitar esta referencia? Ambos contenidos se conservan.',
         'flash' => [
@@ -132,7 +132,7 @@ return [
         'select_item' => 'Seleccionar «:title»',
         'updated' => 'Modificado',
         'empty' => 'No se encontraron contenidos.',
-        'empty_hint' => 'Relaja los filtros o elige otra colección.',
+        'empty_hint' => 'Relaje los filtros o elija otra colección.',
         'add_hits' => 'Añadir a colección',
     ],
     'import' => [
@@ -150,7 +150,7 @@ return [
             'title' => 'Importar de Obsidian',
             'action' => 'Importar Obsidian',
             'intro' => 'Lee una carpeta de Obsidian mediante una conexión de carpeta existente de la entrada de documentos (Nextcloud, OneDrive, Dropbox, Google Drive). Las subcarpetas pasan a ser colecciones, las etiquetas YAML y las #etiquetas se conservan y los [[wikilinks]] pasan a ser referencias.',
-            'none' => 'No hay ninguna conexión de carpeta activa. Configura primero en Administración › Entrada de documentos en la nube una conexión que llegue a la carpeta del almacén de Obsidian.',
+            'none' => 'No hay ninguna conexión de carpeta activa. Configure primero en Administración › Entrada de documentos en la nube una conexión que llegue a la carpeta del almacén de Obsidian.',
             'connection' => 'Conexión de carpeta',
             'vault_path' => 'Ruta del almacén',
             'vault_path_hint' => 'Relativa a la carpeta raíz de la conexión; vacío = toda la carpeta raíz. .obsidian/ y .trash/ quedan fuera.',
@@ -160,7 +160,7 @@ return [
             'action' => 'Importar OneNote',
             'intro' => 'Importa un bloc de notas mediante la conexión de OneNote de solo lectura: los grupos de secciones y las secciones pasan a ser colecciones, cada página una nota o un artículo. El contenido de la página se importa como texto.',
             'none' => 'No se encontraron blocs de notas.',
-            'error' => 'OneNote no está disponible ahora; revisa la conexión en el panel de Microsoft 365.',
+            'error' => 'OneNote no está disponible ahora; revise la conexión en el panel de Microsoft 365.',
             'notebook' => 'Bloc de notas',
         ],
         'flash' => [

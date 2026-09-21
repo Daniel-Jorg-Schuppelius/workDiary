@@ -143,7 +143,7 @@ return [
 
     'order' => [
         'title' => 'Ordini di produzione',
-        'subtitle' => 'Pianifica, rilascia e rendiconta gli ordini di produzione/montaggio.',
+        'subtitle' => 'Pianifichi, rilasci e rendiconti gli ordini di produzione/montaggio.',
         'empty' => 'Nessun ordine di produzione.',
         'action' => [
             'create' => 'Crea ordine',

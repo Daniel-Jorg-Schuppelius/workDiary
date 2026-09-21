@@ -117,7 +117,8 @@ final class ReportsOverviewService {
      * @return list<array{x: string, y: float}>
      */
     private function topProjects(Collection $entries): array {
-        $byProject = $entries->groupBy('project_id')
+        // Interne Zeiten ohne Projekt gruppierten unter '' — die int-Closure warf, /reports stand.
+        $byProject = $entries->whereNotNull('project_id')->groupBy('project_id')
             ->map(fn(Collection $group): int => (int) $group->sum('minutes'))
             ->sortDesc()
             ->take(self::TOP_PROJECTS);

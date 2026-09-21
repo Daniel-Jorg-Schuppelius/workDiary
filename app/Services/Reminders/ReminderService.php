@@ -101,7 +101,7 @@ class ReminderService {
                     $pendingOwnVacations,
                     ['n' => $pendingOwnVacations],
                 ),
-                description: __('Status bei deiner Führungskraft.'),
+                description: __('Status bei Ihrer Führungskraft.'),
                 url: route('vacations.index'),
                 icon: 'beach_access',
                 severity: 'info',

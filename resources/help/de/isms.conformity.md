@@ -12,7 +12,7 @@ related:
     - glossary.core
 ---
 
-Auf der Seite **„Zertifizierungen"** pflegst du je Norm und
+Auf der Seite **„Zertifizierungen"** pflegen Sie je Norm und
 Geltungsbereich den Konformitätsstatus – von der Lückenanalyse bis zum
 hinterlegten Zertifikat.
 

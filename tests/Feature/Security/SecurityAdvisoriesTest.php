@@ -156,4 +156,25 @@ final class SecurityAdvisoriesTest extends TestCase {
 
         $this->assertSame('Nicht ausnutzbar.', $advisory->refresh()->statement);
     }
+
+    /** UI-Fuzz 2026-09-21: Org-Admins sahen Abruf und Bewertungsformular — beides endete in 403. */
+    public function test_org_admin_sees_advisories_read_only(): void {
+        $this->setUpOrganization();
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $advisory = SecurityAdvisory::query()->create([
+            'external_id' => self::VULN_ID,
+            'ecosystem' => 'composer',
+            'package' => 'laravel/framework',
+            'installed_version' => '11.0.0',
+            'severity' => 'high',
+            'summary' => 'Testlücke',
+            'statement' => 'Nicht ausnutzbar.',
+        ]);
+
+        $this->actingAs($admin)->get(route('admin.security.index'))
+            ->assertOk()
+            ->assertSee('Nicht ausnutzbar.')
+            ->assertDontSee(route('admin.security.advisories.pull'), false)
+            ->assertDontSee(route('admin.security.advisories.statement', $advisory), false);
+    }
 }

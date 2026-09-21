@@ -14,7 +14,7 @@ return [
             'index' => 'Webhooks',
             'subtitle' => 'Notificaciones de eventos salientes hacia sistemas externos.',
             'help' => '¿Cómo funcionan los webhooks?',
-            'help_text' => 'Un webhook envía una carga JSON firmada mediante POST HTTPS a tu URL cuando ocurre un evento suscrito. La firma (HMAC-SHA256 sobre la marca de tiempo y el cuerpo) está en la cabecera X-WorkDiary-Signature; verifícala con la clave de firma. Tras varios intentos fallidos el endpoint se desactiva automáticamente.',
+            'help_text' => 'Un webhook envía una carga JSON firmada mediante POST HTTPS a su URL cuando ocurre un evento suscrito. La firma (HMAC-SHA256 sobre la marca de tiempo y el cuerpo) está en la cabecera X-WorkDiary-Signature; verifíquela con la clave de firma. Tras varios intentos fallidos el endpoint se desactiva automáticamente.',
             'create' => 'Crear webhook',
             'edit' => 'Editar webhook',
             'empty' => 'Aún no se han creado webhooks.',
@@ -49,7 +49,7 @@ return [
         ],
         'secret' => [
             'shown_once' => 'Clave de firma – visible solo ahora',
-            'shown_once_help' => 'Copia la clave ahora. Por motivos de seguridad no se volverá a mostrar en texto plano.',
+            'shown_once_help' => 'Copie la clave ahora. Por motivos de seguridad no se volverá a mostrar en texto plano.',
             'rotate_help' => 'La clave en texto plano se muestra una sola vez al crear/rotar.',
             'rotate_confirm' => '¿Generar una nueva clave de firma? La clave anterior queda inválida de inmediato.',
         ],
@@ -59,6 +59,7 @@ return [
             'deleted' => 'Webhook eliminado.',
             'secret_rotated' => 'Clave de firma rotada.',
             'test_sent' => 'Evento de prueba en cola.',
+            'test_failed' => 'No se pudo entregar el evento de prueba: consulte el historial de entregas.',
         ],
         'event' => [
             'openIssue.assigned' => 'Punto abierto asignado',

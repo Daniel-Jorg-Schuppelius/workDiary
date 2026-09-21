@@ -43,7 +43,7 @@
             </option>
         @endforeach
     </x-select-field>
-    <x-input-field name="description" :label="__('Beschreibung')" required maxlength="500" span="2" :value="old('description', $expense?->description)" />
+    <x-input-field name="description" :label="__('Beschreibung')" required maxlength="255" span="2" :value="old('description', $expense?->description)" />
 </x-form-group>
 
 <x-form-group :legend="__('Betrag')" icon="payments" tone="info" cols="3">

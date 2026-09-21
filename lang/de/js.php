@@ -18,7 +18,7 @@ return [
         'check_input' => 'Bitte Eingaben prüfen.',
         'save_failed' => 'Dialog konnte nicht gespeichert werden.',
         'load_failed' => 'Dialog konnte nicht geladen werden.',
-        'loading' => 'Lade…',
+        'loading' => 'Wird geladen …',
         'open_in_new_tab' => 'Seite in neuem Tab öffnen',
         'switch_to_new' => 'In den neuen Modus wechseln',
         'switch_to_legacy' => 'In den Legacy-Modus wechseln',
@@ -70,7 +70,7 @@ return [
         'options_failed' => 'Aufgaben/Aufträge konnten nicht geladen werden.',
     ],
     'http' => [
-        'session_expired' => 'Deine Sitzung ist abgelaufen — die Seite wird neu geladen.',
+        'session_expired' => 'Ihre Sitzung ist abgelaufen — die Seite wird neu geladen.',
     ],
     // KI-Tagvorschläge im Tag-Picker (Feature 143, MVP-711)
     'ai' => [

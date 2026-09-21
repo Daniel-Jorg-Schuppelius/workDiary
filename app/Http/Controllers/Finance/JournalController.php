@@ -116,7 +116,7 @@ class JournalController extends Controller {
         $this->assertOwnAccounts($organization->id, [$debitId, $creditId]);
 
         $amount = Decimal::of((string) $data['amount'], 2)->getValue();
-        $entry = $this->journal->draft($organization, [
+        $draft = [
             'booked_on' => CarbonImmutable::parse((string) $data['booked_on']),
             'document_on' => isset($data['document_on']) ? CarbonImmutable::parse((string) $data['document_on']) : null,
             'memo' => (string) $data['memo'],
@@ -125,11 +125,15 @@ class JournalController extends Controller {
                 ['accounting_account_id' => $debitId, 'debit' => $amount, 'credit' => '0.00'],
                 ['accounting_account_id' => $creditId, 'debit' => '0.00', 'credit' => $amount],
             ],
-        ], $actor);
+        ];
 
+        // Recht vor dem Schreiben prüfen und atomar festschreiben — sonst
+        // blieb bei 403 bzw. gesperrter Buchungshoheit ein Entwurf zurück.
         if ($request->boolean('post')) {
             abort_unless(Gate::allows(Permission::AccountingLedgerPost->value), 403);
-            $entry = $this->journal->post($entry, $actor);
+            $entry = $this->journal->postDirect($organization, $draft, $actor);
+        } else {
+            $entry = $this->journal->draft($organization, $draft, $actor);
         }
 
         return redirect()

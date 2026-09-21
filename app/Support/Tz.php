@@ -59,6 +59,16 @@ final class Tz {
         return self::isValid($configured) ? $configured : self::FALLBACK;
     }
 
+    /** Zeitzone einer bestimmten Organisation — für Jobs/Importe ohne gebundene currentOrganization. */
+    public static function ofOrganization(Organization $organization): string {
+        if (self::isValid($organization->timezone)) {
+            return (string) $organization->timezone;
+        }
+        $configured = (string) config('app.display_timezone', self::FALLBACK);
+
+        return self::isValid($configured) ? $configured : self::FALLBACK;
+    }
+
     /**
      * Wandelt einen Zeitpunkt in die aktive Anzeige-Zeitzone um.
      * Gibt null durch, damit Aufrufer mit optionalen Werten arbeiten können.

@@ -17,9 +17,6 @@
         <x-icon-btn icon="local_taxi" size="sm" :href="route('passenger-rides.index')" show-label>{{ __('passenger.rides.title') }}</x-icon-btn>
     </x-slot:actions>
 
-    @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
-    @endif
     <x-validation-errors />
 
     <x-card :title="__('passenger.masterdata.tariffs')" padding="p-0">

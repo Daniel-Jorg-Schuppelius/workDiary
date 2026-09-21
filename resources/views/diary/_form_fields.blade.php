@@ -126,7 +126,7 @@
 @endif
 
 <x-form-group :legend="__('Eintrag')" icon="edit" tone="primary">
-    <x-textarea-field name="content" :label="__('Inhalt')" required rows="8" placeholder="{{ __('Beschreibe den Vorgang...') }}" :value="old('content', $entry?->content ?? $prefillContent)" />
+    <x-textarea-field name="content" :label="__('Inhalt')" required rows="8" placeholder="{{ __('Beschreiben Sie den Vorgang...') }}" :value="old('content', $entry?->content ?? $prefillContent)" />
 
     <x-textarea-field name="response" :label="__('Rückmeldung')" rows="4" placeholder="{{ __('Antwort oder Notiz (optional) ...') }}" :value="old('response', $entry?->response)" />
 </x-form-group>

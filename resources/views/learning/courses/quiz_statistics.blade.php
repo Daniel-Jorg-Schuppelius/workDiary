@@ -46,7 +46,7 @@
                         <tr class="hover">
                             <td>{{ $attempt->enrollment?->learnerName() ?? '–' }}</td>
                             <td class="text-center">#{{ $attempt->attempt_no }}</td>
-                            <td class="text-sm">{{ $attempt->started_at?->translatedFormat('d.m.Y H:i') }}</td>
+                            <td class="text-sm">{{ $attempt->started_at?->orgTz()->translatedFormat('d.m.Y H:i') }}</td>
                             <td class="text-right font-mono text-sm">{{ $attempt->submitted_at ? ($attempt->score_percent ?? 0) . ' %' : '–' }}</td>
                             <td>
                                 @if ($attempt->submitted_at === null)

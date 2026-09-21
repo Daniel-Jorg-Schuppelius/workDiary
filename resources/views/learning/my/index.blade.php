@@ -49,7 +49,7 @@
                             @endif
                         </div>
                         <p class="mt-1 whitespace-pre-line text-base-content/80">{{ $note->body }}</p>
-                        <p class="mt-1 text-xs text-muted">{{ $note->occurred_at?->translatedFormat('d.m.Y H:i') }}</p>
+                        <p class="mt-1 text-xs text-muted">{{ $note->occurred_at?->orgTz()->translatedFormat('d.m.Y H:i') }}</p>
                     </li>
                 @endforeach
             </ul>

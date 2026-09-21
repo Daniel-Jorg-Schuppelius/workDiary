@@ -16,6 +16,7 @@ use App\Models\{Asset, ExternalReference, ExternalReferenceAlias, Organization, 
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, RemoteProvider, RemoteSession, TeamViewerClient};
 use App\Plugins\Support\PersistsTimeImportInbox;
 use App\Services\Integration\ProjectKeywordMatcher;
+use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\DateHelper;
 
@@ -301,15 +302,16 @@ class RemoteSessionImporter {
         // Zeit-Kürzel in der Sitzungsnotiz („+1h", „2h extra", „seit 8h")
         // ziehen den Beginn weiter vor — die Notiz bleibt als Beleg in der
         // Beschreibung stehen.
-        $startedAt = $this->applyNoteTimeShorthand($startedAt, $session);
+        $startedAt = $this->applyNoteTimeShorthand($startedAt, $session, Tz::ofOrganization($organization));
 
         $attributes = [
             'organization_id' => $organization->id,
             'project_id' => $project->id,
             'user_id' => $userId,
-            'date' => $startedAt->toDateString(),
-            'started_at' => $startedAt,
-            'ended_at' => $session->endedAt,
+            'date' => $startedAt->setTimezone(Tz::ofOrganization($organization))->toDateString(),
+            // Eloquent speichert die Wanduhr des Offsets (TeamViewer liefert ISO mit Offset): UTC erzwingen.
+            'started_at' => $startedAt->utc(),
+            'ended_at' => $session->endedAt->utc(),
             'kind' => TimeEntryKind::Work,
             'description' => $description,
         ];
@@ -404,7 +406,7 @@ class RemoteSessionImporter {
      *  - „+1h" / „+30min" bzw. „2h extra" / „extra 2h": notierte Zusatzzeit,
      *    mehrere Kürzel summieren sich. Deckel: note_extra_max_minutes.
      */
-    private function applyNoteTimeShorthand(CarbonImmutable $start, RemoteSession $session): CarbonImmutable {
+    private function applyNoteTimeShorthand(CarbonImmutable $start, RemoteSession $session, string $timezone): CarbonImmutable {
         $note = trim((string) $session->note);
         if ($note === '') {
             return $start;
@@ -414,7 +416,8 @@ class RemoteSessionImporter {
         if (preg_match('/\bseit\s+(\d[\d:.]*\s*(?:h|uhr)?)/iu', $note, $match) === 1) {
             $clock = DateHelper::parseClockTimeShorthand(trim($match[1]));
             if ($clock !== null) {
-                $candidate = $session->startedAt->setTime($clock[0], $clock[1]);
+                // Uhrzeit der Notiz ist Ortszeit.
+                $candidate = $session->startedAt->setTimezone($timezone)->setTime($clock[0], $clock[1])->utc();
                 if ($candidate < $start) {
                     return $candidate;
                 }
@@ -571,7 +574,7 @@ class RemoteSessionImporter {
             return false;
         }
 
-        $tz = \App\Support\Tz::isValid($organization->timezone) ? (string) $organization->timezone : \App\Support\Tz::FALLBACK;
+        $tz = Tz::ofOrganization($organization);
         $closure = app(\App\Services\TimeApproval\MonthClosureService::class);
 
         return ($entry->started_at !== null && $closure->isPeriodLockedForUser($user, CarbonImmutable::instance($entry->started_at)->setTimezone($tz)))
@@ -672,8 +675,8 @@ class RemoteSessionImporter {
             'remote_id' => $session->remoteId,
             'alias' => $session->alias,
             'session_id' => $session->sessionId,
-            'started_at' => $session->startedAt,
-            'ended_at' => $session->endedAt,
+            'started_at' => $session->startedAt->utc(),
+            'ended_at' => $session->endedAt->utc(),
             'note' => $session->note,
             'status' => $status,
         ]);

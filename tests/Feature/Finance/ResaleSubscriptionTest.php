@@ -17,6 +17,7 @@ use App\Enums\User\Permission;
 use App\Models\{Article, Customer, ForeignCustomer, Organization};
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Exceptions;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -61,6 +62,31 @@ class ResaleSubscriptionTest extends TestCase {
             ->assertSee(__('resale.title.index'))
             ->assertSee(__('resale.empty.subscriptions'));
         $this->actingAs($this->orgAdmin())->get(route('finance.resale.create'))->assertOk()->assertSee(__('resale.dialog.title_new'));
+    }
+
+    /** UI-Fuzz 2026-09-21: eine doppelte Anbieter-Kennung endete in 1062 resale_subs_org_provider_ext_uq (HTTP 500). */
+    public function test_duplicate_external_id_is_a_validation_error(): void {
+        $admin = $this->orgAdmin();
+        $this->actingAs($admin)->post(route('finance.resale.store'), $this->payload())->assertRedirect();
+
+        $this->actingAs($admin)->post(route('finance.resale.store'), $this->payload())->assertSessionHasErrors('external_id');
+
+        // Andere Anbieter dürfen dieselbe Kennung führen; das Abo selbst bleibt speicherbar.
+        $this->actingAs($admin)->post(route('finance.resale.store'), $this->payload(['provider' => 'manual']))->assertSessionHasNoErrors();
+        $subscription = ResaleSubscription::query()->where('provider', 'qualityhosting')->firstOrFail();
+        $this->actingAs($admin)->put(route('finance.resale.update', $subscription->sqid), $this->payload())->assertSessionHasNoErrors();
+    }
+
+    /** UI-Fuzz 2026-09-21: Menge × Stückpreis sprengte das Periodensoll resale_periods decimal(12,2) (1264). */
+    public function test_period_amount_beyond_the_column_is_a_field_error(): void {
+        Exceptions::fake();
+
+        $this->actingAs($this->orgAdmin())
+            ->post(route('finance.resale.store'), $this->payload(['quantity' => 100000, 'sale_unit_price' => '9999999']))
+            ->assertSessionHasErrors('quantity');
+
+        $this->assertSame(0, ResaleSubscription::query()->count());
+        Exceptions::assertNothingReported();
     }
 
     public function test_store_creates_subscription_with_customer_and_plans_periods(): void {

@@ -27,5 +27,5 @@ sie meldet. Ein bereits übernommener Termin wird dabei nicht still gelöscht,
 sondern als abgesagt gekennzeichnet.
 
 **Grenzen:** Die Anbindung liest Buchungen; sie legt keine Buchungsseiten an
-und ändert keine Verfügbarkeiten. Verfügbarkeiten pflegst du weiterhin dort,
+und ändert keine Verfügbarkeiten. Verfügbarkeiten pflegen Sie weiterhin dort,
 wo die Buchungsseite verwaltet wird.

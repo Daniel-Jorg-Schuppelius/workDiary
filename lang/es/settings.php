@@ -29,7 +29,7 @@ return [
     ],
     'weather' => [
         'heading' => 'Consulta automática del clima',
-        'description' => 'Al crear un protocolo, obtén automáticamente una instantánea del clima para su ubicación y momento — como evidencia. Los proyectos pueden anularlo.',
+        'description' => 'Al crear un protocolo, obtener automáticamente una instantánea del clima para su ubicación y momento — como evidencia. Los proyectos pueden anularlo.',
         'auto_fetch' => 'Consultar el clima automáticamente al crear un protocolo',
         'auto_fetch_hint' => 'Solo si hay coordenadas de ubicación; de lo contrario no ocurre nada. Predeterminado: desactivado.',
         'provider' => 'Servicio meteorológico',

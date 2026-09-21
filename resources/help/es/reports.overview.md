@@ -12,8 +12,8 @@ related:
 
 Los informes condensan datos operativos por período, empleados,
 equipos, proyectos, recursos o referencia financiera; los valores
-visibles dependen de permisos, organización activa y filtros. Comprueba
-primero el período y los filtros, luego los totales y anomalías, y usa
+visibles dependen de permisos, organización activa y filtros. Compruebe
+primero el período y los filtros, luego los totales y anomalías, y use
 los drilldowns para rastrear cada indicador hasta los registros que lo
 originan; las exportaciones aplican el estado de filtro actual. Los
 informes no son una fuente de datos propia: las correcciones se hacen

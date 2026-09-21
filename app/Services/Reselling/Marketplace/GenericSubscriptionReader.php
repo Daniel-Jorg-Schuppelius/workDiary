@@ -72,15 +72,15 @@ final class GenericSubscriptionReader {
      */
     public function __construct(private readonly int $maxRows = self::XLSX_MAX_ROWS) {}
 
-    public function read(string $file, SubscriptionProvider $provider = SubscriptionProvider::Other): PurchasesImport {
-        $name = basename($file);
+    public function read(string $file, SubscriptionProvider $provider = SubscriptionProvider::Other, ?string $displayName = null): PurchasesImport {
+        $name = $displayName ?? basename($file);
         if (! File::isReadable($file, false)) {
             throw new RuntimeException((string) __('resale_import.file.unreadable', ['file' => $name]));
         }
         $skipped = [];
         [$headers, $rows] = str_ends_with(mb_strtolower($file), '.xlsx') || str_ends_with(mb_strtolower($file), '.xlsm')
-            ? $this->readXlsx($file)
-            : $this->readCsv($file, $skipped);
+            ? $this->readXlsx($file, $name)
+            : $this->readCsv($file, $skipped, $name);
 
         $index = $this->columnIndex($headers);
         $missing = [];
@@ -221,7 +221,7 @@ final class GenericSubscriptionReader {
      * @param  array<int, string>  $skipped  Zeilennummer → Befund (Zeile fehlt dann als null in den Zeilen)
      * @return array{0: list<string>, 1: array<int, array<int, Cell>|null>}  Kopfzeile, Zeilennummer → Zellen
      */
-    private function readCsv(string $file, array &$skipped): array {
+    private function readCsv(string $file, array &$skipped, string $name): array {
         $delimiter = CSVDocumentParser::detectDelimiter($file);
         $headers = [];
         $rows = [];
@@ -245,7 +245,7 @@ final class GenericSubscriptionReader {
             $rows[(int) $line] = $cells;
         }
         if ($headers === []) {
-            throw new RuntimeException((string) __('resale_import.file.no_header', ['file' => basename($file)]));
+            throw new RuntimeException((string) __('resale_import.file.no_header', ['file' => $name]));
         }
 
         return [$headers, $rows];
@@ -254,10 +254,10 @@ final class GenericSubscriptionReader {
     /**
      * @return array{0: list<string>, 1: array<int, array<int, Cell>|null>}  Kopfzeile, Zeilennummer → Zellen
      */
-    private function readXlsx(string $file): array {
-        $sheet = self::openXlsx($file, $this->maxRows, 'resale_import.file.xlsx_unreadable')->getFirstSheet();
+    private function readXlsx(string $file, string $name): array {
+        $sheet = self::openXlsx($file, $this->maxRows, 'resale_import.file.xlsx_unreadable', $name)->getFirstSheet();
         if ($sheet === null) {
-            throw new RuntimeException((string) __('resale_import.file.no_sheet', ['file' => basename($file)]));
+            throw new RuntimeException((string) __('resale_import.file.no_sheet', ['file' => $name]));
         }
         $headers = array_values($sheet->getHeaderNames());
         $rows = [];

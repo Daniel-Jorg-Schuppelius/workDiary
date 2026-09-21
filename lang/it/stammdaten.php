@@ -11,7 +11,7 @@
 return [
     'identifier' => [
         'heading' => 'Anagrafiche da verificare',
-        'hint' => 'Questi dati non superano la verifica. Correggili qui — la modifica viene trasmessa ai servizi collegati.',
+        'hint' => 'Questi dati non superano la verifica. Li corregga qui — la modifica viene trasmessa ai servizi collegati.',
         'suggestion' => 'Proposta: :value',
         'context' => [
             'bank_account' => 'Coordinate bancarie «:label»',

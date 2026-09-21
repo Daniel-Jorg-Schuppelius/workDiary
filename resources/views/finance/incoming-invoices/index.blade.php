@@ -48,7 +48,7 @@
                     <a class="link font-medium" href="{{ route('finance.incoming-invoices.show', $document) }}">{{ $document->title }}</a>
                 </td>
                 <td class="max-w-md truncate text-sm text-base-content/70">{{ $document->description ?? '—' }}</td>
-                <td class="tabular-nums text-sm">{{ $document->created_at?->format('d.m.Y H:i') }}</td>
+                <td class="tabular-nums text-sm">{{ $document->created_at?->orgTz()->format('d.m.Y H:i') }}</td>
                 <td class="text-sm">{{ $document->creator?->name ?? '—' }}</td>
                 <td class="text-right">
                     <x-icon-btn icon="download" tone="ghost" size="xs"

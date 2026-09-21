@@ -28,12 +28,12 @@ fichaje, registros y correcciones trazables.
 
 ## Procedimiento recomendado
 
-1. Empieza con **«Nueva entrada»** en la barra superior o con el
+1. Empiece con **«Nueva entrada»** en la barra superior o con el
    **cronómetro** (también como mosaico del panel).
-2. Asigna el tiempo en curso a un cliente, proyecto u orden — la
+2. Asigne el tiempo en curso a un cliente, proyecto u orden — la
    asignación se puede cambiar después.
-3. Al parar se crea el registro; revísalo en la vista semanal y
-   divídelo si hace falta.
+3. Al parar se crea el registro; revíselo en la vista semanal y
+   divídalo si hace falta.
 4. Las **pausas** se apuntan aparte en el cierre del día, no en el
    registro de tiempo.
 

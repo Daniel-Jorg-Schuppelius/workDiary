@@ -19,7 +19,7 @@ use App\Models\AssetCompliance\{AssetComplianceAssignment, AssetComplianceProfil
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Asset\AssetBlockService;
 use App\Services\AssetCompliance\AssetComplianceService;
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -120,7 +120,7 @@ class AssetComplianceDashboardController extends Controller {
                 \Illuminate\Support\Carbon::parse($data['valid_until']),
             );
         } catch (\InvalidArgumentException $e) {
-            return back()->withErrors(['reason_text' => $e->getMessage()]);
+            return back()->withErrors(['reason_text' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Befristete Ausnahmefreigabe erteilt (auditiert).'));

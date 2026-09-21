@@ -52,21 +52,24 @@ final class NotificationText {
      *
      * @param  array<string, mixed>  $data
      */
-    public static function message(array $data): string {
+    public static function message(array $data, ?string $tz = null): string {
         $key = $data['message_key'] ?? null;
         if (! is_string($key) || $key === '') {
             return (string) ($data['message'] ?? '');
         }
 
-        return self::render($key, (array) ($data['message_params'] ?? []));
+        return self::render($key, (array) ($data['message_params'] ?? []), $tz);
     }
 
-    /** @param  array<string, mixed>  $params */
-    public static function render(string $key, array $params): string {
-        return (string) __($key, array_map(self::param(...), $params));
+    /**
+     * @param  array<string, mixed>  $params
+     * @param  string|null  $tz  Zielzone für Zeitpunkte; ohne Angabe die aktive Anzeige-Zeitzone
+     */
+    public static function render(string $key, array $params, ?string $tz = null): string {
+        return (string) __($key, array_map(static fn(mixed $value): string => self::param($value, $tz), $params));
     }
 
-    private static function param(mixed $value): string {
+    private static function param(mixed $value, ?string $tz): string {
         if (is_array($value) && isset($value['key'])) {
             return Trans::or((string) $value['key'], isset($value['fallback']) ? (string) $value['fallback'] : null);
         }
@@ -75,7 +78,7 @@ final class NotificationText {
             try {
                 $dt = CarbonImmutable::parse($value);
                 if (isset($m[1])) {
-                    $dt = $dt->setTimezone(Tz::current());
+                    $dt = $dt->setTimezone($tz ?? Tz::current());
                 }
                 // locale() ist laut Signatur auch Getter (string|static) —
                 // instanceof hält die Kette typsicher.

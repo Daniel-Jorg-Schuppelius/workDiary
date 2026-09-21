@@ -15,7 +15,7 @@ un área en el selector (arriba en la cabecera), la navegación muestra solo las
 módulos ni datos, y todo sigue accesible mediante la búsqueda global y **Todas
 las funciones**.
 
-## Qué defines aquí
+## Qué define aquí
 
 - **Áreas ofrecidas:** qué áreas aparecen en el selector. «Mostrar todo» está
   siempre disponible.

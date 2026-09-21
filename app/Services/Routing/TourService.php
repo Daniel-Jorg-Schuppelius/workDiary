@@ -15,6 +15,7 @@ use App\Enums\Tour\TourStatus;
 use App\Enums\Travel\TravelLogVehicle;
 use App\Models\{DiaryEntry, Tour, TravelLog, User};
 use App\Services\Travel\TravelLogService;
+use App\Support\Tz;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Carbon;
@@ -126,7 +127,9 @@ class TourService {
      */
     private function fixateForTour(DiaryEntry $entry, Tour $tour): array {
         $date = $tour->tour_date ?? CarbonImmutable::today();
-        $base = CarbonImmutable::parse($date->toDateString());
+        // Zeitfenster sind Ortszeit, start_at/end_at UTC (UI-Fuzz 2026-09-21).
+        $organization = $entry->organization ?? $tour->organization;
+        $base = CarbonImmutable::parse($date->toDateString(), $organization !== null ? Tz::ofOrganization($organization) : Tz::current());
 
         $start = $entry->time_window_start
             ? $base->setTimeFromTimeString((string) $entry->time_window_start)
@@ -140,8 +143,8 @@ class TourService {
         return [
             'mode' => Mode::Fixed,
             'scheduled_for' => $date,
-            'start_at' => $start->toDateTimeString(),
-            'end_at' => $end->toDateTimeString(),
+            'start_at' => $start->utc()->toDateTimeString(),
+            'end_at' => $end->utc()->toDateTimeString(),
         ];
     }
 

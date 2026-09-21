@@ -72,7 +72,7 @@
                     </span>
                 </td>
                 <td><x-status-badge :tone="$event->severity->tone()" size="sm">{{ $event->severity->label() }}</x-status-badge></td>
-                <td class="text-sm">{{ optional($event->occurred_at)->format('d.m.Y H:i') }}</td>
+                <td class="text-sm">{{ $event->occurred_at?->orgTz()->format('d.m.Y H:i') }}</td>
                 <td class="text-sm text-base-content/70">{{ $event->location ?? '–' }}</td>
                 <td class="text-sm">{{ $event->reporter?->name ?? '–' }}</td>
                 <td><x-status-badge :tone="$event->status->tone()" size="sm">{{ $event->status->label() }}</x-status-badge></td>

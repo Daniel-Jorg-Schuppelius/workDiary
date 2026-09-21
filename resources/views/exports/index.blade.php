@@ -53,9 +53,6 @@
                aria-label="{{ __('Jahr') }}" />
     </x-filter-bar>
 
-    @if (session('status'))
-        <div role="alert" class="alert alert-success"><span>{{ session('status') }}</span></div>
-    @endif
     @if ($exports->isEmpty())
         <x-empty-state framed
             icon="receipt_long"

@@ -201,7 +201,7 @@ const onInput = (root) => {
         setStatus(root, "");
         renderHint(
             root,
-            __("Tippe mindestens 2 Zeichen, um Ergebnisse zu sehen."),
+            __("Geben Sie mindestens 2 Zeichen ein, um Ergebnisse zu sehen."),
         );
         return;
     }
@@ -256,7 +256,7 @@ const openDialog = () => {
             setStatus(root, "");
             renderHint(
                 root,
-                __("Tippe mindestens 2 Zeichen, um Ergebnisse zu sehen."),
+                __("Geben Sie mindestens 2 Zeichen ein, um Ergebnisse zu sehen."),
             );
         }
         setTimeout(() => input.focus(), 30);

@@ -60,6 +60,7 @@ return [
         'disconnected' => 'CalDAV connection disconnected. Already published appointments remain externally.',
         'no_connection' => 'No active CalDAV connection.',
         'invalid_url' => 'The base URL must start with http:// or https://.',
+        'path_outside_base' => 'The calendar URL is not below the base URL. Please enter the path relative to the base URL.',
         'password_required' => 'A new connection requires an app password.',
     ],
 ];

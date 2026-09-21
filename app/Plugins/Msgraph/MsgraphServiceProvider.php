@@ -42,14 +42,12 @@ class MsgraphServiceProvider extends PluginServiceProviderBase {
 
         $this->app->singleton(Api\MsgraphTasksOAuth::class, fn(): Api\MsgraphTasksOAuth => new Api\MsgraphTasksOAuth());
 
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                Console\MsgraphCalendarImportCommand::class,
-                Console\MsgraphPublishCommand::class,
-                Console\MsgraphSubscriptionsCommand::class,
-                Console\MsgraphTodoSyncCommand::class,
-            ]);
-        }
+        $this->commands([
+            Console\MsgraphCalendarImportCommand::class,
+            Console\MsgraphPublishCommand::class,
+            Console\MsgraphSubscriptionsCommand::class,
+            Console\MsgraphTodoSyncCommand::class,
+        ]);
     }
 
     protected function bootPlugin(): void {

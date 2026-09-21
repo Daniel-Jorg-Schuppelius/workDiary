@@ -66,6 +66,29 @@ class AiInvocationJobTest extends TestCase {
         $this->assertSame([], RecordingAiHandler::$failures);
     }
 
+    /** UI-Fuzz 2026-09-21: unter QUEUE_CONNECTION=sync warf der Retry-Auslöser in die auslösende Nutzeraktion (HTTP 500). */
+    public function test_retryable_failure_under_sync_queue_reports_instead_of_throwing(): void {
+        $connection = AiProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        AiCapabilitySetting::factory()->create([
+            'organization_id' => $this->organization->id,
+            'capability' => self::CAPABILITY,
+            'enabled' => true,
+            'allowed_connection_ids' => [$connection->id],
+        ]);
+        FakeAiProviderFactory::current()->failFor($connection);
+
+        AiInvocationJob::dispatchSync(
+            (int) $this->organization->id,
+            self::CAPABILITY,
+            new FormulateRequest(text: 'x'),
+            RecordingAiHandler::class,
+            ['idempotency_key' => 'test-3']
+        );
+
+        $this->assertSame([], RecordingAiHandler::$results);
+        $this->assertCount(1, RecordingAiHandler::$failures);
+    }
+
     public function test_module_gate_makes_job_a_noop_on_free_plan(): void {
         $freeOrg = Organization::factory()->free()->create();
         $connection = AiProviderConnection::factory()->create(['organization_id' => $freeOrg->id]);

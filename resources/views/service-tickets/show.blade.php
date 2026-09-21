@@ -52,9 +52,9 @@
 
         <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
             <div><dt class="text-muted">{{ __('Gemeldet von') }}</dt><dd>{{ $ticket->reportedBy?->name ?: '—' }}</dd></div>
-            <div><dt class="text-muted">{{ __('Gemeldet am') }}</dt><dd>{{ $ticket->reported_at?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Gemeldet am') }}</dt><dd>{{ $ticket->reported_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
             <div><dt class="text-muted">{{ __('Bearbeiter') }}</dt><dd>{{ $ticket->assignedTo?->name ?: '—' }}</dd></div>
-            <div><dt class="text-muted">{{ __('Bestätigt') }}</dt><dd>{{ $ticket->acknowledged_at?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Bestätigt') }}</dt><dd>{{ $ticket->acknowledged_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
             <div><dt class="text-muted">{{ __('Reaktion bis') }}</dt><dd class="flex items-center gap-2">{{ $reactDue?->translatedFormat('d.m.Y H:i') ?: '—' }}@if ($reactDue)<x-status-badge :tone="$reactionStatus->tone()" size="sm" outline>{{ $reactionStatus->label() }}</x-status-badge>@endif</dd></div>
             <div><dt class="text-muted">{{ __('Lösung bis') }}</dt><dd>{{ $resDue?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
             <div><dt class="text-muted">{{ __('Asset') }}</dt><dd>{{ $ticket->asset?->name ?: '—' }}</dd></div>

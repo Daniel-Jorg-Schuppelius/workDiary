@@ -62,9 +62,9 @@ final class MarketplaceImporter {
             $record = $this->record($organization, $user, $provider, $kind, $files[$kind]);
             try {
                 $parsed = match ($kind) {
-                    ResaleImport::KIND_PURCHASES => $this->telekomReader->read($files[$kind]['path']),
-                    ResaleImport::KIND_CONTRACTS => $this->qualityHostingReader->read($files[$kind]['path']),
-                    default => $this->genericReader->read($files[$kind]['path'], $genericProvider),
+                    ResaleImport::KIND_PURCHASES => $this->telekomReader->read($files[$kind]['path'], $files[$kind]['name']),
+                    ResaleImport::KIND_CONTRACTS => $this->qualityHostingReader->read($files[$kind]['path'], $files[$kind]['name']),
+                    default => $this->genericReader->read($files[$kind]['path'], $genericProvider, $files[$kind]['name']),
                 };
                 $imports[$kind] = ['record' => $record, 'import' => $parsed];
                 $record->rows_total = count($parsed->entitlements);
@@ -86,7 +86,7 @@ final class MarketplaceImporter {
         if (isset($files[ResaleImport::KIND_PRICELIST])) {
             $record = $this->record($organization, $user, SubscriptionProvider::QualityHosting, ResaleImport::KIND_PRICELIST, $files[ResaleImport::KIND_PRICELIST]);
             try {
-                $list = $this->priceListReader->read($files[ResaleImport::KIND_PRICELIST]['path']);
+                $list = $this->priceListReader->read($files[ResaleImport::KIND_PRICELIST]['path'], $files[ResaleImport::KIND_PRICELIST]['name']);
                 $record->forceFill($this->upsertPriceList($organization, $record, $list->entries, $list->validFrom ?? $reference))->save();
             } catch (Throwable $e) {
                 $record->forceFill(['status' => ImportStatus::Failed, 'error' => $e->getMessage()])->save();

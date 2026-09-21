@@ -17,7 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Claims\{ClaimCase, ClaimFinancialOutcome};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Claims\ClaimFinancialService;
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -60,7 +60,7 @@ class ClaimFinancialController extends Controller {
         try {
             $this->service->approve($outcome, $request->user() ?? abort(401));
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['outcome' => $e->getMessage()]);
+            return back()->withErrors(['outcome' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Folge freigegeben (Vier-Augen-Prinzip).'));
@@ -72,7 +72,7 @@ class ClaimFinancialController extends Controller {
         try {
             $result = $this->service->execute($outcome, $request->user() ?? abort(401));
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['outcome' => $e->getMessage()]);
+            return back()->withErrors(['outcome' => ErrorText::for($e)]);
         }
 
         if ($result->result_invoice_id !== null) {
@@ -96,7 +96,7 @@ class ClaimFinancialController extends Controller {
         try {
             $this->service->recordExternalReference($outcome, $data['external_reference']);
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['outcome' => $e->getMessage()]);
+            return back()->withErrors(['outcome' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Externe Belegnummer nachgetragen.'));

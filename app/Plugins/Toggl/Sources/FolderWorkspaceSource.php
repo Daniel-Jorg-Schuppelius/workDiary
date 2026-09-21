@@ -18,6 +18,8 @@ final class FolderWorkspaceSource implements WorkspaceSourceInterface {
     public function __construct(
         private readonly string $workspacePath,
         private readonly TogglWorkspaceReader $reader = new TogglWorkspaceReader,
+        /** Zeitzone der Export-Uhrzeiten (Organisation). */
+        private readonly ?string $timezone = null,
     ) {}
 
     public function clients(): array {
@@ -33,6 +35,6 @@ final class FolderWorkspaceSource implements WorkspaceSourceInterface {
     }
 
     public function entries(): array {
-        return $this->reader->entries($this->workspacePath);
+        return $this->reader->entries($this->workspacePath, $this->timezone);
     }
 }

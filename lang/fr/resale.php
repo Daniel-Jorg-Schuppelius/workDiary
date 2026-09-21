@@ -126,6 +126,7 @@ return [
         'customer_required' => 'Veuillez choisir un client.',
         'foreign_required' => 'Veuillez choisir un client final.',
         'ends_on_required' => 'Un renouvellement résilié exige une date de fin.',
+        'amount_too_large' => 'Quantité × prix unitaire dépasse le montant de période maximal enregistrable.',
     ],
     'kind' => [
         'license' => 'Licence',
@@ -687,7 +688,7 @@ return [
     // Review 2026-09-10 (Serienlauf)
     'auto_draft' => [
         'title' => 'Facturation récurrente (facturation locale)',
-        'description' => 'Chaque jour (tâche planifiée), un brouillon de facture est créé pour chaque destinataire à facturation locale à partir des périodes échues — le même brouillon que par clic, avec une ligne par abonnement et période et des liens proposés. Les destinataires facturés via Lexoffice/DATEV ne sont pas concernés. Tu finalises les brouillons dans la liste des factures.',
+        'description' => 'Chaque jour (tâche planifiée), un brouillon de facture est créé pour chaque destinataire à facturation locale à partir des périodes échues — le même brouillon que par clic, avec une ligne par abonnement et période et des liens proposés. Les destinataires facturés via Lexoffice/DATEV ne sont pas concernés. Vous finalisez les brouillons dans la liste des factures.',
         'enabled' => 'Facturation récurrente active',
         'lead_days' => 'Anticipation (jours)',
         'lead_days_hint' => '0 = périodes échues uniquement ; 7 = aussi les périodes commençant dans les 7 prochains jours.',

@@ -35,11 +35,9 @@ class WebdavServiceProvider extends PluginServiceProviderBase {
         // alle Mirror-Plugins — Observer/Dispatcher sehen dieselben Targets.
         $this->app->singletonIf(MirrorTargetRegistry::class);
 
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                Console\WebdavMirrorCommand::class,
-            ]);
-        }
+        $this->commands([
+            Console\WebdavMirrorCommand::class,
+        ]);
     }
 
     protected function bootPlugin(): void {

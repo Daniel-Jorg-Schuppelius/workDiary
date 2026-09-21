@@ -19,9 +19,6 @@
         <x-icon-btn icon="query_stats" size="sm" :href="route('asset-compliance.reports.index')" show-label>{{ __('Auditbericht') }}</x-icon-btn>
     </x-slot:actions>
 
-    @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
-    @endif
     <x-validation-errors />
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

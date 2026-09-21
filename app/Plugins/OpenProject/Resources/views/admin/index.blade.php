@@ -26,9 +26,6 @@
                 {{ __('Projekte und Work Packages werden mit workDiary abgeglichen, anschließend die Zeiteinträge importiert. Zuordenbare Einträge werden direkt im Projekt gebucht, der Rest landet in der zentralen Zuordnungs-Inbox.') }}
             </p>
 
-            @if (session('status'))
-                <div class="alert alert-success mb-3 text-sm">{{ session('status') }}</div>
-            @endif
             @if ($errors->any())
                 <div class="alert alert-error mb-3 text-sm">{{ $errors->first() }}</div>
             @endif

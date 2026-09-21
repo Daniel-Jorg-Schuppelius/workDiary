@@ -23,7 +23,7 @@ corretto registrazione per registrazione.
 
 ## Prerequisiti
 
-- Un cliente esistente (vedi clienti & fornitori).
+- Un cliente esistente (si veda clienti & fornitori).
 - Il diritto di gestire i progetti.
 - Per la fatturazione: regole chiarite (tariffa oraria, forfait,
   fatturabile sì/no).

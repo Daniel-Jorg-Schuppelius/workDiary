@@ -7,9 +7,11 @@
  * License      : AGPL-3.0-or-later
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
-/*
- * Übersetzungen (es) — Fallback auf Englisch, bis übersetzt.
- * Für echte Übersetzungen dieses require durch ein Array ersetzen.
- */
 
-return require __DIR__ . '/../en/branding.php';
+return [
+    'pdf' => [
+        'timesheet' => 'Hoja de horas',
+        'invoice' => 'Factura',
+        'diary' => 'Diario de obra',
+    ],
+];

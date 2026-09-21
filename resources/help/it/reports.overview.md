@@ -12,8 +12,8 @@ related:
 
 I report aggregano i dati operativi per periodo, collaboratori, team,
 progetti, risorse o aspetti finanziari; i valori visibili dipendono da
-autorizzazioni, organizzazione attiva e filtri impostati. Controlla
-prima periodo e filtri, poi totali e anomalie, e usa le viste di
+autorizzazioni, organizzazione attiva e filtri impostati. Controlli
+prima periodo e filtri, poi totali e anomalie, e usi le viste di
 dettaglio o i drilldown per risalire ai record che generano gli
 indicatori; le esportazioni riprendono i filtri correnti. I report non
 sono una fonte di dati autonoma: le correzioni si fanno sull'incarico,

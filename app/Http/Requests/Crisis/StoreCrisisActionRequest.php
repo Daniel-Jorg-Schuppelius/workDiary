@@ -32,7 +32,7 @@ class StoreCrisisActionRequest extends BaseFormRequest {
         return [
             'title' => ['required', 'string', 'max:300'],
             'assignee_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('users')],
-            'due_at' => ['nullable', 'date'],
+            'due_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
             'priority' => ['required', 'in:low,medium,high'],
         ];
     }

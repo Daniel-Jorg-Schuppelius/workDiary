@@ -16,7 +16,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{Problem, ServiceTicket, User};
 use App\Services\ServiceTicket\ProblemService;
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid, Tz};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\ValidationException;
@@ -94,7 +94,7 @@ class ProblemController extends Controller {
         Gate::authorize('create', Problem::class);
 
         $data = $request->validate([
-            'title' => ['required', 'string', 'min:3', 'max:255'],
+            'title' => ['required', 'string', 'min:3', 'max:200'],
             'description' => ['nullable', 'string', 'max:10000'],
             'incidents' => ['nullable', 'array', 'max:20'],
             'incidents.*' => ['string'],
@@ -134,7 +134,7 @@ class ProblemController extends Controller {
         Gate::authorize('update', $problem);
 
         $data = $request->validate([
-            'title' => ['required', 'string', 'min:3', 'max:255'],
+            'title' => ['required', 'string', 'min:3', 'max:200'],
             'description' => ['nullable', 'string', 'max:10000'],
             'root_cause' => ['nullable', 'string', 'max:10000'],
             'evidence' => ['nullable', 'string', 'max:10000'],
@@ -156,7 +156,7 @@ class ProblemController extends Controller {
 
         $data = $request->validate([
             'status' => ['required', 'string', 'in:' . implode(',', Problem::STATUSES)],
-            'effectiveness_check_due_at' => ['nullable', 'date', 'required_if:status,resolved'],
+            'effectiveness_check_due_at' => ['nullable', 'date', 'required_if:status,resolved', new \App\Rules\TimestampRange()],
         ]);
 
         $due = $data['effectiveness_check_due_at'] ?? null;
@@ -166,10 +166,10 @@ class ProblemController extends Controller {
                 $problem,
                 $data['status'],
                 $this->actor(),
-                $due !== null ? \Illuminate\Support\Carbon::parse((string) $due) : null,
+                $due !== null ? \Illuminate\Support\Carbon::instance(Tz::parse((string) $due)) : null,
             );
         } catch (\RuntimeException|\InvalidArgumentException $e) {
-            return back()->withErrors(['status' => $e->getMessage()]);
+            return back()->withErrors(['status' => ErrorText::for($e)]);
         }
 
         return redirect()->route('servicedesk.problems.show', $problem)

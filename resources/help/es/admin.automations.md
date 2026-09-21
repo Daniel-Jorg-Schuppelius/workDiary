@@ -14,7 +14,7 @@ Las automatizaciones son reglas con el patrón **evento → condición →
 acción**: cuando ocurre el evento desencadenante y se cumplen las
 condiciones, se ejecutan las acciones asignadas; las reglas son por
 organización y quedan limitadas al propio inquilino. En la vista
-general puedes **crear** reglas (condiciones y acciones se introducen
+general puede **crear** reglas (condiciones y acciones se introducen
 como JSON en el MVP actual), **activarlas/desactivarlas**, consultar
 las últimas ejecuciones en la vista de detalle y **eliminarlas**. La
 **prioridad** determina el orden cuando coinciden varias reglas (valor

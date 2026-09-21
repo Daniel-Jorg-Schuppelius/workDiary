@@ -14,7 +14,7 @@
         <x-card padding="p-6">
             <h1 class="mb-1 font-['Space_Grotesk'] text-xl font-bold">{{ __('Passwort festlegen') }}</h1>
             <p class="mb-4 text-sm text-base-content/70">
-                {{ __('Hallo :name — lege das Passwort für deinen Portalzugang fest. Danach meldest du dich mit :email an.', ['name' => $portalUser->name, 'email' => $portalUser->email]) }}
+                {{ __('Hallo :name — legen Sie das Passwort für Ihren Portalzugang fest. Danach melden Sie sich mit :email an.', ['name' => $portalUser->name, 'email' => $portalUser->email]) }}
             </p>
 
             <form method="POST" action="{{ route('customer.invitation.accept', ['token' => $token]) }}" class="space-y-3">

@@ -757,3 +757,12 @@ test("Kontowechsel auf dem Gerät leert die lokale Ablage", async () => {
 
     assert.equal((await outboxAll()).length, 0);
 });
+
+test("Abmelde-Erkennung übersteht ein Formularfeld namens action", () => {
+    const { isLogoutForm } = __testables;
+    // name="action" überdeckt form.action mit dem Feld — nur das Attribut zählt.
+    const clobbered = { action: { tagName: "SELECT" }, getAttribute: () => "/inventory/scan" };
+    assert.equal(isLogoutForm(clobbered), false);
+    assert.equal(isLogoutForm({ getAttribute: () => "https://app.example.test/logout" }), true);
+    assert.equal(isLogoutForm({ getAttribute: () => null }), false);
+});

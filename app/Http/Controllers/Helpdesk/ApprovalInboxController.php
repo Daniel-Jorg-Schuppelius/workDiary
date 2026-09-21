@@ -16,7 +16,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\{Approval, Change, ServiceRequest, User};
 use App\Services\ServiceTicket\{ChangeService, ServiceRequestService};
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Pagination\{LengthAwarePaginator, Paginator};
 use Illuminate\Support\Collection;
@@ -110,7 +110,7 @@ class ApprovalInboxController extends Controller {
                 default => abort(422, (string) __('Unbekannter Genehmigungsgegenstand.')),
             };
         } catch (\RuntimeException|\InvalidArgumentException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('servicedesk.approvals.index')

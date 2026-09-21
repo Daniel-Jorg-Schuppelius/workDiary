@@ -45,9 +45,6 @@
             @endif
         </x-slot:actions>
 
-        @if (session('status'))
-            <div role="alert" class="alert alert-success"><span>{{ session('status') }}</span></div>
-        @endif
 
         <x-card class="flex flex-col gap-3">
             <h2 class="card-title text-base">{{ __('Kennzahlen') }}</h2>

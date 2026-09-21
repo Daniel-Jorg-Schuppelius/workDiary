@@ -32,10 +32,10 @@ return [
             'description' => 'Entradas abiertas y en curso del equipo, archivadas hoy, plantilla.',
         ],
         'today_shifts' => [
-            'description' => 'Tus turnos de hoy.',
+            'description' => 'Sus turnos de hoy.',
         ],
         'upcoming_shifts' => [
-            'description' => 'Tus próximas guardias y turnos.',
+            'description' => 'Sus próximas guardias y turnos.',
         ],
         'emergencies' => [
             'description' => 'Intervenciones de guardia próximas.',
@@ -44,16 +44,16 @@ return [
             'description' => 'Cuadrante de los próximos siete días.',
         ],
         'open_issues' => [
-            'description' => 'Puntos abiertos asignados a ti — por fecha de vencimiento.',
+            'description' => 'Puntos abiertos asignados a usted — por fecha de vencimiento.',
         ],
         'recent_entries' => [
-            'description' => 'Tus entradas editadas más recientemente.',
+            'description' => 'Sus entradas editadas más recientemente.',
         ],
         'recent_comments' => [
-            'description' => 'Nuevos comentarios en tus entradas.',
+            'description' => 'Nuevos comentarios en sus entradas.',
         ],
         'recent_attachments' => [
-            'description' => 'Nuevos adjuntos en tus entradas.',
+            'description' => 'Nuevos adjuntos en sus entradas.',
         ],
         'team_activity' => [
             'description' => 'Los últimos comentarios del equipo.',
@@ -71,7 +71,7 @@ return [
             'description' => 'Fichar entrada y salida, pausas y estados intermedios.',
         ],
         'bookmarks' => [
-            'description' => 'Tus marcadores guardados.',
+            'description' => 'Sus marcadores guardados.',
         ],
         'data_protection' => [
             'description' => 'Revisiones del registro vencidas y solicitudes de interesados abiertas.',
@@ -86,25 +86,25 @@ return [
             'description' => 'Saldo de horas flexibles del último mes cerrado, con semáforo.',
         ],
         'time_accounts' => [
-            'description' => 'Saldos de tus cuentas de tiempo (horas extra, cuentas especiales).',
+            'description' => 'Saldos de sus cuentas de tiempo (horas extra, cuentas especiales).',
         ],
         'time_corrections' => [
-            'description' => 'Tus solicitudes de corrección en curso o enviadas.',
+            'description' => 'Sus solicitudes de corrección en curso o enviadas.',
         ],
         'reminders' => [
             'description' => 'Pendientes de gastos, viajes y vacaciones — los mismos que bajo la campana.',
         ],
         'kanban_status' => [
-            'description' => 'Cuántos de tus encargos hay en cada columna Kanban.',
+            'description' => 'Cuántos de sus encargos hay en cada columna Kanban.',
         ],
         'service_tickets' => [
-            'description' => 'Tickets abiertos asignados a ti.',
+            'description' => 'Tickets abiertos asignados a usted.',
         ],
         'chat_unread' => [
             'description' => 'Mensajes no leídos por canal.',
         ],
         'approvals' => [
-            'description' => 'Gastos y solicitudes de vacaciones a la espera de tu decisión.',
+            'description' => 'Gastos y solicitudes de vacaciones a la espera de su decisión.',
         ],
         'asset_compliance' => [
             'description' => 'Inspecciones vencidas y próximas del calendario de inspección.',
@@ -122,10 +122,10 @@ return [
             'description' => 'Revisiones próximas de evaluaciones de riesgos y reconocimientos médicos.',
         ],
         'training_due' => [
-            'description' => 'Tus obligaciones de formación e instrucción abiertas.',
+            'description' => 'Sus obligaciones de formación e instrucción abiertas.',
         ],
         'learning_due' => [
-            'description' => 'Tus cursos abiertos en la plataforma de aprendizaje — vencidos primero.',
+            'description' => 'Sus cursos abiertos en la plataforma de aprendizaje — vencidos primero.',
         ],
         'learning_grading_queue' => [
             'description' => 'Entregas, redacciones y aprobaciones de tiempo de aprendizaje pendientes de evaluación.',

@@ -34,7 +34,7 @@ class SaveEnergyLogRequest extends BaseFormRequest {
             'fuel_kind' => ['nullable', 'string', Rule::in(EnergyLog::FUEL_KINDS)],
             'quantity' => ['required', 'numeric', 'min:0', 'max:9999'],
             'cost_total' => ['nullable', 'numeric', 'min:0', 'max:99999'],
-            'odometer_km' => ['nullable', 'integer', 'min:0'],
+            'odometer_km' => ['nullable', 'integer', 'min:0', 'max:9999999'],
             'location_address' => ['nullable', 'string', 'max:255'],
             'location_lat' => ['nullable', 'numeric', 'between:-90,90'],
             'location_lng' => ['nullable', 'numeric', 'between:-180,180'],

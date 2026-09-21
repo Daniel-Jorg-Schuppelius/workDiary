@@ -11,7 +11,7 @@
 <x-card :title="__('Zeitkonten')" icon="account_balance_wallet">
     @if ($balances->isEmpty())
         <x-empty-state compact icon="account_balance_wallet"
-                       :title="__('Keine Zeitkonten')" :message="__('Für dich ist noch kein Zeitkonto geführt.')" />
+                       :title="__('Keine Zeitkonten')" :message="__('Für Sie ist noch kein Zeitkonto geführt.')" />
     @else
         <ul class="space-y-2 text-sm">
             @foreach ($balances as $balance)

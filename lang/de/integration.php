@@ -14,7 +14,7 @@ return [
             'index' => 'Webhooks',
             'subtitle' => 'Ausgehende Ereignis-Benachrichtigungen an externe Systeme.',
             'help' => 'Wie funktionieren Webhooks?',
-            'help_text' => 'Ein Webhook sendet bei den abonnierten Ereignissen eine signierte JSON-Nutzlast per HTTPS-POST an deine URL. Die Signatur (HMAC-SHA256 über Zeitstempel und Body) liegt im Header X-WorkDiary-Signature; prüfe sie mit dem Signing-Key. Nach mehreren Fehlversuchen wird der Endpunkt automatisch deaktiviert.',
+            'help_text' => 'Ein Webhook sendet bei den abonnierten Ereignissen eine signierte JSON-Nutzlast per HTTPS-POST an Ihre URL. Die Signatur (HMAC-SHA256 über Zeitstempel und Body) liegt im Header X-WorkDiary-Signature; prüfen Sie sie mit dem Signing-Key. Nach mehreren Fehlversuchen wird der Endpunkt automatisch deaktiviert.',
             'create' => 'Webhook anlegen',
             'edit' => 'Webhook bearbeiten',
             'empty' => 'Noch keine Webhooks angelegt.',
@@ -49,7 +49,7 @@ return [
         ],
         'secret' => [
             'shown_once' => 'Signing-Key – nur jetzt sichtbar',
-            'shown_once_help' => 'Kopiere den Schlüssel jetzt. Aus Sicherheitsgründen wird er nie wieder im Klartext angezeigt.',
+            'shown_once_help' => 'Kopieren Sie den Schlüssel jetzt. Aus Sicherheitsgründen wird er nie wieder im Klartext angezeigt.',
             'rotate_help' => 'Der Klartext-Schlüssel wird nur einmal bei Anlage/Rotation angezeigt.',
             'rotate_confirm' => 'Neuen Signing-Key erzeugen? Der alte Schlüssel wird sofort ungültig.',
         ],
@@ -59,6 +59,7 @@ return [
             'deleted' => 'Webhook gelöscht.',
             'secret_rotated' => 'Signing-Key rotiert.',
             'test_sent' => 'Test-Event in die Warteschlange gestellt.',
+            'test_failed' => 'Test-Event konnte nicht zugestellt werden — Details in der Zustellhistorie.',
         ],
         'event' => [
             'openIssue.assigned' => 'Offener Punkt zugewiesen',

@@ -27,7 +27,7 @@ return [
         'linked' => 'Beleg :number zugeordnet.',
         'unlinked' => 'Zuordnung gelöst.',
         'title' => 'Belegdatei',
-        'hint' => 'Hinterlege die Quittung zur Auslage — ohne Beleg ist sie weder für sich prüfbar noch später in die Buchhaltung übernehmbar.',
+        'hint' => 'Hinterlegen Sie die Quittung zur Auslage — ohne Beleg ist sie weder für sich prüfbar noch später in die Buchhaltung übernehmbar.',
     ],
     'title' => [
         'index'        => 'Spesen',
@@ -89,7 +89,7 @@ return [
 
     'help' => [
         'color'          => 'Bestimmt die Akzentfarbe für Icon, Badge und Hervorhebungen in Listen.',
-        'gross_first'    => 'Trage den Brutto-Wert vom Beleg ein. Netto- und Steuerbetrag werden automatisch berechnet.',
+        'gross_first'    => 'Tragen Sie den Brutto-Wert vom Beleg ein. Netto- und Steuerbetrag werden automatisch berechnet.',
         'requires_receipt' => 'Wenn aktiv, ist beim Erfassen mindestens ein Beleg-Anhang (Foto/PDF) Pflicht.',
     ],
 

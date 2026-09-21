@@ -15,6 +15,7 @@ namespace App\Http\Controllers\Customers;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Services\Peppol\PeppolParticipantService;
+use App\Support\ErrorText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use RuntimeException;
@@ -41,7 +42,7 @@ class CustomerPeppolController extends Controller {
         try {
             $lookup = $participants->lookup((int) $customer->organization_id, $participant, refresh: true);
         } catch (RuntimeException $e) {
-            return back()->with('error', __('peppol.error.lookup_failed', ['message' => $e->getMessage()]));
+            return back()->with('error', __('peppol.error.lookup_failed', ['message' => ErrorText::for($e)]));
         }
 
         $result = $lookup->registered

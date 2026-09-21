@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Helpdesk;
 use App\Http\Controllers\Controller;
 use App\Models\{ServiceTicket, User};
 use App\Services\ServiceTicket\TicketIncidentService;
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -68,7 +68,7 @@ class TicketLinkController extends Controller {
         try {
             $this->incidents->link($ticket, $target, $data['kind'], $user);
         } catch (\InvalidArgumentException $e) {
-            return back()->withErrors(['target' => $e->getMessage()]);
+            return back()->withErrors(['target' => ErrorText::for($e)]);
         }
 
         return redirect()

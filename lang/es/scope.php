@@ -13,7 +13,7 @@ return [
     'focus' => [
         'admin' => [
             'title' => 'Áreas de trabajo',
-            'subtitle' => 'Elige qué áreas de trabajo ofrece tu organización en el selector, renómbralas y define una predeterminada.',
+            'subtitle' => 'Elija qué áreas de trabajo ofrece su organización en el selector, renómbrelas y defina una predeterminada.',
             'hint' => 'Solo una sugerencia: el área predeterminada nunca se impone — cualquiera puede cambiar en cualquier momento. Ocultar no cambia ningún permiso.',
             'list_heading' => 'Áreas ofrecidas',
             'configured_at' => 'Última modificación: :date',
@@ -32,8 +32,8 @@ return [
         'reveal_off' => 'Mostrar solo el enfoque',
         'dialog' => [
             'eyebrow' => 'Enfocar la vista',
-            'title' => '¿En qué estás trabajando?',
-            'subtitle' => 'Elige un área de trabajo — la navegación mostrará solo las áreas relevantes. No se elimina ni se bloquea nada; puedes cambiar en cualquier momento.',
+            'title' => '¿En qué está trabajando?',
+            'subtitle' => 'Elija un área de trabajo — la navegación mostrará solo las áreas relevantes. No se elimina ni se bloquea nada; puede cambiar en cualquier momento.',
             'footnote' => 'Las áreas ocultas siguen accesibles mediante la búsqueda global y «Mostrar todo».',
         ],
         'flash' => [
@@ -42,14 +42,14 @@ return [
         ],
         'personal' => [
             'title' => 'Área de trabajo personal',
-            'description' => 'Tu propia selección de entradas de menú.',
+            'description' => 'Su propia selección de entradas de menú.',
             'heading' => 'Áreas de trabajo personales',
             'manage' => 'Gestionar áreas de trabajo personales',
         ],
     ],
     'workspace' => [
         'title' => 'Áreas de trabajo personales',
-        'subtitle' => 'Compón tus propias áreas de trabajo con entradas de menú. Aparecen en el selector junto a las vistas predefinidas y solo ocultan — nunca cambian permisos.',
+        'subtitle' => 'Componga sus propias áreas de trabajo con entradas de menú. Aparecen en el selector junto a las vistas predefinidas y solo ocultan — nunca cambian permisos.',
         'create' => 'Nueva área de trabajo',
         'edit' => 'Editar área de trabajo',
         'empty' => 'Todavía no hay ningún área de trabajo personal',
@@ -59,19 +59,19 @@ return [
         'items' => 'Entradas de menú',
         'available' => 'Disponibles',
         'selected' => 'Seleccionadas',
-        'items_hint' => 'Solo se ofrecen entradas que ya puedes ver. Define el orden arrastrando o con los botones.',
+        'items_hint' => 'Solo se ofrecen entradas que ya puede ver. Defina el orden arrastrando o con los botones.',
         'add' => 'Añadir',
         'remove' => 'Quitar',
         'move_up' => 'Subir',
         'move_down' => 'Bajar',
-        'drag_hint' => 'Arrastra para ordenar — o usa los botones «Subir»/«Bajar».',
+        'drag_hint' => 'Arrastre para ordenar — o use los botones «Subir»/«Bajar».',
         'count' => ':count entradas de menú',
         'active' => 'Activa',
         'delete_title' => 'Eliminar área de trabajo',
         'delete_confirm' => 'El área de trabajo se eliminará. Las entradas de menú y los permisos no se ven afectados.',
         'error' => [
-            'no_items' => 'Selecciona al menos una entrada de menú.',
-            'unknown_item' => 'Al menos una entrada de menú no está disponible para ti.',
+            'no_items' => 'Seleccione al menos una entrada de menú.',
+            'unknown_item' => 'Al menos una entrada de menú no está disponible para usted.',
         ],
         'flash' => [
             'created' => 'Área de trabajo creada.',
@@ -87,12 +87,12 @@ return [
         'functions' => 'Todas las funciones',
     ],
     'page' => [
-        'subtitle' => 'Define el alcance funcional visible de la organización: preajustes para empezar rápido o módulos uno a uno.',
+        'subtitle' => 'Defina el alcance funcional visible de la organización: preajustes para empezar rápido o módulos uno a uno.',
         'no_data_loss' => 'Desactivar solo oculta módulos y bloquea sus páginas: no se elimina ningún dato. Al reactivar, todo vuelve a estar disponible.',
     ],
     'presets' => [
         'heading' => 'Preajustes',
-        'hint' => 'Un preajuste es un atajo: cambia la lista de módulos de abajo en un solo paso. Después puedes ajustar individualmente.',
+        'hint' => 'Un preajuste es un atajo: cambia la lista de módulos de abajo en un solo paso. Después puede ajustar individualmente.',
         'apply' => 'Aplicar el preajuste «:preset»',
         'all_modules' => 'Todos los módulos licenciados',
         'module_count' => '{1} :count módulo adicional|[2,*] :count módulos adicionales',
@@ -118,8 +118,8 @@ return [
         'no_recommendation' => 'No hay recomendación de perfil sectorial para esta organización.',
     ],
     'customize' => [
-        'subtitle' => 'Activa lo que debe aparecer en tu menú — desactiva lo que no necesites. Solo te afecta a ti, en todos los dispositivos.',
-        'cosmetic_hint' => 'Ocultar no cambia los permisos: la búsqueda, los marcadores y los enlaces directos siguen funcionando. Con «Todas las funciones» lo recuperas todo.',
+        'subtitle' => 'Active lo que debe aparecer en su menú — desactive lo que no necesite. Solo le afecta a usted, en todos los dispositivos.',
+        'cosmetic_hint' => 'Ocultar no cambia los permisos: la búsqueda, los marcadores y los enlaces directos siguen funcionando. Con «Todas las funciones» lo recupera todo.',
         'sidebar_heading' => 'Navegación lateral',
         'hide_section' => 'ocultar toda la sección',
         'hide_group' => 'ocultar subgrupo',

@@ -32,8 +32,6 @@ class ClockifyServiceProvider extends PluginServiceProviderBase {
     protected function bootPlugin(): void {
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new ClockifyOutboxDispatcher);
 
-        if ($this->app->runningInConsole()) {
-            $this->commands([ClockifyPushCommand::class]);
-        }
+        $this->commands([ClockifyPushCommand::class]);
     }
 }

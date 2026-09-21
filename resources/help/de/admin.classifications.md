@@ -17,8 +17,8 @@ Kulanz- und Nacharbeitsgründe, Produktgruppen und Dienstmitteltypen. Jede
 Klassifikation hat einen Code, eine Bezeichnung sowie optional Farbe, Symbol
 und Sortierung.
 
-Plattform-Vorgaben stehen allen Organisationen zur Verfügung; du kannst sie
-für deine Organisation überschreiben, eigene Werte ergänzen, die Reihenfolge
+Plattform-Vorgaben stehen allen Organisationen zur Verfügung; Sie können sie
+für Ihre Organisation überschreiben, eigene Werte ergänzen, die Reihenfolge
 je Domäne anpassen oder eine Plattform-Vorgabe für die Organisation
 deaktivieren. Über den CSV-Import lassen sich viele Werte auf einmal anlegen
 oder aktualisieren; Pflichtspalten sind Domäne, Code und Bezeichnung.

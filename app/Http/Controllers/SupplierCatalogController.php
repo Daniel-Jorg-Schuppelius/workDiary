@@ -17,6 +17,7 @@ use App\Http\Requests\SaveSupplierCatalogSourceRequest;
 use App\Models\{Article, ArticleVariant, PricingChangeAlert, Supplier, SupplierCatalogImport, SupplierCatalogItem, SupplierCatalogSource, Warehouse};
 use App\Services\Procurement\{CatalogArticleAdopter, CatalogFetchService, CatalogImportDispatcher, CatalogLinkService, PriceSuggestionService, ShopinfoParser};
 use App\Services\SqidEncoder;
+use App\Support\ErrorText;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -271,7 +272,7 @@ class SupplierCatalogController extends Controller {
         try {
             $content = $fetch->fetch($supplierCatalog);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         /** @var array<string, string> $mapping */
@@ -289,7 +290,7 @@ class SupplierCatalogController extends Controller {
         try {
             $summary = app(CatalogImportDispatcher::class)->run($source, $content, $mapping, SupplierCatalogImport::TRIGGER_MANUAL, $datanormMode);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('procurement.catalog.flash.imported', [
@@ -334,7 +335,7 @@ class SupplierCatalogController extends Controller {
         try {
             $links->link($catalogItem, $article, $variant);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('procurement.catalog.flash.linked'));
@@ -427,7 +428,7 @@ class SupplierCatalogController extends Controller {
             try {
                 app(\App\Services\Procurement\PriceApprovalService::class)->request($catalogItem, $requester);
             } catch (\RuntimeException $e) {
-                return back()->with('error', $e->getMessage());
+                return back()->with('error', ErrorText::for($e));
             }
 
             return back()->with('success', __('procurement.approval.flash.requested'));
@@ -436,7 +437,7 @@ class SupplierCatalogController extends Controller {
         try {
             $suggestion = $pricing->applyToArticle($catalogItem);
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('procurement.margin.flash.applied', ['price' => $suggestion['price']]));
@@ -500,7 +501,7 @@ class SupplierCatalogController extends Controller {
         try {
             $discovery = $parser->parse($content);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         $changes = [];

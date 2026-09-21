@@ -10,7 +10,7 @@ related:
     - invoices.manage
 ---
 
-Im Branding hinterlegst du das White-Label-Erscheinungsbild der
+Im Branding hinterlegen Sie das White-Label-Erscheinungsbild der
 aktuellen Organisation. Die Einstellungen wirken vor allem auf
 generierte PDF-Dokumente (z. B. Rechnungen) und werden je Mandant
 gespeichert.

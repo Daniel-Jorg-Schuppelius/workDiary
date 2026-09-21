@@ -17,6 +17,7 @@ use App\Http\Requests\Protocol\{AddProtocolItemRequest, FillProtocolItemRequest,
 use App\Models\{Asset, Customer, DiaryEntry, Project, Protocol, ProtocolItem, ProtocolItemPhoto, User};
 use App\Services\Protocol\{ProtocolItemPhotoService, ProtocolPdfRenderer, ProtocolService, ProtocolSignatureTokenService};
 use App\Services\Weather\WeatherService;
+use App\Support\ErrorText;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -147,7 +148,7 @@ class ProtocolController extends Controller {
         } catch (InvalidProtocolTransitionException $e) {
             return redirect()->back()->withErrors(['status' => $e->getMessage()]);
         } catch (InvalidArgumentException $e) {
-            return redirect()->back()->withErrors(['reason' => $e->getMessage()]);
+            return redirect()->back()->withErrors(['reason' => ErrorText::for($e)]);
         } catch (ProtocolValidationException $e) {
             return redirect()->back()->withErrors(['validation' => implode(' • ', $e->errors())]);
         }
@@ -234,7 +235,7 @@ class ProtocolController extends Controller {
                 ],
             );
         } catch (InvalidArgumentException $e) {
-            return redirect()->back()->withErrors(['photo' => $e->getMessage()]);
+            return redirect()->back()->withErrors(['photo' => ErrorText::for($e)]);
         }
 
         return redirect()->back()->with('success', __('protocol.flash.photo.uploaded'));
@@ -348,7 +349,7 @@ class ProtocolController extends Controller {
         try {
             $tokens->revoke($token, $u);
         } catch (\RuntimeException $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->back()->with('success', __('protocol.signature.tokenRevoked'));

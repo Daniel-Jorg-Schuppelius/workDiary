@@ -95,7 +95,7 @@
         </x-slot:head>
         @forelse ($requests as $request)
             <tr>
-                <td class="whitespace-nowrap">{{ $request->starts_at->format('d.m.Y H:i') }} – {{ $request->ends_at->format('d.m.Y H:i') }}</td>
+                <td class="whitespace-nowrap">{{ $request->starts_at->orgTz()->format('d.m.Y H:i') }} – {{ $request->ends_at->orgTz()->format('d.m.Y H:i') }}</td>
                 <td>{{ $request->subjectLabel() }}</td>
                 <td>
                     <span class="badge badge-{{ $request->status->badgeTone() }} badge-sm">{{ $request->status->label() }}</span>

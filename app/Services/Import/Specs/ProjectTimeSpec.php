@@ -18,6 +18,7 @@ use App\Models\{ImportValueMapping, IntegrationInboxItem, Organization, Project,
 use App\Services\Import\{HasMappableValues, ImportOutcome, InboxFirstSpec, ValidationIssue};
 use App\Services\Import\Specs\Concerns\{BindsTimeImportReference, ParsesLocalDateTime, ResolvesImportUsers};
 use App\Services\TimeApproval\MonthClosureService;
+use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
@@ -181,7 +182,7 @@ class ProjectTimeSpec extends AbstractEntitySpec implements HasMappableValues, I
                 return [ImportOutcome::Skipped, null];
             }
 
-            $tz = $this->orgTimezone($organization);
+            $tz = Tz::ofOrganization($organization);
             $startedAt = $this->localToUtc($date, (string) $row['start_time'], $tz);
             $endedAt = $this->localToUtc($date, (string) $row['end_time'], $tz);
             if ($endedAt->lessThanOrEqualTo($startedAt)) {

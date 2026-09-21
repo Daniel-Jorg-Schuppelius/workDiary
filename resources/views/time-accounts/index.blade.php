@@ -16,7 +16,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Zusatzkonten mit nachvollziehbarem Journal — Gleitzeit und Urlaub findest du im Arbeitszeitkonto.')" />
+        <x-page-toolbar :subtitle="__('Zusatzkonten mit nachvollziehbarem Journal — Gleitzeit und Urlaub finden Sie im Arbeitszeitkonto.')" />
     </x-slot:toolbar>
 
     @if (empty($rows))

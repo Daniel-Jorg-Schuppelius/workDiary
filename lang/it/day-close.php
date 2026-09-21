@@ -87,7 +87,7 @@ return [
         'break_recorded' => 'Pausa: :min min',
         'no_issues' => 'Nessuna anomalia — la giornata è registrata in modo coerente.',
         'month_locked' => 'Questo giorno appartiene a un mese approvato ed è bloccato — chiusura e richieste di correzione passano per l\'approvazione mensile.',
-        'correction_intro' => 'Descrivi cosa deve essere corretto in questo giorno.',
+        'correction_intro' => 'Descriva cosa deve essere corretto in questo giorno.',
         'reopen_intro' => 'La giornata viene riaperta senza richiesta di correzione — la motivazione viene salvata nel registro di audit.',
     ],
 

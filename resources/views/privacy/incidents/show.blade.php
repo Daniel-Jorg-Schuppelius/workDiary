@@ -18,17 +18,16 @@
                         show-label>{{ __('Zurück') }}</x-icon-btn>
         </x-slot:actions>
 
-        @if (session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif
 
         @php $isProcessor = $incident->controller_role?->value === 'processor'; @endphp
         @if ($incident->authority_deadline_at)
             <div class="alert {{ $incident->isDeadlineBreached() ? 'alert-error' : 'alert-warning' }}">
                 @if ($isProcessor)
-                    {{ __('72-h-Frist (Kunde meldet der Behörde)') }}: {{ $incident->authority_deadline_at->format('d.m.Y H:i') }} — {{ __('ihr informiert den Verantwortlichen/Kunden unverzüglich') }}
-                    @if ($incident->controller_notified_at) — {{ __('Kunde informiert am') }} {{ $incident->controller_notified_at->format('d.m.Y H:i') }} @endif
+                    {{ __('72-h-Frist (Kunde meldet der Behörde)') }}: {{ $incident->authority_deadline_at->orgTz()->format('d.m.Y H:i') }} — {{ __('ihr informiert den Verantwortlichen/Kunden unverzüglich') }}
+                    @if ($incident->controller_notified_at) — {{ __('Kunde informiert am') }} {{ $incident->controller_notified_at->orgTz()->format('d.m.Y H:i') }} @endif
                 @else
-                    {{ __('72-h-Meldefrist') }}: {{ $incident->authority_deadline_at->format('d.m.Y H:i') }}
-                    @if ($incident->authority_notified_at) — {{ __('Behörde gemeldet am') }} {{ $incident->authority_notified_at->format('d.m.Y H:i') }} @endif
+                    {{ __('72-h-Meldefrist') }}: {{ $incident->authority_deadline_at->orgTz()->format('d.m.Y H:i') }}
+                    @if ($incident->authority_notified_at) — {{ __('Behörde gemeldet am') }} {{ $incident->authority_notified_at->orgTz()->format('d.m.Y H:i') }} @endif
                 @endif
             </div>
         @endif
@@ -172,7 +171,7 @@
                         <strong>{{ __('Dokumentierte Meldung') }}:</strong>
                         {{ $incident->authority_name ?? '—' }} ·
                         {{ $incident->authority_report_type === 'follow_up' ? __('Folgemeldung') : __('Erstmeldung') }} ·
-                        {{ $incident->authority_notified_at->format('d.m.Y H:i') }}
+                        {{ $incident->authority_notified_at->orgTz()->format('d.m.Y H:i') }}
                         @if ($incident->authority_report_reference) · {{ __('Kennung') }}: {{ $incident->authority_report_reference }} @endif
                         @if ($incident->authority_case_number) · {{ __('Aktenzeichen') }}: {{ $incident->authority_case_number }} @endif
                     </div>
@@ -207,7 +206,7 @@
                     @if ($incident->subjects_notified_at)
                         <div class="rounded-box bg-base-200 p-3 text-sm">
                             <strong>{{ __('Betroffene benachrichtigt') }}:</strong>
-                            {{ $incident->subjects_notified_at->format('d.m.Y H:i') }}
+                            {{ $incident->subjects_notified_at->orgTz()->format('d.m.Y H:i') }}
                         </div>
                     @elseif ($incident->status !== \App\Enums\Privacy\IncidentStatus::Closed)
                         @can('update', $incident)
@@ -264,7 +263,7 @@
             <ul class="timeline timeline-vertical">
                 @foreach ($events as $e)
                     <li>
-                        <div class="timeline-start text-xs text-muted">{{ $e->created_at?->format('d.m.Y H:i') }}</div>
+                        <div class="timeline-start text-xs text-muted">{{ $e->created_at?->orgTz()->format('d.m.Y H:i') }}</div>
                         <div class="timeline-middle">●</div>
                         <div class="timeline-end timeline-box text-sm">{{ $e->event }}</div>
                     </li>

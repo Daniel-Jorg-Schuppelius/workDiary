@@ -11,10 +11,17 @@
 namespace App\Http\Requests;
 
 use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketSource};
+use App\Http\Requests\Concerns\ParsesOrgLocalDateTimes;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rules\Enum;
 
 class SaveServiceTicketRequest extends BaseFormRequest {
+    use ParsesOrgLocalDateTimes;
+
+    protected function prepareForValidation(): void {
+        $this->mergeOrgLocalToUtc(['reported_at']);
+    }
+
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
@@ -28,7 +35,7 @@ class SaveServiceTicketRequest extends BaseFormRequest {
             'project_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('projects')],
             // Auftragsbezug org-gescopt (nie cross-tenant, s. ExistsInCurrentOrganization).
             'diary_entry_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('diary_entries')],
-            'reported_at' => ['nullable', 'date'],
+            'reported_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
         ];
     }
 }

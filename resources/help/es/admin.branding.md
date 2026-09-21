@@ -10,10 +10,10 @@ related:
     - invoices.manage
 ---
 
-En la imagen corporativa defines la apariencia de marca blanca de la
+En la imagen corporativa define la apariencia de marca blanca de la
 organización actual; los ajustes afectan sobre todo a los documentos
 PDF generados (por ejemplo, facturas) y se guardan por inquilino.
-Puedes mantener **datos maestros** (nombre y eslogan), **contacto**,
+Puede mantener **datos maestros** (nombre y eslogan), **contacto**,
 **datos legales** (NIF-IVA, IBAN/BIC, pie de página), **colores**
 (primario y de acento en hexadecimal) y **opciones de PDF por tipo de
 documento** (variante del logotipo, bloque de contacto, pie). Las

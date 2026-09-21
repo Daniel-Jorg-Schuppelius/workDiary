@@ -11,8 +11,8 @@ related:
 ---
 
 Die KI-Assistenz ist optional und standardmäßig aus. Unter
-**Verwaltung → KI-Dienste** verbindest du Provider (Cloud oder lokal,
-z. B. Ollama), schaltest einzelne Capabilities frei und legst je
+**Verwaltung → KI-Dienste** verbinden Sie Provider (Cloud oder lokal,
+z. B. Ollama), schalten einzelne Capabilities frei und legen je
 Capability fest, welche Verbindungen erlaubt sind und welche als
 Standard gilt.
 
@@ -24,7 +24,7 @@ API-Schlüssel werden verschlüsselt gespeichert und nie angezeigt.
 
 **KI-Gedächtnis:** Glossarbegriffe, Stilregeln und Beispielpaare je
 Organisation, Kunde oder Capability verbessern die Vorschläge — ohne
-Training fremder Modelle. Gelernt wird nur nach deiner Bestätigung
+Training fremder Modelle. Gelernt wird nur nach Ihrer Bestätigung
 („Merken?"-Dialog).
 
 **Leistungstexte:** Im Rechnungs- und Angebotsentwurf erzeugt die

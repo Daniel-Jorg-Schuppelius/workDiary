@@ -46,7 +46,7 @@
                     <td class="text-sm">{{ $report->reporter?->name ?? '—' }}</td>
                     <td><x-status-badge size="xs" :tone="$report->severity->tone()">{{ $report->severity->label() }}</x-status-badge></td>
                     <td><x-status-badge size="xs" :tone="$report->status->tone()">{{ $report->status->label() }}</x-status-badge></td>
-                    <td class="text-sm">{{ $report->created_at?->format('d.m.Y H:i') }}</td>
+                    <td class="text-sm">{{ $report->created_at?->orgTz()->format('d.m.Y H:i') }}</td>
                     <td class="text-right">
                         <x-icon-btn icon="open_in_new" :href="route('admin.problem-reports.show', $report)" :label="__('problemreport.action.open')" />
                     </td>

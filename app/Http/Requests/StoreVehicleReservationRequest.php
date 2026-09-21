@@ -10,11 +10,16 @@
 
 namespace App\Http\Requests;
 
-use App\Http\Requests\Concerns\DecodesSqidInputs;
+use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
 use App\Models\{DiaryEntry, Vehicle};
 
 class StoreVehicleReservationRequest extends BaseFormRequest {
-    use DecodesSqidInputs;
+    use DecodesSqidInputs, ParsesOrgLocalDateTimes;
+
+    // Formularzeiten sind Ortszeit, gespeichert wird UTC (MVP-823).
+    protected function prepareForValidation(): void {
+        $this->mergeOrgLocalToUtc(['reserved_from', 'reserved_to']);
+    }
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
@@ -27,8 +32,8 @@ class StoreVehicleReservationRequest extends BaseFormRequest {
         return [
             'vehicle_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('vehicles')],
             'diary_entry_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('diary_entries')],
-            'reserved_from' => ['required', 'date'],
-            'reserved_to' => ['required', 'date', 'after:reserved_from'],
+            'reserved_from' => ['required', 'date', new \App\Rules\TimestampRange()],
+            'reserved_to' => ['required', 'date', 'after:reserved_from', new \App\Rules\TimestampRange()],
             'note' => ['nullable', 'string', 'max:255'],
         ];
     }

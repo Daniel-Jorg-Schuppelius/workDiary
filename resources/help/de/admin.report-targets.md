@@ -13,7 +13,7 @@ Zielwerte sind Soll-/Benchmark-Größen, gegen die Auswertungen die
 tatsächlichen Werte vergleichen. Aus dem Vergleich leitet sich eine
 Ampel ab (grün/gelb/rot).
 
-Je Zielwert legst du fest:
+Je Zielwert legen Sie fest:
 
 - **Kennzahl**: Deckungsbeitrags-Marge, Abrechenbare Quote,
   Nacharbeits-Anteil, SLA-Einhaltungsquote oder Auslastung.
@@ -25,7 +25,7 @@ Je Zielwert legst du fest:
 - **Gültig von/bis** (optional): Zeitraum, in dem der Zielwert greift.
 - **Notiz** (optional): kurze Erläuterung.
 
-Beachte die Richtung der Kennzahl: Bei Marge, Abrechenbarer Quote,
+Beachten Sie die Richtung der Kennzahl: Bei Marge, Abrechenbarer Quote,
 SLA-Quote und Auslastung ist „höher besser", beim Nacharbeits-Anteil
 „niedriger besser".
 
@@ -34,6 +34,6 @@ die Wirtschaftlichkeits- und SLA-Reports –, wo Ist- gegen
 Soll-Werte gestellt und farblich bewertet werden.
 
 Hinweis: Mehrere Zielwerte können sich überschneiden (z. B.
-organisations- und projektspezifisch). Halte die Geltungsbereiche
+organisations- und projektspezifisch). Halten Sie die Geltungsbereiche
 und Gültigkeitszeiträume eindeutig, damit die Ampel die gewünschte
 Vorgabe bewertet.

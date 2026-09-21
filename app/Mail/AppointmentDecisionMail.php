@@ -14,6 +14,7 @@ namespace App\Mail;
 
 use App\Models\AppointmentRequest;
 use App\Services\Event\IcsFeedService;
+use App\Support\Tz;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\{Attachment, Content, Envelope};
@@ -36,7 +37,7 @@ class AppointmentDecisionMail extends Mailable {
         return new Envelope(subject: $confirmed
             ? (string) __('Terminbestätigung: :service am :date', [
                 'service' => $this->request->service_label,
-                'date' => $this->request->start_at?->format('d.m.Y H:i'),
+                'date' => Tz::toLocal($this->request->start_at)?->format('d.m.Y H:i'),
             ])
             : (string) __('Ihre Terminanfrage: :service', ['service' => $this->request->service_label]));
     }

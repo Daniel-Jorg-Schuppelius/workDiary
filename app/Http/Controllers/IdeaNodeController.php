@@ -15,6 +15,7 @@ use App\Exceptions\{IdeaMapConflictException, IdeaNodeConflictException};
 use App\Models\{ContentReference, IdeaMap, IdeaNode, KnowledgeArticle, Project, Task, User};
 use App\Services\Ideas\{IdeaMapSyncService, IdeaNodeService, NodeConversionService};
 use App\Services\SqidEncoder;
+use App\Support\ErrorText;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
@@ -66,7 +67,7 @@ class IdeaNodeController extends Controller {
                 'current' => $this->treePayload($e->currentMap->loadMissing('nodes')),
             ], 409);
         } catch (RuntimeException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+            return response()->json(['message' => ErrorText::for($e)], 422);
         }
 
         return response()->json([
@@ -123,7 +124,7 @@ class IdeaNodeController extends Controller {
         try {
             $node = $this->nodes->create($map, $parent, (string) $data['title'], Auth::user());
         } catch (RuntimeException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+            return response()->json(['message' => ErrorText::for($e)], 422);
         }
 
         $this->bumpMapVersion($map);
@@ -175,7 +176,7 @@ class IdeaNodeController extends Controller {
         try {
             $node = $this->nodes->move($node, $parent, Auth::user());
         } catch (RuntimeException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+            return response()->json(['message' => ErrorText::for($e)], 422);
         }
 
         $this->bumpMapVersion($map);
@@ -214,7 +215,7 @@ class IdeaNodeController extends Controller {
         try {
             $this->nodes->deleteSubtree($node);
         } catch (RuntimeException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+            return response()->json(['message' => ErrorText::for($e)], 422);
         }
 
         $this->bumpMapVersion($map);
@@ -257,7 +258,7 @@ class IdeaNodeController extends Controller {
                 default => $conversions->convertToKnowledgeArticle($node, $actor),
             };
         } catch (RuntimeException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+            return response()->json(['message' => ErrorText::for($e)], 422);
         }
 
         return response()->json([
@@ -287,7 +288,7 @@ class IdeaNodeController extends Controller {
         try {
             $reference = $conversions->linkTo($node, $target, $actor);
         } catch (RuntimeException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+            return response()->json(['message' => ErrorText::for($e)], 422);
         }
 
         return response()->json(['reference' => $this->serializeReference($reference)], 201);

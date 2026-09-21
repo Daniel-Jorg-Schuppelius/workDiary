@@ -64,7 +64,7 @@
                                     {{ $participant->isSigned() ? __('Ja') : __('Nein') }}
                                 </x-status-badge>
                             </td>
-                            <td class="text-sm text-base-content/70">{{ $participant->signed_at?->format('d.m.Y H:i') ?? '–' }}</td>
+                            <td class="text-sm text-base-content/70">{{ $participant->signed_at?->orgTz()->format('d.m.Y H:i') ?? '–' }}</td>
                             <td class="text-sm text-base-content/70">{{ $participant->method?->label() ?? '–' }}</td>
                             <td class="text-sm {{ $participant->isDueOverdue() ? 'text-error font-semibold' : 'text-base-content/70' }}">{{ $participant->next_due_on?->format('d.m.Y') ?? '–' }}</td>
                             <td class="text-right">

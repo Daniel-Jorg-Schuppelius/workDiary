@@ -16,7 +16,7 @@ return [
     'title' => 'Documentazione delle procedure GoBD',
     'menu' => 'Documentazione delle procedure',
     'subtitle' => 'Documentazione delle procedure versionata: parte di sistema generata più la descrizione del gestore, come PDF con prova hash.',
-    'empty' => 'Nessuna documentazione delle procedure ancora — crea una bozza.',
+    'empty' => 'Nessuna documentazione delle procedure ancora — crei una bozza.',
     'yes' => 'Sì',
     'no' => 'No',
     'action' => [
@@ -40,7 +40,7 @@ return [
         'deleted' => 'Bozza scartata.',
     ],
     'error' => [
-        'draft_exists' => 'Esiste già una bozza — pubblicala o scartala prima.',
+        'draft_exists' => 'Esiste già una bozza — la pubblichi o la scarti prima.',
         'frozen' => 'Le versioni pubblicate sono immutabili.',
         'not_published' => 'Questa versione non è ancora pubblicata.',
         'pdf_missing' => 'Il file PDF di questa versione manca nell\'archivio.',
@@ -59,7 +59,7 @@ return [
     'dialog' => [
         'edit_title' => 'Testi :version',
         'legend' => 'Parti obbligatorie del gestore (GoBD n. 151 ss.)',
-        'description' => 'La parte tecnica di sistema è generata automaticamente — descrivi qui organizzazione, processi e responsabilità.',
+        'description' => 'La parte tecnica di sistema è generata automaticamente — descriva qui organizzazione, processi e responsabilità.',
     ],
     'text' => [
         'general_description' => 'Descrizione generale',

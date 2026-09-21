@@ -58,7 +58,7 @@ return [
         'title' => 'War dieser Artikel hilfreich?',
         'helpful' => 'Hat geholfen',
         'not_helpful' => 'Hat nicht geholfen',
-        'already_voted' => 'Du hast bereits abgestimmt — eine erneute Wahl ändert deine Stimme.',
+        'already_voted' => 'Sie haben bereits abgestimmt — eine erneute Wahl ändert Ihre Stimme.',
     ],
 
     'link_kind' => [
@@ -82,7 +82,7 @@ return [
         'published' => 'Artikel wurde veröffentlicht.',
         'archived' => 'Artikel wurde archiviert.',
         'deleted' => 'Artikel wurde gelöscht.',
-        'feedback_saved' => 'Danke für deine Bewertung.',
+        'feedback_saved' => 'Danke für Ihre Bewertung.',
         'linked' => 'Artikel wurde verknüpft.',
         'unlinked' => 'Verknüpfung wurde gelöst.',
     ],

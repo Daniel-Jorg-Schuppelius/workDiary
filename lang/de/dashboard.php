@@ -32,7 +32,7 @@ return [
             'description' => 'Offene und laufende Einträge des Teams, heute Archiviertes, Mitarbeiterzahl.',
         ],
         'today_shifts' => [
-            'description' => 'Deine Schichten des heutigen Tages.',
+            'description' => 'Ihre Schichten des heutigen Tages.',
         ],
         'upcoming_shifts' => [
             'description' => 'Die nächsten Rufbereitschaften und Schichten.',
@@ -44,16 +44,16 @@ return [
             'description' => 'Dienstplan der nächsten sieben Tage.',
         ],
         'open_issues' => [
-            'description' => 'Offene Punkte, die dir zugewiesen sind — nach Fälligkeit.',
+            'description' => 'Offene Punkte, die Ihnen zugewiesen sind — nach Fälligkeit.',
         ],
         'recent_entries' => [
-            'description' => 'Deine zuletzt bearbeiteten Einträge.',
+            'description' => 'Ihre zuletzt bearbeiteten Einträge.',
         ],
         'recent_comments' => [
-            'description' => 'Neue Kommentare auf deinen Einträgen.',
+            'description' => 'Neue Kommentare auf Ihren Einträgen.',
         ],
         'recent_attachments' => [
-            'description' => 'Neue Anhänge auf deinen Einträgen.',
+            'description' => 'Neue Anhänge auf Ihren Einträgen.',
         ],
         'team_activity' => [
             'description' => 'Die letzten Kommentare im Team.',
@@ -71,7 +71,7 @@ return [
             'description' => 'Ein- und Ausstempeln, Pause und Zwischenstatus.',
         ],
         'bookmarks' => [
-            'description' => 'Deine gespeicherten Lesezeichen.',
+            'description' => 'Ihre gespeicherten Lesezeichen.',
         ],
         'data_protection' => [
             'description' => 'Überfällige Prüfungen im Verzeichnis und offene Betroffenenanfragen.',
@@ -86,25 +86,25 @@ return [
             'description' => 'Gleitzeit-Saldo des zuletzt abgerechneten Monats mit Ampel.',
         ],
         'time_accounts' => [
-            'description' => 'Salden deiner Zeitkonten (Überstunden, Sonderkonten).',
+            'description' => 'Salden Ihrer Zeitkonten (Überstunden, Sonderkonten).',
         ],
         'time_corrections' => [
-            'description' => 'Deine Korrekturanträge, die noch in Arbeit oder eingereicht sind.',
+            'description' => 'Ihre Korrekturanträge, die noch in Arbeit oder eingereicht sind.',
         ],
         'reminders' => [
             'description' => 'Fällige Aufgaben aus Spesen, Reisen und Urlaub — dieselben wie unter der Glocke.',
         ],
         'kanban_status' => [
-            'description' => 'Wie viele deiner Aufträge in welcher Kanban-Spalte stehen.',
+            'description' => 'Wie viele Ihrer Aufträge in welcher Kanban-Spalte stehen.',
         ],
         'service_tickets' => [
-            'description' => 'Offene Tickets, die dir zugewiesen sind.',
+            'description' => 'Offene Tickets, die Ihnen zugewiesen sind.',
         ],
         'chat_unread' => [
             'description' => 'Ungelesene Nachrichten je Kanal.',
         ],
         'approvals' => [
-            'description' => 'Spesen und Urlaubsanträge, die auf deine Entscheidung warten.',
+            'description' => 'Spesen und Urlaubsanträge, die auf Ihre Entscheidung warten.',
         ],
         'asset_compliance' => [
             'description' => 'Überfällige und bald fällige Prüfungen aus dem Prüfkalender.',
@@ -122,10 +122,10 @@ return [
             'description' => 'Anstehende Prüfungen von Gefährdungsbeurteilungen und Vorsorgeterminen.',
         ],
         'training_due' => [
-            'description' => 'Deine offenen Schulungs- und Unterweisungspflichten.',
+            'description' => 'Ihre offenen Schulungs- und Unterweisungspflichten.',
         ],
         'learning_due' => [
-            'description' => 'Deine offenen Schulungen der Lernplattform — überfällige zuerst.',
+            'description' => 'Ihre offenen Schulungen der Lernplattform — überfällige zuerst.',
         ],
         'learning_grading_queue' => [
             'description' => 'Abgaben, Aufsätze und Lernzeit-Freigaben, die auf Bewertung warten.',

@@ -25,12 +25,12 @@ sie werden nie roh geschrieben und lassen sich nicht nachträglich
 - **Benutzer** und
 - **Zeitraum** (über den globalen Datumsfilter)
 
-einschränken. Pro Eintrag siehst du Zeitpunkt, auslösenden Benutzer,
+einschränken. Pro Eintrag sehen Sie Zeitpunkt, auslösenden Benutzer,
 Aktion, Objekt, die konkreten Änderungen und die IP-Adresse.
 
 **Integrität prüfen**: Die Hash-Kette wird über den Konsolenbefehl
 `php artisan audit:verify` geprüft. Er validiert die Verkettung und
-endet bei einem Bruch mit Exit-Code 1 – ideal für Cron/CI. Halte den
+endet bei einem Bruch mit Exit-Code 1 – ideal für Cron/CI. Halten Sie den
 Befehl dauerhaft grün; ein Bruch deutet auf Manipulation oder einen
 Datenfehler hin. Mit `--chain` lässt sich gezielt eine einzelne Kette
 prüfen (`audit_logs` bzw. `organization_audit_logs`).

@@ -30,11 +30,9 @@ class RemoteSupportServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function bootPlugin(): void {
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                SyncSessionsCommand::class,
-                RetagEntriesCommand::class,
-            ]);
-        }
+        $this->commands([
+            SyncSessionsCommand::class,
+            RetagEntriesCommand::class,
+        ]);
     }
 }

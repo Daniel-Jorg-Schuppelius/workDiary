@@ -14,6 +14,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\{LexofficeArticle, User};
 use App\Plugins\Lexoffice\{LexofficeArticleSync, LexofficeConfig};
+use App\Support\ErrorText;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
@@ -110,7 +111,7 @@ class LexofficeArticleController extends Controller {
                 'archived' => $result['archived'],
             ]));
         } catch (Throwable $e) {
-            return back()->with('error', __('Sync fehlgeschlagen: :msg', ['msg' => $e->getMessage()]));
+            return back()->with('error', __('Sync fehlgeschlagen: :msg', ['msg' => ErrorText::for($e)]));
         }
     }
 

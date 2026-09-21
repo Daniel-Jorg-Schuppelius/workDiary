@@ -93,6 +93,15 @@ final class AppointmentBookingTest extends TestCase {
         $this->assertSame($this->admin->id, $fresh?->decided_by);
     }
 
+    /** MVP-823: der Slot kommt als Ortszeit mit Offset, gespeichert wird UTC — die Bestätigung übernimmt ihn unverändert. */
+    public function test_portal_request_is_stored_in_utc(): void {
+        $request = $this->request(CarbonImmutable::parse('2030-07-10T09:00:00+02:00'));
+
+        $this->assertSame('2030-07-10 07:00:00', $request->fresh()?->getRawOriginal('start_at'));
+        $entry = app(AppointmentRequestService::class)->confirm($request->fresh(), $this->admin);
+        $this->assertSame('2030-07-10 07:00:00', $entry->fresh()?->getRawOriginal('start_at'));
+    }
+
     /** Der Vorlauf der Leistungsart gilt. */
     public function test_lead_time_is_enforced(): void {
         $this->expectException(\RuntimeException::class);

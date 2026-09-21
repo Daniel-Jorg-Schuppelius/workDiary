@@ -38,7 +38,7 @@ class CustomerCircularMail extends Mailable {
     }
 
     public function content(): Content {
-        return new Content(view: 'mail.customer-circular', with: [
+        return new Content(markdown: 'mail.customer-circular', with: [
             'circular' => $this->circular,
             'customer' => $this->customer,
             'body' => $this->body,

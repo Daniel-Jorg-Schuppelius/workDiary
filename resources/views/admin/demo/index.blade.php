@@ -77,7 +77,7 @@
 
         @if ($alreadySeeded && $organization->demo_seeded_at)
             <p class="text-xs text-muted">
-                {{ __('Letzter Seed: :at', ['at' => $organization->demo_seeded_at->translatedFormat('d.m.Y H:i')]) }}
+                {{ __('Letzter Seed: :at', ['at' => $organization->demo_seeded_at->orgTz()->translatedFormat('d.m.Y H:i')]) }}
             </p>
         @endif
     </x-card>

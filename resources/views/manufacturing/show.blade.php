@@ -259,7 +259,7 @@
                         <td class="tabular-nums">{{ $report->good_qty }}</td>
                         <td class="tabular-nums">{{ $report->scrap_qty }}</td>
                         <td class="tabular-nums">{{ $report->rework_qty }}</td>
-                        <td>{{ $report->reported_at?->format('d.m.Y H:i') }}</td>
+                        <td>{{ $report->reported_at?->orgTz()->format('d.m.Y H:i') }}</td>
                     </tr>
                 @endforeach
             </x-table>

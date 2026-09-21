@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Support\Crypto;
 
+use App\Exceptions\ModuleKeyMissingException;
 use RuntimeException;
 use SensitiveParameter;
 
@@ -87,7 +88,7 @@ class EnvelopeCrypto {
     private function kek(): string {
         $configured = (string) config($this->keyConfigKey);
         if ($configured === '') {
-            throw new RuntimeException(
+            throw new ModuleKeyMissingException(
                 "{$this->keyName} ist nicht gesetzt – das Modul verweigert ohne eigenen Schluessel den Dienst."
             );
         }
@@ -102,7 +103,7 @@ class EnvelopeCrypto {
         // "geheim" wurde ein gueltiger Schluessel, und niemand merkte, dass
         // der Modulschluessel keine 32 zufaelligen Bytes hatte. Das Preflight
         // weist darauf hin, durchgesetzt hat es niemand.
-        throw new RuntimeException(
+        throw new ModuleKeyMissingException(
             "{$this->keyName} muss 32 zufaellige Bytes sein (roh oder base64). "
             . 'Erzeugen: php artisan tinker --execute="echo base64_encode(random_bytes(32));"'
         );

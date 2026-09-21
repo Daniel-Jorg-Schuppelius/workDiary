@@ -9119,7 +9119,7 @@ CREATE TABLE `invoice_items` (
   `tour_id` bigint(20) unsigned DEFAULT NULL,
   `article_id` bigint(20) unsigned DEFAULT NULL,
   `rental_charge_id` bigint(20) unsigned DEFAULT NULL,
-  `description` varchar(255) NOT NULL,
+  `description` text NOT NULL,
   `quantity` decimal(12,3) NOT NULL DEFAULT 1.000,
   `unit` varchar(32) NOT NULL DEFAULT 'h',
   `unit_price` decimal(12,4) NOT NULL DEFAULT 0.0000,
@@ -21958,3 +21958,6 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (821,'2027_02_22_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (822,'2027_02_22_100700_create_msgraph_onenote_connections',88);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (823,'2027_02_22_100800_sso_domain_unique_per_organization',89);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (824,'2027_02_22_100900_create_document_version_texts',90);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (825,'2027_02_22_101000_widen_invoice_item_description',91);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (826,'2027_02_22_101100_convert_local_times_to_utc',92);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (827,'2027_02_22_101200_convert_imported_sync_times_to_utc',93);

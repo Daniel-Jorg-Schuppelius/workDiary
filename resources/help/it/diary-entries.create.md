@@ -27,11 +27,11 @@ i suoi passaggi di stato tracciano il ciclo di vita della commessa.
 
 ## Procedura consigliata
 
-1. Apri **«Nuova voce»** nella barra superiore o l'azione rapida in
+1. Apra **«Nuova voce»** nella barra superiore o l'azione rapida in
    dashboard.
-2. Registra il **cliente** (obbligatorio) ed eventualmente il
+2. Registri il **cliente** (obbligatorio) ed eventualmente il
    **progetto**.
-3. Scegli il **tipo di voce** e descrivi il **contenuto** in una o due
+3. Scelga il **tipo di voce** e descriva il **contenuto** in una o due
    frasi.
 4. Facoltativo: una **durata prevista** in minuti.
 5. I passaggi di stato avvengono poi nella **finestra di dettaglio** —

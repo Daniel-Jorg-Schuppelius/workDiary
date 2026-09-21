@@ -41,78 +41,78 @@ return [
         'org' => [
             'profile' => [
                 'title' => 'Completar los datos de la organización',
-                'description' => 'Mantén el nombre, la zona horaria y los ajustes básicos locales de la organización.',
+                'description' => 'Mantenga el nombre, la zona horaria y los ajustes básicos locales de la organización.',
                 'link' => 'Abrir organización',
             ],
             'branch_profile' => [
                 'title' => 'Elegir perfil de sector',
-                'description' => 'Selecciona un perfil de sector para disponer de valores predeterminados adecuados para las clasificaciones.',
+                'description' => 'Seleccione un perfil de sector para disponer de valores predeterminados adecuados para las clasificaciones.',
                 'link' => 'Abrir perfiles de sector',
             ],
             'scope' => [
                 'title' => 'Elegir el alcance funcional',
-                'description' => 'Elige un preajuste de alcance funcional o ajusta los módulos activos: lo que no necesites permanece oculto sin perder datos.',
+                'description' => 'Elija un preajuste de alcance funcional o ajuste los módulos activos: lo que no necesite permanece oculto sin perder datos.',
                 'link' => 'Abrir alcance funcional',
             ],
             'workspaces' => [
                 'title' => 'Configurar áreas de trabajo',
-                'description' => 'Elige qué áreas aparecen en el selector y cuál es la predeterminada — cualquiera puede cambiar en cualquier momento.',
+                'description' => 'Elija qué áreas aparecen en el selector y cuál es la predeterminada — cualquiera puede cambiar en cualquier momento.',
                 'link' => 'Abrir áreas de trabajo',
             ],
         ],
         'users' => [
             'invite' => [
                 'title' => 'Invitar a los primeros usuarios',
-                'description' => 'Invita al menos a otra persona activa a tu organización.',
+                'description' => 'Invite al menos a otra persona activa a su organización.',
                 'link' => 'Abrir miembros',
             ],
         ],
         'roles' => [
             'check' => [
                 'title' => 'Verificar roles',
-                'description' => 'Asegúrate de que haya asignados al menos un administrador de organización y un operador.',
+                'description' => 'Asegúrese de que haya asignados al menos un administrador de organización y un operador.',
                 'link' => 'Abrir gestión de accesos',
             ],
         ],
         'classification' => [
             'check' => [
                 'title' => 'Verificar clasificaciones',
-                'description' => 'Confirma o sustituye al menos un dominio de clasificación para la organización.',
+                'description' => 'Confirme o sustituya al menos un dominio de clasificación para la organización.',
                 'link' => 'Abrir clasificaciones',
             ],
         ],
         'customer' => [
             'first' => [
                 'title' => 'Crear el primer cliente',
-                'description' => 'Añade el primer cliente manualmente o mediante importación CSV.',
+                'description' => 'Añada el primer cliente manualmente o mediante importación CSV.',
                 'link' => 'Abrir clientes',
             ],
         ],
         'work' => [
             'first' => [
                 'title' => 'Primer proyecto o trabajo',
-                'description' => 'Crea un primer proyecto o inicia la primera entrada de diario.',
+                'description' => 'Cree un primer proyecto o inicie la primera entrada de diario.',
                 'link' => 'Abrir proyectos',
             ],
         ],
         'time' => [
             'first' => [
                 'title' => 'Primera entrada de tiempo',
-                'description' => 'Registra al menos una entrada de tiempo para activar el registro de tiempo.',
+                'description' => 'Registre al menos una entrada de tiempo para activar el registro de tiempo.',
                 'link' => 'Abrir registro de tiempo',
             ],
         ],
         'protocol' => [
             'first_signed' => [
                 'title' => 'Firmar el primer protocolo',
-                'description' => 'Crea un protocolo y completa la firma.',
+                'description' => 'Cree un protocolo y complete la firma.',
                 'link' => 'Abrir diario',
             ],
         ],
         'backup' => [
             'heartbeat' => [
                 'title' => 'Heartbeat de copia de seguridad',
-                'description' => 'Configura la ejecución de la copia de seguridad para que se escriban heartbeats correctos con regularidad.',
+                'description' => 'Configure la ejecución de la copia de seguridad para que se escriban heartbeats correctos con regularidad.',
                 'link' => 'Abrir registro de auditoría',
             ],
         ],

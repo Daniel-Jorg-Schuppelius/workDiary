@@ -16,7 +16,7 @@
     $employmentHint = $member ? app(\App\Services\Payroll\PayrollClassifier::class)->mismatchHint($member) : null;
 @endphp
 <x-form-group :legend="__('Vergütung & Lohn')" icon="payments" tone="warning" cols="2"
-              x-data="reveal(@js(old('compensation_model', $member?->compensation_model?->value ?? '')))">
+              x-data="reveal({{ \Illuminate\Support\Js::from(old('compensation_model', $member?->compensation_model?->value ?? '')) }})">
     {{-- Vergütungsmodell steuert, welche Felder gelten: intern (dt. Lohn),
          pauschal (Festbetrag) oder extern nach Zeitaufwand (Stundensatz). --}}
     <x-select-field name="compensation_model" :label="__('Vergütungsmodell')" span="2"

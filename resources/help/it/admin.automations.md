@@ -14,7 +14,7 @@ Le automazioni sono flussi basati su regole secondo lo schema
 **evento → condizione → azione**: quando si verifica l'evento di
 attivazione e le condizioni corrispondono, vengono eseguite le azioni
 associate, sempre limitate alla propria organizzazione. Nella
-panoramica puoi **creare** regole (condizioni e azioni per ora in
+panoramica può **creare** regole (condizioni e azioni per ora in
 JSON), **attivarle/disattivarle**, consultare nel dettaglio le
 esecuzioni recenti ed **eliminarle**. La **priorità** determina
 l'ordine tra più regole corrispondenti (valore più basso per primo);

@@ -13,7 +13,7 @@ declare(strict_types=1);
 // Buchhaltungswechsel (Feature 008/045/077, MVP-653).
 return [
     'title' => 'Cambio di software contabile',
-    'intro' => 'Pianifica il cambio del software contabile, verificalo come simulazione, mettilo in sicurezza con l’esercizio parallelo, commuta alla data di switch e chiudilo con attestazione. WorkDiary associa entrambi i sistemi esterni agli stessi oggetti locali — i documenti finalizzati non vengono mai ricostruiti.',
+    'intro' => 'Pianifichi il cambio del software contabile, lo verifichi come simulazione, lo metta in sicurezza con l’esercizio parallelo, commuti alla data di switch e lo chiuda con attestazione. WorkDiary associa entrambi i sistemi esterni agli stessi oggetti locali — i documenti finalizzati non vengono mai ricostruiti.',
     'plan_heading' => 'Pianifica il cambio',
     'plan_hint' => 'Un solo cambio per organizzazione alla volta. L’analisi non scrive in alcun sistema esterno.',
     'areas' => 'Aree dati',

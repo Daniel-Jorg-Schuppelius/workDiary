@@ -22,9 +22,6 @@
                     show-label>{{ __('Neues Template') }}</x-icon-btn>
     </x-slot:actions>
 
-    @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
-    @endif
 
     <x-filter-bar :action="route('admin.invoice-mail-templates.index')" :reset="route('admin.invoice-mail-templates.index')">
         <input type="text" name="q" value="{{ $search ?? '' }}"

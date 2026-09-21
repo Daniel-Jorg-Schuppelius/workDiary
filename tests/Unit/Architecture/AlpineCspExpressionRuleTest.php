@@ -85,6 +85,89 @@ class AlpineCspExpressionRuleTest extends TestCase {
     }
 
     /**
+     * Der CSP-Build wirft bei jeder Direktive auf <iframe>/<script>
+     * („Evaluating expressions on an iframe is prohibited“) — die PDF-Vorschau
+     * des Dokumentdesign-Editors lud deshalb nie (UI-Fuzz 2026-09-21).
+     * Solche Attribute setzt das Komponenten-JS (z. B. per Alpine.effect).
+     */
+    public function test_no_alpine_directives_on_iframe_or_script_tags(): void {
+        $violations = [];
+
+        foreach ($this->bladeFiles() as $file) {
+            $relative = $this->relativePath($file);
+            if ($this->isAllowListed($relative, self::ALLOW_LIST)) {
+                continue;
+            }
+
+            $source = $this->neutralizeBladePhp($this->stripBladeComments((string) file_get_contents($file)));
+
+            if (preg_match_all('/<(iframe|script)\b[^>]*>/i', $source, $tags, PREG_OFFSET_CAPTURE) === 0) {
+                continue;
+            }
+
+            foreach ($tags[0] as [$tag, $offset]) {
+                // Blade-Direktiven wie @cspNonce haben kein "=" — nur Alpine-Bindings zählen.
+                if (preg_match('/\s(x-[a-z][\w:.-]*|@[a-z][\w:.-]*|:[a-z][\w:.-]*)\s*=/i', $tag, $attr) === 1) {
+                    $violations[] = sprintf('%s:%d — %s', $relative, $this->lineOf($source, (int) $offset), trim($attr[0], " \t\n="));
+                }
+            }
+        }
+
+        sort($violations);
+
+        $this->assertSame([], $violations, "Alpine-Direktive auf <iframe>/<script> — der CSP-Build verweigert sie.\n"
+            . "Das Attribut im Komponenten-JS setzen.\n\n"
+            . implode("\n", $violations));
+    }
+
+    /**
+     * Js::from/@js macht aus einem nicht leeren Array `JSON.parse('…')` — den
+     * Aufruf kennt der CSP-Evaluator nicht, die Komponente startet nie (UI-Fuzz
+     * 2026-09-21: Entsorgungsdialog, sobald Standorte existierten; Quiz-Runner
+     * immer). Arrays gehören in ein data-*-Attribut ({{ json_encode(…) }}).
+     * Heuristik: Variable wird in derselben View als Array/Collection belegt.
+     */
+    public function test_alpine_directives_receive_no_arrays_via_js_helper(): void {
+        $violations = [];
+
+        foreach ($this->bladeFiles() as $file) {
+            $relative = $this->relativePath($file);
+            if ($this->isAllowListed($relative, self::ALLOW_LIST)) {
+                continue;
+            }
+            $source = $this->stripBladeComments((string) file_get_contents($file));
+
+            if (preg_match_all('/\s(?:x-[a-z:.-]+|@[a-z:.-]+|:[a-z][a-z0-9:.-]*)\s*=\s*"([^"]*)"/i', $source, $attributes, PREG_OFFSET_CAPTURE) === 0) {
+                continue;
+            }
+            foreach ($attributes[1] as [$value, $offset]) {
+                if (preg_match('/(?:@js|Js::from)\(\s*\[/', $value) === 1) {
+                    $violations[] = sprintf('%s:%d — Array-Literal', $relative, $this->lineOf($source, (int) $offset));
+                }
+                if (preg_match_all('/(?:@js|Js::from)\(\s*\$(\w+)\s*\)/', $value, $vars) === 0) {
+                    continue;
+                }
+                foreach ($vars[1] as $var) {
+                    // Zuweisung bis Zeilenende; implode()/Str::… liefern Strings.
+                    if (preg_match('/\$' . $var . '\s*=\s*([^\n]*)/', $source, $assignment) !== 1
+                        || preg_match('/implode\(|^\\?(?:Illuminate\\\\Support\\\\)?Str::/', $assignment[1]) === 1) {
+                        continue;
+                    }
+                    if (preg_match('/^(?:\[|collect\(|[^;]*->(?:map|mapWithKeys|values|pluck|toArray|all|keys)\()/', $assignment[1]) === 1) {
+                        $violations[] = sprintf('%s:%d — $%s', $relative, $this->lineOf($source, (int) $offset), $var);
+                    }
+                }
+            }
+        }
+
+        sort($violations);
+
+        $this->assertSame([], $violations, "Array per @js/Js::from in einer Alpine-Direktive — im CSP-Build tot.\n"
+            . "Als data-*-Attribut übergeben ({{ json_encode(…) }}) und in init() lesen.\n\n"
+            . implode("\n", $violations));
+    }
+
+    /**
      * Ersetzt {{ … }} sowie @js(…)/@json(…) (balancierte Klammern) durch
      * Leerzeichen — Zeilenumbrüche bleiben, damit Zeilennummern stimmen.
      */

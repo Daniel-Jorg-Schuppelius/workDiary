@@ -23,7 +23,7 @@
         <x-page-toolbar>
             <div class="flex min-w-0 items-center gap-2">
                 <span class="truncate font-medium">{{ $run->route?->name }}</span>
-                <span class="text-sm text-muted">{{ __('gestartet :time', ['time' => $run->started_at->format('H:i')]) }}</span>
+                <span class="text-sm text-muted">{{ __('gestartet :time', ['time' => $run->started_at->orgTz()->format('H:i')]) }}</span>
             </div>
             <x-slot:actions>
                 @if ($run->status !== PatrolRun::STATUS_RUNNING)
@@ -64,7 +64,7 @@
                     </div>
                     <div class="shrink-0 text-right text-xs">
                         @if ($scan)
-                            <span class="font-medium">{{ $scan->scanned_at->format('H:i') }}</span>
+                            <span class="font-medium">{{ $scan->scanned_at->orgTz()->format('H:i') }}</span>
                             @unless ($scan->in_window)
                                 {{-- Abweichung wird gezeigt, nie geglättet. --}}
                                 <span class="block text-warning">{{ $scan->delta_minutes > 0 ? '+' : '' }}{{ $scan->delta_minutes }} min</span>

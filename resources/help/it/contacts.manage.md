@@ -32,13 +32,13 @@ funzionano senza rilavorazioni.
 
 ## Procedura consigliata
 
-1. **Cercare prima di creare:** verifica se il partner esiste già —
+1. **Cercare prima di creare:** verifichi se il partner esiste già —
    così non nascono duplicati. I duplicati esistenti si possono
    unire; la cronologia segue.
-2. Crea il contatto con nome, indirizzo e referenti.
-3. Completa dati di pagamento e fatturazione e gli identificativi
+2. Crei il contatto con nome, indirizzo e referenti.
+3. Completi dati di pagamento e fatturazione e gli identificativi
    esterni — guidano fatturazione e consegna contabile.
-4. Collega progetti, sedi e accordi man mano che nascono.
+4. Colleghi progetti, sedi e accordi man mano che nascono.
 
 ![Elenco clienti con numeri, contatti, tariffe orarie e numero di progetti](media/kunden/kundenliste.png)
 *L’elenco clienti: anagrafica, tariffa oraria e progetti collegati per partner.*

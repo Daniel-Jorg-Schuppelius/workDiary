@@ -31,7 +31,7 @@ class SaveAssetRequest extends BaseFormRequest {
         return [
             'asset_class' => ['required', new Enum(AssetClass::class)],
             'category_code' => ['nullable', 'string', 'max:64', Rule::in($categoryCodes)],
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:180'],
             'manufacturer' => ['nullable', 'string', 'max:120'],
             'model' => ['nullable', 'string', 'max:120'],
             // Typ-Zuordnung (produktmodell-konzept.md, MVP-370).

@@ -102,7 +102,8 @@ class PluginAdminControllerTest extends TestCase {
         $this->actingAs($this->admin)
             ->postJson(route('admin.plugins.health-check', 'admintest'))
             ->assertOk()
-            ->assertJson(['status' => PluginHealth::STATUS_OK]);
+            // Anzeigetext für den Dialog statt Rohwert „ok“.
+            ->assertJson(['status' => PluginHealth::STATUS_OK, 'label' => \App\Enums\Plugin\PluginHealthStatus::Ok->label()]);
 
         $state = PluginState::query()->where('plugin_id', 'admintest')->firstOrFail();
         $this->assertSame(PluginHealth::STATUS_OK, $state->last_health_status);
@@ -113,7 +114,7 @@ class PluginAdminControllerTest extends TestCase {
         $this->actingAs($this->admin)
             ->postJson(route('admin.plugins.health-check', 'admintest'))
             ->assertStatus(422)
-            ->assertJson(['status' => 'disabled']);
+            ->assertJson(['status' => 'disabled', 'label' => __('Deaktiviert')]);
 
         $this->assertSame(0, PluginState::query()->where('plugin_id', 'admintest')->count());
     }

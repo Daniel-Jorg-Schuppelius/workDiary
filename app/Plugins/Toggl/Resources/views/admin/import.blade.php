@@ -27,9 +27,6 @@
                 {{ __('Zeiteinträge per API abrufen oder einen Detailed-Report-CSV-Export hochladen. Zuordenbare Einträge werden direkt im Kundenprojekt gebucht, der Rest landet in der zentralen Zuordnungs-Inbox.') }}
             </p>
 
-            @if (session('status'))
-                <div class="alert alert-success mb-3 text-sm">{{ session('status') }}</div>
-            @endif
             @if ($errors->any())
                 <div class="alert alert-error mb-3 text-sm">{{ $errors->first() }}</div>
             @endif

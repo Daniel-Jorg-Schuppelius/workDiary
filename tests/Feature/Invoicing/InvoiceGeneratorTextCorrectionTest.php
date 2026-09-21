@@ -88,4 +88,14 @@ class InvoiceGeneratorTextCorrectionTest extends TestCase {
         // Quelldaten bleiben unangetastet.
         $this->assertSame('Server geprüfft', $this->entry->fresh()->description);
     }
+
+    /** UI-Fuzz 2026-09-21: Zeiten erlauben 500 Zeichen, die Rechnungsposition fasste nur 255 (1406 im Rechnungslauf). */
+    public function test_long_time_entry_text_reaches_the_invoice_line_in_full(): void {
+        $text = str_repeat('Serverwartung mit Protokoll. ', 17);
+        $this->entry->update(['description' => $text]);
+
+        $invoice = app(InvoiceGenerator::class)->fromTimeEntries($this->customer->fresh(), null);
+
+        $this->assertStringContainsString(trim($text), (string) $invoice->items->first()->description);
+    }
 }

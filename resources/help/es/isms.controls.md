@@ -12,7 +12,7 @@ related:
     - glossary.core
 ---
 
-Las **medidas** son neutrales respecto a las normas: describen CÓMO tu
+Las **medidas** son neutrales respecto a las normas: describen CÓMO su
 organización implementa algo, sin referencia normativa; la asignación a
 requisitos y riesgos se hace mediante vínculos múltiples. Flujo: crear
 la medida (título, descripción, responsable), fijar el **estado de

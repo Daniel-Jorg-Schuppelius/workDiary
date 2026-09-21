@@ -34,7 +34,7 @@
     </x-form-group>
 
     <x-form-group :legend="__('Rolle & Zuständigkeit')" icon="diversity_3" tone="ghost" cols="2">
-        <x-input-field name="controller_role" :label="__('Eure Rolle bei diesem Vorfall')">
+        <x-input-field name="controller_role" :label="__('Ihre Rolle bei diesem Vorfall')">
             <select id="controller_role" name="controller_role" class="select select-bordered w-full">
                 <option value="controller" @selected(old('controller_role', 'controller') === 'controller')>{{ __('Eigener Vorfall (Verantwortlicher, Art. 33)') }}</option>
                 <option value="processor" @selected(old('controller_role') === 'processor')>{{ __('AV-Vorfall (Auftragsverarbeiter – Kunde meldet, Art. 33 Abs. 2)') }}</option>

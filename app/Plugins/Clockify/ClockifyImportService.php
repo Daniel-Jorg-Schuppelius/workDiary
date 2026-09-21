@@ -14,6 +14,7 @@ use App\Models\Organization;
 use App\Plugins\Clockify\Exceptions\ClockifyApiException;
 use App\Plugins\Clockify\Sources\{ClockifyApiClient, ClockifyCsvParser};
 use App\Plugins\Support\{ImportedTimeEntry, MatchingTimeImportService, RemoteSyncWindow};
+use App\Support\Tz;
 use Carbon\CarbonImmutable;
 
 /**
@@ -44,7 +45,7 @@ class ClockifyImportService extends MatchingTimeImportService {
      * @return array{created: int, skipped: int, unmatched: int, unresolved_users: int, updated: int, conflicts: int, removed: int}
      */
     public function importFromCsv(Organization $organization, string $csvContent, array $config): array {
-        return $this->ingest($organization, $this->csvParser->parse($csvContent), $config);
+        return $this->ingest($organization, $this->csvParser->parse($csvContent, Tz::ofOrganization($organization)), $config);
     }
 
     /**

@@ -27,8 +27,6 @@ class EasybillServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function registerPlugin(): void {
-        if ($this->app->runningInConsole()) {
-            $this->commands([EasybillSyncCommand::class]);
-        }
+        $this->commands([EasybillSyncCommand::class]);
     }
 }

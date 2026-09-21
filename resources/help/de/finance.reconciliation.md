@@ -21,7 +21,7 @@ Spese als erstattet.
 ## Ablauf
 
 1. **Importieren:** Bankdatei hochladen (optional ein eigenes Bankkonto
-   wählen; sonst wird es automatisch über die IBAN zugeordnet). Gleiche Dateien
+   wählen; sonst wird es automatisch über die IBAN zugeordnet). Identische Dateien
    werden über den Datei-Hash als Dublette abgewiesen; bereits bekannte Umsätze
    werden beim erneuten Import übersprungen.
 2. **Prüfen:** Im Auszug-Detail zeigt jeder Umsatz einen Status

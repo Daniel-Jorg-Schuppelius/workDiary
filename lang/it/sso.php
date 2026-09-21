@@ -10,11 +10,11 @@
 
 return [
     'title' => 'SSO e servizi di directory',
-    'intro' => 'Provisioning SCIM 2.0: il vostro provider di identità (Entra ID, Keycloak, Okta …) crea, aggiorna e disattiva gli account. Un account disattivato non può più accedere immediatamente; ruoli e dati aziendali restano in WorkDiary. Autenticazione tramite un token bearer per organizzazione.',
+    'intro' => 'Provisioning SCIM 2.0: il suo provider di identità (Entra ID, Keycloak, Okta …) crea, aggiorna e disattiva gli account. Un account disattivato non può più accedere immediatamente; ruoli e dati aziendali restano in WorkDiary. Autenticazione tramite un token bearer per organizzazione.',
     'base_url' => 'URL base SCIM',
 
     'new_token_heading' => 'Nuovo token',
-    'new_token_hint' => 'Copialo ora — il testo in chiaro viene mostrato solo questa volta e successivamente memorizzato solo come hash.',
+    'new_token_hint' => 'Lo copi ora — il testo in chiaro viene mostrato solo questa volta e successivamente memorizzato solo come hash.',
 
     'issue_heading' => 'Emetti un token',
     'tokens_heading' => 'Token emessi',
@@ -49,7 +49,7 @@ return [
     ],
 
     'discover' => [
-        'hint' => 'Inserisci l’identificativo della tua organizzazione per avviare l’accesso tramite il tuo provider di identità.',
+        'hint' => 'Inserisca l’identificativo della sua organizzazione per avviare l’accesso tramite il suo provider di identità.',
         'org_label' => 'Identificativo organizzazione',
         'org_placeholder' => 'ad es. acme-srl',
         'email_label' => 'Indirizzo e-mail',

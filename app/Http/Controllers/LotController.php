@@ -14,6 +14,7 @@ use App\Enums\User\Permission as P;
 use App\Models\StockLot;
 use App\Services\Inventory\{LotService, LotSplitService};
 use App\Services\SqidEncoder;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -62,7 +63,7 @@ class LotController extends Controller {
         try {
             $this->split->split($lot, (string) $data['qty'], (string) $data['new_lot_no'], $data['best_before'] ?? null);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('inventory.lot.flash.split'));
@@ -84,7 +85,7 @@ class LotController extends Controller {
         try {
             $this->split->merge($from, $into);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('inventory.lot.flash.merged'));

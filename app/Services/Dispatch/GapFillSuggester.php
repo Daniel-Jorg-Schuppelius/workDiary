@@ -17,6 +17,7 @@ use App\Models\{AvailabilityWindow, DiaryEntry, DiaryEntryEvent, ScheduledShift,
 use App\Services\Location\GeofenceMatcher;
 use App\Services\Routing\{Coordinate, OsrmRouter};
 use App\Services\Schedule\QualificationGate;
+use App\Support\Tz;
 use Carbon\CarbonImmutable;
 
 /**
@@ -382,10 +383,13 @@ class GapFillSuggester {
 
     /** @return array{0: string, 1: string}|null */
     private function busyInterval(DiaryEntry $entry, CarbonImmutable $date): ?array {
-        if ($entry->start_at !== null && $entry->start_at->isSameDay($date)) {
-            $end = $entry->end_at ?? $entry->start_at->copy()->addMinutes($this->expectedDuration($entry));
+        // start_at/end_at sind UTC, die Fenster Ortszeit der Organisation.
+        $tz = $entry->organization !== null ? Tz::ofOrganization($entry->organization) : Tz::current();
+        $start = $entry->start_at?->copy()->setTimezone($tz);
+        if ($start !== null && $start->toDateString() === $date->toDateString()) {
+            $end = ($entry->end_at ?? $entry->start_at->copy()->addMinutes($this->expectedDuration($entry)))->copy()->setTimezone($tz);
 
-            return [$entry->start_at->format('H:i'), $end->format('H:i')];
+            return [$start->format('H:i'), $end->format('H:i')];
         }
         if ($entry->scheduled_for !== null && $entry->scheduled_for->toDateString() === $date->toDateString() && $entry->time_window_start !== null) {
             $start = substr((string) $entry->time_window_start, 0, 5);

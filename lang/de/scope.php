@@ -13,7 +13,7 @@ return [
     'focus' => [
         'admin' => [
             'title' => 'Arbeitsbereiche',
-            'subtitle' => 'Lege fest, welche Arbeitsbereiche deine Organisation im Umschalter anbietet, benenne sie um und wähle einen Standard.',
+            'subtitle' => 'Legen Sie fest, welche Arbeitsbereiche Ihre Organisation im Umschalter anbietet, benennen Sie sie um und wählen Sie einen Standard.',
             'hint' => 'Nur ein Vorschlag: der Standard-Arbeitsbereich wird niemandem aufgezwungen — jede Person kann jederzeit wechseln. Ausblenden ändert keine Rechte.',
             'list_heading' => 'Angebotene Arbeitsbereiche',
             'configured_at' => 'Zuletzt festgelegt: :date',
@@ -32,8 +32,8 @@ return [
         'reveal_off' => 'Nur Fokus zeigen',
         'dialog' => [
             'eyebrow' => 'Ansicht fokussieren',
-            'title' => 'Womit arbeitest du gerade?',
-            'subtitle' => 'Wähle einen Arbeitsbereich — die Navigation zeigt dann nur die passenden Bereiche. Nichts wird gelöscht oder gesperrt; du kannst jederzeit wechseln.',
+            'title' => 'Womit arbeiten Sie gerade?',
+            'subtitle' => 'Wählen Sie einen Arbeitsbereich — die Navigation zeigt dann nur die passenden Bereiche. Nichts wird gelöscht oder gesperrt; Sie können jederzeit wechseln.',
             'footnote' => 'Ausgeblendete Bereiche bleiben über die globale Suche und „Alle anzeigen“ erreichbar.',
         ],
         'flash' => [
@@ -42,14 +42,14 @@ return [
         ],
         'personal' => [
             'title' => 'Eigener Arbeitsbereich',
-            'description' => 'Deine eigene Zusammenstellung von Menüpunkten.',
+            'description' => 'Ihre eigene Zusammenstellung von Menüpunkten.',
             'heading' => 'Eigene Arbeitsbereiche',
             'manage' => 'Eigene Arbeitsbereiche verwalten',
         ],
     ],
     'workspace' => [
         'title' => 'Eigene Arbeitsbereiche',
-        'subtitle' => 'Stelle dir eigene Arbeitsbereiche aus Menüpunkten zusammen. Sie erscheinen im Umschalter neben den vorgegebenen Ansichten und blenden nur aus — Rechte ändern sie nie.',
+        'subtitle' => 'Stellen Sie sich eigene Arbeitsbereiche aus Menüpunkten zusammen. Sie erscheinen im Umschalter neben den vorgegebenen Ansichten und blenden nur aus — Rechte ändern sie nie.',
         'create' => 'Neuer Arbeitsbereich',
         'edit' => 'Arbeitsbereich bearbeiten',
         'empty' => 'Noch kein eigener Arbeitsbereich angelegt',
@@ -59,7 +59,7 @@ return [
         'items' => 'Menüpunkte',
         'available' => 'Verfügbar',
         'selected' => 'Ausgewählt',
-        'items_hint' => 'Angeboten wird nur, was du ohnehin sehen darfst. Die Reihenfolge legst du per Ziehen oder mit den Schaltflächen fest.',
+        'items_hint' => 'Angeboten wird nur, was Sie ohnehin sehen dürfen. Die Reihenfolge legen Sie per Ziehen oder mit den Schaltflächen fest.',
         'add' => 'Hinzufügen',
         'remove' => 'Entfernen',
         'move_up' => 'Nach oben',
@@ -70,8 +70,8 @@ return [
         'delete_title' => 'Arbeitsbereich löschen',
         'delete_confirm' => 'Der Arbeitsbereich wird entfernt. Menüpunkte und Rechte bleiben unberührt.',
         'error' => [
-            'no_items' => 'Wähle mindestens einen Menüpunkt aus.',
-            'unknown_item' => 'Mindestens ein Menüpunkt steht dir nicht zur Verfügung.',
+            'no_items' => 'Wählen Sie mindestens einen Menüpunkt aus.',
+            'unknown_item' => 'Mindestens ein Menüpunkt steht Ihnen nicht zur Verfügung.',
         ],
         'flash' => [
             'created' => 'Arbeitsbereich angelegt.',
@@ -92,7 +92,7 @@ return [
     ],
     'presets' => [
         'heading' => 'Presets',
-        'hint' => 'Ein Preset ist eine Schreibhilfe: Es schaltet die Modul-Liste unten in einem Schritt. Danach kannst du einzeln nachjustieren.',
+        'hint' => 'Ein Preset ist eine Schreibhilfe: Es schaltet die Modul-Liste unten in einem Schritt. Danach können Sie einzeln nachjustieren.',
         'apply' => 'Preset „:preset“ anwenden',
         'all_modules' => 'Alle lizenzierten Module',
         'module_count' => '{1} :count Zusatzmodul|[2,*] :count Zusatzmodule',
@@ -118,8 +118,8 @@ return [
         'no_recommendation' => 'Für diese Organisation liegt keine Branchenprofil-Empfehlung vor.',
     ],
     'customize' => [
-        'subtitle' => 'Schalte ein, was in deinem Menü erscheinen soll — schalte aus, was du persönlich nicht brauchst. Gilt nur für dich, auf allen Geräten.',
-        'cosmetic_hint' => 'Ausblenden ändert keine Berechtigungen: Suche, Lesezeichen und direkte Links funktionieren weiterhin. Über „Alle Funktionen“ holst du alles zurück.',
+        'subtitle' => 'Schalten Sie ein, was in Ihrem Menü erscheinen soll — schalten Sie aus, was Sie persönlich nicht brauchen. Gilt nur für Sie, auf allen Geräten.',
+        'cosmetic_hint' => 'Ausblenden ändert keine Berechtigungen: Suche, Lesezeichen und direkte Links funktionieren weiterhin. Über „Alle Funktionen“ holen Sie alles zurück.',
         'sidebar_heading' => 'Seitennavigation',
         'hide_section' => 'ganzen Bereich ausblenden',
         'hide_group' => 'Untergruppe ausblenden',

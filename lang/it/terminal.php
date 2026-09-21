@@ -13,7 +13,7 @@ return [
     'intro' => 'Terminali RFID/NFC fissi permettono ai dipendenti senza dispositivo aziendale di timbrare entrata e uscita. Gli eventi confluiscono nella stessa logica di presenza delle timbrature da browser (correzioni, report). I token del dispositivo e gli identificativi dei badge vengono memorizzati solo come hash.',
 
     'new_heading' => 'URL di ingest del terminale',
-    'new_hint' => 'Inseriscilo ora nel terminale — il token viene mostrato solo questa volta.',
+    'new_hint' => 'Lo inserisca ora nel terminale — il token viene mostrato solo questa volta.',
 
     'terminals_heading' => 'Terminali',
     'no_terminals' => 'Nessun terminale registrato finora.',
@@ -45,7 +45,7 @@ return [
         'assign' => 'Assegna',
         'revoke' => 'Revoca',
         'rotate' => 'Ruota token',
-        'rotate_help' => 'Genera un nuovo token del dispositivo — il vecchio diventa subito non valido.',
+        'rotate_help' => 'Generi un nuovo token del dispositivo — il vecchio diventa subito non valido.',
     ],
 
     'col' => [
@@ -85,7 +85,7 @@ return [
         'pin_toggle' => 'Badge dimenticato? Timbra con PIN',
         'pin_submit' => 'Timbra',
         'heading' => 'Indirizzo del chiosco',
-        'hint' => 'Aprilo nel browser di un tablet: il tablet diventa un terminale di timbratura. Contiene lo stesso token; mostrato una sola volta.',
+        'hint' => 'Lo apra nel browser di un tablet: il tablet diventa un terminale di timbratura. Contiene lo stesso token; mostrato una sola volta.',
         'title' => 'Terminale di timbratura',
         'intro' => 'Avvicina il badge al lettore.',
         'mode' => 'Tipo di timbratura',
@@ -107,7 +107,7 @@ return [
             'rejected' => 'Timbratura rifiutata',
             'invalid_token' => 'Terminale disattivato',
             'unavailable' => 'Al momento non è possibile timbrare',
-            'network' => 'Nessuna connessione: riprova',
+            'network' => 'Nessuna connessione: riprovi',
             'nfc_unavailable' => 'NFC non disponibile su questo dispositivo',
             'error' => 'Errore nella timbratura',
         ],
@@ -136,7 +136,7 @@ return [
             'location_check' => 'Un codice può essere fotografato. Con un raggio il dispositivo deve essere vicino al momento della timbratura; senza coordinate proprie valgono quelle della sede. La posizione non viene salvata.',
         ],
         'error' => [
-            'radius_without_center' => 'Il raggio richiede una posizione: inserisci le coordinate o scegli una sede con coordinate.',
+            'radius_without_center' => 'Il raggio richiede una posizione: inserisca le coordinate o scelga una sede con coordinate.',
             'vehicle' => 'Veicolo non trovato.',
         ],
         'flash' => [
@@ -146,8 +146,8 @@ return [
         ],
         'qr' => [
             'alt' => 'Codice QR per il check-in «:name»',
-            'hint' => 'Scansiona con il telefono, accedi e conferma entrata o uscita.',
-            'nfc_hint' => 'Per un adesivo NFC, scrivi questo indirizzo come indirizzo web (URL) con un\'app NFC.',
+            'hint' => 'Scansioni con il telefono, acceda e confermi entrata o uscita.',
+            'nfc_hint' => 'Per un adesivo NFC, scriva questo indirizzo come indirizzo web (URL) con un\'app NFC.',
         ],
     ],
     'pin' => [
@@ -165,7 +165,7 @@ return [
             'personnel_number' => 'Matricola',
         ],
         'help' => [
-            'dialog' => 'Da 4 a 8 cifre. La persona riceve il PIN da te: in seguito non è più visibile.',
+            'dialog' => 'Da 4 a 8 cifre. La persona riceve il PIN da Lei: in seguito non è più visibile.',
             'personnel_number' => 'Solo persone con matricola: è la seconda parte dell\'accesso al terminale.',
         ],
         'status' => [

@@ -123,6 +123,22 @@ class AiAdminHttpTest extends TestCase {
         $this->assertDatabaseMissing('ai_provider_connections', ['name' => 'Google Translate']);
     }
 
+    /** UI-Fuzz 2026-09-21: ein doppelter Verbindungsname sprengte aipc_org_name_uq (HTTP 500). */
+    public function test_duplicate_connection_name_is_a_field_error(): void {
+        AiProviderConnection::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Vergeben']);
+        $other = AiProviderConnection::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Zweite']);
+
+        $this->actingAs($this->admin)->post(route('admin.ai.store'), [
+            'name' => 'Vergeben',
+            'family' => 'llm',
+            'provider' => 'fake',
+        ])->assertSessionHasErrors('name');
+        $this->actingAs($this->admin)->patch(route('admin.ai.update', $other), ['name' => 'Vergeben'])
+            ->assertSessionHasErrors('name');
+
+        $this->assertSame(1, AiProviderConnection::query()->where('name', 'Vergeben')->count());
+    }
+
     public function test_edit_and_update_repair_a_disabled_connection(): void {
         $connection = AiProviderConnection::factory()->create([
             'organization_id' => $this->organization->id,

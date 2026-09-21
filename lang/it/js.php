@@ -10,7 +10,7 @@
 
 return [
     'dialog' => [
-        'check_input' => 'Controlla i dati inseriti.',
+        'check_input' => 'Controlli i dati inseriti.',
         'save_failed' => 'Impossibile salvare la finestra di dialogo.',
         'load_failed' => 'Impossibile caricare la finestra di dialogo.',
         'loading' => 'Caricamento…',
@@ -45,7 +45,7 @@ return [
         'type_active_no' => 'no',
     ],
     'bulk' => [
-        'select_one' => 'Seleziona prima almeno una voce.',
+        'select_one' => 'Selezioni prima almeno una voce.',
     ],
     'design' => [
         'inheritance' => '«:base» · :inherited/:total ereditati, :own sovrascritti',
@@ -57,7 +57,7 @@ return [
     ],
     'kanban' => [
         'invalid_move' => 'Questo cambio di stato non è previsto nel flusso di lavoro dell\'ordine.',
-        'not_allowed' => 'Non sei autorizzato a eseguire questa azione sull\'ordine.',
+        'not_allowed' => 'Non è autorizzato a eseguire questa azione sull\'ordine.',
         'handover_via_order' => 'Il collaudo richiede un protocollo firmato e viene eseguito direttamente nell\'ordine.',
         'no_targets' => 'Al momento non è possibile alcuno spostamento consentito per questa scheda.',
     ],
@@ -69,7 +69,7 @@ return [
     ],
     // KI-Tagvorschläge im Tag-Picker (Feature 143, MVP-711)
     'ai' => [
-        'tags_no_text' => 'Inserisci prima un contenuto — l’IA suggerisce tag dal testo.',
+        'tags_no_text' => 'Inserisca prima un contenuto — l’IA suggerisce tag dal testo.',
         'tags_none' => 'Nessun tag esistente corrisponde al testo.',
         'tags_failed' => 'Suggerimento tag IA non possibile: :message',
         'tags_loading' => 'L’IA cerca tag adatti …',

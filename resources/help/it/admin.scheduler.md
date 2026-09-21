@@ -42,7 +42,7 @@ riservate al gestore. Tramite **Ripristina** un job torna in qualsiasi
 momento al suo piano predefinito.
 
 **Finestra operativa:** se il server non funziona 24 ore su 24 – ad
-esempio perché si spegne di notte –, imposta in **Impostazioni**
+esempio perché si spegne di notte –, imposti in **Impostazioni**
 l'inizio e la fine della finestra operativa (una fine alle 00:00
 indica la mezzanotte). I job a orario fisso al di fuori della finestra
 vengono quindi eseguiti insieme nelle prime due ore di funzionamento,

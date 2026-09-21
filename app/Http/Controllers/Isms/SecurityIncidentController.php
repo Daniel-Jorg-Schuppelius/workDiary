@@ -158,8 +158,8 @@ class SecurityIncidentController extends Controller {
             'description' => ['nullable', 'string', 'max:10000'],
             'category' => ['required', 'string', Rule::enum(SecurityIncidentCategory::class)],
             'severity' => ['required', 'string', Rule::enum(IncidentSeverity::class)],
-            'detected_at' => ['nullable', 'date'],
-            'occurred_at' => ['nullable', 'date'],
+            'detected_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
+            'occurred_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
             'owner_user_id' => [
                 'nullable', 'integer',
                 Rule::exists('users', 'id')->where('organization_id', $actor->organization_id),

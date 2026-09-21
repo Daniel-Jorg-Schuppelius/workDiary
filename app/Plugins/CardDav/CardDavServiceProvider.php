@@ -27,10 +27,8 @@ class CardDavServiceProvider extends PluginServiceProviderBase {
     protected function registerPlugin(): void {
         $this->app->singleton(CardDavGatewayFactory::class, LibCardDavGatewayFactory::class);
 
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                Console\CardDavSyncCommand::class,
-            ]);
-        }
+        $this->commands([
+            Console\CardDavSyncCommand::class,
+        ]);
     }
 }

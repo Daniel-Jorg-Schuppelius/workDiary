@@ -190,7 +190,7 @@
                                     <x-status-badge tone="success" size="sm">{{ __('learning.field.current') }}</x-status-badge>
                                 @endif
                             </td>
-                            <td class="text-sm">{{ $version->released_at?->translatedFormat('d.m.Y H:i') ?? '–' }}</td>
+                            <td class="text-sm">{{ $version->released_at?->orgTz()->translatedFormat('d.m.Y H:i') ?? '–' }}</td>
                             <td class="text-sm text-base-content/70">
                                 {{ $version->training_course_version_id ? __('learning.field.mirrored') : '–' }}
                             </td>

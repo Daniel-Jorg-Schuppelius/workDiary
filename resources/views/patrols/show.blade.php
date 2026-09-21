@@ -100,7 +100,7 @@
                         @foreach ($runs as $run)
                             <li class="flex justify-between gap-2">
                                 <a class="link link-hover min-w-0 truncate" href="{{ route('patrols.runs.show', $run) }}">
-                                    {{ $run->started_at->format('d.m.Y H:i') }} · {{ $run->starter?->name ?? '—' }}
+                                    {{ $run->started_at->orgTz()->format('d.m.Y H:i') }} · {{ $run->starter?->name ?? '—' }}
                                 </a>
                                 <span class="shrink-0 text-muted">{{ $run->scans_count }} {{ __('Scans') }}</span>
                             </li>

@@ -14,9 +14,6 @@
 <div class="space-y-4">
     <h1 class="text-xl font-semibold">{{ __('Verleihvorgang :number', ['number' => $case->number]) }}</h1>
 
-    @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
-    @endif
 
     <div class="flex flex-wrap items-center gap-2 text-sm">
         <span class="badge badge-outline">{{ $case->status->label() }}</span>

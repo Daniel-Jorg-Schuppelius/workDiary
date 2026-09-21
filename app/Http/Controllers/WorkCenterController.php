@@ -59,8 +59,8 @@ class WorkCenterController extends Controller {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'code' => ['nullable', 'string', 'max:32'],
-            'capacity_minutes' => ['required', 'integer', 'min:1'],
-            'setup_minutes' => ['nullable', 'integer', 'min:0'],
+            'capacity_minutes' => ['required', 'integer', 'min:1', 'max:999999999'],
+            'setup_minutes' => ['nullable', 'integer', 'min:0', 'max:999999999'],
         ]);
 
         WorkCenter::query()->create([

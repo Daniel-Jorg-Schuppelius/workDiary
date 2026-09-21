@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 return [
     'form' => [
-        'expired' => 'Il modulo di candidatura è scaduto. Ricarica la pagina e invia di nuovo.',
+        'expired' => 'Il modulo di candidatura è scaduto. Ricarichi la pagina e invii di nuovo.',
     ],
     'upload' => [
         'tooMany' => 'Troppi file (max. :max).',

@@ -38,7 +38,8 @@ class SaveTimeEntryRequest extends BaseFormRequest {
             'date' => [$isRange ? 'nullable' : 'required', 'date', new \App\Rules\NotInLockedMonth($this->targetUser())],
             'minutes' => [$isRange ? 'nullable' : 'required', 'integer', 'min:1', 'max:1440'],
             'started_at' => ['nullable', 'date'],
-            'ended_at' => ['nullable', 'date', 'after:started_at'],
+            // Zeitraum höchstens 24 h wie im Dauer-Modus (max:1440) — sonst ließen sich Einträge über Tage buchen.
+            'ended_at' => array_filter(['nullable', 'date', 'after:started_at', $this->rangeLimit()]),
             'break_minutes' => ['nullable', 'integer', 'min:0', 'max:600'],
             'task_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('tasks')],
             'diary_entry_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('diary_entries')],
@@ -104,7 +105,20 @@ class SaveTimeEntryRequest extends BaseFormRequest {
     public function messages(): array {
         return [
             'ended_at.after' => __('„Bis" muss nach „Von" liegen.'),
+            'ended_at.before_or_equal' => __('Ein Zeiteintrag darf höchstens 24 Stunden umfassen.'),
         ];
+    }
+
+    private function rangeLimit(): ?string {
+        $start = $this->input('started_at');
+        if (! is_string($start) || $start === '' || ! $this->filled('ended_at')) {
+            return null;
+        }
+        try {
+            return 'before_or_equal:' . \Carbon\CarbonImmutable::parse($start)->addDay()->format('Y-m-d H:i:s');
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     /**

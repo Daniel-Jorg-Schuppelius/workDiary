@@ -28,8 +28,8 @@ auditiert.
 
 **Rechnungshoheit:** Für die Fakturierung gilt dasselbe Prinzip:
 Genau ein Programm führt die Rechnungen – WorkDiary, Lexoffice oder
-DATEV. Den Fakturierungsweg stellst du als **Standard je
-Organisation** ein und kannst ihn **je Kunde** übersteuern. Es gilt
+DATEV. Den Fakturierungsweg stellen Sie als **Standard je
+Organisation** ein und können ihn **je Kunde** übersteuern. Es gilt
 die Kaskade: Kunden-Einstellung vor Organisations-Standard, ohne
 beides führt WorkDiary lokal.
 
@@ -45,9 +45,9 @@ führenden Programm.
 
 **Umstellung im Betrieb:** Eine Umstellung des Fakturierungswegs
 wirkt nur auf künftige Vorgänge; bereits erstellte Belege bleiben
-unverändert. Kläre vor dem Wechsel, welche offenen Posten noch über
+unverändert. Klären Sie vor dem Wechsel, welche offenen Posten noch über
 den alten Weg abgeschlossen werden sollen.
 
-**Empfehlung:** Halte die Matrix bewusst schlank – übertrage die
+**Empfehlung:** Halten Sie die Matrix bewusst schlank – übertragen Sie die
 Führung nur dort an eine Integration, wo das Fremdsystem tatsächlich
 die maßgebliche Datenquelle ist.

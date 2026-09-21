@@ -16,7 +16,7 @@
 @section('nav-title', __('Genehmigungen'))
 
 @section('content')
-    <x-index-page :subtitle="__('Offene Genehmigungsschritte, für die du zuständig bist — genehmigen, ablehnen, rückfragen oder delegieren.')">
+    <x-index-page :subtitle="__('Offene Genehmigungsschritte, für die Sie zuständig sind — genehmigen, ablehnen, rückfragen oder delegieren.')">
         <x-table :zebra="true">
             <x-slot:head>
                 <tr>

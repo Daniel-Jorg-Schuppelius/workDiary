@@ -20,7 +20,6 @@
                         show-label>{{ __('Vorfall melden') }}</x-icon-btn>
         </x-slot:actions>
 
-        @if (session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif
 
         <x-table scroll="flex" :pinRows="true">
             <x-slot:head>
@@ -37,7 +36,7 @@
                     <td><a class="link" href="{{ route('dataprotection.incidents.show', $i) }}">{{ $i->incident_number }}</a></td>
                     <td>{{ $i->type->label() }}</td>
                     <td><x-status-badge :tone="$i->isDeadlineBreached() ? 'error' : 'ghost'" size="sm">{{ $i->status->label() }}</x-status-badge></td>
-                    <td class="{{ $i->isDeadlineBreached() ? 'text-error font-semibold' : '' }}">{{ $i->authority_deadline_at?->format('d.m.Y H:i') ?? '—' }}</td>
+                    <td class="{{ $i->isDeadlineBreached() ? 'text-error font-semibold' : '' }}">{{ $i->authority_deadline_at?->orgTz()->format('d.m.Y H:i') ?? '—' }}</td>
                     <td>{{ $i->assignedUser?->name ?? '—' }}</td>
                 </tr>
             @empty

@@ -12,7 +12,7 @@ related:
     - glossary.core
 ---
 
-Im **Risikoregister** erfasst, bewertest (5×5) und behandelst du
+Im **Risikoregister** erfassen, bewerten (5×5) und behandeln Sie
 Informationssicherheitsrisiken je Geltungsbereich.
 
 Typischer Ablauf:
@@ -34,7 +34,7 @@ Bewertungshistorie:
   historisiert und durchläuft „Entwurf" → „Freigegeben".
 - **Freigegebene Bewertungen sind unveränderlich.**
 - Die jüngste freigegebene **Netto**-Bewertung bestimmt die im Risiko
-  angezeigten Werte. Änderst du Wahrscheinlichkeit/Auswirkung direkt am
+  angezeigten Werte. Ändern Sie Wahrscheinlichkeit/Auswirkung direkt am
   Risiko, entsteht automatisch eine freigegebene Direktbewertung –
   die Historie bleibt lückenlos.
 

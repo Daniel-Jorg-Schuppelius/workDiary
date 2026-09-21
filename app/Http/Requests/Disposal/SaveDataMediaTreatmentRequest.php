@@ -43,7 +43,7 @@ class SaveDataMediaTreatmentRequest extends BaseFormRequest {
             'din_category' => ['required', Rule::enum(DinCategory::class)],
             'security_level' => ['required', 'integer', 'min:1', 'max:7'],
             'protection_class' => ['nullable', 'integer', 'min:1', 'max:3'],
-            'treated_at' => ['required', 'date'],
+            'treated_at' => ['required', 'date', new \App\Rules\TimestampRange()],
             'performed_by_user_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('users')],
             'evidence_reference' => ['nullable', 'string', 'max:180'],
         ];

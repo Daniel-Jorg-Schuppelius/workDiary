@@ -17,4 +17,4 @@ export tenant e degli accessi del supporto. Le singole sessioni e i
 token API si possono **revocare** con effetto immediato, cosa che può
 interrompere integrazioni o accessi in corso. L'**esportazione dati**
 genera un report JSON/CSV a supporto delle richieste di accesso e
-portabilità (art. 20 GDPR); trattalo in modo riservato.
+portabilità (art. 20 GDPR); lo tratti in modo riservato.

@@ -11,6 +11,7 @@
 namespace App\Services\Event;
 
 use App\Models\{Event, Room};
+use App\Support\Tz;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\{Carbon, Collection};
 use RuntimeException;
@@ -99,8 +100,8 @@ class RoomBookingService {
             throw new RuntimeException(sprintf(
                 'Raum "%s" ist im Zeitraum %s–%s bereits belegt (%d konkurrierende Event(s)).',
                 $room->name,
-                $startedAt->format('d.m.Y H:i'),
-                $endedAt->format('d.m.Y H:i'),
+                $startedAt->copy()->setTimezone(Tz::current())->format('d.m.Y H:i'),
+                $endedAt->copy()->setTimezone(Tz::current())->format('d.m.Y H:i'),
                 $conflicts->count(),
             ));
         }
@@ -126,8 +127,10 @@ class RoomBookingService {
      * @return array<int, list<array{event: Event, started_at: Carbon, ended_at: Carbon}>>
      */
     public function gridForDay(Carbon $day): array {
-        $from = $day->copy()->startOfDay();
-        $to = $day->copy()->endOfDay();
+        // Belegungen liegen in UTC, das Raster zeigt den Ortstag.
+        $tz = Tz::current();
+        $from = Carbon::parse($day->toDateString(), $tz)->utc();
+        $to = $from->copy()->addDay();
 
         $events = Event::query()
             ->with('rooms')
@@ -147,8 +150,8 @@ class RoomBookingService {
                 }
                 $grid[$room->getKey()][] = [
                     'event' => $event,
-                    'started_at' => Carbon::parse((string) $pivot->getAttribute('started_at')),
-                    'ended_at' => Carbon::parse((string) $pivot->getAttribute('ended_at')),
+                    'started_at' => Carbon::parse((string) $pivot->getAttribute('started_at'), 'UTC')->setTimezone($tz),
+                    'ended_at' => Carbon::parse((string) $pivot->getAttribute('ended_at'), 'UTC')->setTimezone($tz),
                 ];
             }
         }

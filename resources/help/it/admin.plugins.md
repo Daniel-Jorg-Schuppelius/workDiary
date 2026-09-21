@@ -12,7 +12,7 @@ related:
     - admin.remote-support
 ---
 
-Qui gestisci i plugin e le integrazioni installate; attivazione,
+Qui gestisce i plugin e le integrazioni installate; attivazione,
 impostazioni, stato di salute ed errori valgono **per organizzazione**.
 La lista mostra stato e health con le azioni per configurare,
 attivare/disattivare, eseguire subito l'health check o riattivare dopo

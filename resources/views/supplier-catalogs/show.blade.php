@@ -28,7 +28,7 @@
             <div><span class="opacity-60">{{ __('procurement.catalog.col.format') }}:</span> {{ $source->format->label() }}</div>
             <div><span class="opacity-60">{{ __('procurement.catalog.field.delimiter') }}:</span> <code>{{ $source->delimiter }}</code></div>
             <div><span class="opacity-60">{{ __('procurement.catalog.field.decimal_separator') }}:</span> <code>{{ $source->decimal_separator }}</code></div>
-            <div><span class="opacity-60">{{ __('procurement.catalog.col.last_import') }}:</span> {{ optional($source->last_imported_at)->format('d.m.Y H:i') ?: '—' }}</div>
+            <div><span class="opacity-60">{{ __('procurement.catalog.col.last_import') }}:</span> {{ $source->last_imported_at?->orgTz()->format('d.m.Y H:i') ?: '—' }}</div>
         </div>
         @if ($canManage && ($source->hasRemoteFetch() || $source->hasPunchout()))
             <div class="mt-3 flex flex-wrap items-end gap-3">
@@ -155,7 +155,7 @@
                 </x-slot:head>
                 @foreach ($imports as $imp)
                     <tr>
-                        <td class="text-sm">{{ $imp->created_at->format('d.m.Y H:i') }}</td>
+                        <td class="text-sm">{{ $imp->created_at->orgTz()->format('d.m.Y H:i') }}</td>
                         <td class="text-sm">{{ __('procurement.catalog.history.trigger_' . $imp->trigger) }}</td>
                         <td><x-status-badge :tone="$imp->status === 'success' ? 'success' : 'error'">{{ __('procurement.catalog.history.status_' . $imp->status) }}</x-status-badge></td>
                         <td class="text-sm tabular-nums">

@@ -26,7 +26,6 @@
                         show-label>{{ $gvv->partner?->name }}</x-icon-btn>
         </x-slot:actions>
 
-        @if (session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif
 
         <x-card>
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Eckdaten') }}

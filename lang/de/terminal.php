@@ -165,7 +165,7 @@ return [
             'personnel_number' => 'Personalnummer',
         ],
         'help' => [
-            'dialog' => '4 bis 8 Ziffern. Die Person erfährt die PIN von dir — sie ist danach nicht mehr einsehbar.',
+            'dialog' => '4 bis 8 Ziffern. Die Person erfährt die PIN von Ihnen — sie ist danach nicht mehr einsehbar.',
             'personnel_number' => 'Nur Personen mit Personalnummer — sie ist der zweite Teil der Anmeldung am Terminal.',
         ],
         'status' => [

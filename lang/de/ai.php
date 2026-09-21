@@ -343,8 +343,8 @@ return [
     ],
     'learn' => [
         'title' => 'Soll ich mir das merken?',
-        'question' => 'Du hast den Vorschlag vor der Übernahme angepasst. Als Beispielpaar im KI-Gedächtnis verbessert die Korrektur künftige Vorschläge für diesen Kunden. Gespeichert wird nur mit deiner Bestätigung.',
-        'corrected' => 'Deine Fassung',
+        'question' => 'Sie haben den Vorschlag vor der Übernahme angepasst. Als Beispielpaar im KI-Gedächtnis verbessert die Korrektur künftige Vorschläge für diesen Kunden. Gespeichert wird nur mit Ihrer Bestätigung.',
+        'corrected' => 'Ihre Fassung',
         'confirm' => 'Ja, merken',
         'dismiss' => 'Nein, verwerfen',
     ],

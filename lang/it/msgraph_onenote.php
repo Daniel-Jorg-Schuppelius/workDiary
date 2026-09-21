@@ -18,7 +18,7 @@ return [
     'connect' => 'Connetti OneNote',
     'disconnect' => 'Disconnetti OneNote',
     'open_hub' => 'Vai a «Conoscenza»',
-    'enable_hint' => 'Attiva prima «Consenti importazione OneNote» nelle impostazioni del plugin: solo allora la connessione richiede l’autorizzazione aggiuntiva Notes.Read.',
+    'enable_hint' => 'Attivi prima «Consenti importazione OneNote» nelle impostazioni del plugin: solo allora la connessione richiede l’autorizzazione aggiuntiva Notes.Read.',
     'flash' => [
         'not_configured' => 'Microsoft 365 non è configurato (mancano MSGRAPH_CLIENT_ID/SECRET).',
         'state_invalid' => 'L’accesso è scaduto o non valido: ricomincia.',

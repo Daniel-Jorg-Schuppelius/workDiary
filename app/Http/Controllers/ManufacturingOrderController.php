@@ -18,6 +18,7 @@ use App\Plugins\Lexoffice\{LexofficeDeliveryNoteService, LexofficeOrderConfirmat
 use App\Services\Manufacturing\{CapacityService, DeliveryNotePdfRenderer, DeliveryService, ManufacturingInventoryService, ManufacturingOrderService, ManufacturingQualityService, ManufacturingRecordPdfRenderer, ManufacturingReportService, SubcontractService};
 use App\Services\Shipping\{ShipmentPackage, ShipmentRecipient, ShipmentRequest, ShipmentService};
 use App\Services\SqidEncoder;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -190,7 +191,7 @@ class ManufacturingOrderController extends Controller {
             $shipping->createLabel($shipment, $shipmentRequest);
         } catch (RuntimeException $e) {
             $shipment->delete(); // Entwurf verwerfen, wenn der Carrier ablehnt
-            return back()->with('error', __('shipping.flash.label_failed', ['reason' => $e->getMessage()]));
+            return back()->with('error', __('shipping.flash.label_failed', ['reason' => ErrorText::for($e)]));
         }
 
         return back()->with('success', __('shipping.flash.label_created'));
@@ -214,7 +215,7 @@ class ManufacturingOrderController extends Controller {
         try {
             $this->inventory->consume($material, (string) $data['quantity']);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('manufacturing.order.flash.consumed'));
@@ -277,7 +278,7 @@ class ManufacturingOrderController extends Controller {
                 ? $shortages->approveSubstitute($substitute, $actor)
                 : $shortages->rejectSubstitute($substitute, $actor);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Ersatzmaterial-Antrag entschieden.'));
@@ -299,7 +300,7 @@ class ManufacturingOrderController extends Controller {
         Gate::authorize('update', $order);
         $data = $request->validate([
             'work_center' => ['required', 'string'],
-            'minutes' => ['required', 'integer', 'min:0'],
+            'minutes' => ['required', 'integer', 'min:0', 'max:999999999'],
             'day' => ['nullable', 'date'],
         ]);
 
@@ -331,7 +332,7 @@ class ManufacturingOrderController extends Controller {
         try {
             $po = app(SubcontractService::class)->commission($order, $supplier, Auth::id() !== null ? (int) Auth::id() : null);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('purchase-orders.show', $po)->with('success', __('manufacturing.order.flash.subcontracted'));
@@ -384,7 +385,7 @@ class ManufacturingOrderController extends Controller {
         try {
             $this->deliveries->deliver($variant, $warehouse, (string) $data['quantity'], $order, $customer, createdBy: Auth::id() !== null ? (int) Auth::id() : null);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('manufacturing.order.flash.delivered'));
@@ -404,7 +405,7 @@ class ManufacturingOrderController extends Controller {
         try {
             $deliveryNotes->push($delivery);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('manufacturing.order.flash.lexoffice_pushed'));
@@ -423,7 +424,7 @@ class ManufacturingOrderController extends Controller {
         try {
             $reference = $orderConfirmations->push($order);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Auftragsbestätigung in Lexoffice angelegt (ID :id).', [
@@ -444,7 +445,7 @@ class ManufacturingOrderController extends Controller {
         try {
             $reference = $quotations->push($order);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Angebot in Lexoffice angelegt (ID :id).', [
@@ -466,7 +467,7 @@ class ManufacturingOrderController extends Controller {
         try {
             $action();
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('manufacturing-orders.show', $order)->with('success', __($successKey));

@@ -62,7 +62,7 @@
                 <td class="max-w-md truncate text-sm">{{ $grant->purpose }}</td>
                 <td class="text-sm">{{ $grant->grantedBy?->name ?? '—' }}</td>
                 <td class="text-sm">{{ $grant->grantedTo?->name ?? __('Alle Support-Konten') }}</td>
-                <td class="tabular-nums text-sm">{{ $grant->expires_at->translatedFormat('d.m.Y H:i') }}</td>
+                <td class="tabular-nums text-sm">{{ $grant->expires_at->orgTz()->translatedFormat('d.m.Y H:i') }}</td>
                 <td class="text-right">
                     @if ($grant->isActive())
                         <form method="POST" action="{{ route('admin.support.grants.revoke', $grant) }}" class="inline">

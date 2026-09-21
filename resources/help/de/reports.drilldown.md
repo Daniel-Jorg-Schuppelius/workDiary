@@ -12,13 +12,13 @@ Jede Kennzahl in den Auswertungen ist klickbar. Der Drilldown zeigt die
 **konkreten Aufträge**, die in die Zahl eingeflossen sind – mit allen
 aktiven Filtern.
 
-So liest du den Drilldown:
+So lesen Sie den Drilldown:
 
 - **Spalten** zeigen Kunde, Eintragstyp, Status, Plan-/Ist-Dauer.
 - **Sortierung** standardmäßig nach Datum absteigend.
 - **Export** als CSV oder PDF erzeugt eine Momentaufnahme inkl. Filter
   und Erzeugungszeitpunkt im Dateinamen.
 
-Wichtig: Der Drilldown respektiert deine Mandantengrenze und die
-sichtbaren Auftragsstatus. Was du in der Liste nicht sehen darfst,
+Wichtig: Der Drilldown respektiert Ihre Mandantengrenze und die
+sichtbaren Auftragsstatus. Was Sie in der Liste nicht sehen dürfen,
 zählt auch im übergeordneten Report nicht mit.

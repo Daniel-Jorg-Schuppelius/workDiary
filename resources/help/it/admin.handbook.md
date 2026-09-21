@@ -21,6 +21,6 @@ prima configurazione si consiglia questo ordine: verificare
 organizzazione e licenza, configurare ruoli e membri, importare i dati
 anagrafici, configurare le regole (notifiche, maggiorazioni) e infine
 attivare sicurezza e monitoraggio dei backup. Principio di fondo: per
-le correzioni usa sempre il percorso funzionale (richiesta di
+le correzioni usi sempre il percorso funzionale (richiesta di
 correzione, storno, nuova versione) invece dell'intervento diretto da
 amministratore, così la traccia di audit resta intatta.

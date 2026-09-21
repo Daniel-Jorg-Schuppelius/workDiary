@@ -10,14 +10,14 @@ related:
     - planning.availability
 ---
 
-Über den Schichttausch gibst du eine eigene Schicht ab oder tauschst sie
+Über den Schichttausch geben Sie eine eigene Schicht ab oder tauschen sie
 gegen eine andere. Der Plan ändert sich erst nach Freigabe durch die
 Teamleitung.
 
 Ablauf:
 
-1. Du beantragst die Abgabe oder den Tausch einer deiner Schichten.
-   Optional benennst du einen Wunsch-Tauschpartner und eine Gegenschicht.
+1. Sie beantragen die Abgabe oder den Tausch einer Ihrer Schichten.
+   Optional benennen Sie einen Wunsch-Tauschpartner und eine Gegenschicht.
 2. Der gewünschte Kollege kann den Tausch annehmen (bei offener Abgabe
    übernimmt der erste passende Kollege die Schicht).
 3. Die Teamleitung prüft die Freigabe. Dabei wird automatisch geprüft, ob

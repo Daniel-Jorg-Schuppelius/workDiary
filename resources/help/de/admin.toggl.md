@@ -17,8 +17,8 @@ erfasste Zeiten übertragen („Zeit-Übertragung aktivieren").
 
 Zwei Importwege:
 
-- **API-Import**: zieht Zeiteinträge direkt über die Toggl-API. Du
-  hinterlegst ein API-Token und wählst einen Zeitraum.
+- **API-Import**: zieht Zeiteinträge direkt über die Toggl-API. Sie
+  hinterlegen ein API-Token und wählen einen Zeitraum.
 - **Datei-/Export-Import**: lädt einen Toggl-Detailbericht (CSV) oder
   ein vollständiges Workspace-Export-Archiv hoch und importiert
   daraus.
@@ -28,8 +28,8 @@ Posteingang (unzugeordnete Einträge):
 - Toggl-Kunden/-Projekte, die sich nicht automatisch einem
   WorkDiary-Kunden/-Projekt zuordnen ließen, sammeln sich hier –
   gruppiert mit Anzahl, Dauer und Zeitraum.
-- Du ordnest jede Gruppe einem bestehenden Kunden/Projekt zu, legst
-  neue an oder verwirfst Einträge.
+- Sie ordnen jede Gruppe einem bestehenden Kunden/Projekt zu, legen
+  neue an oder verwerfen Einträge.
 - Der erste Import erfolgt manuell; künftige Importe ordnen anhand
   gespeicherter Zuordnungen automatisch zu.
 
@@ -41,7 +41,7 @@ Zuordnungen (Mappings):
   (zurück zur manuellen Zuordnung).
 
 Risiken: Wiederholte Importe desselben Zeitraums können zu Dubletten
-führen, wenn Quelldaten geändert wurden – prüfe Zeitraum und
+führen, wenn Quelldaten geändert wurden – prüfen Sie Zeitraum und
 Posteingang vor dem Übernehmen. Das Verwerfen von Einträgen ist
 endgültig.
 
@@ -52,7 +52,7 @@ Benutzerzuordnung (MVP-509):
   Zuordnungen („Zuordnungen verwalten"), dann E-Mail-Gleichheit.
 - Unbekannte oder nicht abrufbare Toggl-Benutzer werden nicht still auf
   den Hauptbenutzer gebucht — sie landen als offener Fall in der
-  Zuordnungs-Inbox. Dort wählst du den Benutzer; die Wahl wird gemerkt
+  Zuordnungs-Inbox. Dort wählen Sie den Benutzer; die Wahl wird gemerkt
   und künftige Importe buchen automatisch richtig.
 - Nur im ausdrücklich aktivierten Einbenutzer-Modus (Plugin-Einstellung)
   bucht der Import Einträge ohne Benutzersignal auf den
@@ -60,7 +60,7 @@ Benutzerzuordnung (MVP-509):
 - Bereits falsch zugeordnete Alt-Importe repariert der Befehl
   `toggl:repair-entry-users` (erst Dry-Run, mit `--apply` schreiben);
   abgerechnete oder signierte Zeiten werden nie automatisch verändert.
-- Beim einmaligen **Workspace-Import** (Ordner/ZIP oder API) wählst du
+- Beim einmaligen **Workspace-Import** (Ordner/ZIP oder API) wählen Sie
   die Benutzer-Zuordnung ausdrücklich: nur bestehenden Benutzern
   zuordnen (unbekannte Einträge bleiben sichtbar ungebucht und werden
   je E-Mail ausgewiesen), fehlende Benutzer pro E-Mail neu anlegen,

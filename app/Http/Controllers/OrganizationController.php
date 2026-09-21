@@ -251,8 +251,12 @@ class OrganizationController extends Controller {
             ]);
         }
 
-        return redirect()->toList('admin.organizations.index')
-            ->with('success', __('Organisation wurde aktualisiert.'));
+        // Org-Admins dürfen die Mandantenliste nicht sehen (viewAny) — sie landeten nach dem Speichern auf 403.
+        $redirect = Gate::allows('viewAny', Organization::class)
+            ? redirect()->toList('admin.organizations.index')
+            : redirect()->route('admin.organizations.edit', $organization);
+
+        return $redirect->with('success', __('Organisation wurde aktualisiert.'));
     }
 
     public function destroy(Organization $organization): RedirectResponse {

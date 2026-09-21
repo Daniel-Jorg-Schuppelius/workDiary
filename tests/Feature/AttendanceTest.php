@@ -267,7 +267,7 @@ class AttendanceTest extends TestCase {
             ->assertSee(__('Anwesenheit'))
             ->assertSee(__('Unverteilt'))
             // Eingabeleiste (Toggl-artig) auf der Heute-Seite.
-            ->assertSee(__('Woran arbeitest du?'))
+            ->assertSee(__('Woran arbeiten Sie?'))
             // Zusammenlegung mit dem Tagesabschluss (MVP-015): „Heute" zeigt
             // jetzt auch Warnungen, Bilanz (inkl. Pausen) und die Abschluss-Aktion.
             ->assertSee(__('day-close.section.issues'))

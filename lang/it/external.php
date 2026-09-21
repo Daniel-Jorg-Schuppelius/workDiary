@@ -35,7 +35,7 @@ return [
         'title' => 'Partecipanti esterni',
         'invite' => 'Invita',
         'empty' => 'Nessun partecipante esterno ancora invitato.',
-        'link_once' => 'Copia questo link una sola volta e invialo al partecipante esterno — non verrà più mostrato.',
+        'link_once' => 'Copi questo link una sola volta e lo invii al partecipante esterno — non verrà più mostrato.',
     ],
     'col' => [
         'name' => 'Nome',
@@ -80,11 +80,11 @@ return [
     ],
     'public' => [
         'title' => 'Accesso esterno',
-        'hello' => 'Ciao :name',
+        'hello' => 'Buongiorno :name',
         'expires_note' => 'Questo accesso è valido fino al :date.',
         'view_only' => 'Questo accesso è limitato alla sola visualizzazione.',
         'comment_heading' => 'Lascia un commento',
-        'comment_placeholder' => 'La tua osservazione …',
+        'comment_placeholder' => 'La sua osservazione …',
         'comment_submit' => 'Invia commento',
         'comment_saved' => 'Commento salvato.',
         'upload_heading' => 'Carica file o foto',
@@ -101,12 +101,12 @@ return [
 
     // Rang 28 / Feature 023: Kontaktprofile + Einladungs-Mail (Paritäts-Nachzug).
     'mail' => [
-        'subject' => "Il tuo accesso ai documenti condivisi",
+        'subject' => "Il suo accesso ai documenti condivisi",
         'heading' => "Accesso esterno",
-        'intro' => "Ciao :name, sei stato invitato a documenti condivisi. Il link qui sotto ti dà accesso senza login:",
+        'intro' => "Buongiorno :name, è stato invitato a documenti condivisi. Il link qui sotto le dà accesso senza login:",
         'button' => "Apri l'accesso",
         'expires' => "L'accesso è valido fino al :date.",
-        'note' => "Non condividere questo link — è personale e a tempo limitato.",
+        'note' => "Non condivida questo link — è personale e a tempo limitato.",
     ],
     'contact' => [
         'title' => "Profili di contatti esterni",

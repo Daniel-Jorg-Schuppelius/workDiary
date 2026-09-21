@@ -12,6 +12,7 @@ namespace App\Plugins\Kimai\Sources;
 
 use App\Plugins\Support\ImportedTimeEntry;
 use App\Support\Toolkit\CsvFacade;
+use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\CSV\StringHelper as CsvStringHelper;
 use CommonToolkit\Helper\Data\StringHelper;
@@ -51,7 +52,7 @@ class KimaiCsvParser {
     /**
      * @return array<int, ImportedTimeEntry>
      */
-    public function parse(string $content): array {
+    public function parse(string $content, ?string $timezone = null): array {
         $content = StringHelper::stripBom($content);
         $rows = $this->readRows($content);
         if (count($rows) < 2) {
@@ -67,7 +68,7 @@ class KimaiCsvParser {
 
         $entries = [];
         foreach ($rows as $row) {
-            $entry = $this->mapRow($row, $map);
+            $entry = $this->mapRow($row, $map, $timezone ?? Tz::current());
             if ($entry !== null) {
                 $entries[] = $entry;
             }
@@ -107,7 +108,7 @@ class KimaiCsvParser {
      * @param  array<int, string>  $row
      * @param  array<string, int>  $map
      */
-    private function mapRow(array $row, array $map): ?ImportedTimeEntry {
+    private function mapRow(array $row, array $map, string $timezone): ?ImportedTimeEntry {
         $get = static fn (string $field): ?string => isset($map[$field]) ? trim((string) ($row[$map[$field]] ?? '')) : null;
 
         $date = $get('date');
@@ -141,8 +142,9 @@ class KimaiCsvParser {
             projectName: $project,
             activity: $activity,
             description: $description,
-            startedAt: $startedAt,
-            endedAt: $endedAt,
+            // Export-Uhrzeiten sind Ortszeit: gespeichert wird UTC, der Schlüssel bleibt auf der Wandzeit (Re-Import-Idempotenz).
+            startedAt: $startedAt->shiftTimezone($timezone)->utc(),
+            endedAt: $endedAt->shiftTimezone($timezone)->utc(),
             billable: (bool) StringHelper::parseBool($get('billable')),
             userEmail: $this->nullIfBlank($get('email')),
             tags: $this->parseTags($get('tags')),

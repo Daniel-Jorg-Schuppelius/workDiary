@@ -16,11 +16,11 @@ etwa Service, Störung, Wartung oder Installation. Jeder Typ hat einen
 eindeutigen Slug, eine Bezeichnung, ein Symbol und eine Farbe und liefert
 die Voreinstellungen für neue Einträge.
 
-Über die Pflicht- und Erlaubnis-Schalter legst du fest, ob ein Typ Kunde,
+Über die Pflicht- und Erlaubnis-Schalter legen Sie fest, ob ein Typ Kunde,
 Adresse, Terminierung oder Tour verlangt und ob Priorität oder Tour
 zulässig sind. Voreingestellter Status, Standard-Servicedauer und
 Standard-Priorität werden beim Anlegen übernommen.
 
 Inaktive Typen erscheinen nicht mehr in der Auswahl. Ein Typ, der noch von
-Einträgen verwendet wird, kann nicht gelöscht werden; setze ihn in diesem
+Einträgen verwendet wird, kann nicht gelöscht werden; setzen Sie ihn in diesem
 Fall inaktiv.

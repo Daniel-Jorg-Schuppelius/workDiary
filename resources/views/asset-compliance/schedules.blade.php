@@ -13,9 +13,6 @@
 
 @section('content')
 <x-index-page :subtitle="__('Prüftermine mit internen Prüfern oder externen Prüfstellen; Prüfungen werden als unveränderbare Protokolle erfasst.')">
-    @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
-    @endif
     <x-validation-errors />
 
     <x-filter-bar :action="route('asset-compliance.schedules.index')" :reset="route('asset-compliance.schedules.index')">

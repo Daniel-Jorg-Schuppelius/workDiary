@@ -9,7 +9,6 @@
 {{-- Variablen: $plugin, $setting, $schema, $state --}}
 @php
     $action = route('admin.plugins.update', $plugin->id());
-    $health = \App\Enums\Plugin\PluginHealthStatus::tryFrom((string) $state?->last_health_status);
 @endphp
 
 <x-modal
@@ -47,28 +46,7 @@
         </div>
     @endif
 
-    @if ($state && $state->last_health_status)
-        <div class="text-sm">
-            <x-status-badge :tone="$health?->tone() ?? 'ghost'">{{ $health?->label() ?? __('Zustand unbekannt') }}</x-status-badge>
-            @if ($state->last_health_message)
-                <span class="text-base-content/70 ml-1">{{ $state->last_health_message }}</span>
-            @endif
-            @if ($state->last_health_check_at)
-                <span class="text-xs text-muted ml-2">{{ __('zuletzt :time geprüft', ['time' => $state->last_health_check_at->diffForHumans()]) }}</span>
-            @endif
-        </div>
-    @endif
-
-    {{-- Sofort-Healthcheck (testet die aktuell gespeicherte Konfiguration). --}}
-    <div class="mt-1" x-data="pluginHealthCheck('{{ route('admin.plugins.health-check', $plugin->id()) }}', '{{ csrf_token() }}', '{{ __('Verbindung fehlgeschlagen.') }}')">
-        <button type="button" class="btn btn-ghost btn-xs" :disabled="testing" @click="run()">
-            <span x-show="idle">{{ __('Verbindung testen') }}</span>
-            <span x-show="testing" x-cloak>{{ __('Wird geprüft …') }}</span>
-        </button>
-        <template x-if="result">
-            <span class="ml-2 text-sm" x-text="resultText"></span>
-        </template>
-    </div>
+    <x-plugin-health :plugin-id="$plugin->id()" :state="$state" detailed />
 
     @if ($plugin->settingsView() !== null)
         @include($plugin->settingsView(), ['plugin' => $plugin, 'setting' => $setting, 'schema' => $schema])

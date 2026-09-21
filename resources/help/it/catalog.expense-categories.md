@@ -13,8 +13,8 @@ related:
 Le categorie di spesa organizzano esborsi e spese di viaggio, ad esempio
 pernottamento, vitto, trasporti o materiale; ogni categoria ha slug,
 denominazione, colore e un'aliquota IVA predefinita. Con gli
-interruttori stabilisci se la categoria è fatturabile per impostazione
+interruttori stabilisce se la categoria è fatturabile per impostazione
 predefinita e se è richiesta una ricevuta; l'aliquota impostata viene
 proposta alla registrazione di nuove spese. Le categorie inattive
 restano conservate ma non vengono più proposte; una categoria ancora
-usata da spese non può essere eliminata — impostala come inattiva.
+usata da spese non può essere eliminata — la imposti come inattiva.

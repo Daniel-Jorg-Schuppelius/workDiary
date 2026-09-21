@@ -17,8 +17,8 @@ imposte competente e identificativi fiscali, gestiti insieme alla
 configurazione di fatturazione/branding. L'accesso richiede
 l'autorizzazione alla gestione delle retribuzioni, in capo a gestione
 del personale e direzione. Il cuore è la panoramica del salario minimo:
-curi lo storico delle tariffe orarie, carichi lo storico del minimo
-legale del paese e importi i valori di riferimento UE da Eurostat; in
+cura lo storico delle tariffe orarie, carica lo storico del minimo
+legale del paese e importa i valori di riferimento UE da Eurostat; in
 base alla tariffa attuale vengono elencati i collaboratori con paga
 oraria sotto il minimo. Le paghe interessate possono essere elevate al
 salario minimo per singole persone o per tutti, con ogni aumento

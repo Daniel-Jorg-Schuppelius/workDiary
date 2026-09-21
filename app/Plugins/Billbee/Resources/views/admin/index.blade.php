@@ -13,12 +13,6 @@
 @section('content')
 <x-page-shell>
     <div class="space-y-4">
-        @if (session('success'))
-            <div class="alert alert-success text-sm">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-error text-sm">{{ session('error') }}</div>
-        @endif
 
         {{-- Status-Karte --}}
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">

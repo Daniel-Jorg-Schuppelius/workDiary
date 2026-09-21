@@ -20,7 +20,7 @@
     <div role="alert" class="alert alert-warning rounded-none py-2 text-sm">
         <x-icon name="engineering" />
         <span>
-            {{ __('maintenance.window.banner.read_only', ['to' => $effective->ends_at->format('d.m.Y H:i')]) }}
+            {{ __('maintenance.window.banner.read_only', ['to' => $effective->ends_at->orgTz()->format('d.m.Y H:i')]) }}
             @if ($effective->message) — {{ $effective->message }} @endif
         </span>
     </div>
@@ -29,8 +29,8 @@
         <x-icon name="engineering" />
         <span>
             {{ __('maintenance.window.banner.upcoming', [
-                'from' => $upcoming->starts_at->format('d.m.Y H:i'),
-                'to' => $upcoming->ends_at->format('d.m.Y H:i'),
+                'from' => $upcoming->starts_at->orgTz()->format('d.m.Y H:i'),
+                'to' => $upcoming->ends_at->orgTz()->format('d.m.Y H:i'),
             ]) }}
             @if ($upcoming->message) — {{ $upcoming->message }} @endif
         </span>

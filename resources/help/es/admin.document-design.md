@@ -43,7 +43,7 @@ estructurada sigue siendo determinante.
 
 Diseño base CI y herencia:
 
-- El perfil estándar de la organización es tu **diseño base CI**. Las
+- El perfil estándar de la organización es su **diseño base CI**. Las
   variantes para tipos de documento individuales (p. ej. oferta,
   factura, abono, reclamación) o familias enteras (ventas, compras,
   justificantes) **heredan** todas las secciones no sobrescritas — cada

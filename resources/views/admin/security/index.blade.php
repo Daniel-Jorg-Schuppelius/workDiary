@@ -274,16 +274,18 @@
             <p class="text-xs italic text-muted">
                 {{ __('security.hint.advisories') }}
                 @if ($advisoriesLastPull)
-                    · {{ __('security.field.last_pull') }}: {{ \Illuminate\Support\Carbon::parse($advisoriesLastPull)->translatedFormat('d.m.Y H:i') }}
+                    · {{ __('security.field.last_pull') }}: {{ \Illuminate\Support\Carbon::parse($advisoriesLastPull)->orgTz()->translatedFormat('d.m.Y H:i') }}
                 @endif
             </p>
-            <form method="POST" action="{{ route('admin.security.advisories.pull') }}">
-                @csrf
-                <button type="submit" class="btn btn-primary btn-xs">
-                    <x-icon name="refresh" class="text-sm" />
-                    {{ __('security.action.pull_advisories') }}
-                </button>
-            </form>
+            @if ($isPlatformOperator)
+                <form method="POST" action="{{ route('admin.security.advisories.pull') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-primary btn-xs">
+                        <x-icon name="refresh" class="text-sm" />
+                        {{ __('security.action.pull_advisories') }}
+                    </button>
+                </form>
+            @endif
         </div>
         @if ($advisories->isNotEmpty())
             <x-table bare>
@@ -319,17 +321,21 @@
                                 </td>
                                 <td class="font-mono text-xs">{{ $advisory->fixed_in ?? '—' }}</td>
                                 <td>
-                                    <form method="POST" action="{{ route('admin.security.advisories.statement', $advisory) }}" class="flex items-center gap-1">
-                                        @csrf
-                                        @method('PUT')
-                                        <input aria-label="{{ __('security.field.statement_placeholder') }}" type="text" name="statement" maxlength="1000"
-                                               class="input input-bordered input-xs w-56"
-                                               placeholder="{{ __('security.field.statement_placeholder') }}"
-                                               value="{{ $advisory->statement }}">
-                                        <button type="submit" class="btn btn-ghost btn-xs" title="{{ __('Speichern') }}">
-                                            <x-icon name="save" class="text-sm" />
-                                        </button>
-                                    </form>
+                                    @if ($isPlatformOperator)
+                                        <form method="POST" action="{{ route('admin.security.advisories.statement', $advisory) }}" class="flex items-center gap-1">
+                                            @csrf
+                                            @method('PUT')
+                                            <input aria-label="{{ __('security.field.statement_placeholder') }}" type="text" name="statement" maxlength="1000"
+                                                   class="input input-bordered input-xs w-56"
+                                                   placeholder="{{ __('security.field.statement_placeholder') }}"
+                                                   value="{{ $advisory->statement }}">
+                                            <button type="submit" class="btn btn-ghost btn-xs" title="{{ __('Speichern') }}">
+                                                <x-icon name="save" class="text-sm" />
+                                            </button>
+                                        </form>
+                                    @else
+                                        <span class="text-xs">{{ $advisory->statement ?? '—' }}</span>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

@@ -35,12 +35,12 @@
             @foreach ($windows as $window)
                 <tr>
                     <td>
-                        <div class="font-medium">{{ $window->starts_at->format('d.m.Y H:i') }} – {{ $window->ends_at->format('d.m.Y H:i') }}</div>
+                        <div class="font-medium">{{ $window->starts_at->orgTz()->format('d.m.Y H:i') }} – {{ $window->ends_at->orgTz()->format('d.m.Y H:i') }}</div>
                         @if ($window->message)
                             <div class="text-xs text-muted">{{ $window->message }}</div>
                         @endif
                         @if ($window->announce_from)
-                            <div class="text-xs text-muted">{{ __('maintenance.window.field.announce_from') }}: {{ $window->announce_from->format('d.m.Y H:i') }}</div>
+                            <div class="text-xs text-muted">{{ __('maintenance.window.field.announce_from') }}: {{ $window->announce_from->orgTz()->format('d.m.Y H:i') }}</div>
                         @endif
                     </td>
                     <td>
@@ -76,7 +76,7 @@
                                           class="dropdown-content z-20 w-64 space-y-2 rounded-box border border-base-300 bg-base-100 p-3 shadow-lg">
                                         @csrf
                                         <input type="datetime-local" name="ends_at" required class="input input-bordered input-sm w-full"
-                                               value="{{ $window->ends_at->addHour()->format('Y-m-d\TH:i') }}">
+                                               value="{{ $window->ends_at->addHour()->orgTz()->format('Y-m-d\TH:i') }}">
                                         <x-button type="submit" tone="primary" size="sm" class="w-full">{{ __('maintenance.window.action.extend') }}</x-button>
                                     </form>
                                 </details>

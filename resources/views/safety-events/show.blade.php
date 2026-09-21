@@ -65,7 +65,7 @@
                             {{ $event->kind->label() }}
                             @if ($event->occurred_at)
                                 <span class="text-muted">·</span>
-                                {{ $event->occurred_at->format('d.m.Y H:i') }}
+                                {{ $event->occurred_at->orgTz()->format('d.m.Y H:i') }}
                             @endif
                         </p>
                     </div>
@@ -74,7 +74,7 @@
                 <div class="divider my-3"></div>
 
                 <x-detail-grid>
-                    <x-detail-grid.row :label="__('safety.field.occurred_at')" :value="optional($event->occurred_at)->format('d.m.Y H:i')" />
+                    <x-detail-grid.row :label="__('safety.field.occurred_at')" :value="$event->occurred_at?->orgTz()->format('d.m.Y H:i')" />
                     <x-detail-grid.row :label="__('safety.field.location')" :value="$event->location ?? '–'" />
                     <x-detail-grid.row :label="__('safety.field.affected_person')" :value="$event->affected_person ?? '–'" />
                     <x-detail-grid.row :label="__('safety.field.reporter')" :value="$event->reporter?->name ?? '–'" />
@@ -86,7 +86,7 @@
                     <x-detail-grid.row :label="__('safety.field.immediate_action')" :value="$event->immediate_action ?? '–'" />
                     <x-detail-grid.row :label="__('safety.field.root_cause')" :value="$event->root_cause ?? '–'" />
                     @if ($event->closed_at)
-                        <x-detail-grid.row :label="__('safety.field.closed_at')" :value="$event->closed_at->format('d.m.Y H:i')" />
+                        <x-detail-grid.row :label="__('safety.field.closed_at')" :value="$event->closed_at->orgTz()->format('d.m.Y H:i')" />
                         <x-detail-grid.row :label="__('safety.field.closed_by')" :value="$event->closer?->name ?? '–'" />
                     @endif
                 </x-detail-grid>

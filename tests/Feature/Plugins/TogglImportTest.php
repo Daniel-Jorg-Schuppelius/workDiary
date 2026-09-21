@@ -680,6 +680,9 @@ class TogglImportTest extends TestCase {
             'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
             'status' => IntegrationInboxItem::STATUS_OPEN,
         ]);
+        // Snapshot trägt UTC — die spätere Buchung aus der Inbox übernimmt ihn (MVP-824).
+        $snapshot = IntegrationInboxItem::query()->where('plugin_id', TogglPlugin::ID)->firstOrFail()->remote_snapshot;
+        $this->assertSame('2026-05-26T07:00:00+00:00', $snapshot['started_at'] ?? null);
     }
 
     public function test_book_inbox_group_materializes_entries_and_remembers_reference(): void {
@@ -1647,5 +1650,17 @@ class TogglImportTest extends TestCase {
                 'new_project_name' => 'Y',
             ])
             ->assertForbidden();
+    }
+
+    /** UI-Fuzz 2026-09-21: eine fremde CSV meldete „0 gebucht, 0 übersprungen“ statt eines Fehlers. */
+    public function test_csv_upload_rejects_a_file_that_is_no_toggl_export(): void {
+        $this->enableToggl();
+        $csv = \Illuminate\Http\UploadedFile::fake()->createWithContent('kunden.csv', "name;email\nUI;ui@example.com\n");
+
+        $this->actingAs($this->admin)
+            ->from(route('admin.toggl.import-api'))
+            ->post(route('admin.toggl.import-csv'), ['csv' => $csv])
+            ->assertRedirect(route('admin.toggl.import-api'))
+            ->assertSessionHasErrors('csv');
     }
 }

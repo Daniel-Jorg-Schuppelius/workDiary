@@ -19,6 +19,7 @@ use App\Plugins\Calendly\CalendlyPlugin;
 use App\Services\Diary\OrderService;
 use App\Services\Dispatch\DispatchStatusResolver;
 use App\Services\Event\IcsFeedService;
+use App\Support\Tz;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
 
@@ -216,7 +217,9 @@ class CalendlyConfirmService {
     private function localTime(AppointmentRequest $request, string $which): ?string {
         $value = $which === 'start' ? $request->start_at : $request->end_at;
 
-        return $value?->copy()->timezone((string) config('app.timezone', 'Europe/Berlin'))->format('H:i');
+        $organization = \App\Models\Organization::query()->find($request->organization_id);
+
+        return $value?->copy()->setTimezone($organization !== null ? Tz::ofOrganization($organization) : Tz::current())->format('H:i');
     }
 
     private function fillAddress(DiaryEntry $entry, AppointmentRequest $request): void {

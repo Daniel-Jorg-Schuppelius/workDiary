@@ -20,7 +20,7 @@ class SaveMaintenancePlanRequest extends BaseFormRequest {
             'code' => ['nullable', 'string', 'max:60'],
             'label' => ['required', 'string', 'max:180'],
             'interval_kind' => ['required', new Enum(MaintenanceIntervalKind::class)],
-            'interval_value' => ['required', 'integer', 'min:1'],
+            'interval_value' => ['required', 'integer', 'min:1', 'max:999999999'],
             'tolerance_days' => ['nullable', 'integer', 'min:0', 'max:365'],
             'procedure_template_code' => ['nullable', 'string', 'max:60'],
             'next_due_on' => ['nullable', 'date'],

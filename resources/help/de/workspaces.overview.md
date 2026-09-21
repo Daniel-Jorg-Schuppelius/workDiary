@@ -15,7 +15,7 @@ die dazu passenden Bereiche. Das ist **rein kosmetisch** — es werden keine
 Rechte, Module oder Daten verändert, und über die globale Suche sowie „Alle
 Funktionen“ bleibt alles erreichbar.
 
-## Was du hier festlegst
+## Was Sie hier festlegen
 
 - **Angebotene Arbeitsbereiche:** welche Bereiche im Umschalter erscheinen.
   „Alles anzeigen“ ist immer verfügbar.

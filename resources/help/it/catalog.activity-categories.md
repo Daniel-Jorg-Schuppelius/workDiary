@@ -13,8 +13,8 @@ related:
 Le categorie di attività organizzano il lavoro in classi riutilizzabili:
 ogni categoria ha una chiave tecnica, una denominazione e un tipo di
 attività e stabilisce se il tempo conta come lavoro e se è fatturabile
-per impostazione predefinita. Definisci chiave (minuscole, cifre,
-trattini) e denominazione e imposta gli interruttori **"conta come
+per impostazione predefinita. Definisca chiave (minuscole, cifre,
+trattini) e denominazione e imposti gli interruttori **"conta come
 lavoro"** e **"fatturabile per impostazione predefinita"**; colore,
 icona e ordinamento determinano la visualizzazione in liste e campi di
 selezione. Le categorie inattive restano conservate ma non vengono più

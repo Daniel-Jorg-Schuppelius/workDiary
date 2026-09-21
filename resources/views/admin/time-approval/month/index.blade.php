@@ -44,9 +44,6 @@
                 :title="__('Keine Monate im Filter')"
                 :message="__('Passen Sie die Filter an oder warten Sie auf eingereichte Monate.')" />
         @else
-            @if (session('status'))
-                <div role="alert" class="alert alert-success"><span>{{ session('status') }}</span></div>
-            @endif
 
             <x-table scroll="flex" :pinRows="true" table-sort="server"
                      :route="route('admin.month-approval.index')" :current-sort="$sort" :current-dir="$dir"

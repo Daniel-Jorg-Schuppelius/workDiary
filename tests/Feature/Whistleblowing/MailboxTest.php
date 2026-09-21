@@ -72,6 +72,16 @@ class MailboxTest extends TestCase {
         $this->assertNull(session('wb_mailbox_case_id'));
     }
 
+    /** UI-Fuzz 2026-09-21: ohne Modulschlüssel lieferte das öffentliche Postfach einen rohen 500. */
+    public function test_missing_module_key_shows_a_notice_instead_of_crashing(): void {
+        config()->set('whistleblowing.key', '');
+        config()->set('whistleblowing.lookup_key', '');
+
+        $this->post('/melden/postfach', ['secret' => 'ABCD-EFGH-IJKL'])
+            ->assertStatus(503)
+            ->assertSee(__('Dieser Bereich ist noch nicht eingerichtet. Bitte wenden Sie sich an den Betreiber.'));
+    }
+
     public function test_case_number_is_not_a_login(): void {
         [$case] = $this->caseWithSecret();
 

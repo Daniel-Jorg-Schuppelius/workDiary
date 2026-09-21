@@ -51,14 +51,15 @@ class PlanIstReportBuilderTest extends TestCase {
         ]);
 
         // Mo 15.01.2024 — ISO weekday 1, working day.
-        // Stempelung 08:25 (Δ +25 min) … 16:30, brutto 8:05, brutto>6h → 30 min Pause → netto 7:35 = 455 min.
+        // Stempelung 08:25 Ortszeit (Δ +25 min) … 16:30, brutto 8:05, brutto>6h → 30 min Pause → netto 7:35 = 455 min.
+        // Gespeichert wird UTC (Winterzeit: −1 h).
         Attendance::withoutEvents(function () use ($user) {
             Attendance::query()->create([
                 'organization_id' => $this->organization->id,
                 'user_id' => $user->id,
                 'date' => '2024-01-15',
-                'started_at' => '2024-01-15 08:25:00',
-                'ended_at' => '2024-01-15 16:30:00',
+                'started_at' => '2024-01-15 07:25:00',
+                'ended_at' => '2024-01-15 15:30:00',
                 'duration_minutes' => 455,
             ]);
         });

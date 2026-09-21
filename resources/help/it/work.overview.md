@@ -11,9 +11,9 @@ related:
 
 La panoramica giornaliera riunisce lavoro in scadenza, rilevazione tempi in
 corso, appuntamenti e avvisi personali; il Kanban mostra le stesse voci
-operative per stato di lavorazione. Flusso tipico: in **Oggi** controlla le
-pratiche in scadenza o modificate di recente, apri un incarico, integralo o
-avvia la rilevazione tempi, poi nel **Kanban** filtra le voci per stato e
-spostale nello stato successivo consentito. Se mancano voci, verifica prima
+operative per stato di lavorazione. Flusso tipico: in **Oggi** controlli le
+pratiche in scadenza o modificate di recente, apra un incarico, lo integri o
+avvii la rilevazione tempi, poi nel **Kanban** filtri le voci per stato e
+le sposti nello stato successivo consentito. Se mancano voci, verifichi prima
 periodo, filtri e organizzazione attiva; i cambi di stato sono soggetti agli
 stessi permessi e campi obbligatori della lista di lavoro.

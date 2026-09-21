@@ -55,10 +55,10 @@ return [
     ],
 
     'feedback' => [
-        'title' => '¿Te ha resultado útil este artículo?',
+        'title' => '¿Le ha resultado útil este artículo?',
         'helpful' => 'Ha ayudado',
         'not_helpful' => 'No ha ayudado',
-        'already_voted' => 'Ya has votado — votar de nuevo cambia tu voto.',
+        'already_voted' => 'Ya ha votado — votar de nuevo cambia su voto.',
     ],
 
     'link_kind' => [
@@ -82,7 +82,7 @@ return [
         'published' => 'Artículo publicado.',
         'archived' => 'Artículo archivado.',
         'deleted' => 'Artículo eliminado.',
-        'feedback_saved' => 'Gracias por tu valoración.',
+        'feedback_saved' => 'Gracias por su valoración.',
         'linked' => 'Artículo vinculado.',
         'unlinked' => 'Vínculo eliminado.',
     ],

@@ -16,6 +16,7 @@ use App\Models\{Attachment, User};
 use App\Notifications\GenericEventNotification;
 use App\Services\Attachments\ImageMetaUploader;
 use App\Support\Auth\RecentAuthentication;
+use App\Support\ErrorText;
 use CommonToolkit\Helper\Data\{EmailHelper, PhoneNumberHelper};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
@@ -177,7 +178,7 @@ class ProfileController extends Controller {
             ));
         } catch (\Throwable $e) {
             // Der Hinweis darf die Änderung nie verhindern.
-            Log::warning('profile.email_change_notice_failed', ['error' => $e->getMessage()]);
+            Log::warning('profile.email_change_notice_failed', ['error' => ErrorText::for($e)]);
         }
     }
 

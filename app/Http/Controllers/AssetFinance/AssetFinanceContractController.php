@@ -19,7 +19,7 @@ use App\Models\AssetFinance\AssetFinanceContract;
 use App\Models\Investments\{InvestmentCase, InvestmentLink};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\AssetFinance\AssetFinanceService;
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -164,7 +164,7 @@ class AssetFinanceContractController extends Controller {
         try {
             $this->service->activate($contract, $request->user() ?? abort(401));
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['status' => $e->getMessage()]);
+            return back()->withErrors(['status' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Vertrag aktiviert — Konditionen eingefroren, Ratenplan erzeugt.'));
@@ -178,7 +178,7 @@ class AssetFinanceContractController extends Controller {
         try {
             $this->service->terminate($contract, $request->user() ?? abort(401), $data['reason']);
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['status' => $e->getMessage()]);
+            return back()->withErrors(['status' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Vertrag gekündigt.'));
@@ -190,7 +190,7 @@ class AssetFinanceContractController extends Controller {
         try {
             $this->service->close($contract, $request->user() ?? abort(401));
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['status' => $e->getMessage()]);
+            return back()->withErrors(['status' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Akte abgeschlossen.'));

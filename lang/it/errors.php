@@ -32,14 +32,14 @@ return [
     ],
     '403' => [
         'title' => 'Accesso negato',
-        'message' => "Non hai l'autorizzazione per questa azione. Contatta la tua amministrazione.",
+        'message' => "Non ha l'autorizzazione per questa azione. Contatti la sua amministrazione.",
     ],
     '419' => [
         'title' => 'Sessione scaduta',
-        'message' => 'La pagina è rimasta aperta troppo a lungo. Ricaricala e riprova.',
+        'message' => 'La pagina è rimasta aperta troppo a lungo. La ricarichi e riprovi.',
     ],
     '500' => [
         'title' => 'Errore interno',
-        'message' => "Si è verificato un errore imprevisto. Riprova più tardi o segnala il problema con l'ID richiesta.",
+        'message' => "Si è verificato un errore imprevisto. Riprovi più tardi o segnali il problema con l'ID richiesta.",
     ],
 ];

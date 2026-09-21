@@ -1,5 +1,5 @@
 ---
-title: "Dein Tag in WorkDiary: Admin"
+title: "Ihr Tag in WorkDiary: Admin"
 topic: roles.admin
 version: 1
 audience:
@@ -11,8 +11,8 @@ related:
     - glossary.core
 ---
 
-Als Admin deiner Organisation richtest du WorkDiary ein, verwaltest
-Benutzer und Rechte und hältst den Betrieb gesund.
+Als Admin Ihrer Organisation richten Sie WorkDiary ein, verwalten
+Benutzer und Rechte und halten den Betrieb gesund.
 
 Typischer Ablauf:
 
@@ -26,14 +26,14 @@ Typischer Ablauf:
    Plugin-Status.
 5. **Eskalationen**: Korrekturanträge, gesperrte Konten, 2FA-Resets.
 
-Was du darfst: grundsätzlich alles innerhalb deiner Organisation –
+Was Sie dürfen: grundsätzlich alles innerhalb Ihrer Organisation –
 inklusive aller Schreibrechte. Genau deshalb gilt:
 
-- Arbeite im Alltag möglichst mit einem **zweitkonto-freien Blick**:
-  prüfe vor kritischen Aktionen (Löschen, Purge, Entsperren), ob ein
+- Arbeiten Sie im Alltag möglichst mit einem **zweitkonto-freien Blick**:
+  prüfen Sie vor kritischen Aktionen (Löschen, Purge, Entsperren), ob ein
   fachlicher Weg (Korrekturantrag, Storno) existiert.
 - Die **globale Admin-Rolle** (plattformweit, ohne Organisation) ist dem
   Betreiber vorbehalten und wird nie über die Organisations-UI vergeben.
 
-Das vollständige Nachschlagewerk findest du im **Admin-Handbuch**
+Das vollständige Nachschlagewerk finden Sie im **Admin-Handbuch**
 (verwandte Themen unten).

@@ -135,6 +135,52 @@ class AccountingJournalTest extends TestCase {
         $this->journal()->post($entry, $this->admin);
     }
 
+    /** UI-Fuzz 2026-09-21: zusammengesetzte Buchungstexte (Skonto + Notiz) sprengten memo varchar(191). */
+    public function test_overlong_memo_is_truncated_to_the_column(): void {
+        $entry = $this->journal()->draft($this->org, ['memo' => str_repeat('Ä', 250)] + $this->entryData(), $this->admin);
+
+        $this->assertSame(191, mb_strlen((string) $entry->refresh()->memo));
+    }
+
+    /** UI-Fuzz 2026-09-21: scheiterndes Festschreiben ließ einen Entwurf zurück. */
+    public function test_post_direct_leaves_no_draft_when_sovereignty_refuses(): void {
+        app(FiscalYearService::class)->create($this->org, $this->startsOn->subYear());
+
+        try {
+            $this->journal()->postDirect($this->org, $this->entryData(null, $this->startsOn->subMonths(2)), $this->admin);
+            $this->fail('Festschreiben vor dem Stichtag hätte verweigert werden müssen.');
+        } catch (AccountingSovereigntyException) {
+            // erwartet
+        }
+
+        $this->assertSame(0, AccountingEntry::query()->count());
+    }
+
+    /** UI-Fuzz 2026-09-21: „Festschreiben“ im Journal-Dialog endete in HTTP 500. */
+    public function test_journal_store_reports_sovereignty_refusal_instead_of_server_error(): void {
+        app(FiscalYearService::class)->create($this->org, $this->startsOn->subYear());
+        $payload = [
+            'booked_on' => $this->startsOn->subMonths(2)->toDateString(),
+            'memo' => 'Vor dem Stichtag',
+            'debit_account' => (string) $this->bank->id,
+            'credit_account' => (string) $this->revenue->id,
+            'amount' => '10.00',
+            'post' => '1',
+        ];
+
+        $this->actingAs($this->admin)
+            ->post(route('finance.accounting.journal.store'), $payload)
+            ->assertRedirect()
+            ->assertSessionHas('error');
+
+        $this->actingAs($this->admin)
+            ->postJson(route('finance.accounting.journal.store'), $payload)
+            ->assertStatus(409)
+            ->assertJsonStructure(['message']);
+
+        $this->assertSame(0, AccountingEntry::query()->count());
+    }
+
     public function test_inactive_account_cannot_be_posted_on(): void {
         app(ChartOfAccountsService::class)->deactivate($this->revenue);
 

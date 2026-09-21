@@ -44,7 +44,7 @@
                        pattern="[a-z0-9_\-]+" class="font-mono"
                        placeholder="team_meeting"
                        :value="old('key', $category?->key)"
-                       @if ($isEdit) readonly @endif />
+                       :readonly="$isEdit" />
 
         <x-input-field name="label" :label="__('Bezeichnung')" required maxlength="120"
                        :value="old('label', $category?->label)" />
@@ -58,7 +58,7 @@
         <x-input-field type="number" min="0" max="999" name="sort_order" :label="__('Reihenfolge')"
                        :value="old('sort_order', $category?->sort_order ?? 100)" />
 
-        <x-input-field name="icon" :label="__('Icon')" maxlength="64"
+        <x-input-field name="icon" :label="__('Icon')" maxlength="32"
                        class="font-mono"
                        placeholder="category"
                        :value="old('icon', $category?->icon)" />

@@ -8,7 +8,7 @@ related:
     - protocols.create
 ---
 
-Tocca il titolo dell'incarico nell'elenco del registro per aprire la vista
+Tocchi il titolo dell'incarico nell'elenco del registro per aprire la vista
 di dettaglio (fascicolo); la modifica diretta avviene nelle singole
 sezioni (commenti, allegati, tempi, verbali). Le classificazioni
 obbligatorie devono essere compilate prima del passaggio allo stato

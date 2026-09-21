@@ -93,7 +93,7 @@ return [
 
     'help' => [
         'role_name' => 'Nur Kleinbuchstaben, Ziffern, Punkt, Bindestrich, Unterstrich. Nicht änderbar nach Anlage.',
-        'role_permissions' => 'Wähle die Berechtigungen, die diese Rolle gewähren soll.',
+        'role_permissions' => 'Wählen Sie die Berechtigungen, die diese Rolle gewähren soll.',
         'group_roles' => 'Mitglieder dieser Gruppe erhalten zusätzlich alle Berechtigungen der ausgewählten Rollen.',
         'group_permissions' => 'Direkte Berechtigungen werden zusätzlich zu den Rollen-Berechtigungen an die Mitglieder vererbt.',
     ],

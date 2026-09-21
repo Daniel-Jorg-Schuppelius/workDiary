@@ -26,7 +26,7 @@ class TimesheetSignatureRequestedMail extends Mailable {
     }
 
     public function content(): Content {
-        return new Content(view: 'mail.timesheet-signature-requested', with: [
+        return new Content(markdown: 'mail.timesheet-signature-requested', with: [
             'timesheet' => $this->timesheet,
             'signUrl' => $this->signUrl,
         ]);

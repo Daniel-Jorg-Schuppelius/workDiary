@@ -35,7 +35,7 @@
         <div class="content">{{ $step->content ?: '—' }}</div>
         <div class="step-meta">
             {{ $step->isDone() ? __('Abgeschlossen') : __('Offen') }}
-            @if ($step->completed_at) · {{ $step->completed_at->format('d.m.Y H:i') }} @endif
+            @if ($step->completed_at) · {{ $step->completed_at->orgTz()->format('d.m.Y H:i') }} @endif
             @if ($step->completedBy) · {{ $step->completedBy->name }} @endif
         </div>
     @endforeach

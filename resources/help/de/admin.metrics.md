@@ -30,4 +30,4 @@ fallen bei Nichtverfügbarkeit auf leere Vorgaben zurück, ohne die
 Seite zu blockieren.
 
 Der Aufruf erfordert das Metriken-Recht. Detaillierte Health-Checks
-und die Test-Mail findest du unter **Diagnose**.
+und die Test-Mail finden Sie unter **Diagnose**.

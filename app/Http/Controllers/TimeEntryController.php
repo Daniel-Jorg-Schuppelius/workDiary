@@ -42,7 +42,7 @@ class TimeEntryController extends Controller {
             'title' => __('Zeiteintrag erfassen'),
             'eyebrow' => __('Zeiterfassung'),
             'icon' => 'timer',
-            'description' => __('Wähle ein Projekt, auf das die Stunden gebucht werden sollen.'),
+            'description' => __('Wählen Sie ein Projekt, auf das die Stunden gebucht werden sollen.'),
             'isDialog' => true,
         ]);
     }

@@ -37,9 +37,6 @@
         </select>
     </x-filter-bar>
 
-    @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
-    @endif
 
     <x-table :zebra="true" scroll="flex" :pinRows="true">
         <x-slot:head>

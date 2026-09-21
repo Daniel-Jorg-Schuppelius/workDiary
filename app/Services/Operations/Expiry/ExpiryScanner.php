@@ -16,7 +16,7 @@ use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskStatus, Operatio
 use App\Models\{AttendanceTerminal, ChatWebhook, OperationsTask, TodoistConnection};
 use App\Services\Licensing\{LicenseService, LicenseStatus};
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
-use App\Support\Setting;
+use App\Support\{Setting, Tz};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\{DB, Log};
 
@@ -390,7 +390,7 @@ class ExpiryScanner {
                 params: [
                     'name' => (string) $terminal->name,
                     'kind' => 'Terminal',
-                    'error' => __('operations.hint.no_contact_since', ['date' => $terminal->last_seen_at?->format('d.m.Y H:i') ?? '—']),
+                    'error' => __('operations.hint.no_contact_since', ['date' => Tz::toLocal($terminal->last_seen_at)?->format('d.m.Y H:i') ?? '—']),
                 ],
                 organizationId: (int) $terminal->organization_id,
             ))

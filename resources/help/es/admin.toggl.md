@@ -17,9 +17,9 @@ reescribir correcciones y transferir tiempos registrados localmente
 API y rango de fechas) y la importación de archivos (informe detallado
 CSV o archivo de exporte completo del workspace). Los
 clientes/proyectos de Toggl sin asignación automática se acumulan en
-la bandeja de entrada, donde los asignas a clientes/proyectos
-existentes, creas nuevos o los descartas; los futuros imports usan las
-asignaciones guardadas, que puedes modificar o eliminar. Importar de
+la bandeja de entrada, donde los asigna a clientes/proyectos
+existentes, crea nuevos o los descarta; los futuros imports usan las
+asignaciones guardadas, que puede modificar o eliminar. Importar de
 nuevo el mismo periodo puede generar duplicados si los datos de origen
 cambiaron, y el descarte de entradas es definitivo.
 
@@ -29,7 +29,7 @@ workspace: primero las asignaciones guardadas («Gestionar
 asignaciones»), luego la igualdad de correo. Los usuarios de Toggl
 desconocidos o no consultables nunca se contabilizan en silencio en el
 usuario principal: quedan como caso abierto en la bandeja de
-asignación, donde eliges el usuario; la elección se recuerda. Solo en
+asignación, donde elige el usuario; la elección se recuerda. Solo en
 el modo de usuario único activado expresamente (ajuste del plugin) se
 contabilizan las entradas sin señal de usuario en el usuario
 predeterminado. Las importaciones antiguas mal asignadas se reparan con
@@ -37,7 +37,7 @@ predeterminado. Las importaciones antiguas mal asignadas se reparan con
 `--apply`); los tiempos facturados o firmados nunca se modifican
 automáticamente.
 
-Para la importación única de workspace (carpeta/ZIP o API) eliges
+Para la importación única de workspace (carpeta/ZIP o API) elige
 explícitamente la asignación de usuarios: asignar solo a usuarios
 existentes (las entradas desconocidas quedan visiblemente sin
 contabilizar y se listan por correo), crear los usuarios que falten por

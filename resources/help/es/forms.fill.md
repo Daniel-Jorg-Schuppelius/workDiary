@@ -11,12 +11,12 @@ related:
     - glossary.core
 ---
 
-Con los formularios rellenas listas de verificación y registros
-configurables que tu organización ha definido como plantillas. Elige
-una plantilla en estado «Activo», rellena los campos (texto, número,
-fecha, selección, casilla; los obligatorios están marcados), elige
-opcionalmente un **objeto de referencia** y **guarda**: el registro se
-archiva con fecha y tu nombre. Al guardar, la definición de campos se
+Con los formularios rellena listas de verificación y registros
+configurables que su organización ha definido como plantillas. Elija
+una plantilla en estado «Activo», rellene los campos (texto, número,
+fecha, selección, casilla; los obligatorios están marcados), elija
+opcionalmente un **objeto de referencia** y **guarde**: el registro se
+archiva con fecha y su nombre. Al guardar, la definición de campos se
 congela como **instantánea**, por lo que cambios posteriores en la
-plantilla nunca alteran tu registro. Los jefes de equipo ven todos los
+plantilla nunca alteran su registro. Los jefes de equipo ven todos los
 registros de su área; el resto solo los propios.

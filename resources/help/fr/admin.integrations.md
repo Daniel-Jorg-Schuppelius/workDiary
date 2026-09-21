@@ -77,7 +77,7 @@ processus automatisés qu'ensuite.
 ## Quelles intégrations existent
 
 L'offre s'étoffe ; la liste ci-dessous nomme les intégrations disponibles par
-usage, pour que tu n'aies pas à deviner où va quoi :
+usage, pour que vous n'ayez pas à deviner où va quoi :
 
 - **Comptabilité et facturation :** lexoffice, orgaMAX, sevDesk, easybill,
   BuchhaltungsButler, InvoicePlane et le point d'accès Peppol pour l'envoi de
@@ -93,5 +93,5 @@ usage, pour que tu n'aies pas à deviner où va quoi :
   Kimai, Zammad.
 - **Commerce et gestion :** JTL-Wawi, Billbee, Etsy.
 
-Une intégration absente de cette liste n'existe pas — en cas de doute, demande
+Une intégration absente de cette liste n'existe pas — en cas de doute, demandez
 plutôt que d'enregistrer des identifiants à un endroit non prévu pour cela.

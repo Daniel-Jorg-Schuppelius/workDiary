@@ -19,12 +19,9 @@
                 <a href="{{ route('admin.toggl.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurück zum Import') }}</a>
             </div>
             <p class="mb-4 text-sm text-muted">
-                {{ __('Einmaliger Import eines kompletten Toggl-Exports (Ordner mit clients.json, projects.json, workspace_users.json und den Jahres-CSVs je Workspace). Gib den Server-Pfad zum Export an; je gefundenem Workspace legst du dann fest, was passieren soll.') }}
+                {{ __('Einmaliger Import eines kompletten Toggl-Exports (Ordner mit clients.json, projects.json, workspace_users.json und den Jahres-CSVs je Workspace). Geben Sie den Server-Pfad zum Export an; je gefundenem Workspace legen Sie dann fest, was passieren soll.') }}
             </p>
 
-            @if (session('status'))
-                <div class="alert alert-success mb-3 text-sm">{{ session('status') }}</div>
-            @endif
             @if ($errors->any())
                 <div class="alert alert-error mb-3 text-sm">{{ $errors->first() }}</div>
             @endif

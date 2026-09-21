@@ -40,7 +40,7 @@ class SaveGuaranteeRequest extends BaseFormRequest {
             'direction' => ['required', Rule::enum(GuaranteeDirection::class)],
             'kind' => ['required', Rule::enum(GuaranteeKind::class)],
             'reference' => ['nullable', 'string', 'max:64'],
-            'amount' => ['required', 'numeric', 'min:0.01'],
+            'amount' => ['required', 'numeric', 'min:0.01', 'max:999999999999.99'],
             'issued_on' => ['nullable', 'date'],
             'expires_on' => ['nullable', 'date', 'after_or_equal:issued_on'],
             'issuer_name' => ['nullable', 'string', 'max:191'],

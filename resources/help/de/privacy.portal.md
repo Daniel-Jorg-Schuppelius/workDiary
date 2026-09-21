@@ -21,7 +21,7 @@ Wer fragt, muss zuerst als die Person erkannt werden, um die es geht.
 sie an und meldet sich rechtzeitig vorher; eine Verlängerung ist möglich,
 muss aber begründet und der Person mitgeteilt werden.
 
-**Identität:** Prüfe die Identität, bevor du Daten herausgibst — bei Zweifeln
+**Identität:** Prüfen Sie die Identität, bevor Sie Daten herausgeben — bei Zweifeln
 lieber nachfragen als antworten. Eine Auskunft an die falsche Person ist
 selbst eine Datenschutzverletzung.
 

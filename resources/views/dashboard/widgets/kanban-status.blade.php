@@ -15,7 +15,7 @@
 
     @if ($counts->isEmpty())
         <x-empty-state compact icon="view_kanban"
-                       :title="__('Nichts zugewiesen')" :message="__('Dir sind derzeit keine offenen Aufträge zugewiesen.')" />
+                       :title="__('Nichts zugewiesen')" :message="__('Ihnen sind derzeit keine offenen Aufträge zugewiesen.')" />
     @else
         <ul class="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
             @foreach ($statuses as $status)

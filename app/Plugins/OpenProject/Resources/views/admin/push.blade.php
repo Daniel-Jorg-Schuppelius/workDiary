@@ -22,9 +22,6 @@
                 {{ __('Nicht-exportierte Projekt-Zeiten, deren Projekt einem OpenProject-Projekt zugeordnet ist, werden als Zeiteinträge zurückgebucht. Aufgaben werden — sofern zugeordnet — als Work Package gebucht. Bereits gebuchte Einträge werden übersprungen.') }}
             </p>
 
-            @if (session('status'))
-                <div class="alert alert-success mb-3 text-sm">{{ session('status') }}</div>
-            @endif
             @if ($errors->any())
                 <div class="alert alert-error mb-3 text-sm">{{ $errors->first() }}</div>
             @endif

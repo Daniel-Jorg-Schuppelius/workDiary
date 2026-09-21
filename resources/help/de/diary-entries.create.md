@@ -28,10 +28,10 @@ nachvollziehbar ab.
 
 ## Empfohlener Ablauf
 
-1. Öffne **„Neuer Eintrag"** in der Topbar oder die Schnellaktion auf
+1. Öffnen Sie **„Neuer Eintrag"** in der Topbar oder die Schnellaktion auf
    dem Dashboard.
-2. Erfasse **Kunde** (Pflicht) und ggf. **Projekt**.
-3. Wähle den **Eintragstyp** und beschreibe den **Inhalt** in ein bis
+2. Erfassen Sie **Kunde** (Pflicht) und ggf. **Projekt**.
+3. Wählen Sie den **Eintragstyp** und beschreiben Sie den **Inhalt** in ein bis
    zwei Sätzen.
 4. Optional: **Plan-Dauer** in Minuten hinterlegen.
 5. Statusübergänge laufen anschließend über das **Detail-Modal** — kein

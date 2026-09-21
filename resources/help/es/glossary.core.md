@@ -19,7 +19,7 @@ mensual** (el empleado presenta, el jefe de equipo aprueba, tras el
 exporte el mes queda bloqueado) y **Organización** (unidad aislada a la
 que pertenece cada dato). En el ámbito ISMS: **Alcance** (parte de la
 organización cubierta por el SGSI), **Requisito vs. medida** (QUÉ exige
-la norma frente a CÓMO lo implementáis), **SoA** (declaración de
+la norma frente a CÓMO lo implementa usted), **SoA** (declaración de
 aplicabilidad por requisito), **Paquete de auditoría** (instantánea
 inmutable con hash SHA-256 para auditores) y **Vía de facturación** (el
 programa de facturación líder por organización/cliente).

@@ -39,6 +39,14 @@ class AccountingBudgetTest extends AccountingLedgerTestCase {
         $this->assertSame('12001.00', $year[$id], 'Verteilung geht ohne Rundungsverlust auf');
     }
 
+    /** UI-Fuzz 2026-09-21: ein leerer Jahreswert wurde als Budget 0,00 gespeichert statt „nicht geplant“. */
+    public function test_empty_year_value_clears_the_budget_instead_of_zero(): void {
+        $this->service()->save($this->org, $this->accounts['revenue'], 2026, null, ['mode' => 'year', 'year_amount' => '1200.00'], $this->admin);
+        $this->service()->save($this->org, $this->accounts['revenue'], 2026, null, ['mode' => 'year', 'year_amount' => ''], $this->admin);
+
+        $this->assertSame(0, AccountingBudget::query()->where('accounting_account_id', $this->accounts['revenue']->id)->count());
+    }
+
     public function test_month_values_replace_a_year_value(): void {
         $this->service()->save($this->org, $this->accounts['wages'], 2026, null, ['mode' => 'year', 'year_amount' => '1200.00'], $this->admin);
         $this->service()->save($this->org, $this->accounts['wages'], 2026, null, ['mode' => 'months', 'months' => [1 => '100.00', 3 => '50.00', 13 => '999.00']], $this->admin);

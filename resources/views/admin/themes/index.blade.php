@@ -104,7 +104,7 @@
             </div>
 
             @if ($custom === [])
-                <p class="text-sm opacity-60 mt-2">{{ __('Noch keine eigenen Themes. Lege eines an, um die Farbpalette deiner Organisation abzubilden.') }}</p>
+                <p class="text-sm opacity-60 mt-2">{{ __('Noch keine eigenen Themes. Legen Sie eines an, um die Farbpalette Ihrer Organisation abzubilden.') }}</p>
             @else
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-2">
                     @foreach ($custom as $d)

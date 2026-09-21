@@ -18,5 +18,5 @@ inquilino de demostración. El restablecimiento solo se permite en
 inquilinos marcados como demo (`is_demo`) para proteger los datos
 reales, y en ellos sobrescribe o elimina los datos de demostración
 existentes. Ambas acciones requieren permisos propios y se registran
-en el log de auditoría; comprueba antes de generar si la organización
+en el log de auditoría; compruebe antes de generar si la organización
 realmente debe estar vacía.

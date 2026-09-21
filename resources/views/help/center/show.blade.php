@@ -110,7 +110,7 @@
                         {{ __('Nein') }}
                     </x-button>
                 </div>
-                <p class="mt-2 hidden text-xs text-muted" data-help-center-thanks>{{ __('Danke für dein Feedback.') }}</p>
+                <p class="mt-2 hidden text-xs text-muted" data-help-center-thanks>{{ __('Danke für Ihr Feedback.') }}</p>
             </div>
         </div>
     </div>

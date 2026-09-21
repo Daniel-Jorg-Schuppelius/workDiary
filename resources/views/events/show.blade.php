@@ -47,8 +47,8 @@
             <x-card class="lg:col-span-2 flex flex-col gap-2">
                 <h3 class="card-title text-base">{{ __('Details') }}</h3>
                 <x-detail-grid class="grid-cols-2">
-                    <x-detail-grid.row :label="__('Beginn')" :value="$event->started_at?->isoFormat('LLLL')" />
-                    <x-detail-grid.row :label="__('Ende')" :value="$event->ended_at?->isoFormat('LLLL')" />
+                    <x-detail-grid.row :label="__('Beginn')" :value="$event->started_at?->orgTz()->isoFormat('LLLL')" />
+                    <x-detail-grid.row :label="__('Ende')" :value="$event->ended_at?->orgTz()->isoFormat('LLLL')" />
                     @if ($event->topic)
                         <x-detail-grid.row :label="__('Thema')" :value="$event->topic" />
                     @endif
@@ -87,8 +87,8 @@
                             </div>
                         </div>
                         <div class="text-xs opacity-70 text-right">
-                            {{ optional($room->pivot->started_at)->isoFormat('HH:mm') }} –
-                            {{ optional($room->pivot->ended_at)->isoFormat('HH:mm') }}
+                            {{ $room->pivot->started_at ? \Illuminate\Support\Carbon::parse($room->pivot->started_at)->orgTz()->isoFormat('HH:mm') : '' }} –
+                            {{ $room->pivot->ended_at ? \Illuminate\Support\Carbon::parse($room->pivot->ended_at)->orgTz()->isoFormat('HH:mm') : '' }}
                         </div>
                     </div>
                 @empty

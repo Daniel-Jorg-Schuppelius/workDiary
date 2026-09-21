@@ -17,6 +17,7 @@ use App\Services\Learning\{LearningAccessService, LearningAssignmentService, Lea
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\{Carbon, Str};
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\{WithOrganization, WithPortalVisibility};
@@ -238,6 +239,18 @@ class LearningCourseOptionsTest extends TestCase {
         $this->actingAs($manager, 'web')->put(route('learning.settings.update'), ['categories' => 'Vertrieb'])->assertSessionHasNoErrors();
         $this->assertNull($safetyCourse->refresh()->category_id);
         $this->assertSame(1, LearningCourseCategory::query()->count());
+    }
+
+    /** UI-Fuzz 2026-09-21: jede Zeile wird eine Kategorie (name varchar(120)) — eine lange Zeile endete in 1406. */
+    public function test_ueberlange_kategoriezeile_ist_ein_feldfehler(): void {
+        Exceptions::fake();
+
+        $this->actingAs($this->manager())
+            ->put(route('learning.settings.update'), ['categories' => "Sicherheit\n" . str_repeat('Kategorie ', 13)])
+            ->assertSessionHasErrors('categories');
+
+        $this->assertSame(0, LearningCourseCategory::query()->count());
+        Exceptions::assertNothingReported();
     }
 
     // ── Fenster und Grenze ───────────────────────────────────────────────

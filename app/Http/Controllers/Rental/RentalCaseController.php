@@ -19,7 +19,7 @@ use App\Models\{Asset, Customer, Project, User};
 use App\Models\Rental\{RentalCase, RentalCaseAsset, RentalRateCard};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Rental\{RentalBillingService, RentalCaseService};
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid, Tz};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
@@ -132,7 +132,7 @@ class RentalCaseController extends Controller {
         try {
             $this->service->reserve($rental, $request->user() ?? abort(401));
         } catch (RentalConflictException|AssetNotUsableException|\RuntimeException $e) {
-            return back()->withErrors(['reserve' => $e->getMessage()]);
+            return back()->withErrors(['reserve' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Zeitraum reserviert — Verfügbarkeit ist blockiert.'));
@@ -148,9 +148,9 @@ class RentalCaseController extends Controller {
         ]);
 
         try {
-            $this->service->extend($rental, $request->user() ?? abort(401), Carbon::parse($data['ends_at']), $data['reason'] ?? null);
+            $this->service->extend($rental, $request->user() ?? abort(401), Carbon::instance(Tz::parse((string) $data['ends_at'])), $data['reason'] ?? null);
         } catch (RentalConflictException|\RuntimeException|\InvalidArgumentException $e) {
-            return back()->withErrors(['ends_at' => $e->getMessage()]);
+            return back()->withErrors(['ends_at' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Laufzeit verlängert.'));
@@ -180,7 +180,7 @@ class RentalCaseController extends Controller {
         try {
             $this->service->swapAsset($rental, $current, $replacement, $request->user() ?? abort(401), $data['note'] ?? null);
         } catch (RentalConflictException|AssetNotUsableException|\RuntimeException $e) {
-            return back()->withErrors(['asset_id' => $e->getMessage()]);
+            return back()->withErrors(['asset_id' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Tauschgerät dokumentiert.'));
@@ -194,7 +194,7 @@ class RentalCaseController extends Controller {
         try {
             $this->service->cancel($rental, $request->user() ?? abort(401), $data['reason'] ?? null);
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['status' => $e->getMessage()]);
+            return back()->withErrors(['status' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Verleihakte storniert.'));
@@ -206,7 +206,7 @@ class RentalCaseController extends Controller {
         try {
             $this->service->close($rental, $request->user() ?? abort(401));
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['status' => $e->getMessage()]);
+            return back()->withErrors(['status' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Verleihakte abgeschlossen.'));
@@ -245,7 +245,7 @@ class RentalCaseController extends Controller {
             ]);
         }
 
-        return $request->validate([
+        $data = $request->validate([
             'customer_id' => ['required', 'integer', new ExistsInCurrentOrganization('customers')],
             'contact_name' => ['nullable', 'string', 'max:255'],
             'project_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('projects')],
@@ -257,11 +257,16 @@ class RentalCaseController extends Controller {
             'ends_at' => ['required', 'date', 'after:starts_at'],
             'responsible_user_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('users')],
             'rental_rate_card_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('rental_rate_cards')],
-            'deposit_amount' => ['nullable', 'numeric', 'min:0'],
+            'deposit_amount' => ['nullable', 'numeric', 'min:0', 'max:9999999999.99'],
             'insurance_note' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:8000'],
             'asset_ids' => ['sometimes', 'array'],
             'asset_ids.*' => ['integer', new ExistsInCurrentOrganization('assets')],
         ]);
+        // Eingabe ist Ortszeit, gespeichert wird UTC (MVP-823).
+        $data['starts_at'] = Tz::parse((string) $data['starts_at'])->format('Y-m-d H:i:s');
+        $data['ends_at'] = Tz::parse((string) $data['ends_at'])->format('Y-m-d H:i:s');
+
+        return $data;
     }
 }

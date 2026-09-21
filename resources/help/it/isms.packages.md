@@ -13,9 +13,9 @@ related:
 ---
 
 I **pacchetti di audit** congelano lo stato dei dati ISMS a una data di
-riferimento come snapshot, base solida per auditor esterni. Crea il pacchetto
+riferimento come snapshot, base solida per auditor esterni. Crei il pacchetto
 come "Bozza" (titolo, data di riferimento, ambito, eventuale norma come
-filtro), poi **finalizza**: viene generato lo snapshot JSON con hash SHA-256
+filtro), poi **finalizzi**: viene generato lo snapshot JSON con hash SHA-256
 e registrato chi ha finalizzato e quando; l'integrità è verificabile in ogni
 momento contro l'hash salvato. Un **link per auditor** apre una **vista web in sola
 lettura** del pacchetto finalizzato (hash SHA-256 in copertina, file JSON

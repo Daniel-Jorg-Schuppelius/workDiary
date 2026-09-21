@@ -17,6 +17,7 @@ use App\Models\DocumentDesign\{DocumentRenderProfile, DocumentRenderProfileVersi
 use App\Models\{Organization, User};
 use App\Services\DocumentDesign\{LetterheadAssetService, RenderProfileService, SampleDocumentService};
 use App\Services\SqidEncoder;
+use App\Support\ErrorText;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request, Response};
@@ -141,7 +142,7 @@ class DocumentDesignController extends Controller {
                 PageFormat::tryFrom((string) ($data['page_format'] ?? '')) ?? PageFormat::A4Portrait,
             );
         } catch (InvalidArgumentException $e) {
-            throw ValidationException::withMessages(['file' => $e->getMessage()]);
+            throw ValidationException::withMessages(['file' => ErrorText::for($e)]);
         }
 
         return redirect()->route('admin.document-design.index')->with(
@@ -343,10 +344,10 @@ class DocumentDesignController extends Controller {
             $version = $this->profiles->updateDraft($version, $payload, $user);
         } catch (InvalidArgumentException|RuntimeException $e) {
             if ($request->expectsJson()) {
-                return response()->json(['message' => $e->getMessage()], 422);
+                return response()->json(['message' => ErrorText::for($e)], 422);
             }
 
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         $result = $this->profiles->preflightFor($version);
@@ -374,7 +375,7 @@ class DocumentDesignController extends Controller {
         try {
             $this->profiles->newDraftFrom($source, $user);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('admin.document-design.editor', $profile->sqid)

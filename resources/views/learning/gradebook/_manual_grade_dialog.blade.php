@@ -33,7 +33,7 @@
                 @foreach ($history as $grade)
                     <li class="flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 px-3 py-2">
                         <span>{{ $grade->points }} / {{ $grade->max_points }}@if ($grade->note) — {{ $grade->note }}@endif</span>
-                        <span class="text-xs text-muted">{{ $grade->graded_at?->translatedFormat('d.m.Y H:i') }} · {{ $grade->gradedBy?->name ?? '–' }}</span>
+                        <span class="text-xs text-muted">{{ $grade->graded_at?->orgTz()->translatedFormat('d.m.Y H:i') }} · {{ $grade->gradedBy?->name ?? '–' }}</span>
                     </li>
                 @endforeach
             </ul>

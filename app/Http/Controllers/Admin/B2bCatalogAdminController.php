@@ -18,6 +18,7 @@ use App\Models\Article;
 use App\Models\B2b\{B2bCatalogAccess, B2bCatalogItem, B2bOrder};
 use App\Models\{Customer, Organization, User};
 use App\Services\B2bCatalog\B2bOrderIntakeService;
+use App\Support\ErrorText;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
@@ -179,7 +180,7 @@ class B2bCatalogAdminController extends Controller {
         try {
             $result = $service->intake($organization, $xml, B2bOrder::SOURCE_UPLOAD);
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['order_file' => __('b2b_catalog.error.not_opentrans', ['reason' => $e->getMessage()])]);
+            return back()->withErrors(['order_file' => __('b2b_catalog.error.not_opentrans', ['reason' => ErrorText::for($e)])]);
         }
 
         return back()->with('success', $result['status'] === 'created'

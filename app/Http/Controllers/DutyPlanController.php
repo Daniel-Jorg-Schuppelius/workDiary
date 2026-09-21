@@ -37,7 +37,7 @@ class DutyPlanController extends Controller {
         }
 
         [$sort, $dir] = SortableQuery::apply($query, $request, [
-            'name' => 'name',
+            'name' => 'title',
             'period_type' => 'period_type',
             'from_date' => 'from_date',
             'to_date' => 'to_date',

@@ -14,9 +14,6 @@
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Gespeicherte Filter pro Ansicht.')">
 
-        @if (session('status'))
-            <div class="alert alert-success">{{ session('status') }}</div>
-        @endif
 
         @if ($presets->isEmpty())
             <x-empty-state framed

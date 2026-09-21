@@ -14,6 +14,6 @@ El análisis por tipo de orden compara duraciones planificadas y reales
 por tipo de entrada (p. ej. mantenimiento, avería, migración) y muestra
 la duración media y su dispersión, la desviación plan/real en
 porcentaje, la cuota de retrabajo y las causas principales si están
-clasificadas. Así identificas tipos de orden con supuestos de
+clasificadas. Así identifica tipos de orden con supuestos de
 planificación poco realistas o sobreesfuerzo sistemático del equipo,
 ambos indicios de necesidades de formación o de ajuste de precios.

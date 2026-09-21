@@ -82,6 +82,23 @@ class PrivacyIncidentTest extends TestCase {
             ->assertOk()->assertSee('AV-Vorfall');
     }
 
+    /** UI-Fuzz 2026-09-21: eingegebene Meldezeitpunkte landeten als Ortszeit in UTC-Spalten, Fristen wurden in UTC angezeigt. */
+    public function test_notification_times_are_stored_in_utc_and_shown_in_local_time(): void {
+        $org = Organization::factory()->create(['timezone' => 'Europe/Berlin']);
+        $officer = $this->officer($org);
+        $incident = app(IncidentService::class)->open($org, IncidentType::Disclosure, 'Fehlversand', null, null, null, ControllerRole::Processor, 'Muster GmbH');
+
+        $this->actingAs($officer)
+            ->post(route('dataprotection.incidents.notify-controller', $incident), ['notified_at' => '2030-07-10T08:00'])
+            ->assertRedirect();
+
+        $this->assertSame('2030-07-10 06:00:00', $incident->refresh()->getRawOriginal('controller_notified_at'));
+        $this->actingAs($officer)->get(route('dataprotection.incidents.show', $incident))
+            ->assertOk()
+            ->assertSee('10.07.2030 08:00')
+            ->assertSee($incident->authority_deadline_at->copy()->setTimezone('Europe/Berlin')->format('d.m.Y H:i'));
+    }
+
     public function test_company_postcode_recommends_supervisory_authority(): void {
         $org = Organization::factory()->create([
             'settings' => [

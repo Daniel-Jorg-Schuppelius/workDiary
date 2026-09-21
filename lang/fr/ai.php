@@ -50,11 +50,11 @@ return [
         'source_hint' => "Historique avec :count événements",
     ],
     'plan_actual' => [
-        'question' => "Explique l'écart prévu/réel en termes simples et nomme les facteurs les plus marquants dans les chiffres. N'invente pas de causes et ne prescris pas de mesures.",
+        'question' => "Expliquez l'écart prévu/réel en termes simples et nommez les facteurs les plus marquants dans les chiffres. N'inventez pas de causes et ne prescrivez pas de mesures.",
         'source_hint' => "Calcul :from – :to",
     ],
     'support' => [
-        'question' => "Explique l'état de santé en termes simples, classe les constats par urgence et indique la prochaine vérification pour chacun.",
+        'question' => "Expliquez l'état de santé en termes simples, classez les constats par urgence et indiquez la prochaine vérification pour chacun.",
         'source_hint' => ":count contrôles en échec",
     ],
     'dms' => [

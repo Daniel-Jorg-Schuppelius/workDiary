@@ -19,6 +19,7 @@ use App\Http\Requests\SaveConstructionNoticeRequest;
 use App\Models\Construction\ConstructionNotice;
 use App\Models\{Customer, DiaryEntry, Project, Site};
 use App\Services\Construction\{ConstructionNoticePdfRenderer, ConstructionNoticeService};
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -157,7 +158,7 @@ class ConstructionNoticeController extends Controller {
         try {
             $this->notices->acknowledge($notice, $data['acknowledged_note'] ?? null, $request->user());
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('status', __('construction.acknowledged'));

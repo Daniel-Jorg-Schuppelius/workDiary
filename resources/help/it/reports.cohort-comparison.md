@@ -8,7 +8,7 @@ related:
 ---
 
 Il confronto di coorte mostra se un indicatore migliora nei
-collaboratori dopo l'acquisizione di una formazione. Scegli una
+collaboratori dopo l'acquisizione di una formazione. Scelga una
 **formazione/qualifica**, un **indicatore** (quota fatturabile o quota
 di rilavorazione) e una **finestra di confronto** in giorni (standard
 90); per ogni collaboratore con quella qualifica l'indicatore viene

@@ -13,9 +13,6 @@
 
 @section('content')
 <x-page-shell>
-    @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
-    @endif
     @if (session('acceptance_url'))
         <div class="alert alert-info">
             <x-icon name="link" />

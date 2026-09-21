@@ -70,9 +70,6 @@
             </form>
         </x-slot:actions>
 
-        @if (session('status'))
-            <div role="alert" class="alert alert-success"><span>{{ session('status') }}</span></div>
-        @endif
         <x-validation-errors first tone="warning" />
 
         @if ($monthLocked)

@@ -15,6 +15,7 @@ use App\Models\Backup\BackupTargetConnection;
 use App\Models\{BackupHeartbeat, RestoreTest};
 use App\Services\Backup\BackupKeyring;
 use App\Services\Backup\Exceptions\BackupKeyMissingException;
+use App\Support\Tz;
 use Illuminate\Console\Command;
 
 /**
@@ -59,11 +60,11 @@ class BackupStatusCommand extends Command {
                 'sudo scripts/install-system.sh richtet Cron + Token ein; Probelauf: sudo scripts/backup.sh');
         } elseif ($last->occurred_at->addHours($freshnessHours)->isPast()) {
             $this->flag('ÜBERFÄLLIG', sprintf('Letzter Heartbeat %s (älter als %d h).',
-                $last->occurred_at->format('d.m.Y H:i'), $freshnessHours),
+                Tz::toLocal($last->occurred_at)?->format('d.m.Y H:i'), $freshnessHours),
                 'Cron-Eintrag und /var/log/workdiary-backup.log prüfen.');
         } else {
             $this->flag('OK', sprintf('Letzter Heartbeat %s (%s).',
-                $last->occurred_at->format('d.m.Y H:i'), (string) ($last->source ?? 'ohne Quelle')));
+                Tz::toLocal($last->occurred_at)?->format('d.m.Y H:i'), (string) ($last->source ?? 'ohne Quelle')));
         }
     }
 

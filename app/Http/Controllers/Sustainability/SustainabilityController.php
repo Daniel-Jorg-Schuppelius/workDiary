@@ -18,6 +18,7 @@ use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\Sustainability\{SustainabilityActivityRecord, SustainabilityAssessment, SustainabilityCriterion, SustainabilityFactorSet, SustainabilityFrameMapping, SustainabilityMeasure, SustainabilityReportSnapshot, SustainabilityTarget};
 use App\Models\User;
 use App\Services\Sustainability\{EmissionCalculationService, SustainabilityAssessmentService};
+use App\Support\ErrorText;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request, Response};
@@ -131,7 +132,7 @@ class SustainabilityController extends Controller {
         Gate::authorize('create', SustainabilityAssessment::class);
         $data = $request->validate([
             'activity_code' => ['required', 'in:' . implode(',', SustainabilityActivityRecord::ACTIVITY_CODES)],
-            'amount' => ['required', 'numeric', 'min:0'],
+            'amount' => ['required', 'numeric', 'min:0', 'max:99999999999.999'],
             'unit' => ['required', 'string', 'max:20'],
             'period_start' => ['required', 'date'],
             'period_end' => ['required', 'date', 'after_or_equal:period_start'],
@@ -156,7 +157,7 @@ class SustainabilityController extends Controller {
         $data = $request->validate([
             'activity_code' => ['required', 'in:' . implode(',', SustainabilityActivityRecord::ACTIVITY_CODES)],
             'label' => ['required', 'string', 'max:200'],
-            'factor' => ['required', 'numeric', 'min:0'],
+            'factor' => ['required', 'numeric', 'min:0', 'max:999999.999999'],
             'unit_code' => ['required', 'string', 'max:40'],
             'scope' => ['required', 'integer', 'in:1,2,3'],
             'valid_from' => ['required', 'date'],
@@ -193,7 +194,7 @@ class SustainabilityController extends Controller {
                 $this->actor(),
             );
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('sustainability.assessments.show', $assessment)->with('status', __('Bewertungsentwurf angelegt.'));
@@ -242,7 +243,7 @@ class SustainabilityController extends Controller {
         try {
             $this->assessments->finalize($assessment, $this->actor());
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('status', __('Bewertung finalisiert und eingefroren.'));
@@ -254,7 +255,7 @@ class SustainabilityController extends Controller {
         try {
             $next = $this->assessments->newVersion($assessment, $this->actor());
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('sustainability.assessments.show', $next)->with('status', __('Version :v angelegt.', ['v' => $next->version]));
@@ -269,7 +270,7 @@ class SustainabilityController extends Controller {
             'title' => ['required', 'string', 'max:300'],
             'expected_impact' => ['nullable', 'string', 'max:500'],
             'effort' => ['required', 'in:low,medium,high'],
-            'cost_estimate' => ['nullable', 'numeric', 'min:0'],
+            'cost_estimate' => ['nullable', 'numeric', 'min:0', 'max:9999999999.99'],
             'responsible_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('users')],
             'due_on' => ['nullable', 'date'],
         ]);

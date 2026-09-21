@@ -15,9 +15,9 @@ related:
 La vista de existencias muestra por almacén las cantidades disponibles,
 físicas y reservadas de cada variante, el precio medio móvil, el valor
 del stock y el punto de pedido. Con permiso de contabilización
-registras movimientos manuales (entrada, salida, reserva, liberación) y
-defines stocks mínimos y de aviso por variante y almacén; las salidas a
-negativo solo son posibles si las permites expresamente. Los lotes se
+registra movimientos manuales (entrada, salida, reserva, liberación) y
+define stocks mínimos y de aviso por variante y almacén; las salidas a
+negativo solo son posibles si las permite expresamente. Los lotes se
 gestionan en la lista de lotes, donde pueden dividirse y fusionarse. La
 vista de escaneo resuelve un código (número de serie, lote, GTIN o SKU)
 y contabiliza directamente una acción. Todos los movimientos se

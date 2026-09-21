@@ -10,10 +10,10 @@ related:
     - privacy.overview
 ---
 
-Dieser Bereich bündelt datenschutzbezogene Werkzeuge für deine
+Dieser Bereich bündelt datenschutzbezogene Werkzeuge für Ihre
 Organisation auf einer Seite. Er ist berechtigungsgeschützt
 (Datenschutz-Recht) und betrachtet die gesamte Organisation, nicht
-nur dein eigenes Konto.
+nur Ihr eigenes Konto.
 
 Statusüberblick:
 
@@ -49,5 +49,5 @@ Datenexport:
 
 Risiken: Das Widerrufen einer Sitzung oder eines Tokens wirkt sofort
 und kann laufende Integrationen oder Anmeldungen unterbrechen. Der
-Export enthält personenbezogene Verwaltungsdaten – behandle ihn
-vertraulich und gib ihn nur an Berechtigte weiter.
+Export enthält personenbezogene Verwaltungsdaten – behandeln Sie ihn
+vertraulich und geben Sie ihn nur an Berechtigte weiter.

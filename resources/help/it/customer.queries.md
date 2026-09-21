@@ -10,8 +10,8 @@ related:
 I clienti pongono domande su un documento presentato (verbale, collaudo,
 incarico) tramite il portale o il **link di firma**; ogni richiesta appare
 qui come voce tracciabile e genera una notifica al ruolo competente. Le
-richieste **aperte** sono in alto: con **Rispondi** inserite una risposta
-visibile al cliente tramite lo stesso link, con **Chiudi** contrassegnate
+richieste **aperte** sono in alto: con **Rispondi** inserisce una risposta
+visibile al cliente tramite lo stesso link, con **Chiudi** contrassegna
 una richiesta risolta senza risposta scritta. Tramite il link di firma il
 cliente può anche **rifiutare** l'operazione con motivazione obbligatoria;
 i difetti segnalati vengono registrati automaticamente come **punti

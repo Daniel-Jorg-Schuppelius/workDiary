@@ -44,7 +44,7 @@
                     <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Telefon') }}</dt><dd>{{ $lead->phone ?? '—' }}</dd></div>
                     <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Quelle') }}</dt><dd>{{ $lead->source->label() }}</dd></div>
                     <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Verantwortlich') }}</dt><dd>{{ $lead->responsible?->name ?? '—' }}</dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Letzter Kontakt') }}</dt><dd>{{ $lead->last_contact_at?->format('d.m.Y H:i') ?? '—' }}</dd></div>
+                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Letzter Kontakt') }}</dt><dd>{{ $lead->last_contact_at?->orgTz()->format('d.m.Y H:i') ?? '—' }}</dd></div>
                     @if ($lead->customer)
                         <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Kunde') }}</dt>
                             <dd><a class="link" href="{{ route('customers.show', $lead->customer) }}">{{ $lead->customer->name }}</a></dd></div>

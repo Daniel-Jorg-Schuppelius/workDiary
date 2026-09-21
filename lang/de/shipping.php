@@ -13,7 +13,7 @@ return [
     'intro' => 'Carrier-Anbindungen für Versandlabels und Sendungsverfolgung (DHL Paket, UPS, FedEx). Je Carrier eine Anbindung pro Organisation; Zugangsdaten werden verschlüsselt gespeichert.',
 
     'form_heading' => 'Anbindung anlegen / bearbeiten',
-    'form_hint' => 'Wähle den Carrier und hinterlege die Zugangsdaten. Eine erneute Speicherung mit demselben Carrier aktualisiert die bestehende Anbindung.',
+    'form_hint' => 'Wählen Sie den Carrier und hinterlegen Sie die Zugangsdaten. Eine erneute Speicherung mit demselben Carrier aktualisiert die bestehende Anbindung.',
     'secret_hint' => 'Passwort und API-Schlüssel werden verschlüsselt abgelegt und nie wieder angezeigt. Beim Bearbeiten leer lassen, um die gespeicherten Werte zu behalten.',
     'connections_heading' => 'Bestehende Anbindungen',
     'no_connections' => 'Noch keine Carrier-Anbindung hinterlegt.',

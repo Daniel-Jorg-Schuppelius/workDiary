@@ -15,8 +15,8 @@ Assets und Fahrzeuge bilden betriebliche Objekte mit Status,
 Zuständigkeit, Dokumenten und Wartungsinformationen ab. Tank- und
 Ladelogs ergänzen den Verbrauchsverlauf.
 
-Erfasse Stammdaten und eindeutige Kennungen, ordne Standort oder
-Verantwortliche zu und pflege Wartungsintervalle sowie relevante
+Erfassen Sie Stammdaten und eindeutige Kennungen, ordnen Sie Standort oder
+Verantwortliche zu und pflegen Sie Wartungsintervalle sowie relevante
 Dokumente. Statusänderungen sollten den tatsächlichen Lebenszyklus
 widerspiegeln.
 

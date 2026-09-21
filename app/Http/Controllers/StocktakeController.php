@@ -14,7 +14,7 @@ use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\{StockCount, Warehouse};
 use App\Services\Inventory\{CycleCountPlanner, StocktakeService};
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -63,7 +63,7 @@ class StocktakeController extends Controller {
         try {
             $this->stocktake->recordByScan($count, (string) $data['code'], (string) $data['qty'], Auth::id() !== null ? (int) Auth::id() : null);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('inventory.counts.show', $count)->with('success', __('inventory.count_ui.saved'));
@@ -139,7 +139,7 @@ class StocktakeController extends Controller {
         try {
             $this->stocktake->applyDifferences($count, Auth::id() !== null ? (int) Auth::id() : null);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('inventory.counts.show', $count)->with('success', __('inventory.count_ui.applied'));

@@ -43,7 +43,7 @@
         ];
     @endphp
     <form method="POST" enctype="multipart/form-data" action="{{ route('learning.my.quiz.submit', [$enrollment, $attempt]) }}"
-          x-data="quizRunner(@js($runnerOptions))" data-quiz-runner>
+          x-data="quizRunner()" data-quiz-runner data-options="{{ json_encode($runnerOptions) }}">
         @csrf
         <div class="space-y-4">
             @if ($errors->any())
@@ -62,7 +62,7 @@
                     <x-icon name="timer" />
                     <span>
                         {{ __('learning.field.remaining_time') }}:
-                        <span class="font-mono" x-text="remaining">{{ $attempt->expires_at->translatedFormat('H:i') }}</span>
+                        <span class="font-mono" x-text="remaining">{{ $attempt->expires_at->orgTz()->translatedFormat('H:i') }}</span>
                     </span>
                 </div>
             @endif

@@ -21,8 +21,8 @@
     $isSlaRisk = in_array($sla->value, ['atRisk', 'breached'], true);
     $window = null;
     if ($entry->start_at !== null) {
-        $window = $entry->start_at->format('d.m. H:i')
-            . ($entry->end_at !== null ? ' – ' . $entry->end_at->format('H:i') : '');
+        $window = $entry->start_at->orgTz()->format('d.m. H:i')
+            . ($entry->end_at !== null ? ' – ' . $entry->end_at->orgTz()->format('H:i') : '');
     }
 @endphp
 <a href="{{ route('diary.show', $entry) }}"

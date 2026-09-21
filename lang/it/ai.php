@@ -50,11 +50,11 @@ return [
         'source_hint' => 'Storico con :count eventi',
     ],
     'plan_actual' => [
-        'question' => 'Spiega lo scostamento piano/effettivo con parole semplici e indica i fattori più evidenti nei numeri. Non inventare cause e non prescrivere misure.',
+        'question' => 'Spieghi lo scostamento piano/effettivo con parole semplici e indichi i fattori più evidenti nei numeri. Non inventi cause e non prescriva misure.',
         'source_hint' => 'Calcolo :from – :to',
     ],
     'support' => [
-        'question' => 'Spiega lo stato di salute con parole semplici, ordina i rilievi per urgenza e indica per ciascuno la verifica successiva.',
+        'question' => 'Spieghi lo stato di salute con parole semplici, ordini i rilievi per urgenza e indichi per ciascuno la verifica successiva.',
         'source_hint' => ':count controlli falliti',
     ],
     'dms' => [
@@ -224,7 +224,7 @@ return [
         'preflight_open' => 'Preflight in sospeso',
     ],
     'flash' => [
-        'suggestion_created' => 'Suggerimento IA creato — verifica e applica o scarta.',
+        'suggestion_created' => 'Suggerimento IA creato — verifichi e applichi o scarti.',
         'suggestions_queued' => ':count suggerimenti vengono creati in background e appariranno qui al termine.',
         'suggestions_aborted' => ':count suggerimenti creati, poi interrotto: :error',
         'suggestion_accepted' => 'Suggerimento applicato.',
@@ -235,7 +235,7 @@ return [
         'narrative_created' => 'Breve resoconto creato — verificare e applicare o scartare.',
         'mapping_created' => 'Proposta di assegnazione creata — rinominare di conseguenza l’intestazione nel file.',
         'mapping_none' => 'Tutte le intestazioni sono già assegnate — nessuna proposta necessaria.',
-        'classification_created' => 'Suggerimento di classificazione IA creato — verifica e applica o scarta ogni valore.',
+        'classification_created' => 'Suggerimento di classificazione IA creato — verifichi e applichi o scarti ogni valore.',
         'classification_none' => 'L’IA non ha trovato alcun valore di catalogo adatto — nessun suggerimento.',
         'classification_applied' => 'Suggerimento «:value» applicato.',
         'learned' => 'Salvato nella memoria IA — i prossimi suggerimenti useranno la correzione.',
@@ -343,15 +343,15 @@ return [
     ],
     'learn' => [
         'title' => 'Devo ricordarlo?',
-        'question' => 'Hai modificato il suggerimento prima di applicarlo. Salvata come coppia di esempio nella memoria IA, la correzione migliora i futuri suggerimenti per questo cliente. Nulla viene salvato senza la tua conferma.',
-        'corrected' => 'La tua versione',
+        'question' => 'Ha modificato il suggerimento prima di applicarlo. Salvata come coppia di esempio nella memoria IA, la correzione migliora i futuri suggerimenti per questo cliente. Nulla viene salvato senza la sua conferma.',
+        'corrected' => 'La sua versione',
         'confirm' => 'Sì, ricorda',
         'dismiss' => 'No, scarta',
     ],
     'suggestion' => [
         'suggest' => 'Suggerimento IA per questa posizione',
         'suggest_all' => 'Suggerimenti IA per tutte le posizioni',
-        'suggest_all_title' => 'Crea un suggerimento di testo per posizione in background — nulla viene applicato finché non fai clic.',
+        'suggest_all_title' => 'Crea un suggerimento di testo per posizione in background — nulla viene applicato finché non fa clic.',
         'translate' => 'Traduci posizione',
         'translate_submit' => 'Proponi traduzione',
         'translate_help' => 'La traduzione appare come suggerimento sotto la posizione — applicata solo al clic. I termini del glossario della memoria IA vengono imposti dove il provider lo consente in modo deterministico.',

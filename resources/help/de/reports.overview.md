@@ -14,8 +14,8 @@ Auswertungen verdichten operative Daten nach Zeitraum, Mitarbeitenden,
 Teams, Projekten, Ressourcen oder Finanzbezug. Sichtbare Werte hängen
 von Berechtigungen, aktiver Organisation und gesetzten Filtern ab.
 
-Prüfe zuerst Zeitraum und Filter, danach Summen und Auffälligkeiten.
-Nutze Detailansichten oder Drilldowns, um Kennzahlen bis zu den
+Prüfen Sie zuerst Zeitraum und Filter, danach Summen und Auffälligkeiten.
+Nutzen Sie Detailansichten oder Drilldowns, um Kennzahlen bis zu den
 verursachenden Datensätzen nachzuvollziehen. Exporte übernehmen den
 aktuellen Filterstand.
 
@@ -29,5 +29,5 @@ unter anderem bereit: **Umsatz je Produkt** (aus lokalen Rechnungen und
 gespiegelten Lexoffice-Rechnungen, auch je Artikelkategorie), die **Mindestlohn-Prüfung** und die **Lenk- und Ruhezeiten** als
 Nachweis gegenüber Aufsichtsbehörden, das **Fahrtenbuch** sowie die
 **Liquiditätsvorschau** auf dreizehn Wochen. Die finanznahen Auswertungen
-findest du unter Buchhaltung, nicht hier — sie lesen ausschließlich
+finden Sie unter Buchhaltung, nicht hier — sie lesen ausschließlich
 festgeschriebene Buchungen.

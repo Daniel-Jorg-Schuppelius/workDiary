@@ -202,8 +202,8 @@
                         </td>
                         <td>{{ $v->kind->label() }}</td>
                         <td class="text-base-content/70">{{ $v->serviceTicket?->customer?->name ?: '—' }}</td>
-                        <td class="text-base-content/70 text-xs">{{ $v->target_at?->translatedFormat('d.m.Y H:i') ?: '—' }}</td>
-                        <td class="text-base-content/70 text-xs">{{ $v->breached_at?->translatedFormat('d.m.Y H:i') ?: '—' }}</td>
+                        <td class="text-base-content/70 text-xs">{{ $v->target_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}</td>
+                        <td class="text-base-content/70 text-xs">{{ $v->breached_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}</td>
                         <td class="text-right tabular-nums">{{ $v->overdue_minutes }}</td>
                         <td>
                             @if ($v->isAcknowledged())

@@ -31,7 +31,7 @@
             <div>
                 <dt class="text-muted">{{ __('Reaktionsfrist') }}</dt>
                 <dd class="flex items-center gap-2">
-                    {{ $ticket->reaction_due_at?->translatedFormat('d.m.Y H:i') ?: '—' }}
+                    {{ $ticket->reaction_due_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}
                     @if ($ticket->reaction_due_at)
                         <x-status-badge :tone="$reactionStatus->tone()" size="sm" outline>{{ $reactionStatus->label() }}</x-status-badge>
                     @endif
@@ -40,7 +40,7 @@
             <div>
                 <dt class="text-muted">{{ __('Lösungsfrist') }}</dt>
                 <dd class="flex items-center gap-2">
-                    {{ $ticket->resolution_due_at?->translatedFormat('d.m.Y H:i') ?: '—' }}
+                    {{ $ticket->resolution_due_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}
                     @if ($ticket->resolution_due_at)
                         <x-status-badge :tone="$resolutionStatus->tone()" size="sm" outline>{{ $resolutionStatus->label() }}</x-status-badge>
                     @endif

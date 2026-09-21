@@ -16,6 +16,7 @@ use App\Enums\User\Permission;
 use App\Models\{AppointmentRequest, BookableService, Site, User};
 use App\Services\Appointments\AppointmentRequestService;
 use App\Services\SqidEncoder;
+use App\Support\{ErrorText, Tz};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -56,11 +57,11 @@ class AppointmentInboxController extends Controller {
         try {
             $entry = $service->confirm($appointmentRequest, $this->actor());
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Termin bestätigt — Eintrag am :date angelegt.', [
-            'date' => $entry->start_at?->format('d.m.Y H:i') ?? '—',
+            'date' => Tz::toLocal($entry->start_at)?->format('d.m.Y H:i') ?? '—',
         ]));
     }
 
@@ -73,7 +74,7 @@ class AppointmentInboxController extends Controller {
         try {
             $service->decline($appointmentRequest, $this->actor(), (string) $data['reason']);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Anfrage abgelehnt.'));

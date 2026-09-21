@@ -11,6 +11,7 @@
 namespace App\Plugins\Toggl\Sources;
 
 use App\Support\Toolkit\CsvFacade;
+use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\StringHelper;
 
@@ -42,9 +43,24 @@ class TogglCsvParser {
     ];
 
     /**
+     * Toggl-Zeitexport erkannt: Kopfzeile mit Start date, Start time und
+     * Duration. parse() bleibt nachsichtig (Archiv-Reader liest viele CSVs),
+     * der Upload meldet eine fremde Datei damit als Fehler statt „0 gebucht“.
+     */
+    public function recognizes(string $content): bool {
+        $rows = $this->readRows(StringHelper::stripBom($content));
+        if ($rows === []) {
+            return false;
+        }
+        $map = $this->mapColumns($rows[0]);
+
+        return isset($map['start_date'], $map['start_time'], $map['duration']);
+    }
+
+    /**
      * @return array<int, TogglEntry>
      */
-    public function parse(string $content): array {
+    public function parse(string $content, ?string $timezone = null): array {
         // BOM entfernen, in Zeilen zerlegen (Feature 052: Common-Toolkit).
         $content = StringHelper::stripBom($content);
         $rows = $this->readRows($content);
@@ -60,7 +76,7 @@ class TogglCsvParser {
 
         $entries = [];
         foreach ($rows as $row) {
-            $entry = $this->mapRow($row, $map);
+            $entry = $this->mapRow($row, $map, $timezone ?? Tz::current());
             if ($entry !== null) {
                 $entries[] = $entry;
             }
@@ -102,7 +118,7 @@ class TogglCsvParser {
      * @param  array<int, string>  $row
      * @param  array<string, int>  $map
      */
-    private function mapRow(array $row, array $map): ?TogglEntry {
+    private function mapRow(array $row, array $map, string $timezone): ?TogglEntry {
         $get = static fn(string $field): ?string => isset($map[$field]) ? trim((string) ($row[$map[$field]] ?? '')) : null;
 
         $startDate = $get('start_date');
@@ -133,8 +149,9 @@ class TogglCsvParser {
             clientName: $client,
             projectName: $project,
             description: $description,
-            startedAt: $startedAt,
-            endedAt: $endedAt,
+            // Export-Uhrzeiten sind Ortszeit: gespeichert wird UTC, der Schlüssel bleibt auf der Wandzeit (Re-Import-Idempotenz).
+            startedAt: $startedAt->shiftTimezone($timezone)->utc(),
+            endedAt: $endedAt->shiftTimezone($timezone)->utc(),
             billable: (bool) StringHelper::parseBool($get('billable')),
             userEmail: $email,
             tags: $this->parseTags($get('tags')),

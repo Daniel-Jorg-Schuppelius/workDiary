@@ -170,6 +170,15 @@ class VehicleInspectionBlockTest extends TestCase {
         $this->assertDatabaseMissing('vehicle_reservations', ['vehicle_id' => $vehicle->id]);
     }
 
+    /** UI-Fuzz 2026-09-21: der Fahrzeugfilter suchte where('sqid', …) — die Liste warf 1054 (500). */
+    public function test_reservation_list_filters_by_vehicle_sqid(): void {
+        [$vehicle] = $this->vehicleWithAsset();
+
+        $this->actingAs($this->admin)
+            ->get(route('vehicle-reservations.index', ['vehicle' => $vehicle->sqid]))
+            ->assertOk();
+    }
+
     public function test_vehicle_list_shows_inspection_traffic_light(): void {
         [$vehicle, $asset] = $this->vehicleWithAsset();
         app(AssetComplianceService::class)->assign($this->huProfile(), $asset, $this->admin, ['next_due_on' => '2030-05-01']);

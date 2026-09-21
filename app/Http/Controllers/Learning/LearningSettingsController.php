@@ -16,6 +16,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Learning\LearningCourseCategory;
+use App\Rules\MaxLineLength;
 use App\Services\Learning\{LearningCourseService, LearningQuestionEditorService};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -52,7 +53,7 @@ class LearningSettingsController extends Controller {
             'gamification_enabled' => ['nullable', 'boolean'],
             'leaderboard_enabled' => ['nullable', 'boolean'],
             'embed_hosts' => ['nullable', 'string', 'max:2000'],
-            'categories' => ['nullable', 'string', 'max:4000'],
+            'categories' => ['nullable', 'string', 'max:4000', new MaxLineLength(120)],
         ]);
 
         $organization = $this->currentOrganization();

@@ -29,13 +29,13 @@ Korrekturen.
 
 ## Empfohlener Ablauf
 
-1. Starte über **„Neuer Eintrag"** in der Topbar oder über die
+1. Starten Sie über **„Neuer Eintrag"** in der Topbar oder über die
    **Stopuhr** (auch als Dashboard-Kachel).
-2. Ordne die laufende Zeit einem Kunden, Projekt oder Auftrag zu — die
+2. Ordnen Sie die laufende Zeit einem Kunden, Projekt oder Auftrag zu — die
    Zuordnung lässt sich später ändern.
-3. Beim Stoppen entsteht die Zeitbuchung; prüfe sie in der
-   Wochenansicht und teile sie bei Bedarf.
-4. **Pausen** trägst du separat über die Tagesabschluss-Ansicht ein,
+3. Beim Stoppen entsteht die Zeitbuchung; prüfen Sie sie in der
+   Wochenansicht und teilen Sie sie bei Bedarf.
+4. **Pausen** tragen Sie separat über die Tagesabschluss-Ansicht ein,
    nicht über den Zeiteintrag.
 
 ![Heute-Ansicht mit Timer-Zeile, Tagesbilanz und Stempeluhr](media/zeit/heute-erfassung.png)

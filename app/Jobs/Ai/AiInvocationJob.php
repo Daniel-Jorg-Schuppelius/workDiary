@@ -21,6 +21,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\{InteractsWithQueue, SerializesModels};
+use Illuminate\Queue\Jobs\SyncJob;
 use Throwable;
 
 /**
@@ -86,7 +87,8 @@ class AiInvocationJob implements ShouldQueue {
 
             return;
         } catch (AiUnavailableException $e) {
-            if ($e->isRetryable() && $this->attempts() < $this->tries) {
+            // Unter QUEUE_CONNECTION=sync gibt es keinen Retry — der Wurf landete als 500 in der Nutzeraktion.
+            if ($e->isRetryable() && $this->attempts() < $this->tries && ! $this->job instanceof SyncJob) {
                 throw $e; // Queue-Retry mit Backoff.
             }
 

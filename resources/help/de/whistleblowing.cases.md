@@ -12,7 +12,7 @@ related:
     - privacy.overview
 ---
 
-Hier bearbeitest du eingegangene Hinweise interner und externer
+Hier bearbeiten Sie eingegangene Hinweise interner und externer
 Melder (`/compliance/meldungen`). Die Berechtigung der Meldestelle
 ist bewusst von der Administration **getrennt**: Ein globaler Admin
 hat ohne eigene Fall-Zuweisung keinen Einblick. Jeder einzelne
@@ -27,7 +27,7 @@ Kategorie, Status, Priorität, Fristen) – bewusst **keine
 Inhaltsvorschau**. Inhalte sind pro Fall mit einem eigenen Schlüssel
 verschlüsselt (DEK).
 
-**Falldetail**: Im Detail kannst du je nach Berechtigung
+**Falldetail**: Im Detail können Sie je nach Berechtigung
 
 - den **Eingang bestätigen** (7-Tage-Frist),
 - den **Status** entlang des Lebenszyklus ändern (Eingegangen →
@@ -41,7 +41,7 @@ verschlüsselt (DEK).
 
 **Vertraulichkeit und Konflikte**:
 
-- **Interessenkonflikt erklären** sperrt dich selbst für den Fall.
+- **Interessenkonflikt erklären** sperrt Sie selbst für den Fall.
 - Eine **betroffene Person markieren** sperrt diese dauerhaft für den
   Fall.
 - Eine **Notfallfreigabe** (mit Pflicht-Begründung) erteilt einer

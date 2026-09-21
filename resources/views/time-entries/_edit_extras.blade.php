@@ -33,9 +33,9 @@
             <x-icon name="lock" />
             <span>
                 @if ($isAdmin)
-                    {{ __('Eintrag ist gesperrt (:reason). Du bearbeitest als Admin.', ['reason' => $reasonLabel]) }}
+                    {{ __('Eintrag ist gesperrt (:reason). Sie bearbeiten als Admin.', ['reason' => $reasonLabel]) }}
                 @else
-                    {{ __('Eintrag ist gesperrt (:reason). Eine Bearbeitung durch dich ist nicht mehr möglich; Kommentare sind weiterhin erlaubt.', ['reason' => $reasonLabel]) }}
+                    {{ __('Eintrag ist gesperrt (:reason). Eine Bearbeitung durch Sie ist nicht mehr möglich; Kommentare sind weiterhin erlaubt.', ['reason' => $reasonLabel]) }}
                 @endif
             </span>
         </div>

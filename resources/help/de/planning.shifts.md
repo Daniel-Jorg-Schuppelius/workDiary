@@ -28,5 +28,5 @@ Dienstplan markiert Tage, an denen Kopfzahl oder Qualifikations-Minima
 verfehlt werden.
 
 Eine veröffentlichte Planung ist für Mitarbeitende verbindlich sichtbar.
-Ändere sie nur mit der vorgesehenen Berechtigung und informiere
+Ändern Sie sie nur mit der vorgesehenen Berechtigung und informieren Sie
 Betroffene bei kurzfristigen Anpassungen.

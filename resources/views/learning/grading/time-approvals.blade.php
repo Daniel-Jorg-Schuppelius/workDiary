@@ -37,8 +37,8 @@
                 <td>{{ $session->user?->name ?? '—' }}</td>
                 <td>{{ $session->enrollment?->course?->title ?? '—' }}</td>
                 <td>
-                    {{ $session->started_at?->translatedFormat('d.m.Y H:i') }}
-                    @if ($session->ended_at) – {{ $session->ended_at->translatedFormat('H:i') }} @endif
+                    {{ $session->started_at?->orgTz()->translatedFormat('d.m.Y H:i') }}
+                    @if ($session->ended_at) – {{ $session->ended_at->orgTz()->translatedFormat('H:i') }} @endif
                 </td>
                 <td class="text-right font-mono">{{ intdiv($session->active_seconds, 60) }}</td>
                 <td class="text-right">

@@ -45,7 +45,7 @@ return [
         'type_active_no' => 'non',
     ],
     'bulk' => [
-        'select_one' => 'Sélectionne d\'abord au moins une entrée.',
+        'select_one' => 'Sélectionnez d\'abord au moins une entrée.',
     ],
     'design' => [
         'inheritance' => '« :base » · :inherited/:total hérités, :own remplacés',

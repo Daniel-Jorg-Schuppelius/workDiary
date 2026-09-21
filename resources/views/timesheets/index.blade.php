@@ -46,7 +46,7 @@
         <x-empty-state framed
             icon="description"
             :title="__('Keine Stundenzettel gefunden')"
-            :message="__('Lege den ersten Stundenzettel über den Button oben rechts an.')"
+            :message="__('Legen Sie den ersten Stundenzettel über den Button oben rechts an.')"
         />
     @else
         <x-table scroll="flex" :pinRows="true" table-sort="server"

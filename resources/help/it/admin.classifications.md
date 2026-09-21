@@ -16,8 +16,8 @@ dominio (tipi di commessa, attività, tipi di errore, cause, esiti,
 priorità ecc.), ciascuna con codice, denominazione e, facoltativamente,
 colore, icona e ordinamento. I valori predefiniti della piattaforma
 possono essere sovrascritti, integrati con valori propri, riordinati o
-disattivati per la propria organizzazione; con l'importazione CSV crei
-o aggiorni molti valori in una volta (colonne obbligatorie: dominio,
+disattivati per la propria organizzazione; con l'importazione CSV crea
+o aggiorna molti valori in una volta (colonne obbligatorie: dominio,
 codice, denominazione). Le regole obbligatorie collegano un tipo di
 commessa a un dominio richiesto e stabiliscono da quale fase la
 compilazione è necessaria — alla creazione, prima della chiusura o

@@ -14,7 +14,7 @@ namespace App\Http\Controllers;
 
 use App\Models\{Article, Asset, AssetComponent, StockSerial};
 use App\Services\Asset\AssetComponentService;
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -78,7 +78,7 @@ class AssetComponentController extends Controller {
         try {
             $this->components->replace($component, $this->withSerialNumber($this->validated($request)), $request->user());
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('status', __('asset.components.replaced'));

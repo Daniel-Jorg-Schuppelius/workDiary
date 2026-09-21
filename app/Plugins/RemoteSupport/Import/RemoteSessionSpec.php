@@ -18,6 +18,7 @@ use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, RemoteSession};
 use App\Plugins\RemoteSupport\{RemoteSessionImporter, RemoteSupportConfig};
 use App\Services\Import\{ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\AbstractEntitySpec;
+use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\CSV\StringHelper as CsvStringHelper;
 use CommonToolkit\Helper\Data\StringHelper;
@@ -139,12 +140,14 @@ class RemoteSessionSpec extends AbstractEntitySpec {
             ? (string) $row['alias']
             : null;
 
+        // AnyDesk exportiert Ortszeit: gebucht wird UTC, der Ersatzschlüssel oben bleibt auf der Wanduhr (Re-Import).
+        $tz = Tz::ofOrganization($organization);
         $session = new RemoteSession(
             provider: AnyDeskClient::ID,
             sessionId: $sessionId,
             remoteId: $remoteId,
-            startedAt: $start,
-            endedAt: $end,
+            startedAt: $start->shiftTimezone($tz)->utc(),
+            endedAt: $end->shiftTimezone($tz)->utc(),
             note: $row['note'] !== null && $row['note'] !== '' ? (string) $row['note'] : null,
             alias: $alias,
         );

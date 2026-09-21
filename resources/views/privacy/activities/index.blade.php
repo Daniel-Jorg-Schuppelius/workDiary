@@ -32,9 +32,6 @@
                         show-label>{{ __('Neue Tätigkeit') }}</x-icon-btn>
         </x-slot:actions>
 
-        @if (session('status'))
-            <div class="alert alert-success">{{ session('status') }}</div>
-        @endif
 
         {{-- VVT-Vorlagenkatalog (Feature 043 MVP 1; Vollaudit 2026-07, M17). --}}
         @if ($templates !== [])

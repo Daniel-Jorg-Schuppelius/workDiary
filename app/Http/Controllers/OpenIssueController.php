@@ -15,6 +15,7 @@ use App\Exceptions\InvalidOpenIssueTransitionException;
 use App\Http\Requests\OpenIssue\{AssignOpenIssueRequest, StoreOpenIssueRequest, TransitionOpenIssueRequest, UpdateOpenIssueRequest};
 use App\Models\{Customer, DiaryEntry, OpenIssue, Project, User};
 use App\Services\OpenIssue\OpenIssueService;
+use App\Support\ErrorText;
 use App\Support\{Sqid, Tz};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -172,7 +173,7 @@ class OpenIssueController extends Controller {
         } catch (InvalidOpenIssueTransitionException $e) {
             return redirect()->back()->withErrors(['status' => $e->getMessage()]);
         } catch (InvalidArgumentException $e) {
-            return redirect()->back()->withErrors(['reason' => $e->getMessage()]);
+            return redirect()->back()->withErrors(['reason' => ErrorText::for($e)]);
         }
 
         $fresh = $issue->fresh() ?? $issue;

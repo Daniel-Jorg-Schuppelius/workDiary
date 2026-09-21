@@ -26,7 +26,7 @@ return [
         'basics' => "Mappatura",
         'profile' => "Profilo di export",
         'wage_type' => "Voce retributiva interna",
-        'wage_type_help' => "Voci standard dell'export dei tempi più i tipi di maggiorazione della vostra organizzazione.",
+        'wage_type_help' => "Voci standard dell'export dei tempi più i tipi di maggiorazione della sua organizzazione.",
         'external_code' => "Voce di destinazione (esterna)",
         'external_code_help' => "Numero di voce nel programma paghe di destinazione — numerico fino a 4 cifre per DATEV/Lexware.",
         'standard_types' => "Voci standard",

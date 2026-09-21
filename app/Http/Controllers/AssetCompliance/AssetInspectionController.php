@@ -19,7 +19,7 @@ use App\Models\{ExternalContact, User};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\AssetCompliance\AssetComplianceService;
 use App\Services\Attachments\FileAttacher;
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -163,7 +163,7 @@ class AssetInspectionController extends Controller {
         try {
             $event = $this->service->recordInspection($assignment, $actor, $data);
         } catch (\InvalidArgumentException $e) {
-            return back()->withErrors(['certificate_no' => $e->getMessage()]);
+            return back()->withErrors(['certificate_no' => ErrorText::for($e)]);
         }
 
         if ($request->hasFile('certificate_file')) {

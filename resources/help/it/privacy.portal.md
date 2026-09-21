@@ -21,7 +21,7 @@ chiede deve prima essere identificato come la persona interessata.
 avvisa per tempo; una proroga è possibile, ma va motivata e comunicata alla
 persona.
 
-**Identità:** Verifica l'identità prima di consegnare dati; nel dubbio chiedi
+**Identità:** Verifichi l'identità prima di consegnare dati; nel dubbio chieda
 invece di rispondere. Un'informazione alla persona sbagliata è essa stessa una
 violazione dei dati.
 

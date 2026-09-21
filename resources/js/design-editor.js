@@ -130,6 +130,15 @@ export function registerDesignEditor(Alpine) {
             ) {
                 this.tab = hashTab;
             }
+            // Der CSP-Build verweigert Direktiven auf <iframe> (:src warf) —
+            // die Vorschau-URL setzt deshalb dieser Effekt.
+            const frame = this.$el.querySelector("iframe[data-design-preview]");
+            if (frame) {
+                Alpine.effect(() => {
+                    const src = this.previewSrc();
+                    if (src) frame.src = src;
+                });
+            }
         },
 
         setTab(name) {

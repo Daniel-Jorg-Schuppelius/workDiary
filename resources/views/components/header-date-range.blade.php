@@ -89,7 +89,7 @@
                 {{ __('Eigener Zeitraum') }}
             </div>
             <p class="px-3 pb-2 text-[0.7rem] text-muted">
-                {{ __('Nutze die Von/Bis-Felder direkt im Header.') }}
+                {{ __('Nutzen Sie die Von/Bis-Felder direkt im Header.') }}
             </p>
         </div>
     </div>

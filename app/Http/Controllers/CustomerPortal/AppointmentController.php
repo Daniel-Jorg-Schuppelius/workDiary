@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{AppointmentRequest, BookableService, User};
 use App\Services\Appointments\{AppointmentRequestService, AppointmentSlotService};
 use App\Services\SqidEncoder;
+use App\Support\ErrorText;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
@@ -97,7 +98,7 @@ class AppointmentController extends Controller {
         try {
             $service->requestFromPortal($bookable, $customer, $portalUser, CarbonImmutable::parse((string) $data['start']));
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('customer.appointments.index')
@@ -112,7 +113,7 @@ class AppointmentController extends Controller {
         try {
             $service->cancelFromPortal($appointmentRequest, $portalUser);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Terminanfrage storniert.'));

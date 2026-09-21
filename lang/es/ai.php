@@ -50,11 +50,11 @@ return [
         'source_hint' => 'Historial con :count eventos',
     ],
     'plan_actual' => [
-        'question' => 'Explica la desviación plan/real con palabras sencillas y nombra los factores más llamativos de las cifras. No inventes causas ni prescribas medidas.',
+        'question' => 'Explique la desviación plan/real con palabras sencillas y nombre los factores más llamativos de las cifras. No invente causas ni prescriba medidas.',
         'source_hint' => 'Cálculo :from – :to',
     ],
     'support' => [
-        'question' => 'Explica el estado de salud con palabras sencillas, ordena los hallazgos por urgencia e indica para cada uno la siguiente comprobación.',
+        'question' => 'Explique el estado de salud con palabras sencillas, ordene los hallazgos por urgencia e indique para cada uno la siguiente comprobación.',
         'source_hint' => ':count comprobaciones fallidas',
     ],
     'dms' => [
@@ -224,7 +224,7 @@ return [
         'preflight_open' => 'Preflight pendiente',
     ],
     'flash' => [
-        'suggestion_created' => 'Sugerencia de IA creada — revísala y aplícala o descártala.',
+        'suggestion_created' => 'Sugerencia de IA creada — revísela y aplíquela o descártela.',
         'suggestions_queued' => ':count sugerencias se están creando en segundo plano y aparecerán aquí al terminar.',
         'suggestions_aborted' => ':count sugerencias creadas, luego interrumpido: :error',
         'suggestion_accepted' => 'Sugerencia aplicada.',
@@ -235,7 +235,7 @@ return [
         'narrative_created' => 'Resumen creado: revíselo y aplíquelo o descártelo.',
         'mapping_created' => 'Propuesta de asignación creada: cambie el nombre del encabezado en el archivo.',
         'mapping_none' => 'Todos los encabezados ya están asignados: no hace falta ninguna propuesta.',
-        'classification_created' => 'Sugerencia de clasificación IA creada — revisa y aplica o descarta cada valor.',
+        'classification_created' => 'Sugerencia de clasificación IA creada — revise y aplique o descarte cada valor.',
         'classification_none' => 'La IA no encontró ningún valor de catálogo adecuado — nada sugerido.',
         'classification_applied' => 'Sugerencia «:value» aplicada.',
         'learned' => 'Guardado en la memoria de IA — las próximas sugerencias usarán la corrección.',
@@ -343,8 +343,8 @@ return [
     ],
     'learn' => [
         'title' => '¿Debo recordarlo?',
-        'question' => 'Ajustaste la sugerencia antes de aplicarla. Guardada como par de ejemplo en la memoria de IA, la corrección mejora futuras sugerencias para este cliente. No se guarda nada sin tu confirmación.',
-        'corrected' => 'Tu versión',
+        'question' => 'Ajustó la sugerencia antes de aplicarla. Guardada como par de ejemplo en la memoria de IA, la corrección mejora futuras sugerencias para este cliente. No se guarda nada sin su confirmación.',
+        'corrected' => 'Su versión',
         'confirm' => 'Sí, recordar',
         'dismiss' => 'No, descartar',
     ],

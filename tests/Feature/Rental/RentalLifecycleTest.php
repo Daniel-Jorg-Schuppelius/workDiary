@@ -18,6 +18,7 @@ use App\Models\Rental\{RentalCase, RentalProfile, RentalRateCard, RentalReservat
 use App\Services\Asset\{AssetBlockService, AssetUsageGuard};
 use App\Services\Rental\{RentalAvailabilityService, RentalBillingService, RentalCaseService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Exceptions;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\{WithOrganization, WithPortalVisibility};
 use Tests\TestCase;
@@ -502,6 +503,54 @@ final class RentalLifecycleTest extends TestCase {
         $this->assertSame(RentalRateCardStatus::Retired, $card->fresh()->status);
     }
 
+    /** UI-Fuzz 2026-09-21: Kaution, Tarifbetrag und Reservierungsnotiz ließen mehr zu als die Spalte fasst (1264/1406). */
+    public function test_values_beyond_their_columns_are_field_errors(): void {
+        Exceptions::fake();
+        $cases = RentalCase::query()->count();
+        $reservations = RentalReservation::query()->count();
+        $this->actingAs($this->admin)->post(route('rental.rates.store'), ['name' => 'Standard'])->assertRedirect();
+        $card = RentalRateCard::query()->where('name', 'Standard')->firstOrFail();
+
+        $this->actingAs($this->admin)->post(route('rental.rates.items.store', $card), [
+            'kind' => 'daily_rate', 'label' => 'Tagessatz', 'amount' => '999999999999.00', 'unit' => 'day',
+        ])->assertSessionHasErrors('amount');
+        $this->actingAs($this->admin)->post(route('rental.store'), [
+            'customer_id' => $this->customer->sqid,
+            'starts_at' => now()->addDay()->format('Y-m-d\TH:i'),
+            'ends_at' => now()->addDays(2)->format('Y-m-d\TH:i'),
+            'asset_ids' => [$this->asset->sqid],
+            'deposit_amount' => '999999999999.00',
+        ])->assertSessionHasErrors('deposit_amount');
+        $this->actingAs($this->admin)->post(route('rental.reservations.store'), [
+            'asset_id' => $this->asset->sqid,
+            'kind' => 'maintenance',
+            'starts_at' => now()->addDays(3)->format('Y-m-d\TH:i'),
+            'ends_at' => now()->addDays(4)->format('Y-m-d\TH:i'),
+            'note' => str_repeat('Notiz ', 50),
+        ])->assertSessionHasErrors('note');
+
+        $this->assertSame(0, $card->items()->count());
+        $this->assertSame($cases, RentalCase::query()->count());
+        $this->assertSame($reservations, RentalReservation::query()->count());
+        Exceptions::assertNothingReported();
+    }
+
+    /** MVP-823: Formularzeiten sind Ortszeit, gespeichert wird UTC — Überfälligkeit und Abrechnung vergleichen mit UTC-now. */
+    public function test_case_times_are_stored_in_utc(): void {
+        $this->organization->update(['timezone' => 'Europe/Berlin']);
+
+        $this->actingAs($this->admin)->post(route('rental.store'), [
+            'customer_id' => $this->customer->sqid,
+            'starts_at' => '2030-07-10T08:00',
+            'ends_at' => '2030-07-12T18:00',
+            'asset_ids' => [$this->asset->sqid],
+        ])->assertRedirect();
+
+        $case = RentalCase::query()->latest('id')->firstOrFail();
+        $this->assertSame('2030-07-10 06:00:00', $case->getRawOriginal('starts_at'));
+        $this->assertSame('2030-07-12 16:00:00', $case->getRawOriginal('ends_at'));
+    }
+
     public function test_case_can_be_created_via_http_with_sqids(): void {
         $this->actingAs($this->admin)->post(route('rental.store'), [
             'customer_id' => $this->customer->sqid,
@@ -523,5 +572,21 @@ final class RentalLifecycleTest extends TestCase {
         $freeAdmin = User::factory()->admin()->create(['organization_id' => $freeOrg->id]);
 
         $this->actingAs($freeAdmin)->get(route('rental.index'))->assertStatus(423);
+    }
+
+    /** UI-Fuzz 2026-09-21: nach einem Validierungsfehler war old('accessories') ein Array — die Seite warf 500. */
+    public function test_profile_form_survives_validation_error_with_accessories(): void {
+        $this->actingAs($this->admin)
+            ->from(route('rental.profiles.index'))
+            ->post(route('rental.profiles.store'), [
+                'asset_id' => $this->asset->sqid,
+                'accessories' => "Schaufel 60 cm\nTieflöffel",
+                'buffer_before_hours' => 9999,
+            ])
+            ->assertSessionHasErrors('buffer_before_hours');
+
+        $this->actingAs($this->admin)->get(route('rental.profiles.index'))
+            ->assertOk()
+            ->assertSee('Tieflöffel');
     }
 }

@@ -33,12 +33,12 @@ class SavePricingMarginRuleRequest extends BaseFormRequest {
             'name' => ['required', 'string', 'max:191'],
             'supplier' => ['nullable', 'integer', new ExistsInCurrentOrganization('suppliers')],
             'category' => ['nullable', 'string', 'max:191'],
-            'markup_percent' => ['nullable', 'numeric', 'min:0', 'max:100000'],
+            'markup_percent' => ['nullable', 'numeric', 'min:0', 'max:99999.999'],
             'target_margin' => ['nullable', 'numeric', 'min:0', 'max:99.9'],
             'min_margin' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'min_sale_price' => ['nullable', 'numeric', 'min:0'],
+            'min_sale_price' => ['nullable', 'numeric', 'min:0', 'max:99999999999999.9999'],
             'rounding' => ['required', Rule::in(['none', 'up_0_05', 'up_0_10', 'up_0_50', 'up_0_99', 'up_1'])],
-            'priority' => ['nullable', 'integer', 'min:0'],
+            'priority' => ['nullable', 'integer', 'min:0', 'max:999999999'],
             'active' => ['nullable', 'boolean'],
         ];
     }

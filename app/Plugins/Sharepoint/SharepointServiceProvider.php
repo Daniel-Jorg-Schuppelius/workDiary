@@ -34,11 +34,9 @@ class SharepointServiceProvider extends PluginServiceProviderBase {
         // alle Mirror-Plugins — Observer/Dispatcher sehen dieselben Targets.
         $this->app->singletonIf(MirrorTargetRegistry::class);
 
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                Console\SharepointMirrorCommand::class,
-            ]);
-        }
+        $this->commands([
+            Console\SharepointMirrorCommand::class,
+        ]);
     }
 
     protected function bootPlugin(): void {

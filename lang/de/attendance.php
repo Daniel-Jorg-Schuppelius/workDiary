@@ -54,8 +54,8 @@ return [
         'title' => 'Check-in',
         'subtitle' => 'Kommen und Gehen über den Code am Standort oder Fahrzeug.',
         'state' => [
-            'in' => 'Du bist seit :time Uhr eingestempelt.',
-            'out' => 'Du bist gerade nicht eingestempelt.',
+            'in' => 'Sie sind seit :time Uhr eingestempelt.',
+            'out' => 'Sie sind gerade nicht eingestempelt.',
         ],
         'action' => [
             'in' => 'Kommen',
@@ -67,11 +67,11 @@ return [
             'out' => 'Gehen an „:name“ gebucht.',
         ],
         'error' => [
-            'already_in' => 'Du bist bereits eingestempelt.',
-            'not_in' => 'Du bist nicht eingestempelt.',
+            'already_in' => 'Sie sind bereits eingestempelt.',
+            'not_in' => 'Sie sind nicht eingestempelt.',
             'no_center' => 'Für diesen Punkt ist ein Umkreis, aber kein Ort hinterlegt. Bitte an die Verwaltung wenden.',
             'location_required' => 'Für diesen Punkt wird die Position benötigt.',
-            'too_far' => 'Du bist :distance m entfernt, erlaubt sind :radius m.',
+            'too_far' => 'Sie sind :distance m entfernt, erlaubt sind :radius m.',
             'location_denied' => 'Die Position konnte nicht ermittelt werden. Bitte Ortungsfreigabe erlauben.',
         ],
     ],

@@ -28,7 +28,7 @@ Ein Paket kann enthalten:
 - **Standard-Tags** sowie – je nach Gewerk – Wartungspläne, SLA-Vorlagen,
   Reinigungsprofile und Softwarekatalog.
 
-So gehst du vor:
+So gehen Sie vor:
 
 1. Im Katalog das passende Gewerk suchen (Suche/Filter nach
    Installationsstatus).

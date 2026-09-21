@@ -60,6 +60,7 @@ return [
         'disconnected' => 'Connexion CalDAV déconnectée. Les rendez-vous déjà publiés sont conservés en externe.',
         'no_connection' => 'Aucune connexion CalDAV active.',
         'invalid_url' => 'L\'URL de base doit commencer par http:// ou https://.',
+        'path_outside_base' => 'L\'URL du calendrier ne se trouve pas sous l\'URL de base. Veuillez indiquer le chemin relatif à l\'URL de base.',
         'password_required' => 'Une nouvelle connexion nécessite un mot de passe d\'application.',
     ],
 ];

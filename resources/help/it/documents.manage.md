@@ -13,9 +13,9 @@ related:
 
 Il modulo documenti gestisce contratti, certificati, rapporti di verifica
 e manuali come **file versionati** con metadati, validità e riferimento a
-cliente, progetto, incarico o asset. Carica un documento con titolo, tipo,
+cliente, progetto, incarico o asset. Carichi un documento con titolo, tipo,
 validità e oggetto di riferimento (diventa la versione 1); in caso di
-modifiche carica una **nuova versione** — le versioni precedenti restano
+modifiche carichi una **nuova versione** — le versioni precedenti restano
 immutate e scaricabili, le correzioni avvengono sempre tramite una nuova
 versione. Gli stati sono «Bozza», «Attivo», «Archiviato»; **«Scaduto»**
 viene calcolato automaticamente dalla data di fine validità e i documenti

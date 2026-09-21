@@ -54,7 +54,7 @@ class OrganizationSettingsFormRulesTest extends TestCase {
     private function assertAccepted(array $settings): void {
         $this->submit($settings)
             ->assertSessionHasNoErrors()
-            ->assertRedirect(route('admin.organizations.index'));
+            ->assertRedirect(route('admin.organizations.edit', $this->organization));
     }
 
     /** @param array<string, mixed> $settings */

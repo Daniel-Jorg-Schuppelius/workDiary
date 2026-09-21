@@ -12,7 +12,7 @@ related:
     - glossary.core
 ---
 
-Aquí planificas y documentas auditorías internas, externas y de
+Aquí planifica y documenta auditorías internas, externas y de
 proveedores, con hallazgos, acciones correctivas y revisión por la
 dirección. Ciclo de vida: **«Planificada» → «Preparación» → «En
 ejecución» → «Informe creado» → «Cerrada»**. Los hallazgos se

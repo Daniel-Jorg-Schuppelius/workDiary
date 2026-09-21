@@ -60,6 +60,13 @@ class ServiceTicketServiceTest extends TestCase {
         Carbon::setTestNow();
     }
 
+    /** UI-Fuzz 2026-09-21: „[Ref] Zusammenfassung“ aus der Problem-Inbox sprengte title varchar(200). */
+    public function test_overlong_title_is_truncated_to_the_column(): void {
+        $ticket = $this->service->create($this->org, $this->actor, ['title' => str_repeat('Ö', 230)]);
+
+        $this->assertSame(200, mb_strlen((string) $ticket->refresh()->title));
+    }
+
     public function test_create_applies_default_sla_contract_deadlines(): void {
         Carbon::setTestNow('2026-06-01 09:00:00');
 

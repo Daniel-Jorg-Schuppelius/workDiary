@@ -38,11 +38,11 @@ allora), sostituito (successore presso un altro fornitore) e terminato. Gli
 abbonamenti terminati e sostituiti non ricevono nuovi periodi.
 
 **Eliminazione:** un abbonamento con periodi decisi non può essere eliminato
-— impostalo su «terminato». Permessi: vedere con *Vedere il registro di
+— lo imposti su «terminato». Permessi: vedere con *Vedere il registro di
 rivendita*, gestire con *Gestire il registro di rivendita*.
 
 **Riconciliazione per destinatario fattura:** quando periodi restano aperti
-e non è chiaro se manca una fattura o solo l’assegnazione, usa la
+e non è chiaro se manca una fattura o solo l’assegnazione, usi la
 riconciliazione (pulsante nell’elenco abbonamenti, nella pagina periodi e
 sul cliente). Per destinatario — il cliente con i suoi clienti finali —
 confronta i periodi scaduti di tutti gli abbonamenti con le righe licenza
@@ -81,7 +81,7 @@ gli stessi abbonamenti invece di duplicarli. Il fornitore viene dalla
 colonna o dal dialogo; un modello CSV è nel dialogo di import.
 
 **Cedere licenze:** se due aziende condividono la sede e la seconda usa una
-parte delle licenze di un contratto, cedi quelle licenze sul contratto
+parte delle licenze di un contratto, ceda quelle licenze sul contratto
 («Cedere licenze»: titolare, quantità, periodo, prezzo di vendita). Nasce un
 abbonamento separato per l’altro titolare con periodi propri; il contratto
 pianifica i suoi periodi con il resto. Ogni titolare riceve le proprie
@@ -94,7 +94,7 @@ fattura dell’altro cliente come «Cedere il periodo a …», precompilato.
 
 **Posta in arrivo:** gli abbonamenti importati la cui azienda il registro
 non riesce ancora ad assegnare a un titolare finiscono nella posta in
-arrivo. Per azienda decidi una volta: cliente, cliente finale di un partner
+arrivo. Per azienda decide una volta: cliente, cliente finale di un partner
 oppure parco proprio — il suggerimento viene dal confronto dei nomi con
 clienti e clienti finali. La decisione viene memorizzata; l’import
 successivo assegna subito la stessa azienda. Le righe che l’import non ha
@@ -105,9 +105,9 @@ dettagli espandibili nell’elenco.
 **Periodi:** la pagina dei periodi mostra i periodi scaduti di tutti gli
 abbonamenti con riquadri di stato (aperto, fatturato, parziale, rinunciato,
 contestato). «Calcola proposte» confronta i periodi aperti con le righe di
-licenza delle fatture rispecchiate e crea proposte; tu le confermi, colleghi
+licenza delle fatture rispecchiate e crea proposte; Lei le conferma, collega
 a mano una riga (solo fatture dello stesso destinatario, solo mesi di
-licenza liberi) oppure rinunci con un motivo («cortesia»). I periodi decisi
+licenza liberi) oppure rinuncia con un motivo («cortesia»). I periodi decisi
 non vengono più toccati dalla pianificazione; «riapri» li riapre. Se una
 fattura collegata viene poi stornata in Lexoffice, l’esecuzione successiva
 azzera i mesi del collegamento, annota lo storno e riapre il periodo, così
@@ -115,7 +115,7 @@ la fattura sostitutiva può essere collegata.
 
 **Bozza di fattura:** da tutti i periodi aperti di un destinatario fattura
 nasce con un clic una bozza — con fatturazione Lexoffice come bozza in
-Lexoffice (nulla viene finalizzato; verifichi ed emetti lì), con
+Lexoffice (nulla viene finalizzato; verifica ed emette lì), con
 fatturazione locale come bozza di fattura locale con righe e collegamenti
 proposti. Una riga per abbonamento e periodo, cliente finale nella
 descrizione, quantità in mesi per gli articoli mensili. I periodi ricordano
@@ -146,7 +146,7 @@ proviene da tre fonti: (1) fatture e note di credito del fornitore in PDF
 cliente finale e durata, l’importo va esattamente al periodo; le righe di
 nota di credito senza contratto valgono per l’azienda. (2) Documenti in
 entrata dallo specchio documenti pro rata: per fatture cumulative senza
-righe (Telekom) indichi la quota del fornitore e il mese di prestazione,
+righe (Telekom) indica la quota del fornitore e il mese di prestazione,
 l’importo viene ripartito su tutti i periodi del mese, ponderato con il loro
 acquisto previsto mensile. (3) Registrazioni di dominio dalla gestione
 domini, automaticamente. All’import PDF il registro verifica il totale: se
@@ -173,7 +173,7 @@ Avvisi: «vendita sotto acquisto», «vendita sotto prezzo consigliato»,
 «contratto più caro del listino», «nessun prezzo di vendita».
 
 **Classificazione prodotti:** quali articoli Lexoffice siano prodotti in
-abbonamento il registro lo riconosce dal nome. Per articolo puoi forzare:
+abbonamento il registro lo riconosce dal nome. Per articolo può forzare:
 «prodotto in abbonamento» impone il riconoscimento, «mai riga di
 abbonamento» tiene fuori da proposte, elenchi fatture e «righe senza
 abbonamento» i servizi con un nome di prodotto nel testo (manutenzione su

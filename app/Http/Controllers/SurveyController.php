@@ -18,6 +18,7 @@ use App\Models\{Customer, User};
 use App\Models\Survey\{Survey, SurveyAnswer, SurveyQuestion};
 use App\Services\SqidEncoder;
 use App\Services\Survey\SurveyService;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Mail};
 use Illuminate\View\View;
@@ -152,7 +153,7 @@ class SurveyController extends Controller {
         try {
             $issued = $this->service->invite($survey, $email, $customer);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         Mail::to($email)->send(new SurveyInvitationMail($survey, $issued['token']));

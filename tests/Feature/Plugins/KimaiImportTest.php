@@ -10,8 +10,11 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Customer, IntegrationInboxItem, PluginSetting, Project, TimeEntry, User};
+use App\Models\{Customer, ExternalReference, IntegrationInboxItem, PluginSetting, Project, TimeEntry, User};
 use App\Plugins\Kimai\{KimaiConfig, KimaiImportService, KimaiPlugin};
+use App\Plugins\Kimai\Sources\KimaiCsvParser;
+use App\Plugins\Support\RemoteTimeFingerprint;
+use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -157,7 +160,36 @@ class KimaiImportTest extends TestCase {
         $entry = TimeEntry::query()->where('project_id', $project->id)->first();
         $this->assertNotNull($entry);
         $this->assertSame(90, $entry->minutes);
-        $this->assertSame('2026-05-27', CarbonImmutable::parse($entry->ended_at)->toDateString());
+        // Gespeichert wird UTC; der Folgetag gilt in Ortszeit (MVP-824).
+        $this->assertSame('2026-05-27', CarbonImmutable::parse($entry->ended_at)->setTimezone(Tz::ofOrganization($this->organization))->toDateString());
+        $this->assertSame('2026-05-26 21:00:00', $entry->getRawOriginal('started_at'));
+    }
+
+    /**
+     * MVP-824: Der Abdruck vor der Umstellung (Ortszeit als UTC gelesen) gilt
+     * als derselbe Fremdstand — kein Konflikt für die exportierte Zeit, der
+     * Abdruck wird umgeschrieben.
+     */
+    public function test_legacy_fingerprint_is_rewritten_without_conflict(): void {
+        $config = $this->enableKimai();
+        $this->customerWithProject('Acme', 'Website');
+        $csv = <<<'CSV'
+        Datum,Von,Bis,Kunde,Projekt,Tätigkeit,Abrechenbar
+        2026-05-26,09:00,10:30,Acme,Website,Support,ja
+        CSV;
+        $this->service()->importFromCsv($this->organization, $csv, $config);
+        $reference = ExternalReference::query()->where('plugin_id', KimaiPlugin::ID)->where('external_type', KimaiImportService::EXT_TYPE_ENTRY)->firstOrFail();
+        $legacy = (new KimaiCsvParser)->parse($csv, 'UTC')[0];
+        $this->assertSame($reference->external_id, $legacy->entryKey, 'Schlüssel bleibt auf der Wanduhr.');
+        $reference->forceFill(['payload' => ['fingerprint' => RemoteTimeFingerprint::of($legacy)] + (array) $reference->payload])->save();
+        TimeEntry::query()->whereKey($reference->referenceable_id)->update(['exported' => true]);
+
+        $result = $this->service()->importFromCsv($this->organization, $csv, $config);
+
+        $this->assertSame(0, $result['conflicts']);
+        $this->assertSame(0, IntegrationInboxItem::query()->count());
+        $current = (new KimaiCsvParser)->parse($csv, Tz::ofOrganization($this->organization))[0];
+        $this->assertSame(RemoteTimeFingerprint::of($current), $reference->refresh()->payload['fingerprint'] ?? null);
     }
 
     public function test_german_header_unmatched_entry_lands_in_inbox_grouped_by_activity(): void {

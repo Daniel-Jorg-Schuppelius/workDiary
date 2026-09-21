@@ -21,7 +21,7 @@ use App\Models\{Customer, Document, Supplier, User};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Contract\ContractService;
 use App\Services\Licensing\FeatureFlagResolver;
-use App\Support\Sqid;
+use App\Support\{ErrorText, Sqid};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -183,7 +183,7 @@ class ContractController extends Controller {
         try {
             $this->service->linkAssetFinanceContract($assetFinance, $contract);
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['asset_finance_id' => $e->getMessage()]);
+            return back()->withErrors(['asset_finance_id' => ErrorText::for($e)]);
         }
 
         return back()->with('status', __('Leasingvertrag verknüpft.'));
@@ -194,7 +194,7 @@ class ContractController extends Controller {
         try {
             $action();
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['status' => $e->getMessage()]);
+            return back()->withErrors(['status' => ErrorText::for($e)]);
         }
 
         return back()->with('status', $success);

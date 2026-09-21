@@ -17,14 +17,14 @@
 @component('mail::panel')
 **{{ __('Gerät') }}:** {{ $request->subjectLabel() }}
 
-**{{ __('Zeitraum') }}:** {{ $request->starts_at->format('d.m.Y H:i') }} – {{ $request->ends_at->format('d.m.Y H:i') }}
+**{{ __('Zeitraum') }}:** {{ $request->starts_at->orgTz()->format('d.m.Y H:i') }} – {{ $request->ends_at->orgTz()->format('d.m.Y H:i') }}
 @endcomponent
 @else
 # {{ __('Ihre Verleih-Anfrage konnte nicht angenommen werden') }}
 
 {{ __('Hallo :name,', ['name' => $request->portalUser?->name ?? '']) }}
 
-{{ __('leider können wir Ihre Anfrage für :subject vom :from bis :to nicht annehmen.', ['subject' => $request->subjectLabel(), 'from' => $request->starts_at->format('d.m.Y H:i'), 'to' => $request->ends_at->format('d.m.Y H:i')]) }}
+{{ __('leider können wir Ihre Anfrage für :subject vom :from bis :to nicht annehmen.', ['subject' => $request->subjectLabel(), 'from' => $request->starts_at->orgTz()->format('d.m.Y H:i'), 'to' => $request->ends_at->orgTz()->format('d.m.Y H:i')]) }}
 
 @component('mail::panel')
 **{{ __('Grund') }}:** {{ $request->decline_reason }}

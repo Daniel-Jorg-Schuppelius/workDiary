@@ -17,6 +17,7 @@ use App\Models\Patrol\{PatrolCheckpoint, PatrolRoute, PatrolRun};
 use App\Models\{Site, User};
 use App\Services\Patrol\PatrolService;
 use App\Services\SqidEncoder;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -138,7 +139,7 @@ class PatrolController extends Controller {
         try {
             $run = $this->service->start($patrolRoute, $this->actor());
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('patrols.runs.show', $run)->with('success', __('Rundgang gestartet.'));
@@ -188,7 +189,7 @@ class PatrolController extends Controller {
         try {
             $checkpoint = $this->service->scan($patrolRun, (string) $data['token']);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Kontrollpunkt „:label" bestätigt.', ['label' => $checkpoint->label]));
@@ -201,7 +202,7 @@ class PatrolController extends Controller {
         try {
             $this->service->complete($patrolRun, $this->actor(), (string) $request->input('deviation_note', '') ?: null);
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('patrols.show', PatrolRoute::query()->findOrFail($patrolRun->patrol_route_id))

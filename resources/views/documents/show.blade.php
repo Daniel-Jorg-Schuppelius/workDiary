@@ -41,9 +41,6 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if (session('status'))
-        <div class="alert alert-success text-sm">{{ session('status') }}</div>
-    @endif
     @php
         // Dokumenttyp/Fristen erkennen (Feature 148, MVP-732): OCR-/Textanalyse
         // über das php-pdf-toolkit; Chips werden einzeln übernommen.

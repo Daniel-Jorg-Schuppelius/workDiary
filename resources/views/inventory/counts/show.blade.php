@@ -17,7 +17,7 @@
     <x-slot:toolbar>
         <x-page-toolbar :title="$count->warehouse?->name"
                         :badge="$count->status->label()" badgeTone="ghost"
-                        :subtitle="__('inventory.count_ui.counted_at') . ': ' . $count->counted_at?->format('d.m.Y H:i')">
+                        :subtitle="__('inventory.count_ui.counted_at') . ': ' . $count->counted_at?->orgTz()->format('d.m.Y H:i')">
             <x-slot:actions>
                 <x-icon-btn icon="arrow_back" size="sm" :href="route('inventory.counts.index', ['warehouse' => $count->warehouse?->sqid])" show-label>{{ __('Zurück') }}</x-icon-btn>
             </x-slot:actions>

@@ -17,7 +17,7 @@ verifica e propone fatture aperte o spese approvate da abbinare. L'import da
 solo non modifica alcun documento: solo la **conferma** imposta la fattura su
 "pagata" o la spesa su "rimborsata". Nel dettaglio dell'estratto ogni
 movimento mostra lo stato e proposte di abbinamento con punteggio e
-motivazione; in alternativa puoi metterlo da parte o segnarlo come non
+motivazione; in alternativa può metterlo da parte o segnarlo come non
 abbinabile. Una conferma è reversibile, il movimento bancario stesso non
 viene mai modificato. Sconto cassa e differenze di arrotondamento sono
 tollerati; i dati bancari personali sono cifrati e ogni azione è

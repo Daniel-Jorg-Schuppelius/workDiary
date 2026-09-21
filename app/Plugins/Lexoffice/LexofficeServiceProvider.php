@@ -92,16 +92,14 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
         $this->app->make(InvoiceDraftTargets::class)
             ->register(new LexofficeInvoiceDraftTarget($this->app->make(TaxResolver::class), $this->app->make(BillingModeResolver::class)));
 
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                LexofficeSyncArticlesCommand::class,
-                LexofficeSyncContactsCommand::class,
-                LexofficeSyncVouchersCommand::class,
-                LexofficeSyncVoucherLinesCommand::class,
-                LexofficeRepairResaleLinksCommand::class,
-                LexofficeMaterializeVoucherFilesCommand::class,
-                LexofficeWebhooksCommand::class,
-            ]);
-        }
+        $this->commands([
+            LexofficeSyncArticlesCommand::class,
+            LexofficeSyncContactsCommand::class,
+            LexofficeSyncVouchersCommand::class,
+            LexofficeSyncVoucherLinesCommand::class,
+            LexofficeRepairResaleLinksCommand::class,
+            LexofficeMaterializeVoucherFilesCommand::class,
+            LexofficeWebhooksCommand::class,
+        ]);
     }
 }

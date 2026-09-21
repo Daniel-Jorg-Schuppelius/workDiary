@@ -56,10 +56,10 @@ class TimeAccountAdminController extends Controller {
             'code' => ['required', 'string', 'max:64', 'alpha_dash'],
             'name' => ['required', 'string', 'max:255'],
             'unit' => ['required', Rule::enum(TimeAccountUnit::class)],
-            'warn_threshold' => ['nullable', 'numeric', 'min:0'],
-            'critical_threshold' => ['nullable', 'numeric', 'min:0'],
+            'warn_threshold' => ['nullable', 'numeric', 'min:0', 'max:9999999999.99'],
+            'critical_threshold' => ['nullable', 'numeric', 'min:0', 'max:9999999999.99'],
             'carryover_policy' => ['required', Rule::enum(CarryoverPolicy::class)],
-            'cap_amount' => ['nullable', 'numeric', 'min:0', 'required_if:carryover_policy,cap'],
+            'cap_amount' => ['nullable', 'numeric', 'min:0', 'max:9999999999.99', 'required_if:carryover_policy,cap'],
             'show_on_terminal' => ['nullable', 'boolean'],
         ]);
 
@@ -143,7 +143,7 @@ class TimeAccountAdminController extends Controller {
         $data = $request->validate([
             'user_id' => ['required', 'integer'],
             'booking_date' => ['required', 'date'],
-            'quantity' => ['required', 'numeric', 'not_in:0'],
+            'quantity' => ['required', 'numeric', 'not_in:0', 'between:-9999999999.99,9999999999.99'],
             'note' => ['required', 'string', 'min:5', 'max:500'],
         ]);
 

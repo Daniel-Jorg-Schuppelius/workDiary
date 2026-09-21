@@ -27,7 +27,7 @@ Risiken und Einschränkungen:
   (`is_demo`). Für reguläre Organisationen wird er abgelehnt, um
   echte Daten zu schützen. Auf einem Demo-Mandanten überschreibt bzw.
   entfernt der Reset jedoch die vorhandenen Demo-Daten.
-- Das Erzeugen fügt zusätzliche Datensätze hinzu; prüfe vorab, ob die
+- Das Erzeugen fügt zusätzliche Datensätze hinzu; prüfen Sie vorab, ob die
   Organisation wirklich leer sein soll.
 
 Beide Aktionen erfordern eigene Berechtigungen (Seed bzw. plattformweit

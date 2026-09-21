@@ -8,19 +8,19 @@ related:
     - account.profile
 ---
 
-Muchas partes de WorkDiary se pueden usar sin ratón. Pulsa `?` en cualquier
+Muchas partes de WorkDiary se pueden usar sin ratón. Pulse `?` en cualquier
 momento — fuera de un campo de entrada — para abrir el resumen de todos los
 atajos. El mismo resumen está enlazado desde este texto de ayuda.
 
-Los atajos nunca se activan mientras escribes en un campo de entrada, un
+Los atajos nunca se activan mientras escribe en un campo de entrada, un
 cuadro de texto o una lista de selección, así no interfieren con lo que
-tecleas.
+teclea.
 
 Atajos globales:
 
 - `Ctrl`/`⌘` + `K` abre la búsqueda global (clientes, proyectos, gastos,
-  viajes, empleados …). Dentro de la búsqueda elige un resultado con `↑`/`↓`
-  y ábrelo con `↵`.
+  viajes, empleados …). Dentro de la búsqueda elija un resultado con `↑`/`↓`
+  y ábralo con `↵`.
 - `Esc` cierra la búsqueda o el diálogo abierto.
 - `?` muestra el resumen de todos los atajos.
 - `F1` abre la ayuda contextual de la página actual (barra de ayuda derecha).
@@ -33,6 +33,6 @@ Los atajos de navegación son secuencias cortas de teclas: primero `g` (por
 - `g` luego `p` — proyectos
 - `n` — nueva entrada
 
-Los atajos de navegación solo aparecen si también puedes llegar al destino
+Los atajos de navegación solo aparecen si también puede llegar al destino
 desde el menú. Sin ese permiso el atajo permanece mudo y no se muestra en
 el resumen.

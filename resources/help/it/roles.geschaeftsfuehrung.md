@@ -1,5 +1,5 @@
 ---
-title: "La tua giornata in WorkDiary: direzione aziendale"
+title: "La sua giornata in WorkDiary: direzione aziendale"
 topic: roles.geschaeftsfuehrung
 version: 1
 audience:
@@ -11,8 +11,8 @@ related:
     - glossary.core
 ---
 
-Come direzione aziendale hai la vista di gestione: accesso in sola lettura
-a praticamente tutte le aree, senza diritti di scrittura operativi. Consulti
+Come direzione aziendale ha la vista di gestione: accesso in sola lettura
+a praticamente tutte le aree, senza diritti di scrittura operativi. Consulta
 dashboard e analisi (clienti, tipi di incarico, drill-down), tempi e carichi
 di lavoro, stati di fatturazione, nonché il **registro di audit** e la
 cronologia degli accessi; i report sono esportabili in CSV/PDF. Le modifiche

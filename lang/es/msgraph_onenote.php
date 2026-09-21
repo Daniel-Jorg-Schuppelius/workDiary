@@ -18,10 +18,10 @@ return [
     'connect' => 'Conectar OneNote',
     'disconnect' => 'Desconectar OneNote',
     'open_hub' => 'Ir a «Conocimiento»',
-    'enable_hint' => 'Activa primero «Permitir importación de OneNote» en los ajustes del plugin; solo entonces la conexión solicita el permiso adicional Notes.Read.',
+    'enable_hint' => 'Active primero «Permitir importación de OneNote» en los ajustes del plugin; solo entonces la conexión solicita el permiso adicional Notes.Read.',
     'flash' => [
         'not_configured' => 'Microsoft 365 no está configurado (faltan MSGRAPH_CLIENT_ID/SECRET).',
-        'state_invalid' => 'El inicio de sesión ha caducado o no es válido; vuelve a empezar.',
+        'state_invalid' => 'El inicio de sesión ha caducado o no es válido; vuelva a empezar.',
         'oauth_denied' => 'Se canceló la autorización.',
         'oauth_failed' => 'La conexión falló (:class).',
         'connected' => 'OneNote conectado.',

@@ -18,6 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Costing\CostElementCatalog;
 use App\Models\User;
 use App\Services\Gaeb\CostElementCatalogService;
+use App\Support\ErrorText;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request, Response};
@@ -72,7 +73,7 @@ class CostElementCatalogController extends Controller {
                 $data['name'] ?? null,
             );
         } catch (InvalidArgumentException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('cost-catalogs.show', $catalog)

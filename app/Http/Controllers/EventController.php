@@ -14,7 +14,8 @@ use App\Enums\Event\{EventStatus, EventType, EventVisibility, ParticipantRole, P
 use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesGlobalDateRange};
 use App\Models\{Customer, Event, EventCategory, Room, User};
 use App\Services\Event\EventService;
-use App\Support\{LookupCache, Sqid};
+use App\Support\ErrorText;
+use App\Support\{LookupCache, Sqid, Tz};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -66,8 +67,9 @@ class EventController extends Controller {
             ->when($filters['status'], fn($q) => $q->where('status', $filters['status']))
             ->when($filters['visibility'], fn($q) => $q->where('visibility', $filters['visibility']))
             ->when($filters['category_id'], fn($q) => $q->where('category_id', $filters['category_id']))
-            ->when($filters['from'], fn($q) => $q->where('ended_at', '>=', $filters['from']))
-            ->when($filters['to'], fn($q) => $q->where('started_at', '<=', $filters['to']))
+            // Filtertage sind lokale Kalendertage, die Zeiten UTC.
+            ->when($filters['from'], fn($q) => $q->where('ended_at', '>=', CarbonImmutable::parse((string) $filters['from'], Tz::current())->startOfDay()->utc()))
+            ->when($filters['to'], fn($q) => $q->where('started_at', '<=', CarbonImmutable::parse((string) $filters['to'], Tz::current())->endOfDay()->utc()))
             ->when($filters['only_mandatory'], fn($q) => $q->where('is_mandatory', true))
             ->orderBy($sort, $dir);
 
@@ -113,9 +115,9 @@ class EventController extends Controller {
         $activeMonth    = collect($months)->firstWhere('key', $activeMonthKey) ?? $months[0];
         $activeMonthKey = $activeMonth['key'];
 
-        $monthStart = CarbonImmutable::create($activeMonth['year'], $activeMonth['month'], 1)
+        $monthStart = CarbonImmutable::create($activeMonth['year'], $activeMonth['month'], 1, 0, 0, 0, Tz::current())
             ?->startOfMonth()
-            ?? CarbonImmutable::now()->startOfMonth();
+            ?? Tz::now()->startOfMonth();
         $monthEnd = $monthStart->endOfMonth();
 
         $gridStart = $monthStart->startOfWeek(CarbonImmutable::MONDAY);
@@ -123,11 +125,11 @@ class EventController extends Controller {
 
         $events = Event::query()
             ->with(['category', 'rooms'])
-            ->whereBetween('started_at', [$gridStart, $gridEnd])
+            ->whereBetween('started_at', [$gridStart->utc(), $gridEnd->utc()])
             ->orderBy('started_at')
             ->get();
 
-        $eventsByDay = $events->groupBy(fn(Event $e) => $e->started_at->format('Y-m-d'));
+        $eventsByDay = $events->groupBy(fn(Event $e) => $e->started_at->copy()->setTimezone(Tz::current())->format('Y-m-d'));
 
         return view('events.calendar', [
             'monthStart'     => $monthStart,
@@ -163,7 +165,7 @@ class EventController extends Controller {
         try {
             $event = $this->events->create($data, $rooms, $participants);
         } catch (RuntimeException $e) {
-            return back()->withErrors(['rooms' => $e->getMessage()])->withInput();
+            return back()->withErrors(['rooms' => ErrorText::for($e)])->withInput();
         }
 
         return redirect()->route('events.show', $event)
@@ -187,7 +189,7 @@ class EventController extends Controller {
         try {
             $this->events->update($event, $data, $rooms, $participants);
         } catch (RuntimeException $e) {
-            return back()->withErrors(['rooms' => $e->getMessage()])->withInput();
+            return back()->withErrors(['rooms' => ErrorText::for($e)])->withInput();
         }
 
         return redirect()->route('events.show', $event)
@@ -252,7 +254,7 @@ class EventController extends Controller {
             'max_participants' => ['nullable', 'integer', 'min:1', 'max:9999'],
             'is_mandatory' => ['sometimes', 'boolean'],
             'certificate_valid_months' => ['nullable', 'integer', 'min:1', 'max:120'],
-            'recurrence_rule' => ['nullable', 'string', 'max:1000'],
+            'recurrence_rule' => ['nullable', 'string', 'max:1000', new \App\Rules\RecurrenceRule],
             'series_until' => ['nullable', 'date'],
             'reminder_overrides' => ['nullable', 'array'],
             'reminder_overrides.*' => ['integer', 'min:0'],
@@ -266,7 +268,20 @@ class EventController extends Controller {
         $data['is_all_day'] ??= false;
         $data['is_mandatory'] ??= false;
 
+        // Eingaben sind Wandzeit in der Zeitzone des Termins, gespeichert wird UTC (MVP-823).
+        $tz = $this->inputTimezone($request);
+        $data['timezone'] = $tz;
+        $data['started_at'] = CarbonImmutable::parse((string) $data['started_at'], $tz)->utc()->format('Y-m-d H:i:s');
+        $data['ended_at'] = CarbonImmutable::parse((string) $data['ended_at'], $tz)->utc()->format('Y-m-d H:i:s');
+
         return $data;
+    }
+
+    /** Zeitzone des Formulars: gesetzte gültige Termin-Zeitzone, sonst die Anzeige-Zeitzone. */
+    private function inputTimezone(Request $request): string {
+        $tz = trim((string) $request->input('timezone', ''));
+
+        return Tz::isValid($tz) && $tz !== 'UTC' ? $tz : Tz::current();
     }
 
     /** @return array<int, array{room_id: int, started_at?: \Illuminate\Support\Carbon|string, ended_at?: \Illuminate\Support\Carbon|string, setup_minutes_before?: int, teardown_minutes_after?: int}> */
@@ -288,11 +303,10 @@ class EventController extends Controller {
                 'setup_minutes_before' => (int) ($row['setup_minutes_before'] ?? 0),
                 'teardown_minutes_after' => (int) ($row['teardown_minutes_after'] ?? 0),
             ];
-            if (! empty($row['started_at'])) {
-                $entry['started_at'] = (string) $row['started_at'];
-            }
-            if (! empty($row['ended_at'])) {
-                $entry['ended_at'] = (string) $row['ended_at'];
+            foreach (['started_at', 'ended_at'] as $key) {
+                if (! empty($row[$key])) {
+                    $entry[$key] = CarbonImmutable::parse((string) $row[$key], $this->inputTimezone($request))->utc()->format('Y-m-d H:i:s');
+                }
             }
             $out[] = $entry;
         }

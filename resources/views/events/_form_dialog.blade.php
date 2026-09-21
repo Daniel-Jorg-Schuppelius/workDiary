@@ -29,13 +29,16 @@
     $title     = $isEdit ? __('Veranstaltung bearbeiten') : __('Neue Veranstaltung');
     $dialogUrl = ($isEdit ? route('events.edit', $event) : route('events.create')).'?dialog=1';
 
-    $startVal = old('started_at', $event?->started_at?->format('Y-m-d\TH:i') ?? $prefillStart);
-    $endVal   = old('ended_at',   $event?->ended_at?->format('Y-m-d\TH:i')   ?? $prefillEnd);
+    // Zeiten liegen in UTC, das Formular zeigt sie in der Zeitzone des Termins (MVP-823).
+    $formTz   = \App\Support\Tz::isValid($event?->timezone) && $event?->timezone !== 'UTC' ? $event->timezone : \App\Support\Tz::current();
+    $inFormTz = static fn ($value): ?string => $value === null ? null : \Illuminate\Support\Carbon::parse($value)->setTimezone($formTz)->format('Y-m-d\TH:i');
+    $startVal = old('started_at', $inFormTz($event?->started_at) ?? $prefillStart);
+    $endVal   = old('ended_at',   $inFormTz($event?->ended_at)   ?? $prefillEnd);
 
     $roomItems = old('rooms', $event?->rooms->map(fn ($r) => [
         'room_id' => $r->sqid,
-        'started_at' => optional($r->pivot->started_at)->format('Y-m-d\TH:i'),
-        'ended_at'   => optional($r->pivot->ended_at)->format('Y-m-d\TH:i'),
+        'started_at' => $inFormTz($r->pivot->started_at),
+        'ended_at'   => $inFormTz($r->pivot->ended_at),
         'setup_minutes_before'   => $r->pivot->setup_minutes_before,
         'teardown_minutes_after' => $r->pivot->teardown_minutes_after,
     ])->all() ?? []);
@@ -128,7 +131,7 @@
             </label>
         </div>
 
-        <x-input-field name="timezone" :label="__('Zeitzone')" class="font-mono" :value="old('timezone', $event?->timezone ?? config('app.timezone'))" />
+        <x-input-field name="timezone" :label="__('Zeitzone')" class="font-mono" :value="old('timezone', $formTz)" />
 
         <div class="fieldset md:col-span-2">
             <label class="fieldset-label" for="ev-rrule">{{ __('Wiederholungsregel (iCal RRULE)') }}</label>

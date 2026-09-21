@@ -42,9 +42,6 @@
         </select>
     </x-filter-bar>
 
-    @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
-    @endif
 
     <x-card padding="p-0">
         <x-table bare>

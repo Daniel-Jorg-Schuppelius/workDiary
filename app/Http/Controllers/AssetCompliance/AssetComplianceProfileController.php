@@ -108,8 +108,8 @@ class AssetComplianceProfileController extends Controller {
             'label' => ['required', 'string', 'max:255'],
             'code' => ['nullable', 'string', 'max:60'],
             'unit' => ['nullable', 'string', 'max:30'],
-            'limit_min' => ['nullable', 'numeric'],
-            'limit_max' => ['nullable', 'numeric'],
+            'limit_min' => ['nullable', 'numeric', 'between:-9999999999.9999,9999999999.9999'],
+            'limit_max' => ['nullable', 'numeric', 'between:-9999999999.9999,9999999999.9999'],
             'is_mandatory' => ['sometimes', 'boolean'],
         ]);
 

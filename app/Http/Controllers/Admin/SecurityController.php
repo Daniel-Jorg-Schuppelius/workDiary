@@ -15,6 +15,7 @@ use App\Http\Controllers\Concerns\RequiresPlatformOperator;
 use App\Http\Controllers\Controller;
 use App\Models\SecurityAdvisory;
 use App\Services\Security\{OsvAdvisoryService, SecurityOverviewService};
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -42,6 +43,8 @@ class SecurityController extends Controller {
             'security' => $overview->collect(),
             'advisories' => $advisories,
             'advisoriesLastPull' => SecurityAdvisory::query()->where('source', 'osv')->max('updated_at'),
+            // Abruf und Bewertung gelten installationsweit — nur Betreiber (assertPlatformOperator).
+            'isPlatformOperator' => $this->isPlatformOperator(),
         ]);
     }
 
@@ -57,7 +60,7 @@ class SecurityController extends Controller {
             $result = $service->pull();
         } catch (Throwable $e) {
             return redirect()->route('admin.security.index')
-                ->with('error', __('Advisory-Abruf fehlgeschlagen: :message', ['message' => $e->getMessage()]));
+                ->with('error', __('Advisory-Abruf fehlgeschlagen: :message', ['message' => ErrorText::for($e)]));
         }
 
         return redirect()->route('admin.security.index')

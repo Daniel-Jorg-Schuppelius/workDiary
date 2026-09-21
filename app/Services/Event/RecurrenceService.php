@@ -11,6 +11,7 @@
 namespace App\Services\Event;
 
 use App\Models\Event;
+use App\Support\Tz;
 use DateTimeImmutable;
 use Illuminate\Support\Carbon;
 use Recurr\Rule;
@@ -34,8 +35,13 @@ class RecurrenceService {
             return [];
         }
 
-        $startDate = new DateTimeImmutable($master->started_at->format(DATE_ATOM));
-        $rule = new Rule($master->recurrence_rule, $startDate, null, $master->timezone ?? 'Europe/Berlin');
+        // In der Zeitzone des Termins rechnen: „wöchentlich 9 Uhr“ bleibt über den
+        // Sommerzeitwechsel 9 Uhr Ortszeit; gespeichert wird UTC (MVP-823).
+        $timezone = Tz::isValid($master->timezone) && $master->timezone !== 'UTC'
+            ? (string) $master->timezone
+            : ($master->organization !== null ? Tz::ofOrganization($master->organization) : Tz::current());
+        $startDate = $master->started_at->copy()->setTimezone($timezone)->toDateTimeImmutable();
+        $rule = new Rule($master->recurrence_rule, $startDate, null, $timezone);
 
         $upperBound = $until?->toDateTimeImmutable()
             ?? (new DateTimeImmutable())->modify('+' . (int) config('events.materialization_days', 90) . ' days');
@@ -73,7 +79,7 @@ class RecurrenceService {
             ->all();
 
         foreach ($occurrences as $occurrence) {
-            $start = Carbon::instance($occurrence);
+            $start = Carbon::instance($occurrence)->utc();
             // Master selbst auslassen
             if ($start->equalTo($master->started_at)) {
                 continue;

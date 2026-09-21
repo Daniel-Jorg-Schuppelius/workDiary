@@ -21,5 +21,5 @@ los registros existentes. Cada registro congela la definición de campos
 en el momento de rellenarlo, así que los cambios solo afectan a
 **registros nuevos** y ni siquiera eliminar la plantilla hace ilegibles
 los antiguos. La gestión corresponde a jefes de equipo o personas
-expresamente autorizadas; mantén claves de campo estables para poder
+expresamente autorizadas; mantenga claves de campo estables para poder
 comparar evaluaciones entre generaciones de plantillas.

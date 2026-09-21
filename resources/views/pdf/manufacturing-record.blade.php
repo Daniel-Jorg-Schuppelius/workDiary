@@ -74,7 +74,7 @@
             <tbody>
                 @foreach ($order->reports->sortBy('reported_at') as $report)
                     <tr>
-                        <td>{{ $report->reported_at?->format('d.m.Y H:i') }}</td>
+                        <td>{{ $report->reported_at?->orgTz()->format('d.m.Y H:i') }}</td>
                         <td>{{ $report->reported_by !== null ? ($reporters[$report->reported_by] ?? '—') : '—' }}</td>
                         <td class="right">{{ rtrim(rtrim((string) $report->produced_qty, '0'), '.') ?: '0' }}</td>
                         <td class="right">{{ rtrim(rtrim((string) $report->good_qty, '0'), '.') ?: '0' }}</td>

@@ -26,10 +26,8 @@ class GoogleDriveServiceProvider extends PluginServiceProviderBase {
     protected function registerPlugin(): void {
         $this->app->singleton(GoogleDriveOAuth::class, fn (): GoogleDriveOAuth => new GoogleDriveOAuth());
 
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                Console\GoogleDriveSubscriptionsCommand::class,
-            ]);
-        }
+        $this->commands([
+            Console\GoogleDriveSubscriptionsCommand::class,
+        ]);
     }
 }

@@ -12,7 +12,9 @@ namespace Tests\Feature\Sso;
 
 use App\Enums\Auth\SsoProtocol;
 use App\Models\{Organization, SsoConnection, User};
+use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Psr\Http\Message\RequestInterface;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
@@ -133,6 +135,25 @@ final class SsoAdminTest extends TestCase {
             ->post(route('admin.sso.connections.test', $connection->sqid))
             ->assertRedirect()
             ->assertSessionHas('success');
+    }
+
+    /** UI-Fuzz 2026-09-21: ein nicht erreichbarer IdP ließ „Verbindung testen" (und den Login) mit 500 abbrechen. */
+    public function test_unreachable_identity_provider_is_reported(): void {
+        $connection = SsoConnection::query()->create([
+            'organization_id' => $this->organization->id,
+            'protocol' => SsoProtocol::Oidc->value,
+            'label' => 'Entra ID',
+            'issuer' => 'https://idp.example',
+            'client_id' => 'client-1',
+        ]);
+        FakePluginHttp::fake([
+            'https://idp.example/*' => static fn (RequestInterface $request) => throw new ConnectException('Verbindung abgelehnt', $request),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.sso.connections.test', $connection->sqid))
+            ->assertRedirect()
+            ->assertSessionHasErrors('connection_test');
     }
 
     public function test_destroy_removes_connection_and_identities(): void {

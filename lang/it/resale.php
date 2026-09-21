@@ -120,12 +120,13 @@ return [
         'created' => 'Abbonamento creato, periodi pianificati.',
         'updated' => 'Abbonamento salvato, periodi ripianificati.',
         'deleted' => 'Abbonamento eliminato.',
-        'has_decisions' => 'Questo abbonamento ha periodi decisi e non può essere eliminato. Impostalo su «terminato».',
+        'has_decisions' => 'Questo abbonamento ha periodi decisi e non può essere eliminato. Lo imposti su «terminato».',
     ],
     'error' => [
-        'customer_required' => 'Scegli un cliente.',
-        'foreign_required' => 'Scegli un cliente finale.',
+        'customer_required' => 'Scelga un cliente.',
+        'foreign_required' => 'Scelga un cliente finale.',
         'ends_on_required' => 'Un rinnovo disdetto richiede una data di fine.',
+        'amount_too_large' => 'Quantità × prezzo unitario supera l\'importo di periodo massimo memorizzabile.',
     ],
     'kind' => [
         'license' => 'Licenza',
@@ -189,7 +190,7 @@ return [
             'generic' => 'Elenco abbonamenti',
         ],
         'flash' => [
-            'no_files' => 'Scegli almeno un file.',
+            'no_files' => 'Scelga almeno un file.',
             'done' => 'Import completato.',
             'line' => ':kind: :created nuovi, :updated modificati, :unchanged invariati, :unassigned senza titolare',
         ],
@@ -235,7 +236,7 @@ return [
         'note_voided' => 'Fattura annullata — copriva :months', // Review 2026-09-10
         'no_lines' => 'Nessuna riga di fattura specchiata nella finestra intorno all’inizio del periodo.',
         'line' => 'Riga di fattura',
-        'line_hint' => 'Solo righe abbonamento del destinatario nella finestra del periodo. Se manca un articolo, classificalo come prodotto abbonamento sotto «Prodotti».',
+        'line_hint' => 'Solo righe abbonamento del destinatario nella finestra del periodo. Se manca un articolo, lo classifichi come prodotto abbonamento sotto «Prodotti».',
         'line_used' => 'già consumata',
         'months_field' => 'Mesi di licenza coperti',
         'months_hint' => 'Riga a prezzo mensile: quantità = mesi per licenza. Riga annuale: 12 per unità.',
@@ -328,7 +329,7 @@ return [
         'action' => 'Bozza Lexoffice',
         'dialog_title' => 'Creare una bozza di fattura in Lexoffice',
         'submit' => 'Crea bozza',
-        'hint' => 'Tutti i periodi aperti del destinatario diventano righe di una bozza Lexoffice: una riga per abbonamento e periodo, cliente finale nella descrizione, quantità in mesi. Nulla viene finalizzato — verifica e completa in Lexoffice.',
+        'hint' => 'Tutti i periodi aperti del destinatario diventano righe di una bozza Lexoffice: una riga per abbonamento e periodo, cliente finale nella descrizione, quantità in mesi. Nulla viene finalizzato — verifichi e completi in Lexoffice.',
         'title' => 'Fattura',
         'introduction' => 'Licenze e abbonamenti, :count righe — periodi e clienti finali per riga.',
         'end_customer' => 'Cliente finale :name',
@@ -336,15 +337,15 @@ return [
         'note' => 'Bozza Lexoffice :id del :date (:user)',
         'local_note' => 'Bozza di fattura locale :number',
         'flash' => [
-            'created' => 'Bozza per :customer creata: :lines righe, :net € netto (id Lexoffice :id). Verifica e completa in Lexoffice.',
-            'created_local' => 'Bozza :id per :customer creata: :lines righe, :net € netto. I periodi sono collegati come proposta — conferma all’emissione.',
+            'created' => 'Bozza per :customer creata: :lines righe, :net € netto (id Lexoffice :id). Verifichi e completi in Lexoffice.',
+            'created_local' => 'Bozza :id per :customer creata: :lines righe, :net € netto. I periodi sono collegati come proposta — confermi all’emissione.',
         ],
         'error' => [
             'lexoffice' => 'Lexoffice non è attivo per questa organizzazione o senza chiave API.',
             'nothing_open' => 'Nessun periodo aperto con prezzo di vendita per questo destinatario.',
         ],
         'already_drafted' => 'Per questo destinatario è già in sospeso una bozza (:reference del :date). Completarla prima in Lexoffice o localmente, oppure decidere il periodo.', // Review 2026-09-10
-        'no_target' => 'Per la modalità di fatturazione «:mode» di questo destinatario non è registrata alcuna destinazione bozza — attiva il plugin o imposta il cliente sulla fatturazione locale.', // Review 2026-09-11
+        'no_target' => 'Per la modalità di fatturazione «:mode» di questo destinatario non è registrata alcuna destinazione bozza — attivi il plugin o imposti il cliente sulla fatturazione locale.', // Review 2026-09-11
     ],
     'purchase' => [
         'title' => 'Documenti di acquisto',
@@ -412,7 +413,7 @@ return [
         'assign' => 'Assegna periodo',
         'remaining' => 'ancora :amount liberi',
         'empty' => 'Nessuna riga di licenza nello specchio di questo destinatario.',
-        'empty_pending' => 'Righe non ancora specchiate — esegui lexoffice:sync-voucher-lines.',
+        'empty_pending' => 'Righe non ancora specchiate — esegua lexoffice:sync-voucher-lines.',
     ],
     'reconcile' => [
         'title' => 'Riconciliazione per destinatario fattura',
@@ -424,7 +425,7 @@ return [
         'filter_all' => 'Tutti i destinatari',
         'all_periods' => ':count periodo di fatturazione di questo destinatario (tutti gli abbonamenti, tutti gli stati)|:count periodi di fatturazione di questo destinatario (tutti gli abbonamenti, tutti gli stati)',
         'no_customer' => 'nessun cliente',
-        'no_customer_hint' => 'Contatto Lexoffice senza cliente collegato — collega prima il contatto a un cliente.',
+        'no_customer_hint' => 'Contatto Lexoffice senza cliente collegato — colleghi prima il contatto a un cliente.',
         'lines_without_subscription' => ':count riga licenza senza abbonamento|:count righe licenza senza abbonamento',
         'distance' => ':days giorno dall’inizio periodo|:days giorni dall’inizio periodo',
         'kpi' => [
@@ -465,7 +466,7 @@ return [
         ],
         'inbox' => [
             'title' => 'Clienti finali nei testi fattura il cui abbonamento non ha ancora un titolare',
-            'hint' => 'Questi abbonamenti della posta in arrivo nominano aziende che compaiono nelle fatture a :customer — probabilmente clienti finali di questo partner. Assegna prima il titolare, poi i periodi tornano.',
+            'hint' => 'Questi abbonamenti della posta in arrivo nominano aziende che compaiono nelle fatture a :customer — probabilmente clienti finali di questo partner. Assegni prima il titolare, poi i periodi tornano.',
             'mentions' => 'citato in :count fattura|citato in :count fatture',
         ],
         'service_period' => 'Prestazione',
@@ -505,13 +506,13 @@ return [
         'from' => 'Ceduto da',
         'assigned_hint' => ':count licenza ceduta ad altri titolari|:count licenze cedute ad altri titolari',
         'error' => [
-            'holder' => 'Scegli un titolare.',
+            'holder' => 'Scelga un titolare.',
             'quantity' => 'Solo :available licenze non sono ancora cedute.',
         ],
         'flash' => [
             'created' => ':quantity licenze cedute a :holder.',
-            'has_assignments' => 'Il contratto ha licenze cedute — elimina prima le cessioni.',
-            'nested' => 'Una cessione non può essere ceduta di nuovo — usa il contratto.',
+            'has_assignments' => 'Il contratto ha licenze cedute — elimini prima le cessioni.',
+            'nested' => 'Una cessione non può essere ceduta di nuovo — usi il contratto.',
         ],
     ],
     'unlinked' => [

@@ -12,7 +12,7 @@ related:
     - glossary.core
 ---
 
-Le **misure** sono neutre rispetto alle norme: descrivono COME la tua
+Le **misure** sono neutre rispetto alle norme: descrivono COME la sua
 organizzazione attua qualcosa, senza riferimento normativo; il collegamento
 a requisiti e rischi avviene tramite associazioni multiple. Flusso tipico:
 creare la misura (titolo, descrizione, responsabile), impostare lo **stato di

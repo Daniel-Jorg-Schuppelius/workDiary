@@ -10,7 +10,7 @@ related:
 
 Die Onboarding-Checkliste führt eine neue Organisation in **fest definierten
 Schritten** in den produktiven Betrieb. Erledigte Schritte werden anhand
-des Datenbestands automatisch erkannt – du musst nichts manuell abhaken.
+des Datenbestands automatisch erkannt – Sie müssen nichts manuell abhaken.
 
 Hard-Pflichtschritte (nicht überspringbar):
 

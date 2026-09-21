@@ -11,7 +11,6 @@
 @section('nav-title', $processor->name)
 @section('content')
     <x-index-page :subtitle="__('Stammdaten des Dienstleisters und zugeordnete Auftragsverarbeitungsverträge.')">
-        @if (session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif
 
         <x-card>
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Stammdaten') }}

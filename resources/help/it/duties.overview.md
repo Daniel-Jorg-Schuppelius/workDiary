@@ -10,12 +10,12 @@ related:
     - archive.manage
 ---
 
-La lista di lavoro riunisce le tue attività operative in cinque aree:
+La lista di lavoro riunisce le sue attività operative in cinque aree:
 **Incarichi**, **Reperibilità**, **Servizio di emergenza**, **Ferie** e
-**Malattia**. Scegli prima la scheda adatta: filtri e indicatori si
+**Malattia**. Scelga prima la scheda adatta: filtri e indicatori si
 riferiscono sempre al periodo e all'area selezionati, e un clic su un
 indicatore può restringere ulteriormente l'elenco. Con l'azione in alto a
-destra crei una nuova voce per l'area corrente; incarichi, reperibilità e
+destra crea una nuova voce per l'area corrente; incarichi, reperibilità e
 interventi di emergenza conclusi si trovano nell'**archivio**. Se
-l'elenco è vuoto, controlla periodo e filtri: **Reimposta filtri** mostra
+l'elenco è vuoto, controlli periodo e filtri: **Reimposta filtri** mostra
 di nuovo tutte le voci visibili dell'area scelta.

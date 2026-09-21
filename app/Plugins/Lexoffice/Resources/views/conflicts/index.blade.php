@@ -11,7 +11,7 @@
 @section('nav-title', __('Lexoffice-Konflikte'))
 
 @section('content')
-<x-index-page :subtitle="__('Im Modus „Manuelle Prüfung“ landen abweichende Remote-Datensätze hier. Pro Konflikt entscheidest du, ob die lokalen oder die Lexoffice-Werte gewinnen.')">
+<x-index-page :subtitle="__('Im Modus „Manuelle Prüfung“ landen abweichende Remote-Datensätze hier. Pro Konflikt entscheiden Sie, ob die lokalen oder die Lexoffice-Werte gewinnen.')">
     <x-slot:actions>
         <form method="GET" action="{{ route('admin.lexoffice.conflicts.index') }}" class="flex items-center gap-2">
             <select name="status" class="select select-sm select-bordered" data-autosubmit>
@@ -100,7 +100,7 @@
                                         </div>
                                     @else
                                         <span class="text-xs text-muted">
-                                            {{ optional($conflict->resolved_at)->format('d.m.Y H:i') }}
+                                            {{ $conflict->resolved_at?->orgTz()->format('d.m.Y H:i') }}
                                         </span>
                                     @endif
                                 </td>

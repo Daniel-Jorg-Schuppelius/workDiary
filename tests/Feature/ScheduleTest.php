@@ -13,6 +13,8 @@ namespace Tests\Feature;
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\{ScheduledShift, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ScheduleTest extends TestCase {
@@ -208,6 +210,56 @@ class ScheduleTest extends TestCase {
             ->get(route('schedule.import'))
             ->assertOk()
             ->assertViewIs('schedule.import.index');
+    }
+
+    /**
+     * UI-Fuzz 2026-09-21: Die Datei landete auf der local-Disk
+     * (storage/app/private), gelesen wurde storage/app/… — jeder Import endete
+     * in „CSV-Datei nicht lesbar“ (HTTP 500).
+     */
+    public function test_import_preview_reads_the_uploaded_file(): void {
+        Storage::fake('local');
+        $admin = User::factory()->admin()->create();
+        $csv = UploadedFile::fake()->createWithContent('plan.csv', "Datum;Mitarbeiter;Schicht\n2026-09-22;Uta Tester;Früh\n");
+
+        $this->actingAs($admin)
+            ->post(route('schedule.import.preview'), ['file' => $csv])
+            ->assertOk()
+            ->assertViewIs('schedule.import.preview')
+            ->assertViewHas('remaining', 1)
+            // Vorschau und Controller sprechen dieselbe Zuordnung (map[Spalte]).
+            ->assertSee('name="map[0]"', false);
+    }
+
+    public function test_import_confirm_creates_shifts_from_the_column_mapping(): void {
+        Storage::fake('local');
+        $admin = User::factory()->admin()->create();
+        $worker = User::factory()->user()->create(['organization_id' => $admin->organization_id, 'name' => 'Uta Tester']);
+        app()->instance('currentOrganization', $admin->organization);
+        $csv = UploadedFile::fake()->createWithContent('plan.csv', "Datum;Mitarbeiter;Von;Bis\n2026-09-22;Uta Tester;08:00;16:00\n");
+
+        $this->actingAs($admin)->post(route('schedule.import.preview'), ['file' => $csv])->assertOk();
+
+        $this->actingAs($admin)
+            ->post(route('schedule.import.confirm'), ['map' => ['date', 'user', 'start_time', 'end_time']])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('scheduled_shifts', ['user_id' => $worker->id, 'date' => '2026-09-22']);
+        $this->assertSame([], Storage::disk('local')->allFiles('schedule-imports'));
+    }
+
+    public function test_import_confirm_requires_date_and_employee_columns(): void {
+        Storage::fake('local');
+        $admin = User::factory()->admin()->create();
+        $csv = UploadedFile::fake()->createWithContent('plan.csv', "Datum;Mitarbeiter\n2026-09-22;Uta Tester\n");
+
+        $this->actingAs($admin)->post(route('schedule.import.preview'), ['file' => $csv])->assertOk();
+
+        $this->actingAs($admin)
+            ->post(route('schedule.import.confirm'), ['map' => ['date', 'skip']])
+            ->assertRedirect(route('schedule.import'))
+            ->assertSessionHasErrors('file');
     }
 
     public function test_non_admin_cannot_access_import_page(): void {

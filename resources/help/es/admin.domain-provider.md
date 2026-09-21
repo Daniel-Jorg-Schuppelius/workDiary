@@ -32,7 +32,7 @@ contra la API sin modificar nada. «Sincronizar» trae la cartera actual
 (dominios, plazos, modos de renovación, revendedores/subusuarios) a las
 proyecciones locales. La sincronización es de solo lectura e idempotente.
 
-**Confirmar el piloto:** Tras una prueba real correcta confirmas el piloto;
+**Confirmar el piloto:** Tras una prueba real correcta confirma el piloto;
 solo entonces la conexión puede pasar a producción. Mientras el piloto siga
 abierto, la comprobación de estado indica «piloto abierto».
 

@@ -61,7 +61,7 @@
                 <form method="POST" action="{{ route('recruiting.applications.documents.store', $application) }}" enctype="multipart/form-data" class="my-2 flex flex-wrap items-end gap-2">
                     @csrf
                     <input type="file" name="file" required class="file-input file-input-sm file-input-bordered">
-                    <input aria-label="{{ __('Bezeichnung') }}" name="label" maxlength="200" class="input input-sm input-bordered" placeholder="{{ __('Bezeichnung') }}">
+                    <input aria-label="{{ __('Bezeichnung') }}" name="label" maxlength="180" class="input input-sm input-bordered" placeholder="{{ __('Bezeichnung') }}">
                     <x-icon-btn icon="upload" tone="primary" size="sm" type="submit" show-label>{{ __('Ablegen') }}</x-icon-btn>
                 </form>
             @endcan

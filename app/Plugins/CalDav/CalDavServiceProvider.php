@@ -27,11 +27,9 @@ class CalDavServiceProvider extends PluginServiceProviderBase {
     protected function registerPlugin(): void {
         $this->app->singleton(CalDavGatewayFactory::class, GuzzleCalDavGatewayFactory::class);
 
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                Console\CalDavPublishCommand::class,
-                Console\CalDavImportCommand::class,
-            ]);
-        }
+        $this->commands([
+            Console\CalDavPublishCommand::class,
+            Console\CalDavImportCommand::class,
+        ]);
     }
 }

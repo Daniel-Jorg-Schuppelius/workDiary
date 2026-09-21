@@ -9,14 +9,14 @@ related:
     - work.overview
 ---
 
-El centro de notificaciones reúne todos los avisos dirigidos a ti;
-muestra solo tus propias notificaciones y no requiere permisos
-especiales. Puedes marcar notificaciones individuales como leídas o
+El centro de notificaciones reúne todos los avisos dirigidos a usted;
+muestra solo sus propias notificaciones y no requiere permisos
+especiales. Puede marcar notificaciones individuales como leídas o
 todas a la vez, y al abrir una notificación con destino dentro de
-WorkDiary llegas directamente allí (los enlaces externos no se siguen
-por seguridad). Si además quieres recibir notificaciones por correo y
-definir horas de silencio, configúralo en los ajustes de notificación
-de tu perfil.
+WorkDiary llega directamente allí (los enlaces externos no se siguen
+por seguridad). Si además quiere recibir notificaciones por correo y
+definir horas de silencio, configúrelo en los ajustes de notificación
+de su perfil.
 
 **Mensajes de texto (SMS):** Para avisos realmente críticos —por ejemplo
 alarmas de guardia— puede enviarse además un SMS. Esta vía es deliberadamente

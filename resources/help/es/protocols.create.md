@@ -25,11 +25,11 @@ expediente y localizable en él.
 
 ## Procedimiento recomendado
 
-1. Abre el expediente y elige **«Generar acta»** en el menú de
+1. Abra el expediente y elija **«Generar acta»** en el menú de
    acciones.
-2. Elige la **plantilla**.
-3. Recorre los **puntos del acta**: texto, selección, foto, medición.
-4. Adjunta las **fotos antes/después** al punto correspondiente.
+2. Elija la **plantilla**.
+3. Recorra los **puntos del acta**: texto, selección, foto, medición.
+4. Adjunte las **fotos antes/después** al punto correspondiente.
 5. **Guardar** deja el acta en **borrador**; para la recepción pasa
    después al diálogo de firma.
 

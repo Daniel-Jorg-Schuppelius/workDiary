@@ -29,6 +29,6 @@ eine Legacy-Kennung verknüpft, sodass wiederholte Läufe keine
 Dubletten anlegen.
 
 Hinweis: Der Schreibzugriff hängt von der Konfiguration
-(`legacy_write_enabled`) ab. Schlägt ein Import fehl, prüfe die
+(`legacy_write_enabled`) ab. Schlägt ein Import fehl, prüfen Sie die
 Log-Dateien. Der Zugriff erfordert das Recht zur Einsicht in
 Audit-Logs.

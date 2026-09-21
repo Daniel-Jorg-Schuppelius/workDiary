@@ -127,7 +127,7 @@ class TogglWorkspaceReader {
      *
      * @return array<int, TogglEntry>
      */
-    public function entries(string $workspacePath): array {
+    public function entries(string $workspacePath, ?string $timezone = null): array {
         $files = Folder::exists($workspacePath) ? Folder::findByPattern($workspacePath, 'Toggl_time_entries_*.csv') : [];
         sort($files);
 
@@ -137,7 +137,7 @@ class TogglWorkspaceReader {
             if (trim($content) === '') {
                 continue;
             }
-            foreach ($this->csvParser->parse($content) as $entry) {
+            foreach ($this->csvParser->parse($content, $timezone) as $entry) {
                 $entries[] = $entry;
             }
         }

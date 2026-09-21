@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Privacy\{ComplianceFinding, RetentionProposal};
 use App\Models\User;
 use App\Services\Privacy\Retention\{RetentionRegistry, RetentionScanService};
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -90,7 +91,7 @@ class RetentionController extends Controller {
                 default => throw new RuntimeException('Unbekannte Aktion.'),
             };
         } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('status', __('Vorschlag aktualisiert.'));

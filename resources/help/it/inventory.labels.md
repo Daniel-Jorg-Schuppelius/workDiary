@@ -11,7 +11,7 @@ related:
     - articles.master
 ---
 
-Qui gestisci i modelli di etichetta e generi etichette stampabili per
+Qui gestisce i modelli di etichetta e genera etichette stampabili per
 varianti, lotti e numeri di serie. Un modello definisce formato carta (A6,
 A7, A8), orientamento, QR-code opzionale e i campi visualizzati; per
 organizzazione al massimo un modello può essere predefinito e impostarne uno

@@ -8,19 +8,19 @@ related:
     - account.profile
 ---
 
-Molte parti di WorkDiary si usano senza mouse. Premi in qualsiasi momento
+Molte parti di WorkDiary si usano senza mouse. Prema in qualsiasi momento
 `?` — fuori da un campo di input — per aprire la panoramica di tutte le
 scorciatoie. La stessa panoramica è raggiungibile da questo testo di aiuto.
 
-Le scorciatoie non scattano mai mentre scrivi in un campo di input, in una
+Le scorciatoie non scattano mai mentre scrive in un campo di input, in una
 casella di testo o in un elenco di selezione, così non interferiscono con
 la digitazione.
 
 Scorciatoie globali:
 
 - `Ctrl`/`⌘` + `K` apre la ricerca globale (clienti, progetti, spese,
-  viaggi, collaboratori …). Nella ricerca scegli un risultato con `↑`/`↓` e
-  aprilo con `↵`.
+  viaggi, collaboratori …). Nella ricerca scelga un risultato con `↑`/`↓` e
+  lo apra con `↵`.
 - `Esc` chiude la ricerca o la finestra attualmente aperta.
 - `?` mostra la panoramica di tutte le scorciatoie.
 - `F1` apre l'aiuto contestuale della pagina corrente (barra di aiuto a destra).
@@ -33,6 +33,6 @@ Le scorciatoie di navigazione sono brevi sequenze di tasti: prima `g` (per
 - `g` poi `p` — progetti
 - `n` — nuova voce
 
-Le scorciatoie di navigazione compaiono solo se puoi raggiungere la
+Le scorciatoie di navigazione compaiono solo se può raggiungere la
 destinazione anche dal menu. Senza quel permesso la scorciatoia resta muta
 e non viene elencata nella panoramica.

@@ -518,13 +518,16 @@ function bindForms() {
     // §3.4: Abmelden leert die Gerätedaten.
     document.addEventListener("submit", (event) => {
         const form = event.target;
-        if (
-            form instanceof HTMLFormElement &&
-            form.action.includes("/logout")
-        ) {
+        if (form instanceof HTMLFormElement && isLogoutForm(form)) {
             clearAll().catch(() => {});
         }
     });
+}
+
+// getAttribute statt form.action: ein Feld name="action" überdeckt die
+// Property (Inventar-Scan, Datenschutz-Fristen, …) und ließ das werfen.
+function isLogoutForm(form) {
+    return (form.getAttribute("action") || "").includes("/logout");
 }
 
 /**
@@ -801,6 +804,7 @@ export function initOfflineSync() {
 // importiert dieses Objekt.
 export const __testables = {
     buildPayload,
+    isLogoutForm,
     courseStore,
     courseGet,
     courseDelete,

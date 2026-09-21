@@ -20,8 +20,8 @@ use App\Models\Customer;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
 use App\Services\Reselling\Register\{LicenseMonths, LinkProposer, PeriodLinker};
+use App\Support\{ErrorText, Sqid};
 use App\Support\Query\DateRange;
-use App\Support\Sqid;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -103,7 +103,7 @@ class ResalePeriodController extends Controller {
             $result = $proposer->propose($organization);
         } catch (RuntimeException $e) {
             // Lauf läuft schon (Sperre je Organisation): Hinweis statt 500.
-            return back()->with('warning', $e->getMessage());
+            return back()->with('warning', ErrorText::for($e));
         }
 
         return back()->with('success', __('resale.link.flash.proposed', $result));
@@ -214,7 +214,7 @@ class ResalePeriodController extends Controller {
         try {
             return $this->linker->attach($period, $line, $months, $note, $userId);
         } catch (\InvalidArgumentException $e) {
-            throw ValidationException::withMessages(['months' => $e->getMessage()]);
+            throw ValidationException::withMessages(['months' => ErrorText::for($e)]);
         }
     }
 

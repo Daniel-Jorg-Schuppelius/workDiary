@@ -62,7 +62,7 @@ en el sistema antiguo — desde enero asienta WorkDiary.
 - **Doble soberanía de asiento:** asentar en paralelo en el sistema
   antiguo y en WorkDiary crea dos verdades — el preflight lo impide a
   propósito.
-- **Forzar la activación con puntos en rojo** — las lagunas te
+- **Forzar la activación con puntos en rojo** — las lagunas le
   alcanzan en el primer cierre.
 
 ## Efectos y próximos pasos

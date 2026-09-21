@@ -13,12 +13,6 @@
 @section('content')
 <x-page-shell>
     <div class="space-y-4">
-        @if (session('success'))
-            <div class="alert alert-success text-sm">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-error text-sm">{{ session('error') }}</div>
-        @endif
         @if ($errors->any())
             <div class="alert alert-error text-sm">{{ $errors->first() }}</div>
         @endif
@@ -28,11 +22,7 @@
             <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
                 <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('zammad.title') }}</h1>
                 @if ($connection && $connection->isActive())
-                    @if (($health['ok'] ?? false))
-                        <span class="badge badge-success badge-sm">{{ __('zammad.health.ok') }}</span>
-                    @else
-                        <span class="badge badge-error badge-sm">{{ __('zammad.health.failing') }}</span>
-                    @endif
+                    <x-plugin-health :plugin-id="\App\Plugins\Zammad\ZammadPlugin::ID" :state="$healthState" />
                 @elseif ($connection)
                     <span class="badge badge-ghost badge-sm">{{ __('zammad.health.inactive') }}</span>
                 @endif

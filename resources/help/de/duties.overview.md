@@ -10,7 +10,7 @@ related:
     - archive.manage
 ---
 
-Die Arbeitsliste bündelt deine laufenden betrieblichen Vorgänge in fünf
+Die Arbeitsliste bündelt Ihre laufenden betrieblichen Vorgänge in fünf
 Bereichen:
 
 - **Aufträge**: offene, problematische, bestätigte und erledigte
@@ -21,14 +21,14 @@ Bereichen:
   Genehmigungsstatus.
 - **Krank**: Krankmeldungen, Zeiträume und erforderliche Nachweise.
 
-Wähle zuerst den passenden Tab. Filter und Kennzahlen beziehen sich
+Wählen Sie zuerst den passenden Tab. Filter und Kennzahlen beziehen sich
 immer auf den aktuell gewählten Zeitraum und Bereich. Ein Klick auf eine
 Kennzahl kann die Liste weiter einschränken.
 
-Über die Aktion oben rechts legst du einen neuen Eintrag für den
+Über die Aktion oben rechts legen Sie einen neuen Eintrag für den
 aktuellen Bereich an. Abgeschlossene Aufträge, Bereitschaften und
-Notdienste findest du im **Archiv**.
+Notdienste finden Sie im **Archiv**.
 
-Wenn die Liste leer ist, prüfe Zeitraum und Filter. **Filter
-zurücksetzen** zeigt wieder alle Einträge des gewählten Bereichs, die du
-sehen darfst.
+Wenn die Liste leer ist, prüfen Sie Zeitraum und Filter. **Filter
+zurücksetzen** zeigt wieder alle Einträge des gewählten Bereichs, die Sie
+sehen dürfen.

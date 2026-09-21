@@ -28,13 +28,13 @@ class SaveInvoiceItemRequest extends BaseFormRequest {
             // Leistungszeitraum (Feature 152): optional; Ende nie vor Beginn, kein Ende ohne Beginn.
             'service_from' => ['nullable', 'date_format:Y-m-d', 'required_with:service_to'],
             'service_to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:service_from'],
-            'quantity' => ['required', 'numeric', 'min:0'],
+            'quantity' => ['required', 'numeric', 'min:0', 'max:999999999.999'],
             'unit' => ['nullable', 'string', 'max:32'],
-            'unit_price' => ['required', 'numeric', 'min:0'],
+            'unit_price' => ['required', 'numeric', 'min:0', 'max:99999999.9999'],
             // MVP-416: Positionsrabatt — Prozent XOR fester Betrag.
             'discount_percent' => ['nullable', 'numeric', 'min:0', 'max:100', 'prohibits:discount_amount'],
             'discount_amount' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
-            'position' => ['nullable', 'integer', 'min:0'],
+            'position' => ['nullable', 'integer', 'min:0', 'max:999999999'],
             // Phase 23 (MVP-240): Positions-Steuersatz + EN-16931-Kategorie.
             'tax_rate' => ['nullable', 'numeric', 'min:0', 'max:99.99'],
             'tax_category' => ['nullable', 'in:S,AE,Z,E,G,K,O'],

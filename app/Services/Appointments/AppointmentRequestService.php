@@ -14,6 +14,7 @@ namespace App\Services\Appointments;
 
 use App\Enums\Diary\Status;
 use App\Models\{AppointmentRequest, BookableService, Customer, DiaryEntry, User};
+use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 use RuntimeException;
@@ -50,8 +51,8 @@ class AppointmentRequestService {
             'customer_id' => $customer->id,
             'portal_user_id' => $portalUser->id,
             'bookable_service_id' => $service->id,
-            'start_at' => $start,
-            'end_at' => $start->addMinutes($service->duration_minutes),
+            'start_at' => $start->utc(),
+            'end_at' => $start->utc()->addMinutes($service->duration_minutes),
             'invitee_name' => $portalUser->name,
             'invitee_email' => $portalUser->email,
             'service_label' => $service->title,
@@ -77,7 +78,8 @@ class AppointmentRequestService {
         $entry->status = Status::Open;
         $entry->start_at = $request->start_at;
         $entry->end_at = $request->end_at;
-        $entry->scheduled_for = $request->start_at;
+        // Ortsdatum des Termins, nicht das UTC-Datum.
+        $entry->scheduled_for = $request->start_at !== null ? Carbon::parse($request->start_at->copy()->setTimezone(Tz::current())->toDateString()) : null;
         $entry->save();
 
         $request->forceFill([

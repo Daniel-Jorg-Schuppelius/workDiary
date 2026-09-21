@@ -14,6 +14,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, PluginSetting, PluginState, User};
 use App\Plugins\{PluginCompatibility, PluginManager};
+use App\Support\ErrorText;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -386,7 +387,7 @@ class PluginController extends Controller {
         if (! $enabled) {
             $message = __('Plugin ist deaktiviert — Healthcheck nicht ausgeführt.');
             if ($request->expectsJson()) {
-                return response()->json(['status' => 'disabled', 'message' => $message], 422);
+                return response()->json(['status' => 'disabled', 'label' => __('Deaktiviert'), 'message' => $message], 422);
             }
 
             return back()->with('error', $message);
@@ -401,6 +402,8 @@ class PluginController extends Controller {
         }
 
         return response()->json($health->toArray() + [
+            // Anzeigetext statt Rohwert (ok/degraded/failing).
+            'label' => \App\Enums\Plugin\PluginHealthStatus::tryFrom((string) $health->status)?->label(),
             'checked_at' => $state->last_health_check_at?->toIso8601String(),
             'failure_count' => (int) $state->failure_count,
             'auto_disabled' => $result['auto_disabled'],
@@ -429,7 +432,7 @@ class PluginController extends Controller {
         try {
             $schema->upgrade($instance);
         } catch (Throwable $e) {
-            return back()->with('error', __('Schema-Upgrade fehlgeschlagen: :message', ['message' => $e->getMessage()]));
+            return back()->with('error', __('Schema-Upgrade fehlgeschlagen: :message', ['message' => ErrorText::for($e)]));
         }
 
         return back()->with('success', __('Schema-Upgrade ausgeführt (:version).', ['version' => $instance->schemaVersion()]));

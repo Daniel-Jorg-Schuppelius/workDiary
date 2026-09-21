@@ -40,8 +40,8 @@
                 <h1>{{ $unit->title }}</h1>
                 <div class="meta">
                     {{ $event->title ?? '' }}<br>
-                    {{ $event->started_at?->translatedFormat('d.m.Y H:i') }}
-                    @if ($event->ended_at) – {{ $event->ended_at->translatedFormat('H:i') }} @endif
+                    {{ $event->started_at?->orgTz()->translatedFormat('d.m.Y H:i') }}
+                    @if ($event->ended_at) – {{ $event->ended_at->orgTz()->translatedFormat('H:i') }} @endif
                     @if ($event->topic) · {{ $event->topic }} @endif
                 </div>
             </td>

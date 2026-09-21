@@ -28,12 +28,12 @@ timbratura, registrazioni e correzioni tracciabili.
 
 ## Procedura consigliata
 
-1. Avvia con **«Nuova voce»** nella barra superiore o con il
+1. Avvii con **«Nuova voce»** nella barra superiore o con il
    **cronometro** (anche come riquadro in dashboard).
-2. Assegna il tempo in corso a cliente, progetto o commessa —
+2. Assegni il tempo in corso a cliente, progetto o commessa —
    l'assegnazione si può cambiare dopo.
-3. Allo stop nasce la registrazione; controllala nella vista
-   settimanale e dividila se serve.
+3. Allo stop nasce la registrazione; la controlli nella vista
+   settimanale e la divida se serve.
 4. Le **pause** si inseriscono a parte nella chiusura giornaliera, non
    nella registrazione.
 

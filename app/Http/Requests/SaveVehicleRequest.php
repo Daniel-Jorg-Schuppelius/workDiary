@@ -41,14 +41,14 @@ class SaveVehicleRequest extends BaseFormRequest {
             'rental_start' => ['nullable', 'date', 'required_if:ownership,rental'],
             'rental_end' => ['nullable', 'date', 'after_or_equal:rental_start', 'required_if:ownership,rental'],
             'rental_cost_per_day' => ['nullable', 'numeric', 'min:0', 'max:99999'],
-            'rental_included_km' => ['nullable', 'integer', 'min:0'],
+            'rental_included_km' => ['nullable', 'integer', 'min:0', 'max:9999999'],
             'rental_extra_cost_per_km' => ['nullable', 'numeric', 'min:0', 'max:99'],
             'default_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
             'default_rate_per_km' => ['nullable', 'numeric', 'min:0', 'max:10'],
             'tank_capacity_liters' => ['nullable', 'numeric', 'min:0', 'max:9999'],
             'battery_capacity_kwh' => ['nullable', 'numeric', 'min:0', 'max:9999'],
             'wltp_consumption' => ['nullable', 'numeric', 'min:0', 'max:999'],
-            'odometer_km' => ['nullable', 'integer', 'min:0'],
+            'odometer_km' => ['nullable', 'integer', 'min:0', 'max:9999999'],
             // Feature 137/138: Fahrtenbuch-Modus + Asset-Zuordnung (Prüffristen).
             'logbook_mode' => ['sometimes', 'boolean'],
             // Feature 144: Geltung der Lenk-/Ruhezeitregeln (VO (EG) 561/2006 / FPersV).

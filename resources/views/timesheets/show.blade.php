@@ -128,9 +128,9 @@
                     @csrf
                     <input type="hidden" name="project_id" value="{{ $project->sqid }}">
                     <input type="hidden" name="timesheet_id" value="{{ $timesheet->sqid }}">
-                    <input aria-label="{{ __('Woran arbeitest du?') }}" type="text" name="description" maxlength="500"
+                    <input aria-label="{{ __('Woran arbeiten Sie?') }}" type="text" name="description" maxlength="500"
                            class="input input-bordered input-sm min-w-40 flex-1"
-                           placeholder="{{ __('Woran arbeitest du?') }}">
+                           placeholder="{{ __('Woran arbeiten Sie?') }}">
                     @if ($tasks->isNotEmpty())
                         <select name="task_id" class="select select-bordered select-sm w-full sm:w-56">
                             <option value="">{{ __('Keine Aufgabe') }}</option>

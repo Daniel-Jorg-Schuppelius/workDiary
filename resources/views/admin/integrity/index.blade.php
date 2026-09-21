@@ -38,7 +38,7 @@
             @if ($latest !== null)
                 <div class="mt-1 flex items-center gap-2">
                     <x-status-badge :tone="$latest->status->tone()" size="sm">{{ $latest->status->label() }}</x-status-badge>
-                    <span class="text-xs text-base-content/70">{{ $latest->ran_at->format('d.m.Y H:i') }}</span>
+                    <span class="text-xs text-base-content/70">{{ $latest->ran_at->orgTz()->format('d.m.Y H:i') }}</span>
                 </div>
                 @if ($latest->deviationCount() > 0)
                     <div class="mt-1 text-xs text-base-content/70">
@@ -111,7 +111,7 @@
             </x-slot:head>
             @foreach ($checks as $check)
                 <tr>
-                    <td class="text-xs text-base-content/70 whitespace-nowrap">{{ $check->ran_at->format('d.m.Y H:i:s') }}</td>
+                    <td class="text-xs text-base-content/70 whitespace-nowrap">{{ $check->ran_at->orgTz()->format('d.m.Y H:i:s') }}</td>
                     <td><x-status-badge :tone="$check->status->tone()" size="sm">{{ $check->status->label() }}</x-status-badge></td>
                     <td class="text-xs">{{ $check->baseline_source ?: '—' }}</td>
                     <td class="text-right text-xs">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($check->files_checked, 0, withThousandsSeparator: true) }}</td>
