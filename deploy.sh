@@ -242,7 +242,9 @@ echo "→ Lizenzdateien neu sealen"
 if [ -n "$PUBKEY" ]; then
     php artisan license:seal --public-key="$PUBKEY"
 else
-    echo "  ⚠ Kein LICENSE_PUBLIC_KEY gefunden (weder storage/license-keys.env noch .env) – Sealing übersprungen."
+    # Kein Key in license-keys.env/.env: license:seal nimmt die Vorgabe aus
+    # config/license.php (eingebauter Herausgeber-Key).
+    php artisan license:seal
 fi
 
 echo "→ Integritäts-Baseline neu einfrieren (MVP-439)"

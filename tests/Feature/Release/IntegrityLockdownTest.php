@@ -14,8 +14,10 @@ namespace Tests\Feature\Release;
 
 use App\Enums\Security\IntegrityCheckStatus;
 use App\Models\{AuditLog, IntegrityCheck, User};
-use App\Services\Release\{IntegrityComparison, IntegrityLockdownService};
+use App\Services\Release\{IntegrityComparison, IntegrityLockdownService, ReleaseManifestService};
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
@@ -24,13 +26,28 @@ use Tests\TestCase;
  * Abweichungsläufen aus. Alles andere (lokale Baseline, Signaturbruch,
  * transiente Einzelabweichung, Autoloader-Rauschen) darf keinen Ausfall
  * verursachen.
+ *
+ * „Signiert" heißt geprüft: `release.json` muss gegen den konfigurierten
+ * Herausgeber-Key aufgehen (Sicherheitsscan 2026-08-23, S-52). Seit der Key
+ * als Vorgabe in `config/license.php` liegt, gibt es keinen „kein Key ⇒
+ * durchwinken"-Pfad mehr — die Tests laufen mit eigenem Schlüsselpaar und
+ * einem passend signierten Manifest.
  */
 class IntegrityLockdownTest extends TestCase {
     use RefreshDatabase;
 
+    /** @var non-empty-string */
+    private string $secretKey;
+
     protected function setUp(): void {
         parent::setUp();
         config()->set('integrity.lockdown.mode', IntegrityLockdownService::MODE_CONFIRMED);
+
+        $keypair = sodium_crypto_sign_keypair();
+        $this->secretKey = sodium_crypto_sign_secretkey($keypair);
+        config()->set('license.public_key', CryptoHelper::base64UrlEncode(sodium_crypto_sign_publickey($keypair)));
+        Storage::fake('local');
+        $this->writeReleaseManifest();
     }
 
     private function service(): IntegrityLockdownService {
@@ -40,6 +57,25 @@ class IntegrityLockdownTest extends TestCase {
     /** @return array<string, mixed> */
     private function releaseManifest(): array {
         return ['source' => 'release', 'root' => 'root-hash', 'files' => [], 'packages' => []];
+    }
+
+    /**
+     * Minimales, signiertes release.json im Storage — standardmäßig mit dem
+     * Schlüssel, dessen Public Key konfiguriert ist.
+     *
+     * @param  non-empty-string|null  $secretKey
+     */
+    private function writeReleaseManifest(?string $secretKey = null): void {
+        $manifest = ['schema' => 'workdiary.release-manifest/v1', 'artifacts' => []];
+        $signature = sodium_crypto_sign_detached(ReleaseManifestService::canonicalJson($manifest), $secretKey ?? $this->secretKey);
+        $manifest['signature'] = [
+            'algorithm' => 'ed25519',
+            'signed' => true,
+            'value' => CryptoHelper::base64UrlEncode($signature),
+            'public_key' => null,
+        ];
+
+        Storage::disk('local')->put(ReleaseManifestService::STORAGE_PATH, ReleaseManifestService::canonicalJson($manifest));
     }
 
     /**
@@ -107,6 +143,24 @@ class IntegrityLockdownTest extends TestCase {
         // Signaturkette defekt: könnte selbst der Grund für den Diff sein.
         $withChain = new IntegrityComparison(modified: ['app/x.php'], chain: ['Signatur ungültig']);
         $this->assertFalse($this->service()->qualifies($check, $this->releaseManifest(), $withChain));
+    }
+
+    public function test_release_manifest_signed_with_foreign_key_does_not_qualify(): void {
+        // Wer release.json schreiben kann, kann es auch mit eigenem Schlüssel
+        // signieren — nur der konfigurierte Herausgeber-Key zählt.
+        $this->writeReleaseManifest(sodium_crypto_sign_secretkey(sodium_crypto_sign_keypair()));
+        $this->deviation('f1');
+        $check = $this->deviation('f1');
+
+        $this->assertFalse($this->service()->qualifies($check, $this->releaseManifest(), new IntegrityComparison(modified: ['app/x.php'])));
+    }
+
+    public function test_missing_release_manifest_does_not_qualify(): void {
+        Storage::disk('local')->delete(ReleaseManifestService::STORAGE_PATH);
+        $this->deviation('f1');
+        $check = $this->deviation('f1');
+
+        $this->assertFalse($this->service()->qualifies($check, $this->releaseManifest(), new IntegrityComparison(modified: ['app/x.php'])));
     }
 
     public function test_autoloader_only_package_noise_does_not_qualify(): void {

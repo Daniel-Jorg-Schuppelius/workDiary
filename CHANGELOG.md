@@ -992,6 +992,22 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 
 ### Fixed
 
+- Lizenzierung: Eine frische Installation hatte keinen Public Key und konnte
+  deshalb weder Lizenzen noch Release-Manifeste oder den Update-Feed prüfen
+  (`public_key_missing`); der Schlüssel lag nur in `storage/license-keys.env`
+  des Herausgebers. Der Herausgeber-Public-Key ist jetzt die Vorgabe von
+  `license.public_key` in `config/license.php` und damit Teil jeder Auslieferung;
+  `LICENSE_PUBLIC_KEY` übersteuert ihn weiterhin, `deploy.sh` versiegelt damit
+  auch ohne `license-keys.env`. Der Update-Check dekodierte den Schlüssel bisher
+  als striktes Standard-Base64, obwohl `license:keygen` base64url ausgibt — mit
+  dem eingebauten Schlüssel wäre jede Feed-Signatur als ungültig verworfen
+  worden; er nutzt jetzt denselben Dekoder wie Lizenz- und Manifestprüfung.
+  Die Integritätssperre verlangt damit überall ein gegen diesen Schlüssel
+  verifizierbares `release.json` statt bei fehlendem Schlüssel durchzuwinken.
+  Achtung bei versiegelten Instanzen: `config/license.php` gehört zu den
+  versiegelten Dateien — nach dem Update erneut `php artisan license:seal`
+  ausführen (`deploy.sh` tut das automatisch), sonst meldet die Instanz
+  `tampered`.
 - Installer (`php artisan app:install`): Nach „Datenbank konfiguriert & migriert"
   blieb der Befehl ohne weitere Ausgabe stehen. Laravel bindet die Ausgabe der
   Prompts beim Start jedes Commands neu; die inneren Aufrufe von `migrate` und

@@ -18,6 +18,7 @@ use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use App\Services\Release\ReleaseManifestService;
 use App\Support\Setting;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Facades\{Cache, Log};
 use RuntimeException;
 
@@ -251,8 +252,10 @@ class UpdateCheckService {
         if ($publicKeyB64 === null) {
             throw new RuntimeException('Kein Vendor-Public-Key verfügbar — Update-Feed kann nicht verifiziert werden.');
         }
-        $signature = base64_decode($signatureB64, true);
-        $publicKey = base64_decode($publicKeyB64, true);
+        // Derselbe Dekoder wie Lizenz- und Manifestprüfung: license:keygen gibt
+        // base64url aus, striktes Standard-Base64 verwirft diesen Schlüssel.
+        $signature = CryptoHelper::base64UrlDecode($signatureB64);
+        $publicKey = CryptoHelper::base64UrlDecode($publicKeyB64);
         if ($signature === false || $signature === '' || $publicKey === false || $publicKey === ''
             || !sodium_crypto_sign_verify_detached($signature, $payloadJson, $publicKey)) {
             throw new RuntimeException('Update-Feed-Signatur ungültig — Dokument verworfen.');

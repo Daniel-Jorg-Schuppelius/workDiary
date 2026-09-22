@@ -14,6 +14,7 @@ use App\Models\{ComponentUpdate, User};
 use App\Services\Updates\UpdateCheckService;
 use App\Settings\SettingScope;
 use App\Support\Setting;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Support\FakePluginHttp;
@@ -172,5 +173,19 @@ class UpdateCheckTest extends TestCase {
             ->assertOk()
             ->assertSee(__('updates.title.section'))
             ->assertSee('1.3.0');
+    }
+
+    public function test_feed_verifies_with_base64url_key_as_emitted_by_keygen(): void {
+        // license:keygen und der eingebaute Herausgeber-Key sind base64url —
+        // striktes Standard-Base64 verwarf sie und damit jede Feed-Signatur.
+        $pair = sodium_crypto_sign_keypair();
+        config(['license.public_key' => CryptoHelper::base64UrlEncode(sodium_crypto_sign_publickey($pair))]);
+        $payload = json_encode(['generated_at' => now()->toIso8601String(), 'components' => [$this->appComponent('1.3.0')]], JSON_THROW_ON_ERROR);
+        $signature = CryptoHelper::base64UrlEncode(sodium_crypto_sign_detached($payload, sodium_crypto_sign_secretkey($pair)));
+
+        $open = app(UpdateCheckService::class)->apply(['payload' => $payload, 'signature' => $signature, 'algorithm' => 'ed25519'], 'offline_import');
+
+        $this->assertSame(1, $open);
+        $this->assertDatabaseHas('component_updates', ['available_version' => '1.3.0']);
     }
 }

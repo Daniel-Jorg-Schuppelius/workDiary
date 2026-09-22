@@ -9,10 +9,12 @@
  */
 
 return [
-    // Ed25519 Public Key (base64, 32 Byte raw). Wird vom LicenseService zur
-    // Signaturprüfung verwendet. Privater Schlüssel bleibt ausschließlich beim
-    // Herausgeber (Schuppelius).
-    'public_key' => env('LICENSE_PUBLIC_KEY', ''),
+    // Ed25519 Public Key (base64url, 32 Byte raw) des Herausgebers (Schuppelius).
+    // Als Vorgabe eingebaut, damit jede Auslieferung Lizenzen, Release-Manifeste
+    // und den Update-Feed ohne weitere Konfiguration prüfen kann. LICENSE_PUBLIC_KEY
+    // übersteuert ihn (eigener Herausgeber); ein leerer Wert schaltet die Prüfung
+    // auf public_key_missing. Der Private Key bleibt ausschließlich beim Herausgeber.
+    'public_key' => env('LICENSE_PUBLIC_KEY', 'gpiVanM0yrV6SPYq7q_HFBSjjS-DyZNdlbhj133-DOE'),
 
     // Ed25519 Private Key (base64, 64 Byte raw). Wird ausschließlich vom
     // Herausgeber zum Signieren neuer Lizenzen benötigt (license:issue) und
