@@ -555,6 +555,8 @@ return [
     'ClubGroupMembership' => 'Gruppenzuordnung',
     'ClubGroupChangeProposal' => 'Gruppenwechsel-Vorschlag',
     'ClubGuardian' => 'Vereins-Vertretung',
+    'ClubAttendanceSheet' => 'Vereins-Anwesenheitsliste',
+    'ClubAttendanceRecord' => 'Vereins-Anwesenheitsnachweis',
     'ClubEventDetails' => 'Vereinstermin',
     'ClubEventParticipation' => 'Vereinstermin-Teilnahme',
 ];

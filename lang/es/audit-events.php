@@ -1118,6 +1118,14 @@ return [
             'invited' => 'Invitado a la cita',
             'promoted' => 'Promovido desde la lista de espera',
         ],
+        'attendance' => [
+            'confirmed' => 'Lista de asistencia confirmada',
+            'reopened' => 'Lista de asistencia reabierta',
+            'corrected' => 'Justificante de asistencia corregido',
+            'spontaneousAdded' => 'Participación espontánea añadida',
+            'overlapDetected' => 'Solapamiento de justificantes detectado',
+            'overlapCleared' => 'Solapamiento resuelto',
+        ],
         'proposal' => [
             'created' => 'Propuesta de cambio creada',
             'confirmed' => 'Propuesta de cambio confirmada',

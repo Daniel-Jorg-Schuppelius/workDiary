@@ -1118,6 +1118,14 @@ return [
             'invited' => 'Invited to event',
             'promoted' => 'Promoted from waiting list',
         ],
+        'attendance' => [
+            'confirmed' => 'Attendance sheet confirmed',
+            'reopened' => 'Attendance sheet reopened',
+            'corrected' => 'Attendance record corrected',
+            'spontaneousAdded' => 'Spontaneous participation added',
+            'overlapDetected' => 'Overlap of records detected',
+            'overlapCleared' => 'Overlap resolved',
+        ],
         'proposal' => [
             'created' => 'Change proposal created',
             'confirmed' => 'Change proposal confirmed',

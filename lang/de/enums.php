@@ -391,6 +391,12 @@ return [
     ],
     'notification' => [
         'event' => [
+            'club' => [
+                'eventReminder' => 'Erinnerung an Vereinstermin',
+                'eventRescheduled' => 'Vereinstermin verschoben',
+                'eventCancelled' => 'Vereinstermin abgesagt',
+                'waitlistPromoted' => 'Von der Vereins-Warteliste nachgerückt',
+            ],
             'learning' => [
                 'enrolled' => 'Schulung zugewiesen',
                 'dueSoon' => 'Schulung bald fällig',
@@ -1816,6 +1822,20 @@ return [
             'self' => 'Mitglied selbst',
             'spontaneous' => 'Spontan (Leitung)',
             'invitation' => 'Einladung',
+        ],
+        'attendance-sheet-status' => [
+            'open' => 'Offen',
+            'confirmed' => 'Bestätigt',
+        ],
+        'notification-status' => [
+            'sent' => 'Zugestellt',
+            'failed' => 'Zustellfehler',
+        ],
+        'attendance-status' => [
+            'present' => 'Anwesend',
+            'partial' => 'Teilweise anwesend',
+            'excused' => 'Entschuldigt',
+            'absent' => 'Abwesend',
         ],
         'guardian-permission' => [
             'register' => 'An- und Abmelden',

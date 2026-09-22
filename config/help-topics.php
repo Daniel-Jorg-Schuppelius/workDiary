@@ -402,6 +402,9 @@ return [
         // Vereinsverwaltung (Feature 159, MVP-842)
         'club.members.*' => 'club.members',
         'club.groups.*' => 'club.groups',
+        'club.my.*' => 'club.my',
+        'club.events.attendance.*' => 'club.attendance',
+        'club.attendance.*' => 'club.attendance',
         'club.events.*' => 'club.events',
         'club.departments.*' => 'club.groups',
         'club.proposals.*' => 'club.groups',

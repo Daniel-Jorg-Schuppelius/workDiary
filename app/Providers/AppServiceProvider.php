@@ -585,6 +585,9 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(\App\Models\Club\ClubDepartment::class, \App\Policies\Club\ClubDepartmentPolicy::class);
         Gate::policy(\App\Models\Club\ClubGroupChangeProposal::class, \App\Policies\Club\ClubGroupChangeProposalPolicy::class);
         Gate::policy(\App\Models\Club\ClubEventDetails::class, \App\Policies\Club\ClubEventDetailsPolicy::class);
+        Gate::policy(\App\Models\Club\ClubAttendanceSheet::class, \App\Policies\Club\ClubAttendanceSheetPolicy::class);
+        // „Mein Verein“ (MVP-845): verknüpftes Mitglied oder aktive Vertretung — unabhängig von club.*-Rechten.
+        Gate::define('club-my', static fn(\App\Models\User $user): bool => app(\App\Services\Club\ClubPortalContext::class)->hasSubjects($user));
 
         // Provisionen (Feature 146).
         Gate::policy(\App\Models\Sales\CommissionRule::class, \App\Policies\Sales\CommissionRulePolicy::class);

@@ -20073,6 +20073,139 @@ CREATE INDEX "club_ev_part_member_status_idx" on "club_event_participations"(
   "club_member_id",
   "status"
 );
+CREATE TABLE IF NOT EXISTS "club_attendance_sheets"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "event_id" integer not null,
+  "status" varchar not null default 'open',
+  "conducted_minutes" integer,
+  "version" integer not null default '0',
+  "changed_since_confirmation" tinyint(1) not null default '1',
+  "confirmed_at" datetime,
+  "confirmed_by_user_id" integer,
+  "first_confirmed_at" datetime,
+  "note" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("event_id") references "events"("id") on delete cascade,
+  foreign key("confirmed_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "club_att_sheet_event_uq" on "club_attendance_sheets"(
+  "event_id"
+);
+CREATE INDEX "club_att_sheet_org_status_idx" on "club_attendance_sheets"(
+  "organization_id",
+  "status"
+);
+CREATE TABLE IF NOT EXISTS "club_attendance_records"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_attendance_sheet_id" integer not null,
+  "event_id" integer not null,
+  "club_member_id" integer not null,
+  "status" varchar not null,
+  "minutes" integer,
+  "arrived_at" datetime,
+  "left_at" datetime,
+  "spontaneous" tinyint(1) not null default '0',
+  "overlap_event_id" integer,
+  "overlap_cleared_at" datetime,
+  "overlap_cleared_by_user_id" integer,
+  "recorded_by_user_id" integer,
+  "recorded_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_attendance_sheet_id") references "club_attendance_sheets"("id") on delete cascade,
+  foreign key("event_id") references "events"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete cascade,
+  foreign key("overlap_event_id") references "events"("id") on delete set null,
+  foreign key("overlap_cleared_by_user_id") references "users"("id") on delete set null,
+  foreign key("recorded_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "club_att_rec_sheet_member_uq" on "club_attendance_records"(
+  "club_attendance_sheet_id",
+  "club_member_id"
+);
+CREATE INDEX "club_att_rec_member_status_idx" on "club_attendance_records"(
+  "club_member_id",
+  "status"
+);
+CREATE INDEX "club_att_rec_org_event_idx" on "club_attendance_records"(
+  "organization_id",
+  "event_id"
+);
+CREATE TABLE IF NOT EXISTS "club_attendance_revisions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_attendance_record_id" integer not null,
+  "sheet_version" integer not null,
+  "previous_status" varchar,
+  "previous_minutes" integer,
+  "status" varchar not null,
+  "minutes" integer,
+  "reason" varchar not null,
+  "actor_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_attendance_record_id") references "club_attendance_records"("id") on delete cascade,
+  foreign key("actor_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "club_att_rev_record_created_idx" on "club_attendance_revisions"(
+  "club_attendance_record_id",
+  "created_at"
+);
+CREATE TABLE IF NOT EXISTS "club_attendance_confirmations"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_attendance_sheet_id" integer not null,
+  "version" integer not null,
+  "conducted_minutes" integer,
+  "snapshot" text not null,
+  "confirmed_by_user_id" integer,
+  "confirmed_at" datetime not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_attendance_sheet_id") references "club_attendance_sheets"("id") on delete cascade,
+  foreign key("confirmed_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "club_att_conf_sheet_version_uq" on "club_attendance_confirmations"(
+  "club_attendance_sheet_id",
+  "version"
+);
+CREATE TABLE IF NOT EXISTS "club_notifications"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_member_id" integer not null,
+  "event_id" integer,
+  "kind" varchar not null,
+  "dedupe_key" varchar not null,
+  "recipient" varchar not null,
+  "status" varchar not null,
+  "error" varchar,
+  "payload" text,
+  "sent_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete cascade,
+  foreign key("event_id") references "events"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "club_notif_key_recipient_uq" on "club_notifications"(
+  "dedupe_key",
+  "recipient"
+);
+CREATE INDEX "club_notif_member_created_idx" on "club_notifications"(
+  "club_member_id",
+  "created_at"
+);
+CREATE INDEX "club_notif_event_status_idx" on "club_notifications"(
+  "event_id",
+  "status"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -20905,3 +21038,5 @@ INSERT INTO migrations VALUES(828,'2027_02_23_100000_create_contract_signing_tab
 INSERT INTO migrations VALUES(829,'2027_02_23_100100_create_lexoffice_invoice_handovers_table',44);
 INSERT INTO migrations VALUES(830,'2027_02_23_100200_create_club_tables',45);
 INSERT INTO migrations VALUES(831,'2027_02_23_100300_create_club_event_tables',46);
+INSERT INTO migrations VALUES(832,'2027_02_23_100400_create_club_attendance_tables',47);
+INSERT INTO migrations VALUES(833,'2027_02_23_100500_create_club_notifications_table',48);

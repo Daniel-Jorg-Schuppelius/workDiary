@@ -1118,6 +1118,14 @@ return [
             'invited' => 'Invité au rendez-vous',
             'promoted' => 'Promu depuis la liste d\'attente',
         ],
+        'attendance' => [
+            'confirmed' => 'Liste de présence confirmée',
+            'reopened' => 'Liste de présence rouverte',
+            'corrected' => 'Justificatif de présence corrigé',
+            'spontaneousAdded' => 'Participation spontanée ajoutée',
+            'overlapDetected' => 'Chevauchement de justificatifs détecté',
+            'overlapCleared' => 'Chevauchement résolu',
+        ],
         'proposal' => [
             'created' => 'Proposition de changement créée',
             'confirmed' => 'Proposition de changement confirmée',

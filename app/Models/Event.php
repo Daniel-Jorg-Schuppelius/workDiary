@@ -135,6 +135,16 @@ class Event extends Model {
         return $this->hasMany(\App\Models\Club\ClubEventParticipation::class);
     }
 
+    /** @return HasOne<\App\Models\Club\ClubAttendanceSheet, $this> */
+    public function attendanceSheet(): HasOne {
+        return $this->hasOne(\App\Models\Club\ClubAttendanceSheet::class);
+    }
+
+    /** @return HasMany<\App\Models\Club\ClubNotification, $this> */
+    public function clubNotifications(): HasMany {
+        return $this->hasMany(\App\Models\Club\ClubNotification::class);
+    }
+
     /** @return BelongsTo<Event, $this> */
     public function series(): BelongsTo {
         return $this->belongsTo(self::class, 'series_id');

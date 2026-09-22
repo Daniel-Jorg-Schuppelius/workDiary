@@ -32,6 +32,11 @@
                                 :href="route('club.events.register.create', $event)"
                                 show-label>{{ __('club.events.action.register') }}</x-icon-btn>
                 @endif
+                @if ($canParticipants)
+                    <x-icon-btn icon="fact_check" tone="outline" size="sm"
+                                :href="route('club.events.attendance.show', $event)"
+                                show-label>{{ __('club.attendance.action.open') }}</x-icon-btn>
+                @endif
                 @if ($canManage)
                     <x-icon-btn icon="edit" tone="outline" size="sm"
                                 data-entry-modal-trigger
@@ -192,6 +197,27 @@
                     @if ($cancelledCount > 0)
                         <p class="mt-2 text-xs text-muted">{{ __('club.events.label.cancelled_count', ['count' => $cancelledCount]) }}</p>
                     @endif
+                </x-card>
+            @endif
+
+            @if ($canParticipants && $clubNotifications->isNotEmpty())
+                {{-- Zustellprotokoll (MVP-845): Fehler bleiben sichtbar, kein Gelesen-Status. --}}
+                <x-card :title="__('club.my.card.deliveries')" icon="outgoing_mail" :count="$clubNotifications->count()">
+                    <ul class="space-y-1 text-xs">
+                        @foreach ($clubNotifications as $delivery)
+                            <li class="flex flex-wrap items-center gap-2">
+                                <span class="tabular-nums text-muted">{{ $delivery->created_at?->orgTz()->format('d.m.Y H:i') }}</span>
+                                <span class="font-medium">{{ $delivery->member?->fullName() }}</span>
+                                <span class="badge badge-ghost badge-xs">{{ __('club.my.kind.' . $delivery->kind) }}</span>
+                                <span class="text-muted">{{ $delivery->recipientLabel() }}</span>
+                                @if ($delivery->isFailed())
+                                    <x-status-badge tone="error" size="xs" :label="__('club.my.label.delivery_failed')" :title="$delivery->error" />
+                                @else
+                                    <x-status-badge tone="success" size="xs" :label="__('club.my.label.delivered')" />
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
                 </x-card>
             @endif
         </div>

@@ -3102,6 +3102,26 @@ Route::middleware('auth')->group(function () {
             Route::get('termine/{event}/anmeldung', [\App\Http\Controllers\Club\ClubEventController::class, 'registerDialog'])->name('events.register.create');
             Route::post('termine/{event}/anmeldung', [\App\Http\Controllers\Club\ClubEventController::class, 'register'])->name('events.register');
             Route::post('termine/{event}/teilnahmen/{participation}/absagen', [\App\Http\Controllers\Club\ClubEventController::class, 'cancelRegistration'])->name('events.participations.cancel');
+            // Anwesenheit je Termin (MVP-844): Liste, Bestätigung, Korrekturen.
+            Route::get('termine/{event}/anwesenheit', [\App\Http\Controllers\Club\ClubAttendanceController::class, 'show'])->name('events.attendance.show');
+            Route::post('termine/{event}/anwesenheit', [\App\Http\Controllers\Club\ClubAttendanceController::class, 'save'])->name('events.attendance.save');
+            Route::post('termine/{event}/anwesenheit/bestaetigen', [\App\Http\Controllers\Club\ClubAttendanceController::class, 'confirm'])->name('events.attendance.confirm');
+            Route::get('termine/{event}/anwesenheit/oeffnen', [\App\Http\Controllers\Club\ClubAttendanceController::class, 'reopenDialog'])->name('events.attendance.reopen.edit');
+            Route::post('termine/{event}/anwesenheit/oeffnen', [\App\Http\Controllers\Club\ClubAttendanceController::class, 'reopen'])->name('events.attendance.reopen');
+            Route::get('termine/{event}/anwesenheit/spontan', [\App\Http\Controllers\Club\ClubAttendanceController::class, 'spontaneousDialog'])->name('events.attendance.spontaneous.create');
+            Route::post('termine/{event}/anwesenheit/spontan', [\App\Http\Controllers\Club\ClubAttendanceController::class, 'spontaneous'])->name('events.attendance.spontaneous');
+            Route::get('termine/{event}/anwesenheit/{record}/edit', [\App\Http\Controllers\Club\ClubAttendanceController::class, 'editRecord'])->name('events.attendance.records.edit');
+            Route::put('termine/{event}/anwesenheit/{record}', [\App\Http\Controllers\Club\ClubAttendanceController::class, 'updateRecord'])->name('events.attendance.records.update');
+            Route::get('termine/{event}/anwesenheit/{record}/ueberschneidung', [\App\Http\Controllers\Club\ClubAttendanceController::class, 'overlapDialog'])->name('events.attendance.records.overlap.edit');
+            Route::post('termine/{event}/anwesenheit/{record}/ueberschneidung', [\App\Http\Controllers\Club\ClubAttendanceController::class, 'clearOverlap'])->name('events.attendance.records.overlap');
+            Route::get('nachweise', [\App\Http\Controllers\Club\ClubAttendanceController::class, 'index'])->name('attendance.index');
+            // „Mein Verein“ (MVP-845): verknüpftes Mitglied oder Vertretung, Gate club-my.
+            Route::get('mein-verein', [\App\Http\Controllers\Club\ClubMyController::class, 'index'])->name('my.index');
+            Route::post('mein-verein/mitglied', [\App\Http\Controllers\Club\ClubMyController::class, 'select'])->name('my.select');
+            Route::get('mein-verein/anwesenheit', [\App\Http\Controllers\Club\ClubMyController::class, 'attendance'])->name('my.attendance');
+            Route::post('mein-verein/termine/{event}/anmelden', [\App\Http\Controllers\Club\ClubMyController::class, 'register'])->name('my.register');
+            Route::post('mein-verein/termine/{event}/abmelden', [\App\Http\Controllers\Club\ClubMyController::class, 'cancel'])->name('my.cancel');
+            Route::get('nachweise/export', [\App\Http\Controllers\Club\ClubAttendanceController::class, 'export'])->name('attendance.export');
 
             Route::get('abteilungen', [\App\Http\Controllers\Club\ClubDepartmentController::class, 'index'])->name('departments.index');
             Route::get('abteilungen/create', [\App\Http\Controllers\Club\ClubDepartmentController::class, 'create'])->name('departments.create');

@@ -555,6 +555,8 @@ return [
     'ClubGroupMembership' => 'Group assignment',
     'ClubGroupChangeProposal' => 'Group change proposal',
     'ClubGuardian' => 'Club guardian',
+    'ClubAttendanceSheet' => 'Club attendance sheet',
+    'ClubAttendanceRecord' => 'Club attendance record',
     'ClubEventDetails' => 'Club event',
     'ClubEventParticipation' => 'Club event participation',
 ];

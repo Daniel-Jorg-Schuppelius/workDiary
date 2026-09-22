@@ -36,6 +36,35 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   wartende Person. Serien erzeugen eigene Termine mit eigener Liste,
   Änderungen und Absagen gelten wahlweise ab dem gewählten Termin;
   Verschiebung und Absage löschen keine Anmeldung. Hilfe ×5.
+- Vereinsverwaltung (Feature 159, MVP-844): **Bestätigte Anwesenheit je
+  Vereinstermin**. Eine Liste je Termin mit Soll-Liste (Zielgruppen,
+  Angemeldete, spontan Ergänzte, jedes Mitglied einmal) und Stand je Person:
+  anwesend, teilweise, entschuldigt, abwesend — nicht bearbeitet bleibt offen
+  und zählt nicht. Anwesend übernimmt die durchgeführte Dauer ohne Pausen
+  (kürzbar), teilweise über Minuten oder Ankunft/Abgang; ganze Minuten, nie
+  über der durchgeführten Dauer; mehrtägige Lehrgänge tragen ihre Blöcke.
+  Trainingszeit entsteht erst mit der Bestätigung, die den Stand als Version
+  einfriert; Korrekturen danach brauchen Grund und werden mit Akteur und
+  Zeitpunkt festgehalten. Ein Sperrzähler weist veraltete Formulare ab statt
+  still zu überschreiben. Überlappende bestätigte Nachweise desselben
+  Mitglieds werden markiert und bis zur Klärung nicht angerechnet. Nachweis-
+  liste mit CSV-Export für den Kopfzeilen-Zeitraum; keine Buchung in
+  Arbeitszeitkonten. Gruppenleitung erfasst ihre Gruppen, Verwaltung alle.
+  Hilfe ×5.
+- Vereinsverwaltung (Feature 159, MVP-845): **„Mein Verein“ und Nachrichten
+  an Mitglieder**. Verknüpfte Mitglieder und eingetragene Vertretungen
+  sehen — ohne Verwaltungsrecht — die Termine, für die sie anmeldeberechtigt
+  sind (Termine der eigenen Gruppen ohne persönliche Einladung), melden sich
+  an oder ab, sehen Warteliste, Fristen, Änderungen und ihre bestätigte
+  Trainingszeit im Kopfzeilen-Zeitraum; Vertretungen wählen das betreute
+  Mitglied ausdrücklich, ein Widerruf beendet den Zugriff sofort. Keine
+  fremden Mitglieder, Kontaktdaten oder Fehlzeiten. Neue
+  Benachrichtigungsereignisse für Erinnerung (24 h vorher), Verschiebung,
+  Absage und Nachrücken gehen an das Benutzerkonto nach den Regeln der
+  Organisation, sonst an die Mailadresse des Mitglieds, dazu an
+  Vertretungen mit Recht „Nachrichten erhalten“. Ein Zustellprotokoll
+  verhindert Doppelmeldungen bei Wiederholung und zeigt Zustellfehler am
+  Termin; einen Gelesen-Status gibt es bewusst nicht. Hilfe ×5.
 - Kunden-Sonderkonditionen (Feature 098): **Monatsdetail in der Verwaltung**.
   Der Monat im Abrechnungspanel ist jetzt verlinkt und zeigt dieselben Zeilen
   wie Kundenportal und PDF-Nachweis (Datum, Tätigkeit, Von/Bis, Dauer,

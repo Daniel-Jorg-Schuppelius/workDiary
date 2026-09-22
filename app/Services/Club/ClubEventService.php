@@ -21,7 +21,7 @@ use App\Services\Event\EventService;
 use App\Services\Participation\EventSeatService;
 use App\Support\Query\DateRange;
 use App\Support\Tz;
-use Carbon\CarbonImmutable;
+use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -42,6 +42,7 @@ class ClubEventService {
     public function __construct(
         private readonly EventService $events,
         private readonly EventSeatService $seats,
+        private readonly ClubMemberNotifier $notifier,
     ) {}
 
     /**
@@ -90,18 +91,23 @@ class ClubEventService {
         return DB::transaction(function () use ($event, $actor, $data, $applyToFuture): Event {
             $details = $this->detailsOf($event);
             $oldStart = CarbonImmutable::instance($event->started_at);
+            $oldEnd = CarbonImmutable::instance($event->ended_at);
 
             $this->events->update($event, $this->eventAttributes($data) + ['updated_by' => $actor->id], array_key_exists('room_id', $data) ? $this->roomRows($data) : null);
             $details->update($this->detailAttributes($data));
             $this->syncGroups($event, $this->groupIds($data));
             $details->audit('club.event.updated', ['future' => $applyToFuture]);
+            $event->refresh();
+            if (! $oldStart->equalTo($event->started_at) || ! $oldEnd->equalTo($event->ended_at)) {
+                $this->notifier->rescheduled($event, $oldStart);
+            }
 
             if ($applyToFuture) {
-                $event->refresh();
                 $shift = $oldStart->diffInSeconds(CarbonImmutable::instance($event->started_at), false);
                 $duration = CarbonImmutable::instance($event->started_at)->diffInSeconds(CarbonImmutable::instance($event->ended_at), false);
                 foreach ($this->futureOccurrences($event) as $occurrence) {
-                    $start = CarbonImmutable::instance($occurrence->started_at)->addSeconds((int) $shift);
+                    $previousStart = CarbonImmutable::instance($occurrence->started_at);
+                    $start = $previousStart->addSeconds((int) $shift);
                     $this->events->update($occurrence, [
                         'title' => $event->title,
                         'description' => $event->description,
@@ -114,6 +120,9 @@ class ClubEventService {
                         'updated_by' => $actor->id,
                     ], array_key_exists('room_id', $data) ? $this->roomRows($data) : null);
                     $this->copyClubData($event, $occurrence);
+                    if ((int) $shift !== 0) {
+                        $this->notifier->rescheduled($occurrence->refresh(), $previousStart);
+                    }
                 }
             }
 
@@ -127,10 +136,12 @@ class ClubEventService {
             $details = $this->detailsOf($event);
             $this->events->cancel($event, $reason);
             $details->audit('club.event.cancelled', ['reason' => $reason, 'future' => $applyToFuture, 'actor_id' => $actor->id]);
+            $this->notifier->cancelled($event->refresh());
 
             if ($applyToFuture) {
                 foreach ($this->futureOccurrences($event) as $occurrence) {
                     $this->events->cancel($occurrence, $reason);
+                    $this->notifier->cancelled($occurrence->refresh());
                 }
             }
         });
@@ -164,6 +175,40 @@ class ClubEventService {
                     ->whereIn('status', [ClubParticipationStatus::Invited->value, ClubParticipationStatus::Registered->value, ClubParticipationStatus::Waitlisted->value]))
                 ->get(),
         };
+    }
+
+    /**
+     * Termine aus Sicht eines Mitglieds (MVP-845): alles, wofür es anmeldeberechtigt
+     * ist (Verein, Zielgruppe am Termintag, Einladung) — ein passender Lehrgang
+     * erscheint ohne persönliche Einladung — plus Termine mit eigener Teilnahme,
+     * auch abgesagte. Keine fremden Teilnehmer.
+     *
+     * @return Collection<int, array{event: Event, participation: ClubEventParticipation|null, eligible: bool}>
+     */
+    public function visibleEventsFor(ClubMember $member, CarbonInterface $from, CarbonInterface $to, int $limit = 200): Collection {
+        $events = Event::query()
+            ->where('organization_id', $member->organization_id)
+            ->whereHas('clubDetails')
+            ->where('ended_at', '>=', $from)
+            ->where('started_at', '<', $to)
+            ->with(['clubDetails', 'clubGroups:id,name'])
+            ->orderBy('started_at')
+            ->limit($limit)
+            ->get();
+        $participations = ClubEventParticipation::query()
+            ->where('club_member_id', $member->id)
+            ->whereIn('event_id', $events->modelKeys())
+            ->get()
+            ->keyBy('event_id');
+
+        return $events
+            ->map(function (Event $event) use ($member, $participations): array {
+                $eligible = ! $event->isCancelled() && $this->isEligible($event, $member);
+
+                return ['event' => $event, 'participation' => $participations->get($event->id), 'eligible' => $eligible];
+            })
+            ->filter(fn(array $row): bool => $row['eligible'] || $row['participation'] !== null)
+            ->values();
     }
 
     /** Darf sich das Mitglied ohne Sonderrecht anmelden (Sichtbarkeit, Zielgruppe, Einladung)? */
@@ -289,7 +334,10 @@ class ClubEventService {
             ]);
             $participation->audit('club.event.registrationCancelled', ['force' => $force]);
 
-            $this->seats->promoteNext($event);
+            $promoted = $this->seats->promoteNext($event)?->subject;
+            if ($promoted instanceof ClubEventParticipation) {
+                $this->notifier->promoted($promoted->load(['event.organization', 'member']));
+            }
 
             return $participation->refresh();
         });
@@ -366,7 +414,11 @@ class ClubEventService {
         $this->copyClubData($master, $occurrence);
     }
 
-    /** Freie Plätze (null = unbegrenzt), belegte Plätze und Wartende für die Anzeige. */
+    /**
+     * Freie Plätze (null = unbegrenzt), belegte Plätze und Wartende für die Anzeige.
+     *
+     * @return array{taken: int, free: int|null, max: int|null}
+     */
     public function seatSummary(Event $event): array {
         return [
             'taken' => $this->seats->takenSeats($event),
@@ -388,7 +440,7 @@ class ClubEventService {
                 'cancellation_lead_hours' => $details->cancellation_lead_hours,
             ],
         );
-        $this->syncGroups($target, $source->clubGroups()->pluck('club_groups.id')->all());
+        $this->syncGroups($target, array_values(array_map('intval', $source->clubGroups()->pluck('club_groups.id')->all())));
     }
 
     /**
@@ -426,7 +478,7 @@ class ClubEventService {
     }
 
     /** Kalendertag des Beginns in der Zeitzone des Termins bzw. der Organisation. */
-    private function localDay(Event $event): CarbonImmutable {
+    public function localDay(Event $event): CarbonImmutable {
         $timezone = Tz::isValid($event->timezone) && $event->timezone !== 'UTC'
             ? (string) $event->timezone
             : ($event->organization !== null ? Tz::ofOrganization($event->organization) : Tz::current());
@@ -511,7 +563,11 @@ class ClubEventService {
         return $roomId === null ? [] : [['room_id' => $roomId]];
     }
 
-    /** Einfache Serienwahl → RRULE (Feature 028 versteht das volle Format). */
+    /**
+     * Einfache Serienwahl → RRULE (Feature 028 versteht das volle Format).
+     *
+     * @param  array<string, mixed>  $data
+     */
     private function buildRule(array $data): ?string {
         $rule = match ($this->nullableString($data['recurrence'] ?? null)) {
             'weekly' => 'FREQ=WEEKLY;INTERVAL=1',

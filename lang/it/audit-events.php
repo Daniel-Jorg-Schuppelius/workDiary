@@ -1118,6 +1118,14 @@ return [
             'invited' => 'Invitato all\'appuntamento',
             'promoted' => 'Subentrato dalla lista d\'attesa',
         ],
+        'attendance' => [
+            'confirmed' => 'Lista delle presenze confermata',
+            'reopened' => 'Lista delle presenze riaperta',
+            'corrected' => 'Attestazione di presenza corretta',
+            'spontaneousAdded' => 'Partecipazione spontanea aggiunta',
+            'overlapDetected' => 'Sovrapposizione di attestazioni rilevata',
+            'overlapCleared' => 'Sovrapposizione risolta',
+        ],
         'proposal' => [
             'created' => 'Proposta di cambio creata',
             'confirmed' => 'Proposta di cambio confermata',

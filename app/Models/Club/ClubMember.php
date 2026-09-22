@@ -121,6 +121,16 @@ class ClubMember extends Model {
         return $this->hasMany(ClubEventParticipation::class);
     }
 
+    /** @return HasMany<ClubAttendanceRecord, $this> */
+    public function attendanceRecords(): HasMany {
+        return $this->hasMany(ClubAttendanceRecord::class);
+    }
+
+    /** @return HasMany<ClubNotification, $this> */
+    public function clubNotifications(): HasMany {
+        return $this->hasMany(ClubNotification::class);
+    }
+
     /** @return HasMany<ClubGroupChangeProposal, $this> */
     public function proposals(): HasMany {
         return $this->hasMany(ClubGroupChangeProposal::class);

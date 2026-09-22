@@ -1118,6 +1118,14 @@ return [
             'invited' => 'Zum Termin eingeladen',
             'promoted' => 'Von der Warteliste nachgerückt',
         ],
+        'attendance' => [
+            'confirmed' => 'Anwesenheitsliste bestätigt',
+            'reopened' => 'Anwesenheitsliste wieder geöffnet',
+            'corrected' => 'Anwesenheitsnachweis korrigiert',
+            'spontaneousAdded' => 'Spontane Teilnahme ergänzt',
+            'overlapDetected' => 'Überschneidung von Nachweisen erkannt',
+            'overlapCleared' => 'Überschneidung geklärt',
+        ],
         'proposal' => [
             'created' => 'Wechselvorschlag angelegt',
             'confirmed' => 'Wechselvorschlag bestätigt',

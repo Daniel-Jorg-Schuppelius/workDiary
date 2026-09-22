@@ -555,6 +555,8 @@ return [
     'ClubGroupMembership' => 'Asignación a grupo',
     'ClubGroupChangeProposal' => 'Propuesta de cambio de grupo',
     'ClubGuardian' => 'Representante en la asociación',
+    'ClubAttendanceSheet' => 'Lista de asistencia de la asociación',
+    'ClubAttendanceRecord' => 'Justificante de asistencia de la asociación',
     'ClubEventDetails' => 'Cita de la asociación',
     'ClubEventParticipation' => 'Participación en cita de la asociación',
 ];

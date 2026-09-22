@@ -737,17 +737,25 @@ class NavigationRegistry {
         // Vereinsverwaltung (Feature 159, MVP-842): Mitglieder, Gruppen, Abteilungen,
         // Wechselvorschläge — club.viewAny/manage; Gruppenleitung (club.groups.lead)
         // sieht nur ihre Gruppen. Plan-Modul module.club filtert das Layout.
-        if (Gate::allows('viewAny', \App\Models\Club\ClubMember::class)) {
+        // „Mein Verein“ (MVP-845) erscheint für verknüpfte Mitglieder und Vertretungen
+        // auch ohne club.*-Recht — Pflichtweg wie „Meine Schulungen“.
+        $clubAdmin = Gate::allows('viewAny', \App\Models\Club\ClubMember::class);
+        $clubMember = $user !== null && Gate::allows('club-my');
+        if ($clubAdmin || $clubMember) {
             $sidebarSections[] = [
                 'key' => 'club',
                 'label' => __('club.section'),
                 'collapsible' => true,
                 'items' => $this->compactItems([
-                    ['route' => 'club.members.index', 'label' => __('club.nav.members'), 'icon' => 'groups', 'modal' => false, 'matches' => ['club.members.*']],
-                    ['route' => 'club.groups.index', 'label' => __('club.nav.groups'), 'icon' => 'diversity_3', 'modal' => false, 'matches' => ['club.groups.*']],
-                    ['route' => 'club.events.index', 'label' => __('club.nav.events'), 'icon' => 'event', 'modal' => false, 'matches' => ['club.events.*']],
-                    ['route' => 'club.departments.index', 'label' => __('club.nav.departments'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['club.departments.*']],
-                    ['route' => 'club.proposals.index', 'label' => __('club.nav.proposals'), 'icon' => 'swap_horiz', 'modal' => false, 'matches' => ['club.proposals.*']],
+                    $clubMember
+                        ? ['route' => 'club.my.index', 'label' => __('club.nav.my'), 'icon' => 'person_pin', 'modal' => false, 'matches' => ['club.my.*']]
+                        : null,
+                    $clubAdmin ? ['route' => 'club.members.index', 'label' => __('club.nav.members'), 'icon' => 'groups', 'modal' => false, 'matches' => ['club.members.*']] : null,
+                    $clubAdmin ? ['route' => 'club.groups.index', 'label' => __('club.nav.groups'), 'icon' => 'diversity_3', 'modal' => false, 'matches' => ['club.groups.*']] : null,
+                    $clubAdmin ? ['route' => 'club.events.index', 'label' => __('club.nav.events'), 'icon' => 'event', 'modal' => false, 'matches' => ['club.events.*']] : null,
+                    $clubAdmin ? ['route' => 'club.attendance.index', 'label' => __('club.nav.attendance'), 'icon' => 'fact_check', 'modal' => false, 'matches' => ['club.attendance.*']] : null,
+                    $clubAdmin ? ['route' => 'club.departments.index', 'label' => __('club.nav.departments'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['club.departments.*']] : null,
+                    $clubAdmin ? ['route' => 'club.proposals.index', 'label' => __('club.nav.proposals'), 'icon' => 'swap_horiz', 'modal' => false, 'matches' => ['club.proposals.*']] : null,
                 ]),
             ];
         }

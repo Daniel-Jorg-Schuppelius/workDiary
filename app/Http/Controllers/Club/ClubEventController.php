@@ -140,6 +140,8 @@ class ClubEventController extends Controller {
             'occurrenceCount' => $event->series_id === null ? $event->occurrences()->count() : null,
             'canManage' => Gate::allows('update', $details),
             'canParticipants' => Gate::allows('manageParticipants', $details),
+            // Zustellprotokoll (MVP-845): Fehler sichtbar, kein Gelesen-Status.
+            'clubNotifications' => $event->clubNotifications()->with('member:id,first_name,last_name')->orderByDesc('id')->limit(50)->get(),
             'isCancelled' => $event->cancelled_at !== null,
         ]);
     }

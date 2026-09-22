@@ -114,6 +114,14 @@ enum NotificationEvent: string implements HasLabel {
     case LearningWaitlistPromoted = 'learning.waitlistPromoted';
     /** Synchron: LearningBookingService::confirm()/reject() */
     case LearningBookingDecided = 'learning.bookingDecided';
+    /** Scanner: ClubEventReminderScan — angemeldeter Vereinstermin beginnt bald (Feature 159, MVP-845) */
+    case ClubEventReminder = 'club.eventReminder';
+    /** Synchron: ClubEventService::update() — Vereinstermin verschoben */
+    case ClubEventRescheduled = 'club.eventRescheduled';
+    /** Synchron: ClubEventService::cancel() — Vereinstermin abgesagt */
+    case ClubEventCancelled = 'club.eventCancelled';
+    /** Synchron: ClubEventService::cancelRegistration() — Mitglied von der Warteliste nachgerückt */
+    case ClubWaitlistPromoted = 'club.waitlistPromoted';
     /** Synchron: LearningTimeService::stop() — Lernzeit außerhalb der Arbeitszeit wartet auf Freigabe */
     case LearningTimeApprovalRequested = 'learning.timeApprovalRequested';
     /** Synchron: LearningQuestionService::ask() — Frage einer lernenden Person an Verantwortliche/Trainer (MVP-789) */
@@ -501,6 +509,10 @@ enum NotificationEvent: string implements HasLabel {
             self::LearningBookingDecided,
             self::LearningTimeApprovalRequested,
             self::LearningQuestionAsked => 'school',
+            self::ClubEventReminder,
+            self::ClubEventRescheduled,
+            self::ClubEventCancelled,
+            self::ClubWaitlistPromoted => 'groups',
             self::OpenIssueAssigned,
             self::OpenIssueDueSoon,
             self::OpenIssueOverdue => 'assignment_late',

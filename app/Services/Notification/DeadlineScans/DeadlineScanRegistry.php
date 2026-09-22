@@ -60,6 +60,8 @@ final class DeadlineScanRegistry {
         LearningDueScan::class,
         // Vereinsgruppen: Alterskriterien → Wechselvorschläge (Feature 159, MVP-842).
         ClubGroupCriteriaScan::class,
+        // Vereinstermine: Erinnerung an Angemeldete (Feature 159, MVP-845).
+        ClubEventReminderScan::class,
     ];
 
     /** @return list<DeadlineScan> */

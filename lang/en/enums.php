@@ -391,6 +391,12 @@ return [
     ],
     'notification' => [
         'event' => [
+            'club' => [
+                'eventReminder' => 'Club event reminder',
+                'eventRescheduled' => 'Club event rescheduled',
+                'eventCancelled' => 'Club event cancelled',
+                'waitlistPromoted' => 'Promoted from the club waitlist',
+            ],
             'learning' => [
                 'enrolled' => 'Training assigned',
                 'dueSoon' => 'Training due soon',
@@ -1811,6 +1817,20 @@ return [
             'self' => 'Member',
             'spontaneous' => 'Spontaneous (leader)',
             'invitation' => 'Invitation',
+        ],
+        'attendance-sheet-status' => [
+            'open' => 'Open',
+            'confirmed' => 'Confirmed',
+        ],
+        'notification-status' => [
+            'sent' => 'Delivered',
+            'failed' => 'Delivery failed',
+        ],
+        'attendance-status' => [
+            'present' => 'Present',
+            'partial' => 'Partially present',
+            'excused' => 'Excused',
+            'absent' => 'Absent',
         ],
         'guardian-permission' => [
             'register' => 'Register and cancel',

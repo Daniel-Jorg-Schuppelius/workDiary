@@ -391,6 +391,12 @@ return [
     ],
     'notification' => [
         'event' => [
+            'club' => [
+                'eventReminder' => 'Recordatorio de cita de la asociación',
+                'eventRescheduled' => 'Cita de la asociación aplazada',
+                'eventCancelled' => 'Cita de la asociación cancelada',
+                'waitlistPromoted' => 'Plaza asignada desde la lista de espera',
+            ],
             'learning' => [
                 'enrolled' => 'Formación asignada',
                 'dueSoon' => 'Formación próxima a vencer',
@@ -1811,6 +1817,20 @@ return [
             'self' => 'El propio socio',
             'spontaneous' => 'Espontáneo (responsable)',
             'invitation' => 'Invitación',
+        ],
+        'attendance-sheet-status' => [
+            'open' => 'Abierta',
+            'confirmed' => 'Confirmada',
+        ],
+        'notification-status' => [
+            'sent' => 'Entregado',
+            'failed' => 'Error de entrega',
+        ],
+        'attendance-status' => [
+            'present' => 'Presente',
+            'partial' => 'Parcialmente presente',
+            'excused' => 'Justificado',
+            'absent' => 'Ausente',
         ],
         'guardian-permission' => [
             'register' => 'Inscribir y cancelar',
