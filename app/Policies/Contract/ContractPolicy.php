@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Policies\Contract;
 
 use App\Enums\User\Permission as P;
+use App\Models\Contract\Contract;
+use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
 use App\Policies\PermissionPolicy;
 
@@ -29,5 +31,17 @@ class ContractPolicy extends PermissionPolicy {
         'view' => P::ContractView,
         'create' => P::ContractManage,
         'update' => P::ContractManage,
+        // Kundenvereinbarungen (Feature 157): Signaturanforderung/Gegenzeichnung
+        // und Nachweisprüfung als eigene Abilities.
+        'signing' => P::ContractSigningManage,
+        'review' => P::ContractSigningReview,
     ];
+
+    public function signing(User $user, Contract $contract): bool {
+        return $this->allows($user, 'signing');
+    }
+
+    public function review(User $user, Contract $contract): bool {
+        return $this->allows($user, 'review');
+    }
 }

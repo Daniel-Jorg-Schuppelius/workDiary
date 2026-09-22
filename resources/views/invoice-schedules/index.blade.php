@@ -22,6 +22,14 @@
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Wiederkehrende Rechnungen: der Scheduler erzeugt ausschließlich Entwürfe — Ausstellung und Versand bleiben manuell.')">
+    {{-- Lexware-Ergänzung (Feature 158, MVP-832): Serien laufen lokal, die Übergabe an Lexware getrennt. --}}
+    @php $lexwareProfile = app(\App\Plugins\Lexoffice\Tariff\LexwareTariffService::class)->profile(); @endphp
+    @if ($lexwareProfile->isLocallyActive(\App\Enums\Lexoffice\LexwareFeature::RecurringInvoices))
+        <div role="status" class="alert alert-info text-sm">
+            <span>{{ __('lexware.schedules.hint', ['plan' => $lexwareProfile->effectivePlan()->label()]) }}</span>
+            <a href="{{ route('lexoffice.handover.index') }}" class="link">{{ __('lexware.handover.title') }}</a>
+        </div>
+    @endif
 
     <x-filter-bar :action="route('invoice-schedules.index')" :reset="route('invoice-schedules.index')">
         <x-slot:extra>

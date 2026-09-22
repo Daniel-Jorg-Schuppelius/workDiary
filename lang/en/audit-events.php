@@ -251,6 +251,29 @@ return [
         'review_item_added' => 'Contract review item added',
         'review_item_resolved' => 'Contract review item resolved',
         'terminated' => 'Contract terminated',
+        'signing' => [
+            'revisionCreated' => 'Agreement version created',
+            'revisionUpdated' => 'Agreement version edited',
+            'prepared' => 'Agreement version released for signature',
+            'linkIssued' => 'Signature link created',
+            'linkSent' => 'Signature link sent',
+            'linkSendFailed' => 'Sending signature link failed',
+            'linkRevoked' => 'Link revoked',
+            'linkOpened' => 'Link opened',
+            'signed' => 'Agreement signed',
+            'evidenceReceived' => 'Signed PDF received via link',
+            'evidenceRecorded' => 'Signed PDF recorded internally',
+            'evidenceAccepted' => 'Evidence confirmed',
+            'evidenceRejected' => 'Evidence rejected',
+            'completed' => 'Agreement version fully signed',
+            'withdrawn' => 'Agreement version withdrawn',
+            'superseded' => 'Previous version replaced',
+            'downloadLinkIssued' => 'Retrieval link created',
+            'portalReleased' => 'Version released in customer portal',
+            'portalRevoked' => 'Portal release of version withdrawn',
+            'certificateDownloaded' => 'Completion record downloaded',
+            'packageDownloaded' => 'Download package downloaded',
+        ],
         'version_added' => 'Contract version added',
     ],
     'correction' => [
@@ -419,6 +442,10 @@ return [
         'reviewed' => 'Investment reviewed',
     ],
     'invoice' => [
+        'lexwareHandover' => [
+            'confirmed' => 'Handover to Lexware confirmed manually',
+            'exported' => 'Document exported for Lexware',
+        ],
         'metering_drafted' => 'Meter-based draft created',
         'resale_auto_drafted' => 'Invoice draft from subscription periods (recurring invoicing) created',
         'retention_added' => 'Retention recorded',
@@ -1057,5 +1084,8 @@ return [
     ],
     'resale_subscription' => [
         'rehomed' => 'Subscription holder changed',
+    ],
+    'lexware' => [
+        'tariffChanged' => 'Lexware plan profile changed',
     ],
 ];

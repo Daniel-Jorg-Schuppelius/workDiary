@@ -1,0 +1,161 @@
+<?php
+/*
+ * Created on   : Tue Sep 22 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : lexware.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+// Complementos a las tarifas de Lexware Office (Feature 158, MVP-831–833).
+
+return [
+    'menu' => 'Complementos Lexware',
+    'action' => [
+        'confirm' => 'Confirmar manualmente',
+        'confirm_go' => 'Confirmar la entrega',
+        'export_one' => 'Exportar para Lexware (PDF + lista de asignación)',
+        'export_one_short' => 'Exportación Lexware',
+        'export_selected' => 'Exportar seleccionados (ZIP)',
+        'open' => 'Abrir',
+        'save' => 'Guardar perfil de tarifa',
+    ],
+    'channel' => [
+        'api' => 'Entregar automáticamente a Lexware (solo XL, tras comprobar la vía de entrega)',
+        'manual' => 'Exportar documentos y subirlos manualmente',
+    ],
+    'coverage' => [
+        'expansion' => 'Ampliación',
+        'lexware' => 'Incluido en Lexware',
+        'supplement' => 'Complemento en workDiary',
+        'unknown' => 'Sin afirmación segura',
+    ],
+    'csv' => [
+        'currency' => 'Moneda',
+        'customer' => 'Cliente',
+        'customer_number' => 'Número de cliente',
+        'due_on' => 'Vencimiento',
+        'file' => 'Archivo',
+        'gross' => 'Bruto',
+        'handover' => 'Estado de entrega',
+        'issued_on' => 'Fecha del documento',
+        'net' => 'Neto',
+        'number' => 'Número de documento',
+        'status' => 'Estado de la factura',
+        'tax' => 'Impuesto',
+    ],
+    'error' => [
+        'already_transferred' => 'Este documento ya se ha transmitido a través de la interfaz.',
+        'api_channel_needs_xl' => 'La entrega automática requiere una clave API propia, disponible solo en la tarifa XL. Hasta que se compruebe la vía de entrega, la exportación manual sigue siendo la vía estándar.',
+        'not_exportable' => 'El documento :number aún no está emitido y no puede entregarse.',
+        'nothing_selected' => 'Seleccione al menos un documento.',
+    ],
+    'feature' => [
+        'invoices' => ['label' => 'Facturas estándar y facturas electrónicas', 'description' => 'Emitir facturas en workDiary, generarlas como PDF/XRechnung/ZUGFeRD y enviarlas.'],
+        'quotes' => ['label' => 'Presupuestos', 'description' => 'Presupuestos con enlace de aceptación y seguimiento.'],
+        'dunning' => ['label' => 'Reclamaciones y recordatorios de pago', 'description' => 'Ciclo de reclamación para facturas gestionadas localmente.'],
+        'recurring_invoices' => ['label' => 'Facturas periódicas', 'description' => 'Los planes de facturación crean exactamente un borrador verificable por periodo; la emisión y el envío siguen siendo pasos deliberados.'],
+        'partial_final_invoices' => ['label' => 'Facturas a cuenta y de liquidación', 'description' => 'Paquete aparte: se revisarán las cadenas de documentos locales existentes.'],
+        'foreign_tax_cases' => ['label' => 'Casos fiscales y del extranjero especiales', 'description' => 'Paquete especializado aparte; sin promesa general de soporte.'],
+        'accounting' => ['label' => 'Contabilidad (EÜR/PyG, libro de caja, inmovilizado)', 'description' => 'Paquetes independientes tras revisar el estado y las responsabilidades.'],
+        'tax_filings' => ['label' => 'Declaraciones fiscales', 'description' => 'Fuera del MVP; requiere un proceso y una vía de transmisión propios.'],
+    ],
+    'field' => [
+        'action' => 'Acción',
+        'confirmation_note' => 'Nota de confirmación',
+        'coverage' => 'Lexware',
+        'dispatch_status' => 'Envío',
+        'feature' => 'Función',
+        'handover_channel' => 'Vía de entrega',
+        'handover_state' => 'Entrega',
+        'invoice_status' => 'Estado de la factura',
+        'issued_on' => 'Fecha del documento',
+        'local_features' => 'Usar localmente en workDiary',
+        'plan' => 'Tarifa Lexware Office',
+        'plan_confirmed_on' => 'Confirmado el',
+        'plan_source' => 'Origen del dato',
+        'select' => 'Seleccionar',
+        'state' => 'En workDiary',
+        'trial_ends_on' => 'El acceso de prueba termina el',
+        'trial_successor_plan' => 'Tarifa siguiente confirmada',
+    ],
+    'flash' => [
+        'confirmed' => 'Entrega de :number confirmada.',
+        'saved' => 'Perfil de tarifa guardado.',
+    ],
+    'handover' => [
+        'confirmed_at' => 'confirmado el :at por :name',
+        'count' => '{0} Ningún documento|{1} Un documento|[2,*] :count documentos',
+        'dispatched' => 'enviado (:channel) el :at',
+        'empty' => 'No hay documentos emitidos en el periodo seleccionado.',
+        'exported_at' => 'exportado el :at por :name',
+        'filter_all' => 'Todos los estados de entrega',
+        'not_dispatched' => 'todavía no enviado',
+        'note' => '«Exportado» significa descargado, «confirmado» significa validado manualmente con usuario y hora; ninguno de los dos significa contabilizado ni pagado. La anulación y el abono siguen siendo documentos propios con referencia al original.',
+        'status' => [
+            'confirmed' => 'Confirmado manualmente',
+            'exported' => 'Exportado',
+            'failed' => 'Fallido',
+            'needs_review' => 'Revisión necesaria',
+            'pending' => 'Abierto',
+            'transferred' => 'Transmitido',
+        ],
+        'subtitle' => 'Documentos emitidos de clientes facturados localmente en el periodo :range — estado de factura, envío y entrega por separado.',
+        'title' => 'Lista de entrega Lexware',
+    ],
+    'hint' => [
+        'handover_channel' => 'La exportación es una descarga para usted, no un supuesto formato de importación de Lexware. La entrega automática llegará solo tras comprobar la vía de entrega.',
+        'local_features' => 'Solo los complementos activados deliberadamente aparecen como disponibles. Una tarifa superior no quita nada: puede seguir trabajando localmente.',
+        'plan' => 'Orientación, no autorización: qué entrega se ofrece lo deciden la conexión, los permisos y la disponibilidad comprobada.',
+        'trial' => 'Tras el vencimiento se aplica la tarifa siguiente confirmada; no se asume que XL se aplique de forma permanente.',
+    ],
+    'plan' => [
+        'l' => 'Lexware Office L',
+        'm' => 'Lexware Office M',
+        's' => 'Lexware Office S',
+        'unknown' => 'Desconocida / contrato especial',
+        'xl' => 'Lexware Office XL',
+    ],
+    'plan_page' => [
+        'matrix_intro' => 'Estado para :plan (matriz de funciones :version). Complemento significa: disponible en workDiary en cuanto coincidan módulo, responsabilidad y permiso.',
+        'matrix_note' => 'Las funciones existentes de Lexware, como la captura de documentos o las partidas abiertas, no se presentan como ausentes. Los perfiles de factura electrónica se comprueban por separado antes de activarse.',
+        'matrix_title' => 'Complementos a su tarifa Lexware',
+        'preview_api_no' => 'Entrega automática: no disponible (sin clave API propia en esta tarifa).',
+        'preview_api_yes' => 'Entrega automática: posible con acceso XL en cuanto se compruebe la vía de entrega.',
+        'preview_handovers' => '{0} Ninguna entrega abierta.|{1} Una entrega abierta permanece visible y puede pasar a exportación manual.|[2,*] :count entregas abiertas permanecen visibles y pueden pasar a exportación manual.',
+        'preview_intro' => 'Un cambio de tarifa modifica las recomendaciones y las vías de entrega. Documentos, series locales en curso y rangos de numeración se conservan; cambiar el sistema principal es un proceso aparte con fecha de efecto.',
+        'preview_note' => 'Con M y L, un cliente cuya facturación lleva Lexware no puede recibir una serie local: la soberanía de facturación por cliente debe cambiarse deliberadamente.',
+        'preview_schedules' => '{0} Ningún plan de facturación activo.|{1} Un plan de facturación activo sigue en marcha.|[2,*] :count planes de facturación activos siguen en marcha.',
+        'preview_title' => 'Vista previa del cambio de tarifa',
+        'profile_title' => 'Su tarifa Lexware Office',
+        'read_only' => 'Para cambiar el perfil de tarifa se necesita el permiso «Configuración financiera».',
+        'subtitle' => 'Registre su tarifa y vea qué funciones incluye Lexware y cuáles complementa workDiary, incluso sin conexión API.',
+        'title' => 'Complementos Lexware',
+        'trial_expired' => 'El acceso de prueba ha vencido: se aplica la tarifa siguiente confirmada :plan.',
+    ],
+    'reason' => [
+        'billing_external' => 'La soberanía de facturación la tiene un programa externo. Los documentos locales requieren la soberanía «workDiary»; el cambio es un proceso aparte con fecha de efecto.',
+        'included' => 'Incluido en su tarifa Lexware.',
+        'module_missing' => 'El módulo «Ventas y facturación» no está activado.',
+        'not_activated' => 'Configuración necesaria: active el complemento en el perfil de tarifa.',
+        'planned' => 'Planificado; todavía no forma parte de este paquete.',
+        'right_missing' => 'Le falta el permiso para ver facturas.',
+        'unknown_plan' => 'Comprobar disponibilidad: con una tarifa desconocida no hay afirmación segura sobre Lexware; las funciones locales siguen utilizables según sus propios requisitos.',
+        'unknown_plan_local' => 'Activado localmente; sobre Lexware no hay afirmación segura con una tarifa desconocida.',
+    ],
+    'schedules' => [
+        'hint' => 'Las facturas periódicas se ejecutan localmente como complemento Lexware (tarifa :plan). Entregue los documentos emitidos mediante la lista de entrega.',
+    ],
+    'source' => [
+        'provider' => 'Confirmación fiable del proveedor',
+        'user' => 'Indicación propia',
+    ],
+    'state' => [
+        'available' => 'Disponible en workDiary',
+        'check_availability' => 'Comprobar disponibilidad',
+        'lexware' => 'Incluido en Lexware',
+        'planned' => 'Planificado',
+        'setup_required' => 'Configuración necesaria',
+    ],
+];

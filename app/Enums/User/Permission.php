@@ -730,6 +730,11 @@ enum Permission: string implements HasLabel {
     case ContractViewAny = 'contract.viewAny';
     case ContractView = 'contract.view';
     case ContractManage = 'contract.manage';
+        // Kundenvereinbarungen (Feature 157, MVP-822): Signaturanforderung,
+        // Links, Gegenzeichnung und Ablösung getrennt von der Nachweisprüfung
+        // — ein allgemeines Kunden-Leserecht reicht für beides nicht.
+    case ContractSigningManage = 'contract.signing.manage';
+    case ContractSigningReview = 'contract.signing.review';
 
         // ── Domainverwaltung / DomainReselling (Feature 083, MVP-384–396) ──
         // Getrennte Rechte je Risikoklasse; register/contact/dns/renewal/

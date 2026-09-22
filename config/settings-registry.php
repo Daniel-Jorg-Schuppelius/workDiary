@@ -122,6 +122,16 @@ return [
     // (Feature 117, MVP-606) — Default AUS, siehe config/procurement.php.
     'procurement.credential_blocking' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
     'invoicing.girocode_enabled' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+    // Lexware-Office-Tarifergänzungen (Feature 158, MVP-831): Tarifprofil je
+    // Organisation — Orientierung, keine Berechtigung. Übergabewege entscheidet
+    // die geprüfte Verfügbarkeit; `api` bleibt bis Paket A (MVP-834) an XL gebunden.
+    'lexware.plan' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['unknown', 's', 'm', 'l', 'xl'], 'fallback' => 'unknown'],
+    'lexware.plan_source' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['user', 'provider'], 'fallback' => 'user'],
+    'lexware.plan_confirmed_on' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|date'],
+    'lexware.trial_ends_on' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|date'],
+    'lexware.trial_successor_plan' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['unknown', 's', 'm', 'l', 'xl'], 'fallback' => 'unknown'],
+    'lexware.handover_channel' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['manual', 'api'], 'fallback' => 'manual'],
+    'lexware.local_features' => ['type' => 'json', 'scopes' => ['organization'], 'rules' => 'nullable'],
     // Gläubiger-Identifikationsnummer für SEPA-Lastschriften (Feature 120,
     // MVP-609). Ohne sie weist die Bank jede pain.008-Datei zurück.
     'finance.sepa_creditor_id' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|max:35'],

@@ -132,7 +132,8 @@ class Document extends Model {
         return match ($this->documentable_type) {
             Customer::class => $this->documentable_id !== null ? (int) $this->documentable_id : null,
             Project::class, DiaryEntry::class, Asset::class,
-            \App\Models\Disposal\DisposalJob::class => ($cid = $this->documentable?->getAttribute('customer_id')) !== null ? (int) $cid : null,
+            \App\Models\Disposal\DisposalJob::class,
+            \App\Models\Contract\Contract::class => ($cid = $this->documentable?->getAttribute('customer_id')) !== null ? (int) $cid : null,
             default => null,
         };
     }

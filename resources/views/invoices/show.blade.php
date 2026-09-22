@@ -180,6 +180,11 @@
             @endif
             <x-slot:actions>
                 <x-icon-btn icon="picture_as_pdf" size="sm" :href="route('invoices.pdf', $invoice)" show-label>{{ __('PDF') }}</x-icon-btn>
+                {{-- Lexware-Übergabe (Feature 158, MVP-833): Stand und Einzelexport, sobald eine lokale Ergänzung aktiv ist. --}}
+                @include('lexoffice::handover._badge', ['invoice' => $invoice])
+                @if (app(\App\Plugins\Lexoffice\Tariff\LexwareTariffService::class)->profile()->localFeatures !== [] && $invoice->status !== \App\Models\Invoice::STATUS_DRAFT && auth()->user()?->can(\App\Enums\User\Permission::InvoiceExport->value))
+                    <x-icon-btn icon="outbox" size="sm" :href="route('lexoffice.handover.export-one', $invoice)" show-label :title="__('lexware.action.export_one')">{{ __('lexware.action.export_one_short') }}</x-icon-btn>
+                @endif
                 {{-- E-Rechnung (Feature 045): XRechnung nur im Pfad „WorkDiary führt" und für gestellte/bezahlte Rechnungen. --}}
                 @php $einvoiceVisible = in_array($invoice->status, [\App\Models\Invoice::STATUS_ISSUED, \App\Models\Invoice::STATUS_PAID], true) && ! app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($invoice->customer)->isExternal(); @endphp
                 @if ($einvoiceVisible)

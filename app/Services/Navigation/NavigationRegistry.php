@@ -666,6 +666,8 @@ class NavigationRegistry {
                             ? [['route' => 'finance.resale.index', 'label' => __('resale.title.menu'), 'icon' => 'subscriptions', 'modal' => false, 'matches' => ['finance.resale.*']]]
                             : []),
                         ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
+                        // Lexware-Office-Tarifergänzungen (Feature 158): Tarifprofil, Funktionsmatrix, Übergabeliste.
+                        ['route' => 'lexoffice.plan.index', 'label' => __('lexware.menu'), 'icon' => 'tune', 'modal' => false, 'matches' => ['lexoffice.plan.*', 'lexoffice.handover.*']],
                         ['route' => 'investments.index', 'label' => __('Investitionen'), 'icon' => 'trending_up', 'modal' => false, 'matches' => ['investments.*']],
                     ],
                 ],
@@ -1704,6 +1706,7 @@ class NavigationRegistry {
                 ['route' => 'finance.transfers.index', 'label' => __('finance.title.menu'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['finance.transfers.*']],
                 ['route' => 'finance.reconciliation.index', 'label' => __('bank.title.menu'), 'icon' => 'account_balance', 'modal' => false, 'matches' => ['finance.reconciliation.*', 'finance.bank-accounts.*']],
                 ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
+                ['route' => 'lexoffice.plan.index', 'label' => __('lexware.menu'), 'icon' => 'tune', 'modal' => false, 'matches' => ['lexoffice.plan.*', 'lexoffice.handover.*']],
                 ['route' => 'events.index', 'label' => __('Veranstaltungen'), 'icon' => 'event', 'modal' => false, 'matches' => ['events.*']],
                 ['route' => 'flex.index', 'label' => __('Arbeitszeitkonto'), 'icon' => 'hourglass_top', 'modal' => false, 'matches' => ['flex.*']],
                 ['route' => 'archive.index', 'label' => __('Archiv'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['archive.*']],

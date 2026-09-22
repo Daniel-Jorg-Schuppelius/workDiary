@@ -80,6 +80,9 @@
                     @if ($portalAllows(PortalCapability::Subscriptions))
                         <a href="{{ route('customer.subscriptions.index') }}" class="hover:underline">{{ __('resale_portal.menu') }}</a>
                     @endif
+                    @if ($portalAllows(PortalCapability::Agreements))
+                        <a href="{{ route('customer.agreements.index') }}" class="hover:underline">{{ __('contract-signing.portal.menu') }}</a>
+                    @endif
                     @if ($portalAllows(PortalCapability::Queries))
                         <a href="{{ route('customer.queries.index') }}" class="hover:underline">{{ __('Rückfragen') }}</a>
                     @endif

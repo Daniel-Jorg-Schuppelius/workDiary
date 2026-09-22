@@ -681,6 +681,8 @@ return [
         'contract.viewAny' => 'Verträge auflisten',
         'contract.view' => 'Vertrag einsehen',
         'contract.manage' => 'Verträge anlegen und führen',
+        'contract.signing.manage' => 'Kundenvereinbarungen: Fassungen, Signaturlinks, Gegenzeichnung, Ablösung',
+        'contract.signing.review' => 'Kundenvereinbarungen: eingegangene Nachweise prüfen',
 
         // Prüfmittel/Eichung/Kalibrierung (Feature 075)
         'assetCompliance.viewAny' => 'Prüfpflichten und Prüfmittel auflisten',

@@ -151,6 +151,21 @@ Route::post('sign/protocol/{token}/query', [PublicProtocolSignatureController::c
     ->middleware('throttle:6,1')
     ->name('protocols.public-sign.query');
 
+// Kundenvereinbarungen (Feature 157, MVP-822): Signaturlink (Einmal-Token) und
+// getrennter, befristeter Abruflink. Die Danke-Seite steht vor `{token}`,
+// damit sie nicht als Token gelesen wird.
+Route::controller(\App\Http\Controllers\PublicAgreementSignatureController::class)->group(function (): void {
+    Route::get('sign/agreement/danke', 'thanks')->name('agreements.public-thanks');
+    Route::get('sign/agreement/{token}', 'show')->middleware('throttle:30,1')->name('agreements.public-sign');
+    Route::post('sign/agreement/{token}/unterschreiben', 'sign')->middleware('throttle:6,1')->name('agreements.public-sign.submit');
+    Route::post('sign/agreement/{token}/hochladen', 'upload')->middleware('throttle:6,1')->name('agreements.public-sign.upload');
+    Route::get('sign/agreement/{token}/datei/{item}', 'file')->whereNumber('item')->middleware('throttle:30,1')->name('agreements.public-sign.file');
+    Route::get('abruf/vereinbarung/{token}', 'download')->middleware('throttle:30,1')->name('agreements.public-download');
+    Route::get('abruf/vereinbarung/{token}/nachweis', 'certificate')->middleware('throttle:30,1')->name('agreements.public-download.certificate');
+    Route::get('abruf/vereinbarung/{token}/paket', 'package')->middleware('throttle:30,1')->name('agreements.public-download.package');
+    Route::get('abruf/vereinbarung/{token}/datei/{item}', 'file')->whereNumber('item')->middleware('throttle:30,1')->name('agreements.public-download.file');
+});
+
 // Öffentlicher Prüfer-Download finalisierter ISMS-Auditpakete (Feature 046,
 // Inkrement E): token-basiert ohne Login/Org-Session (nur Token-Hash wird
 // gespeichert); widerrufen/abgelaufen/unbekannt ⇒ 404. Bewusst NICHT im
@@ -2362,6 +2377,33 @@ Route::middleware('auth')->group(function () {
             Route::post('{contract}/obligationen', [\App\Http\Controllers\Contract\ContractController::class, 'storeObligation'])->name('obligations.store');
             Route::post('obligationen/{obligation}/erledigen', [\App\Http\Controllers\Contract\ContractController::class, 'completeObligation'])->name('obligations.complete');
             Route::post('{contract}/leasing-verknuepfen', [\App\Http\Controllers\Contract\ContractController::class, 'linkAssetFinance'])->name('asset-finance.link');
+
+            // Kundenvereinbarungen (Feature 157, MVP-822): Fassungen, Links,
+            // Gegenzeichnung, Nachweise, Prüfung, Abschlussnachweis und Paket.
+            Route::get('{contract}/unterzeichnung/neu', [\App\Http\Controllers\Contract\ContractSigningController::class, 'create'])->name('signing.create');
+            Route::post('{contract}/unterzeichnung', [\App\Http\Controllers\Contract\ContractSigningController::class, 'store'])->name('signing.store');
+            Route::prefix('unterzeichnung')->name('signing.')->controller(\App\Http\Controllers\Contract\ContractSigningController::class)->group(function (): void {
+                Route::get('fassung/{revision}/bearbeiten', 'edit')->name('edit');
+                Route::put('fassung/{revision}', 'update')->name('update');
+                Route::post('fassung/{revision}/bereitstellen', 'prepare')->name('prepare');
+                Route::post('fassung/{revision}/zurueckziehen', 'withdraw')->name('withdraw');
+                Route::post('fassung/{revision}/abloesen', 'supersede')->name('supersede');
+                Route::post('fassung/{revision}/portal-freigeben', 'releaseToPortal')->name('portal-release');
+                Route::post('fassung/{revision}/portal-zurueckziehen', 'revokeFromPortal')->name('portal-revoke');
+                Route::post('fassung/{revision}/abruflink', 'issueDownloadLink')->name('download-link');
+                Route::get('fassung/{revision}/nachweis', 'certificate')->name('certificate');
+                Route::get('fassung/{revision}/paket', 'package')->name('package');
+                Route::get('fassung/{revision}/datei/{item}', 'file')->whereNumber('item')->name('file');
+                Route::post('anforderung/{signatureRequest}/link', 'issueLink')->name('requests.link');
+                Route::post('anforderung/{signatureRequest}/senden', 'sendLink')->name('requests.send');
+                Route::get('anforderung/{signatureRequest}/gegenzeichnen', 'countersignDialog')->name('requests.countersign');
+                Route::post('anforderung/{signatureRequest}/gegenzeichnen', 'countersign')->name('requests.countersign.store');
+                Route::get('anforderung/{signatureRequest}/nachweis', 'uploadDialog')->name('requests.upload');
+                Route::post('anforderung/{signatureRequest}/nachweis', 'upload')->name('requests.upload.store');
+                Route::post('link/{link}/widerrufen', 'revokeLink')->name('links.revoke');
+                Route::post('nachweis/{evidence}/pruefen', 'review')->name('evidences.review');
+                Route::get('nachweis/{evidence}/datei', 'evidenceFile')->name('evidences.file');
+            });
         });
 
         // ── Prüfmittel/Eichung/Kalibrierung (Feature 075, module.asset_compliance) ──

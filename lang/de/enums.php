@@ -418,6 +418,7 @@ return [
             ],
             'contract' => [
                 'deadlineDue' => 'Vertragsfrist fällig',
+                'signatureReceived' => 'Nachweis zur Vereinbarung eingegangen',
             ],
             'accounting' => [
                 'recurringOverdue' => 'Wiederkehrender Vorgang überfällig',

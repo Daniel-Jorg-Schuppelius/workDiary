@@ -418,6 +418,7 @@ return [
             ],
             'contract' => [
                 'deadlineDue' => 'Échéance contractuelle',
+                'signatureReceived' => 'Preuve reçue pour un accord',
             ],
             'accounting' => [
                 'recurringOverdue' => 'Opération récurrente en retard',

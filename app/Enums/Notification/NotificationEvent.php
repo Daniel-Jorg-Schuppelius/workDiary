@@ -161,6 +161,10 @@ enum NotificationEvent: string implements HasLabel {
     // Welle D (CLM): allgemeine Vertragsfrist/-obligation wird fällig.
     case ContractDeadlineDue = 'contract.deadlineDue';
 
+    // Feature 157 (MVP-822): Unterschrift oder Nachweis zu einer
+    // Kundenvereinbarung eingegangen — Nachweise warten auf die Prüfung.
+    case ContractSignatureReceived = 'contract.signatureReceived';
+
     // MVP-415: Rechnungsentwurf aus Abrechnungsplan erzeugt (nie Auto-Versand).
     case InvoiceRecurringDraft = 'invoice.recurringDraft';
 
@@ -424,6 +428,9 @@ enum NotificationEvent: string implements HasLabel {
             // Allgemeine Vertragsfristen (Welle D, CLM): Vertragssteuerung ist
             // Leitungsaufgabe; der Verantwortliche der Obligation via Service.
             self::ContractDeadlineDue => [UserRole::Teamleitung->value],
+            // Kundenvereinbarungen (Feature 157): Prüfung und Gegenzeichnung
+            // sind Leitungsaufgabe; der Verantwortliche des Vertrags via Service.
+            self::ContractSignatureReceived => [UserRole::Teamleitung->value],
             // Wiederkehrende Rechnungsentwürfe (MVP-415): kaufmännische Prüfung.
             self::InvoiceRecurringDraft => [UserRole::Buchhaltung->value],
             // Belegerwartung/Buchungsvorlage (MVP-675): dieselbe Zielgruppe.
@@ -536,6 +543,7 @@ enum NotificationEvent: string implements HasLabel {
             self::RentalRequested => 'forklift',
             self::AssetFinanceDeadline => 'request_quote',
             self::ContractDeadlineDue => 'contract',
+            self::ContractSignatureReceived => 'draw',
             self::InvoiceRecurringDraft => 'receipt_long',
             self::AccountingRecurringOverdue => 'event_repeat',
             self::AccountingFilingDue => 'event_available',

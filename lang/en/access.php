@@ -681,6 +681,8 @@ return [
         'contract.viewAny' => 'List contracts',
         'contract.view' => 'View contract',
         'contract.manage' => 'Create and manage contracts',
+        'contract.signing.manage' => 'Customer agreements: versions, signature links, countersignature, replacement',
+        'contract.signing.review' => 'Customer agreements: review received evidence',
 
         // Test equipment / calibration (feature 075)
         'assetCompliance.viewAny' => 'List inspection duties and test equipment',

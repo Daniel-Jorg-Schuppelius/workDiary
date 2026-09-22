@@ -12,14 +12,14 @@ declare(strict_types=1);
 
 namespace App\Models\Contract;
 
-use App\Enums\Contract\{ContractKind, ContractPartnerType, ContractStatus, ContractTermKind, IndexationMethod};
+use App\Enums\Contract\{ContractKind, ContractPartnerType, ContractStatus, ContractTermKind, IndexationMethod, SigningRevisionStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use App\Models\{Customer, Document, Supplier, User};
 use App\Models\Reselling\ResaleSubscription;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne};
 
 /**
  * Allgemeiner Vertrag (Welle D, Contract-Lifecycle-Management). Verträge
@@ -134,5 +134,28 @@ class Contract extends Model {
      */
     public function resaleSubscriptions(): HasMany {
         return $this->hasMany(ResaleSubscription::class)->orderBy('label')->orderBy('starts_on');
+    }
+
+    /**
+     * Unterzeichnungsfassungen einer Kundenvereinbarung (Feature 157),
+     * neueste zuerst.
+     *
+     * @return HasMany<ContractSigningRevision, $this>
+     */
+    public function signingRevisions(): HasMany {
+        return $this->hasMany(ContractSigningRevision::class)->orderByDesc('revision_no');
+    }
+
+    /** @return HasOne<ContractSigningRevision, $this> */
+    public function latestSigningRevision(): HasOne {
+        return $this->hasOne(ContractSigningRevision::class)->ofMany('revision_no', 'max');
+    }
+
+    /** Aktuell gültige, vollständig unterzeichnete und nicht abgelöste Fassung. */
+    public function signedRevision(): ?ContractSigningRevision {
+        return $this->signingRevisions()
+            ->where('status', SigningRevisionStatus::Signed->value)
+            ->orderByDesc('revision_no')
+            ->first();
     }
 }

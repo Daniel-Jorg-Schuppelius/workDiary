@@ -251,6 +251,29 @@ return [
         'review_item_added' => 'Punto di revisione del contratto aggiunto',
         'review_item_resolved' => 'Punto di revisione del contratto risolto',
         'terminated' => 'Contratto disdetto',
+        'signing' => [
+            'revisionCreated' => 'Versione dell\'accordo creata',
+            'revisionUpdated' => 'Versione dell\'accordo modificata',
+            'prepared' => 'Versione dell\'accordo messa in firma',
+            'linkIssued' => 'Link di firma creato',
+            'linkSent' => 'Link di firma inviato',
+            'linkSendFailed' => 'Invio del link di firma non riuscito',
+            'linkRevoked' => 'Link revocato',
+            'linkOpened' => 'Link aperto',
+            'signed' => 'Accordo firmato',
+            'evidenceReceived' => 'PDF firmato ricevuto tramite link',
+            'evidenceRecorded' => 'PDF firmato registrato internamente',
+            'evidenceAccepted' => 'Prova confermata',
+            'evidenceRejected' => 'Prova rifiutata',
+            'completed' => 'Versione dell\'accordo completamente firmata',
+            'withdrawn' => 'Versione dell\'accordo ritirata',
+            'superseded' => 'Versione precedente sostituita',
+            'downloadLinkIssued' => 'Link di consultazione creato',
+            'portalReleased' => 'Versione pubblicata nel portale clienti',
+            'portalRevoked' => 'Pubblicazione della versione ritirata dal portale',
+            'certificateDownloaded' => 'Attestato di chiusura scaricato',
+            'packageDownloaded' => 'Pacchetto di download scaricato',
+        ],
         'version_added' => 'Versione del contratto aggiunta',
     ],
     'correction' => [
@@ -419,6 +442,10 @@ return [
         'reviewed' => 'Investimento riesaminato',
     ],
     'invoice' => [
+        'lexwareHandover' => [
+            'confirmed' => 'Consegna a Lexware confermata manualmente',
+            'exported' => 'Documento esportato per Lexware',
+        ],
         'metering_drafted' => 'Bozza da lettura creata',
         'resale_auto_drafted' => 'Bozza di fattura dai periodi di abbonamento (fatturazione ricorrente) creata',
         'retention_added' => 'Ritenuta a garanzia registrata',
@@ -1057,5 +1084,8 @@ return [
     ],
     'resale_subscription' => [
         'rehomed' => 'Titolare dell’abbonamento cambiato',
+    ],
+    'lexware' => [
+        'tariffChanged' => 'Profilo tariffario Lexware modificato',
     ],
 ];

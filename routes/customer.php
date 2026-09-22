@@ -162,6 +162,17 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
             Route::get('/subscriptions/{subscription}', [\App\Http\Controllers\CustomerPortal\SubscriptionController::class, 'show'])->name('subscriptions.show');
         });
 
+        // Kundenvereinbarungen (Feature 157, MVP-822): eigene AVV-/NDA-Fassungen
+        // mit Stand; Dateien und Abschlussnachweis nur für freigegebene,
+        // vollständig unterzeichnete Fassungen. Modul-Gate module.contracts
+        // hängt an der Capability.
+        Route::middleware('portal.capability:agreements')->controller(\App\Http\Controllers\CustomerPortal\AgreementController::class)->group(function (): void {
+            Route::get('/vereinbarungen', 'index')->name('agreements.index');
+            Route::get('/vereinbarungen/{revision}/nachweis', 'certificate')->name('agreements.certificate');
+            Route::get('/vereinbarungen/{revision}/paket', 'package')->name('agreements.package');
+            Route::get('/vereinbarungen/{revision}/datei/{item}', 'file')->whereNumber('item')->name('agreements.file');
+        });
+
         Route::middleware('portal.capability:documents')->group(function (): void {
             // Freigegebene Dokumente (Welle D — Dokument-Spiegelung): NUR fürs
             // Kundenportal freigegebene Dokumente des eigenen Kunden, sicherer

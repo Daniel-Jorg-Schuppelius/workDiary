@@ -251,6 +251,29 @@ return [
         'review_item_added' => 'Vertragsprüfpunkt hinzugefügt',
         'review_item_resolved' => 'Vertragsprüfpunkt erledigt',
         'terminated' => 'Vertrag gekündigt',
+        'signing' => [
+            'revisionCreated' => 'Vereinbarungsfassung angelegt',
+            'revisionUpdated' => 'Vereinbarungsfassung bearbeitet',
+            'prepared' => 'Vereinbarungsfassung zur Unterschrift bereitgestellt',
+            'linkIssued' => 'Signaturlink erstellt',
+            'linkSent' => 'Signaturlink gesendet',
+            'linkSendFailed' => 'Versand des Signaturlinks fehlgeschlagen',
+            'linkRevoked' => 'Link widerrufen',
+            'linkOpened' => 'Link geöffnet',
+            'signed' => 'Vereinbarung unterzeichnet',
+            'evidenceReceived' => 'Unterschriebenes PDF über Link eingegangen',
+            'evidenceRecorded' => 'Unterschriebenes PDF intern nachgetragen',
+            'evidenceAccepted' => 'Nachweis bestätigt',
+            'evidenceRejected' => 'Nachweis abgelehnt',
+            'completed' => 'Vereinbarungsfassung vollständig unterzeichnet',
+            'withdrawn' => 'Vereinbarungsfassung zurückgezogen',
+            'superseded' => 'Vorgängerfassung abgelöst',
+            'downloadLinkIssued' => 'Abruflink erstellt',
+            'portalReleased' => 'Fassung im Kundenportal freigegeben',
+            'portalRevoked' => 'Portal-Freigabe der Fassung zurückgenommen',
+            'certificateDownloaded' => 'Abschlussnachweis abgerufen',
+            'packageDownloaded' => 'Downloadpaket abgerufen',
+        ],
         'version_added' => 'Vertragsversion hinzugefügt',
     ],
     'correction' => [
@@ -419,6 +442,10 @@ return [
         'reviewed' => 'Investition nachbetrachtet',
     ],
     'invoice' => [
+        'lexwareHandover' => [
+            'confirmed' => 'Übergabe an Lexware manuell bestätigt',
+            'exported' => 'Beleg für Lexware exportiert',
+        ],
         'metering_drafted' => 'Zählerstands-Entwurf erzeugt',
         'resale_auto_drafted' => 'Rechnungsentwurf aus Abo-Perioden (Serienrechnung) erzeugt',
         'retention_added' => 'Sicherheitseinbehalt hinterlegt',
@@ -1057,5 +1084,8 @@ return [
     ],
     'resale_subscription' => [
         'rehomed' => 'Halter des Abos gewechselt',
+    ],
+    'lexware' => [
+        'tariffChanged' => 'Lexware-Tarifprofil geändert',
     ],
 ];

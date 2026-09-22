@@ -74,8 +74,17 @@ class ContractController extends Controller {
             $resaleSubscriptions = $contract->resaleSubscriptions()->with(['customer:id,name', 'foreignCustomer:id,name'])->get();
         }
 
+        // Unterzeichnung (Feature 157): nur bei Vertragsarten mit Signaturschicht.
+        $signingRevisions = null;
+        if ($contract->kind->requiresSigning()) {
+            $signingRevisions = $contract->signingRevisions()
+                ->with(['manifestItems.documentVersion', 'requests.links', 'requests.evidences.reviewer', 'requests.evidences.recorder', 'links.creator', 'predecessor', 'supersededBy', 'preparer'])
+                ->get();
+        }
+
         return view('contracts.show', [
             'contract' => $contract,
+            'signingRevisions' => $signingRevisions,
             'nextTermination' => $contract->status->isOpen() ? $this->service->nextTerminationDate($contract) : null,
             'noticeDeadline' => $contract->status->isOpen() ? $this->service->noticeDeadline($contract) : null,
             'obligationKinds' => ContractObligationKind::cases(),
@@ -86,10 +95,23 @@ class ContractController extends Controller {
         ]);
     }
 
-    public function create(): View {
+    /**
+     * Dialog „Neuer Vertrag" — aus der Kundenakte mit vorbelegtem Kunden und,
+     * bei `agreement=1`, beschränkt auf die Vertragsarten mit Unterzeichnung
+     * (Feature 157: AVV/NDA).
+     */
+    public function create(Request $request): View {
         Gate::authorize('create', Contract::class);
 
-        return view('contracts._form_dialog', $this->formOptions());
+        $presetCustomer = null;
+        if ($request->filled('customer')) {
+            $presetCustomer = Customer::query()->whereKey(Sqid::decodeOrNumeric(Customer::class, $request->query('customer')))->first();
+        }
+
+        return view('contracts._form_dialog', array_merge($this->formOptions(), [
+            'presetCustomer' => $presetCustomer,
+            'agreementOnly' => $request->boolean('agreement'),
+        ]));
     }
 
     public function store(Request $request): RedirectResponse {
@@ -250,6 +272,15 @@ class ContractController extends Controller {
             'notes' => ['nullable', 'string', 'max:8000'],
         ]);
         $validated['auto_renew'] = $request->boolean('auto_renew');
+
+        // Kundenvereinbarungen (Feature 157): zwingend ein Kunde der Organisation
+        // als Partner — Kunden werden nie als Auftragsverarbeiter angelegt.
+        if (ContractKind::from((string) $validated['kind'])->requiresSigning()) {
+            if (empty($validated['customer_id'])) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['customer_id' => (string) __('contract-signing.error.customer_required')]);
+            }
+            $validated['partner_type'] = ContractPartnerType::Customer->value;
+        }
 
         return $validated;
     }

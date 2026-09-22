@@ -57,6 +57,9 @@ enum RenderDocumentKind: string implements HasLabel {
     // MVP-740): eigene Art, weil der Aussteller identifizierbar sein MUSS —
     // ein Nachweis ohne erkennbaren Aussteller ist wertlos.
     case Certificate = 'certificate';
+    // Abschlussnachweis einer unterzeichneten Kundenvereinbarung (Feature 157,
+    // MVP-822): Parteien, Fassungskennung, Dateihashes, Methoden, Zeitpunkte.
+    case SigningCertificate = 'signing_certificate';
 
     public function label(): string {
         return match ($this) {
@@ -78,6 +81,7 @@ enum RenderDocumentKind: string implements HasLabel {
             self::ConstructionObstructionNotice => __('construction.kind.obstruction'),
             self::ConstructionConcernNotice => __('construction.kind.concern'),
             self::Certificate => __('learning.pdf.certificate_kind'),
+            self::SigningCertificate => __('contract-signing.certificate.kind'),
         };
     }
 
@@ -90,7 +94,7 @@ enum RenderDocumentKind: string implements HasLabel {
             self::Protocol, self::ManufacturingRecord, self::Timesheet,
             self::Form, self::Report, self::CaseFile,
             self::ConstructionObstructionNotice, self::ConstructionConcernNotice,
-            self::Certificate => RenderDocumentFamily::Evidence,
+            self::Certificate, self::SigningCertificate => RenderDocumentFamily::Evidence,
             self::Label => RenderDocumentFamily::Special,
         };
     }
@@ -145,7 +149,7 @@ enum RenderDocumentKind: string implements HasLabel {
             self::Quote, self::OrderConfirmation, self::CreditNote,
             self::ProformaInvoice, self::Dunning => self::Invoice,
             self::CaseFile, self::ConstructionObstructionNotice,
-            self::ConstructionConcernNotice, self::Certificate => self::Report,
+            self::ConstructionConcernNotice, self::Certificate, self::SigningCertificate => self::Report,
             default => null,
         };
     }
@@ -212,7 +216,7 @@ enum RenderDocumentKind: string implements HasLabel {
             ],
             // Der Aussteller gehört auf den Nachweis — sonst kann ihn
             // niemand zuordnen und die Prüfseite läuft ins Leere.
-            self::Protocol, self::ManufacturingRecord, self::Certificate => [
+            self::Protocol, self::ManufacturingRecord, self::Certificate, self::SigningCertificate => [
                 InformationBlock::DocumentMeta,
                 InformationBlock::CompanyIdentity,
             ],

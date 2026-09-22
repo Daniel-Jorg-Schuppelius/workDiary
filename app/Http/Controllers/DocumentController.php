@@ -37,6 +37,8 @@ class DocumentController extends Controller {
         'asset' => Asset::class,
         // Personalakte (Feature 141): eigener hrFile-Zugriffskreis, siehe DocumentPolicy.
         'user' => User::class,
+        // Vertragsakte (Feature 157): Vertrags-PDF und Anlagen einer Kundenvereinbarung.
+        'contract' => \App\Models\Contract\Contract::class,
     ];
 
     // Größenlimit: {@see FileAttacher::maxKb()} (wie AttachmentController, org-konfigurierbar).

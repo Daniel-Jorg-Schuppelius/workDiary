@@ -63,6 +63,9 @@ enum PortalCapability: string implements HasLabel {
     /** „Meine Abos" (Feature 152): Bestand der Abos des Kunden und seiner Endkunden — ohne Preise und Belege. */
     case Subscriptions = 'subscriptions';
 
+    /** Kundenvereinbarungen (Feature 157): eigene AVV/NDA-Fassungen und freigegebene Abschlussnachweise. */
+    case Agreements = 'agreements';
+
     public function label(): string {
         return (string) match ($this) {
             self::Diary => __('Aufträge & Fallakte'),
@@ -78,6 +81,7 @@ enum PortalCapability: string implements HasLabel {
             self::Appointments => __('Online-Terminbuchung'),
             self::RentalRequests => __('Verleih-Anfrage'),
             self::Subscriptions => __('Abos & Lizenzen'),
+            self::Agreements => __('Vereinbarungen (AVV/NDA)'),
         };
     }
 
@@ -93,6 +97,7 @@ enum PortalCapability: string implements HasLabel {
             self::Documents => 'module.documents',
             self::Appointments => 'module.planung',
             self::Subscriptions => 'module.reselling',
+            self::Agreements => 'module.contracts',
             default => null,
         };
     }

@@ -1,0 +1,161 @@
+<?php
+/*
+ * Created on   : Tue Sep 22 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : lexware.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+// Lexware Office plan supplements (Feature 158, MVP-831–833).
+
+return [
+    'menu' => 'Lexware supplements',
+    'action' => [
+        'confirm' => 'Confirm manually',
+        'confirm_go' => 'Confirm handover',
+        'export_one' => 'Export for Lexware (PDF + mapping list)',
+        'export_one_short' => 'Lexware export',
+        'export_selected' => 'Export selected (ZIP)',
+        'open' => 'Open',
+        'save' => 'Save plan profile',
+    ],
+    'channel' => [
+        'api' => 'Hand over to Lexware automatically (XL only, after the handover route is proven)',
+        'manual' => 'Export documents and upload manually',
+    ],
+    'coverage' => [
+        'expansion' => 'Expansion',
+        'lexware' => 'Included in Lexware',
+        'supplement' => 'Supplement in workDiary',
+        'unknown' => 'No reliable statement',
+    ],
+    'csv' => [
+        'currency' => 'Currency',
+        'customer' => 'Customer',
+        'customer_number' => 'Customer number',
+        'due_on' => 'Due on',
+        'file' => 'File',
+        'gross' => 'Gross',
+        'handover' => 'Handover state',
+        'issued_on' => 'Document date',
+        'net' => 'Net',
+        'number' => 'Document number',
+        'status' => 'Invoice status',
+        'tax' => 'Tax',
+    ],
+    'error' => [
+        'already_transferred' => 'This document has already been transferred via the interface.',
+        'api_channel_needs_xl' => 'Automatic handover requires your own API key — available only in plan XL. Until the handover route is proven, manual export remains the standard route.',
+        'not_exportable' => 'Document :number has not been issued yet and cannot be handed over.',
+        'nothing_selected' => 'Please select at least one document.',
+    ],
+    'feature' => [
+        'invoices' => ['label' => 'Standard and e-invoices', 'description' => 'Issue invoices in workDiary, output as PDF/XRechnung/ZUGFeRD and send them.'],
+        'quotes' => ['label' => 'Quotes', 'description' => 'Quotes with acceptance link and follow-up.'],
+        'dunning' => ['label' => 'Dunning and payment reminders', 'description' => 'Dunning run for locally managed invoices.'],
+        'recurring_invoices' => ['label' => 'Recurring invoices', 'description' => 'Billing schedules create exactly one verifiable draft per period; issuing and sending remain deliberate steps.'],
+        'partial_final_invoices' => ['label' => 'Partial and final invoices', 'description' => 'Separate package: existing local document chains will be checked for this.'],
+        'foreign_tax_cases' => ['label' => 'Special foreign and tax cases', 'description' => 'Separate specialist package; no blanket promise of support.'],
+        'accounting' => ['label' => 'Accounting (EÜR/P&L, cash book, assets)', 'description' => 'Separate packages after review of scope and responsibility.'],
+        'tax_filings' => ['label' => 'Tax filings', 'description' => 'Outside the MVP; requires its own process and transmission route.'],
+    ],
+    'field' => [
+        'action' => 'Action',
+        'confirmation_note' => 'Confirmation note',
+        'coverage' => 'Lexware',
+        'dispatch_status' => 'Dispatch',
+        'feature' => 'Feature',
+        'handover_channel' => 'Handover route',
+        'handover_state' => 'Handover',
+        'invoice_status' => 'Invoice status',
+        'issued_on' => 'Document date',
+        'local_features' => 'Use locally in workDiary',
+        'plan' => 'Lexware Office plan',
+        'plan_confirmed_on' => 'Confirmed on',
+        'plan_source' => 'Source of the information',
+        'select' => 'Select',
+        'state' => 'In workDiary',
+        'trial_ends_on' => 'Trial ends on',
+        'trial_successor_plan' => 'Confirmed successor plan',
+    ],
+    'flash' => [
+        'confirmed' => 'Handover of :number confirmed.',
+        'saved' => 'Plan profile saved.',
+    ],
+    'handover' => [
+        'confirmed_at' => 'confirmed :at by :name',
+        'count' => '{0} No documents|{1} One document|[2,*] :count documents',
+        'dispatched' => 'sent (:channel) :at',
+        'empty' => 'No issued documents in the selected period.',
+        'exported_at' => 'exported :at by :name',
+        'filter_all' => 'All handover states',
+        'not_dispatched' => 'not sent yet',
+        'note' => '“Exported” means downloaded, “confirmed” means manually acknowledged with user and time — neither means booked or paid. Cancellation and credit note remain separate documents referring to the original.',
+        'status' => [
+            'confirmed' => 'Manually confirmed',
+            'exported' => 'Exported',
+            'failed' => 'Failed',
+            'needs_review' => 'Review required',
+            'pending' => 'Open',
+            'transferred' => 'Transferred',
+        ],
+        'subtitle' => 'Issued documents of locally billed customers in the period :range — invoice, dispatch and handover status kept separate.',
+        'title' => 'Lexware handover list',
+    ],
+    'hint' => [
+        'handover_channel' => 'The export is a download for you, not a claimed Lexware import format. Automatic handover follows only after the handover route is proven.',
+        'local_features' => 'Only deliberately activated supplements appear as available. A higher plan takes nothing away — you can keep working locally.',
+        'plan' => 'Orientation, not authorisation: which handover is offered is decided by connection, permissions and verified availability.',
+        'trial' => 'After expiry the confirmed successor plan applies — it is not assumed that XL applies permanently.',
+    ],
+    'plan' => [
+        'l' => 'Lexware Office L',
+        'm' => 'Lexware Office M',
+        's' => 'Lexware Office S',
+        'unknown' => 'Unknown / special contract',
+        'xl' => 'Lexware Office XL',
+    ],
+    'plan_page' => [
+        'matrix_intro' => 'Status for :plan (feature matrix :version). Supplement means: available in workDiary as soon as module, responsibility and permission fit.',
+        'matrix_note' => 'Existing Lexware functions such as document capture or open items are not advertised as missing. Individual e-invoice profiles are checked separately before activation.',
+        'matrix_title' => 'Supplements to your Lexware plan',
+        'preview_api_no' => 'Automatic handover: not available (no own API key in this plan).',
+        'preview_api_yes' => 'Automatic handover: possible with XL access once the handover route is proven.',
+        'preview_handovers' => '{0} No open handovers.|{1} One open handover stays visible and can be switched to manual export.|[2,*] :count open handovers stay visible and can be switched to manual export.',
+        'preview_intro' => 'A plan change alters recommendations and handover routes. Documents, running local series and number ranges are kept; changing the leading system is a separate process with an effective date.',
+        'preview_note' => 'With M and L a customer with Lexware invoicing authority cannot receive a local series — the invoicing authority per customer has to be changed deliberately.',
+        'preview_schedules' => '{0} No active billing schedules.|{1} One active billing schedule keeps running.|[2,*] :count active billing schedules keep running.',
+        'preview_title' => 'Plan change preview',
+        'profile_title' => 'Your Lexware Office plan',
+        'read_only' => 'Changing the plan profile requires the “Finance configuration” permission.',
+        'subtitle' => 'Store your plan and see which functions Lexware includes and which workDiary supplements — even without an API connection.',
+        'title' => 'Lexware supplements',
+        'trial_expired' => 'The trial has expired — the confirmed successor plan :plan applies.',
+    ],
+    'reason' => [
+        'billing_external' => 'Invoicing authority lies with an external program. Local documents require the invoicing authority “workDiary”; the switch is a separate process with an effective date.',
+        'included' => 'Included in your Lexware plan.',
+        'module_missing' => 'Module “Sales & invoicing” is not enabled.',
+        'not_activated' => 'Setup required: activate the supplement in the plan profile.',
+        'planned' => 'Planned — not yet part of this package.',
+        'right_missing' => 'You lack the permission to view invoices.',
+        'unknown_plan' => 'Check availability: with an unknown plan there is no reliable statement about Lexware; local functions remain usable under their own prerequisites.',
+        'unknown_plan_local' => 'Activated locally; with an unknown plan there is no reliable statement about Lexware itself.',
+    ],
+    'schedules' => [
+        'hint' => 'Recurring invoices run locally as a Lexware supplement (plan :plan). Hand over issued documents via the handover list.',
+    ],
+    'source' => [
+        'provider' => 'Reliable provider confirmation',
+        'user' => 'Own information',
+    ],
+    'state' => [
+        'available' => 'Available in workDiary',
+        'check_availability' => 'Check availability',
+        'lexware' => 'Included in Lexware',
+        'planned' => 'Planned',
+        'setup_required' => 'Setup required',
+    ],
+];

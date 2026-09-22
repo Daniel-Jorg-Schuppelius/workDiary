@@ -1,0 +1,161 @@
+<?php
+/*
+ * Created on   : Tue Sep 22 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : lexware.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+// Lexware-Office-Tarifergänzungen (Feature 158, MVP-831–833).
+
+return [
+    'menu' => 'Lexware-Ergänzungen',
+    'action' => [
+        'confirm' => 'Manuell bestätigen',
+        'confirm_go' => 'Übergabe bestätigen',
+        'export_one' => 'Für Lexware exportieren (PDF + Zuordnungsliste)',
+        'export_one_short' => 'Lexware-Export',
+        'export_selected' => 'Ausgewählte exportieren (ZIP)',
+        'open' => 'Öffnen',
+        'save' => 'Tarifprofil speichern',
+    ],
+    'channel' => [
+        'api' => 'Automatisch an Lexware übergeben (nur XL, nach Nachweis des Übergabewegs)',
+        'manual' => 'Belege exportieren und manuell hochladen',
+    ],
+    'coverage' => [
+        'expansion' => 'Ausbau',
+        'lexware' => 'In Lexware enthalten',
+        'supplement' => 'Ergänzung in workDiary',
+        'unknown' => 'Keine sichere Aussage',
+    ],
+    'csv' => [
+        'currency' => 'Währung',
+        'customer' => 'Kunde',
+        'customer_number' => 'Kundennummer',
+        'due_on' => 'Fällig am',
+        'file' => 'Datei',
+        'gross' => 'Brutto',
+        'handover' => 'Übergabestand',
+        'issued_on' => 'Belegdatum',
+        'net' => 'Netto',
+        'number' => 'Belegnummer',
+        'status' => 'Rechnungsstatus',
+        'tax' => 'Steuer',
+    ],
+    'error' => [
+        'already_transferred' => 'Dieser Beleg wurde bereits über die Schnittstelle übertragen.',
+        'api_channel_needs_xl' => 'Die automatische Übergabe setzt einen eigenen API-Schlüssel voraus — den gibt es nur im Tarif XL. Bis zum nachgewiesenen Übergabeweg bleibt der manuelle Export der Regelweg.',
+        'not_exportable' => 'Der Beleg :number ist noch nicht ausgestellt und kann nicht übergeben werden.',
+        'nothing_selected' => 'Bitte mindestens einen Beleg auswählen.',
+    ],
+    'feature' => [
+        'invoices' => ['label' => 'Standardrechnungen und E-Rechnungen', 'description' => 'Rechnungen in workDiary ausstellen, als PDF/XRechnung/ZUGFeRD ausgeben und versenden.'],
+        'quotes' => ['label' => 'Angebote', 'description' => 'Angebote mit Annahme-Link und Nachfassen.'],
+        'dunning' => ['label' => 'Mahnungen und Zahlungserinnerungen', 'description' => 'Mahnlauf für lokal geführte Rechnungen.'],
+        'recurring_invoices' => ['label' => 'Serienrechnungen', 'description' => 'Abrechnungspläne erzeugen je Periode genau einen prüfbaren Entwurf; Ausstellung und Versand bleiben bewusste Schritte.'],
+        'partial_final_invoices' => ['label' => 'Abschlags- und Schlussrechnungen', 'description' => 'Eigenes Paket: vorhandene lokale Belegketten werden dafür geprüft.'],
+        'foreign_tax_cases' => ['label' => 'Besondere Auslands- und Steuerfälle', 'description' => 'Eigenes fachliches Paket; kein pauschales Unterstützungsversprechen.'],
+        'accounting' => ['label' => 'Buchhaltung (EÜR/GuV, Kassenbuch, Anlagen)', 'description' => 'Eigenständige Pakete nach Bestands- und Zuständigkeitsprüfung.'],
+        'tax_filings' => ['label' => 'Steueranmeldungen', 'description' => 'Außerhalb des MVP; erfordert eigenen Prozess und Übermittlungsweg.'],
+    ],
+    'field' => [
+        'action' => 'Aktion',
+        'confirmation_note' => 'Vermerk zur Bestätigung',
+        'coverage' => 'Lexware',
+        'dispatch_status' => 'Versand',
+        'feature' => 'Funktion',
+        'handover_channel' => 'Übergabeweg',
+        'handover_state' => 'Übergabe',
+        'invoice_status' => 'Rechnungsstatus',
+        'issued_on' => 'Belegdatum',
+        'local_features' => 'Lokal in workDiary nutzen',
+        'plan' => 'Lexware-Office-Tarif',
+        'plan_confirmed_on' => 'Bestätigt am',
+        'plan_source' => 'Quelle der Angabe',
+        'select' => 'Auswählen',
+        'state' => 'In workDiary',
+        'trial_ends_on' => 'Testzugang endet am',
+        'trial_successor_plan' => 'Bestätigter Folgetarif',
+    ],
+    'flash' => [
+        'confirmed' => 'Übergabe von :number bestätigt.',
+        'saved' => 'Tarifprofil gespeichert.',
+    ],
+    'handover' => [
+        'confirmed_at' => 'bestätigt :at von :name',
+        'count' => '{0} Keine Belege|{1} Ein Beleg|[2,*] :count Belege',
+        'dispatched' => 'versendet (:channel) :at',
+        'empty' => 'Keine ausgestellten Belege im gewählten Zeitraum.',
+        'exported_at' => 'exportiert :at von :name',
+        'filter_all' => 'Alle Übergabestände',
+        'not_dispatched' => 'noch nicht versendet',
+        'note' => '„Exportiert“ heißt heruntergeladen, „bestätigt“ heißt manuell mit Benutzer und Zeitpunkt quittiert — keines davon bedeutet gebucht oder bezahlt. Storno und Gutschrift bleiben eigene Belege mit Bezug zum Original.',
+        'status' => [
+            'confirmed' => 'Manuell bestätigt',
+            'exported' => 'Exportiert',
+            'failed' => 'Fehlgeschlagen',
+            'needs_review' => 'Prüfung erforderlich',
+            'pending' => 'Offen',
+            'transferred' => 'Übertragen',
+        ],
+        'subtitle' => 'Ausgestellte Belege lokal geführter Kunden im Zeitraum :range — Rechnungs-, Versand- und Übergabestatus getrennt.',
+        'title' => 'Übergabeliste Lexware',
+    ],
+    'hint' => [
+        'handover_channel' => 'Der Export ist ein Download für Sie, kein behauptetes Lexware-Importformat. Die automatische Übergabe folgt erst nach nachgewiesenem Übergabeweg.',
+        'local_features' => 'Nur bewusst aktivierte Ergänzungen erscheinen als verfügbar. Ein höherer Tarif entzieht nichts — Sie können lokal weiterarbeiten.',
+        'plan' => 'Orientierung, keine Berechtigung: welche Übergabe angeboten wird, entscheiden Verbindung, Rechte und geprüfte Verfügbarkeit.',
+        'trial' => 'Nach Ablauf gilt der bestätigte Folgetarif — es wird nicht angenommen, dass XL dauerhaft gilt.',
+    ],
+    'plan' => [
+        'l' => 'Lexware Office L',
+        'm' => 'Lexware Office M',
+        's' => 'Lexware Office S',
+        'unknown' => 'Unbekannt / Sondervertrag',
+        'xl' => 'Lexware Office XL',
+    ],
+    'plan_page' => [
+        'matrix_intro' => 'Stand für :plan (Funktionsmatrix :version). Ergänzung heißt: in workDiary verfügbar, sobald Modul, Zuständigkeit und Recht passen.',
+        'matrix_note' => 'Vorhandene Lexware-Funktionen wie Belegerfassung oder offene Posten werden nicht als fehlend beworben. Einzelne E-Rechnungsprofile werden vor der Freischaltung gesondert geprüft.',
+        'matrix_title' => 'Ergänzungen zu Ihrem Lexware-Tarif',
+        'preview_api_no' => 'Automatische Übergabe: nicht verfügbar (kein eigener API-Schlüssel in diesem Tarif).',
+        'preview_api_yes' => 'Automatische Übergabe: mit XL-Zugang möglich, sobald der Übergabeweg nachgewiesen ist.',
+        'preview_handovers' => '{0} Keine offenen Übergaben.|{1} Eine offene Übergabe bleibt sichtbar und kann auf manuellen Export umgestellt werden.|[2,*] :count offene Übergaben bleiben sichtbar und können auf manuellen Export umgestellt werden.',
+        'preview_intro' => 'Ein Tarifwechsel ändert Empfehlungen und Übergabewege. Belege, laufende lokale Serien und Nummernkreise bleiben erhalten; ein Wechsel des führenden Systems ist ein eigener Vorgang mit Stichtag.',
+        'preview_note' => 'Bei M und L kann ein Kunde mit Lexware-Rechnungshoheit keine lokale Serie erhalten — dafür ist die Rechnungshoheit je Kunde bewusst umzustellen.',
+        'preview_schedules' => '{0} Keine aktiven Abrechnungspläne.|{1} Ein aktiver Abrechnungsplan läuft weiter.|[2,*] :count aktive Abrechnungspläne laufen weiter.',
+        'preview_title' => 'Vorschau Tarifwechsel',
+        'profile_title' => 'Ihr Lexware-Office-Tarif',
+        'read_only' => 'Zum Ändern des Tarifprofils ist das Recht „Finanzkonfiguration“ nötig.',
+        'subtitle' => 'Tarif hinterlegen und sehen, welche Funktionen Lexware enthält und welche workDiary ergänzt — auch ohne API-Verbindung.',
+        'title' => 'Lexware-Ergänzungen',
+        'trial_expired' => 'Der Testzugang ist abgelaufen — es gilt der bestätigte Folgetarif :plan.',
+    ],
+    'reason' => [
+        'billing_external' => 'Die Rechnungshoheit liegt bei einem externen Programm. Lokale Belege setzen die Rechnungshoheit „workDiary“ voraus; die Umstellung ist ein eigener Vorgang mit Stichtag.',
+        'included' => 'In Ihrem Lexware-Tarif enthalten.',
+        'module_missing' => 'Modul „Vertrieb & Faktura“ ist nicht freigeschaltet.',
+        'not_activated' => 'Einrichtung erforderlich: Ergänzung im Tarifprofil aktivieren.',
+        'planned' => 'Geplant — noch nicht Teil dieses Pakets.',
+        'right_missing' => 'Ihnen fehlt das Recht, Rechnungen einzusehen.',
+        'unknown_plan' => 'Verfügbarkeit prüfen: bei unbekanntem Tarif gibt es keine sichere Aussage zu Lexware; lokale Funktionen bleiben nach ihren eigenen Voraussetzungen nutzbar.',
+        'unknown_plan_local' => 'Lokal aktiviert; zu Lexware selbst gibt es bei unbekanntem Tarif keine sichere Aussage.',
+    ],
+    'schedules' => [
+        'hint' => 'Serienrechnungen laufen als Lexware-Ergänzung lokal (Tarif :plan). Ausgestellte Belege übergeben Sie über die Übergabeliste.',
+    ],
+    'source' => [
+        'provider' => 'Belastbarer Anbieternachweis',
+        'user' => 'Eigene Angabe',
+    ],
+    'state' => [
+        'available' => 'In workDiary verfügbar',
+        'check_availability' => 'Verfügbarkeit prüfen',
+        'lexware' => 'In Lexware enthalten',
+        'planned' => 'Geplant',
+        'setup_required' => 'Einrichtung erforderlich',
+    ],
+];

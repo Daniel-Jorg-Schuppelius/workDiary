@@ -251,6 +251,29 @@ return [
         'review_item_added' => 'Point d\'examen du contrat ajouté',
         'review_item_resolved' => 'Point d\'examen du contrat résolu',
         'terminated' => 'Contrat résilié',
+        'signing' => [
+            'revisionCreated' => 'Version d\'accord créée',
+            'revisionUpdated' => 'Version d\'accord modifiée',
+            'prepared' => 'Version d\'accord mise à la signature',
+            'linkIssued' => 'Lien de signature créé',
+            'linkSent' => 'Lien de signature envoyé',
+            'linkSendFailed' => 'Envoi du lien de signature échoué',
+            'linkRevoked' => 'Lien révoqué',
+            'linkOpened' => 'Lien ouvert',
+            'signed' => 'Accord signé',
+            'evidenceReceived' => 'PDF signé reçu via le lien',
+            'evidenceRecorded' => 'PDF signé consigné en interne',
+            'evidenceAccepted' => 'Preuve confirmée',
+            'evidenceRejected' => 'Preuve refusée',
+            'completed' => 'Version d\'accord entièrement signée',
+            'withdrawn' => 'Version d\'accord retirée',
+            'superseded' => 'Version précédente remplacée',
+            'downloadLinkIssued' => 'Lien de consultation créé',
+            'portalReleased' => 'Version publiée dans le portail client',
+            'portalRevoked' => 'Publication de la version retirée du portail',
+            'certificateDownloaded' => 'Attestation de clôture téléchargée',
+            'packageDownloaded' => 'Dossier de téléchargement récupéré',
+        ],
         'version_added' => 'Version du contrat ajoutée',
     ],
     'correction' => [
@@ -419,6 +442,10 @@ return [
         'reviewed' => 'Investissement réexaminé',
     ],
     'invoice' => [
+        'lexwareHandover' => [
+            'confirmed' => 'Remise à Lexware confirmée manuellement',
+            'exported' => 'Document exporté pour Lexware',
+        ],
         'metering_drafted' => 'Brouillon de relevé créé',
         'resale_auto_drafted' => 'Brouillon de facture à partir des périodes d’abonnement (facturation récurrente) créé',
         'retention_added' => 'Retenue de garantie enregistrée',
@@ -1057,5 +1084,8 @@ return [
     ],
     'resale_subscription' => [
         'rehomed' => 'Titulaire de l’abonnement modifié',
+    ],
+    'lexware' => [
+        'tariffChanged' => 'Profil tarifaire Lexware modifié',
     ],
 ];

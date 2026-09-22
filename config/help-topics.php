@@ -122,6 +122,8 @@ return [
         // Druckerzeugnisse/Kopiershop (MVP-459)
         'print-orders.*' => 'print.orders',
 
+        // Kundenvereinbarungen (Feature 157): eigenes Thema vor dem Sammelmuster.
+        'contracts.signing.*' => 'contracts.agreements',
         'contracts.*' => 'contracts.overview',
         // Cloud-Dokumenteingang (Feature 080).
         'admin.cloud-intake.*' => 'cloud-intake.overview',
@@ -479,6 +481,9 @@ return [
         // Warenwirtschaft – Artikel & Lager (Feature 060/066)
         'articles.*' => 'articles.master',
         'lexoffice.articles.*' => 'articles.lexoffice',
+        // Lexware-Office-Tarifergänzungen (Feature 158).
+        'lexoffice.plan.*' => 'lexware.supplements',
+        'lexoffice.handover.*' => 'lexware.supplements',
         'materials.*' => 'materials.manage',
         'inventory.stock' => 'inventory.stock',
         'inventory.lots' => 'inventory.stock',
@@ -615,6 +620,7 @@ return [
         'customer.open-issues.*' => 'customer-portal.issues',
         'customer.appointments.*' => 'customer-portal.appointments',
         'customer.subscriptions.*' => 'customer-portal.subscriptions',
+        'customer.agreements.*' => 'customer-portal.agreements',
         'customer.time-entries.*' => 'customer-portal.time',
         'customer.login' => 'customer-portal.access',
         'customer.2fa.*' => 'customer-portal.access',

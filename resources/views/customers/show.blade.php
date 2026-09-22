@@ -485,6 +485,9 @@
 
     @include('customers._domains_panel', ['customer' => $customer, 'customerDomains' => $customerDomains])
 
+    {{-- Vereinbarungen AVV/NDA (Feature 157, MVP-822) — nur mit module.contracts und contract.viewAny. --}}
+    @include('customers._agreements_panel', ['customer' => $customer, 'agreements' => $agreements])
+
     {{-- Abos & Lizenzen (Feature 152, MVP-758) — nur mit reselling.view. --}}
     @include('customers._resale_panel', ['customer' => $customer, 'customerSubscriptions' => $customerSubscriptions])
 

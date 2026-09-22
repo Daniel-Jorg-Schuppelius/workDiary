@@ -19625,6 +19625,194 @@ CREATE TABLE IF NOT EXISTS "document_version_texts"(
 CREATE UNIQUE INDEX "doc_version_texts_version_unique" on "document_version_texts"(
   "document_version_id"
 );
+CREATE TABLE IF NOT EXISTS "contract_signing_revisions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "contract_id" integer not null,
+  "revision_no" integer not null,
+  "predecessor_id" integer,
+  "status" varchar not null default 'draft',
+  "controller_party" varchar,
+  "declaration_text" text not null,
+  "manifest_hash" varchar,
+  "review_on" date,
+  "prepared_at" datetime,
+  "prepared_by" integer,
+  "completed_at" datetime,
+  "withdrawn_at" datetime,
+  "withdrawn_by" integer,
+  "withdrawal_reason" varchar,
+  "superseded_by_id" integer,
+  "superseded_at" datetime,
+  "effective_on" date,
+  "customer_visible_at" datetime,
+  "customer_visible_by" integer,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("contract_id") references "contracts"("id") on delete cascade,
+  foreign key("predecessor_id") references "contract_signing_revisions"("id") on delete set null,
+  foreign key("prepared_by") references "users"("id") on delete set null,
+  foreign key("withdrawn_by") references "users"("id") on delete set null,
+  foreign key("superseded_by_id") references "contract_signing_revisions"("id") on delete set null,
+  foreign key("customer_visible_by") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "csr_contract_rev_unique" on "contract_signing_revisions"(
+  "contract_id",
+  "revision_no"
+);
+CREATE INDEX "csr_org_status_idx" on "contract_signing_revisions"(
+  "organization_id",
+  "status"
+);
+CREATE TABLE IF NOT EXISTS "contract_signing_manifest_items"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "revision_id" integer not null,
+  "document_version_id" integer not null,
+  "role" varchar not null,
+  "sort" integer not null default '0',
+  "original_name" varchar not null,
+  "sha256" varchar not null,
+  "size" integer not null default '0',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("revision_id") references "contract_signing_revisions"("id") on delete cascade,
+  foreign key("document_version_id") references "document_versions"("id") on delete restrict
+);
+CREATE UNIQUE INDEX "csmi_revision_version_unique" on "contract_signing_manifest_items"(
+  "revision_id",
+  "document_version_id"
+);
+CREATE TABLE IF NOT EXISTS "contract_signature_requests"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "revision_id" integer not null,
+  "party" varchar not null,
+  "required" tinyint(1) not null default '1',
+  "signer_name" varchar not null,
+  "signer_function" varchar,
+  "signer_email" varchar,
+  "status" varchar not null default 'pending',
+  "waiver_reason" varchar,
+  "fulfilled_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("revision_id") references "contract_signing_revisions"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "csq_revision_party_unique" on "contract_signature_requests"(
+  "revision_id",
+  "party"
+);
+CREATE TABLE IF NOT EXISTS "contract_signature_links"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "revision_id" integer not null,
+  "request_id" integer,
+  "purpose" varchar not null,
+  "token_hash" varchar not null,
+  "expires_at" datetime not null,
+  "opened_at" datetime,
+  "used_at" datetime,
+  "revoked_at" datetime,
+  "revoked_by" integer,
+  "sent_at" datetime,
+  "sent_to" varchar,
+  "send_error" varchar,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("revision_id") references "contract_signing_revisions"("id") on delete cascade,
+  foreign key("request_id") references "contract_signature_requests"("id") on delete cascade,
+  foreign key("revoked_by") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "csl_token_hash_unique" on "contract_signature_links"(
+  "token_hash"
+);
+CREATE INDEX "csl_revision_purpose_idx" on "contract_signature_links"(
+  "revision_id",
+  "purpose"
+);
+CREATE TABLE IF NOT EXISTS "contract_signature_evidences"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "revision_id" integer not null,
+  "request_id" integer not null,
+  "link_id" integer,
+  "manifest_hash" varchar not null,
+  "party" varchar not null,
+  "method" varchar not null,
+  "submitted_via" varchar not null,
+  "signer_name" varchar not null,
+  "signer_function" varchar,
+  "declaration_text" text not null,
+  "declaration_accepted" tinyint(1) not null default '0',
+  "authority_confirmed" tinyint(1) not null default '0',
+  "signed_at" datetime not null,
+  "stated_signed_on" date,
+  "disk" varchar,
+  "path" varchar,
+  "original_name" varchar,
+  "mime" varchar,
+  "size" integer not null default '0',
+  "file_hash" varchar,
+  "recorded_by_user_id" integer,
+  "review_status" varchar,
+  "reviewed_by_user_id" integer,
+  "reviewed_at" datetime,
+  "review_note" varchar,
+  "ip" varchar,
+  "user_agent" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("revision_id") references "contract_signing_revisions"("id") on delete cascade,
+  foreign key("request_id") references "contract_signature_requests"("id") on delete cascade,
+  foreign key("link_id") references "contract_signature_links"("id") on delete set null,
+  foreign key("recorded_by_user_id") references "users"("id") on delete set null,
+  foreign key("reviewed_by_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "cse_revision_party_idx" on "contract_signature_evidences"(
+  "revision_id",
+  "party"
+);
+CREATE TABLE IF NOT EXISTS "lexoffice_invoice_handovers"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "invoice_id" integer not null,
+  "channel" varchar not null default 'manual',
+  "status" varchar not null default 'pending',
+  "invoice_number" varchar,
+  "document_sha256" varchar,
+  "exported_at" datetime,
+  "exported_by" integer,
+  "confirmed_at" datetime,
+  "confirmed_by" integer,
+  "confirmation_note" varchar,
+  "external_file_id" varchar,
+  "external_voucher_id" varchar,
+  "attempts" integer not null default '0',
+  "last_error" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("invoice_id") references "invoices"("id") on delete restrict,
+  foreign key("exported_by") references "users"("id") on delete set null,
+  foreign key("confirmed_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "lih_invoice_unique" on "lexoffice_invoice_handovers"(
+  "invoice_id"
+);
+CREATE INDEX "lih_org_status_idx" on "lexoffice_invoice_handovers"(
+  "organization_id",
+  "status"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -20453,3 +20641,5 @@ INSERT INTO migrations VALUES(824,'2027_02_22_100900_create_document_version_tex
 INSERT INTO migrations VALUES(825,'2027_02_22_101000_widen_invoice_item_description',40);
 INSERT INTO migrations VALUES(826,'2027_02_22_101100_convert_local_times_to_utc',41);
 INSERT INTO migrations VALUES(827,'2027_02_22_101200_convert_imported_sync_times_to_utc',42);
+INSERT INTO migrations VALUES(828,'2027_02_23_100000_create_contract_signing_tables',43);
+INSERT INTO migrations VALUES(829,'2027_02_23_100100_create_lexoffice_invoice_handovers_table',44);

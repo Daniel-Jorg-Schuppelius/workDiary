@@ -302,6 +302,16 @@ class CustomerDetailAssembler {
             'localInvoices' => $localInvoices,
             'lexofficeVoucherCache' => $lexofficeVoucherCache,
             'peppolLookup' => $peppolLookup,
+            // Kundenvereinbarungen (Feature 157): AVV/NDA-Verträge dieses Kunden
+            // mit ihrer neuesten Fassung — ohne Modul/Recht bleibt das Panel weg.
+            'agreements' => $this->featureFlags->isEnabled('module.contracts') && $user->can('viewAny', \App\Models\Contract\Contract::class)
+                ? \App\Models\Contract\Contract::query()
+                    ->where('customer_id', $customer->id)
+                    ->whereIn('kind', array_map(static fn (\App\Enums\Contract\ContractKind $k): string => $k->value, \App\Enums\Contract\ContractKind::signingKinds()))
+                    ->with('latestSigningRevision')
+                    ->orderByDesc('id')
+                    ->get()
+                : null,
             'attachments' => $customer->attachments()->get(),
             'tags' => $customer->tags()->get(),
             'auditLogs' => AuditLog::query()

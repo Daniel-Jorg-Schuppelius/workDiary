@@ -1,0 +1,161 @@
+<?php
+/*
+ * Created on   : Tue Sep 22 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : lexware.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+// Compléments aux tarifs Lexware Office (Feature 158, MVP-831–833).
+
+return [
+    'menu' => 'Compléments Lexware',
+    'action' => [
+        'confirm' => 'Confirmer manuellement',
+        'confirm_go' => 'Confirmer la remise',
+        'export_one' => 'Exporter pour Lexware (PDF + liste de correspondance)',
+        'export_one_short' => 'Export Lexware',
+        'export_selected' => 'Exporter la sélection (ZIP)',
+        'open' => 'Ouvrir',
+        'save' => 'Enregistrer le profil tarifaire',
+    ],
+    'channel' => [
+        'api' => 'Remettre automatiquement à Lexware (XL uniquement, après validation du canal)',
+        'manual' => 'Exporter les documents et les téléverser manuellement',
+    ],
+    'coverage' => [
+        'expansion' => 'Extension',
+        'lexware' => 'Inclus dans Lexware',
+        'supplement' => 'Complément dans workDiary',
+        'unknown' => 'Aucune certitude',
+    ],
+    'csv' => [
+        'currency' => 'Devise',
+        'customer' => 'Client',
+        'customer_number' => 'Numéro client',
+        'due_on' => 'Échéance',
+        'file' => 'Fichier',
+        'gross' => 'TTC',
+        'handover' => 'État de remise',
+        'issued_on' => 'Date du document',
+        'net' => 'HT',
+        'number' => 'Numéro de document',
+        'status' => 'Statut de la facture',
+        'tax' => 'Taxe',
+    ],
+    'error' => [
+        'already_transferred' => 'Ce document a déjà été transmis via l\'interface.',
+        'api_channel_needs_xl' => 'La remise automatique nécessite une clé API propre — disponible uniquement dans le tarif XL. Tant que le canal de remise n\'est pas validé, l\'export manuel reste la voie standard.',
+        'not_exportable' => 'Le document :number n\'est pas encore émis et ne peut pas être remis.',
+        'nothing_selected' => 'Veuillez sélectionner au moins un document.',
+    ],
+    'feature' => [
+        'invoices' => ['label' => 'Factures standard et factures électroniques', 'description' => 'Émettre des factures dans workDiary, les produire en PDF/XRechnung/ZUGFeRD et les envoyer.'],
+        'quotes' => ['label' => 'Devis', 'description' => 'Devis avec lien d\'acceptation et relance.'],
+        'dunning' => ['label' => 'Relances et rappels de paiement', 'description' => 'Cycle de relance pour les factures gérées localement.'],
+        'recurring_invoices' => ['label' => 'Factures récurrentes', 'description' => 'Les plans de facturation créent exactement un brouillon vérifiable par période ; l\'émission et l\'envoi restent des étapes délibérées.'],
+        'partial_final_invoices' => ['label' => 'Factures d\'acompte et de solde', 'description' => 'Paquet séparé : les chaînes de documents locales existantes seront vérifiées à cet effet.'],
+        'foreign_tax_cases' => ['label' => 'Cas fiscaux et internationaux particuliers', 'description' => 'Paquet spécialisé séparé ; aucune promesse générale de prise en charge.'],
+        'accounting' => ['label' => 'Comptabilité (EÜR/compte de résultat, livre de caisse, immobilisations)', 'description' => 'Paquets autonomes après vérification de l\'existant et des responsabilités.'],
+        'tax_filings' => ['label' => 'Déclarations fiscales', 'description' => 'Hors MVP ; nécessite un processus et un canal de transmission propres.'],
+    ],
+    'field' => [
+        'action' => 'Action',
+        'confirmation_note' => 'Remarque de confirmation',
+        'coverage' => 'Lexware',
+        'dispatch_status' => 'Envoi',
+        'feature' => 'Fonction',
+        'handover_channel' => 'Canal de remise',
+        'handover_state' => 'Remise',
+        'invoice_status' => 'Statut de la facture',
+        'issued_on' => 'Date du document',
+        'local_features' => 'Utiliser localement dans workDiary',
+        'plan' => 'Tarif Lexware Office',
+        'plan_confirmed_on' => 'Confirmé le',
+        'plan_source' => 'Source de l\'information',
+        'select' => 'Sélectionner',
+        'state' => 'Dans workDiary',
+        'trial_ends_on' => 'Fin de l\'accès d\'essai',
+        'trial_successor_plan' => 'Tarif suivant confirmé',
+    ],
+    'flash' => [
+        'confirmed' => 'Remise de :number confirmée.',
+        'saved' => 'Profil tarifaire enregistré.',
+    ],
+    'handover' => [
+        'confirmed_at' => 'confirmé le :at par :name',
+        'count' => '{0} Aucun document|{1} Un document|[2,*] :count documents',
+        'dispatched' => 'envoyé (:channel) le :at',
+        'empty' => 'Aucun document émis dans la période choisie.',
+        'exported_at' => 'exporté le :at par :name',
+        'filter_all' => 'Tous les états de remise',
+        'not_dispatched' => 'pas encore envoyé',
+        'note' => '« Exporté » signifie téléchargé, « confirmé » signifie validé manuellement avec utilisateur et horodatage — aucun des deux ne signifie comptabilisé ou payé. Annulation et avoir restent des documents distincts faisant référence à l\'original.',
+        'status' => [
+            'confirmed' => 'Confirmé manuellement',
+            'exported' => 'Exporté',
+            'failed' => 'Échoué',
+            'needs_review' => 'Vérification requise',
+            'pending' => 'Ouvert',
+            'transferred' => 'Transmis',
+        ],
+        'subtitle' => 'Documents émis des clients facturés localement sur la période :range — statut de facture, d\'envoi et de remise séparés.',
+        'title' => 'Liste de remise Lexware',
+    ],
+    'hint' => [
+        'handover_channel' => 'L\'export est un téléchargement pour vous, pas un prétendu format d\'import Lexware. La remise automatique ne suit qu\'après validation du canal.',
+        'local_features' => 'Seuls les compléments activés délibérément apparaissent comme disponibles. Un tarif supérieur ne retire rien — vous pouvez continuer à travailler localement.',
+        'plan' => 'Orientation, pas autorisation : la remise proposée dépend de la connexion, des droits et de la disponibilité vérifiée.',
+        'trial' => 'À l\'expiration, le tarif suivant confirmé s\'applique — il n\'est pas supposé que XL s\'applique durablement.',
+    ],
+    'plan' => [
+        'l' => 'Lexware Office L',
+        'm' => 'Lexware Office M',
+        's' => 'Lexware Office S',
+        'unknown' => 'Inconnu / contrat spécial',
+        'xl' => 'Lexware Office XL',
+    ],
+    'plan_page' => [
+        'matrix_intro' => 'État pour :plan (matrice des fonctions :version). Complément signifie : disponible dans workDiary dès que module, responsabilité et droit correspondent.',
+        'matrix_note' => 'Les fonctions Lexware existantes comme la saisie de documents ou les postes ouverts ne sont pas présentées comme manquantes. Les profils de facture électronique sont vérifiés séparément avant activation.',
+        'matrix_title' => 'Compléments à votre tarif Lexware',
+        'preview_api_no' => 'Remise automatique : non disponible (pas de clé API propre dans ce tarif).',
+        'preview_api_yes' => 'Remise automatique : possible avec un accès XL dès que le canal de remise est validé.',
+        'preview_handovers' => '{0} Aucune remise ouverte.|{1} Une remise ouverte reste visible et peut passer à l\'export manuel.|[2,*] :count remises ouvertes restent visibles et peuvent passer à l\'export manuel.',
+        'preview_intro' => 'Un changement de tarif modifie les recommandations et les canaux de remise. Documents, séries locales en cours et plages de numéros sont conservés ; changer de système pilote est un processus distinct avec date d\'effet.',
+        'preview_note' => 'Avec M et L, un client dont Lexware détient l\'autorité de facturation ne peut pas recevoir de série locale — l\'autorité de facturation par client doit être changée délibérément.',
+        'preview_schedules' => '{0} Aucun plan de facturation actif.|{1} Un plan de facturation actif continue.|[2,*] :count plans de facturation actifs continuent.',
+        'preview_title' => 'Aperçu du changement de tarif',
+        'profile_title' => 'Votre tarif Lexware Office',
+        'read_only' => 'La modification du profil tarifaire nécessite le droit « Configuration financière ».',
+        'subtitle' => 'Enregistrez votre tarif et voyez quelles fonctions Lexware inclut et lesquelles workDiary complète — même sans connexion API.',
+        'title' => 'Compléments Lexware',
+        'trial_expired' => 'L\'accès d\'essai a expiré — le tarif suivant confirmé :plan s\'applique.',
+    ],
+    'reason' => [
+        'billing_external' => 'L\'autorité de facturation appartient à un programme externe. Les documents locaux exigent l\'autorité de facturation « workDiary » ; le changement est un processus distinct avec date d\'effet.',
+        'included' => 'Inclus dans votre tarif Lexware.',
+        'module_missing' => 'Le module « Ventes & facturation » n\'est pas activé.',
+        'not_activated' => 'Configuration requise : activez le complément dans le profil tarifaire.',
+        'planned' => 'Prévu — pas encore inclus dans ce paquet.',
+        'right_missing' => 'Le droit de consulter les factures vous manque.',
+        'unknown_plan' => 'Vérifier la disponibilité : avec un tarif inconnu, aucune certitude sur Lexware ; les fonctions locales restent utilisables selon leurs propres prérequis.',
+        'unknown_plan_local' => 'Activé localement ; avec un tarif inconnu, aucune certitude sur Lexware lui-même.',
+    ],
+    'schedules' => [
+        'hint' => 'Les factures récurrentes fonctionnent localement comme complément Lexware (tarif :plan). Remettez les documents émis via la liste de remise.',
+    ],
+    'source' => [
+        'provider' => 'Confirmation fiable du fournisseur',
+        'user' => 'Indication propre',
+    ],
+    'state' => [
+        'available' => 'Disponible dans workDiary',
+        'check_availability' => 'Vérifier la disponibilité',
+        'lexware' => 'Inclus dans Lexware',
+        'planned' => 'Prévu',
+        'setup_required' => 'Configuration requise',
+    ],
+];

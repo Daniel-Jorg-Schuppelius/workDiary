@@ -64,6 +64,21 @@ Route::middleware(['web', 'auth', \App\Http\Middleware\EnforcePlanModules::class
     Route::post('lexoffice-vouchers/{voucher}/dunning', [LexofficeVoucherController::class, 'createDunning'])
         ->name('lexoffice.vouchers.dunning'); // 045 Mahnung aus überfälliger Rechnung
 
+    // Lexware-Office-Tarifergänzungen (Feature 158, MVP-831–833): Tarifprofil
+    // mit Funktionsmatrix und die Übergabeliste lokal ausgestellter Belege —
+    // beides ohne API-Verbindung nutzbar.
+    Route::get('lexware/tarif', [\App\Plugins\Lexoffice\Http\Controllers\LexwarePlanController::class, 'index'])
+        ->name('lexoffice.plan.index');
+    Route::post('lexware/tarif', [\App\Plugins\Lexoffice\Http\Controllers\LexwarePlanController::class, 'update'])
+        ->name('lexoffice.plan.update');
+    Route::get('lexware/uebergabe', [\App\Plugins\Lexoffice\Http\Controllers\LexofficeHandoverController::class, 'index'])
+        ->name('lexoffice.handover.index');
+    Route::post('lexware/uebergabe/export', [\App\Plugins\Lexoffice\Http\Controllers\LexofficeHandoverController::class, 'export'])
+        ->name('lexoffice.handover.export');
+    Route::get('lexware/uebergabe/{invoice}/export', [\App\Plugins\Lexoffice\Http\Controllers\LexofficeHandoverController::class, 'exportOne'])
+        ->name('lexoffice.handover.export-one');
+    Route::post('lexware/uebergabe/{invoice}/bestaetigen', [\App\Plugins\Lexoffice\Http\Controllers\LexofficeHandoverController::class, 'confirm'])
+        ->name('lexoffice.handover.confirm');
     // Konflikt-Inbox
     Route::get('admin/lexoffice/conflicts', [LexofficeConflictInboxController::class, 'index'])
         ->name('admin.lexoffice.conflicts.index');

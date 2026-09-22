@@ -32,6 +32,10 @@ enum ContractKind: string implements HasLabel {
     case Supply = 'supply';
     case Framework = 'framework';
     case Membership = 'membership';
+    // Kundenvereinbarungen (Feature 157, MVP-822): zwingend Kunde als Partner,
+    // Aktivierung erst nach vollständig unterzeichneter Fassung.
+    case DataProcessing = 'data_processing';
+    case NonDisclosure = 'non_disclosure';
     case Other = 'other';
 
     public function label(): string {
@@ -44,7 +48,19 @@ enum ContractKind: string implements HasLabel {
             self::Supply => (string) __('Liefer-/Bezugsvertrag'),
             self::Framework => (string) __('Rahmenvertrag'),
             self::Membership => (string) __('Mitgliedschaft/Beitrag'),
+            self::DataProcessing => (string) __('Auftragsverarbeitungsvertrag (AVV)'),
+            self::NonDisclosure => (string) __('Verschwiegenheitsvereinbarung (NDA)'),
             self::Other => (string) __('Sonstiger Vertrag'),
         };
+    }
+
+    /** Vertragsart mit Unterzeichnungsschicht (Fassungen, Links, Nachweise). */
+    public function requiresSigning(): bool {
+        return in_array($this, self::signingKinds(), true);
+    }
+
+    /** @return list<self> */
+    public static function signingKinds(): array {
+        return [self::DataProcessing, self::NonDisclosure];
     }
 }

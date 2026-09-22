@@ -26,9 +26,14 @@
             <x-slot:actions>
                 @can('update', $contract)
                     @if ($contract->status === \App\Enums\Contract\ContractStatus::Draft)
-                        <form method="POST" action="{{ route('contracts.activate', $contract) }}">@csrf
-                            <button type="submit" class="btn btn-sm btn-primary">{{ __('Aktivieren') }}</button>
-                        </form>
+                        {{-- Kundenvereinbarungen (Feature 157): Aktivierung erst nach vollständiger Unterzeichnung — der Service blockt serverseitig. --}}
+                        @if ($contract->kind->requiresSigning() && $contract->signedRevision() === null)
+                            <span class="badge badge-warning badge-outline" title="{{ __('contract-signing.error.activate_unsigned') }}">{{ __('contract-signing.panel.activation_blocked') }}</span>
+                        @else
+                            <form method="POST" action="{{ route('contracts.activate', $contract) }}">@csrf
+                                <button type="submit" class="btn btn-sm btn-primary">{{ __('Aktivieren') }}</button>
+                            </form>
+                        @endif
                     @endif
                     @if ($contract->status->isOpen())
                         <form method="POST" action="{{ route('contracts.end', $contract) }}">@csrf
@@ -167,6 +172,14 @@
             </form>
         @endcan
     </x-card>
+
+    {{-- Unterzeichnung (Feature 157, MVP-822): nur bei AVV/NDA ($signingRevisions sonst null). --}}
+    @if ($signingRevisions !== null)
+        @include('contracts.signing._panel', ['contract' => $contract, 'signingRevisions' => $signingRevisions])
+    @endif
+
+    {{-- Vertrags-PDF und Anlagen liegen als Dokumente an der Akte (Feature 031) — Grundlage der Fassungen. --}}
+    @include('documents._panel', ['documentable' => $contract, 'documentableKind' => 'contract'])
 
     {{-- Abos des Reselling-Registers (Feature 152) mit diesem Vertrag als Fristenrahmen — nur mit Modul und Recht ($resaleSubscriptions sonst null). --}}
     @if ($resaleSubscriptions !== null)

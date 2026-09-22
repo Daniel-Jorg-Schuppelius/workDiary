@@ -323,6 +323,10 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ContractViewAny,
             PermissionEnum::ContractView,
             PermissionEnum::ContractManage,
+            // Feature 157: Kundenvereinbarungen anfordern, gegenzeichnen und
+            // eingegangene Nachweise prüfen.
+            PermissionEnum::ContractSigningManage,
+            PermissionEnum::ContractSigningReview,
             // D12: Sperren setzen/aufheben ist Leitungsaufgabe — die
             // Ausnahmefreigabe (override) bleibt GF/Admin.
             PermissionEnum::AssetBlockManage,
@@ -652,6 +656,9 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ContractViewAny,
             PermissionEnum::ContractView,
             PermissionEnum::ContractManage,
+            // Feature 157: Kundenvereinbarungen (Signaturanforderung, Prüfung).
+            PermissionEnum::ContractSigningManage,
+            PermissionEnum::ContractSigningReview,
             // Feature 068: Wertpotenzial/Angebotsstände lesend (Forecast).
             PermissionEnum::TenderViewAny,
             PermissionEnum::TenderView,

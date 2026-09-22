@@ -65,7 +65,7 @@ class PermissionEnforcementRuleTest extends TestCase {
         'EmergencyAssignmentManage', 'EnergyLogManage', 'EntryTypeManage', 'FlexBalanceManage',
         'FlexBalanceView', 'ForeignCustomerCreate', 'ForeignCustomerDelete', 'ForeignCustomerPromote',
         'ForeignCustomerUpdate', 'HolidayManage', 'ImportViewReports', 'InvoiceDelete',
-        'InvoiceExport', 'InvoiceIssue', 'InvoicePay', 'MaterialManage',
+        'InvoiceIssue', 'InvoicePay', 'MaterialManage',
         'MilestoneManage', 'OnCallShiftManage', 'OpenIssueCreate', 'OpenIssueUpdate',
         'OrganizationBilling', 'OrganizationView', 'PlatformDemoCreate', 'ProcedureSecondPersonRequest',
         'ProcedureSecondPersonRevoke', 'ProcedureSecondPersonSign', 'ProcedureSecondPersonTake',

@@ -152,6 +152,7 @@
                     <th>{{ __('Rechnung') }}</th>
                     <th class="text-right">{{ __('Betrag') }}</th>
                     <th>{{ __('Status') }}</th>
+                    <th>{{ __('lexware.field.handover_state') }}</th>
                 </tr>
             </x-slot:head>
             @forelse ($schedule->runs as $run)
@@ -166,9 +167,16 @@
                     </td>
                     <td class="text-right tabular-nums">{{ $run->invoice !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($run->invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) . ' ' . $run->invoice->currency->value : '—' }}</td>
                     <td>{{ $run->invoice !== null ? __('values.' . $run->invoice->status) : '—' }}</td>
+                    <td>
+                        @if ($run->invoice !== null)
+                            @include('lexoffice::handover._badge', ['invoice' => $run->invoice])
+                        @else
+                            —
+                        @endif
+                    </td>
                 </tr>
             @empty
-                <x-table.empty icon="event_repeat" :colspan="4" :title="__('Noch keine Läufe')" compact />
+                <x-table.empty icon="event_repeat" :colspan="5" :title="__('Noch keine Läufe')" compact />
             @endforelse
         </x-table>
     </x-card>

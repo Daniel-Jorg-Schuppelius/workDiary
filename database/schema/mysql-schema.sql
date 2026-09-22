@@ -5271,6 +5271,186 @@ CREATE TABLE `contract_obligations` (
   CONSTRAINT `contract_obligations_responsible_user_id_foreign` FOREIGN KEY (`responsible_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `contract_signature_evidences`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `contract_signature_evidences` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `revision_id` bigint(20) unsigned NOT NULL,
+  `request_id` bigint(20) unsigned NOT NULL,
+  `link_id` bigint(20) unsigned DEFAULT NULL,
+  `manifest_hash` char(64) NOT NULL,
+  `party` varchar(16) NOT NULL,
+  `method` varchar(16) NOT NULL,
+  `submitted_via` varchar(16) NOT NULL,
+  `signer_name` varchar(120) NOT NULL,
+  `signer_function` varchar(120) DEFAULT NULL,
+  `declaration_text` text NOT NULL,
+  `declaration_accepted` tinyint(1) NOT NULL DEFAULT 0,
+  `authority_confirmed` tinyint(1) NOT NULL DEFAULT 0,
+  `signed_at` timestamp NOT NULL,
+  `stated_signed_on` date DEFAULT NULL,
+  `disk` varchar(32) DEFAULT NULL,
+  `path` varchar(255) DEFAULT NULL,
+  `original_name` varchar(255) DEFAULT NULL,
+  `mime` varchar(120) DEFAULT NULL,
+  `size` bigint(20) unsigned NOT NULL DEFAULT 0,
+  `file_hash` char(64) DEFAULT NULL,
+  `recorded_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `review_status` varchar(16) DEFAULT NULL,
+  `reviewed_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `reviewed_at` timestamp NULL DEFAULT NULL,
+  `review_note` varchar(1000) DEFAULT NULL,
+  `ip` varchar(45) DEFAULT NULL,
+  `user_agent` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `contract_signature_evidences_organization_id_foreign` (`organization_id`),
+  KEY `contract_signature_evidences_request_id_foreign` (`request_id`),
+  KEY `contract_signature_evidences_link_id_foreign` (`link_id`),
+  KEY `contract_signature_evidences_recorded_by_user_id_foreign` (`recorded_by_user_id`),
+  KEY `contract_signature_evidences_reviewed_by_user_id_foreign` (`reviewed_by_user_id`),
+  KEY `cse_revision_party_idx` (`revision_id`,`party`),
+  CONSTRAINT `contract_signature_evidences_link_id_foreign` FOREIGN KEY (`link_id`) REFERENCES `contract_signature_links` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `contract_signature_evidences_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `contract_signature_evidences_recorded_by_user_id_foreign` FOREIGN KEY (`recorded_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `contract_signature_evidences_request_id_foreign` FOREIGN KEY (`request_id`) REFERENCES `contract_signature_requests` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `contract_signature_evidences_reviewed_by_user_id_foreign` FOREIGN KEY (`reviewed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `contract_signature_evidences_revision_id_foreign` FOREIGN KEY (`revision_id`) REFERENCES `contract_signing_revisions` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `contract_signature_links`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `contract_signature_links` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `revision_id` bigint(20) unsigned NOT NULL,
+  `request_id` bigint(20) unsigned DEFAULT NULL,
+  `purpose` varchar(16) NOT NULL,
+  `token_hash` char(64) NOT NULL,
+  `expires_at` timestamp NOT NULL,
+  `opened_at` timestamp NULL DEFAULT NULL,
+  `used_at` timestamp NULL DEFAULT NULL,
+  `revoked_at` timestamp NULL DEFAULT NULL,
+  `revoked_by` bigint(20) unsigned DEFAULT NULL,
+  `sent_at` timestamp NULL DEFAULT NULL,
+  `sent_to` varchar(180) DEFAULT NULL,
+  `send_error` varchar(500) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `csl_token_hash_unique` (`token_hash`),
+  KEY `contract_signature_links_organization_id_foreign` (`organization_id`),
+  KEY `contract_signature_links_request_id_foreign` (`request_id`),
+  KEY `contract_signature_links_revoked_by_foreign` (`revoked_by`),
+  KEY `contract_signature_links_created_by_foreign` (`created_by`),
+  KEY `csl_revision_purpose_idx` (`revision_id`,`purpose`),
+  CONSTRAINT `contract_signature_links_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `contract_signature_links_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `contract_signature_links_request_id_foreign` FOREIGN KEY (`request_id`) REFERENCES `contract_signature_requests` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `contract_signature_links_revision_id_foreign` FOREIGN KEY (`revision_id`) REFERENCES `contract_signing_revisions` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `contract_signature_links_revoked_by_foreign` FOREIGN KEY (`revoked_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `contract_signature_requests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `contract_signature_requests` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `revision_id` bigint(20) unsigned NOT NULL,
+  `party` varchar(16) NOT NULL,
+  `required` tinyint(1) NOT NULL DEFAULT 1,
+  `signer_name` varchar(120) NOT NULL,
+  `signer_function` varchar(120) DEFAULT NULL,
+  `signer_email` varchar(180) DEFAULT NULL,
+  `status` varchar(24) NOT NULL DEFAULT 'pending',
+  `waiver_reason` varchar(500) DEFAULT NULL,
+  `fulfilled_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `csq_revision_party_unique` (`revision_id`,`party`),
+  KEY `contract_signature_requests_organization_id_foreign` (`organization_id`),
+  CONSTRAINT `contract_signature_requests_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `contract_signature_requests_revision_id_foreign` FOREIGN KEY (`revision_id`) REFERENCES `contract_signing_revisions` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `contract_signing_manifest_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `contract_signing_manifest_items` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `revision_id` bigint(20) unsigned NOT NULL,
+  `document_version_id` bigint(20) unsigned NOT NULL,
+  `role` varchar(16) NOT NULL,
+  `sort` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `original_name` varchar(255) NOT NULL,
+  `sha256` char(64) NOT NULL,
+  `size` bigint(20) unsigned NOT NULL DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `csmi_revision_version_unique` (`revision_id`,`document_version_id`),
+  KEY `contract_signing_manifest_items_organization_id_foreign` (`organization_id`),
+  KEY `contract_signing_manifest_items_document_version_id_foreign` (`document_version_id`),
+  CONSTRAINT `contract_signing_manifest_items_document_version_id_foreign` FOREIGN KEY (`document_version_id`) REFERENCES `document_versions` (`id`),
+  CONSTRAINT `contract_signing_manifest_items_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `contract_signing_manifest_items_revision_id_foreign` FOREIGN KEY (`revision_id`) REFERENCES `contract_signing_revisions` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `contract_signing_revisions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `contract_signing_revisions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `contract_id` bigint(20) unsigned NOT NULL,
+  `revision_no` smallint(5) unsigned NOT NULL,
+  `predecessor_id` bigint(20) unsigned DEFAULT NULL,
+  `status` varchar(24) NOT NULL DEFAULT 'draft',
+  `controller_party` varchar(16) DEFAULT NULL,
+  `declaration_text` text NOT NULL,
+  `manifest_hash` char(64) DEFAULT NULL,
+  `review_on` date DEFAULT NULL,
+  `prepared_at` timestamp NULL DEFAULT NULL,
+  `prepared_by` bigint(20) unsigned DEFAULT NULL,
+  `completed_at` timestamp NULL DEFAULT NULL,
+  `withdrawn_at` timestamp NULL DEFAULT NULL,
+  `withdrawn_by` bigint(20) unsigned DEFAULT NULL,
+  `withdrawal_reason` varchar(500) DEFAULT NULL,
+  `superseded_by_id` bigint(20) unsigned DEFAULT NULL,
+  `superseded_at` timestamp NULL DEFAULT NULL,
+  `effective_on` date DEFAULT NULL,
+  `customer_visible_at` timestamp NULL DEFAULT NULL,
+  `customer_visible_by` bigint(20) unsigned DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `csr_contract_rev_unique` (`contract_id`,`revision_no`),
+  KEY `contract_signing_revisions_predecessor_id_foreign` (`predecessor_id`),
+  KEY `contract_signing_revisions_prepared_by_foreign` (`prepared_by`),
+  KEY `contract_signing_revisions_withdrawn_by_foreign` (`withdrawn_by`),
+  KEY `contract_signing_revisions_superseded_by_id_foreign` (`superseded_by_id`),
+  KEY `contract_signing_revisions_customer_visible_by_foreign` (`customer_visible_by`),
+  KEY `contract_signing_revisions_created_by_foreign` (`created_by`),
+  KEY `csr_org_status_idx` (`organization_id`,`status`),
+  CONSTRAINT `contract_signing_revisions_contract_id_foreign` FOREIGN KEY (`contract_id`) REFERENCES `contracts` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `contract_signing_revisions_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `contract_signing_revisions_customer_visible_by_foreign` FOREIGN KEY (`customer_visible_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `contract_signing_revisions_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `contract_signing_revisions_predecessor_id_foreign` FOREIGN KEY (`predecessor_id`) REFERENCES `contract_signing_revisions` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `contract_signing_revisions_prepared_by_foreign` FOREIGN KEY (`prepared_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `contract_signing_revisions_superseded_by_id_foreign` FOREIGN KEY (`superseded_by_id`) REFERENCES `contract_signing_revisions` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `contract_signing_revisions_withdrawn_by_foreign` FOREIGN KEY (`withdrawn_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `contracts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -11756,6 +11936,39 @@ CREATE TABLE `lexoffice_articles` (
   UNIQUE KEY `lexoffice_articles_organization_id_external_id_unique` (`organization_id`,`external_id`),
   KEY `lexoffice_articles_organization_id_archived_at_index` (`organization_id`,`archived_at`),
   CONSTRAINT `lexoffice_articles_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `lexoffice_invoice_handovers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `lexoffice_invoice_handovers` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `invoice_id` bigint(20) unsigned NOT NULL,
+  `channel` varchar(16) NOT NULL DEFAULT 'manual',
+  `status` varchar(16) NOT NULL DEFAULT 'pending',
+  `invoice_number` varchar(64) DEFAULT NULL,
+  `document_sha256` char(64) DEFAULT NULL,
+  `exported_at` timestamp NULL DEFAULT NULL,
+  `exported_by` bigint(20) unsigned DEFAULT NULL,
+  `confirmed_at` timestamp NULL DEFAULT NULL,
+  `confirmed_by` bigint(20) unsigned DEFAULT NULL,
+  `confirmation_note` varchar(500) DEFAULT NULL,
+  `external_file_id` varchar(64) DEFAULT NULL,
+  `external_voucher_id` varchar(64) DEFAULT NULL,
+  `attempts` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `last_error` varchar(500) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lih_invoice_unique` (`invoice_id`),
+  KEY `lexoffice_invoice_handovers_exported_by_foreign` (`exported_by`),
+  KEY `lexoffice_invoice_handovers_confirmed_by_foreign` (`confirmed_by`),
+  KEY `lih_org_status_idx` (`organization_id`,`status`),
+  CONSTRAINT `lexoffice_invoice_handovers_confirmed_by_foreign` FOREIGN KEY (`confirmed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `lexoffice_invoice_handovers_exported_by_foreign` FOREIGN KEY (`exported_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `lexoffice_invoice_handovers_invoice_id_foreign` FOREIGN KEY (`invoice_id`) REFERENCES `invoices` (`id`),
+  CONSTRAINT `lexoffice_invoice_handovers_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `lexoffice_voucher_lines`;
@@ -21961,3 +22174,5 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (824,'2027_02_22_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (825,'2027_02_22_101000_widen_invoice_item_description',91);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (826,'2027_02_22_101100_convert_local_times_to_utc',92);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (827,'2027_02_22_101200_convert_imported_sync_times_to_utc',93);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (828,'2027_02_23_100000_create_contract_signing_tables',94);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (829,'2027_02_23_100100_create_lexoffice_invoice_handovers_table',95);

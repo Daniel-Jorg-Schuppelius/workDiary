@@ -54,6 +54,11 @@ class ContractService {
 
     public function activate(Contract $contract, User $actor): Contract {
         $this->assertTransition($contract, ContractStatus::Active);
+        // Kundenvereinbarungen (Feature 157): Aktivierung erst mit vollständig
+        // unterzeichneter Fassung — serverseitig, nicht nur im Button.
+        if ($contract->kind->requiresSigning() && $contract->signedRevision() === null) {
+            throw new \RuntimeException((string) __('contract-signing.error.activate_unsigned'));
+        }
 
         return DB::transaction(function () use ($contract, $actor): Contract {
             $contract->forceFill(['status' => ContractStatus::Active->value])->save();

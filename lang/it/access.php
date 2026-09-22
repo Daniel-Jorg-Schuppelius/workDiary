@@ -645,6 +645,8 @@ return [
         'contract.viewAny' => 'Elencare i contratti',
         'contract.view' => 'Visualizzare un contratto',
         'contract.manage' => 'Creare e gestire i contratti',
+        'contract.signing.manage' => 'Accordi con i clienti: versioni, link di firma, controfirma, sostituzione',
+        'contract.signing.review' => 'Accordi con i clienti: verificare le prove ricevute',
 
         // Strumenti di misura / taratura (funzionalità 075)
         'assetCompliance.viewAny' => 'Elencare obblighi di verifica e strumenti di misura',

@@ -27,31 +27,31 @@ class BranchProfileProcedureTemplateTest extends TestCase {
     use RefreshDatabase;
 
     /**
-     * Höchstzahl an Platzhaltern je Profil (Stand 2026-09-17). Wer eine
-     * Vorlage ausarbeitet, senkt die Zahl hier; ein neues Profil steht mit 0 drin.
+     * Höchstzahl an Platzhaltern je Profil — seit MVP-835 (2026-09-22) überall
+     * null; ein neues Profil steht mit 0 drin und darf keine Platzhalter mitbringen.
      *
      * @var array<string, int>
      */
     private const PLACEHOLDER_BUDGET = [
         'anlagenwartung' => 0,
-        'bau-ausbau' => 3,
+        'bau-ausbau' => 0,
         'druck-kopiershop' => 0,
-        'elektro' => 5,
+        'elektro' => 0,
         'facility' => 0,
-        'galabau' => 5,
+        'galabau' => 0,
         'gebaeudereinigung' => 0,
-        'handwerk' => 4,
-        'it' => 5,
+        'handwerk' => 0,
+        'it' => 0,
         'kfz-fuhrparkservice' => 0,
-        'partyservice' => 4,
+        'partyservice' => 0,
         'pflege' => 0,
-        'shk' => 4,
+        'shk' => 0,
         'sicherheitsdienst' => 0,
-        'spedition' => 7,
-        'steuerberater' => 7,
+        'spedition' => 0,
+        'steuerberater' => 0,
         'taxi-mietwagen' => 0,
-        'veranstalter' => 4,
-        'veranstaltungstechnik' => 5,
+        'veranstalter' => 0,
+        'veranstaltungstechnik' => 0,
     ];
 
     public function test_placeholder_procedure_templates_never_grow(): void {
@@ -90,8 +90,8 @@ class BranchProfileProcedureTemplateTest extends TestCase {
         $this->assertSame([], array_values(array_diff(array_keys(self::PLACEHOLDER_BUDGET), $this->profileCodes())));
     }
 
-    public function test_filled_profiles_publish_every_declared_template(): void {
-        foreach (['gebaeudereinigung', 'anlagenwartung', 'facility', 'kfz-fuhrparkservice', 'sicherheitsdienst'] as $code) {
+    public function test_every_profile_publishes_every_declared_template(): void {
+        foreach ($this->profileCodes() as $code) {
             $organization = Organization::factory()->create();
             $actor = User::factory()->geschaeftsfuehrung()->create(['organization_id' => $organization->id]);
 

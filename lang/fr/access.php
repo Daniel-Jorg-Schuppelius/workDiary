@@ -645,6 +645,8 @@ return [
         'contract.viewAny' => 'Lister les contrats',
         'contract.view' => 'Consulter un contrat',
         'contract.manage' => 'Créer et gérer les contrats',
+        'contract.signing.manage' => 'Accords clients : versions, liens de signature, contresignature, remplacement',
+        'contract.signing.review' => 'Accords clients : vérifier les preuves reçues',
 
         // Moyens de contrôle / étalonnage (fonctionnalité 075)
         'assetCompliance.viewAny' => 'Lister les obligations de contrôle et moyens de contrôle',

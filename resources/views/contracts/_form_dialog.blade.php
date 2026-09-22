@@ -6,10 +6,18 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Dialog: neuer allgemeiner Vertrag (Welle D, Contract-Lifecycle-Management) --}}
+{{-- Dialog: neuer allgemeiner Vertrag (Welle D, Contract-Lifecycle-Management).
+     Aus der Kundenakte (Feature 157) mit vorbelegtem Kunden und, bei
+     $agreementOnly, beschränkt auf AVV/NDA. --}}
+@php
+    $presetCustomer ??= null;
+    $agreementOnly ??= false;
+    $kindOptions = $agreementOnly ? \App\Enums\Contract\ContractKind::signingKinds() : \App\Enums\Contract\ContractKind::cases();
+    $defaultPartnerType = $presetCustomer ? \App\Enums\Contract\ContractPartnerType::Customer->value : 'other';
+@endphp
 <x-modal
-    :title="__('Neuer Vertrag')"
-    :eyebrow="__('Vertragsverwaltung')"
+    :title="$agreementOnly ? __('contract-signing.dialog.new_agreement') : __('Neuer Vertrag')"
+    :eyebrow="$presetCustomer?->name ?? __('Vertragsverwaltung')"
     icon="contract"
     tone="primary"
     :action="route('contracts.store')"
@@ -17,10 +25,13 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Vertrag anlegen')"
 >
+    @if ($agreementOnly)
+        <p class="mb-3 text-sm text-muted">{{ __('contract-signing.dialog.new_agreement_intro') }}</p>
+    @endif
     <x-form-group :legend="__('Vertrag')" icon="contract" tone="primary" cols="2">
         <x-input-field name="title" :label="__('Titel/Bezeichnung')" :value="old('title')" required span="2" />
         <x-select-field name="kind" :label="__('Vertragsart')" required>
-            @foreach (\App\Enums\Contract\ContractKind::cases() as $kind)
+            @foreach ($kindOptions as $kind)
                 <option value="{{ $kind->value }}" @selected(old('kind') === $kind->value)>{{ $kind->label() }}</option>
             @endforeach
         </x-select-field>
@@ -35,14 +46,16 @@
     <x-form-group :legend="__('Vertragspartner')" icon="handshake" tone="primary" cols="2">
         <x-select-field name="partner_type" :label="__('Partnerbezug')" required>
             @foreach (\App\Enums\Contract\ContractPartnerType::cases() as $pt)
-                <option value="{{ $pt->value }}" @selected(old('partner_type', 'other') === $pt->value)>{{ $pt->label() }}</option>
+                <option value="{{ $pt->value }}" @selected(old('partner_type', $defaultPartnerType) === $pt->value)>{{ $pt->label() }}</option>
             @endforeach
         </x-select-field>
         <x-input-field name="partner_name" :label="__('Partner (Freitext)')" :value="old('partner_name')" />
-        <x-select-field name="customer_id" :label="__('Kunde (optional)')">
-            <option value="">{{ __('kein Kundenbezug') }}</option>
+        <x-select-field name="customer_id" :label="$agreementOnly ? __('Kunde') : __('Kunde (optional)')" :required="$agreementOnly">
+            @unless ($agreementOnly)
+                <option value="">{{ __('kein Kundenbezug') }}</option>
+            @endunless
             @foreach ($customers as $c)
-                <option value="{{ $c->sqid }}" @selected((string) old('customer_id') === $c->sqid)>{{ $c->name }}</option>
+                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', $presetCustomer?->sqid) === $c->sqid)>{{ $c->name }}</option>
             @endforeach
         </x-select-field>
         <x-select-field name="supplier_id" :label="__('Lieferant (optional)')">

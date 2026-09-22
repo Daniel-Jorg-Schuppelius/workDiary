@@ -418,6 +418,7 @@ return [
             ],
             'contract' => [
                 'deadlineDue' => 'Scadenza contrattuale',
+                'signatureReceived' => 'Prova ricevuta per un accordo',
             ],
             'accounting' => [
                 'recurringOverdue' => 'Operazione ricorrente scaduta',

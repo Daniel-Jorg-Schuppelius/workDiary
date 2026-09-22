@@ -315,6 +315,17 @@ class DocumentService {
      * Datenlebenszyklus (außerhalb des MVP).
      */
     public function delete(Document $document, User $actor): void {
+        // Als Nachweis gebundene Versionen (Feature 157) überleben jeden
+        // gewöhnlichen Löschweg — der FK der Manifestzeile ist RESTRICT, der
+        // Soft-Delete endet hier mit einer Meldung statt still.
+        $bound = \App\Models\Contract\ContractSigningManifestItem::query()
+            ->withoutGlobalScopes()
+            ->whereIn('document_version_id', $document->versions()->select('id'))
+            ->exists();
+        if ($bound) {
+            throw ValidationException::withMessages(['document' => (string) __('contract-signing.error.document_bound')]);
+        }
+
         DB::transaction(function () use ($document, $actor): void {
             // Fachliches Event VOR dem Delete, damit es gemeinsam mit dem
             // Auditable-`deleted` in der Hash-Kette landet.

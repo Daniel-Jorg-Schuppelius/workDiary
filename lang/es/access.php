@@ -645,6 +645,8 @@ return [
         'contract.viewAny' => 'Listar contratos',
         'contract.view' => 'Ver contrato',
         'contract.manage' => 'Crear y gestionar contratos',
+        'contract.signing.manage' => 'Acuerdos con clientes: versiones, enlaces de firma, contrafirma, sustitución',
+        'contract.signing.review' => 'Acuerdos con clientes: revisar las pruebas recibidas',
 
         // Equipos de medición / calibración (funcionalidad 075)
         'assetCompliance.viewAny' => 'Listar obligaciones de inspección y equipos de medición',
