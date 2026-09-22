@@ -22,6 +22,14 @@ import { initVideoPositions } from "./video-position.js";
 import { __ } from "./i18n.js";
 import { html, setHtml, safeUrl, sameOriginPath, trustedServerHtml } from "./lib/html.js";
 import { postJson, request } from "./lib/http.js";
+import {
+    DRAG_MEDIA_QUERY,
+    baseRect,
+    clampOffset,
+    dragOffset,
+    isDragBlocked,
+    translateValue,
+} from "./lib/dialog-drag.js";
 import { initCharts } from "./charts.js";
 import "./sortable-tables.js";
 import "./bulk-selection.js";
@@ -542,6 +550,116 @@ document.addEventListener("click", (event) => {
         dialog.close();
     }
 });
+
+// Dialoge am Header verschieben. Delegiert über document, damit alle
+// <x-modal>-Dialoge (eingebettet im #entry-modal wie standalone) abgedeckt
+// sind. Die Lage wird als `translate` auf der .modal-box gesetzt — dieselbe
+// Eigenschaft, über die daisyUI die Box beim Öffnen animiert. Beim Schließen
+// wird zurückgesetzt, damit der (wiederverwendete) Dialog zentriert öffnet.
+// Pure Logik: resources/js/lib/dialog-drag.js.
+(() => {
+    if (typeof document === "undefined" || typeof window.matchMedia !== "function") return;
+
+    const media = window.matchMedia(DRAG_MEDIA_QUERY);
+    /** @type {WeakMap<HTMLElement, {x: number, y: number}>} */
+    const applied = new WeakMap();
+    /** @type {null | {box: HTMLElement, header: HTMLElement, pointerId: number, start: {x: number, y: number}, base: {x: number, y: number}, rect: {left: number, top: number, width: number, height: number}}} */
+    let drag = null;
+
+    const viewport = () => ({ width: window.innerWidth, height: window.innerHeight });
+
+    /** @param {HTMLElement} box */
+    const reset = (box) => {
+        box.style.removeProperty("translate");
+        applied.delete(box);
+    };
+
+    /** Alle Boxen offener Dialoge. */
+    const openBoxes = () =>
+        /** @type {HTMLElement[]} */ ([
+            ...document.querySelectorAll("dialog[open] > .modal-box"),
+        ]);
+
+    document.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0 || !media.matches) return;
+        const target = /** @type {HTMLElement} */ (event.target);
+        const header = /** @type {HTMLElement|null} */ (target.closest(".wd-dialog__header"));
+        if (!header) return;
+        const box = /** @type {HTMLElement|null} */ (header.closest(".modal-box"));
+        const dialog = /** @type {HTMLDialogElement|null} */ (box?.closest("dialog"));
+        if (!box || !dialog || !dialog.open) return;
+        if (isDragBlocked(target, header)) return;
+
+        const base = applied.get(box) ?? { x: 0, y: 0 };
+        drag = {
+            box,
+            header,
+            pointerId: event.pointerId,
+            start: { x: event.clientX, y: event.clientY },
+            base,
+            rect: baseRect(box.getBoundingClientRect(), base),
+        };
+        header.setPointerCapture(event.pointerId);
+        box.dataset.wdDragging = "";
+        // Flatpickr hängt am <dialog> und berechnet seine Lage nur beim Öffnen —
+        // nach dem Verschieben stünde er neben dem Feld.
+        dialog.querySelectorAll("input").forEach((input) => {
+            /** @type {any} */ (input)._flatpickr?.close();
+        });
+        event.preventDefault();
+    });
+
+    document.addEventListener("pointermove", (event) => {
+        if (!drag || event.pointerId !== drag.pointerId) return;
+        const offset = dragOffset({
+            start: drag.start,
+            current: { x: event.clientX, y: event.clientY },
+            base: drag.base,
+            box: drag.rect,
+            viewport: viewport(),
+        });
+        drag.box.style.translate = translateValue(offset);
+        applied.set(drag.box, offset);
+    });
+
+    /** @param {PointerEvent} event */
+    const end = (event) => {
+        if (!drag || event.pointerId !== drag.pointerId) return;
+        delete drag.box.dataset.wdDragging;
+        drag = null;
+    };
+    document.addEventListener("pointerup", end);
+    document.addEventListener("pointercancel", end);
+
+    // `close` bubbelt nicht → Capture-Phase.
+    document.addEventListener(
+        "close",
+        (event) => {
+            const dialog = event.target;
+            if (!(dialog instanceof HTMLDialogElement)) return;
+            dialog.querySelectorAll(".modal-box").forEach((box) => reset(/** @type {HTMLElement} */ (box)));
+        },
+        true,
+    );
+
+    // Fenster verkleinert: Lage neu begrenzen, damit der Header erreichbar bleibt.
+    window.addEventListener("resize", () => {
+        if (drag) return;
+        openBoxes().forEach((box) => {
+            const current = applied.get(box);
+            if (!current) return;
+            const offset = clampOffset(current, baseRect(box.getBoundingClientRect(), current), viewport());
+            box.style.translate = translateValue(offset);
+            applied.set(box, offset);
+        });
+    });
+
+    // Unter 640 px gilt das Bottom-Sheet-Layout: Verschiebung aufheben.
+    media.addEventListener("change", () => {
+        if (media.matches) return;
+        openBoxes().forEach(reset);
+    });
+})();
 
 // Entry-Dialog: lädt Form/Detailansichten mit ?dialog=1 in ein globales <dialog>
 (() => {

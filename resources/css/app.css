@@ -1392,6 +1392,22 @@
         overscroll-behavior: contain;
     }
 
+    /* Verschiebbar am Header (JS in app.js, Logik in lib/dialog-drag.js).
+       Nur ab 640 px — darunter gilt das Bottom-Sheet-Layout. Während des
+       Ziehens keine Transition: daisyUI animiert die Box über `translate`
+       (unlayered, daher !important). */
+    @media (min-width: 640px) {
+        .modal-box .wd-dialog__header {
+            cursor: move;
+            touch-action: none;
+        }
+    }
+
+    .modal-box[data-wd-dragging] {
+        transition: none !important;
+        user-select: none;
+    }
+
     /* Aktiv-Toggle im Header deaktiviert → Body wird visuell gesperrt
        (zusätzlich zum `inert`-Attribut, das Fokus & Klicks unterbindet). */
     .wd-dialog__body--locked {
