@@ -992,6 +992,15 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 
 ### Fixed
 
+- Installer (`php artisan app:install`): Nach „Datenbank konfiguriert & migriert"
+  blieb der Befehl ohne weitere Ausgabe stehen. Laravel bindet die Ausgabe der
+  Prompts beim Start jedes Commands neu; die inneren Aufrufe von `migrate` und
+  `db:seed` ließen sie auf ihrem eigenen Puffer zurück, sodass die Frage nach dem
+  Namen der Organisation unsichtbar auf Tastatureingabe wartete. Die Prompts
+  werden nach den Migrationen wieder an die Konsole gebunden. Außerdem verwirft
+  der CLI-Installer zum Abschluss wie der Web-Installer die Bootstrap-Caches,
+  damit ein vorhandener `config:cache` die frisch geschriebenen .env-Werte nicht
+  verdeckt.
 - Deploy: Während des Updates stand die Wartungsseite ohne CSS und Schriften da.
   Sie wird beim `artisan down` vorgerendert und verweist auf die Hash-Namen des
   laufenden Builds; `npm run build` leerte `public/build`, die Anfrage nach dem

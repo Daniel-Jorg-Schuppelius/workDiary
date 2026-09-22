@@ -19,16 +19,15 @@ use Throwable;
 
 /**
  * CLI-Pendant zum Web-Installer. Führt interaktiv durch dieselben Schritte und
- * nutzt denselben {@see InstallationManager}.
+ * nutzt denselben {@see InstallationManager} — aus dem Container wie
+ * {@see AdminCommand}, damit Tests ihn durch eine Attrappe ersetzen können.
  */
 class InstallCommand extends Command {
     protected $signature = 'app:install {--force : Vorhandene Installation überschreiben}';
 
     protected $description = 'Richtet die Anwendung interaktiv ein (APP_KEY, Datenbank, Admin, Mail, Integrationen).';
 
-    public function handle(): int {
-        $installer = InstallationManager::make();
-
+    public function handle(InstallationManager $installer): int {
         if ($installer->isInstalled() && ! $this->option('force')) {
             $this->error('Die Anwendung ist bereits installiert. Mit --force erneut ausführen.');
 
@@ -84,6 +83,10 @@ class InstallCommand extends Command {
 
             return self::FAILURE;
         }
+        // Die inneren Artisan::call() von migrate/db:seed binden die statische
+        // Prompt-Ausgabe auf ihren eigenen Puffer um; ohne Rückbindung bleibt
+        // der nächste Prompt unsichtbar und wartet endlos auf Eingabe.
+        $this->configurePrompts($this->input);
         $this->info('✓ Datenbank konfiguriert & migriert.');
 
         // 4) Administrator
@@ -128,6 +131,9 @@ class InstallCommand extends Command {
 
         // 7) Abschluss
         $installer->markInstalled();
+        // Wie im Web-Installer: ein vorhandener config:cache würde die frisch
+        // geschriebenen .env-Werte verdecken.
+        $installer->clearCaches();
         $this->newLine();
         $this->info('Installation abgeschlossen. Sie können sich nun anmelden.');
 
