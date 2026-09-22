@@ -53,7 +53,7 @@ Every delivery carries the following headers:
 
 The HMAC is computed over `<timestamp>.<body>` with the signing key:
 
-```
+```text
 expected = HMAC_SHA256(timestamp + "." + raw_body, signing_key)
 ```
 

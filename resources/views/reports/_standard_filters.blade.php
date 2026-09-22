@@ -91,7 +91,7 @@
         <select id="{{ $idPrefix }}-entry-type" name="entry_type" class="select select-sm select-bordered w-full" data-autosubmit>
             <option value="">{{ __('Alle Typen') }}</option>
             @foreach ($filterEntryTypes ?? [] as $option)
-                <option value="{{ $option->sqid }}" @selected($standardFilters->entryTypeId === $option->id)>{{ $option->label }}</option>
+                <option value="{{ $option->sqid }}" @selected($standardFilters->entryTypeId === $option->id)>{{ $option->display_label }}</option>
             @endforeach
         </select>
     </x-filter-field>

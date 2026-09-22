@@ -28,6 +28,7 @@ return [
         'assets' => 'Activos',
         'contact_persons' => 'Personas de contacto',
         'documents' => 'Documentos (ZIP)',
+        'club_members' => 'Socios de la asociación',
     ],
     'template' => [
         'example_required' => 'Valor de ejemplo (obligatorio)',
@@ -79,6 +80,8 @@ return [
             'status' => 'El valor no es un estado válido.',
             'amount' => 'Importe no válido.',
             'url' => 'Dirección no válida (se espera http:// o https://).',
+            'integer' => 'No es un número entero válido.',
+            'club_kind' => 'Tipo de afiliación no válido (activo, pasivo, colaborador, en pausa).',
         ],
         'outOfRange' => [
             'rowLimit' => 'Límite de filas (:max) superado — resto ignorado.',

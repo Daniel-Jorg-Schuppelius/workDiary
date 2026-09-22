@@ -40,7 +40,6 @@ Sans profil, la valeur système par défaut (sortie actuelle) s'applique.
 Les factures ZUGFeRD/PDF-A-3 restent valides après application du design —
 la facture structurée reste déterminante.
 
-
 Design de base CI et héritage :
 
 - Le profil standard de l'organisation est votre **design de base CI**.

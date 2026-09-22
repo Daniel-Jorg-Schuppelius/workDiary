@@ -66,6 +66,10 @@ return [
             'title' => 'Administration',
             'description' => 'Organisation, Rollen und Rechte, Import, Sicherung, Lizenz und Integrationen.',
         ],
+        'verein' => [
+            'title' => 'Verein',
+            'description' => 'Mitglieder, Gruppen, Abteilungen und Wechselvorschläge der Vereinsverwaltung.',
+        ],
         'weitere' => [
             'title' => 'Weitere Themen',
             'description' => 'Alles, was keinem der Kernbereiche zugeordnet ist.',

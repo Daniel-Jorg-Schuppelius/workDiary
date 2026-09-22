@@ -267,10 +267,17 @@ class InstallationManager {
     }
 
     /**
-     * Hebt das Zeit- und Speicherlimit für langlaufende Installationsschritte
-     * an, soweit die Hosting-Umgebung das zulässt (ignoriert Fehler still).
+     * Hebt das Zeitlimit für langlaufende Installationsschritte an, soweit die
+     * Hosting-Umgebung das zulässt (ignoriert Fehler still). Nur anheben, nie
+     * absenken: In der CLI ist das Limit 0 (unbegrenzt) — ein starres 300-s-Limit
+     * brachte dort langlebige Paratest-Worker später in fremden Tests zum Absturz.
      */
     private function extendExecutionTime(int $seconds = 300): void {
+        $current = (int) ini_get('max_execution_time');
+        if ($current === 0 || $current >= $seconds) {
+            return;
+        }
+
         if (function_exists('set_time_limit')) {
             @set_time_limit($seconds);
         }

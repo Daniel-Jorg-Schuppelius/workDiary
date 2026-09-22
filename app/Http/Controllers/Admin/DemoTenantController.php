@@ -44,6 +44,8 @@ class DemoTenantController extends Controller {
             'isEmpty' => $isEmpty,
             'industries' => DemoIndustry::all(),
             'currentIndustry' => $organization->is_demo ? $this->seeder->resolveIndustry($organization) : DemoIndustry::default(),
+            'fullShowcase' => $organization->is_demo && $this->seeder->resolveFullShowcase($organization),
+            'licenseOutlook' => $this->seeder->licenseOutlook($organization),
         ]);
     }
 
@@ -58,7 +60,7 @@ class DemoTenantController extends Controller {
 
         $industry = DemoIndustry::fromKey((string) $request->input('industry'));
 
-        $counts = $this->seeder->seed($organization, $user, $industry);
+        $counts = $this->seeder->seed($organization, $user, $industry, $request->boolean('full_showcase'));
 
         $this->writeAudit($user, $organization, 'demo.seeded', $counts);
 
@@ -99,6 +101,7 @@ class DemoTenantController extends Controller {
         return view('admin.demo._fresh_org_dialog', [
             'industries' => DemoIndustry::all(),
             'defaultIndustry' => DemoIndustry::default(),
+            'licenseOutlook' => $this->seeder->licenseOutlook(),
             'platformAdmins' => User::query()
                 ->where('is_platform_admin', true)
                 ->orderBy('name')
@@ -121,6 +124,7 @@ class DemoTenantController extends Controller {
                 DemoIndustry::all(),
             ))],
             'member' => ['nullable', 'string', 'max:64'],
+            'full_showcase' => ['nullable', 'boolean'],
         ]);
 
         /** @var User $actor */
@@ -139,7 +143,12 @@ class DemoTenantController extends Controller {
             }
         }
 
-        $result = $this->seeder->freshOrg(DemoIndustry::fromKey((string) $data['industry']), $actor, $member);
+        $result = $this->seeder->freshOrg(
+            DemoIndustry::fromKey((string) $data['industry']),
+            $actor,
+            $member,
+            $request->boolean('full_showcase'),
+        );
 
         // Die Liste blendet Demo-Organisationen sonst aus (MVP-807).
         return redirect()->route('admin.organizations.index', ['show_demo' => 1])

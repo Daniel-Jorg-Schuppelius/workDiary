@@ -1,0 +1,21 @@
+// markdownlint-cli2 — Formatregeln für die Markdown-Dateien der App
+// (README, CHANGELOG, AGENTS.md, Hilfe-Topics unter resources/help/).
+// Gleiche Regeln wie im Schwester-Repo WorkDiary-Architecture; die
+// VS-Code-Erweiterung DavidAnson.vscode-markdownlint formatiert beim Speichern.
+// Repo-weit: npx markdownlint-cli2 "**/*.md"   |   Autofix: … --fix
+{
+    "config": {
+        "default": true,
+        "MD013": false,
+        "MD060": false,
+        // CHANGELOG: gleiche Unterüberschriften je Version sind gewollt.
+        "MD024": { "siblings_only": true },
+        "MD004": { "style": "dash" },
+        "MD049": { "style": "asterisk" },
+        "MD050": { "style": "asterisk" },
+        "MD033": {
+            "allowed_elements": ["details", "summary", "br", "sup", "sub", "kbd", "img", "a", "b", "code", "p", "span", "table", "tr", "td", "th"]
+        }
+    },
+    "ignores": ["vendor/**", "node_modules/**", "storage/**", "public/**", ".git/**"]
+}

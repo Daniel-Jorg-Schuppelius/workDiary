@@ -65,6 +65,10 @@ return [
             'title' => 'Administration',
             'description' => 'Organisation, roles and permissions, import, backup, licence and integrations.',
         ],
+        'verein' => [
+            'title' => 'Club',
+            'description' => 'Members, groups, departments and change proposals of the club management.',
+        ],
         'weitere' => [
             'title' => 'Other topics',
             'description' => 'Everything that does not belong to one of the core areas.',

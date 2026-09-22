@@ -42,7 +42,8 @@
     </x-slot:actions>
 
     <x-filter-bar :action="route('supplier-scorecards.index')" :reset="route('supplier-scorecards.index')">
-        <x-date-range from-name="from" to-name="to" :from="$from->toDateString()" :to="$to->toDateString()" size="sm" />
+        <x-date-range class="w-80 shrink-0" :label="false" from-name="from" to-name="to"
+                      :from="$from->toDateString()" :to="$to->toDateString()" />
         <x-icon-btn icon="filter_alt" tone="ghost" size="sm" type="submit" show-label>{{ __('scorecard.apply') }}</x-icon-btn>
     </x-filter-bar>
 

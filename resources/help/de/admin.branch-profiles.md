@@ -1,7 +1,7 @@
 ---
 title: "Branchenprofile"
 topic: admin.branch-profiles
-version: 1
+version: 2
 audience:
     - admin
 related:
@@ -49,3 +49,20 @@ Wichtig zu wissen:
 - Jede Installation wird revisionssicher protokolliert.
 - Profile sind als Konfiguration hinterlegt; neue Gewerke lassen sich ohne
   Code-Änderung ergänzen.
+
+Mehrere Profile, Hauptprofil und Deinstallation:
+
+- Profile lassen sich **kombinieren** (z. B. Elektro und SHK). Das zuerst
+  installierte ist das **Hauptprofil**; Nav-Fokus und Fach-Vorgaben folgen
+  ihm, die Modul-Empfehlung im Funktionsumfang vereint alle installierten
+  Profile. **Als Hauptprofil festlegen** wechselt es bewusst.
+- **Deinstallieren** (Plattform-Admin) entfernt unbenutzte Auftragsarten,
+  Kategorien und Tags des Profils, deaktiviert benutzte Klassifikationen und
+  löscht die Pflichtregeln des Profils. Checklisten, Wartungspläne, SLA-,
+  Reinigungs- und Raumvorlagen bleiben als Stammdaten erhalten.
+- Ein **Update-Hinweis** auf der Karte zeigt, dass eine neuere Profilversion
+  vorliegt; „Erneut anwenden" übernimmt sie.
+- **Import** nimmt ein JSON-Profil aus dem Katalog entgegen; unbekannte
+  Klassifikations-Domänen oder Module werden abgelehnt.
+- Auftragsarten sind in den aktivierbaren Sprachen hinterlegt; die Anzeige
+  folgt der Sprache des Nutzers, das Quell-Label bleibt bearbeitbar.

@@ -13,6 +13,7 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'veranstaltungstechnik',
     'label' => 'Veranstaltungstechnik',
+    'description' => 'Veranstaltungstechnik: Ton, Licht, Rigging und Strom mit Safety-Checks im Vier-Augen-Prinzip, Soundcheck, Showbetreuung und Schadensdokumentation.',
     'version' => 1,
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.

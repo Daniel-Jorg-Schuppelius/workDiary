@@ -52,7 +52,7 @@
                 <option value="">{{ __('products.field.no_group') }}</option>
                 @foreach ($productGroups as $group)
                     <option value="{{ \App\Support\Sqid::encode(\App\Models\Classification::class, $group->id) }}"
-                            @selected(old('product_group_classification_id', $product->product_group_classification_id ? \App\Support\Sqid::encode(\App\Models\Classification::class, $product->product_group_classification_id) : '') === \App\Support\Sqid::encode(\App\Models\Classification::class, $group->id))>{{ $group->label }}</option>
+                            @selected(old('product_group_classification_id', $product->product_group_classification_id ? \App\Support\Sqid::encode(\App\Models\Classification::class, $product->product_group_classification_id) : '') === \App\Support\Sqid::encode(\App\Models\Classification::class, $group->id))>{{ $group->display_label }}</option>
                 @endforeach
             </select>
             @error('product_group_classification_id')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror

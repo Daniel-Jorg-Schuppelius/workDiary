@@ -161,6 +161,8 @@ return [
     ],
     'branch_profile' => [
         'installed' => 'Branch-Profil installiert',
+        'primaryChanged' => 'Hauptprofil gewechselt',
+        'uninstalled' => 'Branch-Profil deinstalliert',
     ],
     'caldav' => [
         'connection_saved' => 'CalDAV-Verbindung gespeichert',
@@ -319,6 +321,8 @@ return [
         'orgCreated' => 'Demo-Mandant erstellt',
         'reset' => 'Demo-Mandant zurückgesetzt',
         'seeded' => 'Demo-Daten erzeugt',
+        'licensed' => 'Demo-Lizenz ausgestellt',
+        'pruned' => 'Demo-Mandant nach Aufbewahrungsfrist gelöscht',
     ],
     'device' => [
         'revoked' => 'Gerät widerrufen',
@@ -1087,5 +1091,37 @@ return [
     ],
     'lexware' => [
         'tariffChanged' => 'Lexware-Tarifprofil geändert',
+    ],
+    // Vereinsverwaltung (Feature 159, MVP-842)
+    'club' => [
+        'member' => [
+            'kindChanged' => 'Mitgliedschaftsart geändert',
+            'left' => 'Mitglied ausgetreten',
+        ],
+        'guardian' => [
+            'granted' => 'Vertretung eingerichtet',
+            'revoked' => 'Vertretung widerrufen',
+        ],
+        'group' => [
+            'memberAdmitted' => 'Mitglied in Gruppe aufgenommen',
+            'membershipRequested' => 'Gruppenantrag vorgemerkt',
+            'membershipApproved' => 'Gruppenantrag freigegeben',
+            'membershipRejected' => 'Gruppenantrag abgelehnt',
+            'membershipEnded' => 'Gruppenzuordnung beendet',
+        ],
+        'event' => [
+            'updated' => 'Vereinstermin geändert',
+            'cancelled' => 'Vereinstermin abgesagt',
+            'registered' => 'Teilnahme angemeldet',
+            'waitlisted' => 'Teilnahme auf Warteliste',
+            'registrationCancelled' => 'Teilnahme abgesagt',
+            'invited' => 'Zum Termin eingeladen',
+            'promoted' => 'Von der Warteliste nachgerückt',
+        ],
+        'proposal' => [
+            'created' => 'Wechselvorschlag angelegt',
+            'confirmed' => 'Wechselvorschlag bestätigt',
+            'dismissed' => 'Wechselvorschlag verworfen',
+        ],
     ],
 ];

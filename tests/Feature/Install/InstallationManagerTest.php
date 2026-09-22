@@ -43,6 +43,31 @@ class InstallationManagerTest extends TestCase {
         return new InstallationManager(new EnvWriter($this->envPath), $this->lockPath);
     }
 
+    public function test_extend_execution_time_never_lowers_an_unlimited_limit(): void {
+        // CLI und Paratest-Worker laufen mit 0 (unbegrenzt); ein starres
+        // 300-s-Limit ließ Worker später in fremden Tests sterben.
+        $method = new \ReflectionMethod(InstallationManager::class, 'extendExecutionTime');
+        $manager = $this->manager();
+        $original = (string) ini_get('max_execution_time');
+
+        try {
+            ini_set('max_execution_time', '0');
+            $method->invoke($manager, 300);
+            $this->assertSame('0', ini_get('max_execution_time'));
+
+            ini_set('max_execution_time', '30');
+            $method->invoke($manager, 300);
+            $this->assertSame('300', ini_get('max_execution_time'));
+
+            ini_set('max_execution_time', '600');
+            $method->invoke($manager, 300);
+            $this->assertSame('600', ini_get('max_execution_time'));
+        } finally {
+            set_time_limit((int) $original);
+            ini_set('max_execution_time', $original);
+        }
+    }
+
     public function test_ensure_app_key_generates_when_empty(): void {
         $manager = $this->manager();
 

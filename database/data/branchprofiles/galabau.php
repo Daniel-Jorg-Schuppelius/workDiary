@@ -13,6 +13,7 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'galabau',
     'label' => 'Garten- und Landschaftsbau',
+    'description' => 'Garten- und Landschaftsbau: Pflegegänge, Neuanlagen, Pflanzung, Pflaster, Baumpflege und Winterdienst mit Prüfplänen für Bäume und Spielplätze.',
     'version' => 1,
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.

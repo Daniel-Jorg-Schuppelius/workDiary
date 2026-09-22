@@ -305,6 +305,13 @@ function closeDrawer(options = {}) {
     }
 }
 
+// Hilfecenter-Suchfeld im Drawer-Kopf: im Fallback-Panel ausblenden, dort
+// steht bereits die Drawer-eigene Suche.
+function setCenterSearchHidden(hidden) {
+    const form = document.querySelector("[data-help-center-search]");
+    if (form) form.classList.toggle("hidden", hidden);
+}
+
 function setTitle(text) {
     const titleEl = document.querySelector("[data-help-title]");
     if (titleEl) titleEl.textContent = text;
@@ -327,6 +334,7 @@ function renderFallback(message = null) {
     currentTopic = null;
     currentLocale = null;
     if (footerEl) footerEl.classList.add("hidden");
+    setCenterSearchHidden(true);
 
     if (template) {
         setTitle(template.getAttribute("data-fallback-title") || "");
@@ -406,6 +414,7 @@ function renderTopic(payload) {
     // body_html kommt serverseitig gerendert aus der Help-Registry.
     if (bodyEl) setHtml(bodyEl, trustedServerHtml(payload.body_html || ""));
     if (footerEl) footerEl.classList.remove("hidden");
+    setCenterSearchHidden(false);
     if (thanksEl) thanksEl.classList.add("hidden");
     feedbackSent = false;
 

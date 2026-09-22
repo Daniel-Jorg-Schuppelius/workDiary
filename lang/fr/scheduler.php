@@ -94,6 +94,9 @@ return [
     // Noms lisibles des tâches (clés registry, imbriquées à cause de la notation à points) ;
     // ajouter les nouvelles tâches ici dans toutes les langues — sinon repli = clé.
     'job' => [
+        'demo' => [
+            'prune' => 'Supprimer les organisations de démonstration après le délai de conservation',
+        ],
         'billing' => [
             'account-invoices' => 'Générer les factures mensuelles à conditions spéciales',
             'push-retainers' => 'Transmettre les forfaits de retainer à Lexoffice',

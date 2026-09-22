@@ -13,6 +13,7 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'kfz-fuhrparkservice',
     'label' => 'Kfz- und Fuhrparkservice',
+    'description' => 'Kfz- und Fuhrparkservice: Fahrzeugannahme, Wartung, Diagnose, Reifen, Schaden, HU/AU-Vorbereitung und Übergabe mit Fahrzeugakte.',
     'version' => 1,
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.

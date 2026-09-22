@@ -46,14 +46,22 @@
                         <div>
                             <h2 class="text-lg font-semibold">{{ $profile['label'] }}</h2>
                             <p class="text-sm text-muted font-mono">{{ $profile['code'] }} · v{{ $profile['version'] }}</p>
+                            @if ($profile['description'] !== '')
+                                <p class="mt-1 text-sm text-base-content/80">{{ $profile['description'] }}</p>
+                            @endif
                         </div>
                         @if (in_array($profile['code'], $installedCodes, true))
                             @php $appliedVersion = (int) ($installedVersions[$profile['code']] ?? 0); @endphp
-                            @if ($appliedVersion > 0 && (int) $profile['version'] > $appliedVersion)
-                                <x-status-badge tone="warning" size="sm">{{ __('Update: v:new (installiert v:old)', ['new' => $profile['version'], 'old' => $appliedVersion]) }}</x-status-badge>
-                            @else
-                                <x-status-badge tone="info" size="sm">{{ __('Bereits installiert') }}</x-status-badge>
-                            @endif
+                            <div class="flex flex-wrap justify-end gap-1">
+                                @if ($appliedVersion > 0 && (int) $profile['version'] > $appliedVersion)
+                                    <x-status-badge tone="warning" size="sm">{{ __('Update: v:new (installiert v:old)', ['new' => $profile['version'], 'old' => $appliedVersion]) }}</x-status-badge>
+                                @else
+                                    <x-status-badge tone="info" size="sm">{{ __('Bereits installiert') }}</x-status-badge>
+                                @endif
+                                @if ($primaryCode === $profile['code'])
+                                    <x-status-badge tone="success" size="sm">{{ __('Hauptprofil') }}</x-status-badge>
+                                @endif
+                            </div>
                         @endif
                     </div>
 
@@ -114,10 +122,32 @@
                     @endif
 
                     @php
+                        $isInstalled = in_array($profile['code'], $installedCodes, true);
                         $installConfirm = __('Paket ":profile" für :org installieren? Bestehende, lokal angepasste Daten bleiben unberührt.', ['profile' => $profile['label'], 'org' => $organization->name]);
                         $reapplyConfirm = __('Paket ":profile" erneut anwenden? Vorlagen werden auf den Profilstand zurückgesetzt; veröffentlichte Checklisten bleiben erhalten.', ['profile' => $profile['label']]);
+                        $primaryConfirm = __('Paket ":profile" als Hauptprofil festlegen? Nav-Fokus und Fach-Vorgaben folgen dem Hauptprofil.', ['profile' => $profile['label']]);
+                        $uninstallConfirm = __('Paket ":profile" deinstallieren? Unbenutzte Auftragsarten, Kategorien und Tags werden entfernt, benutzte Klassifikationen deaktiviert, Pflichtregeln des Profils gelöscht. Checklisten, Wartungspläne, SLA-, Reinigungs- und Raumvorlagen bleiben erhalten.', ['profile' => $profile['label']]);
                     @endphp
-                    <div class="flex gap-2 justify-end">
+                    <div class="flex flex-wrap gap-2 justify-end">
+                        @if ($isInstalled && $primaryCode !== $profile['code'])
+                            <x-action-form :action="route('admin.branch-profiles.primary', $profile['code'])"
+                                  :confirm="$primaryConfirm"
+                                  confirm-icon="star"
+                                  :confirm-label="__('Als Hauptprofil festlegen')">
+                                <x-button type="submit" tone="outline" size="sm" class="gap-2" icon="star">{{ __('Als Hauptprofil festlegen') }}</x-button>
+                            </x-action-form>
+                        @endif
+                        @if ($isInstalled)
+                            @if ($canUninstall)
+                                <x-action-form :action="route('admin.branch-profiles.uninstall', $profile['code'])"
+                                      :confirm="$uninstallConfirm"
+                                      confirm-icon="delete"
+                                      confirm-tone="error"
+                                      :confirm-label="__('Deinstallieren')">
+                                    <x-button type="submit" tone="ghost" size="sm" class="gap-2" icon="delete">{{ __('Deinstallieren') }}</x-button>
+                                </x-action-form>
+                            @endif
+                        @endif
                         <x-action-form :action="route('admin.branch-profiles.install', $profile['code'])"
                               :confirm="$installConfirm"
                               confirm-icon="playlist_add_check"

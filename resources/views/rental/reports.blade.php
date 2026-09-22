@@ -21,7 +21,8 @@
     </x-slot:actions>
 
     <x-filter-bar :action="route('rental.reports.index')" :reset="route('rental.reports.index')">
-        <x-date-range :from="$from->toDateString()" :to="$to->toDateString()" />
+        <x-date-range class="w-80 shrink-0" :label="false" from-name="from" to-name="to"
+                      :from="$from->toDateString()" :to="$to->toDateString()" />
     </x-filter-bar>
 
 

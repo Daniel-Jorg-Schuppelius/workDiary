@@ -24,7 +24,7 @@ use Illuminate\Console\Command;
  * Branchenprofil samt End-to-End-Beispielauftrag.
  */
 class DemoSeedCommand extends Command {
-    protected $signature = 'demo:seed {org? : Organisations-ID (Default: erste Org)} {--industry= : Musterbranche (Schlüssel aus --list)} {--list : Verfügbare Musterbranchen anzeigen}';
+    protected $signature = 'demo:seed {org? : Organisations-ID (Default: erste Org)} {--industry= : Musterbranche (Schlüssel aus --list)} {--list : Verfügbare Musterbranchen anzeigen} {--showcase= : Umfang des Showcase: profile (Modul-Empfehlung des Profils, Default) oder full (alle Module)}';
 
     protected $description = 'Erzeugt branchenspezifische Demo-Daten für eine Organisation (Feature 040).';
 
@@ -47,7 +47,7 @@ class DemoSeedCommand extends Command {
 
         $industry = DemoIndustry::fromKey($this->option('industry') !== null ? (string) $this->option('industry') : null);
 
-        $counts = $seeder->seed($org, null, $industry);
+        $counts = $seeder->seed($org, null, $industry, $this->showcaseOption());
 
         AuditLog::query()->create([
             'organization_id' => $org->id,
@@ -70,6 +70,20 @@ class DemoSeedCommand extends Command {
         ));
 
         return self::SUCCESS;
+    }
+
+    /** `--showcase=profile|full`; null = Default des Aufrufs (Seed: Profilumfang, Reset: gemerkter Umfang). */
+    private function showcaseOption(): ?bool {
+        $value = $this->option('showcase');
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return match ((string) $value) {
+            'full' => true,
+            'profile' => false,
+            default => throw new \InvalidArgumentException('--showcase erwartet profile oder full.'),
+        };
     }
 
     private function resolveOrganization(): ?Organization {

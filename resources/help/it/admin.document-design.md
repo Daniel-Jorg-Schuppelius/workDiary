@@ -39,7 +39,6 @@ Senza profilo vale lo standard di sistema (output attuale). Le fatture
 ZUGFeRD/PDF-A-3 restano valide dopo l'applicazione del design — la fattura
 strutturata resta vincolante.
 
-
 Design base CI ed ereditarietà:
 
 - Il profilo standard dell'organizzazione è il suo **design base CI**.

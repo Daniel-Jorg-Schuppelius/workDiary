@@ -646,4 +646,184 @@ class BranchProfileInstallerTest extends TestCase {
         $this->assertGreaterThan(0, $forced['updated']['room_requirement_templates']);
         $this->assertNotSame('Hygiene LOKAL', $template->fresh()?->label);
     }
+
+    /** MVP-839: Das zuerst installierte Profil bleibt Hauptprofil, weitere Installationen registrieren nur. */
+    public function test_second_profile_registers_without_changing_the_primary(): void {
+        $this->installer->install($this->org, 'it', $this->actor);
+        $this->installer->install($this->org, 'handwerk', $this->actor);
+
+        $org = $this->org->refresh();
+        $this->assertSame('it', $org->primaryBranchProfileCode());
+        $this->assertSame(['it', 'handwerk'], $org->installedBranchProfileCodes());
+
+        $this->installer->setPrimary($org, 'handwerk', $this->actor);
+        $org->refresh();
+        $this->assertSame('handwerk', $org->primaryBranchProfileCode());
+        $this->assertSame(['handwerk', 'it'], $org->installedBranchProfileCodes());
+        $this->assertDatabaseHas('audit_logs', [
+            'organization_id' => $org->id,
+            'event' => 'branch_profile.primaryChanged',
+        ]);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->installer->setPrimary($org, 'shk', $this->actor);
+    }
+
+    /** MVP-839 (P12-09): Uninstall entfernt nur Unbenutztes und behält Vorlagen. */
+    public function test_uninstall_removes_unused_deactivates_referenced_and_keeps_templates(): void {
+        $this->installer->install($this->org, 'it', $this->actor);
+        $this->installer->install($this->org, 'handwerk', $this->actor);
+
+        // Eine Handwerk-Klassifikation ist in Gebrauch (Pivot), eine andere nicht.
+        $used = Classification::query()->where('organization_id', $this->org->id)
+            ->where('domain', 'entry_type')->where('code', 'repair')->firstOrFail();
+        // Kunde trägt die Klassifikation (HasClassifications-Pivot), Auftrag den Tag.
+        $customer = \App\Models\Customer::factory()->create(['organization_id' => $this->org->id, 'created_by' => $this->actor->id]);
+        $customer->classifications()->attach($used->id);
+        $entry = \App\Models\DiaryEntry::factory()->create(['organization_id' => $this->org->id, 'user_id' => $this->actor->id]);
+        $usedTag = Tag::query()->withoutGlobalScopes()->where('organization_id', $this->org->id)->where('name', '#wartung')->firstOrFail();
+        $entry->tags()->attach($usedTag->id);
+
+        $proceduresBefore = \App\Models\ProcedureTemplate::query()->where('organization_id', $this->org->id)->count();
+        $requirementsBefore = ClassificationRequirement::query()->where('organization_id', $this->org->id)->count();
+
+        $result = $this->installer->uninstall($this->org, 'handwerk', $this->actor);
+
+        $this->assertSame('handwerk', $result['profile_code']);
+        $this->assertSame(1, $result['deactivated']['classifications']);
+        $this->assertGreaterThan(0, $result['removed']['classifications']);
+        $this->assertGreaterThan(0, $result['removed']['classification_requirements']);
+        $this->assertGreaterThan(0, $result['removed']['tags']);
+        $this->assertContains('procedure_templates', $result['kept']);
+        $this->assertContains('tags_in_use', $result['kept']);
+        $this->assertSame('it', $result['primary']);
+
+        // Benutzte Klassifikation bleibt, aber deaktiviert; unbenutzte weg.
+        $this->assertFalse((bool) $used->fresh()?->active);
+        $this->assertNotNull($used->fresh()?->deprecated_at);
+        $this->assertNull(Classification::query()->where('organization_id', $this->org->id)
+            ->where('domain', 'entry_type')->where('code', 'aufmass')->first());
+        // Benutzter Tag bleibt, unbenutzter weg.
+        $this->assertNotNull($usedTag->fresh());
+        $this->assertNull(Tag::query()->withoutGlobalScopes()->where('organization_id', $this->org->id)->where('name', '#notdienst')->first());
+        // Vorlagen bleiben; Pflichtregeln des Profils sind weg, die des IT-Profils nicht.
+        $this->assertSame($proceduresBefore, \App\Models\ProcedureTemplate::query()->where('organization_id', $this->org->id)->count());
+        $this->assertLessThan($requirementsBefore, ClassificationRequirement::query()->where('organization_id', $this->org->id)->count());
+        $this->assertGreaterThan(0, ClassificationRequirement::query()->where('organization_id', $this->org->id)->count());
+
+        // IT-Klassifikationen unberührt.
+        $this->assertTrue(Classification::query()->where('organization_id', $this->org->id)
+            ->where('domain', 'entry_type')->where('code', 'incident')->where('active', true)->exists());
+
+        $org = $this->org->refresh();
+        $this->assertSame(['it'], $org->installedBranchProfileCodes());
+        $this->assertDatabaseHas('audit_logs', ['organization_id' => $org->id, 'event' => 'branch_profile.uninstalled']);
+    }
+
+    /** MVP-839: Wird das Hauptprofil deinstalliert, rückt das nächste installierte nach. */
+    public function test_uninstalling_the_primary_promotes_the_next_installed_profile(): void {
+        $this->installer->install($this->org, 'it', $this->actor);
+        $this->installer->install($this->org, 'shk', $this->actor);
+
+        $result = $this->installer->uninstall($this->org, 'it', $this->actor);
+        $this->assertSame('shk', $result['primary']);
+        $this->assertSame('shk', $this->org->refresh()->primaryBranchProfileCode());
+
+        $result = $this->installer->uninstall($this->org->refresh(), 'shk', $this->actor);
+        $this->assertNull($result['primary']);
+        $this->assertSame([], $this->org->refresh()->installedBranchProfileCodes());
+        $this->assertNull($this->org->refresh()->primaryBranchProfileCode());
+    }
+
+    /** MVP-839: Die Modul-Empfehlung ist die Vereinigung aller installierten Profile. */
+    public function test_module_recommendation_unions_all_installed_profiles(): void {
+        $this->installer->install($this->org, 'it', $this->actor);
+        $this->installer->install($this->org, 'partyservice', $this->actor);
+
+        $recommendation = app(\App\Services\Licensing\ModuleScopeService::class)->branchProfileRecommendation($this->org->refresh());
+        $this->assertNotNull($recommendation);
+        $this->assertSame('it', $recommendation['code']);
+        $this->assertStringContainsString('IT-Service', $recommendation['label']);
+        $this->assertStringContainsString('Partyservice', $recommendation['label']);
+        $this->assertContains('module.helpdesk', $recommendation['modules']);
+        $this->assertContains('module.rental', $recommendation['modules']);
+        $this->assertSame(count($recommendation['modules']), count(array_unique($recommendation['modules'])));
+    }
+
+    /**
+     * Gate (MVP-841): Jedes Profil hat eine Übersetzungs-Beilage
+     * `i18n/<code>.php`, jede Zeile darin zeigt auf einen Code des Profils,
+     * und jede Auftragsart trägt en/es/fr/it.
+     */
+    public function test_every_profile_ships_entry_type_translations(): void {
+        $files = glob(database_path('data/branchprofiles/*.php')) ?: [];
+        $this->assertNotEmpty($files);
+        $violations = [];
+        foreach ($files as $file) {
+            $code = basename($file, '.php');
+            $profile = require $file;
+            $sidecarFile = database_path("data/branchprofiles/i18n/{$code}.php");
+            if (! is_file($sidecarFile)) {
+                $violations[] = "{$code}: Beilage i18n/{$code}.php fehlt";
+
+                continue;
+            }
+            $sidecar = require $sidecarFile;
+            $domains = (array) ($profile['classifications'] ?? []);
+            foreach ($sidecar as $domain => $rows) {
+                $codes = array_column((array) ($domains[$domain] ?? []), 'code');
+                foreach ($rows as $c => $langs) {
+                    if (! in_array($c, $codes, true)) {
+                        $violations[] = "{$code}: {$domain}.{$c} gibt es im Profil nicht";
+                    }
+                    foreach (['en', 'es', 'fr', 'it'] as $lang) {
+                        if (trim((string) ($langs[$lang] ?? '')) === '') {
+                            $violations[] = "{$code}: {$domain}.{$c} ohne {$lang}";
+                        }
+                    }
+                }
+            }
+            foreach (array_column((array) ($domains['entry_type'] ?? []), 'code') as $c) {
+                if (! isset($sidecar['entry_type'][$c])) {
+                    $violations[] = "{$code}: entry_type.{$c} ohne Übersetzung";
+                }
+            }
+        }
+        $this->assertSame([], $violations, implode("\n", $violations));
+    }
+
+    /** MVP-841: Installer schreibt label_i18n, die Anzeige folgt der Sprache, das Quell-Label bleibt. */
+    public function test_install_writes_label_translations_and_display_label_follows_locale(): void {
+        $this->installer->install($this->org, 'it', $this->actor);
+
+        $advice = Classification::query()->where('organization_id', $this->org->id)
+            ->where('domain', 'entry_type')->where('code', 'advice')->firstOrFail();
+        $this->assertSame('Beratung', $advice->label);
+        $this->assertSame('Consulting', $advice->label_i18n['en'] ?? null);
+        $this->assertSame('Conseil', $advice->label_i18n['fr'] ?? null);
+
+        $previous = app()->getLocale();
+        config()->set('app.fallback_locale', 'en');
+        try {
+            app()->setLocale('de');
+            $this->assertSame('Beratung', $advice->display_label);
+            app()->setLocale('fr');
+            $this->assertSame('Conseil', $advice->displayLabel());
+            app()->setLocale('pt');
+            $this->assertSame('Consulting', $advice->displayLabel(), 'Fallback-Sprache en');
+        } finally {
+            app()->setLocale($previous);
+        }
+
+        // Ohne Übersetzungen bleibt das Label, auch in Fremdsprachen.
+        $advice->forceFill(['label_i18n' => null])->save();
+        $this->assertSame('Beratung', $advice->fresh()?->displayLabel('en'));
+
+        // Erneute Installation ohne force trägt fehlende Übersetzungen nach, lässt Labels in Ruhe.
+        $advice->forceFill(['label' => 'Beratung lokal'])->save();
+        $this->installer->install($this->org, 'it', $this->actor);
+        $advice->refresh();
+        $this->assertSame('Beratung lokal', $advice->label);
+        $this->assertSame('Consulting', $advice->label_i18n['en'] ?? null);
+    }
 }

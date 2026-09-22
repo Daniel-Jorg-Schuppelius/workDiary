@@ -451,6 +451,9 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::SafetyViewAny,
             PermissionEnum::SafetyReport,
             PermissionEnum::SafetyManage,
+            // Vereinsverwaltung (Feature 159): Teamleitung ist Gruppenleitung —
+            // sieht und führt nur die eigenen Gruppen, keine Registerpflege.
+            PermissionEnum::ClubGroupLead,
             // Trainingsmanagement (Feature 145): Teamleitung führt Katalog,
             // Pflichtmatrix und Soll-Einträge ihres Bereichs.
             PermissionEnum::TrainingViewAny,
@@ -585,6 +588,10 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::OrganizationView,
             PermissionEnum::UserViewAny,
             PermissionEnum::UserView,
+            // Vereinsverwaltung (Feature 159): Geschäftsstelle führt Mitglieder,
+            // Gruppen, Vertretungen und den CSV-Erstimport.
+            PermissionEnum::ClubViewAny,
+            PermissionEnum::ClubManage,
             // Plan/Ist-Anwesenheit org-weit (Rang 38).
             PermissionEnum::ReportPresenceTeam,
             PermissionEnum::ReportPresenceOrganization,

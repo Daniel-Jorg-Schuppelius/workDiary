@@ -32,7 +32,8 @@
     </x-slot:toolbar>
 
     <x-filter-bar :action="route('helpdesk.reports.index')" :reset="route('helpdesk.reports.index')">
-        <x-date-range from-name="from" to-name="to" :from="$from->toDateString()" :to="$to->toDateString()" size="sm" />
+        <x-date-range class="w-80 shrink-0" :label="false" from-name="from" to-name="to"
+                      :from="$from->toDateString()" :to="$to->toDateString()" />
         <x-icon-btn icon="filter_alt" tone="ghost" size="sm" type="submit" show-label>{{ __('Anzeigen') }}</x-icon-btn>
     </x-filter-bar>
 

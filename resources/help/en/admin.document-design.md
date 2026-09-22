@@ -38,7 +38,6 @@ Without a profile the system default (current output) applies. ZUGFeRD/
 PDF-A-3 invoices remain valid after applying the design — the structured
 invoice stays authoritative.
 
-
 CI base design and inheritance:
 
 - The org-wide default profile is your **CI base design**. Variants for

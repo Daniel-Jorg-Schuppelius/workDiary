@@ -1757,4 +1757,65 @@ return [
             'machine' => 'machine-generated',
         ],
     ],
+    // Vereinsverwaltung (Feature 159, MVP-842)
+    'club' => [
+        'membership-kind' => [
+            'active' => 'Active',
+            'passive' => 'Passive',
+            'supporting' => 'Supporting member',
+            'paused' => 'Paused',
+        ],
+        'admission-mode' => [
+            'leader' => 'By leader',
+            'application' => 'Request with approval',
+        ],
+        'group-membership-status' => [
+            'requested' => 'Requested',
+            'active' => 'Active',
+            'ended' => 'Ended',
+            'rejected' => 'Rejected',
+        ],
+        'proposal-status' => [
+            'open' => 'Open',
+            'confirmed' => 'Confirmed',
+            'dismissed' => 'Dismissed',
+        ],
+        'criteria-result' => [
+            'met' => 'Met',
+            'age_below' => 'Below minimum age',
+            'age_above' => 'Above maximum age',
+            'review_required' => 'Review required',
+        ],
+        'event-kind' => [
+            'training' => 'Training / rehearsal',
+            'course' => 'Course',
+            'exam' => 'Exam',
+            'meeting' => 'Meeting',
+            'other' => 'Other event',
+        ],
+        'event-visibility' => [
+            'club' => 'Whole club',
+            'groups' => 'Specific groups',
+            'invited' => 'Personal invitation',
+        ],
+        'participation-status' => [
+            'invited' => 'Invited',
+            'registered' => 'Registered',
+            'waitlisted' => 'Waiting list',
+            'cancelled' => 'Cancelled',
+        ],
+        'participation-source' => [
+            'admin' => 'Administration',
+            'leader' => 'Group leader',
+            'guardian' => 'Guardian',
+            'self' => 'Member',
+            'spontaneous' => 'Spontaneous (leader)',
+            'invitation' => 'Invitation',
+        ],
+        'guardian-permission' => [
+            'register' => 'Register and cancel',
+            'view_attendance' => 'View attendance',
+            'receive_messages' => 'Receive messages',
+        ],
+    ],
 ];

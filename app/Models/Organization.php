@@ -167,6 +167,33 @@ class Organization extends Model {
         return array_values(array_map('intval', static::withoutGlobalScopes()->where('is_demo', true)->pluck('id')->all()));
     }
 
+    /**
+     * Installierte Branchenprofile (Schlüssel von `settings.branch_profile_versions`);
+     * das Hauptprofil steht vorn (MVP-839).
+     *
+     * @return list<string>
+     */
+    public function installedBranchProfileCodes(): array {
+        $settings = is_array($this->settings) ? $this->settings : [];
+        $versions = is_array($settings['branch_profile_versions'] ?? null) ? $settings['branch_profile_versions'] : [];
+        $codes = array_values(array_filter(array_map('strval', array_keys($versions)), static fn(string $c): bool => $c !== ''));
+        $primary = $this->primaryBranchProfileCode();
+        if ($primary !== null && ! in_array($primary, $codes, true)) {
+            $codes[] = $primary;
+        }
+        usort($codes, static fn(string $a, string $b): int => ($a === $primary ? 0 : 1) <=> ($b === $primary ? 0 : 1));
+
+        return $codes;
+    }
+
+    /** Hauptprofil (`settings.branch_profile_code`): das zuerst installierte, bis es bewusst gewechselt wird. */
+    public function primaryBranchProfileCode(): ?string {
+        $settings = is_array($this->settings) ? $this->settings : [];
+        $code = (string) ($settings['branch_profile_code'] ?? '');
+
+        return $code === '' ? null : $code;
+    }
+
     /** @return BelongsTo<User, $this> */
     public function owner(): BelongsTo {
         return $this->belongsTo(User::class, 'owner_id');

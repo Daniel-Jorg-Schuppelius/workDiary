@@ -161,6 +161,8 @@ return [
             'keys' => [
                 'section:safety',
                 'section:learning',
+                // Vereinsverwaltung (Feature 159): Mitglieder und Gruppen sind Personenarbeit.
+                'section:club',
                 'section:work',
                 'group:reports-personal',
             ],

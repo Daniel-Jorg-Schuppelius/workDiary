@@ -438,6 +438,10 @@ enum Permission: string implements HasLabel {
     case SafetyViewAny = 'safety.viewAny';
     case SafetyReport = 'safety.report';
     case SafetyManage = 'safety.manage';
+        // ── Vereinsverwaltung (Feature 159, MVP-842) ─────────────────────
+    case ClubViewAny = 'club.viewAny';
+    case ClubManage = 'club.manage';
+    case ClubGroupLead = 'club.groups.lead';
 
         // ── Trainingsmanagement (Feature 145) ──────────────────────────────
     case TrainingViewAny = 'training.viewAny';
@@ -824,6 +828,7 @@ enum Permission: string implements HasLabel {
             // Gruppe — ohne dieses Mapping fiele es in den MasterData-Default.
             str_starts_with($this->value, 'safety.'),
             str_starts_with($this->value, 'training.') => PermissionGroup::Safety,
+            str_starts_with($this->value, 'club.') => PermissionGroup::Club,
             str_starts_with($this->value, 'openIssue.') => PermissionGroup::OpenIssues,
             str_starts_with($this->value, 'serviceTicket.') => PermissionGroup::OpenIssues,
             str_starts_with($this->value, 'helpdesk.') => PermissionGroup::OpenIssues,

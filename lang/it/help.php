@@ -65,6 +65,10 @@ return [
             'title' => 'Amministrazione',
             'description' => 'Organizzazione, ruoli e permessi, importazione, backup, licenza e integrazioni.',
         ],
+        'verein' => [
+            'title' => 'Associazione',
+            'description' => 'Soci, gruppi, sezioni e proposte di cambio della gestione dell\'associazione.',
+        ],
         'weitere' => [
             'title' => 'Altri argomenti',
             'description' => 'Tutto ciò che non rientra in una delle aree principali.',

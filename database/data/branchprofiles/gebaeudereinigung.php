@@ -13,7 +13,10 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'gebaeudereinigung',
     'label' => 'Gebäudereinigung',
+    'description' => 'Gebäudereinigung: Unterhalts-, Grund-, Glas- und Sonderreinigung mit Reinigungsprofilen, Qualitätskontrolle und Reklamationen.',
     'version' => 1,
+    // Vorschlag für den Standard-Arbeitsbereich (MVP-840); nur Default, kein Zwang.
+    'nav_focus_default' => 'facility',
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
     'modules_recommended' => [

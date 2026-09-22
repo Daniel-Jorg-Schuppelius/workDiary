@@ -15,7 +15,7 @@ use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSq
 use Database\Factories\EventFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany, HasOne};
 use Illuminate\Support\Carbon;
 
 /**
@@ -116,6 +116,23 @@ class Event extends Model {
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
+    }
+
+    // ── Vereinstermine (Feature 159, MVP-843): Details, Zielgruppen und Mitgliedsteilnahmen ──
+
+    /** @return HasOne<\App\Models\Club\ClubEventDetails, $this> */
+    public function clubDetails(): HasOne {
+        return $this->hasOne(\App\Models\Club\ClubEventDetails::class);
+    }
+
+    /** @return BelongsToMany<\App\Models\Club\ClubGroup, $this> */
+    public function clubGroups(): BelongsToMany {
+        return $this->belongsToMany(\App\Models\Club\ClubGroup::class, 'club_event_groups')->withPivot('organization_id')->withTimestamps();
+    }
+
+    /** @return HasMany<\App\Models\Club\ClubEventParticipation, $this> */
+    public function clubParticipations(): HasMany {
+        return $this->hasMany(\App\Models\Club\ClubEventParticipation::class);
     }
 
     /** @return BelongsTo<Event, $this> */

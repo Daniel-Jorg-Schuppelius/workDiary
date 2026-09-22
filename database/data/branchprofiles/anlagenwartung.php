@@ -13,6 +13,7 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'anlagenwartung',
     'label' => 'Maschinenbau und Anlagenwartung',
+    'description' => 'Maschinenbau und Anlagenwartung: Wartungsverträge, Störungen, Inspektionen, Kalibrierung und Ersatzteile mit SLA und Prüfintervallen.',
     // v2: Default-Eintragstypen (Struktur-Typen) ans Profil gekoppelt.
     'version' => 2,
     // Default-Struktur-Typen (EntryTypeSeeder::profiles()) — nicht die

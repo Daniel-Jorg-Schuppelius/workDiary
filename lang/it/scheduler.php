@@ -94,6 +94,9 @@ return [
     // Nomi leggibili dei job (chiavi registry, annidate per via della notazione a punti);
     // aggiungere i nuovi job qui in tutte le lingue — altrimenti fallback = chiave.
     'job' => [
+        'demo' => [
+            'prune' => 'Eliminare le organizzazioni demo dopo il periodo di conservazione',
+        ],
         'billing' => [
             'account-invoices' => 'Generare le fatture mensili a condizioni speciali',
             'push-retainers' => 'Trasmettere i forfait retainer a Lexoffice',

@@ -12,8 +12,10 @@ namespace App\Services\Classification;
 
 use App\Models\{AuditLog, Classification, ClassificationRequirement, CleaningProfile, EntryType, MaintenancePlanTemplate, Organization, ProcedureTemplate, RoomRequirementTemplate, SlaContract, Software, Tag, User};
 use App\Services\Procedure\ProcedureTemplateService;
+use CommonToolkit\Helper\FileSystem\File;
 use Database\Seeders\EntryTypeSeeder;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Installiert deklarative Branchenprofile pro Organisation.
@@ -76,6 +78,13 @@ class BranchProfileInstaller {
         $updated = $counterTemplate;
         $skipped = $counterTemplate;
 
+        // MVP-841: Übersetzungen der Labels aus der Beilage i18n/<code>.php
+        // (Inline `label_i18n` je Zeile gewinnt) → classifications.label_i18n.
+        $sidecarCode = (string) ($profile['code'] ?? $profileCode);
+        $sidecarPath = database_path("data/branchprofiles/i18n/{$sidecarCode}.php");
+        /** @var array<string, array<string, array<string, string>>> $sidecar */
+        $sidecar = $sidecarCode !== '' && File::isFile($sidecarPath) ? (array) require $sidecarPath : [];
+
         /** @var array<string, list<array<string, mixed>>> $classificationDomains */
         $classificationDomains = (array) Arr::get($profile, 'classifications', []);
         foreach ($classificationDomains as $domain => $rows) {
@@ -86,6 +95,7 @@ class BranchProfileInstaller {
                 if ($code === '') {
                     continue;
                 }
+                $labelI18n = $this->labelTranslations($row, $sidecar, (string) $domain, $code);
 
                 $existing = Classification::query()
                     ->where('organization_id', $organization->id)
@@ -97,10 +107,15 @@ class BranchProfileInstaller {
                     if ($force) {
                         $existing->update([
                             'label' => (string) ($row['label'] ?? $code),
+                            'label_i18n' => $labelI18n,
                             'sort_order' => (int) ($row['sort_order'] ?? $sort),
                             'active' => true,
                         ]);
                         $updated['classifications']++;
+                    } elseif ($labelI18n !== null && ! is_array($existing->label_i18n)) {
+                        // Übersetzungen nachtragen, ohne lokale Labels anzufassen.
+                        $existing->update(['label_i18n' => $labelI18n]);
+                        $skipped['classifications']++;
                     } else {
                         $skipped['classifications']++;
                     }
@@ -113,6 +128,7 @@ class BranchProfileInstaller {
                     'domain' => $domain,
                     'code' => $code,
                     'label' => (string) ($row['label'] ?? $code),
+                    'label_i18n' => $labelI18n,
                     'sort_order' => (int) ($row['sort_order'] ?? $sort),
                     'active' => true,
                 ]);
@@ -658,7 +674,11 @@ class BranchProfileInstaller {
         $profileVersion = (int) ($profile['version'] ?? 1);
 
         $settings = is_array($organization->settings) ? $organization->settings : [];
-        $settings['branch_profile_code'] = $installedProfileCode;
+        // MVP-839: Das zuerst installierte Profil ist das Hauptprofil; weitere
+        // Installationen ändern es nicht (Wechsel nur über setPrimary()).
+        if ((string) ($settings['branch_profile_code'] ?? '') === '') {
+            $settings['branch_profile_code'] = $installedProfileCode;
+        }
         // Restpunkt 042: angewandte Profilversion je Code — Grundlage der
         // Update-Erkennung auf der Katalogseite.
         $versions = is_array($settings['branch_profile_versions'] ?? null) ? $settings['branch_profile_versions'] : [];
@@ -691,5 +711,227 @@ class BranchProfileInstaller {
             'updated' => $updated,
             'skipped' => $skipped,
         ];
+    }
+
+    /**
+     * Wechselt das Hauptprofil (MVP-839). Nur installierte Profile kommen in
+     * Frage; Nav-Fokus und Fach-Defaults folgen dem Hauptprofil.
+     */
+    public function setPrimary(Organization $organization, string $profileCode, ?User $actor = null): void {
+        if (! in_array($profileCode, $organization->installedBranchProfileCodes(), true)) {
+            throw new \InvalidArgumentException(sprintf('Profil „%s" ist nicht installiert.', $profileCode));
+        }
+
+        $settings = is_array($organization->settings) ? $organization->settings : [];
+        $previous = (string) ($settings['branch_profile_code'] ?? '');
+        if ($previous === $profileCode) {
+            return;
+        }
+
+        $settings['branch_profile_code'] = $profileCode;
+        $organization->forceFill(['settings' => $settings])->save();
+
+        AuditLog::query()->create([
+            'organization_id' => $organization->id,
+            'user_id' => $actor?->id,
+            'event' => 'branch_profile.primaryChanged',
+            'auditable_type' => Organization::class,
+            'auditable_id' => $organization->id,
+            'changes' => ['from' => $previous === '' ? null : $previous, 'to' => $profileCode],
+            'ip' => null,
+            'user_agent' => null,
+        ]);
+    }
+
+    /**
+     * Deinstalliert ein Profil (MVP-839, P12-09) — entfernt nur, was niemand
+     * benutzt: Klassifikationen mit Verweisen werden deaktiviert, unbenutzte
+     * gelöscht; Pflichtregeln des Profils fallen weg; Tags ohne Verwendung
+     * fallen weg. Vorlagen (Prozeduren, Wartungspläne, SLA, Reinigung,
+     * Raumanforderungen, Software, Qualifikationen, Schulungen, Datenschutz)
+     * bleiben als Stammdaten der Organisation erhalten. Danach ist der Code
+     * nicht mehr registriert; war er Hauptprofil, rückt das nächste nach.
+     *
+     * @return array{profile_code: string, removed: array<string, int>, deactivated: array<string, int>, kept: list<string>, primary: ?string}
+     */
+    public function uninstall(Organization $organization, string $profileCode, ?User $actor = null): array {
+        if (! in_array($profileCode, $organization->installedBranchProfileCodes(), true)) {
+            throw new \InvalidArgumentException(sprintf('Profil „%s" ist nicht installiert.', $profileCode));
+        }
+
+        $path = database_path("data/branchprofiles/{$profileCode}.php");
+        /** @var array<string, mixed> $profile Importierte Marketplace-Profile ohne Datei: nur abmelden. */
+        $profile = File::isFile($path) ? require $path : [];
+
+        $removed = ['classifications' => 0, 'classification_requirements' => 0, 'tags' => 0];
+        $deactivated = ['classifications' => 0];
+        $keptTags = 0;
+
+        /** @var array<string, list<array<string, mixed>>> $classificationDomains */
+        $classificationDomains = (array) Arr::get($profile, 'classifications', []);
+        foreach ($classificationDomains as $domain => $rows) {
+            foreach ($rows as $row) {
+                $code = (string) ($row['code'] ?? '');
+                if ($code === '') {
+                    continue;
+                }
+                $classification = Classification::query()
+                    ->where('organization_id', $organization->id)
+                    ->where('domain', $domain)
+                    ->where('code', $code)
+                    ->first();
+                if (! $classification instanceof Classification) {
+                    continue;
+                }
+                if ($this->classificationIsReferenced($classification)) {
+                    if ($classification->active) {
+                        $classification->update(['active' => false, 'deprecated_at' => now()]);
+                        $deactivated['classifications']++;
+                    }
+
+                    continue;
+                }
+                $classification->delete();
+                $removed['classifications']++;
+            }
+        }
+
+        /** @var list<array<string, mixed>> $requirements */
+        $requirements = (array) Arr::get($profile, 'classification_requirements', []);
+        foreach ($requirements as $row) {
+            $deleted = ClassificationRequirement::query()
+                ->where('organization_id', $organization->id)
+                ->where('entry_type_code', (string) ($row['entry_type_code'] ?? ''))
+                ->where('required_domain', (string) ($row['required_domain'] ?? ''))
+                ->where('enforce_phase', (string) ($row['enforce_phase'] ?? ''))
+                ->delete();
+            $removed['classification_requirements'] += $deleted;
+        }
+
+        /** @var list<string> $tags */
+        $tags = (array) Arr::get($profile, 'tags_seed', []);
+        foreach ($tags as $tagName) {
+            $name = trim((string) $tagName);
+            if ($name === '') {
+                continue;
+            }
+            $tag = Tag::query()->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+                ->first();
+            if (! $tag instanceof Tag) {
+                continue;
+            }
+            if (DB::table('taggables')->where('tag_id', $tag->id)->exists()) {
+                $keptTags++;
+
+                continue;
+            }
+            $tag->delete();
+            $removed['tags']++;
+        }
+
+        $kept = [];
+        foreach (['procedure_templates', 'maintenance_plans_seed', 'sla_contracts_seed', 'cleaning_profiles_seed', 'room_requirement_templates_seed', 'software_seed', 'qualifications_seed', 'training_suggestions', 'dataprotection_requirements_seed'] as $key) {
+            if ((array) Arr::get($profile, $key, []) !== []) {
+                $kept[] = $key;
+            }
+        }
+        if ($keptTags > 0) {
+            $kept[] = 'tags_in_use';
+        }
+
+        $settings = is_array($organization->settings) ? $organization->settings : [];
+        $versions = is_array($settings['branch_profile_versions'] ?? null) ? $settings['branch_profile_versions'] : [];
+        unset($versions[$profileCode]);
+        $settings['branch_profile_versions'] = $versions;
+        $primary = (string) ($settings['branch_profile_code'] ?? '');
+        if ($primary === $profileCode) {
+            $next = array_key_first($versions);
+            $primary = is_string($next) ? $next : '';
+            if ($primary === '') {
+                unset($settings['branch_profile_code']);
+            } else {
+                $settings['branch_profile_code'] = $primary;
+            }
+        }
+        $organization->forceFill(['settings' => $settings])->save();
+
+        AuditLog::query()->create([
+            'organization_id' => $organization->id,
+            'user_id' => $actor?->id,
+            'event' => 'branch_profile.uninstalled',
+            'auditable_type' => Organization::class,
+            'auditable_id' => $organization->id,
+            'changes' => [
+                'profile_code' => $profileCode,
+                'removed' => $removed,
+                'deactivated' => $deactivated,
+                'kept' => $kept,
+                'primary' => $primary === '' ? null : $primary,
+            ],
+            'ip' => null,
+            'user_agent' => null,
+        ]);
+
+        return [
+            'profile_code' => $profileCode,
+            'removed' => $removed,
+            'deactivated' => $deactivated,
+            'kept' => $kept,
+            'primary' => $primary === '' ? null : $primary,
+        ];
+    }
+
+    /**
+     * Übersetzungen eines Labels: Beilage `i18n/<profil>.php` (Domäne → Code →
+     * Sprache) plus Inline-`label_i18n` der Profilzeile (gewinnt). null = keine.
+     *
+     * @param  array<string, mixed>  $row
+     * @param  array<string, array<string, array<string, string>>>  $sidecar
+     * @return array<string, string>|null
+     */
+    private function labelTranslations(array $row, array $sidecar, string $domain, string $code): ?array {
+        $fromFile = is_array($sidecar[$domain][$code] ?? null) ? $sidecar[$domain][$code] : [];
+        $inline = is_array($row['label_i18n'] ?? null) ? $row['label_i18n'] : [];
+        $merged = [];
+        foreach ($inline + $fromFile as $locale => $label) {
+            $locale = strtolower(trim((string) $locale));
+            $label = trim((string) $label);
+            if ($locale !== '' && $label !== '') {
+                $merged[$locale] = $label;
+            }
+        }
+        ksort($merged);
+
+        return $merged === [] ? null : $merged;
+    }
+
+    /**
+     * Verweist irgendein Fachobjekt auf die Klassifikation? Zuordnungen laufen
+     * über das `classifiables`-Pivot (HasClassifications) und feste Spalten
+     * (Zeiten, Produkte, Reklamationen, Import-Wertzuordnungen).
+     */
+    private function classificationIsReferenced(Classification $classification): bool {
+        $id = (int) $classification->id;
+        if (DB::table('classifiables')->where('classification_id', $id)->exists()) {
+            return true;
+        }
+
+        $columns = [
+            'time_entries' => ['rework_reason_classification_id', 'goodwill_reason_classification_id'],
+            'products' => ['product_group_classification_id'],
+            'claim_cases' => ['defect_type_classification_id', 'root_cause_classification_id', 'goodwill_reason_classification_id'],
+            'import_value_mappings' => ['classification_id'],
+        ];
+        foreach ($columns as $table => $cols) {
+            foreach ($cols as $column) {
+                if (DB::table($table)->where($column, $id)->exists()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

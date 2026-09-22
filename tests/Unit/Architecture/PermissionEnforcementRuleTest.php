@@ -56,7 +56,7 @@ class PermissionEnforcementRuleTest extends TestCase {
     private const BASELINE = [
         'AccessAssignGroups', 'AccessAssignRoles', 'AccessAuditView', 'ActivityCategoryManage',
         'AssetBlockOverride', 'AttendanceManage',
-        'AttendanceViewAny', 'AuditLogView', 'BranchProfileUninstall',
+        'AttendanceViewAny', 'AuditLogView',
         'BrandingUpdate', 'CoverageRequirementManage', 'CustomerDelete',
         'CustomerLexofficeSync', 'CustomerPortalDiaryView',
         'CustomerPortalInvoiceView', 'CustomerPortalOpenIssueView', 'CustomerPortalTimeEntryView',

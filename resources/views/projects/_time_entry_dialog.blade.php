@@ -151,7 +151,7 @@
                 <x-select-field name="rework_reason_classification_id" :label="__('Nacharbeitsgrund')">
                     <option value="">{{ __('— keiner —') }}</option>
                     @foreach ($reworkOptions as $option)
-                        <option value="{{ $option->sqid }}" @selected((string) old('rework_reason_classification_id', \App\Support\Sqid::encode(\App\Models\Classification::class, $entry?->rework_reason_classification_id)) === $option->sqid)>{{ $option->label }}</option>
+                        <option value="{{ $option->sqid }}" @selected((string) old('rework_reason_classification_id', \App\Support\Sqid::encode(\App\Models\Classification::class, $entry?->rework_reason_classification_id)) === $option->sqid)>{{ $option->display_label }}</option>
                     @endforeach
                 </x-select-field>
             @endif
@@ -159,7 +159,7 @@
                 <x-select-field name="goodwill_reason_classification_id" :label="__('Kulanzgrund')">
                     <option value="">{{ __('— keiner —') }}</option>
                     @foreach ($goodwillOptions as $option)
-                        <option value="{{ $option->sqid }}" @selected((string) old('goodwill_reason_classification_id', \App\Support\Sqid::encode(\App\Models\Classification::class, $entry?->goodwill_reason_classification_id)) === $option->sqid)>{{ $option->label }}</option>
+                        <option value="{{ $option->sqid }}" @selected((string) old('goodwill_reason_classification_id', \App\Support\Sqid::encode(\App\Models\Classification::class, $entry?->goodwill_reason_classification_id)) === $option->sqid)>{{ $option->display_label }}</option>
                     @endforeach
                 </x-select-field>
             @endif

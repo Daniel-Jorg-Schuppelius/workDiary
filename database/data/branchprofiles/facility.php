@@ -13,6 +13,7 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'facility',
     'label' => 'Facility Management und Hausmeisterdienste',
+    'description' => 'Facility Management und Hausmeisterdienste: Objektkontrolle, Mängel, Kleinreparaturen, Wartungsrunden, Winterdienst und Zählerstände.',
     // v2 (Feature 100): Entsorgungs-Modul empfohlen + AVV-Presets für
     // Leuchtmittel/Batterien/Verpackungen (Objekt-Räumungen).
     'version' => 2,

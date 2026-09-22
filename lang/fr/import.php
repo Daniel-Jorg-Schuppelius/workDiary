@@ -28,6 +28,7 @@ return [
         'assets' => 'Actifs',
         'contact_persons' => 'Interlocuteurs',
         'documents' => 'Documents (ZIP)',
+        'club_members' => 'Membres de l\'association',
     ],
     'template' => [
         'example_required' => "Valeur d'exemple (obligatoire)",
@@ -79,6 +80,8 @@ return [
             'status' => 'La valeur n\'est pas un statut valide.',
             'amount' => 'Montant invalide.',
             'url' => 'Adresse invalide (http:// ou https:// attendu).',
+            'integer' => 'Nombre entier invalide.',
+            'club_kind' => 'Type d\'adhésion invalide (actif, passif, soutien, en pause).',
         ],
         'outOfRange' => [
             'rowLimit' => 'Limite de lignes (:max) dépassée — reste ignoré.',

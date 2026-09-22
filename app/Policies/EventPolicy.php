@@ -23,6 +23,11 @@ class EventPolicy {
     }
 
     public function view(User $user, Event $event): bool {
+        // Vereinstermine (Feature 159, MVP-843): Register und Leitung der Zielgruppen sehen mit.
+        $clubDetails = $event->clubDetails;
+        if ($clubDetails !== null && $user->can('view', $clubDetails)) {
+            return true;
+        }
         // Verantwortlicher, Teilnehmer, oder TrainingManager dürfen sehen.
         if ($this->isResponsibleOrParticipant($user, $event)) {
             return true;

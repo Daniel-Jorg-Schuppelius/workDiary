@@ -548,4 +548,13 @@ return [
     'ResalePeriodLink' => 'Resale invoice reference',
     'ResalePurchaseEntry' => 'Resale purchase entry',
     'CompanyMapping' => 'Resale company mapping',
+    // Vereinsverwaltung (Feature 159, MVP-842)
+    'ClubMember' => 'Club member',
+    'ClubDepartment' => 'Club department',
+    'ClubGroup' => 'Club group',
+    'ClubGroupMembership' => 'Group assignment',
+    'ClubGroupChangeProposal' => 'Group change proposal',
+    'ClubGuardian' => 'Club guardian',
+    'ClubEventDetails' => 'Club event',
+    'ClubEventParticipation' => 'Club event participation',
 ];

@@ -24,20 +24,18 @@
     ]" />
     <x-filter-bar :action="route('legacy.oncall.index')">
             @if ($isAdmin)
-                <div class="flex flex-col min-w-48">
-                    <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-muted">{{ __('Mitarbeiter') }}</span></label>
-                    <select name="user" class="select select-bordered select-sm w-full" aria-label="{{ __('Mitarbeiter') }}">
-                        <option value="">{{ __('Alle') }}</option>
-                        @foreach ($users as $legacyUser)
-                            @php
-                                $legacySqid = \App\Support\Sqid::encode(\App\Legacy\Models\LegacyUser::class, $legacyUser->id);
-                            @endphp
-                            <option value="{{ $legacySqid }}" @selected((string) ($filters['user'] ?? '') === $legacySqid)>{{ $legacyUser->uname }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                <select name="user" class="select select-sm select-bordered w-48 shrink-0" aria-label="{{ __('Mitarbeiter') }}">
+                    <option value="">{{ __('Alle Mitarbeiter') }}</option>
+                    @foreach ($users as $legacyUser)
+                        @php
+                            $legacySqid = \App\Support\Sqid::encode(\App\Legacy\Models\LegacyUser::class, $legacyUser->id);
+                        @endphp
+                        <option value="{{ $legacySqid }}" @selected((string) ($filters['user'] ?? '') === $legacySqid)>{{ $legacyUser->uname }}</option>
+                    @endforeach
+                </select>
             @endif
-            <x-date-range :from="$filters['from'] ?? ''" :to="$filters['to'] ?? ''" />
+            <x-date-range class="w-80 shrink-0" :label="false" from-name="from" to-name="to"
+                          :from="$filters['from'] ?? ''" :to="$filters['to'] ?? ''" />
             <x-icon-btn icon="filter_alt" tone="primary" size="sm" type="submit" show-label>{{ __('Filtern') }}</x-icon-btn>
             @if (array_filter($filters))
                 <x-icon-btn icon="restart_alt" size="sm" :href="route('legacy.oncall.index')" show-label>{{ __('Zurücksetzen') }}</x-icon-btn>

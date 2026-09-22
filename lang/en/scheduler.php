@@ -94,6 +94,9 @@ return [
     // Readable job names (registry keys, nested because of dot notation);
     // add new registry jobs here in all locales — otherwise fallback = key.
     'job' => [
+        'demo' => [
+            'prune' => 'Delete demo organizations after the retention period',
+        ],
         'billing' => [
             'account-invoices' => 'Generate monthly special-condition invoices',
             'push-retainers' => 'Push retainer flat fees to Lexoffice',

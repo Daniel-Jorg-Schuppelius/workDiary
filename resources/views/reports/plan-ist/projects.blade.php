@@ -42,7 +42,8 @@
 
     {{-- Gemeinsame Filterleiste statt freiem GET-Formular (Vollaudit 2026-07, N58). --}}
     <x-filter-bar :action="route('reports.plan-ist.projects')" :reset="route('reports.plan-ist.projects')">
-        <x-date-range :from="$from->toDateString()" :to="$to->toDateString()" class="w-72 shrink-0" />
+        <x-date-range class="w-80 shrink-0" :label="false" from-name="from" to-name="to"
+                      :from="$from->toDateString()" :to="$to->toDateString()" />
     </x-filter-bar>
 
     @if ($allRows === [])

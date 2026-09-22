@@ -10,18 +10,19 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Concerns\{RequiresPlatformOperator, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, User};
 use App\Services\Classification\BranchProfileInstaller;
 use App\Support\ErrorText;
-use CommonToolkit\Helper\FileSystem\Folder;
+use CommonToolkit\Helper\FileSystem\{File, Folder};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\{Arr, Collection};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class BranchProfileController extends Controller {
+    use RequiresPlatformOperator;
     use ResolvesCurrentOrganization;
 
     public function __construct(
@@ -36,7 +37,10 @@ class BranchProfileController extends Controller {
         $query = trim($request->string('q')->toString());
         $installedFilter = $this->normalizeInstalledFilter($request->string('installed')->toString());
 
-        $installedCodes = AuditLog::query()
+        // MVP-839: installiert = registriert in den Org-Einstellungen; das
+        // Audit dient nur noch Altbeständen vor der Versionsregistrierung.
+        $installedCodes = $organization->installedBranchProfileCodes();
+        $audited = AuditLog::query()
             ->where('organization_id', $organization->id)
             ->where('event', 'branch_profile.installed')
             ->orderByDesc('id')
@@ -46,6 +50,18 @@ class BranchProfileController extends Controller {
             ->unique()
             ->values()
             ->all();
+        $uninstalled = AuditLog::query()
+            ->where('organization_id', $organization->id)
+            ->where('event', 'branch_profile.uninstalled')
+            ->get()
+            ->pluck('changes.profile_code')
+            ->filter(static fn($value): bool => is_string($value) && $value !== '')
+            ->all();
+        foreach ($audited as $code) {
+            if (! in_array($code, $installedCodes, true) && ! in_array($code, $uninstalled, true)) {
+                $installedCodes[] = $code;
+            }
+        }
         $installedSet = array_fill_keys($installedCodes, true);
 
         if ($query !== '') {
@@ -74,6 +90,8 @@ class BranchProfileController extends Controller {
             'organization' => $organization,
             'profiles' => $profiles,
             'installedCodes' => $installedCodes,
+            'primaryCode' => $organization->primaryBranchProfileCode(),
+            'canUninstall' => $this->isPlatformOperator() && Gate::allows('branchProfile.uninstall'),
             // Restpunkt 042: angewandte Version je Profil → Update-Erkennung.
             'installedVersions' => (array) data_get((array) ($organization->settings ?? []), 'branch_profile_versions', []),
             'activeFilters' => [
@@ -104,6 +122,46 @@ class BranchProfileController extends Controller {
                 'classifications' => $result['created']['classifications'] + $result['updated']['classifications'],
                 'requirements' => $result['created']['classification_requirements'] + $result['updated']['classification_requirements'],
                 'tags' => $result['created']['tags'] + $result['updated']['tags'],
+            ]));
+    }
+
+    /** Hauptprofil wechseln (MVP-839): nur unter den installierten Profilen. */
+    public function setPrimary(Request $request, string $profile): RedirectResponse {
+        $this->authorizeInstall();
+        $organization = $this->currentOrganization();
+        abort_unless(in_array($profile, $organization->installedBranchProfileCodes(), true), 404);
+
+        /** @var User|null $actor */
+        $actor = Auth::user();
+        $this->installer->setPrimary($organization, $profile, $actor);
+
+        return redirect()->toList('admin.branch-profiles.index')
+            ->with('success', __('Profil ":profile" ist jetzt das Hauptprofil.', ['profile' => $profile]));
+    }
+
+    /**
+     * Deinstallation (MVP-839, P12-09): entfernt Klassifikationen, Pflichtregeln
+     * und Tags des Profils, soweit sie unbenutzt sind; Vorlagen bleiben.
+     */
+    public function uninstall(Request $request, string $profile): RedirectResponse {
+        // Deinstallation ist Betreiber-Sache (Branchenprofil-Doku §10): die
+        // org-lokale Admin-Rolle trägt das Recht mit, reicht aber nicht.
+        Gate::authorize('branchProfile.uninstall');
+        $this->assertPlatformOperator();
+        $organization = $this->currentOrganization();
+        abort_unless(in_array($profile, $organization->installedBranchProfileCodes(), true), 404);
+
+        /** @var User|null $actor */
+        $actor = Auth::user();
+        $result = $this->installer->uninstall($organization, $profile, $actor);
+
+        return redirect()->toList('admin.branch-profiles.index')
+            ->with('success', __('Profil ":profile" deinstalliert: :removed Klassifikationen entfernt, :deactivated deaktiviert (in Verwendung), :requirements Pflichtregeln und :tags Tags entfernt. Vorlagen bleiben erhalten.', [
+                'profile' => $result['profile_code'],
+                'removed' => $result['removed']['classifications'],
+                'deactivated' => $result['deactivated']['classifications'],
+                'requirements' => $result['removed']['classification_requirements'],
+                'tags' => $result['removed']['tags'],
             ]));
     }
 
@@ -178,7 +236,7 @@ class BranchProfileController extends Controller {
     }
 
     /**
-     * @return Collection<int, array{code: string, label: string, version: int, classification_count: int, entry_type_count: int, requirement_count: int, tag_count: int, procedure_count: int, room_requirement_count: int, entry_types: list<string>, procedures: list<string>}>
+     * @return Collection<int, array{code: string, label: string, description: string, version: int, classification_count: int, entry_type_count: int, requirement_count: int, tag_count: int, procedure_count: int, room_requirement_count: int, entry_types: list<string>, procedures: list<string>}>
      */
     private function availableProfiles(): Collection {
         $profiles = [];
@@ -195,11 +253,20 @@ class BranchProfileController extends Controller {
                 $classificationCount += is_array($rows) ? count($rows) : 0;
             }
 
+            // MVP-841: Vorschau in der Sprache des Nutzers (Beilage i18n/<code>.php).
+            $profileCode = (string) ($profile['code'] ?? pathinfo($file, PATHINFO_FILENAME));
+            $i18nFile = database_path("data/branchprofiles/i18n/{$profileCode}.php");
+            /** @var array<string, array<string, array<string, string>>> $i18n */
+            $i18n = File::isFile($i18nFile) ? (array) require $i18nFile : [];
+            $locale = strtolower(substr(app()->getLocale(), 0, 2));
+
             /** @var list<array<string, mixed>> $entryTypeRows */
             $entryTypeRows = (array) ($domains['entry_type'] ?? []);
             $entryTypes = [];
             foreach ($entryTypeRows as $row) {
-                $entryTypes[] = (string) ($row['label'] ?? $row['code'] ?? '');
+                $code = (string) ($row['code'] ?? '');
+                $translated = $locale !== 'de' ? (string) ($i18n['entry_type'][$code][$locale] ?? '') : '';
+                $entryTypes[] = $translated !== '' ? $translated : (string) ($row['label'] ?? $code);
             }
             $entryTypes = array_values(array_filter($entryTypes, static fn(string $v): bool => $v !== ''));
 
@@ -213,8 +280,9 @@ class BranchProfileController extends Controller {
             }
 
             $profiles[] = [
-                'code' => (string) ($profile['code'] ?? pathinfo($file, PATHINFO_FILENAME)),
+                'code' => $profileCode,
                 'label' => (string) ($profile['label'] ?? pathinfo($file, PATHINFO_FILENAME)),
+                'description' => (string) ($profile['description'] ?? ''),
                 'version' => (int) ($profile['version'] ?? 1),
                 'classification_count' => $classificationCount,
                 'entry_type_count' => count($entryTypeRows),

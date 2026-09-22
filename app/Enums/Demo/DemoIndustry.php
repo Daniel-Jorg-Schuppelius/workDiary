@@ -16,7 +16,9 @@ use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
 /**
- * Musterbranchen für Demo-Mandanten (Feature 040).
+ * Musterbranchen für Demo-Mandanten (Feature 040). Seit MVP-837 gibt es zu
+ * jedem Branchenprofil unter database/data/branchprofiles genau eine
+ * Musterbranche (Gate: DemoIndustriesTest).
  *
  * Jede Branche bestimmt:
  *  - das zu installierende Branchenprofil (BranchProfileInstaller),
@@ -37,6 +39,18 @@ enum DemoIndustry: string implements HasLabel {
     case BauAusbau = 'bau-ausbau';
     case Spedition = 'spedition';
     case Partyservice = 'partyservice';
+    // Musterbranchen 9–19 (MVP-837): jedes Branchenprofil hat eine Demo.
+    case DruckKopiershop = 'druck-kopiershop';
+    case Galabau = 'galabau';
+    case Gebaeudereinigung = 'gebaeudereinigung';
+    case Handwerk = 'handwerk';
+    case KfzFuhrparkservice = 'kfz-fuhrparkservice';
+    case Pflege = 'pflege';
+    case Shk = 'shk';
+    case Steuerberater = 'steuerberater';
+    case TaxiMietwagen = 'taxi-mietwagen';
+    case Veranstalter = 'veranstalter';
+    case Veranstaltungstechnik = 'veranstaltungstechnik';
 
     /** Branchenprofil-Code für den BranchProfileInstaller (database/data/branchprofiles/*.php). */
     public function branchProfileCode(): string {
@@ -49,6 +63,17 @@ enum DemoIndustry: string implements HasLabel {
             self::BauAusbau => 'bau-ausbau',
             self::Spedition => 'spedition',
             self::Partyservice => 'partyservice',
+            self::DruckKopiershop => 'druck-kopiershop',
+            self::Galabau => 'galabau',
+            self::Gebaeudereinigung => 'gebaeudereinigung',
+            self::Handwerk => 'handwerk',
+            self::KfzFuhrparkservice => 'kfz-fuhrparkservice',
+            self::Pflege => 'pflege',
+            self::Shk => 'shk',
+            self::Steuerberater => 'steuerberater',
+            self::TaxiMietwagen => 'taxi-mietwagen',
+            self::Veranstalter => 'veranstalter',
+            self::Veranstaltungstechnik => 'veranstaltungstechnik',
         };
     }
 
@@ -63,6 +88,17 @@ enum DemoIndustry: string implements HasLabel {
             self::BauAusbau => 'Bau & Ausbau',
             self::Spedition => 'Spedition & Logistik',
             self::Partyservice => 'Partyservice & Catering',
+            self::DruckKopiershop => 'Druck & Kopiershop',
+            self::Galabau => 'Garten- und Landschaftsbau',
+            self::Gebaeudereinigung => 'Gebäudereinigung',
+            self::Handwerk => 'Handwerk & Service',
+            self::KfzFuhrparkservice => 'Kfz- und Fuhrparkservice',
+            self::Pflege => 'Ambulante Pflege',
+            self::Shk => 'Sanitär, Heizung, Klima',
+            self::Steuerberater => 'Steuerberatung',
+            self::TaxiMietwagen => 'Taxi & Mietwagen',
+            self::Veranstalter => 'Veranstalter & Event-Organisation',
+            self::Veranstaltungstechnik => 'Veranstaltungstechnik',
         };
     }
 
@@ -77,6 +113,17 @@ enum DemoIndustry: string implements HasLabel {
             self::BauAusbau => 'Muster Ausbau GmbH',
             self::Spedition => 'Muster Spedition GmbH',
             self::Partyservice => 'Muster Partyservice GmbH',
+            self::DruckKopiershop => 'Muster Druck & Copy GmbH',
+            self::Galabau => 'Muster GaLaBau GmbH',
+            self::Gebaeudereinigung => 'Muster Gebäudereinigung GmbH',
+            self::Handwerk => 'Muster Handwerk GmbH',
+            self::KfzFuhrparkservice => 'Muster Kfz-Service GmbH',
+            self::Pflege => 'Muster Pflegedienst GmbH',
+            self::Shk => 'Muster SHK GmbH',
+            self::Steuerberater => 'Muster Steuerberatung GmbH',
+            self::TaxiMietwagen => 'Muster Taxi & Mietwagen GmbH',
+            self::Veranstalter => 'Muster Events GmbH',
+            self::Veranstaltungstechnik => 'Muster Veranstaltungstechnik GmbH',
         };
     }
 

@@ -29,7 +29,8 @@
     </x-slot:toolbar>
 
     <x-filter-bar :action="route('claims.reports.index')" :reset="route('claims.reports.index')">
-        <x-date-range :from="$from->toDateString()" :to="$to->toDateString()" from-name="from" to-name="to" />
+        <x-date-range class="w-80 shrink-0" :label="false" from-name="from" to-name="to"
+                      :from="$from->toDateString()" :to="$to->toDateString()" />
     </x-filter-bar>
 
     <div class="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">

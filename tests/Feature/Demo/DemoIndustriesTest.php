@@ -20,9 +20,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
- * Musterbranchen 5–8 (MVP-710, Vollscan G5): Sicherheitsdienst, Bau-Ausbau,
- * Spedition, Partyservice — je Branche vollständiger Seed auf dem eigenen
- * Branchenprofil, unterscheidbare Inhalte, Determinismus, Reset-Schutz.
+ * Musterbranchen 5–19 (MVP-710 und MVP-837): je Branche vollständiger Seed
+ * auf dem eigenen Branchenprofil, unterscheidbare Inhalte, Determinismus,
+ * Reset-Schutz; Gate „jedes Profil hat eine Musterbranche".
  */
 final class DemoIndustriesTest extends TestCase {
     use RefreshDatabase;
@@ -44,12 +44,24 @@ final class DemoIndustriesTest extends TestCase {
             'bau-ausbau' => [DemoIndustry::BauAusbau, 'bau-ausbau', 'aufmass', 'BAU_TAGESBERICHT', '#aufmass', 'Trockenbau', 'Fassadengerüst'],
             'spedition' => [DemoIndustry::Spedition, 'spedition', 'transportauftrag', 'SP_LADUNGSSICHERUNG', '#kuehlgut', 'Tour', 'Sattelzug'],
             'partyservice' => [DemoIndustry::Partyservice, 'partyservice', 'menueplanung', 'PS_HACCP_KUEHLKETTE', '#haccp', 'Buffet', 'Kühlfahrzeug'],
+            // Musterbranchen 9–19 (MVP-837).
+            'druck-kopiershop' => [DemoIndustry::DruckKopiershop, 'druck-kopiershop', 'druckauftrag', 'DR_DRUCKFREIGABE', '#druckfreigabe', 'Kampagnenflyer', 'Digitaldruckmaschine'],
+            'galabau' => [DemoIndustry::Galabau, 'galabau', 'pflegegang', 'GL_PFLEGEGANG', '#pflege', 'Pflegegang', 'Aufsitzmäher'],
+            'gebaeudereinigung' => [DemoIndustry::Gebaeudereinigung, 'gebaeudereinigung', 'unterhaltsreinigung', 'GR_QS_KONTROLLE', '#unterhalt', 'Unterhaltsreinigung', 'Scheuersaugmaschine'],
+            'handwerk' => [DemoIndustry::Handwerk, 'handwerk', 'maintenance', 'HW_MAINTENANCE', '#wartung', 'Sektionaltor', 'Sektionaltor'],
+            'kfz-fuhrparkservice' => [DemoIndustry::KfzFuhrparkservice, 'kfz-fuhrparkservice', 'wartung', 'KFZ_WARTUNG', '#fahrzeugakte', 'Inspektion', 'Transporter'],
+            'pflege' => [DemoIndustry::Pflege, 'pflege', 'grundpflege', 'PF_MEDIKAMENTENGABE', '#medikation', 'Tour Nord', 'Pflegebett'],
+            'shk' => [DemoIndustry::Shk, 'shk', 'wartung', 'SHK_WARTUNG', '#wartung', 'Heizungswartung', 'Brennwertkessel'],
+            'steuerberater' => [DemoIndustry::Steuerberater, 'steuerberater', 'fibu', 'STB_FIBU_MONAT', '#datev-import', 'Finanzbuchführung', 'Registrierkasse'],
+            'taxi-mietwagen' => [DemoIndustry::TaxiMietwagen, 'taxi-mietwagen', 'personenfahrt', 'TX_FAHRTAUFTRAG_ANNAHME', '#vorbestellung', 'Krankenfahrt', 'Taxi MU-TX'],
+            'veranstalter' => [DemoIndustry::Veranstalter, 'veranstalter', 'durchfuehrung', 'VA_GENEHMIGUNGEN', '#genehmigung', 'Stadtfest', 'Mobile Bühne'],
+            'veranstaltungstechnik' => [DemoIndustry::Veranstaltungstechnik, 'veranstaltungstechnik', 'aufbau', 'VT_SOUNDCHECK', '#ton', 'Konferenz', 'Line-Array'],
         ];
     }
 
-    public function test_enum_exposes_the_four_new_industries_with_matching_profiles(): void {
+    public function test_enum_exposes_the_new_industries_with_matching_profiles(): void {
         $values = array_map(static fn(DemoIndustry $i): string => $i->value, DemoIndustry::all());
-        foreach (['sicherheitsdienst', 'bau-ausbau', 'spedition', 'partyservice'] as $key) {
+        foreach (array_keys(self::newIndustries()) as $key) {
             $this->assertContains($key, $values);
             $industry = DemoIndustry::fromKey($key);
             $this->assertSame($key, $industry->value);
@@ -58,7 +70,34 @@ final class DemoIndustriesTest extends TestCase {
             $this->assertNotSame('', $industry->label());
             $this->assertStringContainsString('Muster', $industry->companyName());
         }
-        $this->assertCount(8, DemoIndustry::all());
+        $this->assertCount(19, DemoIndustry::all());
+    }
+
+    /**
+     * Gate (MVP-837): Jede Profildatei hat genau eine Musterbranche, und jeder
+     * Blueprint verweist auf eine Prozedurvorlage mit Schritten desselben
+     * Profils — sonst liefe der Demo-Prozedurlauf auf einer Fremdvorlage.
+     */
+    public function test_every_branch_profile_has_a_demo_industry_with_a_published_procedure(): void {
+        $files = array_map(
+            static fn(string $file): string => basename($file, '.php'),
+            glob(database_path('data/branchprofiles/*.php')) ?: [],
+        );
+        sort($files);
+        $codes = array_map(static fn(DemoIndustry $i): string => $i->branchProfileCode(), DemoIndustry::all());
+        sort($codes);
+        $this->assertSame($files, $codes, 'Profildateien und Musterbranchen weichen ab.');
+        $this->assertSame(count($codes), count(array_unique($codes)), 'Ein Profil hat mehr als eine Musterbranche.');
+
+        $provider = new DemoBlueprintProvider();
+        foreach (DemoIndustry::all() as $industry) {
+            $profile = require database_path('data/branchprofiles/' . $industry->branchProfileCode() . '.php');
+            $blueprint = $provider->blueprint($industry);
+            $template = collect((array) ($profile['procedure_templates'] ?? []))
+                ->first(static fn(array $row): bool => ($row['code'] ?? null) === $blueprint['procedure_code']);
+            $this->assertNotNull($template, $industry->value . ': procedure_code fehlt im Profil.');
+            $this->assertNotEmpty($template['steps'] ?? [], $industry->value . ': Prozedurvorlage ohne Schritte.');
+        }
     }
 
     public function test_every_industry_blueprint_has_the_same_key_set(): void {
@@ -144,8 +183,8 @@ final class DemoIndustriesTest extends TestCase {
                 ->where('organization_id', $organization->id)->orderBy('id')->pluck('name')->implode('|');
         }
 
-        $this->assertCount(4, array_unique($titles));
-        $this->assertCount(4, array_unique($customers));
+        $this->assertCount(count(self::newIndustries()), array_unique($titles));
+        $this->assertCount(count(self::newIndustries()), array_unique($customers));
     }
 
     public function test_partyservice_installs_allergen_catalog_from_profile(): void {

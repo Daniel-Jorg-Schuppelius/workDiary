@@ -30,6 +30,7 @@ return [
         'assets' => 'Assets',
         'contact_persons' => 'Ansprechpartner',
         'documents' => 'Dokumente (ZIP)',
+        'club_members' => 'Vereinsmitglieder',
     ],
 
     'template' => [
@@ -84,6 +85,8 @@ return [
             'status' => 'Wert ist kein gültiger Status.',
             'amount' => 'Kein gültiger Betrag.',
             'url' => 'Keine gültige Adresse (erwartet http:// oder https://).',
+            'integer' => 'Keine gültige ganze Zahl.',
+            'club_kind' => 'Keine gültige Mitgliedschaftsart (aktiv, passiv, Fördermitglied, pausiert).',
         ],
         'outOfRange' => [
             'rowLimit' => 'Maximale Zeilenanzahl (:max) überschritten — Rest wurde ignoriert.',

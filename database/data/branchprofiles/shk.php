@@ -13,6 +13,7 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'shk',
     'label' => 'SHK',
+    'description' => 'Sanitär, Heizung, Klima: Wartung, Störung, Installation, Inbetriebnahme, Druck- und Dichtheitsprüfung mit Prüfplänen für Heizung und Trinkwasser.',
     // v2: Default-Eintragstypen (Struktur-Typen) ans Profil gekoppelt.
     'version' => 2,
     // Default-Struktur-Typen (EntryTypeSeeder::profiles()) — nicht die

@@ -13,6 +13,7 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'sicherheitsdienst',
     'label' => 'Sicherheitsdienst und Objektschutz',
+    'description' => 'Sicherheitsdienst und Objektschutz: Wachbuch, Revierfahrt, Kontrollgang, Alarmverfolgung, Zutritt und Schlüsselnachweis.',
     'version' => 1,
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.

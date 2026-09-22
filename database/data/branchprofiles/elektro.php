@@ -13,6 +13,7 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'elektro',
     'label' => 'Elektro',
+    'description' => 'Elektrohandwerk: Installation, E-Check, Messung, Wallbox und PV-Anschluss mit DGUV-V3-Prüfplänen und Qualifikationen.',
     // v2 (Feature 100): Entsorgungs-Modul empfohlen + AVV-Presets für
     // Kabel/Batterien (Altgeräte-Mitnahme von der Baustelle/beim Kunden).
     'version' => 3,

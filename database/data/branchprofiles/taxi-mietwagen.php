@@ -27,8 +27,22 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'taxi-mietwagen',
     'label' => 'Taxi / Mietwagen (Personenbeförderung)',
-    'version' => 1,
+    'version' => 2,
     'description' => 'Personenbeförderung nach PBefG: Taxen-, Mietwagen- und gebündelter Bedarfsverkehr mit Disposition, Konzessions-/Geräte-Nachweisen, Tarifen und Schichtabrechnung.',
+    // Modul-Empfehlung (Feature 081, nachgetragen mit MVP-840): Disposition,
+    // Fahrten und Fahrzeuge (fuhrpark), Barumsätze (kasse), Standorte.
+    'modules_recommended' => [
+        'module.planung',
+        'module.spesen',
+        'module.vertrieb',
+        'module.documents',
+        'module.forms',
+        'module.knowledge',
+        'module.auswertungen_team',
+        'module.fuhrpark',
+        'module.kasse',
+        'module.standorterfassung',
+    ],
 
     'classifications' => [
         'entry_type' => [

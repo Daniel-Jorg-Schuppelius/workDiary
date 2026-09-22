@@ -1,7 +1,7 @@
 ---
 title: "Industry profiles"
 topic: admin.branch-profiles
-version: 1
+version: 2
 audience:
     - admin
 related:
@@ -48,3 +48,21 @@ Good to know:
 - Every installation is recorded in the tamper-evident audit log.
 - Profiles are stored as configuration; new trades can be added without
   code changes.
+
+Multiple profiles, primary profile and uninstall:
+
+- Profiles can be **combined** (e.g. electrical and HVAC). The first one
+  installed is the **primary profile**; navigation focus and domain
+  defaults follow it, while the module recommendation in the scope unites
+  all installed profiles. **Set as primary profile** switches it
+  deliberately.
+- **Uninstall** (platform admin) removes unused order types, categories and
+  tags of the profile, deactivates classifications in use and deletes the
+  profile's requirement rules. Checklists, maintenance plans, SLA, cleaning
+  and room templates remain as master data.
+- An **update badge** on the card indicates a newer profile version;
+  "Re-apply" adopts it.
+- **Import** accepts a JSON profile from the catalogue; unknown
+  classification domains or modules are rejected.
+- Order types ship in the enabled languages; the display follows the
+  user's language while the source label stays editable.

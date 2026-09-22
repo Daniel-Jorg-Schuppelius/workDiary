@@ -55,7 +55,7 @@ Jede Zustellung trägt folgende Header:
 
 Der HMAC wird über `<timestamp>.<body>` mit dem Signing-Key gebildet:
 
-```
+```text
 expected = HMAC_SHA256(timestamp + "." + raw_body, signing_key)
 ```
 

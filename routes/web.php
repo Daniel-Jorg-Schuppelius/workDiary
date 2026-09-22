@@ -3054,6 +3054,68 @@ Route::middleware('auth')->group(function () {
         Route::post('safety-events/{safety_event}/follow-up', [SafetyEventController::class, 'followUp'])->name('safety-events.follow-up');
         Route::delete('safety-events/{safety_event}', [SafetyEventController::class, 'destroy'])->name('safety-events.destroy');
 
+        // ── Vereinsverwaltung (Feature 159, MVP-842): Mitglieder, Gruppen, Abteilungen, Wechselvorschläge ──
+        // Plan-Modul module.club (config/plans.php); Rechte club.viewAny/manage, Gruppenleitung club.groups.lead.
+        Route::prefix('verein')->name('club.')->group(function (): void {
+            Route::get('mitglieder', [\App\Http\Controllers\Club\ClubMemberController::class, 'index'])->name('members.index');
+            Route::get('mitglieder/create', [\App\Http\Controllers\Club\ClubMemberController::class, 'create'])->name('members.create');
+            Route::post('mitglieder', [\App\Http\Controllers\Club\ClubMemberController::class, 'store'])->name('members.store');
+            Route::get('mitglieder/{member}', [\App\Http\Controllers\Club\ClubMemberController::class, 'show'])->name('members.show');
+            Route::get('mitglieder/{member}/edit', [\App\Http\Controllers\Club\ClubMemberController::class, 'edit'])->name('members.edit');
+            Route::put('mitglieder/{member}', [\App\Http\Controllers\Club\ClubMemberController::class, 'update'])->name('members.update');
+            Route::delete('mitglieder/{member}', [\App\Http\Controllers\Club\ClubMemberController::class, 'destroy'])->name('members.destroy');
+            Route::get('mitglieder/{member}/art', [\App\Http\Controllers\Club\ClubMemberController::class, 'kindDialog'])->name('members.kind.edit');
+            Route::post('mitglieder/{member}/art', [\App\Http\Controllers\Club\ClubMemberController::class, 'changeKind'])->name('members.kind.update');
+            Route::get('mitglieder/{member}/austritt', [\App\Http\Controllers\Club\ClubMemberController::class, 'leaveDialog'])->name('members.leave.edit');
+            Route::post('mitglieder/{member}/austritt', [\App\Http\Controllers\Club\ClubMemberController::class, 'leave'])->name('members.leave');
+            Route::get('mitglieder/{member}/vertretungen/create', [\App\Http\Controllers\Club\ClubGuardianController::class, 'create'])->name('members.guardians.create');
+            Route::post('mitglieder/{member}/vertretungen', [\App\Http\Controllers\Club\ClubGuardianController::class, 'store'])->name('members.guardians.store');
+            Route::get('mitglieder/{member}/vertretungen/{guardian}/edit', [\App\Http\Controllers\Club\ClubGuardianController::class, 'edit'])->name('members.guardians.edit');
+            Route::put('mitglieder/{member}/vertretungen/{guardian}', [\App\Http\Controllers\Club\ClubGuardianController::class, 'update'])->name('members.guardians.update');
+            Route::post('mitglieder/{member}/vertretungen/{guardian}/widerruf', [\App\Http\Controllers\Club\ClubGuardianController::class, 'revoke'])->name('members.guardians.revoke');
+
+            Route::post('gruppen/kriterien-pruefen', [\App\Http\Controllers\Club\ClubGroupController::class, 'refreshProposals'])->name('groups.refresh-proposals');
+            Route::get('gruppen', [\App\Http\Controllers\Club\ClubGroupController::class, 'index'])->name('groups.index');
+            Route::get('gruppen/create', [\App\Http\Controllers\Club\ClubGroupController::class, 'create'])->name('groups.create');
+            Route::post('gruppen', [\App\Http\Controllers\Club\ClubGroupController::class, 'store'])->name('groups.store');
+            Route::get('gruppen/{group}', [\App\Http\Controllers\Club\ClubGroupController::class, 'show'])->name('groups.show');
+            Route::get('gruppen/{group}/edit', [\App\Http\Controllers\Club\ClubGroupController::class, 'edit'])->name('groups.edit');
+            Route::put('gruppen/{group}', [\App\Http\Controllers\Club\ClubGroupController::class, 'update'])->name('groups.update');
+            Route::delete('gruppen/{group}', [\App\Http\Controllers\Club\ClubGroupController::class, 'destroy'])->name('groups.destroy');
+            Route::get('gruppen/{group}/aufnahme', [\App\Http\Controllers\Club\ClubGroupController::class, 'admitDialog'])->name('groups.admit.create');
+            Route::post('gruppen/{group}/aufnahme', [\App\Http\Controllers\Club\ClubGroupController::class, 'admit'])->name('groups.admit');
+            Route::get('gruppen/{group}/zuordnungen/{membership}/freigeben', [\App\Http\Controllers\Club\ClubGroupController::class, 'approveDialog'])->name('groups.memberships.approve.edit');
+            Route::post('gruppen/{group}/zuordnungen/{membership}/freigeben', [\App\Http\Controllers\Club\ClubGroupController::class, 'approve'])->name('groups.memberships.approve');
+            Route::post('gruppen/{group}/zuordnungen/{membership}/ablehnen', [\App\Http\Controllers\Club\ClubGroupController::class, 'reject'])->name('groups.memberships.reject');
+            Route::get('gruppen/{group}/zuordnungen/{membership}/beenden', [\App\Http\Controllers\Club\ClubGroupController::class, 'endDialog'])->name('groups.memberships.end.edit');
+            Route::post('gruppen/{group}/zuordnungen/{membership}/beenden', [\App\Http\Controllers\Club\ClubGroupController::class, 'end'])->name('groups.memberships.end');
+
+            // Vereinstermine (MVP-843): Event-Zeilen des Kalenders mit Vereinsdetails.
+            Route::get('termine', [\App\Http\Controllers\Club\ClubEventController::class, 'index'])->name('events.index');
+            Route::get('termine/create', [\App\Http\Controllers\Club\ClubEventController::class, 'create'])->name('events.create');
+            Route::post('termine', [\App\Http\Controllers\Club\ClubEventController::class, 'store'])->name('events.store');
+            Route::get('termine/{event}', [\App\Http\Controllers\Club\ClubEventController::class, 'show'])->name('events.show');
+            Route::get('termine/{event}/edit', [\App\Http\Controllers\Club\ClubEventController::class, 'edit'])->name('events.edit');
+            Route::put('termine/{event}', [\App\Http\Controllers\Club\ClubEventController::class, 'update'])->name('events.update');
+            Route::get('termine/{event}/absage', [\App\Http\Controllers\Club\ClubEventController::class, 'cancelDialog'])->name('events.cancel.edit');
+            Route::post('termine/{event}/absage', [\App\Http\Controllers\Club\ClubEventController::class, 'cancel'])->name('events.cancel');
+            Route::get('termine/{event}/anmeldung', [\App\Http\Controllers\Club\ClubEventController::class, 'registerDialog'])->name('events.register.create');
+            Route::post('termine/{event}/anmeldung', [\App\Http\Controllers\Club\ClubEventController::class, 'register'])->name('events.register');
+            Route::post('termine/{event}/teilnahmen/{participation}/absagen', [\App\Http\Controllers\Club\ClubEventController::class, 'cancelRegistration'])->name('events.participations.cancel');
+
+            Route::get('abteilungen', [\App\Http\Controllers\Club\ClubDepartmentController::class, 'index'])->name('departments.index');
+            Route::get('abteilungen/create', [\App\Http\Controllers\Club\ClubDepartmentController::class, 'create'])->name('departments.create');
+            Route::post('abteilungen', [\App\Http\Controllers\Club\ClubDepartmentController::class, 'store'])->name('departments.store');
+            Route::get('abteilungen/{department}/edit', [\App\Http\Controllers\Club\ClubDepartmentController::class, 'edit'])->name('departments.edit');
+            Route::put('abteilungen/{department}', [\App\Http\Controllers\Club\ClubDepartmentController::class, 'update'])->name('departments.update');
+            Route::delete('abteilungen/{department}', [\App\Http\Controllers\Club\ClubDepartmentController::class, 'destroy'])->name('departments.destroy');
+
+            Route::get('wechselvorschlaege', [\App\Http\Controllers\Club\ClubGroupChangeProposalController::class, 'index'])->name('proposals.index');
+            Route::get('wechselvorschlaege/{proposal}/entscheiden', [\App\Http\Controllers\Club\ClubGroupChangeProposalController::class, 'decideDialog'])->name('proposals.decide.edit');
+            Route::post('wechselvorschlaege/{proposal}/bestaetigen', [\App\Http\Controllers\Club\ClubGroupChangeProposalController::class, 'confirm'])->name('proposals.confirm');
+            Route::post('wechselvorschlaege/{proposal}/verwerfen', [\App\Http\Controllers\Club\ClubGroupChangeProposalController::class, 'dismiss'])->name('proposals.dismiss');
+        });
+
         // ── Arbeitsschutz-Register (Feature 132, MVP-697): GBU, Unterweisung, Vorsorge ──
         // Kernmodul wie die Sicherheitsereignisse (kein Plan-Gate); Rechte safety.viewAny/manage.
         Route::prefix('arbeitsschutz')->name('safety.')->group(function (): void {
@@ -4346,6 +4408,11 @@ Route::middleware('auth')->group(function () {
             ->name('admin.branch-profiles.import');
         Route::post('admin/branch-profiles/{profile}', [BranchProfileController::class, 'install'])
             ->name('admin.branch-profiles.install');
+        // MVP-839: Hauptprofil wechseln, Profil deinstallieren.
+        Route::post('admin/branch-profiles/{profile}/primary', [BranchProfileController::class, 'setPrimary'])
+            ->name('admin.branch-profiles.primary');
+        Route::post('admin/branch-profiles/{profile}/uninstall', [BranchProfileController::class, 'uninstall'])
+            ->name('admin.branch-profiles.uninstall');
         Route::get('admin/classifications/import/form', [ClassificationController::class, 'importForm'])
             ->name('admin.classifications.import.form');
         Route::post('admin/classifications/import', [ClassificationController::class, 'import'])

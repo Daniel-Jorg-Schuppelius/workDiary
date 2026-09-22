@@ -161,6 +161,8 @@ return [
     ],
     'branch_profile' => [
         'installed' => 'Profilo di filiale installato',
+        'primaryChanged' => 'Profilo principale cambiato',
+        'uninstalled' => 'Profilo di filiale disinstallato',
     ],
     'caldav' => [
         'connection_saved' => 'Connessione CalDAV salvata',
@@ -319,6 +321,8 @@ return [
         'orgCreated' => 'Organizzazione demo creata',
         'reset' => 'Tenant demo reimpostato',
         'seeded' => 'Dati demo generati',
+        'licensed' => 'Licenza demo emessa',
+        'pruned' => 'Tenant demo eliminato dopo il periodo di conservazione',
     ],
     'device' => [
         'revoked' => 'Dispositivo revocato',
@@ -1087,5 +1091,37 @@ return [
     ],
     'lexware' => [
         'tariffChanged' => 'Profilo tariffario Lexware modificato',
+    ],
+    // Vereinsverwaltung (Feature 159, MVP-842)
+    'club' => [
+        'member' => [
+            'kindChanged' => 'Tipo di iscrizione modificato',
+            'left' => 'Socio uscito',
+        ],
+        'guardian' => [
+            'granted' => 'Rappresentante designato',
+            'revoked' => 'Rappresentante revocato',
+        ],
+        'group' => [
+            'memberAdmitted' => 'Socio ammesso nel gruppo',
+            'membershipRequested' => 'Richiesta di gruppo registrata',
+            'membershipApproved' => 'Richiesta di gruppo approvata',
+            'membershipRejected' => 'Richiesta di gruppo rifiutata',
+            'membershipEnded' => 'Assegnazione al gruppo terminata',
+        ],
+        'event' => [
+            'updated' => 'Appuntamento dell\'associazione modificato',
+            'cancelled' => 'Appuntamento dell\'associazione annullato',
+            'registered' => 'Partecipazione iscritta',
+            'waitlisted' => 'Partecipazione in lista d\'attesa',
+            'registrationCancelled' => 'Partecipazione annullata',
+            'invited' => 'Invitato all\'appuntamento',
+            'promoted' => 'Subentrato dalla lista d\'attesa',
+        ],
+        'proposal' => [
+            'created' => 'Proposta di cambio creata',
+            'confirmed' => 'Proposta di cambio confermata',
+            'dismissed' => 'Proposta di cambio respinta',
+        ],
     ],
 ];

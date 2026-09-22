@@ -51,6 +51,10 @@ return [
                 'tours.*', 'travel-expenses.*',
             ],
         ],
+        'verein' => [
+            'icon' => 'groups',
+            'patterns' => ['club.*'],
+        ],
         'auftraege-service' => [
             'icon' => 'assignment',
             'patterns' => [

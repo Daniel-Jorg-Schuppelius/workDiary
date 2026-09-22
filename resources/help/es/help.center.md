@@ -19,5 +19,10 @@ y la facturación. Solo se muestra lo que corresponde a su idioma, su rol y
 las funciones activadas para su organización.
 
 Cada página enlaza con temas relacionados y con «¿Le ha resultado útil?»
-puede enviar comentarios anónimos. Desde la ayuda contextual, «Abrir la
-ayuda detallada» lleva directamente a la página correspondiente.
+puede enviar comentarios anónimos.
+
+Desde la ayuda contextual puede acceder al centro de ayuda en cualquier
+momento: el icono del libro en la cabecera de la ayuda abre esta vista
+general y el campo de búsqueda situado debajo inicia su búsqueda
+directamente aquí. «Abrir la ayuda detallada» lleva a la página del tema
+mostrado en ese momento.

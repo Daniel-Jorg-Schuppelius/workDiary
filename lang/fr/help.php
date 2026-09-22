@@ -65,6 +65,10 @@ return [
             'title' => 'Administration',
             'description' => 'Organisation, rôles et droits, import, sauvegarde, licence et intégrations.',
         ],
+        'verein' => [
+            'title' => 'Association',
+            'description' => 'Membres, groupes, sections et propositions de changement de la gestion de l\'association.',
+        ],
         'weitere' => [
             'title' => 'Autres sujets',
             'description' => 'Tout ce qui ne relève d’aucun des domaines principaux.',

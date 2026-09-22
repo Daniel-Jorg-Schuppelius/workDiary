@@ -399,6 +399,12 @@ return [
         // Arbeitsschutz-Register (Feature 132): Gefährdungsbeurteilungen,
         // Vorsorge und Unterweisungen hängen am Sicherheits-Topic.
         'safety.*' => 'safety.overview',
+        // Vereinsverwaltung (Feature 159, MVP-842)
+        'club.members.*' => 'club.members',
+        'club.groups.*' => 'club.groups',
+        'club.events.*' => 'club.events',
+        'club.departments.*' => 'club.groups',
+        'club.proposals.*' => 'club.groups',
 
         // ISMS (Feature 044/046): Anforderungen + SoA-Aussagen + Druckansicht
         // teilen sich ein Topic; isms.soa/isms.dashboard sind exakte

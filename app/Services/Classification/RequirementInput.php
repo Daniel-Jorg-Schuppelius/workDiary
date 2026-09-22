@@ -90,7 +90,7 @@ class RequirementInput {
         $rows = $this->resolver->list($organization->id, ClassificationDomain::EntryType);
         $options = [];
         foreach ($rows as $row) {
-            $options[$row->code] = $row->label;
+            $options[$row->code] = $row->display_label;
         }
 
         return $options;

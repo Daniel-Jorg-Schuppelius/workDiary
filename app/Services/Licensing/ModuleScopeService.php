@@ -59,42 +59,52 @@ class ModuleScopeService {
     }
 
     /**
-     * Modul-Empfehlung des installierten Branchenprofils der Organisation
+     * Modul-Empfehlung der installierten Branchenprofile der Organisation
      * (`modules_recommended` im Profil-Array), auf Katalogmodule gefiltert.
+     * Seit MVP-839 die Vereinigung aller installierten Profile, Hauptprofil
+     * zuerst; `code`/`label` nennen das Hauptprofil (Label listet alle).
      * null = kein Profil installiert oder keine Empfehlung hinterlegt.
      *
      * @return array{code: string, label: string, modules: list<string>}|null
      */
     public function branchProfileRecommendation(Organization $organization): ?array {
-        $settings = is_array($organization->settings) ? $organization->settings : [];
-        $code = (string) ($settings['branch_profile_code'] ?? '');
-        if ($code === '' || ! preg_match('/^[a-z0-9\-]+$/', $code)) {
-            return null;
-        }
-
-        $path = database_path("data/branchprofiles/{$code}.php");
-        if (! File::isFile($path)) {
-            return null;
-        }
-
-        /** @var array<string, mixed> $profile */
-        $profile = require $path;
-        $recommended = $profile['modules_recommended'] ?? null;
-        if (! is_array($recommended) || $recommended === []) {
-            return null;
-        }
-
-        $modules = array_values(array_filter(
-            array_map(static fn($m): string => (string) $m, $recommended),
-            fn(string $m): bool => $this->catalog->has($m)
+        $codes = array_values(array_filter(
+            $organization->installedBranchProfileCodes(),
+            static fn(string $code): bool => preg_match('/^[a-z0-9\-]+$/', $code) === 1,
         ));
+        if ($codes === []) {
+            return null;
+        }
+
+        $modules = [];
+        $labels = [];
+        foreach ($codes as $code) {
+            $path = database_path("data/branchprofiles/{$code}.php");
+            if (! File::isFile($path)) {
+                continue;
+            }
+
+            /** @var array<string, mixed> $profile */
+            $profile = require $path;
+            $recommended = $profile['modules_recommended'] ?? null;
+            if (! is_array($recommended) || $recommended === []) {
+                continue;
+            }
+            $labels[] = (string) ($profile['label'] ?? $code);
+            foreach ($recommended as $m) {
+                $m = (string) $m;
+                if ($this->catalog->has($m) && ! in_array($m, $modules, true)) {
+                    $modules[] = $m;
+                }
+            }
+        }
         if ($modules === []) {
             return null;
         }
 
         return [
-            'code' => $code,
-            'label' => (string) ($profile['label'] ?? $code),
+            'code' => $codes[0],
+            'label' => implode(' + ', $labels),
             'modules' => $modules,
         ];
     }

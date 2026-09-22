@@ -20,5 +20,10 @@ all'amministrazione. Vede solo ciò che corrisponde alla sua lingua, al suo
 ruolo e alle funzioni attivate per la sua organizzazione.
 
 Ogni pagina rimanda ad argomenti correlati e con «È stato utile?» può
-inviare un riscontro anonimo. Dall'aiuto contestuale, «Apri la guida
-dettagliata» porta direttamente alla pagina corrispondente.
+inviare un riscontro anonimo.
+
+Dall'aiuto contestuale può raggiungere il centro assistenza in qualsiasi
+momento: l'icona del libro nell'intestazione dell'aiuto apre questa
+panoramica e il campo di ricerca sottostante avvia la sua ricerca
+direttamente qui. «Apri la guida dettagliata» porta alla pagina
+dell'argomento attualmente visualizzato.

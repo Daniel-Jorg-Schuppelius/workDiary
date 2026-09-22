@@ -24,8 +24,9 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'pflege',
     'label' => 'Ambulante Pflege',
+    'description' => 'Ambulante Pflege: Grund- und Behandlungspflege, Hauswirtschaft, Betreuung, Beratungsbesuche und Pflegevisiten mit 5-R-Regel und Vier-Augen-Prinzip bei BtM.',
     // v2: Default-Eintragstypen (Struktur-Typen) ans Profil gekoppelt.
-    'version' => 3,
+    'version' => 4,
     // Default-Struktur-Typen (EntryTypeSeeder::profiles()) — nicht die
     // Classification-Domäne entry_type.
     'entry_type_defaults' => ['general', 'care_visit'],
@@ -154,7 +155,7 @@ return [
                 ['code' => 'medikamentPruefen', 'step_type' => 'choice', 'label' => 'Medikament laut Medikationsplan wählen'],
                 ['code' => 'dosisZeitpunkt', 'step_type' => 'confirm', 'label' => 'Richtige Dosis und Zeitpunkt bestätigen'],
                 ['code' => 'applikationsform', 'step_type' => 'confirm', 'label' => 'Richtige Applikationsform bestätigen'],
-                ['code' => 'btmKontrolle', 'step_type' => 'confirm', 'label' => 'BtM-Bestandskontrolle (Vier-Augen-Prinzip)', 'required' => false, 'blocking' => false, 'requires_second_person' => true],
+                ['code' => 'btmKontrolle', 'step_type' => 'confirm', 'label' => 'BtM-Bestandskontrolle (Vier-Augen-Prinzip)', 'requires_second_person' => true],
                 ['code' => 'handzeichen', 'step_type' => 'signature', 'label' => 'Handzeichen dokumentieren', 'requires_proof_type' => 'signature'],
             ],
         ],

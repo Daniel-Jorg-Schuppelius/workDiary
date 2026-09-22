@@ -161,6 +161,8 @@ return [
     ],
     'branch_profile' => [
         'installed' => 'Perfil de sucursal instalado',
+        'primaryChanged' => 'Perfil principal cambiado',
+        'uninstalled' => 'Perfil de sucursal desinstalado',
     ],
     'caldav' => [
         'connection_saved' => 'Conexión CalDAV guardada',
@@ -319,6 +321,8 @@ return [
         'orgCreated' => 'Organización de demostración creada',
         'reset' => 'Inquilino de demostración restablecido',
         'seeded' => 'Datos de demostración generados',
+        'licensed' => 'Licencia de demostración emitida',
+        'pruned' => 'Inquilino de demostración eliminado tras el plazo de conservación',
     ],
     'device' => [
         'revoked' => 'Dispositivo revocado',
@@ -1087,5 +1091,37 @@ return [
     ],
     'lexware' => [
         'tariffChanged' => 'Perfil de tarifa Lexware modificado',
+    ],
+    // Vereinsverwaltung (Feature 159, MVP-842)
+    'club' => [
+        'member' => [
+            'kindChanged' => 'Tipo de afiliación cambiado',
+            'left' => 'Socio dado de baja',
+        ],
+        'guardian' => [
+            'granted' => 'Representante asignado',
+            'revoked' => 'Representante revocado',
+        ],
+        'group' => [
+            'memberAdmitted' => 'Socio admitido en el grupo',
+            'membershipRequested' => 'Solicitud de grupo registrada',
+            'membershipApproved' => 'Solicitud de grupo aprobada',
+            'membershipRejected' => 'Solicitud de grupo rechazada',
+            'membershipEnded' => 'Asignación a grupo finalizada',
+        ],
+        'event' => [
+            'updated' => 'Cita de la asociación modificada',
+            'cancelled' => 'Cita de la asociación anulada',
+            'registered' => 'Participación inscrita',
+            'waitlisted' => 'Participación en lista de espera',
+            'registrationCancelled' => 'Participación anulada',
+            'invited' => 'Invitado a la cita',
+            'promoted' => 'Promovido desde la lista de espera',
+        ],
+        'proposal' => [
+            'created' => 'Propuesta de cambio creada',
+            'confirmed' => 'Propuesta de cambio confirmada',
+            'dismissed' => 'Propuesta de cambio descartada',
+        ],
     ],
 ];

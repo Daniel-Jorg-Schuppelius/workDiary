@@ -94,6 +94,9 @@ return [
     // Nombres legibles de los trabajos (claves del registro, anidadas por la notación de puntos);
     // añadir los nuevos trabajos aquí en todos los idiomas — si no, respaldo = clave.
     'job' => [
+        'demo' => [
+            'prune' => 'Eliminar organizaciones de demostración tras el plazo de conservación',
+        ],
         'billing' => [
             'account-invoices' => 'Generar facturas mensuales de condiciones especiales',
             'push-retainers' => 'Enviar las cuotas fijas de retainer a Lexoffice',

@@ -202,7 +202,8 @@ class DemoSeederServiceTest extends TestCase {
     public function test_demo_enthaelt_einen_freigegebenen_lernkurs(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 
-        $counts = app(DemoSeederService::class)->seed($this->organization->fresh(), $admin);
+        // Das IT-Profil empfiehlt kein LMS — der Kurs gehört zum Vollumfang (MVP-838).
+        $counts = app(DemoSeederService::class)->seed($this->organization->fresh(), $admin, null, true);
 
         $this->assertSame(1, $counts['learning']);
 

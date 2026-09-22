@@ -48,6 +48,8 @@ class SchedulerRegistrationTest extends TestCase {
         'domain:events' => ['*/30 * * * *', true, true],
         'inventory:cycle-counts' => ['50 5 * * 1', true, true],
         'inventory:expiring-lots' => ['10 6 * * *', true, true],
+        // MVP-836: Demo-Organisationen nach Aufbewahrungsfrist (No-Op ohne DEMO_RETENTION_DAYS).
+        'demo:prune' => ['40 3 * * *', true, true],
         // Neu mit MVP-461: wöchentlicher Offene-Zeiten-Digest an die Buchhaltung.
         'finance:open-times-digest' => ['40 6 * * 1', true, true],
         'archive:run' => ['0 3 * * *', true, true],

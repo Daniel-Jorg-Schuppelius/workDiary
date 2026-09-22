@@ -548,4 +548,13 @@ return [
     'ResalePeriodLink' => 'Reselling-Rechnungsbezug',
     'ResalePurchaseEntry' => 'Reselling-Einkaufsbeleg',
     'CompanyMapping' => 'Reselling-Firmenzuordnung',
+    // Vereinsverwaltung (Feature 159, MVP-842)
+    'ClubMember' => 'Vereinsmitglied',
+    'ClubDepartment' => 'Vereinsabteilung',
+    'ClubGroup' => 'Vereinsgruppe',
+    'ClubGroupMembership' => 'Gruppenzuordnung',
+    'ClubGroupChangeProposal' => 'Gruppenwechsel-Vorschlag',
+    'ClubGuardian' => 'Vereins-Vertretung',
+    'ClubEventDetails' => 'Vereinstermin',
+    'ClubEventParticipation' => 'Vereinstermin-Teilnahme',
 ];

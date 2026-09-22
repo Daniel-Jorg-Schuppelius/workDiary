@@ -154,7 +154,7 @@
                         <span class="label-text">{{ __('recipes.field.allergen_added') }}</span>
                         <select name="allergen_added[]" multiple size="4" class="select select-bordered select-sm">
                             @foreach ($recipeAllergenOptions as $option)
-                                <option value="{{ $option->code }}" @selected(in_array($option->code, $recipeProfile?->addedAllergens() ?? [], true))>{{ $option->label }}</option>
+                                <option value="{{ $option->code }}" @selected(in_array($option->code, $recipeProfile?->addedAllergens() ?? [], true))>{{ $option->display_label }}</option>
                             @endforeach
                         </select>
                     </label>
@@ -162,7 +162,7 @@
                         <span class="label-text">{{ __('recipes.field.allergen_removed') }}</span>
                         <select name="allergen_removed[]" multiple size="4" class="select select-bordered select-sm">
                             @foreach ($recipeAllergenOptions as $option)
-                                <option value="{{ $option->code }}" @selected(in_array($option->code, $recipeProfile?->removedAllergens() ?? [], true))>{{ $option->label }}</option>
+                                <option value="{{ $option->code }}" @selected(in_array($option->code, $recipeProfile?->removedAllergens() ?? [], true))>{{ $option->display_label }}</option>
                             @endforeach
                         </select>
                     </label>
@@ -206,7 +206,7 @@
                             <span class="text-sm">{{ $req->article->number }} — {{ $req->article->name }}:</span>
                             <select name="allergens[]" multiple size="3" class="select select-bordered select-sm">
                                 @foreach ($recipeAllergenOptions as $option)
-                                    <option value="{{ $option->code }}">{{ $option->label }}</option>
+                                    <option value="{{ $option->code }}">{{ $option->display_label }}</option>
                                 @endforeach
                             </select>
                             <button type="submit" class="btn btn-xs btn-primary">{{ __('recipes.action.save_allergens') }}</button>

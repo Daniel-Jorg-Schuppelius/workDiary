@@ -65,6 +65,7 @@ return [
             'module.kasse',
             'module.domain',
             'module.reselling',
+            'module.club',
         ],
         'enterprise' => [
             'module.kanban',
@@ -90,6 +91,7 @@ return [
             'module.isms',
             'module.finance',
             'module.reselling',
+            'module.club',
             'module.lager',
             'module.b2b_katalog',
             'module.bau',
@@ -120,6 +122,7 @@ return [
         'module.dokumentdesign' => 'PDF-Dokumentdesign & Firmenbogen',
         'module.applications' => 'Bewerbungen & Ausschreibungen',
         'module.investments' => 'Investitionsplanung',
+        'module.club' => 'Vereinsverwaltung',
         'module.crisis_management' => 'Notfall- & Krisenmanagement',
         'module.sustainability' => 'Nachhaltigkeit & ESG',
         'module.claims' => 'Reklamation & Gewährleistung',
@@ -168,6 +171,7 @@ return [
         'module.ai' => 'Optionale KI-Assistenz: Vorschläge aus konfigurierten Provider-Verbindungen (Cloud oder lokal), opt-in je Capability.',
         'module.applications' => 'Auftragsbewerbungen/Ausschreibungsakten und Personalbewerbungen mit Vertragsverhandlung.',
         'module.investments' => 'Investitionsakten mit Varianten, Budgetantrag, Freigabekette und Soll-Ist-Verfolgung.',
+        'module.club' => 'Mitglieder ohne Loginpflicht, Gruppen mit Alterskriterien, Vertretungen und CSV-Erstimport für Vereine.',
         'module.crisis_management' => 'Krisenakten mit Lagebild, Krisenstab, Alarmierung, Maßnahmen, Kommunikation und Übungen.',
         'module.sustainability' => 'ESG-Bewertungen, Aktivitätsdaten mit CO₂e-Faktoren, Maßnahmen, Ziele und VSME-Berichtsvorbereitung.',
         'module.claims' => 'Reklamationsakten mit Bewertung, Entscheidung, RMA-Rückläufern, Maßnahmen, kaufmännischen Folgen und Lieferantenregress.',
@@ -357,6 +361,7 @@ return [
         'applications.*' => 'module.applications', // Feature 068 Vertragsverhandlungen/Berichte
         'careers.*' => 'module.applications', // Feature 068 MVP-437 öffentlicher Karrierebereich
         'investments.*' => 'module.investments', // Feature 069 Investitionsplanung
+        'club.*' => 'module.club', // Feature 159 Vereinsverwaltung (MVP-842)
         'crisis.*' => 'module.crisis_management', // Feature 070 Notfall-/Krisenmanagement
         'sustainability.*' => 'module.sustainability', // Feature 071 Nachhaltigkeit/ESG
         'claims.*' => 'module.claims', // Feature 072 Reklamation/Gewährleistung/Rückläufer
@@ -479,6 +484,7 @@ return [
         'module.vertrieb' => false,
         'module.applications' => false,     // Bewerber-/Vergabedaten → AGG-/Nachweisfristen, nie auto-löschen
         'module.investments' => false,      // Freigabe-/Budget-Nachweise → Aufbewahrung
+        'module.club' => false,             // Mitglieder-/Gruppennachweise → Aufbewahrung
         'module.crisis_management' => false, // Krisen-/Meldenachweise → Aufbewahrung
         'module.sustainability' => false,   // Bewertungs-/Berichtsnachweise → Aufbewahrung         // Rechnungen → GoBD / §147 AO (10 J.)
         'module.claims' => false,           // Reklamations-/Gewährleistungsnachweise → Aufbewahrung

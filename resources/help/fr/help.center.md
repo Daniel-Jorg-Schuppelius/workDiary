@@ -20,5 +20,9 @@ Ne s'affiche que ce qui correspond à votre langue, à votre rôle et aux
 fonctions activées pour votre organisation.
 
 Chaque page de sujet renvoie vers des sujets liés, et « Cela vous a-t-il
-aidé ? » permet un retour anonyme. Depuis l'aide contextuelle, « Ouvrir
-l'aide détaillée » mène directement à la page correspondante.
+aidé ? » permet un retour anonyme.
+
+Depuis l'aide contextuelle, vous accédez à tout moment au centre d'aide :
+l'icône de livre dans l'en-tête de l'aide ouvre cette vue d'ensemble et le
+champ de recherche situé en dessous lance votre recherche directement ici.
+« Ouvrir l'aide détaillée » mène à la page du sujet actuellement affiché.

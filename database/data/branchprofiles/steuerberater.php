@@ -13,7 +13,10 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'steuerberater',
     'label' => 'Steuerberatung',
+    'description' => 'Steuerberatung: Finanzbuchführung, Lohn, Jahresabschluss, Steuererklärungen und Voranmeldungen mit Fristen und Vier-Augen-Freigaben.',
     'version' => 1,
+    // Vorschlag für den Standard-Arbeitsbereich (MVP-840); nur Default, kein Zwang.
+    'nav_focus_default' => 'finance',
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
     'modules_recommended' => [

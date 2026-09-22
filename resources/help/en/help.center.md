@@ -18,5 +18,9 @@ tracking and billing to administration. You only see what matches your
 language, your role and the features enabled for your organisation.
 
 Each topic page links to related topics, and "Was this helpful?" lets you
-give anonymous feedback. From the contextual help, "Open detailed help"
-takes you straight to the matching topic page.
+give anonymous feedback.
+
+From the contextual help you can reach the help center at any time: the
+book icon in the help header opens this overview, and the search field
+below it starts your search right here. "Open detailed help" takes you
+straight to the topic page of the topic currently shown.

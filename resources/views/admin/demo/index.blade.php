@@ -16,6 +16,8 @@
     /** @var bool $isEmpty */
     /** @var array<int, \App\Enums\Demo\DemoIndustry> $industries */
     /** @var \App\Enums\Demo\DemoIndustry $currentIndustry */
+    /** @var bool $fullShowcase */
+    /** @var array{source: string, plan: string} $licenseOutlook */
     $alreadySeeded = (bool) $organization->is_demo;
 @endphp
 
@@ -31,6 +33,8 @@
 
     <x-card as="article" class="flex flex-col gap-3">
         <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Aktion wählen') }}</h2>
+
+        @include('admin.demo._license_outlook', ['licenseOutlook' => $licenseOutlook])
 
         @if (! $alreadySeeded && ! $isEmpty)
             <div class="alert alert-warning">
@@ -51,6 +55,10 @@
                         </option>
                     @endforeach
                 </x-select-field>
+                <x-checkbox-field name="full_showcase" value="1"
+                                  :label="__('Vollumfang vorführen')"
+                                  :checked="$fullShowcase"
+                                  :disabled="! $isEmpty" />
                 <button type="submit"
                         class="btn btn-primary w-full md:w-auto"
                         :disabled="! $isEmpty">
@@ -84,7 +92,8 @@
 
     <x-card as="article" class="flex flex-col gap-3">
         <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Inhalt des Demo-Mandanten') }}</h2>
-        <p class="text-xs text-muted">{{ __('Inhalt richtet sich nach der gewählten Musterbranche und installiert das passende Branchenprofil.') }}</p>
+        <p class="text-xs text-muted">{{ __('Inhalt richtet sich nach der gewählten Musterbranche und installiert das passende Branchenprofil.') }}
+            {{ __('Der Funktionsumfang folgt der Modul-Empfehlung des Profils; „Vollumfang vorführen" legt für alle Module Beispieldaten an.') }}</p>
         <ul class="space-y-1 text-sm text-base-content/80">
             <li>{{ __('Branchenprofil je Musterbranche (Klassifikationen, Tags, SLAs, Prozeduren)') }}</li>
             <li>{{ __('3 Demo-Kunden und 5 Demo-Projekte') }}</li>

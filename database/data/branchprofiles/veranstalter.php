@@ -25,6 +25,7 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'veranstalter',
     'label' => 'Veranstalter / Event-Organisation',
+    'description' => 'Veranstalter und Event-Organisation: Konzept, Budget, Location, Genehmigungen, Dienstleister, Ticketing, Durchführung und Zwischenfälle.',
     'version' => 1,
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.

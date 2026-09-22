@@ -244,6 +244,16 @@ return [
             'expected_runtime_minutes' => 5,
         ],
 
+        // Demo-Organisationen nach Aufbewahrungsfrist (MVP-836): No-Op ohne
+        // DEMO_RETENTION_DAYS; wirkt ausschließlich auf is_demo-Organisationen.
+        'demo.prune' => [
+            'command' => 'demo:prune',
+            'cadence' => ['type' => 'dailyAt', 'time' => '03:40'],
+            'allowed' => ['dailyAt', 'weeklyOn'],
+            'criticality' => 'housekeeping',
+            'expected_runtime_minutes' => 2,
+        ],
+
         // --- Kern/Housekeeping (täglich) ---
         'archive.run' => [
             'command' => 'archive:run',

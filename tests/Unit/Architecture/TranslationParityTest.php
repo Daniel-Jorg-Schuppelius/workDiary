@@ -51,6 +51,31 @@ class TranslationParityTest extends TestCase {
         $this->assertSame([], $missing, 'Im Quellcode verwendete Keys fehlen in en.json (und damit überall).');
     }
 
+    public function test_every_source_plural_key_has_a_german_entry(): void {
+        // trans_choice wählt über Translator::localeForChoice die Fallback-
+        // Sprache, sobald der Schlüssel für die aktive Sprache fehlt — ohne
+        // Identitätseintrag in de.json zeigte die deutsche UI „16 articles“.
+        $have = array_fill_keys(array_keys(Translations::loadJson('de')), true);
+        $missing = array_values(array_filter(
+            Translations::sourcePluralKeys(),
+            static fn(string $k): bool => ! isset($have[$k]),
+        ));
+
+        $this->assertSame([], $missing, 'Pluralschlüssel fehlen in lang/de.json (Identitätseintrag ergänzen).');
+    }
+
+    public function test_every_source_plural_key_exists_in_the_reference_catalog(): void {
+        // Der Quell-Scan oben erfasst nur __()/trans(); ein trans_choice-Key
+        // ohne en.json-Eintrag bliebe in allen Sprachen deutsch.
+        $reference = array_fill_keys(Translations::jsonReferenceKeys(), true);
+        $missing = array_values(array_filter(
+            Translations::sourcePluralKeys(),
+            static fn(string $k): bool => ! isset($reference[$k]),
+        ));
+
+        $this->assertSame([], $missing, 'Pluralschlüssel fehlen in en.json (und damit überall).');
+    }
+
     public function test_every_enabled_locale_has_all_namespace_files(): void {
         $missing = [];
         foreach (Translations::namespaceFiles() as $file) {

@@ -48,7 +48,7 @@
             <option value="acknowledged" @selected(($filters['status'] ?? '') === 'acknowledged')>{{ __('Bestätigt') }}</option>
             <option value="all" @selected(($filters['status'] ?? '') === 'all')>{{ __('Alle') }}</option>
         </select>
-        <x-date-range grid-class="flex flex-wrap items-end gap-2"
+        <x-date-range class="w-80 shrink-0" :label="false" from-name="from" to-name="to"
                       :from="$filters['from'] ?? ''" :to="$filters['to'] ?? ''"
                       :from-label="__('Von')" :to-label="__('Bis')" />
     </x-filter-bar>

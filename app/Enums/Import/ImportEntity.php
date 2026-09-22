@@ -38,6 +38,8 @@ enum ImportEntity: string implements HasLabel {
     case Assets = 'assets';
     case ContactPersons = 'contact_persons';
     case Documents = 'documents';
+    // Vereinsverwaltung (Feature 159, MVP-842): Erstimport des Mitgliederstamms.
+    case ClubMembers = 'club_members';
 
     public function label(): string {
         return (string) __('import.entity.' . $this->value);
@@ -63,6 +65,7 @@ enum ImportEntity: string implements HasLabel {
             self::Assets => 'asset.create',
             self::ContactPersons => 'customer.import',
             self::Documents => 'document.create',
+            self::ClubMembers => 'club.manage',
         };
     }
 
@@ -91,6 +94,7 @@ enum ImportEntity: string implements HasLabel {
             // Ansprechpartner leben als JSON-Liste am Kunden/Lieferanten (kein eigenes Modell).
             self::ContactPersons => null,
             self::Documents => \App\Models\Document::class,
+            self::ClubMembers => \App\Models\Club\ClubMember::class,
         };
     }
 

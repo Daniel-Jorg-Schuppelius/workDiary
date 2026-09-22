@@ -14,6 +14,7 @@
     /** @var array<int, \App\Enums\Demo\DemoIndustry> $industries */
     /** @var \App\Enums\Demo\DemoIndustry $defaultIndustry */
     /** @var \Illuminate\Support\Collection<int, \App\Models\User> $platformAdmins */
+    /** @var array{source: string, plan: string} $licenseOutlook */
 @endphp
 <x-modal
     :title="__('Demo-Organisation anlegen')"
@@ -28,6 +29,8 @@
         {{ __('Erzeugt eine neue, isolierte Demo-Organisation mit vollständigen Beispieldaten der gewählten Musterbranche. Der Mandant ist als Demo markiert und kann jederzeit zurückgesetzt oder endgültig gelöscht werden.') }}
     </p>
 
+    @include('admin.demo._license_outlook', ['licenseOutlook' => $licenseOutlook])
+
     <x-select-field name="industry" :label="__('Musterbranche')" required>
         @foreach ($industries as $industry)
             <option value="{{ $industry->value }}" @selected($defaultIndustry->value === $industry->value)>
@@ -35,6 +38,10 @@
             </option>
         @endforeach
     </x-select-field>
+
+    <x-checkbox-field name="full_showcase" value="1"
+                      :label="__('Vollumfang vorführen')"
+                      :hint="__('Alle Module mit Beispieldaten, unabhängig von der Modul-Empfehlung des Branchenprofils. Ohne Haken folgt die Demo dem Funktionsumfang des Profils.')" />
 
     <x-select-field name="member"
                     :label="__('Plattform-Admin als Mitglied zuweisen')"

@@ -13,10 +13,13 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'it',
     'label' => 'IT-Service / Managed Services',
+    'description' => 'IT-Service und Managed Services: Incidents, Requests, Changes und Wartung mit Softwarekatalog, Raumanforderungen und Datenschutz-Vorlagen.',
     // v2 (Feature 100): Entsorgungs-Modul empfohlen + AVV-Presets für
     // Datenträger/Batterien (Altgeräte-Rücknahme beim Kunden).
     // v3: Default-Eintragstypen (Struktur-Typen) ans Profil gekoppelt.
     'version' => 3,
+    // Vorschlag für den Standard-Arbeitsbereich (MVP-840); nur Default, kein Zwang.
+    'nav_focus_default' => 'service',
     // Default-Struktur-Typen (EntryTypeSeeder::profiles()) — nicht die
     // Classification-Domäne entry_type weiter unten.
     'entry_type_defaults' => ['general', 'service', 'it_ticket'],

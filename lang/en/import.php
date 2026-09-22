@@ -30,6 +30,7 @@ return [
         'assets' => 'Assets',
         'contact_persons' => 'Contact persons',
         'documents' => 'Documents (ZIP)',
+        'club_members' => 'Club members',
     ],
 
     'template' => [
@@ -84,6 +85,8 @@ return [
             'status' => 'Value is not a valid status.',
             'amount' => 'Not a valid amount.',
             'url' => 'Not a valid address (http:// or https:// expected).',
+            'integer' => 'Not a valid whole number.',
+            'club_kind' => 'Not a valid membership type (active, passive, supporting, paused).',
         ],
         'outOfRange' => [
             'rowLimit' => 'Row limit (:max) exceeded — remainder ignored.',

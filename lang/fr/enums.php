@@ -1757,4 +1757,65 @@ return [
             'machine' => 'automatique',
         ],
     ],
+    // Vereinsverwaltung (Feature 159, MVP-842)
+    'club' => [
+        'membership-kind' => [
+            'active' => 'Actif',
+            'passive' => 'Passif',
+            'supporting' => 'Membre de soutien',
+            'paused' => 'En pause',
+        ],
+        'admission-mode' => [
+            'leader' => 'Par le responsable',
+            'application' => 'Demande avec approbation',
+        ],
+        'group-membership-status' => [
+            'requested' => 'Demandé',
+            'active' => 'Actif',
+            'ended' => 'Terminé',
+            'rejected' => 'Refusé',
+        ],
+        'proposal-status' => [
+            'open' => 'Ouverte',
+            'confirmed' => 'Confirmée',
+            'dismissed' => 'Rejetée',
+        ],
+        'criteria-result' => [
+            'met' => 'Rempli',
+            'age_below' => 'Sous l\'âge minimum',
+            'age_above' => 'Au-dessus de l\'âge maximum',
+            'review_required' => 'Contrôle requis',
+        ],
+        'event-kind' => [
+            'training' => 'Entraînement / répétition',
+            'course' => 'Stage',
+            'exam' => 'Examen',
+            'meeting' => 'Assemblée',
+            'other' => 'Autre rendez-vous',
+        ],
+        'event-visibility' => [
+            'club' => 'Toute l\'association',
+            'groups' => 'Groupes précis',
+            'invited' => 'Invitation personnelle',
+        ],
+        'participation-status' => [
+            'invited' => 'Invité',
+            'registered' => 'Inscrit',
+            'waitlisted' => 'Liste d\'attente',
+            'cancelled' => 'Annulé',
+        ],
+        'participation-source' => [
+            'admin' => 'Administration',
+            'leader' => 'Responsable de groupe',
+            'guardian' => 'Représentant',
+            'self' => 'Le membre lui-même',
+            'spontaneous' => 'Spontané (responsable)',
+            'invitation' => 'Invitation',
+        ],
+        'guardian-permission' => [
+            'register' => 'Inscrire et désinscrire',
+            'view_attendance' => 'Consulter les présences',
+            'receive_messages' => 'Recevoir des messages',
+        ],
+    ],
 ];

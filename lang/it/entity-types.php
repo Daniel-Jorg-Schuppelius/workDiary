@@ -548,4 +548,13 @@ return [
     'ResalePeriodLink' => 'Riferimento fattura (rivendita)',
     'ResalePurchaseEntry' => 'Registrazione d’acquisto (rivendita)',
     'CompanyMapping' => 'Assegnazione azienda (rivendita)',
+    // Vereinsverwaltung (Feature 159, MVP-842)
+    'ClubMember' => 'Socio dell\'associazione',
+    'ClubDepartment' => 'Sezione dell\'associazione',
+    'ClubGroup' => 'Gruppo dell\'associazione',
+    'ClubGroupMembership' => 'Assegnazione a gruppo',
+    'ClubGroupChangeProposal' => 'Proposta di cambio gruppo',
+    'ClubGuardian' => 'Rappresentante nell\'associazione',
+    'ClubEventDetails' => 'Appuntamento dell\'associazione',
+    'ClubEventParticipation' => 'Partecipazione ad appuntamento dell\'associazione',
 ];

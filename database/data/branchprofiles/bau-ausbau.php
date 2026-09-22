@@ -13,6 +13,7 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'bau-ausbau',
     'label' => 'Bau, Ausbau und Trockenbau',
+    'description' => 'Bau, Ausbau und Trockenbau: Bautagesbericht, Aufmaß, Nachträge, Mängel und Teilabnahmen mit Gewerken und Genehmigungen.',
     'version' => 2,
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.

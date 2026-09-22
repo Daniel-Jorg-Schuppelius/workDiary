@@ -23,6 +23,27 @@ use Illuminate\Support\Collection;
  */
 class DemoShowcaseSeeder {
     /**
+     * Aktiver Modulumfang der Demo-Organisation (MVP-838): null = alle
+     * Module („Vollumfang"), sonst die Modul-Empfehlung des Branchenprofils.
+     * Blöcke inaktiver Module werden übersprungen — die Demo zeigt, was das
+     * Profil empfiehlt, nicht den ganzen Katalog.
+     *
+     * @var list<string>|null
+     */
+    private ?array $activeModules = null;
+
+    /** @param list<string>|null $modules */
+    public function withActiveModules(?array $modules): static {
+        $this->activeModules = $modules;
+
+        return $this;
+    }
+
+    private function moduleActive(string $code): bool {
+        return $this->activeModules === null || in_array($code, $this->activeModules, true);
+    }
+
+    /**
      * §-19-Demo-Ablauf (Feature 066): dokumentiert die Belegkette einer
      * Kleinunternehmer-Org — Angebot mit Annahme, Überführung in eine
      * Entwurfsrechnung (TaxResolver → 0 %, §-19-Hinweistext) und
@@ -31,6 +52,9 @@ class DemoShowcaseSeeder {
      * für die Belegerzeugung aktiviert und danach zurückgesetzt.
      */
     public function seedSmallBusinessInvoicing(Organization $organization, Customer $customer, ?User $actor): int {
+        if (! $this->moduleActive('module.vertrieb')) {
+            return 0;
+        }
         if ($actor === null) {
             return 0;
         }
@@ -90,6 +114,9 @@ class DemoShowcaseSeeder {
      * Zusage → Mitarbeiter-Entwurf). Robust: Fehler brechen den Seed nicht.
      */
     public function seedApplications(Organization $organization, Customer $customer, ?User $actor): int {
+        if (! $this->moduleActive('module.applications')) {
+            return 0;
+        }
         if ($actor === null) {
             return 0;
         }
@@ -161,6 +188,9 @@ class DemoShowcaseSeeder {
      * der Kette). Robust: Fehler brechen den Seed nicht.
      */
     public function seedInvestments(Organization $organization, ?User $actor): int {
+        if (! $this->moduleActive('module.investments')) {
+            return 0;
+        }
         if ($actor === null) {
             return 0;
         }
@@ -210,6 +240,9 @@ class DemoShowcaseSeeder {
 
     /** Demo Feature 070: geplante Krisenübung (Playbook-Verbesserung). */
     public function seedCrisisExercise(Organization $organization, ?User $actor): int {
+        if (! $this->moduleActive('module.crisis_management')) {
+            return 0;
+        }
         if ($actor === null) {
             return 0;
         }
@@ -237,6 +270,9 @@ class DemoShowcaseSeeder {
      * damit der Demo-Bestand konsistent bleibt.
      */
     public function seedClaims(Organization $organization, ?User $actor): int {
+        if (! $this->moduleActive('module.claims')) {
+            return 0;
+        }
         if ($actor === null) {
             return 0;
         }
@@ -287,6 +323,9 @@ class DemoShowcaseSeeder {
     }
 
     public function seedRental(Organization $organization, ?User $actor): int {
+        if (! $this->moduleActive('module.rental')) {
+            return 0;
+        }
         if ($actor === null) {
             return 0;
         }
@@ -348,6 +387,9 @@ class DemoShowcaseSeeder {
     }
 
     public function seedDisposal(Organization $organization, ?User $actor): int {
+        if (! $this->moduleActive('module.entsorgung')) {
+            return 0;
+        }
         if ($actor === null) {
             return 0;
         }
@@ -427,6 +469,9 @@ class DemoShowcaseSeeder {
     }
 
     public function seedAssetFinance(Organization $organization, ?User $actor): int {
+        if (! $this->moduleActive('module.asset_finance')) {
+            return 0;
+        }
         if ($actor === null) {
             return 0;
         }
@@ -480,6 +525,9 @@ class DemoShowcaseSeeder {
     }
 
     public function seedAssetCompliance(Organization $organization, ?User $actor): int {
+        if (! $this->moduleActive('module.asset_compliance')) {
+            return 0;
+        }
         if ($actor === null) {
             return 0;
         }
@@ -525,6 +573,9 @@ class DemoShowcaseSeeder {
 
     /** Demo Feature 071: E/S/G-Kriterien, Stromverbrauch + Gerätebewertung. */
     public function seedSustainability(Organization $organization, ?User $actor): int {
+        if (! $this->moduleActive('module.sustainability')) {
+            return 0;
+        }
         if ($actor === null) {
             return 0;
         }
@@ -573,6 +624,9 @@ class DemoShowcaseSeeder {
      * @param Collection<int, User> $users
      */
     public function seedHelpdesk(Organization $organization, Customer $customer, Collection $users): int {
+        if (! $this->moduleActive('module.helpdesk')) {
+            return 0;
+        }
         if (\App\Models\ServiceQueue::query()->where('organization_id', $organization->id)->exists()) {
             return 0;
         }
@@ -647,6 +701,9 @@ class DemoShowcaseSeeder {
      * @param Collection<int, User> $users
      */
     public function seedAgileBoards(Collection $projects, Collection $users): int {
+        if (! $this->moduleActive('module.agile_projects')) {
+            return 0;
+        }
         $scrumProject = $projects->get(0);
         if ($scrumProject === null || \App\Models\Agile\AgileBoard::query()->where('project_id', $scrumProject->id)->exists()) {
             return 0;
@@ -799,120 +856,128 @@ class DemoShowcaseSeeder {
         }
 
         // 2) Barkasse mit zwei Buchungen und Tagesabschluss (MVP-414).
-        try {
-            $register = \App\Models\CashRegister::query()->firstOrCreate([
-                'organization_id' => $organization->id,
-                'name' => (string) __('Demo-Barkasse'),
-            ], [
-                'currency' => 'EUR',
-                'opening_balance' => '150.00',
-                'opened_on' => \Illuminate\Support\Carbon::now()->subDays(10)->toDateString(),
-                'active' => true,
-            ]);
-            if ($register->wasRecentlyCreated) {
-                $cash = app(\App\Services\Finance\CashBookService::class);
-                $bookedOn = \Illuminate\Support\Carbon::now()->subDay();
-                $cash->record($register, [
-                    'booked_on' => $bookedOn->toDateString(),
-                    'direction' => \App\Models\CashEntry::DIRECTION_IN,
-                    'amount' => 250.00,
-                    'purpose' => (string) __('Barverkauf Kleinmaterial (Demo)'),
-                    'tax_rate' => 19,
-                    'created_by' => $actor->id,
+        if ($this->moduleActive('module.kasse')) {
+            try {
+                $register = \App\Models\CashRegister::query()->firstOrCreate([
+                    'organization_id' => $organization->id,
+                    'name' => (string) __('Demo-Barkasse'),
+                ], [
+                    'currency' => 'EUR',
+                    'opening_balance' => '150.00',
+                    'opened_on' => \Illuminate\Support\Carbon::now()->subDays(10)->toDateString(),
+                    'active' => true,
                 ]);
-                $cash->record($register, [
-                    'booked_on' => $bookedOn->toDateString(),
-                    'direction' => \App\Models\CashEntry::DIRECTION_OUT,
-                    'amount' => 40.00,
-                    'purpose' => (string) __('Büromaterial (Demo)'),
-                    'tax_rate' => 19,
-                    'created_by' => $actor->id,
-                ]);
-                $cash->closeDay($register, $bookedOn, $cash->balanceAsOf($register, $bookedOn), (string) __('Demo-Tagesabschluss'), $actor->id);
+                if ($register->wasRecentlyCreated) {
+                    $cash = app(\App\Services\Finance\CashBookService::class);
+                    $bookedOn = \Illuminate\Support\Carbon::now()->subDay();
+                    $cash->record($register, [
+                        'booked_on' => $bookedOn->toDateString(),
+                        'direction' => \App\Models\CashEntry::DIRECTION_IN,
+                        'amount' => 250.00,
+                        'purpose' => (string) __('Barverkauf Kleinmaterial (Demo)'),
+                        'tax_rate' => 19,
+                        'created_by' => $actor->id,
+                    ]);
+                    $cash->record($register, [
+                        'booked_on' => $bookedOn->toDateString(),
+                        'direction' => \App\Models\CashEntry::DIRECTION_OUT,
+                        'amount' => 40.00,
+                        'purpose' => (string) __('Büromaterial (Demo)'),
+                        'tax_rate' => 19,
+                        'created_by' => $actor->id,
+                    ]);
+                    $cash->closeDay($register, $bookedOn, $cash->balanceAsOf($register, $bookedOn), (string) __('Demo-Tagesabschluss'), $actor->id);
+                }
+                $count++;
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::info('Demo-Seeder: Kassenbuch übersprungen: ' . $e->getMessage());
             }
-            $count++;
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::info('Demo-Seeder: Kassenbuch übersprungen: ' . $e->getMessage());
         }
 
         // 3) Aktiver Abrechnungsplan (MVP-415) — monatliche Wartungspauschale.
-        try {
-            $schedule = \App\Models\InvoiceSchedule::query()->firstOrCreate([
-                'organization_id' => $organization->id,
-                'customer_id' => $customer->id,
-                'title' => (string) __('Wartungspauschale monatlich (Demo)'),
-            ], [
-                'interval_unit' => \App\Models\InvoiceSchedule::UNIT_MONTH,
-                'interval_count' => 1,
-                'billing_period_mode' => 'previous',
-                'next_run_on' => \Illuminate\Support\Carbon::now()->addMonth()->startOfMonth()->toDateString(),
-                'status' => \App\Models\InvoiceSchedule::STATUS_ACTIVE,
-                'created_by' => $actor->id,
-            ]);
-            if ($schedule->wasRecentlyCreated) {
-                $schedule->items()->create([
+        if ($this->moduleActive('module.vertrieb')) {
+            try {
+                $schedule = \App\Models\InvoiceSchedule::query()->firstOrCreate([
                     'organization_id' => $organization->id,
-                    'position' => 1,
-                    'description' => (string) __('Wartungspauschale {zeitraum}'),
-                    'quantity' => '1',
-                    'unit' => (string) __('Pauschale'),
-                    'unit_price' => '190.00',
-                    'tax_rate' => 19,
+                    'customer_id' => $customer->id,
+                    'title' => (string) __('Wartungspauschale monatlich (Demo)'),
+                ], [
+                    'interval_unit' => \App\Models\InvoiceSchedule::UNIT_MONTH,
+                    'interval_count' => 1,
+                    'billing_period_mode' => 'previous',
+                    'next_run_on' => \Illuminate\Support\Carbon::now()->addMonth()->startOfMonth()->toDateString(),
+                    'status' => \App\Models\InvoiceSchedule::STATUS_ACTIVE,
+                    'created_by' => $actor->id,
                 ]);
+                if ($schedule->wasRecentlyCreated) {
+                    $schedule->items()->create([
+                        'organization_id' => $organization->id,
+                        'position' => 1,
+                        'description' => (string) __('Wartungspauschale {zeitraum}'),
+                        'quantity' => '1',
+                        'unit' => (string) __('Pauschale'),
+                        'unit_price' => '190.00',
+                        'tax_rate' => 19,
+                    ]);
+                }
+                $count++;
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::info('Demo-Seeder: Abrechnungsplan übersprungen: ' . $e->getMessage());
             }
-            $count++;
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::info('Demo-Seeder: Abrechnungsplan übersprungen: ' . $e->getMessage());
         }
 
         // 4) Rechnungsentwurf mit Positionsrabatt und Skonto (MVP-416).
-        try {
-            $invoice = Invoice::create([
-                'organization_id' => $organization->id,
-                'customer_id' => $customer->id,
-                'number' => app(\App\Services\Invoicing\InvoiceGenerator::class)->nextNumber($organization->id),
-                'status' => Invoice::STATUS_DRAFT,
-                'currency' => $customer->currency,
-                'tax_rate' => 19,
-                'skonto_percent' => '2.00',
-                'skonto_days' => 10,
-                'notes' => (string) __('Demo: Rechnung mit Positionsrabatt und Skonto (2 % bei Zahlung in 10 Tagen).'),
-                'created_by' => $actor->id,
-            ]);
-            $invoice->items()->create([
-                'organization_id' => $organization->id,
-                'service_date' => \Illuminate\Support\Carbon::now()->toDateString(),
-                'description' => (string) __('Serviceeinsatz vor Ort (Demo)'),
-                'quantity' => '3',
-                'unit' => (string) __('invoicing.unit_hour'),
-                'unit_price' => '95.00',
-                'discount_percent' => '10.00',
-                'tax_rate' => 19,
-                'position' => 1,
-            ]);
-            $count++;
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::info('Demo-Seeder: Rabatt/Skonto-Rechnung übersprungen: ' . $e->getMessage());
+        if ($this->moduleActive('module.vertrieb')) {
+            try {
+                $invoice = Invoice::create([
+                    'organization_id' => $organization->id,
+                    'customer_id' => $customer->id,
+                    'number' => app(\App\Services\Invoicing\InvoiceGenerator::class)->nextNumber($organization->id),
+                    'status' => Invoice::STATUS_DRAFT,
+                    'currency' => $customer->currency,
+                    'tax_rate' => 19,
+                    'skonto_percent' => '2.00',
+                    'skonto_days' => 10,
+                    'notes' => (string) __('Demo: Rechnung mit Positionsrabatt und Skonto (2 % bei Zahlung in 10 Tagen).'),
+                    'created_by' => $actor->id,
+                ]);
+                $invoice->items()->create([
+                    'organization_id' => $organization->id,
+                    'service_date' => \Illuminate\Support\Carbon::now()->toDateString(),
+                    'description' => (string) __('Serviceeinsatz vor Ort (Demo)'),
+                    'quantity' => '3',
+                    'unit' => (string) __('invoicing.unit_hour'),
+                    'unit_price' => '95.00',
+                    'discount_percent' => '10.00',
+                    'tax_rate' => 19,
+                    'position' => 1,
+                ]);
+                $count++;
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::info('Demo-Seeder: Rabatt/Skonto-Rechnung übersprungen: ' . $e->getMessage());
+            }
         }
 
         // 5) Führerscheinkontrolle (Fuhrpark, Halterhaftung).
-        try {
-            /** @var User $driver */
-            $driver = $users->skip(1)->first() ?? $actor;
-            \App\Models\DriverLicenseCheck::query()->firstOrCreate([
-                'organization_id' => $organization->id,
-                'user_id' => $driver->id,
-            ], [
-                'checked_by' => $actor->id,
-                'checked_at' => \Illuminate\Support\Carbon::now()->toDateString(),
-                'license_classes' => 'B, BE',
-                'license_valid_until' => \Illuminate\Support\Carbon::now()->addYears(3)->toDateString(),
-                'next_due_on' => \Illuminate\Support\Carbon::now()->addMonths(6)->toDateString(),
-                'note' => (string) __('Demo: Sichtkontrolle Original-Führerschein.'),
-            ]);
-            $count++;
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::info('Demo-Seeder: Führerscheinkontrolle übersprungen: ' . $e->getMessage());
+        if ($this->moduleActive('module.fuhrpark')) {
+            try {
+                /** @var User $driver */
+                $driver = $users->skip(1)->first() ?? $actor;
+                \App\Models\DriverLicenseCheck::query()->firstOrCreate([
+                    'organization_id' => $organization->id,
+                    'user_id' => $driver->id,
+                ], [
+                    'checked_by' => $actor->id,
+                    'checked_at' => \Illuminate\Support\Carbon::now()->toDateString(),
+                    'license_classes' => 'B, BE',
+                    'license_valid_until' => \Illuminate\Support\Carbon::now()->addYears(3)->toDateString(),
+                    'next_due_on' => \Illuminate\Support\Carbon::now()->addMonths(6)->toDateString(),
+                    'note' => (string) __('Demo: Sichtkontrolle Original-Führerschein.'),
+                ]);
+                $count++;
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::info('Demo-Seeder: Führerscheinkontrolle übersprungen: ' . $e->getMessage());
+            }
         }
 
         return $count;
@@ -928,6 +993,9 @@ class DemoShowcaseSeeder {
      * external_account_id — nichts läuft an, der Runner überspringt sie.
      */
     public function seedCloudIntake(Organization $organization, ?User $actor): int {
+        if (! $this->moduleActive('module.documents')) {
+            return 0;
+        }
         if ($actor === null) {
             return 0;
         }
@@ -1000,6 +1068,9 @@ class DemoShowcaseSeeder {
      * kann, beantwortet keine Frage.
      */
     public function seedLocalAccounting(Organization $organization, ?User $actor): int {
+        if (! $this->moduleActive('module.finance')) {
+            return 0;
+        }
         if ($actor === null) {
             return 0;
         }
@@ -1086,6 +1157,9 @@ class DemoShowcaseSeeder {
      * der Abschluss landet im Arbeitsschutz-Register, nicht nur im LMS.
      */
     public function seedLearning(Organization $organization, ?User $actor): int {
+        if (! $this->moduleActive('module.lms')) {
+            return 0;
+        }
         if ($actor === null) {
             return 0;
         }

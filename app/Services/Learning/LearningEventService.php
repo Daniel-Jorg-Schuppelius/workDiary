@@ -15,6 +15,7 @@ namespace App\Services\Learning;
 use App\Enums\Event\{ParticipantRole, ParticipantStatus};
 use App\Models\{Event, EventParticipant, User};
 use App\Models\Learning\{LearningEnrollment, LearningUnit};
+use App\Services\Participation\EventSeatService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -46,6 +47,7 @@ class LearningEventService {
     public function __construct(
         private readonly LearningEnrollmentService $enrollments,
         private readonly LearningNotifier $notifier,
+        private readonly EventSeatService $seats,
     ) {}
 
     /** Anmelden — oder auf die Warteliste, wenn der Termin voll ist. */
@@ -184,41 +186,21 @@ class LearningEventService {
 
     /** Rückt die erste wartende Person nach, wenn ein Platz frei ist. */
     public function promoteFromWaitlist(Event $event): ?EventParticipant {
-        if (! $this->hasFreeSeat($event)) {
+        // Kapazität und Reihenfolge teilt sich der Termin mit den Vereins-
+        // teilnahmen (MVP-843); rückt ein Mitglied nach, gibt es hier nichts zu melden.
+        $promoted = $this->seats->promoteNext($event)?->subject;
+        if (! $promoted instanceof EventParticipant) {
             return null;
         }
 
-        $next = EventParticipant::query()
-            ->where('event_id', $event->id)
-            ->where('status', ParticipantStatus::Waitlisted->value)
-            ->orderBy('id')
-            ->first();
+        $this->notifier->waitlistPromoted($promoted);
 
-        if ($next === null) {
-            return null;
-        }
-
-        $next->update(['status' => ParticipantStatus::Accepted->value]);
-        $this->notifier->waitlistPromoted($next->refresh());
-
-        return $next;
+        return $promoted;
     }
 
-    /** Freie Plätze: ohne Obergrenze ist immer Platz. */
+    /** Freie Plätze über alle Teilnehmerarten: ohne Obergrenze ist immer Platz. */
     public function hasFreeSeat(Event $event): bool {
-        if ($event->max_participants === null) {
-            return true;
-        }
-
-        $taken = EventParticipant::query()
-            ->where('event_id', $event->id)
-            ->whereIn('status', [
-                ParticipantStatus::Accepted->value,
-                ParticipantStatus::Attended->value,
-            ])
-            ->count();
-
-        return $taken < $event->max_participants;
+        return $this->seats->hasFreeSeat($event);
     }
 
     private function guardRegistrationOpen(LearningUnit $unit, Event $event, Carbon $now): void {

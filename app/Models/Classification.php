@@ -27,6 +27,7 @@ use Illuminate\Support\Carbon;
  * @property string $code
  * @property string $label
  * @property array<string, string>|null $label_i18n
+ * @property-read string $display_label
  * @property int $sort_order
  * @property string|null $color_hex
  * @property string|null $icon
@@ -72,5 +73,35 @@ class Classification extends Model {
 
     public function isPlatformDefault(): bool {
         return $this->organization_id === null;
+    }
+
+    /**
+     * Label in der aktiven Sprache (MVP-841): `label_i18n[locale]`, sonst die
+     * Fallback-Sprache der App, sonst das Quell-Label (Deutsch). Für die
+     * Anzeige; `label` bleibt der bearbeitbare Quellwert.
+     */
+    public function displayLabel(?string $locale = null): string {
+        $locale ??= app()->getLocale();
+        $i18n = is_array($this->label_i18n) ? $this->label_i18n : [];
+        $short = strtolower(substr($locale, 0, 2));
+        foreach (array_unique([$locale, $short]) as $key) {
+            $value = trim((string) ($i18n[$key] ?? ''));
+            if ($value !== '') {
+                return $value;
+            }
+        }
+        if ($short !== 'de') {
+            $fallback = strtolower(substr((string) config('app.fallback_locale', 'en'), 0, 2));
+            $value = trim((string) ($i18n[$fallback] ?? ''));
+            if ($value !== '') {
+                return $value;
+            }
+        }
+
+        return (string) $this->label;
+    }
+
+    public function getDisplayLabelAttribute(): string {
+        return $this->displayLabel();
     }
 }

@@ -142,4 +142,53 @@ class BranchProfileAdminControllerTest extends TestCase {
             AuditLog::query()->where('organization_id', $this->organization->id)->where('event', 'branch_profile.installed')->count(),
         );
     }
+
+    /** MVP-839: Hauptprofil wechseln ist Org-Admin-Sache, Deinstallation Plattform-Sache. */
+    public function test_admin_can_set_primary_but_not_uninstall(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($admin)->post(route('admin.branch-profiles.install', 'it'))->assertRedirect();
+        $this->actingAs($admin)->post(route('admin.branch-profiles.install', 'shk'))->assertRedirect();
+        $this->assertSame('it', Organization::query()->findOrFail($this->organization->id)->primaryBranchProfileCode());
+
+        $this->actingAs($admin)
+            ->post(route('admin.branch-profiles.primary', 'shk'))
+            ->assertRedirect(route('admin.branch-profiles.index'));
+        $this->assertSame('shk', Organization::query()->findOrFail($this->organization->id)->primaryBranchProfileCode());
+
+        // Nicht installiert → 404, Deinstallation ohne Recht → 403.
+        $this->actingAs($admin)->post(route('admin.branch-profiles.primary', 'galabau'))->assertNotFound();
+        $this->actingAs($admin)->post(route('admin.branch-profiles.uninstall', 'it'))->assertForbidden();
+
+        $this->actingAs($admin)
+            ->get(route('admin.branch-profiles.index'))
+            ->assertOk()
+            ->assertSee(__('Hauptprofil'))
+            ->assertSee(__('Als Hauptprofil festlegen'))
+            ->assertDontSee(__('Deinstallieren'));
+    }
+
+    public function test_platform_admin_can_uninstall_a_profile(): void {
+        $platformAdmin = User::factory()->admin()->create(['organization_id' => $this->organization->id, 'is_platform_admin' => true]);
+
+        $this->actingAs($platformAdmin)->post(route('admin.branch-profiles.install', 'it'))->assertRedirect();
+        $this->actingAs($platformAdmin)->post(route('admin.branch-profiles.install', 'galabau'))->assertRedirect();
+
+        $this->actingAs($platformAdmin)
+            ->get(route('admin.branch-profiles.index'))
+            ->assertOk()
+            ->assertSee(__('Deinstallieren'));
+
+        $this->actingAs($platformAdmin)
+            ->post(route('admin.branch-profiles.uninstall', 'galabau'))
+            ->assertRedirect(route('admin.branch-profiles.index'));
+
+        $organization = Organization::query()->findOrFail($this->organization->id);
+        $this->assertSame(['it'], $organization->installedBranchProfileCodes());
+        $this->assertNull(Classification::query()->where('organization_id', $organization->id)
+            ->where('domain', 'entry_type')->where('code', 'pflegegang')->first());
+        $this->assertDatabaseHas('audit_logs', ['organization_id' => $organization->id, 'event' => 'branch_profile.uninstalled']);
+
+        $this->actingAs($platformAdmin)->post(route('admin.branch-profiles.uninstall', 'galabau'))->assertNotFound();
+    }
 }

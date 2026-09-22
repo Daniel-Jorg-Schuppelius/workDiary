@@ -10,6 +10,32 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Vereinsverwaltung (Feature 159, MVP-842): **Mitglieder, Gruppen und
+  Vertretungen** als neues Plan-Modul `module.club`. Mitglieder existieren ohne
+  Benutzerkonto mit laufender Mitgliedsnummer je Organisation, Mitgliedschafts-
+  verlauf (aktiv/passiv/fördernd/pausiert) und Austritt, der Gruppenzuordnungen
+  beendet, aber Nachweise erhält. Abteilungen und Gruppen mit Leitung,
+  Obergrenze, Aufnahmemodus und inklusiven Altersgrenzen; Aufnahme prüft Alter am
+  Stichtag, Kapazität und Doppelzuordnung, Ausnahmen nur mit Recht und
+  Begründung. Ein täglicher Abgleich verwandelt Geburtstage und geänderte
+  Grenzen in Wechselvorschläge, die die Leitung mit Wirksamkeitsdatum bestätigt
+  oder verwirft — nichts wird automatisch entfernt. Sorgeberechtigte werden
+  ausdrücklich mit erlaubten Handlungen zugeordnet und sehen nur ihre Kinder;
+  Gruppenleitung sieht nur eigene Gruppen. CSV-Erstimport über die
+  Import-Drehscheibe mit Mitgliedsnummer als Abgleichschlüssel. Rechte
+  `club.viewAny`, `club.manage`, `club.groups.lead`; Hilfe ×5.
+- Vereinsverwaltung (Feature 159, MVP-843): **Vereinstermine mit Anmeldung
+  und Warteliste**. Termine des Kalenders tragen Vereinsdetails (Art,
+  Sichtbarkeit Verein/Gruppen/Einladung, Zielgruppen, Anmelde- und
+  Abmeldeschluss in Stunden vor Beginn); Mitglieder ohne Login werden von der
+  Verwaltung oder Gruppenleitung angemeldet, eingeladen oder spontan ergänzt.
+  Die Soll-Liste zählt jedes Mitglied einmal, auch bei mehreren Zielgruppen.
+  Kapazität und Warteliste teilen sich Benutzer- und Mitgliedsteilnahmen über
+  einen gemeinsamen Platzdienst (aus der Lernplattform herausgelöst, kein
+  zweiter Algorithmus); ein frei werdender Platz rückt an die am längsten
+  wartende Person. Serien erzeugen eigene Termine mit eigener Liste,
+  Änderungen und Absagen gelten wahlweise ab dem gewählten Termin;
+  Verschiebung und Absage löschen keine Anmeldung. Hilfe ×5.
 - Kunden-Sonderkonditionen (Feature 098): **Monatsdetail in der Verwaltung**.
   Der Monat im Abrechnungspanel ist jetzt verlinkt und zeigt dieselben Zeilen
   wie Kundenportal und PDF-Nachweis (Datum, Tätigkeit, Von/Bis, Dauer,
@@ -508,7 +534,7 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   und `asset_defects` (Schweregrad low/medium/high/critical, Status open/inRepair/
   resolved/writtenOff mit Statusmaschine, `blocks_usage`-Sperre, Pflicht-Lösungsnotiz
   bei Erledigen/Ausbuchen) — beide `Auditable` + `BelongsToOrganization` + `HasSqid`
-  + `softDeletes`. **Verfügbarkeit/Sperre werden aus diesen Tabellen abgeleitet**
+  - `softDeletes`. **Verfügbarkeit/Sperre werden aus diesen Tabellen abgeleitet**
   (keine neuen `AssetStatus`-Enum-Werte); der bestehende `Asset.status` wird zur
   Kompatibilität auf die vorhandenen Werte `loanOut`/`blocked` gespiegelt, soweit
   die Statusmaschine es zulässt. Ein gesperrtes oder bereits ausgegebenes Asset
@@ -522,7 +548,7 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Permissions `asset.checkout` (admin/teamleitung/aussendienst) und
   `asset.defect.manage` (admin/teamleitung), Policy-Abilities `checkout`/
   `manageDefects`, Enums `DefectSeverity`/`DefectStatus`, i18n `asset.*`-UI-Strings
-  + `enums.asset.*` + `notification.*` + `access.*` in de/en/fr/it/es, Hilfe-Topic
+  - `enums.asset.*` + `notification.*` + `access.*` in de/en/fr/it/es, Hilfe-Topic
   `assets.fleet` (de/en) erweitert. Assets sind keinem Plan-Modul für Checkout/Defekt
   zugeordnet — die Funktion bleibt ungated (nur Permission), konsistent zur
   bestehenden Asset-Verwaltung. Bewusst offen: Foto-/Anhang-Verknüpfung am Defekt,

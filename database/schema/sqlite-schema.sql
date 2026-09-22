@@ -19813,6 +19813,266 @@ CREATE INDEX "lih_org_status_idx" on "lexoffice_invoice_handovers"(
   "organization_id",
   "status"
 );
+CREATE TABLE IF NOT EXISTS "club_departments"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "name" varchar not null,
+  "description" text,
+  "discipline" varchar,
+  "is_active" tinyint(1) not null default '1',
+  "sort_order" integer not null default '0',
+  "created_at" datetime,
+  "updated_at" datetime,
+  "deleted_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE INDEX "club_dep_org_sort_idx" on "club_departments"(
+  "organization_id",
+  "sort_order"
+);
+CREATE TABLE IF NOT EXISTS "club_members"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "member_no" integer not null,
+  "first_name" varchar not null,
+  "last_name" varchar not null,
+  "email" varchar,
+  "phone" varchar,
+  "street" varchar,
+  "postal_code" varchar,
+  "city" varchar,
+  "birth_date" date,
+  "kind" varchar not null default 'active',
+  "joined_on" date not null,
+  "left_on" date,
+  "user_id" integer,
+  "notes" text,
+  "created_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "deleted_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete set null,
+  foreign key("created_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "club_member_org_no_uq" on "club_members"(
+  "organization_id",
+  "member_no"
+);
+CREATE INDEX "club_member_org_name_idx" on "club_members"(
+  "organization_id",
+  "last_name",
+  "first_name"
+);
+CREATE INDEX "club_member_org_user_idx" on "club_members"(
+  "organization_id",
+  "user_id"
+);
+CREATE INDEX "club_member_org_birth_idx" on "club_members"(
+  "organization_id",
+  "birth_date"
+);
+CREATE TABLE IF NOT EXISTS "club_membership_periods"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_member_id" integer not null,
+  "kind" varchar not null,
+  "starts_on" date not null,
+  "ends_on" date,
+  "note" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete cascade
+);
+CREATE INDEX "club_period_member_start_idx" on "club_membership_periods"(
+  "club_member_id",
+  "starts_on"
+);
+CREATE TABLE IF NOT EXISTS "club_groups"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_department_id" integer,
+  "name" varchar not null,
+  "description" text,
+  "leader_user_id" integer,
+  "max_members" integer,
+  "admission_mode" varchar not null default 'leader',
+  "min_age" integer,
+  "max_age" integer,
+  "criteria_note" varchar,
+  "is_active" tinyint(1) not null default '1',
+  "created_at" datetime,
+  "updated_at" datetime,
+  "deleted_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_department_id") references "club_departments"("id") on delete set null,
+  foreign key("leader_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "club_group_org_dep_name_idx" on "club_groups"(
+  "organization_id",
+  "club_department_id",
+  "name"
+);
+CREATE INDEX "club_group_org_leader_idx" on "club_groups"(
+  "organization_id",
+  "leader_user_id"
+);
+CREATE TABLE IF NOT EXISTS "club_group_memberships"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_group_id" integer not null,
+  "club_member_id" integer not null,
+  "status" varchar not null,
+  "valid_from" date not null,
+  "valid_to" date,
+  "note" varchar,
+  "decided_by_user_id" integer,
+  "decided_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_group_id") references "club_groups"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete cascade,
+  foreign key("decided_by_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "club_gm_group_status_idx" on "club_group_memberships"(
+  "club_group_id",
+  "status",
+  "valid_from"
+);
+CREATE INDEX "club_gm_member_status_idx" on "club_group_memberships"(
+  "club_member_id",
+  "status"
+);
+CREATE TABLE IF NOT EXISTS "club_group_change_proposals"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_member_id" integer not null,
+  "club_group_id" integer not null,
+  "reason" varchar not null,
+  "status" varchar not null default 'open',
+  "suggested_group_id" integer,
+  "effective_on" date,
+  "note" varchar,
+  "decided_by_user_id" integer,
+  "decided_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete cascade,
+  foreign key("club_group_id") references "club_groups"("id") on delete cascade,
+  foreign key("suggested_group_id") references "club_groups"("id") on delete set null,
+  foreign key("decided_by_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "club_gcp_group_status_idx" on "club_group_change_proposals"(
+  "club_group_id",
+  "status"
+);
+CREATE INDEX "club_gcp_member_status_idx" on "club_group_change_proposals"(
+  "club_member_id",
+  "status"
+);
+CREATE TABLE IF NOT EXISTS "club_guardians"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_member_id" integer not null,
+  "name" varchar not null,
+  "email" varchar,
+  "phone" varchar,
+  "user_id" integer,
+  "permissions" text,
+  "valid_from" date,
+  "valid_to" date,
+  "revoked_at" datetime,
+  "revoked_by_user_id" integer,
+  "note" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete set null,
+  foreign key("revoked_by_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "club_guardian_org_user_idx" on "club_guardians"(
+  "organization_id",
+  "user_id"
+);
+CREATE TABLE IF NOT EXISTS "club_event_details"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "event_id" integer not null,
+  "kind" varchar not null default 'training',
+  "visibility" varchar not null default 'groups',
+  "club_department_id" integer,
+  "registration_lead_hours" integer,
+  "cancellation_lead_hours" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("event_id") references "events"("id") on delete cascade,
+  foreign key("club_department_id") references "club_departments"("id") on delete set null
+);
+CREATE UNIQUE INDEX "club_ev_det_event_uq" on "club_event_details"("event_id");
+CREATE INDEX "club_ev_det_org_kind_idx" on "club_event_details"(
+  "organization_id",
+  "kind"
+);
+CREATE TABLE IF NOT EXISTS "club_event_groups"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "event_id" integer not null,
+  "club_group_id" integer not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("event_id") references "events"("id") on delete cascade,
+  foreign key("club_group_id") references "club_groups"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "club_ev_grp_event_group_uq" on "club_event_groups"(
+  "event_id",
+  "club_group_id"
+);
+CREATE INDEX "club_ev_grp_group_event_idx" on "club_event_groups"(
+  "club_group_id",
+  "event_id"
+);
+CREATE TABLE IF NOT EXISTS "club_event_participations"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "event_id" integer not null,
+  "club_member_id" integer not null,
+  "status" varchar not null,
+  "source" varchar not null,
+  "registered_at" datetime,
+  "registered_by_user_id" integer,
+  "club_guardian_id" integer,
+  "promoted_at" datetime,
+  "cancelled_at" datetime,
+  "cancelled_by_user_id" integer,
+  "note" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("event_id") references "events"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete cascade,
+  foreign key("registered_by_user_id") references "users"("id") on delete set null,
+  foreign key("club_guardian_id") references "club_guardians"("id") on delete set null,
+  foreign key("cancelled_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "club_ev_part_event_member_uq" on "club_event_participations"(
+  "event_id",
+  "club_member_id"
+);
+CREATE INDEX "club_ev_part_event_status_idx" on "club_event_participations"(
+  "event_id",
+  "status",
+  "registered_at"
+);
+CREATE INDEX "club_ev_part_member_status_idx" on "club_event_participations"(
+  "club_member_id",
+  "status"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -20643,3 +20903,5 @@ INSERT INTO migrations VALUES(826,'2027_02_22_101100_convert_local_times_to_utc'
 INSERT INTO migrations VALUES(827,'2027_02_22_101200_convert_imported_sync_times_to_utc',42);
 INSERT INTO migrations VALUES(828,'2027_02_23_100000_create_contract_signing_tables',43);
 INSERT INTO migrations VALUES(829,'2027_02_23_100100_create_lexoffice_invoice_handovers_table',44);
+INSERT INTO migrations VALUES(830,'2027_02_23_100200_create_club_tables',45);
+INSERT INTO migrations VALUES(831,'2027_02_23_100300_create_club_event_tables',46);

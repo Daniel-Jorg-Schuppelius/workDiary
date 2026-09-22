@@ -94,6 +94,9 @@ return [
     // Lesbare Job-Namen (Registry-Keys, geschachtelt wegen Punkt-Notation);
     // neue Registry-Jobs hier in allen Locales ergänzen — sonst Fallback = Key.
     'job' => [
+        'demo' => [
+            'prune' => 'Demo-Organisationen nach Aufbewahrungsfrist löschen',
+        ],
         'billing' => [
             'account-invoices' => 'Monatsrechnungen aus Sonderkonditionen erzeugen',
             'push-retainers' => 'Retainer-Pauschalen an Lexoffice übergeben',

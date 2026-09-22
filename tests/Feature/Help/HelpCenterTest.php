@@ -12,6 +12,7 @@ namespace Tests\Feature\Help;
 
 use App\Models\{HelpTopic, HelpView, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Blade;
 use Tests\TestCase;
 
 /**
@@ -282,5 +283,19 @@ class HelpCenterTest extends TestCase {
             ->assertSee('Dashboard-Grundlagen')
             // Viel gelesen, aber für die Rolle unsichtbar: taucht nie auf.
             ->assertDontSee('Sicherung geheim');
+    }
+
+    public function test_help_drawer_offers_help_center_link_and_search(): void {
+        // Direkter Weg ins Hilfecenter aus der Sidebar — auch ohne Topic
+        // der aktuellen Seite; die Suche landet als GET auf der Vollseite.
+        $html = Blade::render('<x-help-drawer />');
+
+        $this->assertStringContainsString('data-help-center-link', $html);
+        $this->assertStringContainsString('href="' . route('help.center.index') . '"', $html);
+        $this->assertStringContainsString('data-help-center-search', $html);
+        $this->assertStringContainsString('action="' . route('help.center.index') . '"', $html);
+        $this->assertStringContainsString('name="q"', $html);
+        // Drawer-eigene Suche im Fallback-Panel bleibt erhalten.
+        $this->assertStringContainsString('data-help-search-form', $html);
     }
 }

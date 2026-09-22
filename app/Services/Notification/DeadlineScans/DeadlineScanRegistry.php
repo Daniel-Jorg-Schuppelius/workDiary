@@ -58,6 +58,8 @@ final class DeadlineScanRegistry {
         TrainingDeadlineScan::class,
         // Lernplattform: Einschreibungsfristen (Feature 149, MVP-780).
         LearningDueScan::class,
+        // Vereinsgruppen: Alterskriterien → Wechselvorschläge (Feature 159, MVP-842).
+        ClubGroupCriteriaScan::class,
     ];
 
     /** @return list<DeadlineScan> */

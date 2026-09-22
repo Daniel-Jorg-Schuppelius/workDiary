@@ -21,7 +21,9 @@ use Illuminate\Support\Arr;
  * Konventionen:
  *  - `de` ist die Quellsprache: JSON-Keys SIND die deutschen Quelltexte, die
  *    PHP-Namespace-Dateien unter lang/de/ sind die Referenzstruktur.
- *  - JSON-Dateien existieren je Sprache außer `de` (lang/<code>.json).
+ *  - Übersetzungs-JSON existiert je Sprache außer `de` (lang/<code>.json).
+ *  - `de.json` enthält nur Identitätseinträge für Pluralschlüssel: ohne sie
+ *    wählt Translator::localeForChoice die Fallback-Sprache.
  */
 class Translations {
     public static function langPath(string $rel = ''): string {
@@ -183,6 +185,39 @@ class Translations {
                     }
                 }
                 $keys[$k] = true;
+            }
+        }
+
+        $out = array_keys($keys);
+        sort($out);
+
+        return $out;
+    }
+
+    /**
+     * Literale Pluralschlüssel (trans_choice mit „|“) aus Views/app. Fehlt ein
+     * solcher Schlüssel in de.json, zeigt die deutsche UI die Fallback-Sprache
+     * (z. B. „16 articles“); fehlt er in en.json, bleiben alle anderen deutsch.
+     *
+     * @return list<string>
+     */
+    public static function sourcePluralKeys(): array {
+        $files = [];
+        foreach ([base_path('resources/views'), base_path('app')] as $dir) {
+            $files = [...$files, ...Files::get($dir, true, ['php'])];
+        }
+
+        $keys = [];
+        foreach ($files as $path) {
+            $src = File::read($path);
+            if (! preg_match_all('~(?<![A-Za-z0-9_])trans_choice\(\s*([\'"])((?:\\\\.|(?!\1).)*)\1\s*,~s', $src, $m)) {
+                continue;
+            }
+            foreach ($m[2] as $raw) {
+                $k = stripcslashes($raw);
+                if (str_contains($k, '|') && ! str_contains($k, '$')) {
+                    $keys[$k] = true;
+                }
             }
         }
 

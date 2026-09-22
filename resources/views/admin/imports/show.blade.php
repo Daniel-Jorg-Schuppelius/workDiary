@@ -183,7 +183,7 @@
                                 @foreach ($classificationOptions as $domainValue => $classifications)
                                     <optgroup label="{{ \App\Enums\Classification\ClassificationDomain::from($domainValue)->label() }}">
                                         @foreach ($classifications as $classification)
-                                            <option value="{{ $classification->sqid }}">{{ $classification->label }}</option>
+                                            <option value="{{ $classification->sqid }}">{{ $classification->display_label }}</option>
                                         @endforeach
                                     </optgroup>
                                 @endforeach

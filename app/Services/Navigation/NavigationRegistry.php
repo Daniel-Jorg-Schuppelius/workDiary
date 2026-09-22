@@ -734,6 +734,24 @@ class NavigationRegistry {
                 ],
             ];
         }
+        // Vereinsverwaltung (Feature 159, MVP-842): Mitglieder, Gruppen, Abteilungen,
+        // Wechselvorschläge — club.viewAny/manage; Gruppenleitung (club.groups.lead)
+        // sieht nur ihre Gruppen. Plan-Modul module.club filtert das Layout.
+        if (Gate::allows('viewAny', \App\Models\Club\ClubMember::class)) {
+            $sidebarSections[] = [
+                'key' => 'club',
+                'label' => __('club.section'),
+                'collapsible' => true,
+                'items' => $this->compactItems([
+                    ['route' => 'club.members.index', 'label' => __('club.nav.members'), 'icon' => 'groups', 'modal' => false, 'matches' => ['club.members.*']],
+                    ['route' => 'club.groups.index', 'label' => __('club.nav.groups'), 'icon' => 'diversity_3', 'modal' => false, 'matches' => ['club.groups.*']],
+                    ['route' => 'club.events.index', 'label' => __('club.nav.events'), 'icon' => 'event', 'modal' => false, 'matches' => ['club.events.*']],
+                    ['route' => 'club.departments.index', 'label' => __('club.nav.departments'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['club.departments.*']],
+                    ['route' => 'club.proposals.index', 'label' => __('club.nav.proposals'), 'icon' => 'swap_horiz', 'modal' => false, 'matches' => ['club.proposals.*']],
+                ]),
+            ];
+        }
+
         // Arbeitsschutz-Register (Feature 132): GBU, Unterweisung, Vorsorge — safety.viewAny/manage,
         // Kernmodul ohne Plan-Gate. Trainingsmanagement (Feature 145) hängt in
         // derselben Sektion, hat aber eigene Rechte — Personalverwaltung sieht

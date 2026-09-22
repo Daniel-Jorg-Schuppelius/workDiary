@@ -22,6 +22,7 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'partyservice',
     'label' => 'Partyservice / Catering',
+    'description' => 'Partyservice und Catering: Anfrage bis Rücknahme mit Menüplanung, HACCP-Kühlkette und LMIV-Allergenkennzeichnung.',
     'version' => 2,
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.

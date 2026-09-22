@@ -25,7 +25,7 @@ use Illuminate\Console\Command;
  * für nicht-Demo-Orgs zusätzlich (Defense in Depth).
  */
 class DemoResetCommand extends Command {
-    protected $signature = 'demo:reset {org? : Organisations-ID (Default: erste Demo-Org)} {--industry= : Branche neu wählen (sonst beibehalten)} {--all : Alle Demo-Orgs zurücksetzen}';
+    protected $signature = 'demo:reset {org? : Organisations-ID (Default: erste Demo-Org)} {--industry= : Branche neu wählen (sonst beibehalten)} {--all : Alle Demo-Orgs zurücksetzen} {--showcase= : Umfang des Showcase neu wählen: profile oder full (sonst beibehalten)}';
 
     protected $description = 'Setzt Demo-Organisationen zurück (löscht Demo-Daten und seedet neu). Nur is_demo-Orgs.';
 
@@ -33,6 +33,19 @@ class DemoResetCommand extends Command {
         $industry = $this->option('industry') !== null
             ? DemoIndustry::fromKey((string) $this->option('industry'))
             : null;
+
+        $showcaseOption = $this->option('showcase');
+        $showcase = match ((string) ($showcaseOption ?? '')) {
+            '' => null,
+            'full' => true,
+            'profile' => false,
+            default => null,
+        };
+        if ($showcaseOption !== null && $showcaseOption !== '' && $showcase === null) {
+            $this->error('--showcase erwartet profile oder full.');
+
+            return self::FAILURE;
+        }
 
         $organizations = $this->resolveOrganizations();
         if ($organizations->isEmpty()) {
@@ -49,7 +62,7 @@ class DemoResetCommand extends Command {
                 continue;
             }
 
-            $counts = $seeder->reset($org, null, $industry);
+            $counts = $seeder->reset($org, null, $industry, $showcase);
 
             AuditLog::query()->create([
                 'organization_id' => $org->id,

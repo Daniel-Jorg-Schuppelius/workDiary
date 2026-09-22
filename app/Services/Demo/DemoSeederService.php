@@ -22,6 +22,7 @@ use App\Enums\Timesheet\{TimesheetKind, TimesheetStatus};
 use App\Enums\User\UserRole;
 use App\Models\{Asset, Attachment, AuditLog, CommunicationNote, Customer, DiaryEntry, Material, MaterialUsage, OpenIssue, Organization, ProcedureRun, ProcedureTemplate, Project, Protocol, ProtocolItem, TimeEntry, Timesheet, User};
 use App\Services\Classification\BranchProfileInstaller;
+use App\Services\Licensing\{FeatureFlagResolver, LicenseService, ModuleCatalog, ModuleScopeService};
 use App\Services\Procedure\{BackupProofService, ProcedureExecutionService, ProcedureTemplateService, SecondPersonGate};
 use Carbon\CarbonImmutable;
 use Faker\{Factory as FakerFactory, Generator as Faker};
@@ -72,8 +73,10 @@ class DemoSeederService {
      *
      * @return array<string, int|string>
      */
-    public function seed(Organization $organization, ?User $actor = null, ?DemoIndustry $industry = null): array {
-        return $this->withOrganizationContext($organization, fn(): array => $this->doSeed($organization, $actor, $industry));
+    public function seed(Organization $organization, ?User $actor = null, ?DemoIndustry $industry = null, ?bool $fullShowcase = null): array {
+        $fullShowcase ??= $this->resolveFullShowcase($organization);
+
+        return $this->withOrganizationContext($organization, fn(): array => $this->doSeed($organization, $actor, $industry, $fullShowcase));
     }
 
     /**
@@ -84,7 +87,7 @@ class DemoSeederService {
      *
      * @return array{organization: Organization, counts: array<string, int|string>}
      */
-    public function freshOrg(?DemoIndustry $industry = null, ?User $actor = null, ?User $member = null): array {
+    public function freshOrg(?DemoIndustry $industry = null, ?User $actor = null, ?User $member = null, bool $fullShowcase = false): array {
         $industry ??= DemoIndustry::default();
 
         // Eindeutiger Name — nie Kollision mit bestehenden (echten) Orgs.
@@ -117,7 +120,15 @@ class DemoSeederService {
             ],
         ]);
 
-        $counts = $this->seed($organization, $actor, $industry);
+        // MVP-836: Eine Demo ohne nutzbare Lizenz liefe produktiv im Tarif Free.
+        // Kann diese Instanz Lizenzen ausstellen, bekommt die Demo-Organisation
+        // eine befristete Org-Lizenz; sonst gilt die Installationslizenz.
+        $this->issueDemoLicense($organization, $industry, $actor);
+
+        $counts = $this->seed($organization, $actor, $industry, $fullShowcase);
+        $outlook = $this->licenseOutlook($organization);
+        $counts['license_source'] = $outlook['source'];
+        $counts['license_plan'] = $outlook['plan'];
 
         if ($member !== null) {
             $member->forceFill(['organization_id' => $organization->id])->save();
@@ -136,9 +147,80 @@ class DemoSeederService {
     }
 
     /**
+     * Stellt der Demo-Organisation eine befristete Org-Lizenz aus, wenn die
+     * Instanz einen Herausgeber-Schlüssel hat (Audit `demo.licensed`). Ohne
+     * Schlüssel passiert nichts — bewusst keine Lizenzumgehung für Demos.
+     */
+    private function issueDemoLicense(Organization $organization, DemoIndustry $industry, ?User $actor): void {
+        $licenses = app(LicenseService::class);
+        if (! $licenses->canIssue()) {
+            return;
+        }
+
+        $days = max(1, (int) config('demo.license_days', 30));
+        $plan = (string) config('demo.license_plan', Organization::PLAN_ENTERPRISE);
+        if (! in_array($plan, Organization::$plans, true)) {
+            $plan = Organization::PLAN_ENTERPRISE;
+        }
+        $expires = CarbonImmutable::now()->addDays($days)->toDateString();
+
+        $result = $licenses->issueForOrganization($organization, $plan, [], $expires, 'Demo ' . $industry->label());
+        app(FeatureFlagResolver::class)->flush();
+        if (! $result->isUsable()) {
+            return;
+        }
+
+        AuditLog::query()->create([
+            'organization_id' => $organization->id,
+            'user_id' => $actor?->id,
+            'event' => 'demo.licensed',
+            'auditable_type' => Organization::class,
+            'auditable_id' => $organization->id,
+            'changes' => [
+                'plan' => $plan,
+                'expires_at' => $expires,
+                'license_id' => $result->payload?->licenseId,
+            ],
+        ]);
+    }
+
+    /**
+     * Unter welchem Tarif eine Demo-Organisation tatsächlich läuft — dieselbe
+     * Auflösung wie der FeatureFlagResolver: eigene Lizenz, sonst
+     * Installationslizenz, in local/testing der Org-Plan, produktiv Free.
+     * Ohne Organisation (vor dem Anlegen): `issuer`, wenn diese Instanz eine
+     * Lizenz ausstellen wird.
+     *
+     * @return array{source: string, plan: string}
+     */
+    public function licenseOutlook(?Organization $organization = null): array {
+        $licenses = app(LicenseService::class);
+
+        if ($organization !== null) {
+            $own = $licenses->forOrganization($organization);
+            if ($own->isUsable() && $own->payload !== null) {
+                return ['source' => 'organization', 'plan' => (string) $own->payload->plan];
+            }
+        } elseif ($licenses->canIssue()) {
+            return ['source' => 'issuer', 'plan' => (string) config('demo.license_plan', Organization::PLAN_ENTERPRISE)];
+        }
+
+        $global = $licenses->current();
+        if ($global->isUsable() && $global->payload !== null) {
+            return ['source' => 'installation', 'plan' => (string) $global->payload->plan];
+        }
+
+        if (app()->environment('local', 'testing')) {
+            return ['source' => 'development', 'plan' => (string) ($organization->plan ?? config('demo.license_plan', Organization::PLAN_ENTERPRISE))];
+        }
+
+        return ['source' => 'free', 'plan' => Organization::PLAN_FREE];
+    }
+
+    /**
      * @return array<string, int|string>
      */
-    private function doSeed(Organization $organization, ?User $actor, ?DemoIndustry $industry): array {
+    private function doSeed(Organization $organization, ?User $actor, ?DemoIndustry $industry, bool $fullShowcase = false): array {
         $industry ??= DemoIndustry::default();
 
         $faker = FakerFactory::create('de_DE');
@@ -165,15 +247,18 @@ class DemoSeederService {
             'attachments' => 0,
             'procedure_runs' => 0,
             'learning' => 0,
+            'showcase' => $fullShowcase ? 'full' : 'profile',
+            'modules_active' => 0,
         ];
 
-        DB::transaction(function () use ($organization, $faker, $actor, $industry, $blueprint, &$counts): void {
+        DB::transaction(function () use ($organization, $faker, $actor, $industry, $blueprint, $fullShowcase, &$counts): void {
             $organization->is_demo = true;
             if (! str_ends_with($organization->name, '(Demo)')) {
                 $organization->name = trim($organization->name . ' (Demo)');
             }
             $settings = is_array($organization->settings) ? $organization->settings : [];
             $settings['demo_industry'] = $industry->value;
+            $settings['demo_full_showcase'] = $fullShowcase;
             $organization->settings = $settings;
             $organization->demo_seeded_at = \Carbon\Carbon::now();
             $organization->save();
@@ -185,7 +270,18 @@ class DemoSeederService {
             // Ohne übergebenen Akteur dient der Demo-Admin als Versions-Autor —
             // sonst überspringt der Installer sämtliche Prozedurvorlagen.
             $profileActor = $actor ?? $users->first();
+            if (! $profileActor instanceof User) {
+                throw new RuntimeException('Demo-Seeder: kein Akteur für Profil und Funktionsumfang vorhanden.');
+            }
             $this->branchProfileInstaller()->install($organization, $industry->branchProfileCode(), $profileActor);
+
+            // MVP-838: Die Demo folgt dem Funktionsumfang des Profils — die
+            // Modul-Empfehlung wird angewandt und der Showcase legt nur für
+            // aktive Module Daten an. „Vollumfang" schaltet alles frei.
+            $activeModules = $this->applyShowcaseScope($organization, $profileActor, $fullShowcase);
+            $counts['modules_active'] = $activeModules === null
+                ? count(app(ModuleCatalog::class)->codes())
+                : count($activeModules);
 
             $customers = $this->seedCustomers($organization, $users->first(), $blueprint);
             $counts['customers'] = $customers->count();
@@ -229,7 +325,7 @@ class DemoSeederService {
             $counts['procedure_runs'] = $this->seedProcedureRun($organization, $mainDiary, $users, $blueprint);
 
             // Agile Vorführ-Boards (Feature 064, P7): Scrum + Kanban.
-            $showcase = $this->showcaseSeeder();
+            $showcase = $this->showcaseSeeder()->withActiveModules($activeModules);
             $counts['agile_boards'] = $showcase->seedAgileBoards($projects, $users);
 
             // IT-Demoszenario Helpdesk (Feature 065, P10): Anfrage → Incident → Problem → Change.
@@ -287,21 +383,23 @@ class DemoSeederService {
      *
      * @return array<string, int|string>
      */
-    public function reset(Organization $organization, ?User $actor = null, ?DemoIndustry $industry = null): array {
+    public function reset(Organization $organization, ?User $actor = null, ?DemoIndustry $industry = null, ?bool $fullShowcase = null): array {
         if (! $organization->is_demo) {
             throw new RuntimeException('Reset ist nur für Demo-Mandanten erlaubt (is_demo=true).');
         }
 
-        // Beibehaltung der ursprünglich gewählten Branche, sofern nicht überschrieben.
+        // Beibehaltung der ursprünglich gewählten Branche und des Showcase-
+        // Umfangs, sofern nicht überschrieben.
         $industry ??= $this->resolveIndustry($organization);
+        $fullShowcase ??= $this->resolveFullShowcase($organization);
 
-        return $this->withOrganizationContext($organization, fn(): array => $this->doReset($organization, $actor, $industry));
+        return $this->withOrganizationContext($organization, fn(): array => $this->doReset($organization, $actor, $industry, $fullShowcase));
     }
 
     /**
      * @return array<string, int|string>
      */
-    private function doReset(Organization $organization, ?User $actor, ?DemoIndustry $industry): array {
+    private function doReset(Organization $organization, ?User $actor, ?DemoIndustry $industry, bool $fullShowcase): array {
         DB::transaction(function () use ($organization): void {
             $diaryIds = DiaryEntry::query()->where('organization_id', $organization->id)->pluck('id');
 
@@ -366,7 +464,7 @@ class DemoSeederService {
             User::query()->whereKey($demoUserIds)->delete();
         });
 
-        return $this->doSeed($organization, $actor, $industry);
+        return $this->doSeed($organization, $actor, $industry, $fullShowcase);
     }
 
     /** Ermittelt die aktuell hinterlegte Demo-Branche aus den Org-Einstellungen. */
@@ -375,6 +473,40 @@ class DemoSeederService {
         $key = isset($settings['demo_industry']) ? (string) $settings['demo_industry'] : null;
 
         return DemoIndustry::fromKey($key);
+    }
+
+    /** Gemerkter Showcase-Umfang der Organisation (MVP-838); Default: Profilumfang. */
+    public function resolveFullShowcase(Organization $organization): bool {
+        $settings = is_array($organization->settings) ? $organization->settings : [];
+
+        return (bool) ($settings['demo_full_showcase'] ?? false);
+    }
+
+    /**
+     * Wendet den Funktionsumfang der Demo an: Modul-Empfehlung des Profils
+     * über den ModuleScopeService (Overrides + Audit wie im Onboarding) oder
+     * „Vollumfang" (alle lizenzierten Module aktiv). Liefert die aktiven
+     * Katalogmodule für den Showcase; null = alle.
+     *
+     * @return list<string>|null
+     */
+    private function applyShowcaseScope(Organization $organization, User $actor, bool $fullShowcase): ?array {
+        $scope = app(ModuleScopeService::class);
+
+        if ($fullShowcase) {
+            $scope->setActiveModules($organization, null, $actor, 'demo:full');
+
+            return null;
+        }
+
+        $recommendation = $scope->branchProfileRecommendation($organization);
+        if ($recommendation === null) {
+            return null;
+        }
+
+        $scope->setActiveModules($organization, $recommendation['modules'], $actor, 'branch:' . $recommendation['code']);
+
+        return $recommendation['modules'];
     }
 
     /**

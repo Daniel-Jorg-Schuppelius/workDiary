@@ -431,6 +431,8 @@ class AppServiceProvider extends ServiceProvider {
         // F14: Fachlogik aus den Model-Hooks in Observer (TimeEntry-saving
         // lebt im bestehenden TimeEntryObserver, s. u.).
         \App\Models\Attendance::observe(\App\Observers\AttendanceObserver::class);
+        // Vereinstermine (MVP-843): Serienvorkommen erben Details des Masters.
+        \App\Models\Event::observe(\App\Observers\ClubEventOccurrenceObserver::class);
         \App\Models\InvoiceItem::observe(\App\Observers\InvoiceItemObserver::class);
 
         // Carbon-Anzeige-Macros (Logik in App\Support\CarbonFmt): orgTz/fdate/
@@ -577,6 +579,12 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(\App\Models\Safety\SafetyInstruction::class, \App\Policies\Safety\SafetyInstructionPolicy::class);
         Gate::policy(\App\Models\Safety\SafetyInstructionParticipant::class, \App\Policies\Safety\SafetyInstructionParticipantPolicy::class);
         Gate::policy(\App\Models\Safety\MedicalCheckup::class, \App\Policies\Safety\MedicalCheckupPolicy::class);
+        // Vereinsverwaltung (Feature 159, MVP-842).
+        Gate::policy(\App\Models\Club\ClubMember::class, \App\Policies\Club\ClubMemberPolicy::class);
+        Gate::policy(\App\Models\Club\ClubGroup::class, \App\Policies\Club\ClubGroupPolicy::class);
+        Gate::policy(\App\Models\Club\ClubDepartment::class, \App\Policies\Club\ClubDepartmentPolicy::class);
+        Gate::policy(\App\Models\Club\ClubGroupChangeProposal::class, \App\Policies\Club\ClubGroupChangeProposalPolicy::class);
+        Gate::policy(\App\Models\Club\ClubEventDetails::class, \App\Policies\Club\ClubEventDetailsPolicy::class);
 
         // Provisionen (Feature 146).
         Gate::policy(\App\Models\Sales\CommissionRule::class, \App\Policies\Sales\CommissionRulePolicy::class);

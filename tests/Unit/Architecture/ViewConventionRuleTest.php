@@ -27,6 +27,9 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
  *      Toolbar gibt den Untertitel zusätzlich als `title`-Attribut aus, wo
  *      ein Tag den Attributwert aufbräche (MVP-820). Markup gehört in den
  *      Standard-Slot darunter.
+ *  V7  <x-date-range> in <x-filter-bar> ohne :label="false" — die Leiste
+ *      zentriert vertikal, ein Label über der Gruppe hebt Von/Bis aus der
+ *      Zeile der Nachbarfelder (2026-09-22, 12 Altfälle bereinigt).
  *
  * Altfälle stehen mit Welle-Verweis in den Allow-Listen; neue Views müssen die
  * Konvention erfüllen.
@@ -188,6 +191,22 @@ class ViewConventionRuleTest extends TestCase {
                         $this->lineOf($source, $offset),
                         $snippet,
                     );
+                }
+            }
+
+            // V7 — Von/Bis in der Filterleiste ohne :label="false". Die Leiste
+            // zentriert ihre Felder vertikal; ein Label über der Gruppe hebt die
+            // Datumsfelder aus der Zeile der Nachbarfelder.
+            if (preg_match_all('~<x-filter-bar\b.*?</x-filter-bar>~s', $source, $bars, PREG_OFFSET_CAPTURE) > 0) {
+                foreach ($bars[0] as [$bar, $barOffset]) {
+                    if (preg_match_all('~<x-date-range\b(?:[^>]|->)*?>~s', $bar, $ranges, PREG_OFFSET_CAPTURE) === 0) {
+                        continue;
+                    }
+                    foreach ($ranges[0] as [$tag, $tagOffset]) {
+                        if (! str_contains($tag, ':label="false"')) {
+                            $violations[] = sprintf('%s:%d  V7 <x-date-range> in der Filterleiste ohne :label="false" — das Label hebt Von/Bis aus der Zeile', $relative, $this->lineOf($source, (int) $barOffset + (int) $tagOffset));
+                        }
+                    }
                 }
             }
         }

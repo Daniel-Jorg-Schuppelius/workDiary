@@ -20,6 +20,9 @@ was zu Ihrer Sprache, Ihrer Rolle und den freigeschalteten Funktionen
 Ihrer Organisation passt.
 
 Auf jeder Themenseite führen verwandte Themen weiter, und über „War das
-hilfreich?" können Sie uns anonym Rückmeldung geben. Aus der
-kontextbezogenen Hilfe gelangen Sie mit „Ausführliche Hilfe öffnen" direkt
-zur passenden Themenseite.
+hilfreich?" können Sie uns anonym Rückmeldung geben.
+
+Aus der kontextbezogenen Hilfe erreichen Sie das Hilfecenter jederzeit: Das
+Buchsymbol in der Kopfzeile der Hilfe öffnet diese Übersicht, das Suchfeld
+darunter startet Ihre Suche direkt hier. „Ausführliche Hilfe öffnen" führt
+zur Themenseite des gerade angezeigten Themas.

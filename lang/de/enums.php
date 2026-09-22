@@ -1762,4 +1762,65 @@ return [
             'machine' => 'maschinell',
         ],
     ],
+    // Vereinsverwaltung (Feature 159, MVP-842)
+    'club' => [
+        'membership-kind' => [
+            'active' => 'Aktiv',
+            'passive' => 'Passiv',
+            'supporting' => 'Fördermitglied',
+            'paused' => 'Pausiert',
+        ],
+        'admission-mode' => [
+            'leader' => 'Durch Leitung',
+            'application' => 'Antrag mit Freigabe',
+        ],
+        'group-membership-status' => [
+            'requested' => 'Beantragt',
+            'active' => 'Aktiv',
+            'ended' => 'Beendet',
+            'rejected' => 'Abgelehnt',
+        ],
+        'proposal-status' => [
+            'open' => 'Offen',
+            'confirmed' => 'Bestätigt',
+            'dismissed' => 'Verworfen',
+        ],
+        'criteria-result' => [
+            'met' => 'Erfüllt',
+            'age_below' => 'Unter Mindestalter',
+            'age_above' => 'Über Höchstalter',
+            'review_required' => 'Prüfung erforderlich',
+        ],
+        'event-kind' => [
+            'training' => 'Training / Probe',
+            'course' => 'Lehrgang',
+            'exam' => 'Prüfung',
+            'meeting' => 'Versammlung',
+            'other' => 'Sonstiger Termin',
+        ],
+        'event-visibility' => [
+            'club' => 'Ganzer Verein',
+            'groups' => 'Bestimmte Gruppen',
+            'invited' => 'Persönliche Einladung',
+        ],
+        'participation-status' => [
+            'invited' => 'Eingeladen',
+            'registered' => 'Angemeldet',
+            'waitlisted' => 'Warteliste',
+            'cancelled' => 'Abgesagt',
+        ],
+        'participation-source' => [
+            'admin' => 'Verwaltung',
+            'leader' => 'Gruppenleitung',
+            'guardian' => 'Vertretung',
+            'self' => 'Mitglied selbst',
+            'spontaneous' => 'Spontan (Leitung)',
+            'invitation' => 'Einladung',
+        ],
+        'guardian-permission' => [
+            'register' => 'An- und Abmelden',
+            'view_attendance' => 'Anwesenheit einsehen',
+            'receive_messages' => 'Nachrichten erhalten',
+        ],
+    ],
 ];

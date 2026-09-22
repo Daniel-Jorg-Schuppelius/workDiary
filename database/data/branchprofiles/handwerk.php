@@ -13,6 +13,7 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'handwerk',
     'label' => 'Handwerk / Service allgemein',
+    'description' => 'Handwerk und Service allgemein: Service, Wartung, Reparatur, Installation, Inspektion und Aufmaß als Grundausstattung für gemischte Betriebe.',
     'version' => 1,
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.

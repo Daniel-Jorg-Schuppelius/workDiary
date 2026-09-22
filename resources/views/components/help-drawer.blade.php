@@ -30,14 +30,38 @@
              Inhaltsbereich darunter. --}}
         <header class="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-base-300 px-4">
             <p class="text-xs uppercase tracking-wider text-muted">{{ __('Hilfe') }}</p>
-            {{-- Rot, damit der Schließen-Button sich klar abhebt (analog zur
-                 roten Schließen-Optik der Dialoge). Outline + Farbe, weil
-                 nacktes btn-outline auf dem dunklen wd-badge-Grund zu blass
-                 wäre. --}}
-            <x-icon-btn icon="close" tone="outline" size="sm"
-                        class="btn-square btn-error"
-                        label="{{ __('Schließen') }}" data-help-close />
+            <div class="flex items-center gap-1">
+                {{-- Direkter Absprung ins Hilfecenter (Übersicht + Suche),
+                     unabhängig davon, ob die Seite ein Topic hat. --}}
+                <x-icon-btn icon="menu_book" tone="ghost" size="sm"
+                            class="btn-square"
+                            :label="__('Hilfecenter öffnen')"
+                            :href="route('help.center.index')"
+                            data-help-center-link />
+                {{-- Rot, damit der Schließen-Button sich klar abhebt (analog zur
+                     roten Schließen-Optik der Dialoge). Outline + Farbe, weil
+                     nacktes btn-outline auf dem dunklen wd-badge-Grund zu blass
+                     wäre. --}}
+                <x-icon-btn icon="close" tone="outline" size="sm"
+                            class="btn-square btn-error"
+                            label="{{ __('Schließen') }}" data-help-close />
+            </div>
         </header>
+
+        {{-- Suche direkt aus der Sidebar: GET landet auf der Hilfecenter-
+             Vollseite. Im Fallback-Panel blendet help-drawer.js das Feld aus,
+             dort steht bereits die Drawer-eigene Suche. --}}
+        <form method="GET" action="{{ route('help.center.index') }}" role="search"
+              class="flex shrink-0 items-center gap-2 px-4 pt-3" data-help-center-search>
+            <label class="input input-sm input-bordered flex grow items-center gap-2">
+                <x-icon name="search" class="text-muted" />
+                <input type="search" name="q" class="grow" minlength="2"
+                       placeholder="{{ __('Im Hilfecenter suchen…') }}"
+                       aria-label="{{ __('Im Hilfecenter suchen') }}">
+            </label>
+            <x-icon-btn type="submit" icon="arrow_forward" tone="outline" size="sm"
+                        class="btn-square" :label="__('Suchen')" />
+        </form>
 
         <div class="shrink-0 px-4 pt-3">
             <h2 id="help-drawer-title" class="font-['Space_Grotesk'] text-base font-semibold text-base-content" data-help-title>{{ __('Wird geladen…') }}</h2>
@@ -136,6 +160,9 @@
             <x-icon-btn icon="help" tone="ghost" size="sm"
                         :label="__('Hilfe öffnen')"
                         data-help-trigger aria-haspopup="dialog" aria-controls="help-drawer" />
+            <x-icon-btn icon="menu_book" tone="ghost" size="sm"
+                        :label="__('Hilfecenter öffnen')"
+                        :href="route('help.center.index')" />
 
             <div class="flex min-h-0 w-full flex-1 flex-col items-center gap-2 rounded-xl border border-base-300/60 bg-base-100/40 py-2"
                  data-help-news data-news-rotation-ms="{{ $newsRotationMs }}"
@@ -176,8 +203,11 @@
                         :label="__('Hilfe aufklappen')"
                         data-help-trigger aria-haspopup="dialog" aria-controls="help-drawer" />
         @else
+            <x-icon-btn icon="menu_book" tone="ghost" size="sm"
+                        :label="__('Hilfecenter öffnen')"
+                        :href="route('help.center.index')" />
             <button type="button"
-                    class="flex h-full w-full flex-col items-center justify-between rounded-xl text-xs uppercase tracking-wider text-muted transition-colors hover:bg-base-content/10 hover:text-base-content"
+                    class="flex min-h-0 w-full flex-1 flex-col items-center justify-between rounded-xl text-xs uppercase tracking-wider text-muted transition-colors hover:bg-base-content/10 hover:text-base-content"
                     data-help-trigger aria-haspopup="dialog" aria-controls="help-drawer"
                     title="{{ __('Hilfe öffnen') }}" aria-label="{{ __('Hilfe öffnen') }}">
                 <span class="btn btn-sm btn-ghost btn-square pointer-events-none" aria-hidden="true">

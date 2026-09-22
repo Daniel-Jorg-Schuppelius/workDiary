@@ -40,7 +40,6 @@ Sin perfil se aplica el estándar del sistema (salida actual). Las facturas
 ZUGFeRD/PDF-A-3 siguen siendo válidas tras aplicar el diseño — la factura
 estructurada sigue siendo determinante.
 
-
 Diseño base CI y herencia:
 
 - El perfil estándar de la organización es su **diseño base CI**. Las

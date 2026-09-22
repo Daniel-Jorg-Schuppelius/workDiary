@@ -4831,6 +4831,274 @@ CREATE TABLE `cloud_document_routes` (
   CONSTRAINT `cloud_document_routes_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_departments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_departments` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `name` varchar(120) NOT NULL,
+  `description` text DEFAULT NULL,
+  `discipline` varchar(120) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `sort_order` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `club_dep_org_sort_idx` (`organization_id`,`sort_order`),
+  CONSTRAINT `club_departments_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_event_details`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_event_details` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `event_id` bigint(20) unsigned NOT NULL,
+  `kind` varchar(16) NOT NULL DEFAULT 'training',
+  `visibility` varchar(16) NOT NULL DEFAULT 'groups',
+  `club_department_id` bigint(20) unsigned DEFAULT NULL,
+  `registration_lead_hours` smallint(5) unsigned DEFAULT NULL,
+  `cancellation_lead_hours` smallint(5) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_ev_det_event_uq` (`event_id`),
+  KEY `club_event_details_club_department_id_foreign` (`club_department_id`),
+  KEY `club_ev_det_org_kind_idx` (`organization_id`,`kind`),
+  CONSTRAINT `club_event_details_club_department_id_foreign` FOREIGN KEY (`club_department_id`) REFERENCES `club_departments` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_event_details_event_id_foreign` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_event_details_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_event_groups`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_event_groups` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `event_id` bigint(20) unsigned NOT NULL,
+  `club_group_id` bigint(20) unsigned NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_ev_grp_event_group_uq` (`event_id`,`club_group_id`),
+  KEY `club_event_groups_organization_id_foreign` (`organization_id`),
+  KEY `club_ev_grp_group_event_idx` (`club_group_id`,`event_id`),
+  CONSTRAINT `club_event_groups_club_group_id_foreign` FOREIGN KEY (`club_group_id`) REFERENCES `club_groups` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_event_groups_event_id_foreign` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_event_groups_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_event_participations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_event_participations` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `event_id` bigint(20) unsigned NOT NULL,
+  `club_member_id` bigint(20) unsigned NOT NULL,
+  `status` varchar(16) NOT NULL,
+  `source` varchar(16) NOT NULL,
+  `registered_at` timestamp NULL DEFAULT NULL,
+  `registered_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `club_guardian_id` bigint(20) unsigned DEFAULT NULL,
+  `promoted_at` timestamp NULL DEFAULT NULL,
+  `cancelled_at` timestamp NULL DEFAULT NULL,
+  `cancelled_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `note` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_ev_part_event_member_uq` (`event_id`,`club_member_id`),
+  KEY `club_event_participations_organization_id_foreign` (`organization_id`),
+  KEY `club_event_participations_registered_by_user_id_foreign` (`registered_by_user_id`),
+  KEY `club_event_participations_club_guardian_id_foreign` (`club_guardian_id`),
+  KEY `club_event_participations_cancelled_by_user_id_foreign` (`cancelled_by_user_id`),
+  KEY `club_ev_part_event_status_idx` (`event_id`,`status`,`registered_at`),
+  KEY `club_ev_part_member_status_idx` (`club_member_id`,`status`),
+  CONSTRAINT `club_event_participations_cancelled_by_user_id_foreign` FOREIGN KEY (`cancelled_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_event_participations_club_guardian_id_foreign` FOREIGN KEY (`club_guardian_id`) REFERENCES `club_guardians` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_event_participations_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_event_participations_event_id_foreign` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_event_participations_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_event_participations_registered_by_user_id_foreign` FOREIGN KEY (`registered_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_group_change_proposals`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_group_change_proposals` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_member_id` bigint(20) unsigned NOT NULL,
+  `club_group_id` bigint(20) unsigned NOT NULL,
+  `reason` varchar(24) NOT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'open',
+  `suggested_group_id` bigint(20) unsigned DEFAULT NULL,
+  `effective_on` date DEFAULT NULL,
+  `note` varchar(255) DEFAULT NULL,
+  `decided_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `decided_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `club_group_change_proposals_organization_id_foreign` (`organization_id`),
+  KEY `club_group_change_proposals_suggested_group_id_foreign` (`suggested_group_id`),
+  KEY `club_group_change_proposals_decided_by_user_id_foreign` (`decided_by_user_id`),
+  KEY `club_gcp_group_status_idx` (`club_group_id`,`status`),
+  KEY `club_gcp_member_status_idx` (`club_member_id`,`status`),
+  CONSTRAINT `club_group_change_proposals_club_group_id_foreign` FOREIGN KEY (`club_group_id`) REFERENCES `club_groups` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_group_change_proposals_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_group_change_proposals_decided_by_user_id_foreign` FOREIGN KEY (`decided_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_group_change_proposals_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_group_change_proposals_suggested_group_id_foreign` FOREIGN KEY (`suggested_group_id`) REFERENCES `club_groups` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_group_memberships`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_group_memberships` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_group_id` bigint(20) unsigned NOT NULL,
+  `club_member_id` bigint(20) unsigned NOT NULL,
+  `status` varchar(16) NOT NULL,
+  `valid_from` date NOT NULL,
+  `valid_to` date DEFAULT NULL,
+  `note` varchar(255) DEFAULT NULL,
+  `decided_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `decided_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `club_group_memberships_organization_id_foreign` (`organization_id`),
+  KEY `club_group_memberships_decided_by_user_id_foreign` (`decided_by_user_id`),
+  KEY `club_gm_group_status_idx` (`club_group_id`,`status`,`valid_from`),
+  KEY `club_gm_member_status_idx` (`club_member_id`,`status`),
+  CONSTRAINT `club_group_memberships_club_group_id_foreign` FOREIGN KEY (`club_group_id`) REFERENCES `club_groups` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_group_memberships_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_group_memberships_decided_by_user_id_foreign` FOREIGN KEY (`decided_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_group_memberships_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_groups`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_groups` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_department_id` bigint(20) unsigned DEFAULT NULL,
+  `name` varchar(120) NOT NULL,
+  `description` text DEFAULT NULL,
+  `leader_user_id` bigint(20) unsigned DEFAULT NULL,
+  `max_members` smallint(5) unsigned DEFAULT NULL,
+  `admission_mode` varchar(16) NOT NULL DEFAULT 'leader',
+  `min_age` tinyint(3) unsigned DEFAULT NULL,
+  `max_age` tinyint(3) unsigned DEFAULT NULL,
+  `criteria_note` varchar(255) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `club_groups_club_department_id_foreign` (`club_department_id`),
+  KEY `club_groups_leader_user_id_foreign` (`leader_user_id`),
+  KEY `club_group_org_dep_name_idx` (`organization_id`,`club_department_id`,`name`),
+  KEY `club_group_org_leader_idx` (`organization_id`,`leader_user_id`),
+  CONSTRAINT `club_groups_club_department_id_foreign` FOREIGN KEY (`club_department_id`) REFERENCES `club_departments` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_groups_leader_user_id_foreign` FOREIGN KEY (`leader_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_groups_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_guardians`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_guardians` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_member_id` bigint(20) unsigned NOT NULL,
+  `name` varchar(160) NOT NULL,
+  `email` varchar(190) DEFAULT NULL,
+  `phone` varchar(60) DEFAULT NULL,
+  `user_id` bigint(20) unsigned DEFAULT NULL,
+  `permissions` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`permissions`)),
+  `valid_from` date DEFAULT NULL,
+  `valid_to` date DEFAULT NULL,
+  `revoked_at` timestamp NULL DEFAULT NULL,
+  `revoked_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `note` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `club_guardians_club_member_id_foreign` (`club_member_id`),
+  KEY `club_guardians_user_id_foreign` (`user_id`),
+  KEY `club_guardians_revoked_by_user_id_foreign` (`revoked_by_user_id`),
+  KEY `club_guardian_org_user_idx` (`organization_id`,`user_id`),
+  CONSTRAINT `club_guardians_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_guardians_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_guardians_revoked_by_user_id_foreign` FOREIGN KEY (`revoked_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_guardians_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_members`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_members` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `member_no` int(10) unsigned NOT NULL,
+  `first_name` varchar(120) NOT NULL,
+  `last_name` varchar(120) NOT NULL,
+  `email` varchar(190) DEFAULT NULL,
+  `phone` varchar(60) DEFAULT NULL,
+  `street` varchar(190) DEFAULT NULL,
+  `postal_code` varchar(20) DEFAULT NULL,
+  `city` varchar(120) DEFAULT NULL,
+  `birth_date` date DEFAULT NULL,
+  `kind` varchar(16) NOT NULL DEFAULT 'active',
+  `joined_on` date NOT NULL,
+  `left_on` date DEFAULT NULL,
+  `user_id` bigint(20) unsigned DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `created_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_member_org_no_uq` (`organization_id`,`member_no`),
+  KEY `club_members_user_id_foreign` (`user_id`),
+  KEY `club_members_created_by_user_id_foreign` (`created_by_user_id`),
+  KEY `club_member_org_name_idx` (`organization_id`,`last_name`,`first_name`),
+  KEY `club_member_org_user_idx` (`organization_id`,`user_id`),
+  KEY `club_member_org_birth_idx` (`organization_id`,`birth_date`),
+  CONSTRAINT `club_members_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_members_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_members_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_membership_periods`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_membership_periods` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_member_id` bigint(20) unsigned NOT NULL,
+  `kind` varchar(16) NOT NULL,
+  `starts_on` date NOT NULL,
+  `ends_on` date DEFAULT NULL,
+  `note` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `club_membership_periods_organization_id_foreign` (`organization_id`),
+  KEY `club_period_member_start_idx` (`club_member_id`,`starts_on`),
+  CONSTRAINT `club_membership_periods_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_membership_periods_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `collection_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -22176,3 +22444,5 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (826,'2027_02_22_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (827,'2027_02_22_101200_convert_imported_sync_times_to_utc',93);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (828,'2027_02_23_100000_create_contract_signing_tables',94);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (829,'2027_02_23_100100_create_lexoffice_invoice_handovers_table',95);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (830,'2027_02_23_100200_create_club_tables',96);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (831,'2027_02_23_100300_create_club_event_tables',97);

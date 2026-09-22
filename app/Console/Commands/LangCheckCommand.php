@@ -82,6 +82,19 @@ class LangCheckCommand extends Command {
             $this->sample('  fehlt', $sourceMissing);
         }
 
+        // Pluralschlüssel: ohne de.json-Eintrag fällt trans_choice auf die
+        // Fallback-Sprache zurück, ohne en.json-Eintrag bleibt er überall deutsch.
+        $deSet = array_fill_keys(array_keys(Translations::loadJson('de')), true);
+        $pluralMissing = array_values(array_filter(
+            Translations::sourcePluralKeys(),
+            static fn(string $k): bool => ! isset($deSet[$k]) || ! isset($refSet[$k]),
+        ));
+        if ($pluralMissing !== []) {
+            $gaps++;
+            $this->warn(sprintf('Pluralschlüssel: %d fehlen in de.json oder en.json', count($pluralMissing)));
+            $this->sample('  fehlt', $pluralMissing);
+        }
+
         if ($gaps === 0) {
             $this->info('Übersetzungen vollständig über alle Sprachen (' . implode(', ', Locales::enabledCodes()) . ').');
 

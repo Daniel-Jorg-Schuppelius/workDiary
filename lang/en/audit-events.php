@@ -161,6 +161,8 @@ return [
     ],
     'branch_profile' => [
         'installed' => 'Branch profile installed',
+        'primaryChanged' => 'Primary branch profile changed',
+        'uninstalled' => 'Branch profile uninstalled',
     ],
     'caldav' => [
         'connection_saved' => 'CalDAV connection saved',
@@ -319,6 +321,8 @@ return [
         'orgCreated' => 'Demo tenant created',
         'reset' => 'Demo tenant reset',
         'seeded' => 'Demo data seeded',
+        'licensed' => 'Demo license issued',
+        'pruned' => 'Demo tenant deleted after retention period',
     ],
     'device' => [
         'revoked' => 'Device revoked',
@@ -1087,5 +1091,37 @@ return [
     ],
     'lexware' => [
         'tariffChanged' => 'Lexware plan profile changed',
+    ],
+    // Vereinsverwaltung (Feature 159, MVP-842)
+    'club' => [
+        'member' => [
+            'kindChanged' => 'Membership type changed',
+            'left' => 'Member left',
+        ],
+        'guardian' => [
+            'granted' => 'Guardian granted',
+            'revoked' => 'Guardian revoked',
+        ],
+        'group' => [
+            'memberAdmitted' => 'Member admitted to group',
+            'membershipRequested' => 'Group request recorded',
+            'membershipApproved' => 'Group request approved',
+            'membershipRejected' => 'Group request rejected',
+            'membershipEnded' => 'Group assignment ended',
+        ],
+        'event' => [
+            'updated' => 'Club event changed',
+            'cancelled' => 'Club event cancelled',
+            'registered' => 'Participation registered',
+            'waitlisted' => 'Participation waitlisted',
+            'registrationCancelled' => 'Participation cancelled',
+            'invited' => 'Invited to event',
+            'promoted' => 'Promoted from waiting list',
+        ],
+        'proposal' => [
+            'created' => 'Change proposal created',
+            'confirmed' => 'Change proposal confirmed',
+            'dismissed' => 'Change proposal dismissed',
+        ],
     ],
 ];
