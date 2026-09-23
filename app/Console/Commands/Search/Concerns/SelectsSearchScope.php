@@ -15,26 +15,17 @@ namespace App\Console\Commands\Search\Concerns;
 use App\Enums\Search\SearchSourceType;
 use App\Services\Search\Indexing\SearchSourceRegistry;
 use App\Services\Search\Indexing\Sources\SearchSource;
+use Illuminate\Console\Command;
 
 /**
- * Optionen `--organization` und `--type` der Index-Befehle. Ohne
- * Organisation laufen sie bewusst über alle Mandanten (Konsolen-Vertrag).
+ * Optionen `--organization` und `--type` der Index-Befehle. Befehle ohne
+ * `--type` binden nur {@see SelectsOrganization} ein — Larastan prüft die
+ * Trait-Methoden je Kommando gegen dessen Signatur.
+ *
+ * @mixin Command
  */
 trait SelectsSearchScope {
-    /** @return int|false|null  false = ungültige Eingabe */
-    private function organizationOption(): int|false|null {
-        $value = $this->option('organization');
-        if ($value === null || $value === '') {
-            return null;
-        }
-        if (! ctype_digit((string) $value)) {
-            $this->error('--organization erwartet eine numerische ID.');
-
-            return false;
-        }
-
-        return (int) $value;
-    }
+    use SelectsOrganization;
 
     /** @return list<SearchSource>|null  null = ungültige Quelle */
     private function selectedSources(SearchSourceRegistry $registry): ?array {

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Concerns;
 
 use App\Models\Organization;
+use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\{Builder, Collection};
 use Throwable;
 
@@ -20,6 +21,8 @@ use Throwable;
  * Gemeinsames Org-Iterations-Skelett der Console-Commands (Konsolidierung C6):
  * Einzel-Org-Option → Query, Kontext-Binding mit Restore im finally (A6-Fix,
  * Muster ScanComplianceFindingsCommand) und Throwable-Fang je Organisation.
+ *
+ * @mixin Command
  */
 trait IteratesOrganizations {
     /** Wortgleiche Options-Definition des Skeletts — für Command-Signaturen. */

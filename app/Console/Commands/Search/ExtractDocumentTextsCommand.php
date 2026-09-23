@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Search;
 
-use App\Console\Commands\Search\Concerns\SelectsSearchScope;
+use App\Console\Commands\Search\Concerns\SelectsOrganization;
 use App\Enums\Document\DocumentTextFailure;
 use App\Enums\Search\SearchSourceType;
 use App\Jobs\ExtractDocumentTextJob;
@@ -38,7 +38,7 @@ use Illuminate\Database\Eloquent\{Builder, Model};
  * Extraktion sofort im Vordergrund, und OCR eines Scans dauert Minuten.
  */
 final class ExtractDocumentTextsCommand extends Command {
-    use SelectsSearchScope;
+    use SelectsOrganization;
 
     protected $signature = 'search:extract-texts
         {--organization= : Nur diese Organisation (ID)}
