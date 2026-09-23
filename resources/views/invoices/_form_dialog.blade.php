@@ -8,7 +8,7 @@
 --}}
 {{-- Dialog wrapper for Invoice create --}}
 <x-modal
-    :title="__('Rechnung aus Zeiteinträgen erstellen')"
+    :title="__('invoicing.free.title.create')"
     :eyebrow="__('Neue Rechnung')"
     icon="receipt_long"
     tone="primary"

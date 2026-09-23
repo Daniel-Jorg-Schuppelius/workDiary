@@ -123,6 +123,66 @@ return [
     ],
 
     // Leistungszeitraum je Position (Feature 152, Review 2026-09-11).
+    // Freie Rechnungen aus Artikeln, Material und Fertigung (Feature 160, MVP-856–859).
+    'free' => [
+        'title' => [
+            'create' => 'Rechnung erstellen',
+            'deliveries' => 'Auslieferungen übernehmen',
+        ],
+        'option' => [
+            'manual' => 'Positionen selbst zusammenstellen (Artikel, Material, Fertigung)',
+            'no_variant' => '— ohne Variante —',
+        ],
+        'field' => [
+            'variant' => 'Variante',
+            'delivery' => 'Auslieferung',
+            'order' => 'Fertigungsauftrag',
+            'delivered_on' => 'Geliefert am',
+        ],
+        'action' => [
+            'attach_deliveries' => 'Auslieferung übernehmen',
+            'open_order' => 'Fertigungsauftrag öffnen',
+        ],
+        'hint' => [
+            'manual' => 'Kein Zeitraum, keine Zeiten: Der Entwurf startet leer; Positionen kommen aus Artikeln, Material, Freitext oder Fertigungsauslieferungen.',
+            'empty_draft' => 'Fügen Sie Positionen hinzu oder übernehmen Sie eine Auslieferung. Ein leerer Entwurf lässt sich weder stellen noch versenden.',
+            'variant' => 'Optional; die Variante belegt Preis und Artikelnummer vor.',
+            'no_stock_movement' => 'Artikel- und Freitextpositionen buchen keinen Lagerbestand; eine Lieferung wird über Lager/Auslieferung erfasst.',
+            'price_required' => 'Bewusst eingeben — auch 0,00 für eine Gratisposition.',
+            'currency_mismatch' => 'Der Artikelpreis steht in einer anderen Währung als der Beleg; bitte den Preis in der Belegwährung eingeben.',
+            'deliveries' => 'Gelieferte, noch nicht abgerechnete Auslieferungen des Kunden im Kopfzeilen-Zeitraum :from – :to; jede Auslieferung wird vollständig als eine Position übernommen.',
+            'deliveries_empty' => 'Erzeugnisse ohne Auslieferung verkaufen Sie als freie Artikelposition.',
+            'deliveries_rules' => 'Menge ist quellengebunden, der Verkaufspreis stammt aus der Auslieferung und bleibt im Entwurf änderbar. Entfernen der Position oder Verwerfen des Entwurfs gibt die Auslieferung frei; Lagerbestand bleibt unberührt.',
+        ],
+        'label' => [
+            'from_order' => 'Fertigungsauftrag :number',
+            'source_delivery' => 'Auslieferung vom :date · :order · gelieferte Menge :quantity',
+            'reserved' => 'im Entwurf reserviert',
+        ],
+        'empty' => [
+            'deliveries' => 'Keine offenen Auslieferungen.',
+        ],
+        'flash' => [
+            'draft_created' => 'Rechnungsentwurf erstellt — fügen Sie jetzt Positionen hinzu.',
+            'deliveries_attached' => ':count Auslieferung(en) übernommen.',
+        ],
+        'error' => [
+            'empty' => 'Der Entwurf hat keine Positionen und kann weder gestellt noch versendet werden.',
+            'variant_mismatch' => 'Die Variante gehört nicht zum gewählten Artikel.',
+            'draft_only' => 'Auslieferungen lassen sich nur in einen normalen Rechnungsentwurf übernehmen.',
+            'delivery_required' => 'Bitte mindestens eine Auslieferung wählen.',
+            'delivery_foreign' => 'Die Auslieferung gehört nicht zu dieser Organisation.',
+            'delivery_customer' => 'Die Auslieferung gehört zu einem anderen Kunden.',
+            'delivery_external' => 'Die Auslieferung wird extern fakturiert.',
+            'delivery_not_delivered' => 'Die Auslieferung ist noch nicht erfolgt.',
+            'delivery_invoiced' => 'Die Auslieferung ist bereits abgerechnet.',
+            'delivery_reserved' => 'Auslieferung „:name“ ist bereits im Entwurf :number reserviert.',
+            'delivery_currency' => 'Die Auslieferung ist in :currency, der Beleg in :invoice — keine automatische Umrechnung.',
+            'delivery_project' => 'Die Auslieferung gehört zu einem anderen Projekt.',
+            'delivery_without_price' => 'Auslieferung „:name“ hat keinen Verkaufspreis — Preis am Artikel/der Variante pflegen oder als freie Position erfassen.',
+        ],
+    ],
+
     'item' => [
         'service_period' => 'Leistungszeitraum',
         'service_from' => 'Leistungszeitraum von',

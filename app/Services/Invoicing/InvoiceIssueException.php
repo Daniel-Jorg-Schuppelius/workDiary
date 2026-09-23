@@ -20,6 +20,9 @@ final class InvoiceIssueException extends RuntimeException {
 
     public const REASON_EINVOICE_INVALID = 'einvoice_invalid';
 
+    /** Entwurf ohne Positionen (Feature 160). */
+    public const REASON_EMPTY = 'empty';
+
     public function __construct(public readonly string $reason, string $message) {
         parent::__construct($message);
     }

@@ -325,6 +325,40 @@ class InvoiceGenerator {
     }
 
     /**
+     * Freier Rechnungsentwurf (Feature 160, MVP-856): normale Rechnung im
+     * R-Nummernkreis ohne Quellposten und ohne Zeitraum — die Positionen
+     * kommen manuell (Artikel, Material, Freitext) oder aus Fertigungs-
+     * auslieferungen. Rechnungshoheit und Kontobindung gelten wie im Zeitpfad.
+     */
+    public function emptyDraft(Customer $customer, ?Project $project = null, ?ForeignCustomer $foreignCustomer = null): Invoice {
+        $this->assertLocalBillingAllowed($customer);
+        $this->assertNotAccountManaged($customer);
+
+        return DB::transaction(function () use ($customer, $project, $foreignCustomer): Invoice {
+            $notes = $foreignCustomer !== null ? (string) __('Endkunde: :name', ['name' => $foreignCustomer->displayLabel()]) : null;
+            $tax = app(TaxResolver::class)->resolve($customer->organization()->firstOrFail(), $customer);
+            if ($tax['note'] !== null) {
+                $notes = trim(($notes !== null ? $notes . "\n" : '') . $tax['note']);
+            }
+
+            return Invoice::create([
+                'organization_id' => $customer->organization_id,
+                'customer_id' => $customer->id,
+                'project_id' => $project?->id,
+                'foreign_customer_id' => $foreignCustomer?->id,
+                'number' => $this->nextNumber($customer->organization_id),
+                'status' => Invoice::STATUS_DRAFT,
+                'type' => Invoice::TYPE_INVOICE,
+                'currency' => $customer->currency,
+                'tax_rate' => $tax['rate'],
+                'is_reverse_charge' => $tax['reverse_charge'],
+                'notes' => $notes !== null && $notes !== '' ? $notes : null,
+                'created_by' => Auth::id(),
+            ]);
+        });
+    }
+
+    /**
      * Erzeugt einen Materialrechnungs-Entwurf aus noch nicht abgerechneten
      * MaterialUsages (über die Timesheets des Kunden/Projekts im Zeitraum).
      *
@@ -581,6 +615,10 @@ class InvoiceGenerator {
                 $cancellation->items()->create([
                     'organization_id' => $original->organization_id,
                     'article_id' => $item->article_id,
+                    // Feature 160: Varianten-, Nummern- und Herkunftsbezug wandern mit (Herkunftsnachweis bleibt).
+                    'article_variant_id' => $item->article_variant_id,
+                    'article_number_snapshot' => $item->article_number_snapshot,
+                    'stock_delivery_id' => $item->stock_delivery_id,
                     'service_date' => $item->service_date?->toDateString(),
                     'description' => $item->description,
                     'quantity' => (string) (-1 * (float) $item->quantity),
@@ -599,6 +637,9 @@ class InvoiceGenerator {
             $cancellation->save();
 
             $original->cancel($reason ?? (string) __('Storniert durch Stornorechnung :nr', ['nr' => $cancellation->number]), $userId ?? (int) Auth::id());
+
+            // Feature 160 (MVP-858): Vollstorno gibt abgerechnete Auslieferungen zur erneuten Abrechnung frei.
+            app(DeliveryInvoicingService::class)->releaseForCancellation($original);
 
             return $cancellation;
         });
@@ -869,6 +910,10 @@ class InvoiceGenerator {
             foreach ($original->items as $item) {
                 $credit->items()->create([
                     'organization_id' => $original->organization_id,
+                    'article_id' => $item->article_id,
+                    'article_variant_id' => $item->article_variant_id,
+                    'article_number_snapshot' => $item->article_number_snapshot,
+                    // bewusst KEINE stock_delivery_id — eine Gutschrift gibt die Auslieferung nicht frei (Feature 160).
                     'service_date' => $item->service_date?->toDateString(),
                     'description' => $item->description,
                     'quantity' => (string) (-1 * (float) $item->quantity),

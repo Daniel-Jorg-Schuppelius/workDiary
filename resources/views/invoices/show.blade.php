@@ -221,6 +221,17 @@
                                     data-entry-modal-trigger
                                     :href="route('invoices.items.create', $invoice)"
                                     show-label>{{ __('Position hinzufügen') }}</x-icon-btn>
+                        {{-- Feature 160 (MVP-858): Fertigungsauslieferungen übernehmen — nur mit Lagermodul und Leserecht. --}}
+                        @feature('module.lager')
+                            @if (in_array($invoice->type, [\App\Models\Invoice::TYPE_INVOICE, \App\Models\Invoice::TYPE_PARTIAL, \App\Models\Invoice::TYPE_FINAL], true))
+                                @can('viewAny', \App\Models\ManufacturingOrder::class)
+                                    <x-icon-btn icon="local_shipping" tone="info" size="sm"
+                                                data-entry-modal-trigger
+                                                :href="route('invoices.deliveries.form', $invoice)"
+                                                show-label>{{ __('invoicing.free.action.attach_deliveries') }}</x-icon-btn>
+                                @endcan
+                            @endif
+                        @endfeature
                         <x-icon-btn icon="receipt_long" tone="info" size="sm"
                                     data-entry-modal-trigger
                                     :href="route('invoices.expenses.form', $invoice)"
@@ -432,7 +443,7 @@
         @forelse ($invoice->items as $item)
             <tr>
                 <td>{{ $item->position }}</td>
-                <td>{{ $item->description }}@if ($item->article) <span class="badge badge-ghost badge-xs" title="{{ __('Artikel') }}">{{ $item->article->number ?: $item->article->name }}</span>@endif
+                <td>{{ $item->description }}@if ($item->article_number_snapshot) <span class="badge badge-ghost badge-xs" title="{{ __('Artikel') }}">{{ $item->article_number_snapshot }}</span>@elseif ($item->article) <span class="badge badge-ghost badge-xs" title="{{ __('Artikel') }}">{{ $item->article->number ?: $item->article->name }}</span>@endif
                     @if ($item->service_from !== null)<div class="text-xs text-muted">{{ __('invoicing.item.service_period') }}: {{ $item->servicePeriodLabel() }}</div>@endif</td>
                 @if ($showServiceDates)<td data-sort-value="{{ optional($item->service_date)->toDateString() }}">{{ optional($item->service_date)->fdate() ?: '—' }}</td>@endif
                 <td class="text-right" data-sort-value="{{ (float) $item->quantity }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, ((int) round((float) $item->quantity * 1000)) % 10 !== 0 ? 3 : 2, withThousandsSeparator: true) }} {{ $item->unit }}@if ($item->unit === __('invoicing.unit_hour')) <span class="whitespace-nowrap text-xs text-muted">({{ \App\Support\Formats::duration((int) round((float) $item->quantity * 60), 'clock') }})</span>@endif</td>
@@ -489,6 +500,19 @@
                     </td>
                 </tr>
             @endif
+            @if ($item->stockDelivery !== null)
+                {{-- Feature 160 (MVP-858): Herkunft der Position — Menge quellengebunden, Preis aus der Auslieferung vorbelegt. --}}
+                <tr>
+                    <td colspan="{{ $footColspan + 2 }}" class="py-1 text-xs text-muted">
+                        <x-icon name="local_shipping" class="mr-1" />{{ __('invoicing.free.label.source_delivery', ['date' => $item->stockDelivery->delivered_at?->fdate() ?? '—', 'order' => $item->stockDelivery->order?->number ?? '—', 'quantity' => $item->stockDelivery->quantity?->getNumericValue() . ' ' . $item->stockDelivery->unit]) }}
+                        @if ($item->stockDelivery->order !== null)
+                            @can('view', $item->stockDelivery->order)
+                                · <a href="{{ route('manufacturing-orders.show', $item->stockDelivery->order) }}" class="link">{{ __('invoicing.free.action.open_order') }}</a>
+                            @endcan
+                        @endif
+                    </td>
+                </tr>
+            @endif
             @if ($aiDraft && ($aiSuggestions[$item->id] ?? null) !== null)
                 <tr data-ai-suggestion-row>
                     <td colspan="{{ $footColspan + 2 }}">
@@ -506,7 +530,7 @@
                 </tr>
             @endif
         @empty
-            <x-table.empty icon="receipt_long" :colspan="5" :title="__('Keine Positionen.')" compact />
+            <x-table.empty icon="receipt_long" :colspan="5" :title="__('Keine Positionen.')" :message="$invoice->status === \App\Models\Invoice::STATUS_DRAFT ? __('invoicing.free.hint.empty_draft') : null" compact />
         @endforelse
     </x-table>
 

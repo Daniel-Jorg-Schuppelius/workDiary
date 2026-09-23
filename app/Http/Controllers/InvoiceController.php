@@ -34,7 +34,10 @@ class InvoiceController extends Controller {
         $defaultFrom = $globalRange['from']->toDateString();
         $defaultTo = $globalRange['to']->toDateString();
 
-        return view('invoices._form_dialog', compact('customers', 'projects', 'foreignCustomers', 'defaultFrom', 'defaultTo'));
+        // Feature 160 (MVP-856): Token je Dialog macht die Entwurfsanlage idempotent (Doppelklick).
+        $draftToken = (string) \Illuminate\Support\Str::uuid();
+
+        return view('invoices._form_dialog', compact('customers', 'projects', 'foreignCustomers', 'defaultFrom', 'defaultTo', 'draftToken'));
     }
 
     /**
@@ -104,7 +107,8 @@ class InvoiceController extends Controller {
             'foreign_customer_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('foreign_customers')],
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
-            'content' => ['nullable', 'in:service,material,proforma,down_payment'],
+            'content' => ['nullable', 'in:manual,service,material,proforma,down_payment'],
+            'draft_token' => ['nullable', 'string', 'max:64'],
             'mark_partial' => ['nullable', 'boolean'],
             'dp_description' => ['required_if:content,down_payment', 'nullable', 'string', 'max:500'],
             'dp_amount' => ['required_if:content,down_payment', 'nullable', 'numeric', 'min:0.01', 'max:99999999.99'],
@@ -147,8 +151,11 @@ class InvoiceController extends Controller {
             'to' => $data['to'] ?? null,
         ];
 
-        // Pro-forma (MVP-171): eigener Nummernkreis, keine Quellposten (Positionen manuell).
-        if (($data['content'] ?? 'service') === 'proforma') {
+        if (($data['content'] ?? 'service') === 'manual') {
+            // Freier Entwurf (Feature 160, MVP-856): keine Quellposten, kein Zeitraum.
+            $invoice = $this->manualDraft($gen, $customer, $project, $foreignCustomer, $data['draft_token'] ?? null);
+        } elseif (($data['content'] ?? 'service') === 'proforma') {
+            // Pro-forma (MVP-171): eigener Nummernkreis, keine Quellposten (Positionen manuell).
             $invoice = $gen->emptyProforma($customer, $project);
         } elseif (($data['content'] ?? 'service') === 'down_payment') {
             // Abschlags-/Anzahlungsrechnung (Belegkette 066): Teilentgelt vor Leistung, Anrechnung in der Schlussrechnung.
@@ -186,13 +193,42 @@ class InvoiceController extends Controller {
             'proforma' => __('Pro-forma-Entwurf erstellt.'),
             'down_payment' => __('Abschlagsrechnungs-Entwurf erstellt.'),
             'material' => __('Materialrechnungs-Entwurf erstellt.'),
+            'manual' => __('invoicing.free.flash.draft_created'),
             default => __('Rechnungsentwurf erstellt.'),
+        });
+    }
+
+    /**
+     * Freier Entwurf mit Doppelklick-Schutz (Feature 160, MVP-856): das Token
+     * des Dialogs bindet die erste Anlage; jede Wiederholung liefert denselben
+     * Entwurf statt einer zweiten Rechnungsnummer. Sperre statt Session, weil
+     * zwei gleichzeitige Requests dieselbe Session lesen würden.
+     */
+    private function manualDraft(InvoiceGenerator $gen, Customer $customer, ?Project $project, ?\App\Models\ForeignCustomer $foreignCustomer, ?string $token): Invoice {
+        $token = $token !== null ? preg_replace('/[^A-Za-z0-9\-]/', '', $token) : null;
+        if ($token === null || $token === '') {
+            return $gen->emptyDraft($customer, $project, $foreignCustomer);
+        }
+        $key = 'invoices.manual-draft.' . $customer->organization_id . '.' . $token;
+
+        return \Illuminate\Support\Facades\Cache::lock($key . '.lock', 10)->block(5, function () use ($gen, $customer, $project, $foreignCustomer, $key): Invoice {
+            $existingId = \Illuminate\Support\Facades\Cache::get($key);
+            if ($existingId !== null) {
+                $existing = Invoice::query()->whereKey((int) $existingId)->where('organization_id', $customer->organization_id)->first();
+                if ($existing !== null) {
+                    return $existing;
+                }
+            }
+            $invoice = $gen->emptyDraft($customer, $project, $foreignCustomer);
+            \Illuminate\Support\Facades\Cache::put($key, $invoice->id, now()->addHour());
+
+            return $invoice;
         });
     }
 
     public function show(Invoice $invoice): View {
         Gate::authorize('view', $invoice);
-        $invoice->load(['items.timeEntries.user', 'items.article', 'customer', 'project']);
+        $invoice->load(['items.timeEntries.user', 'items.article', 'items.stockDelivery.order', 'customer', 'project']);
 
         // Belegkette 066: anrechenbare offene Abschläge für den Schlussrechnungs-CTA.
         $openDownPaymentCount = 0;
@@ -628,17 +664,23 @@ class InvoiceController extends Controller {
         return view('invoices._item_form_dialog', [
             'invoice' => $invoice,
             'item' => $item,
-            'articles' => \App\Models\Article::query()->where('sellable', true)->orderBy('name')->limit(500)->get(['id', 'number', 'name', 'base_unit', 'default_sale_price', 'currency']),
+            // Feature 160 (MVP-857): Typ für die Gruppierung, aktive Varianten für die Variantenwahl.
+            'articles' => \App\Models\Article::query()->where('sellable', true)->orderBy('name')->limit(500)
+                ->with(['variants' => fn($q) => $q->where('status', \App\Enums\Article\ArticleStatus::Active->value)->orderBy('name')])
+                ->get(['id', 'number', 'name', 'type', 'base_unit', 'default_sale_price', 'currency']),
         ]);
     }
 
     public function addItem(SaveInvoiceItemRequest $request, Invoice $invoice): RedirectResponse {
         Gate::authorize('update', $invoice);
         $data = $request->validated();
+        $variantId = $this->resolveVariant($data);
 
         $item = $invoice->items()->create([
             'organization_id' => $invoice->organization_id,
             'article_id' => $data['article_id'] ?? null,
+            'article_variant_id' => $variantId,
+            'article_number_snapshot' => $this->articleNumberSnapshot($data['article_id'] ?? null, $variantId),
             'service_date' => $data['service_date'] ?? null,
             'service_from' => $data['service_from'] ?? null,
             'service_to' => $data['service_to'] ?? null,
@@ -678,9 +720,12 @@ class InvoiceController extends Controller {
         $data = $request->validated();
 
         $oldDescription = (string) $item->description;
+        $variantId = $this->resolveVariant($data);
 
         $item->update([
             'article_id' => $data['article_id'] ?? null,
+            'article_variant_id' => $variantId,
+            'article_number_snapshot' => $this->articleNumberSnapshot($data['article_id'] ?? null, $variantId),
             'service_date' => $data['service_date'] ?? null,
             'service_from' => $data['service_from'] ?? null,
             'service_to' => $data['service_to'] ?? null,
@@ -715,6 +760,78 @@ class InvoiceController extends Controller {
         $this->refreshTotals($invoice);
 
         return redirect()->route('invoices.show', $invoice)->with('status', __('Position entfernt.'));
+    }
+
+    /**
+     * Feature 160 (MVP-857): eine Variante gehört zum gewählten Artikel der
+     * eigenen Organisation — sonst Feldfehler statt stiller Korrektur.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function resolveVariant(array $data): ?int {
+        $variantId = isset($data['article_variant_id']) && $data['article_variant_id'] !== '' ? (int) $data['article_variant_id'] : null;
+        if ($variantId === null) {
+            return null;
+        }
+        $articleId = isset($data['article_id']) && $data['article_id'] !== '' ? (int) $data['article_id'] : null;
+        $variant = \App\Models\ArticleVariant::query()->whereKey($variantId)->first();
+        if ($articleId === null || $variant === null || (int) $variant->article_id !== $articleId) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['article_variant_id' => (string) __('invoicing.free.error.variant_mismatch')]);
+        }
+
+        return $variantId;
+    }
+
+    /** SKU der Variante, sonst Artikelnummer — als Belegwert eingefroren (Feature 160). */
+    private function articleNumberSnapshot(mixed $articleId, ?int $variantId): ?string {
+        if ($variantId !== null) {
+            $sku = \App\Models\ArticleVariant::query()->whereKey($variantId)->value('sku');
+            if (is_string($sku) && $sku !== '') {
+                return mb_substr($sku, 0, 64);
+            }
+        }
+        if ($articleId !== null && $articleId !== '') {
+            $number = \App\Models\Article::query()->whereKey((int) $articleId)->value('number');
+            if (is_string($number) && $number !== '') {
+                return mb_substr($number, 0, 64);
+            }
+        }
+
+        return null;
+    }
+
+    /** Feature 160 (MVP-858): offene Fertigungsauslieferungen des Kunden zur Übernahme (globaler Header-Zeitraum). */
+    public function deliveriesForm(Invoice $invoice, \App\Services\Invoicing\DeliveryInvoicingService $service): View {
+        Gate::authorize('update', $invoice);
+        Gate::authorize('viewAny', \App\Models\ManufacturingOrder::class);
+        abort_unless(app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.lager'), 404);
+        $range = app(DateRangeContext::class)->current();
+
+        return view('invoices._deliveries_dialog', [
+            'invoice' => $invoice,
+            'candidates' => $service->candidatesFor($invoice, $range['from'], $range['to']),
+            'range' => $range,
+        ]);
+    }
+
+    public function attachDeliveries(Request $request, Invoice $invoice, \App\Services\Invoicing\DeliveryInvoicingService $service): RedirectResponse {
+        Gate::authorize('update', $invoice);
+        Gate::authorize('viewAny', \App\Models\ManufacturingOrder::class);
+        abort_unless(app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.lager'), 404);
+        $data = $request->validate([
+            'delivery_ids' => ['required', 'array', 'min:1', 'max:100'],
+            'delivery_ids.*' => ['required', 'string', 'max:64'],
+        ]);
+        $ids = [];
+        foreach ((array) $data['delivery_ids'] as $raw) {
+            $decoded = \App\Support\Sqid::decodeOrNumeric(\App\Models\StockDelivery::class, $raw);
+            if ($decoded !== null) {
+                $ids[] = (int) $decoded;
+            }
+        }
+        $items = $service->attach($invoice, $ids, $request->user());
+
+        return redirect()->route('invoices.show', $invoice)->with('status', __('invoicing.free.flash.deliveries_attached', ['count' => $items->count()]));
     }
 
     private function refreshTotals(Invoice $invoice): void {

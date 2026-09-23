@@ -131,6 +131,8 @@ final class EInvoiceValidationTest extends TestCase {
             'type' => Invoice::TYPE_INVOICE,
             'tax_rate' => '19.00',
         ]);
+        // Feature 160: leere Entwürfe scheitern schon vor der Validierung — eine Position, damit der Validierungs-Block greift.
+        $draft->items()->create(['organization_id' => $this->org->id, 'description' => 'Leistung', 'quantity' => '1', 'unit' => 'h', 'unit_price' => '100.00', 'position' => 1]);
 
         $this->actingAs($this->user)
             ->post(route('invoices.issue', $draft))

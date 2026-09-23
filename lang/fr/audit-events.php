@@ -453,6 +453,7 @@ return [
             'exported' => 'Document exporté pour Lexware',
         ],
         'metering_drafted' => 'Brouillon de relevé créé',
+        'delivery_attached' => 'Livraison de fabrication reprise dans le brouillon de facture',
         'resale_auto_drafted' => 'Brouillon de facture à partir des périodes d’abonnement (facturation récurrente) créé',
         'retention_added' => 'Retenue de garantie enregistrée',
         'retention_released' => 'Retenue de garantie libérée',

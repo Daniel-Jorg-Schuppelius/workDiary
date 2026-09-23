@@ -123,6 +123,66 @@ return [
     ],
 
     // Leistungszeitraum je Position (Feature 152, Review 2026-09-11).
+    // Freie Rechnungen aus Artikeln, Material und Fertigung (Feature 160, MVP-856–859).
+    'free' => [
+        'title' => [
+            'create' => 'Crea fattura',
+            'deliveries' => 'Riprendere consegne',
+        ],
+        'option' => [
+            'manual' => 'Comporre le righe manualmente (articoli, materiale, produzione)',
+            'no_variant' => '— senza variante —',
+        ],
+        'field' => [
+            'variant' => 'Variante',
+            'delivery' => 'Consegna',
+            'order' => 'Ordine di produzione',
+            'delivered_on' => 'Consegnato il',
+        ],
+        'action' => [
+            'attach_deliveries' => 'Riprendi consegna',
+            'open_order' => 'Apri ordine di produzione',
+        ],
+        'hint' => [
+            'manual' => 'Nessun periodo, nessun tempo: la bozza parte vuota; le righe provengono da articoli, materiale, testo libero o consegne di produzione.',
+            'empty_draft' => 'Aggiunga righe o riprenda una consegna. Una bozza vuota non può essere emessa né inviata.',
+            'variant' => 'Facoltativa; la variante precompila prezzo e numero articolo.',
+            'no_stock_movement' => 'Le righe articolo e a testo libero non movimentano il magazzino; una consegna si registra tramite magazzino/consegna.',
+            'price_required' => 'Inserire consapevolmente — 0,00 per una riga gratuita è ammesso.',
+            'currency_mismatch' => 'Il prezzo dell\'articolo è in una valuta diversa dal documento; inserisca il prezzo nella valuta del documento.',
+            'deliveries' => 'Consegne effettuate e non ancora fatturate del cliente nel periodo dell\'intestazione :from – :to; ogni consegna viene ripresa per intero come una riga.',
+            'deliveries_empty' => 'I prodotti senza consegna si vendono come riga articolo libera.',
+            'deliveries_rules' => 'La quantità è vincolata alla fonte, il prezzo di vendita proviene dalla consegna e resta modificabile nella bozza. Rimuovere la riga o scartare la bozza libera la consegna; il magazzino resta invariato.',
+        ],
+        'label' => [
+            'from_order' => 'ordine di produzione :number',
+            'source_delivery' => 'Consegna del :date · :order · quantità consegnata :quantity',
+            'reserved' => 'riservata nella bozza',
+        ],
+        'empty' => [
+            'deliveries' => 'Nessuna consegna aperta.',
+        ],
+        'flash' => [
+            'draft_created' => 'Bozza di fattura creata — aggiunga ora le righe.',
+            'deliveries_attached' => ':count consegna/e ripresa/e.',
+        ],
+        'error' => [
+            'empty' => 'La bozza non ha righe e non può essere emessa né inviata.',
+            'variant_mismatch' => 'La variante non appartiene all\'articolo scelto.',
+            'draft_only' => 'Le consegne si riprendono solo in una bozza di fattura normale.',
+            'delivery_required' => 'Selezioni almeno una consegna.',
+            'delivery_foreign' => 'La consegna non appartiene a questa organizzazione.',
+            'delivery_customer' => 'La consegna appartiene a un altro cliente.',
+            'delivery_external' => 'La consegna viene fatturata esternamente.',
+            'delivery_not_delivered' => 'La consegna non è ancora avvenuta.',
+            'delivery_invoiced' => 'La consegna è già fatturata.',
+            'delivery_reserved' => 'La consegna «:name» è già riservata nella bozza :number.',
+            'delivery_currency' => 'La consegna è in :currency, il documento in :invoice — nessuna conversione automatica.',
+            'delivery_project' => 'La consegna appartiene a un altro progetto.',
+            'delivery_without_price' => 'La consegna «:name» non ha prezzo di vendita — lo registri sull\'articolo/variante o inserisca una riga libera.',
+        ],
+    ],
+
     'item' => [
         'service_period' => 'Periodo di prestazione',
         'service_from' => 'Periodo di prestazione dal',

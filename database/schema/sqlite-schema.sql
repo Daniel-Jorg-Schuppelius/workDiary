@@ -4038,44 +4038,6 @@ CREATE UNIQUE INDEX "article_variant_bom_override_unique" on "article_variant_bo
   "position_code",
   "action"
 );
-CREATE TABLE IF NOT EXISTS "stock_deliveries"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "manufacturing_order_id" integer,
-  "article_variant_id" integer not null,
-  "warehouse_id" integer not null,
-  "customer_id" integer,
-  "quantity" numeric not null,
-  "unit" varchar not null,
-  "sku_snapshot" varchar,
-  "name_snapshot" varchar not null,
-  "unit_price_snapshot" numeric,
-  "currency" varchar not null default 'EUR',
-  "stock_status" varchar not null default 'delivered',
-  "facturation_status" varchar not null default 'pending',
-  "facturation_target" varchar,
-  "external_id" varchar,
-  "delivered_at" datetime not null,
-  "created_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete set null,
-  foreign key("manufacturing_order_id") references "manufacturing_orders"("id") on delete set null,
-  foreign key("article_variant_id") references "article_variants"("id") on delete cascade,
-  foreign key("warehouse_id") references "warehouses"("id") on delete cascade,
-  foreign key("customer_id") references "customers"("id") on delete set null,
-  foreign key("created_by") references "users"("id") on delete set null
-);
-CREATE INDEX "stock_deliveries_organization_id_index" on "stock_deliveries"(
-  "organization_id"
-);
-CREATE INDEX "stock_deliveries_manufacturing_order_id_index" on "stock_deliveries"(
-  "manufacturing_order_id"
-);
-CREATE INDEX "stock_deliveries_variant_wh_idx" on "stock_deliveries"(
-  "article_variant_id",
-  "warehouse_id"
-);
 CREATE TABLE IF NOT EXISTS "material_substitutes"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer,
@@ -19585,46 +19547,6 @@ CREATE TABLE IF NOT EXISTS "document_version_texts"(
 CREATE UNIQUE INDEX "doc_version_texts_version_unique" on "document_version_texts"(
   "document_version_id"
 );
-CREATE TABLE IF NOT EXISTS "invoice_items"(
-  "id" integer primary key autoincrement not null,
-  "invoice_id" integer not null,
-  "time_entry_id" integer,
-  "description" text not null,
-  "quantity" numeric not null default('1'),
-  "unit" varchar not null default('h'),
-  "unit_price" numeric not null default('0'),
-  "amount" numeric not null default('0'),
-  "position" integer not null default('0'),
-  "created_at" datetime,
-  "updated_at" datetime,
-  "expense_id" integer,
-  "organization_id" integer,
-  "service_date" date,
-  "material_usage_id" integer,
-  "tour_id" integer,
-  "tax_rate" numeric,
-  "tax_category" varchar,
-  "rental_charge_id" integer,
-  "settled_invoice_id" integer,
-  "ai_assisted_at" datetime,
-  "discount_percent" numeric,
-  "discount_amount" numeric,
-  "article_id" integer,
-  "service_from" date,
-  "service_to" date,
-  foreign key("article_id") references articles("id") on delete set null on update no action,
-  foreign key("rental_charge_id") references rental_charges("id") on delete set null on update no action,
-  foreign key("tour_id") references tours("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("time_entry_id") references time_entries("id") on delete set null on update no action,
-  foreign key("invoice_id") references invoices("id") on delete cascade on update no action,
-  foreign key("expense_id") references expenses("id") on delete set null on update no action,
-  foreign key("material_usage_id") references material_usages("id") on delete set null on update no action,
-  foreign key("settled_invoice_id") references invoices("id") on delete set null on update no action
-);
-CREATE INDEX "idx_invoice_items_org" on "invoice_items"("organization_id");
-CREATE INDEX "invoice_items_expense_id_index" on "invoice_items"("expense_id");
-CREATE INDEX "invoice_items_invoice_id_index" on "invoice_items"("invoice_id");
 CREATE TABLE IF NOT EXISTS "contract_signing_revisions"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -21276,6 +21198,94 @@ CREATE UNIQUE INDEX "club_attendance_requirements_org_name_uq" on "club_attendan
   "organization_id",
   "name"
 );
+CREATE TABLE IF NOT EXISTS "invoice_items"(
+  "id" integer primary key autoincrement not null,
+  "invoice_id" integer not null,
+  "time_entry_id" integer,
+  "description" text not null,
+  "quantity" numeric not null default('1'),
+  "unit" varchar not null default('h'),
+  "unit_price" numeric not null default('0'),
+  "amount" numeric not null default('0'),
+  "position" integer not null default('0'),
+  "created_at" datetime,
+  "updated_at" datetime,
+  "expense_id" integer,
+  "organization_id" integer,
+  "service_date" date,
+  "material_usage_id" integer,
+  "tour_id" integer,
+  "tax_rate" numeric,
+  "tax_category" varchar,
+  "rental_charge_id" integer,
+  "settled_invoice_id" integer,
+  "ai_assisted_at" datetime,
+  "discount_percent" numeric,
+  "discount_amount" numeric,
+  "article_id" integer,
+  "service_from" date,
+  "service_to" date,
+  "article_variant_id" integer,
+  "article_number_snapshot" varchar,
+  "stock_delivery_id" integer,
+  foreign key("settled_invoice_id") references invoices("id") on delete set null on update no action,
+  foreign key("material_usage_id") references material_usages("id") on delete set null on update no action,
+  foreign key("expense_id") references expenses("id") on delete set null on update no action,
+  foreign key("invoice_id") references invoices("id") on delete cascade on update no action,
+  foreign key("time_entry_id") references time_entries("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete set null on update no action,
+  foreign key("tour_id") references tours("id") on delete set null on update no action,
+  foreign key("rental_charge_id") references rental_charges("id") on delete set null on update no action,
+  foreign key("article_id") references articles("id") on delete set null on update no action,
+  foreign key("article_variant_id") references "article_variants"("id") on delete set null,
+  foreign key("stock_delivery_id") references "stock_deliveries"("id") on delete set null
+);
+CREATE INDEX "idx_invoice_items_org" on "invoice_items"("organization_id");
+CREATE INDEX "invoice_items_expense_id_index" on "invoice_items"("expense_id");
+CREATE INDEX "invoice_items_invoice_id_index" on "invoice_items"("invoice_id");
+CREATE TABLE IF NOT EXISTS "stock_deliveries"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "manufacturing_order_id" integer,
+  "article_variant_id" integer not null,
+  "warehouse_id" integer not null,
+  "customer_id" integer,
+  "quantity" numeric not null,
+  "unit" varchar not null,
+  "sku_snapshot" varchar,
+  "name_snapshot" varchar not null,
+  "unit_price_snapshot" numeric,
+  "currency" varchar not null default('EUR'),
+  "stock_status" varchar not null default('delivered'),
+  "facturation_status" varchar not null default('pending'),
+  "facturation_target" varchar,
+  "external_id" varchar,
+  "delivered_at" datetime not null,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "invoice_item_id" integer,
+  foreign key("created_by") references users("id") on delete set null on update no action,
+  foreign key("customer_id") references customers("id") on delete set null on update no action,
+  foreign key("warehouse_id") references warehouses("id") on delete cascade on update no action,
+  foreign key("article_variant_id") references article_variants("id") on delete cascade on update no action,
+  foreign key("manufacturing_order_id") references manufacturing_orders("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete set null on update no action,
+  foreign key("invoice_item_id") references "invoice_items"("id") on delete set null
+);
+CREATE INDEX "stock_deliveries_manufacturing_order_id_index" on "stock_deliveries"(
+  "manufacturing_order_id"
+);
+CREATE INDEX "stock_deliveries_organization_id_index" on "stock_deliveries"(
+  "organization_id"
+);
+CREATE INDEX "stock_deliveries_variant_wh_idx" on "stock_deliveries"(
+  "article_variant_id",
+  "warehouse_id"
+);
+CREATE UNIQUE INDEX "stock_deliveries_invoice_item_id_unique" on "stock_deliveries"(
+  "invoice_item_id"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -22119,3 +22129,4 @@ INSERT INTO migrations VALUES(839,'2027_02_23_101100_create_club_team_tables',1)
 INSERT INTO migrations VALUES(840,'2027_02_23_101200_create_club_resource_tables',1);
 INSERT INTO migrations VALUES(841,'2027_02_23_101300_create_club_horse_tables',1);
 INSERT INTO migrations VALUES(842,'2027_02_23_101400_create_club_competition_tables',1);
+INSERT INTO migrations VALUES(843,'2027_02_23_101500_add_free_invoice_source_columns',1);

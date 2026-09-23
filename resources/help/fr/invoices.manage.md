@@ -1,7 +1,7 @@
 ---
 title: "Factures & pièces"
 topic: invoices.manage
-version: 5
+version: 6
 audience: []
 modules:
     - module.vertrieb
@@ -79,3 +79,33 @@ automatiquement au prochain passage — la facture part sans débat.
 Les factures émises alimentent postes ouverts, relances et remise
 comptable. Ensuite : vérifier encaissements et lettrage, puis créer
 le lot DATEV pour le cabinet.
+
+## Facture libre sans temps
+
+Dans la boîte de dialogue de création, **« Composer les lignes soi-même »** est
+sur un pied d'égalité avec la reprise des temps ou de la consommation de
+matériel. Le brouillon ne demande que le client (projet, client final et délai
+de paiement facultatifs) et démarre vide : il peut être enregistré et complété
+plus tard, mais ni émis ni envoyé tant qu'il n'a aucune ligne — cela vaut pour
+l'émission, l'e-mail, Peppol et le transfert Lexoffice. Un double clic sur
+« Créer le brouillon » ne crée pas de seconde facture.
+
+**Articles, matériel et prestations.** Une ligne est un article (avec variante
+facultative), du matériel ou du texte libre — par exemple « Montage forfait »
+ou une fabrication spéciale sans ordre de fabrication. Désignation, numéro
+d'article, unité et prix sont figés comme valeurs du document ; les
+modifications ultérieures de la fiche article ne changent pas le document. Un
+prix manquant doit être saisi consciemment (0,00 est admis comme ligne
+gratuite) ; un prix d'article en devise étrangère n'est jamais converti en
+silence. Les lignes d'article et de texte libre ne mouvementent **aucun
+stock** ; les livraisons passent par stock/livraison.
+
+**Facturer des livraisons de fabrication.** Avec le module stock actif,
+« Reprendre une livraison » importe les livraisons effectuées du client avec
+cible de facturation locale — chacune entièrement comme une ligne, quantité
+liée à la source et prix de vente de la livraison (pas le coût de
+fabrication). Une livraison ne peut figurer que dans un seul brouillon à la
+fois ; l'émission la marque facturée, retirer la ligne, abandonner le brouillon
+ou une annulation totale la libèrent, et l'origine reste visible sur le
+document. Les avoirs partiels ne libèrent rien ; le stock reste inchangé pour
+toutes les opérations de facturation.

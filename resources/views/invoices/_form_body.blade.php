@@ -13,6 +13,7 @@
 <div x-data="invoiceContentSwitch"
      data-content="{{ old('content', 'service') }}"
      x-on:change="onFormChange($event)">
+<input type="hidden" name="draft_token" value="{{ old('draft_token', $draftToken ?? '') }}">
 <x-form-group :legend="__('Filter')" icon="receipt_long" tone="primary" cols="2">
     <x-select-field name="customer_id" :label="__('Kunde')" required span="2">
         <option value="">{{ __('-- bitte wählen --') }}</option>
@@ -30,12 +31,14 @@
         @endforeach
     </x-select-field>
     <x-select-field name="content" :label="__('Inhalt')" span="2" :hint="__('Material wird getrennt als eigene Rechnung mit Lieferdatum/-zeitraum erstellt.')">
+        <option value="manual" @selected(old('content') === 'manual')>{{ __('invoicing.free.option.manual') }}</option>
         <option value="service" @selected(old('content', 'service') === 'service')>{{ __('Leistung (Zeit) — Leistungsdatum') }}</option>
         <option value="material" @selected(old('content') === 'material')>{{ __('Material — Lieferdatum') }}</option>
         <option value="proforma" @selected(old('content') === 'proforma')>{{ __('Pro-forma — keine steuerliche Rechnung (eigener PF-Nummernkreis)') }}</option>
         <option value="down_payment" @selected(old('content') === 'down_payment')>{{ __('Abschlag — Teilentgelt vor Leistung (Anrechnung in der Schlussrechnung)') }}</option>
     </x-select-field>
-    <div x-show="content !== 'down_payment'" class="contents">
+    <div x-show="content === 'manual'" x-cloak class="md:col-span-2 text-xs text-muted">{{ __('invoicing.free.hint.manual') }}</div>
+    <div x-show="content !== 'down_payment' && content !== 'manual'" class="contents">
         <x-date-range class="md:col-span-2" layout="split" form-control
                       from-name="from" to-name="to"
                       :from="old('from', $defaultFrom ?? '')" :to="old('to', $defaultTo ?? '')"
@@ -50,7 +53,7 @@
         <x-input-field name="dp_service_date" type="date"
                        :label="__('Voraussichtliches Leistungsdatum (optional)')" :value="old('dp_service_date', '')" />
     </div>
-    <div x-show="content === 'service' || content === 'material'" class="contents">
+    <div x-show="content === 'service' || content === 'material' || content === 'manual'" class="contents">
         <x-checkbox-field name="mark_partial" span="2"
                           :label="__('Als Teilrechnung kennzeichnen')" :checked="(bool) old('mark_partial')"
                           :hint="__('Abrechnung eines fachlich abgrenzbaren Leistungsteils; Folge: weitere Teil- oder Schlussrechnung.')" />

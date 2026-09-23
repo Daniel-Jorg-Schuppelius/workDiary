@@ -70,7 +70,7 @@ final class LifecycleWebhookTest extends TestCase {
     private function draftInvoice(): Invoice {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'country' => 'DE']);
 
-        return Invoice::query()->create([
+        $invoice = Invoice::query()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
             'number' => 'R2026-' . random_int(1000, 9999),
@@ -78,6 +78,10 @@ final class LifecycleWebhookTest extends TestCase {
             'type' => Invoice::TYPE_INVOICE,
             'tax_rate' => '19.00',
         ]);
+        // Feature 160: Entwürfe ohne Position sind nicht ausstellbar.
+        $invoice->items()->create(['organization_id' => $this->organization->id, 'description' => 'Leistung', 'quantity' => '1', 'unit' => 'h', 'unit_price' => '100.00', 'position' => 1]);
+
+        return $invoice;
     }
 
     public function test_invoice_issue_publishes_invoice_issued(): void {

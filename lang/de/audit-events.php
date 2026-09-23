@@ -453,6 +453,7 @@ return [
             'exported' => 'Beleg für Lexware exportiert',
         ],
         'metering_drafted' => 'Zählerstands-Entwurf erzeugt',
+        'delivery_attached' => 'Fertigungsauslieferung in Rechnungsentwurf übernommen',
         'resale_auto_drafted' => 'Rechnungsentwurf aus Abo-Perioden (Serienrechnung) erzeugt',
         'retention_added' => 'Sicherheitseinbehalt hinterlegt',
         'retention_released' => 'Sicherheitseinbehalt freigegeben',

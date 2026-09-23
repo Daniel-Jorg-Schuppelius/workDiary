@@ -41,7 +41,7 @@ final class InvoiceWorkflowTest extends TestCase {
     }
 
     private function draft(array $overrides = []): Invoice {
-        return Invoice::query()->create([
+        $invoice = Invoice::query()->create([
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2026-' . str_pad((string) ++self::$invoiceNo, 4, '0', STR_PAD_LEFT),
@@ -50,6 +50,10 @@ final class InvoiceWorkflowTest extends TestCase {
             'tax_rate' => '19.00',
             ...$overrides,
         ]);
+        // Feature 160: ein Entwurf ohne Position ist nicht mehr ausstellbar — die Workflow-Tests prüfen den Ausstellungsweg selbst.
+        $invoice->items()->create(['organization_id' => $this->org->id, 'description' => 'Leistung', 'quantity' => '1', 'unit' => 'h', 'unit_price' => '100.00', 'position' => 1]);
+
+        return $invoice;
     }
 
     public function test_small_business_rule_wins_in_tax_resolver(): void {

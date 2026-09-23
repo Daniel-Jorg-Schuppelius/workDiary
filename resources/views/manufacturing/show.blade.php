@@ -290,7 +290,17 @@
                     <tr>
                         <td>{{ $delivery->name_snapshot }}</td>
                         <td class="text-right tabular-nums">{{ $delivery->quantity?->getNumericValue() }} {{ $delivery->unit }}</td>
-                        <td><span class="badge badge-sm">{{ $delivery->facturation_status->label() }}</span></td>
+                        <td><span class="badge badge-sm">{{ $delivery->facturation_status->label() }}</span>
+                            {{-- Feature 160 (MVP-858): lokale Abrechnung — aktive Reservierung oder Historie mit Belegnummer. --}}
+                            @foreach ($delivery->invoiceItems->sortByDesc('id')->take(2) as $billedItem)
+                                @if ($billedItem->invoice !== null)
+                                    <div class="text-xs text-muted">
+                                        @can('view', $billedItem->invoice)<a href="{{ route('invoices.show', $billedItem->invoice) }}" class="link">{{ $billedItem->invoice->number }}</a>@else{{ $billedItem->invoice->number }}@endcan
+                                        · {{ $billedItem->invoice->status === \App\Models\Invoice::STATUS_DRAFT ? __('invoicing.free.label.reserved') : __('values.' . $billedItem->invoice->status) }}
+                                    </div>
+                                @endif
+                            @endforeach
+                        </td>
                         <td class="text-right">
                             <div class="flex items-center justify-end gap-2">
                                 <a href="{{ route('manufacturing-orders.deliveries.pdf', [$order, $delivery]) }}" target="_blank"

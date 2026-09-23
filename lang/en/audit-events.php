@@ -453,6 +453,7 @@ return [
             'exported' => 'Document exported for Lexware',
         ],
         'metering_drafted' => 'Meter-based draft created',
+        'delivery_attached' => 'Manufacturing delivery taken over into invoice draft',
         'resale_auto_drafted' => 'Invoice draft from subscription periods (recurring invoicing) created',
         'retention_added' => 'Retention recorded',
         'retention_released' => 'Retention released',

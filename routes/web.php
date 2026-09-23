@@ -2011,6 +2011,9 @@ Route::middleware('auth')->group(function () {
         Route::get('invoices/{invoice}/items/{item}/edit', [InvoiceController::class, 'itemForm'])->name('invoices.items.edit');
         Route::put('invoices/{invoice}/items/{item}', [InvoiceController::class, 'updateItem'])->name('invoices.items.update');
         Route::delete('invoices/{invoice}/items/{item}', [InvoiceController::class, 'removeItem'])->name('invoices.items.destroy');
+        // Feature 160 (MVP-858): Fertigungsauslieferungen in den Entwurf übernehmen.
+        Route::get('invoices/{invoice}/auslieferungen', [InvoiceController::class, 'deliveriesForm'])->name('invoices.deliveries.form');
+        Route::post('invoices/{invoice}/auslieferungen', [InvoiceController::class, 'attachDeliveries'])->name('invoices.deliveries.attach');
 
         // ── Bekanntmachungs-Radar (Feature 108, MVP-629/630) ──
         // Eigener Pfad, nicht in der tenders-Gruppe: dort fängt `{opportunity}`

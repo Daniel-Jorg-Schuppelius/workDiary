@@ -111,6 +111,40 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Abrechnungsmonat mit Berechnungsgrund und sichtbaren Fehlern; Forderungen
   entstehen erst mit dem Beitragslauf (MVP-850). Keine Vereinssätze im Code;
   Hilfe ×5.
+- Faktura (Feature 160, MVP-856–859): **Freie Rechnungen aus Artikeln,
+  Material und Fertigung**. Im Erstell-Dialog steht „Positionen selbst
+  zusammenstellen“ neben Zeiten und Material: normaler Entwurf im
+  R-Nummernkreis ohne Zeitraum und Quellposten, Rechnungshoheit und
+  Kontobindung wie bisher, Doppelklick-Schutz über ein Dialog-Token. Leere
+  Entwürfe lassen sich speichern und ergänzen, aber auf keinem Weg stellen
+  oder versenden (Ausstellung, E-Mail, Peppol, Lexoffice). Positionen als
+  Artikel mit optionaler Variante, Material oder Freitext: Artikelauswahl nach
+  Typ gruppiert, Variante belegt Preis und Artikelnummer vor, Beschreibung,
+  Artikelnummer/SKU, Einheit und Preis werden als Belegwerte eingefroren; ein
+  fehlender Preis verlangt eine Eingabe, ein Preis in fremder Währung wird nie
+  still übernommen; keine Lagerbuchung durch Rechnungspositionen.
+  Fertigungsauslieferungen mit lokalem Fakturaziel lassen sich über
+  „Auslieferung übernehmen“ vollständig als Position übernehmen (Menge
+  quellengebunden, Verkaufspreis der Auslieferung, Herkunft am Posten): genau
+  eine aktive Reservierung je Auslieferung (Zeilensperre + Unique), Ausstellung
+  kennzeichnet sie als abgerechnet, Entfernen/Verwerfen/Vollstorno geben sie
+  frei, Gutschriften nicht; Anzeige am Fertigungsauftrag. Demo-Beispiel
+  (Regale, Material, Montagepauschale), Hilfe ×5.
+- Vereinsverwaltung (Feature 159, MVP-848): **Profile, Startpakete und
+  Musterbranche Sportverein**. Branchenprofil „Sportverein“ (Modul-Empfehlung
+  mit Vereinsverwaltung, Klassifikationen für Geschäftsstelle und
+  Übungsleitung, Prozeduren Mitgliedsaufnahme und Sportfest). Elf Startpakete
+  auf der Seite Sportarten (Kampfsport, Tischtennis, Hockey, Reiten, Fußball,
+  Handball, Basketball, Volleyball, Tennis, Leichtathletik, Schießsport): je
+  Sportartenprofil, Abteilung, Gruppen und Sportstätten, dazu
+  Graduierungsordnung, Schulpferde oder Nachweisanforderung — idempotent nach
+  Name, alles anpassbar, keine Verbandsregeln oder gesetzlichen Schwellen.
+  Musterbranche „Sportverein“ (TSV Musterstadt e. V.) in der Demo: alle
+  Pakete plus fiktiver Mehrspartenverein mit Mitgliedern ohne Login,
+  Vertretungen, Familienkonto, Training mit bestätigter Anwesenheit,
+  Beitragslauf mit Zahlungen und Mahnung, Saisonkadern mit Gastspieler,
+  Spieltagen mit Aufstellung und Ergebnis, Wettkämpfen, Prüfungsangebot,
+  Reitstunden und Sperrzeit; Demo-Reset räumt die Vereinsdaten. Hilfe ×5.
 - Vereinsverwaltung (Feature 159, MVP-855): **Individual-, Wettkampf- und
   Schießsport**. Wettkämpfe als Vereinstermin mit Disziplinen des
   Sportartenprofils (Einheit und Vergleichsrichtung), Ort, Ausrichter,

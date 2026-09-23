@@ -51,6 +51,44 @@ class DemoShowcaseSeeder {
      * Steuerkontext wird am Demo-Kunden über den Org-Setting-Schalter nur
      * für die Belegerzeugung aktiviert und danach zurückgesetzt.
      */
+    /**
+     * Freie Rechnung ohne Zeiten (Feature 160, MVP-859): das Beispiel der
+     * Feature-Doku — zwei gefertigte Regale, zusätzliches Material und eine
+     * Montagepauschale (700 € netto) — als Entwurf mit Artikel-/Freitextposten.
+     */
+    public function seedFreeInvoice(Organization $organization, Customer $customer, ?User $actor): int {
+        if (! $this->moduleActive('module.vertrieb') || $actor === null) {
+            return 0;
+        }
+        try {
+            $invoice = app(\App\Services\Invoicing\InvoiceGenerator::class)->emptyDraft($customer);
+            $rows = [
+                ['2', 'Stk', '250.00', 'Regal Eiche 180 × 80 cm, Sonderanfertigung laut Auftrag'],
+                ['10', 'm', '8.00', 'Zusätzliches Material: Kantenleiste Eiche'],
+                ['1', (string) __('invoicing.unit_flat'), '120.00', 'Montage pauschal'],
+            ];
+            foreach ($rows as $index => [$quantity, $unit, $price, $text]) {
+                $invoice->items()->create([
+                    'organization_id' => $organization->id,
+                    'description' => $text,
+                    'quantity' => $quantity,
+                    'unit' => $unit,
+                    'unit_price' => $price,
+                    'service_date' => \Carbon\Carbon::now()->toDateString(),
+                    'position' => $index + 1,
+                ]);
+            }
+            $invoice->load('items');
+            $invoice->recalculate();
+            $invoice->save();
+
+            return 1;
+        } catch (\Throwable $e) {
+            // Demo-Seeder bleibt robust (externe Rechnungshoheit, fehlende Steuerdaten).
+            return 0;
+        }
+    }
+
     public function seedSmallBusinessInvoicing(Organization $organization, Customer $customer, ?User $actor): int {
         if (! $this->moduleActive('module.vertrieb')) {
             return 0;

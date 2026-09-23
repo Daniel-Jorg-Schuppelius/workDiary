@@ -10916,7 +10916,10 @@ CREATE TABLE `invoice_items` (
   `material_usage_id` bigint(20) unsigned DEFAULT NULL,
   `tour_id` bigint(20) unsigned DEFAULT NULL,
   `article_id` bigint(20) unsigned DEFAULT NULL,
+  `article_variant_id` bigint(20) unsigned DEFAULT NULL,
+  `article_number_snapshot` varchar(64) DEFAULT NULL,
   `rental_charge_id` bigint(20) unsigned DEFAULT NULL,
+  `stock_delivery_id` bigint(20) unsigned DEFAULT NULL,
   `description` text NOT NULL,
   `quantity` decimal(12,3) NOT NULL DEFAULT 1.000,
   `unit` varchar(32) NOT NULL DEFAULT 'h',
@@ -10941,13 +10944,17 @@ CREATE TABLE `invoice_items` (
   KEY `invoice_items_rental_charge_id_foreign` (`rental_charge_id`),
   KEY `ii_settled_invoice_fk` (`settled_invoice_id`),
   KEY `invoice_items_article_fk` (`article_id`),
+  KEY `invoice_items_article_variant_id_foreign` (`article_variant_id`),
+  KEY `invoice_items_stock_delivery_id_foreign` (`stock_delivery_id`),
   CONSTRAINT `ii_settled_invoice_fk` FOREIGN KEY (`settled_invoice_id`) REFERENCES `invoices` (`id`) ON DELETE SET NULL,
   CONSTRAINT `invoice_items_article_fk` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `invoice_items_article_variant_id_foreign` FOREIGN KEY (`article_variant_id`) REFERENCES `article_variants` (`id`) ON DELETE SET NULL,
   CONSTRAINT `invoice_items_expense_id_foreign` FOREIGN KEY (`expense_id`) REFERENCES `expenses` (`id`) ON DELETE SET NULL,
   CONSTRAINT `invoice_items_invoice_id_foreign` FOREIGN KEY (`invoice_id`) REFERENCES `invoices` (`id`) ON DELETE CASCADE,
   CONSTRAINT `invoice_items_material_usage_id_foreign` FOREIGN KEY (`material_usage_id`) REFERENCES `material_usages` (`id`) ON DELETE SET NULL,
   CONSTRAINT `invoice_items_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL,
   CONSTRAINT `invoice_items_rental_charge_id_foreign` FOREIGN KEY (`rental_charge_id`) REFERENCES `rental_charges` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `invoice_items_stock_delivery_id_foreign` FOREIGN KEY (`stock_delivery_id`) REFERENCES `stock_deliveries` (`id`) ON DELETE SET NULL,
   CONSTRAINT `invoice_items_time_entry_id_foreign` FOREIGN KEY (`time_entry_id`) REFERENCES `time_entries` (`id`) ON DELETE SET NULL,
   CONSTRAINT `invoice_items_tour_id_foreign` FOREIGN KEY (`tour_id`) REFERENCES `tours` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -19782,11 +19789,13 @@ CREATE TABLE `stock_deliveries` (
   `facturation_status` varchar(16) NOT NULL DEFAULT 'pending',
   `facturation_target` varchar(16) DEFAULT NULL,
   `external_id` varchar(128) DEFAULT NULL,
+  `invoice_item_id` bigint(20) unsigned DEFAULT NULL,
   `delivered_at` timestamp NOT NULL,
   `created_by` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `stock_deliveries_invoice_item_id_unique` (`invoice_item_id`),
   KEY `stock_deliveries_warehouse_id_foreign` (`warehouse_id`),
   KEY `stock_deliveries_customer_id_foreign` (`customer_id`),
   KEY `stock_deliveries_created_by_foreign` (`created_by`),
@@ -19796,6 +19805,7 @@ CREATE TABLE `stock_deliveries` (
   CONSTRAINT `stock_deliveries_article_variant_id_foreign` FOREIGN KEY (`article_variant_id`) REFERENCES `article_variants` (`id`) ON DELETE CASCADE,
   CONSTRAINT `stock_deliveries_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `stock_deliveries_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `stock_deliveries_invoice_item_id_foreign` FOREIGN KEY (`invoice_item_id`) REFERENCES `invoice_items` (`id`) ON DELETE SET NULL,
   CONSTRAINT `stock_deliveries_manufacturing_order_id_foreign` FOREIGN KEY (`manufacturing_order_id`) REFERENCES `manufacturing_orders` (`id`) ON DELETE SET NULL,
   CONSTRAINT `stock_deliveries_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL,
   CONSTRAINT `stock_deliveries_warehouse_id_foreign` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE CASCADE
@@ -23803,3 +23813,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (839,'2027_02_23_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (840,'2027_02_23_101200_create_club_resource_tables',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (841,'2027_02_23_101300_create_club_horse_tables',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (842,'2027_02_23_101400_create_club_competition_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (843,'2027_02_23_101500_add_free_invoice_source_columns',1);

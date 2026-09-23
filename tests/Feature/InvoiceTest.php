@@ -428,6 +428,7 @@ class InvoiceTest extends TestCase {
             'tax_rate' => '19.00',
             'created_by' => $this->admin->id,
         ]);
+        $invoice->items()->create(['organization_id' => $this->organization->id, 'description' => 'Leistung', 'quantity' => '1', 'unit' => 'h', 'unit_price' => '100.00', 'position' => 1]);
 
         $this->postAsAdmin('invoices.issue', [], $invoice)->assertRedirect();
         $this->assertSame(Invoice::STATUS_ISSUED, $invoice->fresh()?->status);
@@ -763,7 +764,7 @@ class InvoiceTest extends TestCase {
     // ────────────────────────────────────────────────────────────────────────
 
     private function makeInvoice(string $status, array $overrides = []): Invoice {
-        return Invoice::create(array_merge([
+        $invoice = Invoice::create(array_merge([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2030-' . str_pad((string) ++self::$invoiceNo, 4, '0', STR_PAD_LEFT),
@@ -775,6 +776,12 @@ class InvoiceTest extends TestCase {
             'total' => '119.00',
             'created_by' => $this->admin->id,
         ], $overrides));
+        // Feature 160: Entwürfe ohne Position sind nicht mehr ausstellbar — die Position deckt die Summen (100/19/119).
+        if ($status === Invoice::STATUS_DRAFT) {
+            $invoice->items()->create(['organization_id' => $this->organization->id, 'description' => 'Leistung', 'quantity' => '1', 'unit' => 'h', 'unit_price' => '100.00', 'amount' => '100.00', 'position' => 1]);
+        }
+
+        return $invoice;
     }
 
     private function makeDefaultTemplate(): InvoiceMailTemplate {

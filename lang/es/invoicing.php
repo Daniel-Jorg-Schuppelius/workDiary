@@ -123,6 +123,66 @@ return [
     ],
 
     // Leistungszeitraum je Position (Feature 152, Review 2026-09-11).
+    // Freie Rechnungen aus Artikeln, Material und Fertigung (Feature 160, MVP-856–859).
+    'free' => [
+        'title' => [
+            'create' => 'Crear factura',
+            'deliveries' => 'Incorporar entregas',
+        ],
+        'option' => [
+            'manual' => 'Componer las posiciones manualmente (artículos, material, fabricación)',
+            'no_variant' => '— sin variante —',
+        ],
+        'field' => [
+            'variant' => 'Variante',
+            'delivery' => 'Entrega',
+            'order' => 'Orden de fabricación',
+            'delivered_on' => 'Entregado el',
+        ],
+        'action' => [
+            'attach_deliveries' => 'Incorporar entrega',
+            'open_order' => 'Abrir orden de fabricación',
+        ],
+        'hint' => [
+            'manual' => 'Sin periodo ni tiempos: el borrador empieza vacío; las posiciones vienen de artículos, material, texto libre o entregas de fabricación.',
+            'empty_draft' => 'Añada posiciones o incorpore una entrega. Un borrador vacío no se puede emitir ni enviar.',
+            'variant' => 'Opcional; la variante rellena precio y número de artículo.',
+            'no_stock_movement' => 'Las posiciones de artículo y texto libre no mueven existencias; una entrega se registra en almacén/entrega.',
+            'price_required' => 'Introdúzcalo conscientemente; 0,00 para una posición gratuita es válido.',
+            'currency_mismatch' => 'El precio del artículo está en otra moneda que el documento; introduzca el precio en la moneda del documento.',
+            'deliveries' => 'Entregas realizadas y no facturadas del cliente en el periodo de cabecera :from – :to; cada entrega se incorpora completa como una posición.',
+            'deliveries_empty' => 'Los productos sin entrega se venden como posición de artículo libre.',
+            'deliveries_rules' => 'La cantidad está ligada a la fuente, el precio de venta viene de la entrega y sigue editable en el borrador. Quitar la posición o descartar el borrador libera la entrega; las existencias no cambian.',
+        ],
+        'label' => [
+            'from_order' => 'orden de fabricación :number',
+            'source_delivery' => 'Entrega del :date · :order · cantidad entregada :quantity',
+            'reserved' => 'reservada en borrador',
+        ],
+        'empty' => [
+            'deliveries' => 'Sin entregas abiertas.',
+        ],
+        'flash' => [
+            'draft_created' => 'Borrador de factura creado; añada ahora las posiciones.',
+            'deliveries_attached' => ':count entrega(s) incorporada(s).',
+        ],
+        'error' => [
+            'empty' => 'El borrador no tiene posiciones y no se puede emitir ni enviar.',
+            'variant_mismatch' => 'La variante no pertenece al artículo elegido.',
+            'draft_only' => 'Las entregas solo se incorporan a un borrador de factura normal.',
+            'delivery_required' => 'Elija al menos una entrega.',
+            'delivery_foreign' => 'La entrega no pertenece a esta organización.',
+            'delivery_customer' => 'La entrega pertenece a otro cliente.',
+            'delivery_external' => 'La entrega se factura externamente.',
+            'delivery_not_delivered' => 'La entrega aún no se ha realizado.',
+            'delivery_invoiced' => 'La entrega ya está facturada.',
+            'delivery_reserved' => 'La entrega «:name» ya está reservada en el borrador :number.',
+            'delivery_currency' => 'La entrega está en :currency y el documento en :invoice; sin conversión automática.',
+            'delivery_project' => 'La entrega pertenece a otro proyecto.',
+            'delivery_without_price' => 'La entrega «:name» no tiene precio de venta; manténgalo en el artículo/la variante o registre una posición libre.',
+        ],
+    ],
+
     'item' => [
         'service_period' => 'Periodo de prestación',
         'service_from' => 'Periodo de prestación desde',

@@ -85,6 +85,9 @@ class InvoiceItem extends Model {
         'material_usage_id',
         'tour_id',
         'article_id',
+        'article_variant_id',
+        'article_number_snapshot',
+        'stock_delivery_id',
         'rental_charge_id',
         'settled_invoice_id',
         'service_date',
@@ -161,6 +164,26 @@ class InvoiceItem extends Model {
      */
     public function article(): BelongsTo {
         return $this->belongsTo(Article::class);
+    }
+
+    /**
+     * Optionale Artikelvariante (Feature 160): Belegwerte bleiben Positionswerte,
+     * `article_number_snapshot` friert SKU/Artikelnummer zum Belegzeitpunkt ein.
+     *
+     * @return BelongsTo<ArticleVariant, $this>
+     */
+    public function variant(): BelongsTo {
+        return $this->belongsTo(ArticleVariant::class, 'article_variant_id');
+    }
+
+    /**
+     * Herkunft: abgerechnete Fertigungsauslieferung (Feature 160, MVP-858) —
+     * bleibt als Historie auch nach Freigabe oder Storno stehen.
+     *
+     * @return BelongsTo<StockDelivery, $this>
+     */
+    public function stockDelivery(): BelongsTo {
+        return $this->belongsTo(StockDelivery::class, 'stock_delivery_id');
     }
 
     /**

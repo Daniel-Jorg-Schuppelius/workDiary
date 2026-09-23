@@ -1,7 +1,7 @@
 ---
 title: "Facturas & documentos"
 topic: invoices.manage
-version: 5
+version: 6
 audience: []
 modules:
     - module.vertrieb
@@ -78,3 +78,33 @@ siguiente pasada — la factura sale sin discusión.
 Las facturas emitidas alimentan partidas abiertas, reclamaciones y la
 entrega contable. Después: revisar cobros y su asignación y crear el
 lote DATEV para la asesoría.
+
+## Factura libre sin tiempos
+
+En el diálogo de creación, **«Componer las posiciones manualmente»** está al
+mismo nivel que la incorporación de tiempos o consumo de material. El borrador
+solo necesita el cliente (opcionalmente proyecto, cliente final y plazo de pago)
+y empieza vacío: se puede guardar y completar después, pero no emitir ni enviar
+mientras no tenga posiciones; esto vale por igual para emisión, correo, Peppol y
+la entrega a Lexoffice. Un doble clic en «Crear borrador» no genera una segunda
+factura.
+
+**Artículos, material y servicios.** Una posición es un artículo (con variante
+opcional), material o texto libre, por ejemplo «Montaje a tanto alzado» o una
+fabricación especial sin orden de fabricación. Descripción, número de artículo,
+unidad y precio se congelan como valores del documento; los cambios posteriores
+en el maestro de artículos no alteran el documento. Un precio ausente debe
+introducirse conscientemente (0,00 se admite como posición gratuita); un precio
+en otra moneda nunca se convierte en silencio. Las posiciones de artículo y
+texto libre **no mueven existencias**; las entregas se gestionan en
+almacén/entrega.
+
+**Facturar entregas de fabricación.** Con el módulo de almacén activo,
+«Incorporar entrega» toma entregas realizadas del cliente con destino de
+facturación local, cada una completa como una posición con cantidad ligada a la
+fuente y el precio de venta de la entrega (no el coste de fabricación). Una
+entrega solo puede estar en un borrador a la vez; la emisión la marca como
+facturada, quitar la posición, descartar el borrador o una anulación completa
+la liberan de nuevo, y el origen sigue visible en el documento. Los abonos
+parciales no liberan nada; las existencias no cambian con ninguna operación de
+factura.

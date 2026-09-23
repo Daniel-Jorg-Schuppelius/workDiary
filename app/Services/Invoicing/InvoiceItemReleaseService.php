@@ -46,6 +46,10 @@ class InvoiceItemReleaseService {
         if ($i->tour_id !== null) {
             Tour::query()->whereKey($i->tour_id)->update(['travel_billed' => false]);
         }
+        if ($i->stock_delivery_id !== null) {
+            // Feature 160 (MVP-858): aktive Reservierung der Auslieferung lösen; die Herkunft bleibt am Posten.
+            app(DeliveryInvoicingService::class)->release($i);
+        }
         if ($i->rental_charge_id !== null) {
             $charge = \App\Models\Rental\RentalCharge::query()->find($i->rental_charge_id);
             if ($charge !== null && $charge->status === \App\Enums\Rental\RentalChargeStatus::Invoiced) {

@@ -453,6 +453,7 @@ return [
             'exported' => 'Documento esportato per Lexware',
         ],
         'metering_drafted' => 'Bozza da lettura creata',
+        'delivery_attached' => 'Consegna di produzione ripresa nella bozza di fattura',
         'resale_auto_drafted' => 'Bozza di fattura dai periodi di abbonamento (fatturazione ricorrente) creata',
         'retention_added' => 'Ritenuta a garanzia registrata',
         'retention_released' => 'Ritenuta a garanzia liberata',

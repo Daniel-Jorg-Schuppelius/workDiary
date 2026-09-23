@@ -15,7 +15,7 @@ use App\Enums\Manufacturing\DeliveryFacturationStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasOne};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne};
 
 /**
  * Auslieferung eines Fertigerzeugnisses (Feature 047, MVP-074). Lager- und
@@ -51,6 +51,7 @@ class StockDelivery extends Model {
         'facturation_status',
         'facturation_target',
         'external_id',
+        'invoice_item_id',
         'delivered_at',
         'created_by',
     ];
@@ -82,6 +83,26 @@ class StockDelivery extends Model {
     /** @return BelongsTo<ManufacturingOrder, $this> */
     public function order(): BelongsTo {
         return $this->belongsTo(ManufacturingOrder::class, 'manufacturing_order_id');
+    }
+
+    /**
+     * Aktive Reservierung durch genau einen Rechnungsposten (Feature 160,
+     * MVP-858; Unique auf `invoice_item_id`).
+     *
+     * @return BelongsTo<InvoiceItem, $this>
+     */
+    public function invoiceItem(): BelongsTo {
+        return $this->belongsTo(InvoiceItem::class, 'invoice_item_id');
+    }
+
+    /**
+     * Abrechnungshistorie: alle Posten, die diese Auslieferung je übernommen
+     * haben (auch nach Freigabe oder Storno).
+     *
+     * @return HasMany<InvoiceItem, $this>
+     */
+    public function invoiceItems(): HasMany {
+        return $this->hasMany(InvoiceItem::class, 'stock_delivery_id');
     }
 
     /** @return HasOne<Shipment, $this> Versandauftrag zu dieser Auslieferung (Feature 059, Rang 20). */

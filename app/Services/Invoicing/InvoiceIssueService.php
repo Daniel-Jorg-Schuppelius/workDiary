@@ -45,6 +45,10 @@ final class InvoiceIssueService {
         if ($invoice->isProforma()) {
             throw new InvoiceIssueException(InvoiceIssueException::REASON_PROFORMA, (string) __('Eine Pro-forma-Rechnung wird nicht gestellt — wandeln Sie sie in eine echte Rechnung um.'));
         }
+        // Feature 160 (MVP-856): ein leerer Entwurf verlässt das Haus auf keinem Weg.
+        if ($invoice->items()->doesntExist()) {
+            throw new InvoiceIssueException(InvoiceIssueException::REASON_EMPTY, (string) __('invoicing.free.error.empty'));
+        }
 
         $invoicingSettings = (array) data_get($invoice->organization?->settings, 'invoicing', []);
         if ((string) ($invoicingSettings['require_approval'] ?? '0') === '1' && $invoice->approved_at === null) {
@@ -75,6 +79,9 @@ final class InvoiceIssueService {
         }
 
         $invoice->loadMissing(['items', 'customer', 'organization']);
+        if ($invoice->items->isEmpty()) {
+            throw new InvoiceIssueException(InvoiceIssueException::REASON_EMPTY, (string) __('invoicing.free.error.empty'));
+        }
         $organization = $invoice->organization;
         $resolvedOn = $invoice->serviceDateTo() ?? now();
         $taxResolution = $organization !== null
@@ -100,6 +107,9 @@ final class InvoiceIssueService {
                 'item_categories' => $invoice->items->pluck('tax_category', 'id')->all(),
             ],
         ]);
+
+        // Feature 160 (MVP-858): reservierte Fertigungsauslieferungen gelten als abgerechnet.
+        app(DeliveryInvoicingService::class)->markInvoiced($invoice);
 
         // Lifecycle-Webhook (MVP-718): invoice.issued an der Service-Schreibstelle.
         $this->lifecycleWebhooks->invoiceIssued($invoice);

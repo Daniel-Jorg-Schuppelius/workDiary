@@ -1,7 +1,7 @@
 ---
 title: "Invoices & documents"
 topic: invoices.manage
-version: 5
+version: 6
 audience: []
 modules:
     - module.vertrieb
@@ -75,3 +75,30 @@ run — the invoice goes out without a debate.
 Issued invoices flow into open items, dunning and the accounting
 handover. Next: check payment runs and allocation, and create the
 DATEV batch for the tax office.
+
+## Free invoice without times
+
+In the create dialog, **“Compose line items yourself”** stands on equal footing
+with taking over times or material usage. The draft only needs the customer
+(optionally project, end customer and payment terms) and starts empty: it can
+be saved and completed later, but cannot be issued or sent while it has no line
+item — this applies to issuing, e-mail, Peppol and the Lexoffice handover
+alike. A double click on “Create draft” does not create a second invoice.
+
+**Articles, material and services.** A line item is an article (with an
+optional variant), material or free text — such as “assembly, flat rate” or a
+custom-made product without a manufacturing order. Description, article
+number, unit and price are frozen as document values; later changes in the
+article master do not alter the document. A missing price must be entered
+deliberately (0.00 is allowed as a free item); an article price in a foreign
+currency is never converted silently. Article and free-text line items post
+**no stock**; deliveries run via inventory/delivery.
+
+**Invoicing manufacturing deliveries.** With the inventory module active,
+“Take over delivery” imports completed deliveries of the customer with a local
+invoicing target — each entirely as one line item with a source-bound quantity
+and the sales price of the delivery (not the production cost). A delivery can
+only sit in one draft at a time; issuing marks it invoiced, removing the line
+item, discarding the draft or a full cancellation release it again, and the
+origin stays visible on the document. Partial credit notes release nothing;
+stock stays untouched by all invoice operations.

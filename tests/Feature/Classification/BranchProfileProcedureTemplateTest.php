@@ -52,6 +52,7 @@ class BranchProfileProcedureTemplateTest extends TestCase {
         'taxi-mietwagen' => 0,
         'veranstalter' => 0,
         'veranstaltungstechnik' => 0,
+        'verein' => 0,
     ];
 
     public function test_placeholder_procedure_templates_never_grow(): void {

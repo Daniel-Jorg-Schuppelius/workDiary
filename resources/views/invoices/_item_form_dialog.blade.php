@@ -26,7 +26,8 @@
     size="md">
 
     <x-form-group :legend="__('Position')" icon="receipt_long" tone="primary" cols="2">
-        <x-article-picker :articles="$articles ?? collect()" :selected="$item->article_id ?? null" />
+        <x-article-picker :articles="$articles ?? collect()" :selected="$item->article_id ?? null" :selected-variant="$item->article_variant_id ?? null" :currency="$invoice->currency->value" />
+        <p class="md:col-span-2 text-xs text-muted">{{ __('invoicing.free.hint.no_stock_movement') }}</p>
         {{-- Kupferzuschlag zum Tagespreis als eigene Position (MVP-804) — nur beim Anlegen. --}}
         @unless ($item->exists)
             <x-checkbox-field name="add_copper_surcharge" span="2" :checked="(bool) old('add_copper_surcharge', true)"
@@ -44,7 +45,7 @@
                       :from-error="$errors->first('service_from')" :to-error="$errors->first('service_to')" />
         <x-input-field name="quantity" type="number" :label="__('Menge')" required min="0" step="0.01" :value="old('quantity', (string) ($item->quantity ?? '1.00'))" />
         <x-input-field name="unit" :label="__('Einheit')" maxlength="32" :value="old('unit', $item->unit ?? __('invoicing.unit_hour'))" />
-        <x-input-field name="unit_price" :label="__('Einzelpreis') . ' (' . $invoice->currency->value . ')'" type="number" required min="0" step="0.01" :value="old('unit_price', ($item->unit_price?->getAmount() ?? '0.00'))" />
+        <x-input-field name="unit_price" :label="__('Einzelpreis') . ' (' . $invoice->currency->value . ')'" type="number" required min="0" step="0.01" :value="old('unit_price', ($item->unit_price?->getAmount() ?? ''))" :hint="__('invoicing.free.hint.price_required')" />
         <x-input-field name="position" type="number" :label="__('Position')" min="0" step="1" :value="old('position', (string) ($item->position ?? ''))" />
         {{-- MVP-416: Positionsrabatt — Prozent ODER Betrag, nie beides. --}}
         <x-input-field name="discount_percent" type="number" :label="__('Rabatt %')" min="0" max="100" step="0.01" :value="old('discount_percent', $item->discount_percent?->getNumericValue() ?? '')" :hint="__('Prozent oder Betrag — nicht beides.')" />

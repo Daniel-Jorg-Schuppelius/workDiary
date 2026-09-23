@@ -123,6 +123,66 @@ return [
     ],
 
     // Leistungszeitraum je Position (Feature 152, Review 2026-09-11).
+    // Freie Rechnungen aus Artikeln, Material und Fertigung (Feature 160, MVP-856–859).
+    'free' => [
+        'title' => [
+            'create' => 'Create invoice',
+            'deliveries' => 'Take over deliveries',
+        ],
+        'option' => [
+            'manual' => 'Compose line items yourself (articles, material, manufacturing)',
+            'no_variant' => '— no variant —',
+        ],
+        'field' => [
+            'variant' => 'Variant',
+            'delivery' => 'Delivery',
+            'order' => 'Manufacturing order',
+            'delivered_on' => 'Delivered on',
+        ],
+        'action' => [
+            'attach_deliveries' => 'Take over delivery',
+            'open_order' => 'Open manufacturing order',
+        ],
+        'hint' => [
+            'manual' => 'No period, no times: the draft starts empty; line items come from articles, material, free text or manufacturing deliveries.',
+            'empty_draft' => 'Add line items or take over a delivery. An empty draft can neither be issued nor sent.',
+            'variant' => 'Optional; the variant prefills price and article number.',
+            'no_stock_movement' => 'Article and free-text line items do not post stock; a delivery is recorded via inventory/delivery.',
+            'price_required' => 'Enter deliberately — 0.00 for a free item is allowed.',
+            'currency_mismatch' => 'The article price is in a different currency than the document; please enter the price in the document currency.',
+            'deliveries' => 'Delivered, not yet invoiced deliveries of the customer in the header period :from – :to; each delivery is taken over completely as one line item.',
+            'deliveries_empty' => 'Sell products without a delivery as a free article line item.',
+            'deliveries_rules' => 'The quantity is bound to the source, the sales price comes from the delivery and stays editable in the draft. Removing the line item or discarding the draft releases the delivery; stock stays untouched.',
+        ],
+        'label' => [
+            'from_order' => 'manufacturing order :number',
+            'source_delivery' => 'Delivery of :date · :order · delivered quantity :quantity',
+            'reserved' => 'reserved in draft',
+        ],
+        'empty' => [
+            'deliveries' => 'No open deliveries.',
+        ],
+        'flash' => [
+            'draft_created' => 'Invoice draft created — add line items now.',
+            'deliveries_attached' => ':count delivery(ies) taken over.',
+        ],
+        'error' => [
+            'empty' => 'The draft has no line items and can neither be issued nor sent.',
+            'variant_mismatch' => 'The variant does not belong to the selected article.',
+            'draft_only' => 'Deliveries can only be taken over into a regular invoice draft.',
+            'delivery_required' => 'Please select at least one delivery.',
+            'delivery_foreign' => 'The delivery does not belong to this organisation.',
+            'delivery_customer' => 'The delivery belongs to another customer.',
+            'delivery_external' => 'The delivery is invoiced externally.',
+            'delivery_not_delivered' => 'The delivery has not taken place yet.',
+            'delivery_invoiced' => 'The delivery is already invoiced.',
+            'delivery_reserved' => 'Delivery “:name” is already reserved in draft :number.',
+            'delivery_currency' => 'The delivery is in :currency, the document in :invoice — no automatic conversion.',
+            'delivery_project' => 'The delivery belongs to another project.',
+            'delivery_without_price' => 'Delivery “:name” has no sales price — maintain it on the article/variant or record a free line item.',
+        ],
+    ],
+
     'item' => [
         'service_period' => 'Service period',
         'service_from' => 'Service period from',

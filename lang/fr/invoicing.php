@@ -123,6 +123,66 @@ return [
     ],
 
     // Leistungszeitraum je Position (Feature 152, Review 2026-09-11).
+    // Freie Rechnungen aus Artikeln, Material und Fertigung (Feature 160, MVP-856–859).
+    'free' => [
+        'title' => [
+            'create' => 'Créer une facture',
+            'deliveries' => 'Reprendre des livraisons',
+        ],
+        'option' => [
+            'manual' => 'Composer les lignes soi-même (articles, matériel, fabrication)',
+            'no_variant' => '— sans variante —',
+        ],
+        'field' => [
+            'variant' => 'Variante',
+            'delivery' => 'Livraison',
+            'order' => 'Ordre de fabrication',
+            'delivered_on' => 'Livré le',
+        ],
+        'action' => [
+            'attach_deliveries' => 'Reprendre une livraison',
+            'open_order' => 'Ouvrir l\'ordre de fabrication',
+        ],
+        'hint' => [
+            'manual' => 'Ni période ni temps : le brouillon démarre vide ; les lignes viennent des articles, du matériel, du texte libre ou des livraisons de fabrication.',
+            'empty_draft' => 'Ajoutez des lignes ou reprenez une livraison. Un brouillon vide ne peut être ni émis ni envoyé.',
+            'variant' => 'Facultatif ; la variante préremplit le prix et le numéro d\'article.',
+            'no_stock_movement' => 'Les lignes d\'article et de texte libre ne mouvementent pas le stock ; une livraison est saisie via stock/livraison.',
+            'price_required' => 'Saisir consciemment — 0,00 pour une ligne gratuite est admis.',
+            'currency_mismatch' => 'Le prix de l\'article est dans une autre devise que le document ; saisissez le prix dans la devise du document.',
+            'deliveries' => 'Livraisons effectuées et non facturées du client sur la période d\'en-tête :from – :to ; chaque livraison est reprise entièrement comme une ligne.',
+            'deliveries_empty' => 'Les produits sans livraison se vendent comme ligne d\'article libre.',
+            'deliveries_rules' => 'La quantité est liée à la source, le prix de vente vient de la livraison et reste modifiable dans le brouillon. Retirer la ligne ou abandonner le brouillon libère la livraison ; le stock reste inchangé.',
+        ],
+        'label' => [
+            'from_order' => 'ordre de fabrication :number',
+            'source_delivery' => 'Livraison du :date · :order · quantité livrée :quantity',
+            'reserved' => 'réservée dans le brouillon',
+        ],
+        'empty' => [
+            'deliveries' => 'Aucune livraison ouverte.',
+        ],
+        'flash' => [
+            'draft_created' => 'Brouillon de facture créé — ajoutez maintenant des lignes.',
+            'deliveries_attached' => ':count livraison(s) reprise(s).',
+        ],
+        'error' => [
+            'empty' => 'Le brouillon n\'a aucune ligne et ne peut être ni émis ni envoyé.',
+            'variant_mismatch' => 'La variante n\'appartient pas à l\'article choisi.',
+            'draft_only' => 'Les livraisons ne se reprennent que dans un brouillon de facture normal.',
+            'delivery_required' => 'Choisissez au moins une livraison.',
+            'delivery_foreign' => 'La livraison n\'appartient pas à cette organisation.',
+            'delivery_customer' => 'La livraison appartient à un autre client.',
+            'delivery_external' => 'La livraison est facturée en externe.',
+            'delivery_not_delivered' => 'La livraison n\'a pas encore eu lieu.',
+            'delivery_invoiced' => 'La livraison est déjà facturée.',
+            'delivery_reserved' => 'La livraison « :name » est déjà réservée dans le brouillon :number.',
+            'delivery_currency' => 'La livraison est en :currency, le document en :invoice — pas de conversion automatique.',
+            'delivery_project' => 'La livraison appartient à un autre projet.',
+            'delivery_without_price' => 'La livraison « :name » n\'a pas de prix de vente — le renseigner sur l\'article/la variante ou saisir une ligne libre.',
+        ],
+    ],
+
     'item' => [
         'service_period' => 'Période de prestation',
         'service_from' => 'Période de prestation du',

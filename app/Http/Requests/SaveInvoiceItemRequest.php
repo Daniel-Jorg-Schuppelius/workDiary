@@ -16,6 +16,7 @@ class SaveInvoiceItemRequest extends BaseFormRequest {
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'article_id' => \App\Models\Article::class,
+        'article_variant_id' => \App\Models\ArticleVariant::class,
     ];
 
     /** @return array<string, array<int, string|\Illuminate\Contracts\Validation\ValidationRule>> */
@@ -23,6 +24,8 @@ class SaveInvoiceItemRequest extends BaseFormRequest {
         return [
             // Optionaler Artikelbezug (Feature 140, Umsatz je Produkt).
             'article_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('articles')],
+            // Feature 160: Variante optional; sie muss zum Artikel gehören (Prüfung im Controller).
+            'article_variant_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('article_variants')],
             'description' => ['required', 'string', 'max:1000'],
             'service_date' => ['nullable', 'date'],
             // Leistungszeitraum (Feature 152): optional; Ende nie vor Beginn, kein Ende ohne Beginn.

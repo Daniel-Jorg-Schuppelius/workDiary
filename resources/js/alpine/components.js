@@ -424,24 +424,88 @@ export function registerAlpineComponents(Alpine) {
     // Beschreibung/Einheit/Einzelpreis des umgebenden Formulars vor — die
     // Werte bleiben Positionswerte und frei editierbar. Läuft direkt auf dem
     // <select>; die Karte kommt als data-articles (Sqid → Vorbelegung).
+    // Artikel-/Variantenauswahl einer Belegposition (Feature 140/160): belegt
+    // Beschreibung, Einheit und Einzelpreis vor; Varianten werden je Artikel
+    // eingesetzt; ein Preis in fremder Währung wird nie still übernommen.
     Alpine.data("articleItemPicker", () => ({
         map: {},
+        currency: "",
         init() {
             this.map = JSON.parse(this.$root.dataset.articles || "{}");
+            this.currency = this.$root.dataset.currency || "";
+        },
+        field(name) {
+            const form = this.$root.closest("form");
+            return form ? form.elements.namedItem(name) : null;
+        },
+        onChange(event) {
+            if (!event.target) return;
+            if (event.target.name === "article_id") this.applyArticle();
+            if (event.target.name === "article_variant_id") this.applyVariant();
+        },
+        fill(name, value) {
+            const field = this.field(name);
+            if (!field || value === null || value === undefined || value === "") return;
+            field.value = value;
+            field.dispatchEvent(new Event("input", { bubbles: true }));
+        },
+        priceAllowed(entryCurrency) {
+            return !this.currency || !entryCurrency || entryCurrency === this.currency;
+        },
+        noteCurrency(show) {
+            const note = this.$root.querySelector("[data-currency-note]");
+            if (note) note.classList.toggle("hidden", !show);
         },
         applyArticle() {
-            const entry = this.map[String(this.$root.value || "")];
-            const form = this.$root.form;
-            if (!entry || !form) return;
-            const fill = (name, value) => {
-                const field = form.elements.namedItem(name);
-                if (!field || value === null || value === undefined || value === "") return;
-                field.value = value;
-                field.dispatchEvent(new Event("input", { bubbles: true }));
-            };
-            fill("description", entry.description);
-            fill("unit", entry.unit);
-            fill("unit_price", entry.unit_price);
+            const select = this.field("article_id");
+            const entry = this.map[String(select ? select.value : "")];
+            this.renderVariants(entry);
+            if (!entry) {
+                this.noteCurrency(false);
+                return;
+            }
+            this.fill("description", entry.description);
+            this.fill("unit", entry.unit);
+            if (this.priceAllowed(entry.currency)) {
+                this.fill("unit_price", entry.unit_price);
+                this.noteCurrency(false);
+            } else {
+                const price = this.field("unit_price");
+                if (price) price.value = "";
+                this.noteCurrency(true);
+            }
+        },
+        renderVariants(entry) {
+            const select = this.field("article_variant_id");
+            if (!select) return;
+            while (select.options.length > 1) select.remove(1);
+            (entry && entry.variants ? entry.variants : []).forEach((v) => {
+                const option = document.createElement("option");
+                option.value = v.id;
+                option.textContent = v.label;
+                select.appendChild(option);
+            });
+            select.value = "";
+        },
+        applyVariant() {
+            const article = this.field("article_id");
+            const variantSelect = this.field("article_variant_id");
+            const entry = this.map[String(article ? article.value : "")];
+            if (!entry || !variantSelect) return;
+            const variant = (entry.variants || []).find((v) => v.id === variantSelect.value);
+            if (!variant) return;
+            const description = this.field("description");
+            if (description && variant.name && (description.value === "" || description.value === entry.description)) {
+                this.fill("description", entry.description + " – " + variant.name);
+            }
+            if (this.priceAllowed(variant.currency)) {
+                this.fill("unit_price", variant.unit_price);
+                this.noteCurrency(false);
+            } else {
+                const price = this.field("unit_price");
+                if (price) price.value = "";
+                this.noteCurrency(true);
+            }
         },
     }));
 

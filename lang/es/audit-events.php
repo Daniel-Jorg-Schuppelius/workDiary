@@ -453,6 +453,7 @@ return [
             'exported' => 'Documento exportado para Lexware',
         ],
         'metering_drafted' => 'Borrador por lectura creado',
+        'delivery_attached' => 'Entrega de fabricación incorporada al borrador de factura',
         'resale_auto_drafted' => 'Borrador de factura a partir de periodos de suscripción (facturación recurrente) creado',
         'retention_added' => 'Retención de garantía registrada',
         'retention_released' => 'Retención de garantía liberada',

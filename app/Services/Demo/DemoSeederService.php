@@ -336,6 +336,7 @@ class DemoSeederService {
 
             // Kleinunternehmer-Faktura §19 (Feature 066, MVP-169).
             $counts['invoices'] = $showcase->seedSmallBusinessInvoicing($organization, $mainCustomer, $users->first());
+            $counts['free_invoices'] = $showcase->seedFreeInvoice($organization, $mainCustomer, $users->first());
 
             // Bewerbungs-/Ausschreibungs-Demo (Feature 068, MVP-194/198).
             $counts['applications'] = $showcase->seedApplications($organization, $mainCustomer, $users->first());

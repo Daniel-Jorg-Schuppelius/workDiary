@@ -1,7 +1,7 @@
 ---
 title: "Rechnungen & Belege"
 topic: invoices.manage
-version: 5
+version: 6
 audience: []
 modules:
     - module.vertrieb
@@ -78,3 +78,32 @@ den nächsten Lauf — die Rechnung geht ohne Diskussion raus.
 Gestellte Rechnungen fließen in offene Posten, Mahnwesen und die
 Buchhaltungsübergabe. Als Nächstes: Zahllauf und Zahlungszuordnung
 prüfen und den DATEV-Buchungsstapel für die Kanzlei erzeugen.
+
+## Freie Rechnung ohne Zeiten
+
+Im Erstell-Dialog steht **„Positionen selbst zusammenstellen“** gleichberechtigt
+neben der Übernahme aus Zeiten oder Materialverbrauch. Der Entwurf braucht nur
+den Kunden (optional Projekt, Endkunde und Zahlungsziel) und startet leer: Er
+lässt sich speichern und später ergänzen, aber weder stellen noch versenden,
+solange er keine Position hat — das gilt für Ausstellung, E-Mail, Peppol und
+Lexoffice-Übergabe gleichermaßen. Ein Doppelklick auf „Entwurf erstellen“
+erzeugt keine zweite Rechnung.
+
+**Artikel, Material und Leistungen.** Eine Position ist ein Artikel (mit
+optionaler Variante), Material oder Freitext — etwa „Montage pauschal“ oder
+eine Sonderanfertigung ohne Fertigungsauftrag. Beschreibung, Artikelnummer,
+Einheit und Preis werden als Belegwerte eingefroren; spätere Änderungen im
+Artikelstamm ändern den Beleg nicht. Ein fehlender Preis muss bewusst
+eingegeben werden (0,00 ist als Gratisposition erlaubt); ein Artikelpreis in
+fremder Währung wird nicht still umgerechnet. Artikel- und Freitextpositionen
+buchen **keinen Lagerbestand**; Lieferungen laufen über Lager/Auslieferung.
+
+**Fertigungsauslieferungen abrechnen.** Mit aktivem Lagermodul übernimmt
+„Auslieferung übernehmen“ erfolgte Auslieferungen des Kunden mit lokalem
+Fakturaziel — jede vollständig als eine Position mit quellengebundener Menge
+und dem Verkaufspreis der Auslieferung (nicht den Herstellkosten). Eine
+Auslieferung kann nur in einem Entwurf zugleich stehen; die Ausstellung
+kennzeichnet sie als abgerechnet, Entfernen der Position, Verwerfen des
+Entwurfs oder ein Vollstorno geben sie wieder frei, die Herkunft bleibt am
+Beleg sichtbar. Teilgutschriften geben nichts frei; der Lagerbestand bleibt bei
+allen Rechnungsvorgängen unverändert.

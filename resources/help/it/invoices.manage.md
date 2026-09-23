@@ -1,7 +1,7 @@
 ---
 title: "Fatture & documenti"
 topic: invoices.manage
-version: 5
+version: 6
 audience: []
 modules:
     - module.vertrieb
@@ -81,3 +81,33 @@ discussioni.
 Le fatture emesse alimentano partite aperte, solleciti e consegna
 contabile. Poi: controllare incassi e abbinamenti e creare il lotto
 DATEV per lo studio.
+
+## Fattura libera senza tempi
+
+Nella finestra di creazione, **«Comporre le righe manualmente»** è alla pari
+con la ripresa da tempi o consumo di materiale. La bozza richiede solo il
+cliente (facoltativi progetto, cliente finale e termine di pagamento) e parte
+vuota: può essere salvata e completata dopo, ma non emessa né inviata finché
+non ha righe — vale allo stesso modo per emissione, e-mail, Peppol e
+trasferimento a Lexoffice. Un doppio clic su «Crea bozza» non genera una
+seconda fattura.
+
+**Articoli, materiale e prestazioni.** Una riga è un articolo (con variante
+facoltativa), materiale o testo libero — ad esempio «Montaggio forfettario» o
+una produzione speciale senza ordine di produzione. Descrizione, numero
+articolo, unità e prezzo vengono congelati come valori del documento; le
+modifiche successive all'anagrafica non cambiano il documento. Un prezzo
+mancante va inserito consapevolmente (0,00 è ammesso come riga gratuita); un
+prezzo in valuta estera non viene mai convertito in silenzio. Le righe articolo
+e a testo libero **non movimentano il magazzino**; le consegne passano da
+magazzino/consegna.
+
+**Fatturare consegne di produzione.** Con il modulo magazzino attivo, «Riprendi
+consegna» importa le consegne effettuate del cliente con destinazione di
+fatturazione locale — ciascuna per intero come una riga, con quantità
+vincolata alla fonte e prezzo di vendita della consegna (non il costo di
+produzione). Una consegna può stare in una sola bozza alla volta; l'emissione
+la segna come fatturata, rimuovere la riga, scartare la bozza o uno storno
+totale la liberano di nuovo e l'origine resta visibile sul documento. Le note
+di credito parziali non liberano nulla; il magazzino resta invariato in tutte
+le operazioni di fattura.
