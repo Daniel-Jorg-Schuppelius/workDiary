@@ -20,6 +20,7 @@ use App\Models\{AuditLog, Comment, CommunicationNote, Customer, CustomerQuery, D
 use App\Services\Ai\Dto\{ExplainRequest, ExtractRequest, SummarizeRequest, TranslateRequest};
 use App\Services\Ai\Suggestions\{CaseNarrativeSuggestionService, CommunicationNoteSuggestionService, DocumentTranslationSuggestionService, PlanActualExplainService, PortalQuerySuggestionService, SupportDiagnosisSuggestionService};
 use App\Services\Ai\Support\CustomerNameMasker;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\{FakeAiProvider, FakeAiProviderFactory};
@@ -193,7 +194,7 @@ class AiWave2AssistanceTest extends TestCase {
         $entry = DiaryEntry::factory()->for($this->admin)->create(['organization_id' => $this->organization->id]);
         $query = CustomerQuery::create([
             'organization_id' => $this->organization->id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'customer_id' => $customer->id,
             'asker_name' => 'John Doe',
@@ -243,7 +244,7 @@ class AiWave2AssistanceTest extends TestCase {
         $entry = DiaryEntry::factory()->for($this->admin)->create(['organization_id' => $this->organization->id]);
         $query = CustomerQuery::create([
             'organization_id' => $this->organization->id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'question' => 'Frage',
             'status' => CustomerQueryStatus::Open->value,
@@ -324,7 +325,7 @@ class AiWave2AssistanceTest extends TestCase {
 
         return CommunicationNote::create(array_merge([
             'organization_id' => $this->organization->id,
-            'notable_type' => DiaryEntry::class,
+            'notable_type' => MorphMap::alias(DiaryEntry::class),
             'notable_id' => $entry->id,
             'type' => CommunicationNoteType::Call->value,
             'direction' => CommunicationDirection::Inbound->value,

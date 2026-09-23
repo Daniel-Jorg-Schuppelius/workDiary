@@ -15,7 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, User};
 use App\Services\Privacy\PrivacyOverviewService;
 use App\Services\Security\SessionManagementService;
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request, Response as HttpResponse};
 use Illuminate\Support\Facades\{DB, Gate};
@@ -104,7 +104,7 @@ class PrivacyController extends Controller {
             'organization_id' => $organization->id,
             'user_id' => $user->id,
             'event' => 'privacy.report.exported',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $user->id,
             'changes' => [
                 'filter' => 'privacy_report',
@@ -141,7 +141,7 @@ class PrivacyController extends Controller {
             'organization_id' => $organization->id,
             'user_id' => $user->id,
             'event' => 'privacy.overviewExported',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $user->id,
             'changes' => [
                 'format' => $format,
@@ -225,7 +225,7 @@ class PrivacyController extends Controller {
             'organization_id' => $organization->id,
             'user_id' => $actor->id,
             'event' => 'session.revoked',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => (int) $row->user_id,
             'changes' => [
                 'revoked_user_id' => (int) $row->user_id,
@@ -250,7 +250,7 @@ class PrivacyController extends Controller {
 
         $row = DB::table('personal_access_tokens')
             ->where('id', $tokenId)
-            ->where('tokenable_type', User::class)
+            ->where('tokenable_type', MorphMap::alias(User::class))
             ->first(['id', 'tokenable_id', 'name']);
         if ($row === null) {
             return back()->withErrors(['token' => __('Token existiert nicht (mehr).')]);
@@ -268,7 +268,7 @@ class PrivacyController extends Controller {
             'organization_id' => $organization->id,
             'user_id' => $actor->id,
             'event' => 'token.revoked',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => (int) $row->tokenable_id,
             'changes' => [
                 'revoked_token_id' => (int) $row->id,

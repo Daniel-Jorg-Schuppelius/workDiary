@@ -11,6 +11,7 @@
 namespace Tests\Feature\Tenant;
 
 use App\Models\{Attachment, DiaryEntry, Organization, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
@@ -89,7 +90,7 @@ class AttachmentTenantTest extends TestCase {
 
     public function test_unsigned_download_url_is_rejected_even_for_own_org(): void {
         $attachmentA = $this->withOrg($this->orgA, fn() => Attachment::factory()->for($this->userA, 'uploader')->create([
-            'attachable_type' => DiaryEntry::class,
+            'attachable_type' => MorphMap::alias(DiaryEntry::class),
             'attachable_id' => $this->withOrg($this->orgA, fn() => DiaryEntry::factory()->for($this->userA)->create())->id,
         ]));
 
@@ -104,7 +105,7 @@ class AttachmentTenantTest extends TestCase {
         $entryB = $this->withOrg($this->orgB, fn() => DiaryEntry::factory()->for($this->userB)->create());
 
         return $this->withOrg($this->orgB, fn() => Attachment::factory()->for($this->userB, 'uploader')->create([
-            'attachable_type' => DiaryEntry::class,
+            'attachable_type' => MorphMap::alias(DiaryEntry::class),
             'attachable_id' => $entryB->id,
         ]));
     }

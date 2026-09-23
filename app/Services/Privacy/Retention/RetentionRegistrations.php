@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Privacy\Retention;
 
 use App\Models\{CommunicationNote, TimeExport};
+use App\Support\MorphMap;
 use App\Support\Query\DateRange;
 
 /**
@@ -336,7 +337,7 @@ class RetentionRegistrations {
                 ->withoutGlobalScopes()
                 ->whereNull('deleted_at')
                 ->where('organization_id', $organization->id)
-                ->where('documentable_type', \App\Models\User::class)
+                ->where('documentable_type', MorphMap::alias(\App\Models\User::class))
                 ->whereNotNull('retention_until')
                 ->whereDate('retention_until', '<=', now()->toDateString()),
             purge: function (\App\Models\Document $subject, \App\Models\User $actor): void {

@@ -18,7 +18,7 @@ use App\Http\Requests\{IssueStockForCustomerRequest, SaveMaterialCostAllocationR
 use App\Models\{ArticleVariant, Customer, LexofficeVoucher, MaterialCostAllocation, Warehouse};
 use App\Services\Inventory\CustomerStockAllocationService;
 use App\Services\Licensing\FeatureFlagResolver;
-use App\Support\ErrorText;
+use App\Support\{ErrorText, MorphMap};
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -63,7 +63,7 @@ class MaterialCostAllocationController extends Controller {
         $customer->materialCostAllocations()->create([
             'organization_id' => $customer->organization_id,
             'project_id' => $request->validated('project_id'),
-            'source_type' => $voucher !== null ? LexofficeVoucher::class : null,
+            'source_type' => $voucher !== null ? MorphMap::alias(LexofficeVoucher::class) : null,
             'source_id' => $voucher?->getKey(),
             'description' => $description !== '' ? $description : null,
             'allocated_amount' => $request->validated('allocated_amount'),

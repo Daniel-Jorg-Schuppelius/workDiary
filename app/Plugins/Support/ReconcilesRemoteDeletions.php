@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Support;
 
 use App\Models\{ExternalReference, IntegrationInboxItem, Organization, TimeEntry};
+use App\Support\MorphMap;
 use App\Support\Query\DateRange;
 
 /**
@@ -81,7 +82,7 @@ trait ReconcilesRemoteDeletions {
             ],
             [
                 'source' => $this->pluginId(),
-                'target_type' => TimeEntry::class,
+                'target_type' => MorphMap::alias(TimeEntry::class),
                 'external_type' => $externalType,
                 'external_id' => (string) $reference->external_id,
                 'case_type' => IntegrationInboxItem::CASE_CONFLICT,

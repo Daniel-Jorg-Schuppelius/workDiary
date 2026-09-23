@@ -12,7 +12,7 @@ namespace Tests\Feature\Communication;
 
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType, CommunicationVisibility, ParticipantParty};
 use App\Models\{CommunicationNote, DiaryEntry, User};
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -40,7 +40,7 @@ class CommunicationNoteControllerTest extends TestCase {
             ->assertRedirect();
 
         $this->assertDatabaseHas('communication_notes', [
-            'notable_type' => DiaryEntry::class,
+            'notable_type' => MorphMap::alias(DiaryEntry::class),
             'notable_id' => $entry->id,
             'type' => CommunicationNoteType::Call->value,
             'direction' => CommunicationDirection::Outbound->value,
@@ -79,7 +79,7 @@ class CommunicationNoteControllerTest extends TestCase {
                 ->assertRedirect();
 
             $this->assertDatabaseHas('communication_notes', [
-                'notable_type' => $class,
+                'notable_type' => MorphMap::alias($class),
                 'notable_id' => $model->id,
                 'subject' => 'Rückmeldung zu ' . $kind,
             ]);
@@ -221,7 +221,7 @@ class CommunicationNoteControllerTest extends TestCase {
         $this->assertSame(CommunicationVisibility::Customer, $note->refresh()->visibility);
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'communication.published',
-            'auditable_type' => CommunicationNote::class,
+            'auditable_type' => MorphMap::stableKey(CommunicationNote::class),
             'auditable_id' => $note->id,
         ]);
     }
@@ -349,7 +349,7 @@ class CommunicationNoteControllerTest extends TestCase {
         $this->assertSame((int) $responsible->id, (int) $note->next_action_completed_by_user_id);
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'communication.followup.completed',
-            'auditable_type' => CommunicationNote::class,
+            'auditable_type' => MorphMap::stableKey(CommunicationNote::class),
             'auditable_id' => $note->id,
         ]);
     }
@@ -390,7 +390,7 @@ class CommunicationNoteControllerTest extends TestCase {
         $this->assertSoftDeleted('communication_notes', ['id' => $note->id]);
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'communication.deleted',
-            'auditable_type' => CommunicationNote::class,
+            'auditable_type' => MorphMap::stableKey(CommunicationNote::class),
             'auditable_id' => $note->id,
         ]);
     }
@@ -410,7 +410,7 @@ class CommunicationNoteControllerTest extends TestCase {
 
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'communication.confidential.viewed',
-            'auditable_type' => CommunicationNote::class,
+            'auditable_type' => MorphMap::stableKey(CommunicationNote::class),
             'auditable_id' => $note->id,
         ]);
     }

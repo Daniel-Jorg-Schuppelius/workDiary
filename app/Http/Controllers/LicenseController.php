@@ -12,6 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Models\{AuditLog, User};
 use App\Services\Licensing\LicenseService;
+use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Log;
@@ -77,7 +78,7 @@ class LicenseController extends Controller {
                 'organization_id' => $user?->organization_id,
                 'user_id' => $user?->id,
                 'event' => 'license.installed',
-                'auditable_type' => User::class,
+                'auditable_type' => MorphMap::stableKey(User::class),
                 'auditable_id' => $user->id ?? 0,
                 'changes' => [
                     'license_id_sha256' => $licenseHash,

@@ -19,6 +19,7 @@ use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\{AuditLog, KnowledgeArticle, Problem, ServiceQueue, ServiceTicket, SlaClockSegment, TicketSatisfaction};
 use App\Services\ServiceTicket\HelpdeskMetricsService;
 use App\Support\{CarbonFmt, Sqid, Tz};
+use App\Support\MorphMap;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
@@ -230,7 +231,7 @@ class HelpdeskReportExportController extends Controller {
             ->whereBetween('resolved_at', [$from, $to])
             ->whereIn('id', AuditLog::query()
                 ->select('auditable_id')
-                ->where('auditable_type', ServiceTicket::class)
+                ->where('auditable_type', MorphMap::stableKey(ServiceTicket::class))
                 ->where('event', 'service_ticket.' . $key))
             ->with('queue:id,name')
             ->orderBy('resolved_at')->orderBy('id')

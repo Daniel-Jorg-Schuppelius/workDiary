@@ -15,6 +15,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Models\{Asset, AssetDefect, DiaryEntry, OpenIssue, Project, Protocol, User};
 use App\Services\Asset\RecurringDefectService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
@@ -59,7 +60,7 @@ class AssetDrilldownReportTest extends TestCase {
     public function test_open_issues_drilldown_lists_open_issues_for_asset(): void {
         OpenIssue::create([
             'organization_id' => $this->organization->id,
-            'subject_type' => Asset::class,
+            'subject_type' => MorphMap::alias(Asset::class),
             'subject_id' => $this->asset->id,
             'title' => 'Reparatur fällig',
             'status' => OpenIssueStatus::Open->value,
@@ -79,7 +80,7 @@ class AssetDrilldownReportTest extends TestCase {
     public function test_escalated_filter_only_returns_blocked_open_issues(): void {
         OpenIssue::create([
             'organization_id' => $this->organization->id,
-            'subject_type' => Asset::class,
+            'subject_type' => MorphMap::alias(Asset::class),
             'subject_id' => $this->asset->id,
             'title' => 'Routinewartung',
             'status' => OpenIssueStatus::Open->value,
@@ -90,7 +91,7 @@ class AssetDrilldownReportTest extends TestCase {
         ]);
         OpenIssue::create([
             'organization_id' => $this->organization->id,
-            'subject_type' => Asset::class,
+            'subject_type' => MorphMap::alias(Asset::class),
             'subject_id' => $this->asset->id,
             'title' => 'Notfall blockiert',
             'status' => OpenIssueStatus::Blocked->value,
@@ -117,7 +118,7 @@ class AssetDrilldownReportTest extends TestCase {
         ]);
         Protocol::create([
             'organization_id' => $this->organization->id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'type' => ProtocolType::Defect->value,
             'title' => 'Lager defekt',
@@ -220,7 +221,7 @@ class AssetDrilldownReportTest extends TestCase {
     public function test_csv_export_writes_audit_log(): void {
         OpenIssue::create([
             'organization_id' => $this->organization->id,
-            'subject_type' => Asset::class,
+            'subject_type' => MorphMap::alias(Asset::class),
             'subject_id' => $this->asset->id,
             'title' => 'Audit-Issue',
             'status' => OpenIssueStatus::Open->value,

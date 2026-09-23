@@ -15,6 +15,7 @@ namespace App\Services\Timeline;
 use App\Enums\ServiceTicket\{ServiceTicketStatus, TicketMessageKind};
 use App\Http\Controllers\AttachmentController;
 use App\Models\{Attachment, AuditLog, ServiceTicket, ServiceTicketMessage, SlaClockSegment, SlaViolation, User};
+use App\Support\MorphMap;
 
 /**
  * Ticket-Timeline (Feature 065, MVP-152): aggregiert read-only und on demand
@@ -177,7 +178,7 @@ class ServiceTicketTimelineService {
     /** @return list<TimelineItem> */
     private function statusItems(ServiceTicket $ticket, int $cap): array {
         $logs = AuditLog::query()
-            ->where('auditable_type', $ticket->getMorphClass())
+            ->where('auditable_type', MorphMap::stableKey($ticket::class))
             ->where('auditable_id', $ticket->getKey())
             ->whereIn('event', self::AUDIT_EVENTS)
             ->with('user:id,name')

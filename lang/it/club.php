@@ -294,6 +294,7 @@ return [
             'period_upcoming' => 'Prossimi',
             'period_range' => 'Periodo dell\'intestazione',
             'period_past' => 'Passati',
+            'period' => 'Periodo',
             'all_kinds' => 'Tutti i tipi',
         ],
         'action' => [

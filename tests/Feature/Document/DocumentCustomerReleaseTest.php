@@ -11,6 +11,7 @@
 namespace Tests\Feature\Document;
 
 use App\Models\{Customer, Document, Project, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -26,7 +27,7 @@ class DocumentCustomerReleaseTest extends TestCase {
         return Document::factory()->create([
             'organization_id' => $creator->organization_id,
             'created_by_user_id' => $creator->id,
-            'documentable_type' => Customer::class,
+            'documentable_type' => MorphMap::alias(Customer::class),
             'documentable_id' => $customer->id,
         ]);
     }
@@ -48,7 +49,7 @@ class DocumentCustomerReleaseTest extends TestCase {
 
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'document.released_to_customer',
-            'auditable_type' => Document::class,
+            'auditable_type' => MorphMap::stableKey(Document::class),
             'auditable_id' => $document->id,
         ]);
     }
@@ -85,7 +86,7 @@ class DocumentCustomerReleaseTest extends TestCase {
         $document = Document::factory()->create([
             'organization_id' => $author->organization_id,
             'created_by_user_id' => $author->id,
-            'documentable_type' => Project::class,
+            'documentable_type' => MorphMap::alias(Project::class),
             'documentable_id' => $project->id,
         ]);
 
@@ -104,7 +105,7 @@ class DocumentCustomerReleaseTest extends TestCase {
         $document = Document::factory()->releasedToCustomer()->create([
             'organization_id' => $author->organization_id,
             'created_by_user_id' => $author->id,
-            'documentable_type' => Customer::class,
+            'documentable_type' => MorphMap::alias(Customer::class),
             'documentable_id' => $customer->id,
             'customer_released_by' => $author->id,
         ]);

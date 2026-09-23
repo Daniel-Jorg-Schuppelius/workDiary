@@ -14,6 +14,7 @@ use App\Enums\Media\MediaState;
 use App\Jobs\TranscodeVideoJob;
 use App\Models\Attachment;
 use App\Services\Media\VideoTranscodingService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\Concerns\WithOrganization;
@@ -45,7 +46,7 @@ class VideoTranscodingTest extends TestCase {
 
         return Attachment::query()->create([
             'organization_id' => $this->organization->id,
-            'attachable_type' => \App\Models\Organization::class,
+            'attachable_type' => MorphMap::alias(\App\Models\Organization::class),
             'attachable_id' => $this->organization->id,
             'disk' => 'local',
             'path' => 'videos/clip.mp4',

@@ -12,6 +12,7 @@ namespace Tests\Feature;
 
 use App\Enums\Vacation\{VacationStatus, VacationType};
 use App\Models\{SavedReportView, User, Vacation, WorkSchedule};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\Concerns\WithOrganization;
@@ -77,7 +78,7 @@ class Q1SlimFeaturesTest extends TestCase {
         $member->update(['phone' => '0123 456789']);
 
         $logs = \App\Models\AuditLog::query()
-            ->where('auditable_type', User::class)
+            ->where('auditable_type', MorphMap::stableKey(User::class))
             ->where('auditable_id', $member->id)
             ->orderBy('id')
             ->get();

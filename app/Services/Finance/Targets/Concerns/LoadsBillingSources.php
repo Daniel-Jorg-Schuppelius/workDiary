@@ -14,6 +14,7 @@ namespace App\Services\Finance\Targets\Concerns;
 
 use App\Models\Finance\BillingTransfer;
 use App\Models\{MaterialUsage, TimeEntry};
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection;
 use RuntimeException;
 
@@ -33,7 +34,7 @@ trait LoadsBillingSources {
      */
     private function loadTimeEntries(BillingTransfer $transfer): Collection {
         $ids = $transfer->items
-            ->where('source_type', TimeEntry::class)
+            ->where('source_type', MorphMap::alias(TimeEntry::class))
             ->pluck('source_id')
             ->all();
 
@@ -57,7 +58,7 @@ trait LoadsBillingSources {
      */
     private function loadMaterialUsages(BillingTransfer $transfer): Collection {
         $ids = $transfer->items
-            ->where('source_type', MaterialUsage::class)
+            ->where('source_type', MorphMap::alias(MaterialUsage::class))
             ->pluck('source_id')
             ->all();
 

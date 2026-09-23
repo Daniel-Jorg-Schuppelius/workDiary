@@ -18,7 +18,7 @@ use App\Models\Article;
 use App\Models\B2b\{B2bCatalogAccess, B2bCatalogItem, B2bOrder};
 use App\Models\{Customer, Organization, User};
 use App\Services\B2bCatalog\B2bOrderIntakeService;
-use App\Support\ErrorText;
+use App\Support\{ErrorText, MorphMap};
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
@@ -232,7 +232,7 @@ class B2bCatalogAdminController extends Controller {
             'organization_id' => $access->organization_id,
             'user_id' => $admin->id,
             'event' => 'datanorm.exported',
-            'auditable_type' => B2bCatalogAccess::class,
+            'auditable_type' => MorphMap::stableKey(B2bCatalogAccess::class),
             'auditable_id' => $access->id,
             'changes' => [
                 'type' => 'customer_prices',

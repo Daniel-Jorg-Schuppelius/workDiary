@@ -16,6 +16,7 @@ use App\Models\{Asset, Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, FixedAssetService, PeriodClosingService};
 use App\Services\Accounting\Posting\Adapters\DepreciationAdapter;
 use App\Services\Accounting\Posting\PostingInboxService;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -189,7 +190,7 @@ class FixedAssetTest extends TestCase {
         $this->assertSame(2, $first['prepared']);
         $this->assertSame(0, $second['prepared']);
         $this->assertSame(2, $second['skipped']);
-        $this->assertSame(2, AccountingEntry::query()->where('source_type', FixedAsset::class)->count());
+        $this->assertSame(2, AccountingEntry::query()->where('source_type', MorphMap::alias(FixedAsset::class))->count());
         $this->assertSame(AccountingEntryStatus::Ready, AccountingEntry::query()->firstOrFail()->status);
     }
 
@@ -203,7 +204,7 @@ class FixedAssetTest extends TestCase {
         $posted = $inbox->post($entry, $this->admin);
 
         $this->assertSame(AccountingEntryStatus::Posted, $posted->status);
-        $this->assertSame(FixedAsset::class, $posted->source_type);
+        $this->assertSame(MorphMap::alias(FixedAsset::class), $posted->source_type);
         $this->assertSame($asset->id, (int) $posted->source_id);
         $this->assertSame('depreciation:' . $asset->id . ':2026', $posted->source_key);
 

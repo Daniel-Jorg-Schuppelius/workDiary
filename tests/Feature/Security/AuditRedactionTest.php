@@ -14,6 +14,7 @@ namespace Tests\Feature\Security;
 
 use App\Models\{AuditLog, AuditRedaction, Customer, SickLeave, User};
 use App\Services\Audit\{AuditChainVerifier, AuditRedactionService};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\Concerns\WithOrganization;
@@ -72,7 +73,7 @@ class AuditRedactionTest extends TestCase {
         $customer->update(['bank_iban' => 'DE02120300000000202051']);
 
         $log = AuditLog::query()
-            ->where('auditable_type', $customer->getMorphClass())
+            ->where('auditable_type', MorphMap::stableKey($customer::class))
             ->where('auditable_id', $customer->id)
             ->where('event', 'updated')
             ->latest('id')->firstOrFail();
@@ -96,7 +97,7 @@ class AuditRedactionTest extends TestCase {
             'organization_id' => $this->organization->id,
             'user_id' => $this->actor->id,
             'event' => 'updated',
-            'auditable_type' => $customer->getMorphClass(),
+            'auditable_type' => MorphMap::stableKey($customer::class),
             'auditable_id' => $customer->id,
             'changes' => ['before' => ['bank_iban' => null], 'after' => ['bank_iban' => 'DE89370400440532013000']],
         ]);
@@ -149,7 +150,7 @@ class AuditRedactionTest extends TestCase {
             'organization_id' => $this->organization->id,
             'user_id' => $this->actor->id,
             'event' => 'updated',
-            'auditable_type' => $customer->getMorphClass(),
+            'auditable_type' => MorphMap::stableKey($customer::class),
             'auditable_id' => $customer->id,
             'changes' => ['before' => ['bank_iban' => null], 'after' => ['bank_iban' => 'DE89370400440532013000']],
         ]);

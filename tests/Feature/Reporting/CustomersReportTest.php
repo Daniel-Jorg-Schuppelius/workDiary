@@ -16,7 +16,7 @@ use App\Enums\Protocol\ProtocolType;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Controllers\Reporting\{CustomerAnalysisReportController, CustomerDrilldownReportController};
 use App\Models\{AuditLog, Customer, DiaryEntry, OpenIssue, Project, Protocol, TimeEntry, User};
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
@@ -112,7 +112,7 @@ class CustomersReportTest extends TestCase {
 
         OpenIssue::create([
             'organization_id' => $this->organization->id,
-            'subject_type' => Customer::class,
+            'subject_type' => MorphMap::alias(Customer::class),
             'subject_id' => $this->customer->id,
             'source_type' => OpenIssueSource::Manual->value,
             'source_ref_id' => null,
@@ -509,7 +509,7 @@ class CustomersReportTest extends TestCase {
     private function createCustomerOpenIssue(string $title): OpenIssue {
         return OpenIssue::create([
             'organization_id' => $this->organization->id,
-            'subject_type' => Customer::class,
+            'subject_type' => MorphMap::alias(Customer::class),
             'subject_id' => $this->customer->id,
             'source_type' => OpenIssueSource::Manual->value,
             'source_ref_id' => null,

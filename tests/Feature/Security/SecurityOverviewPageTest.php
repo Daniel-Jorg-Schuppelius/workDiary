@@ -11,6 +11,7 @@
 namespace Tests\Feature\Security;
 
 use App\Models\{AuditLog, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -79,7 +80,7 @@ class SecurityOverviewPageTest extends TestCase {
             'organization_id' => $admin->organization_id,
             'user_id' => $admin->id,
             'event' => 'support.reportGenerated',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $admin->id,
             'changes' => ['bytes' => 1024],
             // Regressionsschutz: IpAddress-VO ohne __toString — muss als

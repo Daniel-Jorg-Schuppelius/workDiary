@@ -13,6 +13,7 @@ namespace Tests\Feature\Operations;
 use App\Models\{AttendanceTerminal, ChatWebhook, OperationsTask, TodoistConnection, User};
 use App\Services\Operations\Expiry\ExpiryScanner;
 use App\Services\Operations\OperationsAlertService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -33,7 +34,7 @@ class ExpiryScannerTest extends TestCase {
 
     public function test_expiring_personal_access_token_creates_task_and_rotation_resolves(): void {
         $tokenId = DB::table('personal_access_tokens')->insertGetId([
-            'tokenable_type' => User::class,
+            'tokenable_type' => MorphMap::alias(User::class),
             'tokenable_id' => $this->admin->id,
             'name' => 'ci-token',
             'token' => hash('sha256', 'x'),

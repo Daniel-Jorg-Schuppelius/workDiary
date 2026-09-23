@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Privacy\SubjectData;
 
 use App\Models\{AuditLog, User};
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -45,7 +46,7 @@ class AuditTrailSection extends AbstractSubjectSection {
                 __('Ereignisse über die Person'),
                 AuditLog::query()->withoutGlobalScopes()
                     ->where('organization_id', $orgId)
-                    ->where('auditable_type', User::class)
+                    ->where('auditable_type', MorphMap::stableKey(User::class))
                     ->where('auditable_id', $u->id),
                 'created_at',
             ),

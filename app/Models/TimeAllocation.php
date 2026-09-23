@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 
@@ -85,7 +86,7 @@ class TimeAllocation extends Model {
 
     /** UI-Alias der Zielklasse (Umkehrung von TYPES; unbekannt → null). */
     public function typeAlias(): ?string {
-        $alias = array_search($this->allocatable_type, self::TYPES, true);
+        $alias = array_search(MorphMap::classFor($this->allocatable_type) ?? $this->allocatable_type, self::TYPES, true);
 
         return $alias === false ? null : $alias;
     }

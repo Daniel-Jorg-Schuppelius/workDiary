@@ -13,7 +13,7 @@ namespace Tests\Feature\Invoicing;
 use App\Models\{Customer, Invoice, Organization, User};
 use App\Services\Invoicing\{GirocodeService, InvoicePdfRenderer};
 use App\Settings\SettingScope;
-use App\Support\Setting;
+use App\Support\{MorphMap, Setting};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -147,7 +147,7 @@ class GirocodeTest extends TestCase {
         \App\Models\Finance\PaymentAllocation::query()->create([
             'organization_id' => $this->org->id,
             'bank_transaction_id' => $transaction->id,
-            'allocatable_type' => Invoice::class,
+            'allocatable_type' => MorphMap::alias(Invoice::class),
             'allocatable_id' => $invoice->id,
             'amount' => '50.00',
             'kind' => \App\Enums\Finance\AllocationKind::Payment->value,

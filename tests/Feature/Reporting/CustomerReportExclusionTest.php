@@ -14,7 +14,7 @@ use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, Op
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{Customer, DiaryEntry, OpenIssue, Project, TimeEntry, User};
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Illuminate\Testing\TestResponse;
@@ -72,7 +72,7 @@ class CustomerReportExclusionTest extends TestCase {
         // Offener Punkt am ausgeblendeten Kunden — darf ohne Toggle nirgends auftauchen.
         OpenIssue::create([
             'organization_id' => $this->organization->id,
-            'subject_type' => Customer::class,
+            'subject_type' => MorphMap::alias(Customer::class),
             'subject_id' => $this->excludedCustomer->id,
             'source_type' => OpenIssueSource::Manual->value,
             'source_ref_id' => null,

@@ -15,6 +15,7 @@ use App\Models\{ExternalReference, IntegrationInboxItem, Organization, Project, 
 use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\OpenProject\Sources\{OpenProjectApiClient, OpenProjectEntry};
 use App\Plugins\Support\{PersistsTimeImportInbox, ReconcilesRemoteDeletions, RemoteSyncWindow, RemoteTimeFingerprint, TimeWritebackObserver};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -210,7 +211,7 @@ class OpenProjectImportService {
             ],
             [
                 'source' => $this->pluginId(),
-                'target_type' => TimeEntry::class,
+                'target_type' => MorphMap::alias(TimeEntry::class),
                 'external_type' => self::EXT_TYPE_ENTRY,
                 'external_id' => (string) $reference->external_id,
                 'case_type' => IntegrationInboxItem::CASE_CONFLICT,

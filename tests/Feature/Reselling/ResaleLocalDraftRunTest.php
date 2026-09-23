@@ -19,7 +19,7 @@ use App\Models\Reselling\{ResalePeriodLink, ResaleSubscription};
 use App\Notifications\Finance\ResalePeriodsDigestNotification;
 use App\Services\Reselling\Register\{PeriodPlanner, ResaleLocalDraftRun};
 use App\Settings\SettingScope;
-use App\Support\Setting;
+use App\Support\{MorphMap, Setting};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\Concerns\WithOrganization;
@@ -126,7 +126,7 @@ class ResaleLocalDraftRunTest extends TestCase {
         $this->assertSame(0, $own->periods()->whereNotNull('draft_reference')->count(), 'eigener Bestand wird nie berechnet');
         $this->assertSame(0, $unpriced->periods()->whereNotNull('draft_reference')->count(), 'ohne Verkaufspreis kein Stempel');
         $this->assertSame(4, ResalePeriodLink::query()->count());
-        $this->assertSame(2, AuditLog::query()->where('event', ResaleLocalDraftRun::AUDIT_EVENT)->where('auditable_type', Invoice::class)->count(), 'Audit-Event je Entwurf');
+        $this->assertSame(2, AuditLog::query()->where('event', ResaleLocalDraftRun::AUDIT_EVENT)->where('auditable_type', MorphMap::stableKey(Invoice::class))->count(), 'Audit-Event je Entwurf');
 
         // Zweiter Lauf: alles gestempelt → nichts Neues. Das preislose Abo bleibt offen, ergibt aber keinen Empfänger mit Position.
         $again = app(ResaleLocalDraftRun::class)->run($this->organization);

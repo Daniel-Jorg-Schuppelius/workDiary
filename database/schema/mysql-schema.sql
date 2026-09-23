@@ -23814,3 +23814,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (840,'2027_02_23_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (841,'2027_02_23_101300_create_club_horse_tables',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (842,'2027_02_23_101400_create_club_competition_tables',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (843,'2027_02_23_101500_add_free_invoice_source_columns',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (844,'2027_02_24_100000_rewrite_morph_types_to_aliases',2);

@@ -14,6 +14,7 @@ use App\Enums\Compliance\ComplianceFindingStatus;
 use App\Enums\TimeApproval\OvertimeRequestStatus;
 use App\Models\{ComplianceFinding, OvertimeRequest, User};
 use App\Services\Compliance\AttendancePlausibilityScanService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\Concerns\WithOrganization;
@@ -89,7 +90,7 @@ class OvertimeRequestTest extends TestCase {
             'category' => AttendancePlausibilityScanService::CATEGORY,
             'rule_code' => AttendancePlausibilityScanService::KIND_FRAME_TIME,
             'severity' => 'warning',
-            'subject_type' => User::class,
+            'subject_type' => MorphMap::alias(User::class),
             'subject_id' => $this->employee->id,
             'scope_date' => Carbon::parse('2026-06-05'),
             'detected_value' => 60,
@@ -151,7 +152,7 @@ class OvertimeRequestTest extends TestCase {
             'category' => AttendancePlausibilityScanService::CATEGORY,
             'rule_code' => AttendancePlausibilityScanService::KIND_FRAME_TIME,
             'severity' => 'warning',
-            'subject_type' => User::class,
+            'subject_type' => MorphMap::alias(User::class),
             'subject_id' => $this->employee->id,
             'scope_date' => Carbon::parse('2026-06-05'),
             'detected_value' => 60,

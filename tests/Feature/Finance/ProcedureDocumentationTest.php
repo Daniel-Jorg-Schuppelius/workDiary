@@ -17,6 +17,7 @@ use App\Models\Finance\ProcedureDocumentation;
 use App\Models\Integration\WebhookEndpoint;
 use App\Models\{Organization, PluginSetting, User};
 use App\Services\Finance\ProcedureDocumentation\{ProcedureDocumentationBuilder, ProcedureDocumentationService};
+use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -165,7 +166,7 @@ final class ProcedureDocumentationTest extends TestCase {
         Storage::disk('local')->assertExists((string) $published->pdf_path);
 
         $this->assertDatabaseHas('audit_logs', [
-            'auditable_type' => ProcedureDocumentation::class,
+            'auditable_type' => MorphMap::stableKey(ProcedureDocumentation::class),
             'auditable_id' => $published->id,
             'event' => 'procedure_documentation.published',
         ]);

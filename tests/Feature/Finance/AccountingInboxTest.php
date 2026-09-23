@@ -17,7 +17,7 @@ use App\Models\{CashEntry, CashRegister, Customer, Expense, IncomingEInvoice, In
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService};
 use App\Services\Accounting\Posting\{PostingInboxService, PostingSourceRegistry};
 use App\Settings\SettingScope;
-use App\Support\Setting;
+use App\Support\{MorphMap, Setting};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -183,7 +183,7 @@ class AccountingInboxTest extends TestCase {
         $this->assertSame(AccountingEntryStatus::Ready, $entry->status);
         $this->assertNull($entry->journal_no);
         $this->assertSame($proposal->sourceKey, $entry->source_key);
-        $this->assertSame(Invoice::class, $entry->source_type);
+        $this->assertSame(MorphMap::alias(Invoice::class), $entry->source_type);
         $this->assertNotEmpty($entry->snapshot['lines'] ?? []);
     }
 

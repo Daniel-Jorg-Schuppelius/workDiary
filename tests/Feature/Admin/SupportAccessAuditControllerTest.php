@@ -11,6 +11,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\{AuditLog, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -39,7 +40,7 @@ class SupportAccessAuditControllerTest extends TestCase {
             'organization_id' => $admin->organization_id,
             'user_id' => $admin->id,
             'event' => 'support.access.granted',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $admin->id,
             'changes' => ['by' => 'platform'],
         ]);
@@ -47,7 +48,7 @@ class SupportAccessAuditControllerTest extends TestCase {
             'organization_id' => $admin->organization_id,
             'user_id' => $admin->id,
             'event' => 'support.reportGenerated',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $admin->id,
             'changes' => ['sha256' => 'abc'],
         ]);
@@ -56,7 +57,7 @@ class SupportAccessAuditControllerTest extends TestCase {
             'organization_id' => $admin->organization_id,
             'user_id' => $admin->id,
             'event' => 'tenant.export.csv',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $admin->id,
             'changes' => ['rows' => 5],
         ]);
@@ -77,7 +78,7 @@ class SupportAccessAuditControllerTest extends TestCase {
             'organization_id' => $admin->organization_id,
             'user_id' => $admin->id,
             'event' => 'support.access.granted',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $admin->id,
             'changes' => [],
         ]);
@@ -85,7 +86,7 @@ class SupportAccessAuditControllerTest extends TestCase {
             'organization_id' => $admin->organization_id,
             'user_id' => $admin->id,
             'event' => 'support.reportGenerated',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $admin->id,
             'changes' => [],
         ]);
@@ -107,7 +108,7 @@ class SupportAccessAuditControllerTest extends TestCase {
             'organization_id' => $other->organization_id,
             'user_id' => $other->id,
             'event' => 'support.access.granted',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $other->id,
             'changes' => ['secret' => 'do-not-leak'],
         ]);

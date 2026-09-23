@@ -11,7 +11,7 @@
 namespace Tests\Feature\Privacy;
 
 use App\Models\User;
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -69,7 +69,7 @@ class PrivacyTokenRevokeTest extends TestCase {
 
     private function seedToken(int $userId, string $name = 'Demo Token'): int {
         return (int) DB::table('personal_access_tokens')->insertGetId([
-            'tokenable_type' => User::class,
+            'tokenable_type' => MorphMap::alias(User::class),
             'tokenable_id' => $userId,
             'name' => $name,
             'token' => Str::random(64),

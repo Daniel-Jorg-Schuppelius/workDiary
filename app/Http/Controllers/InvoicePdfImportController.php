@@ -18,6 +18,7 @@ use App\Models\{Customer, Document, Invoice, User};
 use App\Services\Document\DocumentService;
 use App\Services\Finance\BillingModeResolver;
 use App\Services\Invoicing\{InvoiceGenerator, InvoicePdfImportService, TaxResolver};
+use App\Support\MorphMap;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\{CryptoHelper, NumberHelper, VatNumberHelper};
 use CommonToolkit\Helper\FileSystem\File;
@@ -350,7 +351,7 @@ class InvoicePdfImportController extends Controller {
                 'organization_id' => $document->organization_id,
                 'user_id' => $viewer->id,
                 'event' => 'document.confidentialAccessed',
-                'auditable_type' => Document::class,
+                'auditable_type' => MorphMap::stableKey(Document::class),
                 'auditable_id' => $document->id,
                 'changes' => ['title' => $document->title],
             ]);

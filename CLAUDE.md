@@ -71,6 +71,28 @@ Shell-Command-Findings zuerst prüfen, ob der Wert über den CommandBuilder läu
 wenn ja, Rohwerte übergeben, kein caller-Escaping (Ausnahme: bewusstes
 Multi-Wert-Vor-Escaping).
 
+## Morph-Map: Typwerte sind Aliase, nie Klassennamen (MVP-860)
+
+`Relation::enforceMorphMap` ist aktiv; `config/morph-map.php` ist generiert
+(`php artisan morph-map:generate`, nach jedem neuen Modell; `--check` im Gate).
+Zwei Schlüsselarten, `App\Support\MorphMap`:
+
+- **Alias** (Tabellenname) für alle `*_type`-Spalten: schreiben mit
+  `$model->getMorphClass()` oder `MorphMap::alias(X::class)`, vergleichen mit
+  `MorphMap::is($row->x_type, X::class)`, nachschlagen in klassen-geschlüsselten
+  Maps/Registries/`match` erst nach `MorphMap::classFor($row->x_type)`.
+- **Stabiler Schlüssel** (`MorphMap::stableKey(X::class)`, bisheriger
+  Klassenname) für die hash-verketteten Tabellen `audit_logs` und
+  `audit_redactions` sowie die Sqid-Alphabete — nie `getMorphClass()` beim
+  Lesen oder Schreiben von Audit-Zeilen.
+
+Nie `X::class`, `$x::class`, `get_class()` oder `=== X::class` an einer
+Typspalte (Gate `RawMorphClassLiteralRuleTest`, auch qualifizierte Spalten,
+Operator- und Ternärform). Werte von Clients (Formulare, Offline-Sync) dürfen
+Alias oder Klassenname sein → mit `classFor()` auflösen, Alias speichern.
+Enum-Casts (`'kind_type' => KindEnum::class`) sind keine Morph-Werte. Zieht
+eine Klasse um, bleibt ihr `legacy`-Schlüssel und nur der Wert wird nachgeführt.
+
 ## Verweise
 
 Die gesamte Entwicklungs-/Architekturdoku liegt im Schwester-Repo

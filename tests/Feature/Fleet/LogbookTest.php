@@ -15,6 +15,7 @@ use App\Exceptions\{LogbookViolationException, TravelLogLockedException};
 use App\Models\{TravelLog, User, Vehicle};
 use App\Services\Travel\TravelLogService;
 use App\Support\Gobd\GobdLockRegistry;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -190,7 +191,7 @@ class LogbookTest extends TestCase {
         $this->actingAs($this->user)->post(route('travel-logs.lock', $log))->assertRedirect(route('travel-logs.index'));
         $log->refresh();
         $this->assertNotNull($log->locked_at);
-        $this->assertDatabaseHas('audit_logs', ['auditable_type' => TravelLog::class, 'auditable_id' => $log->id, 'event' => 'travelLog.locked']);
+        $this->assertDatabaseHas('audit_logs', ['auditable_type' => MorphMap::stableKey(TravelLog::class), 'auditable_id' => $log->id, 'event' => 'travelLog.locked']);
 
         // Modell-Guard (GobdLockRegistry: freeze) — fachliche Felder gesperrt, Löschen gesperrt.
         $this->assertArrayHasKey('TravelLog', GobdLockRegistry::MODELS);
@@ -262,7 +263,7 @@ class LogbookTest extends TestCase {
         // Original bleibt unverändert und festgeschrieben.
         $this->assertSame(1050, $original->fresh()?->odometer_end_km);
         $this->assertNotNull($original->refresh()->locked_at);
-        $this->assertDatabaseHas('audit_logs', ['auditable_type' => TravelLog::class, 'auditable_id' => $original->id, 'event' => 'travelLog.corrected']);
+        $this->assertDatabaseHas('audit_logs', ['auditable_type' => MorphMap::stableKey(TravelLog::class), 'auditable_id' => $original->id, 'event' => 'travelLog.corrected']);
 
         // Kette folgt der Korrektur, nicht dem stornierten Original.
         $this->postTrip($this->payload($vehicle, ['odometer_start_km' => 1050, 'odometer_end_km' => 1100]))

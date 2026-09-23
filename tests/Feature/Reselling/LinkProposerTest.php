@@ -17,6 +17,7 @@ use App\Models\{Customer, ExternalReference, ForeignCustomer, LexofficeArticle, 
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Services\Reselling\Register\{LinkProposer, PeriodPlanner};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -386,7 +387,7 @@ class LinkProposerTest extends TestCase {
         $period->refresh();
         $this->assertSame(PeriodStatus::Billed, $period->status, 'lokaler Entwurfsbezug deckt die Periode');
         $this->assertSame(1, $period->links()->count(), 'kein zusätzlicher Spiegel-Bezug');
-        $this->assertSame(\App\Models\InvoiceItem::class, $period->links()->first()?->linkable_type);
+        $this->assertSame(MorphMap::alias(\App\Models\InvoiceItem::class), $period->links()->first()?->linkable_type);
         $this->assertSame(1, $result['lines_without_subscription'], 'die Spiegelposition bleibt frei — und sichtbar');
     }
 

@@ -18,6 +18,7 @@ use App\Models\{Organization, User};
 use App\Services\Accounting\Posting\Adapters\DepreciationAdapter;
 use App\Services\Accounting\Posting\PostingInboxService;
 use App\Services\Concerns\{AssertsStatusTransition, AssignsSequentialNo};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -245,7 +246,7 @@ class FixedAssetService {
     public function hasPostedDepreciation(FixedAsset $asset): bool {
         return AccountingEntry::query()
             ->where('organization_id', $asset->organization_id)
-            ->where('source_type', FixedAsset::class)
+            ->where('source_type', MorphMap::alias(FixedAsset::class))
             ->where('source_id', $asset->getKey())
             ->whereIn('status', [AccountingEntryStatus::Posted->value, AccountingEntryStatus::Reversed->value])
             ->exists();

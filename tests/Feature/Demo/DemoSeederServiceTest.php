@@ -13,6 +13,7 @@ namespace Tests\Feature\Demo;
 use App\Enums\Demo\DemoIndustry;
 use App\Models\{Asset, CommunicationNote, Customer, DiaryEntry, Material, OpenIssue, Organization, Project, Protocol, TimeEntry, User};
 use App\Services\Demo\DemoSeederService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -148,7 +149,7 @@ class DemoSeederServiceTest extends TestCase {
         $this->assertSame(26, DiaryEntry::query()->where('organization_id', $org->id)->count());
         $this->assertSame(1, OpenIssue::query()
             ->where('organization_id', $org->id)
-            ->where('subject_type', DiaryEntry::class)
+            ->where('subject_type', MorphMap::alias(DiaryEntry::class))
             ->count());
     }
 

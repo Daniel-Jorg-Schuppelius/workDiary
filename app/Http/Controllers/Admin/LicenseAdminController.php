@@ -16,6 +16,7 @@ use App\Http\Controllers\Concerns\{RequiresPlatformOperator, ResolvesCurrentOrga
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, LicenseFlagOverride, Organization, User};
 use App\Services\Licensing\{FeatureFlagResolver, LicenseResult, LicenseService, LicenseStatus, ModuleCatalog, ModuleStatusResolver};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -170,7 +171,7 @@ class LicenseAdminController extends Controller {
             'organization_id' => $organization->id,
             'user_id' => $user->id,
             'event' => $event,
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $organization->id,
             'changes' => [
                 'module' => $module,
@@ -208,7 +209,7 @@ class LicenseAdminController extends Controller {
             'organization_id' => $org->id,
             'user_id' => $user->id,
             'event' => 'tenant.statusChanged',
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $org->id,
             'changes' => [
                 'from' => $previous,
@@ -288,7 +289,7 @@ class LicenseAdminController extends Controller {
             'organization_id' => $organizationId,
             'user_id' => $user->id,
             'event' => 'license.keyIssued',
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $organizationId,
             // Bewusst OHNE den Schlüssel selbst – nur Metadaten.
             'changes' => [
@@ -346,7 +347,7 @@ class LicenseAdminController extends Controller {
             'organization_id' => $org->id,
             'user_id' => $user->id,
             'event' => 'license.orgIssued',
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $org->id,
             'changes' => ['license_id' => $result->payload?->licenseId, 'plan' => $result->payload?->plan, 'addons' => $addons],
         ]);
@@ -394,7 +395,7 @@ class LicenseAdminController extends Controller {
             'organization_id' => $org->id,
             'user_id' => $user->id,
             'event' => 'license.orgInstalled',
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $org->id,
             'changes' => ['license_id' => $result->payload?->licenseId, 'plan' => $result->payload?->plan],
         ]);
@@ -421,7 +422,7 @@ class LicenseAdminController extends Controller {
             'organization_id' => $org->id,
             'user_id' => $user->id,
             'event' => 'license.orgRemoved',
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $org->id,
             'changes' => [],
         ]);
@@ -481,7 +482,7 @@ class LicenseAdminController extends Controller {
             'organization_id' => $organization->id,
             'user_id' => $user->id,
             'event' => $event,
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $user->id,
             'changes' => [
                 'flag' => $flag,

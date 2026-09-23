@@ -11,7 +11,7 @@
 namespace Tests\Feature;
 
 use App\Models\{CostCenter, Organization, Project, TimeAllocation, TimeEntry, User};
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -89,7 +89,7 @@ class TimeAllocationTest extends TestCase {
         $this->assertSame(2, TimeAllocation::query()->where('time_entry_id', $this->entry->id)->count());
         $this->assertDatabaseHas('time_allocations', [
             'time_entry_id' => $this->entry->id,
-            'allocatable_type' => CostCenter::class,
+            'allocatable_type' => MorphMap::alias(CostCenter::class),
             'allocatable_id' => $costCenter->id,
             'duration_minutes' => 120,
             'comment' => 'Wartung',

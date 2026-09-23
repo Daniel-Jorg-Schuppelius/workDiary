@@ -17,6 +17,7 @@ use App\Enums\TimeApproval\MonthClosureStatus;
 use App\Models\{Attachment, Attendance, AuditLog, MonthClosure, Organization, TimeEntry, User};
 use App\Services\Compliance\AttendanceComplianceChecker;
 use App\Support\{CsvExport, Tz};
+use App\Support\MorphMap;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Builders\CSVDocumentBuilder;
@@ -187,7 +188,7 @@ class MonthClosureBundleService {
         // jeder Export den Datenstand und der Paket-Hash wäre nie reproduzierbar.
         $rows = [['Zeitpunkt', 'Ereignis', 'Benutzer', 'Details']];
         AuditLog::query()
-            ->where('auditable_type', $closure->getMorphClass())
+            ->where('auditable_type', MorphMap::stableKey($closure::class))
             ->where('auditable_id', $closure->getKey())
             ->where('event', '!=', 'month_closure.bundle_exported')
             ->with('user:id,name')

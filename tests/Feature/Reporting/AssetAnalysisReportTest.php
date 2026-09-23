@@ -14,6 +14,7 @@ use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, Op
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Models\{Asset, AuditLog, DiaryEntry, OpenIssue, Project, Protocol, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;
@@ -68,7 +69,7 @@ class AssetAnalysisReportTest extends TestCase {
 
         Protocol::create([
             'organization_id' => $this->organization->id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'type' => ProtocolType::Defect->value,
             'title' => 'Defekt entdeckt',
@@ -78,7 +79,7 @@ class AssetAnalysisReportTest extends TestCase {
 
         OpenIssue::create([
             'organization_id' => $this->organization->id,
-            'subject_type' => Asset::class,
+            'subject_type' => MorphMap::alias(Asset::class),
             'subject_id' => $assetA->id,
             'title' => 'Reparatur',
             'status' => OpenIssueStatus::Open->value,

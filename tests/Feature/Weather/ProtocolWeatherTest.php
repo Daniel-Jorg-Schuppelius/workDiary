@@ -15,6 +15,7 @@ use App\Enums\User\Permission;
 use App\Models\{Asset, Customer, Protocol, User, WeatherSnapshot};
 use App\Services\Weather\Contracts\WeatherProvider;
 use App\Services\Weather\WeatherService;
+use App\Support\MorphMap;
 use Carbon\CarbonInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -58,7 +59,7 @@ final class ProtocolWeatherTest extends TestCase {
     private function protocolForCustomer(Customer $customer): Protocol {
         return Protocol::factory()->create([
             'organization_id' => $this->organization->id,
-            'subject_type' => Customer::class,
+            'subject_type' => MorphMap::alias(Customer::class),
             'subject_id' => $customer->id,
             'occurred_at' => '2025-06-15 08:00:00',
             'status' => ProtocolStatus::Draft->value,
@@ -80,7 +81,7 @@ final class ProtocolWeatherTest extends TestCase {
         $asset = Asset::factory()->create(['organization_id' => $this->organization->id]);
         $protocol = Protocol::factory()->create([
             'organization_id' => $this->organization->id,
-            'subject_type' => Asset::class,
+            'subject_type' => MorphMap::alias(Asset::class),
             'subject_id' => $asset->id,
             'occurred_at' => '2025-06-15 08:00:00',
             'status' => ProtocolStatus::Draft->value,
@@ -119,7 +120,7 @@ final class ProtocolWeatherTest extends TestCase {
         $asset = Asset::factory()->create(['organization_id' => $this->organization->id]);
         $protocol = Protocol::factory()->create([
             'organization_id' => $this->organization->id,
-            'subject_type' => Asset::class,
+            'subject_type' => MorphMap::alias(Asset::class),
             'subject_id' => $asset->id,
             'occurred_at' => '2025-06-15 08:00:00',
             'status' => ProtocolStatus::Draft->value,

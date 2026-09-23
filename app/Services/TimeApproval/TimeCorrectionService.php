@@ -13,6 +13,7 @@ namespace App\Services\TimeApproval;
 use App\Enums\Attendance\AttendanceSource;
 use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Models\{Attendance, TimeCorrectionItem, TimeCorrectionRequest, TimeEntry, User};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\{Auth, DB};
 use Illuminate\Support\Str;
@@ -77,7 +78,18 @@ class TimeCorrectionService {
         }
         foreach ($items as $i => $item) {
             $this->assertItemShape($item, $i);
-            $items[$i]['after'] = $this->normalizeAfter((string) $item['target_type'], $item['after'] ?? null, $owner, $i);
+            $class = self::targetClass((string) $item['target_type']);
+            if ($class === null) {
+                throw new TimeCorrectionWorkflowException(
+                    'unsupportedTarget',
+                    __('Target-Typ :type wird nicht unterstützt.', ['type' => $item['target_type']]),
+                    ['index' => $i, 'target_type' => $item['target_type']],
+                );
+            }
+            // Gespeichert wird der Morph-Alias; auf der Leitung sind Alias und
+            // Klassenname erlaubt (Formular, Offline-Sync, Alt-Clients).
+            $items[$i]['target_type'] = MorphMap::alias($class);
+            $items[$i]['after'] = $this->normalizeAfter($class, $item['after'] ?? null, $owner, $i);
         }
 
         $requestedById = $requestedBy instanceof User ? (int) $requestedBy->id : ((int) (Auth::id() ?? $owner->id));
@@ -345,12 +357,12 @@ class TimeCorrectionService {
     // ── intern ─────────────────────────────────────────────────────────
 
     private function applyItem(TimeCorrectionItem $item, User $owner): void {
-        $targetType = $item->target_type;
-        if (! in_array($targetType, self::ALLOWED_TARGETS, true)) {
+        $targetType = self::targetClass((string) $item->target_type);
+        if ($targetType === null) {
             throw new TimeCorrectionWorkflowException(
                 'unsupportedTarget',
-                __('Target-Typ :type wird nicht unterstützt.', ['type' => $targetType]),
-                ['target_type' => $targetType],
+                __('Target-Typ :type wird nicht unterstützt.', ['type' => $item->target_type]),
+                ['target_type' => $item->target_type],
             );
         }
 
@@ -379,7 +391,7 @@ class TimeCorrectionService {
 
         // Jede aus einer Korrektur geschriebene Stempelung ist per Definition
         // manuell (kein echter Stempel) → Quelle erzwingen (Nachvollziehbarkeit).
-        if ($item->target_type === Attendance::class && in_array($item->action, ['create', 'update'], true)) {
+        if (MorphMap::is($item->target_type, Attendance::class) && in_array($item->action, ['create', 'update'], true)) {
             $after['source'] = AttendanceSource::Manual->value;
         }
 
@@ -554,6 +566,18 @@ class TimeCorrectionService {
                 ['min' => self::REASON_MIN_LENGTH],
             );
         }
+    }
+
+    /**
+     * Zielklasse zu einem Typwert (Alias, alter oder aktueller Klassenname);
+     * null, wenn der Typ nicht korrigierbar ist.
+     *
+     * @return class-string<\Illuminate\Database\Eloquent\Model>|null
+     */
+    public static function targetClass(string $type): ?string {
+        $class = MorphMap::classFor($type);
+
+        return $class !== null && in_array($class, self::ALLOWED_TARGETS, true) ? $class : null;
     }
 
     /** @param  array<string, mixed>  $item */

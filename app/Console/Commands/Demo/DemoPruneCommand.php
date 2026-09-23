@@ -12,6 +12,7 @@ namespace App\Console\Commands\Demo;
 
 use App\Models\{AuditLog, Organization};
 use App\Services\OrganizationLifecycleService;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
@@ -73,7 +74,7 @@ class DemoPruneCommand extends Command {
                 'organization_id' => $organization->id,
                 'user_id' => null,
                 'event' => 'demo.pruned',
-                'auditable_type' => Organization::class,
+                'auditable_type' => MorphMap::stableKey(Organization::class),
                 'auditable_id' => $organization->id,
                 'changes' => [
                     'name' => $organization->name,

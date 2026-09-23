@@ -12,6 +12,7 @@ namespace Database\Factories\Finance;
 
 use App\Models\Finance\{DatevBookingBatch, DatevBookingSource};
 use App\Models\Invoice;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -26,7 +27,7 @@ class DatevBookingSourceFactory extends Factory {
         // (Muster PaymentAllocationFactory).
         return [
             'datev_booking_batch_id' => DatevBookingBatch::factory(),
-            'source_type' => Invoice::class,
+            'source_type' => MorphMap::alias(Invoice::class),
             'source_id' => 1,
             'debtor_account' => '10001',
             'revenue_account' => '8400',

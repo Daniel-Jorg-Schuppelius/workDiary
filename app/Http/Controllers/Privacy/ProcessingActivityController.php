@@ -17,7 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Privacy\{ProcessingActivity, ProcessingActivityVersion};
 use App\Services\Privacy\{PrivacyExportService, ProcessingActivityService};
-use App\Support\CsvExport;
+use App\Support\{CsvExport, MorphMap};
 use CommonToolkit\Enums\Common\CSV\QuotingStyle;
 use CommonToolkit\Helper\Data\CSV\StringHelper;
 use CommonToolkit\Helper\Data\JsonHelper;
@@ -141,7 +141,7 @@ class ProcessingActivityController extends Controller {
             'organization_id' => $org->id,
             'user_id' => $user->id,
             'event' => 'privacy.ropa.exported',
-            'auditable_type' => ProcessingActivity::class,
+            'auditable_type' => MorphMap::stableKey(ProcessingActivity::class),
             'auditable_id' => 0,
             'changes' => ['format' => (string) $request->query('format', 'json')],
             'ip' => $request->ip(),

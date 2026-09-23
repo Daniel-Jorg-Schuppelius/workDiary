@@ -12,6 +12,7 @@ namespace Tests\Feature;
 
 use App\Enums\Asset\AssetOwnership;
 use App\Models\{Asset, Attachment, DiaryEntry, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{Storage, URL};
@@ -41,7 +42,7 @@ class AttachmentsTest extends TestCase {
             ->assertRedirect();
 
         $this->assertDatabaseHas('attachments', [
-            'attachable_type' => Asset::class,
+            'attachable_type' => MorphMap::alias(Asset::class),
             'attachable_id' => $asset->id,
             'user_id' => $owner->id,
             'original_name' => 'manual.pdf',
@@ -68,7 +69,7 @@ class AttachmentsTest extends TestCase {
                 ->assertRedirect();
 
             $this->assertDatabaseHas('attachments', [
-                'attachable_type' => $parent::class,
+                'attachable_type' => $parent->getMorphClass(),
                 'attachable_id' => $parent->id,
                 'original_name' => 'beleg-' . $type . '.pdf',
             ]);
@@ -85,7 +86,7 @@ class AttachmentsTest extends TestCase {
             ->assertRedirect();
 
         $this->assertDatabaseHas('attachments', [
-            'attachable_type' => DiaryEntry::class,
+            'attachable_type' => MorphMap::alias(DiaryEntry::class),
             'attachable_id' => $entry->id,
             'user_id' => $owner->id,
             'original_name' => 'report.pdf',
@@ -157,7 +158,7 @@ class AttachmentsTest extends TestCase {
         $admin = User::factory()->admin()->create(['organization_id' => $uploader->organization_id]);
         $entry = DiaryEntry::factory()->for($uploader)->create();
         $attachment = Attachment::factory()->for($uploader, 'uploader')->create([
-            'attachable_type' => DiaryEntry::class,
+            'attachable_type' => MorphMap::alias(DiaryEntry::class),
             'attachable_id' => $entry->id,
         ]);
 
@@ -172,7 +173,7 @@ class AttachmentsTest extends TestCase {
 
         // Admin (in der gleichen Org)
         $attachment2 = Attachment::factory()->for($uploader, 'uploader')->create([
-            'attachable_type' => DiaryEntry::class,
+            'attachable_type' => MorphMap::alias(DiaryEntry::class),
             'attachable_id' => $entry->id,
         ]);
         $this->actingAs($admin)

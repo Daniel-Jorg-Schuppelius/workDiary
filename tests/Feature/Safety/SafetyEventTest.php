@@ -15,6 +15,7 @@ use App\Enums\Safety\{SafetyEventKind, SafetyEventSeverity, SafetyEventStatus};
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
 use App\Models\{OpenIssue, SafetyEvent, User};
 use App\Services\Safety\SafetyEventService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Tests\Concerns\WithOrganization;
@@ -172,7 +173,7 @@ class SafetyEventTest extends TestCase {
 
         $this->assertInstanceOf(OpenIssue::class, $issue);
         $this->assertDatabaseHas('open_issues', [
-            'subject_type' => SafetyEvent::class,
+            'subject_type' => MorphMap::alias(SafetyEvent::class),
             'subject_id' => $event->id,
             'title' => 'Geländer reparieren',
         ]);

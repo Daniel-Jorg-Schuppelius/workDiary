@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Audit;
 
 use App\Models\{Article, AuditLog, Customer, Expense, ExpenseCategory, Material, User};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Console\Command;
@@ -51,7 +52,7 @@ class FindClearedValueObjectsCommand extends Command {
 
         $classes = [];
         foreach (array_keys(self::FIELDS) as $class) {
-            $classes[(new $class())->getMorphClass()] = $class;
+            $classes[MorphMap::stableKey($class)] = $class;
         }
 
         $rows = [];

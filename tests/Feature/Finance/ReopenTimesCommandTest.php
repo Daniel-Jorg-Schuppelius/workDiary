@@ -15,6 +15,7 @@ use App\Enums\Finance\{TransferChannel, TransferTarget};
 use App\Models\Billing\CustomerBillingAgreement;
 use App\Models\{Customer, Invoice, InvoiceItem, Project, TimeEntry, User};
 use App\Models\Finance\{BillingTransfer, BillingTransferItem};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -115,7 +116,7 @@ class ReopenTimesCommandTest extends TestCase {
         ]);
         BillingTransferItem::create([
             'billing_transfer_id' => $transfer->id,
-            'source_type' => TimeEntry::class,
+            'source_type' => MorphMap::alias(TimeEntry::class),
             'source_id' => $entry->id,
             'quantity' => '1.00',
             'amount' => '90.00',

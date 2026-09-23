@@ -14,6 +14,7 @@ use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Models\{Attachment, Comment, DiaryEntry, User};
 use App\Models\Notification\NotificationRule;
 use App\Notifications\GenericEventNotification;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
@@ -30,11 +31,11 @@ class DiaryNotificationsTest extends TestCase {
         $first = User::factory()->user()->create(['organization_id' => $owner->organization_id]);
         $second = User::factory()->user()->create(['organization_id' => $owner->organization_id]);
         $entry = DiaryEntry::factory()->for($owner)->create();
-        Comment::create(['commentable_type' => DiaryEntry::class, 'commentable_id' => $entry->id, 'user_id' => $first->id, 'body' => 'Erster']);
+        Comment::create(['commentable_type' => MorphMap::alias(DiaryEntry::class), 'commentable_id' => $entry->id, 'user_id' => $first->id, 'body' => 'Erster']);
 
         Notification::fake();
         $this->actingAs($second);
-        Comment::create(['commentable_type' => DiaryEntry::class, 'commentable_id' => $entry->id, 'user_id' => $second->id, 'body' => 'Zweiter']);
+        Comment::create(['commentable_type' => MorphMap::alias(DiaryEntry::class), 'commentable_id' => $entry->id, 'user_id' => $second->id, 'body' => 'Zweiter']);
 
         $isCommentEvent = fn(GenericEventNotification $n): bool => $n->event === NotificationEvent::DiaryCommentCreated;
         Notification::assertSentTo($owner, GenericEventNotification::class, $isCommentEvent);
@@ -48,7 +49,7 @@ class DiaryNotificationsTest extends TestCase {
 
         Notification::fake();
         $this->actingAs($owner);
-        Comment::create(['commentable_type' => DiaryEntry::class, 'commentable_id' => $entry->id, 'user_id' => $owner->id, 'body' => 'selbst']);
+        Comment::create(['commentable_type' => MorphMap::alias(DiaryEntry::class), 'commentable_id' => $entry->id, 'user_id' => $owner->id, 'body' => 'selbst']);
 
         Notification::assertNothingSent();
     }
@@ -128,7 +129,7 @@ class DiaryNotificationsTest extends TestCase {
 
         Notification::fake();
         $this->actingAs($other);
-        Comment::create(['commentable_type' => DiaryEntry::class, 'commentable_id' => $entry->id, 'user_id' => $other->id, 'body' => 'Hi']);
+        Comment::create(['commentable_type' => MorphMap::alias(DiaryEntry::class), 'commentable_id' => $entry->id, 'user_id' => $other->id, 'body' => 'Hi']);
 
         Notification::assertNothingSent();
     }
@@ -141,7 +142,7 @@ class DiaryNotificationsTest extends TestCase {
         Notification::fake();
         $this->actingAs($uploader);
         Attachment::factory()->for($uploader, 'uploader')->create([
-            'attachable_type' => DiaryEntry::class,
+            'attachable_type' => MorphMap::alias(DiaryEntry::class),
             'attachable_id' => $entry->id,
         ]);
 
@@ -160,7 +161,7 @@ class DiaryNotificationsTest extends TestCase {
         Notification::fake();
         $this->actingAs($owner);
         Attachment::factory()->for($owner, 'uploader')->create([
-            'attachable_type' => DiaryEntry::class,
+            'attachable_type' => MorphMap::alias(DiaryEntry::class),
             'attachable_id' => $entry->id,
         ]);
 

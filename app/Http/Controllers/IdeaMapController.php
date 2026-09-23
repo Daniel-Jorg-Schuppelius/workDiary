@@ -17,6 +17,7 @@ use App\Models\{AuditLog, IdeaMap, IdeaMapShare, IdeaNode, Team, User};
 use App\Services\Ideas\{IdeaMapImportService, IdeaMapService};
 use App\Services\SqidEncoder;
 use App\Support\{ErrorText, Tz};
+use App\Support\MorphMap;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Cache, Gate};
@@ -210,11 +211,12 @@ class IdeaMapController extends Controller {
         Gate::authorize('view', $map);
 
         $nodeIds = $map->nodes()->withTrashed()->pluck('id');
-        $nodeMorph = (new IdeaNode())->getMorphClass();
+        // audit_logs führt den stabilen Schlüssel, nicht den Morph-Alias (MVP-860).
+        $nodeMorph = MorphMap::stableKey(IdeaNode::class);
 
         $logs = AuditLog::query()
             ->where(function ($q) use ($map, $nodeIds, $nodeMorph): void {
-                $q->where(fn ($qq) => $qq->where('auditable_type', $map->getMorphClass())->where('auditable_id', $map->id))
+                $q->where(fn ($qq) => $qq->where('auditable_type', MorphMap::stableKey($map::class))->where('auditable_id', $map->id))
                     ->orWhere(fn ($qq) => $qq->where('auditable_type', $nodeMorph)->whereIn('auditable_id', $nodeIds));
             })
             ->with('user:id,name')

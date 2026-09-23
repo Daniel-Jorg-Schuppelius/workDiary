@@ -11,6 +11,7 @@
 namespace Tests\Feature;
 
 use App\Models\{AuditLog, Comment, DiaryEntry, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -29,7 +30,7 @@ class AuditLogTest extends TestCase {
 
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'created',
-            'auditable_type' => DiaryEntry::class,
+            'auditable_type' => MorphMap::stableKey(DiaryEntry::class),
             'auditable_id' => $entry->id,
             'user_id' => $user->id,
         ]);
@@ -57,7 +58,7 @@ class AuditLogTest extends TestCase {
 
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'deleted',
-            'auditable_type' => DiaryEntry::class,
+            'auditable_type' => MorphMap::stableKey(DiaryEntry::class),
             'auditable_id' => $id,
         ]);
     }
@@ -77,7 +78,7 @@ class AuditLogTest extends TestCase {
         $user = User::factory()->user()->create(['organization_id' => $admin->organization_id]);
         $this->actingAs($user);
         $entry = DiaryEntry::factory()->for($user)->create();
-        Comment::factory()->for($user)->create(['commentable_type' => DiaryEntry::class, 'commentable_id' => $entry->id]);
+        Comment::factory()->for($user)->create(['commentable_type' => MorphMap::alias(DiaryEntry::class), 'commentable_id' => $entry->id]);
 
         $this->actingAs($admin)
             ->get(route('audit.index', ['event' => 'created', 'type' => 'comment']))

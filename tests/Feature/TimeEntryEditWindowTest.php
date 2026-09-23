@@ -14,6 +14,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Models\{Project, TimeEntry, Timesheet, User};
 use App\Services\Timekeeping\TimeEntryEditPolicy;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -136,7 +137,7 @@ class TimeEntryEditWindowTest extends TestCase {
             ->assertRedirect();
 
         $this->assertDatabaseHas('comments', [
-            'commentable_type' => TimeEntry::class,
+            'commentable_type' => MorphMap::alias(TimeEntry::class),
             'commentable_id' => $entry->id,
             'user_id' => $this->user->id,
             'body' => 'Korrekturhinweis',

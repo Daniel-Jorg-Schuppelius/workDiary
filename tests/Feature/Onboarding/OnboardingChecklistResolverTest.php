@@ -14,6 +14,7 @@ use App\Enums\Protocol\ProtocolStatus;
 use App\Enums\User\UserRole;
 use App\Models\{AuditLog, Classification, Customer, DiaryEntry, OnboardingProgress, Organization, Project, Protocol, TimeEntry, User, UserGroup};
 use App\Services\Onboarding\OnboardingChecklistResolver;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -73,7 +74,7 @@ class OnboardingChecklistResolverTest extends TestCase {
         Protocol::factory()->create([
             'organization_id' => $this->organization->id,
             'status' => ProtocolStatus::Signed->value,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $subject->id,
             'created_by_user_id' => $admin->id,
             'signed_at' => now(),
@@ -83,7 +84,7 @@ class OnboardingChecklistResolverTest extends TestCase {
             'organization_id' => $this->organization->id,
             'user_id' => $admin->id,
             'event' => 'backup.completed',
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $this->organization->id,
             'changes' => ['status' => 'ok'],
         ]);
@@ -151,7 +152,7 @@ class OnboardingChecklistResolverTest extends TestCase {
             'organization_id' => $this->organization->id,
             'user_id' => $admin->id,
             'event' => 'branch_profile.installed',
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $this->organization->id,
             'changes' => ['profile_code' => 'it', 'version' => 1],
         ]);
@@ -264,7 +265,7 @@ class OnboardingChecklistResolverTest extends TestCase {
         $this->assertDatabaseHas('audit_logs', [
             'organization_id' => $this->organization->id,
             'event' => 'onboarding.completed',
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $this->organization->id,
         ]);
 

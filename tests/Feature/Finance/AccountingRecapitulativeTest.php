@@ -15,6 +15,7 @@ use App\Models\Accounting\{AccountingAccount, AccountingFilingObligation, Accoun
 use App\Models\{Customer, Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService};
 use App\Services\Accounting\Filing\{FilingObligationService, RecapitulativeStatementService, VatFieldBreakdownService};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -87,7 +88,7 @@ class AccountingRecapitulativeTest extends TestCase {
                     'debit' => '0.00',
                     'credit' => $amount,
                     'accounting_tax_code_id' => $this->iglCode->id,
-                    'counterparty_type' => $customer !== null ? Customer::class : null,
+                    'counterparty_type' => $customer !== null ? MorphMap::alias(Customer::class) : null,
                     'counterparty_id' => $customer?->id,
                 ],
             ],

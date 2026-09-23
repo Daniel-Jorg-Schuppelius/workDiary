@@ -12,6 +12,7 @@ namespace Tests\Feature;
 
 use App\Enums\User\UserRole;
 use App\Models\{Customer, ExternalReference, IntegrationInboxItem, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -71,7 +72,7 @@ class IntegrationInboxTest extends TestCase {
             ->get(route('admin.integration.inbox', ['target_search' => 'Alpha']))
             ->assertOk();
 
-        $targets = $response->viewData('assignTargets')[Customer::class];
+        $targets = $response->viewData('assignTargets')[MorphMap::alias(Customer::class)];
         $this->assertContains('Alpha GmbH', $targets);
         $this->assertNotContains('Beta AG', $targets);
 

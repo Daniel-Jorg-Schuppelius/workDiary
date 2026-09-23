@@ -17,6 +17,7 @@ use App\Enums\ServiceTicket\TicketMessageKind;
 use App\Enums\User\Permission;
 use App\Models\{Comment, Customer, DiaryEntry, ForeignCustomer, Organization, Project, SearchDocument, SearchSynonymGroup, SearchTerm, ServiceTicket, ServiceTicketMessage, TimeEntry, Timesheet, User};
 use App\Services\Search\{ActivitySearchCriteria, ActivitySearchResult, ActivitySearchService};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};
@@ -270,7 +271,7 @@ final class ActivitySearchTest extends TestCase {
         $diary = DiaryEntry::factory()->create(['user_id' => $this->admin->id, 'title' => 'Serverraum']);
         Comment::query()->create([
             'organization_id' => $this->organization->id,
-            'commentable_type' => DiaryEntry::class,
+            'commentable_type' => MorphMap::alias(DiaryEntry::class),
             'commentable_id' => $diary->id,
             'user_id' => $this->admin->id,
             'body' => 'USV Batterie getauscht',

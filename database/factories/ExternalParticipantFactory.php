@@ -12,6 +12,7 @@ namespace Database\Factories;
 
 use App\Enums\ExternalParticipant\{ExternalAbility, ExternalParty};
 use App\Models\{DiaryEntry, ExternalParticipant, Organization, User};
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\{Carbon, Str};
 
@@ -26,7 +27,7 @@ class ExternalParticipantFactory extends Factory {
 
         return [
             'organization_id' => Organization::factory(),
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => DiaryEntry::factory(),
             'name' => fake()->company(),
             'email' => fake()->safeEmail(),

@@ -16,6 +16,7 @@ use App\Enums\Finance\TransferChannel;
 use App\Models\Finance\{BillingTransfer, BillingTransferPosition};
 use App\Models\{ForeignCustomer, MaterialUsage, Project, TimeEntry};
 use App\Services\Invoicing\{BillableTimeAggregator, BlockPrice, BlockPriceResolver, ServiceDefaultResolver, TextCorrectionService};
+use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -82,7 +83,7 @@ class BillingPositionBuilder {
 
     /** @return Collection<int, BillingTransferPosition> */
     private function buildTimePositions(BillingTransfer $transfer): Collection {
-        $ids = $transfer->items->where('source_type', TimeEntry::class)->pluck('source_id')->all();
+        $ids = $transfer->items->where('source_type', MorphMap::alias(TimeEntry::class))->pluck('source_id')->all();
 
         /** @var \Illuminate\Database\Eloquent\Collection<int, TimeEntry> $entries */
         $entries = TimeEntry::query()
@@ -154,7 +155,7 @@ class BillingPositionBuilder {
 
     /** @return Collection<int, BillingTransferPosition> */
     private function buildMaterialPositions(BillingTransfer $transfer): Collection {
-        $items = $transfer->items->where('source_type', MaterialUsage::class)->keyBy('source_id');
+        $items = $transfer->items->where('source_type', MorphMap::alias(MaterialUsage::class))->keyBy('source_id');
 
         $usages = MaterialUsage::query()
             ->whereIn('id', $items->keys()->all())

@@ -15,6 +15,7 @@ use App\Plugins\Contracts\{CalendarPublisher, PluginCapability};
 use App\Plugins\GoogleCalendar\Api\{GoogleCalendarClient, GoogleCalendarOAuth};
 use App\Plugins\GoogleCalendar\GoogleCalendarPlugin;
 use App\Plugins\{PluginDiscovery, PluginHealth};
+use App\Support\MorphMap;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response as Psr7Response;
@@ -193,7 +194,7 @@ final class GoogleCalendarConnectionTest extends TestCase {
         $this->assertNull($fresh->refresh_token);
         $this->assertFalse($fresh->isActive());
         $this->assertDatabaseHas('audit_logs', [
-            'auditable_type' => $connection->getMorphClass(),
+            'auditable_type' => MorphMap::stableKey($connection::class),
             'auditable_id' => $connection->id,
             'event' => 'google_calendar.disconnected',
         ]);

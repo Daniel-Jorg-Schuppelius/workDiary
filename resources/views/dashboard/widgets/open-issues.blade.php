@@ -23,9 +23,9 @@
             @foreach ($issues as $issue)
                 @php
                     $subjectRoute = null;
-                    if ($issue->subject_type === \App\Models\DiaryEntry::class) {
+                    if (\App\Support\MorphMap::is($issue->subject_type, \App\Models\DiaryEntry::class)) {
                         $subjectRoute = route('diary.show', $issue->subject_id) . '#open-issues';
-                    } elseif ($issue->subject_type === \App\Models\SafetyEvent::class && $issue->subject) {
+                    } elseif (\App\Support\MorphMap::is($issue->subject_type, \App\Models\SafetyEvent::class) && $issue->subject) {
                         $subjectRoute = route('safety-events.show', $issue->subject) . '#open-issues';
                     }
                     $issTone = ['open' => 'warning', 'inProgress' => 'info', 'blocked' => 'error', 'reopened' => 'ghost'][$issue->status->value] ?? 'ghost';

@@ -294,6 +294,7 @@ return [
             'period_upcoming' => 'Anstehend',
             'period_range' => 'Zeitraum der Kopfzeile',
             'period_past' => 'Vergangen',
+            'period' => 'Zeitraum',
             'all_kinds' => 'Alle Terminarten',
         ],
         'action' => [

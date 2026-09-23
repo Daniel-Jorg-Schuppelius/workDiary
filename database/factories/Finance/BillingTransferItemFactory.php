@@ -12,6 +12,7 @@ namespace Database\Factories\Finance;
 
 use App\Models\Finance\{BillingTransfer, BillingTransferItem};
 use App\Models\TimeEntry;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -26,7 +27,7 @@ class BillingTransferItemFactory extends Factory {
         // (Muster PaymentAllocationFactory).
         return [
             'billing_transfer_id' => BillingTransfer::factory(),
-            'source_type' => TimeEntry::class,
+            'source_type' => MorphMap::alias(TimeEntry::class),
             'source_id' => 1,
             'amount' => '150.00',
             'quantity' => '1.50',

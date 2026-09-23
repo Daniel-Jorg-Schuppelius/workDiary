@@ -17,6 +17,7 @@ use App\Services\Inventory\InventoryLedger;
 use App\Services\Invoicing\QuoteService;
 use App\Services\Manufacturing\{DeliveryService, ManufacturingOrderService};
 use App\Services\Procurement\PurchaseOrderService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Spatie\Permission\PermissionRegistrar;
@@ -131,7 +132,7 @@ class DocumentMailTest extends TestCase {
         $this->assertNotNull($dispatch->sha256, 'PDF-Hash wird beim Anhang-Rendern festgehalten.');
 
         $this->assertTrue(AuditLog::query()
-            ->where('auditable_type', Quote::class)
+            ->where('auditable_type', MorphMap::stableKey(Quote::class))
             ->where('auditable_id', $quote->id)
             ->where('event', 'quote.mailed')
             ->exists());

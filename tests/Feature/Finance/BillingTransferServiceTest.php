@@ -16,6 +16,7 @@ use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{Customer, MaterialUsage, Project, TimeEntry, Timesheet, User};
 use App\Models\Finance\BillingTransferEvent;
 use App\Services\Finance\{BillingTransferException, BillingTransferService};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -107,7 +108,7 @@ class BillingTransferServiceTest extends TestCase {
         $this->assertSame(TransferStatus::Draft, $transfer->status);
         $this->assertSame(1, $transfer->items()->count());
         $this->assertSame((int) $eligible->id, (int) $transfer->items->first()->source_id);
-        $this->assertSame(TimeEntry::class, $transfer->items->first()->source_type);
+        $this->assertSame(MorphMap::alias(TimeEntry::class), $transfer->items->first()->source_type);
         $this->assertSame(1, (int) $transfer->position_count);
         $this->assertSame('2.00', (string) $transfer->total_quantity);
         $this->assertNotSame('', (string) $transfer->payload_hash);
@@ -157,7 +158,7 @@ class BillingTransferServiceTest extends TestCase {
 
         $this->assertSame(1, $transfer->items()->count());
         $item = $transfer->items->first();
-        $this->assertSame(MaterialUsage::class, $item->source_type);
+        $this->assertSame(MorphMap::alias(MaterialUsage::class), $item->source_type);
         $this->assertSame((int) $usage->id, (int) $item->source_id);
         $this->assertSame('3.00', (string) $item->quantity);
         $this->assertSame('30.00', (string) $item->amount);

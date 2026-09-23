@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, BackupHeartbeat};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, Request};
 use Symfony\Component\HttpFoundation\Response;
@@ -58,7 +59,7 @@ class BackupHeartbeatController extends Controller {
             'organization_id' => null,
             'user_id' => null,
             'event' => 'backup.heartbeatReceived',
-            'auditable_type' => BackupHeartbeat::class,
+            'auditable_type' => MorphMap::stableKey(BackupHeartbeat::class),
             'auditable_id' => $heartbeat->id,
             'changes' => [
                 'occurred_at' => $occurredAt->toIso8601String(),

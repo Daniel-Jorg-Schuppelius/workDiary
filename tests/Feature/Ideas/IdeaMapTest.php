@@ -12,6 +12,7 @@ namespace Tests\Feature\Ideas;
 
 use App\Models\{IdeaNode, User};
 use App\Services\Ideas\{IdeaMapService, IdeaNodeService};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
 use Tests\Concerns\WithOrganization;
@@ -111,7 +112,7 @@ final class IdeaMapTest extends TestCase {
 
         $this->assertSame($newOwner->id, (int) $map->fresh()->owner_user_id);
         $this->assertDatabaseHas('audit_logs', [
-            'auditable_type' => $map->getMorphClass(),
+            'auditable_type' => MorphMap::stableKey($map::class),
             'auditable_id' => $map->id,
             'event' => 'idea_map.ownership_transferred',
         ]);

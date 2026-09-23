@@ -17,7 +17,7 @@ use App\Enums\TimeEntry\TimeEntryKind;
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Models\{BillOfQuantity, BoqCostType, BoqItem, BoqItemCostApproach, BoqItemMapping, BoqItemProgress, Customer, DiaryEntry, Expense, Material, MaterialUsage, Project, TimeEntry, Timesheet, User};
 use App\Services\Reporting\EconomicsReportBuilder;
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
@@ -193,7 +193,7 @@ class EconomicsBoqDimensionTest extends TestCase {
         BoqItemMapping::create([
             'organization_id' => $this->organization->id,
             'boq_item_id' => $addendum->id,
-            'mappable_type' => Material::class,
+            'mappable_type' => MorphMap::alias(Material::class),
             'mappable_id' => $material->id,
             'factor' => 1,
         ]);

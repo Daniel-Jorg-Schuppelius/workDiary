@@ -12,6 +12,7 @@ namespace Database\Factories;
 
 use App\Enums\Procedure\ProcedureRunStatus;
 use App\Models\{DiaryEntry, Organization, ProcedureRun, ProcedureTemplateVersion, User};
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -24,7 +25,7 @@ class ProcedureRunFactory extends Factory {
         return [
             'organization_id' => Organization::factory(),
             'procedure_template_version_id' => ProcedureTemplateVersion::factory()->published(),
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => 0,
             'status' => ProcedureRunStatus::Open->value,
             'assigned_user_id' => null,

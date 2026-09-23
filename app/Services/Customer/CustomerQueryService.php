@@ -45,7 +45,7 @@ class CustomerQueryService {
 
         $query = CustomerQuery::query()->create([
             'organization_id' => $data['organization_id'],
-            'subject_type' => $subject::class,
+            'subject_type' => $subject->getMorphClass(),
             'subject_id' => $subject->getKey(),
             'customer_id' => $data['customer_id'] ?? null,
             'signature_token_id' => $data['signature_token_id'] ?? null,

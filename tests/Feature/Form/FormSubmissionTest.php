@@ -11,7 +11,7 @@
 namespace Tests\Feature\Form;
 
 use App\Models\{DiaryEntry, FormSubmission, FormTemplate, User};
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -48,7 +48,7 @@ class FormSubmissionTest extends TestCase {
             'form_template_id' => $template->id,
             'organization_id' => $user->organization_id,
             'submitted_by_user_id' => $user->id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
         ]);
 
@@ -268,7 +268,7 @@ class FormSubmissionTest extends TestCase {
             'organization_id' => $user->organization_id,
             'form_template_id' => $template->id,
             'submitted_by_user_id' => $user->id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
         ]);
 

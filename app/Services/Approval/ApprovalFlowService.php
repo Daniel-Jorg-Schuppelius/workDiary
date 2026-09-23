@@ -79,7 +79,7 @@ class ApprovalFlowService {
 
         ApprovalStep::query()->create([
             'organization_id' => $approvable->getAttribute('organization_id'),
-            'approvable_type' => $approvable::class,
+            'approvable_type' => $approvable->getMorphClass(),
             'approvable_id' => (int) $approvable->getKey(),
             'stage' => $done + 1,
             'decision' => ApprovalDecision::Approved->value,
@@ -117,7 +117,7 @@ class ApprovalFlowService {
     public function rejectStage(Model $approvable, User $decider, ?string $comment = null): void {
         ApprovalStep::query()->create([
             'organization_id' => $approvable->getAttribute('organization_id'),
-            'approvable_type' => $approvable::class,
+            'approvable_type' => $approvable->getMorphClass(),
             'approvable_id' => (int) $approvable->getKey(),
             'stage' => $this->approvedSteps($approvable) + 1,
             'decision' => ApprovalDecision::Rejected->value,
@@ -142,7 +142,7 @@ class ApprovalFlowService {
         // verbietet der Guard, den das Modell seit heute trägt.
         $attributes = [
             'organization_id' => $approvable->getAttribute('organization_id'),
-            'approvable_type' => $approvable::class,
+            'approvable_type' => $approvable->getMorphClass(),
             'approvable_id' => (int) $approvable->getKey(),
             'stage' => 1,
             'decision' => ApprovalDecision::Approved->value,
@@ -163,7 +163,7 @@ class ApprovalFlowService {
 
     private function approvedSteps(Model $approvable): int {
         return ApprovalStep::query()
-            ->where('approvable_type', $approvable::class)
+            ->where('approvable_type', $approvable->getMorphClass())
             ->where('approvable_id', (int) $approvable->getKey())
             ->where('decision', ApprovalDecision::Approved->value)
             ->count();
@@ -171,7 +171,7 @@ class ApprovalFlowService {
 
     private function hasDecided(Model $approvable, User $decider): bool {
         return ApprovalStep::query()
-            ->where('approvable_type', $approvable::class)
+            ->where('approvable_type', $approvable->getMorphClass())
             ->where('approvable_id', (int) $approvable->getKey())
             ->where('decided_by', (int) $decider->getKey())
             ->exists();

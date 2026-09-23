@@ -15,6 +15,7 @@ namespace Tests\Feature\OpenIssue;
 use App\Enums\Diary\{LocationMode, Mode};
 use App\Enums\Project\ProjectStatus;
 use App\Models\{AuditLog, Customer, DiaryEntry, OpenIssue, Organization, Project, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -132,7 +133,7 @@ class OpenIssueFollowUpTest extends TestCase {
 
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'openIssue.followUpCreated',
-            'auditable_type' => OpenIssue::class,
+            'auditable_type' => MorphMap::stableKey(OpenIssue::class),
             'auditable_id' => $issue->id,
         ]);
         $log = AuditLog::query()->where('event', 'openIssue.followUpCreated')->firstOrFail();

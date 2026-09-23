@@ -15,6 +15,7 @@ use App\Enums\Protocol\ProtocolStatus;
 use App\Exceptions\InvalidOrderTransitionException;
 use App\Models\{DiaryEntry, DiaryEntryEvent, Project, Protocol, TimeEntry, User};
 use App\Services\Diary\OrderService;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
@@ -54,7 +55,7 @@ class DiaryLifecycleTest extends TestCase {
 
         $protocol = Protocol::factory()->create([
             'organization_id' => $user->organization_id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'status' => ProtocolStatus::Signed,
             'signed_at' => CarbonImmutable::now(),

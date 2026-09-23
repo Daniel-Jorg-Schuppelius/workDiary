@@ -16,6 +16,7 @@ use App\Enums\Protocol\ProtocolStatus;
 use App\Exceptions\InvalidOrderTransitionException;
 use App\Models\{DiaryEntry, DiaryEntryEvent, Protocol, User};
 use App\Services\Classification\ClassificationRequirementValidator;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -73,7 +74,7 @@ class OrderService {
     public function handover(DiaryEntry $entry, User $actor, Protocol $protocol): DiaryEntry {
         if (
             $protocol->status !== ProtocolStatus::Signed
-            || $protocol->subject_type !== DiaryEntry::class
+            || ! MorphMap::is($protocol->subject_type, DiaryEntry::class)
             || (int) $protocol->subject_id !== (int) $entry->id
         ) {
             throw new InvalidArgumentException((string) __('Für die Abnahme ist ein signiertes Protokoll dieses Auftrags erforderlich.'));

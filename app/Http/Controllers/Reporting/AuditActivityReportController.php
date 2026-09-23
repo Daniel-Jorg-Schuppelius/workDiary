@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{AuditLog, User};
 use App\Support\{ChartBucket, Tz};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
@@ -347,9 +348,7 @@ class AuditActivityReportController extends Controller {
         ], $filename, request: $request, reportCode: 'audit-activity', filters: $exportFilters);
     }
 
-    private function shortType(string $fqcn): string {
-        $parts = explode('\\', $fqcn);
-
-        return (string) end($parts);
+    private function shortType(string $type): string {
+        return MorphMap::basename($type);
     }
 }

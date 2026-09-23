@@ -12,6 +12,7 @@ namespace App\Services\Classification;
 
 use App\Models\{AuditLog, Classification, ClassificationRequirement, CleaningProfile, EntryType, MaintenancePlanTemplate, Organization, ProcedureTemplate, RoomRequirementTemplate, SlaContract, Software, Tag, User};
 use App\Services\Procedure\ProcedureTemplateService;
+use App\Support\MorphMap;
 use CommonToolkit\Helper\FileSystem\File;
 use Database\Seeders\EntryTypeSeeder;
 use Illuminate\Support\Arr;
@@ -690,7 +691,7 @@ class BranchProfileInstaller {
             'organization_id' => $organization->id,
             'user_id' => $actor?->id,
             'event' => 'branch_profile.installed',
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $organization->id,
             'changes' => [
                 'profile_code' => $installedProfileCode,
@@ -735,7 +736,7 @@ class BranchProfileInstaller {
             'organization_id' => $organization->id,
             'user_id' => $actor?->id,
             'event' => 'branch_profile.primaryChanged',
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $organization->id,
             'changes' => ['from' => $previous === '' ? null : $previous, 'to' => $profileCode],
             'ip' => null,
@@ -861,7 +862,7 @@ class BranchProfileInstaller {
             'organization_id' => $organization->id,
             'user_id' => $actor?->id,
             'event' => 'branch_profile.uninstalled',
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $organization->id,
             'changes' => [
                 'profile_code' => $profileCode,

@@ -12,6 +12,7 @@ namespace Tests\Feature\Document;
 
 use App\Enums\User\Permission as P;
 use App\Models\{Customer, Document, Tag, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -100,7 +101,7 @@ final class DocumentConfidentialityTest extends TestCase {
         $this->assertDatabaseHas('audit_logs', [
             'user_id' => $manager->id,
             'event' => 'document.confidentialAccessed',
-            'auditable_type' => Document::class,
+            'auditable_type' => MorphMap::stableKey(Document::class),
             'auditable_id' => $this->document->id,
         ]);
     }

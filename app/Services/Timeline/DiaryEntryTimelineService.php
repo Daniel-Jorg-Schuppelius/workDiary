@@ -15,6 +15,7 @@ use App\Enums\Procedure\ProcedureRunStatus;
 use App\Enums\Protocol\ProtocolEventType;
 use App\Models\{AuditLog, CommunicationNote, Customer, DiaryEntry, Document, Invoice, MaterialUsage, OpenIssueEvent, ProcedureRun, ProtocolEvent, Quote, Shipment, TimeEntry, User};
 use App\Services\Licensing\FeatureFlagResolver;
+use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
@@ -231,8 +232,8 @@ class DiaryEntryTimelineService {
         $items = [];
         $notes = CommunicationNote::query()
             ->where(function ($q) use ($customer, $entryIds): void {
-                $q->where(fn($sub) => $sub->where('notable_type', Customer::class)->where('notable_id', $customer->id))
-                    ->orWhere(fn($sub) => $sub->where('notable_type', DiaryEntry::class)->whereIn('notable_id', $entryIds));
+                $q->where(fn($sub) => $sub->where('notable_type', MorphMap::alias(Customer::class))->where('notable_id', $customer->id))
+                    ->orWhere(fn($sub) => $sub->where('notable_type', MorphMap::alias(DiaryEntry::class))->whereIn('notable_id', $entryIds));
             })
             ->visibleTo($viewer)
             ->with('creator:id,name')
@@ -258,8 +259,8 @@ class DiaryEntryTimelineService {
         $documents = Document::query()
             ->visibleTo($viewer)
             ->where(function ($q) use ($customer, $entryIds): void {
-                $q->where(fn($sub) => $sub->where('documentable_type', Customer::class)->where('documentable_id', $customer->id))
-                    ->orWhere(fn($sub) => $sub->where('documentable_type', DiaryEntry::class)->whereIn('documentable_id', $entryIds));
+                $q->where(fn($sub) => $sub->where('documentable_type', MorphMap::alias(Customer::class))->where('documentable_id', $customer->id))
+                    ->orWhere(fn($sub) => $sub->where('documentable_type', MorphMap::alias(DiaryEntry::class))->whereIn('documentable_id', $entryIds));
             })
             ->with('creator:id,name')
             ->latest('created_at')
@@ -394,7 +395,7 @@ class DiaryEntryTimelineService {
         // Statuswechsel stecken in den generischen Auditable-Events
         // (`updated` mit before/after.status); `created` liefert die Anlage.
         $logs = AuditLog::query()
-            ->where('auditable_type', $entry->getMorphClass())
+            ->where('auditable_type', MorphMap::stableKey($entry::class))
             ->where('auditable_id', $entry->getKey())
             ->whereIn('event', ['created', 'updated'])
             ->with('user:id,name')

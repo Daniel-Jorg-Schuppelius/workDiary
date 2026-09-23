@@ -14,6 +14,7 @@ namespace App\Services\Integration;
 
 use App\Models\{AuditLog, Customer, ExternalReference, IntegrationInboxItem, Organization, Supplier};
 use App\Services\Stammdaten\ContactDetailsWriter;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\{Auth, Request};
 use RuntimeException;
@@ -162,7 +163,7 @@ class InboxActionService {
             'organization_id' => $item->organization_id,
             'user_id' => $actor instanceof \App\Models\User ? (int) $actor->getKey() : null,
             'event' => 'integration.inbox_resolved',
-            'auditable_type' => $item->getMorphClass(),
+            'auditable_type' => MorphMap::stableKey($item::class),
             'auditable_id' => $item->getKey(),
             'changes' => [
                 'status' => $status,

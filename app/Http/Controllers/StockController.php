@@ -15,6 +15,7 @@ use App\Enums\User\Permission as P;
 use App\Models\{ArticleVariant, Customer, StockLevelSetting, StockMovement, StockReservation, Warehouse, WarehouseBin};
 use App\Services\Inventory\{CustomerStockAllocationService, InventoryLedger, ReservationService, StockLevelService, ValuationService};
 use App\Support\{ErrorText, Sqid};
+use App\Support\MorphMap;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -201,7 +202,7 @@ class StockController extends Controller {
                 'organization_id' => $variant->organization_id,
                 'user_id' => $actor,
                 'event' => 'inventory.negativeApproved',
-                'auditable_type' => ArticleVariant::class,
+                'auditable_type' => MorphMap::stableKey(ArticleVariant::class),
                 'auditable_id' => $variant->id,
                 'changes' => ['warehouse_id' => $warehouse->id, 'qty' => $qty],
             ]);

@@ -11,6 +11,7 @@
 namespace Tests\Feature\Plugins\Msgraph;
 
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\{WithOrganization, WithPluginSecrets};
@@ -110,7 +111,7 @@ final class MsgraphAdminConsentTest extends TestCase {
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('audit_logs', [
-            'auditable_type' => $this->organization->getMorphClass(),
+            'auditable_type' => MorphMap::stableKey($this->organization::class),
             'auditable_id' => $this->organization->id,
             'event' => 'msgraph.admin_consent_granted',
         ]);

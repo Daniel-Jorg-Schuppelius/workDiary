@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{Attachment, AuditLog, User};
 use App\Models\Learning\{LearningAnswer, LearningQuizAttempt, LearningSubmission, LearningTimeSession};
 use App\Services\Learning\{LearningAssignmentService, LearningQuizService, LearningTimeService};
+use App\Support\MorphMap;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\View\View;
@@ -95,7 +96,7 @@ class LearningGradingController extends Controller {
             'organization_id' => $attempt->organization_id,
             'user_id' => Auth::id(),
             'event' => 'learning.attemptViewed',
-            'auditable_type' => LearningQuizAttempt::class,
+            'auditable_type' => MorphMap::stableKey(LearningQuizAttempt::class),
             'auditable_id' => $attempt->id,
             'changes' => [
                 'reason' => trim((string) $request->string('reason')),

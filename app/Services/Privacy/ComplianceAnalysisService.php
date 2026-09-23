@@ -14,6 +14,7 @@ namespace App\Services\Privacy;
 
 use App\Models\Organization;
 use App\Models\Privacy\{ComplianceFinding, Dpia, JointControllerAgreement, MeasureAssignment, PrivacyAttachment, PrivacyRequirement, ProcessingActivity, ProcessingAgreement, Processor, TechnicalMeasure};
+use App\Support\MorphMap;
 use Illuminate\Support\Carbon;
 
 /**
@@ -164,7 +165,7 @@ class ComplianceAnalysisService {
             case 'tom_proof_current': // TOM-Nachweise mit abgelaufenem Gültig-bis (043b)
                 $expiring = PrivacyAttachment::query()
                     ->where('organization_id', $orgId)
-                    ->where('attachable_type', TechnicalMeasure::class)
+                    ->where('attachable_type', MorphMap::alias(TechnicalMeasure::class))
                     ->whereNotNull('valid_until')
                     ->whereDate('valid_until', '<=', $now->copy()->addDays($warnDays))
                     ->get();

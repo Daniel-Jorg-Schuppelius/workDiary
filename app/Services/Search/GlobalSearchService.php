@@ -17,6 +17,7 @@ use App\Models\{Asset, Attachment, Customer, DiaryEntry, Document, Expense, Form
 use App\Services\Asset\AssetFormOptions;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Support\{CarbonFmt, OrganizationContext};
+use App\Support\MorphMap;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -336,7 +337,7 @@ class GlobalSearchService {
                 ->where(function ($q) use ($user): void {
                     $q->where('user_id', $user->id)
                         ->orWhere(function ($p) use ($user): void {
-                            $p->where('attachable_type', DiaryEntry::class)
+                            $p->where('attachable_type', MorphMap::alias(DiaryEntry::class))
                                 ->whereExists(function ($sub) use ($user): void {
                                     $sub->selectRaw('1')
                                         ->from('diary_entries')

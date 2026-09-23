@@ -11,8 +11,9 @@
 namespace App\Models\Concerns;
 
 use App\Models\{AuditLog, Organization, User};
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\{Auth, Request};
 
 /**
@@ -121,10 +122,13 @@ trait Auditable {
         return $event;
     }
 
-    /** @return MorphMany<AuditLog, Model> */
-    public function auditLogs(): MorphMany {
-        /** @var MorphMany<AuditLog, Model> $relation */
-        $relation = $this->morphMany(AuditLog::class, 'auditable');
+    /** @return HasMany<AuditLog, $this> */
+    public function auditLogs(): HasMany {
+        // Kettentabelle: der Typwert ist der stabile Schlüssel, nicht der
+        // Morph-Alias — Bestandszeilen werden nie umgeschrieben (MVP-860).
+        /** @var HasMany<AuditLog, $this> $relation */
+        $relation = $this->hasMany(AuditLog::class, 'auditable_id')
+            ->where('auditable_type', MorphMap::stableKey(static::class));
 
         return $relation->latest();
     }
@@ -135,7 +139,7 @@ trait Auditable {
             'user_id' => $this->resolveAuditUserId(),
             'organization_id' => $this->resolveAuditOrganizationId($event),
             'event' => $event,
-            'auditable_type' => static::class,
+            'auditable_type' => MorphMap::stableKey(static::class),
             'auditable_id' => $this->getKey(),
             'changes' => $changes ?: null,
             'ip' => Request::ip(),

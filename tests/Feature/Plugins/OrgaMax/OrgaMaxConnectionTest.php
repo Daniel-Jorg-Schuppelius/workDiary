@@ -11,6 +11,7 @@
 namespace Tests\Feature\Plugins\OrgaMax;
 
 use App\Models\{OrgaMaxConnection, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\FakePluginHttp;
@@ -148,7 +149,7 @@ class OrgaMaxConnectionTest extends TestCase {
 
         // Audit-Payload der Anlage enthält ebenfalls keine Secrets.
         $log = \App\Models\AuditLog::query()
-            ->where('auditable_type', $connection->getMorphClass())
+            ->where('auditable_type', MorphMap::stableKey($connection::class))
             ->where('auditable_id', $connection->id)
             ->latest('id')
             ->first();

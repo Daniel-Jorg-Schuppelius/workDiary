@@ -15,6 +15,7 @@ use App\Models\Accounting\AccountingAccount;
 use App\Models\{Customer, Invoice, Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService};
 use App\Services\Accounting\Reports\{DataQualityBuilder, EuerPreviewBuilder, TrialBalanceBuilder};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -176,7 +177,7 @@ class AccountingEuerTest extends TestCase {
             'booked_on' => $this->startsOn->addDays(5),
             'document_on' => $this->startsOn->addDays(5),
             'memo' => 'Ausgangsrechnung',
-            'source_type' => Invoice::class,
+            'source_type' => MorphMap::alias(Invoice::class),
             'source_id' => $invoice->id,
             'source_key' => 'euer-test:invoice',
             'lines' => [
@@ -190,7 +191,7 @@ class AccountingEuerTest extends TestCase {
             'booked_on' => $this->startsOn->addMonths(3),
             'memo' => 'Teilzahlung',
             'source_key' => 'euer-test:payment',
-            'snapshot' => ['settles_source_type' => Invoice::class, 'settles_source_id' => $invoice->id],
+            'snapshot' => ['settles_source_type' => MorphMap::alias(Invoice::class), 'settles_source_id' => $invoice->id],
             'lines' => [
                 ['accounting_account_id' => $this->accounts['bank']->id, 'debit' => '59.50', 'credit' => '0.00'],
                 ['accounting_account_id' => $this->accounts['receivable']->id, 'debit' => '0.00', 'credit' => '59.50'],
@@ -210,7 +211,7 @@ class AccountingEuerTest extends TestCase {
         app(JournalService::class)->postDirect($this->org, [
             'booked_on' => $this->startsOn->addDays(5),
             'memo' => 'Ausgangsrechnung',
-            'source_type' => Customer::class,
+            'source_type' => MorphMap::alias(Customer::class),
             'source_id' => $customer->id,
             'source_key' => 'euer-test:open-invoice',
             'lines' => [
@@ -250,7 +251,7 @@ class AccountingEuerTest extends TestCase {
             'booked_on' => CarbonImmutable::create(2026, 12, 28),
             'document_on' => CarbonImmutable::create(2026, 12, 28),
             'memo' => 'Dezemberrechnung',
-            'source_type' => Invoice::class,
+            'source_type' => MorphMap::alias(Invoice::class),
             'source_id' => $invoice->id,
             'source_key' => 'euer-test:december',
             'lines' => [
@@ -264,7 +265,7 @@ class AccountingEuerTest extends TestCase {
             'booked_on' => CarbonImmutable::create(2027, 1, 5),
             'memo' => 'Zahlung im Januar',
             'source_key' => 'euer-test:january-payment',
-            'snapshot' => ['settles_source_type' => Invoice::class, 'settles_source_id' => $invoice->id],
+            'snapshot' => ['settles_source_type' => MorphMap::alias(Invoice::class), 'settles_source_id' => $invoice->id],
             'lines' => [
                 ['accounting_account_id' => $this->accounts['bank']->id, 'debit' => '119.00', 'credit' => '0.00'],
                 ['accounting_account_id' => $this->accounts['receivable']->id, 'debit' => '0.00', 'credit' => '119.00'],

@@ -12,6 +12,7 @@ namespace Tests\Feature;
 
 use App\Models\{Attachment, Organization, User};
 use App\Services\BrandingService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -152,7 +153,7 @@ class BrandingTest extends TestCase {
             ->assertRedirect();
 
         $this->assertDatabaseHas('attachments', [
-            'attachable_type' => Organization::class,
+            'attachable_type' => MorphMap::alias(Organization::class),
             'attachable_id' => $org->id,
             'meta_type' => Attachment::META_LOGO,
         ]);
@@ -183,7 +184,7 @@ class BrandingTest extends TestCase {
         $this->assertSame(
             1,
             Attachment::query()
-                ->where('attachable_type', Organization::class)
+                ->where('attachable_type', MorphMap::alias(Organization::class))
                 ->where('attachable_id', $org->id)
                 ->where('meta_type', Attachment::META_LOGO)
                 ->count(),
@@ -217,7 +218,7 @@ class BrandingTest extends TestCase {
             ->assertRedirect();
 
         $this->assertDatabaseHas('attachments', [
-            'attachable_type' => User::class,
+            'attachable_type' => MorphMap::alias(User::class),
             'attachable_id' => $user->id,
             'meta_type' => Attachment::META_AVATAR,
         ]);

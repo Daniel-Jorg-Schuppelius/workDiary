@@ -12,6 +12,7 @@ namespace Tests\Feature\Sso;
 
 use App\Enums\Auth\SsoProtocol;
 use App\Models\{AuditLog, Organization, SsoConnection, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -132,7 +133,7 @@ final class SsoEnforcementTest extends TestCase {
 
         $this->assertTrue(
             AuditLog::query()
-                ->where('auditable_type', SsoConnection::class)
+                ->where('auditable_type', MorphMap::stableKey(SsoConnection::class))
                 ->where('auditable_id', $connection->id)
                 ->where('event', 'sso.break_glass_used')
                 ->exists(),

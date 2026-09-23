@@ -13,6 +13,7 @@ namespace Tests\Feature;
 use App\Enums\Project\ProjectStatus;
 use App\Models\{AuditLog, Customer, ExternalReference, Project, User};
 use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Support\MorphMap;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Database\Eloquent\Relations\{MorphMany, MorphToMany};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -413,7 +414,7 @@ class CustomerControllerTest extends TestCase {
 
     private function auditCount(Customer $customer, string $event): int {
         return AuditLog::query()
-            ->where('auditable_type', Customer::class)
+            ->where('auditable_type', MorphMap::stableKey(Customer::class))
             ->where('auditable_id', $customer->id)
             ->where('event', $event)
             ->count();

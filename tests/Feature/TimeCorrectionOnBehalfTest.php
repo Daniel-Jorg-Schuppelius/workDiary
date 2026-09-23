@@ -12,6 +12,7 @@ namespace Tests\Feature;
 
 use App\Enums\User\Permission as P;
 use App\Models\{Attendance, Organization, TimeCorrectionRequest, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission as SpatiePermission;
 use Spatie\Permission\PermissionRegistrar;
@@ -46,7 +47,7 @@ class TimeCorrectionOnBehalfTest extends TestCase {
             'scope_date' => '2026-06-01',
             'reason' => 'Stempelung am 01.06. vergessen – im Namen nachgetragen.',
             'items' => [[
-                'target_type' => Attendance::class,
+                'target_type' => MorphMap::alias(Attendance::class),
                 'action' => 'create',
                 'after' => json_encode([
                     'organization_id' => $org->id, 'user_id' => $targetUserId, 'date' => '2026-06-01',

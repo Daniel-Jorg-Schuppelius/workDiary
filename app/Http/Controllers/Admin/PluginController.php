@@ -14,7 +14,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, PluginSetting, PluginState, User};
 use App\Plugins\{PluginCompatibility, PluginManager};
-use App\Support\ErrorText;
+use App\Support\{ErrorText, MorphMap};
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -241,7 +241,7 @@ class PluginController extends Controller {
                 'organization_id' => $this->currentOrganization()->id,
                 'user_id' => $admin->id,
                 'event' => 'integration.settings_changed',
-                'auditable_type' => PluginSetting::class,
+                'auditable_type' => MorphMap::stableKey(PluginSetting::class),
                 'auditable_id' => (int) $row->id,
                 'changes' => [
                     'integration' => (string) $row->plugin_id,
@@ -354,7 +354,7 @@ class PluginController extends Controller {
             'organization_id' => $this->currentOrganization()->id,
             'user_id' => $admin->id,
             'event' => 'integration.changed',
-            'auditable_type' => PluginSetting::class,
+            'auditable_type' => MorphMap::stableKey(PluginSetting::class),
             'auditable_id' => (int) $row->id,
             'changes' => [
                 'integration' => (string) $row->plugin_id,

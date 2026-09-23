@@ -20,7 +20,7 @@ use App\Plugins\JtlWawi\Api\JtlUrlGuard;
 use App\Plugins\JtlWawi\JtlWawiPlugin;
 use App\Plugins\JtlWawi\Services\{JtlRegistrationService, JtlScopePreflight, JtlSyncService, JtlTakeoverService};
 use App\Services\Inventory\InventoryProviderResolver;
-use App\Support\ErrorText;
+use App\Support\{ErrorText, MorphMap};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -278,7 +278,7 @@ class JtlAdminController extends Controller {
             'organization_id' => $organization->id,
             'user_id' => $user->id,
             'event' => 'inventory.mode_changed',
-            'auditable_type' => $organization->getMorphClass(),
+            'auditable_type' => MorphMap::stableKey($organization::class),
             'auditable_id' => $organization->getKey(),
             'changes' => [
                 'from' => $currentMode->value,

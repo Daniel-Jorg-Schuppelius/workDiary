@@ -15,6 +15,7 @@ use App\Models\Accounting\{AccountingAccount, AccountingOpenItem, AccountingOpen
 use App\Models\{Customer, Invoice, Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService, OpenItemService};
 use App\Services\Accounting\Posting\{PostingInboxService, PostingSourceRegistry};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -128,7 +129,7 @@ class AccountingOpenItemTest extends TestCase {
             'memo' => 'Zahlung ' . $invoice->number,
             'source_key' => 'payment-test:' . uniqid('', true),
             'snapshot' => [
-                'settles_source_type' => Invoice::class,
+                'settles_source_type' => MorphMap::alias(Invoice::class),
                 'settles_source_id' => $invoice->id,
                 'settlement_kind' => $kind->value,
             ],
@@ -154,7 +155,7 @@ class AccountingOpenItemTest extends TestCase {
         $this->assertSame(OpenItemStatus::Open, $item->status);
         $this->assertSame('119.00', $item->original_amount?->getAmount());
         $this->assertSame('119.00', $item->open_amount?->getAmount());
-        $this->assertSame(Invoice::class, $item->source_type);
+        $this->assertSame(MorphMap::alias(Invoice::class), $item->source_type);
         $this->assertSame($invoice->id, $item->source_id);
         $this->assertSame($entry->id, $item->accounting_entry_id);
     }

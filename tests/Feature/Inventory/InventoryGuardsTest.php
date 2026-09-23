@@ -13,6 +13,7 @@ namespace Tests\Feature\Inventory;
 use App\Enums\User\Permission as P;
 use App\Models\{Article, ArticleVariant, User, Warehouse};
 use App\Services\Inventory\InventoryLedger;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
 use Spatie\Permission\PermissionRegistrar;
@@ -72,7 +73,7 @@ final class InventoryGuardsTest extends TestCase {
             'organization_id' => $this->organization->id,
             'user_id' => $this->teamlead->id,
             'event' => 'inventory.negativeApproved',
-            'auditable_type' => ArticleVariant::class,
+            'auditable_type' => MorphMap::stableKey(ArticleVariant::class),
             'auditable_id' => $this->variant->id,
         ]);
     }

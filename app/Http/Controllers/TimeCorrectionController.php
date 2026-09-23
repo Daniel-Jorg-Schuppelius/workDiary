@@ -15,12 +15,13 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\{Attendance, TimeCorrectionRequest, TimeEntry, User};
 use App\Services\TimeApproval\{TimeCorrectionService, TimeCorrectionWorkflowException};
-use App\Support\{CarbonFmt, Formats, Sqid};
+use App\Support\{CarbonFmt, Formats, MorphMap, Sqid};
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Helper\Data\{JsonHelper, StringHelper};
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -94,8 +95,8 @@ class TimeCorrectionController extends Controller {
             'canCreateForOthers' => $canCreateForOthers,
             'members' => $members,
             'targetTypes' => [
-                TimeEntry::class => __('Zeitbuchung'),
-                Attendance::class => __('Anwesenheit'),
+                MorphMap::alias(TimeEntry::class) => __('Zeitbuchung'),
+                MorphMap::alias(Attendance::class) => __('Anwesenheit'),
             ],
             'actions' => [
                 'create' => __('Anlegen'),
@@ -126,7 +127,7 @@ class TimeCorrectionController extends Controller {
             . '–' . ($to !== null ? CarbonFmt::ftime($to) : '…');
 
         return response()->json([
-            TimeEntry::class => TimeEntry::query()->where('user_id', $owner->id)->whereBetween('date', DateRange::days($date, $date))->with('project:id,name')->orderBy('started_at')->get()
+            MorphMap::alias(TimeEntry::class) => TimeEntry::query()->where('user_id', $owner->id)->whereBetween('date', DateRange::days($date, $date))->with('project:id,name')->orderBy('started_at')->get()
                 ->map(static fn (TimeEntry $e): array => [
                     'id' => $e->sqid,
                     'label' => implode(' · ', array_filter([
@@ -135,7 +136,7 @@ class TimeCorrectionController extends Controller {
                         StringHelper::truncate((string) $e->description, 60),
                     ])),
                 ])->values(),
-            Attendance::class => Attendance::query()->where('user_id', $owner->id)->whereBetween('date', DateRange::days($date, $date))->orderBy('started_at')->get()
+            MorphMap::alias(Attendance::class) => Attendance::query()->where('user_id', $owner->id)->whereBetween('date', DateRange::days($date, $date))->orderBy('started_at')->get()
                 ->map(static fn (Attendance $a): array => ['id' => $a->sqid, 'label' => $span($a->started_at, $a->ended_at)])->values(),
         ]);
     }
@@ -150,10 +151,12 @@ class TimeCorrectionController extends Controller {
             $request->merge(['user_id' => Sqid::decodeOrNumeric(User::class, $request->input('user_id'))]);
         }
         $request->merge(['items' => array_map(static function (mixed $row): mixed {
-            if (! is_array($row) || ! in_array($row['target_type'] ?? null, [TimeEntry::class, Attendance::class], true) || ($row['target_id'] ?? '') === '') {
+            // Auf der Leitung sind Alias und Klassenname erlaubt (Alt-Clients).
+            $class = is_array($row) ? TimeCorrectionService::targetClass((string) ($row['target_type'] ?? '')) : null;
+            if ($class === null || ($row['target_id'] ?? '') === '') {
                 return $row;
             }
-            $row['target_id'] = Sqid::decodeOrNumeric($row['target_type'], (string) $row['target_id']);
+            $row['target_id'] = Sqid::decodeOrNumeric($class, (string) $row['target_id']);
 
             return $row;
         }, (array) $request->input('items', []))]);
@@ -163,7 +166,10 @@ class TimeCorrectionController extends Controller {
             'scope_date' => ['required', 'date'],
             'reason' => ['required', 'string', 'min:20', 'max:4000'],
             'items' => ['required', 'array', 'min:1'],
-            'items.*.target_type' => ['required', 'string', 'in:' . TimeEntry::class . ',' . Attendance::class],
+            'items.*.target_type' => ['required', 'string', Rule::in([
+                ...TimeCorrectionService::ALLOWED_TARGETS,
+                ...array_map(MorphMap::alias(...), TimeCorrectionService::ALLOWED_TARGETS),
+            ])],
             'items.*.target_id' => ['nullable', 'integer'],
             'items.*.action' => ['required', 'string', 'in:create,update,delete'],
             'items.*.before' => ['nullable', 'string'],

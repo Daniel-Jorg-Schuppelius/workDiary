@@ -18,6 +18,7 @@ use App\Models\Contract\{Contract, ContractSignatureLink, ContractSigningRevisio
 use App\Models\{Customer, Document, DocumentVersion, Organization, User};
 use App\Services\Contract\{ContractService, ContractSigningService};
 use App\Services\Document\DocumentService;
+use App\Support\MorphMap;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -174,7 +175,7 @@ final class ContractSigningTest extends TestCase {
         $this->assertTrue($drawn->hasFile());
         Storage::disk('local')->assertExists((string) $drawn->path);
 
-        $this->assertDatabaseHas('audit_logs', ['auditable_type' => Contract::class, 'auditable_id' => $this->contract->id, 'event' => 'contract.signing.completed']);
+        $this->assertDatabaseHas('audit_logs', ['auditable_type' => MorphMap::stableKey(Contract::class), 'auditable_id' => $this->contract->id, 'event' => 'contract.signing.completed']);
         $this->assertDatabaseHas('audit_logs', ['auditable_id' => $this->contract->id, 'event' => 'contract.signing.signed']);
         // Review-Wiedervorlage über die Obligationen.
         $this->assertDatabaseHas('contract_obligations', ['contract_id' => $this->contract->id, 'kind' => 'review']);

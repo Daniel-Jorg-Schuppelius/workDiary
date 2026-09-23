@@ -12,6 +12,7 @@ namespace Database\Factories;
 
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType, CommunicationVisibility};
 use App\Models\{CommunicationNote, DiaryEntry, User};
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -22,7 +23,7 @@ class CommunicationNoteFactory extends Factory {
 
     public function definition(): array {
         return [
-            'notable_type' => DiaryEntry::class,
+            'notable_type' => MorphMap::alias(DiaryEntry::class),
             'notable_id' => DiaryEntry::factory(),
             'type' => CommunicationNoteType::Call->value,
             'direction' => CommunicationDirection::Outbound->value,

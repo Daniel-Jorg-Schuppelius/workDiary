@@ -14,7 +14,7 @@ use App\Enums\Expense\ExpenseStatus;
 use App\Models\{BillOfQuantity, BoqItem, BoqItemMapping, BoqItemProgress, Customer, Expense, Material, MaterialUsage, Project, TimeEntry, Timesheet, TravelLog};
 use App\Services\Gaeb\BoqCalculationDataService;
 use App\Services\Travel\TravelChargeService;
-use App\Support\ChartBucket;
+use App\Support\{ChartBucket, MorphMap};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -669,7 +669,7 @@ class EconomicsReportBuilder {
         $materialToItems = [];
         BoqItemMapping::query()
             ->whereIn('boq_item_id', $itemIds)
-            ->where('mappable_type', Material::class)
+            ->where('mappable_type', MorphMap::alias(Material::class))
             ->get(['boq_item_id', 'mappable_id'])
             ->each(static function (BoqItemMapping $mapping) use (&$materialToItems): void {
                 $materialToItems[(int) $mapping->mappable_id][(int) $mapping->boq_item_id] = true;

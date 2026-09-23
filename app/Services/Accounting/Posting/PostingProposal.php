@@ -79,7 +79,7 @@ final class PostingProposal {
         return [
             'source_kind' => $this->kind->value,
             'source_key' => $this->sourceKey,
-            'source_type' => $this->source::class,
+            'source_type' => $this->source->getMorphClass(),
             'source_id' => $this->source->getKey(),
             'booked_on' => $this->bookedOn->toDateString(),
             'document_reference' => $this->documentReference,

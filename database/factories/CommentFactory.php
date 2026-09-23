@@ -11,6 +11,7 @@
 namespace Database\Factories;
 
 use App\Models\{Comment, DiaryEntry, User};
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,7 +22,7 @@ class CommentFactory extends Factory {
 
     public function definition(): array {
         return [
-            'commentable_type' => DiaryEntry::class,
+            'commentable_type' => MorphMap::alias(DiaryEntry::class),
             'commentable_id' => DiaryEntry::factory(),
             'user_id' => User::factory(),
             'body' => fake()->sentence(),

@@ -16,6 +16,7 @@ use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{Customer, Organization, Project, TimeEntry, User};
 use App\Models\Finance\BillingTransfer;
 use App\Services\Finance\BillingTransferService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};
 use Tests\TestCase;
@@ -146,7 +147,7 @@ class FinanceTransferUiTest extends TestCase {
         $this->assertSame(TransferTarget::File, $transfer->target);
         $this->assertSame(1, $transfer->items()->count());
         $this->assertSame((int) $entry->id, (int) $transfer->items()->first()->source_id);
-        $this->assertSame(TimeEntry::class, $transfer->items()->first()->source_type);
+        $this->assertSame(MorphMap::alias(TimeEntry::class), $transfer->items()->first()->source_type);
         // Draft verbraucht die Quelle noch nicht.
         $this->assertFalse((bool) $entry->fresh()->exported);
     }

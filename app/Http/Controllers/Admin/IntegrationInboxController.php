@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, ForeignCustomer, IntegrationInboxItem, Organization, Project, TimeEntry, User};
 use App\Services\Integration\{InboxActionService, InboxGroupBookerRegistry, MatchProfileRegistry};
-use App\Support\ErrorText;
+use App\Support\{ErrorText, MorphMap};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{MorphTo, Relation};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -39,6 +39,9 @@ class IntegrationInboxController extends Controller {
         $caseType = (string) $request->input('case', 'all');
         $plugin = (string) $request->input('plugin', 'all');
         $target = (string) $request->input('target', 'all');
+        if ($target !== 'all' && ($targetClass = MorphMap::classFor($target)) !== null) {
+            $target = MorphMap::alias($targetClass);
+        }
         $targetSearch = trim((string) $request->query('target_search', ''));
 
         // Gruppierte Zeit-Import-Einträge werden separat als Gruppen dargestellt;
@@ -211,13 +214,14 @@ class IntegrationInboxController extends Controller {
         // sqid-Label-Map.
         $projectRows = null;
         foreach (array_keys($registry->options()) as $type) {
-            if (! class_exists($type)) {
+            $class = MorphMap::classFor($type);
+            if ($class === null) {
                 continue;
             }
             /** @var array<string, string> $options */
             $options = [];
-            /** @var class-string<Model> $type */
-            $model = new $type;
+            /** @var class-string<Model> $class */
+            $model = new $class;
             // Nicht jedes Ziel hat eine `name`-Spalte (z. B. Event → `title`).
             $labelColumn = $this->targetLabelColumn($model);
             $rows = $model->newQuery()
@@ -314,8 +318,8 @@ class IntegrationInboxController extends Controller {
      * dem target_type des Eintrags (mandanten-gescopt über den Global Scope).
      */
     private function resolveTarget(IntegrationInboxItem $item, string $sqid): ?Model {
-        $class = $item->target_type;
-        if (! class_exists($class)) {
+        $class = MorphMap::classFor($item->target_type);
+        if ($class === null) {
             return null;
         }
 

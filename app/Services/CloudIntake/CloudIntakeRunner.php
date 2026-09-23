@@ -16,6 +16,7 @@ use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem};
 use App\Plugins\Contracts\DocumentIntakeSource;
 use App\Plugins\PluginManager;
 use App\Plugins\Support\Intake\IntakeItem;
+use App\Support\MorphMap;
 use CommonToolkit\Helper\FileSystem\{File, Folder};
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\{Carbon, Str};
@@ -354,7 +355,7 @@ class CloudIntakeRunner {
                 'organization_id' => $connection->organization_id,
                 'user_id' => $actor->id,
                 'event' => $status === CloudIntakeItemStatus::Imported ? 'cloudIntake.imported' : 'cloudIntake.rejected',
-                'auditable_type' => CloudDocumentConnection::class,
+                'auditable_type' => MorphMap::stableKey(CloudDocumentConnection::class),
                 'auditable_id' => $connection->id,
                 'changes' => [
                     'item' => $item->itemId,

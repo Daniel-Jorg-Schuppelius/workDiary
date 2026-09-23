@@ -13,6 +13,7 @@ namespace Tests\Feature\ExternalParticipant;
 use App\Enums\ExternalParticipant\ExternalAbility;
 use App\Mail\ExternalParticipantInvitedMail;
 use App\Models\{DiaryEntry, ExternalParticipant, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
@@ -65,7 +66,7 @@ class ExternalParticipantTest extends TestCase {
         // Einladung wird intern auditiert.
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'external.participant.invited',
-            'auditable_type' => DiaryEntry::class,
+            'auditable_type' => MorphMap::stableKey(DiaryEntry::class),
             'auditable_id' => $entry->id,
         ]);
     }
@@ -75,7 +76,7 @@ class ExternalParticipantTest extends TestCase {
         $token = 'plain-token-valid-1234567890';
         ExternalParticipant::factory()
             ->withPlainToken($token)
-            ->state(['subject_type' => DiaryEntry::class, 'subject_id' => $entry->id, 'organization_id' => $entry->organization_id])
+            ->state(['subject_type' => MorphMap::alias(DiaryEntry::class), 'subject_id' => $entry->id, 'organization_id' => $entry->organization_id])
             ->create();
 
         $this->get(route('external.show', ['token' => $token]))->assertOk();
@@ -109,7 +110,7 @@ class ExternalParticipantTest extends TestCase {
         ExternalParticipant::factory()
             ->withPlainToken($token)
             ->viewOnly()
-            ->state(['subject_type' => DiaryEntry::class, 'subject_id' => $entry->id, 'organization_id' => $entry->organization_id])
+            ->state(['subject_type' => MorphMap::alias(DiaryEntry::class), 'subject_id' => $entry->id, 'organization_id' => $entry->organization_id])
             ->create();
 
         $this->post(route('external.upload', ['token' => $token]), [])->assertForbidden();
@@ -123,14 +124,14 @@ class ExternalParticipantTest extends TestCase {
         ExternalParticipant::factory()
             ->withPlainToken($token)
             ->abilities([ExternalAbility::Comment->value])
-            ->state(['subject_type' => DiaryEntry::class, 'subject_id' => $entry->id, 'organization_id' => $entry->organization_id])
+            ->state(['subject_type' => MorphMap::alias(DiaryEntry::class), 'subject_id' => $entry->id, 'organization_id' => $entry->organization_id])
             ->create();
 
         $this->post(route('external.comment', ['token' => $token]), ['body' => 'Bitte Termin verschieben.'])
             ->assertRedirect(route('external.show', ['token' => $token]));
 
         $this->assertDatabaseHas('comments', [
-            'commentable_type' => DiaryEntry::class,
+            'commentable_type' => MorphMap::alias(DiaryEntry::class),
             'commentable_id' => $entry->id,
             'user_id' => null,
             'body' => 'Bitte Termin verschieben.',
@@ -144,7 +145,7 @@ class ExternalParticipantTest extends TestCase {
         ExternalParticipant::factory()
             ->withPlainToken($token)
             ->abilities([ExternalAbility::Confirm->value])
-            ->state(['subject_type' => DiaryEntry::class, 'subject_id' => $entry->id, 'organization_id' => $entry->organization_id])
+            ->state(['subject_type' => MorphMap::alias(DiaryEntry::class), 'subject_id' => $entry->id, 'organization_id' => $entry->organization_id])
             ->create();
 
         $this->post(route('external.confirm', ['token' => $token]), ['accept' => '1', 'note' => 'Abnahme ok'])
@@ -159,7 +160,7 @@ class ExternalParticipantTest extends TestCase {
         $token = 'plain-token-toberevoked-12345';
         $participant = ExternalParticipant::factory()
             ->withPlainToken($token)
-            ->state(['subject_type' => DiaryEntry::class, 'subject_id' => $entry->id, 'organization_id' => $manager->organization_id])
+            ->state(['subject_type' => MorphMap::alias(DiaryEntry::class), 'subject_id' => $entry->id, 'organization_id' => $manager->organization_id])
             ->create();
 
         $this->actingAs($manager)

@@ -14,6 +14,7 @@ use App\Enums\Finance\{AccountType, AccountingEntryStatus, ProfitDetermination, 
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingRecurringRun, AccountingRecurringTemplate};
 use App\Models\{IncomingEInvoice, Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, RecurringAccountingService};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -176,7 +177,7 @@ class AccountingRecurringTest extends TestCase {
         $fulfilled = $this->service()->fulfill($run, $incoming);
 
         $this->assertSame(RecurringRunStatus::Fulfilled, $fulfilled->status);
-        $this->assertSame(IncomingEInvoice::class, $fulfilled->fulfilled_by_type);
+        $this->assertSame(MorphMap::alias(IncomingEInvoice::class), $fulfilled->fulfilled_by_type);
         $this->assertSame($incoming->id, $fulfilled->fulfilled_by_id);
     }
 

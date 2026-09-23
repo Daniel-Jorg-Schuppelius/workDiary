@@ -13,6 +13,7 @@ namespace Database\Factories;
 use App\Enums\Compliance\ComplianceFindingStatus;
 use App\Models\{ComplianceFinding, Organization, User};
 use App\Services\Compliance\AttendanceComplianceChecker;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<ComplianceFinding> */
@@ -27,7 +28,7 @@ class ComplianceFindingFactory extends Factory {
             'category' => 'arbzg',
             'rule_code' => AttendanceComplianceChecker::KIND_MAX_DAILY_HOURS,
             'severity' => 'error',
-            'subject_type' => User::class,
+            'subject_type' => MorphMap::alias(User::class),
             'subject_id' => User::factory(),
             'scope_date' => $date,
             'detected_value' => 660,

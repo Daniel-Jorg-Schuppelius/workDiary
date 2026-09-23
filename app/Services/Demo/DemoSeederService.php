@@ -24,6 +24,7 @@ use App\Models\{Asset, Attachment, AuditLog, CommunicationNote, Customer, DiaryE
 use App\Services\Classification\BranchProfileInstaller;
 use App\Services\Licensing\{FeatureFlagResolver, LicenseService, ModuleCatalog, ModuleScopeService};
 use App\Services\Procedure\{BackupProofService, ProcedureExecutionService, ProcedureTemplateService, SecondPersonGate};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Faker\{Factory as FakerFactory, Generator as Faker};
 use Illuminate\Support\Collection;
@@ -110,7 +111,7 @@ class DemoSeederService {
             'organization_id' => $organization->id,
             'user_id' => $actor?->id,
             'event' => 'demo.orgCreated',
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $organization->id,
             'changes' => [
                 'industry' => $industry->value,
@@ -138,7 +139,7 @@ class DemoSeederService {
             'organization_id' => $organization->id,
             'user_id' => $actor?->id,
             'event' => 'demo.seeded',
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $organization->id,
             'changes' => $counts,
         ]);
@@ -174,7 +175,7 @@ class DemoSeederService {
             'organization_id' => $organization->id,
             'user_id' => $actor?->id,
             'event' => 'demo.licensed',
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $organization->id,
             'changes' => [
                 'plan' => $plan,
@@ -312,7 +313,7 @@ class DemoSeederService {
                 ->count();
             $counts['open_issues'] = OpenIssue::query()
                 ->where('organization_id', $organization->id)
-                ->where('subject_type', DiaryEntry::class)
+                ->where('subject_type', MorphMap::alias(DiaryEntry::class))
                 ->where('subject_id', $mainDiary->id)
                 ->count();
 
@@ -423,7 +424,7 @@ class DemoSeederService {
             // Demo-Anhänge inkl. Storage-Dateien (query()->delete() der
             // Aufträge feuert keine Model-Events — Leichen vermeiden).
             $attachments = Attachment::query()
-                ->where('attachable_type', DiaryEntry::class)
+                ->where('attachable_type', MorphMap::alias(DiaryEntry::class))
                 ->whereIn('attachable_id', $diaryIds)
                 ->get();
             foreach ($attachments as $attachment) {
@@ -437,7 +438,7 @@ class DemoSeederService {
             // Protokolle der Demo-Aufträge (inkl. Items über DB-Cascade/explizit).
             $protocolIds = Protocol::query()
                 ->where('organization_id', $organization->id)
-                ->where('subject_type', DiaryEntry::class)
+                ->where('subject_type', MorphMap::alias(DiaryEntry::class))
                 ->whereIn('subject_id', $diaryIds)
                 ->pluck('id');
             ProtocolItem::query()->whereIn('protocol_id', $protocolIds)->delete();
@@ -445,13 +446,13 @@ class DemoSeederService {
 
             CommunicationNote::query()
                 ->where('organization_id', $organization->id)
-                ->where('notable_type', DiaryEntry::class)
+                ->where('notable_type', MorphMap::alias(DiaryEntry::class))
                 ->whereIn('notable_id', $diaryIds)
                 ->delete();
 
             OpenIssue::query()
                 ->where('organization_id', $organization->id)
-                ->where('subject_type', DiaryEntry::class)
+                ->where('subject_type', MorphMap::alias(DiaryEntry::class))
                 ->whereIn('subject_id', $diaryIds)
                 ->delete();
 
@@ -743,7 +744,7 @@ class DemoSeederService {
 
         OpenIssue::query()->create([
             'organization_id' => $organization->id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'source_type' => OpenIssueSource::Manual->value,
             'title' => $main['open_issue_title'],
@@ -839,7 +840,7 @@ class DemoSeederService {
         $protocol = Protocol::query()->create([
             'organization_id' => $organization->id,
             'type' => ProtocolType::Acceptance->value,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'title' => $main['protocol_title'],
             'description' => 'Abnahmeprotokoll zum Demo-Hauptauftrag (generisch).',
@@ -887,7 +888,7 @@ class DemoSeederService {
 
         CommunicationNote::query()->create([
             'organization_id' => $organization->id,
-            'notable_type' => DiaryEntry::class,
+            'notable_type' => MorphMap::alias(DiaryEntry::class),
             'notable_id' => $entry->id,
             'type' => CommunicationNoteType::Call->value,
             'direction' => CommunicationDirection::Outbound->value,

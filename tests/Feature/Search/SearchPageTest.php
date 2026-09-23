@@ -11,6 +11,7 @@
 namespace Tests\Feature\Search;
 
 use App\Models\{Attachment, Comment, Customer, DiaryEntry, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -74,14 +75,14 @@ final class SearchPageTest extends TestCase {
 
         Comment::query()->create([
             'organization_id' => $this->organization->id,
-            'commentable_type' => DiaryEntry::class,
+            'commentable_type' => MorphMap::alias(DiaryEntry::class),
             'commentable_id' => $mine->id,
             'user_id' => $this->user->id,
             'body' => 'Spezialventil DX9 nachbestellen',
         ]);
         Comment::query()->create([
             'organization_id' => $this->organization->id,
-            'commentable_type' => DiaryEntry::class,
+            'commentable_type' => MorphMap::alias(DiaryEntry::class),
             'commentable_id' => $foreign->id,
             'user_id' => $foreignUser->id,
             'body' => 'Spezialventil DX9 defekt gemeldet',
@@ -103,7 +104,7 @@ final class SearchPageTest extends TestCase {
         ]);
         Attachment::factory()->create([
             'organization_id' => $this->organization->id,
-            'attachable_type' => DiaryEntry::class,
+            'attachable_type' => MorphMap::alias(DiaryEntry::class),
             'attachable_id' => $mine->id,
             'user_id' => $this->user->id,
             'original_name' => 'pruefprotokoll_dx9.pdf',

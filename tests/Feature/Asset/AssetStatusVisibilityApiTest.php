@@ -14,6 +14,7 @@ use App\Enums\Asset\AssetOwnership;
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
 use App\Enums\Protocol\ProtocolType;
 use App\Models\{Asset, OpenIssue, Protocol, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\WithOrganization;
@@ -40,7 +41,7 @@ class AssetStatusVisibilityApiTest extends TestCase {
 
         OpenIssue::query()->create([
             'organization_id' => $this->organization->id,
-            'subject_type' => Asset::class,
+            'subject_type' => MorphMap::alias(Asset::class),
             'subject_id' => $asset->id,
             'source_type' => OpenIssueSource::ProtocolDefect->value,
             'source_ref_id' => null,

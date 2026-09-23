@@ -14,6 +14,7 @@ use App\Enums\Document\{DocumentStatus, DocumentType};
 use App\Enums\Hr\HrDocumentCategory;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, HasTags};
 use App\Services\Content\ContentSubjectResolver;
+use App\Support\MorphMap;
 use Database\Factories\DocumentFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -129,7 +130,7 @@ class Document extends Model {
      * Portal-Scopes. Liest die geladene `documentable`-Relation.
      */
     public function customerId(): ?int {
-        return match ($this->documentable_type) {
+        return match (MorphMap::classFor($this->documentable_type)) {
             Customer::class => $this->documentable_id !== null ? (int) $this->documentable_id : null,
             Project::class, DiaryEntry::class, Asset::class,
             \App\Models\Disposal\DisposalJob::class,
@@ -203,7 +204,7 @@ class Document extends Model {
      * hrFile-Zugriffskreis, immer vertraulich, nie kundenfreigebbar.
      */
     public function isPersonnelFile(): bool {
-        return $this->documentable_type === User::class;
+        return MorphMap::is($this->documentable_type, User::class);
     }
 
     /**
@@ -214,7 +215,7 @@ class Document extends Model {
      */
     public function scopePersonnelFilesOf(Builder $query, User $member): Builder {
         return $query
-            ->where('documentable_type', User::class)
+            ->where('documentable_type', MorphMap::alias(User::class))
             ->where('documentable_id', $member->id);
     }
 
@@ -237,7 +238,7 @@ class Document extends Model {
             $outer->where(function (Builder $general) use ($user, $seesConfidential): void {
                 $general->where(function (Builder $q): void {
                     $q->whereNull('documentable_type')
-                        ->orWhere('documentable_type', '!=', User::class);
+                        ->orWhere('documentable_type', '!=', MorphMap::alias(User::class));
                 });
                 if (! $seesConfidential) {
                     $general->where(function (Builder $q) use ($user): void {
@@ -247,7 +248,7 @@ class Document extends Model {
                 }
             });
             if ($seesPersonnelFiles) {
-                $outer->orWhere('documentable_type', User::class);
+                $outer->orWhere('documentable_type', MorphMap::alias(User::class));
             }
         });
     }

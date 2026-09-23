@@ -16,6 +16,7 @@ use App\Models\Finance\{DatevBookingBatch, DatevBookingEvent, DatevBookingSource
 use App\Services\Concerns\ResolvesActorId;
 use App\Services\Export\ExportRunner;
 use App\Services\Finance\Datev\{DatevBookingAdapter, DatevBookingConfig, DatevBookingFieldResolver};
+use App\Support\MorphMap;
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Helper\Data\{CryptoHelper, NumberHelper};
@@ -36,7 +37,7 @@ use Illuminate\Support\Facades\{DB, Storage};
  * Jeder Statuswechsel schreibt ein {@see DatevBookingEvent} (Hash-Kette, audit:verify).
  *
  * @phpstan-type BookingRow array{
- *   source_type: class-string,
+ *   source_type: string,
  *   source_id: int,
  *   debtor_account: string,
  *   revenue_account: string,
@@ -161,7 +162,7 @@ class DatevBookingService {
             $sub->from('datev_booking_sources')
                 ->join('datev_booking_batches', 'datev_booking_batches.id', '=', 'datev_booking_sources.datev_booking_batch_id')
                 ->whereColumn('datev_booking_sources.source_id', 'invoices.id')
-                ->where('datev_booking_sources.source_type', Invoice::class)
+                ->where('datev_booking_sources.source_type', MorphMap::alias(Invoice::class))
                 ->where('datev_booking_sources.is_reversal', false)
                 ->where('datev_booking_batches.status', DatevBatchStatus::Exported->value)
                 ->whereNull('datev_booking_batches.deleted_at');
@@ -172,7 +173,7 @@ class DatevBookingService {
             $sub->from('datev_booking_sources')
                 ->join('datev_booking_batches', 'datev_booking_batches.id', '=', 'datev_booking_sources.datev_booking_batch_id')
                 ->whereColumn('datev_booking_sources.source_id', 'invoices.id')
-                ->where('datev_booking_sources.source_type', Invoice::class)
+                ->where('datev_booking_sources.source_type', MorphMap::alias(Invoice::class))
                 ->where('datev_booking_sources.is_reversal', true)
                 ->whereNull('datev_booking_batches.deleted_at');
         });
@@ -189,7 +190,7 @@ class DatevBookingService {
      * Buchung DATEV-seitig um.
      *
      * @param  Collection<int, Invoice|Expense>  $sources
-     * @return list<array{source_type: class-string, source_id: int, debtor_account: string, revenue_account: string, soll_haben: string, amount: float, tax_rate: float, tax_key: ?string, document_ref: string, text: string, date: string, is_credit_note: bool, is_reversal: bool}>
+     * @return list<array{source_type: string, source_id: int, debtor_account: string, revenue_account: string, soll_haben: string, amount: float, tax_rate: float, tax_key: ?string, document_ref: string, text: string, date: string, is_credit_note: bool, is_reversal: bool}>
      */
     public function buildBookingRows(Collection $sources, DatevBookingConfig $config): array {
         $rows = [];
@@ -212,7 +213,7 @@ class DatevBookingService {
     }
 
     /**
-     * @return list<array{source_type: class-string, source_id: int, debtor_account: string, revenue_account: string, soll_haben: string, amount: float, tax_rate: float, tax_key: ?string, document_ref: string, text: string, date: string, is_credit_note: bool, is_reversal: bool}>
+     * @return list<array{source_type: string, source_id: int, debtor_account: string, revenue_account: string, soll_haben: string, amount: float, tax_rate: float, tax_key: ?string, document_ref: string, text: string, date: string, is_credit_note: bool, is_reversal: bool}>
      */
     private function invoiceRows(Invoice $invoice, DatevBookingConfig $config): array {
         $breakdown = (array) ($invoice->tax_breakdown ?? []);
@@ -241,7 +242,7 @@ class DatevBookingService {
     }
 
     /**
-     * @return array{source_type: class-string, source_id: int, debtor_account: string, revenue_account: string, soll_haben: string, amount: float, tax_rate: float, tax_key: ?string, document_ref: string, text: string, date: string, is_credit_note: bool, is_reversal: bool}
+     * @return array{source_type: string, source_id: int, debtor_account: string, revenue_account: string, soll_haben: string, amount: float, tax_rate: float, tax_key: ?string, document_ref: string, text: string, date: string, is_credit_note: bool, is_reversal: bool}
      */
     private function invoiceRow(Invoice $invoice, DatevBookingConfig $config): array {
         $taxRate = $invoice->tax_rate !== null ? (float) $invoice->tax_rate->getNumericValue() : 0.0;
@@ -256,7 +257,7 @@ class DatevBookingService {
         $sollHaben = $isCredit ? 'H' : 'S';
 
         return [
-            'source_type' => Invoice::class,
+            'source_type' => MorphMap::alias(Invoice::class),
             'source_id' => (int) $invoice->id,
             'debtor_account' => $config->debtorAccountFor($invoice->customer),
             'revenue_account' => $config->revenueAccountFor($taxRate),
@@ -280,14 +281,14 @@ class DatevBookingService {
      * ({@see DatevBookingConfig::expenseAccountFor()}); ohne Mapping greift die
      * bisherige Vereinfachung (Erlöskonto-Slot, Steuersatz-BU).
      *
-     * @return array{source_type: class-string, source_id: int, debtor_account: string, revenue_account: string, soll_haben: string, amount: float, tax_rate: float, tax_key: ?string, document_ref: string, text: string, date: string, is_credit_note: bool, is_reversal: bool}
+     * @return array{source_type: string, source_id: int, debtor_account: string, revenue_account: string, soll_haben: string, amount: float, tax_rate: float, tax_key: ?string, document_ref: string, text: string, date: string, is_credit_note: bool, is_reversal: bool}
      */
     private function expenseRow(Expense $expense, DatevBookingConfig $config): array {
         $taxRate = ($expense->tax_rate !== null ? (float) $expense->tax_rate->getNumericValue() : 0.0);
         $gross = ($expense->amount_gross?->toFloat() ?? 0.0);
 
         return [
-            'source_type' => Expense::class,
+            'source_type' => MorphMap::alias(Expense::class),
             'source_id' => (int) $expense->id,
             'debtor_account' => (string) ($config->debtorBase),
             'revenue_account' => $config->expenseAccountFor($expense),
@@ -673,7 +674,7 @@ class DatevBookingService {
             $sub->from('datev_booking_sources')
                 ->join('datev_booking_batches', 'datev_booking_batches.id', '=', 'datev_booking_sources.datev_booking_batch_id')
                 ->whereColumn('datev_booking_sources.source_id', $table . '.id')
-                ->where('datev_booking_sources.source_type', $sourceType)
+                ->where('datev_booking_sources.source_type', MorphMap::alias($sourceType))
                 ->where('datev_booking_sources.is_reversal', false)
                 ->whereIn('datev_booking_batches.status', [DatevBatchStatus::Draft->value, DatevBatchStatus::Exported->value])
                 ->whereNull('datev_booking_batches.deleted_at');
@@ -760,12 +761,13 @@ class DatevBookingService {
     private function sourceModels(DatevBookingBatch $batch): array {
         $models = [];
         foreach ([Invoice::class => ['customer'], Expense::class => []] as $class => $with) {
-            $ids = $batch->sources->where('source_type', $class)->pluck('source_id')->map(intval(...))->all();
+            $alias = MorphMap::alias($class);
+            $ids = $batch->sources->where('source_type', $alias)->pluck('source_id')->map(intval(...))->all();
             if ($ids === []) {
                 continue;
             }
             foreach ($class::query()->with($with)->whereIn('id', $ids)->get() as $model) {
-                $models[$class . ':' . $model->getKey()] = $model;
+                $models[$alias . ':' . $model->getKey()] = $model;
             }
         }
 

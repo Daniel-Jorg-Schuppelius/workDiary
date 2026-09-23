@@ -16,6 +16,7 @@ use App\Models\{Customer, Document, IncomingEInvoice, Invoice, Organization, Use
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService};
 use App\Services\Accounting\Posting\{PostingInboxService, PostingSourceRegistry};
 use App\Services\Accounting\Reports\LiquidityForecastBuilder;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -138,7 +139,7 @@ class LiquidityForecastTest extends TestCase {
             'memo' => 'Zahlung ' . $invoice->number,
             'source_key' => 'forecast-test:' . uniqid('', true),
             'snapshot' => [
-                'settles_source_type' => Invoice::class,
+                'settles_source_type' => MorphMap::alias(Invoice::class),
                 'settles_source_id' => $invoice->id,
                 'settlement_kind' => SettlementKind::Payment->value,
             ],
@@ -173,7 +174,7 @@ class LiquidityForecastTest extends TestCase {
             'booked_on' => CarbonImmutable::parse($issuedOn),
             'memo' => 'Eingangsrechnung ' . $incoming->invoice_number,
             'document_reference' => (string) $incoming->invoice_number,
-            'source_type' => IncomingEInvoice::class,
+            'source_type' => MorphMap::alias(IncomingEInvoice::class),
             'source_id' => (int) $incoming->id,
             'source_key' => 'forecast-test:' . uniqid('', true),
             'snapshot' => ['due_date' => $dueOn],

@@ -14,6 +14,7 @@ namespace App\Services\Licensing;
 
 use App\Enums\Licensing\ModuleStatus;
 use App\Models\{AuditLog, LicenseFlagOverride, Organization, User};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\FileSystem\File;
 
@@ -179,7 +180,7 @@ class ModuleScopeService {
                 'organization_id' => $organization->id,
                 'user_id' => $actor->id,
                 'event' => 'license.scopeConfigured',
-                'auditable_type' => Organization::class,
+                'auditable_type' => MorphMap::stableKey(Organization::class),
                 'auditable_id' => $organization->id,
                 'changes' => [
                     'preset' => $presetKey,
@@ -206,7 +207,7 @@ class ModuleScopeService {
             'organization_id' => $organization->id,
             'user_id' => $actor->id,
             'event' => $event,
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $organization->id,
             'changes' => [
                 'module' => $module,

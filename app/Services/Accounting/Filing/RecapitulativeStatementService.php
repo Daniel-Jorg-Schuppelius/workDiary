@@ -15,6 +15,7 @@ namespace App\Services\Accounting\Filing;
 use App\Enums\Finance\{AccountingEntryStatus, VatFilingInterval};
 use App\Models\Accounting\{AccountingEntryLine, AccountingTaxCode};
 use App\Models\{Customer, Organization};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -95,7 +96,7 @@ class RecapitulativeStatementService {
             $amount = $line->signedAmount()->negated();
             $total = $total->plus($amount);
 
-            $customer = $line->counterparty_type === Customer::class && $line->counterparty_id !== null
+            $customer = MorphMap::is($line->counterparty_type, Customer::class) && $line->counterparty_id !== null
                 ? Customer::query()->find($line->counterparty_id)
                 : null;
 

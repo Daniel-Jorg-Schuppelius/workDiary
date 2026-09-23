@@ -13,6 +13,7 @@ namespace Tests\Feature;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{AuditLog, Customer, ForeignCustomer, Project, TimeEntry, User};
 use App\Services\Invoicing\InvoiceGenerator;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -83,7 +84,7 @@ class ForeignCustomerTest extends TestCase {
         // Audit via Auditable-Trait (A1): genau eine Zeile je Event, archived_at-Wechsel als eigenes Event.
         foreach (['archived' => 1, 'restored' => 1, 'updated' => 0] as $event => $expected) {
             $this->assertSame($expected, AuditLog::query()
-                ->where('auditable_type', ForeignCustomer::class)
+                ->where('auditable_type', MorphMap::stableKey(ForeignCustomer::class))
                 ->where('auditable_id', $fc->id)
                 ->where('event', $event)
                 ->count(), "audit_logs für Event '{$event}'");

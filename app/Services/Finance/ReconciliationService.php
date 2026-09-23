@@ -21,7 +21,9 @@ use App\Models\Finance\{BankTransaction, PaymentAllocation, PaymentReconciliatio
 use App\Services\Billing\CustomerAccountStatementService;
 use App\Services\Club\ClubFeePaymentService;
 use App\Services\Concerns\ResolvesActorId;
+use App\Support\MorphMap;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 /**
  * Bestätigung und Rücknahme von Zahlungszuordnungen (Feature 045, „Priorität 3").
@@ -61,7 +63,7 @@ class ReconciliationService {
                 $allocation = PaymentAllocation::query()->create([
                     'organization_id' => $transaction->organization_id,
                     'bank_transaction_id' => $transaction->id,
-                    'allocatable_type' => $target::class,
+                    'allocatable_type' => $target->getMorphClass(),
                     'allocatable_id' => $target->id,
                     'amount' => (string) $amount,
                     'kind' => $kind,
@@ -74,7 +76,7 @@ class ReconciliationService {
 
                 $payloadTargets[] = [
                     'allocation_id' => $allocation->id,
-                    'target_type' => $target::class,
+                    'target_type' => $target->getMorphClass(),
                     'target_id' => $target->id,
                     'amount' => (string) $amount,
                     'kind' => $kind->value,
@@ -330,7 +332,7 @@ class ReconciliationService {
                 PaymentAllocation::query()->create([
                     'organization_id' => $invoice->organization_id,
                     'bank_transaction_id' => $transaction->id,
-                    'allocatable_type' => Invoice::class,
+                    'allocatable_type' => MorphMap::alias(Invoice::class),
                     'allocatable_id' => $invoice->id,
                     'amount' => (string) $skonto,
                     'kind' => AllocationKind::Skonto,
@@ -382,7 +384,7 @@ class ReconciliationService {
         // Vollaudit 2026-07 (N12): der automatische Skonto-Satz existiert nur
         // wegen der Deckung — fällt sie, wird er mit zurückgenommen (SoftDelete).
         PaymentAllocation::query()
-            ->where('allocatable_type', Invoice::class)
+            ->where('allocatable_type', MorphMap::alias(Invoice::class))
             ->where('allocatable_id', $invoice->id)
             ->where('kind', AllocationKind::Skonto)
             ->get()
@@ -450,7 +452,7 @@ class ReconciliationService {
      */
     public function allocatedSum(Invoice $invoice): float {
         $allocated = (float) PaymentAllocation::query()
-            ->where('allocatable_type', Invoice::class)
+            ->where('allocatable_type', MorphMap::alias(Invoice::class))
             ->where('allocatable_id', $invoice->id)
             // Vollaudit 2026-07 (N12): Skonto-Sätze sind Erlösschmälerung,
             // keine Zahlungsdeckung — sonst würde der Auto-Satz die Deckung verfälschen.
@@ -492,8 +494,12 @@ class ReconciliationService {
     }
 
     private function resolveTarget(?int $organizationId, string $type, int $id): Invoice|Expense|CustomerBillingAgreement|ClubFeeClaim {
+        $class = MorphMap::classFor($type);
+        if ($class === null) {
+            throw new InvalidArgumentException("Unbekannter Zieltyp {$type}.");
+        }
         /** @var Invoice|Expense|CustomerBillingAgreement|ClubFeeClaim|null $target */
-        $target = $type::query()->where('organization_id', $organizationId)->find($id);
+        $target = $class::query()->where('organization_id', $organizationId)->find($id);
 
         if ($target instanceof CustomerBillingAgreement && ! $target->active) {
             $target = null; // inaktives Kundenkonto nie bebuchen

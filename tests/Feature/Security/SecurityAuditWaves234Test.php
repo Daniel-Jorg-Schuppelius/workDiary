@@ -12,6 +12,7 @@ namespace Tests\Feature\Security;
 
 use App\Models\{Attachment, DiaryEntry, OperationsTask, User};
 use App\Support\Crypto\EnvelopeCrypto;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Laravel\Sanctum\Sanctum;
@@ -105,7 +106,7 @@ class SecurityAuditWaves234Test extends TestCase {
         $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $entry = DiaryEntry::factory()->for($uploader)->create(['organization_id' => $this->organization->id]);
         $attachment = Attachment::factory()->for($uploader, 'uploader')->create([
-            'attachable_type' => DiaryEntry::class,
+            'attachable_type' => MorphMap::alias(DiaryEntry::class),
             'attachable_id' => $entry->id,
         ]);
 

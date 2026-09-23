@@ -13,6 +13,7 @@ namespace Tests\Feature\Ideas;
 use App\Enums\Ideas\IdeaShareRole;
 use App\Models\{IdeaMap, User};
 use App\Services\Ideas\{IdeaMapExportService, IdeaMapService, IdeaNodeService};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -53,7 +54,7 @@ final class IdeaMapExportTest extends TestCase {
         $this->assertStringNotContainsString('"id"', (string) $response->getContent());
 
         $this->assertDatabaseHas('audit_logs', [
-            'auditable_type' => $this->map->getMorphClass(),
+            'auditable_type' => MorphMap::stableKey($this->map::class),
             'auditable_id' => $this->map->id,
             'event' => 'idea_map.exported',
         ]);
@@ -119,7 +120,7 @@ final class IdeaMapExportTest extends TestCase {
         $this->assertInstanceOf(\SimpleXMLElement::class, simplexml_load_string($body));
 
         $this->assertDatabaseHas('audit_logs', [
-            'auditable_type' => $this->map->getMorphClass(),
+            'auditable_type' => MorphMap::stableKey($this->map::class),
             'auditable_id' => $this->map->id,
             'event' => 'idea_map.exported',
         ]);

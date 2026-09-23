@@ -12,6 +12,7 @@ namespace Database\Factories;
 
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
 use App\Models\{DiaryEntry, OpenIssue, User};
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -22,7 +23,7 @@ class OpenIssueFactory extends Factory {
 
     public function definition(): array {
         return [
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => DiaryEntry::factory(),
             'source_type' => OpenIssueSource::Manual->value,
             'source_ref_id' => null,

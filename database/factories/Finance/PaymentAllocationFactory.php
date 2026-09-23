@@ -13,6 +13,7 @@ namespace Database\Factories\Finance;
 use App\Enums\Finance\AllocationKind;
 use App\Models\Finance\{BankTransaction, PaymentAllocation};
 use App\Models\Invoice;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -27,7 +28,7 @@ class PaymentAllocationFactory extends Factory {
         // wird daher von den Tests explizit gesetzt. Default = Platzhalter.
         return [
             'bank_transaction_id' => BankTransaction::factory(),
-            'allocatable_type' => Invoice::class,
+            'allocatable_type' => MorphMap::alias(Invoice::class),
             'allocatable_id' => 1,
             'amount' => '100.00',
             'kind' => AllocationKind::Payment,

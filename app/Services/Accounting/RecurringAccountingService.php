@@ -144,7 +144,7 @@ class RecurringAccountingService {
 
         $run->update([
             'status' => RecurringRunStatus::Fulfilled,
-            'fulfilled_by_type' => $document::class,
+            'fulfilled_by_type' => $document->getMorphClass(),
             'fulfilled_by_id' => $document->getKey(),
             'fulfilled_at' => now(),
         ]);

@@ -12,7 +12,7 @@ namespace Tests\Feature\Settings;
 
 use App\Models\{AuditLog, SystemSetting};
 use App\Settings\{SettingScope, SettingsRegistry};
-use App\Support\Setting;
+use App\Support\{MorphMap, Setting};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\Concerns\WithOrganization;
@@ -55,7 +55,7 @@ class SystemSettingSecrecyTest extends TestCase {
         Setting::set('testsecret.api_key', 'super-geheim-123', SettingScope::System);
 
         $log = AuditLog::query()
-            ->where('auditable_type', SystemSetting::class)
+            ->where('auditable_type', MorphMap::stableKey(SystemSetting::class))
             ->where('event', 'created')
             ->latest('id')
             ->first();

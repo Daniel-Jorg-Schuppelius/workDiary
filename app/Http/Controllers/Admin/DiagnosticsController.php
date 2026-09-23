@@ -15,6 +15,7 @@ use App\Http\Controllers\Concerns\{RequiresPlatformOperator, ResolvesCurrentOrga
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, User};
 use App\Services\Diagnostics\DiagnosticsService;
+use App\Support\MorphMap;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Gate, Mail};
 use Illuminate\View\View;
@@ -84,7 +85,7 @@ class DiagnosticsController extends Controller {
             'organization_id' => $this->currentOrganization()->id,
             'user_id' => $user->id,
             'event' => 'diagnostics.viewed',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $user->id,
             'changes' => ['format' => $format],
         ]);
@@ -95,7 +96,7 @@ class DiagnosticsController extends Controller {
             'organization_id' => $this->currentOrganization()->id,
             'user_id' => $user->id,
             'event' => 'diagnostics.testTriggered',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $user->id,
             'changes' => ['kind' => $kind, 'ok' => $ok, 'error' => $error],
         ]);

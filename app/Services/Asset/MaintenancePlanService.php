@@ -13,6 +13,7 @@ namespace App\Services\Asset;
 use App\Enums\Asset\MaintenanceIntervalKind;
 use App\Exceptions\AssetValidationException;
 use App\Models\{Asset, MaintenancePlan, User};
+use App\Support\MorphMap;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -26,7 +27,7 @@ class MaintenancePlanService {
 
         $plan = new MaintenancePlan([
             'organization_id' => $asset->organization_id,
-            'subject_type' => Asset::class,
+            'subject_type' => MorphMap::alias(Asset::class),
             'subject_id' => $asset->id,
             'asset_id' => $asset->id,
             'code' => (string) ($payload['code'] ?? $this->generateCode($asset)),

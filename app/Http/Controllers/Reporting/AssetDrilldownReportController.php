@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{BuildsOpenIssueDrilldown, RendersReportPdf, WritesReportCsv};
 use App\Models\{Asset, DiaryEntry, OpenIssue, Protocol, User};
 use App\Services\Asset\RecurringDefectService;
+use App\Support\MorphMap;
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -79,7 +80,7 @@ class AssetDrilldownReportController extends Controller {
         $assetIds = $this->assetIds($filters);
 
         $issuesQuery = $this->openIssueDrilldownQuery($escalatedOnly, function ($query) use ($assetIds): void {
-            $query->where('subject_type', Asset::class)
+            $query->where('subject_type', MorphMap::alias(Asset::class))
                 ->when($assetIds !== [], fn($q) => $q->whereIn('subject_id', $assetIds), fn($q) => $q->whereRaw('1=0'));
         });
 

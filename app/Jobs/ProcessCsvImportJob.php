@@ -17,6 +17,7 @@ use App\Models\{AuditLog, ImportRun, ImportRunError, User};
 use App\Plugins\Support\TimeWritebackObserver;
 use App\Services\Import\{CsvPreflightAnalyzer, DocumentZipImportService, EntitySpecRegistry, ImportOutcome};
 use App\Services\Import\Source\ImportSourceFactory;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -105,7 +106,7 @@ class ProcessCsvImportJob implements ShouldQueue {
             'organization_id' => $run->organization_id,
             'user_id' => $run->created_by_user_id,
             'event' => 'import.started',
-            'auditable_type' => ImportRun::class,
+            'auditable_type' => MorphMap::stableKey(ImportRun::class),
             'auditable_id' => $run->id,
             'changes' => [
                 'entity' => $run->entity->value,
@@ -209,7 +210,7 @@ class ProcessCsvImportJob implements ShouldQueue {
             'organization_id' => $run->organization_id,
             'user_id' => $run->created_by_user_id,
             'event' => $event,
-            'auditable_type' => ImportRun::class,
+            'auditable_type' => MorphMap::stableKey(ImportRun::class),
             'auditable_id' => $run->id,
             'changes' => [
                 'entity' => $run->entity->value,

@@ -18,7 +18,7 @@ use App\Http\Controllers\Concerns\{RequiresPlatformOperator, ResolvesCurrentOrga
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, ScheduledJobOverride, ScheduledJobState, User};
 use App\Scheduling\{Cadence, CadenceType, JobCriticality, JobDefinition, JobRegistry, SchedulerOverrideService, SchedulerRegistrar};
-use App\Support\SortableQuery;
+use App\Support\{MorphMap, SortableQuery};
 use Carbon\CarbonImmutable;
 use Cron\CronExpression;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -312,7 +312,7 @@ class SchedulerController extends Controller {
             'organization_id' => $this->currentOrganization()->id,
             'user_id' => $user->id,
             'event' => 'scheduler.testRun',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $user->id,
             'changes' => ['job' => $jobKey],
         ]);

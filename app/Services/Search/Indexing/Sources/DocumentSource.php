@@ -16,6 +16,7 @@ use App\Enums\Search\SearchSourceType;
 use App\Models\{Document, User};
 use App\Services\Content\ContentSubjectResolver;
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\{Builder, Model};
 
 /**
@@ -51,7 +52,7 @@ final class DocumentSource extends AbstractSearchSource {
         return $query
             ->where(static fn (Builder $q) => $q
                 ->whereNull('documentable_type')
-                ->orWhere('documentable_type', '!=', User::class))
+                ->orWhere('documentable_type', '!=', MorphMap::alias(User::class)))
             ->with(['tags:id,name', 'currentVersion.extractedText'])
             ->with($this->subjects->eagerLoad(Document::class));
     }

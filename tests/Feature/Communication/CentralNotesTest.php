@@ -16,7 +16,7 @@ use App\Enums\User\Permission;
 use App\Models\{CommunicationNote, Customer, Organization, SearchDocument, User};
 use App\Services\Communication\CommunicationNoteService;
 use App\Services\Search\SearchResultLinker;
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Tests\Concerns\BuildsPolicyActors;
@@ -34,7 +34,7 @@ class CentralNotesTest extends TestCase {
         $this->actingAs($user)
             ->post(route('communication-notes.store'), $this->quickPayload([
                 'organization_id' => $foreign->id,
-                'notable_type' => Organization::class,
+                'notable_type' => MorphMap::alias(Organization::class),
                 'notable_id' => $foreign->id,
                 'direction' => CommunicationDirection::Outbound->value,
                 'visibility' => CommunicationVisibility::Customer->value,
@@ -65,7 +65,7 @@ class CentralNotesTest extends TestCase {
             ->assertSessionHasNoErrors();
 
         $note = CommunicationNote::query()->withoutGlobalScopes()->sole();
-        $this->assertSame(Customer::class, $note->notable_type);
+        $this->assertSame(MorphMap::alias(Customer::class), $note->notable_type);
         $this->assertSame($customer->id, (int) $note->notable_id);
         $this->assertSame(CommunicationVisibility::Internal, $note->visibility);
 

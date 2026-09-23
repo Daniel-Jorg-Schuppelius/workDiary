@@ -14,6 +14,7 @@ use App\Enums\Finance\{TransferChannel, TransferStatus, TransferTarget};
 use App\Models\{Customer, ExternalReference, MaterialUsage, TimeEntry, User};
 use App\Models\Finance\{BillingTransfer, BillingTransferEvent, BillingTransferItem};
 use App\Services\Concerns\ResolvesActorId;
+use App\Support\MorphMap;
 use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
@@ -455,7 +456,7 @@ class BillingTransferService {
      *
      * @param  array{from?: string|CarbonInterface|null, to?: string|CarbonInterface|null}  $period
      * @param  list<int>|null  $sourceIds
-     * @return Collection<int, array{type: 'App\Models\TimeEntry', id: int, date: string|null, quantity: float, amount: float, unit: null, unit_price: null, tax_rate: null, cost_position: null}>
+     * @return Collection<int, array{type: string, id: int, date: string|null, quantity: float, amount: float, unit: null, unit_price: null, tax_rate: null, cost_position: null}>
      */
     private function collectTimeSources(Customer $customer, array $period, ?array $sourceIds): Collection {
         $query = TimeEntry::query()
@@ -476,7 +477,7 @@ class BillingTransferService {
         $this->excludeReserved($query, TimeEntry::class);
 
         return $query->orderBy('date')->get()->map(fn(TimeEntry $entry): array => [
-            'type' => TimeEntry::class,
+            'type' => MorphMap::alias(TimeEntry::class),
             'id' => (int) $entry->id,
             'date' => $entry->date?->toDateString(),
             'quantity' => round(((int) $entry->minutes) / 60, 2),
@@ -496,7 +497,7 @@ class BillingTransferService {
      *
      * @param  array{from?: string|CarbonInterface|null, to?: string|CarbonInterface|null}  $period
      * @param  list<int>|null  $sourceIds
-     * @return Collection<int, array{type: 'App\Models\MaterialUsage', id: int, date: string|null, quantity: float, amount: float, unit: non-empty-string|null, unit_price: float|null, tax_rate: float|null, cost_position: non-empty-string|null}>
+     * @return Collection<int, array{type: string, id: int, date: string|null, quantity: float, amount: float, unit: non-empty-string|null, unit_price: float|null, tax_rate: float|null, cost_position: non-empty-string|null}>
      */
     private function collectMaterialSources(Customer $customer, array $period, ?array $sourceIds): Collection {
         $query = MaterialUsage::query()
@@ -518,7 +519,7 @@ class BillingTransferService {
         $this->excludeReserved($query, MaterialUsage::class);
 
         return $query->with(['timesheet:id,work_date', 'material:id,sku'])->get()->map(fn(MaterialUsage $usage): array => [
-            'type' => MaterialUsage::class,
+            'type' => MorphMap::alias(MaterialUsage::class),
             'id' => (int) $usage->id,
             'date' => $usage->timesheet?->work_date?->toDateString(),
             'quantity' => round(($usage->quantity?->getValue()->toFloat() ?? 0.0), 2),
@@ -545,7 +546,7 @@ class BillingTransferService {
             $sub->from('billing_transfer_items')
                 ->join('billing_transfers', 'billing_transfers.id', '=', 'billing_transfer_items.billing_transfer_id')
                 ->whereColumn('billing_transfer_items.source_id', $query->getModel()->getTable() . '.id')
-                ->where('billing_transfer_items.source_type', $sourceType)
+                ->where('billing_transfer_items.source_type', MorphMap::alias($sourceType))
                 ->whereIn('billing_transfers.status', [TransferStatus::Confirmed->value, TransferStatus::Transferred->value])
                 ->whereNull('billing_transfers.deleted_at');
         });
@@ -574,14 +575,14 @@ class BillingTransferService {
                 continue;
             }
 
-            if ($item->source_type === TimeEntry::class) {
+            if (MorphMap::is($item->source_type, TimeEntry::class)) {
                 $entry = TimeEntry::query()->find($item->source_id);
                 if ($entry !== null && (bool) $entry->exported !== $consumed) {
                     $entry->exported = $consumed;
                     $entry->saveQuietly();
                     $changed++;
                 }
-            } elseif ($item->source_type === MaterialUsage::class) {
+            } elseif (MorphMap::is($item->source_type, MaterialUsage::class)) {
                 $usage = MaterialUsage::query()->find($item->source_id);
                 if ($usage !== null && (bool) $usage->billed !== $consumed) {
                     $usage->billed = $consumed;

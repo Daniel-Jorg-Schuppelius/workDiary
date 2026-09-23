@@ -614,7 +614,7 @@
                                         @csrf
                                         <select name="target" required class="join-item select select-sm select-bordered">
                                             <option value="">{{ __('… bestehendem zuordnen') }}</option>
-                                            @if ($item->target_type === \App\Models\Project::class && $assignProjects !== null)
+                                            @if (\App\Support\MorphMap::is($item->target_type, \App\Models\Project::class) && $assignProjects !== null)
                                                 {{-- Projekt-Dropdowns immer über die Komponente (Kundengruppierung). --}}
                                                 <x-project-options :projects="$assignProjects" />
                                             @else

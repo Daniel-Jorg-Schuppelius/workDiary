@@ -14,7 +14,7 @@ use App\Enums\Finance\{TransferChannel, TransferTarget};
 use App\Models\Finance\BillingTransfer;
 use App\Models\{MaterialUsage, TimeEntry};
 use App\Services\Finance\BillingPositionBuilder;
-use App\Support\CsvExport;
+use App\Support\{CsvExport, MorphMap};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\CSV\StringHelper;
 use CommonToolkit\Helper\Data\{NumberHelper, StringHelper as TextHelper};
@@ -116,7 +116,7 @@ class FileTarget implements FacturationTarget {
      * @return list<string>
      */
     private function timeLines(BillingTransfer $transfer): array {
-        $sourceIds = $transfer->items->where('source_type', TimeEntry::class)->pluck('source_id')->all();
+        $sourceIds = $transfer->items->where('source_type', MorphMap::alias(TimeEntry::class))->pluck('source_id')->all();
 
         /** @var \Illuminate\Support\Collection<int, TimeEntry> $entriesById */
         $entriesById = TimeEntry::query()
@@ -186,7 +186,7 @@ class FileTarget implements FacturationTarget {
      * @return list<string>
      */
     private function materialLines(BillingTransfer $transfer): array {
-        $items = $transfer->items->where('source_type', MaterialUsage::class)->keyBy('source_id');
+        $items = $transfer->items->where('source_type', MorphMap::alias(MaterialUsage::class))->keyBy('source_id');
 
         $usages = MaterialUsage::query()
             ->whereIn('id', $items->keys()->all())

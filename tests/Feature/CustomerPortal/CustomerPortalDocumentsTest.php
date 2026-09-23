@@ -11,6 +11,7 @@
 namespace Tests\Feature\CustomerPortal;
 
 use App\Models\{Customer, DiaryEntry, Document, Organization, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -62,7 +63,7 @@ class CustomerPortalDocumentsTest extends TestCase {
             'organization_id' => $orgId,
             'created_by_user_id' => $this->internalUser->id,
             'title' => $title,
-            'documentable_type' => $documentableType,
+            'documentable_type' => $documentableType !== null ? MorphMap::alias($documentableType) : null,
             'documentable_id' => $documentableId,
             'customer_visible' => $visible,
             'customer_released_at' => $visible ? now() : null,

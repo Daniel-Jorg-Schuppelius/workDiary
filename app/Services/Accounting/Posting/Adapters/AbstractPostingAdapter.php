@@ -105,7 +105,7 @@ abstract class AbstractPostingAdapter implements PostingSourceAdapter {
      */
     protected function alreadyHandedOver(Model $source): bool {
         return DatevBookingSource::query()
-            ->where('source_type', $source::class)
+            ->where('source_type', $source->getMorphClass())
             ->where('source_id', $source->getKey())
             ->whereHas('batch', fn ($query) => $query->where('status', 'exported'))
             ->exists();

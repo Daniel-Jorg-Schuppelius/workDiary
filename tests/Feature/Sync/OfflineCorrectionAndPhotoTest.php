@@ -11,7 +11,7 @@
 namespace Tests\Feature\Sync;
 
 use App\Models\{Attendance, FormSubmission, FormTemplate, SyncCommand, TimeCorrectionRequest, User};
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
@@ -78,7 +78,7 @@ class OfflineCorrectionAndPhotoTest extends TestCase {
         $this->assertSame((int) $this->user->id, (int) $request->user_id);
         $this->assertSame('time_correction_requests:' . $request->id, $response->json('results.0.ref'));
         $this->assertCount(1, $request->items);
-        $this->assertSame(Attendance::class, $request->items->first()->target_type);
+        $this->assertSame(MorphMap::alias(Attendance::class), $request->items->first()->target_type);
     }
 
     /** Selbstkorrektur-Modus: die Änderung ist danach wirklich am Stempel. */

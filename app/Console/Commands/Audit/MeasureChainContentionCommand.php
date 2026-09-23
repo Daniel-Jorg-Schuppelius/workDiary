@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Audit;
 
 use App\Models\{AuditLog, Organization, User};
+use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\{JsonHelper, StringHelper};
 use Illuminate\Console\Command;
 use Illuminate\Process\Pool;
@@ -205,7 +206,7 @@ class MeasureChainContentionCommand extends Command {
                         'organization_id' => $organization->id,
                         'user_id' => $user?->id,
                         'event' => 'perf.measure',
-                        'auditable_type' => Organization::class,
+                        'auditable_type' => MorphMap::stableKey(Organization::class),
                         'auditable_id' => $organization->id,
                         'changes' => ['i' => $i],
                     ]);

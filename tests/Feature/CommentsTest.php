@@ -12,6 +12,7 @@ namespace Tests\Feature;
 
 use App\Enums\User\Permission;
 use App\Models\{Comment, DiaryEntry, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -35,7 +36,7 @@ class CommentsTest extends TestCase {
             ->assertRedirect();
 
         $this->assertDatabaseHas('comments', [
-            'commentable_type' => DiaryEntry::class,
+            'commentable_type' => MorphMap::alias(DiaryEntry::class),
             'commentable_id' => $entry->id,
             'user_id' => $author->id,
             'body' => 'Mein Kommentar',

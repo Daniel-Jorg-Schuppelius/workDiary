@@ -16,6 +16,7 @@ use App\Enums\Protocol\ProtocolEventType;
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Models\{CommunicationNote, DiaryEntry, Document, MaterialUsage, OpenIssue, OpenIssueEvent, Project, Protocol, ProtocolEvent, TimeEntry, Timesheet, User};
 use App\Services\Timeline\DiaryEntryTimelineService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -97,7 +98,7 @@ class DiaryEntryTimelineTest extends TestCase {
 
         $protocol = Protocol::factory()->create([
             'organization_id' => $orgId,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'created_by_user_id' => $user->id,
             'title' => 'Abnahmeprotokoll Heizung',
@@ -111,7 +112,7 @@ class DiaryEntryTimelineTest extends TestCase {
 
         $issue = OpenIssue::factory()->create([
             'organization_id' => $orgId,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'created_by_user_id' => $user->id,
             'title' => 'Dichtung nachbessern',
@@ -131,7 +132,7 @@ class DiaryEntryTimelineTest extends TestCase {
 
         Document::factory()->create([
             'organization_id' => $orgId,
-            'documentable_type' => DiaryEntry::class,
+            'documentable_type' => MorphMap::alias(DiaryEntry::class),
             'documentable_id' => $entry->id,
             'created_by_user_id' => $user->id,
             'title' => 'Wartungsvertrag',
@@ -272,7 +273,7 @@ class DiaryEntryTimelineTest extends TestCase {
         ]);
         Document::factory()->create([
             'organization_id' => $user->organization_id,
-            'documentable_type' => \App\Models\Customer::class,
+            'documentable_type' => MorphMap::alias(\App\Models\Customer::class),
             'documentable_id' => $customer->id,
             'created_by_user_id' => $user->id,
             'title' => 'Rahmenvertrag',
@@ -300,7 +301,7 @@ class DiaryEntryTimelineTest extends TestCase {
 
         $run = \App\Models\ProcedureRun::factory()->create([
             'organization_id' => $user->organization_id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'status' => \App\Enums\Procedure\ProcedureRunStatus::Completed->value,
             'started_at' => now()->subHour(),
@@ -336,7 +337,7 @@ class DiaryEntryTimelineTest extends TestCase {
 
         $protocol = Protocol::factory()->create([
             'organization_id' => $admin->organization_id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'created_by_user_id' => $admin->id,
             'title' => 'Abnahme Wartung',

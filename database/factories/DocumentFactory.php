@@ -12,6 +12,7 @@ namespace Database\Factories;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
 use App\Models\{Document, User};
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -63,7 +64,7 @@ class DocumentFactory extends Factory {
     public function personnelFile(User $member, \App\Enums\Hr\HrDocumentCategory $category = \App\Enums\Hr\HrDocumentCategory::Contract): self {
         return $this->state(fn() => [
             'organization_id' => $member->organization_id,
-            'documentable_type' => User::class,
+            'documentable_type' => MorphMap::alias(User::class),
             'documentable_id' => $member->id,
             'document_type' => $category->documentType()->value,
             'confidential' => true,

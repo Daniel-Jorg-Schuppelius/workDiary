@@ -14,6 +14,7 @@ use App\Models\{Customer, DocumentDispatch, Invoice, PeppolParticipantLookup, Pl
 use App\Plugins\PeppolAccessPoint\PeppolAccessPointPlugin;
 use App\Plugins\PluginManager;
 use App\Services\Peppol\{PeppolInvoiceDispatcher, PeppolParticipantService};
+use App\Support\MorphMap;
 use ERechnungToolkit\Contracts\{DnsNaptrResolverInterface, ValidatorInterface};
 use ERechnungToolkit\Enums\ValidationSeverity;
 use ERechnungToolkit\Peppol\{DocumentTypeId, ParticipantId, Sbdh};
@@ -230,7 +231,7 @@ class PeppolDispatchTest extends TestCase {
         });
 
         $this->assertDatabaseHas('audit_logs', [
-            'auditable_type' => $invoice->getMorphClass(),
+            'auditable_type' => MorphMap::stableKey($invoice::class),
             'auditable_id' => $invoice->id,
             'event' => 'invoice.peppolSent',
         ]);

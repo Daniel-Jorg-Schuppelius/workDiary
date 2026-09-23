@@ -15,6 +15,7 @@ use App\Enums\Facility\RoomRequirementKind;
 use App\Enums\Protocol\ProtocolType;
 use App\Enums\User\UserRole;
 use App\Models\{Asset, AssetAssignment, AssetDefect, MaintenancePlan, Organization, Protocol, Room, RoomRequirement, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -55,7 +56,7 @@ class AssetDossierControllerTest extends TestCase {
         Protocol::factory()->create([
             'organization_id' => $this->organization->id,
             'type' => ProtocolType::Service->value,
-            'subject_type' => Asset::class,
+            'subject_type' => MorphMap::alias(Asset::class),
             'subject_id' => $asset->id,
             'created_by_user_id' => $user->id,
             'title' => 'Wartungsprotokoll Akte',
@@ -83,7 +84,7 @@ class AssetDossierControllerTest extends TestCase {
         MaintenancePlan::query()->create([
             'organization_id' => $this->organization->id,
             'asset_id' => $asset->id,
-            'subject_type' => Asset::class,
+            'subject_type' => MorphMap::alias(Asset::class),
             'subject_id' => $asset->id,
             'code' => 'MP-DOSS',
             'label' => 'Jahreswartung Akte',

@@ -17,6 +17,7 @@ use App\Models\Finance\{BankStatement, BankTransaction, PaymentAllocation};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, InternalTransferService};
 use App\Services\Accounting\Posting\{PostingInboxService, PostingSourceRegistry};
 use App\Services\Accounting\Reports\DataQualityBuilder;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -242,7 +243,7 @@ class AccountingBankCashLinkTest extends TestCase {
         $allocation = PaymentAllocation::query()->create([
             'organization_id' => $this->org->id,
             'bank_transaction_id' => $transaction->id,
-            'allocatable_type' => Invoice::class,
+            'allocatable_type' => MorphMap::alias(Invoice::class),
             'allocatable_id' => $invoice->id,
             'amount' => '119.00',
             'kind' => AllocationKind::Payment,
@@ -323,7 +324,7 @@ class AccountingBankCashLinkTest extends TestCase {
         $allocation = PaymentAllocation::query()->create([
             'organization_id' => $this->org->id,
             'bank_transaction_id' => $transaction->id,
-            'allocatable_type' => Invoice::class,
+            'allocatable_type' => MorphMap::alias(Invoice::class),
             'allocatable_id' => $invoice->id,
             'amount' => '119.00',
             'kind' => AllocationKind::Payment,

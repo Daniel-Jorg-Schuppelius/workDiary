@@ -176,7 +176,7 @@ class PaymentAdapter extends AbstractPostingAdapter {
         }
 
         return [
-            'settles_source_type' => $target::class,
+            'settles_source_type' => $target->getMorphClass(),
             'settles_source_id' => $target->getKey(),
             'settlement_kind' => $this->settlementKind($allocation)->value,
             'payment_allocation_id' => $allocation->id,

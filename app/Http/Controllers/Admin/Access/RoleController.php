@@ -15,6 +15,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, Organization};
 use App\Services\Whistleblowing\WhistleblowingPermissions;
+use App\Support\MorphMap;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Support\Str;
@@ -204,7 +205,7 @@ class RoleController extends Controller {
             'organization_id' => $organization->id,
             'user_id' => Auth::id(),
             'event' => 'role.' . $event,
-            'auditable_type' => Role::class,
+            'auditable_type' => MorphMap::stableKey(Role::class),
             'auditable_id' => $auditableId,
             'changes' => $changes,
             'ip' => $request->ip(),

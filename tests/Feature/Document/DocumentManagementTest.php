@@ -12,7 +12,7 @@ namespace Tests\Feature\Document;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
 use App\Models\{Customer, Document, DocumentVersion, User};
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -75,7 +75,7 @@ class DocumentManagementTest extends TestCase {
 
         $this->assertDatabaseHas('documents', [
             'title' => 'Zertifikat Brandschutz',
-            'documentable_type' => Customer::class,
+            'documentable_type' => MorphMap::alias(Customer::class),
             'documentable_id' => $customer->id,
         ]);
     }

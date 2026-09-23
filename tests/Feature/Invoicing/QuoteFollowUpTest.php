@@ -15,6 +15,7 @@ use App\Models\CommunicationNote;
 use App\Models\{Customer, Organization, Quote, User};
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
 use App\Services\Invoicing\{QuoteFollowUpService, QuoteService};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -90,7 +91,7 @@ class QuoteFollowUpTest extends TestCase {
 
         $note = CommunicationNote::query()->sole();
         // Die Notiz hängt am KUNDEN — nur dort zeigt die Oberfläche sie an.
-        $this->assertSame(Customer::class, $note->notable_type);
+        $this->assertSame(MorphMap::alias(Customer::class), $note->notable_type);
         $this->assertSame((int) $this->customer->id, (int) $note->notable_id);
         $this->assertStringContainsString((string) $quote->number, (string) $note->subject);
         $this->assertSame('Kunde prüft noch intern.', $note->body);

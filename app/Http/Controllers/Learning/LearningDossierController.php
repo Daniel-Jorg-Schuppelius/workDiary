@@ -17,7 +17,7 @@ use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDa
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, Organization, Team, User};
 use App\Services\Learning\{LearningDossierPdfRenderer, QualificationDossierService};
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\{Request, Response};
@@ -181,7 +181,7 @@ class LearningDossierController extends Controller {
             'organization_id' => $organization->id,
             'user_id' => Auth::id(),
             'event' => 'learning.dossierDisclosed',
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $organization->id,
             'changes' => [
                 'reason' => trim((string) $request->string('reason')),

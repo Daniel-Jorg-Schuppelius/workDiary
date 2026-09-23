@@ -11,6 +11,7 @@
 namespace Tests\Feature\Access;
 
 use App\Models\{AuditLog, User, UserGroup};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -54,7 +55,7 @@ class UserGroupControllerAuditTest extends TestCase {
             'organization_id' => $this->organization->id,
             'user_id' => $this->admin->id,
             'event' => 'user_group.member_added',
-            'auditable_type' => UserGroup::class,
+            'auditable_type' => MorphMap::stableKey(UserGroup::class),
             'auditable_id' => $group->id,
         ]);
 
@@ -66,7 +67,7 @@ class UserGroupControllerAuditTest extends TestCase {
             'organization_id' => $this->organization->id,
             'user_id' => $this->admin->id,
             'event' => 'user_group.member_removed',
-            'auditable_type' => UserGroup::class,
+            'auditable_type' => MorphMap::stableKey(UserGroup::class),
             'auditable_id' => $group->id,
         ]);
 
@@ -74,7 +75,7 @@ class UserGroupControllerAuditTest extends TestCase {
             2,
             AuditLog::query()
                 ->where('organization_id', $this->organization->id)
-                ->where('auditable_type', UserGroup::class)
+                ->where('auditable_type', MorphMap::stableKey(UserGroup::class))
                 ->whereIn('event', ['user_group.member_added', 'user_group.member_removed'])
                 ->count(),
         );

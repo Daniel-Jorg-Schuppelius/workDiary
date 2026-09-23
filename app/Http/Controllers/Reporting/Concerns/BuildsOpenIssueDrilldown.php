@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Reporting\Concerns;
 use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Models\{DiaryEntry, OpenIssue, Protocol};
-use App\Support\Tz;
+use App\Support\{MorphMap, Tz};
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -53,7 +53,7 @@ trait BuildsOpenIssueDrilldown {
         return Protocol::query()
             ->with(['creator:id,name'])
             ->where('type', ProtocolType::Defect->value)
-            ->where('subject_type', DiaryEntry::class)
+            ->where('subject_type', MorphMap::alias(DiaryEntry::class))
             ->whereBetween('occurred_at', [$from, $to])
             ->when($entryIds !== [], fn($q) => $q->whereIn('subject_id', $entryIds), fn($q) => $q->whereRaw('1=0'))
             ->orderByDesc('occurred_at');

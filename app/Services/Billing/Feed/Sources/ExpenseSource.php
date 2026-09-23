@@ -17,6 +17,7 @@ use App\Enums\Expense\ExpenseStatus;
 use App\Models\Expense;
 use App\Services\Billing\DocumentFeedFilters;
 use App\Services\Billing\Feed\{DocumentFeedSource, DocumentFeedSourceRegistry, FeedProjection};
+use App\Support\MorphMap;
 use App\Support\Query\DateRange;
 use Illuminate\Database\Query\{Builder, JoinClause};
 use Illuminate\Support\Facades\DB;
@@ -63,7 +64,7 @@ class ExpenseSource implements DocumentFeedSource {
             // MariaDB in Stringliteralen als Escapes liest.
             ->leftJoin('external_references as feed_link', function (JoinClause $join) use ($criteria): void {
                 $join->on('feed_link.referenceable_id', '=', 'expenses.id')
-                    ->where('feed_link.referenceable_type', Expense::class);
+                    ->where('feed_link.referenceable_type', MorphMap::alias(Expense::class));
 
                 // Ohne registrierte Verknüpfungs-Quelle gibt es keine
                 // zählbaren Links — der Join bleibt leer statt zu raten.

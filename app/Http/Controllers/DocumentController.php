@@ -16,7 +16,7 @@ use App\Services\Attachments\FileAttacher;
 use App\Services\Content\ContentSubjectResolver;
 use App\Services\Document\DocumentService;
 use App\Services\Hr\PersonnelFileService;
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
@@ -438,7 +438,7 @@ class DocumentController extends Controller {
             'organization_id' => $document->organization_id,
             'user_id' => $user->id,
             'event' => 'document.confidentialAccessed',
-            'auditable_type' => Document::class,
+            'auditable_type' => MorphMap::stableKey(Document::class),
             'auditable_id' => $document->id,
             'changes' => ['title' => $document->title],
         ]);
@@ -531,7 +531,7 @@ class DocumentController extends Controller {
 
         $class = self::DOCUMENTABLE_MAP[$ref] ?? null;
         if ($class !== null) {
-            $query->where('documentable_type', $class);
+            $query->where('documentable_type', MorphMap::alias($class));
         }
     }
 }

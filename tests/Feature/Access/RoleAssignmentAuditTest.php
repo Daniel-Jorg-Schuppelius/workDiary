@@ -12,6 +12,7 @@ namespace Tests\Feature\Access;
 
 use App\Enums\User\UserRole;
 use App\Models\{AuditLog, User, UserGroup};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -56,7 +57,7 @@ class RoleAssignmentAuditTest extends TestCase {
             'organization_id' => $this->organization->id,
             'user_id' => $this->admin->id,
             'event' => 'user.role.assigned',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $member->id,
         ]);
 
@@ -82,12 +83,12 @@ class RoleAssignmentAuditTest extends TestCase {
 
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'user.role.assigned',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $member->id,
         ]);
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'user.role.revoked',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $member->id,
         ]);
     }
@@ -110,7 +111,7 @@ class RoleAssignmentAuditTest extends TestCase {
 
         $countAfterFirst = AuditLog::query()
             ->whereIn('event', ['user.role.assigned', 'user.role.revoked'])
-            ->where('auditable_type', User::class)
+            ->where('auditable_type', MorphMap::stableKey(User::class))
             ->where('auditable_id', $member->id)
             ->count();
         $this->assertSame(1, $countAfterFirst, 'Erst-Zuweisung muss genau ein assigned-Event schreiben.');
@@ -122,7 +123,7 @@ class RoleAssignmentAuditTest extends TestCase {
 
         $this->assertSame($countAfterFirst, AuditLog::query()
             ->whereIn('event', ['user.role.assigned', 'user.role.revoked'])
-            ->where('auditable_type', User::class)
+            ->where('auditable_type', MorphMap::stableKey(User::class))
             ->where('auditable_id', $member->id)
             ->count());
     }
@@ -146,7 +147,7 @@ class RoleAssignmentAuditTest extends TestCase {
 
         $assigned = AuditLog::query()
             ->where('event', 'user.role.assigned')
-            ->where('auditable_type', User::class)
+            ->where('auditable_type', MorphMap::stableKey(User::class))
             ->where('auditable_id', $member->id)
             ->firstOrFail();
         $this->assertSame('projektleitung', $assigned->changes['role'] ?? null);
@@ -154,7 +155,7 @@ class RoleAssignmentAuditTest extends TestCase {
 
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'user.role.revoked',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $member->id,
         ]);
     }
@@ -177,7 +178,7 @@ class RoleAssignmentAuditTest extends TestCase {
 
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'user_group.member_added',
-            'auditable_type' => UserGroup::class,
+            'auditable_type' => MorphMap::stableKey(UserGroup::class),
             'auditable_id' => $group->id,
         ]);
 
@@ -190,7 +191,7 @@ class RoleAssignmentAuditTest extends TestCase {
 
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'user_group.member_removed',
-            'auditable_type' => UserGroup::class,
+            'auditable_type' => MorphMap::stableKey(UserGroup::class),
             'auditable_id' => $group->id,
         ]);
     }
@@ -218,14 +219,14 @@ class RoleAssignmentAuditTest extends TestCase {
 
         $roleEvent = AuditLog::query()
             ->where('event', 'user.role.assigned')
-            ->where('auditable_type', UserGroup::class)
+            ->where('auditable_type', MorphMap::stableKey(UserGroup::class))
             ->where('auditable_id', $group->id)
             ->firstOrFail();
         $this->assertSame('lagerleitung', $roleEvent->changes['role'] ?? null);
 
         $permEvent = AuditLog::query()
             ->where('event', 'user.permission.granted')
-            ->where('auditable_type', UserGroup::class)
+            ->where('auditable_type', MorphMap::stableKey(UserGroup::class))
             ->where('auditable_id', $group->id)
             ->firstOrFail();
         $this->assertSame('customer.viewAny', $permEvent->changes['permission'] ?? null);
@@ -252,12 +253,12 @@ class RoleAssignmentAuditTest extends TestCase {
 
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'user.role.revoked',
-            'auditable_type' => UserGroup::class,
+            'auditable_type' => MorphMap::stableKey(UserGroup::class),
             'auditable_id' => $group->id,
         ]);
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'user.permission.revoked',
-            'auditable_type' => UserGroup::class,
+            'auditable_type' => MorphMap::stableKey(UserGroup::class),
             'auditable_id' => $group->id,
         ]);
     }

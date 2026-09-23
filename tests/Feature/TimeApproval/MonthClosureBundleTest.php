@@ -15,6 +15,7 @@ use App\Enums\TimeEntry\TimeEntryKind;
 use App\Enums\User\Permission as P;
 use App\Models\{Attendance, MonthClosure, Project, TimeEntry, User};
 use App\Services\TimeApproval\{MonthClosureBundleService, MonthClosureService};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -113,7 +114,7 @@ class MonthClosureBundleTest extends TestCase {
 
         // Audit-Event geschrieben.
         $this->assertDatabaseHas('audit_logs', [
-            'auditable_type' => $closure->getMorphClass(),
+            'auditable_type' => MorphMap::stableKey($closure::class),
             'auditable_id' => $closure->id,
             'event' => 'month_closure.bundle_exported',
         ]);

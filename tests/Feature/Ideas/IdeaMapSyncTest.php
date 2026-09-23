@@ -12,6 +12,7 @@ namespace Tests\Feature\Ideas;
 
 use App\Models\{ContentReference, IdeaMap, IdeaNode, IdeaNodeLink, User};
 use App\Services\Ideas\{IdeaMapService, IdeaNodeService};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -129,7 +130,7 @@ final class IdeaMapSyncTest extends TestCase {
             'organization_id' => $this->organization->id,
             'source_type' => $node->getMorphClass(),
             'source_id' => $node->id,
-            'target_type' => User::class,
+            'target_type' => MorphMap::alias(User::class),
             'target_id' => $this->owner->id,
             'kind' => 'linked',
         ]);

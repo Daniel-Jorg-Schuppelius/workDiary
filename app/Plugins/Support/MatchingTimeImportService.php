@@ -14,7 +14,7 @@ namespace App\Plugins\Support;
 
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{ExternalReference, IntegrationInboxItem, Organization, Project, TimeEntry};
-use App\Support\Tz;
+use App\Support\{MorphMap, Tz};
 
 /**
  * Gemeinsame Import-Pipeline der Zeit-Migrations-Plugins (Kimai, Clockify, …)
@@ -254,7 +254,7 @@ abstract class MatchingTimeImportService {
             ],
             [
                 'source' => $this->pluginId(),
-                'target_type' => TimeEntry::class,
+                'target_type' => MorphMap::alias(TimeEntry::class),
                 'external_type' => self::EXT_TYPE_ENTRY,
                 'external_id' => (string) $reference->external_id,
                 'case_type' => IntegrationInboxItem::CASE_CONFLICT,

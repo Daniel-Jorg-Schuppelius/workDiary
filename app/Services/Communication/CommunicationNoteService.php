@@ -12,6 +12,7 @@ namespace App\Services\Communication;
 
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType, CommunicationVisibility, ParticipantParty};
 use App\Models\{CommunicationNote, Organization, User};
+use App\Support\MorphMap;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -50,7 +51,7 @@ class CommunicationNoteService {
                 'organization_id' => $notable instanceof Organization
                     ? $notable->getKey()
                     : ($notable->getAttribute('organization_id') ?: $creator->organization_id),
-                'notable_type' => $notable::class,
+                'notable_type' => $notable->getMorphClass(),
                 'notable_id' => $notable->getKey(),
                 'type' => $type->value,
                 'direction' => $direction->value,
@@ -276,7 +277,7 @@ class CommunicationNoteService {
 
             $already = \App\Models\AuditLog::query()
                 ->where('event', 'communication.confidential.viewed')
-                ->where('auditable_type', CommunicationNote::class)
+                ->where('auditable_type', MorphMap::stableKey(CommunicationNote::class))
                 ->where('auditable_id', $note->id)
                 ->where('changes->viewer_user_id', $viewer->id)
                 ->whereDate('created_at', now()->toDateString())

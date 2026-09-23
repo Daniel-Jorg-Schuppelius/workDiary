@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{Approval, Change, ServiceRequest, User};
 use App\Services\ServiceTicket\{ChangeService, ServiceRequestService};
 use App\Support\{ErrorText, Sqid};
+use App\Support\MorphMap;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Pagination\{LengthAwarePaginator, Paginator};
 use Illuminate\Support\Collection;
@@ -102,7 +103,7 @@ class ApprovalInboxController extends Controller {
         }
 
         try {
-            match ($approval->approvable_type) {
+            match (MorphMap::classFor($approval->approvable_type)) {
                 ServiceRequest::class => app(ServiceRequestService::class)
                     ->decide($approval, $user, $data['decision'], $data['reason'] ?? null, $delegateId),
                 Change::class => app(ChangeService::class)

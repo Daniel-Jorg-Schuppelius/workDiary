@@ -13,6 +13,7 @@ namespace Tests\Feature\TimeApproval;
 use App\Enums\TimeApproval\{MonthClosureStatus, TimeCorrectionStatus};
 use App\Models\{MonthClosure, Project, TimeEntry, User};
 use App\Services\TimeApproval\{TimeCorrectionService, TimeCorrectionWorkflowException};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -41,7 +42,7 @@ class TimeCorrectionServiceTest extends TestCase {
             CarbonImmutable::parse((string) $entry->date?->format('Y-m-d')),
             str_repeat('A', 25),
             [[
-                'target_type' => TimeEntry::class,
+                'target_type' => MorphMap::alias(TimeEntry::class),
                 'target_id' => $entry->id,
                 'action' => 'update',
                 'before' => ['minutes' => 60],
@@ -54,7 +55,7 @@ class TimeCorrectionServiceTest extends TestCase {
         $this->assertCount(1, $request->items);
         $this->assertDatabaseHas('time_correction_items', [
             'time_correction_request_id' => $request->id,
-            'target_type' => TimeEntry::class,
+            'target_type' => MorphMap::alias(TimeEntry::class),
         ]);
     }
 
@@ -71,7 +72,7 @@ class TimeCorrectionServiceTest extends TestCase {
 
         try {
             $this->service->createDraft($user, CarbonImmutable::parse('2024-01-15'), 'kurz', [[
-                'target_type' => TimeEntry::class,
+                'target_type' => MorphMap::alias(TimeEntry::class),
                 'target_id' => 1,
                 'action' => 'update',
             ]]);
@@ -91,7 +92,7 @@ class TimeCorrectionServiceTest extends TestCase {
             CarbonImmutable::parse((string) $entry->date?->format('Y-m-d')),
             str_repeat('A', 30),
             [[
-                'target_type' => TimeEntry::class,
+                'target_type' => MorphMap::alias(TimeEntry::class),
                 'target_id' => $entry->id,
                 'action' => 'update',
                 'before' => ['minutes' => 60],
@@ -139,7 +140,7 @@ class TimeCorrectionServiceTest extends TestCase {
             CarbonImmutable::parse('2024-01-15'),
             str_repeat('A', 30),
             [[
-                'target_type' => TimeEntry::class,
+                'target_type' => MorphMap::alias(TimeEntry::class),
                 'target_id' => $entry->id,
                 'action' => 'update',
                 'after' => ['minutes' => 30],
@@ -163,7 +164,7 @@ class TimeCorrectionServiceTest extends TestCase {
             CarbonImmutable::parse((string) $entry->date?->format('Y-m-d')),
             str_repeat('A', 25),
             [[
-                'target_type' => TimeEntry::class,
+                'target_type' => MorphMap::alias(TimeEntry::class),
                 'target_id' => $entry->id,
                 'action' => 'update',
                 'after' => ['minutes' => 30],
@@ -194,7 +195,7 @@ class TimeCorrectionServiceTest extends TestCase {
                 CarbonImmutable::parse((string) $entry->date?->format('Y-m-d')),
                 str_repeat('A', 25),
                 [[
-                    'target_type' => TimeEntry::class,
+                    'target_type' => MorphMap::alias(TimeEntry::class),
                     'target_id' => $entry->id,
                     'action' => 'update',
                     'after' => ['minutes' => 30],
@@ -223,7 +224,7 @@ class TimeCorrectionServiceTest extends TestCase {
         $foreign = $this->makeTimeEntry($colleague);
 
         $request = $this->service->createDraft($attacker, CarbonImmutable::parse('2024-03-10'), str_repeat('A', 30), [[
-            'target_type' => TimeEntry::class,
+            'target_type' => MorphMap::alias(TimeEntry::class),
             'target_id' => $foreign->id,
             'action' => 'update',
             'before' => null,
@@ -253,7 +254,7 @@ class TimeCorrectionServiceTest extends TestCase {
         ] as [$after, $code]) {
             try {
                 $this->service->createDraft($user, CarbonImmutable::parse('2024-03-10'), str_repeat('A', 30), [[
-                    'target_type' => TimeEntry::class, 'target_id' => null, 'action' => 'create', 'before' => null, 'after' => $after,
+                    'target_type' => MorphMap::alias(TimeEntry::class), 'target_id' => null, 'action' => 'create', 'before' => null, 'after' => $after,
                 ]], $user);
                 $this->fail('Angenommen: ' . json_encode($after));
             } catch (TimeCorrectionWorkflowException $e) {
@@ -268,7 +269,7 @@ class TimeCorrectionServiceTest extends TestCase {
         $project = Project::factory()->create(['organization_id' => $this->organization->id]);
 
         $request = $this->service->createDraft($user, CarbonImmutable::parse('2024-03-11'), str_repeat('A', 30), [[
-            'target_type' => TimeEntry::class, 'target_id' => null, 'action' => 'create', 'before' => null,
+            'target_type' => MorphMap::alias(TimeEntry::class), 'target_id' => null, 'action' => 'create', 'before' => null,
             'after' => ['organization_id' => $this->organization->id, 'user_id' => $user->id, 'project_id' => $project->id, 'date' => '2024-03-11', 'minutes' => 45, 'description' => 'Nachtrag'],
         ]], $user);
         $this->service->apply($this->service->approve($this->service->submit($request, $user), $admin));

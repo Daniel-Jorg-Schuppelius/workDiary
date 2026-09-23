@@ -12,6 +12,7 @@ namespace Tests\Feature\Helpdesk;
 
 use App\Models\{Approval, Asset, Change, ChangeTemplate, Organization, Problem, ServiceTicket, User};
 use App\Services\ServiceTicket\ChangeService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -195,7 +196,7 @@ final class HelpdeskChangeUiTest extends TestCase {
             ->assertRedirect(route('servicedesk.approvals.index'));
 
         $delegated = Approval::query()
-            ->where('approvable_type', Change::class)
+            ->where('approvable_type', MorphMap::alias(Change::class))
             ->where('approvable_id', $change->id)
             ->where('step', 2)
             ->whereNull('decision')

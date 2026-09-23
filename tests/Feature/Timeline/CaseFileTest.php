@@ -12,6 +12,7 @@ namespace Tests\Feature\Timeline;
 
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Models\{Attachment, Comment, CommunicationNote, Customer, DiaryEntry, Document, MaterialUsage, OpenIssue, Project, Protocol, TimeEntry, Timesheet, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use PDFToolkit\Registries\PDFReaderRegistry;
@@ -84,14 +85,14 @@ class CaseFileTest extends TestCase {
         ]);
         Protocol::factory()->signed()->create([
             'organization_id' => $orgId,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'created_by_user_id' => $user->id,
             'title' => 'Abnahmeprotokoll Heizung',
         ]);
         OpenIssue::factory()->create([
             'organization_id' => $orgId,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'created_by_user_id' => $user->id,
             'title' => 'Dichtung nachbessern',
@@ -103,7 +104,7 @@ class CaseFileTest extends TestCase {
         ]);
         Document::factory()->create([
             'organization_id' => $orgId,
-            'documentable_type' => DiaryEntry::class,
+            'documentable_type' => MorphMap::alias(DiaryEntry::class),
             'documentable_id' => $entry->id,
             'created_by_user_id' => $user->id,
             'title' => 'Wartungsvertrag',

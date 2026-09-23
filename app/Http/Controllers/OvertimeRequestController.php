@@ -16,6 +16,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\{ComplianceFinding, OvertimeRequest, User};
 use App\Services\Compliance\AttendancePlausibilityScanService;
 use App\Services\TimeApproval\OvertimeRequestService;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -55,7 +56,7 @@ class OvertimeRequestController extends Controller {
         // als Selbstsicht — Klärung läuft über Überstunden- bzw. Korrekturantrag.
         $unclearCases = ComplianceFinding::query()
             ->where('category', AttendancePlausibilityScanService::CATEGORY)
-            ->where('subject_type', User::class)
+            ->where('subject_type', MorphMap::alias(User::class))
             ->where('subject_id', $user->id)
             ->whereIn('status', [ComplianceFindingStatus::Open->value, ComplianceFindingStatus::Acknowledged->value])
             ->orderByDesc('scope_date')

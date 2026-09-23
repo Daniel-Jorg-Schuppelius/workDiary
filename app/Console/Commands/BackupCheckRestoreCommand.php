@@ -11,6 +11,7 @@
 namespace App\Console\Commands;
 
 use App\Models\{AuditLog, BackupHeartbeat};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Console\Command;
@@ -126,7 +127,7 @@ class BackupCheckRestoreCommand extends Command {
                 'organization_id' => null,
                 'user_id' => null,
                 'event' => 'backup.checkRestore',
-                'auditable_type' => BackupHeartbeat::class,
+                'auditable_type' => MorphMap::stableKey(BackupHeartbeat::class),
                 'auditable_id' => $last !== null ? $last->id : 0,
                 'changes' => $payload,
             ]);

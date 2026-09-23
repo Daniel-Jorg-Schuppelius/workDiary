@@ -19,6 +19,7 @@ use App\Services\Classification\ClassificationRequirementValidator;
 use App\Services\Diary\OrderService;
 use App\Services\Integration\LifecycleWebhookPublisher;
 use App\Services\OpenIssue\OpenIssueService;
+use App\Support\MorphMap;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -59,7 +60,7 @@ class ProtocolService {
             $protocol = Protocol::query()->create([
                 'organization_id' => $subject->getAttribute('organization_id') ?: $creator->organization_id,
                 'type' => $type->value,
-                'subject_type' => $subject::class,
+                'subject_type' => $subject->getMorphClass(),
                 'subject_id' => $subject->getKey(),
                 'title' => $attributes['title'],
                 'description' => $attributes['description'] ?? null,
@@ -456,7 +457,7 @@ class ProtocolService {
         // zu einem Auftrag erbt dessen Klassifikationspflichten. Die Lücken
         // reihen sich in die vorhandene Fehlerliste ein, statt einen zweiten
         // Fehlerkanal aufzumachen.
-        if ($phase !== null && $protocol->subject_type === DiaryEntry::class) {
+        if ($phase !== null && MorphMap::is($protocol->subject_type, DiaryEntry::class)) {
             $entry = DiaryEntry::query()->find($protocol->subject_id);
             if ($entry instanceof DiaryEntry) {
                 try {

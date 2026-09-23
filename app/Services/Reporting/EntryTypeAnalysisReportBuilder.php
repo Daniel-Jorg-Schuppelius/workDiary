@@ -13,6 +13,7 @@ namespace App\Services\Reporting;
 use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Models\{DiaryEntry, EntryType, OpenIssue, Protocol, TimeEntry};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 
 /**
@@ -102,7 +103,7 @@ class EntryTypeAnalysisReportBuilder {
 
         /** @var list<int> $reworkEntryIds */
         $reworkEntryIds = Protocol::query()
-            ->where('subject_type', DiaryEntry::class)
+            ->where('subject_type', MorphMap::alias(DiaryEntry::class))
             ->where('type', ProtocolType::Defect->value)
             ->whereIn('subject_id', $entryIds)
             ->whereBetween('occurred_at', [$from, $to])
@@ -114,7 +115,7 @@ class EntryTypeAnalysisReportBuilder {
 
         /** @var list<int> $escalatedEntryIds */
         $escalatedEntryIds = OpenIssue::query()
-            ->where('subject_type', DiaryEntry::class)
+            ->where('subject_type', MorphMap::alias(DiaryEntry::class))
             ->whereIn('subject_id', $entryIds)
             ->where('status', OpenIssueStatus::Blocked->value)
             ->distinct('subject_id')

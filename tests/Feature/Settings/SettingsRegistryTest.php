@@ -12,7 +12,7 @@ namespace Tests\Feature\Settings;
 
 use App\Models\{AuditLog, SystemSetting};
 use App\Settings\{SettingScope, SettingSource, SettingsRegistry};
-use App\Support\Setting;
+use App\Support\{MorphMap, Setting};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
@@ -99,7 +99,7 @@ class SettingsRegistryTest extends TestCase {
 
         $this->assertTrue(
             AuditLog::query()
-                ->where('auditable_type', \App\Models\Organization::class)
+                ->where('auditable_type', MorphMap::stableKey(\App\Models\Organization::class))
                 ->where('auditable_id', $this->organization->id)
                 ->where('event', 'updated')
                 ->exists(),
@@ -111,7 +111,7 @@ class SettingsRegistryTest extends TestCase {
 
         $this->assertTrue(
             AuditLog::query()
-                ->where('auditable_type', SystemSetting::class)
+                ->where('auditable_type', MorphMap::stableKey(SystemSetting::class))
                 ->where('event', 'created')
                 ->exists(),
         );

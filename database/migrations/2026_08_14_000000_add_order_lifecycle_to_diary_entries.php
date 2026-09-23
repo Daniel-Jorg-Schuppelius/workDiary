@@ -8,6 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
+use App\Support\MorphMap;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\{DB, Schema};
@@ -66,7 +67,7 @@ return new class extends Migration {
                 $status = (int) $entry->status;
                 $signedProtocol = $status === -1
                     ? DB::table('protocols')
-                        ->where('subject_type', \App\Models\DiaryEntry::class)
+                        ->where('subject_type', MorphMap::alias(\App\Models\DiaryEntry::class))
                         ->where('subject_id', $entry->id)
                         ->where('status', 'signed')
                         ->latest('signed_at')

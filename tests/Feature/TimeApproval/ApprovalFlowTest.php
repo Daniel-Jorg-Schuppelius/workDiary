@@ -15,6 +15,7 @@ use App\Enums\TimeApproval\{OvertimeRequestStatus, TimeCorrectionStatus};
 use App\Enums\Vacation\{VacationStatus, VacationType};
 use App\Models\{ApprovalStep, Project, TimeEntry, User, Vacation};
 use App\Services\TimeApproval\{OvertimeRequestService, TimeCorrectionService};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
@@ -68,7 +69,7 @@ class ApprovalFlowTest extends TestCase {
         $this->assertSame(VacationStatus::Approved, $vacation->fresh()->status);
 
         $steps = ApprovalStep::query()
-            ->where('approvable_type', Vacation::class)
+            ->where('approvable_type', MorphMap::alias(Vacation::class))
             ->where('approvable_id', $vacation->id)
             ->orderBy('stage')
             ->get();
@@ -98,7 +99,7 @@ class ApprovalFlowTest extends TestCase {
         $this->actingAs($adminTwo)->patch(route('vacations.approve', $vacation))->assertRedirect();
         $this->assertSame(VacationStatus::Approved, $vacation->fresh()->status);
         $this->assertSame(2, ApprovalStep::query()
-            ->where('approvable_type', Vacation::class)
+            ->where('approvable_type', MorphMap::alias(Vacation::class))
             ->where('approvable_id', $vacation->id)
             ->count());
     }
@@ -141,7 +142,7 @@ class ApprovalFlowTest extends TestCase {
         $this->assertSame(OvertimeRequestStatus::Rejected, $request->fresh()->status);
 
         $step = ApprovalStep::query()
-            ->where('approvable_type', \App\Models\OvertimeRequest::class)
+            ->where('approvable_type', MorphMap::alias(\App\Models\OvertimeRequest::class))
             ->where('approvable_id', $request->id)
             ->sole();
         $this->assertSame(ApprovalDecision::Rejected, $step->decision);
@@ -172,7 +173,7 @@ class ApprovalFlowTest extends TestCase {
             CarbonImmutable::parse('2026-06-10'),
             'Minuten nachtragen wegen vergessener Stempelung',
             [[
-                'target_type' => TimeEntry::class,
+                'target_type' => MorphMap::alias(TimeEntry::class),
                 'target_id' => $entry->id,
                 'action' => 'update',
                 'before' => ['minutes' => 60],

@@ -12,6 +12,7 @@ namespace Tests\Feature\Privacy;
 
 use App\Models\{AuditLog, User};
 use App\Services\Privacy\PrivacyOverviewService;
+use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -87,7 +88,7 @@ class PrivacyExportTest extends TestCase {
             'organization_id' => $admin->organization_id,
             'user_id' => $admin->id,
             'event' => 'tenant.export.csv',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $admin->id,
             'changes' => ['rows' => 3],
         ]);
@@ -95,7 +96,7 @@ class PrivacyExportTest extends TestCase {
             'organization_id' => $admin->organization_id,
             'user_id' => $admin->id,
             'event' => 'support.access.granted',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $admin->id,
             'changes' => ['by' => 'platform'],
         ]);

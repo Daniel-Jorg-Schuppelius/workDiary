@@ -14,6 +14,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\{Attachment, AuditLog, Comment, Customer, DiaryEntry, EmergencyAssignment, ImportRun, NumberSequence, OnCallShift, Supplier};
 use App\Services\UI\DateRangeContext;
 use App\Support\{LookupCache, SortableQuery};
+use App\Support\MorphMap;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -65,7 +66,7 @@ class AuditLogController extends Controller {
         if ($typeKey = $request->string('type')->toString()) {
             $class = self::TYPE_MAP[$typeKey] ?? null;
             if ($class) {
-                $query->where('auditable_type', $class);
+                $query->where('auditable_type', MorphMap::stableKey($class));
             }
         }
 

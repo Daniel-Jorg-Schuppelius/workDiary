@@ -22130,3 +22130,4 @@ INSERT INTO migrations VALUES(840,'2027_02_23_101200_create_club_resource_tables
 INSERT INTO migrations VALUES(841,'2027_02_23_101300_create_club_horse_tables',1);
 INSERT INTO migrations VALUES(842,'2027_02_23_101400_create_club_competition_tables',1);
 INSERT INTO migrations VALUES(843,'2027_02_23_101500_add_free_invoice_source_columns',1);
+INSERT INTO migrations VALUES(844,'2027_02_24_100000_rewrite_morph_types_to_aliases',2);

@@ -22,6 +22,7 @@ use App\Services\CustomerStatsService;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Stammdaten\IdentifierIssueDetector;
 use App\Services\Timeline\DiaryEntryTimelineService;
+use App\Support\MorphMap;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
@@ -315,7 +316,7 @@ class CustomerDetailAssembler {
             'attachments' => $customer->attachments()->get(),
             'tags' => $customer->tags()->get(),
             'auditLogs' => AuditLog::query()
-                ->where('auditable_type', $customer->getMorphClass())
+                ->where('auditable_type', MorphMap::stableKey($customer::class))
                 ->where('auditable_id', $customer->getKey())
                 ->with('user')
                 ->orderByDesc('created_at')

@@ -73,7 +73,7 @@
                     <td class="tabular-nums text-sm">{{ $allocation->allocated_on?->fdate() ?? '—' }}</td>
                     <td class="text-sm">
                         {{ $allocation->description ?? '—' }}
-                        @if ($allocation->source_type === \App\Models\StockMovement::class)
+                        @if (\App\Support\MorphMap::is($allocation->source_type, \App\Models\StockMovement::class))
                             <span class="badge badge-ghost badge-xs align-middle">{{ __('customer-material.source_stock') }}</span>
                         @elseif ($allocation->source_type !== null)
                             <span class="badge badge-ghost badge-xs align-middle">{{ __('customer-material.source_lexoffice') }}</span>

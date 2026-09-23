@@ -13,6 +13,7 @@ namespace App\Models;
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType, CommunicationVisibility};
 use App\Enums\User\Permission;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, HasTags};
+use App\Support\MorphMap;
 use Database\Factories\CommunicationNoteFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -157,14 +158,14 @@ class CommunicationNote extends Model {
 
     /** Interne Notiz ohne Fachbezug, abgelegt bei der Organisation selbst (Feature 154). */
     public function isOrganizationNote(): bool {
-        return $this->notable_type === Organization::class;
+        return MorphMap::is($this->notable_type, Organization::class);
     }
 
     /** Art der Ablage für Listen: „Intern“, „Kunde“ oder der Typ der Akte. */
     public function notableKindLabel(): string {
         return match (true) {
             $this->isOrganizationNote() => (string) __('communication.storage.internal'),
-            $this->notable_type === Customer::class => (string) __('communication.storage.customer'),
+            MorphMap::is($this->notable_type, Customer::class) => (string) __('communication.storage.customer'),
             default => (string) __('entity-types.' . class_basename($this->notable_type)),
         };
     }

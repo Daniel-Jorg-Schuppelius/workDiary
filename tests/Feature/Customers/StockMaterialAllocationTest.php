@@ -12,6 +12,7 @@ namespace Tests\Feature\Customers;
 
 use App\Models\{Article, ArticleVariant, Customer, StockMovement, User, Warehouse};
 use App\Services\Inventory\{CustomerStockAllocationService, InventoryLedger, ValuationService};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -75,7 +76,7 @@ class StockMaterialAllocationTest extends TestCase {
 
         $allocation = $this->customer->materialCostAllocations()->firstOrFail();
         $this->assertSame(15.0, $allocation->allocated_amount?->toFloat());
-        $this->assertSame(StockMovement::class, $allocation->source_type);
+        $this->assertSame(MorphMap::alias(StockMovement::class), $allocation->source_type);
         $this->assertSame('7.0000', app(InventoryLedger::class)->available($this->variant, $this->warehouse));
     }
 
@@ -137,7 +138,7 @@ class StockMaterialAllocationTest extends TestCase {
 
         $allocation = $this->customer->materialCostAllocations()->firstOrFail();
         $this->assertSame(10.0, $allocation->allocated_amount?->toFloat());
-        $this->assertSame(StockMovement::class, $allocation->source_type);
+        $this->assertSame(MorphMap::alias(StockMovement::class), $allocation->source_type);
         $this->assertSame('8.0000', app(InventoryLedger::class)->available($this->variant, $this->warehouse));
     }
 }

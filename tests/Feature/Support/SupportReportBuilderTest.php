@@ -12,6 +12,7 @@ namespace Tests\Feature\Support;
 
 use App\Models\{AuditLog, Customer, User};
 use App\Services\Support\SupportReportBuilder;
+use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -163,7 +164,7 @@ class SupportReportBuilderTest extends TestCase {
             'organization_id' => $this->organization->id,
             'user_id' => null,
             'event' => 'support.test',
-            'auditable_type' => \App\Models\Organization::class,
+            'auditable_type' => MorphMap::stableKey(\App\Models\Organization::class),
             'auditable_id' => $this->organization->id,
             'changes' => [],
         ]);

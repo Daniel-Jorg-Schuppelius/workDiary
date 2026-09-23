@@ -15,6 +15,7 @@ use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Enums\User\Permission as P;
 use App\Models\{Attendance, Organization, TimeCorrectionRequest, User};
 use App\Services\TimeApproval\TimeCorrectionService;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission as SpatiePermission;
@@ -40,7 +41,7 @@ class TimeCorrectionSelfApplyTest extends TestCase {
             CarbonImmutable::parse('2026-06-01'),
             'Stempelung am 01.06. vergessen einzutragen.',
             [[
-                'target_type' => Attendance::class,
+                'target_type' => MorphMap::alias(Attendance::class),
                 'target_id' => null,
                 'action' => 'create',
                 'before' => null,
@@ -82,7 +83,7 @@ class TimeCorrectionSelfApplyTest extends TestCase {
         // unterscheidbar (zeit-korrekturen.md §3.3).
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'attendance.correctedByApproval',
-            'auditable_type' => Attendance::class,
+            'auditable_type' => MorphMap::stableKey(Attendance::class),
             'auditable_id' => $att->id,
         ]);
         $log = \App\Models\AuditLog::query()->where('event', 'attendance.correctedByApproval')->firstOrFail();
@@ -113,7 +114,7 @@ class TimeCorrectionSelfApplyTest extends TestCase {
             CarbonImmutable::parse('2026-06-01'),
             'Stempelung am 01.06. vergessen einzutragen.',
             [[
-                'target_type' => Attendance::class, 'target_id' => null, 'action' => 'create', 'before' => null,
+                'target_type' => MorphMap::alias(Attendance::class), 'target_id' => null, 'action' => 'create', 'before' => null,
                 'after' => ['organization_id' => $org->id, 'user_id' => $emp->id, 'date' => '2026-06-01',
                     'started_at' => '2026-06-01 08:00:00', 'ended_at' => '2026-06-01 16:00:00',
                     'duration_minutes' => 480, 'status' => 'closed'],

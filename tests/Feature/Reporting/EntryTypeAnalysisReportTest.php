@@ -16,7 +16,7 @@ use App\Enums\Protocol\ProtocolType;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Controllers\Reporting\{EntryTypeAnalysisReportController, EntryTypeDrilldownReportController};
 use App\Models\{AuditLog, DiaryEntry, EntryType, OpenIssue, Project, Protocol, TimeEntry, User};
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
@@ -111,7 +111,7 @@ class EntryTypeAnalysisReportTest extends TestCase {
 
         OpenIssue::create([
             'organization_id' => $this->organization->id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entryB->id,
             'source_type' => OpenIssueSource::Manual->value,
             'source_ref_id' => null,
@@ -471,7 +471,7 @@ class EntryTypeAnalysisReportTest extends TestCase {
     private function createEntryTypeOpenIssue(DiaryEntry $entry, string $title): OpenIssue {
         return OpenIssue::create([
             'organization_id' => $this->organization->id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'source_type' => OpenIssueSource::Manual->value,
             'source_ref_id' => null,

@@ -12,7 +12,7 @@ namespace Tests\Feature;
 
 use App\Enums\User\Permission;
 use App\Models\{Project, TimeAllocation, TimeDimensionType, TimeDimensionValue, TimeEntry, User};
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -125,7 +125,7 @@ class TimeDimensionTest extends TestCase {
 
         $this->assertDatabaseHas('time_allocations', [
             'time_entry_id' => $entry->id,
-            'allocatable_type' => TimeDimensionValue::class,
+            'allocatable_type' => MorphMap::alias(TimeDimensionValue::class),
             'allocatable_id' => $value->id,
             'duration_minutes' => 90,
         ]);
@@ -151,7 +151,7 @@ class TimeDimensionTest extends TestCase {
         $type = $this->type();
         $value = $type->values()->create(['organization_id' => $this->organization->id, 'name' => 'X']);
 
-        $allocation = new TimeAllocation(['allocatable_type' => TimeDimensionValue::class]);
+        $allocation = new TimeAllocation(['allocatable_type' => MorphMap::alias(TimeDimensionValue::class)]);
         $this->assertSame('dimension', $allocation->typeAlias());
         $this->assertTrue($value->isValidOn(now()));
     }

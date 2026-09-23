@@ -14,6 +14,7 @@ namespace App\Services\Audit;
 
 use App\Models\{AuditLog, AuditRedaction, User};
 use App\Models\Concerns\HashChainable;
+use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -75,6 +76,10 @@ class AuditRedactionService {
 
         /** @var class-string<HashChainable> $modelClass */
         $modelClass = $chains[$chainTable];
+
+        // Die Kette führt den stabilen Schlüssel; Aufrufer dürfen Alias,
+        // alten oder aktuellen Klassennamen übergeben (MVP-860).
+        $auditableType = MorphMap::stableKey(MorphMap::classFor($auditableType) ?? $auditableType);
 
         $affected = DB::table($chainTable)
             ->where('auditable_type', $auditableType)

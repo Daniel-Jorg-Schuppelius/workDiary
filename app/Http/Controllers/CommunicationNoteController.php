@@ -16,7 +16,7 @@ use App\Models\{CommunicationNote, Customer, DiaryEntry, Organization, Project, 
 use App\Services\Communication\CommunicationNoteService;
 use App\Services\Ideas\NodeConversionService;
 use App\Support\{EntityUrl, Sqid, Tz};
-use App\Support\ErrorText;
+use App\Support\{ErrorText, MorphMap};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -80,8 +80,8 @@ class CommunicationNoteController extends Controller {
         $notes = CommunicationNote::query()
             ->visibleTo($user)
             ->with(['notable', 'creator:id,name', 'nextActionUser:id,name', 'tags:id,name,color,slug'])
-            ->when($storage === self::STORAGE_INTERNAL, fn($q) => $q->where('notable_type', Organization::class))
-            ->when($storage === self::STORAGE_CUSTOMER || $customerId !== null, fn($q) => $q->where('notable_type', Customer::class))
+            ->when($storage === self::STORAGE_INTERNAL, fn($q) => $q->where('notable_type', MorphMap::alias(Organization::class)))
+            ->when($storage === self::STORAGE_CUSTOMER || $customerId !== null, fn($q) => $q->where('notable_type', MorphMap::alias(Customer::class)))
             ->when($customerId !== null, fn($q) => $q->where('notable_id', $customerId))
             ->when($type, fn($q, CommunicationNoteType $t) => $q->where('type', $t->value))
             ->when($openFollowUps, fn($q) => $q->openFollowUps())

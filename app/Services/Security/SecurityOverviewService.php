@@ -11,6 +11,7 @@
 namespace App\Services\Security;
 
 use App\Models\{AuditLog, ExportRun, ExternalReference, Organization, PluginSetting, TimeExport, User};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -133,7 +134,7 @@ class SecurityOverviewService {
 
         $userIds = $this->organizationUserIds();
 
-        $query = DB::table('personal_access_tokens')->where('tokenable_type', User::class);
+        $query = DB::table('personal_access_tokens')->where('tokenable_type', MorphMap::alias(User::class));
         if ($userIds !== null) {
             $query->whereIn('tokenable_id', $userIds);
         }
@@ -285,7 +286,7 @@ class SecurityOverviewService {
                 'user' => $log->user?->name,
                 'ip' => $log->ip?->getValue(),
                 'subject' => $log->auditable_type !== ''
-                    ? class_basename((string) $log->auditable_type) . ' #' . $log->auditable_id
+                    ? MorphMap::basename((string) $log->auditable_type) . ' #' . $log->auditable_id
                     : null,
                 'created_at' => $log->created_at,
             ])->all(),

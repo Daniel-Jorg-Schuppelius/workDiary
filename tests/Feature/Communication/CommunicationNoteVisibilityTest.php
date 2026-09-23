@@ -11,6 +11,7 @@
 namespace Tests\Feature\Communication;
 
 use App\Models\{CommunicationNote, DiaryEntry, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -97,7 +98,7 @@ class CommunicationNoteVisibilityTest extends TestCase {
         $this->assertSame('internal', $note->visibility->value);
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'communication.confidential.set',
-            'auditable_type' => CommunicationNote::class,
+            'auditable_type' => MorphMap::stableKey(CommunicationNote::class),
             'auditable_id' => $note->id,
         ]);
     }

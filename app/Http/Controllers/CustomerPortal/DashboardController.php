@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{DiaryEntry, Invoice, OpenIssue, Project, TimeEntry, User};
 use App\Models\Reselling\ResaleSubscription;
 use App\Services\CustomerPortal\PortalVisibility;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -49,17 +50,17 @@ class DashboardController extends Controller {
                 ->whereNull('closed_at')
                 ->where(function (Builder $q) use ($customerId): void {
                     $q->where(function (Builder $sub) use ($customerId): void {
-                        $sub->where('subject_type', \App\Models\Customer::class)
+                        $sub->where('subject_type', MorphMap::alias(\App\Models\Customer::class))
                             ->where('subject_id', $customerId);
                     })
                         ->orWhere(function (Builder $sub) use ($customerId): void {
-                            $sub->where('subject_type', DiaryEntry::class)
+                            $sub->where('subject_type', MorphMap::alias(DiaryEntry::class))
                                 ->whereIn('subject_id', DiaryEntry::query()
                                     ->where('customer_id', $customerId)
                                     ->select('id'));
                         })
                         ->orWhere(function (Builder $sub) use ($customerId): void {
-                            $sub->where('subject_type', Project::class)
+                            $sub->where('subject_type', MorphMap::alias(Project::class))
                                 ->whereIn('subject_id', Project::query()
                                     ->where('customer_id', $customerId)
                                     ->select('id'));

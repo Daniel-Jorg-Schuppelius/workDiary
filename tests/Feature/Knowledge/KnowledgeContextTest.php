@@ -12,7 +12,7 @@ namespace Tests\Feature\Knowledge;
 
 use App\Models\{DiaryEntry, KnowledgeArticle, User};
 use App\Services\Knowledge\KnowledgeArticleService;
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -36,9 +36,9 @@ class KnowledgeContextTest extends TestCase {
             ->assertRedirect();
 
         $this->assertDatabaseHas('content_references', [
-            'source_type' => KnowledgeArticle::class,
+            'source_type' => MorphMap::alias(KnowledgeArticle::class),
             'source_id' => $article->id,
-            'target_type' => DiaryEntry::class,
+            'target_type' => MorphMap::alias(DiaryEntry::class),
             'target_id' => $entry->id,
             'kind' => 'linked',
             'created_by' => $user->id,
@@ -187,9 +187,9 @@ class KnowledgeContextTest extends TestCase {
         app()->instance('currentOrganization', $user->organization);
         $article = KnowledgeArticle::query()->firstOrFail();
         $this->assertDatabaseHas('content_references', [
-            'source_type' => KnowledgeArticle::class,
+            'source_type' => MorphMap::alias(KnowledgeArticle::class),
             'source_id' => $article->id,
-            'target_type' => DiaryEntry::class,
+            'target_type' => MorphMap::alias(DiaryEntry::class),
             'target_id' => $entry->id,
         ]);
     }

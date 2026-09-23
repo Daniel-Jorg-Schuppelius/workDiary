@@ -14,6 +14,7 @@ use App\Models\{Organization, User};
 use App\Models\Privacy\{ComplianceFinding, Dpia, DpiaStep, PrivacyAttachment, PrivacyRequirement, ProcessingActivity, TechnicalMeasure};
 use App\Services\Classification\BranchProfileInstaller;
 use App\Services\Privacy\{ComplianceAnalysisService, DataProtectionPermissions, DpiaWorkflowService};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
 use Spatie\Permission\PermissionRegistrar;
@@ -109,7 +110,7 @@ class PrivacyFollowupsTest extends TestCase {
         $measure = TechnicalMeasure::create(['organization_id' => $org->id, 'name' => 'Verschlüsselung', 'category' => 'data_access']);
         PrivacyAttachment::create([
             'organization_id' => $org->id,
-            'attachable_type' => TechnicalMeasure::class,
+            'attachable_type' => MorphMap::alias(TechnicalMeasure::class),
             'attachable_id' => $measure->id,
             'filename' => 'iso-zertifikat.pdf',
             'path' => 'privacy/attachments/test.pdf',

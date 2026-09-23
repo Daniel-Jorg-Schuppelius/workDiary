@@ -14,6 +14,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{Customer, Project, TimeEntry, User};
 use App\Services\TimeApproval\{TimeCorrectionService, TimeCorrectionWorkflowException};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -73,7 +74,7 @@ class TimeCorrectionTransferGuardTest extends TestCase {
             CarbonImmutable::parse('2030-04-01'),
             'Minuten falsch erfasst, bitte auf 90 Minuten korrigieren.',
             [[
-                'target_type' => TimeEntry::class,
+                'target_type' => MorphMap::alias(TimeEntry::class),
                 'target_id' => $this->entry->id,
                 'action' => 'update',
                 'after' => ['minutes' => 90],

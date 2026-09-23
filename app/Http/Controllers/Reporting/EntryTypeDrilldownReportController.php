@@ -14,6 +14,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{BuildsOpenIssueDrilldown, RendersReportPdf, WritesReportCsv};
 use App\Models\{DiaryEntry, EntryType, OpenIssue, Protocol};
+use App\Support\MorphMap;
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -44,7 +45,7 @@ class EntryTypeDrilldownReportController extends Controller {
         $entryIds = $this->entryIds($from->toDateTimeString(), $to->toDateTimeString(), $entryTypeId, $customerId, $userId, $statusFilter);
 
         $issuesQuery = $this->openIssueDrilldownQuery($escalatedOnly, function ($query) use ($entryIds): void {
-            $query->where('subject_type', DiaryEntry::class)
+            $query->where('subject_type', MorphMap::alias(DiaryEntry::class))
                 ->when($entryIds !== [], fn($q) => $q->whereIn('subject_id', $entryIds), fn($q) => $q->whereRaw('1=0'));
         });
 

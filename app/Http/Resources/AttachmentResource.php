@@ -11,7 +11,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Attachment;
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -32,7 +32,7 @@ class AttachmentResource extends JsonResource {
 
         return [
             'id' => $this->sqid,
-            'attachable_type' => class_basename($this->attachable_type),
+            'attachable_type' => MorphMap::basename($this->attachable_type),
             'attachable_id' => $attachableId,
             'original_name' => $this->original_name,
             'mime' => $this->mime,

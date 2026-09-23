@@ -13,6 +13,7 @@ namespace Tests\Feature\Peppol;
 use App\Models\{Customer, Organization, PeppolParticipantLookup, User};
 use App\Plugins\PeppolAccessPoint\PeppolAccessPointPlugin;
 use App\Plugins\PluginManager;
+use App\Support\MorphMap;
 use ERechnungToolkit\Contracts\DnsNaptrResolverInterface;
 use ERechnungToolkit\Peppol\{DocumentTypeId, ParticipantId};
 use GuzzleHttp\Psr7\Response as Psr7Response;
@@ -110,7 +111,7 @@ class PeppolCustomerTest extends TestCase {
         $this->assertCount(1, $lookup->document_types ?? []);
 
         $this->assertDatabaseHas('audit_logs', [
-            'auditable_type' => $this->customer->getMorphClass(),
+            'auditable_type' => MorphMap::stableKey($this->customer::class),
             'auditable_id' => $this->customer->id,
             'event' => 'customer.peppolChecked',
         ]);

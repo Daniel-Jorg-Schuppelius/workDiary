@@ -14,6 +14,7 @@ use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, Op
 use App\Models\{Comment, DiaryEntry, EmergencyAssignment, Expense, OnCallShift, PerDiemTrip, User, Vacation};
 use App\Models\OpenIssue;
 use App\Services\Dashboard\DashboardService;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -83,7 +84,7 @@ class DashboardTest extends TestCase {
         $owner = User::factory()->user()->create();
         $other = User::factory()->user()->create(['organization_id' => $owner->organization_id]);
         $entry = DiaryEntry::factory()->for($owner)->create();
-        Comment::factory()->for($other)->create(['commentable_type' => DiaryEntry::class, 'commentable_id' => $entry->id, 'body' => 'Wichtiger Hinweis von Kollege']);
+        Comment::factory()->for($other)->create(['commentable_type' => MorphMap::alias(DiaryEntry::class), 'commentable_id' => $entry->id, 'body' => 'Wichtiger Hinweis von Kollege']);
 
         $this->actingAs($owner)
             ->get(route('dashboard'))
@@ -158,7 +159,7 @@ class DashboardTest extends TestCase {
 
         OpenIssue::query()->create([
             'organization_id' => $user->organization_id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'source_type' => OpenIssueSource::Manual->value,
             'title' => 'Fällig später',
@@ -172,7 +173,7 @@ class DashboardTest extends TestCase {
 
         OpenIssue::query()->create([
             'organization_id' => $user->organization_id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'source_type' => OpenIssueSource::Manual->value,
             'title' => 'Fällig zuerst',
@@ -186,7 +187,7 @@ class DashboardTest extends TestCase {
 
         OpenIssue::query()->create([
             'organization_id' => $user->organization_id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'source_type' => OpenIssueSource::Manual->value,
             'title' => 'Ohne Frist',
@@ -201,7 +202,7 @@ class DashboardTest extends TestCase {
         // Geschlossen -> darf im Widget nicht mehr erscheinen.
         OpenIssue::query()->create([
             'organization_id' => $user->organization_id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'source_type' => OpenIssueSource::Manual->value,
             'title' => 'Bereits erledigt',
@@ -218,7 +219,7 @@ class DashboardTest extends TestCase {
         // Anderer Assignee -> darf im persönlichen Widget nicht erscheinen.
         OpenIssue::query()->create([
             'organization_id' => $user->organization_id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'source_type' => OpenIssueSource::Manual->value,
             'title' => 'Anderer Assignee',
@@ -247,7 +248,7 @@ class DashboardTest extends TestCase {
 
         OpenIssue::query()->create([
             'organization_id' => $user->organization_id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'source_type' => OpenIssueSource::Manual->value,
             'title' => 'Kritischer Mangel',

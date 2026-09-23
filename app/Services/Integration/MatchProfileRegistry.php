@@ -15,6 +15,7 @@ namespace App\Services\Integration;
 use App\Models\{Article, Customer, Project, Supplier};
 use App\Services\Integration\Match\MatchProfile;
 use App\Services\Integration\Profiles\{ArticleMatchProfile, CustomerMatchProfile, EventMatchProfile, ProjectMatchProfile, SupplierMatchProfile};
+use App\Support\MorphMap;
 
 /**
  * Liefert das {@see MatchProfile} zu einer Ziel-Entität (Morph-Klasse). Neue
@@ -22,7 +23,7 @@ use App\Services\Integration\Profiles\{ArticleMatchProfile, CustomerMatchProfile
  * vorerst nur Kunden ab.
  */
 class MatchProfileRegistry {
-    /** @var array<string, class-string<MatchProfile>> */
+    /** @var array<class-string<\Illuminate\Database\Eloquent\Model>, class-string<MatchProfile>> */
     private array $map = [
         Customer::class => CustomerMatchProfile::class,
         Supplier::class => SupplierMatchProfile::class,
@@ -35,33 +36,34 @@ class MatchProfileRegistry {
     ];
 
     public function for(string $targetType): ?MatchProfile {
-        $class = $this->map[$targetType] ?? null;
+        // Gespeichert ist der Morph-Alias, Altbestand der Klassenname (MVP-860).
+        $class = $this->map[MorphMap::classFor($targetType) ?? $targetType] ?? null;
 
         return $class !== null ? app($class) : null;
     }
 
     /** Lesbares Label der Ziel-Entität (für Filter/Anzeige). */
     public function label(string $targetType): string {
-        return match ($targetType) {
+        return match (MorphMap::classFor($targetType) ?? $targetType) {
             Customer::class => (string) __('Kunde'),
             Supplier::class => (string) __('Lieferant'),
             Article::class => (string) __('Artikel'),
             \App\Models\Project::class => (string) __('Projekt'),
             \App\Models\Asset::class => (string) __('Gerät'),
             \App\Models\Event::class => (string) __('Termin'),
-            default => class_basename($targetType),
+            default => MorphMap::basename($targetType),
         };
     }
 
     /**
-     * Alle registrierten Ziel-Typen (Morph-Klassen) → Label, für Filter-Dropdowns.
+     * Alle registrierten Ziel-Typen (Morph-Alias) → Label, für Filter-Dropdowns.
      *
      * @return array<string, string>
      */
     public function options(): array {
         $out = [];
         foreach (array_keys($this->map) as $type) {
-            $out[$type] = $this->label($type);
+            $out[MorphMap::alias($type)] = $this->label($type);
         }
 
         return $out;

@@ -12,6 +12,7 @@ namespace App\Policies;
 
 use App\Models\{Attachment, SickLeave, User};
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
+use App\Support\MorphMap;
 
 class SickLeavePolicy {
     use ChecksOwnership;
@@ -49,7 +50,7 @@ class SickLeavePolicy {
             return false;
         }
 
-        return $attachment->attachable_type === SickLeave::class
+        return MorphMap::is($attachment->attachable_type, SickLeave::class)
             && (int) $attachment->attachable_id === (int) $sickLeave->id;
     }
 }

@@ -12,6 +12,7 @@ namespace Database\Factories;
 
 use App\Enums\Protocol\{ProtocolStatus, ProtocolType, ProtocolVisibility};
 use App\Models\{DiaryEntry, Protocol, User};
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -23,7 +24,7 @@ class ProtocolFactory extends Factory {
     public function definition(): array {
         return [
             'type' => ProtocolType::Service->value,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => DiaryEntry::factory(),
             'title' => fake()->sentence(5),
             'description' => fake()->paragraph(),

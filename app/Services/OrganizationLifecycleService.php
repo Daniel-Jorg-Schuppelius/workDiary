@@ -12,6 +12,7 @@ namespace App\Services;
 
 use App\Http\Controllers\OrganizationSwitchController;
 use App\Models\{Organization, OrganizationAuditLog, User};
+use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\JsonHelper;
 use CommonToolkit\Helper\FileSystem\{File as ToolkitFile, Files, Folder as ToolkitFolder};
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
@@ -105,7 +106,7 @@ class OrganizationLifecycleService {
         }
 
         DB::table('personal_access_tokens')
-            ->where('tokenable_type', User::class)
+            ->where('tokenable_type', MorphMap::alias(User::class))
             ->whereIn('tokenable_id', $userIds)
             ->delete();
 

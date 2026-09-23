@@ -12,6 +12,7 @@ namespace Tests\Feature;
 
 use App\Enums\User\Permission as P;
 use App\Models\{Attendance, Organization, TimeCorrectionRequest, TimeEntry, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission as SpatiePermission;
 use Spatie\Permission\PermissionRegistrar;
@@ -58,9 +59,9 @@ class TimeCorrectionTargetsTest extends TestCase {
             ->getJson(route('corrections.targets', ['date' => '2026-06-01']))
             ->assertOk();
 
-        $this->assertSame([$entry->sqid], array_column($response->json(TimeEntry::class), 'id'));
-        $this->assertSame([$attendance->sqid], array_column($response->json(Attendance::class), 'id'));
-        $this->assertStringContainsString('–', (string) $response->json(Attendance::class . '.0.label'));
+        $this->assertSame([$entry->sqid], array_column($response->json(MorphMap::alias(TimeEntry::class)), 'id'));
+        $this->assertSame([$attendance->sqid], array_column($response->json(MorphMap::alias(Attendance::class)), 'id'));
+        $this->assertStringContainsString('–', (string) $response->json(MorphMap::alias(Attendance::class) . '.0.label'));
     }
 
     public function test_targets_of_colleagues_require_the_on_behalf_permission(): void {
@@ -81,7 +82,7 @@ class TimeCorrectionTargetsTest extends TestCase {
             'scope_date' => '2026-06-01',
             'reason' => 'Gehen vergessen zu stempeln, tatsächlich bis 15 Uhr gearbeitet.',
             'items' => [[
-                'target_type' => Attendance::class,
+                'target_type' => MorphMap::alias(Attendance::class),
                 'target_id' => $attendance->sqid,
                 'action' => 'update',
                 'after' => json_encode(['ended_at' => '2026-06-01 15:00:00']),

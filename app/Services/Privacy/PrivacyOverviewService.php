@@ -14,6 +14,7 @@ use App\Enums\User\Permission;
 use App\Models\{AuditLog, Organization, PluginSetting, User};
 use App\Plugins\PluginManager;
 use App\Services\Security\SessionManagementService;
+use App\Support\MorphMap;
 use Illuminate\Support\Facades\{DB, Schema};
 
 /**
@@ -62,7 +63,7 @@ class PrivacyOverviewService {
 
         $tokens = $user->can(Permission::PrivacyTokensView->value) && Schema::hasTable('personal_access_tokens')
             ? DB::table('personal_access_tokens')
-            ->where('tokenable_type', User::class)
+            ->where('tokenable_type', MorphMap::alias(User::class))
             ->whereIn('tokenable_id', $memberIds)
             ->orderByDesc('created_at')
             ->limit(50)
@@ -236,7 +237,7 @@ class PrivacyOverviewService {
 
         $tokenCount = Schema::hasTable('personal_access_tokens')
             ? DB::table('personal_access_tokens')
-            ->where('tokenable_type', User::class)
+            ->where('tokenable_type', MorphMap::alias(User::class))
             ->whereIn('tokenable_id', $memberIds)
             ->count()
             : 0;

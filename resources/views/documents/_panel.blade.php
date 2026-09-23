@@ -70,7 +70,7 @@
                             @endcan
                             <x-status-badge :tone="$panelEffective->tone()" size="sm">{{ $panelEffective->label() }}</x-status-badge>
                         </span>
-                        @if ($panelChained && $panelDocument->documentable_type !== \App\Models\Customer::class)
+                        @if ($panelChained && ! \App\Support\MorphMap::is($panelDocument->documentable_type, \App\Models\Customer::class))
                             <x-subject-link :for="$panelDocument" class="block text-xs" />
                         @endif
                         <span class="block text-xs text-muted">

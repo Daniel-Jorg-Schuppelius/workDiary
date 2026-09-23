@@ -11,6 +11,7 @@
 namespace Tests\Feature\Tenant;
 
 use App\Models\{CommunicationNote, Document, Event, FeatureUsageCounter, FormSubmission, FormTemplate, KnowledgeArticle, Milestone, Organization, PerDiemTrip, Project, Task, TimeEntry, Timesheet, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -161,7 +162,7 @@ class TenantBoundaryTest extends TestCase {
 
             return \App\Models\Finance\PaymentAllocation::factory()->create([
                 'bank_transaction_id' => $transaction->id,
-                'allocatable_type' => \App\Models\Invoice::class,
+                'allocatable_type' => MorphMap::alias(\App\Models\Invoice::class),
                 'allocatable_id' => $invoice->id,
             ]);
         });

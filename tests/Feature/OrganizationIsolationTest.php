@@ -11,6 +11,7 @@
 namespace Tests\Feature;
 
 use App\Models\{Attachment, Comment, Customer, DiaryEntry, Event, EventReminder, FlexBalance, Organization, Project, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
@@ -53,7 +54,7 @@ class OrganizationIsolationTest extends TestCase {
         // Datensatz in Org B: DiaryEntry + Attachment.
         $entryB = $this->withOrg($this->orgB, fn() => DiaryEntry::factory()->for($this->userB)->create());
         $attachmentB = $this->withOrg($this->orgB, fn() => Attachment::factory()->for($this->userB, 'uploader')->create([
-            'attachable_type' => DiaryEntry::class,
+            'attachable_type' => MorphMap::alias(DiaryEntry::class),
             'attachable_id' => $entryB->id,
         ]));
 
@@ -96,7 +97,7 @@ class OrganizationIsolationTest extends TestCase {
 
         $commentB = $this->withOrg($this->orgB, function () use ($entryB) {
             return Comment::create([
-                'commentable_type' => DiaryEntry::class,
+                'commentable_type' => MorphMap::alias(DiaryEntry::class),
                 'commentable_id' => $entryB->id,
                 'user_id' => $this->userB->id,
                 'body' => 'secret',

@@ -11,6 +11,7 @@
 namespace Database\Factories;
 
 use App\Models\{Attachment, DiaryEntry, User};
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -23,7 +24,7 @@ class AttachmentFactory extends Factory {
         $entry = DiaryEntry::factory()->create();
 
         return [
-            'attachable_type' => DiaryEntry::class,
+            'attachable_type' => MorphMap::alias(DiaryEntry::class),
             'attachable_id' => $entry->id,
             'user_id' => User::factory(),
             'disk' => 'local',

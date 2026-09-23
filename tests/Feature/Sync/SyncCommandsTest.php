@@ -12,7 +12,7 @@ namespace Tests\Feature\Sync;
 
 use App\Enums\Sync\SyncCommandStatus;
 use App\Models\{Attendance, AuditLog, Comment, DiaryEntry, FormSubmission, FormTemplate, Organization, SyncCommand, User};
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\Concerns\WithOrganization;
@@ -220,7 +220,7 @@ class SyncCommandsTest extends TestCase {
         $this->assertDatabaseHas('form_submissions', [
             'form_template_id' => $template->id,
             'submitted_by_user_id' => $this->user->id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $diary->id,
         ]);
         // Formularwerte tauchen NICHT im Diagnose-Payload des Registers auf.

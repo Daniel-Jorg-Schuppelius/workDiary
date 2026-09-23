@@ -17,7 +17,7 @@ use App\Models\CommunicationNote;
 use App\Models\{Customer, Organization, Project, User};
 use App\Services\Communication\CustomerCircularService;
 use App\Settings\SettingScope;
-use App\Support\Setting;
+use App\Support\{MorphMap, Setting};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use RuntimeException;
@@ -222,7 +222,7 @@ class CustomerCircularTest extends TestCase {
         $this->service()->send($this->circular(), $this->admin);
 
         $note = CommunicationNote::query()
-            ->where('notable_type', Customer::class)
+            ->where('notable_type', MorphMap::alias(Customer::class))
             ->where('notable_id', $customer->id)
             ->firstOrFail();
         $this->assertSame('Preisanpassung 2027', $note->subject);

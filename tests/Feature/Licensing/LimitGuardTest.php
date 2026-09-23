@@ -13,6 +13,7 @@ namespace Tests\Feature\Licensing;
 use App\Exceptions\LimitExceededException;
 use App\Models\{Attachment, DiaryEntry, Organization, User};
 use App\Services\Licensing\{LicensePayload, LicenseResult, LicenseService, LicenseStatus, LimitGuard};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -125,7 +126,7 @@ class LimitGuardTest extends TestCase {
         $entry = DiaryEntry::factory()->create(['organization_id' => $this->organization->id]);
         Attachment::factory()->create([
             'organization_id' => $this->organization->id,
-            'attachable_type' => DiaryEntry::class,
+            'attachable_type' => MorphMap::alias(DiaryEntry::class),
             'attachable_id' => $entry->id,
             'size' => 1024 * 1024 * 1024 - 1000, // 1 GB minus 1000 B
         ]);

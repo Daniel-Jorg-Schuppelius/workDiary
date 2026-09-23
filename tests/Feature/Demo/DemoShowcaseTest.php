@@ -13,6 +13,7 @@ namespace Tests\Feature\Demo;
 use App\Enums\Procedure\ProcedureRunStatus;
 use App\Models\{Attachment, DiaryEntry, Organization, ProcedureBackupProof, ProcedureRun};
 use App\Services\Demo\DemoSeederService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -42,7 +43,7 @@ final class DemoShowcaseTest extends TestCase {
         // Anhänge hängen am Hauptauftrag, Dateien liegen im Storage.
         $attachments = Attachment::query()
             ->where('organization_id', $organization->id)
-            ->where('attachable_type', DiaryEntry::class)
+            ->where('attachable_type', MorphMap::alias(DiaryEntry::class))
             ->get();
         $this->assertCount(2, $attachments);
         foreach ($attachments as $attachment) {

@@ -12,6 +12,7 @@ namespace App\Models;
 
 use App\Enums\Asset\{MaintenanceDueAction, MaintenanceIntervalKind};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Support\MorphMap;
 use Database\Factories\MaintenancePlanFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -96,11 +97,11 @@ class MaintenancePlan extends Model {
     }
 
     public function subjectIsAsset(): bool {
-        return $this->subject_type === Asset::class;
+        return MorphMap::is($this->subject_type, Asset::class);
     }
 
     public function subjectIsRoom(): bool {
-        return $this->subject_type === Room::class;
+        return MorphMap::is($this->subject_type, Room::class);
     }
 
     public function isDue(?Carbon $reference = null): bool {

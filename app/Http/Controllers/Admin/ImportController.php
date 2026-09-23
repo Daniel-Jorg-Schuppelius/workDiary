@@ -18,6 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\ProcessCsvImportJob;
 use App\Models\{AuditLog, ImportRun, ImportRunError, User};
 use App\Services\Import\{CsvPreflightAnalyzer, DocumentZipImportService};
+use App\Support\MorphMap;
 use App\Support\Toolkit\CsvFacade;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request, Response};
@@ -199,7 +200,7 @@ class ImportController extends Controller {
                 'organization_id' => $organization->id,
                 'user_id' => Auth::id(),
                 'event' => 'import.preflightFailed',
-                'auditable_type' => ImportRun::class,
+                'auditable_type' => MorphMap::stableKey(ImportRun::class),
                 'auditable_id' => $run->id,
                 'changes' => ['entity' => $entity->value],
                 'ip' => $request->ip(),
@@ -375,7 +376,7 @@ class ImportController extends Controller {
             'organization_id' => $import->organization_id,
             'user_id' => Auth::id(),
             'event' => 'import.confirmed',
-            'auditable_type' => ImportRun::class,
+            'auditable_type' => MorphMap::stableKey(ImportRun::class),
             'auditable_id' => $import->id,
             'changes' => [
                 'entity' => $import->entity->value,

@@ -14,6 +14,7 @@ use App\Enums\Asset\AssetOwnership;
 use App\Enums\Protocol\{ProtocolItemPhotoPhase, ProtocolItemType, ProtocolStatus, ProtocolType};
 use App\Models\{Asset, DiaryEntry, Protocol, ProtocolItemPhoto, User};
 use App\Services\Protocol\ProtocolService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -41,7 +42,7 @@ class ProtocolControllerTest extends TestCase {
             ->assertRedirect();
 
         $this->assertDatabaseHas('protocols', [
-            'subject_type' => Asset::class,
+            'subject_type' => MorphMap::alias(Asset::class),
             'subject_id' => $asset->id,
             'type' => ProtocolType::Service->value,
             'status' => ProtocolStatus::Draft->value,
@@ -85,7 +86,7 @@ class ProtocolControllerTest extends TestCase {
         $entry = DiaryEntry::factory()->for($user)->create();
         $protocol = Protocol::factory()->create([
             'organization_id' => $user->organization_id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'created_by_user_id' => $user->id,
             'status' => ProtocolStatus::Draft->value,
@@ -122,7 +123,7 @@ class ProtocolControllerTest extends TestCase {
             ->assertRedirect();
 
         $this->assertDatabaseHas('protocols', [
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'type' => ProtocolType::Service->value,
             'status' => ProtocolStatus::Draft->value,

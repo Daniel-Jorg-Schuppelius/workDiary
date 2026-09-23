@@ -12,6 +12,7 @@ namespace App\Services\Licensing;
 
 use App\Exceptions\LimitExceededException;
 use App\Models\{Attachment, AuditLog, Organization, User};
+use App\Support\MorphMap;
 
 /**
  * Prüft Lizenz-Limits vor Create-Aktionen (MVP-047 §5).
@@ -167,7 +168,7 @@ class LimitGuard {
             'organization_id' => $organization->id,
             'user_id' => $actor?->id,
             'event' => 'limit.exceeded',
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $organization->id,
             'changes' => [
                 'limit' => $limit,

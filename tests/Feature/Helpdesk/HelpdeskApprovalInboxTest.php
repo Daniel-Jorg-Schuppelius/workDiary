@@ -12,6 +12,7 @@ namespace Tests\Feature\Helpdesk;
 
 use App\Models\{Approval, BusinessService, Organization, RequestItem, ServiceOffering, ServiceQueue, ServiceRequest, User};
 use App\Services\ServiceTicket\ServiceRequestService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -192,7 +193,7 @@ final class HelpdeskApprovalInboxTest extends TestCase {
 
         $this->assertSame('delegated', $step1->fresh()->decision);
         $delegated = Approval::query()
-            ->where('approvable_type', ServiceRequest::class)
+            ->where('approvable_type', MorphMap::alias(ServiceRequest::class))
             ->where('approvable_id', $request->id)
             ->where('step', 1)
             ->whereNull('decision')
@@ -240,7 +241,7 @@ final class HelpdeskApprovalInboxTest extends TestCase {
         $foreignOrg = Organization::factory()->create();
         $foreignApproval = Approval::query()->create([
             'organization_id' => $foreignOrg->id,
-            'approvable_type' => ServiceRequest::class,
+            'approvable_type' => MorphMap::alias(ServiceRequest::class),
             'approvable_id' => 999,
             'step' => 1,
             'approver_rule' => ['type' => 'user', 'value' => (int) $this->approverA->id],

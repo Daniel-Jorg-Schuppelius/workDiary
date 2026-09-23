@@ -16,7 +16,7 @@ use App\Enums\Finance\{AccountType, OpenItemDirection, OpenItemStatus, Settlemen
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingEntryLine, AccountingOpenItem, AccountingOpenItemSettlement};
 use App\Models\{Organization, User};
 use App\Services\Finance\Datev\DatevBookingConfig;
-use App\Support\Tz;
+use App\Support\{MorphMap, Tz};
 use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\{Decimal, Money};
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -229,7 +229,7 @@ class OpenItemService {
                 $note !== null && $note !== '' ? ' — ' . $note : '',
             )),
             'document_reference' => $item->document_reference,
-            'source_type' => AccountingOpenItem::class,
+            'source_type' => MorphMap::alias(AccountingOpenItem::class),
             'source_id' => (int) $item->getKey(),
             'source_key' => 'opos-settle:' . $item->getKey() . ':' . $kind->value . ':' . $amount,
             'snapshot' => $snapshot,
@@ -308,7 +308,7 @@ class OpenItemService {
     public function forSource(Organization $organization, Model $source): ?AccountingOpenItem {
         return AccountingOpenItem::query()
             ->where('organization_id', $organization->id)
-            ->where('source_type', $source::class)
+            ->where('source_type', $source->getMorphClass())
             ->where('source_id', $source->getKey())
             ->stillOpen()
             ->orderBy('id')

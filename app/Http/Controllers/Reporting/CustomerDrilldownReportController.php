@@ -14,7 +14,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{BuildsOpenIssueDrilldown, RendersReportPdf, WritesReportCsv};
 use App\Models\{Customer, DiaryEntry, OpenIssue, Project, Protocol, User};
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -68,20 +68,20 @@ class CustomerDrilldownReportController extends Controller {
         $issuesQuery = $this->openIssueDrilldownQuery($escalatedOnly, function ($query) use ($customerId, $entryIds, $projectIds): void {
             $query->where(function ($q) use ($customerId, $entryIds, $projectIds): void {
                 $q->where(function ($sub) use ($customerId): void {
-                    $sub->where('subject_type', Customer::class)
+                    $sub->where('subject_type', MorphMap::alias(Customer::class))
                         ->where('subject_id', $customerId);
                 });
 
                 if ($entryIds !== []) {
                     $q->orWhere(function ($sub) use ($entryIds): void {
-                        $sub->where('subject_type', DiaryEntry::class)
+                        $sub->where('subject_type', MorphMap::alias(DiaryEntry::class))
                             ->whereIn('subject_id', $entryIds);
                     });
                 }
 
                 if ($projectIds !== []) {
                     $q->orWhere(function ($sub) use ($projectIds): void {
-                        $sub->where('subject_type', Project::class)
+                        $sub->where('subject_type', MorphMap::alias(Project::class))
                             ->whereIn('subject_id', $projectIds);
                     });
                 }

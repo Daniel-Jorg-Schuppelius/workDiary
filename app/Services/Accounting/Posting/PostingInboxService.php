@@ -366,7 +366,7 @@ class PostingInboxService {
             'document_on' => $proposal->documentOn,
             'memo' => $proposal->memo,
             'document_reference' => $proposal->documentReference,
-            'source_type' => $proposal->source::class,
+            'source_type' => $proposal->source->getMorphClass(),
             'source_id' => (int) $proposal->source->getKey(),
             'source_key' => $proposal->sourceKey,
             'rule_version' => $proposal->ruleVersion,

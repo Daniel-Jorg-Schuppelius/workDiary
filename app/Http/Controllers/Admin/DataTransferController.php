@@ -17,6 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, ExportRun, ImportRun, User};
 use App\Services\Export\{ExportRunner, ExportSpecRegistry};
+use App\Support\MorphMap;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Storage};
@@ -118,7 +119,7 @@ class DataTransferController extends Controller {
             'organization_id' => $organization->id,
             'user_id' => Auth::id(),
             'event' => $run->state === ExportRunState::Ready ? 'export.created' : 'export.failed',
-            'auditable_type' => ExportRun::class,
+            'auditable_type' => MorphMap::stableKey(ExportRun::class),
             'auditable_id' => $run->id,
             'changes' => [
                 'entity' => $entity->value,

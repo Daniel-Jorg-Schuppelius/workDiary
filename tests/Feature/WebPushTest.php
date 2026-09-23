@@ -15,6 +15,7 @@ use App\Enums\Timesheet\TimesheetStatus;
 use App\Jobs\Notification\WebPushDeliveryJob;
 use App\Models\{Comment, DiaryEntry, EmergencyAssignment, Project, PushSubscription, Timesheet, User};
 use App\Notifications\GenericEventNotification;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Bus, Config, Notification};
 use Tests\TestCase;
@@ -86,7 +87,7 @@ class WebPushTest extends TestCase {
         Notification::fake();
         Bus::fake([WebPushDeliveryJob::class]);
         $this->actingAs($commenter);
-        Comment::factory()->for($commenter)->create(['commentable_type' => DiaryEntry::class, 'commentable_id' => $entry->id, 'body' => 'Hi']);
+        Comment::factory()->for($commenter)->create(['commentable_type' => MorphMap::alias(DiaryEntry::class), 'commentable_id' => $entry->id, 'body' => 'Hi']);
 
         Bus::assertDispatched(WebPushDeliveryJob::class, fn(WebPushDeliveryJob $job): bool => $job->userId === (int) $owner->id
             && $job->payload['title'] !== '');
@@ -100,7 +101,7 @@ class WebPushTest extends TestCase {
         Notification::fake();
         Bus::fake([WebPushDeliveryJob::class]);
         $this->actingAs($owner);
-        Comment::factory()->for($owner)->create(['commentable_type' => DiaryEntry::class, 'commentable_id' => $entry->id, 'body' => 'self']);
+        Comment::factory()->for($owner)->create(['commentable_type' => MorphMap::alias(DiaryEntry::class), 'commentable_id' => $entry->id, 'body' => 'self']);
 
         Bus::assertNotDispatched(WebPushDeliveryJob::class);
     }

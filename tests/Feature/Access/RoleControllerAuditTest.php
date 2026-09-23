@@ -12,6 +12,7 @@ namespace Tests\Feature\Access;
 
 use App\Models\{AuditLog, User};
 use App\Services\Whistleblowing\WhistleblowingPermissions;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -58,7 +59,7 @@ class RoleControllerAuditTest extends TestCase {
             'organization_id' => $this->organization->id,
             'user_id' => $this->admin->id,
             'event' => 'role.created',
-            'auditable_type' => Role::class,
+            'auditable_type' => MorphMap::stableKey(Role::class),
             'auditable_id' => $role->getKey(),
         ]);
 

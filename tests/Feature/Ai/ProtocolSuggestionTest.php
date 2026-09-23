@@ -21,6 +21,7 @@ use App\Models\{AuditLog, Classification, Customer, DiaryEntry, Organization, Pr
 use App\Services\Ai\Suggestions\ProtocolTextSuggestionService;
 use App\Services\Ai\Support\CustomerNameMasker;
 use App\Services\Protocol\ProtocolService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\{FakeAiProvider, FakeAiProviderFactory};
@@ -69,7 +70,7 @@ class ProtocolSuggestionTest extends TestCase {
 
         return Protocol::factory()->create([
             'organization_id' => $creator->organization_id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'created_by_user_id' => $creator->id,
             'title' => 'Abnahme Serverraum',
@@ -338,7 +339,7 @@ class ProtocolSuggestionTest extends TestCase {
         $entry = DiaryEntry::factory()->for($stranger)->create(['organization_id' => $other->id]);
         $protocol = Protocol::factory()->create([
             'organization_id' => $other->id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'created_by_user_id' => $stranger->id,
         ]);

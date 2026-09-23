@@ -79,7 +79,7 @@ final class CostGroupReportTest extends TestCase {
         BoqCatalogAssignment::query()->create([
             'organization_id' => $this->organization->id,
             'bill_of_quantity_id' => $this->bill->id,
-            'assignable_type' => $target::class,
+            'assignable_type' => $target->getMorphClass(),
             'assignable_id' => $target->id,
             'catalog_key' => 'idDIN276-18',
             'code' => $code,

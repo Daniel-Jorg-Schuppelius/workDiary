@@ -16,6 +16,7 @@ use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskStatus, Operatio
 use App\Models\{AttendanceTerminal, ChatWebhook, OperationsTask, TodoistConnection};
 use App\Services\Licensing\{LicenseService, LicenseStatus};
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
+use App\Support\MorphMap;
 use App\Support\{Setting, Tz};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\{DB, Log};
@@ -215,7 +216,7 @@ class ExpiryScanner {
         $signals = DB::table('personal_access_tokens')
             ->join('users', function ($join): void {
                 $join->on('users.id', '=', 'personal_access_tokens.tokenable_id')
-                    ->where('personal_access_tokens.tokenable_type', \App\Models\User::class);
+                    ->where('personal_access_tokens.tokenable_type', MorphMap::alias(\App\Models\User::class));
             })
             ->whereNotNull('personal_access_tokens.expires_at')
             ->where('personal_access_tokens.expires_at', '>', now())

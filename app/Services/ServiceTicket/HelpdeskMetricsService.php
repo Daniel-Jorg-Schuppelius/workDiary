@@ -14,6 +14,7 @@ namespace App\Services\ServiceTicket;
 
 use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Models\{AuditLog, Change, ContentReference, KnowledgeArticle, Problem, ServiceRequest, ServiceTicket, SlaClockSegment, TicketSatisfaction};
+use App\Support\MorphMap;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -417,7 +418,7 @@ class HelpdeskMetricsService {
         $requeuedIds = [];
         foreach ($tickets->pluck('id')->chunk(500) as $ids) {
             $logs = AuditLog::query()
-                ->where('auditable_type', ServiceTicket::class)
+                ->where('auditable_type', MorphMap::stableKey(ServiceTicket::class))
                 ->whereIn('auditable_id', $ids->all())
                 ->whereIn('event', ['service_ticket.reopened', 'service_ticket.requeued'])
                 ->get(['auditable_id', 'event']);

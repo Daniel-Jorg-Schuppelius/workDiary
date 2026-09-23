@@ -12,6 +12,7 @@ namespace Tests\Feature\Plugins;
 
 use App\Models\{TodoistConnection, User};
 use App\Plugins\Todoist\Api\TodoistOAuth;
+use App\Support\MorphMap;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response as Psr7Response;
@@ -160,7 +161,7 @@ final class TodoistConnectionTest extends TestCase {
         $this->assertSame(TodoistConnection::STATUS_DISCONNECTED, $fresh->status);
         $this->assertNull($fresh->access_token);
         $this->assertDatabaseHas('audit_logs', [
-            'auditable_type' => $connection->getMorphClass(),
+            'auditable_type' => MorphMap::stableKey($connection::class),
             'auditable_id' => $connection->id,
             'event' => 'todoist.disconnected',
         ]);

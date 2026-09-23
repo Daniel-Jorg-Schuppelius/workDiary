@@ -13,7 +13,7 @@ namespace Tests\Feature\Reporting;
 use App\Enums\Procedure\{ProcedureDeviationProposedAction, ProcedureDeviationSeverity, ProcedureDeviationType};
 use App\Models\{AuditLog, DiaryEntry, OpenIssue, ProcedureDeviation, ProcedureRun, ProcedureStepDef, ProcedureStepRun, ProcedureTemplate, ProcedureTemplateVersion, User};
 use App\Services\Reporting\ProcedureDeviationReportBuilder;
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
@@ -49,7 +49,7 @@ final class ProcedureDeviationReportTest extends TestCase {
         $run = ProcedureRun::factory()->create([
             'organization_id' => $this->organization->id,
             'procedure_template_version_id' => $version->id,
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'created_by_user_id' => $this->admin->id,
         ]);

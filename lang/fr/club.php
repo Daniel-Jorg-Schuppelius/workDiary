@@ -294,6 +294,7 @@ return [
             'period_upcoming' => 'À venir',
             'period_range' => 'Période de l\'en-tête',
             'period_past' => 'Passés',
+            'period' => 'Période',
             'all_kinds' => 'Tous les types',
         ],
         'action' => [

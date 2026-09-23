@@ -17,6 +17,7 @@ use App\Models\{AuditLog, Organization};
 use App\Services\Ai\Contracts\{AiRequestInterface, LlmProviderInterface, TranslatesTextInterface};
 use App\Services\Ai\Dto\{AiCapability, AiClassificationResult, AiExtractionResult, AiFindResult, AiInvocationResult, AiTextResult, AiTranslationResult, ClassifyRequest, ExplainRequest, ExtractRequest, FindRequest, FormulateRequest, SummarizeRequest, TranslateRequest};
 use App\Services\Ai\Exceptions\{AiException, AiUnavailableException};
+use App\Support\MorphMap;
 use Illuminate\Support\Facades\{Auth, Cache};
 use Throwable;
 
@@ -147,7 +148,7 @@ class AiInvocationService {
                 'organization_id' => $organization->id,
                 'user_id' => $actor instanceof \App\Models\User ? (int) $actor->getKey() : null,
                 'event' => 'ai.invoked',
-                'auditable_type' => $connection->getMorphClass(),
+                'auditable_type' => MorphMap::stableKey($connection::class),
                 'auditable_id' => $connection->getKey(),
                 'changes' => [
                     'capability' => $capability->key,

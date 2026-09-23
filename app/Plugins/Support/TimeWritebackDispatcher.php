@@ -14,6 +14,7 @@ namespace App\Plugins\Support;
 
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
 use App\Models\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry, TimeEntry};
+use App\Support\MorphMap;
 
 /**
  * Gemeinsame Rückrichtung der Zeit-Plugins: schreibt lokale Korrekturen an
@@ -220,7 +221,7 @@ abstract class TimeWritebackDispatcher implements IntegrationOutboxDispatcher {
             ],
             [
                 'source' => $this->pluginId(),
-                'target_type' => TimeEntry::class,
+                'target_type' => MorphMap::alias(TimeEntry::class),
                 'external_type' => MatchingTimeImportService::EXT_TYPE_ENTRY,
                 'external_id' => (string) $reference->external_id,
                 'case_type' => IntegrationInboxItem::CASE_CONFLICT,

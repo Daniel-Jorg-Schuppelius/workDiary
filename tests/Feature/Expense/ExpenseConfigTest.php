@@ -13,6 +13,7 @@ namespace Tests\Feature\Expense;
 use App\Enums\Expense\PaymentMethod;
 use App\Models\{Expense, User};
 use App\Services\Expense\ExpenseService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -102,7 +103,7 @@ class ExpenseConfigTest extends TestCase {
             ->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('attachments', [
-            'attachable_type' => Expense::class,
+            'attachable_type' => MorphMap::alias(Expense::class),
             'attachable_id' => $expense->id,
             'original_name' => 'beleg.pdf',
         ]);

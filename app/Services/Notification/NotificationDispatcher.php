@@ -136,7 +136,7 @@ class NotificationDispatcher {
             ->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
             ->where('event', $event->value)
-            ->where('subject_type', $subject::class)
+            ->where('subject_type', $subject->getMorphClass())
             ->where('subject_id', $subject->getKey())
             ->where('stage', $stage)
             ->first();
@@ -283,7 +283,7 @@ class NotificationDispatcher {
             ->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
             ->where('event', $event->value)
-            ->where('subject_type', $subject::class)
+            ->where('subject_type', $subject->getMorphClass())
             ->where('subject_id', $subject->getKey())
             ->where('stage', $stage)
             ->exists();
@@ -296,7 +296,7 @@ class NotificationDispatcher {
             NotificationDispatchLog::query()->create([
                 'organization_id' => $organizationId,
                 'event' => $event->value,
-                'subject_type' => $subject::class,
+                'subject_type' => $subject->getMorphClass(),
                 'subject_id' => $subject->getKey(),
                 'stage' => $stage,
                 'recipient_count' => $recipientCount,

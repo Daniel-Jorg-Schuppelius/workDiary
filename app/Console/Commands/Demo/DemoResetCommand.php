@@ -15,6 +15,7 @@ namespace App\Console\Commands\Demo;
 use App\Enums\Demo\DemoIndustry;
 use App\Models\{AuditLog, Organization};
 use App\Services\Demo\DemoSeederService;
+use App\Support\MorphMap;
 use Illuminate\Console\Command;
 
 /**
@@ -68,7 +69,7 @@ class DemoResetCommand extends Command {
                 'organization_id' => $org->id,
                 'user_id' => null,
                 'event' => 'demo.reset',
-                'auditable_type' => Organization::class,
+                'auditable_type' => MorphMap::stableKey(Organization::class),
                 'auditable_id' => $org->id,
                 'changes' => $counts,
             ]);

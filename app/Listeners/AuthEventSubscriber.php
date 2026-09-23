@@ -17,6 +17,7 @@ use App\Enums\Security\SecurityEventType;
 use App\Models\{AuditLog, User};
 use App\Notifications\GenericEventNotification;
 use App\Services\Security\{KnownDeviceService, SecurityEventLogger};
+use App\Support\MorphMap;
 use Illuminate\Auth\Events\{Failed, Lockout, Login, Logout, PasswordReset, PasswordResetLinkSent};
 use Illuminate\Support\Facades\{Log, Request};
 
@@ -143,7 +144,7 @@ class AuthEventSubscriber {
                 'user_id' => $user->id,
                 'organization_id' => $user->organization_id,
                 'event' => $event,
-                'auditable_type' => User::class,
+                'auditable_type' => MorphMap::stableKey(User::class),
                 'auditable_id' => $user->id,
                 'changes' => null,
                 'ip' => Request::ip(),

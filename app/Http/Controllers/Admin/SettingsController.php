@@ -17,7 +17,7 @@ use App\Http\Controllers\Concerns\{RequiresPlatformOperator, ResolvesCurrentOrga
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, Organization, SystemSetting};
 use App\Settings\{SettingDefinition, SettingScope, SettingType, SettingsRegistry};
-use App\Support\ErrorText;
+use App\Support\{ErrorText, MorphMap};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -125,7 +125,7 @@ class SettingsController extends Controller {
             'organization_id' => $user?->organization_id,
             'user_id' => $user?->id,
             'event' => 'settings.exported',
-            'auditable_type' => SystemSetting::class,
+            'auditable_type' => MorphMap::stableKey(SystemSetting::class),
             'auditable_id' => 0,
             'changes' => ['scope' => $scope->value, 'keys' => count($entries)],
         ]);
@@ -150,7 +150,7 @@ class SettingsController extends Controller {
 
         $settingIds = SystemSetting::query()->where('key', $key)->pluck('id');
         $logs = AuditLog::query()
-            ->where('auditable_type', SystemSetting::class)
+            ->where('auditable_type', MorphMap::stableKey(SystemSetting::class))
             ->whereIn('auditable_id', $settingIds->isEmpty() ? [0] : $settingIds)
             ->latest('id')
             ->limit(20)

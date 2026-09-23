@@ -9,6 +9,7 @@
  */
 
 use App\Models\Asset;
+use App\Support\MorphMap;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\{DB, Schema};
@@ -25,7 +26,7 @@ return new class extends Migration {
         DB::table('maintenance_plans')
             ->whereNotNull('asset_id')
             ->update([
-                'subject_type' => Asset::class,
+                'subject_type' => MorphMap::alias(Asset::class),
                 'subject_id' => DB::raw('asset_id'),
             ]);
 

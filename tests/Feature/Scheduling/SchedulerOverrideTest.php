@@ -12,6 +12,7 @@ namespace Tests\Feature\Scheduling;
 
 use App\Models\{AuditLog, ScheduledJobOverride};
 use App\Scheduling\{Cadence, CadenceType, SchedulerOverrideService, SchedulerRegistrar};
+use App\Support\MorphMap;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -103,7 +104,7 @@ class SchedulerOverrideTest extends TestCase {
 
         $this->assertTrue(
             AuditLog::query()
-                ->where('auditable_type', ScheduledJobOverride::class)
+                ->where('auditable_type', MorphMap::stableKey(ScheduledJobOverride::class))
                 ->where('event', 'created')
                 ->exists(),
         );

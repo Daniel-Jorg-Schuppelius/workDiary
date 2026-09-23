@@ -15,6 +15,7 @@ use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem, CloudDoc
 use App\Models\{Customer, Document, DocumentVersion, IntegrationInboxItem, User};
 use App\Plugins\Support\Intake\{IntakeChangePage, IntakeItem};
 use App\Services\CloudIntake\{CloudIntakeRunner, StaleCheckpointException};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\Concerns\WithOrganization;
@@ -74,7 +75,7 @@ class CloudIntakeRunnerTest extends TestCase {
 
         $evidence = CloudDocumentItem::query()->sole();
         $this->assertSame(CloudIntakeItemStatus::Imported, $evidence->status);
-        $this->assertSame(Document::class, $evidence->imported_type);
+        $this->assertSame(MorphMap::alias(Document::class), $evidence->imported_type);
         $this->assertNotNull(Document::query()->find($evidence->imported_id));
 
         $this->assertDatabaseHas('audit_logs', ['event' => 'cloudIntake.imported', 'organization_id' => $this->organization->id]);
@@ -106,7 +107,7 @@ class CloudIntakeRunnerTest extends TestCase {
         $this->assertSame(1, $result['inbox']);
 
         $document = Document::query()->sole();
-        $this->assertSame(Customer::class, $document->documentable_type);
+        $this->assertSame(MorphMap::alias(Customer::class), $document->documentable_type);
 
         $inbox = IntegrationInboxItem::query()->sole();
         $this->assertSame('cloud_intake', $inbox->source);

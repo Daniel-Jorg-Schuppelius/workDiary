@@ -13,6 +13,7 @@ namespace App\Services\Reporting;
 use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Models\{Asset, DiaryEntry, ExternalReference, OpenIssue, Protocol, TimeEntry};
+use App\Support\MorphMap;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 
@@ -97,7 +98,7 @@ class AssetAnalysisReportBuilder {
 
         /** @var array<int, int> $openByAsset */
         $openByAsset = OpenIssue::query()
-            ->where('subject_type', Asset::class)
+            ->where('subject_type', MorphMap::alias(Asset::class))
             ->whereIn('subject_id', $assetIds)
             ->whereIn('status', $openStatuses)
             ->selectRaw('subject_id as aid, COUNT(*) as c')
@@ -108,7 +109,7 @@ class AssetAnalysisReportBuilder {
 
         /** @var array<int, int> $escByAsset */
         $escByAsset = OpenIssue::query()
-            ->where('subject_type', Asset::class)
+            ->where('subject_type', MorphMap::alias(Asset::class))
             ->whereIn('subject_id', $assetIds)
             ->where('status', OpenIssueStatus::Blocked->value)
             ->selectRaw('subject_id as aid, COUNT(*) as c')
@@ -123,7 +124,7 @@ class AssetAnalysisReportBuilder {
         $lastDefectAtByEntry = [];
         if ($allEntryIds !== []) {
             $defects = Protocol::query()
-                ->where('subject_type', DiaryEntry::class)
+                ->where('subject_type', MorphMap::alias(DiaryEntry::class))
                 ->where('type', ProtocolType::Defect->value)
                 ->whereIn('subject_id', $allEntryIds)
                 ->whereBetween('occurred_at', [$from, $to])

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use InvalidArgumentException;
 use Sqids\Sqids;
@@ -104,13 +105,15 @@ final class SqidEncoder {
 
     /**
      * Erzeugt eine deterministische Permutation des Alphabets aus
-     * `salt + modelClass`. Zwei Modelle erhalten so unterschiedliche
-     * Alphabete; identische PKs ergeben unterschiedliche Sqids.
+     * `salt + stabiler Schlüssel des Modells`. Zwei Modelle erhalten so
+     * unterschiedliche Alphabete; identische PKs ergeben unterschiedliche Sqids.
      *
      * @param  class-string  $modelClass
      */
     private function permuteAlphabet(string $modelClass): string {
-        $seed = CryptoHelper::hash($this->salt . '|' . $modelClass);
+        // Stabiler Schlüssel statt Klassenname (MVP-860): ein Klassenumzug darf
+        // keine ausgegebene URL ungültig machen.
+        $seed = CryptoHelper::hash($this->salt . '|' . MorphMap::stableKey($modelClass));
         $chars = mb_str_split($this->alphabet);
         $count = count($chars);
 

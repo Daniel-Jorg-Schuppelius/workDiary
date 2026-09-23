@@ -18,6 +18,7 @@ use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
 use App\Services\Stammdaten\{ContactMasterDataPusher, IdentifierIssueDetector};
 use App\Support\{CarbonFmt, CsvExport, Setting};
+use App\Support\MorphMap;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -134,7 +135,7 @@ class SupplierController extends Controller {
             'attachments' => $supplier->attachments()->get(),
             'tags' => $supplier->tags()->get(),
             'auditLogs' => AuditLog::query()
-                ->where('auditable_type', $supplier->getMorphClass())
+                ->where('auditable_type', MorphMap::stableKey($supplier::class))
                 ->where('auditable_id', $supplier->getKey())
                 ->with('user')
                 ->orderByDesc('created_at')

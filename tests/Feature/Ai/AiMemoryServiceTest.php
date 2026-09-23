@@ -16,6 +16,7 @@ use App\Enums\Ai\AiMemoryEntryType;
 use App\Models\Ai\AiMemoryEntry;
 use App\Models\{Customer, Organization};
 use App\Services\Ai\AiMemoryService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -173,7 +174,7 @@ class AiMemoryServiceTest extends TestCase {
 
         $this->assertSame(AiMemoryEntry::ORIGIN_LEARNED, $entry->origin);
         $this->assertDatabaseHas('audit_logs', [
-            'auditable_type' => $entry->getMorphClass(),
+            'auditable_type' => MorphMap::stableKey($entry::class),
             'auditable_id' => $entry->id,
             'event' => 'created',
         ]);

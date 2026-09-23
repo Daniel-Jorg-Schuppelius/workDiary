@@ -12,6 +12,7 @@ namespace Tests\Feature\Security;
 
 use App\Models\{AuditLog, Organization, User};
 use App\Services\Security\SecurityOverviewService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -101,7 +102,7 @@ class SecurityOverviewServiceTest extends TestCase {
             'organization_id' => $org->id,
             'user_id' => $admin->id,
             'event' => 'support.session.started',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $admin->id,
             'changes' => ['ticket' => 'WD-1'],
         ]);
@@ -110,7 +111,7 @@ class SecurityOverviewServiceTest extends TestCase {
             'organization_id' => $org->id,
             'user_id' => $admin->id,
             'event' => 'auth.login',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $admin->id,
             'changes' => [],
         ]);

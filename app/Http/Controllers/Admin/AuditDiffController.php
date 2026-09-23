@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, Customer, Organization, ShiftType, TimeAccount, User, WorkSchedule};
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -55,7 +55,7 @@ class AuditDiffController extends Controller {
 
             if ($record !== null) {
                 $logs = AuditLog::query()
-                    ->where('auditable_type', $type['class'])
+                    ->where('auditable_type', MorphMap::stableKey($type['class']))
                     ->where('auditable_id', $record->id)
                     ->with('user:id,name')
                     ->orderByDesc('id')

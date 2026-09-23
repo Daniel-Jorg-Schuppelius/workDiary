@@ -12,7 +12,7 @@ namespace App\Console\Commands\Billing;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\{Customer, Organization, TimeEntry};
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use CommonToolkit\Helper\Data\DateHelper;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
@@ -159,7 +159,7 @@ class ReopenTimesCommand extends Command {
                 ->from('billing_transfer_items')
                 ->join('billing_transfers', 'billing_transfers.id', '=', 'billing_transfer_items.billing_transfer_id')
                 ->whereColumn('billing_transfer_items.source_id', 'time_entries.id')
-                ->where('billing_transfer_items.source_type', TimeEntry::class)
+                ->where('billing_transfer_items.source_type', MorphMap::alias(TimeEntry::class))
                 ->whereIn('billing_transfers.status', ['confirmed', 'transferred']));
     }
 

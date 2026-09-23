@@ -12,6 +12,7 @@ namespace App\Models;
 
 use App\Casts\IpAddressCast;
 use App\Models\Concerns\{BelongsToOrganization, HashChainable, HashChained};
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 
@@ -96,7 +97,7 @@ class AuditLog extends Model implements HashChainable {
     }
 
     public function auditableTypeLabel(): string {
-        $type = class_basename($this->auditable_type);
+        $type = MorphMap::basename($this->auditable_type);
         $key = 'entity-types.' . $type;
         $label = __($key);
 

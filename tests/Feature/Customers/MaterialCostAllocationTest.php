@@ -11,6 +11,7 @@
 namespace Tests\Feature\Customers;
 
 use App\Models\{Customer, LexofficeVoucher, MaterialCostAllocation, Project, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -79,7 +80,7 @@ class MaterialCostAllocationTest extends TestCase {
             ->assertRedirect(route('customers.show', $this->customer));
 
         $allocation = $this->customer->materialCostAllocations()->firstOrFail();
-        $this->assertSame(LexofficeVoucher::class, $allocation->source_type);
+        $this->assertSame(MorphMap::alias(LexofficeVoucher::class), $allocation->source_type);
         $this->assertSame($voucher->id, (int) $allocation->source_id);
         $this->assertSame(200.0, $allocation->allocated_amount?->toFloat());
     }

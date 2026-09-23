@@ -17,6 +17,7 @@ use App\Models\{Article, Customer, ExternalReference, ForeignCustomer, Lexoffice
 use App\Models\Reselling\{ResalePriceEntry, ResaleSubscription};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Services\Reselling\Register\PeriodPlanner;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
 use Tests\Concerns\WithOrganization;
@@ -114,7 +115,7 @@ class ResaleDraftAndPricesTest extends TestCase {
         foreach ($subscription->periods()->get() as $period) {
             $this->assertSame(PeriodStatus::Billed, $period->status);
             $this->assertTrue($period->isProposedOnly(), 'Bezug auf die lokale Rechnungsposition ist ein Vorschlag');
-            $this->assertSame(\App\Models\InvoiceItem::class, $period->links()->first()?->linkable_type);
+            $this->assertSame(MorphMap::alias(\App\Models\InvoiceItem::class), $period->links()->first()?->linkable_type);
             $this->assertSame($invoice->number, $period->draft_reference, 'Stempel = Rechnungsnummer des Entwurfs');
             $this->assertNotNull($period->draft_created_at);
             $this->assertStringContainsString($invoice->number, (string) $period->note);

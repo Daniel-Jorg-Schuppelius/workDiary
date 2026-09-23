@@ -11,6 +11,7 @@
 namespace Tests\Feature\Onboarding;
 
 use App\Models\{OnboardingProgress, Organization, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Exceptions;
 use Tests\TestCase;
@@ -92,7 +93,7 @@ class OnboardingPageTest extends TestCase {
             'organization_id' => $admin->organization_id,
             'user_id' => $admin->id,
             'event' => 'onboarding.stepSkipped',
-            'auditable_type' => OnboardingProgress::class,
+            'auditable_type' => MorphMap::stableKey(OnboardingProgress::class),
         ]);
     }
 
@@ -141,7 +142,7 @@ class OnboardingPageTest extends TestCase {
             'organization_id' => $admin->organization_id,
             'user_id' => $admin->id,
             'event' => 'onboarding.widgetDismissed',
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $admin->organization_id,
         ]);
     }

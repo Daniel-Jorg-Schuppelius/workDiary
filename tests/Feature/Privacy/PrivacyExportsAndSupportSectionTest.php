@@ -11,6 +11,7 @@
 namespace Tests\Feature\Privacy;
 
 use App\Models\{AuditLog, Organization, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -27,7 +28,7 @@ class PrivacyExportsAndSupportSectionTest extends TestCase {
             'organization_id' => $admin->organization_id,
             'user_id' => $admin->id,
             'event' => 'tenant.export.requested',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $admin->id,
             'changes' => ['format' => 'zip', 'scope' => 'all', 'bytes' => 204800],
         ]);
@@ -56,7 +57,7 @@ class PrivacyExportsAndSupportSectionTest extends TestCase {
             'organization_id' => $admin->organization_id,
             'user_id' => $admin->id,
             'event' => 'support.reportGenerated',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $admin->id,
             'changes' => ['sha256' => str_repeat('a', 64), 'bytes' => 1024],
         ]);
@@ -88,7 +89,7 @@ class PrivacyExportsAndSupportSectionTest extends TestCase {
             'organization_id' => $otherOrg->id,
             'user_id' => null,
             'event' => 'tenant.export.requested',
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $otherOrg->id,
             'changes' => ['format' => 'tar', 'scope' => 'fremd-org'],
         ]);

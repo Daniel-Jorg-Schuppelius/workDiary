@@ -16,6 +16,7 @@ use App\Enums\Training\TrainingAssignmentState;
 use App\Enums\User\UserRole;
 use App\Models\Training\{TrainingAssignment, TrainingCourse};
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -192,7 +193,7 @@ class TrainingComplianceService {
         $map = [];
         $rows = DB::table($pivotTable)
             ->join($rolesTable, $rolesTable . '.id', '=', $pivotTable . '.role_id')
-            ->where($pivotTable . '.model_type', User::class)
+            ->where($pivotTable . '.model_type', MorphMap::alias(User::class))
             ->whereIn($pivotTable . '.' . $morphKey, $userIds)
             ->get([$pivotTable . '.' . $morphKey . ' as user_id', $rolesTable . '.name']);
         foreach ($rows as $row) {

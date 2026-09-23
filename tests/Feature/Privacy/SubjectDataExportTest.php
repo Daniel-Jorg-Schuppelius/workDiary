@@ -16,6 +16,7 @@ use App\Models\{AuditLog, ContactAddress, ContactBankAccount, Customer, Lead, Or
 use App\Models\Location\LocationPoint;
 use App\Models\Privacy\{DataSubjectRequest, PrivacyAttachment};
 use App\Services\Privacy\{DataProtectionPermissions, DataSubjectRequestService, SubjectDataExporter};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\PermissionRegistrar;
@@ -108,7 +109,7 @@ class SubjectDataExportTest extends TestCase {
         ]);
         AuditLog::create([
             'organization_id' => $org->id, 'user_id' => $officer->id, 'event' => 'user.updated',
-            'auditable_type' => User::class, 'auditable_id' => $employee->id, 'changes' => [],
+            'auditable_type' => MorphMap::stableKey(User::class), 'auditable_id' => $employee->id, 'changes' => [],
         ]);
 
         $exporter = app(SubjectDataExporter::class);

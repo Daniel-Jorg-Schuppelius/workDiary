@@ -17,6 +17,7 @@ use App\Models\Contract\Contract;
 use App\Plugins\Support\Intake\IntakeItem;
 use App\Services\Document\DocumentService;
 use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
+use App\Support\MorphMap;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
@@ -158,7 +159,7 @@ class CloudIntakeRouter {
         $previous = CloudDocumentItem::query()
             ->where('connection_id', $connection->id)
             ->where('external_item_id', $item->itemId)
-            ->where('imported_type', Document::class)
+            ->where('imported_type', MorphMap::alias(Document::class))
             ->whereNotNull('imported_id')
             ->latest('id')
             ->first();
@@ -264,7 +265,7 @@ class CloudIntakeRouter {
             ],
             [
                 'source' => 'cloud_intake',
-                'target_type' => Document::class,
+                'target_type' => MorphMap::alias(Document::class),
                 'external_type' => 'cloud_document',
                 'external_id' => $item->itemId,
                 'case_type' => $caseReason === 'ambiguous_variables'

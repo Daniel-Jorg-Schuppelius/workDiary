@@ -294,6 +294,7 @@ return [
             'period_upcoming' => 'Upcoming',
             'period_range' => 'Header period',
             'period_past' => 'Past',
+            'period' => 'Period',
             'all_kinds' => 'All kinds',
         ],
         'action' => [

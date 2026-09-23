@@ -14,7 +14,7 @@ use App\Enums\TimeApproval\{DayClosureStatus, DayCorrectionStatus};
 use App\Enums\User\Permission as P;
 use App\Models\{Attendance, AuditLog, DayClosure, DayCorrectionRequest, Organization, User};
 use App\Services\TimeApproval\{DayCloseService, MonthClosureService};
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -384,7 +384,7 @@ class DayCloseTest extends TestCase {
 
     private function auditCount(DayClosure $closure, string $event): int {
         return AuditLog::query()
-            ->where('auditable_type', DayClosure::class)
+            ->where('auditable_type', MorphMap::stableKey(DayClosure::class))
             ->where('auditable_id', $closure->id)
             ->where('event', $event)
             ->count();

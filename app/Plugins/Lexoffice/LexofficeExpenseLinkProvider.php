@@ -17,7 +17,7 @@ use App\Models\{Expense, ExternalReference, LexofficeVoucher};
 use App\Services\Billing\Contracts\ExpenseLinkProvider;
 use App\Services\Billing\ExpenseVoucherRef;
 use App\Support\Billing\VoucherTypes;
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Support\{Carbon, Collection};
 use Illuminate\Support\Facades\Storage;
@@ -332,7 +332,7 @@ class LexofficeExpenseLinkProvider implements ExpenseLinkProvider {
             ->where('organization_id', $organizationId)
             ->where('plugin_id', LexofficePlugin::ID)
             ->where('external_type', LexofficePlugin::EXT_TYPE_VOUCHER)
-            ->where('referenceable_type', Expense::class)
+            ->where('referenceable_type', MorphMap::alias(Expense::class))
             ->where('referenceable_id', '!=', $exceptExpenseId)
             ->pluck('external_id')
             ->all();

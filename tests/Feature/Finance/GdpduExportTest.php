@@ -17,6 +17,7 @@ use App\Jobs\Finance\GobdExportJob;
 use App\Models\{Customer, Expense, ExpenseCategory, GobdExport, Invoice, InvoiceItem, Organization, Project, TimeEntry, User};
 use App\Models\Finance\{BankStatement, BankTransaction, DatevBookingBatch, PaymentAllocation};
 use App\Services\Finance\GdpduExportService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Queue;
@@ -152,7 +153,7 @@ final class GdpduExportTest extends TestCase {
             'record_count' => 3, // 1 Rechnung + 1 Position + 1 Debitor
         ]);
         $this->assertDatabaseHas('audit_logs', [
-            'auditable_type' => (new GobdExport())->getMorphClass(),
+            'auditable_type' => MorphMap::stableKey(GobdExport::class),
             'event' => 'gobd.exported',
         ]);
     }
@@ -347,7 +348,7 @@ final class GdpduExportTest extends TestCase {
             'file_hash' => hash('sha256', 'nachweis-' . $batchNo),
         ]);
         $batch->sources()->create([
-            'source_type' => Invoice::class,
+            'source_type' => MorphMap::alias(Invoice::class),
             'source_id' => 1,
             'debtor_account' => '10001',
             'revenue_account' => '8400',
@@ -359,7 +360,7 @@ final class GdpduExportTest extends TestCase {
         ]);
         if ($withReversal) {
             $batch->sources()->create([
-                'source_type' => Invoice::class,
+                'source_type' => MorphMap::alias(Invoice::class),
                 'source_id' => 2,
                 'debtor_account' => '10001',
                 'revenue_account' => '8400',
@@ -439,7 +440,7 @@ final class GdpduExportTest extends TestCase {
         $items = $files['buchungsstapelpositionen.csv'];
         $this->assertStringContainsString('RE-2025-100', $items);
         $this->assertStringContainsString('STORNO-RE-2025-100', $items);
-        $this->assertStringContainsString('Invoice', $items);
+        $this->assertStringContainsString(MorphMap::alias(Invoice::class), $items);
         $this->assertStringContainsString('8400', $items);
         $this->assertStringContainsString('Ja', $items);   // Generalumkehr
         $this->assertStringContainsString('Nein', $items);
@@ -466,7 +467,7 @@ final class GdpduExportTest extends TestCase {
         PaymentAllocation::factory()->create([
             'organization_id' => $this->organization->id,
             'bank_transaction_id' => $tx->id,
-            'allocatable_type' => Invoice::class,
+            'allocatable_type' => MorphMap::alias(Invoice::class),
             'allocatable_id' => $invoice->id,
             'amount' => '119.00',
             'kind' => AllocationKind::Payment,
@@ -478,7 +479,7 @@ final class GdpduExportTest extends TestCase {
         PaymentAllocation::factory()->create([
             'organization_id' => $this->organization->id,
             'bank_transaction_id' => $returnTx->id,
-            'allocatable_type' => Invoice::class,
+            'allocatable_type' => MorphMap::alias(Invoice::class),
             'allocatable_id' => $invoice->id,
             'amount' => '-119.00',
             'kind' => AllocationKind::Chargeback,
@@ -491,7 +492,7 @@ final class GdpduExportTest extends TestCase {
         PaymentAllocation::factory()->create([
             'organization_id' => $this->organization->id,
             'bank_transaction_id' => $lateTx->id,
-            'allocatable_type' => Invoice::class,
+            'allocatable_type' => MorphMap::alias(Invoice::class),
             'allocatable_id' => $invoice->id,
             'amount' => '50.00',
             'note' => 'AUSSERHALB-ZEITRAUM',
@@ -500,7 +501,7 @@ final class GdpduExportTest extends TestCase {
         PaymentAllocation::factory()->create([
             'organization_id' => $this->organization->id,
             'bank_transaction_id' => $unmatchedTx->id,
-            'allocatable_type' => Invoice::class,
+            'allocatable_type' => MorphMap::alias(Invoice::class),
             'allocatable_id' => $invoice->id,
             'amount' => '10.00',
             'note' => 'GELOESTE-ZUORDNUNG',
@@ -509,7 +510,7 @@ final class GdpduExportTest extends TestCase {
         PaymentAllocation::factory()->create([
             'organization_id' => $foreignOrg->id,
             'bank_transaction_id' => $this->bankTransaction($foreignOrg, '2025-06-12', '77.00')->id,
-            'allocatable_type' => Invoice::class,
+            'allocatable_type' => MorphMap::alias(Invoice::class),
             'allocatable_id' => $invoice->id,
             'amount' => '77.00',
             'note' => 'FREMD-ZUORDNUNG',
@@ -589,7 +590,7 @@ final class GdpduExportTest extends TestCase {
         PaymentAllocation::factory()->create([
             'organization_id' => $this->organization->id,
             'bank_transaction_id' => $this->bankTransaction($this->organization, '2025-06-10', '119.00')->id,
-            'allocatable_type' => Invoice::class,
+            'allocatable_type' => MorphMap::alias(Invoice::class),
             'allocatable_id' => $invoice->id,
             'amount' => '119.00',
             'confirmed_at' => Carbon::parse('2025-06-11 09:00:00'),

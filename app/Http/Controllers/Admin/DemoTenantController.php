@@ -16,7 +16,7 @@ use App\Http\Controllers\Concerns\RequiresPlatformOperator;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, Organization, User};
 use App\Services\Demo\DemoSeederService;
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -161,7 +161,7 @@ class DemoTenantController extends Controller {
             'organization_id' => $organization->id,
             'user_id' => $user->id,
             'event' => $event,
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $organization->id,
             'changes' => $counts,
         ]);

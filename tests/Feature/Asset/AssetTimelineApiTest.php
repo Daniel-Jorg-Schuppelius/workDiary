@@ -13,6 +13,7 @@ namespace Tests\Feature\Asset;
 use App\Enums\Asset\AssetOwnership;
 use App\Enums\Protocol\ProtocolType;
 use App\Models\{Asset, Attachment, DiaryEntry, MaterialUsage, Project, Protocol, Timesheet, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\WithOrganization;
@@ -74,7 +75,7 @@ class AssetTimelineApiTest extends TestCase {
 
         Attachment::query()->create([
             'organization_id' => $this->organization->id,
-            'attachable_type' => Asset::class,
+            'attachable_type' => MorphMap::alias(Asset::class),
             'attachable_id' => $asset->id,
             'user_id' => $user->id,
             'disk' => 'local',

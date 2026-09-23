@@ -12,6 +12,7 @@ namespace App\Services\Protocol;
 
 use App\Enums\Protocol\{ProtocolEventType, ProtocolItemPhotoPhase};
 use App\Models\{Attachment, Protocol, ProtocolItem, ProtocolItemPhoto, User};
+use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Http\UploadedFile;
@@ -87,7 +88,7 @@ class ProtocolItemPhotoService {
         }
 
         $attachment = Attachment::query()->create([
-            'attachable_type' => ProtocolItem::class,
+            'attachable_type' => MorphMap::alias(ProtocolItem::class),
             'attachable_id' => $item->id,
             'user_id' => $actor->id,
             'disk' => $disk,

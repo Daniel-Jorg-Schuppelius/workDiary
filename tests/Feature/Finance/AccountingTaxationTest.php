@@ -15,6 +15,7 @@ use App\Models\Accounting\{AccountingAccount, AccountingEvent, AccountingPosting
 use App\Models\{Customer, Invoice, Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService, TaxationMethodResolver};
 use App\Services\Accounting\Reports\VatPreviewBuilder;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -103,7 +104,7 @@ class AccountingTaxationTest extends TestCase {
             'document_on' => $this->startsOn->addDays(10),
             'memo' => 'Rechnung Januar',
             'document_reference' => 'RE-1',
-            'source_type' => Invoice::class,
+            'source_type' => MorphMap::alias(Invoice::class),
             'source_id' => $invoice->id,
             'source_key' => 'tax-test:invoice',
             'lines' => [
@@ -127,7 +128,7 @@ class AccountingTaxationTest extends TestCase {
             'memo' => 'Zahlung',
             'source_key' => 'tax-test:payment:' . uniqid('', true),
             'snapshot' => [
-                'settles_source_type' => Invoice::class,
+                'settles_source_type' => MorphMap::alias(Invoice::class),
                 'settles_source_id' => $invoice->id,
                 'settlement_kind' => $kind->value,
             ],

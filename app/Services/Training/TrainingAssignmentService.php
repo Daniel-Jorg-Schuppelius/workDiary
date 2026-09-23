@@ -16,6 +16,7 @@ use App\Enums\Training\TrainingRequirementSubject;
 use App\Models\{Organization, Team, User, UserGroup};
 use App\Models\Safety\{SafetyInstruction, SafetyInstructionParticipant};
 use App\Models\Training\{TrainingAssignment, TrainingCourse, TrainingRequirement};
+use App\Support\MorphMap;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -295,12 +296,12 @@ class TrainingAssignmentService {
 
         $directIds = DB::table($pivotTable)
             ->whereIn('role_id', $roleIds)
-            ->where('model_type', User::class)
+            ->where('model_type', MorphMap::alias(User::class))
             ->pluck($morphKey);
 
         $groupIds = DB::table($pivotTable)
             ->whereIn('role_id', $roleIds)
-            ->where('model_type', UserGroup::class)
+            ->where('model_type', MorphMap::alias(UserGroup::class))
             ->pluck($morphKey);
         $viaGroups = $groupIds->isEmpty()
             ? collect()

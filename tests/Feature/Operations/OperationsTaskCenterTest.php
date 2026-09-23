@@ -13,6 +13,7 @@ namespace Tests\Feature\Operations;
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskStatus, OperationsTaskType};
 use App\Models\{OperationsTask, ProblemReport, SupportAccessGrant, User};
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
@@ -76,7 +77,7 @@ class OperationsTaskCenterTest extends TestCase {
 
         $this->assertTrue(
             \App\Models\AuditLog::query()
-                ->where('auditable_type', OperationsTask::class)
+                ->where('auditable_type', MorphMap::stableKey(OperationsTask::class))
                 ->where('auditable_id', $task->id)
                 ->where('event', 'updated')
                 ->exists(),

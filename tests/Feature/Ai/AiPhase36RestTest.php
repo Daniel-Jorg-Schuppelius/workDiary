@@ -14,6 +14,7 @@ use App\Enums\User\Permission;
 use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection};
 use App\Models\{Customer, CustomerQuery, Invoice, User};
 use App\Services\Ai\Suggestions\CoveringTextSuggestionService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{RegistersAiCapabilities, WithOrganization};
 use Tests\Support\{FakeAiProvider, FakeAiProviderFactory};
@@ -167,7 +168,7 @@ class AiPhase36RestTest extends TestCase {
         $query = CustomerQuery::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer()->id,
-            'subject_type' => \App\Models\DiaryEntry::class,
+            'subject_type' => MorphMap::alias(\App\Models\DiaryEntry::class),
             'subject_id' => 1,
             'question' => 'Wann kommt der Techniker?',
             'status' => 'open',
@@ -193,7 +194,7 @@ class AiPhase36RestTest extends TestCase {
         $query = CustomerQuery::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer()->id,
-            'subject_type' => \App\Models\DiaryEntry::class,
+            'subject_type' => MorphMap::alias(\App\Models\DiaryEntry::class),
             'subject_id' => 1,
             'question' => 'Ist das Ersatzteil da?',
             'status' => 'open',

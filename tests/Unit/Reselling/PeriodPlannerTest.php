@@ -15,6 +15,7 @@ namespace Tests\Unit\Reselling;
 use App\Enums\Reselling\{BillingFrequency, LinkOrigin, PeriodStatus, SubscriptionStatus};
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Services\Reselling\Register\PeriodPlanner;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -141,7 +142,7 @@ class PeriodPlannerTest extends TestCase {
         [$proposed, $confirmed, $waived] = $subscription->periods()->get()->all();
         $link = static fn(ResalePeriod $p, float $months): ResalePeriodLink => ResalePeriodLink::query()->create([
             'organization_id' => $p->organization_id, 'period_id' => $p->id, 'subscription_id' => $p->subscription_id,
-            'linkable_type' => \App\Models\LexofficeVoucherLine::class, 'linkable_id' => $p->id, 'voucher_number' => 'RE/' . $p->id, 'voucher_date' => $p->starts_on,
+            'linkable_type' => MorphMap::alias(\App\Models\LexofficeVoucherLine::class), 'linkable_id' => $p->id, 'voucher_number' => 'RE/' . $p->id, 'voucher_date' => $p->starts_on,
             'quantity' => 5, 'months' => $months, 'amount' => '1236.00', 'currency' => 'EUR', 'origin' => LinkOrigin::Proposed,
         ]);
         $link($proposed, 60.0);

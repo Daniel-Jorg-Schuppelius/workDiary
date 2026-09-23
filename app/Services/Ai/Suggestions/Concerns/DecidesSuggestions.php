@@ -15,6 +15,7 @@ namespace App\Services\Ai\Suggestions\Concerns;
 use App\Models\Ai\AiTextSuggestion;
 use App\Models\{AuditLog, User};
 use App\Services\Ai\Dto\AiInvocationResult;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -91,7 +92,7 @@ trait DecidesSuggestions {
             'organization_id' => $suggestion->organization_id,
             'user_id' => $user?->getKey(),
             'event' => 'ai.suggestion_decided',
-            'auditable_type' => $suggestion->getMorphClass(),
+            'auditable_type' => MorphMap::stableKey($suggestion::class),
             'auditable_id' => $suggestion->getKey(),
             'changes' => array_merge([
                 'decision' => $decision,

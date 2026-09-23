@@ -16,6 +16,7 @@ use App\Enums\Protocol\ProtocolType;
 use App\Enums\Timesheet\{TimesheetKind, TimesheetStatus};
 use App\Enums\User\UserRole;
 use App\Models\{Asset, Attachment, DiaryEntry, MaterialUsage, OpenIssue, Project, Protocol, Timesheet, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -66,7 +67,7 @@ class AssetShowControllerTest extends TestCase {
         Protocol::factory()->create([
             'organization_id' => $this->organization->id,
             'type' => ProtocolType::Service->value,
-            'subject_type' => Asset::class,
+            'subject_type' => MorphMap::alias(Asset::class),
             'subject_id' => $asset->id,
             'created_by_user_id' => $user->id,
             'title' => 'Serviceprotokoll Asset',
@@ -105,7 +106,7 @@ class AssetShowControllerTest extends TestCase {
 
         OpenIssue::query()->create([
             'organization_id' => $this->organization->id,
-            'subject_type' => Asset::class,
+            'subject_type' => MorphMap::alias(Asset::class),
             'subject_id' => $asset->id,
             'source_type' => OpenIssueSource::ProtocolDefect->value,
             'source_ref_id' => null,
@@ -125,7 +126,7 @@ class AssetShowControllerTest extends TestCase {
 
         Attachment::query()->create([
             'organization_id' => $this->organization->id,
-            'attachable_type' => Asset::class,
+            'attachable_type' => MorphMap::alias(Asset::class),
             'attachable_id' => $asset->id,
             'user_id' => $user->id,
             'disk' => 'local',

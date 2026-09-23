@@ -17,6 +17,7 @@ use App\Enums\Security\IntegrityCheckStatus;
 use App\Models\{AuditLog, IntegrityCheck, User};
 use App\Notifications\GenericEventNotification;
 use App\Services\Isms\SbomGenerator;
+use App\Support\MorphMap;
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\FileSystem\{File, Files, Folder};
@@ -793,7 +794,7 @@ class CodeIntegrityService {
                 'organization_id' => null,
                 'user_id' => $user?->id,
                 'event' => $event,
-                'auditable_type' => IntegrityCheck::class,
+                'auditable_type' => MorphMap::stableKey(IntegrityCheck::class),
                 'auditable_id' => $check->id,
                 'changes' => $changes,
             ]);

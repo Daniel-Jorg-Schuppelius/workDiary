@@ -69,7 +69,7 @@ class OpenIssueService {
         $issue = DB::transaction(function () use ($subject, $creator, $attributes, $severity, $assigneeId, $dueAt): OpenIssue {
             $issue = OpenIssue::query()->create([
                 'organization_id' => $subject->getAttribute('organization_id') ?: $creator->organization_id,
-                'subject_type' => $subject::class,
+                'subject_type' => $subject->getMorphClass(),
                 'subject_id' => $subject->getKey(),
                 'source_type' => ($attributes['source_type'] ?? OpenIssueSource::Manual->value),
                 'source_ref_id' => $attributes['source_ref_id'] ?? null,

@@ -16,6 +16,7 @@ use App\Enums\Compliance\ComplianceFindingStatus;
 use App\Enums\Notification\NotificationEvent;
 use App\Models\{ComplianceFinding, Organization, User};
 use App\Services\Notification\NotificationDispatcher;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -65,7 +66,7 @@ final class ComplianceFindingRecorder {
                         $model->category = $category;
                         $model->rule_code = $finding->kind;
                         $model->severity = $finding->severity;
-                        $model->subject_type = User::class;
+                        $model->subject_type = MorphMap::alias(User::class);
                         $model->subject_id = (int) $userId;
                         $model->scope_date = Carbon::parse($finding->date);
                         $model->detected_value = $finding->value;
@@ -138,7 +139,7 @@ final class ComplianceFindingRecorder {
      * Org-Regel zum Event kann den Versand abschalten.
      */
     private function notifyAffected(ComplianceFinding $model, string $category): void {
-        if ($model->subject_type !== User::class) {
+        if (! MorphMap::is($model->subject_type, User::class)) {
             return;
         }
         if ($category === DrivingTimeComplianceChecker::CATEGORY) {

@@ -15,6 +15,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\TimeAllocation;
+use App\Support\MorphMap;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -88,7 +89,7 @@ class AllocationReportController extends Controller {
         $names = [];
         $dimensionMeta = [];
         foreach ($rows->groupBy('allocatable_type') as $type => $typeRows) {
-            $alias = array_search((string) $type, TimeAllocation::TYPES, true);
+            $alias = array_search(MorphMap::classFor((string) $type) ?? (string) $type, TimeAllocation::TYPES, true);
             if ($alias === false) {
                 continue;
             }
@@ -120,7 +121,7 @@ class AllocationReportController extends Controller {
 
         $groups = [];
         foreach ($rows as $row) {
-            $alias = array_search((string) $row->allocatable_type, TimeAllocation::TYPES, true);
+            $alias = array_search(MorphMap::classFor((string) $row->allocatable_type) ?? (string) $row->allocatable_type, TimeAllocation::TYPES, true);
             if ($alias === false) {
                 continue;
             }

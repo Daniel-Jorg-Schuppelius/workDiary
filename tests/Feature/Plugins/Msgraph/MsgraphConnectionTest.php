@@ -15,6 +15,7 @@ use App\Plugins\Contracts\{CalendarPublisher, PluginCapability};
 use App\Plugins\Msgraph\Api\{MsgraphCalendarClient, MsgraphOAuth};
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\{PluginDiscovery, PluginHealth};
+use App\Support\MorphMap;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Handler\MockHandler;
@@ -213,7 +214,7 @@ final class MsgraphConnectionTest extends TestCase {
         $this->assertNull($fresh->refresh_token);
         $this->assertFalse($fresh->isActive());
         $this->assertDatabaseHas('audit_logs', [
-            'auditable_type' => $connection->getMorphClass(),
+            'auditable_type' => MorphMap::stableKey($connection::class),
             'auditable_id' => $connection->id,
             'event' => 'msgraph.disconnected',
         ]);

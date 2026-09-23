@@ -28,12 +28,13 @@ use App\Services\Routing\{NominatimGeocoder, OsrmRouter};
 use App\Services\Timesheet\Stopwatch;
 use App\Services\UI\DateRangeContext;
 use App\Session\AnonymousStackSessionHandler;
-use App\Support\{CarbonFmt, Setting};
+use App\Support\{CarbonFmt, MorphMap, Setting};
 use Carbon\{Carbon as CarbonMutable, CarbonImmutable};
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, Event as EventFacade, Gate, RateLimiter, View};
 use Illuminate\Support\Facades\Session;
@@ -288,6 +289,15 @@ class AppServiceProvider extends ServiceProvider {
     }
 
     public function boot(): void {
+        // Polymorphe Typwerte nur über die Map (MVP-860): Aliase zuerst, dann
+        // die alten Klassennamen, damit Bestandszeilen weiter auflösen. Ohne
+        // Datei (frischer Checkout vor `morph-map:generate`) bleibt der
+        // Betrieb möglich; das Gate MorphMapCoverageRule verlangt sie.
+        $morphMap = MorphMap::map();
+        if ($morphMap !== []) {
+            Relation::enforceMorphMap($morphMap);
+        }
+
         // Sitzungen der anonymen Portale ohne Adresse und Browserkennung
         // (Sicherheitsaudit 2026-09-13). Ersetzt den Datenbank-Treiber, weil
         // die Ablage global konfiguriert ist und sich nicht je Route-Gruppe

@@ -15,6 +15,7 @@ use App\Exceptions\AssetValidationException;
 use App\Models\{Asset, AuditLog, Customer, Organization, User};
 use App\Services\Asset\{AssetNumberGenerator, AssetService, AssetStatusMachine};
 use App\Services\Numbering\NumberSequenceService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -51,7 +52,7 @@ class AssetServiceTest extends TestCase {
 
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'asset.created',
-            'auditable_type' => Asset::class,
+            'auditable_type' => MorphMap::stableKey(Asset::class),
             'auditable_id' => $asset->id,
         ]);
     }

@@ -12,10 +12,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\{AttendanceTerminal, AuditLog, LocationDeviceToken, User};
+use App\Models\{AttendanceTerminal, AuditLog, User};
+use App\Models\Location\LocationDeviceToken;
 use App\Services\Auth\UserSessionInvalidator;
 use App\Services\Security\SessionManagementService;
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{DB, Gate};
 use Illuminate\View\View;
@@ -151,7 +152,7 @@ class SessionController extends Controller {
 
         $row = DB::table('personal_access_tokens')
             ->where('id', $tokenId)
-            ->where('tokenable_type', User::class)
+            ->where('tokenable_type', MorphMap::alias(User::class))
             ->first(['id', 'tokenable_id', 'name']);
         if ($row === null) {
             return back()->withErrors(['token' => __('sessions.error.token_gone')]);
@@ -254,7 +255,7 @@ class SessionController extends Controller {
             'organization_id' => $organizationId,
             'user_id' => $actorId,
             'event' => $event,
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $subjectUserId,
             'changes' => $changes,
         ]);

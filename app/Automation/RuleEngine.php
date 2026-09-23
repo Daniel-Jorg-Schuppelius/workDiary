@@ -109,7 +109,7 @@ class RuleEngine {
     private function alreadyMatched(AutomationRule $rule, Model $subject): bool {
         return AutomationRuleRun::query()
             ->where('rule_id', $rule->id)
-            ->where('subject_type', $subject::class)
+            ->where('subject_type', $subject->getMorphClass())
             ->where('subject_id', (int) $subject->getKey())
             ->where('decision', 'matched')
             ->exists();
@@ -129,7 +129,7 @@ class RuleEngine {
     private function logRun(AutomationRule $rule, Model $subject, string $decision, array $log): void {
         AutomationRuleRun::create([
             'rule_id' => $rule->id,
-            'subject_type' => $subject::class,
+            'subject_type' => $subject->getMorphClass(),
             'subject_id' => (int) $subject->getKey(),
             'decision' => $decision,
             'log' => $log,

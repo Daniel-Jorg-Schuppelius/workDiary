@@ -12,7 +12,7 @@ namespace Tests\Feature\OpenIssue;
 
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueStatus, OpenIssueVisibility};
 use App\Models\{DiaryEntry, OpenIssue, User};
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -34,7 +34,7 @@ class OpenIssueControllerTest extends TestCase {
             ->assertRedirect();
 
         $this->assertDatabaseHas('open_issues', [
-            'subject_type' => DiaryEntry::class,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
             'title' => 'Leitung verlegen',
             'severity' => OpenIssueSeverity::Medium->value,

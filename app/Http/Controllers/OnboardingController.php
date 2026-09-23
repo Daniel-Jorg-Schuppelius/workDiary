@@ -13,6 +13,7 @@ namespace App\Http\Controllers;
 use App\Enums\User\Permission;
 use App\Models\{AuditLog, OnboardingProgress, User};
 use App\Services\Onboarding\OnboardingChecklistResolver;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Gate, Route};
@@ -129,7 +130,7 @@ class OnboardingController extends Controller {
             'organization_id' => $organization->id,
             'user_id' => $user->id,
             'event' => 'onboarding.stepSkipped',
-            'auditable_type' => OnboardingProgress::class,
+            'auditable_type' => MorphMap::stableKey(OnboardingProgress::class),
             'auditable_id' => $progress->id,
             'changes' => [
                 'step_code' => $step,
@@ -162,7 +163,7 @@ class OnboardingController extends Controller {
             'organization_id' => $organization->id,
             'user_id' => $user->id,
             'event' => 'onboarding.widgetDismissed',
-            'auditable_type' => $organization::class,
+            'auditable_type' => MorphMap::stableKey($organization::class),
             'auditable_id' => $organization->id,
             'changes' => [
                 'dismissed_at' => $dismissedAt,

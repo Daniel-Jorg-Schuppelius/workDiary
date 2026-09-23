@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Portal;
 
 use App\Models\{Attachment, Customer, CustomerQuery, DiaryEntry, User};
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{Auth, Storage, URL};
@@ -75,7 +76,7 @@ final class PortalQueryAttachmentTest extends TestCase {
         $this->assertSame((int) $this->organization->id, (int) $query->attachments->first()?->organization_id);
         Storage::disk('local')->assertExists((string) $query->attachments->first()?->path);
         $this->assertDatabaseHas('audit_logs', [
-            'auditable_type' => $query->getMorphClass(),
+            'auditable_type' => MorphMap::stableKey($query::class),
             'auditable_id' => $query->id,
             'event' => 'portal.query.attachments_added',
         ]);

@@ -13,7 +13,7 @@ namespace App\Services\Reporting;
 use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Models\{Customer, DiaryEntry, OpenIssue, Project, Protocol, TimeEntry};
-use App\Support\ChartBucket;
+use App\Support\{ChartBucket, MorphMap};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\HashAlgorithm;
@@ -134,7 +134,7 @@ class CustomerAnalysisReportBuilder {
 
         $issuesByCustomer = OpenIssue::query()
             ->whereIn('open_issues.status', $openStatuses)
-            ->where('open_issues.subject_type', Customer::class)
+            ->where('open_issues.subject_type', MorphMap::alias(Customer::class))
             ->whereIn('open_issues.subject_id', $customerIds)
             ->toBase()
             ->selectRaw('open_issues.subject_id AS customer_id, ' . $issueSelect, [$blocked])
@@ -142,7 +142,7 @@ class CustomerAnalysisReportBuilder {
             ->get()->keyBy('customer_id');
         $issuesByEntry = OpenIssue::query()
             ->whereIn('open_issues.status', $openStatuses)
-            ->where('open_issues.subject_type', DiaryEntry::class)
+            ->where('open_issues.subject_type', MorphMap::alias(DiaryEntry::class))
             ->join('diary_entries AS oi_entry', 'oi_entry.id', '=', 'open_issues.subject_id')
             ->whereIn('oi_entry.customer_id', $customerIds)
             ->tap(fn($q) => $entryFilter($q, 'oi_entry'))
@@ -152,7 +152,7 @@ class CustomerAnalysisReportBuilder {
             ->get()->keyBy('customer_id');
         $issuesByProject = OpenIssue::query()
             ->whereIn('open_issues.status', $openStatuses)
-            ->where('open_issues.subject_type', Project::class)
+            ->where('open_issues.subject_type', MorphMap::alias(Project::class))
             ->join('projects AS oi_project', 'oi_project.id', '=', 'open_issues.subject_id')
             ->whereIn('oi_project.customer_id', $customerIds)
             ->when($projectId !== null, fn($q) => $q->where('oi_project.id', $projectId))
@@ -164,7 +164,7 @@ class CustomerAnalysisReportBuilder {
         // Nacharbeit: Mängelprotokolle an gefilterten Aufträgen, je Auftrag einmal.
         $rework = Protocol::query()
             ->where('protocols.type', ProtocolType::Defect->value)
-            ->where('protocols.subject_type', DiaryEntry::class)
+            ->where('protocols.subject_type', MorphMap::alias(DiaryEntry::class))
             ->whereBetween('protocols.occurred_at', [$from, $to])
             ->join('diary_entries AS pr_entry', 'pr_entry.id', '=', 'protocols.subject_id')
             ->whereIn('pr_entry.customer_id', $customerIds)

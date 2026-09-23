@@ -19,6 +19,7 @@ use App\Models\{ComplianceFinding, OvertimeRequest, User};
 use App\Services\Approval\ApprovalFlowService;
 use App\Services\Compliance\AttendancePlausibilityScanService;
 use App\Services\Notification\NotificationDispatcher;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -184,7 +185,7 @@ class OvertimeRequestService {
             ->where('organization_id', $request->organization_id)
             ->where('category', AttendancePlausibilityScanService::CATEGORY)
             ->where('rule_code', AttendancePlausibilityScanService::KIND_FRAME_TIME)
-            ->where('subject_type', User::class)
+            ->where('subject_type', MorphMap::alias(User::class))
             ->where('subject_id', $request->user_id)
             ->whereDate('scope_date', $request->scope_date->toDateString())
             ->whereIn('status', [ComplianceFindingStatus::Open->value, ComplianceFindingStatus::Acknowledged->value])

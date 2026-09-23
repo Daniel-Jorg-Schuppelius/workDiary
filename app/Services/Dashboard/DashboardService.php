@@ -15,6 +15,7 @@ use App\Enums\User\Permission;
 use App\Enums\Vacation\VacationStatus;
 use App\Models\{Attachment, Comment, DiaryEntry, EmergencyAssignment, Expense, OnCallShift, OpenIssue, PerDiemTrip, ScheduledShift, User, Vacation};
 use App\Services\Onboarding\OnboardingChecklistResolver;
+use App\Support\MorphMap;
 use App\Support\{OrganizationContext, Setting};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
@@ -200,7 +201,7 @@ class DashboardService {
     /** @return Collection<int, Comment> */
     public function recentComments(User $user): Collection {
         return $this->remember('recentComments', $user, fn (): Collection => Comment::query()
-            ->where('commentable_type', DiaryEntry::class)
+            ->where('commentable_type', MorphMap::alias(DiaryEntry::class))
             // Subquery statt pluck() + large IN-Klausel
             ->whereIn('commentable_id', DiaryEntry::query()->where('user_id', $user->id)->select('id'))
             ->with(['user:id,name', 'commentable:id,content,user_id'])
@@ -212,7 +213,7 @@ class DashboardService {
     /** @return Collection<int, Attachment> */
     public function recentAttachments(User $user): Collection {
         return $this->remember('recentAttachments', $user, fn (): Collection => Attachment::query()
-            ->where('attachable_type', DiaryEntry::class)
+            ->where('attachable_type', MorphMap::alias(DiaryEntry::class))
             ->whereIn('attachable_id', DiaryEntry::query()->where('user_id', $user->id)->select('id'))
             ->with('uploader:id,name')
             ->latest()
@@ -271,7 +272,7 @@ class DashboardService {
     /** @return Collection<int, Comment> */
     public function teamActivity(): Collection {
         return $this->remember('teamActivity', null, fn (): Collection => Comment::query()
-            ->where('commentable_type', DiaryEntry::class)
+            ->where('commentable_type', MorphMap::alias(DiaryEntry::class))
             ->select(['id', 'user_id', 'commentable_type', 'commentable_id', 'body', 'created_at'])
             ->with(['user:id,name', 'commentable:id,content'])
             ->latest()

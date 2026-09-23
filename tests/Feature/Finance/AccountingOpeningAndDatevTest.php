@@ -14,6 +14,7 @@ use App\Enums\Finance\{AccountType, ProfitDetermination};
 use App\Models\Accounting\{AccountingAccount, AccountingEvent};
 use App\Models\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService, LedgerDatevExportService, OpeningBalanceImportService};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -234,7 +235,7 @@ class AccountingOpeningAndDatevTest extends TestCase {
             'booked_on' => $this->startsOn->addDays(3),
             'memo' => 'Rechnung RE-J1',
             'document_reference' => 'RE-J1',
-            'source_type' => \App\Models\Invoice::class,
+            'source_type' => MorphMap::alias(\App\Models\Invoice::class),
             'source_id' => (int) $invoice->id,
             'source_key' => 'datev-test:kost',
             'snapshot' => ['due_date' => $this->startsOn->addDays(17)->toDateString()],

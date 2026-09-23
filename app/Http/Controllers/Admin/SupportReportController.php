@@ -15,6 +15,7 @@ use App\Http\Controllers\Concerns\{RequiresPlatformOperator, ResolvesCurrentOrga
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, User};
 use App\Services\Support\{SupportReportBuilder, SupportReportPackager};
+use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request, Response};
 use Illuminate\Support\Carbon;
@@ -72,7 +73,7 @@ class SupportReportController extends Controller {
             'organization_id' => $this->currentOrganization()->id,
             'user_id' => $user->id,
             'event' => 'support.reportGenerated',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $user->id,
             'changes' => [
                 'sha256' => $package['sha256'],
@@ -87,7 +88,7 @@ class SupportReportController extends Controller {
             'organization_id' => $this->currentOrganization()->id,
             'user_id' => $user->id,
             'event' => 'support.reportDownloaded',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $user->id,
             'changes' => ['sha256' => $package['sha256']],
         ]);
@@ -114,7 +115,7 @@ class SupportReportController extends Controller {
             'organization_id' => $this->currentOrganization()->id,
             'user_id' => $user->id,
             'event' => 'support.reportDownloaded',
-            'auditable_type' => User::class,
+            'auditable_type' => MorphMap::stableKey(User::class),
             'auditable_id' => $user->id,
             'changes' => [
                 'format' => 'json',

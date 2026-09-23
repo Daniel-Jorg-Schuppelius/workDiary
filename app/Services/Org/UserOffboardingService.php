@@ -136,7 +136,7 @@ class UserOffboardingService {
             'calendar_feed_token_hash' => null,
         ])->save();
 
-        \App\Models\LocationDeviceToken::query()
+        \App\Models\Location\LocationDeviceToken::query()
             ->where('user_id', $member->id)
             ->whereNull('revoked_at')
             ->update(['revoked_at' => now()]);

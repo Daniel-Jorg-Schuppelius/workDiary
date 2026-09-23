@@ -101,7 +101,7 @@
                 @forelse ($notes as $note)
                     @php
                         $contextUrl = $contextUrls[$note->id] ?? null;
-                        $kindTone = $note->isOrganizationNote() ? 'neutral' : ($note->notable_type === \App\Models\Customer::class ? 'info' : 'ghost');
+                        $kindTone = $note->isOrganizationNote() ? 'neutral' : (\App\Support\MorphMap::is($note->notable_type, \App\Models\Customer::class) ? 'info' : 'ghost');
                         $dueOverdue = $note->hasOpenFollowUp() && $note->next_action_due_at !== null && $note->next_action_due_at->isPast();
                     @endphp
                     <tr class="hover" id="communication-note-{{ $note->id }}">

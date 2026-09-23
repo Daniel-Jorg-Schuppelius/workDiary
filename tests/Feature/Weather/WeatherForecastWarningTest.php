@@ -18,7 +18,7 @@ use App\Plugins\Support\PluginApiClient;
 use App\Services\Weather\Contracts\WeatherProvider;
 use App\Services\Weather\{DwdProvider, OpenMeteoProvider, WeatherService};
 use App\Settings\SettingScope;
-use App\Support\Setting;
+use App\Support\{MorphMap, Setting};
 use Carbon\CarbonImmutable;
 use GuzzleHttp\{Client, HandlerStack};
 use GuzzleHttp\Handler\MockHandler;
@@ -145,7 +145,7 @@ final class WeatherForecastWarningTest extends TestCase {
         // Dedupe: eine Meldung je Warnung (Subjekt WeatherWarning), auch nach zwei Läufen.
         $logs = NotificationDispatchLog::query()->where('event', NotificationEvent::WeatherWarning->value)->get();
         $this->assertCount(2, $logs);
-        $this->assertSame([WeatherWarning::class], $logs->pluck('subject_type')->unique()->values()->all());
+        $this->assertSame([MorphMap::alias(WeatherWarning::class)], $logs->pluck('subject_type')->unique()->values()->all());
 
         // Vorhersagen werden nie als Ist-Snapshot gespeichert.
         $this->assertSame(0, WeatherSnapshot::query()->count());

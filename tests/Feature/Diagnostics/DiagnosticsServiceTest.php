@@ -12,6 +12,7 @@ namespace Tests\Feature\Diagnostics;
 
 use App\Models\{AuditLog, BackupHeartbeat};
 use App\Services\Diagnostics\{DiagnosticStatus, DiagnosticsService};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -260,7 +261,7 @@ class DiagnosticsServiceTest extends TestCase {
             'organization_id' => $this->organization->id,
             'user_id' => null,
             'event' => 'backup.completed',
-            'auditable_type' => \App\Models\Organization::class,
+            'auditable_type' => MorphMap::stableKey(\App\Models\Organization::class),
             'auditable_id' => $this->organization->id,
             'changes' => [],
         ]);

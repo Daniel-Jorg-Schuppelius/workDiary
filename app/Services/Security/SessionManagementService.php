@@ -10,8 +10,9 @@
 
 namespace App\Services\Security;
 
-use App\Models\{AttendanceTerminal, AuditLog, LocationDeviceToken, Organization, RemotePendingSession, User};
-use App\Support\Sqid;
+use App\Models\{AttendanceTerminal, AuditLog, Organization, RemotePendingSession, User};
+use App\Models\Location\LocationDeviceToken;
+use App\Support\{MorphMap, Sqid};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\UserAgentHelper;
 use CommonToolkit\Helper\Geo\IpLocationHelper;
@@ -217,7 +218,7 @@ class SessionManagementService {
 
         // Bewusst KEIN Select auf `token` (Hash) — nur Metadaten.
         $rows = DB::table('personal_access_tokens')
-            ->where('tokenable_type', User::class)
+            ->where('tokenable_type', MorphMap::alias(User::class))
             ->whereIn('tokenable_id', $memberIds)
             ->orderByDesc('created_at')
             ->get(['id', 'tokenable_id', 'name', 'abilities', 'last_used_at', 'created_at']);

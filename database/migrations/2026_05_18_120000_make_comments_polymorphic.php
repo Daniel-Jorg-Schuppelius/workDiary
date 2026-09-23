@@ -9,6 +9,7 @@
  */
 
 use App\Models\DiaryEntry;
+use App\Support\MorphMap;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\{DB, Schema};
@@ -23,7 +24,7 @@ return new class extends Migration {
         DB::table('comments')
             ->whereNotNull('diary_entry_id')
             ->update([
-                'commentable_type' => DiaryEntry::class,
+                'commentable_type' => MorphMap::alias(DiaryEntry::class),
                 'commentable_id' => DB::raw('diary_entry_id'),
             ]);
 
@@ -48,7 +49,7 @@ return new class extends Migration {
         });
 
         DB::table('comments')
-            ->where('commentable_type', DiaryEntry::class)
+            ->where('commentable_type', MorphMap::alias(DiaryEntry::class))
             ->update(['diary_entry_id' => DB::raw('commentable_id')]);
 
         Schema::table('comments', function (Blueprint $table): void {

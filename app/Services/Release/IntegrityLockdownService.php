@@ -18,6 +18,7 @@ use App\Models\{AuditLog, IntegrityCheck, Organization, User};
 use App\Models\Crisis\CrisisCase;
 use App\Notifications\GenericEventNotification;
 use App\Services\Crisis\CrisisAlertService;
+use App\Support\MorphMap;
 use Illuminate\Support\Facades\{Artisan, Log, Notification};
 use Illuminate\Support\Facades\Storage;
 
@@ -272,7 +273,7 @@ class IntegrityLockdownService {
                 'organization_id' => null,
                 'user_id' => null,
                 'event' => $event,
-                'auditable_type' => IntegrityCheck::class,
+                'auditable_type' => MorphMap::stableKey(IntegrityCheck::class),
                 'auditable_id' => $check->id,
                 'changes' => $changes,
             ]);

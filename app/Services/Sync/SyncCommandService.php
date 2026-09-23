@@ -18,6 +18,7 @@ use App\Services\Attendance\{AttendanceClockService, StampPlausibility};
 use App\Services\Form\FormService;
 use App\Services\Learning\LearningEnrollmentService;
 use App\Services\TimeApproval\TimeCorrectionService;
+use App\Support\MorphMap;
 use App\Support\{Setting, Sqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
@@ -92,7 +93,7 @@ class SyncCommandService {
                     'organization_id' => $user->organization_id,
                     'user_id' => $user->id,
                     'event' => 'sync.applied',
-                    'auditable_type' => User::class,
+                    'auditable_type' => MorphMap::stableKey(User::class),
                     'auditable_id' => $user->id,
                     'changes' => [
                         'type' => $command['type'],
@@ -410,7 +411,7 @@ class SyncCommandService {
             CarbonImmutable::parse($attendance->date?->toDateString() ?? $attendance->started_at?->toDateString() ?? 'today'),
             (string) $data['reason'],
             [[
-                'target_type' => Attendance::class,
+                'target_type' => MorphMap::alias(Attendance::class),
                 'target_id' => (int) $attendance->id,
                 'action' => 'update',
                 'before' => $before,

@@ -13,6 +13,7 @@ namespace App\Services\Onboarding;
 use App\Enums\Protocol\ProtocolStatus;
 use App\Enums\User\UserRole;
 use App\Models\{AuditLog, Classification, Customer, DiaryEntry, OnboardingProgress, Organization, Project, Protocol, TimeEntry, User, UserGroup};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
@@ -181,7 +182,7 @@ class OnboardingChecklistResolver {
         $directRoleExists = DB::table($modelHasRolesTable)
             ->join($rolesTable, $rolesTable . '.id', '=', $modelHasRolesTable . '.role_id')
             ->join('users', 'users.id', '=', $modelHasRolesTable . '.' . $morphKey)
-            ->where($modelHasRolesTable . '.model_type', User::class)
+            ->where($modelHasRolesTable . '.model_type', MorphMap::alias(User::class))
             ->where('users.organization_id', $organizationId)
             ->whereIn($rolesTable . '.name', $roleNames)
             ->where(function ($query) use ($rolesTable, $teamKey, $organizationId): void {
@@ -199,7 +200,7 @@ class OnboardingChecklistResolver {
             ->join('user_groups', 'user_groups.id', '=', $modelHasRolesTable . '.' . $morphKey)
             ->join('user_user_group', 'user_user_group.user_group_id', '=', 'user_groups.id')
             ->join('users', 'users.id', '=', 'user_user_group.user_id')
-            ->where($modelHasRolesTable . '.model_type', UserGroup::class)
+            ->where($modelHasRolesTable . '.model_type', MorphMap::alias(UserGroup::class))
             ->where('user_groups.organization_id', $organizationId)
             ->where('users.organization_id', $organizationId)
             ->whereIn($rolesTable . '.name', $roleNames)
@@ -276,7 +277,7 @@ class OnboardingChecklistResolver {
             'organization_id' => $organization->id,
             'user_id' => $actor?->id,
             'event' => 'onboarding.stepCompleted',
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $organization->id,
             'changes' => [
                 'step_code' => $stepCode,
@@ -289,7 +290,7 @@ class OnboardingChecklistResolver {
             'organization_id' => $organization->id,
             'user_id' => $actor?->id,
             'event' => 'onboarding.completed',
-            'auditable_type' => Organization::class,
+            'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $organization->id,
             'changes' => [],
         ]);

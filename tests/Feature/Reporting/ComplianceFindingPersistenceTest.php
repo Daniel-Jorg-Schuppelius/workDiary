@@ -14,6 +14,7 @@ use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
 use App\Enums\Compliance\ComplianceFindingStatus;
 use App\Models\{Attendance, ComplianceFinding, Organization, User};
 use App\Services\Compliance\AttendanceComplianceChecker;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\Concerns\WithOrganization;
@@ -80,7 +81,7 @@ class ComplianceFindingPersistenceTest extends TestCase {
         $this->assertSame('arbzg', $finding->category);
         $this->assertSame(ComplianceFindingStatus::Open, $finding->status);
         $this->assertSame($this->user->id, $finding->subject_id);
-        $this->assertSame(User::class, $finding->subject_type);
+        $this->assertSame(MorphMap::alias(User::class), $finding->subject_type);
         $this->assertSame(610, $finding->detected_value);
         $this->assertSame(600, $finding->threshold_value);
     }
@@ -101,7 +102,7 @@ class ComplianceFindingPersistenceTest extends TestCase {
 
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'compliance.finding.detected',
-            'auditable_type' => ComplianceFinding::class,
+            'auditable_type' => MorphMap::stableKey(ComplianceFinding::class),
         ]);
     }
 

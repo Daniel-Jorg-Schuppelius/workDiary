@@ -14,7 +14,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Enums\User\Permission as P;
 use App\Models\{AuditLog, ExternalReference, Organization, Project, TimeEntry, Timesheet, User};
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission as SpatiePermission;
 use Spatie\Permission\PermissionRegistrar;
@@ -95,7 +95,7 @@ class TimeEntryReassignTest extends TestCase {
 
         $audit = AuditLog::query()
             ->where('event', 'timeEntry.reassigned')
-            ->where('auditable_type', TimeEntry::class)
+            ->where('auditable_type', MorphMap::stableKey(TimeEntry::class))
             ->get();
         $this->assertCount(2, $audit);
         $this->assertSame($owner->id, (int) $audit->first()->getAttribute('changes')['from_user_id']);
