@@ -31,7 +31,7 @@ trait RequiresLegacyAdmin {
 
         abort_if(
             ! LegacyRoleResolver::isAdmin($user)
-            && ! ($user instanceof \App\Models\User && $user->isGlobalAdmin()),
+            && ! ($user instanceof \App\Models\Platform\User && $user->isGlobalAdmin()),
             403
         );
     }

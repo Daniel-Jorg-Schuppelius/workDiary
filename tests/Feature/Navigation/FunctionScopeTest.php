@@ -12,7 +12,7 @@ namespace Tests\Feature\Navigation;
 
 use App\Enums\Licensing\ModuleStatus;
 use App\Enums\User\Permission;
-use App\Models\{LicenseFlagOverride, Organization, User};
+use App\Models\Platform\{LicenseFlagOverride, Organization, User};
 use App\Services\Licensing\{ModuleScopeService, ModuleStatusResolver};
 use App\Services\Navigation\NavigationRegistry;
 use App\Services\Onboarding\OnboardingChecklistResolver;

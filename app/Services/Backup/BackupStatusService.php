@@ -11,7 +11,7 @@
 namespace App\Services\Backup;
 
 use App\Enums\Backup\RestoreTestResult;
-use App\Models\{BackupHeartbeat, RestoreTest};
+use App\Models\Platform\{BackupHeartbeat, RestoreTest};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Throwable;

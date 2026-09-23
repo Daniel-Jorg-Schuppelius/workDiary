@@ -14,7 +14,7 @@ namespace App\Services\Document;
 
 use App\Enums\Document\DocumentTextFailure;
 use App\Exceptions\DocumentTextUnavailableException;
-use App\Models\DocumentVersion;
+use App\Models\Document\DocumentVersion;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Support\Facades\Storage;
 use PDFToolkit\Readers\TesseractReader;

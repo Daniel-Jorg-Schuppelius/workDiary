@@ -11,7 +11,11 @@
 namespace Tests\Feature\Demo;
 
 use App\Enums\Demo\DemoIndustry;
-use App\Models\{Asset, CommunicationNote, Customer, DiaryEntry, Material, OpenIssue, Organization, Project, Protocol, TimeEntry, User};
+use App\Models\{Asset, DiaryEntry, Material, OpenIssue, Protocol, TimeEntry};
+use App\Models\Communication\CommunicationNote;
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
 use App\Services\Demo\DemoSeederService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

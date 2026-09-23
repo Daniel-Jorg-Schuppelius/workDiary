@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Search\Indexing;
 
 use App\Enums\Search\SearchSourceType;
-use App\Models\SearchDocument;
+use App\Models\Search\SearchDocument;
 use App\Services\Search\Indexing\Sources\SearchSource;
 use App\Services\Search\{SearchTextNormalizer, SearchVocabulary};
 use Carbon\{CarbonImmutable, CarbonInterface};

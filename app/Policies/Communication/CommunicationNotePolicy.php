@@ -8,10 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Policies;
+namespace App\Policies\Communication;
 
 use App\Enums\User\Permission as P;
-use App\Models\{CommunicationNote, User};
+use App\Models\Communication\CommunicationNote;
+use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
 
 /**

@@ -14,8 +14,9 @@ use App\Enums\Integration\WebhookEvent;
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Jobs\Notification\{CalendarEventPublishJob, ChatWebhookDeliveryJob};
 use App\Jobs\Notification\WebPushDeliveryJob;
-use App\Models\{ChatWebhook, Organization, User};
+use App\Models\ChatWebhook;
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
+use App\Models\Platform\{Organization, User};
 use App\Notifications\GenericEventNotification;
 use App\Services\Integration\WebhookDispatchService;
 use App\Services\Notification\Sms\SmsChannelService;
@@ -576,7 +577,7 @@ class NotificationDispatcher {
     private function organizationIdOf(Model $subject, ?User $affected): ?int {
         // Betriebsereignisse (Feature 041) können die Organisation selbst
         // als Subjekt tragen (Meldung ohne Aufgaben-Datensatz).
-        if ($subject instanceof \App\Models\Organization) {
+        if ($subject instanceof \App\Models\Platform\Organization) {
             return (int) $subject->getKey();
         }
 

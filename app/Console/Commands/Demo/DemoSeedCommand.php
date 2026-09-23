@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Console\Commands\Demo;
 
 use App\Enums\Demo\DemoIndustry;
-use App\Models\{AuditLog, Organization};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\Organization;
 use App\Services\Demo\DemoSeederService;
 use App\Support\MorphMap;
 use Illuminate\Console\Command;

@@ -14,7 +14,7 @@ use App\Enums\Learning\{LearningEnrollmentSource, LearningTimePolicy, LearningUn
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Models\Learning\{LearningAssignment, LearningCourse};
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningAssignmentService, LearningBookingService, LearningCompletionService, LearningCourseService, LearningEnrollmentService, LearningTimeService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Domain;
 
 use App\Enums\Domain\{DomainRenewalMode, DomainSyncStatus};
 use App\Http\Controllers\Controller;
-use App\Models\{Customer, ForeignCustomer};
+use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Domain\DomainProjection;
 use App\Services\Domain\{DomainCustomerMappingService, DomainInvoiceService, DomainSyncService};
 use App\Support\Sqid;

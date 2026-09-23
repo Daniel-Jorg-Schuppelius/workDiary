@@ -14,7 +14,7 @@ namespace App\Http\Controllers\Careers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Applications\JobPosting;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Applications\CareerFormState;
 use App\Support\Setting;
 use Illuminate\Contracts\View\View;

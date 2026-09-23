@@ -9,7 +9,7 @@
 namespace Tests\Feature\Navigation;
 
 use App\Enums\User\UserRole;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Navigation\StartPageResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;

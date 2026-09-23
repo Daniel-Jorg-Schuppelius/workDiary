@@ -69,8 +69,8 @@ class PluginSecretFallbackTest extends TestCase {
             'plugins.demo.api_key' => 'BETREIBER-SCHLUESSEL',
         ]);
 
-        $organization = \App\Models\Organization::factory()->create();
-        \App\Models\PluginSetting::query()->create([
+        $organization = \App\Models\Platform\Organization::factory()->create();
+        \App\Models\Platform\PluginSetting::query()->create([
             'organization_id' => $organization->id,
             'plugin_id' => 'demo',
             'enabled' => true,
@@ -87,16 +87,16 @@ class PluginSecretFallbackTest extends TestCase {
             'plugins.demo.client_secret' => 'INSTANZ-APP',
         ]);
 
-        $organization = \App\Models\Organization::factory()->create();
+        $organization = \App\Models\Platform\Organization::factory()->create();
         // Zeile vorhanden, aber ohne eigene App-Registrierung — genau der Fall,
         // in dem die Organisation die Instanz-App des Betreibers nutzt.
-        \App\Models\PluginSetting::query()->create([
+        \App\Models\Platform\PluginSetting::query()->create([
             'organization_id' => $organization->id,
             'plugin_id' => 'msgraph',
             'enabled' => true,
             'settings' => [],
         ]);
-        \App\Models\PluginSetting::query()->create([
+        \App\Models\Platform\PluginSetting::query()->create([
             'organization_id' => $organization->id,
             'plugin_id' => 'demo',
             'enabled' => true,
@@ -120,8 +120,8 @@ class PluginSecretFallbackTest extends TestCase {
             'plugins.msgraph.client_secret' => 'INSTANZ-APP',
         ]);
 
-        $organization = \App\Models\Organization::factory()->create();
-        \App\Models\PluginSetting::query()->create([
+        $organization = \App\Models\Platform\Organization::factory()->create();
+        \App\Models\Platform\PluginSetting::query()->create([
             'organization_id' => $organization->id,
             'plugin_id' => 'msgraph',
             'enabled' => true,

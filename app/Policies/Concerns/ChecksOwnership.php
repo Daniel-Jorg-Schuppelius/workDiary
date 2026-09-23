@@ -10,7 +10,7 @@
 
 namespace App\Policies\Concerns;
 
-use App\Models\User;
+use App\Models\Platform\User;
 
 trait ChecksOwnership {
     protected function owns(User $user, mixed $resource, string $column = 'user_id'): bool {

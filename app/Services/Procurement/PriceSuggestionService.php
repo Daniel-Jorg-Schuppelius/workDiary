@@ -159,7 +159,7 @@ class PriceSuggestionService {
 
     /** Kalkulationsstundensatz (MVP-602): Org-Setting, Rückfall Erlössatz. */
     private function assemblyRate(int $organizationId): ?float {
-        $organization = \App\Models\Organization::query()->withoutGlobalScopes()->find($organizationId);
+        $organization = \App\Models\Platform\Organization::query()->withoutGlobalScopes()->find($organizationId);
         if ($organization === null) {
             return null;
         }

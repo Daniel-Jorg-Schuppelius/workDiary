@@ -12,7 +12,8 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\{AssetNotUsableException, DriverLicenseCheckOverdueException, VehicleReservationConflictException};
 use App\Http\Requests\StoreVehicleReservationRequest;
-use App\Models\{DiaryEntry, User, Vehicle, VehicleReservation};
+use App\Models\{DiaryEntry, Vehicle, VehicleReservation};
+use App\Models\Platform\User;
 use App\Services\Dispatch\VehicleReservationService;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};

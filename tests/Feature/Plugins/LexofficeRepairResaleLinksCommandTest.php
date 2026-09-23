@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Plugins;
 
 use App\Enums\Reselling\LinkOrigin;
-use App\Models\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
+use App\Models\Plugins\Lexoffice\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

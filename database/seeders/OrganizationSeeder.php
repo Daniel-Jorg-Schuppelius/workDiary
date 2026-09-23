@@ -10,7 +10,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Database\Seeder;
 
 class OrganizationSeeder extends Seeder {

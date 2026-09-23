@@ -11,7 +11,9 @@
 namespace App\Services\Event;
 
 use App\Enums\Event\{EventStatus, ParticipantRole, ParticipantStatus};
-use App\Models\{Event, Room, User};
+use App\Models\Calendar\Event;
+use App\Models\Platform\User;
+use App\Models\Room;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 

@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Kimai\Services;
 
-use App\Models\{IntegrationOutboxEntry, Organization};
+use App\Models\Integration\IntegrationOutboxEntry;
+use App\Models\Platform\Organization;
 use App\Plugins\Kimai\{KimaiConfig, KimaiExportService, KimaiPlugin};
 use App\Plugins\Kimai\Sources\KimaiApiClient;
 use App\Plugins\Support\{MirrorsCreatedEntries, RemoteTimeWriter, TimeWritebackDispatcher};

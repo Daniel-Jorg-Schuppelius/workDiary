@@ -11,7 +11,7 @@
 namespace Tests\Feature\Scheduling;
 
 use App\Enums\Scheduling\JobRunStatus;
-use App\Models\{ScheduledJobOverride, ScheduledJobState, User};
+use App\Models\Platform\{ScheduledJobOverride, ScheduledJobState, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;

@@ -13,7 +13,11 @@ namespace Tests\Feature;
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Enums\User\Permission as P;
-use App\Models\{AuditLog, ExternalReference, Organization, Project, TimeEntry, Timesheet, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
+use App\Models\{TimeEntry, Timesheet};
 use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission as SpatiePermission;
@@ -195,7 +199,7 @@ class TimeEntryReassignTest extends TestCase {
     }
 
     public function test_portal_and_deactivated_targets_are_rejected(): void {
-        $customer = \App\Models\Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $customer = \App\Models\Customer\Customer::factory()->create(['organization_id' => $this->organization->id]);
         $portal = User::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,

@@ -11,7 +11,8 @@
 namespace Tests\Feature\Backup;
 
 use App\Console\Commands\BackupCheckRestoreCommand;
-use App\Models\{AuditLog, BackupHeartbeat};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\BackupHeartbeat;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

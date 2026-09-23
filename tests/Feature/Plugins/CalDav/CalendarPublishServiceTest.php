@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins\CalDav;
 
-use App\Models\{CalDavConnection, ExternalReference};
+use App\Models\Integration\ExternalReference;
+use App\Models\Plugins\CalDav\CalDavConnection;
 use App\Plugins\CalDav\CalDavPlugin;
 use App\Plugins\CalDav\Services\{CalDavRemoteCalendarGateway, CalendarPublishItem};
 use App\Plugins\Support\Calendar\RemoteCalendarPublishService;

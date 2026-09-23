@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Plugins\Zammad;
 
-use App\Models\{Customer, IntegrationInboxItem, ZammadConnection};
+use App\Models\Customer\Customer;
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Plugins\Zammad\ZammadConnection;
 use App\Plugins\Zammad\Contracts\ZammadGateway;
 use App\Plugins\Zammad\Services\ZammadTicketImporter;
 use Illuminate\Foundation\Testing\RefreshDatabase;

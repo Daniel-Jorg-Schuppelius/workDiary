@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\Concerns;
 
-use App\Models\{Customer, ExternalReference, Organization};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\Organization;
 use App\Services\Integration\Match\MatchProfile;
 use Illuminate\Database\Eloquent\Model;
 

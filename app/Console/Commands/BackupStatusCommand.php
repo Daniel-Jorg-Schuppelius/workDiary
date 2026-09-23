@@ -12,7 +12,7 @@ namespace App\Console\Commands;
 
 use App\Enums\Backup\{BackupTargetStatus, RestoreTestResult};
 use App\Models\Backup\BackupTargetConnection;
-use App\Models\{BackupHeartbeat, RestoreTest};
+use App\Models\Platform\{BackupHeartbeat, RestoreTest};
 use App\Services\Backup\BackupKeyring;
 use App\Services\Backup\Exceptions\BackupKeyMissingException;
 use App\Support\Tz;

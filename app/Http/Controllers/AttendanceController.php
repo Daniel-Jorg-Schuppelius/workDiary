@@ -12,7 +12,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\Attendance\AttendanceStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
-use App\Models\{Attendance, User};
+use App\Models\Attendance;
+use App\Models\Platform\User;
 use App\Services\Attendance\AttendanceClockService;
 use App\Services\TimeApproval\DayCloseService;
 use App\Support\{Setting, SortableQuery, Tz};

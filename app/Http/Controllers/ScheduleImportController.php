@@ -11,7 +11,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Shift\ScheduledShiftStatus;
-use App\Models\{ScheduledShift, ShiftType, User};
+use App\Models\Platform\User;
+use App\Models\{ScheduledShift, ShiftType};
 use App\Support\{ErrorText, Setting};
 use Carbon\Carbon;
 use CommonToolkit\Entities\XLSX\Cell;

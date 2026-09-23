@@ -11,7 +11,9 @@
 namespace Tests\Feature\Agile;
 
 use App\Models\Agile\AgileWorkItem;
-use App\Models\{Organization, Project, Task, TimeEntry, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\{Project, Task};
+use App\Models\TimeEntry;
 use App\Services\Agile\{AgileBoardService, AgileWorkItemService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

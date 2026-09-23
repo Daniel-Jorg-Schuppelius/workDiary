@@ -13,7 +13,7 @@ namespace App\Policies\Finance;
 use App\Enums\Finance\TransferChannel;
 use App\Enums\User\Permission as P;
 use App\Models\Finance\BillingTransfer;
-use App\Models\User;
+use App\Models\Platform\User;
 
 /**
  * Policy für Übergabenachweise (Feature 045): Lesen über finance.viewAny,

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Whistleblowing;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Models\Whistleblowing\{CaseConflict, CaseSubject, EmergencyGrant, WhistleblowingCase};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

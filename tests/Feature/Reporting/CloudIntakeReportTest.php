@@ -12,7 +12,7 @@ namespace Tests\Feature\Reporting;
 
 use App\Enums\CloudIntake\{CloudIntakeItemStatus, CloudIntakeProvider};
 use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};

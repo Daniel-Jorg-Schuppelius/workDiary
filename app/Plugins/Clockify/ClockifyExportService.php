@@ -13,7 +13,10 @@ declare(strict_types=1);
 namespace App\Plugins\Clockify;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{ExternalReference, Organization, Project, TimeEntry};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\Organization;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Plugins\Clockify\Exceptions\ClockifyApiException;
 use App\Plugins\Clockify\Sources\ClockifyApiClient;
 use App\Plugins\Support\{AbstractTimeEntryPushService, ImportedTimeEntry, MatchingTimeImportService, RemoteTimeFingerprint};

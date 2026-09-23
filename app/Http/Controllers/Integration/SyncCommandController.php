@@ -8,12 +8,13 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Integration;
 
 use App\Services\Sync\SyncCommandService;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use App\Http\Controllers\Controller;
 
 /**
  * Idempotenter Batch-Endpunkt der Offline-Sync-Outbox (Feature 035, Phase 1;

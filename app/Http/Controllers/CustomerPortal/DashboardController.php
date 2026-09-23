@@ -12,7 +12,9 @@ namespace App\Http\Controllers\CustomerPortal;
 
 use App\Enums\CustomerPortal\PortalCapability;
 use App\Http\Controllers\Controller;
-use App\Models\{DiaryEntry, Invoice, OpenIssue, Project, TimeEntry, User};
+use App\Models\{DiaryEntry, Invoice, OpenIssue, TimeEntry};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Models\Reselling\ResaleSubscription;
 use App\Services\CustomerPortal\PortalVisibility;
 use App\Support\MorphMap;
@@ -50,7 +52,7 @@ class DashboardController extends Controller {
                 ->whereNull('closed_at')
                 ->where(function (Builder $q) use ($customerId): void {
                     $q->where(function (Builder $sub) use ($customerId): void {
-                        $sub->where('subject_type', MorphMap::alias(\App\Models\Customer::class))
+                        $sub->where('subject_type', MorphMap::alias(\App\Models\Customer\Customer::class))
                             ->where('subject_id', $customerId);
                     })
                         ->orWhere(function (Builder $sub) use ($customerId): void {

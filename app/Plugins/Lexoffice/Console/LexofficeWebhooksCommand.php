@@ -11,7 +11,7 @@
 namespace App\Plugins\Lexoffice\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\PluginSetting;
+use App\Models\Platform\PluginSetting;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin, LexofficeWebhookService};
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;

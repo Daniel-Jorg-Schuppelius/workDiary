@@ -14,8 +14,9 @@ namespace App\Http\Controllers\Club;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Club\{AssignHorseRequest, RecordHorseUseRequest};
+use App\Models\Calendar\Event;
 use App\Models\Club\{ClubEventDetails, ClubHorse, ClubHorseAssignment, ClubMember};
-use App\Models\{Event, User};
+use App\Models\Platform\User;
 use App\Services\Club\ClubHorseService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Auth, Gate};

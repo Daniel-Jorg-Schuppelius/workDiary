@@ -10,7 +10,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;

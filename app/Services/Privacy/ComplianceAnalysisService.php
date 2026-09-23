@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Models\Privacy\{ComplianceFinding, Dpia, JointControllerAgreement, MeasureAssignment, PrivacyAttachment, PrivacyRequirement, ProcessingActivity, ProcessingAgreement, Processor, TechnicalMeasure};
 use App\Support\MorphMap;
 use Illuminate\Support\Carbon;

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Msgraph\Console;
 
-use App\Models\MsgraphConnection;
+use App\Models\Plugins\Msgraph\MsgraphConnection;
 use App\Plugins\Msgraph\Services\MsgraphCalendarImportService;
 use Illuminate\Console\Command;
 use Throwable;

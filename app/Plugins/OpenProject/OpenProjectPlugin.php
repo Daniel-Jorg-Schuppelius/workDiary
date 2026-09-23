@@ -10,7 +10,7 @@
 
 namespace App\Plugins\OpenProject;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
 use App\Plugins\OpenProject\Services\OpenProjectImportService;
@@ -23,7 +23,7 @@ use Throwable;
  *
  * - Synchronisiert Projekte + Work Packages als Mapping-Quelle und importiert
  *   Zeiteinträge per API. OpenProject-Projekte werden auf workDiary-Projekte,
- *   Work Packages auf Aufgaben gematcht (über {@see \App\Models\ExternalReference}
+ *   Work Packages auf Aufgaben gematcht (über {@see \App\Models\Integration\ExternalReference}
  *   bzw. Namen). Nicht Zuordenbares landet in einer Admin-Inbox (TIME_IMPORT).
  * - Bucht in workDiary erfasste Zeiten als time_entries nach OpenProject zurück
  *   ({@see \App\Plugins\OpenProject\Services\OpenProjectExportService}).

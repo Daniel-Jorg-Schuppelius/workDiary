@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Participation;
 
-use App\Models\Event;
+use App\Models\Calendar\Event;
 
 /**
  * Kapazität und Warteliste eines Termins über alle Teilnehmerarten

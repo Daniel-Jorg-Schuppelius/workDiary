@@ -10,7 +10,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\{ContactBankAccount, User};
+use App\Models\Contacts\ContactBankAccount;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Crypt, DB};
 use Tests\TestCase;

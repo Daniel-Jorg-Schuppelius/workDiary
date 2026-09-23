@@ -10,7 +10,9 @@
 
 namespace App\Plugins\Toggl;
 
-use App\Models\{Customer, Organization, Project, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
 use App\Support\Sqid;
 use Illuminate\Support\Collection;
 

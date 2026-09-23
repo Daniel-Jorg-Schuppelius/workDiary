@@ -8,14 +8,16 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Project;
 
 use App\Enums\Task\TaskStatus;
-use App\Http\Requests\SaveTaskRequest;
-use App\Models\{Project, Task};
+use App\Http\Requests\Project\SaveTaskRequest;
+use App\Models\Project\Project\Project;
+use App\Models\Project\Project\Task;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 class TaskController extends Controller {
     public function create(Project $project, Request $request): View {
@@ -145,7 +147,7 @@ class TaskController extends Controller {
      * (Team-Mitglieder + Einzelmitglieder). Ist dem Projekt noch kein Team/
      * Mitglied zugeordnet, fällt die Auswahl auf alle Org-Benutzer zurück.
      *
-     * @return \Illuminate\Support\Collection<int, \App\Models\User>
+     * @return \Illuminate\Support\Collection<int, \App\Models\Platform\User>
      */
     private function assignableUsers(Project $project): \Illuminate\Support\Collection {
         $assignable = $project->assignableUsers();

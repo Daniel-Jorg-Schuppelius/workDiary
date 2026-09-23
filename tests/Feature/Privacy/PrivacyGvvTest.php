@@ -11,7 +11,7 @@
 namespace Tests\Feature\Privacy;
 
 use App\Enums\Privacy\ProcessorRole;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\{JointControllerAgreement, Processor};
 use App\Services\Privacy\DataProtectionPermissions;
 use Illuminate\Foundation\Testing\RefreshDatabase;

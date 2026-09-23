@@ -11,7 +11,8 @@
 namespace Tests\Feature\Procurement;
 
 use App\Enums\Procurement\CatalogItemStatus;
-use App\Models\{Article, ManufacturingOrder, ManufacturingOrderMaterial, PricingChangeAlert, PricingMarginRule, Supplier, SupplierCatalogItem, SupplierCatalogSource, User, Warehouse};
+use App\Models\{Article, ManufacturingOrder, ManufacturingOrderMaterial, PricingChangeAlert, PricingMarginRule, Supplier, SupplierCatalogItem, SupplierCatalogSource, Warehouse};
+use App\Models\Platform\User;
 use App\Services\Procurement\{CatalogCsvImportService, PurchaseOrderService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

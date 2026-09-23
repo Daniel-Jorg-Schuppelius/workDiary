@@ -10,7 +10,8 @@
 
 namespace App\Plugins\Msgraph\Http\Controllers;
 
-use App\Models\{MsgraphOneNoteConnection, User};
+use App\Models\Platform\User;
+use App\Models\Plugins\Msgraph\MsgraphOneNoteConnection;
 use App\Plugins\Msgraph\Api\{MsgraphOneNoteClient, MsgraphOneNoteOAuth};
 use App\Plugins\Msgraph\MsgraphConfig;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;

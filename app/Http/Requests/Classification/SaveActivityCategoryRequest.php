@@ -8,10 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Classification;
 
 use App\Enums\Activity\ActivityCategoryType;
 use Illuminate\Validation\Rule;
+use App\Http\Requests\BaseFormRequest;
 
 class SaveActivityCategoryRequest extends BaseFormRequest {
     /** @return array<string, mixed> */

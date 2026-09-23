@@ -14,7 +14,8 @@ namespace App\Services\Agile;
 
 use App\Enums\Agile\AgileColumnCategory;
 use App\Models\Agile\AgileBoard;
-use App\Models\{Project, Task, User};
+use App\Models\Platform\User;
+use App\Models\Project\{Project, Task};
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;

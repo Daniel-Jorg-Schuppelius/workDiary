@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Policies\Privacy;
 
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\DataSubjectRequest;
 use App\Policies\Privacy\DataSubjectRequestPolicy;
 use App\Services\Privacy\DataProtectionPermissions;

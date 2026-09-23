@@ -17,7 +17,7 @@ use App\Enums\Notification\NotificationEvent;
 use App\Enums\Numbering\NumberScope;
 use App\Models\AssetFinance\AssetFinanceContract;
 use App\Models\Contract\{Contract, ContractObligation};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\AssertsStatusTransition;
 use App\Services\Notification\NotificationDispatcher;
 use App\Services\Numbering\NumberSequenceService;

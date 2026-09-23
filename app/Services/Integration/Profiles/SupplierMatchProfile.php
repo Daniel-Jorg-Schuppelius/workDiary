@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Integration\Profiles;
 
-use App\Models\{Organization, Supplier};
+use App\Models\Platform\Organization;
+use App\Models\Supplier;
 use App\Services\Integration\Match\{AbstractMatchProfile, CompositeField, ExactField, FuzzyField, MatchStrategy};
 use App\Services\Stammdaten\ContactDetailsWriter;
 use Illuminate\Database\Eloquent\{Builder, Model};

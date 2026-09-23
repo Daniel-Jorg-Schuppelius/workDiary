@@ -16,7 +16,7 @@
     $collectableType = app(\App\Services\Collections\CollectableTypes::class)->keyFor($item);
 @endphp
 
-@if ($collectableType !== null && \Illuminate\Support\Facades\Gate::allows('create', \App\Models\ContentCollection::class))
+@if ($collectableType !== null && \Illuminate\Support\Facades\Gate::allows('create', \App\Models\Knowledge\ContentCollection::class))
     <x-icon-btn icon="bookmark_add" tone="outline" :size="$size" show-label data-entry-modal-trigger
                 :href="route('collections.add', ['type' => $collectableType, 'item' => $item->sqid])"
                 {{ $attributes }}>{{ __('collections.action.add_to_collection') }}</x-icon-btn>

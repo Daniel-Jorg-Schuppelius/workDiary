@@ -10,7 +10,9 @@
 
 namespace App\Plugins\Msgraph\Http\Controllers;
 
-use App\Models\{MsgraphTaskConnection, MsgraphTaskListLink, Project, User};
+use App\Models\Platform\User;
+use App\Models\Plugins\Msgraph\{MsgraphTaskConnection, MsgraphTaskListLink};
+use App\Models\Project\Project;
 use App\Plugins\Msgraph\Api\{MsgraphTasksOAuth, MsgraphTodoClient};
 use App\Plugins\Msgraph\MsgraphConfig;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;

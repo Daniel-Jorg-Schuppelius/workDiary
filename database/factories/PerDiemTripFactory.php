@@ -11,7 +11,8 @@
 namespace Database\Factories;
 
 use App\Enums\Expense\PerDiemTripStatus;
-use App\Models\{PerDiemTrip, User};
+use App\Models\PerDiemTrip;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

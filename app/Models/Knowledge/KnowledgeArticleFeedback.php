@@ -8,10 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Knowledge;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Knowledge\KnowledgeArticle;
 
 /**
  * Feedback „Hat geholfen / Hat nicht geholfen" — genau eine Wertung pro

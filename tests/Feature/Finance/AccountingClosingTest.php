@@ -12,7 +12,7 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AccountType, AccountingPeriodStatus, ProfitDetermination};
 use App\Models\Accounting\{AccountingAccount, AccountingEvent, AccountingFiscalYear, AccountingPeriod};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService, PeriodClosingService};
 use App\Services\Finance\GdpduExportService;
 use Carbon\CarbonImmutable;

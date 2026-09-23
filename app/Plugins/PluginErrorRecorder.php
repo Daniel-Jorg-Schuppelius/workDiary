@@ -10,7 +10,7 @@
 
 namespace App\Plugins;
 
-use App\Models\{PluginError, PluginState};
+use App\Models\Platform\{PluginError, PluginState};
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\{DB, Log};

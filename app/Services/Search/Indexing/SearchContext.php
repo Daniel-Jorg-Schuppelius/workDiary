@@ -12,7 +12,10 @@ declare(strict_types=1);
 
 namespace App\Services\Search\Indexing;
 
-use App\Models\{Asset, Customer, DiaryEntry, ForeignCustomer, Project, User};
+use App\Models\{Asset, DiaryEntry};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 

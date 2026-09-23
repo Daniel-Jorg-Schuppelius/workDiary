@@ -8,10 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Policies;
+namespace App\Policies\Form;
 
 use App\Enums\User\Permission as P;
-use App\Models\{FormSubmission, User};
+use App\Models\Form\FormSubmission;
+use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
 
 /**

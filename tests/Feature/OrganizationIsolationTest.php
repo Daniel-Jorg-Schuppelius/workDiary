@@ -10,7 +10,13 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Attachment, Comment, Customer, DiaryEntry, Event, EventReminder, FlexBalance, Organization, Project, User};
+use App\Models\Attachments\Attachment;
+use App\Models\Calendar\{Event, EventReminder};
+use App\Models\Communication\Comment;
+use App\Models\Customer\Customer;
+use App\Models\{DiaryEntry, FlexBalance};
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;

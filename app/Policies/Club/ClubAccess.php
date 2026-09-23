@@ -15,7 +15,7 @@ namespace App\Policies\Club;
 use App\Enums\Club\ClubGroupMembershipStatus;
 use App\Enums\User\Permission as P;
 use App\Models\Club\{ClubGroup, ClubMember};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Support\Query\DateRange;
 use Illuminate\Support\Carbon;
 

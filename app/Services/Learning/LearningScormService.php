@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use App\Models\Learning\{LearningEnrollment, LearningScormPackage, LearningScormState, LearningUnit};
-use App\Models\User;
+use App\Models\Platform\User;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\FileSystem\Folder;
 use ELearningToolkit\Package\{PackageException, PackageExtractor};

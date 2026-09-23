@@ -26,9 +26,9 @@ class SaveConstructionNoticeRequest extends BaseFormRequest {
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'diary_entry_id' => \App\Models\DiaryEntry::class,
-        'project_id' => \App\Models\Project::class,
+        'project_id' => \App\Models\Project\Project::class,
         'site_id' => \App\Models\Site::class,
-        'customer_id' => \App\Models\Customer::class,
+        'customer_id' => \App\Models\Customer\Customer::class,
     ];
 
     /** @return array<string, mixed> */

@@ -10,7 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\UserFilterPreset;
+use App\Models\Platform\UserFilterPreset;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Concerns\WithOrganization;

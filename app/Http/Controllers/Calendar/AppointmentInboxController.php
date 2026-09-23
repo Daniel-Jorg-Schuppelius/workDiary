@@ -10,17 +10,21 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Calendar;
 
 use App\Enums\User\Permission;
-use App\Models\{AppointmentRequest, BookableService, Site, User};
+use App\Models\Calendar\AppointmentRequest;
+use App\Models\Sales\BookableService;
+use App\Models\Site;
+use App\Models\Platform\User;
 use App\Services\Appointments\AppointmentRequestService;
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use App\Support\{ErrorText, Tz};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use RuntimeException;
+use App\Http\Controllers\Controller;
 
 /**
  * Dispositions-Inbox der Terminanfragen (Feature 087, MVP-667) + Pflege der

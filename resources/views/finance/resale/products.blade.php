@@ -119,7 +119,7 @@
                             <form method="POST" action="{{ route('finance.resale.products.store') }}" class="flex items-center gap-1">
                                 @csrf
                                 <input type="hidden" name="article_type" value="lexoffice">
-                                <input type="hidden" name="article_id" value="{{ \App\Support\Sqid::encode(\App\Models\LexofficeArticle::class, $article->id) }}">
+                                <input type="hidden" name="article_id" value="{{ \App\Support\Sqid::encode(\App\Models\Plugins\Lexoffice\LexofficeArticle::class, $article->id) }}">
                                 <select name="role" class="select select-xs select-bordered w-44" aria-label="{{ __('resale.products.override') }}">
                                     <option value="auto" @selected($article->resale_role === null)>{{ __('resale.products.role.auto') }}</option>
                                     @foreach ($roles as $role)

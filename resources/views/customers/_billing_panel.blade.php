@@ -20,7 +20,7 @@
         || auth()->user()?->can(\App\Enums\User\Permission::DocumentDesignAssign->value)
         || auth()->user()?->can(\App\Enums\User\Permission::DocumentDesignManage->value);
     $designProfiles = $canAssignDesign
-        ? \App\Models\DocumentDesign\DocumentRenderProfile::query()
+        ? \App\Models\Document\DocumentDesign\DocumentRenderProfile::query()
             ->where('organization_id', $customer->organization_id)
             ->where('status', '!=', \App\Enums\DocumentDesign\RenderProfileStatus::Archived)
             ->orderBy('name')

@@ -10,7 +10,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\{Material, Organization};
+use App\Models\Material;
+use App\Models\Platform\Organization;
 use Illuminate\Database\Seeder;
 
 class MaterialSeeder extends Seeder {

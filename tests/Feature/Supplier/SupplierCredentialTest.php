@@ -12,8 +12,10 @@ namespace Tests\Feature\Supplier;
 
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Enums\Supplier\CredentialStatus;
-use App\Models\{Document, IncomingEInvoice, Organization, PurchaseOrder, Supplier, User};
+use App\Models\Document\Document;
+use App\Models\{IncomingEInvoice, PurchaseOrder, Supplier};
 use App\Models\Notification\NotificationRule;
+use App\Models\Platform\{Organization, User};
 use App\Models\Supplier\{SupplierCredential, SupplierCredentialType};
 use App\Services\Supplier\SupplierCredentialService;
 use App\Settings\SettingScope;

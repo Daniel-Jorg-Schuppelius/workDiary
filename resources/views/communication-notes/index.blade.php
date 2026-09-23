@@ -15,7 +15,7 @@
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @php
-    /** @var \Illuminate\Pagination\LengthAwarePaginator<int, \App\Models\CommunicationNote> $notes */
+    /** @var \Illuminate\Pagination\LengthAwarePaginator<int, \App\Models\Communication\CommunicationNote> $notes */
     /** @var array{q: string, storage: string, customer: string, type: string, open_followups: bool, tag: string} $filters */
     /** @var array<int, string|null> $contextUrls */
 @endphp
@@ -23,7 +23,7 @@
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('communication.subtitle.notes')">
         <x-slot:actions>
-            @can('create', \App\Models\CommunicationNote::class)
+            @can('create', \App\Models\Communication\CommunicationNote::class)
                 <x-icon-btn icon="add_comment" tone="primary" size="sm" data-entry-modal-trigger
                             :href="route('communication-notes.create', array_filter(['customer' => $filters['customer']]))" show-label>
                     {{ __('communication.action.create') }}
@@ -101,7 +101,7 @@
                 @forelse ($notes as $note)
                     @php
                         $contextUrl = $contextUrls[$note->id] ?? null;
-                        $kindTone = $note->isOrganizationNote() ? 'neutral' : (\App\Support\MorphMap::is($note->notable_type, \App\Models\Customer::class) ? 'info' : 'ghost');
+                        $kindTone = $note->isOrganizationNote() ? 'neutral' : (\App\Support\MorphMap::is($note->notable_type, \App\Models\Customer\Customer::class) ? 'info' : 'ghost');
                         $dueOverdue = $note->hasOpenFollowUp() && $note->next_action_due_at !== null && $note->next_action_due_at->isPast();
                     @endphp
                     <tr class="hover" id="communication-note-{{ $note->id }}">

@@ -14,7 +14,8 @@ namespace App\Services\Compliance;
 
 use App\Enums\Compliance\ComplianceFindingStatus;
 use App\Enums\Notification\NotificationEvent;
-use App\Models\{ComplianceFinding, Organization, User};
+use App\Models\ComplianceFinding;
+use App\Models\Platform\{Organization, User};
 use App\Services\Notification\NotificationDispatcher;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;

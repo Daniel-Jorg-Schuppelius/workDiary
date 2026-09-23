@@ -12,7 +12,7 @@ namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\{LearningBlockKind, LearningTranslationStatus};
 use App\Models\Learning\{LearningContentTranslation, LearningCourse, LearningUnit};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningContentService, LearningCourseService, LearningEnrollmentService, LearningTranslationService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

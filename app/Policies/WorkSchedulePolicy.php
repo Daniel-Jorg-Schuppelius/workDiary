@@ -11,7 +11,8 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission;
-use App\Models\{User, WorkSchedule};
+use App\Models\Platform\User;
+use App\Models\WorkSchedule;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 /**

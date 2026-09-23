@@ -72,7 +72,7 @@ class DiaryExportController extends Controller {
 
     /** @return Builder<DiaryEntry> */
     private function buildQuery(Request $request): Builder {
-        /** @var \App\Models\User $user */
+        /** @var \App\Models\Platform\User $user */
         $user = Auth::user();
         /** @var Builder<DiaryEntry> $query */
         $query = DiaryEntry::query()
@@ -99,7 +99,7 @@ class DiaryExportController extends Controller {
         }
         // Die Export-Links reichen die Index-Filter weiter — tag ist dort ein
         // Sqid; integer() ergäbe 0 und der Export ignorierte den Filter still.
-        $tagId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Tag::class, $request->string('tag')->toString());
+        $tagId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Classification\Tag::class, $request->string('tag')->toString());
         if ($tagId !== null && $tagId > 0) {
             $query->whereHas('tags', fn($q) => $q->where('tags.id', $tagId));
         }

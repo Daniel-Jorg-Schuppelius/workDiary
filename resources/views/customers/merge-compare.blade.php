@@ -11,8 +11,8 @@
 @section('nav-title', __('Kunden zusammenführen'))
 
 @php
-    /** @var \App\Models\Customer $source */
-    /** @var \App\Models\Customer $target */
+    /** @var \App\Models\Customer\Customer $source */
+    /** @var \App\Models\Customer\Customer $target */
 
     // Reine Anzeigefelder (Identität) — nicht übersteuerbar.
     $identityFields = [

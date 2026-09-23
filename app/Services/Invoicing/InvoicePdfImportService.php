@@ -45,7 +45,7 @@ class InvoicePdfImportService {
     /**
      * @return array<string, mixed>
      */
-    public function extract(string $path, string $extension = 'pdf', ?string $mime = null, ?\App\Models\Organization $organization = null): array {
+    public function extract(string $path, string $extension = 'pdf', ?string $mime = null, ?\App\Models\Platform\Organization $organization = null): array {
         $extension = mb_strtolower($extension);
 
         $structured = $this->structuredExtract($path, $extension, $mime);
@@ -88,7 +88,7 @@ class InvoicePdfImportService {
      *
      * @param  array<string, mixed>  $result
      */
-    private function augmentWithAiFallback(array &$result, string $text, \App\Models\Organization $organization): void {
+    private function augmentWithAiFallback(array &$result, string $text, \App\Models\Platform\Organization $organization): void {
         $missing = array_values(array_filter(
             ['number', 'issued_on', 'due_on', 'net', 'tax', 'gross', 'tax_rate', 'buyer_reference'],
             static fn(string $field): bool => ($result[$field] ?? null) === null,

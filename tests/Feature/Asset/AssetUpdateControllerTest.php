@@ -12,7 +12,9 @@ namespace Tests\Feature\Asset;
 
 use App\Enums\Asset\{AssetClass, AssetStatus};
 use App\Enums\User\UserRole;
-use App\Models\{Asset, Customer, Room, User};
+use App\Models\{Asset, Room};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -81,7 +83,7 @@ class AssetUpdateControllerTest extends TestCase {
             'asset_class' => AssetClass::Device->value,
             'status' => AssetStatus::Active->value,
         ]);
-        $existing = \App\Models\Tag::create([
+        $existing = \App\Models\Classification\Tag::create([
             'name' => 'Bestand',
             'organization_id' => $this->organization->id,
         ]);

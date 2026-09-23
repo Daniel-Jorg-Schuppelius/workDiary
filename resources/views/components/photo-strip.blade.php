@@ -31,8 +31,8 @@
                             @php($att = $photo->attachment)
                             <figure class="w-24">
                                 @if ($att)
-                                    <a href="{{ \App\Http\Controllers\AttachmentController::downloadUrl($att) }}" target="_blank" rel="noopener">
-                                        <img src="{{ \App\Http\Controllers\AttachmentController::downloadUrl($att) }}"
+                                    <a href="{{ \App\Http\Controllers\Attachments\AttachmentController::downloadUrl($att) }}" target="_blank" rel="noopener">
+                                        <img src="{{ \App\Http\Controllers\Attachments\AttachmentController::downloadUrl($att) }}"
                                              alt="{{ $photo->caption ?? $att->original_name }}"
                                              class="h-20 w-24 rounded-box border border-base-300 object-cover" loading="lazy">
                                     </a>

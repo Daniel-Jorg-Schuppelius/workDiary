@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Plugins\Billbee\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{BillbeeOrder, IntegrationInboxItem, Organization, User};
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Platform\{Organization, User};
+use App\Models\Plugins\Billbee\BillbeeOrder;
 use App\Plugins\Billbee\BillbeePlugin;
 use App\Plugins\Billbee\Services\{BillbeeArticleMappingService, BillbeeOrderImportService};
 use Illuminate\Http\{RedirectResponse, Request};

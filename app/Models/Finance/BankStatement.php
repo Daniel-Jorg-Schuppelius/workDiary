@@ -14,7 +14,7 @@ namespace App\Models\Finance;
 
 use App\Enums\Finance\{BalanceCheck, BankStatementFormat};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use Database\Factories\Finance\BankStatementFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};

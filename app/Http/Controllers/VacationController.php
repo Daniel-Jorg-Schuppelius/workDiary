@@ -12,7 +12,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Vacation\{VacationStatus, VacationType};
-use App\Models\{User, Vacation};
+use App\Models\Platform\User;
+use App\Models\Vacation;
 use App\Services\Absence\VacationBalanceService;
 use App\Services\Approval\ApprovalFlowService;
 use App\Services\Notification\NotificationDispatcher;
@@ -285,7 +286,7 @@ class VacationController extends Controller {
     /** @return array<string, mixed> */
     private function validateVacation(Request $request): array {
         $rawUserId = $request->input('user_id');
-        $userId = \App\Support\Sqid::decodeOrNumeric(\App\Models\User::class, $rawUserId);
+        $userId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Platform\User::class, $rawUserId);
 
         $request->merge([
             'user_id' => $userId,

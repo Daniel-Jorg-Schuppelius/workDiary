@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use App\Enums\Notification\NotificationEvent;
-use App\Models\EventParticipant;
+use App\Models\Calendar\EventParticipant;
 use App\Models\Learning\{LearningBooking, LearningCertificate, LearningEnrollment, LearningSubmission, LearningTimeSession};
 use App\Services\Notification\NotificationDispatcher;
 

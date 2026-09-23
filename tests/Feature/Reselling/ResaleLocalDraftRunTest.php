@@ -14,7 +14,10 @@ namespace Tests\Feature\Reselling;
 
 use App\Enums\Finance\BillingMode;
 use App\Enums\Reselling\PeriodStatus;
-use App\Models\{AuditLog, Customer, ForeignCustomer, Invoice, LexofficeArticle};
+use App\Models\Audit\AuditLog;
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Invoice;
+use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Models\Reselling\{ResalePeriodLink, ResaleSubscription};
 use App\Notifications\Finance\ResalePeriodsDigestNotification;
 use App\Services\Reselling\Register\{PeriodPlanner, ResaleLocalDraftRun};

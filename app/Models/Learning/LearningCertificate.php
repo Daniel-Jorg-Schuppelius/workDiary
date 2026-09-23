@@ -10,8 +10,9 @@
 
 namespace App\Models\Learning;
 
+use App\Models\Communication\ExternalParticipant;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\{ExternalParticipant, User};
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

@@ -32,7 +32,7 @@ class SaveDataMediaTreatmentRequest extends BaseFormRequest {
      * @var array<string, class-string>
      */
     protected array $sqidFields = [
-        'performed_by_user_id' => \App\Models\User::class,
+        'performed_by_user_id' => \App\Models\Platform\User::class,
     ];
 
     /** @return array<string, mixed> */

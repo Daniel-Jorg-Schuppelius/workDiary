@@ -13,8 +13,8 @@ namespace App\Dashboard\Widgets;
 use App\Dashboard\Widget;
 use App\Enums\Dashboard\WidgetGroup;
 use App\Enums\Privacy\DataSubjectRequestStatus;
+use App\Models\Platform\User;
 use App\Models\Privacy\{DataSubjectRequest, ProcessingActivity};
-use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
 

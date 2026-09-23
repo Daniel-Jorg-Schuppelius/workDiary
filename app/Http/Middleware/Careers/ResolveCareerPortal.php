@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Careers;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Support\Setting;
 use Closure;
 use Illuminate\Http\Request;

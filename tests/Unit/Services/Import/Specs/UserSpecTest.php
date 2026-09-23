@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services\Import\Specs;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Export\Specs\UserExportSpec;
 use App\Services\Import\ImportOutcome;
 use App\Services\Import\Specs\UserSpec;

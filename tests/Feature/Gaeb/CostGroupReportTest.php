@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Gaeb;
 
 use App\Enums\Gaeb\{BoqItemStatus, GaebPhase};
-use App\Models\{BillOfQuantity, BoqCatalog, BoqCatalogAssignment, BoqItem, BoqItemQuantitySplit, BoqSection, User};
+use App\Models\{BillOfQuantity, BoqCatalog, BoqCatalogAssignment, BoqItem, BoqItemQuantitySplit, BoqSection};
 use App\Models\Catalog\{CatalogEntry, CatalogRegistry};
+use App\Models\Platform\User;
 use App\Services\Gaeb\CostGroupReportService;
 use Database\Seeders\CatalogRegistrySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

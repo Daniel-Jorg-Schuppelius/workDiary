@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Services\ServiceTicket;
 
 use App\Enums\ServiceTicket\ServiceTicketStatus;
-use App\Models\{AuditLog, Change, ContentReference, KnowledgeArticle, Problem, ServiceRequest, ServiceTicket, SlaClockSegment, TicketSatisfaction};
+use App\Models\Audit\AuditLog;
+use App\Models\{Change, Problem, ServiceRequest, ServiceTicket, SlaClockSegment, TicketSatisfaction};
+use App\Models\Knowledge\{ContentReference, KnowledgeArticle};
 use App\Support\MorphMap;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

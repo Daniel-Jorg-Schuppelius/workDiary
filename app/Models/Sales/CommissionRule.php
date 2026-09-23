@@ -15,7 +15,7 @@ namespace App\Models\Sales;
 use App\Casts\PercentageCast;
 use App\Enums\Sales\CommissionScope;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Support\Query\DateRange;
 use CommonToolkit\ValueObjects\Percentage;
 use Illuminate\Database\Eloquent\{Builder, Model};

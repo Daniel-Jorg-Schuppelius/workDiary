@@ -11,7 +11,8 @@
 namespace Tests\Feature;
 
 use App\Enums\Project\ProjectStatus;
-use App\Models\{Milestone, Project, User};
+use App\Models\Platform\User;
+use App\Models\Project\{Milestone, Project};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

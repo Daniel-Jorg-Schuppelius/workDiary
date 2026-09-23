@@ -11,7 +11,8 @@
 namespace Tests\Feature;
 
 use App\Enums\Integration\{ConflictFieldPolicy, ImportMatchPolicy};
-use App\Models\{Customer, ExternalReference, IntegrationInboxItem};
+use App\Models\Customer\Customer;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Services\Integration\{IntegrationResolver, ResolveOutcome};
 use App\Services\Integration\Match\EntityMatcher;
 use App\Services\Integration\Profiles\CustomerMatchProfile;

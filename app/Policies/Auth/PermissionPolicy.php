@@ -10,10 +10,10 @@
 
 declare(strict_types=1);
 
-namespace App\Policies;
+namespace App\Policies\Auth;
 
 use App\Enums\User\Permission;
-use App\Models\User;
+use App\Models\Platform\User;
 
 /**
  * Basis für rein permissionsbasierte Policies (Konsolidierung C11): Abilities

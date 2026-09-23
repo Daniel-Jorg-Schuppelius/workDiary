@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Auth\Sso;
 
-use App\Models\SsoConnection;
+use App\Models\Auth\SsoConnection;
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\{CryptoHelper, EmailHelper, XmlHelper};
 use ErrorException;

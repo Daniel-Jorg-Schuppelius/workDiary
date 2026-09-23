@@ -13,7 +13,7 @@ namespace Tests\Feature\Learning;
 use App\Dashboard\Widgets\{LearningDueWidget, LearningGradingQueueWidget};
 use App\Enums\Learning\LearningUnitKind;
 use App\Models\Learning\LearningAssignment;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningAssignmentService, LearningCourseService, LearningEnrollmentService};
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Testing\RefreshDatabase;

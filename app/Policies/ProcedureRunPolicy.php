@@ -11,7 +11,8 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\{ProcedureRun, User};
+use App\Models\Platform\User;
+use App\Models\ProcedureRun;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class ProcedureRunPolicy {

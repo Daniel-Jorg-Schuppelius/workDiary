@@ -14,8 +14,8 @@ namespace App\Http\Controllers\Me;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SaveUserWorkspaceRequest;
-use App\Models\{User, UserWorkspace};
+use App\Http\Requests\Platform\SaveUserWorkspaceRequest;
+use App\Models\Platform\{User, UserWorkspace};
 use App\Services\Navigation\{NavFocusService, NavigationRegistry};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;

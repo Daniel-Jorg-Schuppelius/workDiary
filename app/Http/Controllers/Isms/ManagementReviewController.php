@@ -12,9 +12,9 @@ namespace App\Http\Controllers\Isms;
 
 use App\Http\Controllers\Controller;
 use App\Models\Isms\{IsmsManagementReview, IsmsScope};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Isms\AuditService;
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};

@@ -8,9 +8,9 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace Database\Factories;
+namespace Database\Factories\Classification;
 
-use App\Models\Tag;
+use App\Models\Classification\Classification\Tag;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 

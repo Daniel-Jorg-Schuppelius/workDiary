@@ -11,7 +11,9 @@
 namespace Tests\Feature\Sso;
 
 use App\Enums\Auth\SsoProtocol;
-use App\Models\{AuditLog, Organization, SsoConnection, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Auth\SsoConnection;
+use App\Models\Platform\{Organization, User};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

@@ -8,10 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Knowledge;
 
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Rules\ExistsInCurrentOrganization;
+use App\Http\Requests\BaseFormRequest;
 
 /**
  * Validierung für Anlegen/Umbenennen einer Ideenlandkarte (Feature 054,
@@ -23,8 +24,8 @@ class SaveIdeaMapRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'customer' => \App\Models\Customer::class,
-        'project' => \App\Models\Project::class,
+        'customer' => \App\Models\Customer\Customer::class,
+        'project' => \App\Models\Project\Project::class,
     ];
 
     /** @return array<string, mixed> */

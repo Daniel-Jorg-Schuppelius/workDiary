@@ -277,7 +277,7 @@
                     </div>
                     @if ($job->signatureAttachment !== null)
                         <div>
-                            <img src="{{ \App\Http\Controllers\AttachmentController::downloadUrl($job->signatureAttachment) }}"
+                            <img src="{{ \App\Http\Controllers\Attachments\AttachmentController::downloadUrl($job->signatureAttachment) }}"
                                  alt="{{ __('Unterschrift') }}" class="max-h-32 rounded border border-base-300 bg-white p-2">
                         </div>
                     @endif

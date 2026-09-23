@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\GitIssueImport;
 
-use App\Models\{ExternalReference, Task};
+use App\Models\Integration\ExternalReference;
+use App\Models\Project\Task;
 use App\Services\Integration\{IntegrationOutboxDispatcherResolver, IntegrationOutboxService};
 
 /**

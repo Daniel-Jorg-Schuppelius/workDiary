@@ -15,7 +15,7 @@ namespace App\Models\Accounting;
 use App\Enums\Finance\AccountingSovereignty;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Migration\AccountingMigrationRun;
-use App\Models\User;
+use App\Models\Platform\User;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

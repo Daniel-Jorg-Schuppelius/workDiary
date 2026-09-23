@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Platform;
 
 use App\Casts\MoneyCast;
 use App\Enums\User\{CompensationModel, UserRole};
@@ -17,7 +17,7 @@ use App\Legacy\Models\LegacyUser;
 use App\Models\Concerns\{Auditable, HasAttachments, HasEffectivePermissions, HasPreferences, HasSqid, InteractsWithTwoFactor, InteractsWithWorkSchedule, Searchable};
 use App\Support\Crypto\BlindIndex;
 use CommonToolkit\Helper\Data\PhoneNumberHelper;
-use Database\Factories\UserFactory;
+use Database\Factories\Platform\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -28,6 +28,28 @@ use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Models\Permission as SpatiePermission;
 use Spatie\Permission\Traits\HasRoles;
+use App\Models\Attachments\Attachments\Attachment;
+use App\Models\Auth\SsoIdentity;
+use App\Models\Contacts\ContactAddress;
+use App\Models\Contacts\ContactBankAccount;
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\EmergencyAssignment;
+use App\Models\FlexEligibility;
+use App\Models\OnCallShift;
+use App\Models\Platform\Organization;
+use App\Models\Platform\PushSubscription;
+use App\Models\Platform\Team;
+use App\Models\Qualification;
+use App\Models\SickLeave;
+use App\Models\Supplier;
+use App\Models\TimeEntry;
+use App\Models\Timesheet;
+use App\Models\Platform\UserBookmark;
+use App\Models\Platform\UserDashboardWidget;
+use App\Models\Platform\UserFilterPreset;
+use App\Models\Platform\UserGroup;
+use App\Models\Vacation;
 
 /**
  * @property int $id

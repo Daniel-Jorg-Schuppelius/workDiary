@@ -26,7 +26,7 @@ class CsvReaderRuleTest extends TestCase {
 
     /** @var array<string, string> Pfad → Begründung / Nachzieh-Welle */
     private const ALLOW_LIST = [
-        'app/Http/Controllers/OrgMemberController.php' => 'Welle 3 (C5): Mitglieder-Import auf CsvFacade::streamAssoc.',
+        'app/Http/Controllers/Platform/OrgMemberController.php' => 'Welle 3 (C5): Mitglieder-Import auf CsvFacade::streamAssoc.',
         'app/Console/Commands/TimeExport/ImportExternalWageItemsCommand.php' => 'Welle 3 (C5): Lohnarten-Import auf CsvFacade::streamAssoc.',
         'app/Services/Isms/CsafFeedService.php' => 'Welle 3 (C5, optional): CSAF changes.csv, kleine Feed-Datei.',
         'app/Support/Toolkit/CsvFacade.php' => 'Die Fassade selbst darf die Primitive kapseln.',

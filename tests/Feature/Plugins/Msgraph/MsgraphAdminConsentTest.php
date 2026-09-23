@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins\Msgraph;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

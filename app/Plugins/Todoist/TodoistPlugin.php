@@ -10,7 +10,8 @@
 
 namespace App\Plugins\Todoist;
 
-use App\Models\{Organization, TodoistConnection};
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Todoist\TodoistConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
 use App\Plugins\Support\PluginOrgContext;
@@ -66,8 +67,8 @@ class TodoistPlugin extends AbstractPlugin implements TaskSyncer {
      * Deep-Link zur Todoist-Aufgabe eines verknüpften Tasks (MVP-116) —
      * nur bei gültiger, URL-sicherer Fremd-ID (DoD), sonst null.
      */
-    public static function taskUrl(\App\Models\Task $task): ?string {
-        $externalId = \App\Models\ExternalReference::query()
+    public static function taskUrl(\App\Models\Project\Task $task): ?string {
+        $externalId = \App\Models\Integration\ExternalReference::query()
             ->forPlugin($task->organization_id, self::ID, self::EXT_TYPE_TASK)
             ->forReferenceable($task)
             ->value('external_id');

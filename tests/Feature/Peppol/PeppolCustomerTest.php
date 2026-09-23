@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Peppol;
 
-use App\Models\{Customer, Organization, PeppolParticipantLookup, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
+use App\Models\Plugins\Peppol\PeppolParticipantLookup;
 use App\Plugins\PeppolAccessPoint\PeppolAccessPointPlugin;
 use App\Plugins\PluginManager;
 use App\Support\MorphMap;

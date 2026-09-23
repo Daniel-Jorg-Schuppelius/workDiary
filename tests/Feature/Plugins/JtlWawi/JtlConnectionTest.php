@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins\JtlWawi;
 
-use App\Models\{JtlConnection, User};
+use App\Models\Platform\User;
+use App\Models\Plugins\JtlWawi\JtlConnection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Psr\Http\Message\RequestInterface;
@@ -164,7 +165,7 @@ final class JtlConnectionTest extends TestCase {
 
     public function test_registration_answers_are_isolated_per_tenant(): void {
         $this->makeOnPremiseConnection();
-        $otherOrg = \App\Models\Organization::factory()->create();
+        $otherOrg = \App\Models\Platform\Organization::factory()->create();
         $otherAdmin = User::factory()->admin()->create(['organization_id' => $otherOrg->id]);
 
         // Fremder Admin sieht die Verbindung dieser Organisation nicht.

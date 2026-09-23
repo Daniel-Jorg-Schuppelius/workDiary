@@ -8,16 +8,22 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Communication;
 
 use App\Enums\ExternalParticipant\{ExternalAbility, ExternalParty};
 use App\Mail\ExternalParticipantInvitedMail;
-use App\Models\{DiaryEntry, Document, ExternalContact, ExternalParticipant, Protocol, User};
+use App\Models\DiaryEntry;
+use App\Models\Document\Document\Document;
+use App\Models\Contacts\ExternalContact;
+use App\Models\Communication\ExternalParticipant;
+use App\Models\Protocol;
+use App\Models\Platform\User;
 use App\Services\ExternalParticipant\ExternalParticipantService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Mail};
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 /**
  * Interne Verwaltung externer Beteiligter (Feature 033): Einladen,

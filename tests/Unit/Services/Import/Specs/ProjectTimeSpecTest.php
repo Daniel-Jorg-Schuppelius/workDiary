@@ -13,7 +13,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Services\Import\Specs;
 
 use App\Enums\TimeEntry\TimeEntryActivityType;
-use App\Models\{IntegrationInboxItem, Project, TimeEntry, User};
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Services\Import\ImportOutcome;
 use App\Services\Import\Specs\ProjectTimeSpec;
 use Illuminate\Foundation\Testing\RefreshDatabase;

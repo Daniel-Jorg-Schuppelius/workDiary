@@ -14,7 +14,7 @@ namespace App\Services\Accounting;
 
 use App\Enums\Finance\{AccountType, OpenItemDirection, OpenItemStatus, SettlementKind};
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingEntryLine, AccountingOpenItem, AccountingOpenItemSettlement};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Finance\Datev\DatevBookingConfig;
 use App\Support\{MorphMap, Tz};
 use Carbon\CarbonImmutable;

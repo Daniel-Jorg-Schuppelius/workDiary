@@ -10,7 +10,7 @@
 
 namespace App\Services\Auth;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;

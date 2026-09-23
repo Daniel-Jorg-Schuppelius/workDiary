@@ -14,7 +14,7 @@ namespace App\Http\Controllers\Applications;
 
 use App\Http\Controllers\Controller;
 use App\Models\Applications\{ApplicationContractNegotiation, ApplicationOpportunity, JobApplication};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Applications\ContractNegotiationService;
 use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};

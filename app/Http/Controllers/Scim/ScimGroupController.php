@@ -13,9 +13,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Scim;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Organization, ScimGroup};
+use App\Models\Auth\ScimGroup;
+use App\Models\Platform\Organization;
 use App\Services\Scim\{ScimException, ScimGroupService, ScimResponse};
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use Closure;
 use Illuminate\Http\{JsonResponse, Request};
 use Throwable;

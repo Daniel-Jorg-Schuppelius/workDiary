@@ -12,7 +12,8 @@ namespace App\Http\Requests;
 
 use App\Enums\Shift\ShiftPreference;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\{DesiredShift, ShiftType, User};
+use App\Models\{DesiredShift, ShiftType};
+use App\Models\Platform\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;

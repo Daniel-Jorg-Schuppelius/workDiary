@@ -8,12 +8,13 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Knowledge;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
+use App\Models\Knowledge\ContentCollectionItem;
 
 /**
  * Sammlung (MVP-809, Feature 155): Knoten im Sammlungsbaum der Organisation.

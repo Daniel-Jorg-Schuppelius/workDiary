@@ -14,7 +14,7 @@ namespace App\Policies\Club;
 
 use App\Enums\Club\ClubGuardianPermission;
 use App\Models\Club\{ClubEventDetails, ClubMember};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
 use Illuminate\Support\Carbon;
 

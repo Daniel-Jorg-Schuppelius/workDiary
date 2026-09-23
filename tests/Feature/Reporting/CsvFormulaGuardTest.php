@@ -11,7 +11,7 @@
 namespace Tests\Feature\Reporting;
 
 use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Isms\RegisterExportService;
 use App\Support\CsvExport;
 use Illuminate\Foundation\Testing\RefreshDatabase;

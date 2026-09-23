@@ -8,9 +8,10 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Policies;
+namespace App\Policies\Platform;
 
-use App\Models\{User, UserBookmark};
+use App\Models\Platform\User;
+use App\Models\Platform\UserBookmark;
 use App\Policies\Concerns\ChecksOwnership;
 
 class UserBookmarkPolicy {

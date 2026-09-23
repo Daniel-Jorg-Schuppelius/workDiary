@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Collections\Import;
 
-use App\Models\ContentCollection;
+use App\Models\Knowledge\ContentCollection;
 
 /** Ergebnis einer Übernahme aus Obsidian oder OneNote (MVP-815). */
 final class KnowledgeImportReport {

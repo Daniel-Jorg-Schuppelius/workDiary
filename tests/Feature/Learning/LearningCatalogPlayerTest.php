@@ -11,8 +11,10 @@
 namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\LearningAudience;
-use App\Models\{Article, Customer, User};
+use App\Models\Article;
+use App\Models\Customer\Customer;
 use App\Models\Learning\{LearningCourse, LearningEnrollment};
+use App\Models\Platform\User;
 use App\Models\Survey\{Survey, SurveyAnswer, SurveyInvitation, SurveyQuestion, SurveyResponse};
 use App\Services\Learning\{LearningCourseRatingService, LearningCourseService, LearningEnrollmentService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

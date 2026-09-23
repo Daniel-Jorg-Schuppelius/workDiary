@@ -12,8 +12,10 @@ namespace Tests\Feature\Weather;
 
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Enums\Weather\WeatherWarningThreshold;
-use App\Models\{DiaryEntry, User, WeatherSnapshot, WeatherWarning};
+use App\Models\DiaryEntry;
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
+use App\Models\Platform\User;
+use App\Models\Weather\{WeatherSnapshot, WeatherWarning};
 use App\Plugins\Support\PluginApiClient;
 use App\Services\Weather\Contracts\WeatherProvider;
 use App\Services\Weather\{DwdProvider, OpenMeteoProvider, WeatherService};

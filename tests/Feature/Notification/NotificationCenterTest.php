@@ -11,7 +11,8 @@
 namespace Tests\Feature\Notification;
 
 use App\Enums\Notification\NotificationEvent;
-use App\Models\{OpenIssue, User};
+use App\Models\OpenIssue;
+use App\Models\Platform\User;
 use App\Notifications\GenericEventNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

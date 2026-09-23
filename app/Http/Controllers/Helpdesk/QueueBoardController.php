@@ -14,7 +14,8 @@ namespace App\Http\Controllers\Helpdesk;
 
 use App\Enums\ServiceTicket\{ServiceTicketKind, ServiceTicketPriority};
 use App\Http\Controllers\Controller;
-use App\Models\{ServiceQueue, ServiceTicket, User};
+use App\Models\Platform\User;
+use App\Models\{ServiceQueue, ServiceTicket};
 use App\Services\ServiceTicket\{ServiceTicketService, TicketStatusMachine};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};

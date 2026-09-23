@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Integration;
 
-use App\Models\IntegrationInboxItem;
+use App\Models\Integration\IntegrationInboxItem;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 

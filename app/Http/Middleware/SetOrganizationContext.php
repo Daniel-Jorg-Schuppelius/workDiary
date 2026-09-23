@@ -10,8 +10,8 @@
 
 namespace App\Http\Middleware;
 
-use App\Http\Controllers\OrganizationSwitchController;
-use App\Models\{Organization, User};
+use App\Http\Controllers\Platform\OrganizationSwitchController;
+use App\Models\Platform\{Organization, User};
 use Closure;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, Route};

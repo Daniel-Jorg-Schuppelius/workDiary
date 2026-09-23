@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\{FlexEligibility, Organization};
+use App\Models\FlexEligibility;
+use App\Models\Platform\Organization;
 use App\Policies\FlexEligibilityPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};

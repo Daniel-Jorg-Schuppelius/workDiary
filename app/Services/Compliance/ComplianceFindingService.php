@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Compliance;
 
 use App\Enums\Compliance\ComplianceFindingStatus;
-use App\Models\{ComplianceFinding, User};
+use App\Models\ComplianceFinding;
+use App\Models\Platform\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;

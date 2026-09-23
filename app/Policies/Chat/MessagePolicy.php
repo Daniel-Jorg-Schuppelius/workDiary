@@ -11,7 +11,7 @@
 namespace App\Policies\Chat;
 
 use App\Models\Chat\{Channel, Message};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Policies\Concerns\ChecksOwnership;
 
 class MessagePolicy {

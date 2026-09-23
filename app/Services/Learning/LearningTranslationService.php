@@ -14,7 +14,7 @@ namespace App\Services\Learning;
 
 use App\Enums\Learning\LearningTranslationStatus;
 use App\Models\Learning\{LearningContentTranslation, LearningCourse, LearningUnit};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Ai\AiInvocationService;
 use App\Services\Ai\Dto\{AiTranslationResult, TranslateRequest};
 use App\Services\Ai\Exceptions\AiException;
@@ -142,7 +142,7 @@ class LearningTranslationService {
     /**
      * @return list<array<string, mixed>>
      */
-    private function translateBlocks(\App\Models\Organization $organization, LearningUnit $unit, string $locale, ?int $connectionId): array {
+    private function translateBlocks(\App\Models\Platform\Organization $organization, LearningUnit $unit, string $locale, ?int $connectionId): array {
         $out = [];
 
         foreach ($unit->blocks() as $index => $block) {
@@ -206,7 +206,7 @@ class LearningTranslationService {
         return $out;
     }
 
-    private function text(\App\Models\Organization $organization, string $source, string $locale, ?int $connectionId): string {
+    private function text(\App\Models\Platform\Organization $organization, string $source, string $locale, ?int $connectionId): string {
         if (trim($source) === '') {
             return $source;
         }

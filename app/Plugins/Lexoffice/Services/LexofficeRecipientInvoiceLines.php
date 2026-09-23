@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Lexoffice\Services;
 
-use App\Models\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine, Organization};
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Lexoffice\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
 use App\Models\Reselling\ResalePeriod;
 use App\Services\Reselling\Register\{LicenseArticleClassifier, LinkProposer, PeriodLinker};
 use App\Support\Query\DateRange;

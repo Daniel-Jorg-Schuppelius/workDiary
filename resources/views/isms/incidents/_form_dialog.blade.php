@@ -13,7 +13,7 @@
     $isEdit = $incident !== null;
     $linkedRiskIds = $isEdit ? $incident->risks->pluck('sqid')->all() : [];
     $linkedControlIds = $isEdit ? $incident->controls->pluck('sqid')->all() : [];
-    $ownerSqid = \App\Support\Sqid::encode(\App\Models\User::class, $incident?->owner_user_id);
+    $ownerSqid = \App\Support\Sqid::encode(\App\Models\Platform\User::class, $incident?->owner_user_id);
 @endphp
 
 <x-modal

@@ -17,7 +17,7 @@ use App\Enums\Notification\NotificationEvent;
 use App\Enums\Numbering\NumberScope;
 use App\Models\Claims\{ClaimAssessment, ClaimCase, ClaimDecision};
 use App\Models\Notification\NotificationDispatchLog;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Notifications\GenericEventNotification;
 use App\Services\Concerns\AssertsStatusTransition;
 use App\Services\Inventory\SerialService;

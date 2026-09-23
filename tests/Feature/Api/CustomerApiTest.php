@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api;
 
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\WithOrganization;

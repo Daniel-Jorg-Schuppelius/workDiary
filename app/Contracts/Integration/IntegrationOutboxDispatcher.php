@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Contracts\Integration;
 
 use App\Contracts\PluginDispatcher;
-use App\Models\IntegrationOutboxEntry;
+use App\Models\Integration\IntegrationOutboxEntry;
 
 /**
  * Stellt einen generischen Outbox-Eintrag an das externe System zu

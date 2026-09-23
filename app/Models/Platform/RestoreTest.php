@@ -8,16 +8,17 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Platform;
 
 use App\Casts\ByteSizeCast;
 use App\Enums\Backup\RestoreTestResult;
 use App\Models\Concerns\Auditable;
 use Carbon\CarbonImmutable;
-use Database\Factories\RestoreTestFactory;
+use Database\Factories\Platform\RestoreTestFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Platform\User;
 
 /**
  * Protokollierter Restore-Test (Feature 017, §6.3).

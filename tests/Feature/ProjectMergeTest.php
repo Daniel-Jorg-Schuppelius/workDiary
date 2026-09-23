@@ -10,10 +10,14 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Customer, DiaryEntry, ExternalReference, Project, ProjectMergeDismissal, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\{DiaryEntry, TimeEntry};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\User;
+use App\Models\Project\{Project, ProjectMergeDismissal};
 use App\Plugins\Toggl\Sources\TogglEntry;
 use App\Plugins\Toggl\{TogglImportService, TogglPlugin};
-use App\Services\{ProjectDuplicateFinder, ProjectMergeService};
+use App\Services\Stammdaten\{ProjectDuplicateFinder, ProjectMergeService};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -159,12 +163,12 @@ class ProjectMergeTest extends TestCase {
 
     public function test_finder_ignores_cross_foreign_customer_duplicates(): void {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
-        $lds = \App\Models\ForeignCustomer::factory()->create([
+        $lds = \App\Models\Customer\ForeignCustomer::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
             'name' => 'LDS Endkunde A',
         ]);
-        $thieme = \App\Models\ForeignCustomer::factory()->create([
+        $thieme = \App\Models\Customer\ForeignCustomer::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
             'name' => 'LDS Endkunde B',

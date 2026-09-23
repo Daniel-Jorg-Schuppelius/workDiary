@@ -15,7 +15,7 @@ namespace App\Models\Reselling;
 use App\Casts\MoneyCast;
 use App\Enums\Reselling\LinkOrigin;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;

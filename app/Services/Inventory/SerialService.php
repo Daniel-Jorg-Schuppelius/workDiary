@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{SerialSource, SerialStatus};
-use App\Models\{ArticleVariant, Customer, ManufacturingOrder, StockDelivery, StockSerial, Warehouse};
+use App\Models\{ArticleVariant, ManufacturingOrder, StockDelivery, StockSerial, Warehouse};
+use App\Models\Customer\Customer;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;

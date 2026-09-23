@@ -14,7 +14,7 @@ namespace App\Services\Accounting;
 
 use App\Enums\Finance\{AccountingEntryStatus, DepreciationMethod, FixedAssetStatus};
 use App\Models\Accounting\{AccountingEntry, AccountingFiscalYear, FixedAsset};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\Posting\Adapters\DepreciationAdapter;
 use App\Services\Accounting\Posting\PostingInboxService;
 use App\Services\Concerns\{AssertsStatusTransition, AssignsSequentialNo};

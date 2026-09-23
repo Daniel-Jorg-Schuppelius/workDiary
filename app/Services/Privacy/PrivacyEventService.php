@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy;
 
+use App\Models\Platform\User;
 use App\Models\Privacy\{DataSubjectRequest, RequestEvent};
-use App\Models\User;
 
 /**
  * Schreibt minimierte, append-only Ereignisse in die Hash-Kette einer

@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Privacy;
 
 use App\Http\Controllers\Controller;
+use App\Models\Platform\User;
 use App\Models\Privacy\{ComplianceFinding, RetentionProposal};
-use App\Models\User;
 use App\Services\Privacy\Retention\{RetentionRegistry, RetentionScanService};
 use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};

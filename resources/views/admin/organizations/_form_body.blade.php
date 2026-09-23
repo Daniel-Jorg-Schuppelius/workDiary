@@ -61,9 +61,9 @@
 
 <x-form-group :legend="__('Plan & Status')" icon="workspace_premium" tone="info" cols="2">
     <x-select-field name="plan" :label="__('Plan')" required>
-        @foreach (\App\Models\Organization::$plans as $plan)
+        @foreach (\App\Models\Platform\Organization::$plans as $plan)
             <option value="{{ $plan }}" @selected(old('plan', $organization?->plan ?? 'free') === $plan)>
-                {{ \App\Models\Organization::planLabel($plan) }}
+                {{ \App\Models\Platform\Organization::planLabel($plan) }}
             </option>
         @endforeach
     </x-select-field>

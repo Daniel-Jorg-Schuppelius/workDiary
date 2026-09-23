@@ -16,7 +16,7 @@ use App\Dashboard\Widget;
 use App\Enums\Dashboard\WidgetGroup;
 use App\Enums\Learning\LearningEnrollmentStatus;
 use App\Models\Learning\LearningEnrollment;
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Contracts\View\View;
 
 /**

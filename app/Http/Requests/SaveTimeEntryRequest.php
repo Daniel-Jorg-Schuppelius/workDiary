@@ -19,11 +19,11 @@ class SaveTimeEntryRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'task_id' => \App\Models\Task::class,
+        'task_id' => \App\Models\Project\Task::class,
         'diary_entry_id' => \App\Models\DiaryEntry::class,
-        'rework_reason_classification_id' => \App\Models\Classification::class,
-        'goodwill_reason_classification_id' => \App\Models\Classification::class,
-        'tag_ids' => \App\Models\Tag::class,
+        'rework_reason_classification_id' => \App\Models\Classification\Classification::class,
+        'goodwill_reason_classification_id' => \App\Models\Classification\Classification::class,
+        'tag_ids' => \App\Models\Classification\Tag::class,
     ];
 
     /** @return array<string, mixed> */
@@ -127,20 +127,20 @@ class SaveTimeEntryRequest extends BaseFormRequest {
      * Vorgesetzte erfassen Zeiten auch für andere; die Monatssperre gilt dann
      * für den **Mitarbeiter**, nicht für den Erfasser.
      */
-    private function targetUser(): ?\App\Models\User {
+    private function targetUser(): ?\App\Models\Platform\User {
         $userId = $this->input('user_id');
 
         if (filled($userId)) {
-            $user = \App\Models\User::query()->find(is_numeric($userId) ? (int) $userId : null);
+            $user = \App\Models\Platform\User::query()->find(is_numeric($userId) ? (int) $userId : null);
 
-            if ($user instanceof \App\Models\User) {
+            if ($user instanceof \App\Models\Platform\User) {
                 return $user;
             }
         }
 
         $auth = \Illuminate\Support\Facades\Auth::user();
 
-        return $auth instanceof \App\Models\User ? $auth : null;
+        return $auth instanceof \App\Models\Platform\User ? $auth : null;
     }
 
 }

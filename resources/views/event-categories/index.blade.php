@@ -20,7 +20,7 @@
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Kategorien für Veranstaltungen und Termine pflegen.')">
         <x-slot:actions>
-            @can('create', App\Models\EventCategory::class)
+            @can('create', App\Models\Calendar\EventCategory::class)
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
                             :href="route('event-categories.create').'?dialog=1'"

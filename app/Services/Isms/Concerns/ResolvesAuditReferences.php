@@ -11,7 +11,7 @@
 namespace App\Services\Isms\Concerns;
 
 use App\Models\Isms\IsmsRequirement;
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Validation\ValidationException;
 
 /**

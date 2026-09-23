@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Policies\Privacy;
 
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\{ComplianceFinding, Dpia, Incident, JointControllerAgreement, ProcessingAgreement, Processor, TechnicalMeasure};
 use App\Policies\Privacy\{ComplianceFindingPolicy, DpiaPolicy, IncidentPolicy, JointControllerAgreementPolicy, ProcessingAgreementPolicy, ProcessorPolicy, TechnicalMeasurePolicy};
 use App\Services\Privacy\DataProtectionPermissions;

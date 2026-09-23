@@ -11,9 +11,10 @@
 namespace Tests\Feature\Customers;
 
 use App\Enums\Billing\{AccountPaymentSource, BillingAgreementMode};
-use App\Models\ActivityCategory;
 use App\Models\Billing\{CustomerAccountPayment, CustomerBillingAgreement, CustomerBillingRate};
-use App\Models\{Customer, User};
+use App\Models\Classification\ActivityCategory;
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -107,7 +108,7 @@ class BillingAdminTest extends TestCase {
             'day_type' => 'weekday',
             'hourly_rate' => 16.50,
         ]);
-        $project = \App\Models\Project::factory()->create([
+        $project = \App\Models\Project\Project::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
         ]);
@@ -173,7 +174,7 @@ class BillingAdminTest extends TestCase {
             'day_type' => 'weekday',
             'hourly_rate' => 18.00,
         ]);
-        $project = \App\Models\Project::factory()->create([
+        $project = \App\Models\Project\Project::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
         ]);

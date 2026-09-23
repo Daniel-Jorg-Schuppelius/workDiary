@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Security;
 
-use App\Models\SecurityAdvisory;
+use App\Models\Auth\SecurityAdvisory;
 use Illuminate\Console\Command;
 
 /**

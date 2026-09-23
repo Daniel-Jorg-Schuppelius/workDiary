@@ -10,7 +10,9 @@
 
 namespace App\Services\Billing;
 
-use App\Models\{Customer, InvoiceItem, Project, TimeEntry};
+use App\Models\Customer\Customer;
+use App\Models\{InvoiceItem, TimeEntry};
+use App\Models\Project\Project;
 use App\Plugins\Support\TimeWritebackObserver;
 use Illuminate\Support\Facades\DB;
 

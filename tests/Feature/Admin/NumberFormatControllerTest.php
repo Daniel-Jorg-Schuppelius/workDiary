@@ -11,7 +11,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Enums\Numbering\NumberScope;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Numbering\NumberSequenceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

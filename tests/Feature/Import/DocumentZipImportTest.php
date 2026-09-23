@@ -14,7 +14,12 @@ namespace Tests\Feature\Import;
 
 use App\Enums\Document\DocumentType;
 use App\Enums\Import\{ImportEntity, ImportRunState};
-use App\Models\{Asset, Customer, Document, ImportRun, Project, User};
+use App\Models\Asset;
+use App\Models\Customer\Customer;
+use App\Models\Document\Document;
+use App\Models\Integration\ImportRun;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Services\Import\DocumentZipImportService;
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -145,7 +150,7 @@ class DocumentZipImportTest extends TestCase {
         $this->assertSame(1, $result['failed']);
         $this->assertStringContainsString('manifest.csv', $result['errors'][0]);
 
-        $foreign = \App\Models\Organization::factory()->create();
+        $foreign = \App\Models\Platform\Organization::factory()->create();
         Customer::factory()->create(['organization_id' => $foreign->id, 'number' => 'K-F', 'name' => 'Fremd']);
         $zip = $this->zip("file;target_type;target_key;title\nok.pdf;customer;K-F;Fremd\n", ['ok.pdf' => self::PDF]);
         $result = app(DocumentZipImportService::class)->importBinary($zip, $this->organization, $this->admin);

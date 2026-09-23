@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Ideas;
 
-use App\Models\{IdeaMap, IdeaNode, User};
+use App\Models\Ideas\{IdeaMap, IdeaNode};
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Spatie\Permission\PermissionRegistrar;

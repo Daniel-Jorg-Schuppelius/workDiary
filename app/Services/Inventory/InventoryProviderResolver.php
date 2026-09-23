@@ -14,7 +14,7 @@ namespace App\Services\Inventory;
 
 use App\Contracts\Inventory\InventoryProvider;
 use App\Enums\Inventory\InventoryMode;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Closure;
 use RuntimeException;
 

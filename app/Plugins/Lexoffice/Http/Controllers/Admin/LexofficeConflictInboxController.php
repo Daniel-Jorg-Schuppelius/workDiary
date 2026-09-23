@@ -11,7 +11,9 @@
 namespace App\Plugins\Lexoffice\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Customer, PendingExternalConflict, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\PendingExternalConflict;
+use App\Models\Platform\User;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;

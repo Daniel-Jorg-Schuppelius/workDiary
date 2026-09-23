@@ -12,7 +12,7 @@ namespace App\Plugins\Msgraph\Api;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
 use APIToolkit\API\Pagination\{CursorPage, CursorPaginator};
-use App\Models\MsgraphOneNoteConnection;
+use App\Models\Plugins\Msgraph\MsgraphOneNoteConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
 use Generator;

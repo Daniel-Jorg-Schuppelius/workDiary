@@ -10,7 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Illuminate\Contracts\Queue\Job;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Queue\Events\JobProcessing;

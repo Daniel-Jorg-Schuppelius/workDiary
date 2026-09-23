@@ -12,7 +12,8 @@ namespace Tests\Feature\Fleet;
 
 use App\Enums\Travel\{TravelLogVehicle, TripKind};
 use App\Exceptions\{LogbookViolationException, TravelLogLockedException};
-use App\Models\{TravelLog, User, Vehicle};
+use App\Models\Platform\User;
+use App\Models\{TravelLog, Vehicle};
 use App\Services\Travel\TravelLogService;
 use App\Support\Gobd\GobdLockRegistry;
 use App\Support\MorphMap;

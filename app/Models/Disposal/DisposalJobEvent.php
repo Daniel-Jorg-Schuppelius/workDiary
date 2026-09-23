@@ -14,7 +14,7 @@ namespace App\Models\Disposal;
 
 use App\Enums\Disposal\DisposalJobEventType;
 use App\Models\Concerns\AppendOnly;
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

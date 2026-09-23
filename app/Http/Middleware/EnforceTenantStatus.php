@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Closure;
 use Illuminate\Http\{JsonResponse, Request};
 use Symfony\Component\HttpFoundation\Response;

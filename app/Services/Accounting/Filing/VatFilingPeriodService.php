@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Accounting\Filing;
 
 use App\Enums\Finance\VatFilingInterval;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Accounting\VatFilingProfileResolver;
 use Carbon\CarbonImmutable;
 

@@ -12,8 +12,10 @@ declare(strict_types=1);
 
 namespace App\Models\AssetCompliance;
 
-use App\Models\{Asset, ExternalContact, User};
+use App\Models\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Contacts\ExternalContact;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 

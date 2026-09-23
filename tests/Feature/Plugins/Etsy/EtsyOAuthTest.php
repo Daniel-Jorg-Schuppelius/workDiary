@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins\Etsy;
 
-use App\Models\{EtsyConnection, Organization, PluginSetting, User};
+use App\Models\Platform\{Organization, PluginSetting, User};
+use App\Models\Plugins\Etsy\EtsyConnection;
 use App\Plugins\Etsy\Api\EtsyOAuthGrant;
 use App\Plugins\Etsy\EtsyPlugin;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};

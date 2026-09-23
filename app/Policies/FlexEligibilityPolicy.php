@@ -10,7 +10,8 @@
 
 namespace App\Policies;
 
-use App\Models\{FlexEligibility, User};
+use App\Models\FlexEligibility;
+use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
 
 /**

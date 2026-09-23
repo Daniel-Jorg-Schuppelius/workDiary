@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Schema;
  *
  * Adress- und Bankdaten werden NICHT hier abgelegt, sondern – konsistent mit
  * Customer/Supplier – über die polymorphen Tabellen contact_addresses /
- * contact_bank_accounts (addressable/accountable = App\Models\User).
+ * contact_bank_accounts (addressable/accountable = App\Models\Platform\User).
  */
 return new class extends Migration {
     public function up(): void {

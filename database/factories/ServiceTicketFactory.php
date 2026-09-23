@@ -11,7 +11,8 @@
 namespace Database\Factories;
 
 use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketSource, ServiceTicketStatus};
-use App\Models\{Organization, ServiceTicket};
+use App\Models\Platform\Organization;
+use App\Models\ServiceTicket;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<ServiceTicket> */

@@ -12,7 +12,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Requests\SaveWarehouseRequest;
-use App\Models\{Site, Team, Vehicle, Warehouse};
+use App\Models\Platform\Team;
+use App\Models\{Site, Vehicle, Warehouse};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;

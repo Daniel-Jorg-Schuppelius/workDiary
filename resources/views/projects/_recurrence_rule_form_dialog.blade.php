@@ -9,11 +9,11 @@
 {{-- Erwartet: $project, $rule, $entryTypes, $customers, $users --}}
 @php
     /**
-     * @var \App\Models\Project $project
-     * @var \App\Models\RecurrenceRule $rule
-     * @var \Illuminate\Support\Collection<int, \App\Models\EntryType> $entryTypes
-     * @var \Illuminate\Support\Collection<int, \App\Models\Customer> $customers
-     * @var \Illuminate\Support\Collection<int, \App\Models\User> $users
+     * @var \App\Models\Project\Project $project
+     * @var \App\Models\Project\RecurrenceRule $rule
+     * @var \Illuminate\Support\Collection<int, \App\Models\Classification\EntryType> $entryTypes
+     * @var \Illuminate\Support\Collection<int, \App\Models\Customer\Customer> $customers
+     * @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users
      */
     $isEdit = $rule->exists;
     $action = $isEdit
@@ -49,7 +49,7 @@
         <x-select-field name="entry_type_id" :label="__('Eintragstyp')">
             <option value="">—</option>
             @foreach ($entryTypes as $t)
-                <option value="{{ $t->sqid }}" @selected((string) old('entry_type_id', \App\Support\Sqid::encode(\App\Models\EntryType::class, $rule->entry_type_id)) === $t->sqid)>{{ $t->label }}</option>
+                <option value="{{ $t->sqid }}" @selected((string) old('entry_type_id', \App\Support\Sqid::encode(\App\Models\Classification\EntryType::class, $rule->entry_type_id)) === $t->sqid)>{{ $t->label }}</option>
             @endforeach
         </x-select-field>
         <x-textarea-field span="2" name="content_template" :label="__('Inhalts-Template')" rows="3" required>{{ old('content_template', $rule->content_template) }}</x-textarea-field>
@@ -77,13 +77,13 @@
         <x-select-field name="customer_id" :label="__('Kunde (optional)')">
             <option value="">—</option>
             @foreach ($customers as $c)
-                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $rule->customer_id)) === $c->sqid)>{{ $c->name }}</option>
+                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $rule->customer_id)) === $c->sqid)>{{ $c->name }}</option>
             @endforeach
         </x-select-field>
         <x-select-field span="2" name="assigned_user_id" :label="__('Zuständig (optional)')">
             <option value="">—</option>
             @foreach ($users as $u)
-                <option value="{{ $u->sqid }}" @selected((string) old('assigned_user_id', \App\Support\Sqid::encode(\App\Models\User::class, $rule->assigned_user_id)) === $u->sqid)>{{ $u->name }}</option>
+                <option value="{{ $u->sqid }}" @selected((string) old('assigned_user_id', \App\Support\Sqid::encode(\App\Models\Platform\User::class, $rule->assigned_user_id)) === $u->sqid)>{{ $u->name }}</option>
             @endforeach
         </x-select-field>
     </x-form-group>
@@ -106,7 +106,7 @@
         <div class="fieldset">
             <span class="fieldset-label">{{ __('Wochentage (nur wöchentlich)') }}</span>
             <div class="flex flex-wrap gap-2">
-                @foreach (\App\Models\RecurrenceRule::WEEKDAY_CODES as $code)
+                @foreach (\App\Models\Project\RecurrenceRule::WEEKDAY_CODES as $code)
                     <label class="cursor-pointer">
                         <input type="checkbox" name="byweekday[]" value="{{ $code }}"
                                @checked(in_array($code, (array) old('byweekday', $weekdays), true))

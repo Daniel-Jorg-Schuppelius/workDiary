@@ -12,14 +12,15 @@ declare(strict_types=1);
 
 namespace App\Plugins\RemoteSupport;
 
-use App\Models\{Asset, Organization};
+use App\Models\Asset;
+use App\Models\Platform\Organization;
 use App\Services\Integration\InboxGroupBooker;
 use Illuminate\Support\Collection;
 
 /**
  * Bindet die offenen Fernwartungs-Gruppen unbekannter Geräte (provider+remote_id)
  * an die universelle Zuordnungs-Inbox. Liest bewusst aus der bestehenden
- * {@see \App\Models\RemotePendingSession}-Inbox des Plugins und delegiert Buchung
+ * {@see \App\Models\Auth\RemotePendingSession}-Inbox des Plugins und delegiert Buchung
  * (Geräte-ID → Asset binden + Sitzungen materialisieren) an den bewährten
  * {@see RemotePendingAssignmentService} — ohne Storage-Umbau.
  *

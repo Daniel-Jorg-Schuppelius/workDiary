@@ -14,7 +14,7 @@ namespace App\Models\Privacy;
 
 use App\Enums\Privacy\{ImplementationStatus, MeasureCategory};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 

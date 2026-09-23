@@ -12,7 +12,7 @@
 --}}
 @php
     $isEdit = $checkup !== null;
-    $userSqid = \App\Support\Sqid::encodeOrNull(\App\Models\User::class, $checkup?->user_id);
+    $userSqid = \App\Support\Sqid::encodeOrNull(\App\Models\Platform\User::class, $checkup?->user_id);
 @endphp
 
 <x-modal

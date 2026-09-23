@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-use App\Models\PluginSetting;
+use App\Models\Platform\PluginSetting;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\{DB, Schema};

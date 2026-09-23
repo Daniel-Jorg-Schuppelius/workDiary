@@ -11,7 +11,7 @@
 namespace Tests\Feature\Learning;
 
 use App\Models\Learning\{Competency, CompetencyRequirement, LearningCourse, UserCompetency};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningCompetencyService, LearningCourseService, LearningEnrollmentService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

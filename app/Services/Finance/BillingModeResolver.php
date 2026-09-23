@@ -11,7 +11,7 @@
 namespace App\Services\Finance;
 
 use App\Enums\Finance\BillingMode;
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 
 /**
  * Löst den effektiven Fakturierungsweg eines Kunden auf (Feature 045,

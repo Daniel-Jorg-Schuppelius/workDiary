@@ -14,7 +14,7 @@
     $dialogUrl = $isEdit
         ? route('vacation-entitlements.edit', $entitlement) . '?dialog=1'
         : route('vacation-entitlements.create', ['year' => $year, 'dialog' => 1]);
-    $selectedUser = (string) old('user_id', $entitlement ? \App\Support\Sqid::encode(\App\Models\User::class, $entitlement->user_id) : '');
+    $selectedUser = (string) old('user_id', $entitlement ? \App\Support\Sqid::encode(\App\Models\Platform\User::class, $entitlement->user_id) : '');
 @endphp
 
 <x-modal
@@ -43,7 +43,7 @@
                     <option value="">{{ __('Bitte wählen') }}</option>
                     @foreach ($assignableUsers as $u)
                         @php($uid = (int) ($u['id'] ?? $u->id))
-                        @php($usqid = \App\Support\Sqid::encode(\App\Models\User::class, $uid))
+                        @php($usqid = \App\Support\Sqid::encode(\App\Models\Platform\User::class, $uid))
                         <option value="{{ $usqid }}" @selected($selectedUser === $usqid)>{{ $u['name'] ?? $u->name }}</option>
                     @endforeach
                 </select>

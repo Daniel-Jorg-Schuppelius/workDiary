@@ -12,8 +12,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Policies;
 
-use App\Models\{Customer, ForeignCustomer, Organization, Supplier, User};
-use App\Policies\{CustomerPolicy, ForeignCustomerPolicy, SupplierPolicy};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Platform\{Organization, User};
+use App\Models\Supplier;
+use App\Policies\Customer\{CustomerPolicy, ForeignCustomerPolicy};
+use App\Policies\SupplierPolicy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;

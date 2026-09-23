@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Licensing;
 
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Licensing\{FeatureFlagResolver, LicenseService, LicenseStatus};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\CryptoHelper;

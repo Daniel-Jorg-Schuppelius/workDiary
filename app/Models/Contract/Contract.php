@@ -14,8 +14,11 @@ namespace App\Models\Contract;
 
 use App\Enums\Contract\{ContractKind, ContractPartnerType, ContractStatus, ContractTermKind, IndexationMethod, SigningRevisionStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
-use App\Models\{Customer, Document, Supplier, User};
+use App\Models\Customer\Customer;
+use App\Models\Document\Document;
+use App\Models\Platform\User;
 use App\Models\Reselling\ResaleSubscription;
+use App\Models\Supplier;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;

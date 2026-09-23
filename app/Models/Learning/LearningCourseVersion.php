@@ -11,8 +11,8 @@
 namespace App\Models\Learning;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Platform\User;
 use App\Models\Training\TrainingCourseVersion;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

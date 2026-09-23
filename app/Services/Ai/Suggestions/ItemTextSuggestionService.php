@@ -14,7 +14,9 @@ namespace App\Services\Ai\Suggestions;
 
 use App\Models\Ai\AiTextSuggestion;
 use App\Models\Finance\{BillingTransfer, BillingTransferPosition};
-use App\Models\{Invoice, InvoiceItem, Organization, Quote, QuoteItem, TimeEntry, User};
+use App\Models\{Invoice, InvoiceItem, TimeEntry};
+use App\Models\Platform\{Organization, User};
+use App\Models\Sales\{Quote, QuoteItem};
 use App\Services\Ai\{AiInvocationService, AiMemoryService};
 use App\Services\Ai\Contracts\AiRequestInterface;
 use App\Services\Ai\Dto\{AiInvocationResult, AiTextResult, AiTranslationResult, FormulateRequest, SummarizeRequest, TranslateRequest};

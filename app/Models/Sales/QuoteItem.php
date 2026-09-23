@@ -10,13 +10,15 @@
 
 declare(strict_types=1);
 
-namespace App\Models;
+namespace App\Models\Sales;
 
 use App\Casts\{MoneyCast, PercentageCast};
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Article;
+use App\Models\Sales\Quote;
 
 /**
  * Angebotsposition (Feature 066, MVP-170) — optional = Eventualposition,
@@ -34,7 +36,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class QuoteItem extends Model {
     use BelongsToOrganization;
-    /** @use HasFactory<\Database\Factories\QuoteItemFactory> */
+    /** @use HasFactory<\Database\Factories\Sales\QuoteItemFactory> */
     use HasFactory;
     use HasSqid;
 

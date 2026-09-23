@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Customer;
 
 use App\Casts\MoneyCast;
 use App\Enums\Numbering\NumberScope;
@@ -18,6 +18,12 @@ use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne, MorphMany};
 use Illuminate\Support\Carbon;
+use App\Models\Asset;
+use App\Models\Customer\ForeignCustomer;
+use App\Models\MaterialCostAllocation;
+use App\Models\Project\Project;
+use App\Models\Room;
+use App\Models\Site;
 
 /**
  * @property int $id

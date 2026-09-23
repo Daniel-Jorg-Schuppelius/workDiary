@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Hr;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Document, User};
+use App\Models\Document\Document;
+use App\Models\Platform\User;
 use App\Services\Document\DocumentService;
 use App\Services\Hr\PersonnelFileService;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};

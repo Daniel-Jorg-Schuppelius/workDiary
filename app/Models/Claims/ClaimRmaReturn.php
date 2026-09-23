@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Models\Claims;
 
 use App\Enums\Claims\{ClaimRmaDisposition, ClaimRmaStatus};
-use App\Models\{Article, ArticleVariant, StockLot, StockSerial, User, Warehouse};
+use App\Models\{Article, ArticleVariant, StockLot, StockSerial, Warehouse};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 

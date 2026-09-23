@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Participation;
 
 use App\Enums\Club\ClubParticipationStatus;
+use App\Models\Calendar\Event;
 use App\Models\Club\ClubEventParticipation;
-use App\Models\Event;
 use Illuminate\Support\Carbon;
 
 /**

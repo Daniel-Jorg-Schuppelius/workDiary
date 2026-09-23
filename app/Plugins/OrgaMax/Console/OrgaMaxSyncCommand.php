@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\OrgaMax\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\{OrgaMaxConnection, Organization, PluginSetting};
+use App\Models\Platform\{Organization, PluginSetting};
+use App\Models\Plugins\OrgaMax\OrgaMaxConnection;
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Plugins\OrgaMax\Services\OrgaMaxSyncService;
 use CommonToolkit\Helper\Data\JsonHelper;

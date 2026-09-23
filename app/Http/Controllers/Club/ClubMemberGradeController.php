@@ -17,7 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Club\{RecognizeGradeRequest, SaveMemberProofRequest};
 use App\Models\Club\{ClubExamCandidate, ClubGrade, ClubGradingSystem, ClubMember, ClubMemberGrade, ClubMemberProof};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Club\{ClubEligibilityService, ClubGradeCertificatePdfRenderer, ClubGradingService};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request, Response};

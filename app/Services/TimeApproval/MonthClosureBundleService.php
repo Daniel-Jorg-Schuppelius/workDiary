@@ -14,7 +14,10 @@ namespace App\Services\TimeApproval;
 
 use App\Enums\Attendance\AttendanceStatus;
 use App\Enums\TimeApproval\MonthClosureStatus;
-use App\Models\{Attachment, Attendance, AuditLog, MonthClosure, Organization, TimeEntry, User};
+use App\Models\Attachments\Attachment;
+use App\Models\{Attendance, MonthClosure, TimeEntry};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{Organization, User};
 use App\Services\Compliance\AttendanceComplianceChecker;
 use App\Support\{CsvExport, Tz};
 use App\Support\MorphMap;

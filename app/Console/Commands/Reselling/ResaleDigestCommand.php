@@ -15,7 +15,7 @@ namespace App\Console\Commands\Reselling;
 use App\Console\Concerns\IteratesOrganizations;
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
 use App\Enums\User\Permission;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use App\Notifications\Finance\ResalePeriodsDigestNotification;
 use App\Services\Reselling\Register\{ResalePriceCheck, ResaleRenewalReport, ResaleUnbilledReport};

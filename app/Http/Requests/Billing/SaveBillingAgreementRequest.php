@@ -8,13 +8,14 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Billing;
 
 use App\Enums\Billing\{BillingAgreementMode, BillingRateDayType};
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Rules\ExistsInCurrentOrganization;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Validation\Rule;
+use App\Http\Requests\BaseFormRequest;
 
 /**
  * Sonderkonditions-Profil eines Kunden (Feature 098). Satzzeilen kommen als
@@ -25,8 +26,8 @@ class SaveBillingAgreementRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'rate_activity_category_id' => \App\Models\ActivityCategory::class,
-        'travel_categories' => \App\Models\ActivityCategory::class,
+        'rate_activity_category_id' => \App\Models\Classification\ActivityCategory::class,
+        'travel_categories' => \App\Models\Classification\ActivityCategory::class,
     ];
 
     /** @return array<string, mixed> */
@@ -66,7 +67,7 @@ class SaveBillingAgreementRequest extends BaseFormRequest {
             }
 
             $customer = $this->route('customer');
-            if ($customer instanceof \App\Models\Customer) {
+            if ($customer instanceof \App\Models\Customer\Customer\Customer) {
                 $mode = app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($customer);
                 if ($mode !== \App\Enums\Finance\BillingMode::Lexoffice) {
                     $validator->errors()->add('mode', (string) __('customer-billing.retainer_requires_lexoffice'));

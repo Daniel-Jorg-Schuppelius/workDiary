@@ -8,14 +8,15 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\UI;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Models\Organization;
-use App\Services\BrandingService;
+use App\Models\Platform\Organization;
+use App\Services\UI\BrandingService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 /**
  * Admin-Oberfläche für die White-Label-/Branding-Einstellungen der aktuellen

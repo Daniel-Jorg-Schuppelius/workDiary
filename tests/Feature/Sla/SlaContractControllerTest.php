@@ -11,7 +11,8 @@
 namespace Tests\Feature\Sla;
 
 use App\Enums\User\Permission;
-use App\Models\{Asset, MaintenancePlan, Organization, SlaContract, SlaContractQuota, User};
+use App\Models\{Asset, MaintenancePlan, SlaContract, SlaContractQuota};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;

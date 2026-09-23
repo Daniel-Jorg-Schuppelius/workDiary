@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Applications;
 
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
-use App\Models\Document;
+use App\Models\Document\Document;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

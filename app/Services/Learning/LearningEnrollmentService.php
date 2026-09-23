@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use App\Enums\Learning\{LearningCourseStatus, LearningEnrollmentSource, LearningEnrollmentStatus, LearningProgressStatus};
-use App\Models\{ExternalParticipant, User};
+use App\Models\Communication\ExternalParticipant;
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningTimeSession, LearningUnit, LearningUnitProgress};
+use App\Models\Platform\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;

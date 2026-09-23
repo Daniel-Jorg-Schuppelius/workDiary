@@ -10,11 +10,12 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Sales;
 
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Rules\ExistsInCurrentOrganization;
+use App\Http\Requests\BaseFormRequest;
 
 /**
  * Manuelle Zuordnung Beleg → Vertriebsperson (Feature 146, MVP-729). Ein

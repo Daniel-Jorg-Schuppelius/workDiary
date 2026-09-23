@@ -15,7 +15,7 @@ namespace App\Plugins\Lexoffice\Tariff;
 use App\Enums\Finance\BillingMode;
 use App\Enums\Lexoffice\{LexwareCoverage, LexwareFeature};
 use App\Enums\User\Permission;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Licensing\FeatureFlagResolver;
 
 /**

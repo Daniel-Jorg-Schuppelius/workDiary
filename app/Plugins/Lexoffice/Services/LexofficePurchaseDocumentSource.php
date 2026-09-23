@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Lexoffice\Services;
 
 use App\Enums\User\Permission;
-use App\Models\{LexofficeVoucher, Organization};
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Services\Reselling\Purchase\{PurchaseDocument, PurchaseDocumentSource};
 use App\Support\Billing\VoucherTypes;
 use App\Support\Query\DateRange;

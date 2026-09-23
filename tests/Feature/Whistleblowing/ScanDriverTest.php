@@ -11,7 +11,7 @@
 namespace Tests\Feature\Whistleblowing;
 
 use App\Enums\Whistleblowing\AttachmentScanStatus;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Models\Whistleblowing\{Attachment, WhistleblowingCase};
 use App\Services\Whistleblowing\{ReporterCredentialService, WhistleblowingAttachmentService};
 use App\Services\Whistleblowing\Scanning\ScanDriver;

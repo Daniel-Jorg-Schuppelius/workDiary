@@ -12,7 +12,8 @@ namespace App\Services\Asset;
 
 use App\Enums\Asset\MaintenanceIntervalKind;
 use App\Exceptions\AssetValidationException;
-use App\Models\{Asset, MaintenancePlan, User};
+use App\Models\{Asset, MaintenancePlan};
+use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

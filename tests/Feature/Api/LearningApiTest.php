@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Api;
 
 use App\Models\Learning\{LearningCourse, LearningEnrollment};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Learning\{LearningCourseService, LearningEnrollmentService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;

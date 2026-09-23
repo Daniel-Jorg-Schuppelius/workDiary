@@ -10,7 +10,7 @@
 
 namespace Tests\Unit\Models;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Tests\TestCase;
 
 final class OrganizationTest extends TestCase {

@@ -11,7 +11,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\{Expense, User};
+use App\Models\Expense;
+use App\Models\Platform\User;
 use App\Services\Expense\ExpenseService;
 use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};

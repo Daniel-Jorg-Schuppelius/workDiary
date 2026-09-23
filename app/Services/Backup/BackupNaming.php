@@ -10,7 +10,7 @@
 
 namespace App\Services\Backup;
 
-use App\Models\SystemSetting;
+use App\Models\Platform\SystemSetting;
 use Illuminate\Support\Str;
 
 /**

@@ -10,7 +10,11 @@
 
 namespace Tests\Feature\Search;
 
-use App\Models\{Attachment, Comment, Customer, DiaryEntry, User};
+use App\Models\Attachments\Attachment;
+use App\Models\Communication\Comment;
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

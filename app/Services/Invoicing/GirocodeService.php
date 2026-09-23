@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
-use App\Models\{CashEntry, Invoice, Organization};
+use App\Models\{CashEntry, Invoice};
+use App\Models\Platform\Organization;
 use App\Services\Finance\ReconciliationService;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;

@@ -11,7 +11,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StartStopwatchRequest;
-use App\Models\{Project, Timesheet};
+use App\Models\Project\Project;
+use App\Models\Timesheet;
 use App\Services\Timesheet\{Stopwatch, StopwatchAlreadyRunningException, TimesheetResolver};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;

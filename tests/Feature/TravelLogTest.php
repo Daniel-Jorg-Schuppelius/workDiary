@@ -12,7 +12,8 @@ namespace Tests\Feature;
 
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Enums\Travel\TravelLogVehicle;
-use App\Models\{TimeEntry, TravelLog, User};
+use App\Models\Platform\User;
+use App\Models\{TimeEntry, TravelLog};
 use App\Services\Travel\{MileageRateResolver, TravelLogService};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

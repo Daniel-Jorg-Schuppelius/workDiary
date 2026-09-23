@@ -10,7 +10,8 @@
 
 namespace App\Http\Requests;
 
-use App\Models\{ExpenseCategory, Organization};
+use App\Models\ExpenseCategory;
+use App\Models\Platform\Organization;
 use Illuminate\Validation\Rule;
 
 class SaveExpenseCategoryRequest extends BaseFormRequest {

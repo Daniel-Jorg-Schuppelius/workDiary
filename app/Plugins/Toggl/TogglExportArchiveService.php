@@ -176,7 +176,7 @@ class TogglExportArchiveService {
     /** Unterordner je Organisation — ohne gebundene Org ein neutraler Platz. */
     private function organizationFolder(): string {
         $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
-        $id = $organization instanceof \App\Models\Organization ? (int) $organization->id : 0;
+        $id = $organization instanceof \App\Models\Platform\Organization ? (int) $organization->id : 0;
 
         return 'org-' . $id;
     }

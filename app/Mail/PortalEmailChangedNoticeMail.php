@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Mail;
 
-use App\Models\User;
-use App\Services\BrandingService;
+use App\Models\Platform\User;
+use App\Services\UI\BrandingService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\{Content, Envelope};

@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support;
 
-use App\Models\{ExternalReference, TimeEntry};
+use App\Models\Integration\ExternalReference;
+use App\Models\TimeEntry;
 use App\Services\Integration\{IntegrationOutboxDispatcherResolver, IntegrationOutboxService};
 
 /**

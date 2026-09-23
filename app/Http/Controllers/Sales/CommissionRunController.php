@@ -14,7 +14,7 @@ namespace App\Http\Controllers\Sales;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CreateCommissionRunRequest;
+use App\Http\Requests\Sales\CreateCommissionRunRequest;
 use App\Models\Sales\CommissionSettlementRun;
 use App\Services\Sales\CommissionSettlementService;
 use App\Support\ErrorText;

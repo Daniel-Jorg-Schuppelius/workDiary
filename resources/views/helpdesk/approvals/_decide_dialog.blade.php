@@ -8,7 +8,7 @@
 --}}
 {{-- Variablen: $approval (mit approvable geladen), $orgUsers --}}
 @php
-    /** @var \App\Models\Approval $approval */
+    /** @var \App\Models\Approval\Approval $approval */
     $approvable = $approval->approvable;
     $ticket = $approvable instanceof \App\Models\ServiceRequest ? $approvable->ticket : null;
     $subject = $ticket?->title ?? $approvable?->title ?? $approvable?->name ?? '—';

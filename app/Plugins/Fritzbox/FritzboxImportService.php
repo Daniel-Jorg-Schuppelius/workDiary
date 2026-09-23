@@ -13,7 +13,11 @@ declare(strict_types=1);
 namespace App\Plugins\Fritzbox;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, IntegrationInboxItem, Organization, Project, TimeEntry, User};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Integration\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem};
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Plugins\Fritzbox\Sources\{FritzboxCall, FritzboxCsvParser};
 use App\Plugins\Support\PersistsTimeImportInbox;
 use App\Services\Contacts\{ExternalPhoneContactDirectory, ExternalPhoneContactMatch};

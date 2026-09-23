@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Gaeb;
 
 use App\Models\Costing\{CostElement, CostElementCatalog};
-use App\Models\User;
+use App\Models\Platform\User;
 use ERechnungToolkit\Entities\Gaeb\{GaebCostElement, GaebCosting};
 use ERechnungToolkit\Enums\GaebPhase;
 use ERechnungToolkit\Generators\GaebDaXmlGenerator;

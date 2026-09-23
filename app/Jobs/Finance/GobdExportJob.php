@@ -12,7 +12,8 @@ namespace App\Jobs\Finance;
 
 use App\Enums\Finance\GobdExportStatus;
 use App\Jobs\Concerns\RetriesTransientFailures;
-use App\Models\{GobdExport, Organization, User};
+use App\Models\Audit\GobdExport;
+use App\Models\Platform\{Organization, User};
 use App\Services\Finance\GdpduExportService;
 use App\Support\OrganizationContext;
 use Illuminate\Bus\Queueable;

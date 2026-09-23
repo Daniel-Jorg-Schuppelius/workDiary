@@ -13,7 +13,7 @@ namespace App\Plugins\GoogleDrive;
 use App\Enums\CloudIntake\{CloudIntakeConnectionStatus, CloudIntakeProvider};
 use App\Models\Backup\BackupTargetConnection;
 use App\Models\CloudIntake\CloudDocumentConnection;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{BackupTarget, DocumentIntakeSource, DocumentIntakeSubscriptions, Plugin, PluginCapability};
 use App\Plugins\GoogleDrive\Api\{GoogleDriveBackupClient, GoogleDriveClient};

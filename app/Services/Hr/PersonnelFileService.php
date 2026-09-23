@@ -14,7 +14,8 @@ namespace App\Services\Hr;
 
 use App\Enums\Document\DocumentStatus;
 use App\Enums\Hr\HrDocumentCategory;
-use App\Models\{Document, User};
+use App\Models\Document\Document;
+use App\Models\Platform\User;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Document\DocumentService;
 use Carbon\CarbonImmutable;

@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Contracts;
 
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use Carbon\CarbonImmutable;
 
 /**

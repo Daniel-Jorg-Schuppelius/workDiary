@@ -24,7 +24,7 @@
                         :href="route('projects.duplicates.index')"
                         show-label>{{ __('Projekt-Abgleich') }}</x-icon-btn>
         @endif
-        @can('create', App\Models\Project::class)
+        @can('create', App\Models\Project\Project::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger
                         :href="route('projects.create')"

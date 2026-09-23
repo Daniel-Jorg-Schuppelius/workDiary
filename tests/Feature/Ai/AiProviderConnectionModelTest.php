@@ -14,7 +14,7 @@ namespace Tests\Feature\Ai;
 
 use App\Enums\Ai\AiProviderType;
 use App\Models\Ai\AiProviderConnection;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\Concerns\WithOrganization;

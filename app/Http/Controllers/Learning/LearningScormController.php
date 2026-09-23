@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Learning;
 use App\Enums\Learning\LearningUnitKind;
 use App\Http\Controllers\Controller;
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningScormPackage, LearningUnit};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningScormService, LearningXapiService, ScormContentToken, ScormPackageFiles};
 use App\Support\Learning\ScormContentHost;
 use CommonToolkit\Helper\Data\JsonHelper;

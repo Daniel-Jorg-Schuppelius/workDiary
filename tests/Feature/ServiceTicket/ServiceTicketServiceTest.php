@@ -12,7 +12,10 @@ namespace Tests\Feature\ServiceTicket;
 
 use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketStatus};
 use App\Exceptions\ServiceTicketException;
-use App\Models\{Customer, DiaryEntry, Organization, Project, SlaContract, User};
+use App\Models\Customer\Customer;
+use App\Models\{DiaryEntry, SlaContract};
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
 use App\Services\Numbering\NumberSequenceService;
 use App\Services\ServiceTicket\{ServiceTicketService, SlaTimer, TicketStatusMachine};
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -11,7 +11,7 @@
 namespace App\Console\Commands\Plugin;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\{PluginHealth, PluginHealthService, PluginManager};
 use App\Support\OrganizationContext;

@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Finance;
 
-use App\Models\{Customer, Invoice, Project, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\{Invoice, TimeEntry};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Services\Invoicing\LateTimeEntryDetector;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

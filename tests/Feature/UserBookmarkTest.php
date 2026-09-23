@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Models\{User, UserBookmark};
+use App\Models\Platform\{User, UserBookmark};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

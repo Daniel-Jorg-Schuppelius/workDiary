@@ -17,8 +17,10 @@ use App\Enums\Reselling\{BillingFrequency, PeriodStatus, RenewalMode, Subscripti
 use App\Models\Article;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Contract\Contract;
-use App\Models\{Customer, ForeignCustomer, LexofficeArticle, Organization, User};
+use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Domain\DomainProjection;
+use App\Models\Platform\{Organization, User};
+use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Services\Reselling\Marketplace\ProductNameMatcher;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;

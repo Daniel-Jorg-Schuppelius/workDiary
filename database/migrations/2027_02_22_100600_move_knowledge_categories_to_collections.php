@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\{DB, Schema};
  * Sammlung ordnet die Struktur, Schlagwort die Querachse.
  */
 return new class extends Migration {
-    private const ARTICLE_MORPH = 'App\Models\KnowledgeArticle';
+    private const ARTICLE_MORPH = 'App\Models\Knowledge\KnowledgeArticle';
 
     public function up(): void {
         if (! Schema::hasColumn('knowledge_articles', 'category')) {

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Legacy\Auth;
 
 use App\Legacy\Auth\LegacyUserProvider;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Support\DatabaseHealth;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{DB, Hash};

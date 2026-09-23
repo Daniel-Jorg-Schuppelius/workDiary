@@ -15,7 +15,11 @@ namespace App\Plugins\JtlWawi\Http\Controllers;
 use App\Enums\Inventory\InventoryMode;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\{AuditLog, IntegrationInboxItem, JtlConnection, JtlWarehouseMapping, Organization, User, Warehouse};
+use App\Models\Audit\AuditLog;
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Platform\{Organization, User};
+use App\Models\Plugins\JtlWawi\{JtlConnection, JtlWarehouseMapping};
+use App\Models\Warehouse;
 use App\Plugins\JtlWawi\Api\JtlUrlGuard;
 use App\Plugins\JtlWawi\JtlWawiPlugin;
 use App\Plugins\JtlWawi\Services\{JtlRegistrationService, JtlScopePreflight, JtlSyncService, JtlTakeoverService};
@@ -56,7 +60,7 @@ class JtlAdminController extends Controller {
             ->where('plugin_id', JtlWawiPlugin::ID)
             ->where('status', IntegrationInboxItem::STATUS_OPEN)
             ->count();
-        $linkedArticles = \App\Models\ExternalArticleMapping::query()
+        $linkedArticles = \App\Models\Integration\ExternalArticleMapping::query()
             ->where('organization_id', $organization->id)
             ->where('plugin_id', JtlWawiPlugin::ID)
             ->whereNotNull('article_variant_id')

@@ -16,7 +16,7 @@ use App\Casts\MoneyCast;
 use App\Enums\Club\{ClubFeePaymentMethod, ClubFeePaymentSource};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Finance\{BankTransaction, PaymentAllocation, PaymentRunItem};
-use App\Models\User;
+use App\Models\Platform\User;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Model;

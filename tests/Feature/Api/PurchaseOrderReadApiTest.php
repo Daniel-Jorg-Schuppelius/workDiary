@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Api;
 
 use App\Enums\Procurement\PurchaseOrderStatus;
-use App\Models\{Article, Organization, PurchaseOrder, Supplier, User, Warehouse};
+use App\Models\{Article, PurchaseOrder, Supplier, Warehouse};
+use App\Models\Platform\{Organization, User};
 use App\Services\Procurement\PurchaseOrderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;

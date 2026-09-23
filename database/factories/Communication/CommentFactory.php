@@ -8,9 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace Database\Factories;
+namespace Database\Factories\Communication;
 
-use App\Models\{Comment, DiaryEntry, User};
+use App\Models\Communication\Comment;
+use App\Models\DiaryEntry;
+use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

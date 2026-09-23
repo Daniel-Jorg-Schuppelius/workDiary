@@ -12,7 +12,7 @@ namespace App\Models;
 
 use App\Enums\Vacation\{VacationStatus, VacationType};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Services\HolidayService;
+use App\Services\Calendar\HolidayService;
 use Carbon\{Carbon, CarbonInterface};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

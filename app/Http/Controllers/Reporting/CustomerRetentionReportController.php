@@ -14,7 +14,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Reporting\CustomerRetentionReportBuilder;
 use App\Support\CarbonFmt;
 use CommonToolkit\Helper\Data\NumberHelper;

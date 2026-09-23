@@ -35,7 +35,7 @@
                      Default false → fixe Mindesthöhe pro Tag-Zelle.
       - showWeekHeader   Wochentag-Kopfzeile anzeigen (Default true)
       - showWeekNumbers  KW-Spalte links rendern (Default false)
-      - holidays     optional App\Services\HolidayService — wenn gesetzt,
+      - holidays     optional App\Services\Calendar\HolidayService — wenn gesetzt,
                      bekommt jeder Feiertag einen warning-getönten Hintergrund
                      plus den Feiertagsnamen unter der Tagesnummer (gleiche
                      Konvention wie der Schichtplan, siehe

@@ -11,7 +11,8 @@
 namespace App\Plugins\Lexoffice;
 
 use APIToolkit\API\Authentication\BearerAuthentication;
-use App\Models\{ExternalReference, Invoice};
+use App\Models\Integration\ExternalReference;
+use App\Models\Invoice;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use RuntimeException;
 

@@ -13,7 +13,11 @@ namespace Tests\Feature\Finance;
 use App\Enums\Finance\{TransferChannel, TransferTarget};
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Customer, LexofficeArticle, Project, ProjectBillingRule, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\Plugins\Lexoffice\LexofficeArticle;
+use App\Models\Project\{Project, ProjectBillingRule};
+use App\Models\TimeEntry;
 use App\Services\Billing\OrganizationDefaultRateResolver;
 use App\Services\Finance\{BillingPositionBuilder, BillingTransferService};
 use App\Services\Invoicing\{BlockPrice, ServiceDefaultResolver};
@@ -269,7 +273,7 @@ class TransferPositionBuildTest extends TestCase {
     }
 
     public function test_woerterbuch_korrigiert_vorschau_und_eingefrorene_positionen(): void {
-        \App\Models\TextCorrection::factory()->create([
+        \App\Models\Platform\TextCorrection::factory()->create([
             'organization_id' => $this->organization->id,
             'wrong' => 'geprüfft',
             'correct' => 'geprüft',
@@ -293,7 +297,7 @@ class TransferPositionBuildTest extends TestCase {
     }
 
     public function test_inaktiver_woerterbuch_eintrag_wirkt_nicht(): void {
-        \App\Models\TextCorrection::factory()->inactive()->create([
+        \App\Models\Platform\TextCorrection::factory()->inactive()->create([
             'organization_id' => $this->organization->id,
             'wrong' => 'geprüfft',
             'correct' => 'geprüft',
@@ -308,8 +312,8 @@ class TransferPositionBuildTest extends TestCase {
 
     // ── Endkunde (Fremdkunde des Projekts) in Bezeichnung und Text ──────────
 
-    private function foreignCustomer(?string $company, string $name): \App\Models\ForeignCustomer {
-        return \App\Models\ForeignCustomer::factory()->create([
+    private function foreignCustomer(?string $company, string $name): \App\Models\Customer\ForeignCustomer {
+        return \App\Models\Customer\ForeignCustomer::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'name' => $name,

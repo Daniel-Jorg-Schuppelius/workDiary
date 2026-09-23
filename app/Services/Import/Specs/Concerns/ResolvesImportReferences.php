@@ -13,7 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Import\Specs\Concerns;
 
 use App\Enums\Import\ImportErrorCode;
-use App\Models\{Article, Asset, Customer, Organization, Project, Supplier};
+use App\Models\{Article, Asset, Supplier};
+use App\Models\Customer\Customer;
+use App\Models\Platform\Organization;
+use App\Models\Project\Project;
 use App\Services\Import\ValidationIssue;
 
 /**

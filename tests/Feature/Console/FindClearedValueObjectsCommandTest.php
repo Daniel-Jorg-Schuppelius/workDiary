@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Console;
 
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Concerns\WithOrganization;

@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Import;
 
 use App\Enums\Import\{ImportErrorCode, ImportRunState};
-use App\Models\{ImportRun, ImportRunError, Organization, User};
+use App\Models\Integration\{ImportRun, ImportRunError};
+use App\Models\Platform\{Organization, User};
 use App\Services\Import\Specs\DocumentSpec;
 use CommonToolkit\Helper\Data\CSV\StringHelper as CsvStringHelper;
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;

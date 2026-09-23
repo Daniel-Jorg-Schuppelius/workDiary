@@ -14,7 +14,8 @@ namespace Tests\Feature\Passenger;
 
 use App\Enums\Passenger\{RideOperationMode, RideStatus};
 use App\Models\Passenger\{PassengerConcession, PassengerFareTariff, PassengerRide, PassengerVehicleProfile};
-use App\Models\{Qualification, User, Vehicle};
+use App\Models\Platform\User;
+use App\Models\{Qualification, Vehicle};
 use App\Services\Passenger\PassengerRideService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
@@ -405,7 +406,7 @@ class PassengerRideLifecycleTest extends TestCase {
     public function test_foreign_tenant_data_is_isolated(): void {
         $ride = $this->acceptTaxiRide();
 
-        $foreign = \App\Models\Organization::factory()->create();
+        $foreign = \App\Models\Platform\Organization::factory()->create();
         app()->instance('currentOrganization', $foreign);
         $this->assertSame(0, PassengerRide::query()->count());
 

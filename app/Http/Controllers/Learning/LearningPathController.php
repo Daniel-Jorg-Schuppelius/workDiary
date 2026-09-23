@@ -16,7 +16,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Learning\{LearningCourse, LearningPath, LearningPathItem};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Learning\LearningPathService;
 use App\Support\Sqid;

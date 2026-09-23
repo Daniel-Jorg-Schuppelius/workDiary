@@ -10,7 +10,8 @@
 
 namespace Database\Factories;
 
-use App\Models\{Asset, AssetAssignment, Organization, User};
+use App\Models\{Asset, AssetAssignment};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<AssetAssignment> */

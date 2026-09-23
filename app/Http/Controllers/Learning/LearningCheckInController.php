@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Learning;
 use App\Enums\Learning\LearningUnitKind;
 use App\Http\Controllers\Controller;
 use App\Models\Learning\{LearningEnrollment, LearningUnit};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\LearningEventService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
@@ -88,7 +88,7 @@ class LearningCheckInController extends Controller {
      * Eigene Einschreibung zum Termin — fremde gibt es nicht, und ohne
      * Einschreibung ist der Link wertlos.
      *
-     * @return array{0: LearningEnrollment, 1: \App\Models\Event}
+     * @return array{0: LearningEnrollment, 1: \App\Models\Calendar\Event}
      */
     private function context(LearningUnit $unit): array {
         abort_unless($unit->kind === LearningUnitKind::Event, 404);

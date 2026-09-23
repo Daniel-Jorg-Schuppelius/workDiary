@@ -13,7 +13,7 @@
      * Erwartete Variablen (über @include übergeben):
      * - $wv             : array{key,isoWeek,isoYear,start,end,days,shiftsByDay,assignmentsByDay,entriesByDay,rangeLabel,shortLabel}
      * - $service        : App\Services\Calendar\WeekViewService
-     * - $holidays       : App\Services\HolidayService
+     * - $holidays       : App\Services\Calendar\HolidayService
      * - $hours          : array<int, int>
      * - $statusToneClass: array<string, string>
      * - $workHoursCfg   : array (aus config('app.work_hours'))

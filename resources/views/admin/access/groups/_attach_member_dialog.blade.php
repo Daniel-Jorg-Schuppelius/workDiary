@@ -8,7 +8,7 @@
 --}}
 {{-- Dialog: Mitglied einer Gruppe hinzufügen. --}}
 @php
-    /** @var \App\Models\UserGroup $group */
+    /** @var \App\Models\Platform\UserGroup $group */
     /** @var \Illuminate\Database\Eloquent\Collection $addableUsers */
 @endphp
 <x-modal

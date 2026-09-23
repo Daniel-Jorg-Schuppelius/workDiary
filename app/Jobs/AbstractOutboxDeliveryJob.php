@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Contracts\{OutboxTransitionService, PluginDispatcher};
-use App\Models\{IntegrationOutboxEntry, InventoryOutboxEntry};
-use App\Services\AbstractPluginDispatcherResolver;
+use App\Models\Integration\IntegrationOutboxEntry;
+use App\Models\InventoryOutboxEntry;
+use App\Services\Integration\AbstractPluginDispatcherResolver;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\{Builder, Model};

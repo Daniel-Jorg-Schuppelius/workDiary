@@ -11,7 +11,8 @@
 namespace Tests\Feature\Events;
 
 use App\Enums\Event\EventVisibility;
-use App\Models\{Event, Organization, User};
+use App\Models\Calendar\Event;
+use App\Models\Platform\{Organization, User};
 use App\Services\Event\OrganizationCalendarFeedService;
 use App\Support\OrganizationContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;

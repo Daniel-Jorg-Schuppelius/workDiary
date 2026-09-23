@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Me;
 use App\Enums\Dashboard\WidgetWidth;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Dashboard\{DashboardLayoutService, DashboardPresets};
 use App\Support\Dashboard\DashboardLayoutItem;
 use Illuminate\Http\{RedirectResponse, Request};

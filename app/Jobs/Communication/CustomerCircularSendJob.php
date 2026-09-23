@@ -12,7 +12,7 @@ namespace App\Jobs\Communication;
 
 use App\Jobs\Concerns\RetriesTransientFailures;
 use App\Models\Communication\CustomerCircular;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Communication\CustomerCircularService;
 use App\Support\OrganizationContext;
 use Illuminate\Bus\Queueable;

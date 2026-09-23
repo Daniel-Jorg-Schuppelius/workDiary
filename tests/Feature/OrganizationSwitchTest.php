@@ -10,8 +10,8 @@
 
 namespace Tests\Feature;
 
-use App\Http\Controllers\OrganizationSwitchController;
-use App\Models\{Organization, User};
+use App\Http\Controllers\Platform\OrganizationSwitchController;
+use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

@@ -8,12 +8,13 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Calendar;
 
 use App\Enums\Event\{ParticipantRole, ParticipantStatus};
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, Pivot};
 use Illuminate\Support\Carbon;
+use App\Models\Calendar\Event;
 
 /**
  * Pivot-Modell für event_user — bietet Convenience-Methoden

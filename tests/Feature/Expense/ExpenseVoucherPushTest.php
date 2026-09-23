@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Expense;
 
 use App\Enums\Expense\{ExpenseStatus, PaymentMethod};
-use App\Models\{Expense, ExpenseCategory, LexofficeVoucher, PluginSetting, User};
+use App\Models\{Expense, ExpenseCategory};
+use App\Models\Platform\{PluginSetting, User};
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Plugins\Lexoffice\{LexofficeExpenseLinkProvider, LexofficeMapper, LexofficePlugin, LexofficeService};
 use App\Plugins\PluginManager;
 use App\Services\Billing\NullExpenseLinkProvider;

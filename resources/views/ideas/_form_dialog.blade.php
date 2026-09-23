@@ -42,7 +42,7 @@
         </x-select-field>
         <x-project-select name="project" :label="__('ideas.context.project')"
             :projects="$projects"
-            :selected="$editing ? \App\Support\Sqid::encode(\App\Models\Project::class, $map->project_id) : ''" />
+            :selected="$editing ? \App\Support\Sqid::encode(\App\Models\Project\Project::class, $map->project_id) : ''" />
     </x-form-group>
     <p class="text-xs opacity-60">{{ __('ideas.privacy_hint') }}</p>
 </x-modal>

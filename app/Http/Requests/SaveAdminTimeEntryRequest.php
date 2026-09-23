@@ -25,9 +25,9 @@ class SaveAdminTimeEntryRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'activity_category_id' => \App\Models\ActivityCategory::class,
+        'activity_category_id' => \App\Models\Classification\ActivityCategory::class,
         'attendance_id' => \App\Models\Attendance::class,
-        'tag_ids' => \App\Models\Tag::class,
+        'tag_ids' => \App\Models\Classification\Tag::class,
     ];
 
     /**

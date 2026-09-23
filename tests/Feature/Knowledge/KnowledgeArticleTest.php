@@ -11,7 +11,9 @@
 namespace Tests\Feature\Knowledge;
 
 use App\Enums\Knowledge\ArticleStatus;
-use App\Models\{KnowledgeArticle, Tag, User};
+use App\Models\Classification\Tag;
+use App\Models\Knowledge\KnowledgeArticle;
+use App\Models\Platform\User;
 use App\Services\Collections\ContentCollectionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

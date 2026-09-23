@@ -8,15 +8,16 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Classification;
 
 use App\Enums\Activity\ActivityCategoryType;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid, Searchable};
-use Database\Factories\ActivityCategoryFactory;
+use Database\Factories\Classification\ActivityCategoryFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use App\Models\TimeEntry;
 
 /**
  * @property int $id

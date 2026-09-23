@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Safety;
 
 use App\Enums\Safety\HazardAssessmentStatus;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Safety\{HazardAssessment, HazardAssessmentItem};
 use App\Services\Concerns\AssignsSequentialNo;
 use App\Services\Isms\Concerns\AssertsIsmsTransition;

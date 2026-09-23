@@ -14,7 +14,7 @@ namespace App\Services\Accounting;
 
 use App\Enums\Finance\AccountingSovereignty;
 use App\Models\Accounting\{AccountingProfile, AccountingSovereigntyPeriod};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Carbon\{CarbonImmutable, CarbonInterface};
 
 /**

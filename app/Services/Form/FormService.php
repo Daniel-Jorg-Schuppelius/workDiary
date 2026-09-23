@@ -11,7 +11,8 @@
 namespace App\Services\Form;
 
 use App\Enums\Form\{FormFieldType, FormTemplateStatus};
-use App\Models\{FormSubmission, FormTemplate, User};
+use App\Models\Form\{FormSubmission, FormTemplate};
+use App\Models\Platform\User;
 use App\Services\Attachments\FileAttacher;
 use CommonToolkit\Helper\Data\DataUrlHelper;
 use Illuminate\Database\Eloquent\Model;
@@ -65,13 +66,13 @@ class FormService {
     private function normalizeTarget(array $attributes): ?array {
         $target = [];
         if (($attributes['target_entry_type'] ?? '') !== '') {
-            $id = \App\Support\Sqid::decodeOrNumeric(\App\Models\EntryType::class, (string) $attributes['target_entry_type']);
+            $id = \App\Support\Sqid::decodeOrNumeric(\App\Models\Classification\EntryType::class, (string) $attributes['target_entry_type']);
             if ($id !== null) {
                 $target['entry_type_id'] = $id;
             }
         }
         if (($attributes['target_customer'] ?? '') !== '') {
-            $id = \App\Support\Sqid::decodeOrNumeric(\App\Models\Customer::class, (string) $attributes['target_customer']);
+            $id = \App\Support\Sqid::decodeOrNumeric(\App\Models\Customer\Customer::class, (string) $attributes['target_customer']);
             if ($id !== null) {
                 $target['customer_id'] = $id;
             }

@@ -14,7 +14,7 @@ namespace App\Models\Whistleblowing;
 
 use App\Enums\Whistleblowing\{CaseCategory, CasePriority, CaseStatus, ReporterMode};
 use App\Models\Concerns\BelongsToOrganization;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Models\Whistleblowing\Casts\CaseEncrypted;
 use App\Models\Whistleblowing\Concerns\ProvidesCaseDek;
 use App\Services\Whistleblowing\WhistleblowingCryptoService;

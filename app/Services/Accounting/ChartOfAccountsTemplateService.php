@@ -14,7 +14,7 @@ namespace App\Services\Accounting;
 
 use App\Enums\Finance\{AccountType, EuerCategory, PostingAccountRole, PostingSourceKind, TaxCodeDirection};
 use App\Models\Accounting\{AccountingAccount, AccountingPostingRule, AccountingTaxCode};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\FileSystem\{Files, Folder};
 use Illuminate\Support\Facades\DB;

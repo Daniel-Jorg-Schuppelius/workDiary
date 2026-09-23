@@ -14,7 +14,7 @@ namespace App\Services\Club;
 
 use App\Enums\Club\{ClubGroupMembershipStatus, ClubMembershipKind};
 use App\Models\Club\{ClubGuardian, ClubMember, ClubMembershipPeriod};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\AssignsSequentialNo;
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};

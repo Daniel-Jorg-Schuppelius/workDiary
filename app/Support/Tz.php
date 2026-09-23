@@ -10,7 +10,7 @@
 
 namespace App\Support;
 
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Carbon\{CarbonImmutable, CarbonInterface};
 use DateTimeZone;
 use Illuminate\Support\Facades\Auth;

@@ -14,7 +14,11 @@ namespace App\Plugins\Calendly\Services;
 
 use App\Enums\Diary\{DispatchStatus, Status};
 use App\Exceptions\InvalidOrderTransitionException;
-use App\Models\{AppointmentRequest, CalendlyConnection, DiaryEntry, DiaryEntryEvent, IntegrationInboxItem, User};
+use App\Models\Calendar\AppointmentRequest;
+use App\Models\{DiaryEntry, DiaryEntryEvent};
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Platform\User;
+use App\Models\Plugins\Calendly\CalendlyConnection;
 use App\Plugins\Calendly\CalendlyPlugin;
 use App\Services\Diary\OrderService;
 use App\Services\Dispatch\DispatchStatusResolver;
@@ -217,7 +221,7 @@ class CalendlyConfirmService {
     private function localTime(AppointmentRequest $request, string $which): ?string {
         $value = $which === 'start' ? $request->start_at : $request->end_at;
 
-        $organization = \App\Models\Organization::query()->find($request->organization_id);
+        $organization = \App\Models\Platform\Organization::query()->find($request->organization_id);
 
         return $value?->copy()->setTimezone($organization !== null ? Tz::ofOrganization($organization) : Tz::current())->format('H:i');
     }

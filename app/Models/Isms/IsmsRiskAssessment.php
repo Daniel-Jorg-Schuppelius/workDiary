@@ -12,7 +12,7 @@ namespace App\Models\Isms;
 
 use App\Enums\Isms\{AssessmentKind, AssessmentStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use Database\Factories\Isms\IsmsRiskAssessmentFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

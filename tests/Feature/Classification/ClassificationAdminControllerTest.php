@@ -12,7 +12,7 @@ namespace Tests\Feature\Classification;
 
 use App\Enums\Classification\ClassificationDomain;
 use App\Enums\User\UserRole;
-use App\Models\Classification;
+use App\Models\Classification\Classification;
 use App\Services\Classification\ClassificationManager;
 use Database\Seeders\ClassificationSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -8,10 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Policies;
+namespace App\Policies\Classification;
 
 use App\Enums\User\Permission as P;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\Auth\PermissionPolicy;
 
 class ClassificationRequirementPolicy extends PermissionPolicy {
     use HasAdminBypass;

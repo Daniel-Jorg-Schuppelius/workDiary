@@ -11,7 +11,8 @@
 namespace Tests\Feature;
 
 use App\Enums\User\Permission as P;
-use App\Models\{Attendance, Organization, TimeCorrectionRequest, User};
+use App\Models\{Attendance, TimeCorrectionRequest};
+use App\Models\Platform\{Organization, User};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission as SpatiePermission;

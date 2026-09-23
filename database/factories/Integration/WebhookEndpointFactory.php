@@ -12,7 +12,7 @@ namespace Database\Factories\Integration;
 
 use App\Enums\Integration\WebhookEvent;
 use App\Models\Integration\WebhookEndpoint;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Ideas;
 
 use App\Enums\Ideas\IdeaMapVisibility;
 use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, HasSqid, HasTags};
@@ -17,12 +17,20 @@ use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne, MorphMany};
 use Illuminate\Support\Carbon;
+use App\Models\Communication\Comment;
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\Ideas\IdeaMapShare;
+use App\Models\Ideas\IdeaNode;
+use App\Models\Ideas\IdeaNodeLink;
+use App\Models\Ideas\IdeaNodeSummary;
+use App\Models\Project\Project;
 
 /**
  * Ideenlandkarte (Feature 054, MVP-104/105). Datenschutz-Grundsatz: `private`
  * ist Default; sichtbar ist eine Karte ausschließlich für den Eigentümer und
  * ausdrücklich freigegebene Personen/Teams ({@see scopeVisibleTo()} +
- * {@see \App\Policies\IdeaMapPolicy}). Org-Admins erhalten über
+ * {@see \App\Policies\Knowledge\IdeaMapPolicy}). Org-Admins erhalten über
  * `viewMeta`/`manageLifecycle` nur Metadaten — nie Knoteninhalt.
  *
  * @property int $id

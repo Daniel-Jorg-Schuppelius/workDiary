@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Customer, ForeignCustomer, Project, TimeEntry, User};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Plugins\Toggl\Sources\{ApiWorkspaceSource, TogglApiClient};
 use App\Plugins\Toggl\TogglExportImporter;
 use Carbon\CarbonImmutable;

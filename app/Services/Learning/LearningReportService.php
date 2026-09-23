@@ -14,7 +14,7 @@ namespace App\Services\Learning;
 
 use App\Enums\Learning\{LearningCourseStatus, LearningEnrollmentStatus, LearningProgressStatus};
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningQuizAttempt, LearningUnitProgress};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 
 /**
  * Kursanalyse (Feature 149, MVP-747).

@@ -12,7 +12,9 @@ namespace Tests\Feature\Ai;
 
 use App\Enums\User\Permission;
 use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection};
-use App\Models\{Customer, CustomerQuery, Invoice, User};
+use App\Models\Customer\{Customer, CustomerQuery};
+use App\Models\Invoice;
+use App\Models\Platform\User;
 use App\Services\Ai\Suggestions\CoveringTextSuggestionService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

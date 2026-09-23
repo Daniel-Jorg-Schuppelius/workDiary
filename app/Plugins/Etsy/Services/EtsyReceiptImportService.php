@@ -12,7 +12,11 @@ declare(strict_types=1);
 
 namespace App\Plugins\Etsy\Services;
 
-use App\Models\{ArticleVariant, Customer, EtsyConnection, EtsyReceipt, ExternalArticleMapping, Organization};
+use App\Models\ArticleVariant;
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalArticleMapping;
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Etsy\{EtsyConnection, EtsyReceipt};
 use App\Plugins\Etsy\Api\EtsyClientFactory;
 use App\Plugins\Etsy\{EtsyConfig, EtsyPlugin};
 use App\Services\Integration\{IntegrationResolver, MatchProfileRegistry};

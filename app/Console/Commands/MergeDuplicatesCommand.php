@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;

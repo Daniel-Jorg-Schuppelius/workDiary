@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry, Project, TimeEntry, User};
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Plugins\Support\{ImportedTimeEntry, MatchingTimeImportService, RemoteTimeFingerprint, TimeWritebackDispatcher, TimeWritebackObserver};
 use App\Plugins\Toggl\Services\TogglOutboxDispatcher;
 use App\Plugins\Toggl\{TogglImportService, TogglPlugin};
@@ -394,7 +397,7 @@ class TogglWritebackTest extends TestCase {
         $end = CarbonImmutable::parse('2026-07-01 10:00');
         $entry = $this->linkedEntry($start, $end, 'Alt');
 
-        $tag = \App\Models\Tag::create(['name' => 'AnyDesk', 'organization_id' => $this->organization->id]);
+        $tag = \App\Models\Classification\Tag::create(['name' => 'AnyDesk', 'organization_id' => $this->organization->id]);
         $entry->tags()->sync([$tag->id]);
         ExternalReference::query()->create([
             'organization_id' => $this->organization->id,

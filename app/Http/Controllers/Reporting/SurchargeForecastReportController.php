@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Surcharge\SurchargeForecastService;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;

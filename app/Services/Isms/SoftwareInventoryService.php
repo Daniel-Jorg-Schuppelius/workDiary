@@ -12,7 +12,7 @@ namespace App\Services\Isms;
 
 use App\Enums\Isms\SupportStatus;
 use App\Models\Isms\{IsmsSoftwareInstallation, IsmsSoftwareProduct};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;

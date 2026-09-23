@@ -106,7 +106,7 @@
                             required
                             :hint="__('Ohne Projektwahl landet der Stundenzettel im Standardprojekt des Kunden (z. B. Wartung).')">
                 <option value="">{{ __('Kunde wählen…') }}</option>
-                @foreach (\App\Models\Customer::query()->whereNull('archived_at')->orderBy('name')->get(['id','name']) as $c)
+                @foreach (\App\Models\Customer\Customer::query()->whereNull('archived_at')->orderBy('name')->get(['id','name']) as $c)
                     <option value="{{ $c->sqid }}">{{ $c->name }}</option>
                 @endforeach
             </x-select-field>

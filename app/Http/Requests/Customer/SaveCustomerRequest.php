@@ -8,11 +8,12 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Customer;
 
 use App\Http\Requests\Concerns\{DecodesSqidInputs, PartyFormFields};
-use App\Models\Customer;
+use App\Models\Customer\Customer\Customer;
 use Illuminate\Validation\Rule;
+use App\Http\Requests\BaseFormRequest;
 
 class SaveCustomerRequest extends BaseFormRequest {
     use DecodesSqidInputs;
@@ -20,7 +21,7 @@ class SaveCustomerRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'tag_ids' => \App\Models\Tag::class,
+        'tag_ids' => \App\Models\Classification\Tag::class,
     ];
 
     /** @return array<string, mixed> */

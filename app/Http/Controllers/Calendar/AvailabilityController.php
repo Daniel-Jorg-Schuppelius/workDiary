@@ -8,13 +8,18 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Calendar;
 
-use App\Http\Requests\{SaveAvailabilityWindowRequest, SaveDesiredShiftRequest};
-use App\Models\{AvailabilityWindow, DesiredShift, ShiftType, User};
+use App\Http\Requests\Calendar\SaveAvailabilityWindowRequest;
+use App\Http\Requests\SaveDesiredShiftRequest;
+use App\Models\Calendar\AvailabilityWindow;
+use App\Models\DesiredShift;
+use App\Models\ShiftType;
+use App\Models\Platform\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 /**
  * Self-Service für Verfügbarkeiten & Wunschdienste (Feature 007).

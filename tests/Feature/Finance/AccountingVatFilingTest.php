@@ -12,7 +12,7 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{ProfitDetermination, VatFilingInterval};
 use App\Models\Accounting\{AccountingEvent, AccountingVatFilingPeriod};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, FiscalYearService, VatFilingProfileResolver};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;

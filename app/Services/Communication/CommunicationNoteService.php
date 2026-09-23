@@ -11,7 +11,8 @@
 namespace App\Services\Communication;
 
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType, CommunicationVisibility, ParticipantParty};
-use App\Models\{CommunicationNote, Organization, User};
+use App\Models\Communication\CommunicationNote;
+use App\Models\Platform\{Organization, User};
 use App\Support\MorphMap;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
@@ -275,7 +276,7 @@ class CommunicationNoteService {
                 continue;
             }
 
-            $already = \App\Models\AuditLog::query()
+            $already = \App\Models\Audit\AuditLog::query()
                 ->where('event', 'communication.confidential.viewed')
                 ->where('auditable_type', MorphMap::stableKey(CommunicationNote::class))
                 ->where('auditable_id', $note->id)

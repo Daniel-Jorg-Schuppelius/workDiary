@@ -25,8 +25,8 @@ class AssignCrisisTeamRequest extends BaseFormRequest {
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'crisis_role_id' => \App\Models\Crisis\CrisisRole::class,
-        'user_id' => \App\Models\User::class,
-        'deputy_user_id' => \App\Models\User::class,
+        'user_id' => \App\Models\Platform\User::class,
+        'deputy_user_id' => \App\Models\Platform\User::class,
     ];
 
     /** @return array<string, mixed> */

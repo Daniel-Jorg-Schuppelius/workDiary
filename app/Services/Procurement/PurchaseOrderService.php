@@ -14,7 +14,8 @@ namespace App\Services\Procurement;
 
 use App\Enums\Numbering\NumberScope;
 use App\Enums\Procurement\PurchaseOrderStatus;
-use App\Models\{Article, ArticleVariant, Organization, PurchaseOrder, PurchaseOrderLine, Supplier, Warehouse};
+use App\Models\{Article, ArticleVariant, PurchaseOrder, PurchaseOrderLine, Supplier, Warehouse};
+use App\Models\Platform\Organization;
 use App\Services\Integration\LifecycleWebhookPublisher;
 use App\Services\Numbering\NumberSequenceService;
 use App\Support\DecimalQty;

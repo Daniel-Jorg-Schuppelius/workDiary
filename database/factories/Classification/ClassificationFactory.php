@@ -8,10 +8,10 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace Database\Factories;
+namespace Database\Factories\Classification;
 
 use App\Enums\Classification\ClassificationDomain;
-use App\Models\Classification;
+use App\Models\Classification\Classification\Classification;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

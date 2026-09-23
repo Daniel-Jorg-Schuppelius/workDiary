@@ -16,7 +16,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Crisis\{AddCrisisLinkRequest, AssignCrisisTeamRequest, MarkCrisisCommunicationSentRequest, StoreCrisisActionRequest, StoreCrisisCaseRequest, StoreCrisisCommunicationRequest, StoreCrisisContinuityImpactRequest, StoreCrisisDecisionRequest, StoreCrisisReviewRequest, StoreCrisisRoleRequest, StoreCrisisSituationReportRequest, UpdateCrisisActionRequest, UpdateCrisisCaseStatusRequest, UpdateCrisisContinuityImpactRequest};
 use App\Models\Crisis\{CrisisCase, CrisisCommunication, CrisisRole, CrisisTeamAssignment};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Crisis\{CrisisAlertService, CrisisDeadlineService};
 use App\Support\ErrorText;
 use App\Support\Query\DateRange;
@@ -352,7 +352,7 @@ class CrisisCaseController extends Controller {
             'privacy_incident' => \App\Models\Privacy\Incident::class,
             'safety_event' => \App\Models\SafetyEvent::class,
             'procedure_run' => \App\Models\ProcedureRun::class,
-            'document' => \App\Models\Document::class,
+            'document' => \App\Models\Document\Document::class,
         ];
         $class = $map[$data['linkable_type']];
         $id = \App\Support\Sqid::decodeOrNumeric($class, $data['linkable_sqid']);

@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Manufacturing;
 
-use App\Models\{Article, ArticleVariant, Customer, StockDelivery, User, Warehouse};
+use App\Models\{Article, ArticleVariant, StockDelivery, Warehouse};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Services\Inventory\InventoryLedger;
 use App\Services\Manufacturing\{DeliveryService, ManufacturingOrderService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

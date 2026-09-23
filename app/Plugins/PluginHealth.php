@@ -16,7 +16,7 @@ use Throwable;
 /**
  * Ergebnis eines Plugin-Health-Checks. Wird vom Plugin selbst zurückgegeben
  * (siehe {@see \App\Plugins\Contracts\Plugin::healthCheck()}) und persistiert
- * in {@see \App\Models\PluginState::$last_health_status} / `last_health_message`.
+ * in {@see \App\Models\Platform\PluginState::$last_health_status} / `last_health_message`.
  *
  * Drei Stufen:
  *  - ok        : Plugin kann seine Hauptfunktion erfüllen (z. B. API erreichbar)

@@ -14,7 +14,7 @@ namespace App\Models\Claims;
 
 use App\Enums\Claims\{ClaimKind, ClaimVerdict};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

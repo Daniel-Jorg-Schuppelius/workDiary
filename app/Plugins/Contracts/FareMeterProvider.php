@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Contracts;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 
 /**
  * Taxameter-/Wegstreckenzähler-Import (MVP-456, Konzept §9).

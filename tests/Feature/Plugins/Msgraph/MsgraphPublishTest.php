@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Plugins\Msgraph;
 
-use App\Models\{Event, ExternalReference, MsgraphConnection, Organization};
+use App\Models\Calendar\Event;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Msgraph\MsgraphConnection;
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Support\Calendar\RemoteCalendarPublishService;
 use App\Services\Event\IcsFeedService;

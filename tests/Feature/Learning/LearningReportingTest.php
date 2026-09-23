@@ -11,7 +11,7 @@
 namespace Tests\Feature\Learning;
 
 use App\Models\Learning\LearningCourse;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningCourseService, LearningEnrollmentService, LearningGamificationService, LearningReportService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

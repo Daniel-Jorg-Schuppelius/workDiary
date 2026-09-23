@@ -10,8 +10,9 @@
 
 namespace Tests\Feature\Security;
 
-use App\Models\{Customer, Organization, User};
-use App\Services\OrganizationLifecycleService;
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
+use App\Services\Org\OrganizationLifecycleService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;

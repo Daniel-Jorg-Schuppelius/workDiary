@@ -14,7 +14,8 @@ namespace App\Models\Plugins\Lexoffice;
 
 use App\Enums\Lexoffice\LexofficeHandoverStatus;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
-use App\Models\{Invoice, User};
+use App\Models\Invoice;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

@@ -8,10 +8,12 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace Database\Factories;
+namespace Database\Factories\Calendar;
 
 use App\Enums\Event\{EventStatus, EventType, EventVisibility};
-use App\Models\{Event, Organization, User};
+use App\Models\Calendar\Event;
+use App\Models\Platform\Organization;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

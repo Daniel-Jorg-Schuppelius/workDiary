@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Plugins\Zammad\Observers;
 
 use App\Enums\Task\TaskStatus;
-use App\Models\{ExternalReference, Task, ZammadConnection};
+use App\Models\Integration\ExternalReference;
+use App\Models\Plugins\Zammad\ZammadConnection;
+use App\Models\Project\Task;
 use App\Plugins\Zammad\Services\ZammadOutboxDispatcher;
 use App\Plugins\Zammad\ZammadPlugin;
 use App\Services\Integration\IntegrationOutboxService;

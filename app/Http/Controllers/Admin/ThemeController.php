@@ -14,8 +14,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\Organization;
-use App\Services\ThemeService;
+use App\Models\Platform\Organization;
+use App\Services\UI\ThemeService;
 use App\Support\ThemeDefinition;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;

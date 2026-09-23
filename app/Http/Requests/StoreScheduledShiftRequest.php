@@ -12,7 +12,7 @@ namespace App\Http\Requests;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Http\Requests\Concerns\{ChecksShiftCompliance, DecodesSqidInputs};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\{Rule, Validator};
@@ -22,7 +22,7 @@ class StoreScheduledShiftRequest extends FormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'user_id' => \App\Models\User::class,
+        'user_id' => \App\Models\Platform\User::class,
         'shift_type_id' => \App\Models\ShiftType::class,
         'duty_plan_id' => \App\Models\DutyPlan::class,
     ];

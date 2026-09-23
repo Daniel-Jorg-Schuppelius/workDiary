@@ -14,9 +14,9 @@ namespace App\Policies\Applications;
 
 use App\Enums\User\Permission as P;
 use App\Models\Applications\EmployeeDraft;
-use App\Models\User;
+use App\Models\Platform\User;
+use App\Policies\Auth\PermissionPolicy;
 use App\Policies\Concerns\HasAdminBypass;
-use App\Policies\PermissionPolicy;
 
 /** Mitarbeiter-Entwürfe (Feature 068, MVP-193): HR-Bereich (recruiting.*). */
 class EmployeeDraftPolicy extends PermissionPolicy {

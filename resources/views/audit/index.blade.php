@@ -15,7 +15,7 @@
 @section('content')
     @php
         /** @var \Illuminate\Pagination\LengthAwarePaginator $logs */
-        /** @var \Illuminate\Support\Collection<int, \App\Models\User> $users */
+        /** @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users */
         /** @var array<string, string> $events */
         /** @var array<string, string> $types */
         /** @var array<string, string> $filters */
@@ -27,7 +27,7 @@
                     <select id="audit-event" name="event" class="select select-bordered select-sm">
                         <option value="">{{ __('alle') }}</option>
                         @foreach ($events as $ev)
-                            <option value="{{ $ev }}" @selected(($filters['event'] ?? '') === $ev)>{{ (new \App\Models\AuditLog(['event' => $ev]))->eventLabel() }}</option>
+                            <option value="{{ $ev }}" @selected(($filters['event'] ?? '') === $ev)>{{ (new \App\Models\Audit\AuditLog(['event' => $ev]))->eventLabel() }}</option>
                         @endforeach
                     </select>
                 </x-filter-field>

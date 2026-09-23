@@ -12,7 +12,7 @@ namespace App\Services\Location;
 
 use App\Jobs\Location\ProcessLocationBatch;
 use App\Models\Location\LocationPoint;
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\DB;
 

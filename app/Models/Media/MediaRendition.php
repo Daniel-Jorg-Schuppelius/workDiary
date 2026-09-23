@@ -11,7 +11,7 @@
 namespace App\Models\Media;
 
 use App\Enums\Media\{MediaRenditionKind, SubtitleSource};
-use App\Models\Attachment;
+use App\Models\Attachments\Attachment;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -80,9 +80,9 @@ class MediaRendition extends Model {
         return $this->belongsTo(Attachment::class);
     }
 
-    /** @return BelongsTo<\App\Models\User, $this> */
+    /** @return BelongsTo<\App\Models\Platform\User, $this> */
     public function reviewer(): BelongsTo {
-        return $this->belongsTo(\App\Models\User::class, 'reviewed_by');
+        return $this->belongsTo(\App\Models\Platform\User::class, 'reviewed_by');
     }
 
     /**

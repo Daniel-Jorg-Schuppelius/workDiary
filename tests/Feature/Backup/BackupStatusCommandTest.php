@@ -11,7 +11,7 @@
 namespace Tests\Feature\Backup;
 
 use App\Models\Backup\BackupTargetConnection;
-use App\Models\BackupHeartbeat;
+use App\Models\Platform\BackupHeartbeat;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;

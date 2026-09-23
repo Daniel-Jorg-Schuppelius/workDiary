@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Msgraph\Observers;
 
-use App\Models\{ExternalReference, MsgraphTaskConnection, MsgraphTaskListLink, Task};
+use App\Models\Integration\ExternalReference;
+use App\Models\Plugins\Msgraph\{MsgraphTaskConnection, MsgraphTaskListLink};
+use App\Models\Project\Task;
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Msgraph\Services\{MsgraphOutboxDispatcher, MsgraphTodoSyncService};
 use App\Services\Integration\IntegrationOutboxService;

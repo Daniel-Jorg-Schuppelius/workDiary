@@ -12,7 +12,11 @@ namespace Tests\Feature\Knowledge;
 
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType};
 use App\Enums\User\Permission;
-use App\Models\{CommunicationNote, ContentCollection, DiaryEntry, Tag, User};
+use App\Models\Classification\Tag;
+use App\Models\Communication\CommunicationNote;
+use App\Models\DiaryEntry;
+use App\Models\Knowledge\ContentCollection;
+use App\Models\Platform\User;
 use App\Services\Collections\ContentCollectionService;
 use App\Services\Communication\CommunicationNoteService;
 use App\Services\Knowledge\KnowledgeArticleService;

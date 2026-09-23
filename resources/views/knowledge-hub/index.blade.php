@@ -83,7 +83,7 @@
             @endif
             @foreach ($tagFacets as $facet)
                 @continue($facet['id'] === $activeTagId)
-                <a href="{{ route('knowledge-hub.index', $hubQuery(['tag' => \App\Support\Sqid::encode(\App\Models\Tag::class, $facet['id'])])) }}"
+                <a href="{{ route('knowledge-hub.index', $hubQuery(['tag' => \App\Support\Sqid::encode(\App\Models\Classification\Tag::class, $facet['id'])])) }}"
                    class="badge badge-outline gap-1">{{ $facet['name'] }} <span class="opacity-70">{{ $facet['hits'] }}</span></a>
             @endforeach
         </div>

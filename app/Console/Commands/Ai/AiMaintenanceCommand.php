@@ -14,7 +14,8 @@ namespace App\Console\Commands\Ai;
 
 use App\Enums\Ai\AiConnectionStatus;
 use App\Models\Ai\{AiProviderConnection, AiTextSuggestion};
-use App\Models\{Invoice, InvoiceItem, QuoteItem};
+use App\Models\{Invoice, InvoiceItem};
+use App\Models\Sales\QuoteItem;
 use App\Services\Ai\AiConnectionTester;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;

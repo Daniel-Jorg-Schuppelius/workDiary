@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Licensing;
 
-use App\Models\{LicenseFlagOverride, Organization, User};
+use App\Models\Platform\{LicenseFlagOverride, Organization, User};
 use App\Services\Licensing\FeatureFlagResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -130,7 +130,7 @@ class ModuleConfigurationTest extends TestCase {
 
     public function test_disabled_module_is_hidden_from_global_search(): void {
         $admin = $this->admin();
-        \App\Models\Document::factory()->create([
+        \App\Models\Document\Document::factory()->create([
             'title' => 'Zuluwort Wartungsvertrag',
             'created_by_user_id' => $admin->id,
         ]);

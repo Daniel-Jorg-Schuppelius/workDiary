@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Gaeb;
 
-use App\Models\{Article, ArticleVariant, Supplier, User, Warehouse};
+use App\Models\{Article, ArticleVariant, Supplier, Warehouse};
+use App\Models\Platform\User;
 use App\Services\Gaeb\GaebOrderExportService;
 use App\Services\Procurement\PurchaseOrderService;
 use ERechnungToolkit\Enums\GaebPhase;

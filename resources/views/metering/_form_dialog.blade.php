@@ -25,7 +25,7 @@
             <label class="label" for="m-form-customer"><span class="label-text">{{ __('metering.column.customer') }}</span></label>
             <select id="m-form-customer" name="customer_id" class="select select-bordered w-full">
                 @foreach ($customers as $c)
-                    <option value="{{ $c->sqid }}" @selected(old('customer_id', $agreement?->customer_id !== null ? \App\Support\Sqid::encode(\App\Models\Customer::class, (int) $agreement->customer_id) : null) === $c->sqid)>{{ $c->displayLabel() }}</option>
+                    <option value="{{ $c->sqid }}" @selected(old('customer_id', $agreement?->customer_id !== null ? \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, (int) $agreement->customer_id) : null) === $c->sqid)>{{ $c->displayLabel() }}</option>
                 @endforeach
             </select>
         </div>

@@ -19,7 +19,7 @@ class SaveVehicleRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'default_user_id' => \App\Models\User::class,
+        'default_user_id' => \App\Models\Platform\User::class,
         'asset_id' => \App\Models\Asset::class,
     ];
 

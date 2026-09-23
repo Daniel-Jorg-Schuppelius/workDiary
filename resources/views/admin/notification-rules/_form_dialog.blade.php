@@ -13,7 +13,7 @@
     $channels = (array) old('channels', $rule->channels ?? []);
     $selectedRoles = (array) old('recipient_roles', $rule->recipient_roles ?? []);
     $encodeUserSqids = fn(array $ids) => collect($ids)
-        ->map(fn($id) => \App\Support\Sqid::encode(\App\Models\User::class, (int) $id))
+        ->map(fn($id) => \App\Support\Sqid::encode(\App\Models\Platform\User::class, (int) $id))
         ->all();
     $selectedUserSqids = (array) old('recipient_users', $encodeUserSqids((array) ($rule->recipient_user_ids ?? [])));
     $selectedLevel2Roles = (array) old('escalation2_roles', $rule->escalation2_roles ?? []);

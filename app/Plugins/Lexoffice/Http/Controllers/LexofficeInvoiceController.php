@@ -11,7 +11,8 @@
 namespace App\Plugins\Lexoffice\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{ExternalReference, Invoice};
+use App\Models\Integration\ExternalReference;
+use App\Models\Invoice;
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
 use App\Support\ErrorText;
 use Illuminate\Http\RedirectResponse;

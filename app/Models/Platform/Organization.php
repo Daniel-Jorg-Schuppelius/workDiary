@@ -8,16 +8,19 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Platform;
 
 use App\Enums\Organization\TenantStatus;
 use App\Models\Concerns\{Auditable, HasAttachments, HasSqid};
 use App\Services\Licensing\{LicenseResult, LicenseService};
-use Database\Factories\OrganizationFactory;
+use Database\Factories\Platform\OrganizationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\{Carbon, Str};
+use App\Models\Attachments\Attachments\Attachment;
+use App\Models\Platform\OrganizationSsoDomain;
+use App\Models\Platform\User;
 
 /**
  * @property int $id

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Navigation;
 
 use App\Enums\User\UserRole;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Support\Facades\Route;
 
 /**

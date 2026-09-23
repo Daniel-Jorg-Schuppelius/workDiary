@@ -14,7 +14,7 @@ namespace App\Services\Search\Indexing\Sources;
 
 use App\Enums\Knowledge\ArticleStatus;
 use App\Enums\Search\SearchSourceType;
-use App\Models\KnowledgeArticle;
+use App\Models\Knowledge\KnowledgeArticle;
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
 use Illuminate\Database\Eloquent\{Builder, Model};
 

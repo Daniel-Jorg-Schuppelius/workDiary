@@ -8,10 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace Database\Factories;
+namespace Database\Factories\Platform;
 
 use App\Enums\User\UserRole;
-use App\Models\{Organization, User};
+use App\Models\Platform\Organization;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;

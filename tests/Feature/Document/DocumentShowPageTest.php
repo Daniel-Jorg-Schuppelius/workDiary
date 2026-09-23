@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Document;
 
-use App\Models\{Document, DocumentVersion, ExternalParticipant, Organization, User};
+use App\Models\Communication\ExternalParticipant;
+use App\Models\Document\{Document, DocumentVersion};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

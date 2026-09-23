@@ -12,9 +12,9 @@
     /** @var int $month */
     /** @var int $year */
     /** @var bool $isAdmin */
-    /** @var \App\Models\User $user */
-    /** @var \App\Models\User|null $authUser */
-    /** @var \Illuminate\Support\Collection<int, \App\Models\User> $users */
+    /** @var \App\Models\Platform\User $user */
+    /** @var \App\Models\Platform\User|null $authUser */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users */
     /** @var \App\Services\Calendar\WeekViewService $service */
     /** @var \App\Models\WorkSchedule $schedule */
     /** @var \App\Enums\WorkSchedule\ScheduleType $scheduleType */

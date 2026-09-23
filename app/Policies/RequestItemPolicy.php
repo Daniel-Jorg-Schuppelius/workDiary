@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Enums\User\Permission;
-use App\Models\{RequestItem, User};
+use App\Models\Platform\User;
+use App\Models\RequestItem;
 use App\Policies\Concerns\ChecksOwnership;
 
 /**

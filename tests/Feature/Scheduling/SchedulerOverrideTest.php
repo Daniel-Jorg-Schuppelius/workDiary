@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Scheduling;
 
-use App\Models\{AuditLog, ScheduledJobOverride};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\ScheduledJobOverride;
 use App\Scheduling\{Cadence, CadenceType, SchedulerOverrideService, SchedulerRegistrar};
 use App\Support\MorphMap;
 use Illuminate\Console\Scheduling\Schedule;

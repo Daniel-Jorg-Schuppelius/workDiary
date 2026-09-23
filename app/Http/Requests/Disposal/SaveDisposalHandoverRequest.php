@@ -28,7 +28,7 @@ class SaveDisposalHandoverRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'external_contact_id' => \App\Models\ExternalContact::class,
+        'external_contact_id' => \App\Models\Contacts\ExternalContact::class,
     ];
     /** @return array<string, mixed> */
     public function rules(): array {

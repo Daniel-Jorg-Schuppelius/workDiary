@@ -13,10 +13,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Services\Import\Specs;
 
 use App\Enums\Import\ImportErrorCode;
-use App\Models\Customer;
-use App\Services\CustomerMergeService;
+use App\Models\Customer\Customer;
 use App\Services\Import\ImportOutcome;
 use App\Services\Import\Specs\CustomerSpec;
+use App\Services\Stammdaten\CustomerMergeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -165,7 +165,7 @@ class CustomerSpecTest extends TestCase {
 
         $this->assertSame(ImportOutcome::Updated, $outcome);
         $this->assertSame('Neu', $customer->fresh()->name);
-        $this->assertSame(0, \App\Models\IntegrationInboxItem::query()->count(), 'Kein Inbox-Eintrag bei Treffer');
+        $this->assertSame(0, \App\Models\Integration\IntegrationInboxItem::query()->count(), 'Kein Inbox-Eintrag bei Treffer');
     }
 
     public function test_external_id_binds_and_reimport_is_stable(): void {

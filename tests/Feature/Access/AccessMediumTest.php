@@ -14,7 +14,9 @@ namespace Tests\Feature\Access;
 
 use App\Enums\Access\AccessMediumStatus;
 use App\Enums\Task\TaskStatus;
-use App\Models\{AccessMedium, Organization, Task, User};
+use App\Models\AccessMedium;
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Task;
 use App\Services\Access\AccessMediumService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

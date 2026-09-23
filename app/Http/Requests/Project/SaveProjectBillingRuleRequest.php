@@ -8,10 +8,10 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Project;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\LexofficeArticle;
+use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

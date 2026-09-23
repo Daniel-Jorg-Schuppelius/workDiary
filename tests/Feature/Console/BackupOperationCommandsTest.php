@@ -12,7 +12,7 @@ namespace Tests\Feature\Console;
 
 use App\Enums\Operations\OperationsTaskType;
 use App\Models\Backup\BackupGeneration;
-use App\Models\OperationsTask;
+use App\Models\Project\OperationsTask;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Queue, Storage};
 use Tests\Concerns\WithOrganization;

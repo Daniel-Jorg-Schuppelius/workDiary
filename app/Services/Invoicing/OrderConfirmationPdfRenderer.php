@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Invoicing;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
-use App\Models\Quote;
-use App\Services\BrandingService;
+use App\Models\Sales\Quote;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Services\UI\BrandingService;
 use RuntimeException;
 
 /**

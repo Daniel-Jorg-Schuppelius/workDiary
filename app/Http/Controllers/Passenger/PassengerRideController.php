@@ -15,9 +15,9 @@ namespace App\Http\Controllers\Passenger;
 use App\Enums\Passenger\{RideOperationMode, RideOrderChannel, RidePriceKind, RideStatus};
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
-use App\Models\Organization;
 use App\Models\Passenger\{PassengerFareTariff, PassengerRide};
-use App\Models\{User, Vehicle};
+use App\Models\Platform\{Organization, User};
+use App\Models\Vehicle;
 use App\Services\Passenger\PassengerRideService;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -93,7 +93,7 @@ class PassengerRideController extends Controller {
         $this->passengerOrganization();
 
         return view('passenger.rides._form_dialog', [
-            'customers' => \App\Models\Customer::query()->orderBy('name')->get(['id', 'name']),
+            'customers' => \App\Models\Customer\Customer::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -101,7 +101,7 @@ class PassengerRideController extends Controller {
         Gate::authorize('create', PassengerRide::class);
         $organization = $this->passengerOrganization();
 
-        $request->merge(['customer_id' => Sqid::decodeOrNumeric(\App\Models\Customer::class, $request->input('customer_id'))]);
+        $request->merge(['customer_id' => Sqid::decodeOrNumeric(\App\Models\Customer\Customer::class, $request->input('customer_id'))]);
         $validated = $request->validate([
             'operation_mode' => ['required', 'string', 'in:' . implode(',', RideOperationMode::values())],
             'order_channel' => ['required', 'string', 'in:' . implode(',', RideOrderChannel::values())],

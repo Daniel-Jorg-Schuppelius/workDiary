@@ -8,13 +8,15 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Help;
 
-use App\Models\{HelpView, User};
+use App\Models\Platform\HelpView;
+use App\Models\Platform\User;
 use App\Services\Help\HelpTopicResolver;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, Request};
 use Symfony\Component\HttpFoundation\Response;
+use App\Http\Controllers\Controller;
 
 class HelpController extends Controller {
     public function show(Request $request, HelpTopicResolver $resolver, string $topic): JsonResponse {

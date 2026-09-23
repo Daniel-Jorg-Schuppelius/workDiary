@@ -14,7 +14,7 @@ use App\Enums\Isms\{AssessmentKind, AssessmentStatus, RiskStatus};
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Models\Isms\{IsmsRisk, IsmsRiskAssessment};
 use App\Models\Notification\NotificationRule;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Isms\RiskService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;

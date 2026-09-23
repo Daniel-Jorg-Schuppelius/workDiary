@@ -12,7 +12,7 @@
   submissions/show.blade.php, ohne Bedien-Elemente.
 --}}
 @php
-    /** @var \App\Models\FormSubmission $submission */
+    /** @var \App\Models\Form\FormSubmission $submission */
     $values = (array) $submission->values;
 @endphp
 <!DOCTYPE html>

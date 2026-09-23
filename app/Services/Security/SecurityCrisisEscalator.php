@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Security;
 
 use App\Models\Crisis\CrisisCase;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Crisis\CrisisAlertService;
 use Illuminate\Support\Facades\Log;
 

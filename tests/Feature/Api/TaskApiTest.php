@@ -14,7 +14,8 @@ namespace Tests\Feature\Api;
 
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Task\{TaskPriority, TaskStatus};
-use App\Models\{Project, Task, User};
+use App\Models\Platform\User;
+use App\Models\Project\{Project, Task};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\WithOrganization;

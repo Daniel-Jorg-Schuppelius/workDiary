@@ -8,9 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Knowledge;
 
-use App\Models\{ContentCollection, ContentReference, User};
+use App\Models\Knowledge\ContentCollection;
+use App\Models\Knowledge\ContentReference;
+use App\Models\Platform\User;
 use App\Services\Collections\{CollectableTypes, ContentReferenceService};
 use App\Support\Sqid;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +20,7 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 /**
  * Verweise setzen und lösen (MVP-811, Feature 155). Verweise ordnen wie

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Whistleblowing;
 
 use App\Enums\Whistleblowing\AttachmentScanStatus;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Models\Whistleblowing\WhistleblowingCase;
 use CommonToolkit\Helper\Data\JsonHelper;
 use CommonToolkit\Helper\FileSystem\File;

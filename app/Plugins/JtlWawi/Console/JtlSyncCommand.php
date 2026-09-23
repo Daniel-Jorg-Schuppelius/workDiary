@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\JtlWawi\Console;
 
-use App\Models\{JtlConnection, Organization, PluginSetting};
+use App\Models\Platform\{Organization, PluginSetting};
+use App\Models\Plugins\JtlWawi\JtlConnection;
 use App\Plugins\JtlWawi\JtlWawiPlugin;
 use App\Plugins\JtlWawi\Services\JtlSyncService;
 use CommonToolkit\Helper\Data\JsonHelper;

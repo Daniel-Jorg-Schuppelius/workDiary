@@ -11,7 +11,9 @@
 namespace Tests\Feature\Helpdesk;
 
 use App\Enums\ServiceTicket\ServiceTicketStatus;
-use App\Models\{AuditLog, Organization, ServiceQueue, ServiceTicket, TicketSatisfaction, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{Organization, User};
+use App\Models\{ServiceQueue, ServiceTicket, TicketSatisfaction};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\URL;

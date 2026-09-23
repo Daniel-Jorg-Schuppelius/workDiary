@@ -11,7 +11,9 @@
 namespace App\Services\Licensing;
 
 use App\Exceptions\LimitExceededException;
-use App\Models\{Attachment, AuditLog, Organization, User};
+use App\Models\Attachments\Attachment;
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{Organization, User};
 use App\Support\MorphMap;
 
 /**

@@ -11,38 +11,38 @@
     $isDialog = $isDialog ?? false;
     $action = $project ? route('projects.update', $project) : route('projects.store');
     $dialogUrl = ($project ? route('projects.edit', $project) : route('projects.create')) . '?dialog=1';
-    $customers = \App\Models\Customer::query()->whereNull('archived_at')->orderBy('name')->get(['id', 'name']);
+    $customers = \App\Models\Customer\Customer::query()->whereNull('archived_at')->orderBy('name')->get(['id', 'name']);
     // Mögliche Parents: alle Projekte außer dem aktuellen und dessen Subtree.
     $excludeIds = [];
     if ($project) {
         $excludeIds = $project->descendants()->pluck('id')->all();
         $excludeIds[] = $project->id;
     }
-    $parentOptions = \App\Models\Project::query()
+    $parentOptions = \App\Models\Project\Project::query()
         ->when($excludeIds, fn($q) => $q->whereNotIn('id', $excludeIds))
         ->orderBy('name')
         ->get(['id', 'name', 'customer_id', 'foreign_customer_id']);
     // Map Parent-Projekt-Sqid → Kunden-Sqid (die Selects nutzen Sqids als Werte,
     // daher müssen Schlüssel und Auto-Befüllung ebenfalls Sqids sein, keine int-IDs).
     $parentCustomerSqids = $parentOptions->mapWithKeys(fn($p) => [
-        $p->sqid => $p->customer_id ? \App\Support\Sqid::encode(\App\Models\Customer::class, $p->customer_id) : '',
+        $p->sqid => $p->customer_id ? \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $p->customer_id) : '',
     ]);
     // Fremdkunden gruppiert nach Kunden-Sqid (für die clientseitige Filterung).
-    $foreignCustomersByCustomer = \App\Models\ForeignCustomer::query()
+    $foreignCustomersByCustomer = \App\Models\Customer\ForeignCustomer::query()
         ->whereNull('archived_at')
         ->orderBy('name')
         ->get(['id', 'name', 'customer_id'])
-        ->groupBy(fn($fc) => $fc->customer_id ? \App\Support\Sqid::encode(\App\Models\Customer::class, $fc->customer_id) : '')
+        ->groupBy(fn($fc) => $fc->customer_id ? \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $fc->customer_id) : '')
         ->map(fn($group) => $group->map(fn($fc) => [
-            'sqid' => \App\Support\Sqid::encode(\App\Models\ForeignCustomer::class, $fc->id),
+            'sqid' => \App\Support\Sqid::encode(\App\Models\Customer\ForeignCustomer::class, $fc->id),
             'name' => $fc->name,
         ])->values());
     $teams = $teams ?? collect();
     $orgUsers = $orgUsers ?? collect();
     $assignedTeamIds = $assignedTeamIds ?? [];
     $assignedMemberIds = $assignedMemberIds ?? [];
-    $initialCustomerSqid = (string) old('customer_id', $project?->customer_id ? \App\Support\Sqid::encode(\App\Models\Customer::class, $project->customer_id) : '');
-    $initialForeignCustomerSqid = (string) old('foreign_customer_id', $project?->foreign_customer_id ? \App\Support\Sqid::encode(\App\Models\ForeignCustomer::class, $project->foreign_customer_id) : '');
+    $initialCustomerSqid = (string) old('customer_id', $project?->customer_id ? \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $project->customer_id) : '');
+    $initialForeignCustomerSqid = (string) old('foreign_customer_id', $project?->foreign_customer_id ? \App\Support\Sqid::encode(\App\Models\Customer\ForeignCustomer::class, $project->foreign_customer_id) : '');
 @endphp
 
 <x-modal
@@ -57,7 +57,7 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="$project ? __('Speichern') : __('Anlegen')">
     <div x-data="projectForm"
-          data-parent-id="{{ (string) old('parent_id', \App\Support\Sqid::encode(\App\Models\Project::class, $project?->parent_id)) }}"
+          data-parent-id="{{ (string) old('parent_id', \App\Support\Sqid::encode(\App\Models\Project\Project::class, $project?->parent_id)) }}"
           data-parent-customers="{{ json_encode($parentCustomerSqids) }}"
           data-customer-id="{{ $initialCustomerSqid }}"
           data-foreign-customers="{{ json_encode($foreignCustomersByCustomer) }}"
@@ -84,7 +84,7 @@
             <x-project-select name="parent_id" :label="__('Übergeordnetes Projekt')"
                 :placeholder="__('— Top-Level (kein Parent) —')"
                 :projects="$parentOptions"
-                :selected="(string) old('parent_id', \App\Support\Sqid::encode(\App\Models\Project::class, $project?->parent_id))"
+                :selected="(string) old('parent_id', \App\Support\Sqid::encode(\App\Models\Project\Project::class, $project?->parent_id))"
                 :hint="__('Sub-Projekte erben Customer und Abrechnung vom Parent.')"
                 x-model="parentId" />
 
@@ -93,7 +93,7 @@
                 <select id="customer_id" name="customer_id" class="select select-bordered w-full" x-ref="customerSelect" x-model="customerId" :disabled="hasParent">
                     <option value="">{{ __('— Kein Kunde —') }}</option>
                     @foreach ($customers as $customer)
-                        <option value="{{ $customer->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $project?->customer_id)) === $customer->sqid)>
+                        <option value="{{ $customer->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $project?->customer_id)) === $customer->sqid)>
                             {{ $customer->name }}
                         </option>
                     @endforeach
@@ -148,7 +148,7 @@
         <x-form-group :legend="__('Teams & Mitglieder')" icon="groups" tone="secondary">
             <div class="fieldset">
                 <span class="fieldset-label">{{ __('Zuständige Teams') }}</span>
-                @php($selectedTeams = (array) old('team_ids', array_map(fn($id) => \App\Support\Sqid::encode(\App\Models\Team::class, $id), $assignedTeamIds)))
+                @php($selectedTeams = (array) old('team_ids', array_map(fn($id) => \App\Support\Sqid::encode(\App\Models\Platform\Team::class, $id), $assignedTeamIds)))
                 <div class="grid grid-cols-1 gap-1 sm:grid-cols-2">
                     @forelse ($teams as $team)
                         <label class="label cursor-pointer justify-start gap-2 rounded px-2 hover:bg-base-200">
@@ -165,7 +165,7 @@
 
             <div class="fieldset">
                 <span class="fieldset-label">{{ __('Zusätzliche Einzelmitglieder') }}</span>
-                @php($selectedMembers = (array) old('member_ids', array_map(fn($id) => \App\Support\Sqid::encode(\App\Models\User::class, $id), $assignedMemberIds)))
+                @php($selectedMembers = (array) old('member_ids', array_map(fn($id) => \App\Support\Sqid::encode(\App\Models\Platform\User::class, $id), $assignedMemberIds)))
                 <x-user-checklist
                     name="member_ids"
                     :users="$orgUsers"

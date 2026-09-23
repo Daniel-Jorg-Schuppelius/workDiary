@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Etsy\Api;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
-use App\Models\EtsyConnection;
+use App\Models\Plugins\Etsy\EtsyConnection;
 use App\Plugins\Etsy\EtsyPlugin;
 use App\Plugins\Support\{ConnectionTokenStore, GuardsPluginApiResponses, PluginApiClient, PluginHttpFactory};
 

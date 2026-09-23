@@ -182,11 +182,11 @@
         $aiView = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
         $aiPlanActualUsable = $aiView->capabilityUsable(\App\Services\Ai\Suggestions\PlanActualExplainService::CAPABILITY);
         $aiProjects = $aiPlanActualUsable
-            ? \App\Models\Project::query()->whereIn('id', collect($byProject)->pluck('projectId')->all())->get(['id'])->keyBy('id')
+            ? \App\Models\Project\Project::query()->whereIn('id', collect($byProject)->pluck('projectId')->all())->get(['id'])->keyBy('id')
             : collect();
         $aiPlanActualSuggestions = $aiPlanActualUsable
             ? $aiView->openSuggestionsFor(
-                (new \App\Models\Project)->getMorphClass(),
+                (new \App\Models\Project\Project)->getMorphClass(),
                 $aiProjects,
                 \App\Services\Ai\Suggestions\PlanActualExplainService::CAPABILITY,
             )
@@ -222,7 +222,7 @@
                         // MVP-332 Belegtiefe: signierte Drilldowns je Kostenblock (Zeit/Material/Belege).
                         $drill = fn(string $kind, float $expected): string => \Illuminate\Support\Facades\URL::temporarySignedRoute('reports.economics.drilldown', now()->addHours(2), [
                             'kind' => $kind,
-                            'project' => \App\Support\Sqid::encode(\App\Models\Project::class, $row['projectId']),
+                            'project' => \App\Support\Sqid::encode(\App\Models\Project\Project::class, $row['projectId']),
                             'from' => $from->toDateString(),
                             'to' => $to->toDateString(),
                             'expected' => number_format($expected, 2, '.', ''),

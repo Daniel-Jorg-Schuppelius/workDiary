@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Lexoffice\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\{LexofficeVoucher, LexofficeVoucherLine};
+use App\Models\Plugins\Lexoffice\{LexofficeVoucher, LexofficeVoucherLine};
 use App\Models\Reselling\ResalePeriodLink;
 use App\Plugins\Lexoffice\LexofficeVoucherLineSync;
 use Illuminate\Console\Command;

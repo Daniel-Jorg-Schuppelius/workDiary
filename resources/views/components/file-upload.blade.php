@@ -13,7 +13,7 @@
     'meta' => null,
     /** Optionale URL einer DELETE-Route (z. B. attachments.destroyMeta). */
     'deleteAction' => null,
-    /** Aktuell aktiver Anhang (App\Models\Attachment|null) zur Vorschau. */
+    /** Aktuell aktiver Anhang (App\Models\Attachments\Attachment|null) zur Vorschau. */
     'current' => null,
     /** Anzeigelabel über dem Upload-Feld. */
     'label' => null,
@@ -28,12 +28,12 @@
 ])
 
 @php
-    /** @var \App\Models\Attachment|null $current */
+    /** @var \App\Models\Attachments\Attachment|null $current */
     $previewUrl = null;
     if ($current !== null) {
         // Signierter Temp-URL aus AttachmentController – funktioniert auch
         // für nicht-public Disks (z. B. `local`).
-        $previewUrl = \App\Http\Controllers\AttachmentController::downloadUrl($current);
+        $previewUrl = \App\Http\Controllers\Attachments\AttachmentController::downloadUrl($current);
     }
     $inputId = 'fu_' . uniqid();
 @endphp

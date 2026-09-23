@@ -14,7 +14,7 @@ namespace Tests\Feature\Ai;
 
 use App\Enums\Ai\AiFamily;
 use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection, AiUsagePeriod};
-use App\Models\AuditLog;
+use App\Models\Audit\AuditLog;
 use App\Services\Ai\AiInvocationService;
 use App\Services\Ai\Dto\{AiTextResult, ClassifyRequest, FormulateRequest};
 use App\Services\Ai\Exceptions\{AiBudgetExceededException, AiUnavailableException};

@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\Mirror;
 
-use App\Models\{Document, DocumentVersion, ExternalReference, IntegrationInboxItem, User};
+use App\Models\Document\{Document, DocumentVersion};
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\User;
 use App\Services\Document\DocumentService;
 use App\Services\Integration\InboxActionService;
 use CommonToolkit\Helper\Data\CryptoHelper;

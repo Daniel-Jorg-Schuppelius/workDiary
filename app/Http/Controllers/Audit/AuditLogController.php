@@ -8,16 +8,26 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Audit;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
-use App\Models\{Attachment, AuditLog, Comment, Customer, DiaryEntry, EmergencyAssignment, ImportRun, NumberSequence, OnCallShift, Supplier};
+use App\Models\Attachments\Attachments\Attachment;
+use App\Models\Audit\AuditLog;
+use App\Models\Communication\Comment;
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\EmergencyAssignment;
+use App\Models\Integration\ImportRun;
+use App\Models\Numbering\NumberSequence;
+use App\Models\OnCallShift;
+use App\Models\Supplier;
 use App\Services\UI\DateRangeContext;
 use App\Support\{LookupCache, SortableQuery};
 use App\Support\MorphMap;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 class AuditLogController extends Controller {
     use ResolvesGlobalDateRange;
@@ -59,7 +69,7 @@ class AuditLogController extends Controller {
 
         // Das Filter-Select sendet Sqids; integer() ergäbe 0 und der
         // Benutzer-Filter griffe still nie.
-        if ($userId = \App\Support\Sqid::decodeOrNumeric(\App\Models\User::class, $request->string('user_id')->toString())) {
+        if ($userId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Platform\User::class, $request->string('user_id')->toString())) {
             $query->where('user_id', $userId);
         }
 

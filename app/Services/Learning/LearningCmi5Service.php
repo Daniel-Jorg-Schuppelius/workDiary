@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use App\Models\Learning\{LearningCmi5Package, LearningUnit};
-use App\Models\User;
+use App\Models\Platform\User;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\FileSystem\{File, Folder};
 use ELearningToolkit\Cmi5\{AssignableUnit, Block, Cmi5Exception, CourseStructure, LanguageMap};

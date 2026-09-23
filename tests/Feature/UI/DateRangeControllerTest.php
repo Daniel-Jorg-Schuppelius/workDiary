@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\UI;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\UI\DateRangeContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

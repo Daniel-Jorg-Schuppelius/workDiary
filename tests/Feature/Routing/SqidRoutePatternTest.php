@@ -10,8 +10,8 @@
 
 namespace Tests\Feature\Routing;
 
-use App\Models\Project;
-use App\Services\SqidEncoder;
+use App\Models\Project\Project;
+use App\Support\SqidEncoder;
 use Tests\TestCase;
 
 /**

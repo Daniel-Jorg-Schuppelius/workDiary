@@ -11,7 +11,9 @@
 namespace Tests\Feature\Plugins\Gitlab;
 
 use App\Enums\Task\TaskStatus;
-use App\Models\{ExternalReference, PluginSetting, Task};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\PluginSetting;
+use App\Models\Project\Task;
 use App\Plugins\Gitlab\Api\GitlabClientFactory;
 use App\Plugins\Gitlab\GitlabPlugin;
 use App\Plugins\Gitlab\Services\GitlabIssueImporter;

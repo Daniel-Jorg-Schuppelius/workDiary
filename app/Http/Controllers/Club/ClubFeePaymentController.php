@@ -17,7 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Club\{ClubFeeAccount, ClubFeeClaim, ClubFeeDunning, ClubFeePayment};
 use App\Models\Finance\{BankAccount, PaymentRun, SepaMandate};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Club\{ClubFeeNoticePdfRenderer, ClubFeePaymentService};
 use App\Services\Finance\FinancialFormatsSupport;
 use App\Support\Sqid;

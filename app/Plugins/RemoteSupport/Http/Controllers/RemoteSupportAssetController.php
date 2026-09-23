@@ -11,7 +11,8 @@
 namespace App\Plugins\RemoteSupport\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Asset, Organization};
+use App\Models\Asset;
+use App\Models\Platform\Organization;
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, TeamViewerClient};
 use App\Plugins\RemoteSupport\{RemoteDeviceRegistry, RemoteSessionImporter, RemoteSupportConfig};
 use App\Support\Sqid;

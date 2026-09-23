@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api;
 
-use App\Models\{Article, ArticleVariant, Organization, User, Warehouse, WarehouseBin};
+use App\Models\{Article, ArticleVariant, Warehouse, WarehouseBin};
+use App\Models\Platform\{Organization, User};
 use App\Services\Inventory\InventoryLedger;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;

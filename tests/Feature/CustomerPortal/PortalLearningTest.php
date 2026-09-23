@@ -11,8 +11,9 @@
 namespace Tests\Feature\CustomerPortal;
 
 use App\Enums\Learning\{LearningAudience, LearningEnrollmentStatus};
-use App\Models\{Customer, Organization, User};
+use App\Models\Customer\Customer;
 use App\Models\Learning\{LearningCourse, LearningEnrollment};
+use App\Models\Platform\{Organization, User};
 use App\Services\Learning\LearningCourseService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

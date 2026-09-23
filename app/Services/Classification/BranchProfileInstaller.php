@@ -10,7 +10,10 @@
 
 namespace App\Services\Classification;
 
-use App\Models\{AuditLog, Classification, ClassificationRequirement, CleaningProfile, EntryType, MaintenancePlanTemplate, Organization, ProcedureTemplate, RoomRequirementTemplate, SlaContract, Software, Tag, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Classification\{Classification, ClassificationRequirement, EntryType, Tag};
+use App\Models\{CleaningProfile, MaintenancePlanTemplate, ProcedureTemplate, RoomRequirementTemplate, SlaContract, Software};
+use App\Models\Platform\{Organization, User};
 use App\Services\Procedure\ProcedureTemplateService;
 use App\Support\MorphMap;
 use CommonToolkit\Helper\FileSystem\File;

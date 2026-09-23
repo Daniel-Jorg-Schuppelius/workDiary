@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Models\Investments;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\{Document, Supplier};
+use App\Models\Document\Document;
+use App\Models\Supplier;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

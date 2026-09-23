@@ -10,7 +10,8 @@
 
 namespace App\Services\Support;
 
-use App\Models\{AuditLog, PluginError};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\PluginError;
 use App\Services\Diagnostics\DiagnosticsService;
 use App\Services\Release\ReleaseManifestService;
 use Carbon\CarbonImmutable;
@@ -546,8 +547,8 @@ class SupportReportBuilder {
         try {
             $registry = app(\App\Scheduling\JobRegistry::class);
             $registrar = app(\App\Scheduling\SchedulerRegistrar::class);
-            $overrides = \App\Models\ScheduledJobOverride::systemMap();
-            $states = \App\Models\ScheduledJobState::query()->get()->keyBy('job_key');
+            $overrides = \App\Models\Platform\ScheduledJobOverride::systemMap();
+            $states = \App\Models\Platform\ScheduledJobState::query()->get()->keyBy('job_key');
 
             $snapshot = [];
             foreach ($registry->all() as $key => $definition) {
@@ -579,12 +580,12 @@ class SupportReportBuilder {
     private function updatesSnapshot(): array {
         try {
             $updates = app(\App\Services\Updates\UpdateCheckService::class);
-            $pending = \App\Models\ComponentUpdate::query()->get();
+            $pending = \App\Models\Platform\ComponentUpdate::query()->get();
 
             return [
                 'mode' => $updates->mode(),
                 'last_checked_at' => $updates->lastCheckedAt()?->toIso8601String(),
-                'pending' => $pending->map(fn(\App\Models\ComponentUpdate $u): array => [
+                'pending' => $pending->map(fn(\App\Models\Platform\ComponentUpdate $u): array => [
                     'component' => $u->component_type . ':' . $u->component_key,
                     'installed' => $u->installed_version,
                     'available' => $u->available_version,

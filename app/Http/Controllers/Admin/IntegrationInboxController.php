@@ -13,7 +13,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Customer, ForeignCustomer, IntegrationInboxItem, Organization, Project, TimeEntry, User};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Services\Integration\{InboxActionService, InboxGroupBookerRegistry, MatchProfileRegistry};
 use App\Support\{ErrorText, MorphMap};
 use Illuminate\Database\Eloquent\Model;
@@ -204,7 +208,7 @@ class IntegrationInboxController extends Controller {
      * im zweiten Rückgabewert gemeldet, damit die Ansicht darauf hinweist; der
      * dritte liefert die Projekt-Zeilen als Collection für x-project-options.
      *
-     * @return array{0: array<string, array<string, string>>, 1: array<string, bool>, 2: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Project>|null}
+     * @return array{0: array<string, array<string, string>>, 1: array<string, bool>, 2: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Project\Project>|null}
      */
     private function buildAssignTargets(User $user, MatchProfileRegistry $registry, string $search = ''): array {
         $out = [];
@@ -240,7 +244,7 @@ class IntegrationInboxController extends Controller {
                 $options[$row->getRouteKey()] = $label !== '' ? $label : ('#' . $row->getKey());
             }
             $out[$type] = $options;
-            if ($type === \App\Models\Project::class) {
+            if ($type === \App\Models\Project\Project::class) {
                 $projectRows = $rows;
             }
         }

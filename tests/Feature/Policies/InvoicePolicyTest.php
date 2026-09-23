@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Policies;
 
-use App\Models\{Invoice, User};
+use App\Models\Invoice;
+use App\Models\Platform\User;
 use App\Policies\InvoicePolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};

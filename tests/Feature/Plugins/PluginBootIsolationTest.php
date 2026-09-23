@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\PluginError;
+use App\Models\Platform\PluginError;
 use App\Plugins\Contracts\{Plugin, PluginCapability};
 use App\Plugins\{PluginDefaults, PluginManager};
 use App\Providers\PluginServiceProvider;

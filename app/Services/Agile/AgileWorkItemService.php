@@ -14,7 +14,8 @@ namespace App\Services\Agile;
 
 use App\Enums\Agile\AgileItemType;
 use App\Models\Agile\{AgileBoard, AgileEvent, AgileWorkItem};
-use App\Models\{Task, User};
+use App\Models\Platform\User;
+use App\Models\Project\Task;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use RuntimeException;

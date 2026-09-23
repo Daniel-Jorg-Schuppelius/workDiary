@@ -12,7 +12,9 @@ namespace Tests\Feature\Tenant;
 
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Timesheet\TimesheetStatus;
-use App\Models\{MaterialUsage, Organization, Project, TimeEntry, Timesheet, User};
+use App\Models\{MaterialUsage, TimeEntry, Timesheet};
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;

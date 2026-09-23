@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Users;
 
 use App\Enums\Vacation\VacationStatus;
-use App\Models\User;
+use App\Models\Platform\User;
 
 /**
  * Benannte Stellvertretung (MVP-523): Der Deputy entscheidet, solange der

@@ -10,7 +10,8 @@
 
 namespace App\Automation\Actions;
 
-use App\Models\{Expense, User};
+use App\Models\Expense;
+use App\Models\Platform\User;
 use App\Services\Expense\{ApproverResolver, ExpenseService};
 use Illuminate\Database\Eloquent\Model;
 

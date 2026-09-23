@@ -11,8 +11,9 @@
 namespace Tests\Feature;
 
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
-use App\Models\{Comment, DiaryEntry, EmergencyAssignment, Expense, OnCallShift, PerDiemTrip, User, Vacation};
-use App\Models\OpenIssue;
+use App\Models\Communication\Comment;
+use App\Models\{DiaryEntry, EmergencyAssignment, Expense, OnCallShift, OpenIssue, PerDiemTrip, Vacation};
+use App\Models\Platform\User;
 use App\Services\Dashboard\DashboardService;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;

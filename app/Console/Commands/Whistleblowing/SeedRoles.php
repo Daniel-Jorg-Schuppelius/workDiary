@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Whistleblowing;
 
 use App\Console\Commands\SeedRolesCommand;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Whistleblowing\WhistleblowingPermissions;
 
 /**

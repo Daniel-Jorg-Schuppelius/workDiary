@@ -14,7 +14,7 @@ use APIToolkit\API\Authentication\OAuth2\OAuth2AuthorizationCodeGrant;
 use App\Enums\CloudIntake\{CloudIntakeConnectionStatus, CloudIntakeProvider};
 use App\Http\Controllers\Controller;
 use App\Models\CloudIntake\CloudDocumentConnection;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Plugins\Support\Concerns\HandlesOAuthPopup;
 use App\Plugins\Support\{OAuthStateHandshake, PluginOrgContext};
 use App\Support\Sqid;

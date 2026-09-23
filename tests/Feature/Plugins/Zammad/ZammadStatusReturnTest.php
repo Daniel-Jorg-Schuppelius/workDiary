@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Plugins\Zammad;
 
-use App\Models\{ExternalReference, IntegrationOutboxEntry, Task, ZammadConnection};
+use App\Models\Integration\{ExternalReference, IntegrationOutboxEntry};
+use App\Models\Plugins\Zammad\ZammadConnection;
+use App\Models\Project\Task;
 use App\Plugins\Zammad\Contracts\{ZammadGateway, ZammadGatewayFactory};
 use App\Plugins\Zammad\Services\ZammadOutboxDispatcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;

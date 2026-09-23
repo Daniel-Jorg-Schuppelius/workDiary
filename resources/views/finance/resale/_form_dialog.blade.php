@@ -20,10 +20,10 @@
         ? ($subscription->is_own_holding ? 'own' : ($subscription->foreign_customer_id !== null ? 'foreign' : ($subscription->customer_id !== null ? 'customer' : 'none')))
         : (string) ($prefill['holder'] ?? 'none');
     $holder = (string) old('holder', $holderDefault);
-    $customerSqid = (string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $editing ? $subscription->customer_id : ($prefill['customer_id'] ?? null)));
-    $foreignSqid = (string) old('foreign_customer_id', \App\Support\Sqid::encode(\App\Models\ForeignCustomer::class, $editing ? $subscription->foreign_customer_id : ($prefill['foreign_customer_id'] ?? null)));
+    $customerSqid = (string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $editing ? $subscription->customer_id : ($prefill['customer_id'] ?? null)));
+    $foreignSqid = (string) old('foreign_customer_id', \App\Support\Sqid::encode(\App\Models\Customer\ForeignCustomer::class, $editing ? $subscription->foreign_customer_id : ($prefill['foreign_customer_id'] ?? null)));
     $articleSqid = (string) old('article_id', \App\Support\Sqid::encode(\App\Models\Article::class, $editing ? $subscription->article_id : ($prefill['article_id'] ?? null)));
-    $lexArticleSqid = (string) old('lexoffice_article_id', \App\Support\Sqid::encode(\App\Models\LexofficeArticle::class, $editing ? $subscription->lexoffice_article_id : ($prefill['lexoffice_article_id'] ?? null)));
+    $lexArticleSqid = (string) old('lexoffice_article_id', \App\Support\Sqid::encode(\App\Models\Plugins\Lexoffice\LexofficeArticle::class, $editing ? $subscription->lexoffice_article_id : ($prefill['lexoffice_article_id'] ?? null)));
     $contractSqid = (string) old('contract_id', \App\Support\Sqid::encode(\App\Models\Contract\Contract::class, $editing ? $subscription->contract_id : null));
     $contracts = $contracts ?? collect();
     // Vorbelegung („Abo aus Rechnungsposition anlegen") greift nur beim Anlegen.
@@ -122,7 +122,7 @@
         <x-select-field name="lexoffice_article_id" :label="__('resale.field.lexoffice_article')" :span="$articles->isNotEmpty() ? 3 : 4" :hint="__('resale.dialog.lexoffice_article_hint')" :disabled="$locked['product']">
             <option value="">{{ __('resale.dialog.no_article') }}</option>
             @foreach ($lexofficeArticles as $article)
-                @php $lexSqid = \App\Support\Sqid::encode(\App\Models\LexofficeArticle::class, $article->id); @endphp
+                @php $lexSqid = \App\Support\Sqid::encode(\App\Models\Plugins\Lexoffice\LexofficeArticle::class, $article->id); @endphp
                 <option value="{{ $lexSqid }}" @selected($lexArticleSqid === $lexSqid)>{{ $article->article_number ? $article->article_number . ' · ' : '' }}{{ $article->name }}{{ $article->net_unit_price ? ' — ' . $article->net_unit_price->withScale(2)->format() . ($article->unit_name ? '/' . $article->unit_name : '') : '' }}</option>
             @endforeach
         </x-select-field>

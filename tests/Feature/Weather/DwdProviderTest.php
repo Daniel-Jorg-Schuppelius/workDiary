@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Weather;
 
-use App\Models\WeatherSnapshot;
+use App\Models\Weather\WeatherSnapshot;
 use App\Services\Weather\Contracts\WeatherProvider;
 use App\Services\Weather\{DwdProvider, OpenMeteoProvider, WeatherService};
 use App\Settings\SettingScope;

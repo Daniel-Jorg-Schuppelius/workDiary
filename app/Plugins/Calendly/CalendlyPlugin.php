@@ -10,7 +10,8 @@
 
 namespace App\Plugins\Calendly;
 
-use App\Models\{CalendlyConnection, Organization};
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Calendly\CalendlyConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Calendly\Api\CalendlyClient;
 use App\Plugins\Calendly\Services\CalendlyBackfillService;

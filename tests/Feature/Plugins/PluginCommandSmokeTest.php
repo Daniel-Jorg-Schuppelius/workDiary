@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

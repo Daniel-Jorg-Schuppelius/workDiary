@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Scim;
 
-use App\Models\{ExternalReference, Organization, ScimToken, User};
+use App\Models\Auth\ScimToken;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\{Organization, User};
 use App\Services\Scim\ScimUserService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;

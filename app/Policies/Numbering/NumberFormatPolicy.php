@@ -8,11 +8,12 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Policies;
+namespace App\Policies\Numbering;
 
 use App\Enums\User\Permission as P;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\Auth\PermissionPolicy;
 
 class NumberFormatPolicy extends PermissionPolicy {
     use HasAdminBypass;

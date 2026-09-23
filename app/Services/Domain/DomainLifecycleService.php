@@ -12,7 +12,7 @@ namespace App\Services\Domain;
 
 use App\Enums\Domain\{DomainCapabilityArea, DomainProviderCommandStatus, DomainRenewalMode};
 use App\Models\Domain\{DomainProjection, DomainProviderCommand};
-use App\Models\User;
+use App\Models\Platform\User;
 
 /**
  * Renewal, Transfer und Transferlock (Feature 083, MVP-390) — getrennte,

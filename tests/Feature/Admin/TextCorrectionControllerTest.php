@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\{Organization, TextCorrection};
+use App\Models\Platform\{Organization, TextCorrection};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

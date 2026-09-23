@@ -14,7 +14,7 @@ namespace App\Models\Migration;
 
 use App\Enums\Migration\{AccountingMigrationStatus, MigrationDataArea, MigrationProvider};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

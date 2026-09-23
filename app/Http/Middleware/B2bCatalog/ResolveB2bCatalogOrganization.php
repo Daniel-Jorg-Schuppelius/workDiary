@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\B2bCatalog;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Licensing\ModuleStatusResolver;
 use Closure;
 use Illuminate\Http\Request;

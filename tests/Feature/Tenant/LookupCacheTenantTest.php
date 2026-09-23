@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Tenant;
 
-use App\Models\{Organization, Tag};
+use App\Models\Classification\Tag;
+use App\Models\Platform\Organization;
 use App\Support\LookupCache;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;

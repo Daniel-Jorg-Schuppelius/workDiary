@@ -15,7 +15,7 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Tags zur Klassifikation von Auftragsbuch-Einträgen verwalten.')">
     <x-slot:actions>
-        @can('create', App\Models\Tag::class)
+        @can('create', App\Models\Classification\Tag::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger
                         :href="route('tags.create')"

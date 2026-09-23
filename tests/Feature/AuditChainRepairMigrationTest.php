@@ -10,7 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\AuditLog;
+use App\Models\Audit\AuditLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Artisan, DB};
 use RuntimeException;

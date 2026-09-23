@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Helpdesk;
 
 use App\Enums\User\Permission;
-use App\Http\Controllers\{AttachmentController, Controller};
-use App\Models\{ServiceTicket, User};
+use App\Http\Controllers\Attachments\AttachmentController;
+use App\Http\Controllers\Controller;
+use App\Models\Platform\User;
+use App\Models\ServiceTicket;
 use App\Services\Attachments\FileAttacher;
 use App\Services\ServiceTicket\TicketConversationService;
 use App\Support\ErrorText;

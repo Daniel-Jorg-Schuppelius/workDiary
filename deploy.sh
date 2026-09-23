@@ -114,6 +114,14 @@ if [ "${DEPLOY_SKIP_MAINTENANCE:-0}" != "1" ]; then
     # ausgeliefert, bevor Laravel bootet — sonst zeigten Besucher, solange
     # Composer und Vite die Anwendung umbauen, die nackte Standard-503-Seite
     # oder einen Fatal. Der Secret-Bypass (Pfad → Cookie) gilt auch dort.
+    # Klassenumzug (MVP-862): Queue-Payloads tragen Klassennamen. Vor dem
+    # Wartungsmodus muss die Jobs-Tabelle leer sein, sonst scheitern die
+    # wartenden Jobs nach dem Deploy an umgezogenen Klassen.
+    pending_jobs=$(php artisan tinker --execute='echo DB::table("jobs")->count();' 2>/dev/null | tail -n 1 | tr -d '[:space:]')
+    if [ -n "$pending_jobs" ] && [ "$pending_jobs" != "0" ]; then
+        echo "Abbruch: $pending_jobs offene Queue-Jobs — erst leerlaufen lassen (php artisan queue:work --stop-when-empty)." >&2
+        exit 1
+    fi
     php artisan down --retry=60 --secret="$DEPLOY_SECRET" --render="errors::503"
     MAINTENANCE_ON=1
     DEPLOY_APP_URL="$(env_value APP_URL .env)"

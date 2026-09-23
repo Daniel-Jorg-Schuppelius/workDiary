@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Models\{Organization, PluginSetting};
+use App\Models\Platform\{Organization, PluginSetting};
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\PluginManager;
 use App\Support\OrganizationContext;

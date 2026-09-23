@@ -13,8 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Timeline;
 
 use App\Enums\ServiceTicket\{ServiceTicketStatus, TicketMessageKind};
-use App\Http\Controllers\AttachmentController;
-use App\Models\{Attachment, AuditLog, ServiceTicket, ServiceTicketMessage, SlaClockSegment, SlaViolation, User};
+use App\Http\Controllers\Attachments\AttachmentController;
+use App\Models\Attachments\Attachment;
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\User;
+use App\Models\{ServiceTicket, ServiceTicketMessage, SlaClockSegment, SlaViolation};
 use App\Support\MorphMap;
 
 /**

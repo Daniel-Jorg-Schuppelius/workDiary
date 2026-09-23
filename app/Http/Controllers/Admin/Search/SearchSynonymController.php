@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin\Search;
 
 use App\Http\Controllers\Controller;
-use App\Models\SearchSynonymGroup;
+use App\Models\Search\SearchSynonymGroup;
 use App\Services\Search\{SearchSynonyms, SearchTextNormalizer};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -23,7 +23,7 @@ use Illuminate\View\View;
 /**
  * Pflege der Such-Synonyme (Feature 153, MVP-772): Gruppen gleichbedeutender
  * Begriffe je Organisation, dazu Vorlagen zum Übernehmen. Recht
- * `organization.update` ({@see \App\Policies\SearchSynonymGroupPolicy}).
+ * `organization.update` ({@see \App\Policies\Search\SearchSynonymGroupPolicy}).
  */
 class SearchSynonymController extends Controller {
     public function index(): View {

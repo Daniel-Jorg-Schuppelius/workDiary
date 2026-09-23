@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy\SubjectData;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -44,7 +44,7 @@ class PortalUserMasterDataSection extends AbstractSubjectSection {
             'phone' => $this->field(__('Telefon'), $u->phone),
             'mobile' => $this->field(__('Mobil'), $u->mobile),
             'customer' => $this->field(__('Kundenzuordnung'), $u->customer_id !== null
-                ? \App\Models\Customer::query()->withoutGlobalScopes()
+                ? \App\Models\Customer\Customer::query()->withoutGlobalScopes()
                     ->where('organization_id', $u->organization_id)
                     ->whereKey($u->customer_id)
                     ->value('name')

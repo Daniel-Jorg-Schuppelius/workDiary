@@ -12,7 +12,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\{RequiresPlatformOperator, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
-use App\Models\{AuditLog, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\User;
 use App\Services\Classification\BranchProfileInstaller;
 use App\Support\ErrorText;
 use CommonToolkit\Helper\FileSystem\{File, Folder};
@@ -203,7 +204,7 @@ class BranchProfileController extends Controller {
             }
         }
 
-        /** @var \App\Models\User $actor */
+        /** @var \App\Models\Platform\User $actor */
         $actor = $request->user();
 
         try {

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Attachments;
 
-use App\Models\Attachment;
+use App\Models\Attachments\Attachment;
 use App\Support\Setting;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Database\Eloquent\Model;
@@ -69,7 +69,7 @@ final class FileAttacher {
         if ($orgId !== null) {
             try {
                 app(\App\Services\Licensing\LimitGuard::class)->ensureCanStoreAttachment(
-                    \App\Models\Organization::query()->withoutGlobalScopes()->findOrFail((int) $orgId),
+                    \App\Models\Platform\Organization::query()->withoutGlobalScopes()->findOrFail((int) $orgId),
                     (int) $file->getSize(),
                 );
             } catch (\App\Exceptions\LimitExceededException $e) {

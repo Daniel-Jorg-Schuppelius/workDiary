@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Operations;
 
-use App\Models\{AttendanceTerminal, ChatWebhook, OperationsTask, TodoistConnection, User};
+use App\Models\{AttendanceTerminal, ChatWebhook};
+use App\Models\Platform\User;
+use App\Models\Plugins\Todoist\TodoistConnection;
+use App\Models\Project\OperationsTask;
 use App\Services\Operations\Expiry\ExpiryScanner;
 use App\Services\Operations\OperationsAlertService;
 use App\Support\MorphMap;

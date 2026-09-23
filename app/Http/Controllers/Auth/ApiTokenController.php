@@ -8,15 +8,16 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Auth;
 
 use App\Enums\Api\ApiAbility;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Laravel\Sanctum\PersonalAccessToken;
+use App\Http\Controllers\Controller;
 
 class ApiTokenController extends Controller {
     public function index(Request $request): View {

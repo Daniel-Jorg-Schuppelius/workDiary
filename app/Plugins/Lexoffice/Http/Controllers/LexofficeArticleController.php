@@ -12,7 +12,8 @@ namespace App\Plugins\Lexoffice\Http\Controllers;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\{LexofficeArticle, User};
+use App\Models\Platform\User;
+use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Plugins\Lexoffice\{LexofficeArticleSync, LexofficeConfig};
 use App\Support\ErrorText;
 use Illuminate\Database\Eloquent\Builder;

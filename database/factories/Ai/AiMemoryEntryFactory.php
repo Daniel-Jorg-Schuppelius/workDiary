@@ -14,7 +14,7 @@ namespace Database\Factories\Ai;
 
 use App\Enums\Ai\AiMemoryEntryType;
 use App\Models\Ai\AiMemoryEntry;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

@@ -12,9 +12,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SaveCustomerRequest;
+use App\Http\Requests\Customer\SaveCustomerRequest;
 use App\Http\Resources\CustomerResource;
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\{Auth, Gate};

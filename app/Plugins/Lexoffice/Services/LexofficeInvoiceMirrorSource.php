@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Plugins\Lexoffice\Services;
 
 use App\Enums\User\Permission;
-use App\Models\{Customer, LexofficeVoucher, LexofficeVoucherLine, Organization};
+use App\Models\Customer\Customer;
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Lexoffice\{LexofficeVoucher, LexofficeVoucherLine};
 use App\Services\Reselling\Mirror\{InvoiceMirrorSource, MirrorLine, MirrorVoucher};
 use App\Services\Reselling\Register\LicenseArticleClassifier;
 use App\Support\Sqid;

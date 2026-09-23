@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Customer, Organization, PluginSetting, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, PluginSetting, User};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;

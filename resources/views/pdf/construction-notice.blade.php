@@ -8,7 +8,7 @@
 --}}
 @php
     /** @var \App\Models\Construction\ConstructionNotice $notice */
-    /** @var \App\Models\Organization|null $organization */
+    /** @var \App\Models\Platform\Organization|null $organization */
     /** @var \Illuminate\Support\Carbon $generatedAt */
 @endphp
 <!DOCTYPE html>

@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Onboarding;
 
-use App\Models\{OnboardingProgress, Organization, User};
+use App\Models\Platform\{OnboardingProgress, Organization, User};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Exceptions;

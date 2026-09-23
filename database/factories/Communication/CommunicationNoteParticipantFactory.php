@@ -8,10 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace Database\Factories;
+namespace Database\Factories\Communication;
 
 use App\Enums\Communication\ParticipantParty;
-use App\Models\{CommunicationNote, CommunicationNoteParticipant};
+use App\Models\Communication\CommunicationNote;
+use App\Models\Communication\CommunicationNoteParticipant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

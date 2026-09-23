@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Register;
 
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
-use App\Models\{Customer, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink};
 use App\Services\Finance\BillingModeResolver;
 use App\Services\Reselling\Draft\{DraftResult, InvoiceDraftTarget, InvoiceDraftTargets, LocalInvoiceDraftTarget};
@@ -75,7 +76,7 @@ final class ResaleInvoiceDraftService {
             ->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])
             ->where('starts_on', '<', DateRange::dayAfter($reference))
             ->whereHas('subscription', static fn($s) => $s->where('is_own_holding', false)->where(static fn($w) => $w->where('customer_id', $recipient->id)
-                ->orWhereIn('foreign_customer_id', \App\Models\ForeignCustomer::query()->where('customer_id', $recipient->id)->select('id'))))
+                ->orWhereIn('foreign_customer_id', \App\Models\Customer\ForeignCustomer::query()->where('customer_id', $recipient->id)->select('id'))))
             ->with(['subscription.foreignCustomer', 'subscription.lexofficeArticle', 'subscription.article', 'links'])
             ->orderBy('starts_on');
     }

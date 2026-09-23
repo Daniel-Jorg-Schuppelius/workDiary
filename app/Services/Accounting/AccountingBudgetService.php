@@ -14,7 +14,8 @@ namespace App\Services\Accounting;
 
 use App\Enums\Finance\AccountType;
 use App\Models\Accounting\{AccountingAccount, AccountingBudget, AccountingFiscalYear};
-use App\Models\{CostCenter, Organization, User};
+use App\Models\CostCenter;
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\Reports\MonthlyActualsBuilder;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;

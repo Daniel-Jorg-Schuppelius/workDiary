@@ -15,7 +15,7 @@ namespace App\Plugins\Webdav\Http\Controllers;
 use App\Enums\Backup\{BackupProvider, BackupTargetStatus};
 use App\Http\Controllers\Controller;
 use App\Models\Backup\BackupTargetConnection;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Plugins\Webdav\WebdavPlugin;
 use App\Services\Backup\BackupNaming;
 use App\Support\{Sqid, UrlSafety};

@@ -11,7 +11,9 @@
 namespace App\Services\Reporting;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\{BillOfQuantity, BoqItem, BoqItemMapping, BoqItemProgress, Customer, Expense, Material, MaterialUsage, Project, TimeEntry, Timesheet, TravelLog};
+use App\Models\{BillOfQuantity, BoqItem, BoqItemMapping, BoqItemProgress, Expense, Material, MaterialUsage, TimeEntry, Timesheet, TravelLog};
+use App\Models\Customer\Customer;
+use App\Models\Project\Project;
 use App\Services\Gaeb\BoqCalculationDataService;
 use App\Services\Travel\TravelChargeService;
 use App\Support\{ChartBucket, MorphMap};

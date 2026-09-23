@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\PluginSetting;
+use App\Models\Platform\PluginSetting;
 use App\Plugins\Toggl\{TogglConfig, TogglPlugin};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

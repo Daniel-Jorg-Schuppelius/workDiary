@@ -14,7 +14,7 @@ namespace App\Models\Reselling;
 
 use App\Enums\Reselling\{ImportStatus, SubscriptionProvider};
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};

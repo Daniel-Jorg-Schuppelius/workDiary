@@ -11,7 +11,8 @@
 namespace App\Plugins\Sharepoint\Http\Controllers;
 
 use App\Enums\Document\DocumentType;
-use App\Models\{PluginState, SharepointConnection};
+use App\Models\Platform\PluginState;
+use App\Models\Plugins\Sharepoint\SharepointConnection;
 use App\Plugins\Sharepoint\Api\{SharepointDriveClient, SharepointOAuth};
 use App\Plugins\Sharepoint\{SharepointConfig, SharepointPlugin};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;

@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Isms;
 
 use App\Http\Controllers\Controller;
 use App\Models\Isms\{IsmsApplicabilityStatement, IsmsRequirement, IsmsScope};
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;

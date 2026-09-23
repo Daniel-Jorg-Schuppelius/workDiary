@@ -11,9 +11,10 @@
 namespace Tests\Feature\Location;
 
 use App\Http\Controllers\Api\LocationController;
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use App\Models\Location\{CustomerGeofence, LocationDeviceToken, LocationPendingEntry, LocationPoint, LocationVisit};
-use App\Models\{TimeEntry, User};
+use App\Models\Platform\User;
+use App\Models\TimeEntry;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Location\VisitMaterializer;
 use Illuminate\Foundation\Testing\RefreshDatabase;

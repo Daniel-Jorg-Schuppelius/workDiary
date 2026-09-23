@@ -325,7 +325,7 @@
             @break
 
         @case(\App\Enums\Learning\LearningBlockKind::Knowledge)
-            @php $article = \App\Models\KnowledgeArticle::query()->find($block['knowledge_article_id'] ?? null); @endphp
+            @php $article = \App\Models\Knowledge\KnowledgeArticle::query()->find($block['knowledge_article_id'] ?? null); @endphp
             @if ($article)
                 <p class="mt-3 text-sm">
                     <x-icon name="menu_book" class="text-muted" />

@@ -11,7 +11,7 @@
 namespace Tests\Feature\Isms;
 
 use App\Models\Isms\{IsmsRisk, IsmsRiskAssessment};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Isms\RegisterExportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

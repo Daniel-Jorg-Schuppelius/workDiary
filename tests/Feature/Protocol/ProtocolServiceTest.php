@@ -12,7 +12,8 @@ namespace Tests\Feature\Protocol;
 
 use App\Enums\Protocol\{ProtocolEventType, ProtocolItemResult, ProtocolSignatureMethod, ProtocolSignatureRole, ProtocolStatus, ProtocolType};
 use App\Exceptions\InvalidProtocolTransitionException;
-use App\Models\{DiaryEntry, User};
+use App\Models\DiaryEntry;
+use App\Models\Platform\User;
 use App\Services\Protocol\ProtocolService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;

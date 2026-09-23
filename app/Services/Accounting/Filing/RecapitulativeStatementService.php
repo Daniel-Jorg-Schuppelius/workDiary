@@ -14,7 +14,8 @@ namespace App\Services\Accounting\Filing;
 
 use App\Enums\Finance\{AccountingEntryStatus, VatFilingInterval};
 use App\Models\Accounting\{AccountingEntryLine, AccountingTaxCode};
-use App\Models\{Customer, Organization};
+use App\Models\Customer\Customer;
+use App\Models\Platform\Organization;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;

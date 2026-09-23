@@ -11,7 +11,8 @@
 namespace Tests\Feature\Procurement;
 
 use App\Enums\Procurement\CatalogItemStatus;
-use App\Models\{Article, Supplier, SupplierCatalogItem, SupplierCatalogSource, User};
+use App\Models\{Article, Supplier, SupplierCatalogItem, SupplierCatalogSource};
+use App\Models\Platform\User;
 use App\Services\Procurement\CatalogLinkService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

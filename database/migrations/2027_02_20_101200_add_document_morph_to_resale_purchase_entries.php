@@ -33,7 +33,7 @@ return new class extends Migration {
             ->whereNotNull('lexoffice_voucher_id')
             ->whereNull('document_type')
             ->update([
-                'document_type' => (new \App\Models\LexofficeVoucher)->getMorphClass(),
+                'document_type' => (new \App\Models\Plugins\Lexoffice\LexofficeVoucher)->getMorphClass(),
                 'document_id' => DB::raw('lexoffice_voucher_id'),
             ]);
     }

@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins\OrgaMax;
 
-use App\Models\{OrgaMaxConnection, User};
+use App\Models\Platform\User;
+use App\Models\Plugins\OrgaMax\OrgaMaxConnection;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -148,7 +149,7 @@ class OrgaMaxConnectionTest extends TestCase {
         $this->assertStringNotContainsString('jwt-token', (string) $serialized);
 
         // Audit-Payload der Anlage enthält ebenfalls keine Secrets.
-        $log = \App\Models\AuditLog::query()
+        $log = \App\Models\Audit\AuditLog::query()
             ->where('auditable_type', MorphMap::stableKey($connection::class))
             ->where('auditable_id', $connection->id)
             ->latest('id')

@@ -11,7 +11,8 @@
 namespace Tests\Feature\Security;
 
 use App\Http\Middleware\SecurityHeaders;
-use App\Models\{LexofficeVoucher, Organization, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Route, Storage};
 use Tests\TestCase;

@@ -8,12 +8,13 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Integration;
 
 use App\Enums\Import\ImportErrorCode;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use App\Models\Integration\ImportRun;
 
 /**
  * MVP-049 — Einzelner Zeilenfehler eines Import-Laufs.

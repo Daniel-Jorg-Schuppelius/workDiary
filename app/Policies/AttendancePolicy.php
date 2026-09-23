@@ -10,7 +10,8 @@
 
 namespace App\Policies;
 
-use App\Models\{Attendance, User};
+use App\Models\Attendance;
+use App\Models\Platform\User;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 use App\Services\TimeApproval\DayCloseService;
 

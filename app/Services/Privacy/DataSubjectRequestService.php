@@ -14,7 +14,7 @@ namespace App\Services\Privacy;
 
 use App\Enums\Numbering\NumberScope;
 use App\Enums\Privacy\{DataSubjectRequestStatus, DataSubjectRequestType};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\DataSubjectRequest;
 use App\Services\Numbering\NumberSequenceService;
 use Illuminate\Support\Carbon;

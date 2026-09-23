@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Draft;
 
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 
 /**
  * Registry der Entwurfsziele (Feature 152, Review 2026-09-11). Singleton

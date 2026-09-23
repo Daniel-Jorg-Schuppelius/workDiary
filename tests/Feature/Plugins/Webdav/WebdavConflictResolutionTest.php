@@ -11,7 +11,11 @@
 namespace Tests\Feature\Plugins\Webdav;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
-use App\Models\{AuditLog, Document, DocumentVersion, ExternalReference, IntegrationInboxItem, User, WebdavConnection};
+use App\Models\Audit\AuditLog;
+use App\Models\Document\{Document, DocumentVersion};
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\User;
+use App\Models\Plugins\Webdav\WebdavConnection;
 use App\Plugins\Support\Mirror\{DocumentMirrorService, RemoteFileGateway};
 use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
 use App\Plugins\Webdav\{WebdavMirrorTarget, WebdavPlugin};

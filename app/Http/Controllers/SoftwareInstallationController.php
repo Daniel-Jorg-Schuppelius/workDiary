@@ -12,9 +12,10 @@ namespace App\Http\Controllers;
 
 use App\Enums\Software\SoftwareKind;
 use App\Exceptions\SoftwareInstallationException;
-use App\Models\{Asset, Software, SoftwareInstallation, User};
+use App\Models\{Asset, Software, SoftwareInstallation};
+use App\Models\Platform\User;
 use App\Services\Software\SoftwareInstallationService;
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;

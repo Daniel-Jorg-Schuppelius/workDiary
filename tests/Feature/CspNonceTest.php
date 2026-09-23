@@ -10,7 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\WithOrganization;
@@ -119,7 +119,7 @@ class CspNonceTest extends TestCase {
             'organization_id' => $this->organization->id,
         ]);
         // Ein Datensatz, damit die Kundenliste (inkl. Zeilen-Aktionen) rendert.
-        \App\Models\Customer::factory()->create([
+        \App\Models\Customer\Customer::factory()->create([
             'organization_id' => $this->organization->id,
         ]);
 

@@ -8,16 +8,19 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Project;
 
 use App\Casts\MoneyCast;
 use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Models\Concerns\{BelongsToOrganization, HasAttachments, HasSqid, Searchable};
-use Database\Factories\TaskFactory;
+use Database\Factories\Project\TaskFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
+use App\Models\Project\Project\Milestone;
+use App\Models\Project\Project\Project;
+use App\Models\TimeEntry;
 
 /**
  * @property int $id

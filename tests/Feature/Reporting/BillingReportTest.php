@@ -10,7 +10,11 @@
 
 namespace Tests\Feature\Reporting;
 
-use App\Models\{Customer, Invoice, LexofficeVoucher, Project, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\{Invoice, TimeEntry};
+use App\Models\Platform\User;
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
+use App\Models\Project\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};

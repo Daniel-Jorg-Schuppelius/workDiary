@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Support;
 
-use App\Models\{Customer, DiaryEntry, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\Platform\{Organization, User};
 use App\Services\Billing\{DocumentFeedFilters, DocumentFeedQuery};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;

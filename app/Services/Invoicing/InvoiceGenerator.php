@@ -11,7 +11,9 @@
 namespace App\Services\Invoicing;
 
 use App\Enums\Numbering\NumberScope;
-use App\Models\{Customer, ForeignCustomer, Invoice, MaterialUsage, Project, TimeEntry};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\{Invoice, MaterialUsage, TimeEntry};
+use App\Models\Project\Project;
 use App\Services\Finance\{BillingModeLockedException, BillingModeResolver};
 use App\Services\Numbering\NumberSequenceService;
 use App\Support\Query\DateRange;

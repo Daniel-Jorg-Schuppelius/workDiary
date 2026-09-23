@@ -16,11 +16,11 @@
                     @php
                         $aggregateLink = match (true) {
                             $aggregate->foreignCustomerId !== null => route('search.index', $criteria->toParameters([
-                                'foreign_customer' => \App\Support\Sqid::encode(\App\Models\ForeignCustomer::class, $aggregate->foreignCustomerId),
+                                'foreign_customer' => \App\Support\Sqid::encode(\App\Models\Customer\ForeignCustomer::class, $aggregate->foreignCustomerId),
                                 'customer' => null,
                             ])),
                             $aggregate->customerId !== null => route('search.index', $criteria->toParameters([
-                                'customer' => \App\Support\Sqid::encode(\App\Models\Customer::class, $aggregate->customerId),
+                                'customer' => \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $aggregate->customerId),
                             ])),
                             default => null,
                         };
@@ -69,7 +69,7 @@
     <x-card :title="__('search.facets.tags')" icon="sell">
         <div class="flex flex-wrap gap-2">
             @foreach ($result->tagFacets as $facet)
-                <a href="{{ route('search.index', $criteria->toParameters(['tag' => \App\Support\Sqid::encode(\App\Models\Tag::class, $facet['id'])])) }}"
+                <a href="{{ route('search.index', $criteria->toParameters(['tag' => \App\Support\Sqid::encode(\App\Models\Classification\Tag::class, $facet['id'])])) }}"
                    @class(['badge gap-1', 'badge-primary' => $criteria->tagId === $facet['id'], 'badge-outline' => $criteria->tagId !== $facet['id']])>
                     {{ $facet['name'] }} <span class="opacity-70">{{ $facet['hits'] }}</span>
                 </a>

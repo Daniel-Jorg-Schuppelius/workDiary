@@ -14,7 +14,7 @@ namespace App\Dashboard\Widgets;
 
 use App\Dashboard\Widget;
 use App\Enums\Dashboard\WidgetGroup;
-use App\Models\{PluginState, User};
+use App\Models\Platform\{PluginState, User};
 use Illuminate\Contracts\View\View;
 
 /**

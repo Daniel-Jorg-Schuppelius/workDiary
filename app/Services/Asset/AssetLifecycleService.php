@@ -11,7 +11,8 @@
 namespace App\Services\Asset;
 
 use App\Enums\Asset\{AssetOwnership, AssetStatus};
-use App\Models\{Asset, AssetOwnershipChange, User};
+use App\Models\{Asset, AssetOwnershipChange};
+use App\Models\Platform\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 

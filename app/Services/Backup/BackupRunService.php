@@ -12,7 +12,7 @@ namespace App\Services\Backup;
 
 use App\Enums\Backup\{BackupGenerationStatus, BackupRetentionClass, BackupTargetStatus};
 use App\Models\Backup\{BackupGeneration, BackupGenerationPart, BackupTargetConnection};
-use App\Models\BackupHeartbeat;
+use App\Models\Platform\BackupHeartbeat;
 use App\Plugins\Contracts\BackupTarget;
 use App\Services\Backup\Exceptions\{BackupKeyMissingException, BackupPreflightException};
 use CommonToolkit\Helper\FileSystem\File;

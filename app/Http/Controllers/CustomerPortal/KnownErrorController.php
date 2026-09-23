@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\CustomerPortal;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Problem, User};
+use App\Models\Platform\User;
+use App\Models\Problem;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 

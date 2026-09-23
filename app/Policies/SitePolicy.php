@@ -10,7 +10,8 @@
 
 namespace App\Policies;
 
-use App\Models\{Site, User};
+use App\Models\Platform\User;
+use App\Models\Site;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class SitePolicy {

@@ -12,7 +12,7 @@ namespace App\Services\ServiceTicket;
 
 use App\Enums\ServiceTicket\{ServiceTicketPriority, SlaStatus};
 use App\Models\{ServiceTicket, SlaContract};
-use App\Services\HolidayService;
+use App\Services\Calendar\HolidayService;
 use Illuminate\Support\Carbon;
 
 class SlaTimer {

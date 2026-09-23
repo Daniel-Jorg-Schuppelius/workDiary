@@ -11,8 +11,9 @@
 namespace App\Services\Isms;
 
 use App\Enums\Isms\NormConformityStatus;
-use App\Models\{Document, User};
+use App\Models\Document\Document;
 use App\Models\Isms\{IsmsCertificate, IsmsNormStatus, IsmsRequirement, IsmsScope};
+use App\Models\Platform\User;
 use App\Services\Isms\Concerns\AssertsIsmsTransition;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

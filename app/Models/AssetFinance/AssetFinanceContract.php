@@ -14,7 +14,9 @@ namespace App\Models\AssetFinance;
 
 use App\Enums\AssetFinance\{AssetFinanceKind, AssetFinanceStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
-use App\Models\{CostCenter, Project, PurchaseOrder, Supplier, User};
+use App\Models\{CostCenter, PurchaseOrder, Supplier};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};

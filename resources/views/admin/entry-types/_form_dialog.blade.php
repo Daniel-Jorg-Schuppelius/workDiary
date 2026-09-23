@@ -8,7 +8,7 @@
 --}}
 {{-- Dialog wrapper for EntryType create/edit --}}
 @php
-    /** @var \App\Models\EntryType $entryType */
+    /** @var \App\Models\Classification\EntryType $entryType */
     $isEdit = $entryType?->exists ?? false;
 @endphp
 <x-modal

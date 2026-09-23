@@ -14,8 +14,8 @@ namespace App\Http\Requests\Club;
 
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
+use App\Models\Calendar\Event;
 use App\Models\Club\ClubSportProfile;
-use App\Models\Event;
 use App\Rules\ExistsInCurrentOrganization;
 
 class SavePerformanceRequest extends BaseFormRequest {

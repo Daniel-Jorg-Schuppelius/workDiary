@@ -12,7 +12,7 @@ namespace Tests\Feature\Api;
 
 use App\Enums\Integration\WebhookEvent;
 use App\Models\Integration\WebhookEndpoint;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Integration\WebhookDispatchService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;

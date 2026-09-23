@@ -11,8 +11,8 @@
 namespace App\Policies\Safety;
 
 use App\Enums\User\Permission as P;
+use App\Models\Platform\User;
 use App\Models\Safety\HazardAssessment;
-use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
 
 /**

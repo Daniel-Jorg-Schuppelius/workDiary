@@ -12,9 +12,10 @@ namespace Tests\Feature\Media;
 
 use App\Enums\Media\{MediaRenditionKind, MediaState, SubtitleSource};
 use App\Jobs\TranscribeSubtitleJob;
-use App\Models\{Attachment, User};
+use App\Models\Attachments\Attachment;
 use App\Models\Learning\{LearningCourse, LearningUnit};
 use App\Models\Media\MediaRendition;
+use App\Models\Platform\User;
 use App\Services\Learning\LearningCourseService;
 use App\Services\Media\{MediaPresenter, VideoTranscodingService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

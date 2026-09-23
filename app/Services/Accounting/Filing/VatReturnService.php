@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Accounting\Filing;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Accounting\Reports\VatPreviewBuilder;
 use App\Services\Accounting\VatFilingProfileResolver;
 use CommonToolkit\Helper\Data\NumberHelper;

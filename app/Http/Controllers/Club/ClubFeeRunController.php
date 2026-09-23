@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Club;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Club\{ClubFeeAccount, ClubFeeRun, ClubMember};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Club\ClubFeeRunService;
 use App\Support\CsvExport;
 use Carbon\CarbonImmutable;

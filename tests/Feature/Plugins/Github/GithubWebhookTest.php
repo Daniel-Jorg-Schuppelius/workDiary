@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins\Github;
 
-use App\Models\{PluginSetting, Task};
+use App\Models\Platform\PluginSetting;
+use App\Models\Project\Task;
 use App\Plugins\Github\GithubPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;

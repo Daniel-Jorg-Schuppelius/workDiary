@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Domain;
 
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use App\Models\Domain\{DomainAccountingEntry, DomainResellerAccount};
 use App\Services\Domain\{DomainCustomerMappingService, DomainInvoiceService};
 use Illuminate\Contracts\View\View;

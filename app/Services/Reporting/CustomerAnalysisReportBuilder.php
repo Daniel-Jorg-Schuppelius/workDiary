@@ -12,7 +12,9 @@ namespace App\Services\Reporting;
 
 use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
-use App\Models\{Customer, DiaryEntry, OpenIssue, Project, Protocol, TimeEntry};
+use App\Models\Customer\Customer;
+use App\Models\{DiaryEntry, OpenIssue, Protocol, TimeEntry};
+use App\Models\Project\Project;
 use App\Support\{ChartBucket, MorphMap};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;

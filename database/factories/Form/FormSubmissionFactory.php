@@ -8,10 +8,13 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace Database\Factories;
+namespace Database\Factories\Form;
 
-use App\Models\{FormSubmission, FormTemplate, User};
+use App\Models\Form\FormSubmission;
+use App\Models\Form\FormTemplate;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Database\Factories\Form\FormTemplateFactory;
 
 /**
  * @extends Factory<FormSubmission>

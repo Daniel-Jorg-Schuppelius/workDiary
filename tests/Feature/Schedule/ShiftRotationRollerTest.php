@@ -12,7 +12,8 @@ namespace Tests\Feature\Schedule;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Enums\Vacation\{VacationStatus, VacationType};
-use App\Models\{ScheduledShift, ShiftRotation, ShiftType, User, Vacation};
+use App\Models\Platform\User;
+use App\Models\{ScheduledShift, ShiftRotation, ShiftType, Vacation};
 use App\Services\Schedule\ShiftRotationRoller;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

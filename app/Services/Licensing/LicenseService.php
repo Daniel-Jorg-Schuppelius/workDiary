@@ -10,7 +10,8 @@
 
 namespace App\Services\Licensing;
 
-use App\Models\{AuditLog, Organization};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\Organization;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use CommonToolkit\Helper\FileSystem\{File as ToolkitFile, Folder as ToolkitFolder};

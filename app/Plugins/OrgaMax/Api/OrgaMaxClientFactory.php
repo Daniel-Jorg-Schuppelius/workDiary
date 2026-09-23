@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\OrgaMax\Api;
 
-use App\Models\OrgaMaxConnection;
+use App\Models\Plugins\OrgaMax\OrgaMaxConnection;
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Plugins\Support\PluginHttpFactory;
 use GuzzleHttp\Client as GuzzleClient;

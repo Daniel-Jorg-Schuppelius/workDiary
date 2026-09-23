@@ -11,8 +11,8 @@
 namespace App\Plugins\CardDav\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{CardDavCard, CardDavConnection};
-use App\Models\PluginState;
+use App\Models\Platform\PluginState;
+use App\Models\Plugins\CardDav\{CardDavCard, CardDavConnection};
 use App\Plugins\CardDav\CardDavPlugin;
 use App\Plugins\CardDav\Contracts\CardDavGatewayFactory;
 use App\Plugins\CardDav\Services\CardDavAddressbook;

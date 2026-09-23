@@ -12,7 +12,7 @@ namespace App\Services\Isms;
 
 use App\Enums\Isms\{CorrectiveActionStatus, FindingStatus};
 use App\Models\Isms\{IsmsAuditFinding, IsmsCorrectiveAction};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Isms\Concerns\{AssertsIsmsTransition, ResolvesAuditReferences};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

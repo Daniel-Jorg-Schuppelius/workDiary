@@ -11,8 +11,9 @@
 namespace App\Http\Controllers;
 
 use App\Enums\User\Permission;
-use App\Models\{DiaryEntry, Qualification, User};
-use App\Services\SqidEncoder;
+use App\Models\{DiaryEntry, Qualification};
+use App\Models\Platform\User;
+use App\Support\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 

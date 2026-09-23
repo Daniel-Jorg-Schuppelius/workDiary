@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Lexoffice\Jobs;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeInvoiceService};
 use App\Services\Billing\RetainerVoucherReconciler;
 use App\Support\OrganizationContext;

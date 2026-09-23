@@ -14,8 +14,8 @@ namespace App\Services\Tenders;
 
 use App\Enums\Applications\TenderProcedureType;
 use App\Models\Applications\ApplicationOpportunity;
+use App\Models\Platform\User;
 use App\Models\Tenders\TenderNoticeMatch;
-use App\Models\User;
 use RuntimeException;
 
 /**

@@ -17,7 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Jobs\Integration\WebhookDeliveryJob;
 use App\Models\Integration\WebhookEndpoint;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Integration\WebhookDispatchService;
 use App\Support\UrlSafety;
 use Illuminate\Http\{JsonResponse, Request};

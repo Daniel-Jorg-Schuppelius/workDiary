@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api;
 
-use App\Models\{Organization, User, Vehicle};
+use App\Models\Platform\{Organization, User};
+use App\Models\Vehicle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\WithOrganization;

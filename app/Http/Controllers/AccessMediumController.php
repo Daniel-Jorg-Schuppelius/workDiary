@@ -14,10 +14,10 @@ namespace App\Http\Controllers;
 
 use App\Enums\Access\{AccessMediumStatus, AccessMediumType};
 use App\Enums\User\Permission;
-use App\Models\{AccessMedium, Site, User};
+use App\Models\{AccessMedium, Site};
+use App\Models\Platform\User;
 use App\Services\Access\AccessMediumService;
-use App\Services\SqidEncoder;
-use App\Support\ErrorText;
+use App\Support\{ErrorText, SqidEncoder};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;

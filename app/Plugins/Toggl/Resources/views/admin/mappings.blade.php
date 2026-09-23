@@ -154,7 +154,7 @@
                                 @php
                                     $target = $mapping->referenceable;
                                     $currentSqid = $target?->sqid;
-                                    $isForeign = $target instanceof \App\Models\ForeignCustomer;
+                                    $isForeign = $target instanceof \App\Models\Customer\ForeignCustomer;
                                 @endphp
                                 <tr>
                                     <td class="font-mono text-xs">{{ $mapping->external_id }}</td>

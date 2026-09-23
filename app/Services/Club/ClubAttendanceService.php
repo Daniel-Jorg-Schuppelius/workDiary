@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Club;
 
 use App\Enums\Club\{ClubAttendanceSheetStatus, ClubAttendanceStatus, ClubParticipationStatus};
+use App\Models\Calendar\Event;
 use App\Models\Club\{ClubAttendanceConfirmation, ClubAttendanceRecord, ClubAttendanceRevision, ClubAttendanceSheet, ClubEventParticipation, ClubMember};
-use App\Models\{Event, User};
+use App\Models\Platform\User;
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Support\Collection;

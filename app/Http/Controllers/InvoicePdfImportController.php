@@ -14,7 +14,10 @@ namespace App\Http\Controllers;
 
 use App\Enums\Document\DocumentType;
 use App\Enums\Invoicing\InvoiceDeliveryFormat;
-use App\Models\{Customer, Document, Invoice, User};
+use App\Models\Customer\Customer;
+use App\Models\Document\Document;
+use App\Models\Invoice;
+use App\Models\Platform\User;
 use App\Services\Document\DocumentService;
 use App\Services\Finance\BillingModeResolver;
 use App\Services\Invoicing\{InvoiceGenerator, InvoicePdfImportService, TaxResolver};
@@ -347,7 +350,7 @@ class InvoicePdfImportController extends Controller {
         /** @var User|null $viewer */
         $viewer = Auth::user();
         if ($viewer !== null && $document->confidential && (int) $document->created_by_user_id !== (int) $viewer->id) {
-            \App\Models\AuditLog::query()->create([
+            \App\Models\Audit\AuditLog::query()->create([
                 'organization_id' => $document->organization_id,
                 'user_id' => $viewer->id,
                 'event' => 'document.confidentialAccessed',
@@ -374,7 +377,7 @@ class InvoicePdfImportController extends Controller {
     }
 
     /** XML-Quelle (E-Rechnung) — erkennbar am Medientyp oder an der Endung. */
-    private function isXmlPreview(\App\Models\DocumentVersion $version): bool {
+    private function isXmlPreview(\App\Models\Document\DocumentVersion $version): bool {
         $mime = strtolower((string) $version->mime);
 
         return str_contains($mime, 'xml') || str_ends_with(strtolower((string) $version->original_name), '.xml');

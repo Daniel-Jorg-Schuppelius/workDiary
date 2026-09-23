@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\BuchhaltungsButler\Services;
 
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
-use App\Models\{ExternalReference, IntegrationOutboxEntry, Invoice};
+use App\Models\Integration\{ExternalReference, IntegrationOutboxEntry};
+use App\Models\Invoice;
 use App\Plugins\BuchhaltungsButler\Api\BhbClientFactory;
 use App\Plugins\BuchhaltungsButler\{BhbConfig, BuchhaltungsButlerPlugin};
 use App\Services\Invoicing\InvoicePdfRenderer;

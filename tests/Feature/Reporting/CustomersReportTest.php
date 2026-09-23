@@ -15,7 +15,11 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Controllers\Reporting\{CustomerAnalysisReportController, CustomerDrilldownReportController};
-use App\Models\{AuditLog, Customer, DiaryEntry, OpenIssue, Project, Protocol, TimeEntry, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Customer\Customer;
+use App\Models\{DiaryEntry, OpenIssue, Protocol, TimeEntry};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
@@ -146,17 +150,17 @@ class CustomersReportTest extends TestCase {
         $response->assertSee('60', false);
         $response->assertSee('1', false);
         $response->assertSee(route('diary.index', [
-            'customer' => Sqid::encode(\App\Models\Customer::class, $this->customer->id),
+            'customer' => Sqid::encode(\App\Models\Customer\Customer::class, $this->customer->id),
             'from' => now()->subDays(30)->toDateString(),
             'to' => now()->toDateString(),
-            'project' => Sqid::encode(\App\Models\Project::class, null),
+            'project' => Sqid::encode(\App\Models\Project\Project::class, null),
             'user' => null,
         ]));
         $response->assertSee(route('reports.customers.drilldown.protocols', [
-            'customer_id' => Sqid::encode(\App\Models\Customer::class, $this->customer->id),
+            'customer_id' => Sqid::encode(\App\Models\Customer\Customer::class, $this->customer->id),
         ]), false);
         $response->assertSee(route('reports.customers.drilldown.open-issues', [
-            'customer_id' => Sqid::encode(\App\Models\Customer::class, $this->customer->id),
+            'customer_id' => Sqid::encode(\App\Models\Customer\Customer::class, $this->customer->id),
             'escalated' => 1,
         ]));
     }
@@ -195,7 +199,7 @@ class CustomersReportTest extends TestCase {
             'created_at' => now()->subDays(2),
         ]);
 
-        $response = $this->getWithDateRange('diary.index', ['customer' => Sqid::encode(\App\Models\Customer::class, $this->customer->id)]);
+        $response = $this->getWithDateRange('diary.index', ['customer' => Sqid::encode(\App\Models\Customer\Customer::class, $this->customer->id)]);
 
         $response->assertOk();
         $response->assertSeeText('Passender Auftrag mit relevanten Details');

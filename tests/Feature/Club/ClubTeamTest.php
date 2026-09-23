@@ -12,8 +12,9 @@ namespace Tests\Feature\Club;
 
 use App\Enums\Club\{ClubAvailabilityStatus, ClubEventRoleKind, ClubLineupStatus, ClubMatchProposalSource, ClubMembershipKind, ClubParticipationStatus, ClubProposalStatus};
 use App\Enums\User\UserRole;
+use App\Models\Calendar\Event;
 use App\Models\Club\{ClubEventParticipation, ClubGroup, ClubLineupEntry, ClubMatchProposal, ClubMember, ClubSeason, ClubSportProfile, ClubSquad};
-use App\Models\{Event, User};
+use App\Models\Platform\User;
 use App\Services\Club\{ClubFeeCalculator, ClubMatchService, ClubTeamService};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

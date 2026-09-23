@@ -12,7 +12,7 @@ namespace Tests\Feature\Isms;
 
 use App\Enums\Isms\SupportStatus;
 use App\Models\Isms\{IsmsSoftwareInstallation, IsmsSoftwareProduct};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

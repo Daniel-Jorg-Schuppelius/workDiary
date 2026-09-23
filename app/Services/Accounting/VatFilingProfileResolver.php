@@ -14,7 +14,7 @@ namespace App\Services\Accounting;
 
 use App\Enums\Finance\VatFilingInterval;
 use App\Models\Accounting\{AccountingVatExtension, AccountingVatFilingPeriod};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;

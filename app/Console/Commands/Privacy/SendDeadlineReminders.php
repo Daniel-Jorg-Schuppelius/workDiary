@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Privacy;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Models\Privacy\ComplianceFinding;
 use App\Services\Privacy\{ComplianceAnalysisService, PrivacyDeadlineService};
 use Illuminate\Console\Command;

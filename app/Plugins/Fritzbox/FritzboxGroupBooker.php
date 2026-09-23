@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Fritzbox;
 
-use App\Models\{Customer, ForeignCustomer, Organization};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Platform\Organization;
 use App\Services\Integration\InboxGroupBooker;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;

@@ -8,13 +8,14 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Contacts;
 
 use App\Enums\ExternalParticipant\ExternalParty;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Communication\ExternalParticipant;
 
 /**
  * Wiederverwendbares externes Kontakt-/Rollenprofil (Feature 033, Rang 30):
@@ -33,7 +34,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ExternalContact extends Model {
     use BelongsToOrganization;
 
-    /** @use HasFactory<\Database\Factories\ExternalContactFactory> */
+    /** @use HasFactory<\Database\Factories\Contacts\ExternalContactFactory> */
     use HasFactory;
 
     use HasSqid;

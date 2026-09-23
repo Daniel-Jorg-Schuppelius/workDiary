@@ -11,7 +11,7 @@
 namespace App\Console\Commands;
 
 use App\Console\Concerns\UpdatesEnvFile;
-use App\Models\AuditLog;
+use App\Models\Audit\AuditLog;
 use Illuminate\Console\Command;
 
 /**

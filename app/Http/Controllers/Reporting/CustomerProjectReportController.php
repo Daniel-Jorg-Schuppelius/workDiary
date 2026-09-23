@@ -13,7 +13,9 @@ namespace App\Http\Controllers\Reporting;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
-use App\Models\{Customer, Project, TimeEntry};
+use App\Models\Customer\Customer;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Services\Reporting\ReportFilters;
 use App\Support\{Sqid, XlsxExport};
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -54,7 +56,7 @@ class CustomerProjectReportController extends Controller {
         $filters = $this->standardFilters($request, $filterFields, $fromDate, $toDate, scope: $scope);
 
         $foreignCustomerParam = $request->string('foreign_customer')->toString();
-        $foreignCustomerId = Sqid::decode(\App\Models\ForeignCustomer::class, $foreignCustomerParam);
+        $foreignCustomerId = Sqid::decode(\App\Models\Customer\ForeignCustomer::class, $foreignCustomerParam);
 
         $byProject = $this->aggregateByProject($from, $to, $scope, $userId, $filters, $foreignCustomerId);
         $bucket = $this->bucketByCustomer($byProject);
@@ -247,7 +249,7 @@ class CustomerProjectReportController extends Controller {
                 $foreign = $entry['project']->foreignCustomer;
                 $rows[] = [
                     $customerName,
-                    $foreign instanceof \App\Models\ForeignCustomer ? (string) $foreign->name : '',
+                    $foreign instanceof \App\Models\Customer\ForeignCustomer ? (string) $foreign->name : '',
                     (string) $entry['project']->name,
                     (string) ($entry['project']->number ?? ''),
                     (int) $entry['minutes'],

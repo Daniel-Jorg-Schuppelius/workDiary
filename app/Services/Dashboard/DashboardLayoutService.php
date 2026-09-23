@@ -14,7 +14,7 @@ namespace App\Services\Dashboard;
 
 use App\Dashboard\{Widget, WidgetRegistry};
 use App\Enums\Dashboard\WidgetWidth;
-use App\Models\{Organization, User, UserDashboardWidget};
+use App\Models\Platform\{Organization, User, UserDashboardWidget};
 use App\Support\Dashboard\DashboardLayoutItem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;

@@ -12,7 +12,9 @@ namespace App\Http\Controllers;
 
 use App\Enums\Procedure\{ProcedureDeviationProposedAction, ProcedureDeviationSeverity, ProcedureDeviationType, ProcedureStepRunStatus};
 use App\Exceptions\{ProcedureDeviationValidationException, ProcedureRunIncompleteException, ProcedureSecondPersonException, ProcedureStepBlockedException};
-use App\Models\{Attachment, DiaryEntry, ProcedureRun, ProcedureStepRun, ProcedureTemplate, User};
+use App\Models\Attachments\Attachment;
+use App\Models\{DiaryEntry, ProcedureRun, ProcedureStepRun, ProcedureTemplate};
+use App\Models\Platform\User;
 use App\Services\Procedure\{DeviationRecorder, ProcedureApplicabilityResolver, ProcedureExecutionService, SecondPersonGate, WaitStepService};
 use App\Support\EntityUrl;
 use Illuminate\Http\{RedirectResponse, Request};

@@ -11,7 +11,9 @@
 namespace Tests\Feature\Communication;
 
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType, CommunicationVisibility, ParticipantParty};
-use App\Models\{CommunicationNote, DiaryEntry, User};
+use App\Models\Communication\CommunicationNote;
+use App\Models\DiaryEntry;
+use App\Models\Platform\User;
 use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

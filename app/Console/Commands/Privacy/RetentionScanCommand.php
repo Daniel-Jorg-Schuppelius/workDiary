@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Privacy;
 
-use App\Models\{HelpView, Organization};
+use App\Models\Platform\{HelpView, Organization};
 use App\Services\Privacy\Retention\RetentionScanService;
 use Illuminate\Console\Command;
 

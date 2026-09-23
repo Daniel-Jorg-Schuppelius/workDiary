@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Settings;
 
-use App\Models\{AuditLog, SystemSetting};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\SystemSetting;
 use App\Settings\{SettingScope, SettingsRegistry};
 use App\Support\{MorphMap, Setting};
 use Illuminate\Foundation\Testing\RefreshDatabase;

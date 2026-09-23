@@ -13,8 +13,12 @@ declare(strict_types=1);
 namespace App\Models\Disposal;
 
 use App\Enums\Disposal\DisposalJobStatus;
-use App\Models\{Attachment, Customer, DiaryEntry, Document, Site, User};
+use App\Models\Attachments\Attachment;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Customer\Customer;
+use App\Models\{DiaryEntry, Site};
+use App\Models\Document\Document;
+use App\Models\Platform\User;
 use Database\Factories\Disposal\DisposalJobFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;

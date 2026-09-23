@@ -10,10 +10,11 @@
 
 declare(strict_types=1);
 
-namespace App\Models;
+namespace App\Models\Platform;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Platform\Organization;
 
 /**
  * Ein Eintrag im Downgrade-/Karenz-Ledger (Tabelle plan_module_grace).

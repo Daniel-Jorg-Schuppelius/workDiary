@@ -12,7 +12,8 @@ namespace Tests\Feature\Procedure;
 
 use App\Enums\Procedure\{ProcedureRunEventType, ProcedureStepRunStatus, ProcedureStepType};
 use App\Exceptions\ProcedureSecondPersonException;
-use App\Models\{DiaryEntry, Organization, ProcedureStepRun, ProcedureTemplate, User};
+use App\Models\{DiaryEntry, ProcedureStepRun, ProcedureTemplate};
+use App\Models\Platform\{Organization, User};
 use App\Services\Procedure\{ProcedureExecutionService, ProcedureTemplateService, SecondPersonGate};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

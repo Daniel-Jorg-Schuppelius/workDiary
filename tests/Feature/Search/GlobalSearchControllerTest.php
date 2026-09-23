@@ -10,7 +10,14 @@
 
 namespace Tests\Feature\Search;
 
-use App\Models\{Asset, CommunicationNote, Customer, DiaryEntry, Document, FormSubmission, FormTemplate, KnowledgeArticle, Organization, Project, User};
+use App\Models\{Asset, DiaryEntry};
+use App\Models\Communication\CommunicationNote;
+use App\Models\Customer\Customer;
+use App\Models\Document\Document;
+use App\Models\Form\{FormSubmission, FormTemplate};
+use App\Models\Knowledge\KnowledgeArticle;
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -66,7 +73,7 @@ class GlobalSearchControllerTest extends TestCase {
     }
 
     public function test_does_not_leak_across_organizations(): void {
-        $otherOrg = \App\Models\Organization::factory()->create();
+        $otherOrg = \App\Models\Platform\Organization::factory()->create();
         Customer::factory()->create([
             'organization_id' => $otherOrg->id,
             'name' => 'Foreign Kunde XYZ',

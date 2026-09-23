@@ -10,7 +10,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Project, Team, User};
+use App\Models\Platform\{Team, User};
+use App\Models\Project\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

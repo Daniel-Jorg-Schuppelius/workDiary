@@ -15,7 +15,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\TimeExport\TimeExportStatus;
-use App\Models\{TimeExport, User};
+use App\Models\Platform\User;
+use App\Models\TimeExport;
 use App\Services\TimeExport\{TimeExportException, TimeExportService};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -104,7 +105,7 @@ class TimeExportController extends Controller {
         $profileKeys = array_keys($this->availableProfiles());
 
         $request->merge([
-            'scope_user_id' => Sqid::decode(\App\Models\User::class, $request->input('scope_user_id')),
+            'scope_user_id' => Sqid::decode(\App\Models\Platform\User::class, $request->input('scope_user_id')),
         ]);
 
         $data = $request->validate([

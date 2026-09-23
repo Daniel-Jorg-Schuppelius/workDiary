@@ -11,8 +11,11 @@
 namespace App\Http\Controllers\CustomerPortal;
 
 use App\Enums\Customer\CustomerQueryStatus;
-use App\Http\Controllers\{AttachmentController, Controller};
-use App\Models\{Attachment, CustomerQuery, User};
+use App\Http\Controllers\Attachments\AttachmentController;
+use App\Http\Controllers\Controller;
+use App\Models\Attachments\Attachment;
+use App\Models\Customer\CustomerQuery;
+use App\Models\Platform\User;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Customer\CustomerQueryService;
 use App\Services\CustomerPortal\PortalQuerySubjects;

@@ -12,7 +12,7 @@ namespace App\Models\Isms;
 
 use App\Enums\Isms\CorrectiveActionStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use Database\Factories\Isms\IsmsCorrectiveActionFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins\Github;
 
-use App\Models\{Organization, PluginSetting, PluginState};
+use App\Models\Platform\{Organization, PluginSetting, PluginState};
 use App\Plugins\Contracts\{PluginCapability, TaskSyncer};
 use App\Plugins\Github\{GithubConfig, GithubPlugin};
 use App\Plugins\{PluginDiscovery, PluginHealth};

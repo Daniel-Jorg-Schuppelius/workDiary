@@ -11,7 +11,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Procedure\{ProcedureProofType, ProcedureRiskLevel, ProcedureStepType};
-use App\Models\{ProcedureTemplate, ProcedureTemplateVersion, User};
+use App\Models\Platform\User;
+use App\Models\{ProcedureTemplate, ProcedureTemplateVersion};
 use App\Services\Procedure\ProcedureTemplateService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -158,7 +159,7 @@ class ProcedureTemplateController extends Controller {
             $data['recipeAllergens'] = $recipes->allergens($version);
             $data['recipePlan'] = $recipes->planCosts($version, $portions);
             $data['recipePortions'] = $portions;
-            $data['recipeAllergenOptions'] = \App\Models\Classification::query()
+            $data['recipeAllergenOptions'] = \App\Models\Classification\Classification::query()
                 ->where('domain', \App\Enums\Classification\ClassificationDomain::Allergen->value)
                 ->where(function ($q) use ($template): void {
                     $q->whereNull('organization_id')->orWhere('organization_id', $template->organization_id);

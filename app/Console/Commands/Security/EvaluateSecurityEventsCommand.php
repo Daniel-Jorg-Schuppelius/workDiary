@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Console\Commands\Security;
 
 use App\Enums\Notification\NotificationEvent;
-use App\Models\{SecurityEvent, User};
+use App\Models\Auth\SecurityEvent;
+use App\Models\Platform\User;
 use App\Notifications\GenericEventNotification;
 use App\Services\Security\SecurityCrisisEscalator;
 use Illuminate\Console\Command;

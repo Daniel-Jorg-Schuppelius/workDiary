@@ -11,7 +11,7 @@
 namespace Tests\Feature\Learning;
 
 use App\Models\Learning\{LearningLtiPlatform, LearningLtiTool};
-use App\Models\User;
+use App\Models\Platform\User;
 use ELearningToolkit\Lti\Keys;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;

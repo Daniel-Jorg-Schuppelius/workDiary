@@ -13,7 +13,9 @@ namespace Tests\Feature\Finance;
 use App\Enums\Expense\ExpenseStatus;
 use App\Enums\Finance\{AccountType, AccountingEntryStatus, PostingAccountRole, PostingSourceKind, ProfitDetermination};
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingPostingRule};
-use App\Models\{CashEntry, CashRegister, Customer, Expense, IncomingEInvoice, Invoice, Organization, User};
+use App\Models\{CashEntry, CashRegister, Expense, IncomingEInvoice, Invoice};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService};
 use App\Services\Accounting\Posting\{PostingInboxService, PostingSourceRegistry};
 use App\Settings\SettingScope;
@@ -234,7 +236,7 @@ class AccountingInboxTest extends TestCase {
         $this->rule(PostingSourceKind::IncomingInvoice, PostingAccountRole::TaxInput, 'tax_input');
         $this->rule(PostingSourceKind::IncomingInvoice, PostingAccountRole::Payable, 'payable');
 
-        $document = \App\Models\Document::factory()->create(['organization_id' => $this->org->id]);
+        $document = \App\Models\Document\Document::factory()->create(['organization_id' => $this->org->id]);
         $incoming = IncomingEInvoice::query()->create([
             'organization_id' => $this->org->id,
             'document_id' => $document->id,

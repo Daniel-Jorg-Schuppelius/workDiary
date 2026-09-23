@@ -10,7 +10,9 @@
 
 namespace App\Services\Reporting;
 
-use App\Models\{Customer, DiaryEntry, Invoice, Project, TimeEntry};
+use App\Models\Customer\Customer;
+use App\Models\{DiaryEntry, Invoice, TimeEntry};
+use App\Models\Project\Project;
 use App\Support\ChartBucket;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;

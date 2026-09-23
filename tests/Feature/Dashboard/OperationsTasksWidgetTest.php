@@ -13,7 +13,7 @@ namespace Tests\Feature\Dashboard;
 use App\Dashboard\WidgetRegistry;
 use App\Dashboard\Widgets\OperationsTasksWidget;
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskType};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Testing\RefreshDatabase;

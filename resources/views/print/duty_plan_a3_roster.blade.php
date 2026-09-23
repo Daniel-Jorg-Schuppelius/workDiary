@@ -12,10 +12,10 @@
 @php
     /** @var \App\Models\DutyPlan $dutyPlan */
     /** @var list<string> $dates */
-    /** @var \Illuminate\Support\Collection<int, \App\Models\User> $users */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users */
     /** @var array<int, array<string, list<\App\Models\ScheduledShift>>> $matrix */
     /** @var \Illuminate\Support\Collection<int, \App\Models\ShiftType> $shiftTypes */
-    /** @var \App\Services\HolidayService $holidays */
+    /** @var \App\Services\Calendar\HolidayService $holidays */
     /** @var bool $anonymous */
 
     $extraMeta = sprintf(

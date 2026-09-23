@@ -12,7 +12,7 @@ namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\{LearningQuestionKind, LearningUnitKind};
 use App\Models\Learning\{LearningCourse, LearningQuiz, LearningUnit};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningAnswerGrader, LearningCourseService, LearningQuestionEditorService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -207,10 +207,10 @@ class LearningQuestionEditingTest extends TestCase {
         $victim = $editor->create($this->organization->id, ['kind' => 'hotspot', 'prompt' => 'Ohne Bild', 'points' => 1, 'options' => '*10,10,20,20: Ziel'], null, null, $quiz);
         $victim->forceFill(['settings' => [...(array) $victim->settings, 'image_attachment_id' => $other->settings['image_attachment_id']]])->save();
 
-        $attachments = \App\Models\Attachment::query()->count();
+        $attachments = \App\Models\Attachments\Attachment::query()->count();
         $copy = $editor->duplicate($victim->refresh(), $this->author());
 
-        $this->assertSame($attachments, \App\Models\Attachment::query()->count());
+        $this->assertSame($attachments, \App\Models\Attachments\Attachment::query()->count());
         $this->assertNotSame($other->settings['image_attachment_id'], $copy->settings['image_attachment_id'] ?? null);
     }
 

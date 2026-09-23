@@ -10,7 +10,7 @@
 @php
     /**
      * @var \App\Models\ScheduledShift $shift
-     * @var \Illuminate\Support\Collection<int, \App\Models\User> $users
+     * @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users
      * @var \Illuminate\Support\Collection<int, mixed> $types
      */
     $action = route('scheduled-shifts.update', $shift);
@@ -31,7 +31,7 @@
     <x-form-group :legend="__('Zuordnung')" icon="person" tone="primary" cols="2">
         <x-select-field name="user_id" :label="__('Mitarbeiter')" required>
             @foreach ($users as $u)
-                <option value="{{ $u->sqid }}" @selected((string) old('user_id', \App\Support\Sqid::encode(\App\Models\User::class, $shift->user_id)) === $u->sqid)>{{ $u->name }}</option>
+                <option value="{{ $u->sqid }}" @selected((string) old('user_id', \App\Support\Sqid::encode(\App\Models\Platform\User::class, $shift->user_id)) === $u->sqid)>{{ $u->name }}</option>
             @endforeach
         </x-select-field>
         <x-select-field name="shift_type_id" :label="__('Schichttyp')">

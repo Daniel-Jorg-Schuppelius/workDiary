@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Settings;
 
-use App\Models\{Organization, SystemSetting};
+use App\Models\Platform\{Organization, SystemSetting};
 use Illuminate\Support\Facades\Validator;
 use InvalidArgumentException;
 

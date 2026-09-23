@@ -11,8 +11,8 @@
 namespace Database\Factories\Safety;
 
 use App\Enums\Safety\MedicalCheckupKind;
+use App\Models\Platform\User;
 use App\Models\Safety\MedicalCheckup;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

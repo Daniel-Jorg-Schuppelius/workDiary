@@ -186,7 +186,7 @@ class Supplier extends Model {
 
     /**
      * Bestellungen bei diesem Lieferanten — Grundlage der Ziel-Heuristik des
-     * {@see \App\Services\SupplierDuplicateFinder} (der Datensatz mit der
+     * {@see \App\Services\Stammdaten\SupplierDuplicateFinder} (der Datensatz mit der
      * Einkaufs-Historie gewinnt beim Zusammenführen).
      *
      * @return HasMany<PurchaseOrder, $this>

@@ -11,8 +11,10 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AllocationKind, BalanceCheck, MatchStatus, TransactionDirection};
-use App\Models\{Customer, Invoice, Organization, User};
+use App\Models\Customer\Customer;
 use App\Models\Finance\{BankStatement, BankTransaction, PaymentAllocation};
+use App\Models\Invoice;
+use App\Models\Platform\{Organization, User};
 use App\Services\Finance\{BankImportException, BankImportService, FinancialFormatsSupport, MatchingService, ReconciliationService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

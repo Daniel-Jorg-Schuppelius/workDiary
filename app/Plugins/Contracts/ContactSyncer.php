@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Contracts;
 
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 
 /**
  * Plugins implementing this contract can synchronize a workDiary Customer

@@ -11,7 +11,9 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\{ArticleVariant, Customer, Project, Warehouse};
+use App\Models\{ArticleVariant, Warehouse};
+use App\Models\Customer\Customer;
+use App\Models\Project\Project;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Contracts\Validation\Validator;
 

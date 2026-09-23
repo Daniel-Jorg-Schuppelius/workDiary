@@ -10,7 +10,7 @@
 
 namespace Tests\Unit\Surcharge;
 
-use App\Models\Holiday;
+use App\Models\Platform\Holiday;
 use App\Models\Surcharge\SurchargeRule;
 use App\Services\Surcharge\SurchargeCalculator;
 use Carbon\CarbonImmutable;

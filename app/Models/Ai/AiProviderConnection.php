@@ -14,7 +14,7 @@ namespace App\Models\Ai;
 
 use App\Enums\Ai\{AiConnectionStatus, AiFamily, AiProviderType, AiVerb};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

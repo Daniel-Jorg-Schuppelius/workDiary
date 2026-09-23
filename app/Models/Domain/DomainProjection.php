@@ -12,7 +12,7 @@ namespace App\Models\Domain;
 
 use App\Enums\Domain\{DomainRenewalMode, DomainSyncStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\{Customer, ForeignCustomer};
+use App\Models\Customer\{Customer, ForeignCustomer};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};

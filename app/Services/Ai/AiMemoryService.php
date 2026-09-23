@@ -14,7 +14,7 @@ namespace App\Services\Ai;
 
 use App\Enums\Ai\AiMemoryEntryType;
 use App\Models\Ai\AiMemoryEntry;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Ai\Dto\{ExamplePair, GlossaryEntry};
 use Illuminate\Support\{Carbon, Collection};
 use Illuminate\Support\Facades\DB;

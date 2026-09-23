@@ -11,7 +11,11 @@
 namespace Tests\Feature\Plugins;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Customer, ExternalReference, PluginSetting, Project, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\{PluginSetting, User};
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Plugins\Clockify\{ClockifyConfig, ClockifyExportService, ClockifyImportService, ClockifyPlugin};
 use App\Plugins\Support\MatchingTimeImportService;
 use Carbon\CarbonImmutable;
@@ -276,7 +280,7 @@ class ClockifyPushTest extends TestCase {
         $project = $this->mappedProject();
         $entry = $this->timeEntry($project);
 
-        $outbox = \App\Models\IntegrationOutboxEntry::query()
+        $outbox = \App\Models\Integration\IntegrationOutboxEntry::query()
             ->where('operation', \App\Plugins\Clockify\Services\ClockifyOutboxDispatcher::OP_ENTRY_CREATE)
             ->where('idempotency_key', ClockifyPlugin::ID . '-entry-create:' . $entry->getKey())
             ->firstOrFail();

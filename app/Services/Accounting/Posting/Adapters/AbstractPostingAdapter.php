@@ -15,7 +15,7 @@ namespace App\Services\Accounting\Posting\Adapters;
 use App\Enums\Finance\PostingAccountRole;
 use App\Models\Accounting\{AccountingPostingRule, AccountingProfile};
 use App\Models\Finance\DatevBookingSource;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Accounting\Posting\{PostingProposalLine, PostingRuleResolver, PostingSourceAdapter};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;

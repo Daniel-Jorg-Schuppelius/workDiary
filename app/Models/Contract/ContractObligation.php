@@ -14,7 +14,7 @@ namespace App\Models\Contract;
 
 use App\Enums\Contract\ContractObligationKind;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

@@ -14,7 +14,8 @@ namespace App\Http\Controllers\Rental;
 
 use App\Exceptions\RentalConflictException;
 use App\Http\Controllers\Controller;
-use App\Models\{Asset, User};
+use App\Models\Asset;
+use App\Models\Platform\User;
 use App\Models\Rental\{RentalCase, RentalProfile, RentalRequest};
 use App\Services\Rental\RentalRequestService;
 use App\Support\{ErrorText, Sqid};

@@ -12,7 +12,8 @@ namespace App\Http\Controllers\Customers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Billing\CustomerBillingStatement;
-use App\Models\{Customer, LexofficeVoucher};
+use App\Models\Customer\Customer;
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Services\Billing\{RetainerLexofficeService, RetainerVoucherReconciler};
 use App\Support\{ErrorText, Tz};
 use Illuminate\Http\{RedirectResponse, Request};

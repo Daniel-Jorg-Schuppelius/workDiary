@@ -14,7 +14,7 @@ namespace Tests\Feature\Ai;
 
 use App\Jobs\Ai\AiInvocationJob;
 use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Ai\Contracts\AiResultHandlerInterface;
 use App\Services\Ai\Dto\{AiInvocationResult, FormulateRequest};
 use Illuminate\Foundation\Testing\RefreshDatabase;

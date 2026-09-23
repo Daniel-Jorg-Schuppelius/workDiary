@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Customer;
 
 use App\Enums\Project\ProjectStatus;
 use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSqid, Searchable};
@@ -16,6 +16,9 @@ use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 use Illuminate\Support\Carbon;
+use App\Models\Asset;
+use App\Models\Customer\Customer\Customer;
+use App\Models\Project\Project;
 
 /**
  * Fremdkunde (Endkunde): gehört zu einem {@see Customer} (Firma) und bildet

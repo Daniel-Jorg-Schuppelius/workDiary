@@ -15,9 +15,9 @@ namespace App\Http\Controllers\Customers;
 use App\Enums\DocumentDesign\RenderProfileStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
-use App\Models\DocumentDesign\DocumentRenderProfile;
-use App\Services\SqidEncoder;
+use App\Models\Customer\Customer;
+use App\Models\Document\DocumentDesign\DocumentRenderProfile;
+use App\Support\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 

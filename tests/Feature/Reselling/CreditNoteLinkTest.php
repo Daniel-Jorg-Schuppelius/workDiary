@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Reselling;
 
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
-use App\Models\{Customer, ExternalReference, LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Plugins\Lexoffice\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
 use App\Models\Reselling\{ResalePeriodLink, ResaleSubscription};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Services\LexofficeRecipientInvoiceLines;

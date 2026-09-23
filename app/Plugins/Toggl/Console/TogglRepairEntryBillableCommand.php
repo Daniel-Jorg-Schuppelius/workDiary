@@ -11,7 +11,9 @@
 namespace App\Plugins\Toggl\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\{ExternalReference, InvoiceItem, Organization, TimeEntry};
+use App\Models\Integration\ExternalReference;
+use App\Models\{InvoiceItem, TimeEntry};
+use App\Models\Platform\Organization;
 use App\Plugins\Support\{MatchingTimeImportService, TimeWritebackObserver};
 use App\Plugins\Toggl\{TogglConfig, TogglPlugin};
 use Illuminate\Console\Command;

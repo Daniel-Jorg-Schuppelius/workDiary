@@ -14,7 +14,10 @@ namespace App\Models\Applications;
 
 use App\Enums\Applications\TenderProcedureType;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\{Customer, Project, Quote, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\Sales\Quote;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 

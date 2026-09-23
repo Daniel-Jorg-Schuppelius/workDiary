@@ -9,7 +9,7 @@
 @php
     /** @var \App\Models\Permit $permit */
     /** @var array<string, string> $statusOptions */
-    /** @var \Illuminate\Support\Collection<int, \App\Models\Event> $eventOptions */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Calendar\Event> $eventOptions */
     $currentStatus = old('status', $permit->status?->value ?? \App\Enums\Permit\PermitStatus::Required->value);
     $currentEvent = old('event_id', $permit->event?->sqid);
     $evidence = $permit->exists ? $permit->evidence() : null;
@@ -62,7 +62,7 @@
     @if ($evidence)
         <div class="flex items-center gap-2 text-sm">
             <x-icon name="description" />
-            <a class="link" href="{{ \App\Http\Controllers\AttachmentController::downloadUrl($evidence) }}">{{ $evidence->original_name }}</a>
+            <a class="link" href="{{ \App\Http\Controllers\Attachments\AttachmentController::downloadUrl($evidence) }}">{{ $evidence->original_name }}</a>
         </div>
         <p class="text-xs text-muted mt-1">{{ __('permit.evidence.replace_hint') }}</p>
     @endif

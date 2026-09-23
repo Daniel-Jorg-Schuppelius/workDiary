@@ -12,7 +12,7 @@ namespace Tests\Feature\Accounting;
 
 use App\Enums\Finance\{AccountType, BwaGroup};
 use App\Models\Accounting\AccountingAccount;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Accounting\AccountingBudgetService;
 use App\Services\Accounting\Reports\{BwaAccountMapper, BwaBuilder, ProfitAndLossBuilder};
 use Carbon\CarbonImmutable;

@@ -8,9 +8,12 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Knowledge;
 
-use App\Models\{ContentCollection, Customer, Tag, User};
+use App\Models\Knowledge\ContentCollection;
+use App\Models\Customer\Customer;
+use App\Models\Classification\Tag;
+use App\Models\Platform\User;
 use App\Services\Collections\{CollectableTypes, ContentCollectionService, KnowledgeHubService};
 use App\Support\Sqid;
 use Illuminate\Http\Request;
@@ -18,6 +21,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 /**
  * Einstieg „Wissen“ (MVP-813, Feature 155): Sammlungsbaum links, Inhalte als
@@ -119,7 +123,7 @@ class KnowledgeHubController extends Controller {
         if (! \App\Plugins\Msgraph\MsgraphConfig::oneNoteImportEnabled($organizationId)) {
             return false;
         }
-        $connection = \App\Models\MsgraphOneNoteConnection::query()->where('organization_id', $organizationId)->first();
+        $connection = \App\Models\Plugins\Msgraph\MsgraphOneNoteConnection::query()->where('organization_id', $organizationId)->first();
 
         return $connection !== null && $connection->isActive();
     }

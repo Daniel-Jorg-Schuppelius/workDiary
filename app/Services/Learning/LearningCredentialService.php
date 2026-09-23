@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use App\Models\Learning\{LearningCertificate, LearningIssuerKey};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\{Carbon, Str};
 

@@ -11,7 +11,8 @@
 namespace Tests\Feature\Learning;
 
 use App\Models\Learning\{LearningCertificate, LearningCourse, LearningEnrollment};
-use App\Models\{Qualification, User, UserQualification};
+use App\Models\Platform\{User, UserQualification};
+use App\Models\Qualification;
 use App\Models\Safety\{SafetyInstruction, SafetyInstructionParticipant};
 use App\Models\Training\{TrainingAssignment, TrainingCourse};
 use App\Services\Learning\{LearningCompletionService, LearningCourseService, LearningEnrollmentService};
@@ -303,7 +304,7 @@ class LearningCompletionTest extends TestCase {
 
         $supplier = \App\Models\Supplier::factory()->create(['organization_id' => $this->organization->id]);
 
-        $participant = \App\Models\ExternalParticipant::factory()->create([
+        $participant = \App\Models\Communication\ExternalParticipant::factory()->create([
             'organization_id' => $this->organization->id,
             'subject_type' => (new \App\Models\Supplier())->getMorphClass(),
             'subject_id' => $supplier->id,

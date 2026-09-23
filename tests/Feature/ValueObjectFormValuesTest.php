@@ -10,7 +10,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Article, Customer, Expense, ExpenseCategory, Material, MinimumWage, PerDiemRate, Project, Task, User};
+use App\Models\{Article, Expense, ExpenseCategory, Material, MinimumWage, PerDiemRate};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\Project\{Project, Task};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Finance\ProcedureDocumentation\Sections;
 
 use App\Models\Backup\{BackupGeneration, BackupTargetConnection};
-use App\Models\{BackupHeartbeat, Organization};
+use App\Models\Platform\{BackupHeartbeat, Organization};
 use App\Services\Finance\ProcedureDocumentation\{FormatsSectionValues, ProcedureSection, SectionContext};
 use CommonToolkit\Helper\Data\NumberHelper;
 

@@ -12,7 +12,10 @@ namespace App\Plugins\Lexoffice\Http\Controllers;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\{Customer, LexofficeVoucher, Supplier, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
+use App\Models\Supplier;
 use App\Plugins\Lexoffice\Jobs\SyncVouchersJob;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeDunningService, LexofficeVoucherFileService, LexofficeVoucherSync};
 use App\Services\Billing\RetainerVoucherReconciler;

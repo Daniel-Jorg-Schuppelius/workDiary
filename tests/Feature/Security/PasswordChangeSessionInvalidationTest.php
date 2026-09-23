@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Security;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{DB, Hash};
 use Illuminate\Support\Str;

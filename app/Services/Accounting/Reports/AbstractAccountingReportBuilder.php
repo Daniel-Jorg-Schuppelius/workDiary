@@ -14,7 +14,7 @@ namespace App\Services\Accounting\Reports;
 
 use App\Enums\Finance\{AccountType, AccountingEntryStatus};
 use App\Models\Accounting\{AccountingAccount, AccountingEntryLine, AccountingOpenItemSettlement};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\RoundingMode;

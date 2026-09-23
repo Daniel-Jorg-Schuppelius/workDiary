@@ -11,7 +11,8 @@
 namespace Tests\Feature\Access;
 
 use App\Enums\User\UserRole;
-use App\Models\{AuditLog, User, UserGroup};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{User, UserGroup};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;

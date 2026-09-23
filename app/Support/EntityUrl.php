@@ -12,8 +12,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\{Asset, Customer, DiaryEntry, ForeignCustomer, Lead, ManufacturingOrder, Project, Protocol, SafetyEvent};
+use App\Models\{Asset, DiaryEntry, ManufacturingOrder, Protocol, SafetyEvent};
+use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Learning\LearningEnrollment;
+use App\Models\Project\Project;
+use App\Models\Sales\Lead;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Throwable;

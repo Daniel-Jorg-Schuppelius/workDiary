@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
-use App\Models\{LexofficeArticle, Organization, Project, ProjectBillingRule};
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Lexoffice\LexofficeArticle;
+use App\Models\Project\{Project, ProjectBillingRule};
 use App\Plugins\Support\PluginOrgContext;
 
 /**

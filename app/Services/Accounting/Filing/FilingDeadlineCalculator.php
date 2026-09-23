@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Accounting\Filing;
 
 use App\Enums\Finance\FilingObligationKind;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Accounting\VatFilingProfileResolver;
-use App\Services\HolidayService;
+use App\Services\Calendar\HolidayService;
 use Carbon\CarbonImmutable;
 
 /**

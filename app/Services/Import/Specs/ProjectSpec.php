@@ -14,7 +14,9 @@ namespace App\Services\Import\Specs;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Enums\Project\ProjectStatus;
-use App\Models\{Customer, Organization, Project};
+use App\Models\Customer\Customer;
+use App\Models\Platform\Organization;
+use App\Models\Project\Project;
 use App\Services\Import\{ImportOutcome, ValidationIssue};
 use CommonToolkit\Helper\Data\StringHelper;
 use Throwable;

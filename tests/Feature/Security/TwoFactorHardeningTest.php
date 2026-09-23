@@ -11,7 +11,8 @@
 namespace Tests\Feature\Security;
 
 use App\Mail\TwoFactorCodeMail;
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Services\Auth\EmailOtpService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\ThrottleRequests;

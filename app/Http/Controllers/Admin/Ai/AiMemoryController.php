@@ -16,7 +16,7 @@ use App\Enums\Ai\AiMemoryEntryType;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Ai\AiMemoryEntry;
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use App\Services\Ai\AiCapabilityRegistry;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};

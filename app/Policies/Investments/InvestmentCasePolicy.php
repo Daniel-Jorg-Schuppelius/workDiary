@@ -14,7 +14,7 @@ namespace App\Policies\Investments;
 
 use App\Enums\User\Permission as P;
 use App\Models\Investments\InvestmentCase;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
 
 /**

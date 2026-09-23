@@ -11,9 +11,12 @@
 namespace Tests\Feature\Billing;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\ActivityCategory;
 use App\Models\Billing\{CustomerBillingAgreement, CustomerBillingRate};
-use App\Models\{Customer, Project, TimeEntry, User};
+use App\Models\Classification\ActivityCategory;
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

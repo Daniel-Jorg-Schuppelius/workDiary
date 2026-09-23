@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\CustomerPortal;
 
 use App\Mail\CustomerPortalInvitationMail;
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Services\Auth\UserSessionInvalidator;
 use CommonToolkit\Helper\Data\{CryptoHelper, EmailHelper};
 use Illuminate\Support\{Carbon, Str};

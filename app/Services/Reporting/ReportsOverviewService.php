@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Reporting;
 
-use App\Models\{Project, TimeEntry, User};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;

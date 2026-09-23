@@ -48,7 +48,7 @@
             <p class="text-sm text-muted">{{ __('orgamax.intro') }}</p>
             <p class="mt-1 text-xs text-muted">{{ __('orgamax.erp_notice') }}</p>
 
-            @if ($connection === null || $connection->status === \App\Models\OrgaMaxConnection::STATUS_DISCONNECTED || $connection->status === \App\Models\OrgaMaxConnection::STATUS_DRAFT)
+            @if ($connection === null || $connection->status === \App\Models\Plugins\OrgaMax\OrgaMaxConnection::STATUS_DISCONNECTED || $connection->status === \App\Models\Plugins\OrgaMax\OrgaMaxConnection::STATUS_DRAFT)
                 {{-- Geführter Verbindungsdialog --}}
                 <form method="POST" action="{{ route('admin.orgamax.connect') }}" class="mt-3 grid gap-2 sm:grid-cols-2">
                     @csrf
@@ -75,7 +75,7 @@
                 </form>
             @else
                 <div class="mt-3 flex flex-wrap items-center gap-2 text-sm">
-                    <span class="badge badge-sm {{ $connection->isActive() ? 'badge-success' : ($connection->status === \App\Models\OrgaMaxConnection::STATUS_BLOCKED ? 'badge-error' : 'badge-warning') }}">
+                    <span class="badge badge-sm {{ $connection->isActive() ? 'badge-success' : ($connection->status === \App\Models\Plugins\OrgaMax\OrgaMaxConnection::STATUS_BLOCKED ? 'badge-error' : 'badge-warning') }}">
                         {{ __('orgamax.status.' . $connection->status) }}
                     </span>
                     <span class="badge badge-ghost badge-sm">{{ __('orgamax.connect.mode') }}: {{ __('orgamax.connect.mode_' . $connection->mode) }}</span>
@@ -87,7 +87,7 @@
                     <p class="mt-1 text-sm text-error">{{ __('orgamax.connect.blocked', ['reason' => $connection->blocked_reason]) }}</p>
                 @endif
 
-                @if ($connection->status === \App\Models\OrgaMaxConnection::STATUS_PENDING_CONFIRMATION)
+                @if ($connection->status === \App\Models\Plugins\OrgaMax\OrgaMaxConnection::STATUS_PENDING_CONFIRMATION)
                     {{-- Ausdrückliche Kontobestätigung (Anti-Fremd-iid) --}}
                     <div class="mt-3 rounded-box border border-info/40 bg-info/5 p-3 text-sm">
                         <strong>{{ __('orgamax.connect.detected_account') }}:</strong>
@@ -111,7 +111,7 @@
             @endif
         </div>
 
-        @if ($connection !== null && $connection->status !== \App\Models\OrgaMaxConnection::STATUS_DISCONNECTED)
+        @if ($connection !== null && $connection->status !== \App\Models\Plugins\OrgaMax\OrgaMaxConnection::STATUS_DISCONNECTED)
             {{-- Capability-Matrix / Datenführerschaft --}}
             <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                 <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('orgamax.capabilities.heading') }}</h2>
@@ -129,7 +129,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (\App\Models\OrgaMaxConnection::CAPABILITIES as $capability)
+                                @foreach (\App\Models\Plugins\OrgaMax\OrgaMaxConnection::CAPABILITIES as $capability)
                                     @php
                                         $entry = (array) (($connection->capabilities ?? [])[$capability] ?? []);
                                         $isExpense = $capability === 'expenses';

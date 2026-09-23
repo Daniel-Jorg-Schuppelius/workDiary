@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Support\TimeTracking;
 
 use App\Jobs\Concerns\RetriesTransientFailures;
-use App\Models\{Organization, TimeTrackingWebhookDelivery};
+use App\Models\Integration\TimeTrackingWebhookDelivery;
+use App\Models\Platform\Organization;
 use App\Plugins\Contracts\TimeImporter;
 use App\Plugins\PluginManager;
 use Illuminate\Bus\Queueable;

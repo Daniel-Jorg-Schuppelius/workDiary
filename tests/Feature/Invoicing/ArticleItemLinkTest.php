@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Invoicing;
 
-use App\Models\{Article, Customer, Invoice, Organization, User};
+use App\Models\{Article, Invoice};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
 use App\Services\Invoicing\QuoteService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

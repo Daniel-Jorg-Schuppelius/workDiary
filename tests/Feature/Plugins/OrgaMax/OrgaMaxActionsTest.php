@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Plugins\OrgaMax;
 
-use App\Models\{ExternalReference, IntegrationOutboxEntry, OrgaMaxConnection, User};
+use App\Models\Integration\{ExternalReference, IntegrationOutboxEntry};
+use App\Models\Platform\User;
+use App\Models\Plugins\OrgaMax\OrgaMaxConnection;
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Plugins\OrgaMax\Services\OrgaMaxOutboxDispatcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;

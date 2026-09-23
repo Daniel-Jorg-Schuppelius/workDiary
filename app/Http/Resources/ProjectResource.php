@@ -10,7 +10,8 @@
 
 namespace App\Http\Resources;
 
-use App\Models\{Customer, Project};
+use App\Models\Customer\Customer;
+use App\Models\Project\Project;
 use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

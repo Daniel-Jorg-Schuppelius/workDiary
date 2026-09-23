@@ -11,7 +11,8 @@
 namespace Tests\Feature\Schedule;
 
 use App\Enums\Shift\ShiftPreference;
-use App\Models\{DesiredShift, ScheduledShift, ShiftType, User};
+use App\Models\{DesiredShift, ScheduledShift, ShiftType};
+use App\Models\Platform\User;
 use App\Services\Schedule\{StaffingSuggester, WishMatcher};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

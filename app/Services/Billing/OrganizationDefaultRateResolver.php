@@ -12,12 +12,12 @@ declare(strict_types=1);
 
 namespace App\Services\Billing;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Support\Setting;
 
 /**
  * Organisationsweiter Standard-Stundensatz (MVP-482): letzte Stufe der
- * Satzhierarchie im {@see \App\Services\RateCalculator}, wenn weder Eintrag,
+ * Satzhierarchie im {@see \App\Services\Billing\RateCalculator}, wenn weder Eintrag,
  * Kondition, Mitarbeiter, Tätigkeit, Projekt noch Kunde einen Satz setzen.
  *
  * Aufgelöst wird bewusst über die Organisation des Eintrags

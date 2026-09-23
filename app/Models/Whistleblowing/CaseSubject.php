@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Whistleblowing;
 
 use App\Models\Concerns\BelongsToOrganization;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Models\Whistleblowing\Casts\CaseEncrypted;
 use App\Models\Whistleblowing\Concerns\ProvidesCaseDek;
 use Illuminate\Database\Eloquent\Model;

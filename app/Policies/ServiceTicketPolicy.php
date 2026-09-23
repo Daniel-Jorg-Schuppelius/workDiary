@@ -11,7 +11,8 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\{ServiceTicket, User};
+use App\Models\Platform\User;
+use App\Models\ServiceTicket;
 use App\Policies\Concerns\HasAdminBypass;
 
 class ServiceTicketPolicy extends PermissionPolicy {

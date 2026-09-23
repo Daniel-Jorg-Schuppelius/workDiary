@@ -34,7 +34,7 @@
         <x-select-field name="team_id" :label="__('Team')">
             <option value="">{{ __('— Kein Team —') }}</option>
             @foreach ($teams as $team)
-                <option value="{{ $team->sqid }}" @selected((string) old('team_id', \App\Support\Sqid::encode(\App\Models\Team::class, $queue->team_id)) === $team->sqid)>{{ $team->name }}</option>
+                <option value="{{ $team->sqid }}" @selected((string) old('team_id', \App\Support\Sqid::encode(\App\Models\Platform\Team::class, $queue->team_id)) === $team->sqid)>{{ $team->name }}</option>
             @endforeach
         </x-select-field>
 

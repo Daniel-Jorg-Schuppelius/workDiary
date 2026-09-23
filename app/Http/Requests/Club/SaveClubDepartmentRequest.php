@@ -14,7 +14,7 @@ namespace App\Http\Requests\Club;
 
 use App\Http\Requests\BaseFormRequest;
 use App\Models\Club\ClubDepartment;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Illuminate\Validation\Rule;
 
 /** Abteilung/Sparte (MVP-842): Name je Organisation eindeutig unter den nicht gelöschten. */

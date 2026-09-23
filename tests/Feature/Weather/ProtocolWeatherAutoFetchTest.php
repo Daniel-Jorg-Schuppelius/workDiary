@@ -12,7 +12,10 @@ namespace Tests\Feature\Weather;
 
 use App\Enums\Protocol\ProtocolStatus;
 use App\Jobs\FetchProtocolWeatherJob;
-use App\Models\{Customer, Project, Protocol, WeatherSnapshot};
+use App\Models\Customer\Customer;
+use App\Models\Project\Project;
+use App\Models\Protocol;
+use App\Models\Weather\WeatherSnapshot;
 use App\Services\Weather\Contracts\WeatherProvider;
 use Carbon\CarbonInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;

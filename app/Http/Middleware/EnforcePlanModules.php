@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Enums\Licensing\ModuleStatus;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Licensing\{FeatureFlagResolver, ModuleCatalog, ModuleStatusResolver};
 use Closure;
 use Illuminate\Http\{JsonResponse, Request};

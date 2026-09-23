@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Security;
 
-use App\Models\{Attachment, DiaryEntry, OperationsTask, User};
+use App\Models\Attachments\Attachment;
+use App\Models\DiaryEntry;
+use App\Models\Platform\User;
+use App\Models\Project\OperationsTask;
 use App\Support\Crypto\EnvelopeCrypto;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

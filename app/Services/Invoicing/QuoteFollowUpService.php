@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
-use App\Models\{Quote, User};
+use App\Models\Platform\User;
+use App\Models\Sales\Quote;
 use App\Services\Communication\CommunicationNoteService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +22,7 @@ use RuntimeException;
 /**
  * Nachfassen eines Angebots (Feature 112, MVP-601).
  *
- * Das Ergebnis wird als {@see \App\Models\CommunicationNote} festgehalten —
+ * Das Ergebnis wird als {@see \App\Models\Communication\CommunicationNote} festgehalten —
  * bewusst kein eigenes Modell: Ein Nachfassen IST ein Kontakt, und in der
  * Kundenakte steht es dort, wo man es sucht, neben Anrufen und Mails.
  *

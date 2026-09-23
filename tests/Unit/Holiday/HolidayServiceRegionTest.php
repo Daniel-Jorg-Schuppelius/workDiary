@@ -10,8 +10,8 @@
 
 namespace Tests\Unit\Holiday;
 
-use App\Models\Organization;
-use App\Services\HolidayService;
+use App\Models\Platform\Organization;
+use App\Services\Calendar\HolidayService;
 use App\Support\HolidayRegions;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -84,7 +84,7 @@ class HolidayServiceRegionTest extends TestCase {
 
     /** B16 (Vollscan 2026-08-23): die eine Werktage-Zählung, gegen Kalender gepinnt. */
     public function test_working_days_between_and_next_business_day(): void {
-        $service = app(\App\Services\HolidayService::class);
+        $service = app(\App\Services\Calendar\HolidayService::class);
 
         // KW 20/2026 (18.–22.05.) ohne Feiertag: 5 Werktage; inkl. Wochenende 5.
         $this->assertSame(5, $service->workingDaysBetween(CarbonImmutable::parse('2026-05-18'), CarbonImmutable::parse('2026-05-24')));

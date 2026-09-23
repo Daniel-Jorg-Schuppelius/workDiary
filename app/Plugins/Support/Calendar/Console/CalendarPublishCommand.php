@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Support\Calendar\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\Contracts\CalendarPublisher;
 use Illuminate\Console\Command;
 

@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Lexoffice;
 
-use App\Models\LexofficeVoucher;
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use CommonToolkit\ValueObjects\Money;
 
 /**

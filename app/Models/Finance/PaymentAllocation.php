@@ -14,7 +14,7 @@ namespace App\Models\Finance;
 
 use App\Enums\Finance\AllocationKind;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use Database\Factories\Finance\PaymentAllocationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};

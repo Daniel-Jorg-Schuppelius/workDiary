@@ -14,7 +14,8 @@ namespace Tests\Feature\Reselling;
 
 use App\Enums\Finance\BillingMode;
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus, ResaleArticleRole};
-use App\Models\{Article, Customer, Invoice, InvoiceItem};
+use App\Models\{Article, Invoice, InvoiceItem};
+use App\Models\Customer\Customer;
 use App\Models\Reselling\{ResalePeriodLink, ResaleSubscription};
 use App\Services\Reselling\Mirror\{InvoiceMirror, LocalInvoiceMirrorSource};
 use App\Services\Reselling\Register\{LinkProposer, PeriodPlanner};

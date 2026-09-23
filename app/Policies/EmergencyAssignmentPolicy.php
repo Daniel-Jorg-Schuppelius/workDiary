@@ -10,7 +10,8 @@
 
 namespace App\Policies;
 
-use App\Models\{EmergencyAssignment, User};
+use App\Models\EmergencyAssignment;
+use App\Models\Platform\User;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class EmergencyAssignmentPolicy {

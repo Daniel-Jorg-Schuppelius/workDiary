@@ -16,7 +16,7 @@ use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Costing\CostElementCatalog;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Gaeb\CostElementCatalogService;
 use App\Support\ErrorText;
 use CommonToolkit\Helper\FileSystem\File;
@@ -97,7 +97,7 @@ class CostElementCatalogController extends Controller {
 
         $raw = $request->input('article');
         $articleId = is_string($raw) && $raw !== ''
-            ? app(\App\Services\SqidEncoder::class)->decode(\App\Models\Article::class, $raw)
+            ? app(\App\Support\SqidEncoder::class)->decode(\App\Models\Article::class, $raw)
             : null;
 
         // Der Org-Scope liegt am Modell; ein fremder Sqid findet nichts.

@@ -10,7 +10,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\{OnCallShift, User};
+use App\Models\OnCallShift;
+use App\Models\Platform\User;
 use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

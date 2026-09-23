@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Models;
+namespace App\Models\Project;
 
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskStatus, OperationsTaskType};
 use App\Models\Concerns\{Auditable, HasSqid};

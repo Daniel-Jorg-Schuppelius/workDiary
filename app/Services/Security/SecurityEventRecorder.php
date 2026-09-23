@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Security;
 
 use App\Enums\Security\SecurityEventType;
-use App\Models\SecurityEvent;
+use App\Models\Auth\SecurityEvent;
 use Illuminate\Support\Facades\Request;
 
 /**

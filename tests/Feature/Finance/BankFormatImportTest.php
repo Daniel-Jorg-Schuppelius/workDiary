@@ -11,7 +11,9 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{BalanceCheck, BankStatementFormat, MatchStatus, TransactionDirection};
-use App\Models\{Customer, Invoice, User};
+use App\Models\Customer\Customer;
+use App\Models\Invoice;
+use App\Models\Platform\User;
 use App\Services\Finance\{BankImportException, BankImportService, FinancialFormatsSupport, MatchingService};
 use App\Services\Finance\Banking\BankStatementParser;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -210,7 +212,7 @@ class BankFormatImportTest extends TestCase {
         // dieselbe Datei importieren (Mandantentrennung der Dedup-Regel).
         $this->importService()->import($this->fixtureFile('qif_sample.qif'), $this->organization->id);
 
-        $other = \App\Models\Organization::factory()->create();
+        $other = \App\Models\Platform\Organization::factory()->create();
         $statements = $this->importService()->import($this->fixtureFile('qif_sample.qif'), $other->id);
 
         $this->assertCount(1, $statements);

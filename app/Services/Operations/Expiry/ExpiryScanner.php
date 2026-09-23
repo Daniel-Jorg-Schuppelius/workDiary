@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Operations\Expiry;
 
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskStatus, OperationsTaskType};
-use App\Models\{AttendanceTerminal, ChatWebhook, OperationsTask, TodoistConnection};
+use App\Models\{AttendanceTerminal, ChatWebhook};
+use App\Models\Plugins\Todoist\TodoistConnection;
+use App\Models\Project\OperationsTask;
 use App\Services\Licensing\{LicenseService, LicenseStatus};
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use App\Support\MorphMap;
@@ -111,11 +113,11 @@ class ExpiryScanner {
      */
     private function connectionHealthSignals(): array {
         $models = [
-            'email' => \App\Models\EmailConnection::class,
-            'cti' => \App\Models\CtiConnection::class,
+            'email' => \App\Models\Mail\EmailConnection::class,
+            'cti' => \App\Models\Cti\CtiConnection::class,
             'carrier' => \App\Models\CarrierConnection::class,
-            'caldav' => \App\Models\CalDavConnection::class,
-            'webdav' => \App\Models\WebdavConnection::class,
+            'caldav' => \App\Models\Plugins\CalDav\CalDavConnection::class,
+            'webdav' => \App\Models\Plugins\Webdav\WebdavConnection::class,
         ];
 
         $signals = [];
@@ -185,7 +187,7 @@ class ExpiryScanner {
         $guard = app(\App\Services\Licensing\LimitGuard::class);
         $signals = [];
 
-        foreach (\App\Models\Organization::query()->withoutGlobalScopes()->get() as $org) {
+        foreach (\App\Models\Platform\Organization::query()->withoutGlobalScopes()->get() as $org) {
             $usage = $guard->userLimitUsage($org);
             if ($usage === null || $usage['max'] <= 0) {
                 continue;
@@ -216,7 +218,7 @@ class ExpiryScanner {
         $signals = DB::table('personal_access_tokens')
             ->join('users', function ($join): void {
                 $join->on('users.id', '=', 'personal_access_tokens.tokenable_id')
-                    ->where('personal_access_tokens.tokenable_type', MorphMap::alias(\App\Models\User::class));
+                    ->where('personal_access_tokens.tokenable_type', MorphMap::alias(\App\Models\Platform\User::class));
             })
             ->whereNotNull('personal_access_tokens.expires_at')
             ->where('personal_access_tokens.expires_at', '>', now())

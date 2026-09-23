@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Invoicing;
 
 use App\Mail\DunningMail;
-use App\Models\{CashEntry, DocumentDispatch, Invoice};
+use App\Models\{CashEntry, Invoice};
+use App\Models\Document\DocumentDispatch;
 use App\Services\Finance\{BillingModeResolver, ReconciliationService};
 use App\Support\Setting;
 use Carbon\{CarbonImmutable, CarbonInterface};

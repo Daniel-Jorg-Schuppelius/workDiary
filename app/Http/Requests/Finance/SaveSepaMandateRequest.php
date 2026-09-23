@@ -25,7 +25,7 @@ class SaveSepaMandateRequest extends FormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
-    protected array $sqidFields = ['customer_id' => \App\Models\Customer::class];
+    protected array $sqidFields = ['customer_id' => \App\Models\Customer\Customer::class];
 
     public function authorize(): bool {
         return Gate::allows(Permission::FinancePaymentRun->value);
@@ -75,6 +75,6 @@ class SaveSepaMandateRequest extends FormRequest {
     private function currentOrganizationId(): int {
         $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
 
-        return $organization instanceof \App\Models\Organization ? (int) $organization->id : 0;
+        return $organization instanceof \App\Models\Platform\Organization ? (int) $organization->id : 0;
     }
 }

@@ -12,7 +12,8 @@ namespace Tests\Feature\Asset;
 
 use App\Enums\Asset\MaintenanceIntervalKind;
 use App\Enums\User\UserRole;
-use App\Models\{Asset, MaintenancePlan, Organization, User};
+use App\Models\{Asset, MaintenancePlan};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;

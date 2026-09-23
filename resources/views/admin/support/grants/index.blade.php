@@ -41,7 +41,7 @@
             </tr>
         </x-slot:head>
         @forelse ($grants as $grant)
-            @php /** @var \App\Models\SupportAccessGrant $grant */ @endphp
+            @php /** @var \App\Models\Auth\SupportAccessGrant $grant */ @endphp
             <tr>
                 <td>
                     @if ($grant->isActive())
@@ -53,7 +53,7 @@
                     @endif
                 </td>
                 <td>
-                    @if ($grant->scope === \App\Models\SupportAccessGrant::SCOPE_FULL)
+                    @if ($grant->scope === \App\Models\Auth\SupportAccessGrant::SCOPE_FULL)
                         <x-status-badge size="xs" tone="warning">{{ __('Vollzugriff') }}</x-status-badge>
                     @else
                         <x-status-badge size="xs" tone="info">{{ __('Nur lesend') }}</x-status-badge>

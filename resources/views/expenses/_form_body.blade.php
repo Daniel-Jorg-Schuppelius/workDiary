@@ -66,12 +66,12 @@
 
 <x-form-group :legend="__('Zuordnung')" icon="link" tone="success" cols="2">
     <x-project-select :label="__('Projekt')" :projects="$projects"
-        :selected="(string) old('project_id', \App\Support\Sqid::encode(\App\Models\Project::class, $expense?->project_id))"
+        :selected="(string) old('project_id', \App\Support\Sqid::encode(\App\Models\Project\Project::class, $expense?->project_id))"
         data-depends-on="customer_id" :data-parent="true" />
     <x-select-field name="customer_id" :label="__('Kunde')">
         <option value="">—</option>
         @foreach ($customers as $c)
-            <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $expense?->customer_id)) === $c->sqid)>{{ $c->name }}</option>
+            <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $expense?->customer_id)) === $c->sqid)>{{ $c->name }}</option>
         @endforeach
     </x-select-field>
 </x-form-group>

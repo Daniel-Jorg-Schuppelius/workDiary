@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Auth;
 
 use App\Enums\Auth\{SsoProtocol, SsoProviderType};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
@@ -16,6 +16,7 @@ use App\Models\Concerns\HasPrivateNetworkOptIn;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Auth\SsoIdentity;
 
 /**
  * SSO-Anbindung einer Organisation (Feature 057): genau eine Verbindung je

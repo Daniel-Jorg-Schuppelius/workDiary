@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\{CtiConnection, Organization};
+use App\Models\Cti\CtiConnection;
+use App\Models\Platform\Organization;
 use App\Services\Cti\{CtiCallService, CtiNormalizerResolver};
 use Illuminate\Http\{JsonResponse, Request};
 use OpenApi\Attributes as OA;

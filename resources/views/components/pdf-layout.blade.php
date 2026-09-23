@@ -17,7 +17,7 @@
       - $documentMeta  (optional) ergänzende Metazeile direkt unter Header
 --}}
 @php
-    /** @var \App\Services\BrandingService|null $branding */
+    /** @var \App\Services\UI\BrandingService|null $branding */
     $pdfType = $pdfType ?? 'default';
     $pdfTitle = $pdfTitle ?? null;
     $pdfCfg = $branding ? $branding->pdfConfig($pdfType) : [

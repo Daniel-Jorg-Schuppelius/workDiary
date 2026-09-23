@@ -11,11 +11,12 @@
 namespace App\Plugins\Zammad\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Organization, Project, ZammadConnection};
-use App\Models\PluginState;
+use App\Models\Platform\{Organization, PluginState};
+use App\Models\Plugins\Zammad\ZammadConnection;
+use App\Models\Project\Project;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Zammad\ZammadPlugin;
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;

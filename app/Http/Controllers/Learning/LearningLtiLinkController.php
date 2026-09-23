@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Learning;
 use App\Enums\Learning\LearningUnitKind;
 use App\Http\Controllers\Controller;
 use App\Models\Learning\{LearningCourse, LearningLtiLink, LearningLtiTool, LearningUnit};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\LearningLtiPlatformService;
 use App\Support\Sqid;
 use ELearningToolkit\Lti\LtiException;

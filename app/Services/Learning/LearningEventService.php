@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use App\Enums\Event\{ParticipantRole, ParticipantStatus};
-use App\Models\{Event, EventParticipant, User};
+use App\Models\Calendar\{Event, EventParticipant};
 use App\Models\Learning\{LearningEnrollment, LearningUnit};
+use App\Models\Platform\User;
 use App\Services\Participation\EventSeatService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

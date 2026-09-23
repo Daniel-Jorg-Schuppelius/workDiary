@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Plugins\Easybill\Services;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
-use App\Models\{Document, ExternalReference, User};
+use App\Models\Document\Document;
 use App\Models\Finance\BillingTransfer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\User;
 use App\Plugins\Easybill\Api\EasybillClientFactory;
 use App\Plugins\Easybill\{EasybillConfig, EasybillPlugin};
 use App\Services\Document\DocumentService;

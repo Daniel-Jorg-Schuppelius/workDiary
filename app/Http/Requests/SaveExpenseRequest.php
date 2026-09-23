@@ -20,9 +20,9 @@ class SaveExpenseRequest extends BaseFormRequest {
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'expense_category_id' => \App\Models\ExpenseCategory::class,
-        'project_id' => \App\Models\Project::class,
-        'customer_id' => \App\Models\Customer::class,
-        'task_id' => \App\Models\Task::class,
+        'project_id' => \App\Models\Project\Project::class,
+        'customer_id' => \App\Models\Customer\Customer::class,
+        'task_id' => \App\Models\Project\Task::class,
         'attendance_id' => \App\Models\Attendance::class,
     ];
 

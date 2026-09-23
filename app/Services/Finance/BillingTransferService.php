@@ -11,8 +11,11 @@
 namespace App\Services\Finance;
 
 use App\Enums\Finance\{TransferChannel, TransferStatus, TransferTarget};
-use App\Models\{Customer, ExternalReference, MaterialUsage, TimeEntry, User};
+use App\Models\Customer\Customer;
 use App\Models\Finance\{BillingTransfer, BillingTransferEvent, BillingTransferItem};
+use App\Models\Integration\ExternalReference;
+use App\Models\{MaterialUsage, TimeEntry};
+use App\Models\Platform\User;
 use App\Services\Concerns\ResolvesActorId;
 use App\Support\MorphMap;
 use App\Support\Query\DateRange;

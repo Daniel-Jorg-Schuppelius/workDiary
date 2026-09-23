@@ -8,11 +8,13 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Platform;
 
-use App\Models\{PushSubscription, User};
+use App\Models\Platform\PushSubscription;
+use App\Models\Platform\User;
 use App\Rules\SafePushEndpoint;
 use Illuminate\Http\{JsonResponse, Request};
+use App\Http\Controllers\Controller;
 
 class PushSubscriptionController extends Controller {
     public function vapid(): JsonResponse {

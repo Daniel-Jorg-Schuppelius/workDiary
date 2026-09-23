@@ -10,7 +10,7 @@
 @php
     $isEdit = $isEdit ?? false;
     $action = $isEdit ? route('invoice-schedules.update', $schedule) : route('invoice-schedules.store');
-    $selectedCustomer = (string) old('customer_id', $schedule ? \App\Support\Sqid::encode(\App\Models\Customer::class, $schedule->customer_id) : '');
+    $selectedCustomer = (string) old('customer_id', $schedule ? \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $schedule->customer_id) : '');
     $selectedContract = (string) old('contract_id', $schedule?->contract_id !== null ? \App\Support\Sqid::encode(\App\Models\Contract\Contract::class, $schedule->contract_id) : '');
 @endphp
 
@@ -37,7 +37,7 @@
                 <select id="is-customer" name="customer_id" class="select select-bordered w-full" required>
                     <option value="">{{ __('Bitte wählen') }}</option>
                     @foreach ($customers as $customer)
-                        @php($csqid = \App\Support\Sqid::encode(\App\Models\Customer::class, (int) $customer->id))
+                        @php($csqid = \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, (int) $customer->id))
                         <option value="{{ $csqid }}" @selected($selectedCustomer === $csqid)>{{ $customer->displayLabel() }}</option>
                     @endforeach
                 </select>

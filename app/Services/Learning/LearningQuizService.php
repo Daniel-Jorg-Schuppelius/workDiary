@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use App\Models\Learning\{LearningAnswer, LearningEnrollment, LearningQuestion, LearningQuiz, LearningQuizAttempt, LearningQuizAttemptWaiver};
-use App\Models\User;
+use App\Models\Platform\User;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Routing;
 
-use App\Models\GeocodeCache;
+use App\Models\Platform\GeocodeCache;
 use App\Services\Routing\{GeocodingException, NominatimGeocoder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;

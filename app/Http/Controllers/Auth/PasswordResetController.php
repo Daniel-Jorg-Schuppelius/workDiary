@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Notifications\PasswordResetLink;
 use App\Services\Auth\UserSessionInvalidator;
 use Carbon\CarbonImmutable;

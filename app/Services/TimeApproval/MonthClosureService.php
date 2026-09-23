@@ -11,7 +11,8 @@
 namespace App\Services\TimeApproval;
 
 use App\Enums\TimeApproval\MonthClosureStatus;
-use App\Models\{MonthClosure, MonthClosureEvent, User};
+use App\Models\{MonthClosure, MonthClosureEvent};
+use App\Models\Platform\User;
 use App\Services\Concerns\ResolvesActorId;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;

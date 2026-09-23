@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Webdav\Services;
 
 use APIToolkit\API\WebDav\Propfind;
-use App\Models\WebdavConnection;
+use App\Models\Plugins\Webdav\WebdavConnection;
 use App\Plugins\Support\Mirror\RemoteFileGateway;
 use App\Plugins\Support\PluginApiClient;
 use App\Support\UrlSafety;

@@ -12,7 +12,9 @@ namespace App\Http\Controllers;
 
 use App\Enums\Project\ProjectStatus;
 use App\Http\Controllers\Concerns\{ProvidesTimeEntryTagPicker, ResolvesGlobalDateRange};
-use App\Models\{Attendance, Project, TimeEntry, User};
+use App\Models\{Attendance, TimeEntry};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Services\Attendance\AttendanceClockService;
 use App\Services\Flextime\FlexCalculator;
 use App\Services\TimeApproval\{DayCloseService, UntrackedBlockCalculator};

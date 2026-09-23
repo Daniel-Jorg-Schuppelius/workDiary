@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\PluginSetting;
+use App\Models\Platform\PluginSetting;
 use App\Plugins\Lexoffice\Jobs\{SyncContactsJob, SyncVouchersJob};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -96,7 +96,7 @@ class LexofficeWebhookTest extends TestCase {
         $this->postJson($this->url(), $payload)->assertOk()->assertJson(['status' => 'duplicate']);
 
         Queue::assertPushed(SyncVouchersJob::class, 1);
-        $this->assertSame(1, \App\Models\LexofficeWebhookDelivery::query()->count());
+        $this->assertSame(1, \App\Models\Plugins\Lexoffice\LexofficeWebhookDelivery::query()->count());
     }
 
     public function test_wrong_token_or_disabled_plugin_yields_404_without_traces(): void {
@@ -108,7 +108,7 @@ class LexofficeWebhookTest extends TestCase {
         $this->postJson($this->url(), $this->payload('voucher.changed'))->assertNotFound();
 
         Queue::assertNothingPushed();
-        $this->assertSame(0, \App\Models\LexofficeWebhookDelivery::query()->count());
+        $this->assertSame(0, \App\Models\Plugins\Lexoffice\LexofficeWebhookDelivery::query()->count());
     }
 
     public function test_rsa_signature_is_enforced_when_public_key_is_configured(): void {

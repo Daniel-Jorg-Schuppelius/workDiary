@@ -10,7 +10,8 @@
 
 namespace App\Notifications\Event;
 
-use App\Models\{Event, Organization, User};
+use App\Models\Calendar\Event;
+use App\Models\Platform\{Organization, User};
 use App\Notifications\DirectNotification;
 use App\Support\{NotificationText, Tz};
 use Illuminate\Notifications\Messages\MailMessage;

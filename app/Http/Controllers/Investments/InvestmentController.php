@@ -15,9 +15,9 @@ namespace App\Http\Controllers\Investments;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Investments\{AddInvestmentActualRequest, AddInvestmentDeviationRequest, AddInvestmentLinkRequest, AddInvestmentOptionRequest, DecideInvestmentDeviationRequest, RejectInvestmentBudgetRequest, SaveInvestmentCaseRequest, StoreCostCenterRequest, StoreInvestmentReviewRequest, SubmitInvestmentBudgetRequest, SupplementInvestmentBudgetRequest, UpdateInvestmentStatusRequest};
-use App\Models\CostCenter;
+use App\Models\{CostCenter, Supplier};
 use App\Models\Investments\{InvestmentBudgetRequest, InvestmentCase, InvestmentDeviation, InvestmentOption};
-use App\Models\{Supplier, User};
+use App\Models\Platform\User;
 use App\Services\Investments\InvestmentService;
 use App\Support\{ErrorText, SortableQuery};
 use Illuminate\Contracts\View\View;
@@ -241,11 +241,11 @@ class InvestmentController extends Controller {
         $data = $request->validated();
 
         $map = [
-            'project' => \App\Models\Project::class,
+            'project' => \App\Models\Project\Project::class,
             'purchase_order' => \App\Models\PurchaseOrder::class,
             'asset' => \App\Models\Asset::class,
             'incoming_einvoice' => \App\Models\IncomingEInvoice::class,
-            'document' => \App\Models\Document::class,
+            'document' => \App\Models\Document\Document::class,
         ];
         $class = $map[$data['linkable_type']];
         $id = \App\Support\Sqid::decodeOrNumeric($class, $data['linkable_sqid']);

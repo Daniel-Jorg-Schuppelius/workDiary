@@ -67,7 +67,7 @@ class VerifyIntegrityCommand extends Command {
         };
     }
 
-    private function printHuman(IntegrityCheckStatus $status, \App\Models\IntegrityCheck $check): void {
+    private function printHuman(IntegrityCheckStatus $status, \App\Models\Platform\IntegrityCheck $check): void {
         if ($status === IntegrityCheckStatus::MissingBaseline) {
             $this->error('Keine Baseline gefunden — zuerst `release:manifest` (Herausgeber) oder `integrity:freeze` (lokal) ausführen.');
 

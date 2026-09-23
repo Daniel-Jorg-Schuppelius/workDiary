@@ -16,7 +16,7 @@ use App\Enums\Club\ClubProposalStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Club\DecideClubProposalRequest;
 use App\Models\Club\{ClubGroup, ClubGroupChangeProposal, ClubMember};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Club\ClubGroupService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};

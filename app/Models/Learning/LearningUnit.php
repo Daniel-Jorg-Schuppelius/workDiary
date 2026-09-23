@@ -11,8 +11,8 @@
 namespace App\Models\Learning;
 
 use App\Enums\Learning\{LearningProgressStatus, LearningUnitKind};
+use App\Models\Calendar\Event;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
-use App\Models\Event;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasOne};

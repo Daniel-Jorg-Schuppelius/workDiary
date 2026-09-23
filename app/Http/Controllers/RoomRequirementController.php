@@ -11,7 +11,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Facility\RoomRequirementKind;
-use App\Models\{Room, RoomRequirement, User};
+use App\Models\Platform\User;
+use App\Models\{Room, RoomRequirement};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rules\Enum;

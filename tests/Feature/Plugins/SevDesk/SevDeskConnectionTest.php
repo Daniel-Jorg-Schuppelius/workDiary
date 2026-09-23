@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins\SevDesk;
 
-use App\Models\{Organization, PluginSetting, PluginState};
+use App\Models\Platform\{Organization, PluginSetting, PluginState};
 use App\Plugins\PluginHealth;
 use App\Plugins\SevDesk\Api\SevDeskClient;
 use App\Plugins\SevDesk\{SevDeskConfig, SevDeskPlugin};

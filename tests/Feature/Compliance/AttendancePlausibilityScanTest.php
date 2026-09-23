@@ -12,7 +12,8 @@ namespace Tests\Feature\Compliance;
 
 use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
 use App\Enums\Vacation\VacationStatus;
-use App\Models\{Attendance, ComplianceFinding, Organization, User, Vacation, WorkSchedule};
+use App\Models\{Attendance, ComplianceFinding, Vacation, WorkSchedule};
+use App\Models\Platform\{Organization, User};
 use App\Services\Compliance\AttendancePlausibilityScanService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

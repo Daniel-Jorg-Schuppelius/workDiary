@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Peppol;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
-use App\Models\{DocumentDispatch, Invoice};
+use App\Models\Document\DocumentDispatch;
+use App\Models\Invoice;
 use App\Plugins\Contracts\PeppolTransportProvider;
 use App\Plugins\PeppolAccessPoint\PeppolAccessPointConfig;
 use App\Plugins\PluginManager;

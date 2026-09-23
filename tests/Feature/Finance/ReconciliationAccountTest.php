@@ -12,8 +12,9 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Billing\AccountPaymentSource;
 use App\Models\Billing\{CustomerAccountPayment, CustomerBillingAgreement};
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
 use App\Models\Finance\{BankStatement, BankTransaction, PaymentAllocation};
+use App\Models\Platform\User;
 use App\Services\Finance\{BankImportException, MatchingService, ReconciliationService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -139,7 +140,7 @@ class ReconciliationAccountTest extends TestCase {
 
     public function test_cross_org_agreement_is_rejected(): void {
         $tx = $this->makeTransaction();
-        $foreignOrg = \App\Models\Organization::factory()->create();
+        $foreignOrg = \App\Models\Platform\Organization::factory()->create();
         $foreignAgreement = CustomerBillingAgreement::factory()->create([
             'organization_id' => $foreignOrg->id,
             'customer_id' => Customer::factory()->create(['organization_id' => $foreignOrg->id])->id,

@@ -15,7 +15,7 @@ namespace App\Services\Integration;
 use App\Contracts\OutboxTransitionService;
 use App\Enums\Integration\IntegrationOutboxStatus;
 use App\Jobs\Integration\IntegrationOutboxDeliveryJob;
-use App\Models\IntegrationOutboxEntry;
+use App\Models\Integration\IntegrationOutboxEntry;
 use App\Services\Concerns\ManagesOutboxTransitions;
 use Illuminate\Database\Eloquent\Model;
 

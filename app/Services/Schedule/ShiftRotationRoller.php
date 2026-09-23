@@ -14,7 +14,8 @@ namespace App\Services\Schedule;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Enums\Vacation\VacationStatus;
-use App\Models\{OnCallShift, Organization, ScheduledShift, ShiftRotationAssignment, SickLeave, Vacation};
+use App\Models\{OnCallShift, ScheduledShift, ShiftRotationAssignment, SickLeave, Vacation};
+use App\Models\Platform\Organization;
 use App\Support\Query\DateRange;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;

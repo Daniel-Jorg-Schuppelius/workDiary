@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Console;
 
-use App\Models\{AuditLog, Organization, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Artisan, DB};
 use Tests\TestCase;

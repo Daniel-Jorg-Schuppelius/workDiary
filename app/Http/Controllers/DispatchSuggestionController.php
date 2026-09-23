@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enums\User\Permission;
-use App\Models\{DiaryEntry, User};
+use App\Models\DiaryEntry;
+use App\Models\Platform\User;
 use App\Services\Dispatch\GapFillSuggester;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;

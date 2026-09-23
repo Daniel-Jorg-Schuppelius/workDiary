@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Ai\Suggestions\Concerns;
 
 use App\Models\Ai\AiTextSuggestion;
-use App\Models\{AuditLog, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\User;
 use App\Services\Ai\Dto\AiInvocationResult;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;

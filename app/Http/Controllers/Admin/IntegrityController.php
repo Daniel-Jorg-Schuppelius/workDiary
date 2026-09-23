@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\Security\{FreezeIntegrityBaselineJob, RunIntegrityCheckJob};
-use App\Models\IntegrityCheck;
+use App\Models\Platform\IntegrityCheck;
 use App\Services\Release\CodeIntegrityService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;

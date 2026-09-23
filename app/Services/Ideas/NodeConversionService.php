@@ -12,7 +12,13 @@ declare(strict_types=1);
 
 namespace App\Services\Ideas;
 
-use App\Models\{CommunicationNote, ContentReference, Customer, DiaryEntry, IdeaNode, KnowledgeArticle, Project, Task, User};
+use App\Models\Communication\CommunicationNote;
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\Ideas\IdeaNode;
+use App\Models\Knowledge\{ContentReference, KnowledgeArticle};
+use App\Models\Platform\User;
+use App\Models\Project\{Project, Task};
 use App\Services\Knowledge\KnowledgeArticleService;
 use App\Services\Licensing\FeatureFlagResolver;
 use Illuminate\Database\Eloquent\Model;

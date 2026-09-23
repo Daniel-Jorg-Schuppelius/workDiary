@@ -12,8 +12,8 @@ namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\{LearningCourseStatus, LearningTimePolicy, LearningUnitKind};
 use App\Models\Learning\LearningCourse;
+use App\Models\Platform\User;
 use App\Models\Training\TrainingCourse;
-use App\Models\User;
 use App\Services\Learning\LearningCourseService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;

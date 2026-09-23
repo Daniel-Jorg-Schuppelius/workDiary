@@ -14,7 +14,7 @@ namespace App\Services\AccountingMigration;
 
 use App\Enums\Finance\TransferTarget;
 use App\Enums\Migration\MigrationProvider;
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use Carbon\CarbonInterface;
 
 /**

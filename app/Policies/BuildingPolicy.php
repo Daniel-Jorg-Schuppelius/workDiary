@@ -10,7 +10,8 @@
 
 namespace App\Policies;
 
-use App\Models\{Building, User};
+use App\Models\Building;
+use App\Models\Platform\User;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class BuildingPolicy {

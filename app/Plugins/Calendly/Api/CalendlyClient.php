@@ -11,7 +11,7 @@
 namespace App\Plugins\Calendly\Api;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
-use App\Models\CalendlyConnection;
+use App\Models\Plugins\Calendly\CalendlyConnection;
 use App\Plugins\Calendly\{CalendlyConfig, CalendlyPlugin};
 use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
 use Throwable;

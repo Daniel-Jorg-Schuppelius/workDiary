@@ -11,7 +11,8 @@
 namespace Tests\Feature\Sso;
 
 use App\Enums\Auth\{SsoProtocol, SsoProviderType};
-use App\Models\{Organization, SsoConnection, User};
+use App\Models\Auth\SsoConnection;
+use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

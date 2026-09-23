@@ -10,7 +10,7 @@
 
 namespace App\Models\Concerns;
 
-use App\Models\ProjectBillingRule;
+use App\Models\Project\ProjectBillingRule;
 use App\Support\Setting;
 
 /**
@@ -25,8 +25,8 @@ use App\Support\Setting;
  * @property bool|null $weather_auto_fetch
  * @property int|null $billing_increment_minutes
  * @property int|null $billing_grouping_gap_minutes
- * @property \App\Models\Project|null $parent
- * @property \App\Models\Customer|null $customer
+ * @property \App\Models\Project\Project|null $parent
+ * @property \App\Models\Customer\Customer|null $customer
  */
 trait ResolvesEffectiveProjectSettings {
     /**

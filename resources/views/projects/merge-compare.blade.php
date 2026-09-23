@@ -11,8 +11,8 @@
 @section('nav-title', __('Projekte zusammenführen'))
 
 @php
-    /** @var \App\Models\Project $source */
-    /** @var \App\Models\Project $target */
+    /** @var \App\Models\Project\Project $source */
+    /** @var \App\Models\Project\Project $target */
 
     // Reine Anzeigefelder (Identität) — nicht übersteuerbar.
     $identityFields = [

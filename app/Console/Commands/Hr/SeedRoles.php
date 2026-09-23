@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Hr;
 
 use App\Console\Commands\SeedRolesCommand;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Hr\PersonnelFilePermissions;
 
 /**

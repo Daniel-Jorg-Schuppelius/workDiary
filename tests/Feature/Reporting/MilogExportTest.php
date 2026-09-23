@@ -11,7 +11,8 @@
 namespace Tests\Feature\Reporting;
 
 use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
-use App\Models\{Attendance, Organization, User};
+use App\Models\Attendance;
+use App\Models\Platform\{Organization, User};
 use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;

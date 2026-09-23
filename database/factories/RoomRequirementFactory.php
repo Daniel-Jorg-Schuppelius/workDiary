@@ -11,7 +11,8 @@
 namespace Database\Factories;
 
 use App\Enums\Facility\RoomRequirementKind;
-use App\Models\{Organization, Room, RoomRequirement};
+use App\Models\Platform\Organization;
+use App\Models\{Room, RoomRequirement};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

@@ -14,7 +14,8 @@ namespace App\Http\Controllers\CustomerPortal;
 
 use App\Enums\Form\FormFieldType;
 use App\Http\Controllers\Controller;
-use App\Models\{RequestItem, ServiceRequest, User};
+use App\Models\Platform\User;
+use App\Models\{RequestItem, ServiceRequest};
 use App\Services\ServiceTicket\ServiceRequestService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;

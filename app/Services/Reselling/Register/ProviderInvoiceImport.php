@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Register;
 
 use App\Enums\Reselling\SubscriptionProvider;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Reselling\Marketplace\{ProviderInvoice, QualityHostingInvoiceReader};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;

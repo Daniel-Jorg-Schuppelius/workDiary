@@ -14,11 +14,11 @@ namespace App\Http\Controllers;
 
 use App\Enums\User\Permission;
 use App\Mail\SurveyInvitationMail;
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Models\Survey\{Survey, SurveyAnswer, SurveyQuestion};
-use App\Services\SqidEncoder;
 use App\Services\Survey\SurveyService;
-use App\Support\ErrorText;
+use App\Support\{ErrorText, SqidEncoder};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Mail};
 use Illuminate\View\View;

@@ -10,7 +10,8 @@
 
 namespace App\Services\Reporting;
 
-use App\Models\{Qualification, TimeEntry, User};
+use App\Models\Platform\User;
+use App\Models\{Qualification, TimeEntry};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;

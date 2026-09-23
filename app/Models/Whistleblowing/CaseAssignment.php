@@ -14,7 +14,7 @@ namespace App\Models\Whistleblowing;
 
 use App\Enums\Whistleblowing\CaseRole;
 use App\Models\Concerns\BelongsToOrganization;
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

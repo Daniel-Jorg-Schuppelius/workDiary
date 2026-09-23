@@ -11,7 +11,7 @@
 namespace Tests\Feature\Privacy;
 
 use App\Mail\Privacy\DsarReceiptMail;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\{DataSubjectRequest, DsarPortal, PrivacyAttachment};
 use App\Services\Privacy\{DataProtectionPermissions, DsarPortalIntakeService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

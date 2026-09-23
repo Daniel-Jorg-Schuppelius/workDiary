@@ -10,16 +10,20 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Sales;
 
 use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
-use App\Models\{Customer, Quote, QuoteItem, User};
+use App\Models\Customer\Customer\Customer;
+use App\Models\Sales\Quote;
+use App\Models\Sales\QuoteItem;
+use App\Models\Platform\User;
 use App\Services\Invoicing\QuoteService;
 use App\Support\ErrorText;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
+use App\Http\Controllers\Controller;
 
 /**
  * Angebots-UI (Feature 066, MVP-170, Restpaket): Lifecycle-Oberfläche über
@@ -37,7 +41,7 @@ class QuoteController extends Controller {
 
         return view('quotes._form_dialog', [
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'projects' => \App\Models\Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
+            'projects' => \App\Models\Project\Project\Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
         ]);
     }
 
@@ -46,7 +50,7 @@ class QuoteController extends Controller {
 
         $request->merge([
             'customer_id' => \App\Support\Sqid::decodeOrNumeric(Customer::class, $request->input('customer_id')),
-            'project_id' => \App\Support\Sqid::decodeOrNumeric(\App\Models\Project::class, $request->input('project_id')),
+            'project_id' => \App\Support\Sqid::decodeOrNumeric(\App\Models\Project\Project\Project::class, $request->input('project_id')),
         ]);
         $data = $request->validate([
             'customer_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],

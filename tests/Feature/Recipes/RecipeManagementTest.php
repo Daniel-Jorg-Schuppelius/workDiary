@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Recipes;
 
 use App\Enums\Classification\ClassificationDomain;
-use App\Models\{Article, Classification, ProcedureMaterialRequirement, ProcedureTemplate, ProcedureTemplateVersion, User};
+use App\Models\{Article, ProcedureMaterialRequirement, ProcedureTemplate, ProcedureTemplateVersion};
+use App\Models\Classification\Classification;
+use App\Models\Platform\User;
 use App\Models\Recipes\RecipeProfile;
 use App\Services\Recipes\RecipeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

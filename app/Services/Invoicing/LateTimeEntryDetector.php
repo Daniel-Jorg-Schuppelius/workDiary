@@ -10,7 +10,9 @@
 
 namespace App\Services\Invoicing;
 
-use App\Models\{Customer, Invoice, InvoiceItem, Project, TimeEntry};
+use App\Models\Customer\Customer;
+use App\Models\{Invoice, InvoiceItem, TimeEntry};
+use App\Models\Project\Project;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;

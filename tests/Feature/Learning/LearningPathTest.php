@@ -12,7 +12,7 @@ namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\LearningEnrollmentSource;
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningPath, LearningPathItem};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningCourseService, LearningPathService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -192,7 +192,7 @@ class LearningPathTest extends TestCase {
         $path = $this->path([[$course, 7]]);
         $manager = User::factory()->personalverwaltung()->create(['organization_id' => $this->organization->id]);
 
-        $foreign = \App\Models\Organization::factory()->create();
+        $foreign = \App\Models\Platform\Organization::factory()->create();
         User::factory()->aussendienst()->create([
             'organization_id' => $foreign->id,
             'name' => 'Fremder Kollege',

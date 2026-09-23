@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins\Sharepoint;
 
-use App\Models\{SharepointConnection, User};
+use App\Models\Platform\User;
+use App\Models\Plugins\Sharepoint\SharepointConnection;
 use App\Plugins\{PluginDiscovery, PluginHealth};
 use App\Plugins\Sharepoint\Api\{SharepointDriveClient, SharepointOAuth};
 use App\Plugins\Sharepoint\SharepointPlugin;

@@ -11,7 +11,11 @@
 namespace Tests\Feature\Invoicing;
 
 use App\Mail\DunningMail;
-use App\Models\{AuditLog, Customer, DocumentDispatch, Invoice, Organization, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Customer\Customer;
+use App\Models\Document\DocumentDispatch;
+use App\Models\Invoice;
+use App\Models\Platform\{Organization, User};
 use App\Services\Invoicing\DunningService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

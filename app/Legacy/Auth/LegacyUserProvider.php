@@ -11,7 +11,7 @@
 namespace App\Legacy\Auth;
 
 use App\Legacy\Support\LegacyConnectivity;
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Auth\EloquentUserProvider;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Hashing\Hasher;
@@ -169,7 +169,7 @@ class LegacyUserProvider extends EloquentUserProvider {
         // Passwort-Login gesperrt — Ausnahme nur Break-Glass (users.sso_exempt).
         if (! self::$ignoreSsoEnforcement
             && ! $user->sso_exempt
-            && \App\Models\SsoConnection::enforcementActiveFor($user->organization_id)) {
+            && \App\Models\Auth\SsoConnection::enforcementActiveFor($user->organization_id)) {
             return false;
         }
         // Portal-Accounts duerfen den internen Guard nicht passieren.
@@ -182,7 +182,7 @@ class LegacyUserProvider extends EloquentUserProvider {
         // gebundener Organisation ungescopt durch alle Mandanten.
         if ($user->organization_id !== null && ! $user->isGlobalAdmin()) {
             $org = $user->organization;
-            if (! $org instanceof \App\Models\Organization || ! $org->is_active) {
+            if (! $org instanceof \App\Models\Platform\Organization || ! $org->is_active) {
                 return false;
             }
         }

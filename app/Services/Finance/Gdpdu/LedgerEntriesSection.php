@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Finance\Gdpdu;
 
 use App\Models\Accounting\AccountingEntry;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 use Illuminate\Support\LazyCollection;

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Training;
 
 use App\Enums\Training\TrainingRequirementSubject;
-use App\Models\{Organization, Team, User, UserGroup};
+use App\Models\Platform\{Organization, Team, User, UserGroup};
 use App\Models\Safety\{SafetyInstruction, SafetyInstructionParticipant};
 use App\Models\Training\{TrainingAssignment, TrainingCourse, TrainingRequirement};
 use App\Support\MorphMap;

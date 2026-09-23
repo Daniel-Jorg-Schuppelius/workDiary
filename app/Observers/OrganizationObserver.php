@@ -10,7 +10,7 @@
 
 namespace App\Observers;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Licensing\PlanModuleService;
 use App\Services\Privacy\DataProtectionPermissions;
 use App\Services\Whistleblowing\WhistleblowingPermissions;

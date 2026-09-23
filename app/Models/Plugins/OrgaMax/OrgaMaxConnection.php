@@ -11,7 +11,7 @@
 namespace App\Models\Plugins\OrgaMax;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

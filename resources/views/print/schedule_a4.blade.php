@@ -12,10 +12,10 @@
 @php
     /** @var \Carbon\CarbonImmutable $from */
     /** @var \Carbon\CarbonImmutable $to */
-    /** @var \Illuminate\Support\Collection<int, \App\Models\User> $users */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users */
     /** @var \Illuminate\Support\Collection<string, \Illuminate\Support\Collection<int, \App\Models\ScheduledShift>> $byUserDate */
     /** @var \Illuminate\Support\Collection<int, \App\Models\ShiftType> $shiftTypes */
-    /** @var \App\Services\HolidayService $holidays */
+    /** @var \App\Services\Calendar\HolidayService $holidays */
     /** @var bool $anonymous */
 
     $days = [];

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Import\Source;
 
 use App\Enums\Import\ImportEntity;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Import\Source\Ical\{AttendanceIcalMapper, ProjectTimeIcalMapper};
 use App\Support\Tz;
 use CommonToolkit\Helper\FileSystem\File;

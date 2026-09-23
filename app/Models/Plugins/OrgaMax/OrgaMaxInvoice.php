@@ -14,7 +14,7 @@ namespace App\Models\Plugins\OrgaMax;
 
 use App\Casts\MoneyCast;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

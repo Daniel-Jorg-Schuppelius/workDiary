@@ -11,9 +11,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SaveTaskRequest;
+use App\Http\Requests\Project\SaveTaskRequest;
 use App\Http\Resources\TaskResource;
-use App\Models\{Project, Task};
+use App\Models\Project\{Project, Task};
 use App\Support\Sqid;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -42,7 +42,7 @@ class TaskController extends Controller {
         if ($status = $request->string('status')->toString()) {
             $query->where('status', $status);
         }
-        if ($assignedTo = Sqid::decode(\App\Models\User::class, $request->query('assigned_to'))) {
+        if ($assignedTo = Sqid::decode(\App\Models\Platform\User::class, $request->query('assigned_to'))) {
             $query->where('assigned_to', $assignedTo);
         }
 

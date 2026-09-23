@@ -14,7 +14,7 @@ namespace App\Services\Accounting\Posting;
 
 use App\Enums\Finance\{PostingAccountRole, PostingSourceKind};
 use App\Models\Accounting\AccountingPostingRule;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Carbon\CarbonImmutable;
 
 /**

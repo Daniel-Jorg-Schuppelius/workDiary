@@ -12,7 +12,12 @@ namespace Tests\Feature\Onboarding;
 
 use App\Enums\Protocol\ProtocolStatus;
 use App\Enums\User\UserRole;
-use App\Models\{AuditLog, Classification, Customer, DiaryEntry, OnboardingProgress, Organization, Project, Protocol, TimeEntry, User, UserGroup};
+use App\Models\Audit\AuditLog;
+use App\Models\Classification\Classification;
+use App\Models\Customer\Customer;
+use App\Models\{DiaryEntry, Protocol, TimeEntry};
+use App\Models\Platform\{OnboardingProgress, Organization, User, UserGroup};
+use App\Models\Project\Project;
 use App\Services\Onboarding\OnboardingChecklistResolver;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

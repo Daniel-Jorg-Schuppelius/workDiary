@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins\TimeTracking;
 
-use App\Models\{Organization, PluginSetting, TimeTrackingWebhookDelivery};
+use App\Models\Integration\TimeTrackingWebhookDelivery;
+use App\Models\Platform\{Organization, PluginSetting};
 use App\Plugins\Clockify\ClockifyPlugin;
 use App\Plugins\Support\TimeTracking\{TimeTrackingWebhookGate, WebhookImportJob};
 use App\Plugins\Toggl\TogglPlugin;

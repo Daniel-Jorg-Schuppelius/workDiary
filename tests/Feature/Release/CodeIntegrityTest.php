@@ -12,7 +12,8 @@ namespace Tests\Feature\Release;
 
 use App\Enums\Security\IntegrityCheckStatus;
 use App\Jobs\Security\{FreezeIntegrityBaselineJob, RunIntegrityCheckJob};
-use App\Models\{AuditLog, IntegrityCheck, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{IntegrityCheck, User};
 use App\Notifications\GenericEventNotification;
 use App\Services\Release\{CodeIntegrityService, ReleaseManifestService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -26,11 +26,11 @@ class SaveWarrantyPeriodRequest extends BaseFormRequest {
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'protocol_id' => \App\Models\Protocol::class,
-        'project_id' => \App\Models\Project::class,
+        'project_id' => \App\Models\Project\Project::class,
         'diary_entry_id' => \App\Models\DiaryEntry::class,
-        'customer_id' => \App\Models\Customer::class,
+        'customer_id' => \App\Models\Customer\Customer::class,
         'supplier_id' => \App\Models\Supplier::class,
-        'responsible_user_id' => \App\Models\User::class,
+        'responsible_user_id' => \App\Models\Platform\User::class,
     ];
 
     /** @return array<string, mixed> */

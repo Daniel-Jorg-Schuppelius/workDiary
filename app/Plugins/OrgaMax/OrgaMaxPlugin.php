@@ -14,7 +14,8 @@ namespace App\Plugins\OrgaMax;
 
 use APIToolkit\Entities\ID;
 use APIToolkit\Exceptions\ApiException;
-use App\Models\{Customer, OrgaMaxConnection};
+use App\Models\Customer\Customer;
+use App\Models\Plugins\OrgaMax\OrgaMaxConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{ContactSyncer, Plugin};
 use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;

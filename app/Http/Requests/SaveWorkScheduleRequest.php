@@ -28,7 +28,7 @@ class SaveWorkScheduleRequest extends BaseFormRequest {
         $member = $this->route('user');
         $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
 
-        if (! $member instanceof \App\Models\User || ! $organization instanceof \App\Models\Organization) {
+        if (! $member instanceof \App\Models\Platform\User || ! $organization instanceof \App\Models\Platform\Organization) {
             return false;
         }
 

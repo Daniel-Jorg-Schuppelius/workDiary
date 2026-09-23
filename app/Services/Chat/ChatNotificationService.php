@@ -12,7 +12,7 @@ namespace App\Services\Chat;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Chat\{Message, Reminder};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Notification\NotificationDispatcher;
 use App\Support\Setting;
 

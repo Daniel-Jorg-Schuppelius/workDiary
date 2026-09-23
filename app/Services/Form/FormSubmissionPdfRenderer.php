@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Form;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
-use App\Models\FormSubmission;
+use App\Models\Form\FormSubmission;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 
 /**

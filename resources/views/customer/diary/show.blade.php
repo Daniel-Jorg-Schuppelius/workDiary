@@ -131,7 +131,7 @@
         @endphp
         @if ($canQuery)
             @php
-                $diaryQueries = \App\Models\CustomerQuery::query()
+                $diaryQueries = \App\Models\Customer\CustomerQuery::query()
                     ->withoutGlobalScopes()
                     ->where('organization_id', $portalQueryUser->organization_id)
                     ->where('customer_id', $portalQueryUser->customer_id)

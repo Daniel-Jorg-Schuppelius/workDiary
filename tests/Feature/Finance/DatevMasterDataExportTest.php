@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Finance;
 
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Services\Finance\Datev\{DatevBookingConfig, DatevMasterDataExporter};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -116,7 +117,7 @@ final class DatevMasterDataExportTest extends TestCase {
         $this->assertStringContainsString('text/csv', (string) $response->headers->get('Content-Type'));
         $this->assertSame(
             1,
-            \App\Models\AuditLog::query()->where('event', 'finance.datev.debtors_exported')->count(),
+            \App\Models\Audit\AuditLog::query()->where('event', 'finance.datev.debtors_exported')->count(),
         );
     }
 }

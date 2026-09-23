@@ -13,7 +13,7 @@ namespace Tests\Feature\Learning;
 use App\Enums\Learning\LearningUnitKind;
 use App\Enums\User\Permission;
 use App\Models\Learning\{LearningAssignment, LearningCourse};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningAssignmentService, LearningCourseService, LearningEnrollmentService, LearningReportService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};

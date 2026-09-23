@@ -15,7 +15,8 @@ namespace App\Http\Controllers\Recipes;
 use App\Enums\Classification\ClassificationDomain;
 use App\Enums\Manufacturing\QuantityKind;
 use App\Http\Controllers\Controller;
-use App\Models\{Article, Classification, ProcedureMaterialRequirement, ProcedureTemplate, ProcedureTemplateVersion};
+use App\Models\{Article, ProcedureMaterialRequirement, ProcedureTemplate, ProcedureTemplateVersion};
+use App\Models\Classification\Classification;
 use App\Models\Recipes\RecipeProfile;
 use App\Services\Recipes\RecipeService;
 use CommonToolkit\Enums\RoundingMode;
@@ -219,7 +220,7 @@ class RecipeController extends Controller {
 
     /** @param class-string<\Illuminate\Database\Eloquent\Model> $modelClass */
     private function decodeSqid(string $modelClass, string $sqid): ?int {
-        return app(\App\Services\SqidEncoder::class)->decode($modelClass, $sqid);
+        return app(\App\Support\SqidEncoder::class)->decode($modelClass, $sqid);
     }
 
     private function backToRecipe(ProcedureTemplate $template): RedirectResponse {

@@ -12,8 +12,9 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\TransferChannel;
 use App\Enums\User\Permission;
-use App\Models\{Customer, Organization, User};
+use App\Models\Customer\Customer;
 use App\Models\Finance\BillingTransfer;
+use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Tests\Concerns\WithOrganization;

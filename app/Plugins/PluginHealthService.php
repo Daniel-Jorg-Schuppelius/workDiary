@@ -11,7 +11,7 @@
 namespace App\Plugins;
 
 use App\Events\{PluginHealthChanged, PluginRecovered};
-use App\Models\{PluginError, PluginState};
+use App\Models\Platform\{PluginError, PluginState};
 use App\Plugins\Contracts\Plugin;
 use Throwable;
 

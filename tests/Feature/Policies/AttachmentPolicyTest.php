@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Policies;
 
-use App\Models\{Attachment, Organization, User};
-use App\Policies\AttachmentPolicy;
+use App\Models\Attachments\Attachment;
+use App\Models\Platform\{Organization, User};
+use App\Policies\Attachments\AttachmentPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};
 use Tests\TestCase;

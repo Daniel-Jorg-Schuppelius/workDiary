@@ -10,7 +10,8 @@
 
 namespace App\Services\Fleet;
 
-use App\Models\{DriverLicenseCheck, Organization, User};
+use App\Models\DriverLicenseCheck;
+use App\Models\Platform\{Organization, User};
 use Carbon\{Carbon, CarbonInterface};
 
 /**

@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Integration;
 
-use App\Models\{Article, Customer, Project, Supplier};
+use App\Models\{Article, Supplier};
+use App\Models\Customer\Customer;
+use App\Models\Project\Project;
 use App\Services\Integration\Match\MatchProfile;
 use App\Services\Integration\Profiles\{ArticleMatchProfile, CustomerMatchProfile, EventMatchProfile, ProjectMatchProfile, SupplierMatchProfile};
 use App\Support\MorphMap;
@@ -29,7 +31,7 @@ class MatchProfileRegistry {
         Supplier::class => SupplierMatchProfile::class,
         Article::class => ArticleMatchProfile::class,
         // Feature 102 (C3-Übernahme): Kalender-Vorschläge → Event anlegen.
-        \App\Models\Event::class => EventMatchProfile::class,
+        \App\Models\Calendar\Event::class => EventMatchProfile::class,
         // CSV-Projektzeiten (Feature 094): unaufgelöste Projektnamen aus der
         // Inbox heraus anlegen — danach bucht der idempotente Wiederholimport.
         Project::class => ProjectMatchProfile::class,
@@ -48,9 +50,9 @@ class MatchProfileRegistry {
             Customer::class => (string) __('Kunde'),
             Supplier::class => (string) __('Lieferant'),
             Article::class => (string) __('Artikel'),
-            \App\Models\Project::class => (string) __('Projekt'),
+            \App\Models\Project\Project::class => (string) __('Projekt'),
             \App\Models\Asset::class => (string) __('Gerät'),
-            \App\Models\Event::class => (string) __('Termin'),
+            \App\Models\Calendar\Event::class => (string) __('Termin'),
             default => MorphMap::basename($targetType),
         };
     }

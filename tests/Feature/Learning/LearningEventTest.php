@@ -12,8 +12,9 @@ namespace Tests\Feature\Learning;
 
 use App\Enums\Event\{EventType, ParticipantStatus};
 use App\Enums\Learning\{LearningEnrollmentStatus, LearningUnitKind};
-use App\Models\{Event, EventParticipant, User};
+use App\Models\Calendar\{Event, EventParticipant};
 use App\Models\Learning\{LearningEnrollment, LearningUnit};
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningCourseService, LearningEnrollmentService, LearningEventService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

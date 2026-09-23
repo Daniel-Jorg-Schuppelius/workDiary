@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Release;
 
 use App\Enums\Security\IntegrityCheckStatus;
-use App\Models\IntegrityCheck;
+use App\Models\Platform\IntegrityCheck;
 use App\Services\Release\{CodeIntegrityService, IntegrityAnchorService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{File as FileFacade, Storage};

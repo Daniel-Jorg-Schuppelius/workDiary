@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin\Invoicing;
 
 use App\Http\Controllers\Controller;
-use App\Models\TextCorrection;
+use App\Models\Platform\TextCorrection;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -22,7 +22,7 @@ use Illuminate\View\View;
  * Pflege-UI des Schreibfehler-Wörterbuchs: Einträge (falsch => richtig) je
  * Organisation, die automatisch auf generierte Positionstexte wirken.
  * Berechtigung `finance.config` — das Wörterbuch verändert Rechnungs-Output
- * ({@see \App\Policies\TextCorrectionPolicy}).
+ * ({@see \App\Policies\Platform\TextCorrectionPolicy}).
  */
 class TextCorrectionController extends Controller {
     public function index(Request $request): View {

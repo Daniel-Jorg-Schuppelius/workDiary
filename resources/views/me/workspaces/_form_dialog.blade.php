@@ -19,7 +19,7 @@
     Variablen: $workspace, $isEdit, $catalog, $selected
 --}}
 @php
-    /** @var \App\Models\UserWorkspace $workspace */
+    /** @var \App\Models\Platform\UserWorkspace $workspace */
     /** @var bool $isEdit */
     /** @var list<array<string, mixed>> $catalog */
     /** @var list<string> $selected */

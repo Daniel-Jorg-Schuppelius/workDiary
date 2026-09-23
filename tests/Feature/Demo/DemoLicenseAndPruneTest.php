@@ -11,7 +11,8 @@
 namespace Tests\Feature\Demo;
 
 use App\Enums\Demo\DemoIndustry;
-use App\Models\{AuditLog, Organization, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{Organization, User};
 use App\Services\Demo\DemoSeederService;
 use App\Services\Licensing\{LicenseService, LicenseStatus};
 use Carbon\CarbonImmutable;

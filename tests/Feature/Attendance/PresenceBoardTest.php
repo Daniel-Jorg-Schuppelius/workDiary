@@ -12,7 +12,8 @@ namespace Tests\Feature\Attendance;
 
 use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
 use App\Enums\Vacation\{VacationStatus, VacationType};
-use App\Models\{Attendance, User, Vacation};
+use App\Models\{Attendance, Vacation};
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

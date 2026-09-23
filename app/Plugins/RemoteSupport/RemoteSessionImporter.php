@@ -12,7 +12,12 @@ namespace App\Plugins\RemoteSupport;
 
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Asset, ExternalReference, ExternalReferenceAlias, Organization, Project, RemotePendingSession, Tag, TimeEntry};
+use App\Models\{Asset, TimeEntry};
+use App\Models\Auth\RemotePendingSession;
+use App\Models\Classification\Tag;
+use App\Models\Integration\{ExternalReference, ExternalReferenceAlias};
+use App\Models\Platform\Organization;
+use App\Models\Project\Project;
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, RemoteProvider, RemoteSession, TeamViewerClient};
 use App\Plugins\Support\PersistsTimeImportInbox;
 use App\Services\Integration\ProjectKeywordMatcher;
@@ -569,7 +574,7 @@ class RemoteSessionImporter {
 
     /** Monatsabschluss-Guard für die Ende-Verlängerung (Eintrags- und Sitzungsende-Tag). */
     private function extensionLocked(Organization $organization, TimeEntry $entry, RemoteSession $session): bool {
-        $user = \App\Models\User::query()->withoutGlobalScopes()->find($entry->user_id);
+        $user = \App\Models\Platform\User::query()->withoutGlobalScopes()->find($entry->user_id);
         if ($user === null) {
             return false;
         }
@@ -592,7 +597,7 @@ class RemoteSessionImporter {
             ->exists();
 
         if ($occupied) {
-            \App\Models\ExternalReferenceAlias::query()->withoutGlobalScopes()->updateOrCreate(
+            \App\Models\Integration\ExternalReferenceAlias::query()->withoutGlobalScopes()->updateOrCreate(
                 [
                     'organization_id' => $organization->id,
                     'plugin_id' => RemoteSupportPlugin::ID,

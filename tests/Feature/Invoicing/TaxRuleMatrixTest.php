@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Invoicing;
 
-use App\Models\{Customer, Invoice, Organization, TaxRule, User};
+use App\Models\Customer\Customer;
+use App\Models\{Invoice, TaxRule};
+use App\Models\Platform\{Organization, User};
 use App\Services\Invoicing\TaxResolver;
 use Database\Seeders\TaxRulesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

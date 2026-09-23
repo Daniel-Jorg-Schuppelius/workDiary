@@ -11,7 +11,8 @@
 namespace Database\Factories;
 
 use App\Enums\Product\ProductStatus;
-use App\Models\{Organization, Product};
+use App\Models\Platform\Organization;
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

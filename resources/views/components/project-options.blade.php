@@ -72,7 +72,7 @@
             $key = $p->customer_id !== null ? 'c' . $p->customer_id : '';
             $byCustomer[$key] ??= [
                 'label' => $p->customer?->name ?? $noCustomer,
-                'customer' => $p->customer_id !== null ? \App\Support\Sqid::encode(\App\Models\Customer::class, $p->customer_id) : '',
+                'customer' => $p->customer_id !== null ? \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $p->customer_id) : '',
                 'projects' => [],
             ];
             $byCustomer[$key]['projects'][] = $p;
@@ -99,7 +99,7 @@
 @foreach ($renderGroups as $rg)
     @if ($rg['label'] !== null)<optgroup label="{{ $rg['label'] }}"@if ($dataCustomer) data-customer="{{ $rg['customer'] }}"@endif>@endif
     @foreach ($rg['projects'] as $p)
-        <option value="{{ $p->sqid }}"@if ($dataParent) data-parent="{{ \App\Support\Sqid::encode(\App\Models\Customer::class, $p->customer_id) }}"@endif @if ($dataForeign)data-foreign="{{ $foreignSqid($p) }}"@endif @selected((string) $selected === $p->sqid)>{{ $optionLabel($p) }}</option>
+        <option value="{{ $p->sqid }}"@if ($dataParent) data-parent="{{ \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $p->customer_id) }}"@endif @if ($dataForeign)data-foreign="{{ $foreignSqid($p) }}"@endif @selected((string) $selected === $p->sqid)>{{ $optionLabel($p) }}</option>
     @endforeach
     @if ($rg['label'] !== null)</optgroup>@endif
 @endforeach

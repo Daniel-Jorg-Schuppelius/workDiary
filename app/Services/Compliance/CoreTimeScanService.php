@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Compliance;
 
-use App\Models\{Organization, TimeEntry, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\TimeEntry;
 use App\Services\Flextime\CoreTimeValidator;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;

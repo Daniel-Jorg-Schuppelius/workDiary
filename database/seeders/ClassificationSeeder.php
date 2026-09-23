@@ -11,7 +11,7 @@
 namespace Database\Seeders;
 
 use App\Enums\Classification\ClassificationDomain;
-use App\Models\Classification;
+use App\Models\Classification\Classification;
 use Illuminate\Database\Seeder;
 
 /**

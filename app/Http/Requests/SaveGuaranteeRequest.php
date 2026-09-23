@@ -28,10 +28,10 @@ class SaveGuaranteeRequest extends BaseFormRequest {
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'issuer_supplier_id' => \App\Models\Supplier::class,
-        'customer_id' => \App\Models\Customer::class,
+        'customer_id' => \App\Models\Customer\Customer::class,
         'supplier_id' => \App\Models\Supplier::class,
-        'project_id' => \App\Models\Project::class,
-        'responsible_user_id' => \App\Models\User::class,
+        'project_id' => \App\Models\Project\Project::class,
+        'responsible_user_id' => \App\Models\Platform\User::class,
     ];
 
     /** @return array<string, mixed> */

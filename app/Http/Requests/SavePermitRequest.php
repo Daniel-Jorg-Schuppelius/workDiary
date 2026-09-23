@@ -20,7 +20,7 @@ class SavePermitRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'event_id' => \App\Models\Event::class,
+        'event_id' => \App\Models\Calendar\Event::class,
     ];
 
     /** @return array<string, mixed> */

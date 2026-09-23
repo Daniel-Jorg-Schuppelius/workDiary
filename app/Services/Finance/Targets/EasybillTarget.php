@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Finance\Targets;
 
 use App\Enums\Finance\{TransferChannel, TransferTarget};
-use App\Models\{Customer, ExternalReference};
+use App\Models\Customer\Customer;
 use App\Models\Finance\BillingTransfer;
+use App\Models\Integration\ExternalReference;
 use App\Plugins\Easybill\Api\{EasybillClient, EasybillClientFactory};
 use App\Plugins\Easybill\{EasybillConfig, EasybillPlugin};
 use App\Services\Finance\BillingPositionBuilder;

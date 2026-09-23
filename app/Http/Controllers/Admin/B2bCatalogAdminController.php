@@ -16,7 +16,8 @@ use App\Enums\Article\ArticleStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\B2b\{B2bCatalogAccess, B2bCatalogItem, B2bOrder};
-use App\Models\{Customer, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
 use App\Services\B2bCatalog\B2bOrderIntakeService;
 use App\Support\{ErrorText, MorphMap};
 use CommonToolkit\Helper\FileSystem\File;
@@ -228,7 +229,7 @@ class B2bCatalogAdminController extends Controller {
         }
 
         // Kundenindividuelle Preislisten sind auditpflichtig.
-        \App\Models\AuditLog::create([
+        \App\Models\Audit\AuditLog::create([
             'organization_id' => $access->organization_id,
             'user_id' => $admin->id,
             'event' => 'datanorm.exported',
@@ -253,7 +254,7 @@ class B2bCatalogAdminController extends Controller {
 
     /** @param class-string<\Illuminate\Database\Eloquent\Model> $modelClass */
     private function decodeSqid(string $modelClass, string $sqid): ?int {
-        return app(\App\Services\SqidEncoder::class)->decode($modelClass, $sqid);
+        return app(\App\Support\SqidEncoder::class)->decode($modelClass, $sqid);
     }
 
     private function guard(User $admin, B2bCatalogAccess $access): void {

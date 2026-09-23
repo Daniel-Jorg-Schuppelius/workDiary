@@ -13,7 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Search;
 
 use App\Enums\Search\SearchSourceType;
-use App\Models\{ContentCollection, Customer, ForeignCustomer, Project, Tag, User};
+use App\Models\Classification\Tag;
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Knowledge\ContentCollection;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;

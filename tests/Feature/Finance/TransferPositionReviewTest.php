@@ -17,8 +17,11 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Enums\User\Permission;
 use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection, AiTextSuggestion};
-use App\Models\{Customer, Project, TimeEntry, User};
+use App\Models\Customer\Customer;
 use App\Models\Finance\BillingTransfer;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Services\Ai\Suggestions\ItemTextSuggestionService;
 use App\Services\Billing\OrganizationDefaultRateResolver;
 use App\Services\Finance\BillingTransferService;
@@ -383,13 +386,13 @@ class TransferPositionReviewTest extends TestCase {
             'organization_id' => $this->organization->id,
             'wrong_normalized' => 'geprüfft',
             'correct' => 'geprüft',
-            'origin' => \App\Models\TextCorrection::ORIGIN_LEARNED,
+            'origin' => \App\Models\Platform\TextCorrection::ORIGIN_LEARNED,
             'active' => true,
         ]);
     }
 
     public function test_merken_duplikat_erhoeht_verwendung_statt_doppelt_anzulegen(): void {
-        \App\Models\TextCorrection::factory()->create([
+        \App\Models\Platform\TextCorrection::factory()->create([
             'organization_id' => $this->organization->id,
             'wrong' => 'Geprüfft',
             'correct' => 'geprüft',
@@ -400,8 +403,8 @@ class TransferPositionReviewTest extends TestCase {
             'correct' => 'geprüft',
         ])->assertSessionHasNoErrors();
 
-        $this->assertSame(1, \App\Models\TextCorrection::query()->count());
-        $this->assertSame(1, (int) \App\Models\TextCorrection::query()->first()->usage_count);
+        $this->assertSame(1, \App\Models\Platform\TextCorrection::query()->count());
+        $this->assertSame(1, (int) \App\Models\Platform\TextCorrection::query()->first()->usage_count);
     }
 
     public function test_merken_ohne_belegrecht_verboten(): void {

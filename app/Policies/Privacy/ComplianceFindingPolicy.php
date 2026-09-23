@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Policies\Privacy;
 
+use App\Models\Platform\User;
 use App\Models\Privacy\ComplianceFinding;
-use App\Models\User;
 use App\Policies\Concerns\ChecksOwnership;
 
 /** Lueckenanalyse: lesen mit dataprotection.view, entscheiden mit compliance.manage. */

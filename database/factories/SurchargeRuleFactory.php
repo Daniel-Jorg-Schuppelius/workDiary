@@ -11,7 +11,7 @@
 namespace Database\Factories;
 
 use App\Enums\Surcharge\SurchargeKind;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Models\Surcharge\SurchargeRule;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

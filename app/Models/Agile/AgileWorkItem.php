@@ -14,7 +14,7 @@ namespace App\Models\Agile;
 
 use App\Enums\Agile\AgileItemType;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\Task;
+use App\Models\Project\Task;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

@@ -11,7 +11,8 @@
 namespace Tests\Feature\Agile;
 
 use App\Models\Agile\AgileWorkItem;
-use App\Models\{Organization, Project, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
 use App\Services\Agile\{AgileBoardService, AgileMetricsService, AgileWorkItemService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

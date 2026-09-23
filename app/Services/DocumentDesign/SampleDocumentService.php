@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\DocumentDesign;
 
 use App\Enums\DocumentDesign\{InformationBlock, PageFormat, RenderDocumentFamily, RenderDocumentKind};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Duration;
 use PDFToolkit\Entities\PDFContent;

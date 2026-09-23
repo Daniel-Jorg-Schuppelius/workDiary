@@ -12,8 +12,9 @@ namespace Tests\Feature\Reporting;
 
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState};
 use App\Enums\Procurement\PurchaseOrderStatus;
-use App\Models\{Article, ArticleVariant, Organization, PurchaseOrder, PurchaseOrderLine, StockMovement, Supplier, User, Warehouse};
+use App\Models\{Article, ArticleVariant, PurchaseOrder, PurchaseOrderLine, StockMovement, Supplier, Warehouse};
 use App\Models\Claims\ClaimCase;
+use App\Models\Platform\{Organization, User};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;

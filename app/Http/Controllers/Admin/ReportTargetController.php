@@ -12,8 +12,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\Reporting\{ReportTargetMetric, ReportTargetPeriod, ReportTargetScope};
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SaveReportTargetRequest;
-use App\Models\{Customer, Project, ReportTarget, User};
+use App\Http\Requests\Reporting\SaveReportTargetRequest;
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\Reporting\ReportTarget;
 use App\Support\Setting;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};

@@ -14,7 +14,8 @@ namespace App\Http\Controllers\Helpdesk;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveChangeRequest;
-use App\Models\{Asset, Change, ChangeTemplate, Problem, ProcedureTemplate, ServiceTicket, User};
+use App\Models\{Asset, Change, ChangeTemplate, Problem, ProcedureTemplate, ServiceTicket};
+use App\Models\Platform\User;
 use App\Services\ServiceTicket\ChangeService;
 use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};

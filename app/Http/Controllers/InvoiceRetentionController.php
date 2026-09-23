@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enums\Invoicing\{RetentionBase, RetentionKind};
-use App\Models\{Invoice, User};
+use App\Models\Invoice;
 use App\Models\Invoicing\InvoiceRetention;
+use App\Models\Platform\User;
 use App\Services\Invoicing\RetentionService;
 use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};

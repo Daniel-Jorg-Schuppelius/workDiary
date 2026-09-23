@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
-use App\Models\Event;
+use App\Models\Calendar\Event;
 use App\Services\Club\ClubEventService;
 
 /**

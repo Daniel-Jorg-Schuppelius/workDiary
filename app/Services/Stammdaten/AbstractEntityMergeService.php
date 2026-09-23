@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Services\Stammdaten;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\{DB, Schema};

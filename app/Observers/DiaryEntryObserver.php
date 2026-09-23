@@ -12,7 +12,8 @@ namespace App\Observers;
 
 use App\Enums\Diary\Status;
 use App\Enums\Notification\NotificationEvent;
-use App\Models\{DiaryEntry, DiaryEntryEvent, User};
+use App\Models\{DiaryEntry, DiaryEntryEvent};
+use App\Models\Platform\User;
 use App\Services\Notification\NotificationDispatcher;
 use App\Support\Setting;
 use Carbon\CarbonImmutable;

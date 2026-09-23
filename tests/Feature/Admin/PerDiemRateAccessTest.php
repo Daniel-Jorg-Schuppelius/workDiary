@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\{PerDiemRate, User};
+use App\Models\PerDiemRate;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

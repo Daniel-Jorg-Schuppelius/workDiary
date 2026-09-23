@@ -8,14 +8,18 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Communication;
 
-use App\Models\{Comment, DiaryEntry, TimeEntry};
+use App\Models\Communication\Comment;
+use App\Models\DiaryEntry;
+use App\Models\TimeEntry;
 use App\Support\Setting;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{Auth, Gate};
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\TimeEntryCommentController;
 
 class CommentController extends Controller {
     public function store(Request $request, DiaryEntry $diary): RedirectResponse {

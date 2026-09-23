@@ -10,7 +10,7 @@
 
 namespace Tests\Unit\Invoicing;
 
-use App\Models\{Organization, TextCorrection};
+use App\Models\Platform\{Organization, TextCorrection};
 use App\Services\Invoicing\TextCorrectionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

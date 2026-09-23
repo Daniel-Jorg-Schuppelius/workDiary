@@ -17,7 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\Applications\{ApplicationContractNegotiation, ApplicationOpportunity, JobApplication};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Support\ChartBucket;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;

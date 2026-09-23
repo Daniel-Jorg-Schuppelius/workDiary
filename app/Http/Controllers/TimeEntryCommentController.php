@@ -10,7 +10,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Comment, TimeEntry};
+use App\Models\Communication\Comment;
+use App\Models\TimeEntry;
 use App\Support\Setting;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;

@@ -12,7 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\Fritzbox;
 
-use App\Models\{Customer, ForeignCustomer, Organization, Project, TimeEntry};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Platform\Organization;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 

@@ -15,7 +15,7 @@ namespace App\Services\Notification\Sms;
 use App\Enums\Notification\{NotificationChannel, NotificationEvent, SmsDeliveryStatus};
 use App\Jobs\Notification\SmsDeliveryJob;
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Plugins\Contracts\SmsProvider;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;

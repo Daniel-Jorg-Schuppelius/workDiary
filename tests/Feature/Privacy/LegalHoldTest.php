@@ -9,11 +9,12 @@
 namespace Tests\Feature\Privacy;
 
 use App\Exceptions\Privacy\LegalHoldException;
-use App\Models\{Customer, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\{LegalHold, RetentionProposal};
-use App\Services\CustomerMergeService;
 use App\Services\Privacy\{DataProtectionPermissions, LegalHoldService, UserAnonymizationService};
 use App\Services\Privacy\Retention\RetentionScanService;
+use App\Services\Stammdaten\CustomerMergeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
@@ -184,10 +185,10 @@ final class LegalHoldTest extends TestCase {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
         $this->legalHolds()->place($customer, 'Gewährleistungsstreit, Belege sichern.', null, $admin);
 
-        $record = new \App\Models\Lead(['customer_id' => $customer->id]);
+        $record = new \App\Models\Sales\Lead(['customer_id' => $customer->id]);
 
         $this->assertNotNull($this->legalHolds()->activeHoldFor($record));
-        $this->assertNull($this->legalHolds()->activeHoldFor(new \App\Models\Lead(['customer_id' => null])));
+        $this->assertNull($this->legalHolds()->activeHoldFor(new \App\Models\Sales\Lead(['customer_id' => null])));
     }
 
     private function officer(): User {

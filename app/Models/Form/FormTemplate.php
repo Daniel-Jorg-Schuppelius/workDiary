@@ -8,15 +8,16 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Form;
 
 use App\Enums\Form\FormTemplateStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use Database\Factories\FormTemplateFactory;
+use Database\Factories\Form\FormTemplateFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use App\Models\Form\FormSubmission;
 
 /**
  * Formularvorlage (Feature 032, MVP): Name + Felddefinitionen als JSON

@@ -8,10 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Policies;
+namespace App\Policies\Reporting;
 
 use App\Enums\User\Permission;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\Auth\PermissionPolicy;
 
 /**
  * Zielwert-Pflege ist Geschäftsführungs-/Admin-Sache (report.target.manage).

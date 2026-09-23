@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Customer, PluginSetting, Project, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{PluginSetting, User};
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Plugins\Clockify\{ClockifyConfig, ClockifyImportService, ClockifyPlugin};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;

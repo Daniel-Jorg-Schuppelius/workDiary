@@ -20,8 +20,8 @@ class StartStopwatchRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'project_id' => \App\Models\Project::class,
-        'task_id' => \App\Models\Task::class,
+        'project_id' => \App\Models\Project\Project::class,
+        'task_id' => \App\Models\Project\Task::class,
         'diary_entry_id' => \App\Models\DiaryEntry::class,
         'timesheet_id' => \App\Models\Timesheet::class,
     ];

@@ -11,7 +11,8 @@
 namespace Database\Seeders;
 
 use App\Enums\Activity\ActivityCategoryType;
-use App\Models\{ActivityCategory, Organization};
+use App\Models\Classification\ActivityCategory;
+use App\Models\Platform\Organization;
 use Illuminate\Database\Seeder;
 
 /**

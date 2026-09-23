@@ -12,8 +12,10 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\DatevBatchStatus;
 use App\Enums\User\Permission;
-use App\Models\{Customer, Invoice, User};
+use App\Models\Customer\Customer;
 use App\Models\Finance\DatevBookingBatch;
+use App\Models\Invoice;
+use App\Models\Platform\User;
 use App\Services\Finance\Datev\{DatevBookingAdapter, DatevBookingConfig};
 use App\Services\Finance\{DatevBookingException, DatevBookingService, FinancialFormatsSupport};
 use DateTimeImmutable;
@@ -311,7 +313,7 @@ class DatevBookingTest extends TestCase {
     }
 
     public function test_batch_is_scoped_to_organization(): void {
-        $other = \App\Models\Organization::factory()->create();
+        $other = \App\Models\Platform\Organization::factory()->create();
         $foreignBatch = DatevBookingBatch::factory()->create(['organization_id' => $other->id]);
 
         // Unter der currentOrganization darf der fremde Stapel nicht sichtbar sein.

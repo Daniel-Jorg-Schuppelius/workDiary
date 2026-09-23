@@ -11,8 +11,8 @@
     use App\Enums\Task\TaskPriority;
     use App\Enums\Task\TaskStatus;
     /**
-     * @var \App\Models\Task|null $task
-     * @var \Illuminate\Support\Collection<int, \App\Models\User> $users
+     * @var \App\Models\Project\Task|null $task
+     * @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users
      * @var bool $isDialog
      */
     $isDialog = $isDialog ?? false;

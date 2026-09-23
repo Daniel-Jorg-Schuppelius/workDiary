@@ -15,7 +15,7 @@ namespace App\Contracts;
 /**
  * Gemeinsamer Vertrag aller plugin-gebundenen Outbox-Dispatcher (C14):
  * registriert und aufgelöst über die Plugin-Kennung
- * ({@see \App\Services\AbstractPluginDispatcherResolver}).
+ * ({@see \App\Services\Integration\AbstractPluginDispatcherResolver}).
  */
 interface PluginDispatcher {
     /** Plugin-Kennung, für die dieser Dispatcher zuständig ist. */

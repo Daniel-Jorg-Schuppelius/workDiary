@@ -10,8 +10,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Article, ArticleMergeDismissal, ArticleVariant, User};
-use App\Services\{ArticleDuplicateFinder, ArticleMergeService};
+use App\Models\{Article, ArticleMergeDismissal, ArticleVariant};
+use App\Models\Platform\User;
+use App\Services\Stammdaten\{ArticleDuplicateFinder, ArticleMergeService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -95,7 +96,7 @@ class ArticleMergeTest extends TestCase {
 
     public function test_merge_is_refused_across_organizations(): void {
         $own = $this->article();
-        $foreign = Article::factory()->create(['organization_id' => \App\Models\Organization::factory()->create()->id]);
+        $foreign = Article::factory()->create(['organization_id' => \App\Models\Platform\Organization::factory()->create()->id]);
 
         $this->expectException(\InvalidArgumentException::class);
         app(ArticleMergeService::class)->merge($foreign, $own);

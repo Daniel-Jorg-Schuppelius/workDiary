@@ -10,10 +10,15 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Search;
 
 use App\Enums\Search\SearchSourceType;
-use App\Models\{ContentCollection, Customer, ForeignCustomer, Project, Tag, User};
+use App\Models\Knowledge\ContentCollection;
+use App\Models\Customer\Customer;
+use App\Models\Customer\ForeignCustomer;
+use App\Models\Project\Project;
+use App\Models\Classification\Classification\Tag;
+use App\Models\Platform\User;
 use App\Services\Ai\Suggestions\{SearchAnswerSuggestionService, SuggestionViewData};
 use App\Services\Collections\{CollectableTypes, ContentCollectionService};
 use App\Services\Search\{ActivitySearchCriteria, ActivitySearchService, ActivitySearchVisibility, GlobalSearchService};
@@ -21,6 +26,7 @@ use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 /**
  * Suchseite `/suche` (Feature 153; vorher Vollergebnisseite aus Vollaudit

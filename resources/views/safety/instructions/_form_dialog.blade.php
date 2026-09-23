@@ -14,9 +14,9 @@
 @php
     $isEdit = $instruction !== null;
     $selectedParticipants = $isEdit
-        ? $instruction->participants->map(fn ($p) => \App\Support\Sqid::encode(\App\Models\User::class, $p->user_id))->all()
+        ? $instruction->participants->map(fn ($p) => \App\Support\Sqid::encode(\App\Models\Platform\User::class, $p->user_id))->all()
         : [];
-    $instructorSqid = \App\Support\Sqid::encode(\App\Models\User::class, $instruction?->instructor_user_id ?? auth()->id());
+    $instructorSqid = \App\Support\Sqid::encode(\App\Models\Platform\User::class, $instruction?->instructor_user_id ?? auth()->id());
     $assessmentSqid = \App\Support\Sqid::encodeOrNull(\App\Models\Safety\HazardAssessment::class, $instruction?->hazard_assessment_id);
     $courseSqid = \App\Support\Sqid::encodeOrNull(\App\Models\Training\TrainingCourse::class, $instruction?->training_course_id);
     $courseVersionSqid = \App\Support\Sqid::encodeOrNull(\App\Models\Training\TrainingCourseVersion::class, $instruction?->training_course_version_id);

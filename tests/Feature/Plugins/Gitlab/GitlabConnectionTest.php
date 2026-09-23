@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins\Gitlab;
 
-use App\Models\{Organization, PluginSetting, PluginState};
+use App\Models\Platform\{Organization, PluginSetting, PluginState};
 use App\Plugins\Contracts\{PluginCapability, TaskSyncer};
 use App\Plugins\Gitlab\{GitlabConfig, GitlabPlugin};
 use App\Plugins\{PluginDiscovery, PluginHealth};

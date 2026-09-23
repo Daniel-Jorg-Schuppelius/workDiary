@@ -11,32 +11,32 @@
   Beim Kunden zeigt das Panel die volle Kette (MVP-818) und je Zeile deren Herkunft.
 --}}
 @php
-    $canViewAnyDocuments = \Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Document::class)
+    $canViewAnyDocuments = \Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Document\Document::class)
         && app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.documents');
 @endphp
 
 @if ($canViewAnyDocuments)
 @php
-    /** @var \App\Models\User $panelViewer */
+    /** @var \App\Models\Platform\User $panelViewer */
     $panelViewer = \Illuminate\Support\Facades\Auth::user();
     // Vertrauliche Dokumente Dritter ausblenden — wie in der Liste (Vollaudit
     // 2026-07 N10); das Panel hatte den Filter bis MVP-817 nicht.
     // Beim Kunden die volle Kette (MVP-818): auch die Dokumente an seinen
     // Projekten, Aufträgen und Anlagen — jede andere Akte bleibt bei ihrer
     // direkten Kante.
-    $panelQuery = \App\Models\Document::query()
+    $panelQuery = \App\Models\Document\Document::query()
         ->visibleTo($panelViewer)
         ->ofCarrier($documentable);
     $panelTotal = (clone $panelQuery)->count();
-    $panelChained = $documentable instanceof \App\Models\Customer;
-    /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Document> $panelDocuments */
+    $panelChained = $documentable instanceof \App\Models\Customer\Customer;
+    /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Document\Document> $panelDocuments */
     $panelDocuments = $panelQuery
         ->with(['currentVersion'])
-        ->when($panelChained, fn ($q) => $q->with(app(\App\Services\Content\ContentSubjectResolver::class)->eagerLoad(\App\Models\Document::class)))
+        ->when($panelChained, fn ($q) => $q->with(app(\App\Services\Content\ContentSubjectResolver::class)->eagerLoad(\App\Models\Document\Document::class)))
         ->latest('updated_at')
-        ->limit(\App\Models\Document::PANEL_LIMIT)
+        ->limit(\App\Models\Document\Document::PANEL_LIMIT)
         ->get();
-    $canCreateDocument = \Illuminate\Support\Facades\Gate::allows('create', \App\Models\Document::class);
+    $canCreateDocument = \Illuminate\Support\Facades\Gate::allows('create', \App\Models\Document\Document::class);
 @endphp
 
 <x-card as="section" id="documents" :title="__('document.title.index')" icon="folder_open" :count="$panelTotal">
@@ -70,7 +70,7 @@
                             @endcan
                             <x-status-badge :tone="$panelEffective->tone()" size="sm">{{ $panelEffective->label() }}</x-status-badge>
                         </span>
-                        @if ($panelChained && ! \App\Support\MorphMap::is($panelDocument->documentable_type, \App\Models\Customer::class))
+                        @if ($panelChained && ! \App\Support\MorphMap::is($panelDocument->documentable_type, \App\Models\Customer\Customer::class))
                             <x-subject-link :for="$panelDocument" class="block text-xs" />
                         @endif
                         <span class="block text-xs text-muted">

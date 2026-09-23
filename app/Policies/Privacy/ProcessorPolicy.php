@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Policies\Privacy;
 
+use App\Models\Platform\User;
 use App\Models\Privacy\Processor;
-use App\Models\User;
 use App\Policies\Concerns\ChecksOwnership;
 
 /** Dienstleisterstammdaten. Ohne Admin-Bypass, organisationsgebunden. */

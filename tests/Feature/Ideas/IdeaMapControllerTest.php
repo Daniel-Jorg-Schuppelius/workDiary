@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Ideas;
 
-use App\Models\{IdeaMap, Organization, User};
+use App\Models\Ideas\IdeaMap;
+use App\Models\Platform\{Organization, User};
 use App\Services\Ideas\IdeaMapService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

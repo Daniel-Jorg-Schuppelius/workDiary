@@ -8,13 +8,14 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Audit;
 
 use App\Enums\Finance\GobdExportStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Platform\User;
 
 /**
  * Nachweis einer GoBD-Z3-Datenträgerüberlassung (Feature 063, MVP-132). Jede

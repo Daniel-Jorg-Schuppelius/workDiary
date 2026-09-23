@@ -11,7 +11,10 @@
 namespace App\Models\Location;
 
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
-use App\Models\{Customer, Project, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;

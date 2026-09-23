@@ -14,7 +14,7 @@ use App\Enums\Billing\BillingRateDayType;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Billing\{CustomerBillingAgreement, CustomerBillingRate};
 use App\Models\TimeEntry;
-use App\Services\HolidayService;
+use App\Services\Calendar\HolidayService;
 use Carbon\CarbonInterface;
 
 /**
@@ -22,7 +22,7 @@ use Carbon\CarbonInterface;
  * Tagtyp über workdays_per_week des Agreements (6 ⇒ nur So, 5 ⇒ Sa+So,
  * optional Feiertag = Wochenende),
  * Kategorie-Satz vor Kategorie-Fallback (activity_category_id=NULL), fehlt der
- * Wochenendsatz greift der Werktagssatz. Wird vom {@see \App\Services\RateCalculator}
+ * Wochenendsatz greift der Werktagssatz. Wird vom {@see \App\Services\Billing\RateCalculator}
  * VOR dem User-Satz befragt.
  *
  * Als `scoped` gebunden (AppServiceProvider): der Cache lebt pro Request bzw.

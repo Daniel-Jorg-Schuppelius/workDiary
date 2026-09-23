@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy\SubjectData;
 
-use App\Models\{Document, User};
+use App\Models\Document\Document;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 
 /**

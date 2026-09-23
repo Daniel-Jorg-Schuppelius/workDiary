@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Clockify\Services;
 
-use App\Models\IntegrationOutboxEntry;
+use App\Models\Integration\IntegrationOutboxEntry;
 use App\Plugins\Clockify\{ClockifyConfig, ClockifyExportService, ClockifyPlugin};
 use App\Plugins\Clockify\Exceptions\ClockifyApiException;
 use App\Plugins\Clockify\Sources\ClockifyApiClient;

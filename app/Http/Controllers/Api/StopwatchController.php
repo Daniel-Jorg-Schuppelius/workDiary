@@ -13,7 +13,8 @@ namespace App\Http\Controllers\Api;
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TimeEntryResource;
-use App\Models\{Project, Timesheet};
+use App\Models\Project\Project;
+use App\Models\Timesheet;
 use App\Services\Timesheet\Stopwatch;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -63,7 +64,7 @@ class StopwatchController extends Controller {
     public function start(Request $request): TimeEntryResource {
         $request->merge([
             'project_id' => Sqid::decode(Project::class, $request->input('project_id')),
-            'task_id' => Sqid::decode(\App\Models\Task::class, $request->input('task_id')),
+            'task_id' => Sqid::decode(\App\Models\Project\Task::class, $request->input('task_id')),
             'diary_entry_id' => Sqid::decode(\App\Models\DiaryEntry::class, $request->input('diary_entry_id')),
             'timesheet_id' => Sqid::decode(Timesheet::class, $request->input('timesheet_id')),
         ]);
@@ -83,7 +84,7 @@ class StopwatchController extends Controller {
             : DB::transaction(function () use ($project, $today) {
                 // Per-User serialisieren (kein Unique-Index als Backstop) —
                 // sonst zwei Stundenzettel je Tag bei parallelen Starts.
-                \App\Models\User::query()->whereKey(Auth::id())->lockForUpdate()->first();
+                \App\Models\Platform\User::query()->whereKey(Auth::id())->lockForUpdate()->first();
 
                 return Timesheet::firstOrCreate([
                     'project_id' => $project->id,

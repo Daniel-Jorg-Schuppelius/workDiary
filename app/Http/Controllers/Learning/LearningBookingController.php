@@ -16,7 +16,7 @@ use App\Enums\Learning\LearningBookingStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Learning\LearningBooking;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\LearningBookingService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};

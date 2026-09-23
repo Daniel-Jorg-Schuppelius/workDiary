@@ -72,7 +72,7 @@
         @endforelse
     </div>
 
-    @can('create', App\Models\Comment::class)
+    @can('create', App\Models\Communication\Comment::class)
         {{-- Offline-Sync (Feature 035): Auftrags-Kommentare sind offline
              erfassbar (append-only); andere Parents posten nur online. --}}
         <form method="POST" action="{{ $storeRoute }}" class="space-y-2"

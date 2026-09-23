@@ -14,8 +14,9 @@ namespace App\Services\Club;
 
 use App\Enums\Club\{ClubHorseKind, ClubParticipationStatus, ClubResourceKind};
 use App\Enums\Notification\NotificationEvent;
+use App\Models\Calendar\Event;
 use App\Models\Club\{ClubHorse, ClubHorseAssignment, ClubHorseUse, ClubMember, ClubResource, ClubResourceBooking};
-use App\Models\{Event, Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Notification\NotificationDispatcher;
 use App\Support\Tz;
 use Carbon\{CarbonImmutable, CarbonInterface};

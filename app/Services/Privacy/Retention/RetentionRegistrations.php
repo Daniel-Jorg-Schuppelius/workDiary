@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy\Retention;
 
-use App\Models\{CommunicationNote, TimeExport};
+use App\Models\Communication\CommunicationNote;
+use App\Models\TimeExport;
 use App\Support\MorphMap;
 use App\Support\Query\DateRange;
 
@@ -77,12 +78,12 @@ class RetentionRegistrations {
         // Zeitpunkt/Dauer bleiben als Vorgangsnachweis.
         $registry->register(new RetentionPolicy(
             area: 'cti_calls',
-            modelClass: \App\Models\ExternalReference::class,
-            overdueQuery: fn($organization, $cutoff) => \App\Models\ExternalReference::query()
+            modelClass: \App\Models\Integration\ExternalReference::class,
+            overdueQuery: fn($organization, $cutoff) => \App\Models\Integration\ExternalReference::query()
                 ->forPlugin($organization->id, \App\Services\Cti\CtiCallService::PLUGIN_ID, \App\Services\Cti\CtiCallService::EXTERNAL_TYPE)
                 ->where('synced_at', '<', $cutoff)
                 ->whereRaw("json_extract(payload, '$.anonymized') is null"),
-            purge: function (\App\Models\ExternalReference $subject): void {
+            purge: function (\App\Models\Integration\ExternalReference $subject): void {
                 $payload = (array) $subject->payload;
                 unset($payload['number']);
                 $subject->forceFill(['payload' => [...$payload, 'anonymized' => true]])->save();
@@ -97,16 +98,16 @@ class RetentionRegistrations {
         // Karten nach Frist endgültig entfernen (Knoten/Links/Shares kaskadieren).
         $registry->register(new RetentionPolicy(
             area: 'idea_maps',
-            modelClass: \App\Models\IdeaMap::class,
-            overdueQuery: fn($organization, $cutoff) => \App\Models\IdeaMap::query()
+            modelClass: \App\Models\Ideas\IdeaMap::class,
+            overdueQuery: fn($organization, $cutoff) => \App\Models\Ideas\IdeaMap::query()
                 ->withoutGlobalScopes()
                 ->onlyTrashed()
                 ->where('organization_id', $organization->id)
                 ->where('deleted_at', '<', $cutoff),
-            purge: function (\App\Models\IdeaMap $subject): void {
+            purge: function (\App\Models\Ideas\IdeaMap $subject): void {
                 $subject->forceDelete();
                 // Verweise der Knoten haben keinen Fremdschlüssel mehr (MVP-811).
-                \App\Models\ContentReference::pruneOrphans((int) $subject->organization_id);
+                \App\Models\Knowledge\ContentReference::pruneOrphans((int) $subject->organization_id);
             },
         ));
 
@@ -191,15 +192,15 @@ class RetentionRegistrations {
         // letzten Kontakt anonymisiert (PII weg, Pipeline-Kennzahl bleibt).
         $registry->register(new RetentionPolicy(
             area: 'leads',
-            modelClass: \App\Models\Lead::class,
-            overdueQuery: fn($organization, $cutoff) => \App\Models\Lead::query()
+            modelClass: \App\Models\Sales\Lead::class,
+            overdueQuery: fn($organization, $cutoff) => \App\Models\Sales\Lead::query()
                 ->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
                 ->whereNull('anonymized_at')
                 ->where('status', '!=', \App\Enums\Sales\LeadStatus::Converted->value)
                 ->whereNotNull('last_contact_at')
                 ->where('last_contact_at', '<=', now()->subMonths((int) config('sales.lead_retention_months', 6))),
-            purge: function (\App\Models\Lead $subject): void {
+            purge: function (\App\Models\Sales\Lead $subject): void {
                 app(\App\Services\Sales\LeadService::class)->anonymize($subject);
             },
         ));
@@ -248,8 +249,8 @@ class RetentionRegistrations {
         // archiviert, gilt das Dokument als in Verwendung (kein Vorschlag).
         $registry->register(new RetentionPolicy(
             area: 'documents_invoice',
-            modelClass: \App\Models\Document::class,
-            overdueQuery: fn($organization, $cutoff) => \App\Models\Document::query()
+            modelClass: \App\Models\Document\Document::class,
+            overdueQuery: fn($organization, $cutoff) => \App\Models\Document\Document::query()
                 ->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
                 ->where('document_type', \App\Enums\Document\DocumentType::Invoice->value)
@@ -299,8 +300,8 @@ class RetentionRegistrations {
         // und läuft nur als bestätigter Review-Vorschlag (approve → purge).
         $registry->register(new RetentionPolicy(
             area: 'employee_records',
-            modelClass: \App\Models\User::class,
-            overdueQuery: fn($organization, $cutoff) => \App\Models\User::query()
+            modelClass: \App\Models\Platform\User::class,
+            overdueQuery: fn($organization, $cutoff) => \App\Models\Platform\User::query()
                 ->where('organization_id', $organization->id)
                 ->whereNull('customer_id')
                 ->where('is_platform_admin', false)
@@ -312,14 +313,14 @@ class RetentionRegistrations {
             // ihre Kategorie-Fristen laufen länger (bis 6 J.) und die Akte
             // braucht den Personenbezug für ihren Zweck — erst vernichten
             // (Bereich personnel_files), dann anonymisieren.
-            exempt: function (\App\Models\User $subject): ?string {
+            exempt: function (\App\Models\Platform\User $subject): ?string {
                 $open = app(\App\Services\Hr\PersonnelFileService::class)->openDocumentCount($subject);
 
                 return $open > 0
                     ? "Personalakte mit {$open} Dokument(en) vorhanden — zuerst über den Bereich Personalakten vernichten."
                     : null;
             },
-            purge: function (\App\Models\User $subject, \App\Models\User $actor): void {
+            purge: function (\App\Models\Platform\User $subject, \App\Models\Platform\User $actor): void {
                 app(\App\Services\Privacy\UserAnonymizationService::class)->anonymize($subject, $actor);
             },
         ));
@@ -332,15 +333,15 @@ class RetentionRegistrations {
         // bestätigter Review-Vorschlag (approve → purge).
         $registry->register(new RetentionPolicy(
             area: 'personnel_files',
-            modelClass: \App\Models\Document::class,
-            overdueQuery: fn($organization, $cutoff) => \App\Models\Document::query()
+            modelClass: \App\Models\Document\Document::class,
+            overdueQuery: fn($organization, $cutoff) => \App\Models\Document\Document::query()
                 ->withoutGlobalScopes()
                 ->whereNull('deleted_at')
                 ->where('organization_id', $organization->id)
-                ->where('documentable_type', MorphMap::alias(\App\Models\User::class))
+                ->where('documentable_type', MorphMap::alias(\App\Models\Platform\User::class))
                 ->whereNotNull('retention_until')
                 ->whereDate('retention_until', '<=', now()->toDateString()),
-            purge: function (\App\Models\Document $subject, \App\Models\User $actor): void {
+            purge: function (\App\Models\Document\Document $subject, \App\Models\Platform\User $actor): void {
                 app(\App\Services\Hr\PersonnelFileService::class)->destroy($subject, $actor, 'retention');
             },
         ));
@@ -357,8 +358,8 @@ class RetentionRegistrations {
         // zweistufigen Bestätigung.
         $registry->register(new RetentionPolicy(
             area: 'customer_master',
-            modelClass: \App\Models\Customer::class,
-            overdueQuery: fn($organization, $cutoff) => \App\Models\Customer::query()
+            modelClass: \App\Models\Customer\Customer::class,
+            overdueQuery: fn($organization, $cutoff) => \App\Models\Customer\Customer::query()
                 ->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
                 ->where('updated_at', '<', $cutoff)
@@ -370,7 +371,7 @@ class RetentionRegistrations {
                     ->from('time_entries')
                     ->join('projects', 'projects.id', '=', 'time_entries.project_id')
                     ->whereColumn('projects.customer_id', 'customers.id')),
-            exempt: function (\App\Models\Customer $subject): ?string {
+            exempt: function (\App\Models\Customer\Customer $subject): ?string {
                 $structures = [
                     'Projekte' => \Illuminate\Support\Facades\DB::table('projects')->where('customer_id', $subject->id)->where('is_default', false),
                     'Standorte' => \Illuminate\Support\Facades\DB::table('sites')->where('customer_id', $subject->id),
@@ -385,7 +386,7 @@ class RetentionRegistrations {
 
                 return null;
             },
-            purge: function (\App\Models\Customer $subject): void {
+            purge: function (\App\Models\Customer\Customer $subject): void {
                 \Illuminate\Support\Facades\DB::table('projects')
                     ->where('customer_id', $subject->id)
                     ->where('is_default', true)

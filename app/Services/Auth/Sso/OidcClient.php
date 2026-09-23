@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Auth\Sso;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2AuthorizationCodeGrant;
-use App\Models\SsoConnection;
+use App\Models\Auth\SsoConnection;
 use App\Plugins\Support\PluginHttpFactory;
 use Illuminate\Support\Facades\{Cache, Log};
 use Illuminate\Support\Str;

@@ -11,7 +11,7 @@
 namespace Tests\Feature\Isms;
 
 use App\Models\Isms\IsmsScope;
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

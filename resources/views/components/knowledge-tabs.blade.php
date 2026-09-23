@@ -23,7 +23,7 @@
 @php
     $tabsUser = auth()->user();
     $tabsTypes = app(\App\Services\Collections\CollectableTypes::class);
-    $tabsAvailable = $tabsUser instanceof \App\Models\User ? $tabsTypes->availableKeys($tabsUser) : [];
+    $tabsAvailable = $tabsUser instanceof \App\Models\Platform\User ? $tabsTypes->availableKeys($tabsUser) : [];
     $tabsQuery = request()->query();
     $tabsCarry = fn (?string $key): array => $tabsTypes->carry(
         $key === null ? \App\Services\Collections\CollectableTypes::SHARED_FILTERS : $tabsTypes->listFilters($key),

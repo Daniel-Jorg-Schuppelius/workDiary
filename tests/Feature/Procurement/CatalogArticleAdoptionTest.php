@@ -12,7 +12,8 @@ namespace Tests\Feature\Procurement;
 
 use App\Enums\Article\{ArticleStatus, ArticleType};
 use App\Enums\Procurement\CatalogItemStatus;
-use App\Models\{Article, ArticleSupply, ArticleVariant, Supplier, SupplierCatalogItem, SupplierCatalogSource, User};
+use App\Models\{Article, ArticleSupply, ArticleVariant, Supplier, SupplierCatalogItem, SupplierCatalogSource};
+use App\Models\Platform\User;
 use App\Services\Procurement\CatalogArticleAdopter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

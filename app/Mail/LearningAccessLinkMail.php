@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Mail;
 
-use App\Models\ExternalParticipant;
+use App\Models\Communication\ExternalParticipant;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\{Content, Envelope};

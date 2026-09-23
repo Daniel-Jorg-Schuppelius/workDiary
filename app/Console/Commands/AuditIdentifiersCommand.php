@@ -10,8 +10,12 @@
 
 namespace App\Console\Commands;
 
-use App\Models\{Article, ArticleVariant, ContactBankAccount, Customer, LexofficeArticle, Supplier, SupplierCatalogItem, User};
+use App\Models\{Article, ArticleVariant, Supplier, SupplierCatalogItem};
+use App\Models\Contacts\ContactBankAccount;
+use App\Models\Customer\Customer;
 use App\Models\Finance\BankAccount;
+use App\Models\Platform\User;
+use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Services\Stammdaten\IdentifierIssueDetector;
 use App\Support\CsvExport;
 use CommonToolkit\Enums\Common\CSV\QuotingStyle;

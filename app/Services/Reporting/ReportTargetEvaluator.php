@@ -11,7 +11,7 @@
 namespace App\Services\Reporting;
 
 use App\Enums\Reporting\{ReportTargetMetric, ReportTargetScope};
-use App\Models\ReportTarget;
+use App\Models\Reporting\ReportTarget;
 use Carbon\{Carbon, CarbonInterface};
 use Illuminate\Support\Collection;
 

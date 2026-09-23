@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Security;
 
-use App\Models\{SecurityEvent, User, UserKnownDevice};
+use App\Models\Auth\{SecurityEvent, UserKnownDevice};
+use App\Models\Platform\User;
 use App\Services\Security\{ImpossibleTravelDetector, SecurityEventLogger};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;

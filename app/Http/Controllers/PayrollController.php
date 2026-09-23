@@ -11,7 +11,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\User\Permission;
-use App\Models\{MinimumWage, MinimumWageReference, Organization, User};
+use App\Models\{MinimumWage, MinimumWageReference};
+use App\Models\Platform\{Organization, User};
 use App\Services\Payroll\{EurostatMinimumWageImporter, MinimumWageService};
 use App\Support\{ErrorText, Sqid};
 use CommonToolkit\Enums\CountryCode;

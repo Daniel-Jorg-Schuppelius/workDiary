@@ -8,13 +8,14 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Integration;
 
 use App\Enums\Export\{ExportEntity, ExportFormat, ExportRunState};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Platform\User;
 
 /**
  * Datentransfer — Export-Lauf.

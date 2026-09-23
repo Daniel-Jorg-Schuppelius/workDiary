@@ -29,13 +29,13 @@
         <x-select-field name="customer_id" :label="__('Kunde (optional)')" span="2">
             <option value="">{{ __('— ohne Kundenbezug —') }}</option>
             @foreach ($customers as $c)
-                <option value="{{ $c->sqid }}" @selected(old('customer_id', $opportunity->customer_id !== null ? \App\Support\Sqid::encode(\App\Models\Customer::class, $opportunity->customer_id) : '') === $c->sqid)>{{ $c->name }}</option>
+                <option value="{{ $c->sqid }}" @selected(old('customer_id', $opportunity->customer_id !== null ? \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $opportunity->customer_id) : '') === $c->sqid)>{{ $c->name }}</option>
             @endforeach
         </x-select-field>
         <x-select-field name="responsible_user_id" :label="__('Verantwortlich')" span="2">
             <option value="">{{ __('— offen —') }}</option>
             @foreach ($users as $u)
-                <option value="{{ $u->sqid }}" @selected(old('responsible_user_id', $opportunity->responsible_user_id !== null ? \App\Support\Sqid::encode(\App\Models\User::class, $opportunity->responsible_user_id) : '') === $u->sqid)>{{ $u->name }}</option>
+                <option value="{{ $u->sqid }}" @selected(old('responsible_user_id', $opportunity->responsible_user_id !== null ? \App\Support\Sqid::encode(\App\Models\Platform\User::class, $opportunity->responsible_user_id) : '') === $u->sqid)>{{ $u->name }}</option>
             @endforeach
         </x-select-field>
         <x-input-field name="question_deadline" type="date" :label="__('Rückfragefrist')" :value="old('question_deadline', optional($opportunity->question_deadline)->toDateString())" />

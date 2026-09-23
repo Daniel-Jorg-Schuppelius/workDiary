@@ -10,7 +10,11 @@
 
 namespace Tests\Feature\Cti;
 
-use App\Models\{CommunicationNote, CtiConnection, Customer, ExternalReference, User};
+use App\Models\Communication\CommunicationNote;
+use App\Models\Cti\CtiConnection;
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\User;
 use App\Services\Cti\{CtiCallService, CtiNormalizerResolver, GenericNormalizer, PlacetelNormalizer, SipgateNormalizer, StarfaceNormalizer};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;

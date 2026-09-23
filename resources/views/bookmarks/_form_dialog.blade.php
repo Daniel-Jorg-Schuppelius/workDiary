@@ -8,7 +8,7 @@
 --}}
 {{-- Variablen: $bookmark, $isEdit --}}
 @php
-    /** @var \App\Models\UserBookmark $bookmark */
+    /** @var \App\Models\Platform\UserBookmark $bookmark */
     /** @var bool $isEdit */
     $isEdit ??= $bookmark->exists;
     $action = $isEdit ? route('bookmarks.update', $bookmark) : route('bookmarks.store');

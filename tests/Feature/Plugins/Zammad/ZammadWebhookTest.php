@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins\Zammad;
 
-use App\Models\{Task, ZammadConnection};
+use App\Models\Plugins\Zammad\ZammadConnection;
+use App\Models\Project\Task;
 use App\Plugins\Zammad\Contracts\{ZammadGateway, ZammadGatewayFactory};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;

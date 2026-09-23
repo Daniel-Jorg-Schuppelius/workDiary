@@ -12,7 +12,9 @@ namespace App\Plugins\OpenProject\Services;
 
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Task\{TaskPriority, TaskStatus};
-use App\Models\{ExternalReference, ExternalReferenceAlias, Organization, Project, Task, User};
+use App\Models\Integration\{ExternalReference, ExternalReferenceAlias};
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\{Project, Task};
 use App\Plugins\OpenProject\OpenProjectPlugin;
 use App\Plugins\OpenProject\Sources\OpenProjectApiClient;
 use Illuminate\Database\Eloquent\Model;

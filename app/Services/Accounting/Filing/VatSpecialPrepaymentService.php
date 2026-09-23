@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Accounting\Filing;
 
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingProfile, AccountingVatExtension};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{JournalService, VatFilingProfileResolver};
 use App\Services\Accounting\Reports\VatPreviewBuilder;
 use Carbon\CarbonImmutable;

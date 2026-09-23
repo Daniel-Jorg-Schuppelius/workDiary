@@ -447,7 +447,7 @@ class AccountingReportController extends Controller {
     }
 
     /** @return Collection<int, CostCenter> */
-    private function costCenters(\App\Models\Organization $organization): Collection {
+    private function costCenters(\App\Models\Platform\Organization $organization): Collection {
         return CostCenter::query()
             ->where('organization_id', $organization->id)
             ->orderBy('code')

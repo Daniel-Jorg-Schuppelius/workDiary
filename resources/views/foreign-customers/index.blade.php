@@ -24,7 +24,7 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Endkunden der Kunden verwalten (z. B. die Kundschaft einer betreuten Firma).')">
     <x-slot:actions>
-        @can('create', App\Models\ForeignCustomer::class)
+        @can('create', App\Models\Customer\ForeignCustomer::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger
                         :href="route('foreign-customers.create', array_filter(['customer' => $customerParam]))"

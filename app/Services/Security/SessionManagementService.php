@@ -10,8 +10,11 @@
 
 namespace App\Services\Security;
 
-use App\Models\{AttendanceTerminal, AuditLog, Organization, RemotePendingSession, User};
+use App\Models\AttendanceTerminal;
+use App\Models\Audit\AuditLog;
+use App\Models\Auth\RemotePendingSession;
 use App\Models\Location\LocationDeviceToken;
+use App\Models\Platform\{Organization, User};
 use App\Support\{MorphMap, Sqid};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\UserAgentHelper;

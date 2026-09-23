@@ -10,7 +10,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Customer, DiaryEntry, EntryType, User};
+use App\Models\Classification\EntryType;
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

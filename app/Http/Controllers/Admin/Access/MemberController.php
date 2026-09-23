@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Admin\Access;
 use App\Enums\User\UserRole;
 use App\Http\Controllers\Concerns\{AuditsAccessChanges, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
-use App\Models\{User, UserGroup};
+use App\Models\Platform\{User, UserGroup};
 use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -25,7 +25,7 @@ use Spatie\Permission\Models\Role;
  * inkl. ihrer effektiven Rollen und Gruppen-Mitgliedschaften, mit der
  * Möglichkeit, Rollen sowie Gruppen pro User direkt zuzuweisen.
  *
- * Dieser Controller ergänzt {@see \App\Http\Controllers\OrgMemberController}
+ * Dieser Controller ergänzt {@see \App\Http\Controllers\Platform\OrgMemberController}
  * um die feingranulare Verwaltung — der OrgMember-Controller bleibt
  * verantwortlich für das Anlegen und Löschen von Mitgliedern selbst.
  */

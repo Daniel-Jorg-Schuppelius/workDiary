@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
+use App\Models\Platform\TextCorrection;
 use App\Models\Scopes\OrganizationScope;
-use App\Models\TextCorrection;
 use CommonToolkit\Helper\Data\StringHelper;
 
 /**

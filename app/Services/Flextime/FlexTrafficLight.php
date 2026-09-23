@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Flextime;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 
 /**
  * Ampelphasen für den Gleitzeitsaldo (MVP-521): färbt Kontostände nach

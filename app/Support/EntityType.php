@@ -17,7 +17,7 @@ namespace App\Support;
  * der unqualifizierte Klassenname im Namespace `entity-types` (siehe
  * lang/<locale>/entity-types.php). Fehlt eine Übersetzung, wird der
  * Klassenname als Fallback zurückgegeben — identisch zur Logik in
- * {@see \App\Models\AuditLog::auditableTypeLabel()}. Der Typ darf Alias,
+ * {@see \App\Models\Audit\AuditLog::auditableTypeLabel()}. Der Typ darf Alias,
  * alter Klassenname oder Klassenname sein ({@see MorphMap::basename()}).
  */
 final class EntityType {

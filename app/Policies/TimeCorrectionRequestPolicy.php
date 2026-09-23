@@ -12,7 +12,8 @@ namespace App\Policies;
 
 use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Enums\User\Permission as P;
-use App\Models\{TimeCorrectionRequest, User};
+use App\Models\Platform\User;
+use App\Models\TimeCorrectionRequest;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 /**

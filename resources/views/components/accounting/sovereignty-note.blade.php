@@ -14,10 +14,10 @@
 
 @php
     $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
-    $period = $organization instanceof \App\Models\Organization
+    $period = $organization instanceof \App\Models\Platform\Organization
         ? app(\App\Services\Accounting\AccountingSovereigntyResolver::class)->periodAt($organization)
         : null;
-    $sovereignty = $organization instanceof \App\Models\Organization
+    $sovereignty = $organization instanceof \App\Models\Platform\Organization
         ? ($period?->sovereignty ?? \App\Enums\Finance\AccountingSovereignty::Preaccounting)
         : null;
 @endphp

@@ -11,7 +11,9 @@
 namespace Tests\Feature\Schedule;
 
 use App\Enums\Shift\{AvailabilityKind, ShiftPreference};
-use App\Models\{AvailabilityWindow, DesiredShift, User};
+use App\Models\Calendar\AvailabilityWindow;
+use App\Models\DesiredShift;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

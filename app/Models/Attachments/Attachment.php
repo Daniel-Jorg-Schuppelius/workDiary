@@ -8,14 +8,16 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Attachments;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use Database\Factories\AttachmentFactory;
+use Database\Factories\Attachments\AttachmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 use Illuminate\Support\Carbon;
+use App\Models\Attachments\AttachmentConfirmation;
+use App\Models\Platform\User;
 
 /**
  * @property int $id
@@ -105,7 +107,7 @@ class Attachment extends Model {
                 return;
             }
 
-            if ($class === \App\Models\Organization::class) {
+            if ($class === \App\Models\Platform\Organization::class) {
                 $attachment->organization_id = $parent->getKey();
 
                 return;

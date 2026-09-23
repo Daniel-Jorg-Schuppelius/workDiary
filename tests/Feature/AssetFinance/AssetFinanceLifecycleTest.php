@@ -11,8 +11,9 @@
 namespace Tests\Feature\AssetFinance;
 
 use App\Enums\AssetFinance\{AssetFinanceDeadlineKind, AssetFinanceEndKind, AssetFinanceKind, AssetFinanceStatus, AssetFinanceUsageLimitKind};
-use App\Models\{Asset, IncomingEInvoice, User};
+use App\Models\{Asset, IncomingEInvoice};
 use App\Models\AssetFinance\AssetFinanceContract;
+use App\Models\Platform\User;
 use App\Services\AssetFinance\AssetFinanceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -80,7 +81,7 @@ final class AssetFinanceLifecycleTest extends TestCase {
         $service = app(AssetFinanceService::class);
         $service->activate($contract, $this->admin);
 
-        $document = \App\Models\Document::factory()->create(['organization_id' => $this->organization->id]);
+        $document = \App\Models\Document\Document::factory()->create(['organization_id' => $this->organization->id]);
         $invoice = IncomingEInvoice::query()->create([
             'organization_id' => $this->organization->id,
             'document_id' => $document->id,
@@ -309,7 +310,7 @@ final class AssetFinanceLifecycleTest extends TestCase {
 
     public function test_module_gating_blocks_without_license(): void {
         // module.asset_finance ist NUR im Enterprise-Tier enthalten.
-        $proOrg = \App\Models\Organization::factory()->create(['plan' => 'pro']);
+        $proOrg = \App\Models\Platform\Organization::factory()->create(['plan' => 'pro']);
         app(PermissionRegistrar::class)->setPermissionsTeamId($proOrg->id);
         $proAdmin = User::factory()->admin()->create(['organization_id' => $proOrg->id]);
 

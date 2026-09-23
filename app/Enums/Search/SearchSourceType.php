@@ -14,7 +14,11 @@ namespace App\Enums\Search;
 
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
-use App\Models\{CommunicationNote, DiaryEntry, Document, KnowledgeArticle, OpenIssue, Protocol, RemotePendingSession, ServiceTicket, TimeEntry, Timesheet};
+use App\Models\Auth\RemotePendingSession;
+use App\Models\Communication\CommunicationNote;
+use App\Models\{DiaryEntry, OpenIssue, Protocol, ServiceTicket, TimeEntry, Timesheet};
+use App\Models\Document\Document;
+use App\Models\Knowledge\KnowledgeArticle;
 
 /**
  * Quellen des Tätigkeitsindex (Feature 153). Der Wert steht in

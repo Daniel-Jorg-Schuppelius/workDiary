@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Reporting;
 
-use App\Models\{AuditLog, Customer, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Services\Claims\ClaimCaseService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

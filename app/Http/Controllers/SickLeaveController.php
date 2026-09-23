@@ -11,7 +11,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SaveSickLeaveRequest;
-use App\Models\{Attachment, SickLeave, User};
+use App\Models\Attachments\Attachment;
+use App\Models\Platform\User;
+use App\Models\SickLeave;
 use App\Support\LookupCache;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Database\Eloquent\Collection;

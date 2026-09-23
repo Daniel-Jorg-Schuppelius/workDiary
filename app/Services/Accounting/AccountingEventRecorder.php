@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Accounting;
 
 use App\Models\Accounting\{AccountingEntry, AccountingEvent};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 
 /**
  * Schreibt die revisionssichere Ereigniskette des Buchungskerns

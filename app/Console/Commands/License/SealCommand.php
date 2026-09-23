@@ -36,7 +36,7 @@ class SealCommand extends Command {
         'app/Services/Licensing/LicenseResult.php',
         'app/Services/Licensing/LicenseStatus.php',
         'app/Http/Middleware/EnsureValidLicense.php',
-        'app/Http/Controllers/LicenseController.php',
+        'app/Http/Controllers/Licensing/LicenseController.php',
         'config/license.php',
     ];
 

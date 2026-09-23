@@ -10,7 +10,8 @@
 
 namespace Database\Factories;
 
-use App\Models\{Organization, SlaContract};
+use App\Models\Platform\Organization;
+use App\Models\SlaContract;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<SlaContract> */

@@ -11,8 +11,10 @@
 namespace Tests\Feature\DocumentDesign;
 
 use App\Enums\DocumentDesign\{LetterheadPageRole, RenderDocumentKind};
-use App\Models\{Customer, Invoice, Organization, User};
-use App\Models\DocumentDesign\DocumentRenderSnapshot;
+use App\Models\Customer\Customer;
+use App\Models\Document\DocumentDesign\DocumentRenderSnapshot;
+use App\Models\Invoice;
+use App\Models\Platform\{Organization, User};
 use App\Services\DocumentDesign\{DocumentDesignRenderer, LetterheadAssetService, RenderProfileService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -50,7 +52,7 @@ class RenderPipelineTest extends TestCase {
         ]);
     }
 
-    private function uploadAsset(Organization $org, User $admin): \App\Models\DocumentDesign\LetterheadAsset {
+    private function uploadAsset(Organization $org, User $admin): \App\Models\Document\DocumentDesign\LetterheadAsset {
         $img = imagecreatetruecolor(630, 891);
         imagefill($img, 0, 0, (int) imagecolorallocate($img, 230, 240, 250));
         ob_start();
@@ -61,7 +63,7 @@ class RenderPipelineTest extends TestCase {
         return app(LetterheadAssetService::class)->store($org, $file, LetterheadPageRole::First, 'Bogen', $admin);
     }
 
-    /** @return array{0: Organization, 1: User, 2: \App\Models\DocumentDesign\DocumentRenderProfile} */
+    /** @return array{0: Organization, 1: User, 2: \App\Models\Document\DocumentDesign\DocumentRenderProfile} */
     private function makeActiveProfile(array $kinds = ['invoice']): array {
         [$org, $admin] = $this->makeOrgAdmin();
         $service = app(RenderProfileService::class);

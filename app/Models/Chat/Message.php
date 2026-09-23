@@ -10,8 +10,9 @@
 
 namespace App\Models\Chat;
 
-use App\Models\{Attachment, User};
+use App\Models\Attachments\Attachment;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany, HasOne, MorphMany};

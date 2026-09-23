@@ -10,7 +10,7 @@
 
 namespace App\Exceptions;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, Gate};
 use RuntimeException;

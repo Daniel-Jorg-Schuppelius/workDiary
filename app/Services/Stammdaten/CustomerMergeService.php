@@ -10,11 +10,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Services\Stammdaten;
 
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use Illuminate\Support\Facades\{DB, Schema};
 use InvalidArgumentException;
+use App\Services\Stammdaten\AbstractEntityMergeService;
 
 /**
  * Führt zwei lokale Kunden-Datensätze zusammen (Dubletten-Bereinigung, z. B.

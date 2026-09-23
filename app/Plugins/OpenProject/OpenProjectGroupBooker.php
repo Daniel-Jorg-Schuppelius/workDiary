@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\OpenProject;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\OpenProject\Services\OpenProjectImportService;
 use App\Services\Integration\Concerns\ResolvesInboxTargets;
 use App\Services\Integration\InboxGroupBooker;

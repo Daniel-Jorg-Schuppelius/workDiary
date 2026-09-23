@@ -11,8 +11,8 @@
 namespace Tests\Feature\DocumentDesign;
 
 use App\Enums\DocumentDesign\{LetterheadAssetStatus, LetterheadPageRole};
-use App\Models\DocumentDesign\{DocumentRenderProfileVersion, LetterheadAsset};
-use App\Models\{Organization, User};
+use App\Models\Document\DocumentDesign\{DocumentRenderProfileVersion, LetterheadAsset};
+use App\Models\Platform\{Organization, User};
 use App\Services\DocumentDesign\RenderProfileService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

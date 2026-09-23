@@ -11,7 +11,9 @@
 namespace Tests\Feature;
 
 use App\Enums\User\Permission;
-use App\Models\{Comment, DiaryEntry, User};
+use App\Models\Communication\Comment;
+use App\Models\DiaryEntry;
+use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

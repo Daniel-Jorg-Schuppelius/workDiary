@@ -12,7 +12,8 @@ namespace Tests\Feature\Support;
 
 use App\Enums\Support\{ProblemReportDeliveryTarget, ProblemReportStatus};
 use App\Mail\ProblemReportForwardMail;
-use App\Models\{ProblemReport, User};
+use App\Models\Platform\User;
+use App\Models\ProblemReport;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{Mail, Storage};

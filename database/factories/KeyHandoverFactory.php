@@ -11,7 +11,8 @@
 namespace Database\Factories;
 
 use App\Enums\KeyHandover\KeyHandoverDirection;
-use App\Models\{Asset, KeyHandover, Organization};
+use App\Models\{Asset, KeyHandover};
+use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<KeyHandover> */

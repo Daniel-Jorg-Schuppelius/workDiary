@@ -15,7 +15,7 @@ namespace App\Http\Requests\Finance\Resale;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Http\Requests\Finance\Concerns\ChecksResaleLineRecipient;
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use App\Models\Reselling\ResalePeriod;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Reselling\Mirror\MirrorLine;

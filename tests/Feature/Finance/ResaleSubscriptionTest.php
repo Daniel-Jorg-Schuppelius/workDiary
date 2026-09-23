@@ -14,7 +14,9 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Reselling\{PeriodStatus, SubscriptionStatus};
 use App\Enums\User\Permission;
-use App\Models\{Article, Customer, ForeignCustomer, Organization};
+use App\Models\Article;
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Exceptions;

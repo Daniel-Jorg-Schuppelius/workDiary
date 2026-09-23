@@ -8,10 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace Database\Factories;
+namespace Database\Factories\Knowledge;
 
 use App\Enums\Knowledge\{ArticleStatus, ArticleVisibility};
-use App\Models\{KnowledgeArticle, User};
+use App\Models\Knowledge\KnowledgeArticle;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 

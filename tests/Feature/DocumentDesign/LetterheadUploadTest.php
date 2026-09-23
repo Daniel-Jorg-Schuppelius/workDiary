@@ -11,8 +11,8 @@
 namespace Tests\Feature\DocumentDesign;
 
 use App\Enums\DocumentDesign\LetterheadAssetStatus;
-use App\Models\DocumentDesign\LetterheadAsset;
-use App\Models\{Organization, User};
+use App\Models\Document\DocumentDesign\LetterheadAsset;
+use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;

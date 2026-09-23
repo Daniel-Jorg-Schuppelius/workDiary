@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Procurement;
 
-use App\Models\{Supplier, SupplierCatalogItem, SupplierCatalogSource, User};
+use App\Models\Platform\User;
+use App\Models\{Supplier, SupplierCatalogItem, SupplierCatalogSource};
 use App\Services\Procurement\BMEcatImportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

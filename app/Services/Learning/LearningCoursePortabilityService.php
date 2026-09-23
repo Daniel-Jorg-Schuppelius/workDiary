@@ -14,7 +14,7 @@ namespace App\Services\Learning;
 
 use App\Enums\Learning\{LearningQuestionKind, LearningUnitKind};
 use App\Models\Learning\{LearningCourse, LearningQuestion, LearningQuestionOption, LearningQuiz, LearningSection, LearningUnit};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 

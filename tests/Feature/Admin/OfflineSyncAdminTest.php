@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Admin;
 
 use App\Enums\Sync\SyncCommandStatus;
-use App\Models\{Organization, SyncCommand, User};
+use App\Models\Integration\SyncCommand;
+use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Spatie\Permission\PermissionRegistrar;

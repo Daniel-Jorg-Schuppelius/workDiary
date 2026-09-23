@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Mail;
 
-use App\Models\{EmailConnection, MsgraphMailConnection, User};
+use App\Models\Mail\EmailConnection;
+use App\Models\Platform\User;
+use App\Models\Plugins\Msgraph\MsgraphMailConnection;
 use App\Services\Mail\{GraphMailboxGateway, MailboxGateway, TransportSelectingMailboxGateway};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{WithOrganization, WithPluginSecrets};

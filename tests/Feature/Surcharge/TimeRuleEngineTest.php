@@ -12,7 +12,10 @@ namespace Tests\Feature\Surcharge;
 
 use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
 use App\Enums\Surcharge\SurchargeKind;
-use App\Models\{Attendance, AttendanceTerminal, AuditLog, Customer, Site, Team, User};
+use App\Models\{Attendance, AttendanceTerminal, Site};
+use App\Models\Audit\AuditLog;
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Team, User};
 use App\Models\Surcharge\{SurchargeRule, TimeRuleResult};
 use App\Services\Surcharge\TimeRuleEngine;
 use Carbon\CarbonImmutable;

@@ -14,7 +14,7 @@
     $effectiveGap = $project->effectiveBillingGroupingGap() ?? 0;
     $presetIncrements = [1 => __('Jede angefangene Minute'), 15 => __('Viertelstunde'), 30 => __('Halbe Stunde'), 60 => __('Stunde')];
     $isPreset = $increment === null || array_key_exists((int) $increment, $presetIncrements);
-    $itemTypes = \App\Models\ProjectBillingRule::itemTypeOptions();
+    $itemTypes = \App\Models\Project\ProjectBillingRule::itemTypeOptions();
 @endphp
 
 <div class="flex flex-col gap-3">

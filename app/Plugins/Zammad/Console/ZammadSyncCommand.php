@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Zammad\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\{Organization, ZammadConnection};
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Zammad\ZammadConnection;
 use App\Plugins\Zammad\Contracts\ZammadGatewayFactory;
 use App\Plugins\Zammad\Services\ZammadTicketImporter;
 use Illuminate\Console\Command;

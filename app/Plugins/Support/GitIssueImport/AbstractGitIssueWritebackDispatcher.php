@@ -14,7 +14,8 @@ namespace App\Plugins\Support\GitIssueImport;
 
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
 use App\Enums\Task\TaskStatus;
-use App\Models\{ExternalReference, IntegrationOutboxEntry, Task};
+use App\Models\Integration\{ExternalReference, IntegrationOutboxEntry};
+use App\Models\Project\Task;
 
 /**
  * Status-Rückrichtung der Git-Issue-Plugins (Audit 2026-08, Welle 1.4):

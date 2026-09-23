@@ -14,7 +14,7 @@
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @php
-    /** @var \Illuminate\Support\Collection<int, \App\Models\UserBookmark> $bookmarks */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Platform\UserBookmark> $bookmarks */
 @endphp
 
 @section('content')

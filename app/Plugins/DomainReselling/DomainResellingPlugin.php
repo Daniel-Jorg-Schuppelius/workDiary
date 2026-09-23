@@ -12,7 +12,7 @@ namespace App\Plugins\DomainReselling;
 
 use App\Enums\Domain\DomainConnectionStatus;
 use App\Models\Domain\DomainProviderConnection;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Domain\DomainProviderAdapter;
 use App\Plugins\Contracts\{DomainRegistrar, Plugin, PluginCapability, SettingsField};

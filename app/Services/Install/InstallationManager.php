@@ -10,7 +10,7 @@
 
 namespace App\Services\Install;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use CommonToolkit\Helper\Data\JsonHelper;
 use CommonToolkit\Helper\FileSystem\{File, Folder};
 use Illuminate\Support\Facades\Artisan;

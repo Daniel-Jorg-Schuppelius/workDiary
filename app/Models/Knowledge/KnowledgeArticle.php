@@ -8,16 +8,20 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Knowledge;
 
 use App\Enums\Knowledge\{ArticleStatus, ArticleVisibility};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasSqid, HasTags, Searchable};
-use Database\Factories\KnowledgeArticleFactory;
+use Database\Factories\Knowledge\KnowledgeArticleFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 use Illuminate\Support\{Carbon, Str};
+use App\Models\Asset;
+use App\Models\Knowledge\KnowledgeArticleFeedback;
+use App\Models\Knowledge\ContentReference;
+use App\Models\Problem;
 
 /**
  * Wissensartikel (Feature 011): bekanntes Problem + Lösungsschritte aus

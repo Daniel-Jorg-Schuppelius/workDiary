@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Etsy\Services;
 
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
-use App\Models\{EtsyConnection, EtsyReceipt, IntegrationOutboxEntry};
+use App\Models\Integration\IntegrationOutboxEntry;
+use App\Models\Plugins\Etsy\{EtsyConnection, EtsyReceipt};
 use App\Plugins\Etsy\Api\{EtsyApiException, EtsyClientFactory};
 use App\Plugins\Etsy\EtsyPlugin;
 use Carbon\CarbonImmutable;

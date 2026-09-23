@@ -17,7 +17,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\SaveSepaMandateRequest;
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use App\Models\Finance\SepaMandate;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;

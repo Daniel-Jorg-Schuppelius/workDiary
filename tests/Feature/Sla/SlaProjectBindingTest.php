@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Sla;
 
-use App\Models\{Customer, Project, ServiceQueue, SlaContract, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\{ServiceQueue, SlaContract};
 use App\Services\ServiceTicket\{ServiceTicketService, SlaTimer};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -121,7 +124,7 @@ class SlaProjectBindingTest extends TestCase {
 
     public function test_store_rejects_foreign_project(): void {
         $foreignProject = Project::factory()->create([
-            'organization_id' => \App\Models\Organization::factory()->create()->id,
+            'organization_id' => \App\Models\Platform\Organization::factory()->create()->id,
         ]);
         $agent = User::factory()->teamleitung()->create(['organization_id' => $this->organization->id]);
 

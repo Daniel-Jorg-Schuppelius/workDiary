@@ -65,7 +65,7 @@ class StampOrganizationMailHeader {
     /** Empfänger-Konto: die Adresse gehört genau einem Nutzer. */
     private function organizationFromRecipient(MessageSending $event): ?int {
         foreach ($event->message->getTo() as $address) {
-            $user = \App\Models\User::query()
+            $user = \App\Models\Platform\User::query()
                 ->withoutGlobalScopes()
                 ->where('email', $address->getAddress())
                 ->first(['organization_id']);
@@ -87,6 +87,6 @@ class StampOrganizationMailHeader {
 
         $organization = app('currentOrganization');
 
-        return $organization instanceof \App\Models\Organization ? (int) $organization->id : null;
+        return $organization instanceof \App\Models\Platform\Organization ? (int) $organization->id : null;
     }
 }

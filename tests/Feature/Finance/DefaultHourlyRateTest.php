@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Finance;
 
-use App\Models\{Customer, Organization, Project, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Services\Billing\OrganizationDefaultRateResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

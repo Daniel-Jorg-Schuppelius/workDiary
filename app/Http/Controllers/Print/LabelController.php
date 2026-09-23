@@ -8,12 +8,16 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Print;
 
 use App\Enums\User\Permission as P;
-use App\Models\{ArticleVariant, LabelTemplate, Organization, StockLot, StockSerial};
+use App\Models\ArticleVariant;
+use App\Models\Print\LabelTemplate;
+use App\Models\Platform\Organization;
+use App\Models\StockLot;
+use App\Models\StockSerial;
 use App\Services\Inventory\LabelService;
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
@@ -21,6 +25,7 @@ use BaconQrCode\Writer;
 use CommonToolkit\Helper\Data\DataUrlHelper;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Controller;
 
 /**
  * Etikettendruck (Feature 048, E5): erzeugt ein druckbares Etikett (PDF) für

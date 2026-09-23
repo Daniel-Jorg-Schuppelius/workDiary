@@ -8,9 +8,9 @@
 --}}
 @php
     $isDialog = $isDialog ?? true;
-    /** @var \App\Models\User $user */
+    /** @var \App\Models\Platform\User $user */
     $prefs = $user->preferences();
-    $themeService = app(\App\Services\ThemeService::class);
+    $themeService = app(\App\Services\UI\ThemeService::class);
     $builtinThemes = $themeService->builtinThemes();
     $lightThemes = array_values(array_filter($builtinThemes, fn($t) => $t['scheme'] === 'light'));
     $darkThemes = array_values(array_filter($builtinThemes, fn($t) => $t['scheme'] === 'dark'));
@@ -21,7 +21,7 @@
     $avatarMaxKb = (int) config('branding.limits.avatar_kb', 1024);
     $currentAvatar = $user->avatar();
     $avatarPreview = $currentAvatar !== null
-        ? \App\Http\Controllers\AttachmentController::downloadUrl($currentAvatar)
+        ? \App\Http\Controllers\Attachments\AttachmentController::downloadUrl($currentAvatar)
         : null;
 @endphp
 

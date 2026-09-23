@@ -11,7 +11,8 @@
 namespace Tests\Feature\Inventory;
 
 use App\Enums\Inventory\StockState;
-use App\Models\{Article, ArticleVariant, User, Warehouse};
+use App\Models\{Article, ArticleVariant, Warehouse};
+use App\Models\Platform\User;
 use App\Services\Inventory\InventoryLedger;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

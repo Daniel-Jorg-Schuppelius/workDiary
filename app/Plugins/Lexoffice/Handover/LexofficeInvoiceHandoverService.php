@@ -14,7 +14,10 @@ namespace App\Plugins\Lexoffice\Handover;
 
 use App\Enums\Finance\BillingMode;
 use App\Enums\Lexoffice\LexofficeHandoverStatus;
-use App\Models\{ExternalReference, Invoice, LexofficeInvoiceHandover, Organization, User};
+use App\Models\Integration\ExternalReference;
+use App\Models\Invoice;
+use App\Models\Platform\{Organization, User};
+use App\Models\Plugins\Lexoffice\LexofficeInvoiceHandover;
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
 use App\Plugins\Lexoffice\Tariff\LexwareTariffService;
 use App\Services\Invoicing\InvoicePdfRenderer;

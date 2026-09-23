@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Finance\Datev;
 
-use App\Models\{Customer, ExpenseCategory, Organization};
+use App\Models\Customer\Customer;
+use App\Models\ExpenseCategory;
+use App\Models\Platform\Organization;
 use App\Services\Finance\FinancialFormatsSupport;
 use CommonToolkit\Entities\CSV\DataLine;
 use CommonToolkit\FinancialFormats\Builders\DATEV\V700\{DebitorsCreditorsDocumentBuilder, GLAccountDescriptionDocumentBuilder};

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Investments;
 
-use App\Models\Approval;
+use App\Models\Approval\Approval;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany};

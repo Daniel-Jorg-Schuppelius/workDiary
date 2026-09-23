@@ -13,7 +13,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Plugins;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{ExternalReference, IntegrationOutboxEntry, PluginSetting, Project, TimeEntry, User};
+use App\Models\Integration\{ExternalReference, IntegrationOutboxEntry};
+use App\Models\Platform\{PluginSetting, User};
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Plugins\Support\MatchingTimeImportService;
 use App\Plugins\Toggl\Services\TogglOutboxDispatcher;
 use App\Plugins\Toggl\Support\TogglQuotaGuard;
@@ -164,7 +167,7 @@ class TogglQuotaPauseTest extends TestCase {
                 'match_policy' => 'auto_create',
                 'file' => $file,
             ])->assertRedirect();
-        $run = \App\Models\ImportRun::query()->latest('id')->firstOrFail();
+        $run = \App\Models\Integration\ImportRun::query()->latest('id')->firstOrFail();
         $this->actingAs($admin)->post(route('admin.imports.confirm', $run))->assertRedirect();
 
         // Importierte Zeile ist gebucht — aber KEIN Spiegel-Export Richtung Toggl.

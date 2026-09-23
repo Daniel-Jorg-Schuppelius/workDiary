@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Gaeb;
 
-use App\Models\{Customer, Invoice};
+use App\Models\Customer\Customer;
+use App\Models\Invoice;
 use App\Services\Gaeb\GaebInvoiceExportService;
 use ERechnungToolkit\Enums\GaebPhase;
 use ERechnungToolkit\Validators\GaebSchemaValidator;

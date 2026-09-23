@@ -131,7 +131,7 @@ class AppConfigurator {
         $this->env->set('SQIDS_SALT', $salt);
         Config::set('sqids.salt', $salt);
         // SqidEncoder-Singleton neu binden, damit der frische Salt sofort greift.
-        app()->forgetInstance(\App\Services\SqidEncoder::class);
+        app()->forgetInstance(\App\Support\SqidEncoder::class);
 
         return true;
     }

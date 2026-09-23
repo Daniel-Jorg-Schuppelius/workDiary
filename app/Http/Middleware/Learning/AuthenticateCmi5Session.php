@@ -14,7 +14,7 @@ namespace App\Http\Middleware\Learning;
 
 use App\Enums\Security\SecurityEventType;
 use App\Models\Learning\LearningCmi5Session;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Security\SecurityEventLogger;
 use Closure;
 use CommonToolkit\Helper\Data\CryptoHelper;

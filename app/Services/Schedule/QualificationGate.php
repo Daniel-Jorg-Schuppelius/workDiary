@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Schedule;
 
-use App\Models\{Qualification, ScheduledShift, User};
+use App\Models\Platform\User;
+use App\Models\{Qualification, ScheduledShift};
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\{Carbon, Collection};

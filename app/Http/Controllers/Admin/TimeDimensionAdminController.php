@@ -11,7 +11,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Organization, TimeDimensionType, TimeDimensionValue, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\{TimeDimensionType, TimeDimensionValue};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;

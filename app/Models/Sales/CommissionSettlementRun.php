@@ -15,7 +15,7 @@ namespace App\Models\Sales;
 use App\Casts\MoneyCast;
 use App\Enums\Sales\CommissionSettlementStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\{Collection, Model};

@@ -11,7 +11,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{AuditLog, Customer, Organization, ShiftType, TimeAccount, User, WorkSchedule};
+use App\Models\Audit\AuditLog;
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
+use App\Models\{ShiftType, TimeAccount, WorkSchedule};
 use App\Support\{MorphMap, Sqid};
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\Request;

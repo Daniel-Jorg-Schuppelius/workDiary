@@ -13,8 +13,8 @@
 
 @section('content')
 @php
-    /** @var \App\Models\Organization $organization */
-    /** @var \App\Services\BrandingService $branding */
+    /** @var \App\Models\Platform\Organization $organization */
+    /** @var \App\Services\UI\BrandingService $branding */
     $settings = $branding->settings();
     $contact = (array) ($settings['contact'] ?? []);
     $legal = (array) ($settings['legal'] ?? []);
@@ -44,7 +44,7 @@
                 :action="route('attachments.store', ['type' => 'organization', 'id' => $organization->sqid])"
                 :delete-action="route('attachments.destroyMeta', ['type' => 'organization', 'id' => $organization->sqid, 'meta' => 'logo'])"
                 :current="$organization->logo()"
-                :meta="\App\Models\Attachment::META_LOGO"
+                :meta="\App\Models\Attachments\Attachment::META_LOGO"
                 :max-kb="$logoMaxKb"
                 :helper="$logoHelper"
             />
@@ -53,7 +53,7 @@
                 :action="route('attachments.store', ['type' => 'organization', 'id' => $organization->sqid])"
                 :delete-action="route('attachments.destroyMeta', ['type' => 'organization', 'id' => $organization->sqid, 'meta' => 'logo_dark'])"
                 :current="$organization->logoDark()"
-                :meta="\App\Models\Attachment::META_LOGO_DARK"
+                :meta="\App\Models\Attachments\Attachment::META_LOGO_DARK"
                 :max-kb="$logoMaxKb"
                 :helper="$logoHelper"
             />

@@ -11,8 +11,8 @@
 namespace App\Jobs\Notification;
 
 use App\Jobs\Concerns\RetriesTransientFailures;
-use App\Models\User;
-use App\Services\WebPushService;
+use App\Models\Platform\User;
+use App\Services\Notification\WebPushService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;

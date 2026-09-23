@@ -10,9 +10,10 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Customer, ExternalReference, IntegrationInboxItem};
+use App\Models\Customer\Customer;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Plugins\Lexoffice\{LexofficeContactSync, LexofficeMatchPolicy, LexofficePlugin};
-use App\Services\CustomerMergeService;
+use App\Services\Stammdaten\CustomerMergeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\FakePluginHttp;
@@ -130,14 +131,14 @@ class LexofficeContactSyncTest extends TestCase {
         $this->assertDatabaseHas('integration_inbox_items', [
             'plugin_id' => LexofficePlugin::ID,
             'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
-            'case_type' => \App\Models\IntegrationInboxItem::CASE_CONFLICT,
+            'case_type' => \App\Models\Integration\IntegrationInboxItem::CASE_CONFLICT,
             'referenceable_id' => $customer->id,
             'external_id' => 'lex-3',
-            'status' => \App\Models\IntegrationInboxItem::STATUS_OPEN,
+            'status' => \App\Models\Integration\IntegrationInboxItem::STATUS_OPEN,
         ]);
         $this->assertDatabaseMissing('pending_external_conflicts', ['plugin_id' => LexofficePlugin::ID]);
 
-        $item = \App\Models\IntegrationInboxItem::query()->first();
+        $item = \App\Models\Integration\IntegrationInboxItem::query()->first();
         $this->assertNotNull($item);
         $this->assertContains('email', $item->diff_fields ?? []);
         // mapped_snapshot trägt den Remote-Wert für die spätere „Remote übernehmen"-Aktion.
@@ -313,7 +314,7 @@ class LexofficeContactSyncTest extends TestCase {
 
         // city ist at-rest verschlüsselt → über das Model (entschlüsselt) prüfen,
         // nicht per assertDatabaseHas gegen den Ciphertext.
-        $shipping = \App\Models\ContactAddress::query()
+        $shipping = \App\Models\Contacts\ContactAddress::query()
             ->where('addressable_id', $customer->id)
             ->where('kind', 'shipping')
             ->first();

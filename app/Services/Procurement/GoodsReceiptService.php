@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Procurement;
 
 use App\Enums\Procurement\PurchaseOrderStatus;
-use App\Models\{ArticleVariant, Organization, PurchaseOrder, PurchaseOrderLine, StockMovement, Warehouse};
+use App\Models\{ArticleVariant, PurchaseOrder, PurchaseOrderLine, StockMovement, Warehouse};
+use App\Models\Platform\Organization;
 use App\Services\Inventory\{InventoryLedger, InventoryValuationManager};
 use App\Support\DecimalQty;
 use Illuminate\Support\Facades\DB;

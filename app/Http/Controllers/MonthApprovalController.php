@@ -11,7 +11,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\TimeApproval\MonthClosureStatus;
-use App\Models\{MonthClosure, User};
+use App\Models\MonthClosure;
+use App\Models\Platform\User;
 use App\Services\TimeApproval\{MonthClosureService, MonthClosureWorkflowException, MonthTotalsSnapshotter};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};

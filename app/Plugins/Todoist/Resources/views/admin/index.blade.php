@@ -20,7 +20,7 @@
                 <x-icon name="key_off" />
                 <span>{{ __('todoist.flash.not_configured') }}</span>
             </div>
-        @elseif ($connection === null || $connection->status === \App\Models\TodoistConnection::STATUS_DISCONNECTED)
+        @elseif ($connection === null || $connection->status === \App\Models\Plugins\Todoist\TodoistConnection::STATUS_DISCONNECTED)
             <p class="text-sm opacity-80 mb-3">{{ __('todoist.connection.none') }}</p>
             {{-- Datenübertragungs-Hinweis VOR OAuth (MVP-116): was an Todoist geht --}}
             <div class="alert mb-3">

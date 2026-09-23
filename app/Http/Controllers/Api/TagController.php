@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TagResource;
-use App\Models\Tag;
+use App\Models\Classification\Tag;
 use App\Support\LookupCache;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;

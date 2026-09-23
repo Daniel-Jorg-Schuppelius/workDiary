@@ -15,7 +15,8 @@ namespace App\Dashboard\Widgets;
 use App\Dashboard\Widget;
 use App\Enums\Dashboard\WidgetGroup;
 use App\Enums\TimeApproval\TimeCorrectionStatus;
-use App\Models\{TimeCorrectionRequest, User};
+use App\Models\Platform\User;
+use App\Models\TimeCorrectionRequest;
 use Illuminate\Contracts\View\View;
 
 /** Eigene Zeitkorrektur-Anträge, die noch offen sind (Entwurf/eingereicht). */

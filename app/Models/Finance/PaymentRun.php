@@ -14,7 +14,8 @@ namespace App\Models\Finance;
 
 use App\Enums\Finance\{PaymentRunKind, PaymentRunStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\{Document, User};
+use App\Models\Document\Document;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};

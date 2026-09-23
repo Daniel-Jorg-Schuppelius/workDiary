@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins\Msgraph;
 
-use App\Models\{MsgraphConnection, User};
+use App\Models\Platform\User;
+use App\Models\Plugins\Msgraph\MsgraphConnection;
 use App\Plugins\Msgraph\Services\MsgraphPresenceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

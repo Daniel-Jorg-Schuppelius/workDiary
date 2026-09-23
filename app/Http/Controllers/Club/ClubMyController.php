@@ -14,8 +14,9 @@ namespace App\Http\Controllers\Club;
 
 use App\Enums\Club\{ClubAttendanceSheetStatus, ClubAttendanceStatus, ClubGuardianPermission, ClubParticipationSource, ClubParticipationStatus};
 use App\Http\Controllers\Controller;
+use App\Models\Calendar\Event;
 use App\Models\Club\{ClubAttendanceRecord, ClubExamCandidate, ClubExamOffer, ClubMember, ClubMemberGrade, ClubNotification};
-use App\Models\{Event, User};
+use App\Models\Platform\User;
 use App\Services\Club\{ClubAttendanceService, ClubEventService, ClubExamService, ClubGradeCertificatePdfRenderer, ClubGradingService, ClubMatchService, ClubPortalContext, ClubPortalSubject};
 use App\Services\UI\DateRangeContext;
 use App\Support\Sqid;

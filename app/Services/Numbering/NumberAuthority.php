@@ -11,7 +11,8 @@
 namespace App\Services\Numbering;
 
 use App\Enums\Numbering\NumberScope;
-use App\Models\{NumberFormat, Organization};
+use App\Models\Numbering\NumberFormat;
+use App\Models\Platform\Organization;
 
 /**
  * Entscheidet, wer die Hoheit über einen Nummernkreis hat:

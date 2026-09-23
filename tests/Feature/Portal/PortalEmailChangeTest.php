@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Portal;
 
 use App\Mail\{PortalEmailChangeConfirmMail, PortalEmailChangedNoticeMail};
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Services\CustomerPortal\{PortalAccessService, PortalEmailChangeService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

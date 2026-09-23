@@ -14,7 +14,7 @@ use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Enums\Safety\{HazardAssessmentStatus, InstructionSignatureMethod, MedicalCheckupKind};
 use App\Enums\User\UserRole;
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Safety\{HazardAssessment, MedicalCheckup, SafetyInstruction, SafetyInstructionParticipant};
 use App\Services\Safety\{HazardAssessmentService, SafetyInstructionService};
 use App\Support\Sqid;

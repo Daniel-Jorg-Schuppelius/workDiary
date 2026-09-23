@@ -8,11 +8,12 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Platform;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Http\Controllers\Concerns\ManagesUserContactDetails;
-use App\Models\{Attachment, User};
+use App\Models\Attachments\Attachments\Attachment;
+use App\Models\Platform\User;
 use App\Notifications\GenericEventNotification;
 use App\Services\Attachments\ImageMetaUploader;
 use App\Support\Auth\RecentAuthentication;
@@ -22,6 +23,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\{Hash, Log, Notification};
 use Illuminate\Validation\{Rule, ValidationException};
+use App\Http\Controllers\Controller;
 
 class ProfileController extends Controller {
     use ManagesUserContactDetails;
@@ -43,7 +45,7 @@ class ProfileController extends Controller {
         /** @var User $user */
         $user = $this->authUser();
 
-        $themeKeys = app(\App\Services\ThemeService::class)->allowedKeys();
+        $themeKeys = app(\App\Services\UI\ThemeService::class)->allowedKeys();
         $avatarMaxKb = (int) config('branding.limits.avatar_kb', 1024);
 
         $data = $request->validate([

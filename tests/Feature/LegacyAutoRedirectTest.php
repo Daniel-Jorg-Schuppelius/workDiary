@@ -12,7 +12,8 @@ namespace Tests\Feature;
 
 use App\Legacy\Http\Controllers\{LegacyNotdienstController, LegacyOnCallController};
 use App\Legacy\Models\{LegacyNotdienst, LegacyOnCall};
-use App\Models\{EmergencyAssignment, OnCallShift, User};
+use App\Models\{EmergencyAssignment, OnCallShift};
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\RedirectResponse;
 use Tests\TestCase;

@@ -15,7 +15,7 @@ namespace App\Services\Notification\DeadlineScans;
 use App\Enums\Isms\RiskStatus;
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Isms\{IsmsCertificate, IsmsCorrectiveAction, IsmsRisk, IsmsRiskAssessment, IsmsSupplierAssessment, IsmsVulnerability};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Isms\ConformityService;
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Support\Carbon;

@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\ServiceTicket;
 
-use App\Models\{ContentReference, Problem, ServiceTicket, User};
+use App\Models\Knowledge\ContentReference;
+use App\Models\Platform\User;
+use App\Models\{Problem, ServiceTicket};
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -107,13 +109,13 @@ class ProblemService {
      * KnowledgeArticleService; idempotent über den Verweis (ContentReference)
      * (linkable=Problem): ein zweiter Aufruf liefert den bestehenden Artikel.
      */
-    public function publishKnownError(Problem $problem, User $actor): \App\Models\KnowledgeArticle {
+    public function publishKnownError(Problem $problem, User $actor): \App\Models\Knowledge\KnowledgeArticle {
         $existing = $this->knownErrorLink($problem);
         if ($existing !== null) {
-            return \App\Models\KnowledgeArticle::query()->findOrFail($existing->source_id);
+            return \App\Models\Knowledge\KnowledgeArticle::query()->findOrFail($existing->source_id);
         }
 
-        return DB::transaction(function () use ($problem, $actor): \App\Models\KnowledgeArticle {
+        return DB::transaction(function () use ($problem, $actor): \App\Models\Knowledge\KnowledgeArticle {
             $article = app(\App\Services\Knowledge\KnowledgeArticleService::class)->create($actor, [
                 'title' => (string) __('Known Error: :title', ['title' => $problem->title]),
                 'problem' => (string) ($problem->description ?? $problem->title),
@@ -140,7 +142,7 @@ class ProblemService {
     /** Verknüpfung des Known-Error-Artikels mit dem Problem, falls es sie gibt. */
     public function knownErrorLink(Problem $problem): ?ContentReference {
         return ContentReference::query()
-            ->where('source_type', (new \App\Models\KnowledgeArticle)->getMorphClass())
+            ->where('source_type', (new \App\Models\Knowledge\KnowledgeArticle)->getMorphClass())
             ->where('kind', ContentReference::KIND_LINKED)
             ->where('target_type', $problem->getMorphClass())
             ->where('target_id', $problem->id)

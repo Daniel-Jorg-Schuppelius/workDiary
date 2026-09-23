@@ -11,7 +11,8 @@
 namespace Tests\Feature\Article;
 
 use App\Enums\Article\ArticleStatus;
-use App\Models\{Article, User};
+use App\Models\Article;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -123,7 +124,7 @@ final class ArticleControllerTest extends TestCase {
     }
 
     public function test_article_can_be_tagged_on_store_and_update(): void {
-        $existing = \App\Models\Tag::factory()->create([
+        $existing = \App\Models\Classification\Tag::factory()->create([
             'organization_id' => $this->organization->id,
             'name' => 'Verschleißteil',
         ]);

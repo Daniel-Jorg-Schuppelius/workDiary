@@ -11,7 +11,8 @@
 namespace App\Plugins\Msgraph\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{MsgraphConnection, User};
+use App\Models\Platform\User;
+use App\Models\Plugins\Msgraph\MsgraphConnection;
 use App\Plugins\Msgraph\Api\MsgraphCalendarClient;
 use App\Support\Sqid;
 use Illuminate\Http\{JsonResponse, Request};

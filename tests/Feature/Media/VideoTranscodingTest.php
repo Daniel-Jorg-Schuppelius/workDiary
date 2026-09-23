@@ -12,7 +12,7 @@ namespace Tests\Feature\Media;
 
 use App\Enums\Media\MediaState;
 use App\Jobs\TranscodeVideoJob;
-use App\Models\Attachment;
+use App\Models\Attachments\Attachment;
 use App\Services\Media\VideoTranscodingService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -46,7 +46,7 @@ class VideoTranscodingTest extends TestCase {
 
         return Attachment::query()->create([
             'organization_id' => $this->organization->id,
-            'attachable_type' => MorphMap::alias(\App\Models\Organization::class),
+            'attachable_type' => MorphMap::alias(\App\Models\Platform\Organization::class),
             'attachable_id' => $this->organization->id,
             'disk' => 'local',
             'path' => 'videos/clip.mp4',
@@ -141,7 +141,7 @@ class VideoTranscodingTest extends TestCase {
             'media_state' => MediaState::Ready,
         ]);
 
-        $author = \App\Models\User::factory()->personalverwaltung()->create(['organization_id' => $this->organization->id]);
+        $author = \App\Models\Platform\User::factory()->personalverwaltung()->create(['organization_id' => $this->organization->id]);
 
         $this->actingAs($author)
             ->post(route('learning.courses.units.subtitles.store', [$course->sqid, $unit->sqid, $attachment->sqid]), [
@@ -178,7 +178,7 @@ class VideoTranscodingTest extends TestCase {
             'media_state' => MediaState::Ready,
         ]);
 
-        $author = \App\Models\User::factory()->personalverwaltung()->create(['organization_id' => $this->organization->id]);
+        $author = \App\Models\Platform\User::factory()->personalverwaltung()->create(['organization_id' => $this->organization->id]);
 
         // … der Aufruf nennt Einheit A.
         $this->actingAs($author)
@@ -214,7 +214,7 @@ class VideoTranscodingTest extends TestCase {
         ]);
 
         $courses->release($course->refresh(), null);
-        $learner = \App\Models\User::factory()->aussendienst()->create(['organization_id' => $this->organization->id]);
+        $learner = \App\Models\Platform\User::factory()->aussendienst()->create(['organization_id' => $this->organization->id]);
         $enrollment = app(\App\Services\Learning\LearningEnrollmentService::class)->enroll($course->refresh(), $learner);
 
         // Ohne Range-Unterstützung müsste der Browser von vorn laden, um in

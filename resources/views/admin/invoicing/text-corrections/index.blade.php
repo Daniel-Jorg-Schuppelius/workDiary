@@ -50,7 +50,7 @@
                 <td class="font-mono text-xs">{{ $correction->wrong }}</td>
                 <td class="font-mono text-xs">{{ $correction->correct }}</td>
                 <td>
-                    <x-status-badge :tone="$correction->origin === \App\Models\TextCorrection::ORIGIN_LEARNED ? 'warning' : 'ghost'" size="sm">
+                    <x-status-badge :tone="$correction->origin === \App\Models\Platform\TextCorrection::ORIGIN_LEARNED ? 'warning' : 'ghost'" size="sm">
                         {{ __('textcorrections.field.origin_' . $correction->origin) }}
                     </x-status-badge>
                     @if ($correction->creator !== null)

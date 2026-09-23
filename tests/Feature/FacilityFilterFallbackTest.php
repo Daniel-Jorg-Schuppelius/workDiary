@@ -8,7 +8,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Building, Customer, Floor, Site, User};
+use App\Models\{Building, Floor, Site};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

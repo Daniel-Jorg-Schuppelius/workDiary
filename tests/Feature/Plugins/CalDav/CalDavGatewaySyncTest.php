@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins\CalDav;
 
-use App\Models\CalDavConnection;
+use App\Models\Plugins\CalDav\CalDavConnection;
 use App\Plugins\CalDav\Services\HttpCalDavGateway;
 use App\Plugins\Support\PluginApiClient;
 use Carbon\CarbonImmutable;

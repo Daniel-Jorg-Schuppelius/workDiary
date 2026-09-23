@@ -16,9 +16,10 @@ use App\Enums\Learning\{LearningAccessKind, LearningAudience, LearningBlockKind,
 use App\Enums\Media\MediaRenditionKind;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{Attachment, User};
+use App\Models\Attachments\Attachment;
 use App\Models\Learning\{LearningAssignment, LearningContentTranslation, LearningCourse, LearningCourseCategory, LearningEnrollment, LearningQuestion, LearningQuestionCategory, LearningQuiz, LearningQuizAttempt, LearningQuizDrawRule, LearningSection, LearningUnit};
 use App\Models\Media\MediaRendition;
+use App\Models\Platform\User;
 use App\Models\Training\TrainingCourse;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Ai\Exceptions\AiException;
@@ -63,7 +64,7 @@ class LearningCourseController extends Controller {
         // Kategorie (MVP-788): Sqid aus der Auswahl, sonst kein Filter.
         $categoryId = $request->filled('category') ? Sqid::decodeOrNumeric(LearningCourseCategory::class, (string) $request->query('category')) : null;
         // Schlagwort (MVP-810): unbekannte Kennung filtert auf 0 statt den Filter fallen zu lassen.
-        $tagId = $request->filled('tag') ? (Sqid::decodeOrNumeric(\App\Models\Tag::class, (string) $request->query('tag')) ?? 0) : null;
+        $tagId = $request->filled('tag') ? (Sqid::decodeOrNumeric(\App\Models\Classification\Tag::class, (string) $request->query('tag')) ?? 0) : null;
 
         /** @var User $viewer */
         $viewer = Auth::user();
@@ -107,7 +108,7 @@ class LearningCourseController extends Controller {
             'categories' => $this->categoryOptions(),
             'tagId' => $tagId,
             // Nur Schlagwörter an Kursen, die die Person sehen darf (Trainer-Scoping).
-            'tags' => \App\Models\Tag::query()
+            'tags' => \App\Models\Classification\Tag::query()
                 ->whereHas('learningCourses', fn ($q) => $q->visibleTo($viewer))
                 ->orderBy('name')
                 ->get(['id', 'name']),

@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Security;
 
 use App\Enums\Security\SecurityEventType;
+use App\Models\Auth\SecurityEvent;
 use App\Models\Crisis\CrisisCase;
-use App\Models\{SecurityEvent, User};
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Cache, Notification};
 use Tests\Concerns\WithOrganization;

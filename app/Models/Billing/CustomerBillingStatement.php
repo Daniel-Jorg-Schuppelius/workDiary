@@ -12,7 +12,7 @@ namespace App\Models\Billing;
 
 use App\Casts\MoneyCast;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -115,10 +115,10 @@ class CustomerBillingStatement extends Model {
      * Gegenpart zu {@see retainerInvoice()} für Bestände, die workDiary nicht
      * selbst gepusht hat. Beides gesetzt kann nicht vorkommen (Push prüft).
      *
-     * @return BelongsTo<\App\Models\LexofficeVoucher, $this>
+     * @return BelongsTo<\App\Models\Plugins\Lexoffice\LexofficeVoucher, $this>
      */
     public function lexofficeVoucher(): BelongsTo {
-        return $this->belongsTo(\App\Models\LexofficeVoucher::class, 'lexoffice_voucher_id');
+        return $this->belongsTo(\App\Models\Plugins\Lexoffice\LexofficeVoucher::class, 'lexoffice_voucher_id');
     }
 
     /** Ist für diesen Monat überhaupt eine Pauschalrechnung hinterlegt? */

@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Models;
+namespace App\Models\Auth;
 
 use App\Models\Concerns\HasSqid;
 use Illuminate\Database\Eloquent\{Builder, Model};

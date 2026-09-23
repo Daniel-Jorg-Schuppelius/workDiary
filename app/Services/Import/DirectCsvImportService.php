@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Import;
 
 use App\Enums\Import\ImportEntity;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\Support\TimeWritebackObserver;
 use App\Support\Toolkit\CsvFacade;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;

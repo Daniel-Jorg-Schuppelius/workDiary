@@ -13,7 +13,10 @@ declare(strict_types=1);
 namespace App\Plugins\JtlWawi\Services;
 
 use App\Enums\Inventory\StockState;
-use App\Models\{ArticleVariant, ExternalArticleMapping, JtlWarehouseMapping, Organization, Warehouse};
+use App\Models\{ArticleVariant, Warehouse};
+use App\Models\Integration\ExternalArticleMapping;
+use App\Models\Platform\Organization;
+use App\Models\Plugins\JtlWawi\JtlWarehouseMapping;
 use App\Plugins\JtlWawi\JtlWawiPlugin;
 use App\Services\Inventory\InventoryLedger;
 
@@ -113,10 +116,10 @@ class JtlTakeoverService {
             ->where('plugin_id', JtlWawiPlugin::ID)
             ->whereNotNull('article_variant_id')
             ->count();
-        $unmatchedOpen = \App\Models\IntegrationInboxItem::query()
+        $unmatchedOpen = \App\Models\Integration\IntegrationInboxItem::query()
             ->where('organization_id', $organization->id)
             ->where('plugin_id', JtlWawiPlugin::ID)
-            ->where('status', \App\Models\IntegrationInboxItem::STATUS_OPEN)
+            ->where('status', \App\Models\Integration\IntegrationInboxItem::STATUS_OPEN)
             ->count();
 
         return [

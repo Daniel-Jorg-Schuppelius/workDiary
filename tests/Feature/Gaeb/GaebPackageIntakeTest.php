@@ -14,7 +14,9 @@ namespace Tests\Feature\Gaeb;
 
 use App\Enums\Gaeb\GaebImportStatus;
 use App\Models\Applications\ApplicationOpportunity;
-use App\Models\{Document, GaebImport, User};
+use App\Models\Document\Document;
+use App\Models\GaebImport;
+use App\Models\Platform\User;
 use App\Services\Gaeb\GaebPackageIntakeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;

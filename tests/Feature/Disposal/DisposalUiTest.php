@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Disposal;
 
 use App\Enums\Disposal\DisposalJobStatus;
-use App\Models\{Customer, Organization, User};
+use App\Models\Customer\Customer;
 use App\Models\Disposal\{DisposalItem, DisposalJob};
+use App\Models\Platform\{Organization, User};
 use App\Services\Licensing\FeatureFlagResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

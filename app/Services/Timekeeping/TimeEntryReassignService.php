@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Timekeeping;
 
-use App\Models\{Project, TimeEntry, User};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;

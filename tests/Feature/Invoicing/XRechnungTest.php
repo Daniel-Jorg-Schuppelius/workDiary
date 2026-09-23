@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Invoicing;
 
-use App\Models\{Customer, Invoice, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Invoice;
+use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -159,7 +161,7 @@ class XRechnungTest extends TestCase {
         ])->assertRedirect(route('invoices.show', $invoice));
 
         $invoice->refresh();
-        $dispatch = \App\Models\DocumentDispatch::query()->where('invoice_id', $invoice->id)->firstOrFail();
+        $dispatch = \App\Models\Document\DocumentDispatch::query()->where('invoice_id', $invoice->id)->firstOrFail();
         $this->assertSame(Invoice::STATUS_ISSUED, $invoice->status);
         $this->assertSame('xrechnung_ubl', $dispatch->format);
         $this->assertNotNull($dispatch->sha256);

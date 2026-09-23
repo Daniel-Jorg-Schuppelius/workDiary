@@ -12,7 +12,7 @@ namespace App\Services\Surcharge;
 
 use App\Enums\Surcharge\SurchargeKind;
 use App\Models\Surcharge\SurchargeRule;
-use App\Services\HolidayService;
+use App\Services\Calendar\HolidayService;
 use App\Support\Setting;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\ValueObjects\Duration;

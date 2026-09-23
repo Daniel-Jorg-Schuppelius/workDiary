@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Me;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Navigation\NavFocusService;
 use Illuminate\Http\{RedirectResponse, Request};
 

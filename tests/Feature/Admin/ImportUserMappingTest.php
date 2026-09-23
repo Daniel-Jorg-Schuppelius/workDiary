@@ -13,7 +13,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Admin;
 
 use App\Enums\Import\ImportRunState;
-use App\Models\{ImportRun, ImportValueMapping, Project, TimeEntry, User};
+use App\Models\Integration\{ImportRun, ImportValueMapping};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -185,8 +188,8 @@ class ImportUserMappingTest extends TestCase {
 
         // Unbekanntes Projekt: nichts gebucht, Zeile projektförmig in der Inbox.
         $this->assertSame(0, TimeEntry::query()->count());
-        $item = \App\Models\IntegrationInboxItem::query()
-            ->where('plugin_id', \App\Models\IntegrationInboxItem::PLUGIN_CSV)
+        $item = \App\Models\Integration\IntegrationInboxItem::query()
+            ->where('plugin_id', \App\Models\Integration\IntegrationInboxItem::PLUGIN_CSV)
             ->firstOrFail();
         $this->assertSame((new Project)->getMorphClass(), $item->target_type);
         $this->assertSame(['name' => 'Neues Bauprojekt'], $item->mapped_snapshot);

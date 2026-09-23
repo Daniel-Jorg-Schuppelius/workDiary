@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Asset;
 
-use App\Models\{Asset, AssetComponent, MaterialUsage, User};
+use App\Models\{Asset, AssetComponent, MaterialUsage};
+use App\Models\Platform\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;

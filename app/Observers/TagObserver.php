@@ -10,7 +10,7 @@
 
 namespace App\Observers;
 
-use App\Models\Tag;
+use App\Models\Classification\Tag;
 use App\Support\LookupCache;
 
 class TagObserver {

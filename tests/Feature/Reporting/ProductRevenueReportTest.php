@@ -12,7 +12,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reporting;
 
-use App\Models\{Article, Customer, ExternalArticleMapping, ExternalReference, Invoice, InvoiceItem, LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine, Organization, User};
+use App\Models\{Article, Invoice, InvoiceItem};
+use App\Models\Customer\Customer;
+use App\Models\Integration\{ExternalArticleMapping, ExternalReference};
+use App\Models\Platform\{Organization, User};
+use App\Models\Plugins\Lexoffice\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
 use App\Services\Reporting\ProductRevenueReportBuilder;
 use Carbon\CarbonImmutable;

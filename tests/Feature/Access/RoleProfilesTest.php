@@ -11,7 +11,7 @@
 namespace Tests\Feature\Access;
 
 use App\Enums\User\{Permission as PermissionEnum, UserRole};
-use App\Models\User;
+use App\Models\Platform\User;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;

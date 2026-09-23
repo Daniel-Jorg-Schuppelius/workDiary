@@ -11,7 +11,7 @@
 namespace App\Console\Commands\TimeAccount;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\TimeAccount\TimeAccountPostingService;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;

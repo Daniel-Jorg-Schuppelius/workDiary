@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\B2b;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -24,7 +24,7 @@ use Illuminate\Support\{Carbon, Str};
  * Punchout-Zugang eines B2B-Kunden zum eigenen Artikelkatalog (Feature 099,
  * MVP-457). Das OCI-PASSWORD wird ausschließlich als SHA-256-Hash persistiert;
  * der Klartext ist nur einmal bei Ausstellung/Rotation sichtbar — Muster wie
- * {@see \App\Models\ScimToken}. Deaktivierung über `revoked_at`, Rotation
+ * {@see \App\Models\Auth\ScimToken}. Deaktivierung über `revoked_at`, Rotation
  * ersetzt nur den Hash und erhält die Artikel-Freigaben.
  *
  * @property int $id

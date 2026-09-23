@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Msgraph\Http\Controllers;
 
-use App\Models\MsgraphConnection;
+use App\Models\Plugins\Msgraph\MsgraphConnection;
 use App\Plugins\Msgraph\Api\{MsgraphCalendarClient, MsgraphOAuth};
 use App\Plugins\Msgraph\MsgraphConfig;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
@@ -50,26 +50,26 @@ class MsgraphAdminController extends ConnectionOAuthController {
         }
 
         // Graph-Mail-Verbindung (Feature 102): eigener Grant, eigene Sektion.
-        $mailConnection = \App\Models\MsgraphMailConnection::query()->where('organization_id', $organization->id)->first();
+        $mailConnection = \App\Models\Plugins\Msgraph\MsgraphMailConnection::query()->where('organization_id', $organization->id)->first();
 
         // Kontakt-Verbindung (Feature 102, Schnitt D): fünfter Grant.
-        $contactConnection = \App\Models\MsgraphContactConnection::query()->where('organization_id', $organization->id)->first();
+        $contactConnection = \App\Models\Plugins\Msgraph\MsgraphContactConnection::query()->where('organization_id', $organization->id)->first();
 
         // To-Do-Sync (Feature 102, Schnitt E): sechster Grant + Listen-Zuordnungen.
-        $taskConnection = \App\Models\MsgraphTaskConnection::query()->where('organization_id', $organization->id)->first();
+        $taskConnection = \App\Models\Plugins\Msgraph\MsgraphTaskConnection::query()->where('organization_id', $organization->id)->first();
         $todoLists = [];
-        if ($taskConnection instanceof \App\Models\MsgraphTaskConnection && $taskConnection->isActive()) {
+        if ($taskConnection instanceof \App\Models\Plugins\Msgraph\MsgraphTaskConnection && $taskConnection->isActive()) {
             try {
                 $todoLists = (new \App\Plugins\Msgraph\Api\MsgraphTodoClient($taskConnection))->lists();
             } catch (Throwable) {
                 $todoLists = [];
             }
         }
-        $taskLinks = \App\Models\MsgraphTaskListLink::query()
+        $taskLinks = \App\Models\Plugins\Msgraph\MsgraphTaskListLink::query()
             ->where('organization_id', $organization->id)
             ->orderBy('todo_list_name')
             ->get();
-        $projects = \App\Models\Project::query()
+        $projects = \App\Models\Project\Project::query()
             ->where('organization_id', $organization->id)
             ->orderBy('name')
             ->get(['id', 'name']);
@@ -88,7 +88,7 @@ class MsgraphAdminController extends ConnectionOAuthController {
             'projects' => $projects,
             // OneNote-Übernahme (MVP-815): abschaltbar, eigener Grant.
             'oneNoteEnabled' => MsgraphConfig::oneNoteImportEnabled((int) $organization->id),
-            'oneNoteConnection' => \App\Models\MsgraphOneNoteConnection::query()->where('organization_id', $organization->id)->first(),
+            'oneNoteConnection' => \App\Models\Plugins\Msgraph\MsgraphOneNoteConnection::query()->where('organization_id', $organization->id)->first(),
         ]);
     }
 

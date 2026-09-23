@@ -14,7 +14,7 @@ namespace App\Http\Controllers\Privacy;
 
 use App\Enums\Privacy\ControllerRole;
 use App\Http\Controllers\Controller;
-use App\Models\AuditLog;
+use App\Models\Audit\AuditLog;
 use App\Models\Privacy\{ProcessingActivity, ProcessingActivityVersion};
 use App\Services\Privacy\{PrivacyExportService, ProcessingActivityService};
 use App\Support\{CsvExport, MorphMap};

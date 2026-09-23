@@ -14,7 +14,8 @@ namespace App\Dashboard\Widgets;
 
 use App\Dashboard\Widget;
 use App\Enums\Dashboard\WidgetGroup;
-use App\Models\{TimeAccountBalance, User};
+use App\Models\Platform\User;
+use App\Models\TimeAccountBalance;
 use Illuminate\Contracts\View\View;
 
 /**

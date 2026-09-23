@@ -8,7 +8,7 @@
 --}}
 {{-- Dialog: Mitglied einem Team hinzufügen. --}}
 @php
-    /** @var \App\Models\Team $team */
+    /** @var \App\Models\Platform\Team $team */
     /** @var \Illuminate\Database\Eloquent\Collection $addableUsers */
 @endphp
 <x-modal

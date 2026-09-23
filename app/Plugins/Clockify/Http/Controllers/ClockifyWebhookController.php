@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Clockify\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Organization, TimeTrackingWebhookDelivery};
+use App\Models\Integration\TimeTrackingWebhookDelivery;
+use App\Models\Platform\Organization;
 use App\Plugins\Clockify\ClockifyPlugin;
 use App\Plugins\Support\{RecordsWebhookDeliveries, WebhookSignature};
 use App\Plugins\Support\TimeTracking\{TimeTrackingWebhookGate, WebhookImportJob};

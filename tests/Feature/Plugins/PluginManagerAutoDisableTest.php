@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\PluginState;
+use App\Models\Platform\PluginState;
 use App\Plugins\Contracts\{Plugin, PluginCapability};
 use App\Plugins\{PluginDefaults, PluginManager};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -47,7 +47,7 @@ class PluginManagerAutoDisableTest extends TestCase {
         $this->assertCount(0, $manager->enabled());
         $this->assertCount(1, $manager->all());
         // Der Fehler landet in der Inbox (phase runtime).
-        $this->assertSame(1, \App\Models\PluginError::query()->where('plugin_id', 'fake-throwing')->count());
+        $this->assertSame(1, \App\Models\Platform\PluginError::query()->where('plugin_id', 'fake-throwing')->count());
     }
 }
 

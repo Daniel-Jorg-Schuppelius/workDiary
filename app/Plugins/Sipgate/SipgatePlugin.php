@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Sipgate;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{PluginCapability, SettingsField, SmsProvider};
 use App\Plugins\Sipgate\Api\SipgateSmsClient;

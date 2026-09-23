@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Tenders;
 
 use App\Models\Applications\ApplicationOpportunity;
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;

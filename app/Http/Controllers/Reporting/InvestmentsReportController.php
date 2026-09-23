@@ -17,7 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\Investments\{InvestmentActual, InvestmentBudgetRequest, InvestmentCase, InvestmentDeviation};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Investments\InvestmentService;
 use App\Services\Reporting\ReportFilters;
 use App\Support\ChartBucket;

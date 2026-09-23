@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Integration\Profiles;
 
-use App\Models\{Article, Organization};
+use App\Models\Article;
+use App\Models\Platform\Organization;
 use App\Services\Integration\Match\FuzzyField;
 use Illuminate\Database\Eloquent\{Builder, Model};
 

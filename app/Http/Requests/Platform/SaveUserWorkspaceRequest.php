@@ -10,9 +10,10 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Platform;
 
-use App\Models\{User, UserWorkspace};
+use App\Models\Platform\User;
+use App\Models\Platform\UserWorkspace;
 use App\Services\Navigation\NavigationRegistry;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;

@@ -14,7 +14,7 @@ namespace App\Http\Controllers\Invoicing;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\TextCorrection;
+use App\Models\Platform\TextCorrection;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 
@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\{Auth, Gate};
  * Bestätigter Lernvorschlag aus dem „Merken?"-Dialog des Wörterbuchs.
  * Wer Belegtexte bearbeiten darf, darf bestätigt lernen (Analogie zum
  * KI-Lernen über `ai.use` + Fachrecht); die Pflege-UI selbst bleibt
- * `finance.config` ({@see \App\Policies\TextCorrectionPolicy}).
+ * `finance.config` ({@see \App\Policies\Platform\TextCorrectionPolicy}).
  */
 class TextCorrectionLearnController extends Controller {
     public function __invoke(Request $request): RedirectResponse {

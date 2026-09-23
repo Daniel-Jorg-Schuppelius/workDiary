@@ -12,7 +12,8 @@ namespace App\Services\Reporting;
 
 use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
-use App\Models\{DiaryEntry, EntryType, OpenIssue, Protocol, TimeEntry};
+use App\Models\Classification\EntryType;
+use App\Models\{DiaryEntry, OpenIssue, Protocol, TimeEntry};
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 

@@ -10,7 +10,8 @@
 
 declare(strict_types=1);
 
-use App\Models\{AuditLog, CashEntry};
+use App\Models\Audit\AuditLog;
+use App\Models\CashEntry;
 use App\Models\Concerns\HashChainable;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\{DB, Log, Schema};

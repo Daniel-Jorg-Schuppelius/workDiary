@@ -11,8 +11,7 @@
 namespace Tests\Feature\Scheduling;
 
 use App\Enums\Scheduling\JobRunStatus;
-use App\Models\{Organization, PluginSetting, ScheduledJobRun, ScheduledJobState};
-use App\Models\ScheduledJobOverride;
+use App\Models\Platform\{Organization, PluginSetting, ScheduledJobOverride, ScheduledJobRun, ScheduledJobState};
 use App\Scheduling\ScheduleRunRecorder;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Events\{ScheduledTaskFinished, ScheduledTaskStarting};

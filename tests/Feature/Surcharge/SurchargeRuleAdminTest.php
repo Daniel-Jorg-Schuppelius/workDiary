@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Surcharge;
 
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Surcharge\SurchargeRule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

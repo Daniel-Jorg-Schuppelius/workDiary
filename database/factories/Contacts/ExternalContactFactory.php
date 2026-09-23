@@ -8,10 +8,10 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace Database\Factories;
+namespace Database\Factories\Contacts;
 
 use App\Enums\ExternalParticipant\ExternalParty;
-use App\Models\ExternalContact;
+use App\Models\Contacts\ExternalContact;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

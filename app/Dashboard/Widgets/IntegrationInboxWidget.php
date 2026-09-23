@@ -14,7 +14,8 @@ namespace App\Dashboard\Widgets;
 
 use App\Dashboard\Widget;
 use App\Enums\Dashboard\WidgetGroup;
-use App\Models\{IntegrationInboxItem, User};
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Platform\User;
 use Illuminate\Contracts\View\View;
 
 /**

@@ -10,7 +10,8 @@
 
 namespace Database\Factories;
 
-use App\Models\{CleaningProfile, Organization};
+use App\Models\CleaningProfile;
+use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<CleaningProfile> */

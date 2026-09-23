@@ -11,7 +11,7 @@
 @section('nav-title', __('Artikel-Abgleich'))
 
 @php
-    use App\Services\ArticleDuplicateFinder;
+    use App\Services\Stammdaten\ArticleDuplicateFinder;
 
     // Schlüssel entsprechen den Strategien des SupplierMatchProfile.
     $reasonLabels = [

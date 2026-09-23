@@ -11,7 +11,11 @@
 namespace Tests\Feature\Ideas;
 
 use App\Enums\Ideas\IdeaShareRole;
-use App\Models\{Customer, IdeaMap, IdeaNode, KnowledgeArticle, Project, Task, User};
+use App\Models\Customer\Customer;
+use App\Models\Ideas\{IdeaMap, IdeaNode};
+use App\Models\Knowledge\KnowledgeArticle;
+use App\Models\Platform\User;
+use App\Models\Project\{Project, Task};
 use App\Services\Ideas\{IdeaMapService, IdeaNodeService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -115,7 +119,7 @@ final class IdeaNodeConversionTest extends TestCase {
         ])->assertCreated()->assertJsonPath('reference.kind', 'linked');
 
         // Fremd-Org-Ziel wird nicht verknüpft (Scope blendet aus → 404).
-        $orgB = \App\Models\Organization::factory()->create();
+        $orgB = \App\Models\Platform\Organization::factory()->create();
         $foreign = Customer::factory()->create(['organization_id' => $orgB->id]);
         $this->actingAs($this->owner)->postJson(route('ideas.nodes.link', [$this->map, $this->node]), [
             'type' => 'customer', 'id' => $foreign->sqid,

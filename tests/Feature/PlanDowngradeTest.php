@@ -10,7 +10,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Customer, Organization, PlanModuleGrace, User, Vehicle};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, PlanModuleGrace, User};
+use App\Models\Vehicle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;

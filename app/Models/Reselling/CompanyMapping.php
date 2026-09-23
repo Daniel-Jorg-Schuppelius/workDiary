@@ -14,7 +14,8 @@ namespace App\Models\Reselling;
 
 use App\Enums\Reselling\CompanyMappingMode;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\{Customer, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
 use App\Services\Reselling\Marketplace\MarketplaceCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

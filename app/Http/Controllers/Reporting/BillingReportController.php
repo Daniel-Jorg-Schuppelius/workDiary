@@ -13,7 +13,8 @@ namespace App\Http\Controllers\Reporting;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
-use App\Models\{Customer, Invoice, TimeEntry};
+use App\Models\Customer\Customer;
+use App\Models\{Invoice, TimeEntry};
 use App\Services\Reporting\{LexofficeRevenueMirror, ReportFilters};
 use App\Support\ChartBucket;
 use App\Support\Query\DateRange;
@@ -266,7 +267,7 @@ class BillingReportController extends Controller {
      * }
      */
     private function aggregateDocumentChain(string $from, string $to, ReportFilters $filters): array {
-        $quotes = \App\Models\Quote::query()
+        $quotes = \App\Models\Sales\Quote::query()
             ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
             ->when($filters->customerId !== null, fn($q) => $q->where('customer_id', $filters->customerId))
             ->when($filters->projectId !== null, fn($q) => $q->where('project_id', $filters->projectId))

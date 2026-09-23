@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Plugins\Lexoffice;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\{Expense, ExternalReference, LexofficeVoucher};
+use App\Models\Expense;
+use App\Models\Integration\ExternalReference;
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Services\Billing\Contracts\ExpenseLinkProvider;
 use App\Services\Billing\ExpenseVoucherRef;
 use App\Support\Billing\VoucherTypes;

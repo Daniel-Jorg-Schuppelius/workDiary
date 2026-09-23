@@ -14,8 +14,9 @@ namespace App\Services\Release;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Security\IntegrityCheckStatus;
-use App\Models\{AuditLog, IntegrityCheck, Organization, User};
+use App\Models\Audit\AuditLog;
 use App\Models\Crisis\CrisisCase;
+use App\Models\Platform\{IntegrityCheck, Organization, User};
 use App\Notifications\GenericEventNotification;
 use App\Services\Crisis\CrisisAlertService;
 use App\Support\MorphMap;

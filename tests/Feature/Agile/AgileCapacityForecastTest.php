@@ -11,7 +11,9 @@
 namespace Tests\Feature\Agile;
 
 use App\Models\Agile\AgileSprint;
-use App\Models\{Organization, Project, User, Vacation, WorkSchedule};
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
+use App\Models\{Vacation, WorkSchedule};
 use App\Services\Agile\{AgileBoardService, AgileMetricsService, AgileSprintService, AgileWorkItemService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

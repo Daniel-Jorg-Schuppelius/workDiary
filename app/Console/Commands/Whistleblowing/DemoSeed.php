@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Whistleblowing;
 
 use App\Enums\Whistleblowing\{CaseCategory, ReporterMode};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Models\Whistleblowing\Portal;
 use App\Services\Whistleblowing\WhistleblowingReportService;
 use Illuminate\Console\Command;

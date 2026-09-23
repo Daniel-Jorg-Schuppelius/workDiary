@@ -11,7 +11,8 @@
 namespace Tests\Feature\Reporting;
 
 use App\Enums\User\Permission as P;
-use App\Models\{Attendance, Team, User, WorkSchedule};
+use App\Models\{Attendance, WorkSchedule};
+use App\Models\Platform\{Team, User};
 use App\Services\Reporting\PlanIstReportBuilder;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

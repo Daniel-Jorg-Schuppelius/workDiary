@@ -12,7 +12,7 @@ namespace Database\Seeders;
 
 use App\Enums\Applications\TenderProcedureType;
 use App\Models\Applications\{ApplicationOpportunity, TenderCompetitorBid};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Tenders\{TenderFilterProfile, TenderNotice, TenderNoticeMatch};
 use Illuminate\Database\Seeder;
 

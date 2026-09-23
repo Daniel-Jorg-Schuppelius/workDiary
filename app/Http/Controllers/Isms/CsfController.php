@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Isms;
 use App\Http\Controllers\Controller;
 use App\Models\Isms\{IsmsRequirement, IsmsScope};
 use App\Services\Isms\CsfReadinessService;
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;

@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use App\Models\Ai\AiCapabilitySetting;
-use App\Models\{KnowledgeArticle, Organization};
+use App\Models\Knowledge\KnowledgeArticle;
 use App\Models\Learning\{LearningCourse, LearningUnit};
+use App\Models\Platform\Organization;
 use App\Services\Ai\AiInvocationService;
 use App\Services\Ai\Dto\{AiInvocationResult, AiTextResult, ExplainRequest, FormulateRequest};
 use Illuminate\Support\Str;

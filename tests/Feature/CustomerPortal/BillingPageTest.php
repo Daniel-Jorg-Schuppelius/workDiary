@@ -12,7 +12,10 @@ namespace Tests\Feature\CustomerPortal;
 
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Billing\{CustomerBillingAgreement, CustomerBillingRate};
-use App\Models\{Customer, Project, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Hash, URL};
 use Spatie\Permission\PermissionRegistrar;

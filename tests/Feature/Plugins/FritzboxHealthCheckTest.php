@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{EmailConnection, PluginSetting, User};
+use App\Models\Mail\EmailConnection;
+use App\Models\Platform\{PluginSetting, User};
 use App\Plugins\Fritzbox\FritzboxPlugin;
 use App\Plugins\PluginHealth;
 use Illuminate\Foundation\Testing\RefreshDatabase;

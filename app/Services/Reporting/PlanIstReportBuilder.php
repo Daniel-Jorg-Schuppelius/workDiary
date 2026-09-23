@@ -10,8 +10,10 @@
 
 namespace App\Services\Reporting;
 
-use App\Models\{Attendance, DiaryEntry, Project, ScheduledShift, Site, TimeEntry, User, WorkSchedule};
+use App\Models\{Attendance, DiaryEntry, ScheduledShift, Site, TimeEntry, WorkSchedule};
 use App\Models\Location\LocationVisit;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Support\Query\DateRange;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;

@@ -11,7 +11,7 @@
 namespace Tests\Feature\Navigation;
 
 use App\Enums\Finance\ProfitDetermination;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, FiscalYearService};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Notification\Sms;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\Contracts\{PluginCapability, SmsProvider};
 use App\Plugins\PluginManager;
 use App\Support\OrganizationContext;

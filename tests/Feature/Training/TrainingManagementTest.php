@@ -14,7 +14,7 @@ use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Enums\Training\{TrainingAssignmentState, TrainingRequirementSubject};
 use App\Enums\User\UserRole;
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
-use App\Models\{Organization, Team, User};
+use App\Models\Platform\{Organization, Team, User};
 use App\Models\Safety\SafetyInstruction;
 use App\Models\Training\{TrainingAssignment, TrainingCourse, TrainingCourseVersion, TrainingRequirement};
 use App\Services\Safety\SafetyInstructionService;

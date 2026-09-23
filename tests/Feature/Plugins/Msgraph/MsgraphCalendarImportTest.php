@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Plugins\Msgraph;
 
-use App\Models\{Event, ExternalReference, IntegrationInboxItem, MsgraphConnection, User};
+use App\Models\Calendar\Event;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\User;
+use App\Models\Plugins\Msgraph\MsgraphConnection;
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Msgraph\Services\MsgraphCalendarImportService;
 use App\Plugins\Support\Calendar\RemoteCalendarPublishService;

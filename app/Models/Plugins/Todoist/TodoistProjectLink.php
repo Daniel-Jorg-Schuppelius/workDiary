@@ -11,7 +11,7 @@
 namespace App\Models\Plugins\Todoist;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\Project;
+use App\Models\Project\Project;
 use App\Plugins\Support\TaskSync\TaskSyncLink;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;

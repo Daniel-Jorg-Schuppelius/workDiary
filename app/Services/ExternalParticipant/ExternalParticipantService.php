@@ -11,7 +11,8 @@
 namespace App\Services\ExternalParticipant;
 
 use App\Enums\ExternalParticipant\{ExternalAbility, ExternalParty};
-use App\Models\{Comment, ExternalParticipant, ExternalParticipantEvent, User};
+use App\Models\Communication\{Comment, ExternalParticipant, ExternalParticipantEvent};
+use App\Models\Platform\User;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
@@ -172,7 +173,7 @@ class ExternalParticipantService {
         $filename = Str::uuid()->toString() . '.' . $ext;
         $path = $file->storeAs($folder, $filename, 'local');
 
-        /** @var \App\Models\Attachment $attachment */
+        /** @var \App\Models\Attachments\Attachment $attachment */
         $attachment = $subject->attachments()->create([
             'user_id' => null,
             'disk' => 'local',

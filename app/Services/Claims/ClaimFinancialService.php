@@ -15,7 +15,7 @@ namespace App\Services\Claims;
 use App\Enums\Claims\{ClaimFinancialKind, ClaimFinancialStatus};
 use App\Enums\Finance\BillingMode;
 use App\Models\Claims\{ClaimCase, ClaimFinancialOutcome};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Finance\BillingModeResolver;
 use App\Services\Invoicing\InvoiceGenerator;
 use Illuminate\Support\Facades\DB;

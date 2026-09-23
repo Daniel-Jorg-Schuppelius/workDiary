@@ -12,7 +12,7 @@ namespace Tests\Feature\Privacy;
 
 use App\Enums\Privacy\DataSubjectRequestType;
 use App\Enums\Privacy\{IncidentType, MeasureCategory, ProcessorRole};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\{MeasureAssignment, PrivacyAttachment, ProcessingActivity, ProcessingAgreement, Processor};
 use App\Services\Privacy\{DataProtectionPermissions, DataSubjectRequestService, IncidentService, TechnicalMeasureService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

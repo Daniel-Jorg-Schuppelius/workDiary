@@ -13,7 +13,7 @@ namespace App\Models\Training;
 use App\Enums\Training\TrainingRequirementSubject;
 use App\Enums\User\UserRole;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\Team;
+use App\Models\Platform\Team;
 use Database\Factories\Training\TrainingRequirementFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;

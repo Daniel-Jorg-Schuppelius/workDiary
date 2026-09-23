@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Applications;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Applications\{JobPosting, JobRequisition};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Support\SortableQuery;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};

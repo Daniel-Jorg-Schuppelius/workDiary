@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Me;
 use App\Enums\Licensing\ModuleStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Licensing\{ModuleCatalog, ModuleStatusResolver};
 use App\Services\Navigation\{NavFocusService, NavigationRegistry};
 use Illuminate\Support\Facades\Auth;

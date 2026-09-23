@@ -11,7 +11,7 @@
 @section('nav-title', __('Lieferanten-Abgleich'))
 
 @php
-    use App\Services\SupplierDuplicateFinder;
+    use App\Services\Stammdaten\SupplierDuplicateFinder;
 
     // Schlüssel entsprechen den Strategien des SupplierMatchProfile.
     $reasonLabels = [

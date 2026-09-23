@@ -10,7 +10,7 @@
 @php
     /**
      * @var \App\Models\Vehicle|null $vehicle
-     * @var \Illuminate\Support\Collection<int, \App\Models\User> $users
+     * @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users
      */
 @endphp
 
@@ -35,7 +35,7 @@
     <x-select-field name="default_user_id" :label="__('Standardfahrer')">
         <option value="">{{ __('— frei verfügbar —') }}</option>
         @foreach ($users as $u)
-            <option value="{{ $u->sqid }}" @selected((string) old('default_user_id', \App\Support\Sqid::encode(\App\Models\User::class, $vehicle?->default_user_id)) === $u->sqid)>{{ $u->name }}</option>
+            <option value="{{ $u->sqid }}" @selected((string) old('default_user_id', \App\Support\Sqid::encode(\App\Models\Platform\User::class, $vehicle?->default_user_id)) === $u->sqid)>{{ $u->name }}</option>
         @endforeach
     </x-select-field>
 </x-form-group>

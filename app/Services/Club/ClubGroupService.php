@@ -14,7 +14,7 @@ namespace App\Services\Club;
 
 use App\Enums\Club\{ClubCriteriaResult, ClubGroupMembershipStatus, ClubProposalStatus};
 use App\Models\Club\{ClubGrade, ClubGradingSystem, ClubGroup, ClubGroupChangeProposal, ClubGroupMembership, ClubMember};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\AssertsStatusTransition;
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};

@@ -10,12 +10,13 @@
 
 declare(strict_types=1);
 
-namespace App\Models;
+namespace App\Models\Search;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Platform\User;
 
 /**
  * Gleichbedeutende Suchbegriffe einer Organisation (Feature 153, MVP-772):

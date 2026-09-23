@@ -11,7 +11,7 @@
 namespace App\Services\Licensing;
 
 use App\Enums\Licensing\ModuleStatus;
-use App\Models\{LicenseFlagOverride, Organization};
+use App\Models\Platform\{LicenseFlagOverride, Organization};
 use Illuminate\Support\Facades\Schema;
 
 /**

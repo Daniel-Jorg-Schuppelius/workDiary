@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Concerns;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Spatie\Permission\Models\{Permission, Role};
 use Spatie\Permission\PermissionRegistrar;
 

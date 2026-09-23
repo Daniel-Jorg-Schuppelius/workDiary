@@ -14,7 +14,7 @@ namespace App\Services\Accounting\Filing;
 
 use App\Enums\Finance\{AccountingEntryStatus, TaxCodeDirection};
 use App\Models\Accounting\{AccountingEntryLine, AccountingTaxCode};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 

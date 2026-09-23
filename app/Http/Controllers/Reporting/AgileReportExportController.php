@@ -16,7 +16,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\Agile\{AgileBoard, AgileEvent, AgileSprint};
-use App\Models\Project;
+use App\Models\Project\Project;
 use App\Services\Agile\AgileMetricsService;
 use App\Support\CarbonFmt;
 use Illuminate\Http\{Request, Response};

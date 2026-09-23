@@ -105,7 +105,7 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route('invoices.index', ['customer' => \App\Support\Sqid::encode(\App\Models\Customer::class, $row['customerId']), 'status' => \App\Models\Invoice::STATUS_ISSUED]) }}" class="link link-hover">{{ $row['customerName'] }}</a>
+                                <a href="{{ route('invoices.index', ['customer' => \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $row['customerId']), 'status' => \App\Models\Invoice::STATUS_ISSUED]) }}" class="link link-hover">{{ $row['customerName'] }}</a>
                             </td>
                             <td class="text-right tabular-nums">{{ $row['dueOn'] }}</td>
                             <td class="text-right tabular-nums">{{ $row['daysOverdue'] }}</td>

@@ -15,18 +15,31 @@ use App\Automation\Actions\ApproveExpenseAction;
 use App\Automation\{ConditionEvaluator, RuleEngine};
 use App\Legacy\LegacyBridge;
 use App\Listeners\AuthEventSubscriber;
-use App\Models\{ActivityCategory, Asset, Attachment, Building, Classification, ClassificationRequirement, Comment, CommunicationNote, CoverageRequirement, Customer, DiaryEntry, DutyPlan, EmergencyAssignment, Event, EventCategory, Expense, ExpenseCategory, FlexEligibility, Floor, KeyHandover, MaintenancePlan, Material, MaterialUsage, MeterReading, Milestone, MonthClosure, NumberFormat, OpenIssue, Organization, PerDiemRate, PerDiemTrip, ProcedureBackupProof, ProcedureDeviation, ProcedureRun, ProcedureTemplate, Project, Protocol, Qualification, Room, ScheduledShift, ServiceTicket, ShiftType, Site, Software, Supplier, Tag, Task, TimeCorrectionRequest, TimeEntry, TimeExport, Timesheet, TravelLog, User, UserGroup, WorkSchedule};
+use App\Models\{Asset, Building, CoverageRequirement, DiaryEntry, DutyPlan, EmergencyAssignment, Expense, ExpenseCategory, FlexEligibility, Floor, KeyHandover, MaintenancePlan, Material, MaterialUsage, MeterReading, MonthClosure, OpenIssue, PerDiemRate, PerDiemTrip, ProcedureBackupProof, ProcedureDeviation, ProcedureRun, ProcedureTemplate, Protocol, Qualification, Room, ScheduledShift, ServiceTicket, ShiftType, Site, Software, Supplier, TimeCorrectionRequest, TimeEntry, TimeExport, Timesheet, TravelLog, WorkSchedule};
+use App\Models\Attachments\Attachment;
+use App\Models\Calendar\{Event, EventCategory};
+use App\Models\Classification\{ActivityCategory, Classification, ClassificationRequirement, Tag};
+use App\Models\Communication\{Comment, CommunicationNote};
+use App\Models\Customer\Customer;
+use App\Models\Numbering\NumberFormat;
+use App\Models\Platform\{Organization, User, UserGroup};
+use App\Models\Project\{Milestone, Project, Task};
 use App\Observers\{AttachmentObserver, CommentObserver, CustomerObserver, DiaryEntryObserver, EmergencyAssignmentObserver, MaterialUsageObserver, OrganizationObserver, ProjectObserver, ProtocolObserver, TagObserver, TimeEntryObserver, TimesheetObserver, UserObserver};
-use App\Policies\{ActivityCategoryPolicy, AssetPolicy, BuildingPolicy, ClassificationPolicy, ClassificationRequirementPolicy, CommunicationNotePolicy, CoverageRequirementPolicy, DutyPlanPolicy, EventCategoryPolicy, EventPolicy, ExpenseCategoryPolicy, ExpensePolicy, FlexEligibilityPolicy, FloorPolicy, KeyHandoverPolicy, MaintenancePlanPolicy, MaterialPolicy, MaterialUsagePolicy, MeterReadingPolicy, MilestonePolicy, MonthClosurePolicy, NumberFormatPolicy, OpenIssuePolicy, OrganizationPolicy, PerDiemRatePolicy, PerDiemTripPolicy, ProcedureBackupProofPolicy, ProcedureDeviationPolicy, ProcedureRunPolicy, ProcedureTemplatePolicy, ProtocolPolicy, QualificationPolicy, RoomPolicy, ScheduledShiftPolicy, ServiceTicketPolicy, ShiftTypePolicy, SitePolicy, SoftwarePolicy, TaskPolicy, TimeCorrectionRequestPolicy, TimeEntryPolicy, TimeExportPolicy, TimesheetPolicy, TravelLogPolicy, UserGroupPolicy, WorkSchedulePolicy};
+use App\Policies\{AssetPolicy, BuildingPolicy, CoverageRequirementPolicy, DutyPlanPolicy, ExpenseCategoryPolicy, ExpensePolicy, FlexEligibilityPolicy, FloorPolicy, KeyHandoverPolicy, MaintenancePlanPolicy, MaterialPolicy, MaterialUsagePolicy, MeterReadingPolicy, MonthClosurePolicy, OpenIssuePolicy, PerDiemRatePolicy, PerDiemTripPolicy, ProcedureBackupProofPolicy, ProcedureDeviationPolicy, ProcedureRunPolicy, ProcedureTemplatePolicy, ProtocolPolicy, QualificationPolicy, RoomPolicy, ScheduledShiftPolicy, ServiceTicketPolicy, ShiftTypePolicy, SitePolicy, SoftwarePolicy, TimeCorrectionRequestPolicy, TimeEntryPolicy, TimeExportPolicy, TimesheetPolicy, TravelLogPolicy, WorkSchedulePolicy};
+use App\Policies\Calendar\{EventCategoryPolicy, EventPolicy};
+use App\Policies\Classification\{ActivityCategoryPolicy, ClassificationPolicy, ClassificationRequirementPolicy};
+use App\Policies\Communication\CommunicationNotePolicy;
+use App\Policies\Numbering\NumberFormatPolicy;
+use App\Policies\Platform\{OrganizationPolicy, UserGroupPolicy};
+use App\Policies\Project\{MilestonePolicy, TaskPolicy};
 use App\Services\Attendance\AttendanceClockService;
-use App\Services\BrandingService;
 use App\Services\Classification\{ClassificationManager, ClassificationResolver};
 use App\Services\I18n\JsTranslationProvider;
 use App\Services\Install\{EnvWriter, InstallationManager};
 use App\Services\Reminders\ReminderService;
 use App\Services\Routing\{NominatimGeocoder, OsrmRouter};
 use App\Services\Timesheet\Stopwatch;
-use App\Services\UI\DateRangeContext;
+use App\Services\UI\{BrandingService, DateRangeContext};
 use App\Session\AnonymousStackSessionHandler;
 use App\Support\{CarbonFmt, MorphMap, Setting};
 use Carbon\{Carbon as CarbonMutable, CarbonImmutable};
@@ -154,11 +167,11 @@ class AppServiceProvider extends ServiceProvider {
 
         // ThemeService nutzt denselben Request-Cache (über BrandingService)
         // und hält die validierten Org-Custom-Themes vor.
-        $this->app->singleton(\App\Services\ThemeService::class);
+        $this->app->singleton(\App\Services\UI\ThemeService::class);
 
         // Sqid-Encoder als Singleton: hält pro Modell-Klasse einen Sqids-
         // Instanz-Cache mit deterministisch permutiertem Alphabet vor.
-        $this->app->singleton(\App\Services\SqidEncoder::class, function ($app): \App\Services\SqidEncoder {
+        $this->app->singleton(\App\Support\SqidEncoder::class, function ($app): \App\Support\SqidEncoder {
             /** @var array<string, mixed> $cfg */
             $cfg = (array) $app['config']->get('sqids', []);
             $salt = (string) ($cfg['salt'] ?? '');
@@ -167,7 +180,7 @@ class AppServiceProvider extends ServiceProvider {
                 throw new \RuntimeException('SQIDS_SALT must be set in production.');
             }
 
-            return new \App\Services\SqidEncoder(
+            return new \App\Support\SqidEncoder(
                 salt: $salt,
                 minLength: (int) ($cfg['min_length'] ?? 10),
                 alphabet: (string) ($cfg['alphabet'] ?? 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'),
@@ -449,7 +462,7 @@ class AppServiceProvider extends ServiceProvider {
         // lebt im bestehenden TimeEntryObserver, s. u.).
         \App\Models\Attendance::observe(\App\Observers\AttendanceObserver::class);
         // Vereinstermine (MVP-843): Serienvorkommen erben Details des Masters.
-        \App\Models\Event::observe(\App\Observers\ClubEventOccurrenceObserver::class);
+        \App\Models\Calendar\Event::observe(\App\Observers\ClubEventOccurrenceObserver::class);
         \App\Models\InvoiceItem::observe(\App\Observers\InvoiceItemObserver::class);
 
         // Carbon-Anzeige-Macros (Logik in App\Support\CarbonFmt): orgTz/fdate/
@@ -482,8 +495,8 @@ class AppServiceProvider extends ServiceProvider {
         Comment::observe(CommentObserver::class);
         // Feature 107 W10: VK-Preisverlauf für den DATPREIS-Export „seit Datum".
         // F8/E6: contact_* führend — Projektion in die Inline-Spalten.
-        \App\Models\ContactAddress::observe(\App\Observers\ContactDetailsProjectionObserver::class);
-        \App\Models\ContactBankAccount::observe(\App\Observers\ContactDetailsProjectionObserver::class);
+        \App\Models\Contacts\ContactAddress::observe(\App\Observers\ContactDetailsProjectionObserver::class);
+        \App\Models\Contacts\ContactBankAccount::observe(\App\Observers\ContactDetailsProjectionObserver::class);
         \App\Models\Article::observe(\App\Observers\ArticleSalePriceObserver::class);
         \App\Models\ArticleVariant::observe(\App\Observers\ArticleVariantSalePriceObserver::class);
         Attachment::observe(AttachmentObserver::class);
@@ -502,7 +515,7 @@ class AppServiceProvider extends ServiceProvider {
         TimeEntry::observe(\App\Plugins\Support\TimeWritebackObserver::class);
         // Git-Issue-Status-Rückrichtung (Audit 2026-08, Welle 1.4): Statuswechsel
         // an Issue-verknüpften Aufgaben → Outbox (GitHub/GitLab, opt-in).
-        \App\Models\Task::observe(\App\Plugins\Support\GitIssueImport\GitIssueWritebackObserver::class);
+        \App\Models\Project\Task::observe(\App\Plugins\Support\GitIssueImport\GitIssueWritebackObserver::class);
         Timesheet::observe(TimesheetObserver::class);
         MaterialUsage::observe(MaterialUsageObserver::class);
         Organization::observe(OrganizationObserver::class);
@@ -510,20 +523,20 @@ class AppServiceProvider extends ServiceProvider {
         Protocol::observe(ProtocolObserver::class);
         // Tätigkeitsrecherche (Feature 153): Quellen und Kind-Modelle indizieren
         // nach Commit; Stammdaten-Umbenennungen ziehen per Job nach.
-        foreach ([TimeEntry::class, DiaryEntry::class, Timesheet::class, ServiceTicket::class, \App\Models\ServiceTicketMessage::class, Protocol::class, OpenIssue::class, CommunicationNote::class, \App\Models\KnowledgeArticle::class, \App\Models\RemotePendingSession::class, Comment::class, \App\Models\Learning\LearningCourse::class, \App\Models\Document::class] as $searchable) {
+        foreach ([TimeEntry::class, DiaryEntry::class, Timesheet::class, ServiceTicket::class, \App\Models\ServiceTicketMessage::class, Protocol::class, OpenIssue::class, CommunicationNote::class, \App\Models\Knowledge\KnowledgeArticle::class, \App\Models\Auth\RemotePendingSession::class, Comment::class, \App\Models\Learning\LearningCourse::class, \App\Models\Document\Document::class] as $searchable) {
             $searchable::observe(\App\Observers\SearchIndexObserver::class);
         }
-        foreach ([Project::class, \App\Models\ForeignCustomer::class, Customer::class] as $searchContext) {
+        foreach ([Project::class, \App\Models\Customer\ForeignCustomer::class, Customer::class] as $searchContext) {
             $searchContext::observe(\App\Observers\SearchContextObserver::class);
         }
 
-        Gate::policy(\App\Models\IdeaMap::class, \App\Policies\IdeaMapPolicy::class);
-        Gate::policy(\App\Models\TextCorrection::class, \App\Policies\TextCorrectionPolicy::class);
-        Gate::policy(\App\Models\SearchSynonymGroup::class, \App\Policies\SearchSynonymGroupPolicy::class);
+        Gate::policy(\App\Models\Ideas\IdeaMap::class, \App\Policies\Knowledge\IdeaMapPolicy::class);
+        Gate::policy(\App\Models\Platform\TextCorrection::class, \App\Policies\Platform\TextCorrectionPolicy::class);
+        Gate::policy(\App\Models\Search\SearchSynonymGroup::class, \App\Policies\Search\SearchSynonymGroupPolicy::class);
         // Agiles Projektmanagement (Feature 064).
         Gate::policy(\App\Models\Agile\AgileBoard::class, \App\Policies\Agile\AgileBoardPolicy::class);
         Gate::policy(\App\Models\Agile\AgileWorkItem::class, \App\Policies\Agile\AgileWorkItemPolicy::class);
-        Gate::policy(\App\Models\GobdExport::class, \App\Policies\GobdExportPolicy::class);
+        Gate::policy(\App\Models\Audit\GobdExport::class, \App\Policies\Audit\GobdExportPolicy::class);
         Gate::policy(\App\Models\Finance\ProcedureDocumentation::class, \App\Policies\Finance\ProcedureDocumentationPolicy::class);
         // Feature 068: Bewerbungs-/Ausschreibungsmodul (getrennte Rechtebereiche).
         Gate::policy(\App\Models\Ai\AiProviderConnection::class, \App\Policies\Ai\AiProviderConnectionPolicy::class);
@@ -612,7 +625,7 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(\App\Models\Club\ClubPerformance::class, \App\Policies\Club\ClubPerformancePolicy::class);
         Gate::policy(\App\Models\Club\ClubAttendanceRequirement::class, \App\Policies\Club\ClubAttendanceRequirementPolicy::class);
         // „Mein Verein“ (MVP-845): verknüpftes Mitglied oder aktive Vertretung — unabhängig von club.*-Rechten.
-        Gate::define('club-my', static fn(\App\Models\User $user): bool => app(\App\Services\Club\ClubPortalContext::class)->hasSubjects($user)
+        Gate::define('club-my', static fn(\App\Models\Platform\User $user): bool => app(\App\Services\Club\ClubPortalContext::class)->hasSubjects($user)
             || \App\Models\Club\ClubFeeAccount::query()->where('user_id', $user->id)->exists());
 
         // Provisionen (Feature 146).
@@ -624,7 +637,7 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(\App\Models\Learning\LearningCourse::class, \App\Policies\Learning\LearningCoursePolicy::class);
         Gate::policy(\App\Models\Training\TrainingRequirement::class, \App\Policies\Training\TrainingRequirementPolicy::class);
         Gate::policy(\App\Models\Training\TrainingAssignment::class, \App\Policies\Training\TrainingAssignmentPolicy::class);
-        Gate::policy(\App\Models\ExternalParticipant::class, \App\Policies\ExternalParticipantPolicy::class);
+        Gate::policy(\App\Models\Communication\ExternalParticipant::class, \App\Policies\Communication\ExternalParticipantPolicy::class);
         Gate::policy(DutyPlan::class, DutyPlanPolicy::class);
         Gate::policy(CoverageRequirement::class, CoverageRequirementPolicy::class);
         Gate::policy(Milestone::class, MilestonePolicy::class);
@@ -661,16 +674,16 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(PerDiemRate::class, PerDiemRatePolicy::class);
         Gate::policy(Room::class, RoomPolicy::class);
         Gate::policy(OpenIssue::class, OpenIssuePolicy::class);
-        Gate::policy(\App\Models\CustomerQuery::class, \App\Policies\CustomerQueryPolicy::class);
+        Gate::policy(\App\Models\Customer\CustomerQuery::class, \App\Policies\Customer\CustomerQueryPolicy::class);
         Gate::policy(\App\Models\SafetyEvent::class, \App\Policies\SafetyEventPolicy::class);
-        Gate::policy(\App\Models\Notification\NotificationRule::class, \App\Policies\NotificationRulePolicy::class);
+        Gate::policy(\App\Models\Notification\NotificationRule::class, \App\Policies\Notification\NotificationRulePolicy::class);
         Gate::policy(\App\Models\Surcharge\SurchargeRule::class, \App\Policies\SurchargeRulePolicy::class);
         Gate::policy(CommunicationNote::class, CommunicationNotePolicy::class);
-        Gate::policy(\App\Models\Document::class, \App\Policies\DocumentPolicy::class);
-        Gate::policy(\App\Models\KnowledgeArticle::class, \App\Policies\KnowledgeArticlePolicy::class);
-        Gate::policy(\App\Models\ContentCollection::class, \App\Policies\ContentCollectionPolicy::class);
-        Gate::policy(\App\Models\FormTemplate::class, \App\Policies\FormTemplatePolicy::class);
-        Gate::policy(\App\Models\FormSubmission::class, \App\Policies\FormSubmissionPolicy::class);
+        Gate::policy(\App\Models\Document\Document::class, \App\Policies\Document\DocumentPolicy::class);
+        Gate::policy(\App\Models\Knowledge\KnowledgeArticle::class, \App\Policies\Knowledge\KnowledgeArticlePolicy::class);
+        Gate::policy(\App\Models\Knowledge\ContentCollection::class, \App\Policies\Knowledge\ContentCollectionPolicy::class);
+        Gate::policy(\App\Models\Form\FormTemplate::class, \App\Policies\Form\FormTemplatePolicy::class);
+        Gate::policy(\App\Models\Form\FormSubmission::class, \App\Policies\Form\FormSubmissionPolicy::class);
         Gate::policy(Protocol::class, ProtocolPolicy::class);
         Gate::policy(ProcedureTemplate::class, ProcedureTemplatePolicy::class);
         Gate::policy(ProcedureRun::class, ProcedureRunPolicy::class);
@@ -681,8 +694,8 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(MonthClosure::class, MonthClosurePolicy::class);
         Gate::policy(TimeCorrectionRequest::class, TimeCorrectionRequestPolicy::class);
         Gate::policy(TimeExport::class, TimeExportPolicy::class);
-        Gate::policy(\App\Models\UserBookmark::class, \App\Policies\UserBookmarkPolicy::class);
-        Gate::policy(\App\Models\UserFilterPreset::class, \App\Policies\UserFilterPresetPolicy::class);
+        Gate::policy(\App\Models\Platform\UserBookmark::class, \App\Policies\Platform\UserBookmarkPolicy::class);
+        Gate::policy(\App\Models\Platform\UserFilterPreset::class, \App\Policies\Platform\UserFilterPresetPolicy::class);
         Gate::policy(Supplier::class, \App\Policies\SupplierPolicy::class);
         Gate::policy(\App\Models\Privacy\ProcessingActivity::class, \App\Policies\Privacy\ProcessingActivityPolicy::class);
         Gate::policy(\App\Models\Privacy\DataSubjectRequest::class, \App\Policies\Privacy\DataSubjectRequestPolicy::class);
@@ -1047,7 +1060,7 @@ class AppServiceProvider extends ServiceProvider {
         // Anti-Flash-Seed) und die Auth-Seiten. PDFs nutzen kein Runtime-Theme.
         View::composer(['layouts.*', 'auth.*'], function ($view): void {
             try {
-                $theme = app(\App\Services\ThemeService::class);
+                $theme = app(\App\Services\UI\ThemeService::class);
             } catch (\Throwable $e) {
                 report($e);
                 $theme = null;

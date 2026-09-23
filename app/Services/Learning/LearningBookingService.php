@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use App\Enums\Learning\{LearningAccessKind, LearningBookingStatus, LearningCourseStatus, LearningEnrollmentSource};
-use App\Models\{Customer, ExternalParticipant, User};
+use App\Models\Communication\ExternalParticipant;
+use App\Models\Customer\Customer;
 use App\Models\Learning\{LearningBooking, LearningCourse};
+use App\Models\Platform\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;

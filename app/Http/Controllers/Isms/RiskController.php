@@ -14,7 +14,7 @@ use App\Enums\Isms\{AssessmentKind, RiskCategory, RiskStatus, RiskTreatment};
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Isms\Concerns\StreamsRegisterExport;
 use App\Models\Isms\{IsmsControl, IsmsRisk, IsmsRiskAssessment};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Isms\{RegisterExportService, RiskService};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};

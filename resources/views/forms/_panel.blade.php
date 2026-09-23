@@ -12,16 +12,16 @@
   Erwartet: $subject (Model), $subjectKind ('diary'|'customer'|'asset'|'project')
 --}}
 @php
-    $canViewForms = \Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\FormSubmission::class)
+    $canViewForms = \Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Form\FormSubmission::class)
         && app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.forms');
 @endphp
 
 @if ($canViewForms)
 @php
-    /** @var \App\Models\User $panelUser */
+    /** @var \App\Models\Platform\User $panelUser */
     $panelUser = auth()->user();
     $panelSubjectSqid = \App\Support\Sqid::encode(get_class($subject), (int) $subject->getKey());
-    $panelSubmissionsQuery = \App\Models\FormSubmission::query()
+    $panelSubmissionsQuery = \App\Models\Form\FormSubmission::query()
         ->where('subject_type', $subject->getMorphClass())
         ->where('subject_id', $subject->getKey())
         ->with(['template', 'submitter'])
@@ -35,14 +35,14 @@
     // Vorlagen anbieten, deren Ziel (Auftragstyp/Kunde) zum Subject passt.
     $panelEntryTypeId = $subject instanceof \App\Models\DiaryEntry ? ($subject->entry_type_id !== null ? (int) $subject->entry_type_id : null) : null;
     $panelCustomerId = match (true) {
-        $subject instanceof \App\Models\Customer => (int) $subject->getKey(),
+        $subject instanceof \App\Models\Customer\Customer => (int) $subject->getKey(),
         $subject instanceof \App\Models\DiaryEntry => $subject->customer_id !== null ? (int) $subject->customer_id : null,
-        $subject instanceof \App\Models\Project => $subject->customer_id !== null ? (int) $subject->customer_id : null,
+        $subject instanceof \App\Models\Project\Project => $subject->customer_id !== null ? (int) $subject->customer_id : null,
         default => null,
     };
-    $panelActiveTemplates = \Illuminate\Support\Facades\Gate::allows('create', \App\Models\FormSubmission::class)
-        ? \App\Models\FormTemplate::query()->active()->orderBy('name')->get()
-            ->filter(fn(\App\Models\FormTemplate $t): bool => $t->matchesSubject($panelEntryTypeId, $panelCustomerId))
+    $panelActiveTemplates = \Illuminate\Support\Facades\Gate::allows('create', \App\Models\Form\FormSubmission::class)
+        ? \App\Models\Form\FormTemplate::query()->active()->orderBy('name')->get()
+            ->filter(fn(\App\Models\Form\FormTemplate $t): bool => $t->matchesSubject($panelEntryTypeId, $panelCustomerId))
             ->values()
         : collect();
 @endphp

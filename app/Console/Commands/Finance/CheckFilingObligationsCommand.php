@@ -15,7 +15,7 @@ namespace App\Console\Commands\Finance;
 use App\Enums\Finance\AccountingSovereignty;
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Accounting\AccountingFilingObligation;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\AccountingSovereigntyResolver;
 use App\Services\Accounting\Filing\FilingObligationService;
 use App\Services\Notification\NotificationDispatcher;

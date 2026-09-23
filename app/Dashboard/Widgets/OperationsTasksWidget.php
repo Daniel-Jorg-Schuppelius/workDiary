@@ -15,7 +15,8 @@ namespace App\Dashboard\Widgets;
 use App\Dashboard\Widget;
 use App\Enums\Dashboard\WidgetGroup;
 use App\Enums\User\Permission;
-use App\Models\{OperationsTask, User};
+use App\Models\Platform\User;
+use App\Models\Project\OperationsTask;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
 

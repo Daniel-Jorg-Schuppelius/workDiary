@@ -12,7 +12,8 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AccountType, ProfitDetermination, TaxCodeDirection, VatFilingInterval};
 use App\Models\Accounting\{AccountingAccount, AccountingFilingObligation, AccountingTaxCode};
-use App\Models\{Customer, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService};
 use App\Services\Accounting\Filing\{FilingObligationService, RecapitulativeStatementService, VatFieldBreakdownService};
 use App\Support\MorphMap;

@@ -15,7 +15,7 @@ namespace App\Models\Reselling;
 use App\Casts\MoneyCast;
 use App\Enums\Reselling\{BillingFrequency, SubscriptionProvider};
 use App\Models\Concerns\BelongsToOrganization;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;

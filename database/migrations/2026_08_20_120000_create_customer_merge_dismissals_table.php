@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Merkt Kunden-Paare, die der Anwender im Abgleich bewusst als „kein Duplikat"
- * markiert hat. Der {@see \App\Services\CustomerDuplicateFinder} schlägt diese
+ * markiert hat. Der {@see \App\Services\Stammdaten\CustomerDuplicateFinder} schlägt diese
  * Paare danach nicht mehr vor. Das Paar wird normalisiert (kleinere ID zuerst),
  * damit Reihenfolge keine Rolle spielt.
  */

@@ -13,10 +13,13 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enums\Asset\AssetClass;
-use App\Models\{Asset, Customer, Organization, RemotePendingSession};
+use App\Models\Asset;
+use App\Models\Auth\RemotePendingSession;
+use App\Models\Customer\Customer;
+use App\Models\Platform\Organization;
 use App\Plugins\RemoteSupport\Providers\AnyDeskClient;
 use App\Plugins\RemoteSupport\RemoteDeviceRegistry;
-use App\Services\AssetMergeService;
+use App\Services\Stammdaten\AssetMergeService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;

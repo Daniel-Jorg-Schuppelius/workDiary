@@ -10,11 +10,12 @@
 
 declare(strict_types=1);
 
-namespace App\Models;
+namespace App\Models\Auth;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Platform\User;
 
 /**
  * Temporäre Supportfreigabe (Rang 64): vom Kundenadmin erteilt, zeitlich

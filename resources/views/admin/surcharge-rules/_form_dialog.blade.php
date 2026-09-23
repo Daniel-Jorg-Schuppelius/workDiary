@@ -147,7 +147,7 @@
                     'shift_type_ids' => array_map('strval', (array) old('condition_shift_type_ids', [])),
                 ]
                 : [
-                    'team_ids' => array_map(fn ($id) => \App\Support\Sqid::encode(\App\Models\Team::class, (int) $id), (array) ($rule->conditions['team_ids'] ?? [])),
+                    'team_ids' => array_map(fn ($id) => \App\Support\Sqid::encode(\App\Models\Platform\Team::class, (int) $id), (array) ($rule->conditions['team_ids'] ?? [])),
                     'site_ids' => array_map(fn ($id) => \App\Support\Sqid::encode(\App\Models\Site::class, (int) $id), (array) ($rule->conditions['site_ids'] ?? [])),
                     'shift_type_ids' => array_map(fn ($id) => \App\Support\Sqid::encode(\App\Models\ShiftType::class, (int) $id), (array) ($rule->conditions['shift_type_ids'] ?? [])),
                 ];

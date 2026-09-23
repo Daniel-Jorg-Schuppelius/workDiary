@@ -12,7 +12,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery, ResolvesGlobalDateRange};
 use App\Http\Requests\SaveSupplierRequest;
-use App\Models\{AuditLog, ExternalReference, LexofficeVoucher, Supplier, Tag};
+use App\Models\Audit\AuditLog;
+use App\Models\Classification\Tag;
+use App\Models\Integration\ExternalReference;
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
+use App\Models\Supplier;
 use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
@@ -101,7 +105,7 @@ class SupplierController extends Controller {
         $voucherCountSeries = null;
         $authUser = Auth::user();
         if (
-            $authUser instanceof \App\Models\User
+            $authUser instanceof \App\Models\Platform\User
             && ($authUser->isAdmin() || $authUser->can(\App\Enums\User\Permission::ReportView->value))
         ) {
             $spendBuilder = app(\App\Services\Reporting\SupplierAnalysisReportBuilder::class);

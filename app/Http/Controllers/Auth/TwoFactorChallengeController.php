@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Auth;
 use App\Enums\Auth\TwoFactorType;
 use App\Http\Controllers\Auth\Concerns\{CompletesLogin, ResolvesWorkMode};
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Auth\{EmailOtpService, TwoFactorService, WebAuthnService};
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, RateLimiter};

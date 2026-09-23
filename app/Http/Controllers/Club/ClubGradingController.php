@@ -17,7 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Club\{SaveGradeRequest, SaveGradeRequirementRequest, SaveGradingSystemRequest, SaveGradingVersionRequest};
 use App\Models\Club\{ClubGrade, ClubGradeRequirement, ClubGradingSystem, ClubGradingVersion, ClubGroup};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Club\ClubGradingService;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};

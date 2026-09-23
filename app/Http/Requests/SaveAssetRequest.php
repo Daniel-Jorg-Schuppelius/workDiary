@@ -86,9 +86,9 @@ class SaveAssetRequest extends BaseFormRequest {
                         __('Ein Fremdkunde kann nur einem Asset mit Kunde zugeordnet werden.')
                     );
                 } else {
-                    $foreignCustomer = \App\Models\ForeignCustomer::query()->find($foreignCustomerId);
+                    $foreignCustomer = \App\Models\Customer\ForeignCustomer::query()->find($foreignCustomerId);
                     if (
-                        $foreignCustomer instanceof \App\Models\ForeignCustomer
+                        $foreignCustomer instanceof \App\Models\Customer\ForeignCustomer
                         && (int) $foreignCustomer->customer_id !== (int) $customerId
                     ) {
                         $validator->errors()->add(

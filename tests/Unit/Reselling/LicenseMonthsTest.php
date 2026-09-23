@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Reselling;
 
-use App\Models\{LexofficeVoucher, LexofficeVoucherLine};
+use App\Models\Plugins\Lexoffice\{LexofficeVoucher, LexofficeVoucherLine};
 use App\Plugins\Lexoffice\Services\LexofficeInvoiceMirrorSource;
 use App\Services\Reselling\Mirror\MirrorLine;
 use App\Services\Reselling\Register\LicenseMonths;

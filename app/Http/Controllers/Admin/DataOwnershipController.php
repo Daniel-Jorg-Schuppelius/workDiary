@@ -14,7 +14,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\Integration\DataDomain;
 use App\Http\Controllers\Controller;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\PluginManager;
 use App\Services\Integration\DataOwnershipResolver;
 use Illuminate\Http\{RedirectResponse, Request};

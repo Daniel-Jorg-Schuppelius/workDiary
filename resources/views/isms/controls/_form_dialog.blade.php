@@ -16,7 +16,7 @@
 @php
     $isEdit = $control !== null;
     $linkedRequirementIds = $isEdit ? $control->requirements->pluck('sqid')->all() : [];
-    $ownerSqid = \App\Support\Sqid::encode(\App\Models\User::class, $control?->owner_user_id);
+    $ownerSqid = \App\Support\Sqid::encode(\App\Models\Platform\User::class, $control?->owner_user_id);
 @endphp
 
 <x-modal

@@ -12,7 +12,7 @@ namespace App\Models\Training;
 
 use App\Enums\Training\TrainingProviderKind;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use CommonToolkit\Enums\CurrencyCode;
 use Database\Factories\Training\TrainingCourseFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};

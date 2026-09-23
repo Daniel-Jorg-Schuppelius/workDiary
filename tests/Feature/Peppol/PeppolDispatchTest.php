@@ -10,7 +10,11 @@
 
 namespace Tests\Feature\Peppol;
 
-use App\Models\{Customer, DocumentDispatch, Invoice, PeppolParticipantLookup, PluginSetting, User};
+use App\Models\Customer\Customer;
+use App\Models\Document\DocumentDispatch;
+use App\Models\Invoice;
+use App\Models\Platform\{PluginSetting, User};
+use App\Models\Plugins\Peppol\PeppolParticipantLookup;
 use App\Plugins\PeppolAccessPoint\PeppolAccessPointPlugin;
 use App\Plugins\PluginManager;
 use App\Services\Peppol\{PeppolInvoiceDispatcher, PeppolParticipantService};

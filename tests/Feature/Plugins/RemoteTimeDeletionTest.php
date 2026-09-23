@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{ExternalReference, IntegrationInboxItem, Organization, Project, TimeEntry, User};
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Plugins\Support\{ImportedTimeEntry, RemoteSyncWindow, RemoteTimeFingerprint};
 use App\Plugins\Toggl\{TogglImportService, TogglPlugin};
 use Carbon\CarbonImmutable;

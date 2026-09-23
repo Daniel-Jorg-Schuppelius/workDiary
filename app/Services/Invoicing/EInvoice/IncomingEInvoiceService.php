@@ -161,7 +161,7 @@ class IncomingEInvoiceService {
      * als Document (DMS) + Prüfbereich-Datensatz. Kanäle unterscheiden sich
      * nur in der `source`-Herkunft — nie in der Verarbeitung.
      *
-     * @return array{status: 'created'|'duplicate'|'unreadable', incoming: \App\Models\IncomingEInvoice|null, document: \App\Models\Document|null}
+     * @return array{status: 'created'|'duplicate'|'unreadable', incoming: \App\Models\IncomingEInvoice|null, document: \App\Models\Document\Document|null}
      */
     /**
      * Malware-Prüfung der eingehenden Datei über den im Betrieb konfigurierten
@@ -191,10 +191,10 @@ class IncomingEInvoiceService {
     }
 
     /**
-     * @return array{status: string, incoming: ?\App\Models\IncomingEInvoice, document: ?\App\Models\Document}
+     * @return array{status: string, incoming: ?\App\Models\IncomingEInvoice, document: ?\App\Models\Document\Document}
      */
     public function storeIncoming(
-        \App\Models\User $actor,
+        \App\Models\Platform\User $actor,
         string $contents,
         ?string $mime = null,
         ?string $path = null,
@@ -260,7 +260,7 @@ class IncomingEInvoiceService {
         } else {
             // Kanäle ohne UploadedFile (Mail/API): Document-Kopf + Version aus
             // dem Byte-Inhalt — identische Ablage wie beim Upload.
-            $document = \App\Models\Document::query()->create([
+            $document = \App\Models\Document\Document::query()->create([
                 'organization_id' => $organizationId,
                 'title' => $attributes['title'],
                 'document_type' => $attributes['document_type'],
@@ -334,7 +334,7 @@ class IncomingEInvoiceService {
         $projects = [];
         $projectRef = trim((string) ($summary['project_reference'] ?? ($summary['buyer_reference'] ?? '')));
         if ($projectRef !== '') {
-            foreach (\App\Models\Project::query()->withoutGlobalScopes()->where('organization_id', $organizationId)->whereLikeEscaped('name', $projectRef)->limit(3)->get() as $project) {
+            foreach (\App\Models\Project\Project::query()->withoutGlobalScopes()->where('organization_id', $organizationId)->whereLikeEscaped('name', $projectRef)->limit(3)->get() as $project) {
                 $projects[] = ['id' => (int) $project->id, 'label' => (string) $project->name, 'reasons' => [(string) __('Projektreferenz ähnlich')]];
             }
         }

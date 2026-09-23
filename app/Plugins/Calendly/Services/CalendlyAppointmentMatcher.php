@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Calendly\Services;
 
-use App\Models\{Customer, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
 use CommonToolkit\Helper\Data\EmailHelper;
 
 /**

@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Register;
 
-use App\Models\{Customer, ForeignCustomer, Organization};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Platform\Organization;
 use App\Models\Reselling\CompanyMapping;
 use App\Services\Reselling\Marketplace\{MarketplaceCompany, NameTokenMatcher};
 use App\Support\Sqid;

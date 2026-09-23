@@ -12,7 +12,8 @@ namespace Tests\Feature\Protocol;
 
 use App\Enums\Protocol\{ProtocolItemResult, ProtocolItemType, ProtocolType};
 use App\Exceptions\ProtocolValidationException;
-use App\Models\{DiaryEntry, OpenIssue, Protocol, ProtocolItem, User};
+use App\Models\{DiaryEntry, OpenIssue, Protocol, ProtocolItem};
+use App\Models\Platform\User;
 use App\Services\Protocol\{ProtocolItemValidator, ProtocolService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

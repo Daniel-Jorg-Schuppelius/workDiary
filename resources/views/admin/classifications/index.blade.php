@@ -26,8 +26,8 @@
 
     @foreach ($domains as $domain)
         @php
-            /** @var \Illuminate\Support\Collection<int, \App\Models\Classification> $platformRows */
-            /** @var \Illuminate\Support\Collection<int, \App\Models\Classification> $orgRows */
+            /** @var \Illuminate\Support\Collection<int, \App\Models\Classification\Classification> $platformRows */
+            /** @var \Illuminate\Support\Collection<int, \App\Models\Classification\Classification> $orgRows */
             $platformRows = $platformByDomain->get($domain->value, collect());
             $orgRows = $orgByDomain->get($domain->value, collect());
             $orgRowsByCode = $orgRows->keyBy('code');

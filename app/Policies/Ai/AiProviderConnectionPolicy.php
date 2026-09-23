@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Policies\Ai;
 
 use App\Enums\User\Permission as P;
+use App\Policies\Auth\PermissionPolicy;
 use App\Policies\Concerns\HasAdminBypass;
-use App\Policies\PermissionPolicy;
 
 /**
  * KI-Provider-Verbindungen (Feature 025, MVP-400): Verwaltung —

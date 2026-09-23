@@ -8,13 +8,14 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Communication;
 
 use App\Enums\Communication\ParticipantParty;
-use Database\Factories\CommunicationNoteParticipantFactory;
+use Database\Factories\Communication\CommunicationNoteParticipantFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Communication\CommunicationNote;
 
 /**
  * Beteiligte einer Kommunikationsnotiz (intern, Kunde, Dritte).

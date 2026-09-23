@@ -13,7 +13,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Reselling;
 
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
-use App\Models\{AuditLog, Customer, ExternalReference, LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\User;
+use App\Models\Plugins\Lexoffice\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Services\Reselling\Register\{LinkProposer, PeriodPlanner};

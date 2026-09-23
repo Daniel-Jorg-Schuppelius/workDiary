@@ -13,7 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Search;
 
 use App\Enums\Search\SearchSourceType;
-use App\Models\{CommunicationNote, DiaryEntry, Document, KnowledgeArticle, OpenIssue, Protocol, SearchDocument, ServiceTicket, TimeEntry, Timesheet};
+use App\Models\Communication\CommunicationNote;
+use App\Models\{DiaryEntry, OpenIssue, Protocol, ServiceTicket, TimeEntry, Timesheet};
+use App\Models\Document\Document;
+use App\Models\Knowledge\KnowledgeArticle;
+use App\Models\Search\SearchDocument;
 use App\Support\{EntityUrl, Sqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;

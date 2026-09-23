@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Ai\Support;
 
-use App\Models\{Customer, Organization};
+use App\Models\Customer\Customer;
+use App\Models\Platform\Organization;
 
 /**
  * Datenschutz-Vorfilter aller KI-Prompts (Feature 084, Vollaudit 2026-07

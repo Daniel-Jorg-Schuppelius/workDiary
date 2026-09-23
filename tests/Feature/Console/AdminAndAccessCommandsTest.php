@@ -12,7 +12,7 @@ namespace Tests\Feature\Console;
 
 use App\Http\Controllers\Api\LocationController;
 use App\Models\Location\LocationDeviceToken;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Hr\PersonnelFilePermissions;
 use App\Services\Install\InstallationManager;
 use App\Services\Whistleblowing\WhistleblowingPermissions;

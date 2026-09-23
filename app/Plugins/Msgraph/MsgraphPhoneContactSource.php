@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Msgraph;
 
-use App\Models\{MsgraphContactConnection, Organization};
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Msgraph\MsgraphContactConnection;
 use App\Plugins\Msgraph\Api\MsgraphContactsClient;
 use App\Plugins\Support\PluginSettingsResolver;
 use App\Services\Contacts\{ExternalPhoneContact, ExternalPhoneContactSource};

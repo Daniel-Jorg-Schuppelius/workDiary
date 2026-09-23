@@ -11,7 +11,8 @@
 namespace Tests\Feature\Integration;
 
 use App\Enums\Integration\IntegrationOutboxStatus;
-use App\Models\{IntegrationOutboxEntry, TodoistWebhookDelivery};
+use App\Models\Integration\IntegrationOutboxEntry;
+use App\Models\Plugins\Todoist\TodoistWebhookDelivery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

@@ -14,7 +14,9 @@ namespace App\Services\Print;
 
 use App\Enums\AssetCompliance\AssetComplianceStatus;
 use App\Enums\Print\{PreflightStatus, PrintOrderStatus, PrintOutputKind};
-use App\Models\{Asset, Document, DocumentVersion, ManufacturingOrder, Organization, Shipment, User};
+use App\Models\{Asset, ManufacturingOrder, Shipment};
+use App\Models\Document\{Document, DocumentVersion};
+use App\Models\Platform\{Organization, User};
 use App\Models\Print\PrintOrder;
 use App\Services\Asset\AssetUsageGuard;
 use App\Services\AssetCompliance\AssetComplianceService;

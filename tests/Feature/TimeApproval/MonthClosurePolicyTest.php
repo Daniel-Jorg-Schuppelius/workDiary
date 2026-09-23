@@ -12,7 +12,8 @@ namespace Tests\Feature\TimeApproval;
 
 use App\Enums\TimeApproval\MonthClosureStatus;
 use App\Enums\User\Permission as P;
-use App\Models\{MonthClosure, User};
+use App\Models\MonthClosure;
+use App\Models\Platform\User;
 use App\Policies\MonthClosurePolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

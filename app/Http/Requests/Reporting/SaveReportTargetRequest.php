@@ -8,12 +8,15 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Reporting;
 
 use App\Enums\Reporting\{ReportTargetMetric, ReportTargetPeriod, ReportTargetScope};
-use App\Models\{Customer, Project, User};
-use App\Services\SqidEncoder;
+use App\Models\Customer\Customer;
+use App\Models\Project\Project;
+use App\Models\Platform\User;
+use App\Support\SqidEncoder;
 use Illuminate\Validation\Rule;
+use App\Http\Requests\BaseFormRequest;
 
 class SaveReportTargetRequest extends BaseFormRequest {
     protected function prepareForValidation(): void {

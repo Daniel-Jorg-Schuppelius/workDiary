@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{PluginError, PluginState};
+use App\Models\Platform\{PluginError, PluginState};
 use App\Plugins\PluginErrorRecorder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;

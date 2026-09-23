@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Concerns;
 
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 
 /**
  * Trait für FormRequests, die opake Sqid-Strings in numerische
@@ -27,9 +27,9 @@ use App\Services\SqidEncoder;
  *         use DecodesSqidInputs;
  *
  *         protected array $sqidFields = [
- *             'customer_id'      => \App\Models\Customer::class,
- *             'assigned_user_id' => \App\Models\User::class,
- *             'tag_ids'          => \App\Models\Tag::class, // Arrays werden elementweise dekodiert
+ *             'customer_id'      => \App\Models\Customer\Customer::class,
+ *             'assigned_user_id' => \App\Models\Platform\User::class,
+ *             'tag_ids'          => \App\Models\Classification\Tag::class, // Arrays werden elementweise dekodiert
  *         ];
  *     }
  *

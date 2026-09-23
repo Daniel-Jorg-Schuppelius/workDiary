@@ -41,7 +41,7 @@ class SecurityRekeyEncryptedCommand extends Command {
      * @var array<class-string<\Illuminate\Database\Eloquent\Model>, array<string, array<string, mixed>>>
      */
     private const DIRECT_USERS = [
-        \App\Models\SystemSetting::class => ['value' => ['is_sensitive' => 1]],
+        \App\Models\Platform\SystemSetting::class => ['value' => ['is_sensitive' => 1]],
     ];
 
         public function handle(): int {

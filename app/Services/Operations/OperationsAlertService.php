@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Operations;
 
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskStatus};
-use App\Models\{OperationsTask, Organization};
+use App\Models\Platform\Organization;
+use App\Models\Project\OperationsTask;
 use App\Services\Notification\NotificationDispatcher;
 use App\Support\{NotificationText, Setting};
 use Carbon\CarbonImmutable;

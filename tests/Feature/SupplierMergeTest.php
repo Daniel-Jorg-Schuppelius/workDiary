@@ -10,8 +10,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\{ExternalReference, PurchaseOrder, Supplier, SupplierMergeDismissal, User, Warehouse};
-use App\Services\{SupplierDuplicateFinder, SupplierMergeService};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\User;
+use App\Models\{PurchaseOrder, Supplier, SupplierMergeDismissal, Warehouse};
+use App\Services\Stammdaten\{SupplierDuplicateFinder, SupplierMergeService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -93,7 +95,7 @@ class SupplierMergeTest extends TestCase {
     public function test_merge_rejects_cross_organization(): void {
         $own = $this->supplier();
         // Mandantengrenze: Lieferant einer anderen Organisation.
-        $foreign = Supplier::factory()->create(['organization_id' => \App\Models\Organization::factory()->create()->id]);
+        $foreign = Supplier::factory()->create(['organization_id' => \App\Models\Platform\Organization::factory()->create()->id]);
 
         $this->expectException(\InvalidArgumentException::class);
         app(SupplierMergeService::class)->merge($foreign, $own);

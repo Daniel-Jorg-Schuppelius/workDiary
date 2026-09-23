@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Finance\ProcedureDocumentation\Sections;
 
 use App\Enums\User\{Permission, UserRole};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Finance\ProcedureDocumentation\{FormatsSectionValues, ProcedureSection, SectionContext};
 use Spatie\Permission\Models\Role;
 

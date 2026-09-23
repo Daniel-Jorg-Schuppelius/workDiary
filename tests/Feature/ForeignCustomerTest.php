@@ -11,7 +11,11 @@
 namespace Tests\Feature;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{AuditLog, Customer, ForeignCustomer, Project, TimeEntry, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Services\Invoicing\InvoiceGenerator;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;

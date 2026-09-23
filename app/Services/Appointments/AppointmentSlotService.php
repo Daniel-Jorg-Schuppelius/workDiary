@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Appointments;
 
-use App\Models\{BookableService, User};
+use App\Models\Platform\User;
+use App\Models\Sales\BookableService;
 use App\Services\Dispatch\GapFillSuggester;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;

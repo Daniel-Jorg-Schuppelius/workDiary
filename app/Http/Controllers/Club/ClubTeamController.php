@@ -16,7 +16,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Club\{SaveSeasonRequest, SaveSquadMemberRequest};
 use App\Models\Club\{ClubGroup, ClubMember, ClubSeason, ClubSquad, ClubSquadMember};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Club\ClubTeamService;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 use Illuminate\Support\{Carbon, Collection};
 

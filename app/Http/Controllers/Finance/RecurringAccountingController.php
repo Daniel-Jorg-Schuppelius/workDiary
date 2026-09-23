@@ -149,7 +149,7 @@ class RecurringAccountingController extends Controller {
     }
 
     /** @return array<string, mixed> */
-    private function validated(Request $request, \App\Models\Organization $organization): array {
+    private function validated(Request $request, \App\Models\Platform\Organization $organization): array {
         $data = $request->validate([
             'kind' => ['required', 'string', 'in:' . implode(',', array_column(RecurringTemplateKind::cases(), 'value'))],
             'name' => ['required', 'string', 'max:191'],

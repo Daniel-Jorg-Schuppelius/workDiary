@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Print;
 
 use App\Enums\Print\{PreflightStatus, PrintOrderStatus};
-use App\Models\{Article, User};
+use App\Models\Article;
+use App\Models\Platform\User;
 use App\Models\Print\PrintOrder;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Print\PrintOrderService;

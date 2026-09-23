@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Security;
 
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Blade;
 use Tests\Concerns\WithOrganization;

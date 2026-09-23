@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Support;
 
-use App\Models\{Attachment, AuditLog, Customer, Organization, User};
+use App\Models\Attachments\Attachment;
+use App\Models\Audit\AuditLog;
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
 use App\Support\{EntityUrl, MorphMap};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;

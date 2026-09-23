@@ -44,7 +44,7 @@
                 </x-action-form>
             @endif
         @endif
-        @can('create', App\Models\Customer::class)
+        @can('create', App\Models\Customer\Customer::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger
                         :href="route('customers.create')"

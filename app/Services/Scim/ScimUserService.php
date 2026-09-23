@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Scim;
 
-use App\Models\{ExternalReference, Organization, User};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\{Organization, User};
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\DB;
 

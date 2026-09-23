@@ -12,7 +12,7 @@ namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\{LearningProgressStatus, LearningUnitKind};
 use App\Models\Learning\{LearningCmi5Package, LearningCmi5Registration, LearningCmi5Session, LearningCmi5Unit, LearningEnrollment, LearningUnit, LearningUnitProgress, LearningXapiDocument, LearningXapiStatement};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningCmi5Runtime, LearningCmi5Service, LearningCourseService, LearningEnrollmentService};
 use ELearningToolkit\Cmi5\Cmi5;
 use ELearningToolkit\XApi\Verbs;

@@ -8,11 +8,20 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Knowledge;
 
 use App\Enums\Knowledge\ArticleStatus;
 use App\Enums\User\Permission as P;
-use App\Models\{Asset, ContentCollection, ContentCollectionItem, ContentReference, Customer, DiaryEntry, KnowledgeArticle, Protocol, Tag, User};
+use App\Models\Asset;
+use App\Models\Knowledge\ContentCollection;
+use App\Models\Knowledge\ContentCollectionItem;
+use App\Models\Knowledge\ContentReference;
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\Knowledge\KnowledgeArticle;
+use App\Models\Protocol;
+use App\Models\Classification\Tag;
+use App\Models\Platform\User;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Collections\ContentCollectionService;
 use App\Services\Knowledge\KnowledgeArticleService;
@@ -21,6 +30,8 @@ use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\Document\DocumentController;
 
 class KnowledgeArticleController extends Controller {
     /**

@@ -14,7 +14,11 @@ namespace App\Http\Controllers\Helpdesk;
 
 use App\Enums\User\UserRole;
 use App\Http\Controllers\Controller;
-use App\Models\{BusinessService, Customer, FormTemplate, ProcedureTemplate, RequestItem, ServiceOffering, ServiceRequest, SlaContract, User};
+use App\Models\{BusinessService, ProcedureTemplate, RequestItem, ServiceRequest, SlaContract};
+use App\Models\Customer\Customer;
+use App\Models\Form\FormTemplate;
+use App\Models\Platform\User;
+use App\Models\Sales\ServiceOffering;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};

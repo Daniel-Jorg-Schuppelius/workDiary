@@ -8,7 +8,8 @@
 
 namespace Tests\Feature\Terminal;
 
-use App\Models\{Attendance, AttendanceTerminal, User, UserTerminalPin};
+use App\Models\{Attendance, AttendanceTerminal};
+use App\Models\Platform\{User, UserTerminalPin};
 use App\Services\Attendance\TerminalPinService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

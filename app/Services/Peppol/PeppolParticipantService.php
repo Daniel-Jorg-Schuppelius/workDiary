@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Peppol;
 
-use App\Models\{Customer, PeppolParticipantLookup};
+use App\Models\Customer\Customer;
+use App\Models\Plugins\Peppol\PeppolParticipantLookup;
 use App\Plugins\PeppolAccessPoint\PeppolAccessPointConfig;
 use ERechnungToolkit\Contracts\{DnsNaptrResolverInterface, SmpHttpClientInterface};
 use ERechnungToolkit\Peppol\{DocumentTypeId, ParticipantId, SmpLookup};

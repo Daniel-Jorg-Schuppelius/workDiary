@@ -11,8 +11,10 @@
 namespace Tests\Feature\Plugins\Easybill;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
-use App\Models\{Customer, ExternalReference, PluginSetting};
+use App\Models\Customer\Customer;
 use App\Models\Finance\AccountingVoucher;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\PluginSetting;
 use App\Plugins\Easybill\EasybillPlugin;
 use App\Plugins\Easybill\Services\EasybillVoucherPullService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

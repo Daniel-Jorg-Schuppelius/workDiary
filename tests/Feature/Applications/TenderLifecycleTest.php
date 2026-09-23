@@ -12,7 +12,9 @@ namespace Tests\Feature\Applications;
 
 use App\Enums\User\UserRole;
 use App\Models\Applications\ApplicationOpportunity;
-use App\Models\{Customer, Project, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Services\Applications\TenderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -126,7 +128,7 @@ final class TenderLifecycleTest extends TestCase {
         $this->actingAs($accounting)->post(route('tenders.go', $opportunity), ['decision' => 'go'])->assertForbidden();
 
         // Fremde Organisation: 404 durch Tenant-Scope.
-        $otherOrg = \App\Models\Organization::factory()->create();
+        $otherOrg = \App\Models\Platform\Organization::factory()->create();
         $foreignAdmin = User::factory()->admin()->create(['organization_id' => $otherOrg->id]);
         app()->instance('currentOrganization', $otherOrg);
         $this->actingAs($foreignAdmin)->get(route('tenders.show', $opportunity))->assertNotFound();

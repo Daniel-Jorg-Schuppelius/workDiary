@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Helpdesk;
 
-use App\Models\{BusinessService, Organization, RequestItem, ServiceOffering, ServiceQueue, ServiceRequest, Task, User};
+use App\Models\{BusinessService, RequestItem, ServiceQueue, ServiceRequest};
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Task;
+use App\Models\Sales\ServiceOffering;
 use App\Services\ServiceTicket\ServiceRequestService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

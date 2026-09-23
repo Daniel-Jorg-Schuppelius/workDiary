@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy\SubjectData;
 
-use App\Models\Lead;
+use App\Models\Sales\Lead;
 use Illuminate\Database\Eloquent\Model;
 
 /** Lead-Stammdaten (Vertriebskontakt vor Kundenanlage). */

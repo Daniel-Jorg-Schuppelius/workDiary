@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Admin\Access;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Organization, User, UserGroup};
+use App\Models\Platform\{Organization, User, UserGroup};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use Spatie\Permission\Models\{Permission, Role};

@@ -10,7 +10,7 @@
 
 namespace App\Plugins;
 
-use App\Models\PluginState;
+use App\Models\Platform\PluginState;
 use App\Plugins\Contracts\Plugin;
 use Illuminate\Support\Facades\{Artisan, Cache, DB, Log};
 use Throwable;

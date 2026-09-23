@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Models\{Organization, ScimToken};
+use App\Models\Auth\ScimToken;
+use App\Models\Platform\Organization;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Scim\ScimResponse;
 use Closure;

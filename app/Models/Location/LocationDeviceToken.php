@@ -11,7 +11,7 @@
 namespace App\Models\Location;
 
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

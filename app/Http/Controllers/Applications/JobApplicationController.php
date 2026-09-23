@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Applications;
 use App\Enums\Document\DocumentType;
 use App\Http\Controllers\Controller;
 use App\Models\Applications\{EmployeeDraft, JobApplication, JobRequisition};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Applications\RecruitingService;
 use App\Services\Document\DocumentService;
 use App\Support\{ErrorText, SortableQuery};

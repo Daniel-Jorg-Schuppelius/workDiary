@@ -78,15 +78,15 @@
     $rowLink = static function (object $row) use ($canOpenOrgaMax): ?array {
         if ($row->source_type === 'orgamax_invoice') {
             return $canOpenOrgaMax
-                ? [route('admin.orgamax.invoices.mirror-pdf', Sqid::encode(\App\Models\OrgaMaxInvoice::class, (int) $row->link_id)), true]
+                ? [route('admin.orgamax.invoices.mirror-pdf', Sqid::encode(\App\Models\Plugins\OrgaMax\OrgaMaxInvoice::class, (int) $row->link_id)), true]
                 : null;
         }
 
         return match ($row->source_type) {
             'invoice' => [route('invoices.show', Sqid::encode(\App\Models\Invoice::class, (int) $row->link_id)), false],
-            'quote' => [route('quotes.show', Sqid::encode(\App\Models\Quote::class, (int) $row->link_id)), false],
-            'voucher' => [route('lexoffice.vouchers.preview', Sqid::encode(\App\Models\LexofficeVoucher::class, (int) $row->link_id)), true],
-            'incoming_einvoice' => [route('finance.incoming-invoices.show', Sqid::encode(\App\Models\Document::class, (int) $row->link_id)), false],
+            'quote' => [route('quotes.show', Sqid::encode(\App\Models\Sales\Quote::class, (int) $row->link_id)), false],
+            'voucher' => [route('lexoffice.vouchers.preview', Sqid::encode(\App\Models\Plugins\Lexoffice\LexofficeVoucher::class, (int) $row->link_id)), true],
+            'incoming_einvoice' => [route('finance.incoming-invoices.show', Sqid::encode(\App\Models\Document\Document::class, (int) $row->link_id)), false],
             'expense' => [route('expenses.receipt', Sqid::encode(\App\Models\Expense::class, (int) $row->link_id)), true],
             default => null,
         };
@@ -342,7 +342,7 @@
                                         :href="route('invoices.dun.form', Sqid::encode(\App\Models\Invoice::class, (int) $row->source_id))"
                                         :label="__('billing.feed.action.dun')" />
                         @elseif ($isOverdue && $row->source_type === 'voucher' && $canDun)
-                            <x-action-form :action="route('lexoffice.vouchers.dunning', Sqid::encode(\App\Models\LexofficeVoucher::class, (int) $row->source_id))"
+                            <x-action-form :action="route('lexoffice.vouchers.dunning', Sqid::encode(\App\Models\Plugins\Lexoffice\LexofficeVoucher::class, (int) $row->source_id))"
                                            :confirm="__('billing.feed.action.dun_confirm')"
                                            :confirm-label="__('billing.feed.action.dun')">
                                 <x-icon-btn icon="campaign" tone="warning" size="sm" type="submit"

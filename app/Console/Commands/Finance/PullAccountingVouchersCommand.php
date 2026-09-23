@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Finance;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Finance\Accounting\Vouchers\VoucherPullerRegistry;
 use Illuminate\Console\Command;
 use Throwable;

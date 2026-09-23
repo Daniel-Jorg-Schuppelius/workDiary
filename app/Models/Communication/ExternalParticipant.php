@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Communication;
 
 use App\Enums\ExternalParticipant\{ExternalAbility, ExternalParty};
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
 use Illuminate\Support\Carbon;
+use App\Models\Contacts\ExternalContact;
+use App\Models\Communication\ExternalParticipantEvent;
 
 /**
  * Kontextbezogene externe Einladung (Feature 033): Subunternehmer, Prüfer
@@ -54,7 +56,7 @@ use Illuminate\Support\Carbon;
 class ExternalParticipant extends Model {
     use BelongsToOrganization;
 
-    /** @use HasFactory<\Database\Factories\ExternalParticipantFactory> */
+    /** @use HasFactory<\Database\Factories\Communication\ExternalParticipantFactory> */
     use HasFactory;
 
     use HasSqid;

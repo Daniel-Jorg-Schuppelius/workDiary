@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Peppol;
 
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Plugins\Contracts\PeppolTransportProvider;
 use App\Plugins\PluginManager;
 use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;

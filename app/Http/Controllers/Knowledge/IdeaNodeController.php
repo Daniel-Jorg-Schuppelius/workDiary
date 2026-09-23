@@ -8,18 +8,25 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Knowledge;
 
 use App\Enums\Ideas\IdeaNodeColor;
 use App\Exceptions\{IdeaMapConflictException, IdeaNodeConflictException};
-use App\Models\{ContentReference, IdeaMap, IdeaNode, KnowledgeArticle, Project, Task, User};
+use App\Models\Knowledge\ContentReference;
+use App\Models\Ideas\IdeaMap;
+use App\Models\Ideas\IdeaNode;
+use App\Models\Knowledge\KnowledgeArticle;
+use App\Models\Project\Project;
+use App\Models\Project\Task;
+use App\Models\Platform\User;
 use App\Services\Ideas\{IdeaMapSyncService, IdeaNodeService, NodeConversionService};
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use App\Support\ErrorText;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use RuntimeException;
+use App\Http\Controllers\Controller;
 
 /**
  * Knotenbezogene Editor-API der Ideenlandkarten (Feature 054, MVP-106/108):
@@ -95,14 +102,14 @@ class IdeaNodeController extends Controller {
             'can_update' => Gate::allows('update', $map),
             'nodes' => $nodes->map(fn (IdeaNode $node): array => $this->serialize($node))->values(),
             // Querverbindungen (MVP-137): Endpunkte als Sqid (nie interne IDs).
-            'links' => $map->links()->get()->map(fn (\App\Models\IdeaNodeLink $l): array => [
+            'links' => $map->links()->get()->map(fn (\App\Models\Ideas\IdeaNodeLink $l): array => [
                 'from' => $encoder->encode(IdeaNode::class, (int) $l->source_node_id),
                 'to' => $encoder->encode(IdeaNode::class, (int) $l->target_node_id),
                 'label' => $l->label,
                 'color' => $l->color,
             ])->values(),
             // Boundaries/Zusammenfassungen (MVP-137): Elternknoten als Sqid, Bereich start..end.
-            'summaries' => $map->summaries()->get()->map(fn (\App\Models\IdeaNodeSummary $s): array => [
+            'summaries' => $map->summaries()->get()->map(fn (\App\Models\Ideas\IdeaNodeSummary $s): array => [
                 'parent' => $encoder->encode(IdeaNode::class, (int) $s->parent_node_id),
                 'start' => (int) $s->start_index,
                 'end' => (int) $s->end_index,
@@ -302,7 +309,7 @@ class IdeaNodeController extends Controller {
             $target instanceof Project => route('projects.show', $target),
             $target instanceof KnowledgeArticle => route('knowledge.show', $target),
             $target instanceof Task => route('kanban.index'),
-            $target instanceof \App\Models\Customer => route('customers.show', $target),
+            $target instanceof \App\Models\Customer\Customer => route('customers.show', $target),
             $target instanceof \App\Models\DiaryEntry => route('diary.show', $target),
             default => null,
         };

@@ -12,7 +12,8 @@ namespace App\Services\Reminders;
 
 use App\Enums\Expense\{ExpenseStatus, PerDiemTripStatus};
 use App\Enums\Vacation\VacationStatus;
-use App\Models\{Expense, PerDiemTrip, User, Vacation};
+use App\Models\{Expense, PerDiemTrip, Vacation};
+use App\Models\Platform\User;
 use App\Support\OrganizationContext;
 use App\Support\Reminders\ReminderItem;
 use Carbon\CarbonImmutable;

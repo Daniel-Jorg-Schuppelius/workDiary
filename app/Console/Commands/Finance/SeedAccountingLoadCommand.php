@@ -14,7 +14,7 @@ namespace App\Console\Commands\Finance;
 
 use App\Enums\Finance\{AccountType, AccountingEntryStatus, OpenItemDirection, OpenItemStatus, ProfitDetermination};
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingFiscalYear, AccountingPeriod, AccountingProfile};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, OpenItemService};
 use App\Services\Accounting\Reports\{AccountLedgerBuilder, LiquidityBuilder, TrialBalanceBuilder};
 use App\Support\Query\DateRange;

@@ -11,7 +11,8 @@
 namespace Tests\Feature\Inventory;
 
 use App\Enums\Inventory\{SerialSource, SerialStatus};
-use App\Models\{Article, ArticleVariant, Customer, StockDelivery, StockSerial, Warehouse};
+use App\Models\{Article, ArticleVariant, StockDelivery, StockSerial, Warehouse};
+use App\Models\Customer\Customer;
 use App\Services\Inventory\{SerialNumberGenerator, SerialService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

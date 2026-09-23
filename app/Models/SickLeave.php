@@ -12,7 +12,7 @@ namespace App\Models;
 
 use App\Enums\Sickness\SickLeaveKind;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
-use App\Services\HolidayService;
+use App\Services\Calendar\HolidayService;
 use Carbon\{Carbon, CarbonInterface};
 use Database\Factories\SickLeaveFactory;
 use Illuminate\Database\Eloquent\{Builder, Collection, Model};

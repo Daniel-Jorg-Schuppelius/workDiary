@@ -14,7 +14,7 @@ namespace Tests\Feature\Policies\Integration;
 
 use App\Enums\User\Permission as P;
 use App\Models\Integration\WebhookEndpoint;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Policies\Integration\WebhookEndpointPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};

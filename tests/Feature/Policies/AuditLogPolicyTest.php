@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Policies;
 
-use App\Models\{AuditLog, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Spatie\Permission\PermissionRegistrar;

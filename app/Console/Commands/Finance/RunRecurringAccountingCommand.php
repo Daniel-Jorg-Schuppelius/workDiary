@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Finance;
 
 use App\Enums\Finance\AccountingSovereignty;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingSovereigntyResolver, RecurringAccountingService};
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;

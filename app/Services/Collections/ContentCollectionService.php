@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Collections;
 
-use App\Models\{ContentCollection, ContentCollectionItem, Organization, User};
+use App\Models\Knowledge\{ContentCollection, ContentCollectionItem};
+use App\Models\Platform\{Organization, User};
 use App\Services\Content\ContentSubjectResolver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;

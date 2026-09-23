@@ -17,7 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Club\{ChangeClubMembershipKindRequest, LeaveClubMemberRequest, SaveClubMemberRequest};
 use App\Models\Club\{ClubGroup, ClubMember};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Club\ClubMemberService;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;

@@ -12,7 +12,10 @@ declare(strict_types=1);
 
 namespace App\Services\Search;
 
-use App\Models\{Customer, ForeignCustomer, Project, SearchDocument, User};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\Search\SearchDocument;
 use App\Services\Search\Engine\{SearchEngineResolver, SearchMatchCompiler};
 use App\Services\Search\Query\{ParsedSearchQuery, SearchQueryParser};
 use App\Support\{OrganizationContext, Tz};

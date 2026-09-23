@@ -14,7 +14,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\InvoiceResource;
-use App\Models\{Customer, ExternalReference, Invoice};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Invoice;
 use App\Services\Invoicing\InvoicePdfRenderer;
 use App\Support\Sqid;
 use Illuminate\Http\Request;

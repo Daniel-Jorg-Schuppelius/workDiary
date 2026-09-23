@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Tenant;
 
-use App\Models\{Holiday, Organization, Tag};
+use App\Models\Classification\Tag;
+use App\Models\Platform\{Holiday, Organization};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

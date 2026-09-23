@@ -10,7 +10,8 @@
 
 namespace Database\Factories;
 
-use App\Models\{OnCallShift, User};
+use App\Models\OnCallShift;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

@@ -11,7 +11,8 @@
 namespace Tests\Feature\Tenant;
 
 use App\Enums\Timesheet\{TimesheetKind, TimesheetStatus};
-use App\Models\{Organization, Timesheet, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\Timesheet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -130,7 +131,7 @@ class PublicRouteTenantTest extends TestCase {
 
     public function test_personal_schedule_token_resolves_only_owning_user(): void {
         $tokenB = Str::random(48);
-        $this->userB->forceFill(['calendar_feed_token_hash' => \App\Models\User::hashCalendarFeedToken($tokenB)])->save();
+        $this->userB->forceFill(['calendar_feed_token_hash' => \App\Models\Platform\User::hashCalendarFeedToken($tokenB)])->save();
 
         app()->forgetInstance('currentOrganization');
         $response = $this->get('/calendar/feed/' . $tokenB . '.ics');
@@ -146,13 +147,13 @@ class PublicRouteTenantTest extends TestCase {
      * eigene Organisation begrenzt (Mandanten-Review).
      */
     public function test_public_ics_requires_auth_and_stays_inside_the_own_tenant(): void {
-        $orgBPublic = $this->withOrg($this->orgB, fn () => \App\Models\Event::factory()->create([
+        $orgBPublic = $this->withOrg($this->orgB, fn () => \App\Models\Calendar\Event::factory()->create([
             'organization_id' => $this->orgB->id,
             'responsible_user_id' => $this->userB->id,
             'visibility' => \App\Enums\Event\EventVisibility::Public,
             'title' => 'GEHEIM-ORG-B-PUBLICEVENT',
         ]));
-        $orgAPublic = $this->withOrg($this->orgA, fn () => \App\Models\Event::factory()->create([
+        $orgAPublic = $this->withOrg($this->orgA, fn () => \App\Models\Calendar\Event::factory()->create([
             'organization_id' => $this->orgA->id,
             'responsible_user_id' => $this->userA->id,
             'visibility' => \App\Enums\Event\EventVisibility::Public,
@@ -178,7 +179,7 @@ class PublicRouteTenantTest extends TestCase {
         $this->assertContains($response->status(), [302, 401], 'Personal-ICS ohne Auth muss 302/401 liefern, war: ' . $response->status());
 
         // Mit Org-A-User eingeloggt → 200, kein Org-B-Event im Body.
-        $orgBEvent = $this->withOrg($this->orgB, fn() => \App\Models\Event::factory()->create([
+        $orgBEvent = $this->withOrg($this->orgB, fn() => \App\Models\Calendar\Event::factory()->create([
             'organization_id' => $this->orgB->id,
             'responsible_user_id' => $this->userB->id,
             'title' => 'GEHEIM-ORG-B-EVENTPERSONAL',

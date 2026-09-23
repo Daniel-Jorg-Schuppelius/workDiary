@@ -11,7 +11,7 @@
 namespace App\Automation;
 
 use App\Automation\Actions\RuleAction;
-use App\Models\{AutomationRule, AutomationRuleRun};
+use App\Models\Automation\{AutomationRule, AutomationRuleRun};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 

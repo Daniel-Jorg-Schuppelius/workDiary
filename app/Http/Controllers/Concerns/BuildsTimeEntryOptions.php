@@ -11,7 +11,8 @@
 namespace App\Http\Controllers\Concerns;
 
 use App\Enums\Task\TaskStatus;
-use App\Models\{DiaryEntry, Project, Task};
+use App\Models\DiaryEntry;
+use App\Models\Project\{Project, Task};
 use Illuminate\Support\Collection;
 
 /**

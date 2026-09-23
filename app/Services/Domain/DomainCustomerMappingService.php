@@ -10,8 +10,10 @@
 
 namespace App\Services\Domain;
 
-use App\Models\{Customer, ExternalReference, ForeignCustomer, User};
+use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Domain\{DomainContactProjection, DomainProjection, DomainResellerAccount};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\User;
 use App\Plugins\DomainReselling\DomainResellingPlugin;
 
 /**

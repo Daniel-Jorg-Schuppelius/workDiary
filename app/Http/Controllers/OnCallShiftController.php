@@ -11,7 +11,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ManagesShiftLike;
-use App\Models\{OnCallShift, User};
+use App\Models\OnCallShift;
+use App\Models\Platform\User;
 use App\Support\Tz;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;

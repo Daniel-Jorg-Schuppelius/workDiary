@@ -14,7 +14,7 @@ namespace App\Services\Club;
 
 use App\Enums\Club\{ClubEventKind, ClubResourceKind};
 use App\Models\Club\{ClubAttendanceRequirement, ClubDepartment, ClubGradingSystem, ClubGroup, ClubHorse, ClubResource, ClubSportProfile};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use CommonToolkit\Helper\FileSystem\{File as ToolkitFile, Folder};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;

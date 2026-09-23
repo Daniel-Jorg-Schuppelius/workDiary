@@ -98,7 +98,7 @@
                 @foreach ($riskRows as $row)
                     <tr>
                         <td class="font-medium">
-                            <a href="{{ route('reports.customer-project', array_merge($standardFilters->toQueryParams(), ['customer' => \App\Support\Sqid::encode(\App\Models\Customer::class, $row['customerId'])])) }}" class="link link-hover">
+                            <a href="{{ route('reports.customer-project', array_merge($standardFilters->toQueryParams(), ['customer' => \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $row['customerId'])])) }}" class="link link-hover">
                                 {{ $row['customerName'] }}
                             </a>
                         </td>
@@ -160,7 +160,7 @@
                 @foreach ($tableRows as $row)
                     <tr>
                         <td class="font-medium">
-                            <a href="{{ route('reports.customer-project', array_merge($standardFilters->toQueryParams(), ['customer' => \App\Support\Sqid::encode(\App\Models\Customer::class, $row['customerId'])])) }}" class="link link-hover">
+                            <a href="{{ route('reports.customer-project', array_merge($standardFilters->toQueryParams(), ['customer' => \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $row['customerId'])])) }}" class="link link-hover">
                                 {{ $row['customerName'] }}
                             </a>
                         </td>

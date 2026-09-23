@@ -11,7 +11,8 @@
 namespace App\Services\Software;
 
 use App\Exceptions\SoftwareInstallationException;
-use App\Models\{Asset, Software, SoftwareInstallation, User};
+use App\Models\{Asset, Software, SoftwareInstallation};
+use App\Models\Platform\User;
 
 class SoftwareInstallationService {
     /** @param array<string, mixed> $payload */

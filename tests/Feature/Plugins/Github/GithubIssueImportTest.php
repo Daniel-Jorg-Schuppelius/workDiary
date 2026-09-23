@@ -11,11 +11,13 @@
 namespace Tests\Feature\Plugins\Github;
 
 use App\Enums\Task\TaskStatus;
-use App\Models\{ExternalReference, Organization, PluginSetting, Project, Task};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\{Organization, PluginSetting};
+use App\Models\Project\{Project, Task};
 use App\Plugins\Github\Api\GithubClientFactory;
 use App\Plugins\Github\GithubPlugin;
 use App\Plugins\Github\Services\GithubIssueImporter;
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\FakePluginHttp;

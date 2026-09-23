@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Services\Import\Specs;
 
 use App\Enums\Import\ImportErrorCode;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Import\ImportOutcome;
 use App\Services\Import\Specs\ScheduledShiftSpec;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -8,10 +8,10 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace Database\Factories;
+namespace Database\Factories\Platform;
 
 use App\Enums\Backup\RestoreTestResult;
-use App\Models\RestoreTest;
+use App\Models\Platform\RestoreTest;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

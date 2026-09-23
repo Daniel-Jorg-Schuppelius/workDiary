@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry, Project, TimeEntry, User};
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Plugins\Clockify\Services\ClockifyOutboxDispatcher;
 use App\Plugins\Kimai\Services\KimaiOutboxDispatcher;
 use App\Plugins\OpenProject\Services\OpenProjectOutboxDispatcher;

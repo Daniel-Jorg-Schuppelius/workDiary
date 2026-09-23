@@ -12,8 +12,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\Diary\{Priority, Status as DiaryStatus};
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SaveEntryTypeRequest;
-use App\Models\EntryType;
+use App\Http\Requests\Classification\SaveEntryTypeRequest;
+use App\Models\Classification\EntryType;
 use App\Support\{Setting, SortableQuery};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;

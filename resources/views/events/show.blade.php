@@ -12,7 +12,7 @@
 @section('nav-title', $event->title)
 
 @php
-    /** @var \App\Models\Event $event */
+    /** @var \App\Models\Calendar\Event $event */
 @endphp
 
 @section('content')

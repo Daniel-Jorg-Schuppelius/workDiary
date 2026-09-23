@@ -11,7 +11,7 @@
 namespace App\Plugins\Lexoffice;
 
 use App\Enums\Numbering\NumberScope;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Numbering\{NumberAuthority, NumberSequenceService};
 
 /**

@@ -12,7 +12,8 @@ namespace App\Services\Invoicing;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Contract\Contract;
-use App\Models\{Customer, Invoice, InvoiceSchedule, InvoiceScheduleRun};
+use App\Models\Customer\Customer;
+use App\Models\{Invoice, InvoiceSchedule, InvoiceScheduleRun};
 use App\Services\Finance\BillingModeResolver;
 use App\Services\Notification\NotificationDispatcher;
 use Carbon\{Carbon, CarbonInterface};
@@ -164,7 +165,7 @@ class RecurringInvoiceService {
     private function createDraft(InvoiceSchedule $schedule, Carbon $periodStart, Carbon $periodEnd): Invoice {
         /** @var Customer $customer */
         $customer = $schedule->customer;
-        /** @var \App\Models\Organization $organization */
+        /** @var \App\Models\Platform\Organization $organization */
         $organization = $customer->organization()->firstOrFail();
         $tax = app(TaxResolver::class)->resolve($organization, $customer);
 

@@ -11,8 +11,8 @@
 namespace App\Models\Safety;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Platform\User;
 use App\Models\Training\{TrainingCourse, TrainingCourseVersion};
-use App\Models\User;
 use Database\Factories\Safety\SafetyInstructionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};

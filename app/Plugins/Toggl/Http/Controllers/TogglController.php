@@ -11,7 +11,9 @@
 namespace App\Plugins\Toggl\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem, Organization, TimeEntry};
+use App\Models\Integration\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem};
+use App\Models\Platform\Organization;
+use App\Models\TimeEntry;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Toggl\Services\TogglUserMappingService;
 use App\Plugins\Toggl\Sources\{ApiWorkspaceSource, TogglApiClient, TogglCsvParser, TogglWorkspaceReader};
@@ -64,7 +66,7 @@ class TogglController extends Controller {
         if ($singleUserMode && $organization instanceof Organization) {
             $defaultUserId = is_numeric($config['default_user_id']) ? (int) $config['default_user_id'] : null;
             $defaultUser = $defaultUserId !== null
-                ? \App\Models\User::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereKey($defaultUserId)->first()
+                ? \App\Models\Platform\User::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereKey($defaultUserId)->first()
                 : null;
             $defaultUserName = $defaultUser->name
                 ?? $organization->owner->name

@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Register;
 
 use App\Enums\Reselling\{BillingFrequency, ImportStatus, RenewalMode, SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
-use App\Models\{LexofficeArticle, Organization, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Models\Reselling\{CompanyMapping, ResaleImport, ResalePeriod, ResalePriceEntry, ResaleSubscription};
 use App\Services\Reselling\Marketplace\{GenericSubscriptionReader, MarketplaceEntitlement, MarketplacePurchasesReader, ProductNameMatcher, PurchasesImport, PurchasesImportMerger, QualityHostingContractsReader, QualityHostingPriceListReader, UnitPriceCatalog};
 use App\Support\Query\DateRange;

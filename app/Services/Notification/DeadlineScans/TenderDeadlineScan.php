@@ -14,7 +14,7 @@ namespace App\Services\Notification\DeadlineScans;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Applications\ApplicationOpportunity;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Notification\NotificationDispatcher;
 use Closure;
 use Illuminate\Support\Carbon;

@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Policies;
 
 use App\Enums\Shift\DutyPlanStatus;
-use App\Models\{DutyPlan, Organization, User};
+use App\Models\DutyPlan;
+use App\Models\Platform\{Organization, User};
 use App\Policies\DutyPlanPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;

@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers\Concerns;
 
-use App\Models\{User, UserGroup};
+use App\Models\Platform\{User, UserGroup};
 use Illuminate\Support\Collection;
 use Spatie\Permission\Contracts\Role as RoleContract;
 use Spatie\Permission\Models\Role;

@@ -11,7 +11,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Models\{Qualification, User};
+use App\Models\Platform\User;
+use App\Models\Qualification;
 use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};

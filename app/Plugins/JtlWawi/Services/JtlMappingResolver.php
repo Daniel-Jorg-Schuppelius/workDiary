@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\JtlWawi\Services;
 
-use App\Models\{ArticleVariant, ExternalArticleMapping, JtlConnection, JtlWarehouseMapping, Warehouse};
+use App\Models\{ArticleVariant, Warehouse};
+use App\Models\Integration\ExternalArticleMapping;
+use App\Models\Plugins\JtlWawi\{JtlConnection, JtlWarehouseMapping};
 use App\Plugins\JtlWawi\JtlWawiPlugin;
 use RuntimeException;
 

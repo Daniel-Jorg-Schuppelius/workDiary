@@ -11,11 +11,11 @@
     use App\Enums\Task\TaskPriority;
     use App\Enums\Task\TaskStatus;
     /**
-     * @var \App\Models\Project $project
-     * @var \App\Models\Task|null $task
-     * @var \Illuminate\Support\Collection<int, \App\Models\Milestone> $milestones
-     * @var \Illuminate\Support\Collection<int, \App\Models\Task> $parentTasks
-     * @var \Illuminate\Support\Collection<int, \App\Models\User> $users
+     * @var \App\Models\Project\Project $project
+     * @var \App\Models\Project\Task|null $task
+     * @var \Illuminate\Support\Collection<int, \App\Models\Project\Milestone> $milestones
+     * @var \Illuminate\Support\Collection<int, \App\Models\Project\Task> $parentTasks
+     * @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users
      * @var int|null $preselectedParentId
      * @var bool $isDialog
      */
@@ -87,7 +87,7 @@
 
             <div class="fieldset md:col-span-2">
                 <span class="fieldset-label">{{ __('Bearbeiter') }}</span>
-                @php($selectedAssignees = (array) old('assignee_ids', array_map(fn($id) => \App\Support\Sqid::encode(\App\Models\User::class, $id), $assigneeIds ?? [])))
+                @php($selectedAssignees = (array) old('assignee_ids', array_map(fn($id) => \App\Support\Sqid::encode(\App\Models\Platform\User::class, $id), $assigneeIds ?? [])))
                 <x-user-checklist
                     name="assignee_ids"
                     :users="$users"
@@ -146,7 +146,7 @@
                     <x-select-field name="milestone_id" :label="__('Milestone')">
                         <option value="">{{ __('Kein Milestone') }}</option>
                         @foreach ($milestones as $ms)
-                            <option value="{{ $ms->sqid }}" @selected((string) old('milestone_id', \App\Support\Sqid::encode(\App\Models\Milestone::class, $task?->milestone_id)) === $ms->sqid)>{{ $ms->title }}</option>
+                            <option value="{{ $ms->sqid }}" @selected((string) old('milestone_id', \App\Support\Sqid::encode(\App\Models\Project\Milestone::class, $task?->milestone_id)) === $ms->sqid)>{{ $ms->title }}</option>
                         @endforeach
                     </x-select-field>
                 @endif
@@ -156,7 +156,7 @@
                         <option value="">{{ __('Keine') }}</option>
                         @foreach ($parentTasks as $pt)
                             <option value="{{ $pt->sqid }}"
-                                @selected((string) old('parent_task_id', \App\Support\Sqid::encode(\App\Models\Task::class, $task?->parent_task_id ?? $preselectedParentId)) === $pt->sqid)>
+                                @selected((string) old('parent_task_id', \App\Support\Sqid::encode(\App\Models\Project\Task::class, $task?->parent_task_id ?? $preselectedParentId)) === $pt->sqid)>
                                 {{ $pt->title }}
                             </option>
                         @endforeach

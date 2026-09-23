@@ -14,7 +14,8 @@ namespace Tests\Feature\Ai;
 
 use App\Enums\Ai\AiMemoryEntryType;
 use App\Models\Ai\AiMemoryEntry;
-use App\Models\{Customer, Organization};
+use App\Models\Customer\Customer;
+use App\Models\Platform\Organization;
 use App\Services\Ai\AiMemoryService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

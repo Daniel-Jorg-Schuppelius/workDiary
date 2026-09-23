@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Isms;
 use App\Enums\Isms\{IncidentSeverity, SecurityIncidentCategory, SecurityIncidentStatus};
 use App\Http\Controllers\Controller;
 use App\Models\Isms\{IsmsControl, IsmsRisk, IsmsSecurityIncident};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Isms\SecurityIncidentService;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};

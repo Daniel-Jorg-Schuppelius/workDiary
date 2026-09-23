@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Media;
 
-use App\Models\Attachment;
+use App\Models\Attachments\Attachment;
 use App\Models\Media\MediaRendition;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Support\Facades\Storage;

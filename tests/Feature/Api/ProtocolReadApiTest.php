@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Api;
 
 use App\Enums\Protocol\{ProtocolSignatureMethod, ProtocolSignatureRole, ProtocolType};
-use App\Models\{Organization, Protocol, ProtocolSignature, ProtocolSignatureToken, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\{Protocol, ProtocolSignature, ProtocolSignatureToken};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\WithOrganization;

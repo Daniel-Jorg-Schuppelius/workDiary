@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api;
 
-use App\Models\{Expense, ScheduledShift, SickLeave, User, Vacation};
+use App\Models\{Expense, ScheduledShift, SickLeave, Vacation};
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\WithOrganization;

@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Isms;
 
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Classification\BranchProfileInstaller;
 use App\Services\Isms\{AssessmentSnapshotService, ConformityService, ScopeService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

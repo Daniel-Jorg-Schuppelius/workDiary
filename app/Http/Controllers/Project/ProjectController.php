@@ -8,17 +8,24 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Project;
 
 use App\Enums\Project\ProjectStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
-use App\Http\Requests\SaveProjectRequest;
-use App\Models\{DiaryEntry, LexofficeArticle, Project, RecurrenceRule, Task, Team, User};
+use App\Http\Requests\Project\SaveProjectRequest;
+use App\Models\DiaryEntry;
+use App\Models\Project\Project\Project;
+use App\Models\Project\Project\RecurrenceRule;
+use App\Models\Project\Project\Task;
+use App\Models\Platform\Team;
+use App\Models\Platform\User;
+use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 class ProjectController extends Controller {
     use ResolvesGlobalDateRange;
@@ -172,11 +179,11 @@ class ProjectController extends Controller {
         match ($timeSort) {
             // Relations-Spalten über korrelierte Subqueries sortieren.
             'user' => $timeEntriesQuery->orderBy(
-                \App\Models\User::query()->select('name')->whereColumn('users.id', 'time_entries.user_id'),
+                \App\Models\Platform\User::query()->select('name')->whereColumn('users.id', 'time_entries.user_id'),
                 $timeDir,
             ),
             'task' => $timeEntriesQuery->orderBy(
-                \App\Models\Task::query()->select('title')->whereColumn('tasks.id', 'time_entries.task_id'),
+                \App\Models\Project\Project\Task::query()->select('title')->whereColumn('tasks.id', 'time_entries.task_id'),
                 $timeDir,
             ),
             'minutes', 'description', 'date' => $timeEntriesQuery->orderBy($timeSort, $timeDir),
@@ -370,7 +377,7 @@ class ProjectController extends Controller {
      * Berechnet die Zeitstrahl-Daten (Achse in Wochen, Balken in Prozent-Offsets).
      *
      * @param  Collection<int, Task>  $tasks
-     * @param  Collection<int, \App\Models\Milestone>  $milestones
+     * @param  Collection<int, \App\Models\Project\Project\Milestone>  $milestones
      * @return array<string, mixed>
      */
     private function buildTimeline(Collection $tasks, Collection $milestones, Project $project): array {

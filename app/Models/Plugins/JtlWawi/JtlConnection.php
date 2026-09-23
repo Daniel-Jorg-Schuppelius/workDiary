@@ -12,7 +12,7 @@ namespace App\Models\Plugins\JtlWawi;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization};
 use App\Models\Concerns\HasPrivateNetworkOptIn;
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

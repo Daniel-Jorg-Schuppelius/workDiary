@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Finance;
 
 use App\Enums\Finance\{DatevBatchStatus, GobdExportStatus};
+use App\Models\Audit\GobdExport;
 use App\Models\Finance\DatevBookingBatch;
-use App\Models\{GobdExport, Invoice, Organization, User};
+use App\Models\Invoice;
+use App\Models\Platform\{Organization, User};
 use App\Services\Finance\Gdpdu\{
     BookingBatchItemsSection,
     BookingBatchesSection,

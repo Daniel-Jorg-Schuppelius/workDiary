@@ -12,7 +12,7 @@ namespace Tests\Feature\Crisis;
 
 use App\Enums\User\UserRole;
 use App\Models\Crisis\{CrisisCase, CrisisDeadlineTemplate, CrisisRole};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Crisis\{CrisisAlertService, CrisisDeadlineService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;

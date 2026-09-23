@@ -14,7 +14,8 @@ namespace App\Http\Controllers\CustomerPortal;
 
 use App\Enums\Reselling\PeriodStatus;
 use App\Http\Controllers\Controller;
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use App\Services\Reselling\Register\PeriodPlanner;
 use Carbon\CarbonImmutable;

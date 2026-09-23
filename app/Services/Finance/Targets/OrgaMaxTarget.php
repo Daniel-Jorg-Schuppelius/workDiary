@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Finance\Targets;
 
 use App\Enums\Finance\{TransferChannel, TransferTarget};
-use App\Models\{ExternalReference, OrgaMaxConnection};
 use App\Models\Finance\BillingTransfer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Plugins\OrgaMax\OrgaMaxConnection;
 use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Services\Finance\BillingPositionBuilder;

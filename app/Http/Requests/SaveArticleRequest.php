@@ -27,10 +27,10 @@ class SaveArticleRequest extends BaseFormRequest {
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'default_procedure_template_version_id' => \App\Models\ProcedureTemplateVersion::class,
-        'tag_ids' => \App\Models\Tag::class,
+        'tag_ids' => \App\Models\Classification\Tag::class,
         'product_id' => \App\Models\Product::class,
         // W3.3: Rabattgruppe kam bisher als rohe ID aus dem Dialog.
-        'sales_discount_group_id' => \App\Models\SalesDiscountGroup::class,
+        'sales_discount_group_id' => \App\Models\Sales\SalesDiscountGroup::class,
     ];
 
     /** @var list<string> */
@@ -108,7 +108,7 @@ class SaveArticleRequest extends BaseFormRequest {
     private function currentOrganizationId(): ?int {
         if (app()->bound('currentOrganization')) {
             $organization = app('currentOrganization');
-            if ($organization instanceof \App\Models\Organization) {
+            if ($organization instanceof \App\Models\Platform\Organization) {
                 return (int) $organization->id;
             }
         }

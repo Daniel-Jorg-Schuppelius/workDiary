@@ -11,7 +11,7 @@
 namespace App\Services\Payroll;
 
 use App\Enums\User\EmploymentType;
-use App\Models\User;
+use App\Models\Platform\User;
 use CommonToolkit\Helper\Data\NumberHelper;
 
 /**

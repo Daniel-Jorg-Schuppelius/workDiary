@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Search;
 
-use App\Models\SearchSynonymGroup;
+use App\Models\Search\SearchSynonymGroup;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

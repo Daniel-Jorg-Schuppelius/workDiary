@@ -14,7 +14,7 @@ namespace App\Models\Club;
 
 use App\Enums\Club\ClubAttendanceStatus;
 use App\Models\Concerns\BelongsToOrganization;
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

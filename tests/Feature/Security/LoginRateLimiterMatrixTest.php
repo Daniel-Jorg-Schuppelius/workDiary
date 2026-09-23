@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Security;
 
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Testing\TestResponse;

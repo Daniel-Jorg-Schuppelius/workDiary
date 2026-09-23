@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\Mirror;
 
-use App\Models\{Document, Invoice, Protocol};
+use App\Models\Document\Document;
+use App\Models\{Invoice, Protocol};
 use App\Plugins\Support\Mirror\Observers\{MirrorDocumentObserver, MirrorInvoiceObserver, MirrorProtocolObserver};
 
 /**

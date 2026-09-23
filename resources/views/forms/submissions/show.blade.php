@@ -11,7 +11,7 @@
   Anzeige läuft IMMER gegen fields_snapshot — nie gegen die Vorlage.
 --}}
 @php
-    /** @var \App\Models\FormSubmission $submission */
+    /** @var \App\Models\Form\FormSubmission $submission */
     $values = (array) $submission->values;
 @endphp
 <!DOCTYPE html>

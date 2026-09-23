@@ -11,7 +11,8 @@
 namespace Tests\Feature\Procurement;
 
 use App\Enums\Procurement\PurchaseOrderStatus;
-use App\Models\{Article, ArticleVariant, PurchaseOrder, Supplier, User, Warehouse};
+use App\Models\{Article, ArticleVariant, PurchaseOrder, Supplier, Warehouse};
+use App\Models\Platform\User;
 use App\Services\Procurement\{GoodsReceiptService, PurchaseOrderService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

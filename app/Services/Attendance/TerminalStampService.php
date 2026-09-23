@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Attendance;
 
 use App\Enums\Attendance\AttendanceSource;
-use App\Models\{AttendanceTerminal, ExternalReference, User, UserBadge};
+use App\Models\AttendanceTerminal;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\{User, UserBadge};
 use Illuminate\Support\Carbon;
 use Throwable;
 

@@ -15,7 +15,8 @@ namespace App\Http\Requests\Product;
 use App\Enums\Product\ProductStatus;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\{Classification, Product};
+use App\Models\Classification\Classification;
+use App\Models\Product;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
 

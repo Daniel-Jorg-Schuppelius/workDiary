@@ -12,7 +12,12 @@ namespace Tests\Feature\Invoicing;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Mail\DocumentMail;
-use App\Models\{Article, ArticleVariant, AuditLog, Customer, DocumentDispatch, InvoiceMailTemplate, PurchaseOrder, Quote, StockDelivery, Supplier, User, Warehouse};
+use App\Models\{Article, ArticleVariant, InvoiceMailTemplate, PurchaseOrder, StockDelivery, Supplier, Warehouse};
+use App\Models\Audit\AuditLog;
+use App\Models\Customer\Customer;
+use App\Models\Document\DocumentDispatch;
+use App\Models\Platform\User;
+use App\Models\Sales\Quote;
 use App\Services\Inventory\InventoryLedger;
 use App\Services\Invoicing\QuoteService;
 use App\Services\Manufacturing\{DeliveryService, ManufacturingOrderService};

@@ -39,8 +39,8 @@ class PublicProtocolSignatureController extends Controller {
         // Org-Kontext aus dem Protokoll binden, damit Anzeige-Zeitzone (Tz)
         // korrekt aufgelöst wird statt auf den globalen Fallback zu fallen.
         if (! empty($protocol->organization_id)) {
-            $org = \App\Models\Organization::query()->withoutGlobalScopes()->find($protocol->organization_id);
-            if ($org instanceof \App\Models\Organization) {
+            $org = \App\Models\Platform\Organization::query()->withoutGlobalScopes()->find($protocol->organization_id);
+            if ($org instanceof \App\Models\Platform\Organization) {
                 // Gesperrter Mandant: auch der Unterschriften-Link endet hier
                 // (tenant-status-1).
                 $this->assertTenantPublicSurfacesAvailable($org);
@@ -150,10 +150,10 @@ class PublicProtocolSignatureController extends Controller {
      * Bisherige Rückfragen zu diesem Vorgang — strikt auf den Vorgang des
      * Tokens beschränkt (keine fremden/internen Inhalte). Frage + Antwort.
      *
-     * @return \Illuminate\Support\Collection<int, \App\Models\CustomerQuery>
+     * @return \Illuminate\Support\Collection<int, \App\Models\Customer\CustomerQuery>
      */
     private function queriesForToken(\App\Models\ProtocolSignatureToken $record): \Illuminate\Support\Collection {
-        return \App\Models\CustomerQuery::query()
+        return \App\Models\Customer\CustomerQuery::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $record->protocol?->organization_id)
             ->where('signature_token_id', $record->id)

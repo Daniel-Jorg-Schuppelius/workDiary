@@ -8,15 +8,16 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Classification;
 
 use App\Http\Controllers\Concerns\ParsesIndexQuery;
-use App\Http\Requests\SaveActivityCategoryRequest;
-use App\Models\ActivityCategory;
+use App\Http\Requests\Classification\SaveActivityCategoryRequest;
+use App\Models\Classification\Classification\ActivityCategory;
 use App\Support\Setting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 class ActivityCategoryController extends Controller {
     use ParsesIndexQuery;

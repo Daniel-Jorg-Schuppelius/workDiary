@@ -10,14 +10,15 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Project;
 
 use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesCurrentOrganization};
-use App\Http\Requests\SaveTaskRequest;
-use App\Models\Task;
+use App\Http\Requests\Project\SaveTaskRequest;
+use App\Models\Project\Project\Task;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 class GlobalTaskController extends Controller {
     use ParsesIndexQuery;

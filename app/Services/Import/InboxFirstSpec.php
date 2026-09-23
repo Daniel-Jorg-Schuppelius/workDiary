@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Import;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 
 /**
  * Markiert eine {@see EntitySpec}, die den Import-Modus „Inbox-First" unterstützt:

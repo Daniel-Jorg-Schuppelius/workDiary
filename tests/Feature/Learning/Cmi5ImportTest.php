@@ -12,7 +12,7 @@ namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\LearningUnitKind;
 use App\Models\Learning\{LearningCmi5Package, LearningCmi5Unit, LearningUnit};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningCmi5Service, LearningCourseService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

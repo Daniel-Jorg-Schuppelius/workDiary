@@ -11,7 +11,8 @@
 namespace App\Services\TimeApproval;
 
 use App\Enums\Attendance\AttendanceStatus;
-use App\Models\{Attendance, User};
+use App\Models\Attendance;
+use App\Models\Platform\User;
 use App\Services\Flextime\FlexCalculator;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;

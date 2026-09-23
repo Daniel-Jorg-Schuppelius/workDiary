@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Privacy;
 
 use App\Exceptions\Privacy\LegalHoldException;
-use App\Models\{Customer, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\LegalHold;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;

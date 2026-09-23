@@ -21,7 +21,7 @@ class SaveSickLeaveRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'user_id' => \App\Models\User::class,
+        'user_id' => \App\Models\Platform\User::class,
         'follow_up_for_id' => \App\Models\SickLeave::class,
     ];
 

@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins\Msgraph;
 
-use App\Models\{PluginSetting, User};
+use App\Models\Platform\{PluginSetting, User};
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Sharepoint\SharepointConfig;
 use Illuminate\Foundation\Testing\RefreshDatabase;

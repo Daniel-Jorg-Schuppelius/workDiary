@@ -14,7 +14,8 @@ namespace App\Plugins\JtlWawi\Services;
 
 use App\Contracts\Inventory\InventoryProvider;
 use App\Enums\Inventory\{ProviderCapability, StockState};
-use App\Models\{ArticleVariant, Organization, StockMovement, Warehouse};
+use App\Models\{ArticleVariant, StockMovement, Warehouse};
+use App\Models\Platform\Organization;
 use App\Services\Inventory\{InventoryLedger, StockPosting};
 
 /**

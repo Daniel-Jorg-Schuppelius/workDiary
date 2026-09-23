@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\CalDav\Services;
 
-use App\Models\{Event, Organization};
+use App\Models\Calendar\Event;
+use App\Models\Platform\Organization;
 use App\Plugins\CalDav\Contracts\CalendarSource;
 use App\Services\Event\IcsFeedService;
 

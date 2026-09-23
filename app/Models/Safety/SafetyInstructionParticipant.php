@@ -13,7 +13,7 @@ namespace App\Models\Safety;
 use App\Casts\IpAddressCast;
 use App\Enums\Safety\InstructionSignatureMethod;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use CommonToolkit\ValueObjects\IpAddress;
 use Database\Factories\Safety\SafetyInstructionParticipantFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};

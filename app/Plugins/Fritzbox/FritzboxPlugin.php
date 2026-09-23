@@ -88,7 +88,7 @@ class FritzboxPlugin extends AbstractPlugin {
         $config = FritzboxConfig::resolve((int) $org->id);
 
         if ($config['default_user_id'] !== null) {
-            $userExists = \App\Models\User::query()
+            $userExists = \App\Models\Platform\User::query()
                 ->whereKey($config['default_user_id'])
                 ->where('organization_id', $org->id)
                 ->exists();
@@ -97,7 +97,7 @@ class FritzboxPlugin extends AbstractPlugin {
             }
         }
 
-        $mailIntake = \App\Models\EmailConnection::query()
+        $mailIntake = \App\Models\Mail\EmailConnection::query()
             ->where('organization_id', $org->id)
             ->where('callreport_intake', true)
             ->exists();

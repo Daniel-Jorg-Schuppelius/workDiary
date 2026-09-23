@@ -33,6 +33,7 @@ final class PlatformManifest extends Manifest {
     /** @return list<string> */
     public function folders(): array {
         return [
+            'Platform',
             'Org',
             'Users',
             'Install',

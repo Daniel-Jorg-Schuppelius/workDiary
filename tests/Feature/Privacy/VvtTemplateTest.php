@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Privacy;
 
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\ProcessingActivity;
 use App\Services\Privacy\{DataProtectionPermissions, ProcessingActivityService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

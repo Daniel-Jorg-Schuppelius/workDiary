@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
-use App\Models\{ManufacturingOrder, Organization, User};
+use App\Models\ManufacturingOrder;
+use App\Models\Platform\{Organization, User};
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 
 /**

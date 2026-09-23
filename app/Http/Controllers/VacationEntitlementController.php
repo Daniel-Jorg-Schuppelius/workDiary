@@ -12,7 +12,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Models\{Organization, User, VacationEntitlement};
+use App\Models\Platform\{Organization, User};
+use App\Models\VacationEntitlement;
 use App\Services\Absence\VacationBalanceService;
 use App\Support\{LookupCache, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};

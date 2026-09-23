@@ -11,7 +11,10 @@
 namespace Tests\Feature\CustomerPortal;
 
 use App\Enums\Protocol\ProtocolVisibility;
-use App\Models\{Asset, Attachment, AttachmentConfirmation, Customer, CustomerQuery, DiaryEntry, Protocol, User};
+use App\Models\{Asset, DiaryEntry, Protocol};
+use App\Models\Attachments\{Attachment, AttachmentConfirmation};
+use App\Models\Customer\{Customer, CustomerQuery};
+use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -51,14 +54,14 @@ class CustomerPortalAssetsAndPhotosTest extends TestCase {
      */
     public function test_portal_shows_only_published_communication_notes(): void {
         $diary = $this->ownDiary();
-        \App\Models\CommunicationNote::factory()->create([
+        \App\Models\Communication\CommunicationNote::factory()->create([
             'organization_id' => $this->organization->id,
             'notable_type' => MorphMap::alias(DiaryEntry::class),
             'notable_id' => $diary->id,
             'subject' => 'Freigegebene Rückmeldung',
             'visibility' => \App\Enums\Communication\CommunicationVisibility::Customer->value,
         ]);
-        \App\Models\CommunicationNote::factory()->create([
+        \App\Models\Communication\CommunicationNote::factory()->create([
             'organization_id' => $this->organization->id,
             'notable_type' => MorphMap::alias(DiaryEntry::class),
             'notable_id' => $diary->id,

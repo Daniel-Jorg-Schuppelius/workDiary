@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Helpdesk;
 
-use App\Models\{Organization, ServiceQueue, ServiceTicket, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\{ServiceQueue, ServiceTicket};
 use App\Services\Licensing\FeatureFlagResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -57,7 +58,7 @@ final class HelpdeskFoundationTest extends TestCase {
         $this->assertTrue(app(FeatureFlagResolver::class)->isEnabled('module.service_desk'));
 
         // Basis-Modul per Org-Override deaktiviert → abhängiges Modul fällt mit.
-        \App\Models\LicenseFlagOverride::query()->create([
+        \App\Models\Platform\LicenseFlagOverride::query()->create([
             'organization_id' => $this->org->id,
             'flag' => 'module.helpdesk',
             'disabled_at' => now(),
@@ -139,7 +140,7 @@ final class HelpdeskFoundationTest extends TestCase {
 
     /** B1/MVP-007: das Queue-Formular sendet Sqids (Konvention: Sqid in Formularen). */
     public function test_queue_store_accepts_sqid_references(): void {
-        $team = \App\Models\Team::query()->create([
+        $team = \App\Models\Platform\Team::query()->create([
             'organization_id' => $this->org->id,
             'name' => 'Support',
         ]);

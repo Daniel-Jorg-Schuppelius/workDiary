@@ -14,7 +14,8 @@ namespace App\Services\Inventory;
 
 use App\Contracts\Inventory\InventoryValuationStrategy;
 use App\Enums\Inventory\ValuationMethod;
-use App\Models\{ArticleVariant, Organization};
+use App\Models\ArticleVariant;
+use App\Models\Platform\Organization;
 
 /**
  * Wählt die aktive Bewertungsstrategie je Organisation (Feature 048, E3):

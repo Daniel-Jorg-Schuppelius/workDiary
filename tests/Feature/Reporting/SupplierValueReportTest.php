@@ -11,7 +11,10 @@
 namespace Tests\Feature\Reporting;
 
 use App\Http\Controllers\Reporting\SupplierValueReportController;
-use App\Models\{AuditLog, LexofficeVoucher, Supplier, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\User;
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
+use App\Models\Supplier;
 use App\Services\Reporting\SupplierValueReportBuilder;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;

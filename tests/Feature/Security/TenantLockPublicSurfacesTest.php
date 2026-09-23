@@ -11,7 +11,8 @@
 namespace Tests\Feature\Security;
 
 use App\Enums\Organization\TenantStatus;
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Services\Invoicing\QuoteService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

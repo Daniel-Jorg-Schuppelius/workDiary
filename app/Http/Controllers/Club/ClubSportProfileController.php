@@ -16,7 +16,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Club\SaveSportProfileRequest;
 use App\Models\Club\ClubSportProfile;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Club\{ClubStarterPackService, ClubTeamService};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;

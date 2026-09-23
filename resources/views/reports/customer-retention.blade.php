@@ -18,7 +18,7 @@
         $standardFilters->toQueryParams(),
     ));
     $customerLink = fn (int $id): string => route('reports.customer-project', array_merge($standardFilters->toQueryParams(), [
-        'customer' => \App\Support\Sqid::encode(\App\Models\Customer::class, $id),
+        'customer' => \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $id),
     ]));
     $pct = fn (?float $v): string => $v === null ? '–' : \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 1) . ' %';
 @endphp

@@ -10,7 +10,8 @@
 
 namespace App\Services\Attachments;
 
-use App\Models\{Attachment, Organization, User};
+use App\Models\Attachments\Attachment;
+use App\Models\Platform\{Organization, User};
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{Auth, Storage};

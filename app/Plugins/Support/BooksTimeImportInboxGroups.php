@@ -12,7 +12,11 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support;
 
-use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, IntegrationInboxItem, Organization, Project, TimeEntry, User};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Integration\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem};
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Support\Collection;

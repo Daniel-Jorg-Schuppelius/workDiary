@@ -14,7 +14,8 @@ namespace App\Services\Ideas;
 
 use App\Enums\Ideas\{IdeaMapVisibility, IdeaShareRole};
 use App\Enums\Notification\NotificationEvent;
-use App\Models\{IdeaMap, IdeaMapShare, Organization, Team, User};
+use App\Models\Ideas\{IdeaMap, IdeaMapShare};
+use App\Models\Platform\{Organization, Team, User};
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

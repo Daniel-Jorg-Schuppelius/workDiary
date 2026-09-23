@@ -13,7 +13,7 @@ namespace Tests\Feature\Club;
 use App\Enums\Club\{ClubCriteriaResult, ClubGroupMembershipStatus, ClubProposalStatus};
 use App\Enums\User\UserRole;
 use App\Models\Club\{ClubGroup, ClubGroupChangeProposal, ClubGroupMembership, ClubMember};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Club\ClubGroupService;
 use App\Services\Notification\DeadlineScans\{ClubGroupCriteriaScan, DeadlineScanOptions};
 use App\Services\Notification\NotificationDispatcher;

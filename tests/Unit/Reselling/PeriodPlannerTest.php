@@ -142,7 +142,7 @@ class PeriodPlannerTest extends TestCase {
         [$proposed, $confirmed, $waived] = $subscription->periods()->get()->all();
         $link = static fn(ResalePeriod $p, float $months): ResalePeriodLink => ResalePeriodLink::query()->create([
             'organization_id' => $p->organization_id, 'period_id' => $p->id, 'subscription_id' => $p->subscription_id,
-            'linkable_type' => MorphMap::alias(\App\Models\LexofficeVoucherLine::class), 'linkable_id' => $p->id, 'voucher_number' => 'RE/' . $p->id, 'voucher_date' => $p->starts_on,
+            'linkable_type' => MorphMap::alias(\App\Models\Plugins\Lexoffice\LexofficeVoucherLine::class), 'linkable_id' => $p->id, 'voucher_number' => 'RE/' . $p->id, 'voucher_date' => $p->starts_on,
             'quantity' => 5, 'months' => $months, 'amount' => '1236.00', 'currency' => 'EUR', 'origin' => LinkOrigin::Proposed,
         ]);
         $link($proposed, 60.0);

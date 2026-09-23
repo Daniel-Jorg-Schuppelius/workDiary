@@ -11,7 +11,9 @@
 namespace Tests\Feature\Asset;
 
 use App\Enums\Asset\AssetOwnership;
-use App\Models\{Asset, DiaryEntry, MaterialUsage, Project, Timesheet, User};
+use App\Models\{Asset, DiaryEntry, MaterialUsage, Timesheet};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

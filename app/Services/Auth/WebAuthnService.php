@@ -14,7 +14,7 @@ namespace App\Services\Auth;
 
 use App\Enums\Auth\TwoFactorType;
 use App\Models\Auth\TwoFactorCredential;
-use App\Models\User;
+use App\Models\Platform\User;
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Symfony\Component\Serializer\SerializerInterface;

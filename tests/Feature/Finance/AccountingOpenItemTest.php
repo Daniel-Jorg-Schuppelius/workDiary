@@ -12,7 +12,9 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AccountType, OpenItemDirection, OpenItemStatus, PostingAccountRole, PostingSourceKind, ProfitDetermination, SettlementKind};
 use App\Models\Accounting\{AccountingAccount, AccountingOpenItem, AccountingOpenItemSettlement, AccountingPostingRule};
-use App\Models\{Customer, Invoice, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Invoice;
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService, OpenItemService};
 use App\Services\Accounting\Posting\{PostingInboxService, PostingSourceRegistry};
 use App\Support\MorphMap;

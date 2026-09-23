@@ -10,7 +10,8 @@
 
 namespace App\Legacy\Console\Commands;
 
-use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift, User};
+use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift};
+use App\Models\Platform\User;
 use CommonToolkit\Helper\Data\StringHelper as ToolkitStringHelper;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\{DB, Hash};

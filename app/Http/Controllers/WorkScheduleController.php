@@ -12,7 +12,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Requests\SaveWorkScheduleRequest;
-use App\Models\{User, WorkSchedule};
+use App\Models\Platform\User;
+use App\Models\WorkSchedule;
 use App\Services\Flextime\WorkScheduleResolver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Auth, Gate};

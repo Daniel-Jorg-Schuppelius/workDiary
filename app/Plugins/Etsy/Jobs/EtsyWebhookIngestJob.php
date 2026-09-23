@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Etsy\Jobs;
 
 use App\Jobs\Concerns\RetriesTransientFailures;
-use App\Models\{EtsyWebhookDelivery, Organization};
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Etsy\EtsyWebhookDelivery;
 use App\Plugins\Etsy\EtsyPlugin;
 use App\Plugins\Etsy\Services\EtsyReceiptImportService;
 use App\Support\OrganizationContext;

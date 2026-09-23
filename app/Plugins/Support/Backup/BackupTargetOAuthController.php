@@ -14,7 +14,7 @@ use APIToolkit\API\Authentication\OAuth2\OAuth2AuthorizationCodeGrant;
 use App\Enums\Backup\{BackupProvider, BackupTargetStatus};
 use App\Http\Controllers\Controller;
 use App\Models\Backup\BackupTargetConnection;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Plugins\Contracts\BackupTarget;
 use App\Plugins\PluginManager;
 use App\Plugins\Support\Concerns\HandlesOAuthPopup;

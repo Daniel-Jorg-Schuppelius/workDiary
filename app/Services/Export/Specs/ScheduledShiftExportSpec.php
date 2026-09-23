@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Export\Specs;
 
 use App\Enums\Export\ExportEntity;
-use App\Models\{Organization, ScheduledShift};
+use App\Models\Platform\Organization;
+use App\Models\ScheduledShift;
 use Illuminate\Database\Eloquent\Model;
 
 /**

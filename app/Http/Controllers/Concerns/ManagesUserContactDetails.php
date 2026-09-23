@@ -10,7 +10,8 @@
 
 namespace App\Http\Controllers\Concerns;
 
-use App\Models\{ContactAddress, User};
+use App\Models\Contacts\ContactAddress;
+use App\Models\Platform\User;
 
 /**
  * Gemeinsame Validierungsregeln und Persistenz für die erweiterten

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Reselling;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Models\Reselling\ResaleImport;
 use App\Services\Reselling\Register\MarketplaceImporter;
 use CommonToolkit\Helper\FileSystem\File;

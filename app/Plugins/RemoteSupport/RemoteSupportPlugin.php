@@ -10,7 +10,8 @@
 
 namespace App\Plugins\RemoteSupport;
 
-use App\Models\{Asset, Organization};
+use App\Models\Asset;
+use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, SlotRenderer, TimeImporter};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, TeamViewerClient};

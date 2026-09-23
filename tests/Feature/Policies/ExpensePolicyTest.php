@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Policies;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\{Expense, User};
+use App\Models\Expense;
+use App\Models\Platform\User;
 use App\Policies\ExpensePolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;

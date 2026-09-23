@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\Organization;
-use App\Services\{ProjectDuplicateFinder, ProjectMergeService};
+use App\Models\Platform\Organization;
+use App\Services\Stammdaten\{ProjectDuplicateFinder, ProjectMergeService};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
@@ -24,7 +24,7 @@ use Illuminate\Support\Collection;
  * Kunde + identischer Name); unscharfe Treffer (fuzzy) bleiben dem manuellen
  * Abgleich vorbehalten, sofern nicht ausdrücklich gewählt.
  *
- * @extends MergeDuplicatesCommand<\App\Models\Project>
+ * @extends MergeDuplicatesCommand<\App\Models\Project\Project>
  */
 class ProjectMergeDuplicatesCommand extends MergeDuplicatesCommand {
     protected $signature = 'project:merge-duplicates ' . self::ORGANIZATION_OPTION . '

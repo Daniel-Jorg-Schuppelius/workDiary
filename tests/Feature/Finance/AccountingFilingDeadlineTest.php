@@ -12,7 +12,7 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{FilingObligationKind, FilingObligationStatus, ProfitDetermination, VatFilingInterval};
 use App\Models\Accounting\AccountingFilingObligation;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, FiscalYearService, VatFilingProfileResolver};
 use App\Services\Accounting\Filing\{FilingDeadlineCalculator, FilingObligationService, VatFilingPeriodService};
 use App\Services\Accounting\Reports\DataQualityBuilder;
@@ -75,9 +75,9 @@ class AccountingFilingDeadlineTest extends TestCase {
     /** § 108 Abs. 3 AO: Ein Fristende am Wochenende rutscht auf Montag. */
     public function test_a_deadline_on_a_weekend_moves_to_the_next_business_day(): void {
         // 10.05.2026 ist ein Sonntag.
-        $this->assertSame('2026-05-11', app(\App\Services\HolidayService::class)->nextBusinessDay(CarbonImmutable::create(2026, 5, 10) ?? CarbonImmutable::now())->toDateString());
+        $this->assertSame('2026-05-11', app(\App\Services\Calendar\HolidayService::class)->nextBusinessDay(CarbonImmutable::create(2026, 5, 10) ?? CarbonImmutable::now())->toDateString());
         // 10.06.2026 ist ein Mittwoch und bleibt stehen.
-        $this->assertSame('2026-06-10', app(\App\Services\HolidayService::class)->nextBusinessDay(CarbonImmutable::create(2026, 6, 10) ?? CarbonImmutable::now())->toDateString());
+        $this->assertSame('2026-06-10', app(\App\Services\Calendar\HolidayService::class)->nextBusinessDay(CarbonImmutable::create(2026, 6, 10) ?? CarbonImmutable::now())->toDateString());
     }
 
     /** Die Dauerfristverlängerung schiebt die Voranmeldung um einen Monat. */

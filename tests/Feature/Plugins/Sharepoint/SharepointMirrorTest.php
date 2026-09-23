@@ -11,7 +11,11 @@
 namespace Tests\Feature\Plugins\Sharepoint;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
-use App\Models\{Document, DocumentVersion, ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry, Organization, SharepointConnection, User, WebdavConnection};
+use App\Models\Document\{Document, DocumentVersion};
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry};
+use App\Models\Platform\{Organization, User};
+use App\Models\Plugins\Sharepoint\SharepointConnection;
+use App\Models\Plugins\Webdav\WebdavConnection;
 use App\Plugins\Sharepoint\Api\SharepointDriveClient;
 use App\Plugins\Sharepoint\{SharepointMirrorTarget, SharepointPlugin};
 use App\Plugins\Support\Mirror\MirrorOutboxDispatcher;

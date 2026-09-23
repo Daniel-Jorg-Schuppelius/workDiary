@@ -13,9 +13,10 @@ declare(strict_types=1);
 namespace App\Services\B2bCatalog;
 
 use App\Enums\Diary\Status;
-use App\Models\Article;
+use App\Models\{Article, DiaryEntry};
 use App\Models\B2b\{B2bCatalogAccess, B2bOrder};
-use App\Models\{Customer, DiaryEntry, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
 use CommonToolkit\Helper\Data\{CryptoHelper, NumberHelper, VatNumberHelper};
 use ERechnungToolkit\Entities\Order;
 use ERechnungToolkit\Parsers\OpenTransOrderParser;

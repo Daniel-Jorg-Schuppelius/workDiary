@@ -12,8 +12,16 @@ namespace Tests\Feature\Tenant;
 
 use App\Enums\Auth\SsoProtocol;
 use App\Http\Controllers\Api\LocationController;
-use App\Models\{Attendance, CommunicationNote, CtiConnection, Customer, Organization, PluginSetting, ScimToken, SsoConnection, SsoIdentity, Task, TodoistConnection, TodoistWebhookDelivery, User, UserBadge, ZammadConnection};
+use App\Models\Attendance;
+use App\Models\Auth\{ScimToken, SsoConnection, SsoIdentity};
+use App\Models\Communication\CommunicationNote;
+use App\Models\Cti\CtiConnection;
+use App\Models\Customer\Customer;
 use App\Models\Location\{LocationDeviceToken, LocationPoint};
+use App\Models\Platform\{Organization, PluginSetting, User, UserBadge};
+use App\Models\Plugins\Todoist\{TodoistConnection, TodoistWebhookDelivery};
+use App\Models\Plugins\Zammad\ZammadConnection;
+use App\Models\Project\Task;
 use App\Plugins\Github\GithubPlugin;
 use App\Plugins\Gitlab\GitlabPlugin;
 use App\Plugins\Todoist\Jobs\TodoistWebhookSyncJob;
@@ -203,13 +211,13 @@ final class WebhookTenantTest extends TestCase {
         // Token von A gegen die Organisation von B: 404, nichts angestoßen.
         $this->postJson("/api/webhooks/lexoffice/{$this->orgB->id}/token-A", $payload)->assertNotFound();
         Queue::assertNothingPushed();
-        $this->assertSame(0, \App\Models\LexofficeWebhookDelivery::query()->count());
+        $this->assertSame(0, \App\Models\Plugins\Lexoffice\LexofficeWebhookDelivery::query()->count());
 
         // Eigenes Token: angenommen und der eigenen Organisation zugeschrieben.
         $this->postJson("/api/webhooks/lexoffice/{$this->orgB->id}/token-B", $payload)->assertOk();
         $this->assertSame(
             (int) $this->orgB->id,
-            (int) \App\Models\LexofficeWebhookDelivery::query()->firstOrFail()->organization_id,
+            (int) \App\Models\Plugins\Lexoffice\LexofficeWebhookDelivery::query()->firstOrFail()->organization_id,
         );
     }
 

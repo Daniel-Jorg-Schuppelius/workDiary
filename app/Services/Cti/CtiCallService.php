@@ -14,7 +14,10 @@ namespace App\Services\Cti;
 
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType};
 use App\Enums\Notification\NotificationEvent;
-use App\Models\{CtiConnection, Customer, ExternalReference, Organization, User};
+use App\Models\Cti\CtiConnection;
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\{Organization, User};
 use App\Notifications\GenericEventNotification;
 use App\Services\Communication\CommunicationNoteService;
 use App\Services\Contacts\PhoneNumberMatcher;

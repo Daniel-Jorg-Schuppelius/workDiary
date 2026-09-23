@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Concerns;
 
-use App\Models\{Organization, ScheduledShift};
+use App\Models\Platform\Organization;
+use App\Models\ScheduledShift;
 use App\Services\Compliance\{ComplianceReport, ShiftComplianceService};
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;

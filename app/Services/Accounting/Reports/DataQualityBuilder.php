@@ -14,7 +14,7 @@ namespace App\Services\Accounting\Reports;
 
 use App\Enums\Finance\{AccountingEntryStatus, RecurringRunStatus};
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingFilingObligation, AccountingRecurringRun};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;

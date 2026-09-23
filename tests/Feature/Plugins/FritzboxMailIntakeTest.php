@@ -10,7 +10,11 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Customer, EmailConnection, IntegrationInboxItem, PluginSetting, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Mail\EmailConnection;
+use App\Models\Platform\{PluginSetting, User};
+use App\Models\TimeEntry;
 use App\Plugins\Fritzbox\FritzboxPlugin;
 use App\Services\Mail\{MailAttachment, MailIntakeService, ParsedMessage};
 use Illuminate\Foundation\Testing\RefreshDatabase;

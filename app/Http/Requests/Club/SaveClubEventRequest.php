@@ -16,7 +16,8 @@ use App\Enums\Club\{ClubEventKind, ClubEventVisibility};
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Club\{ClubDepartment, ClubGroup};
-use App\Models\{Room, User};
+use App\Models\Platform\User;
+use App\Models\Room;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
 

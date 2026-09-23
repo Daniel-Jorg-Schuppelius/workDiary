@@ -16,7 +16,7 @@ use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\Project;
+use App\Models\Project\Project;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 use App\Services\Gaeb\HoaiCostReportService;
 use Illuminate\Contracts\View\View;

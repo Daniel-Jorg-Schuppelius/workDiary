@@ -8,9 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Policies;
+namespace App\Policies\Attachments;
 
-use App\Models\{Attachment, Organization, User};
+use App\Models\Attachments\Attachments\Attachment;
+use App\Models\Platform\Organization;
+use App\Models\Platform\User;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 use Illuminate\Support\Facades\Gate;
 

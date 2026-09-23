@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Integration\Profiles;
 
-use App\Models\{Organization, Project};
+use App\Models\Platform\Organization;
+use App\Models\Project\Project;
 use App\Services\Integration\Match\{AbstractMatchProfile, ExactField, FuzzyField, MatchStrategy};
 use Illuminate\Database\Eloquent\{Builder, Model};
 

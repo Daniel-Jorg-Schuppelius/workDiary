@@ -22,8 +22,8 @@ class SaveTimesheetEntryRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'task_id' => \App\Models\Task::class,
-        'tag_ids' => \App\Models\Tag::class,
+        'task_id' => \App\Models\Project\Task::class,
+        'tag_ids' => \App\Models\Classification\Tag::class,
     ];
 
     /**
@@ -123,16 +123,16 @@ class SaveTimesheetEntryRequest extends BaseFormRequest {
     }
 
     /** Der Stundenzettel gehört einem Mitarbeiter — für den gilt die Sperre. */
-    private function timesheetOwner(): ?\App\Models\User {
+    private function timesheetOwner(): ?\App\Models\Platform\User {
         $timesheet = $this->route('timesheet');
 
-        if ($timesheet instanceof \App\Models\Timesheet && $timesheet->user instanceof \App\Models\User) {
+        if ($timesheet instanceof \App\Models\Timesheet && $timesheet->user instanceof \App\Models\Platform\User) {
             return $timesheet->user;
         }
 
         $auth = \Illuminate\Support\Facades\Auth::user();
 
-        return $auth instanceof \App\Models\User ? $auth : null;
+        return $auth instanceof \App\Models\Platform\User ? $auth : null;
     }
 
 }

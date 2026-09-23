@@ -14,7 +14,7 @@ namespace App\Models\Plugins\Etsy;
 
 use App\Casts\MoneyCast;
 use App\Models\Concerns\BelongsToOrganization;
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

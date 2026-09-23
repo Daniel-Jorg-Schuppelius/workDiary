@@ -11,8 +11,9 @@
 namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\{LearningEnrollmentSource, LearningEnrollmentStatus, LearningProgressStatus};
-use App\Models\{ExternalParticipant, User};
+use App\Models\Communication\ExternalParticipant;
 use App\Models\Learning\{LearningCourse, LearningEnrollment};
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningCourseService, LearningEnrollmentService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
@@ -176,7 +177,7 @@ class LearningEnrollmentTest extends TestCase {
         $course = $this->releasedCourse();
         $user = $this->learner();
         $this->enrollments()->enroll($course, $user);
-        $this->organization->update(['plan' => \App\Models\Organization::PLAN_FREE]);
+        $this->organization->update(['plan' => \App\Models\Platform\Organization::PLAN_FREE]);
 
         $this->actingAs($user)
             ->get(route('learning.my.index'))

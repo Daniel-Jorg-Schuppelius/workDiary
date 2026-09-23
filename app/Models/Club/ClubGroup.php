@@ -14,7 +14,7 @@ namespace App\Models\Club;
 
 use App\Enums\Club\{ClubAdmissionMode, ClubGroupMembershipStatus, ClubProposalStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 use Database\Factories\Club\ClubGroupFactory;

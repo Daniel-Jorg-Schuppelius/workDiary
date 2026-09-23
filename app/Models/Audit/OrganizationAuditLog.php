@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Audit;
 
 use App\Models\Concerns\{HashChainable, HashChained};
 use Illuminate\Database\Eloquent\Model;

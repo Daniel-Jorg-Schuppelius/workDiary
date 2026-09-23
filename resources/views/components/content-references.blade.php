@@ -19,9 +19,9 @@
     $referenceTypes = app(\App\Services\Collections\CollectableTypes::class);
     $referenceService = app(\App\Services\Collections\ContentReferenceService::class);
     $referenceKey = $referenceTypes->keyFor($subject);
-    $mayReference = $referenceKey !== null && \Illuminate\Support\Facades\Gate::allows('create', \App\Models\ContentCollection::class);
-    $referencesOut = $referenceViewer instanceof \App\Models\User && $referenceKey !== null ? $referenceService->outgoing($subject, $referenceViewer) : [];
-    $referencesIn = $referenceViewer instanceof \App\Models\User ? $referenceService->backlinks($subject, $referenceViewer, (bool) $withoutKnowledgeLinks) : [];
+    $mayReference = $referenceKey !== null && \Illuminate\Support\Facades\Gate::allows('create', \App\Models\Knowledge\ContentCollection::class);
+    $referencesOut = $referenceViewer instanceof \App\Models\Platform\User && $referenceKey !== null ? $referenceService->outgoing($subject, $referenceViewer) : [];
+    $referencesIn = $referenceViewer instanceof \App\Models\Platform\User ? $referenceService->backlinks($subject, $referenceViewer, (bool) $withoutKnowledgeLinks) : [];
 @endphp
 
 @if ($mayReference || $referencesOut !== [] || $referencesIn !== [])
@@ -47,11 +47,11 @@
                             <x-icon :name="$row['icon']" class="text-muted" />
                             <a href="{{ $row['url'] }}" class="link link-hover truncate text-sm font-medium">{{ $row['title'] }}</a>
                             <x-status-badge tone="ghost" outline>{{ $row['label'] }}</x-status-badge>
-                            @if ($row['reference']->kind !== \App\Models\ContentReference::KIND_MENTIONED)
+                            @if ($row['reference']->kind !== \App\Models\Knowledge\ContentReference::KIND_MENTIONED)
                                 <x-status-badge tone="info" outline>{{ __('collections.references.kind.' . $row['reference']->kind) }}</x-status-badge>
                             @endif
                         </div>
-                        @if ($mayReference && $row['reference']->kind === \App\Models\ContentReference::KIND_MENTIONED)
+                        @if ($mayReference && $row['reference']->kind === \App\Models\Knowledge\ContentReference::KIND_MENTIONED)
                             <x-action-form :action="route('references.destroy', $row['reference'])" method="DELETE"
                                            data-confirm-title="{{ __('collections.references.action.remove') }}"
                                            :confirm="__('collections.references.confirm_remove')"
@@ -79,7 +79,7 @@
                                     @if ($row['context'] !== null)
                                         <span class="text-xs text-muted">{{ $row['context'] }}</span>
                                     @endif
-                                    @if ($row['kind'] !== \App\Models\ContentReference::KIND_MENTIONED)
+                                    @if ($row['kind'] !== \App\Models\Knowledge\ContentReference::KIND_MENTIONED)
                                         <x-status-badge tone="ghost" outline>{{ __('collections.references.kind.' . $row['kind']) }}</x-status-badge>
                                     @endif
                                 </li>

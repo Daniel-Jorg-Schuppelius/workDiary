@@ -8,9 +8,10 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Policies;
+namespace App\Policies\Audit;
 
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\Auth\PermissionPolicy;
 
 class AuditLogPolicy extends PermissionPolicy {
     use HasAdminBypass;

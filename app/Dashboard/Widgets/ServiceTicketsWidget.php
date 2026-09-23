@@ -16,7 +16,8 @@ use App\Dashboard\Widget;
 use App\Enums\Dashboard\WidgetGroup;
 use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Enums\User\Permission;
-use App\Models\{ServiceTicket, User};
+use App\Models\Platform\User;
+use App\Models\ServiceTicket;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
 

@@ -33,7 +33,7 @@
                 <div class="alert alert-warning text-sm">{{ __('sharepoint.not_configured_hint') }}</div>
             @endunless
 
-            @if ($connection && $connection->status === \App\Models\SharepointConnection::STATUS_ACTIVE)
+            @if ($connection && $connection->status === \App\Models\Plugins\Sharepoint\SharepointConnection::STATUS_ACTIVE)
                 <div class="flex flex-wrap gap-2">
                     @if ($connection->isActive())
                         <form method="POST" action="{{ route('admin.sharepoint.mirror') }}">
@@ -55,7 +55,7 @@
         </div>
 
         {{-- Ziel: Site + Dokumentbibliothek --}}
-        @if ($connection && $connection->status === \App\Models\SharepointConnection::STATUS_ACTIVE)
+        @if ($connection && $connection->status === \App\Models\Plugins\Sharepoint\SharepointConnection::STATUS_ACTIVE)
             <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-3">
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('sharepoint.target.heading') }}</h2>
                 <p class="text-sm text-muted">{{ __('sharepoint.target.help') }}</p>
@@ -146,7 +146,7 @@
                 <div class="form-control">
                     <span class="label-text">{{ __('sharepoint.field.sources') }}</span>
                     <div class="flex flex-wrap gap-4 pt-1">
-                        @foreach (\App\Models\SharepointConnection::SOURCES as $source)
+                        @foreach (\App\Models\Plugins\Sharepoint\SharepointConnection::SOURCES as $source)
                             <label class="label cursor-pointer justify-start gap-2">
                                 <input type="checkbox" name="sources[]" value="{{ $source }}" class="checkbox checkbox-sm"
                                        @checked(in_array($source, $currentSources, true))>

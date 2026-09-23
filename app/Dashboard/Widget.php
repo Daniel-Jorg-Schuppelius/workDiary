@@ -11,7 +11,7 @@
 namespace App\Dashboard;
 
 use App\Enums\Dashboard\{WidgetGroup, WidgetWidth};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Contracts\View\View;
 
 abstract class Widget {

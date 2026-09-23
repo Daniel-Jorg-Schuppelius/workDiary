@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Security;
 
-use App\Models\{SecurityAdvisory, User};
+use App\Models\Auth\SecurityAdvisory;
+use App\Models\Platform\User;
 use App\Services\Diagnostics\DiagnosticsService;
 use App\Services\Security\OsvAdvisoryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

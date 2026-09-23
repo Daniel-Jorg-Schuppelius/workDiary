@@ -12,8 +12,9 @@ namespace Tests\Feature\Classification;
 
 use App\Enums\Classification\ClassificationDomain;
 use App\Enums\User\UserRole;
-use App\Models\{Classification, User};
-use App\Policies\ClassificationPolicy;
+use App\Models\Classification\Classification;
+use App\Models\Platform\User;
+use App\Policies\Classification\ClassificationPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;

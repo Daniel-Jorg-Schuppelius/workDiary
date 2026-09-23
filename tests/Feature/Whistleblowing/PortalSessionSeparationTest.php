@@ -11,7 +11,7 @@
 namespace Tests\Feature\Whistleblowing;
 
 use App\Http\Middleware\UseAnonymousPortalSession;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Session\AnonymousStackSessionHandler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

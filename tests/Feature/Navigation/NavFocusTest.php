@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Navigation;
 
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Navigation\{NavFocusService, NavigationRegistry};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

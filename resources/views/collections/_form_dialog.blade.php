@@ -26,7 +26,7 @@
                        :value="old('title', $collection?->title)" />
         <x-textarea-field name="description" :label="__('collections.field.description')" rows="3" span="2" maxlength="2000"
                           :value="old('description', $collection?->description)" />
-        <x-select-field name="parent_id" :label="__('collections.field.parent')" :hint="__('collections.help.parent', ['max' => \App\Models\ContentCollection::MAX_DEPTH])">
+        <x-select-field name="parent_id" :label="__('collections.field.parent')" :hint="__('collections.help.parent', ['max' => \App\Models\Knowledge\ContentCollection::MAX_DEPTH])">
             <option value="">{{ __('collections.field.no_parent') }}</option>
             @foreach ($parentOptions as $row)
                 @continue($isEdit && (int) $row['collection']->id === (int) $collection->id)
@@ -34,8 +34,8 @@
             @endforeach
         </x-select-field>
         <x-select-field name="visibility" :label="__('collections.field.visibility')" :hint="__('collections.help.visibility')" required>
-            @foreach ([\App\Models\ContentCollection::VISIBILITY_ORGANIZATION, \App\Models\ContentCollection::VISIBILITY_PRIVATE] as $visibility)
-                <option value="{{ $visibility }}" @selected(old('visibility', $collection?->visibility ?? \App\Models\ContentCollection::VISIBILITY_ORGANIZATION) === $visibility)>{{ __('collections.visibility.' . $visibility) }}</option>
+            @foreach ([\App\Models\Knowledge\ContentCollection::VISIBILITY_ORGANIZATION, \App\Models\Knowledge\ContentCollection::VISIBILITY_PRIVATE] as $visibility)
+                <option value="{{ $visibility }}" @selected(old('visibility', $collection?->visibility ?? \App\Models\Knowledge\ContentCollection::VISIBILITY_ORGANIZATION) === $visibility)>{{ __('collections.visibility.' . $visibility) }}</option>
             @endforeach
         </x-select-field>
     </x-form-group>

@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\{Change, Organization, Problem, RequestItem, ServiceQueue};
+use App\Models\{Change, Problem, RequestItem, ServiceQueue};
+use App\Models\Platform\Organization;
 use App\Policies\{ChangePolicy, ProblemPolicy, RequestItemPolicy, ServiceQueuePolicy};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;

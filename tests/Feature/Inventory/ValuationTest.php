@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Inventory;
 
-use App\Models\{Article, ArticleVariant, Organization, StockValuation, Warehouse};
+use App\Models\{Article, ArticleVariant, StockValuation, Warehouse};
+use App\Models\Platform\Organization;
 use App\Services\Inventory\ValuationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;

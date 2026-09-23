@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Event;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Str;
 

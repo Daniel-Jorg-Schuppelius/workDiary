@@ -36,7 +36,7 @@
             @forelse ($holds as $hold)
                 @php
                     $subject = $hold->holdable;
-                    $subjectLabel = $subject instanceof \App\Models\Customer ? __('Kunde') : __('Person');
+                    $subjectLabel = $subject instanceof \App\Models\Customer\Customer ? __('Kunde') : __('Person');
                 @endphp
                 <tr class="hover">
                     <td>

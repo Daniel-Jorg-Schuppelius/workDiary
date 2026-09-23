@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Kimai;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\Kimai\Sources\{KimaiApiClient, KimaiCsvParser};
 use App\Plugins\Support\{ImportedTimeEntry, MatchingTimeImportService, RemoteSyncWindow};
 use App\Support\Tz;

@@ -12,7 +12,7 @@ namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\LearningUnitKind;
 use App\Models\Learning\{LearningCourse, LearningQuestion, LearningQuestionCategory, LearningQuiz, LearningQuizDrawRule, LearningUnit};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Learning\{LearningCourseService, LearningEnrollmentService, LearningQuestionCatalogService, LearningQuestionEditorService, LearningQuizService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Exceptions;

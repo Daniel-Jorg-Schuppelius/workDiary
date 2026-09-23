@@ -12,7 +12,7 @@ namespace App\Models\Safety;
 
 use App\Enums\Safety\HazardAssessmentStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use Database\Factories\Safety\HazardAssessmentFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Document;
 
-use App\Models\{Customer, Document, Project, User};
+use App\Models\Customer\Customer;
+use App\Models\Document\Document;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

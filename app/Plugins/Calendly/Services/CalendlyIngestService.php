@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Calendly\Services;
 
-use App\Models\{AppointmentRequest, IntegrationInboxItem, Organization};
+use App\Models\Calendar\AppointmentRequest;
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Platform\Organization;
 use App\Plugins\Calendly\CalendlyPlugin;
 use App\Plugins\Support\PluginSettingsResolver;
 use App\Services\Sales\LeadService;

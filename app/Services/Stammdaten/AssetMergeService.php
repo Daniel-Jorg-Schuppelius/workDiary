@@ -10,13 +10,14 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Services\Stammdaten;
 
 use App\Enums\Asset\AssetOwnership;
 use App\Models\Asset;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use App\Services\Stammdaten\AbstractEntityMergeService;
 
 /**
  * Führt zwei (doppelt angelegte) Assets zusammen: hängt alle abhängigen
@@ -144,7 +145,7 @@ class AssetMergeService extends AbstractEntityMergeService {
             $target->foreign_customer_id = null;
         } elseif ($target->foreign_customer_id !== null) {
             // Übernommener Fremdkunde muss zum Ziel-Kunden gehören.
-            $belongsToCustomer = \App\Models\ForeignCustomer::query()
+            $belongsToCustomer = \App\Models\Customer\ForeignCustomer::query()
                 ->whereKey($target->foreign_customer_id)
                 ->where('customer_id', $target->customer_id)
                 ->exists();

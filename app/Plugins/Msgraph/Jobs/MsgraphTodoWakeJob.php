@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Msgraph\Jobs;
 
 use App\Jobs\Concerns\RetriesTransientFailures;
-use App\Models\{MsgraphTaskConnection, MsgraphTaskListLink, Organization};
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Msgraph\{MsgraphTaskConnection, MsgraphTaskListLink};
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Msgraph\Services\MsgraphTodoSyncService;
 use Illuminate\Bus\Queueable;

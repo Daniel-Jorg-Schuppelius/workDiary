@@ -10,7 +10,12 @@
 
 namespace Tests\Feature\Reporting;
 
-use App\Models\{CommunicationNote, Customer, DiaryEntry, Document, Project, User};
+use App\Models\Communication\CommunicationNote;
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\Document\Document;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Services\Timeline\ProjectTimelineService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

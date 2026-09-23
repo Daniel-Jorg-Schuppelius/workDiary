@@ -10,7 +10,8 @@
 
 namespace App\Plugins\GoogleCalendar;
 
-use App\Models\{GoogleCalendarConnection, Organization};
+use App\Models\Platform\Organization;
+use App\Models\Plugins\GoogleCalendar\GoogleCalendarConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{CalendarPublisher, PluginCapability};
 use App\Plugins\GoogleCalendar\Api\GoogleCalendarClient;
@@ -23,11 +24,11 @@ use Throwable;
  * Google-Kalender-Anbindung (MVP-328, Bauturbo A8) — Nur-Publish-Pilot
  * neben CalDAV/ICS.
  *
- * - **Publiziert** WorkDiary-Termine ({@see \App\Models\Event}) über die
+ * - **Publiziert** WorkDiary-Termine ({@see \App\Models\Calendar\Event}) über die
  *   Google Calendar API v3 in einen wählbaren Kalender des verbundenen
  *   Google-Kontos (OAuth2 Authorization-Code + PKCE, offline access).
  * - **Idempotent** über stabile UIDs (deterministische Event-ID) +
- *   {@see \App\Models\ExternalReference}: Anlegen/Ändern/Löschen (bei Absage)
+ *   {@see \App\Models\Integration\ExternalReference}: Anlegen/Ändern/Löschen (bei Absage)
  *   erzeugen keine Dubletten — CalDAV-Muster.
  * - Pro Organisation verbunden ({@see GoogleCalendarConnection}, Tokens
  *   verschlüsselt at-rest); Rückimport externer Termine ist bewusst NICHT

@@ -10,7 +10,10 @@
 
 namespace App\Plugins\Toggl;
 
-use App\Models\{Customer, ExternalReference, ForeignCustomer, Organization, Project};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\Organization;
+use App\Models\Project\Project;
 use App\Plugins\Support\{ImportedTimeEntry, MatchingTimeImportService, RemoteSyncWindow};
 use App\Plugins\Toggl\Sources\{TogglApiClient, TogglCsvParser, TogglEntry};
 use App\Support\Tz;

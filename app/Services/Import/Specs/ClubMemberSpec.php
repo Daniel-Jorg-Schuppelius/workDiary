@@ -15,7 +15,7 @@ namespace App\Services\Import\Specs;
 use App\Enums\Club\ClubMembershipKind;
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Models\Club\ClubMember;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Club\ClubMemberService;
 use App\Services\Import\{ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\Concerns\ParsesLocalDateTime;

@@ -10,8 +10,9 @@
 
 namespace App\Console\Commands\Demo;
 
-use App\Models\{AuditLog, Organization};
-use App\Services\OrganizationLifecycleService;
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\Organization;
+use App\Services\Org\OrganizationLifecycleService;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;

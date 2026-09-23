@@ -12,7 +12,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Requests\{StoreCoverageRequirementRequest, UpdateCoverageRequirementRequest};
-use App\Models\{CoverageRequirement, DutyPlan, User};
+use App\Models\{CoverageRequirement, DutyPlan};
+use App\Models\Platform\User;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;

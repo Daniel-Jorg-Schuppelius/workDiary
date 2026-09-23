@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Todoist\Services;
 
-use App\Models\{ExternalReference, Organization, TodoistConnection, User};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\{Organization, User};
+use App\Models\Plugins\Todoist\TodoistConnection;
 use App\Plugins\Todoist\Api\TodoistApiClient;
 use App\Plugins\Todoist\TodoistPlugin;
 use CommonToolkit\Helper\Data\EmailHelper;

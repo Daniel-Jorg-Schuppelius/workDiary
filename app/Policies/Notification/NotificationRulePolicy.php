@@ -8,10 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Policies;
+namespace App\Policies\Notification;
 
 use App\Enums\User\Permission as P;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\Auth\PermissionPolicy;
 
 /**
  * Benachrichtigungsregeln (MVP-018): Admin verwaltet (HasAdminBypass),

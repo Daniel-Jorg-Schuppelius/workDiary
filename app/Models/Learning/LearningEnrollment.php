@@ -11,8 +11,9 @@
 namespace App\Models\Learning;
 
 use App\Enums\Learning\{LearningEnrollmentSource, LearningEnrollmentStatus};
+use App\Models\Communication\ExternalParticipant;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasCommunicationNotes, HasSqid};
-use App\Models\{ExternalParticipant, User};
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};

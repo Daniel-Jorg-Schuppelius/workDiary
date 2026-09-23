@@ -12,7 +12,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Http\Requests\PublicSignatureRequest;
-use App\Models\{Organization, Timesheet};
+use App\Models\Platform\Organization;
+use App\Models\Timesheet;
 use App\Services\Timesheet\SignatureService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;

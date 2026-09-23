@@ -12,7 +12,7 @@ namespace Tests\Feature\Isms;
 
 use App\Enums\Isms\SecurityIncidentStatus;
 use App\Models\Isms\{IsmsControl, IsmsRisk, IsmsSecurityIncident};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

@@ -8,9 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace Database\Factories;
+namespace Database\Factories\Ideas;
 
-use App\Models\{IdeaMap, IdeaNode, Organization};
+use App\Models\Ideas\IdeaMap;
+use App\Models\Ideas\IdeaNode;
+use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

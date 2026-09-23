@@ -11,7 +11,8 @@
 namespace Tests\Feature\Absence;
 
 use App\Enums\User\Permission;
-use App\Models\{User, VacationEntitlement};
+use App\Models\Platform\User;
+use App\Models\VacationEntitlement;
 use App\Services\Absence\VacationBalanceService;
 use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;

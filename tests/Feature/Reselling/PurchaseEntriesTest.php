@@ -13,9 +13,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Reselling;
 
 use App\Enums\Reselling\SubscriptionProvider;
-use App\Models\{Customer, LexofficeVoucher, Supplier};
+use App\Models\Customer\Customer;
 use App\Models\Domain\{DomainAccountingEntry, DomainProjection, DomainProviderConnection};
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Models\Reselling\{ResalePurchaseEntry, ResaleSubscription};
+use App\Models\Supplier;
 use App\Services\Reselling\Marketplace\{ProviderInvoice, ProviderInvoiceLine, QualityHostingInvoiceReader};
 use App\Services\Reselling\Purchase\{PurchaseDocument, PurchaseDocuments};
 use App\Services\Reselling\Register\{DomainSubscriptionSync, PeriodPlanner, PurchaseAllocator};

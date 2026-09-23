@@ -8,10 +8,12 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace Database\Factories;
+namespace Database\Factories\Communication;
 
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType, CommunicationVisibility};
-use App\Models\{CommunicationNote, DiaryEntry, User};
+use App\Models\Communication\CommunicationNote;
+use App\Models\DiaryEntry;
+use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

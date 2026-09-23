@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Models;
+namespace App\Models\Platform;
 
 use App\Enums\Scheduling\JobRunStatus;
 use Illuminate\Database\Eloquent\Model;

@@ -10,8 +10,8 @@
 @php
     $isDialog = $isDialog ?? false;
     $tpl = $template ?? null;
-    $fields = $tpl?->fields ?? \App\Models\LabelTemplate::FIELDS;
-    $allFields = \App\Models\LabelTemplate::FIELDS;
+    $fields = $tpl?->fields ?? \App\Models\Print\LabelTemplate::FIELDS;
+    $allFields = \App\Models\Print\LabelTemplate::FIELDS;
 @endphp
 
 <x-modal

@@ -11,7 +11,11 @@
 namespace Tests\Feature\Plugins;
 
 use App\Enums\TimeApproval\MonthClosureStatus;
-use App\Models\{Customer, ExternalReferenceAlias, MonthClosure, Project, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReferenceAlias;
+use App\Models\{MonthClosure, TimeEntry};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Plugins\Fritzbox\{FritzboxImportService, FritzboxPlugin};
 use App\Plugins\Fritzbox\Sources\FritzboxCall;
 use Carbon\CarbonImmutable;

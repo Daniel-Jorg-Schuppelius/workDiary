@@ -10,7 +10,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Customer, LexofficeVoucher, PluginSetting, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{PluginSetting, User};
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

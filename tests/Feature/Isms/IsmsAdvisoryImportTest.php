@@ -12,7 +12,7 @@ namespace Tests\Feature\Isms;
 
 use App\Enums\Isms\{AdvisoryFormat, Exploitability, IncidentSeverity, VulnerabilitySource, VulnerabilityStatus};
 use App\Models\Isms\{IsmsAdvisory, IsmsSoftwareProduct, IsmsVulnerability};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Isms\AdvisoryImportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;

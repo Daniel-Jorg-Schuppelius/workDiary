@@ -11,7 +11,7 @@
 namespace Tests\Feature\Dashboard;
 
 use App\Dashboard\WidgetRegistry;
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;

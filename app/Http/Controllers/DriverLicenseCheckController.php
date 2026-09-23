@@ -11,7 +11,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\User\Permission;
-use App\Models\{DriverLicenseCheck, User};
+use App\Models\DriverLicenseCheck;
+use App\Models\Platform\User;
 use App\Services\Fleet\DriverLicenseCheckService;
 use App\Support\{LookupCache, Sqid};
 use Carbon\Carbon;

@@ -8,15 +8,16 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Archive;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Archive\{ArchiveService, ArchiveSummaryService};
 use App\Services\UI\DateRangeContext;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 class ArchiveController extends Controller {
     use ResolvesGlobalDateRange;

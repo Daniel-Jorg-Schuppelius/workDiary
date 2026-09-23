@@ -12,7 +12,8 @@ namespace Tests\Feature\Surcharge;
 
 use App\Enums\Attendance\AttendanceStatus;
 use App\Enums\User\Permission as P;
-use App\Models\{Attendance, MonthClosure, TimeExport, User};
+use App\Models\{Attendance, MonthClosure, TimeExport};
+use App\Models\Platform\User;
 use App\Models\Surcharge\SurchargeRule;
 use App\Services\TimeApproval\MonthClosureService;
 use App\Services\TimeExport\TimeExportService;
@@ -182,7 +183,7 @@ class TimeExportSurchargeTest extends TestCase {
     }
 
     public function test_rules_of_other_organization_do_not_leak_into_export(): void {
-        $orgB = \App\Models\Organization::factory()->create();
+        $orgB = \App\Models\Platform\Organization::factory()->create();
         SurchargeRule::factory()->night()->create([
             'organization_id' => $orgB->id,
             'code' => 'night',

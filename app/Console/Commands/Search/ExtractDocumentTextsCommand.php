@@ -16,7 +16,7 @@ use App\Console\Commands\Search\Concerns\SelectsOrganization;
 use App\Enums\Document\DocumentTextFailure;
 use App\Enums\Search\SearchSourceType;
 use App\Jobs\ExtractDocumentTextJob;
-use App\Models\Document;
+use App\Models\Document\Document;
 use App\Services\Search\Indexing\SearchSourceRegistry;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\{Builder, Model};

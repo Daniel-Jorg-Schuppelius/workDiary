@@ -12,7 +12,7 @@ namespace Tests\Feature\Backup;
 
 use App\Enums\Backup\BackupGenerationStatus;
 use App\Models\Backup\{BackupGeneration, BackupTargetConnection};
-use App\Models\RestoreTest;
+use App\Models\Platform\RestoreTest;
 use App\Services\Backup\{BackupRestoreTestService, BackupRunService, BackupVerifyService};
 use App\Services\Backup\Exceptions\BackupPreflightException;
 use Illuminate\Foundation\Testing\RefreshDatabase;

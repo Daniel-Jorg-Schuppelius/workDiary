@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Models\Communication;
 
-use App\Models\{CommunicationNote, Customer};
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Customer\Customer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

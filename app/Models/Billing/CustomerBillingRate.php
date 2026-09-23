@@ -12,7 +12,7 @@ namespace App\Models\Billing;
 
 use App\Casts\MoneyCast;
 use App\Enums\Billing\BillingRateDayType;
-use App\Models\ActivityCategory;
+use App\Models\Classification\ActivityCategory;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};

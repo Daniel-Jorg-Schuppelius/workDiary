@@ -24,7 +24,7 @@ class StoreCrisisActionRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'assignee_id' => \App\Models\User::class,
+        'assignee_id' => \App\Models\Platform\User::class,
     ];
 
     /** @return array<string, mixed> */

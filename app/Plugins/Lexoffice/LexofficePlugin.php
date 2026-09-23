@@ -10,7 +10,10 @@
 
 namespace App\Plugins\Lexoffice;
 
-use App\Models\{Customer, ExternalReference, Organization, PluginSetting, Supplier, TimeEntry};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\{Organization, PluginSetting};
+use App\Models\{Supplier, TimeEntry};
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{ContactSyncer, PaymentSyncer, Plugin, PluginCapability, SlotRenderer, TimeExporter};
 use App\Support\Query\DateRange;

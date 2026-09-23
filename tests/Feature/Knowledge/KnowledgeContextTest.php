@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Knowledge;
 
-use App\Models\{DiaryEntry, KnowledgeArticle, User};
+use App\Models\DiaryEntry;
+use App\Models\Knowledge\KnowledgeArticle;
+use App\Models\Platform\User;
 use App\Services\Knowledge\KnowledgeArticleService;
 use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;

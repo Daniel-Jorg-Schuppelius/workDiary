@@ -14,7 +14,8 @@ namespace App\Services\Release;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Security\IntegrityCheckStatus;
-use App\Models\{AuditLog, IntegrityCheck, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{IntegrityCheck, User};
 use App\Notifications\GenericEventNotification;
 use App\Services\Isms\SbomGenerator;
 use App\Support\MorphMap;

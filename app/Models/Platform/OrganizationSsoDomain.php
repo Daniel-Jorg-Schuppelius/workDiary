@@ -8,12 +8,13 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Platform;
 
 use App\Models\Concerns\HasSqid;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Platform\Organization;
 
 /**
  * Verifizierte E-Mail-Domain einer Organisation für die SSO-Login-Discovery

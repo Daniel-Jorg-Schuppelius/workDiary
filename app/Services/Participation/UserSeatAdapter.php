@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Participation;
 
 use App\Enums\Event\ParticipantStatus;
-use App\Models\{Event, EventParticipant};
+use App\Models\Calendar\{Event, EventParticipant};
 use Illuminate\Support\Carbon;
 
 /**

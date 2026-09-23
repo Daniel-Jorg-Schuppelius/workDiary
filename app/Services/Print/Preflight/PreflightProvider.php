@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Print\Preflight;
 
-use App\Models\DocumentVersion;
+use App\Models\Document\DocumentVersion;
 
 /**
  * Vertrag für PDF-/Datei-Prüfwerkzeuge (MVP-459, austauschbar). Provider

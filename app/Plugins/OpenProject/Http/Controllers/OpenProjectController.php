@@ -11,7 +11,9 @@
 namespace App\Plugins\OpenProject\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{ExternalReference, Organization, Project, Task, User};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\{Project, Task};
 use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\OpenProject\Services\{OpenProjectExportService, OpenProjectImportService, OpenProjectStructureSync};
 use App\Plugins\OpenProject\Sources\OpenProjectApiClient;
@@ -42,10 +44,10 @@ class OpenProjectController extends Controller {
         // Unzugeordnete OpenProject-Einträge werden jetzt in der universellen
         // Zuordnungs-Inbox (MVP-103) bearbeitet — hier nur die offene Anzahl.
         $inboxOpenCount = $organization instanceof Organization
-            ? \App\Models\IntegrationInboxItem::query()
+            ? \App\Models\Integration\IntegrationInboxItem::query()
                 ->where('organization_id', $organization->id)
                 ->where('plugin_id', OpenProjectPlugin::ID)
-                ->where('status', \App\Models\IntegrationInboxItem::STATUS_OPEN)
+                ->where('status', \App\Models\Integration\IntegrationInboxItem::STATUS_OPEN)
                 ->whereNotNull('group_key')
                 ->count()
             : 0;

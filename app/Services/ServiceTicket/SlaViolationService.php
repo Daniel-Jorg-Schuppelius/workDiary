@@ -11,7 +11,8 @@
 namespace App\Services\ServiceTicket;
 
 use App\Enums\ServiceTicket\SlaViolationKind;
-use App\Models\{ServiceTicket, SlaViolation, User};
+use App\Models\Platform\User;
+use App\Models\{ServiceTicket, SlaViolation};
 use Illuminate\Support\Carbon;
 use Throwable;
 

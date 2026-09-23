@@ -12,7 +12,8 @@ namespace Tests\Feature\TimeApproval;
 
 use App\Enums\Compliance\ComplianceFindingStatus;
 use App\Enums\TimeApproval\OvertimeRequestStatus;
-use App\Models\{ComplianceFinding, OvertimeRequest, User};
+use App\Models\{ComplianceFinding, OvertimeRequest};
+use App\Models\Platform\User;
 use App\Services\Compliance\AttendancePlausibilityScanService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -126,7 +127,7 @@ class OvertimeRequestTest extends TestCase {
 
     public function test_foreign_org_request_is_not_visible_or_decidable(): void {
         $foreignRequest = OvertimeRequest::factory()->create([
-            'organization_id' => \App\Models\Organization::factory()->create()->id,
+            'organization_id' => \App\Models\Platform\Organization::factory()->create()->id,
         ]);
 
         // Sqid-Route-Bindung + Org-Scope: fremder Antrag ist nicht auffindbar.

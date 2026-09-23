@@ -11,7 +11,8 @@
 namespace Tests\Feature\Form;
 
 use App\Enums\Form\FormTemplateStatus;
-use App\Models\{FormTemplate, User};
+use App\Models\Form\FormTemplate;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

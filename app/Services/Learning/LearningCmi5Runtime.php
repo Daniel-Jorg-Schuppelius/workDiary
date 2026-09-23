@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use App\Models\Learning\{LearningCmi5AuState, LearningCmi5Package, LearningCmi5Registration, LearningCmi5Session, LearningCmi5Unit, LearningEnrollment, LearningXapiStatement};
-use App\Models\User;
+use App\Models\Platform\User;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use ELearningToolkit\Cmi5\{Actor, AssignableUnit, LaunchMode, LmsStatements, MoveOn, SatisfiedScope, Session};

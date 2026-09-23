@@ -12,7 +12,7 @@ namespace Database\Factories\Billing;
 
 use App\Enums\Billing\BillingAgreementMode;
 use App\Models\Billing\CustomerBillingAgreement;
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Licensing;
 
-use App\Models\AuditLog;
+use App\Models\Audit\AuditLog;
 use App\Services\Licensing\{LicensePayload, LicenseResult, LicenseService, LicenseStatus};
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;

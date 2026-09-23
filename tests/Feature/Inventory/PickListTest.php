@@ -11,7 +11,8 @@
 namespace Tests\Feature\Inventory;
 
 use App\Enums\Inventory\{StockMovementType, StockState};
-use App\Models\{Article, ArticleVariant, ManufacturingOrder, StockLot, User, Warehouse, WarehouseBin};
+use App\Models\{Article, ArticleVariant, ManufacturingOrder, StockLot, Warehouse, WarehouseBin};
+use App\Models\Platform\User;
 use App\Services\Inventory\{InventoryLedger, PickListBuilder, ReservationService, StockPosting};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

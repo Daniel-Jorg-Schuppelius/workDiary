@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\UI;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

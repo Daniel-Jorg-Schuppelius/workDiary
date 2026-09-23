@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Asset;
-use App\Services\AssetMergeService;
+use App\Services\Stammdaten\AssetMergeService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;

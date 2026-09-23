@@ -11,7 +11,8 @@
 namespace Tests\Feature\Helpdesk;
 
 use App\Enums\ServiceTicket\ServiceTicketStatus;
-use App\Models\{Organization, ServiceTicket, ServiceTicketLink, ServiceTicketWatcher, SlaClockSegment, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\{ServiceTicket, ServiceTicketLink, ServiceTicketWatcher, SlaClockSegment};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;

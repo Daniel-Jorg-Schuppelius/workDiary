@@ -12,7 +12,9 @@ namespace App\Services\Timesheet;
 
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Mail\TimesheetSignedMail;
-use App\Models\{Attachment, Timesheet, User};
+use App\Models\Attachments\Attachment;
+use App\Models\Platform\User;
+use App\Models\Timesheet;
 use CommonToolkit\Helper\Data\{CryptoHelper, DataUrlHelper};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, Mail, Storage};

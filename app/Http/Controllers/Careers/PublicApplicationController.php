@@ -14,7 +14,7 @@ namespace App\Http\Controllers\Careers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Applications\{JobApplication, JobPosting};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Applications\{CareerApplicationUploadService, CareerFormState, RecruitingService};
 use App\Support\Setting;
 use CommonToolkit\Helper\Data\CryptoHelper;

@@ -8,16 +8,17 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Calendar;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Calendar\CalendarEventService;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 class CalendarController extends Controller {
     use ResolvesGlobalDateRange;

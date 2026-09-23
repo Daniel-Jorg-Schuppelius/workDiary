@@ -14,7 +14,7 @@ use App\Enums\Isms\ControlImplementationStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Isms\Concerns\StreamsRegisterExport;
 use App\Models\Isms\{IsmsControl, IsmsRequirement};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Isms\{ControlService, RegisterExportService};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};

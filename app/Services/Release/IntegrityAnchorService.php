@@ -14,7 +14,7 @@ namespace App\Services\Release;
 
 use App\Enums\Backup\BackupTargetStatus;
 use App\Models\Backup\BackupTargetConnection;
-use App\Models\IntegrityCheck;
+use App\Models\Platform\IntegrityCheck;
 use App\Plugins\Contracts\BackupTarget;
 use App\Services\Backup\BackupNaming;
 use App\Services\Backup\Concerns\ResolvesBackupTarget;

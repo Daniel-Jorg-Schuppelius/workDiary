@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Models;
+namespace App\Models\Integration;
 
 use App\Models\Concerns\PrunesWebhookDeliveries;
 use Illuminate\Database\Eloquent\Model;

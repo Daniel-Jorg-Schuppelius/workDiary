@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace Database\Factories\Disposal;
 
 use App\Enums\Disposal\DisposalJobStatus;
-use App\Models\{Customer, Organization, User};
+use App\Models\Customer\Customer;
 use App\Models\Disposal\DisposalJob;
+use App\Models\Platform\{Organization, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<DisposalJob> */

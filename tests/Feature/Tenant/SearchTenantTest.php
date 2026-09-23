@@ -10,7 +10,13 @@
 
 namespace Tests\Feature\Tenant;
 
-use App\Models\{CommunicationNote, Customer, Document, FormSubmission, FormTemplate, KnowledgeArticle, Organization, Project, User};
+use App\Models\Communication\CommunicationNote;
+use App\Models\Customer\Customer;
+use App\Models\Document\Document;
+use App\Models\Form\{FormSubmission, FormTemplate};
+use App\Models\Knowledge\KnowledgeArticle;
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

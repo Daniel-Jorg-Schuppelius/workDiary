@@ -22,8 +22,8 @@
     /** @var \Illuminate\Support\Collection<int, \App\Models\ScheduledShift> $shifts */
     /** @var \Illuminate\Support\Collection<string, \Illuminate\Support\Collection> $shiftsByDate */
     /** @var \Illuminate\Support\Collection<int, \App\Models\ShiftType> $shiftTypes */
-    /** @var \Illuminate\Support\Collection<int, \App\Models\User> $users */
-    /** @var \App\Services\HolidayService $holidays */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users */
+    /** @var \App\Services\Calendar\HolidayService $holidays */
     /** @var int $userFilter */
     /** @var bool $isAdmin */
 @endphp
@@ -37,7 +37,7 @@
         <select name="user" class="select select-bordered select-sm w-full sm:w-auto sm:min-w-48" data-autosubmit aria-label="{{ __('Mitarbeiter') }}">
             <option value="">{{ __('Alle Mitarbeiter') }}</option>
             @foreach ($users as $u)
-                <option value="{{ $u->sqid }}" @selected(\App\Support\Sqid::encode(\App\Models\User::class, $userFilter) === $u->sqid)>{{ $u->name }}</option>
+                <option value="{{ $u->sqid }}" @selected(\App\Support\Sqid::encode(\App\Models\Platform\User::class, $userFilter) === $u->sqid)>{{ $u->name }}</option>
             @endforeach
         </select>
 

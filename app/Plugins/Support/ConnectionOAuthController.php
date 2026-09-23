@@ -11,7 +11,7 @@
 namespace App\Plugins\Support;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Plugins\Support\Concerns\{HandlesOAuthPopup, ResolvesPluginOrgContext};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};

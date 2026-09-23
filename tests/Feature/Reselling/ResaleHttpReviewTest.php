@@ -14,7 +14,10 @@ namespace Tests\Feature\Reselling;
 
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus, SubscriptionProvider};
 use App\Enums\User\Permission;
-use App\Models\{Customer, ExternalReference, LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\{Organization, User};
+use App\Models\Plugins\Lexoffice\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
 use App\Models\Reselling\{ResaleImport, ResalePeriodLink, ResalePurchaseEntry, ResaleSubscription};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Services\Reselling\Register\{MarketplaceImporter, PeriodPlanner};
@@ -285,7 +288,7 @@ class ResaleHttpReviewTest extends TestCase {
         $this->assertSame(['ent-9#2', 'ent-9#3'], $contract->assignments()->reorder('id')->pluck('external_id')->all());
 
         // Fremdkunde eines anderen Kunden als Halter: abgelehnt.
-        $foreign = \App\Models\ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $schub->id, 'name' => 'Endkunde von Schub']);
+        $foreign = \App\Models\Customer\ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $schub->id, 'name' => 'Endkunde von Schub']);
         $this->actingAs($admin)->postJson(route('finance.resale.transfer.store', $contract->sqid), [
             'mode' => 'foreign', 'customer_id' => $maerkische->sqid, 'foreign_customer_id' => $foreign->sqid, 'quantity' => 1, 'starts_on' => '2025-01-01',
         ])->assertStatus(422)->assertJsonValidationErrors(['foreign_customer_id']);

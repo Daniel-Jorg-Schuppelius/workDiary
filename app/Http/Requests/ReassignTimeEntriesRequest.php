@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\{TimeEntry, User};
+use App\Models\Platform\User;
+use App\Models\TimeEntry;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;

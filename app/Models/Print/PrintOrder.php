@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Models\Print;
 
 use App\Enums\Print\{PreflightStatus, PrintOrderStatus, PrintOutputKind};
-use App\Models\{Asset, Document, DocumentVersion, ManufacturingOrder, Shipment, User};
+use App\Models\{Asset, ManufacturingOrder, Shipment};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Document\{Document, DocumentVersion};
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

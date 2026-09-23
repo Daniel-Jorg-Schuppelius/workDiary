@@ -8,10 +8,17 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Document;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
-use App\Models\{Asset, Customer, DiaryEntry, Document, DocumentVersion, Project, Tag, User};
+use App\Models\Asset;
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\Document\Document\Document;
+use App\Models\Document\Document\DocumentVersion;
+use App\Models\Project\Project;
+use App\Models\Classification\Tag;
+use App\Models\Platform\User;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Content\ContentSubjectResolver;
 use App\Services\Document\DocumentService;
@@ -22,6 +29,7 @@ use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Http\Controllers\Controller;
 
 class DocumentController extends Controller {
     /**
@@ -434,7 +442,7 @@ class DocumentController extends Controller {
             return;
         }
 
-        \App\Models\AuditLog::query()->create([
+        \App\Models\Audit\AuditLog::query()->create([
             'organization_id' => $document->organization_id,
             'user_id' => $user->id,
             'event' => 'document.confidentialAccessed',

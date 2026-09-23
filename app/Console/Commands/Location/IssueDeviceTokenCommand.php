@@ -14,7 +14,7 @@ namespace App\Console\Commands\Location;
 
 use App\Http\Controllers\Api\LocationController;
 use App\Models\Location\LocationDeviceToken;
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Console\Command;
 
 /**

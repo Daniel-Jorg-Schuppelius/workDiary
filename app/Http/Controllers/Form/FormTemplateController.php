@@ -8,14 +8,16 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Form;
 
 use App\Enums\Form\FormTemplateStatus;
-use App\Models\{FormTemplate, User};
+use App\Models\Form\FormTemplate;
+use App\Models\Platform\User;
 use App\Services\Form\FormService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 /**
  * Vorlagen-Verwaltung (Feature 032): Listenseite + Modal-CRUD.

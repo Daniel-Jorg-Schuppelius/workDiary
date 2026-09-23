@@ -14,7 +14,7 @@ namespace App\Models\Club;
 
 use App\Enums\Club\{ClubGroupMembershipStatus, ClubMembershipKind};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use Carbon\CarbonInterface;
 use Database\Factories\Club\ClubMemberFactory;
 use Illuminate\Database\Eloquent\Builder;

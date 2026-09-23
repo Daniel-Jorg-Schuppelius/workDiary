@@ -12,7 +12,9 @@ namespace Tests\Feature\Asset;
 
 use App\Enums\Asset\MaintenanceIntervalKind;
 use App\Exceptions\AssetValidationException;
-use App\Models\{Asset, AuditLog, Organization, User};
+use App\Models\Asset;
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{Organization, User};
 use App\Services\Asset\MaintenancePlanService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

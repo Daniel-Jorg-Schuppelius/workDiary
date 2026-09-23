@@ -10,7 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{PluginSetting, User};
+use App\Models\Platform\{PluginSetting, User};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

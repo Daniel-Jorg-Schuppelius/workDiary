@@ -13,7 +13,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Services\Import\Specs;
 
 use App\Enums\Import\ImportErrorCode;
-use App\Models\{Article, Customer, Organization, Quote};
+use App\Models\Article;
+use App\Models\Customer\Customer;
+use App\Models\Platform\Organization;
+use App\Models\Sales\Quote;
 use App\Services\Import\ImportOutcome;
 use App\Services\Import\Specs\QuoteSpec;
 use Illuminate\Foundation\Testing\RefreshDatabase;

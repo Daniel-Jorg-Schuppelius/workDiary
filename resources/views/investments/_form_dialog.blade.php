@@ -33,7 +33,7 @@
         <x-select-field name="responsible_user_id" :label="__('Verantwortlich')" span="2">
             <option value="">{{ __('— offen —') }}</option>
             @foreach ($users as $u)
-                <option value="{{ $u->sqid }}" @selected(old('responsible_user_id', $case->responsible_user_id !== null ? \App\Support\Sqid::encode(\App\Models\User::class, $case->responsible_user_id) : '') === $u->sqid)>{{ $u->name }}</option>
+                <option value="{{ $u->sqid }}" @selected(old('responsible_user_id', $case->responsible_user_id !== null ? \App\Support\Sqid::encode(\App\Models\Platform\User::class, $case->responsible_user_id) : '') === $u->sqid)>{{ $u->name }}</option>
             @endforeach
         </x-select-field>
         <x-select-field name="cost_center_id" :label="__('Kostenstelle')" :hint="$costCenters->isEmpty() ? __('Noch keine Kostenstellen — Anlage in der Akte möglich.') : null">

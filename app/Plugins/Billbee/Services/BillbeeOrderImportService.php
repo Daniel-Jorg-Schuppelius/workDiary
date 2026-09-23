@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Billbee\Services;
 
-use App\Models\{BillbeeOrder, Customer, Organization};
+use App\Models\Customer\Customer;
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Billbee\BillbeeOrder;
 use App\Plugins\Billbee\Api\BillbeeClientFactory;
 use App\Plugins\Billbee\BillbeePlugin;
 use App\Services\Integration\{IntegrationResolver, MatchProfileRegistry};

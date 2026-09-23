@@ -17,7 +17,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\{LearningCertificateResource, LearningCourseResource, LearningEnrollmentResource};
 use App\Models\Learning\{LearningCertificate, LearningCourse, LearningCourseCategory, LearningEnrollment};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\LearningEnrollmentService;
 use App\Support\Sqid;
 use Illuminate\Http\{JsonResponse, Request};

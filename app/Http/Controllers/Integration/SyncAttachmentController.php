@@ -10,14 +10,16 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Integration;
 
 use App\Enums\Sync\SyncCommandStatus;
-use App\Models\{FormSubmission, SyncCommand};
+use App\Models\Form\FormSubmission;
+use App\Models\Integration\SyncCommand;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Form\FormService;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Http\UploadedFile;
+use App\Http\Controllers\Controller;
 
 /**
  * Nachreichen der Offline-Foto-Queue (Feature 035 Phase 3; Audit 2026-08,

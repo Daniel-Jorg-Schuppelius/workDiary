@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\{ServiceTicket, User};
+use App\Models\Platform\User;
+use App\Models\ServiceTicket;
 use App\Services\ServiceTicket\ServiceTicketService;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Gate;

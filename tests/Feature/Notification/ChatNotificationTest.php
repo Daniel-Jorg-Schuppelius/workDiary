@@ -12,7 +12,7 @@ namespace Tests\Feature\Notification;
 
 use App\Jobs\Notification\WebPushDeliveryJob;
 use App\Models\Chat\{Channel, Message, Reminder};
-use App\Models\{PushSubscription, User};
+use App\Models\Platform\{PushSubscription, User};
 use App\Services\Chat\ChatNotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Bus, Notification};

@@ -10,14 +10,16 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Sales;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Models\{Article, SalesDiscountGroup};
+use App\Models\Article;
+use App\Models\Sales\SalesDiscountGroup;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 /**
  * Verwaltung der Verkaufs-Rabattgruppen (Feature 107, W9): org-weite
@@ -34,8 +36,8 @@ class SalesDiscountGroupController extends Controller {
         return view('articles.sales_discount_groups', [
             'groups' => SalesDiscountGroup::query()->withCount('articles')->orderBy('code')->get(),
             // MVP-567: kundenindividuelle Overrides je Gruppe.
-            'overrides' => \App\Models\SalesDiscountGroupOverride::query()->with(['group', 'customer'])->orderBy('sales_discount_group_id')->get(),
-            'customers' => \App\Models\Customer::query()->orderBy('name')->get(['id', 'name', 'company', 'number']),
+            'overrides' => \App\Models\Sales\SalesDiscountGroupOverride::query()->with(['group', 'customer'])->orderBy('sales_discount_group_id')->get(),
+            'customers' => \App\Models\Customer\Customer\Customer::query()->orderBy('name')->get(['id', 'name', 'company', 'number']),
         ]);
     }
 
@@ -47,7 +49,7 @@ class SalesDiscountGroupController extends Controller {
         // Sqids aus dem Formular (I7); rohe numerische IDs bleiben als Fallback lesbar.
         $request->merge([
             'sales_discount_group_id' => \App\Support\Sqid::decodeOrNumeric(SalesDiscountGroup::class, $request->input('sales_discount_group_id')),
-            'customer_id' => \App\Support\Sqid::decodeOrNumeric(\App\Models\Customer::class, $request->input('customer_id')),
+            'customer_id' => \App\Support\Sqid::decodeOrNumeric(\App\Models\Customer\Customer\Customer::class, $request->input('customer_id')),
         ]);
 
         $data = $request->validate([
@@ -57,7 +59,7 @@ class SalesDiscountGroupController extends Controller {
             'value' => ['required', 'numeric', 'min:0', 'max:999'],
         ]);
 
-        \App\Models\SalesDiscountGroupOverride::query()->updateOrCreate(
+        \App\Models\Sales\SalesDiscountGroupOverride::query()->updateOrCreate(
             [
                 'sales_discount_group_id' => (int) $data['sales_discount_group_id'],
                 'customer_id' => (int) $data['customer_id'],
@@ -68,7 +70,7 @@ class SalesDiscountGroupController extends Controller {
         return back()->with('success', (string) __('article.discount_group.flash.override_saved'));
     }
 
-    public function destroyOverride(\App\Models\SalesDiscountGroupOverride $override): RedirectResponse {
+    public function destroyOverride(\App\Models\Sales\SalesDiscountGroupOverride $override): RedirectResponse {
         Gate::authorize('create', Article::class);
         abort_unless($override->organization_id === $this->currentOrganization()->id, 404);
         $override->delete();

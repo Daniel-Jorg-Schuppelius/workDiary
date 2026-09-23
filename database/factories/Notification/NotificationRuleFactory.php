@@ -8,11 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace Database\Factories;
+namespace Database\Factories\Notification;
 
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Models\Notification\NotificationRule;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

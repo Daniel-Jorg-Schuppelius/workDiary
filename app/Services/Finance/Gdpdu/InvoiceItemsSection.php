@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Finance\Gdpdu;
 
-use App\Models\{InvoiceItem, Organization};
+use App\Models\InvoiceItem;
+use App\Models\Platform\Organization;
 use Carbon\CarbonInterface;
 
 /** Positionen der Ausgangsrechnungen des Prüfungszeitraums. */

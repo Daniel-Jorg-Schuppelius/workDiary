@@ -11,8 +11,10 @@
 namespace Tests\Unit\Support;
 
 use App\Models\Club\ClubMember;
-use App\Models\{Customer, DiaryEntry, Invoice, User};
-use App\Services\SqidEncoder;
+use App\Models\Customer\Customer;
+use App\Models\{DiaryEntry, Invoice};
+use App\Models\Platform\User;
+use App\Support\SqidEncoder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 

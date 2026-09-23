@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Services;
+namespace App\Services\Billing;
 
 use App\Models\Billing\CustomerBillingRate;
 use App\Models\TimeEntry;

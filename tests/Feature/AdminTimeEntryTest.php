@@ -12,7 +12,8 @@ namespace Tests\Feature;
 
 use App\Enums\Activity\ActivityCategoryType;
 use App\Enums\TimeEntry\TimeEntryActivityType;
-use App\Models\{ActivityCategory, User};
+use App\Models\Classification\ActivityCategory;
+use App\Models\Platform\User;
 use Database\Seeders\ActivityCategorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

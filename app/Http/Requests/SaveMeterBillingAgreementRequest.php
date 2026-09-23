@@ -23,9 +23,9 @@ class SaveMeterBillingAgreementRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'customer_id' => \App\Models\Customer::class,
+        'customer_id' => \App\Models\Customer\Customer::class,
         'asset_id' => \App\Models\Asset::class,
-        'project_id' => \App\Models\Project::class,
+        'project_id' => \App\Models\Project\Project::class,
     ];
 
     /** @return array<string, mixed> */

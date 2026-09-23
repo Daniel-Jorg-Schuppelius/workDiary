@@ -11,7 +11,7 @@
 namespace Tests\Feature\Whistleblowing;
 
 use App\Enums\User\Permission as CentralPermission;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Whistleblowing\WhistleblowingPermissions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;

@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Plugins\Billbee;
 
-use App\Models\{BillbeeOrder, Customer, ExternalReference, IntegrationInboxItem, Organization, PluginSetting, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\{Organization, PluginSetting, User};
+use App\Models\Plugins\Billbee\BillbeeOrder;
 use App\Plugins\Billbee\BillbeePlugin;
 use App\Plugins\Billbee\Services\BillbeeOrderImportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

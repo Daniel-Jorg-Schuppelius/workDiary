@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Scheduling;
 
-use App\Models\ScheduledJobOverride;
+use App\Models\Platform\ScheduledJobOverride;
 use Cron\CronExpression;
 use InvalidArgumentException;
 

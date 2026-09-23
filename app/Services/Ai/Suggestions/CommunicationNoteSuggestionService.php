@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Ai\Suggestions;
 
 use App\Models\Ai\AiTextSuggestion;
-use App\Models\{CommunicationNote, Organization, User};
+use App\Models\Communication\CommunicationNote;
+use App\Models\Platform\{Organization, User};
 use App\Services\Ai\AiInvocationService;
 use App\Services\Ai\Dto\{AiExtractionResult, ExtractRequest};
 use App\Services\Ai\Exceptions\AiException;

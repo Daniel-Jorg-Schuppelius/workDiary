@@ -11,7 +11,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ManagesShiftLike;
-use App\Models\{EmergencyAssignment, OnCallShift, User};
+use App\Models\{EmergencyAssignment, OnCallShift};
+use App\Models\Platform\User;
 use App\Support\Tz;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
@@ -93,7 +94,7 @@ class EmergencyAssignmentController extends Controller {
     /** @return array<string, mixed> */
     private function validateAssignment(Request $request): array {
         $rawUserId = $request->input('user_id');
-        $userId = \App\Support\Sqid::decodeOrNumeric(\App\Models\User::class, $rawUserId);
+        $userId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Platform\User::class, $rawUserId);
 
         $rawShiftId = $request->input('on_call_shift_id');
         $onCallShiftId = \App\Support\Sqid::decodeOrNumeric(\App\Models\OnCallShift::class, $rawShiftId);

@@ -10,7 +10,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\{DiaryEntry, User};
+use App\Models\DiaryEntry;
+use App\Models\Platform\User;
 use App\Services\UI\DateRangeContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

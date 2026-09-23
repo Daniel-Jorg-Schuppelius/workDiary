@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Draft;
 
-use App\Models\{Customer, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
 use App\Models\Reselling\ResalePeriod;
 use Carbon\CarbonImmutable;
 

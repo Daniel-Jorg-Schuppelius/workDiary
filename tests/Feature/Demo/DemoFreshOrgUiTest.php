@@ -10,7 +10,11 @@
 
 namespace Tests\Feature\Demo;
 
-use App\Models\{AuditLog, Customer, DiaryEntry, Organization, Project, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;

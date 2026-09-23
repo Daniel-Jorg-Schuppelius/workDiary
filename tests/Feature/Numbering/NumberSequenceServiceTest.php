@@ -11,7 +11,8 @@
 namespace Tests\Feature\Numbering;
 
 use App\Enums\Numbering\NumberScope;
-use App\Models\{NumberSequence, Organization};
+use App\Models\Numbering\NumberSequence;
+use App\Models\Platform\Organization;
 use App\Services\Numbering\NumberSequenceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

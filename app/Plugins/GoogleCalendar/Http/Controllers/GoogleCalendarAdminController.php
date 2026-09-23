@@ -10,7 +10,7 @@
 
 namespace App\Plugins\GoogleCalendar\Http\Controllers;
 
-use App\Models\GoogleCalendarConnection;
+use App\Models\Plugins\GoogleCalendar\GoogleCalendarConnection;
 use App\Plugins\GoogleCalendar\Api\{GoogleCalendarClient, GoogleCalendarOAuth};
 use App\Plugins\GoogleCalendar\GoogleCalendarConfig;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;

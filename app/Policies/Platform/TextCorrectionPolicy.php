@@ -10,10 +10,11 @@
 
 declare(strict_types=1);
 
-namespace App\Policies;
+namespace App\Policies\Platform;
 
 use App\Enums\User\Permission as P;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\Auth\PermissionPolicy;
 
 /**
  * Schreibfehler-Wörterbuch: verändert automatisch den Rechnungs-Output und

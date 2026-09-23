@@ -13,7 +13,7 @@ namespace App\Plugins\Nextcloud\Http\Controllers;
 use App\Enums\CloudIntake\{CloudIntakeConnectionStatus, CloudIntakeProvider};
 use App\Http\Controllers\Controller;
 use App\Models\CloudIntake\CloudDocumentConnection;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Plugins\Nextcloud\Api\NextcloudIntakeClient;
 use App\Plugins\Nextcloud\NextcloudConfig;
 use App\Plugins\Support\PluginOrgContext;

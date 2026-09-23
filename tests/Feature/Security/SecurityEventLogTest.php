@@ -12,7 +12,8 @@ namespace Tests\Feature\Security;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Security\SecurityEventType;
-use App\Models\{SecurityEvent, User};
+use App\Models\Auth\SecurityEvent;
+use App\Models\Platform\User;
 use App\Notifications\GenericEventNotification;
 use App\Services\Security\{KnownDeviceService, SecurityEventLogger};
 use Illuminate\Foundation\Testing\RefreshDatabase;

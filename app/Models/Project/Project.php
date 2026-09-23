@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Project;
 
 use App\Casts\MoneyCast;
 use App\Enums\Diary\LocationMode;
@@ -18,6 +18,14 @@ use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\{Carbon, Collection};
+use App\Models\Customer\Customer\Customer;
+use App\Models\Customer\Customer\ForeignCustomer;
+use App\Models\DiaryEntry;
+use App\Models\Project\ProjectBillingRule;
+use App\Models\Project\Project\Milestone;
+use App\Models\Project\Task;
+use App\Models\TimeEntry;
+use App\Models\Timesheet;
 
 /**
  * @property int $id
@@ -159,7 +167,7 @@ class Project extends Model {
      * opake Sqid liefern (API/JSON), nicht den Slug.
      */
     public function getSqidAttribute(): string {
-        return app(\App\Services\SqidEncoder::class)->encode(static::class, (int) $this->getKey());
+        return app(\App\Support\SqidEncoder::class)->encode(static::class, (int) $this->getKey());
     }
 
     public function getRouteKey(): string {
@@ -195,7 +203,7 @@ class Project extends Model {
 
         // Opake Sqid (API/JSON) vor dem Slug-Fallback versuchen. Kollision Sqid↔Slug praktisch ausgeschlossen:
         // decode() verlangt exakten Roundtrip (min_length 10); scheitert es, greift der Slug-Pfad.
-        $sqidId = app(\App\Services\SqidEncoder::class)->decode(static::class, $value);
+        $sqidId = app(\App\Support\SqidEncoder::class)->decode(static::class, $value);
         if ($sqidId !== null) {
             return $this->newQuery()->whereKey($sqidId)->first();
         }

@@ -11,7 +11,7 @@
 namespace App\Services\Isms;
 
 use App\Models\Isms\{IsmsApplicabilityStatement, IsmsControl, IsmsRequirement, IsmsRisk, IsmsRiskAssessment, IsmsScope};
-use App\Models\User;
+use App\Models\Platform\User;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Carbon;
 

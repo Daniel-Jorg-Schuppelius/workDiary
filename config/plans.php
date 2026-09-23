@@ -224,7 +224,7 @@ return [
         ],
         // Links/Feedback hängen per FK-Cascade am Artikel.
         'module.knowledge' => [
-            \App\Models\KnowledgeArticle::class,
+            \App\Models\Knowledge\KnowledgeArticle::class,
         ],
     ],
 ];

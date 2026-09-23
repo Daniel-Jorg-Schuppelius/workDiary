@@ -12,7 +12,7 @@ namespace App\Policies\Finance;
 
 use App\Enums\User\Permission as P;
 use App\Models\Finance\DatevBookingBatch;
-use App\Models\User;
+use App\Models\Platform\User;
 
 /**
  * Policy für DATEV-Buchungsstapel (Feature 045, Priorität 2): Lesen, Anlegen,

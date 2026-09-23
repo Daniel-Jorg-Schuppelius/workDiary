@@ -8,12 +8,12 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Platform;
 
 use App\Enums\User\{Permission, UserRole};
 use App\Http\Controllers\Concerns\{AuditsAccessChanges, ManagesUserContactDetails};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Auth\UserSessionInvalidator;
 use App\Services\Licensing\LimitGuard;
 use App\Support\SortableQuery;
@@ -24,6 +24,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 use Spatie\Permission\Models\Role;
+use App\Http\Controllers\Controller;
 
 /**
  * Verwaltet Mitglieder der eigenen Organisation.

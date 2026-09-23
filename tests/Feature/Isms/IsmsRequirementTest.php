@@ -12,7 +12,7 @@ namespace Tests\Feature\Isms;
 
 use App\Enums\Isms\{ControlImplementationStatus, RequirementSource};
 use App\Models\Isms\{IsmsApplicabilityStatement, IsmsRequirement, IsmsScope};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Isms\RequirementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

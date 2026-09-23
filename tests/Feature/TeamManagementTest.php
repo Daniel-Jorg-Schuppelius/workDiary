@@ -10,7 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Organization, Team, User};
+use App\Models\Platform\{Organization, Team, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -69,7 +69,7 @@ class TeamManagementTest extends TestCase {
         $u = $this->member();
 
         $this->actingAs($lead)
-            ->post(route('teams.members.attach', $team), ['user_id' => \App\Support\Sqid::encode(\App\Models\User::class, $u->id)])
+            ->post(route('teams.members.attach', $team), ['user_id' => \App\Support\Sqid::encode(\App\Models\Platform\User::class, $u->id)])
             ->assertRedirect();
         $this->assertTrue($team->members()->whereKey($u->id)->exists());
 

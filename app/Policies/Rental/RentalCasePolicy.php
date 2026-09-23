@@ -13,10 +13,10 @@ declare(strict_types=1);
 namespace App\Policies\Rental;
 
 use App\Enums\User\Permission as P;
+use App\Models\Platform\User;
 use App\Models\Rental\RentalCase;
-use App\Models\User;
+use App\Policies\Auth\PermissionPolicy;
 use App\Policies\Concerns\HasAdminBypass;
-use App\Policies\PermissionPolicy;
 
 /**
  * Policy des Verleih-Aggregats (Feature 073). Kind-Objekte (Reservierungen,

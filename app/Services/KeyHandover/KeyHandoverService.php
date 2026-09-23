@@ -11,7 +11,8 @@
 namespace App\Services\KeyHandover;
 
 use App\Enums\KeyHandover\KeyHandoverDirection;
-use App\Models\{Asset, KeyHandover, User};
+use App\Models\{Asset, KeyHandover};
+use App\Models\Platform\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;

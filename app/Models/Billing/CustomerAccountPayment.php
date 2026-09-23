@@ -14,7 +14,7 @@ use App\Casts\MoneyCast;
 use App\Enums\Billing\AccountPaymentSource;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Finance\{BankTransaction, PaymentAllocation};
-use App\Models\User;
+use App\Models\Platform\User;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};

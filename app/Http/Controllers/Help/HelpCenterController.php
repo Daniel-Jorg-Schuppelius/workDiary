@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Help;
 
 use App\Http\Controllers\Controller;
-use App\Models\{HelpView, User};
+use App\Models\Platform\{HelpView, User};
 use App\Services\Help\{HelpCenterCatalog, HelpTopicResolver};
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
@@ -99,7 +99,7 @@ class HelpCenterController extends Controller {
      * Roh-Zählung je Org; der Sichtbarkeitsfilter läuft pro Nutzer über die
      * bereits geladenen sichtbaren Topics (kein Berechtigungs-Orakel).
      *
-     * @param \Illuminate\Support\Collection<int, \App\Models\HelpTopic> $visibleTopics
+     * @param \Illuminate\Support\Collection<int, \App\Models\Platform\HelpTopic> $visibleTopics
      * @return list<array{topic:string, title:string, section:string}>
      */
     private function popularTopics(?User $user, \Illuminate\Support\Collection $visibleTopics, HelpCenterCatalog $catalog): array {

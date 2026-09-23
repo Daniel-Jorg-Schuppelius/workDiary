@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Help;
 
-use App\Models\HelpTopic;
+use App\Models\Platform\HelpTopic;
 use Illuminate\Support\{Collection, Str};
 
 /**

@@ -11,7 +11,7 @@
 namespace App\Plugins\Msgraph\Api;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
-use App\Models\MsgraphTaskConnection;
+use App\Models\Plugins\Msgraph\MsgraphTaskConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
 use App\Services\CloudIntake\StaleCheckpointException;

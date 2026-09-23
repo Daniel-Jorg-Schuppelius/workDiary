@@ -11,7 +11,7 @@
 namespace Tests\Feature\Accounting;
 
 use App\Models\Accounting\AccountingBudget;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingBudgetService, FiscalCalendar};
 use Carbon\CarbonImmutable;
 use Illuminate\Database\UniqueConstraintViolationException;

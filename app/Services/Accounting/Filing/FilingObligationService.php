@@ -14,7 +14,7 @@ namespace App\Services\Accounting\Filing;
 
 use App\Enums\Finance\{FilingObligationKind, FilingObligationStatus, VatFilingInterval};
 use App\Models\Accounting\{AccountingFilingObligation, AccountingProfile};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\VatFilingProfileResolver;
 use App\Support\Setting;
 use Carbon\CarbonImmutable;

@@ -11,7 +11,8 @@
 namespace App\Services\Numbering;
 
 use App\Enums\Numbering\NumberScope;
-use App\Models\{NumberFormat, NumberSequence, Organization};
+use App\Models\Numbering\{NumberFormat, NumberSequence};
+use App\Models\Platform\Organization;
 use Carbon\CarbonInterface;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\DB;

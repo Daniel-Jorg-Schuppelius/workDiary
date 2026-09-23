@@ -8,15 +8,17 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Customer;
 
 use App\Enums\Customer\CustomerQueryStatus;
 use App\Enums\User\Permission;
-use App\Models\{CustomerQuery, User};
+use App\Models\Customer\Customer\CustomerQuery;
+use App\Models\Platform\User;
 use App\Services\Customer\CustomerQueryService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 /**
  * Interne Verwaltung der Kunden-Rückfragen (Feature 012).
@@ -87,7 +89,7 @@ class CustomerQueryController extends Controller {
             }
 
             try {
-                $organization = \App\Models\Organization::query()->withoutGlobalScopes()->findOrFail($customerQuery->organization_id);
+                $organization = \App\Models\Platform\Organization::query()->withoutGlobalScopes()->findOrFail($customerQuery->organization_id);
                 $translated = app(\App\Services\Ai\Suggestions\CoveringTextSuggestionService::class)->translatePortalAnswer(
                     $organization,
                     $customerQuery->customer_id !== null ? (int) $customerQuery->customer_id : null,

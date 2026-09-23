@@ -14,7 +14,7 @@ namespace App\Services\Accounting\Posting\Adapters;
 
 use App\Enums\Finance\{PostingAccountRole, PostingSourceKind};
 use App\Models\Accounting\{AccountingAccount, AccountingFiscalYear, AccountingPeriod, FixedAsset};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Accounting\{DepreciationCalculator, DepreciationScheduleRow};
 use App\Services\Accounting\Posting\{PostingProposal, PostingProposalLine, PostingRuleResolver};
 use App\Support\CarbonFmt;

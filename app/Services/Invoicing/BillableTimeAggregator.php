@@ -10,7 +10,8 @@
 
 namespace App\Services\Invoicing;
 
-use App\Models\{Project, TimeEntry};
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use Illuminate\Support\Collection;
 
 /**

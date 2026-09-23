@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Organization, PluginSetting, PluginState};
+use App\Models\Platform\{Organization, PluginSetting, PluginState};
 use App\Plugins\Lexoffice\{LexofficeMapper, LexofficePlugin, LexofficeService};
 use App\Plugins\PluginHealth;
 use Illuminate\Foundation\Testing\RefreshDatabase;

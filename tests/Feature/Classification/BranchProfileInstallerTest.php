@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Classification;
 
-use App\Models\{AuditLog, Classification, ClassificationRequirement, Organization, ProcedureStepDef, ProcedureTemplate, RoomRequirementTemplate, Software, Tag, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Classification\{Classification, ClassificationRequirement, Tag};
+use App\Models\Platform\{Organization, User};
+use App\Models\{ProcedureStepDef, ProcedureTemplate, RoomRequirementTemplate, Software};
 use App\Services\Classification\BranchProfileInstaller;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -678,7 +681,7 @@ class BranchProfileInstallerTest extends TestCase {
         $used = Classification::query()->where('organization_id', $this->org->id)
             ->where('domain', 'entry_type')->where('code', 'repair')->firstOrFail();
         // Kunde trägt die Klassifikation (HasClassifications-Pivot), Auftrag den Tag.
-        $customer = \App\Models\Customer::factory()->create(['organization_id' => $this->org->id, 'created_by' => $this->actor->id]);
+        $customer = \App\Models\Customer\Customer::factory()->create(['organization_id' => $this->org->id, 'created_by' => $this->actor->id]);
         $customer->classifications()->attach($used->id);
         $entry = \App\Models\DiaryEntry::factory()->create(['organization_id' => $this->org->id, 'user_id' => $this->actor->id]);
         $usedTag = Tag::query()->withoutGlobalScopes()->where('organization_id', $this->org->id)->where('name', '#wartung')->firstOrFail();

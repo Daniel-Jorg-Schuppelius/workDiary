@@ -12,7 +12,10 @@ namespace Tests\Feature\Helpdesk;
 
 use App\Enums\ServiceTicket\{ServiceTicketStatus, TicketMessageKind};
 use App\Jobs\ServiceTicketReplyMailJob;
-use App\Models\{EmailConnection, IntegrationInboxItem, Organization, ServiceQueue, ServiceTicket, ServiceTicketMessage, User};
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Mail\EmailConnection;
+use App\Models\Platform\{Organization, User};
+use App\Models\{ServiceQueue, ServiceTicket, ServiceTicketMessage};
 use App\Services\Mail\{MailInboxResolutionService, MailIntakeService, ParsedMessage};
 use App\Services\ServiceTicket\TicketConversationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -160,7 +163,7 @@ final class HelpdeskConversationTest extends TestCase {
      */
     public function test_subject_threading_requires_a_known_sender(): void {
         [, $connection] = $this->queueWithMailbox();
-        $customer = \App\Models\Customer::factory()->create([
+        $customer = \App\Models\Customer\Customer::factory()->create([
             'organization_id' => $this->org->id,
             'email' => 'kunde@acme.test',
         ]);

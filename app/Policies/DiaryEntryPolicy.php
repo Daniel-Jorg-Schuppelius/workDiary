@@ -11,7 +11,8 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission;
-use App\Models\{DiaryEntry, User};
+use App\Models\DiaryEntry;
+use App\Models\Platform\User;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class DiaryEntryPolicy {

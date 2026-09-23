@@ -14,7 +14,7 @@ namespace App\Models\Accounting;
 
 use App\Enums\Finance\{AccountingSovereignty, ProfitDetermination};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};

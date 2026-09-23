@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\{Organization, Team};
-use App\Policies\TeamPolicy;
+use App\Models\Platform\{Organization, Team};
+use App\Policies\Platform\TeamPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};
 use Tests\TestCase;

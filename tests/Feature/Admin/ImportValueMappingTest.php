@@ -14,7 +14,10 @@ namespace Tests\Feature\Admin;
 
 use App\Enums\Classification\ClassificationDomain;
 use App\Enums\Import\ImportRunState;
-use App\Models\{Classification, Customer, ImportRun, ImportValueMapping, Organization, Tag, User};
+use App\Models\Classification\{Classification, Tag};
+use App\Models\Customer\Customer;
+use App\Models\Integration\{ImportRun, ImportValueMapping};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;

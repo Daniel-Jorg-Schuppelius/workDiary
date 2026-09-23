@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Isms;
 use App\Enums\Isms\AdvisoryFormat;
 use App\Http\Controllers\Controller;
 use App\Models\Isms\IsmsAdvisory;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Isms\AdvisoryImportService;
 use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};

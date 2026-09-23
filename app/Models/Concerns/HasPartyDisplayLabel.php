@@ -25,7 +25,7 @@ namespace App\Models\Concerns;
  * Bewusste Ausnahme: {@see \App\Services\Cti\CtiCallService} dreht die
  * Reihenfolge um (Name vor Firma) — im Anruf-Popup ist die Person die
  * hilfreichere Auskunft. Diese Stelle nutzt den Accessor deshalb nicht.
- * Ebenfalls außen vor: {@see \App\Models\Lead} (Firma ?: Ansprechpartner,
+ * Ebenfalls außen vor: {@see \App\Models\Sales\Lead} (Firma ?: Ansprechpartner,
  * kein `name`-Feld).
  *
  * @property string|null $company

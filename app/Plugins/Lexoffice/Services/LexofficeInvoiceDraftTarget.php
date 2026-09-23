@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Lexoffice\Services;
 
 use App\Enums\Finance\BillingMode;
-use App\Models\{Customer, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeDraftInvoiceService};
 use App\Services\Finance\BillingModeResolver;
 use App\Services\Invoicing\TaxResolver;

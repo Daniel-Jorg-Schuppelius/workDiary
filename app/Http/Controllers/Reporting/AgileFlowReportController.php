@@ -16,7 +16,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\Agile\{AgileBoard, AgileEvent};
-use App\Models\Project;
+use App\Models\Project\Project;
 use App\Services\Agile\AgileMetricsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;

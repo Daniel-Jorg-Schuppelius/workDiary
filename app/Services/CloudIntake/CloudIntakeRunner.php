@@ -11,8 +11,9 @@
 namespace App\Services\CloudIntake;
 
 use App\Enums\CloudIntake\CloudIntakeItemStatus;
-use App\Models\{AuditLog, User};
+use App\Models\Audit\AuditLog;
 use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem};
+use App\Models\Platform\User;
 use App\Plugins\Contracts\DocumentIntakeSource;
 use App\Plugins\PluginManager;
 use App\Plugins\Support\Intake\IntakeItem;
@@ -85,7 +86,7 @@ class CloudIntakeRunner {
         // Org-Kontext binden (Scheduler-Lauf) mit garantiertem Restore —
         // zentral über OrganizationContext (Vollaudit 2026-07, M42).
         $organization = $connection->organization;
-        if (! $organization instanceof \App\Models\Organization) {
+        if (! $organization instanceof \App\Models\Platform\Organization) {
             $lock->release();
 
             return $result;

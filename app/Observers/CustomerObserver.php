@@ -10,7 +10,7 @@
 
 namespace App\Observers;
 
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 
 /**
  * Nur Fachlogik — Audit-Logging läuft ausschließlich über das Auditable-Trait

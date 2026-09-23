@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{ContactAddress, Customer, Supplier};
+use App\Models\Contacts\ContactAddress;
+use App\Models\Customer\Customer;
+use App\Models\Supplier;
 use App\Plugins\Lexoffice\LexofficeMapper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

@@ -12,7 +12,7 @@ namespace Tests\Feature\Isms;
 
 use App\Enums\Isms\NormConformityStatus;
 use App\Models\Isms\{IsmsApplicabilityStatement, IsmsAudit, IsmsAuditFinding, IsmsCertificate, IsmsControl, IsmsCorrectiveAction, IsmsNormStatus, IsmsRequirement, IsmsRisk, IsmsRiskAssessment, IsmsScope, IsmsSoftwareProduct};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

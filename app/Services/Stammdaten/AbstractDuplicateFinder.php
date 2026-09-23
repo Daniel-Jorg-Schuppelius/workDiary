@@ -10,9 +10,9 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Services\Stammdaten;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Integration\Match\{EntityMatcher, MatchProfile, MatchStrategy};
 use Illuminate\Database\Eloquent\{Collection as EloquentCollection, Model};
 use Illuminate\Support\Collection;

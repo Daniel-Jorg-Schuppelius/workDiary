@@ -14,7 +14,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Reporting\{PaymentBehaviorReportBuilder, ReportFilters};
 use App\Support\CarbonFmt;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -102,7 +102,7 @@ class PaymentBehaviorReportController extends Controller {
      */
     private function customerUrl(int $customerId, ReportFilters $filters): string {
         return route('reports.payment-behavior', array_merge($filters->toQueryParams(), [
-            'customer' => \App\Support\Sqid::encode(\App\Models\Customer::class, $customerId),
+            'customer' => \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $customerId),
         ]));
     }
 

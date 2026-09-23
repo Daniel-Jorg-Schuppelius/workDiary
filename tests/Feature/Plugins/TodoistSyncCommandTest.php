@@ -11,7 +11,9 @@
 namespace Tests\Feature\Plugins;
 
 use App\Enums\Task\TaskStatus;
-use App\Models\{ExternalReference, IntegrationInboxItem, Task, TodoistConnection, TodoistProjectLink};
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Plugins\Todoist\{TodoistConnection, TodoistProjectLink};
+use App\Models\Project\Task;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
 use Spatie\Permission\PermissionRegistrar;

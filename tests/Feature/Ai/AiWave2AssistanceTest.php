@@ -16,7 +16,13 @@ use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType, Comm
 use App\Enums\Customer\CustomerQueryStatus;
 use App\Enums\User\Permission;
 use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection, AiTextSuggestion};
-use App\Models\{AuditLog, Comment, CommunicationNote, Customer, CustomerQuery, DiaryEntry, Project, Quote, QuoteItem, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Communication\{Comment, CommunicationNote};
+use App\Models\Customer\{Customer, CustomerQuery};
+use App\Models\DiaryEntry;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\Sales\{Quote, QuoteItem};
 use App\Services\Ai\Dto\{ExplainRequest, ExtractRequest, SummarizeRequest, TranslateRequest};
 use App\Services\Ai\Suggestions\{CaseNarrativeSuggestionService, CommunicationNoteSuggestionService, DocumentTranslationSuggestionService, PlanActualExplainService, PortalQuerySuggestionService, SupportDiagnosisSuggestionService};
 use App\Services\Ai\Support\CustomerNameMasker;

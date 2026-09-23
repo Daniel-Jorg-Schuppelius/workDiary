@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Import\Specs\Concerns;
 
-use App\Models\{ImportValueMapping, Organization, User};
+use App\Models\Integration\ImportValueMapping;
+use App\Models\Platform\{Organization, User};
 
 /**
  * Benutzer-Auflösung der Zeitimport-Specs (Projektzeiten, Stempelungen,

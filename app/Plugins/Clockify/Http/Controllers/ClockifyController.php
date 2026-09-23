@@ -11,7 +11,8 @@
 namespace App\Plugins\Clockify\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{IntegrationInboxItem, Organization};
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Platform\Organization;
 use App\Plugins\Clockify\{ClockifyConfig, ClockifyExportService, ClockifyImportService, ClockifyPlugin};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use Carbon\CarbonImmutable;

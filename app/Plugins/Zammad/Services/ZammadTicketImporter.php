@@ -12,7 +12,11 @@ declare(strict_types=1);
 
 namespace App\Plugins\Zammad\Services;
 
-use App\Models\{Customer, ExternalReference, IntegrationInboxItem, Organization, Project, Task, User, ZammadConnection};
+use App\Models\Customer\Customer;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\{Organization, User};
+use App\Models\Plugins\Zammad\ZammadConnection;
+use App\Models\Project\{Project, Task};
 use App\Plugins\Zammad\Contracts\ZammadGateway;
 use App\Plugins\Zammad\ZammadPlugin;
 use App\Services\Integration\Match\EntityMatcher;
@@ -57,7 +61,7 @@ class ZammadTicketImporter {
             // trägt data_ownership=external); sonst Bestand (Task).
             if ($connection->ticket_target === 'service_ticket' && $connection->service_queue_id !== null) {
                 $serviceTicket = app(\App\Services\ServiceTicket\ServiceTicketService::class)->create(
-                    \App\Models\Organization::query()->whereKey($connection->organization_id)->firstOrFail(),
+                    \App\Models\Platform\Organization::query()->whereKey($connection->organization_id)->firstOrFail(),
                     $actor,
                     [
                         'title' => $this->taskTitle($ticket),
@@ -86,7 +90,7 @@ class ZammadTicketImporter {
             // Aufgabenbereich, landet das Ticket als Inbox-Konflikt statt
             // als Task-Write (native Führung erlaubt den Import wie bisher).
             $ownership = app(\App\Services\Integration\DataOwnershipResolver::class);
-            $organization = \App\Models\Organization::query()->whereKey($connection->organization_id)->firstOrFail();
+            $organization = \App\Models\Platform\Organization::query()->whereKey($connection->organization_id)->firstOrFail();
             if (! $ownership->mayWrite($organization, \App\Enums\Integration\DataDomain::Tasks, ZammadPlugin::ID)) {
                 IntegrationInboxItem::query()->firstOrCreate(
                     [

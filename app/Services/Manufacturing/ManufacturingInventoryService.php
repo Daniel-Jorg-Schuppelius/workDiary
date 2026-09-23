@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Enums\Inventory\{StockMovementType, StockState};
-use App\Models\{ArticleVariant, ManufacturingOrder, ManufacturingOrderMaterial, Organization, Warehouse};
+use App\Models\{ArticleVariant, ManufacturingOrder, ManufacturingOrderMaterial, Warehouse};
+use App\Models\Platform\Organization;
 use App\Services\Inventory\{InventoryLedger, InventoryValuationManager, ReservationService, SerialService, StockPosting};
 use App\Support\DecimalQty;
 use CommonToolkit\Enums\CurrencyCode;

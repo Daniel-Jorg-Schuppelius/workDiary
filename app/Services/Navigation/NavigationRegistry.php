@@ -14,7 +14,7 @@ namespace App\Services\Navigation;
 
 use App\Enums\User\Permission;
 use App\Legacy\LegacyBridge;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Modules\ModuleRegistry;
 use App\Plugins\PluginManager;
 use App\Services\Licensing\FeatureFlagResolver;
@@ -267,7 +267,7 @@ class NavigationRegistry {
         $knowledgeHubAvailable = $user instanceof User
             && app(\App\Services\Collections\CollectableTypes::class)->availableKeys($user) !== [];
         $documentsAvailable = $this->features->isEnabled('module.documents')
-            && Gate::allows('viewAny', \App\Models\Document::class);
+            && Gate::allows('viewAny', \App\Models\Document\Document::class);
 
         $sidebarSections = [];
         $sidebarSections[] = [
@@ -323,7 +323,7 @@ class NavigationRegistry {
                             : null,
                         // Formulare bleiben eigenständig: ein ausgefülltes Formular
                         // ist ein Nachweis am Vorgang, kein Wissensinhalt.
-                        $this->features->isEnabled('module.forms') && Gate::allows('viewAny', \App\Models\FormSubmission::class)
+                        $this->features->isEnabled('module.forms') && Gate::allows('viewAny', \App\Models\Form\FormSubmission::class)
                             ? ['route' => 'form-submissions.index', 'label' => __('form.title.submissions'), 'icon' => 'edit_note', 'modal' => false, 'matches' => ['form-submissions.*']]
                             : null,
                     ]),
@@ -345,7 +345,7 @@ class NavigationRegistry {
                 ['route' => 'time-accounts.index', 'label' => __('Zeitkonten'), 'icon' => 'account_balance', 'modal' => false, 'matches' => ['time-accounts.*']],
                 // MVP-524: Anwesenheits-Board — nur bei aktiviertem Org-Opt-in.
                 (bool) data_get(
-                    app()->bound('currentOrganization') && app('currentOrganization') instanceof \App\Models\Organization
+                    app()->bound('currentOrganization') && app('currentOrganization') instanceof \App\Models\Platform\Organization
                         ? app('currentOrganization')->settings
                         : null,
                     'presence.board_enabled',
@@ -530,7 +530,7 @@ class NavigationRegistry {
                         // Nachfass-Arbeitsliste (Feature 112, MVP-601): eigene Seite,
                         // weil der Beleg-Feed auf den globalen Zeitraum begrenzt ist
                         // und ein drei Monate altes Angebot dort herausfiele.
-                        ...(Gate::allows('viewAny', \App\Models\Quote::class)
+                        ...(Gate::allows('viewAny', \App\Models\Sales\Quote::class)
                             ? [['route' => 'quotes.follow-ups.index', 'label' => __('quotes.follow_up.title'), 'icon' => 'phone_forwarded', 'modal' => false, 'matches' => ['quotes.follow-ups.*'], 'badge' => $this->dueQuoteFollowUpCount()]]
                             : []),
                         ...(Gate::allows('timeEntry.viewAny')
@@ -1556,7 +1556,7 @@ class NavigationRegistry {
         return (int) Cache::remember(
             'nav-badge:quote-followup:' . (int) $organizationId,
             self::BADGE_TTL,
-            static fn (): int => \App\Models\Quote::query()
+            static fn (): int => \App\Models\Sales\Quote::query()
                 ->whereIn('status', ['approved', 'sent'])
                 ->whereNotNull('follow_up_at')
                 ->whereNull('followed_up_at')
@@ -1591,7 +1591,7 @@ class NavigationRegistry {
             ->where('due_on', '<', $today)
             ->count();
 
-        $vouchers = \App\Models\LexofficeVoucher::query()
+        $vouchers = \App\Models\Plugins\Lexoffice\LexofficeVoucher::query()
             ->where('organization_id', $organizationId)
             ->where('archived', false)
             ->whereIn('voucher_type', \App\Support\Billing\VoucherTypes::REVENUE)
@@ -1615,7 +1615,7 @@ class NavigationRegistry {
 
         $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
 
-        return $this->localLedgerVisible = $organization instanceof \App\Models\Organization
+        return $this->localLedgerVisible = $organization instanceof \App\Models\Platform\Organization
             && app(\App\Services\Accounting\AccountingSovereigntyResolver::class)->hasLocalLedger($organization);
     }
 
@@ -1709,7 +1709,7 @@ class NavigationRegistry {
                 }
                 $adminNavItems[] = ['route' => 'admin.branding.edit', 'label' => __('Branding'), 'icon' => 'palette', 'modal' => false];
                 // Such-Synonyme (Feature 153): wirken auf die Suche der ganzen Organisation.
-                if (Gate::allows('viewAny', \App\Models\SearchSynonymGroup::class)) {
+                if (Gate::allows('viewAny', \App\Models\Search\SearchSynonymGroup::class)) {
                     $adminNavItems[] = ['route' => 'admin.search-synonyms.index', 'label' => __('search.synonyms.title'), 'icon' => 'manage_search', 'modal' => false, 'matches' => ['admin.search-synonyms.*']];
                 }
                 // PDF-Dokumentdesign/CI-Basisdesign (Feature 076, Ausbau #83): war bislang nur per Direkt-URL erreichbar.
@@ -1790,9 +1790,9 @@ class NavigationRegistry {
                         ? (int) Cache::remember(
                             'nav-badge:integration-inbox:' . (int) $iiOrg,
                             self::BADGE_TTL,
-                            static fn (): int => \App\Models\IntegrationInboxItem::query()
+                            static fn (): int => \App\Models\Integration\IntegrationInboxItem::query()
                                 ->where('organization_id', $iiOrg)
-                                ->where('status', \App\Models\IntegrationInboxItem::STATUS_OPEN)
+                                ->where('status', \App\Models\Integration\IntegrationInboxItem::STATUS_OPEN)
                                 ->count(),
                         )
                         : 0;
@@ -1804,9 +1804,9 @@ class NavigationRegistry {
                         ? (int) Cache::remember(
                             'nav-badge:remote-pending:' . (int) $rsOrg,
                             self::BADGE_TTL,
-                            static fn (): int => \App\Models\RemotePendingSession::query()
+                            static fn (): int => \App\Models\Auth\RemotePendingSession::query()
                                 ->where('organization_id', $rsOrg)
-                                ->where('status', \App\Models\RemotePendingSession::STATUS_OPEN)
+                                ->where('status', \App\Models\Auth\RemotePendingSession::STATUS_OPEN)
                                 ->count(),
                         )
                         : 0;
@@ -1862,9 +1862,9 @@ class NavigationRegistry {
                     $opsOrg = $user->organization_id;
                     $opsOpen = $opsOrg !== null
                         ? (int) Cache::remember(
-                            \App\Models\OperationsTask::navBadgeCacheKey((int) $opsOrg),
-                            \App\Models\OperationsTask::NAV_BADGE_TTL,
-                            static fn(): int => \App\Models\OperationsTask::query()
+                            \App\Models\Project\OperationsTask::navBadgeCacheKey((int) $opsOrg),
+                            \App\Models\Project\OperationsTask::NAV_BADGE_TTL,
+                            static fn(): int => \App\Models\Project\OperationsTask::query()
                                 ->where('organization_id', $opsOrg)
                                 ->active()
                                 ->count(),
@@ -1888,7 +1888,7 @@ class NavigationRegistry {
                 $peOpen = (int) Cache::remember(
                     'nav-badge:plugin-errors:' . $peOrg,
                     60,
-                    static fn(): int => \App\Models\PluginError::query()
+                    static fn(): int => \App\Models\Platform\PluginError::query()
                         ->whereNull('acknowledged_at')
                         ->where(static function ($q) use ($peOrg): void {
                             $q->whereNull('organization_id')->orWhere('organization_id', $peOrg);

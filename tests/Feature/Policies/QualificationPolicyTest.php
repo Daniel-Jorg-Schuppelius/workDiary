@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Policies;
 
-use App\Models\{Organization, Qualification, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\Qualification;
 use App\Policies\QualificationPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};

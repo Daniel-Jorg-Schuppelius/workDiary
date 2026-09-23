@@ -12,7 +12,10 @@ namespace Tests\Feature\CloudIntake;
 
 use App\Enums\CloudIntake\{CloudIntakeItemStatus, CloudIntakeRouteTarget};
 use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem, CloudDocumentRoute};
-use App\Models\{Customer, Document, DocumentVersion, IntegrationInboxItem, User};
+use App\Models\Customer\Customer;
+use App\Models\Document\{Document, DocumentVersion};
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Platform\User;
 use App\Plugins\Support\Intake\{IntakeChangePage, IntakeItem};
 use App\Services\CloudIntake\{CloudIntakeRunner, StaleCheckpointException};
 use App\Support\MorphMap;

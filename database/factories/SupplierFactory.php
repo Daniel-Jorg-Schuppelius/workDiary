@@ -10,7 +10,8 @@
 
 namespace Database\Factories;
 
-use App\Models\{Supplier, User};
+use App\Models\Platform\User;
+use App\Models\Supplier;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

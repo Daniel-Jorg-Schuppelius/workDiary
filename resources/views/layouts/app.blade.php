@@ -258,25 +258,25 @@
             $legacyUserId = \App\Legacy\Support\LegacyRoleResolver::resolveLegacyUserId(Auth::user());
             $isLegacyAdmin = \App\Legacy\Support\LegacyRoleResolver::isAdmin(Auth::user());
             $_authUser = Auth::user();
-            $canAccessLegacy = $_authUser instanceof \App\Models\User ? $_authUser->canAccessLegacy() : false;
-            $canAccessNew = $_authUser instanceof \App\Models\User ? $_authUser->canAccessNew() : false;
+            $canAccessLegacy = $_authUser instanceof \App\Models\Platform\User ? $_authUser->canAccessLegacy() : false;
+            $canAccessNew = $_authUser instanceof \App\Models\Platform\User ? $_authUser->canAccessNew() : false;
             $showModeSwitch = $legacyConfigured && $canAccessLegacy && $canAccessNew;
 
             // Org-Switcher: nur für Admins, und nur wenn überhaupt
             // mehrere Organisationen existieren. Aktive Org kommt aus dem
             // (via SetOrganizationContext-Middleware bereits aufgelösten)
             // Container-Binding currentOrganization.
-            $_isGlobalAdmin = $_authUser instanceof \App\Models\User && $_authUser->isAdmin();
+            $_isGlobalAdmin = $_authUser instanceof \App\Models\Platform\User && $_authUser->isAdmin();
             // Echter Plattform-Betreiber (darf Org-Kontext wechseln + Mandanten
             // verwalten). NUR diese Kennung schaltet Cross-Tenant-Oberflächen
             // frei; ein org-lokaler Admin ($_isGlobalAdmin, Fehlname) bleibt
             // auf seine Organisation beschränkt.
-            $_isPlatformAdmin = $_authUser instanceof \App\Models\User && $_authUser->isGlobalAdmin();
+            $_isPlatformAdmin = $_authUser instanceof \App\Models\Platform\User && $_authUser->isGlobalAdmin();
             // Nur AKTIVE Organisationen im Header-Switcher anbieten; deaktivierte
             // dürfen nicht als Kontext gewählt werden, bis sie über die Verwaltung
             // wieder aktiviert wurden.
             $_orgList = $_isPlatformAdmin
-                ? \App\Models\Organization::query()->where('is_active', true)->orderBy('name')->get(['id', 'name'])
+                ? \App\Models\Platform\Organization::query()->where('is_active', true)->orderBy('name')->get(['id', 'name'])
                 : collect();
             $_activeOrg = app()->bound('currentOrganization') ? app('currentOrganization') : null;
             $_activeOrgId = $_activeOrg ? (int) $_activeOrg->id : null;
@@ -321,7 +321,7 @@
                             // aufgelöst über Session → Preference → Org-Default → Config-Default.
                             // Rein kosmetisch; greift nur im neuen Modus als letzter Filterschritt.
                             $_focusSvc = app(\App\Services\Navigation\NavFocusService::class);
-                            $navFocusActive = $isLegacyMode ? 'all' : $_focusSvc->resolveActive($_authUser instanceof \App\Models\User ? $_authUser : null, $_activeOrg, session(\App\Services\Navigation\NavFocusService::SESSION_KEY));
+                            $navFocusActive = $isLegacyMode ? 'all' : $_focusSvc->resolveActive($_authUser instanceof \App\Models\Platform\User ? $_authUser : null, $_activeOrg, session(\App\Services\Navigation\NavFocusService::SESSION_KEY));
                             $navFocusAvailable = $isLegacyMode ? [] : $_focusSvc->availableFor($_activeOrg);
 
                             // Navigation (Feature 081, MVP-372): alle Menüstrukturen kommen aus
@@ -1376,7 +1376,7 @@
                     $_graceItems = [];
                     if (app()->bound('currentOrganization')) {
                         $_purgeable = (array) config('plans.purgeable_on_downgrade', []);
-                        foreach (\App\Models\PlanModuleGrace::query()
+                        foreach (\App\Models\Platform\PlanModuleGrace::query()
                             ->where('organization_id', app('currentOrganization')->id)
                             ->whereNull('purged_at')
                             ->where('grace_until', '>', now())

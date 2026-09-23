@@ -11,7 +11,9 @@
 namespace App\Http\Controllers\CustomerPortal;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Attachment, AttachmentConfirmation, DiaryEntry, User};
+use App\Models\Attachments\{Attachment, AttachmentConfirmation};
+use App\Models\DiaryEntry;
+use App\Models\Platform\User;
 use App\Services\Customer\CustomerQueryService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;

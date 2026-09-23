@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy;
 
-use App\Models\{Attachment, User};
+use App\Models\Attachments\Attachment;
+use App\Models\Platform\User;
 use App\Services\Attachments\ImageMetaUploader;
 use Illuminate\Support\Str;
 use RuntimeException;

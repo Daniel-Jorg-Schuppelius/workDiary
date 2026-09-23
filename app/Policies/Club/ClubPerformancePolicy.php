@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Policies\Club;
 
 use App\Models\Club\ClubPerformance;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
 
 /** Leistungen und Startrechte (MVP-855): Leistungen erfasst/bestätigt Verwaltung oder Gruppenleitung, Startrechte nur Verwaltung. */

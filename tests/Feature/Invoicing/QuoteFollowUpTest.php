@@ -11,9 +11,11 @@
 namespace Tests\Feature\Invoicing;
 
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
-use App\Models\CommunicationNote;
-use App\Models\{Customer, Organization, Quote, User};
+use App\Models\Communication\CommunicationNote;
+use App\Models\Customer\Customer;
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
+use App\Models\Platform\{Organization, User};
+use App\Models\Sales\Quote;
 use App\Services\Invoicing\{QuoteFollowUpService, QuoteService};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

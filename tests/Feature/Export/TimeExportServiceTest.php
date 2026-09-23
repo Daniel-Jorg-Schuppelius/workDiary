@@ -14,7 +14,8 @@ use App\Enums\Attendance\AttendanceStatus;
 use App\Enums\TimeApproval\MonthClosureStatus;
 use App\Enums\TimeExport\TimeExportStatus;
 use App\Enums\User\Permission as P;
-use App\Models\{Attendance, MonthClosure, TimeExportEvent, User};
+use App\Models\{Attendance, MonthClosure, TimeExportEvent};
+use App\Models\Platform\User;
 use App\Services\TimeApproval\MonthClosureService;
 use App\Services\TimeExport\{TimeExportException, TimeExportService};
 use Carbon\CarbonImmutable;
@@ -370,7 +371,7 @@ class TimeExportServiceTest extends TestCase {
             'start_at' => '2024-01-20 08:00:00', // 8 h Bereitschaft
             'end_at' => '2024-01-20 16:00:00',
         ]);
-        $project = \App\Models\Project::query()->create([
+        $project = \App\Models\Project\Project::query()->create([
             'organization_id' => $this->organization->id,
             'name' => 'Reisen',
             'status' => \App\Enums\Project\ProjectStatus::Active->value,
@@ -429,7 +430,7 @@ class TimeExportServiceTest extends TestCase {
         $this->assertDatabaseMissing('time_exports', ['id' => $built->id]);
         $this->assertSame(0, \App\Models\TimeExportLine::query()->where('time_export_id', $built->id)->count());
         Storage::disk('local')->assertMissing($file);
-        $log = \App\Models\AuditLog::query()->where('event', 'export.deleted')->firstOrFail();
+        $log = \App\Models\Audit\AuditLog::query()->where('event', 'export.deleted')->firstOrFail();
         $this->assertSame('Fehlerhafte Periode, Neuaufbau folgt.', $log->changes['reason']);
 
         // Übergebene Läufe sind tabu (Aufbewahrungspflicht).

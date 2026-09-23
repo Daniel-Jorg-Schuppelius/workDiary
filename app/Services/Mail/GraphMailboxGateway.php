@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Mail;
 
-use App\Models\{EmailConnection, MsgraphMailConnection};
+use App\Models\Mail\EmailConnection;
+use App\Models\Plugins\Msgraph\MsgraphMailConnection;
 use App\Plugins\Msgraph\Api\MsgraphMailClient;
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Support\Carbon;

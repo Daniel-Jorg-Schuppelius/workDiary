@@ -16,7 +16,7 @@ use App\Enums\Learning\LearningUnitKind;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Learning\Concerns\RendersLtiAutoPost;
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningLtiLink, LearningUnit};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\LearningLtiPlatformService;
 use App\Support\Sqid;
 use CommonToolkit\Helper\Data\WebLinkHelper;

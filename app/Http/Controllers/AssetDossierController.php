@@ -12,7 +12,9 @@ namespace App\Http\Controllers;
 
 use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Enums\User\Permission;
-use App\Models\{Asset, Attachment, DiaryEntry, MaterialUsage, Protocol, ServiceTicket, User};
+use App\Models\{Asset, DiaryEntry, MaterialUsage, Protocol, ServiceTicket};
+use App\Models\Attachments\Attachment;
+use App\Models\Platform\User;
 use App\Services\Asset\{AssetLifecycleService, AssetTimelineService};
 use App\Services\ServiceTicket\SlaTimer;
 use Illuminate\Http\Request;

@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Reselling;
 
 use App\Enums\Reselling\PeriodStatus;
-use App\Models\{Customer, ExternalReference};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Services\Reselling\Register\{LinkProposer, PeriodPlanner, ResaleInvoiceDraftService};

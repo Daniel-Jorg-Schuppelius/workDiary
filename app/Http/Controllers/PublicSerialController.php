@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Inventory\{SerialPassportService, SerialService};
 use Illuminate\Http\Request;
 use Illuminate\View\View;

@@ -12,8 +12,8 @@ namespace Tests\Feature\Learning;
 
 use App\Enums\Privacy\{DataSubjectKind, DataSubjectRequestType};
 use App\Models\Learning\{LearningCertificate, LearningEnrollment};
+use App\Models\Platform\User;
 use App\Models\Privacy\{DataSubjectRequest, RetentionProposal};
-use App\Models\User;
 use App\Services\Learning\{LearningCourseService, LearningEnrollmentService};
 use App\Services\Privacy\{DataSubjectRequestService, SubjectDataExporter};
 use App\Services\Privacy\Retention\{RetentionRegistry, RetentionScanService};

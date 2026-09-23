@@ -8,10 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Policies;
+namespace App\Policies\Calendar;
 
 use App\Enums\User\UserRole;
-use App\Models\{EventCategory, User};
+use App\Models\Calendar\EventCategory;
+use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
 
 class EventCategoryPolicy {

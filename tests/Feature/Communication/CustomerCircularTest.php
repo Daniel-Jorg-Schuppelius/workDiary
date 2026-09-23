@@ -12,9 +12,11 @@ namespace Tests\Feature\Communication;
 
 use App\Enums\Communication\CommunicationVisibility;
 use App\Mail\CustomerCircularMail;
+use App\Models\Communication\CommunicationNote;
 use App\Models\Communication\{CustomerCircular, CustomerCircularRecipient};
-use App\Models\CommunicationNote;
-use App\Models\{Customer, Organization, Project, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
 use App\Services\Communication\CustomerCircularService;
 use App\Settings\SettingScope;
 use App\Support\{MorphMap, Setting};

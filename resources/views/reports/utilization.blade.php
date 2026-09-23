@@ -89,7 +89,7 @@
                 @foreach ($rows as $row)
                     <tr>
                         <td class="font-medium">
-                            <a href="{{ route('reports.month-by-user-team', ['user' => \App\Support\Sqid::encode(\App\Models\User::class, $row['userId'])]) }}" class="link link-hover">{{ $row['userName'] }}</a>
+                            <a href="{{ route('reports.month-by-user-team', ['user' => \App\Support\Sqid::encode(\App\Models\Platform\User::class, $row['userId'])]) }}" class="link link-hover">{{ $row['userName'] }}</a>
                         </td>
                         <td class="text-right tabular-nums">{{ $hours($row['targetMinutes']) }}</td>
                         <td class="text-right tabular-nums">{{ $hours($row['trackedMinutes']) }}</td>

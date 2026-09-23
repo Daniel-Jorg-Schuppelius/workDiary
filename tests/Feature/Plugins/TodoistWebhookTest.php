@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Task, TodoistConnection, TodoistProjectLink, TodoistWebhookDelivery};
+use App\Models\Plugins\Todoist\{TodoistConnection, TodoistProjectLink, TodoistWebhookDelivery};
+use App\Models\Project\Task;
 use App\Plugins\Todoist\Jobs\TodoistWebhookSyncJob;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
@@ -165,7 +166,7 @@ final class TodoistWebhookTest extends TestCase {
         Queue::fake();
         $this->pluginSecret('todoist', ['client_secret' => 'org-sec']);
 
-        $fremde = \App\Models\Organization::factory()->create();
+        $fremde = \App\Models\Platform\Organization::factory()->create();
         $this->pluginSecret('todoist', ['client_secret' => 'fremd-sec'], (int) $fremde->id);
 
         $raw = (string) json_encode($this->eventPayload());

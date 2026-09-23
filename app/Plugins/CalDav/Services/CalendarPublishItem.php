@@ -18,7 +18,7 @@ use CommonToolkit\Helper\Data\CryptoHelper;
 /**
  * Ein zu publizierendes Kalenderelement (Feature 058). Providerneutral: eine
  * stabile UID, der CalDAV-Ressourcenname, das ICS-Dokument und die lokale
- * Herkunft (Morph) für die idempotente {@see \App\Models\ExternalReference}.
+ * Herkunft (Morph) für die idempotente {@see \App\Models\Integration\ExternalReference}.
  * `cancelled` markiert ein zu entfernendes Element (abgesagter Termin).
  * Seit C9 Item des gemeinsamen {@see \App\Plugins\Support\Calendar\RemoteCalendarPublishService};
  * der Fingerprint bleibt der ICS-Hash (byte-stabil zu Bestandsreferenzen).

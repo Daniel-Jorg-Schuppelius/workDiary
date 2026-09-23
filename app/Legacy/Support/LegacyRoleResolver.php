@@ -10,7 +10,7 @@
 
 namespace App\Legacy\Support;
 
-use App\Models\User;
+use App\Models\Platform\User;
 
 /**
  * Legacy-Identität und -Adminstatus eines angemeldeten Nutzers.

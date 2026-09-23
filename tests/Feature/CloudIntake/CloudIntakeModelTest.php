@@ -13,7 +13,7 @@ namespace Tests\Feature\CloudIntake;
 use App\Enums\CloudIntake\CloudIntakeConnectionStatus;
 use App\Enums\User\Permission;
 use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem, CloudDocumentRoute};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;

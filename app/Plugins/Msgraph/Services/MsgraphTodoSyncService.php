@@ -13,7 +13,10 @@ declare(strict_types=1);
 namespace App\Plugins\Msgraph\Services;
 
 use App\Enums\Task\{TaskPriority, TaskStatus};
-use App\Models\{ExternalReference, IntegrationInboxItem, MsgraphTaskConnection, MsgraphTaskListLink, Organization, Task};
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Msgraph\{MsgraphTaskConnection, MsgraphTaskListLink};
+use App\Models\Project\Task;
 use App\Plugins\Msgraph\Api\MsgraphTodoClient;
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Msgraph\Observers\MsgraphTodoTaskObserver;

@@ -11,7 +11,9 @@
 namespace Tests\Feature\Integration;
 
 use App\Enums\Integration\DataDomain;
-use App\Models\{AuditLog, Organization, Task, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Task;
 use App\Services\Integration\DataOwnershipResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -56,7 +58,7 @@ final class DataOwnershipTest extends TestCase {
         app()->instance('currentOrganization', $org);
         app(DataOwnershipResolver::class)->setOwner($org, DataDomain::Tasks, 'openproject');
 
-        $connection = \App\Models\ZammadConnection::query()->create([
+        $connection = \App\Models\Plugins\Zammad\ZammadConnection::query()->create([
             'organization_id' => $org->id,
             'name' => 'Support',
             'base_url' => 'https://support.example.com',
@@ -92,7 +94,7 @@ final class DataOwnershipTest extends TestCase {
         $this->assertSame(1, $result['inbox']);
         $this->assertSame(
             1,
-            \App\Models\IntegrationInboxItem::query()
+            \App\Models\Integration\IntegrationInboxItem::query()
                 ->where('external_type', 'ticket_ownership_conflict')->count(),
         );
     }

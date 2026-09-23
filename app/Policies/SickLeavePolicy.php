@@ -10,7 +10,9 @@
 
 namespace App\Policies;
 
-use App\Models\{Attachment, SickLeave, User};
+use App\Models\Attachments\Attachment;
+use App\Models\Platform\User;
+use App\Models\SickLeave;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 use App\Support\MorphMap;
 

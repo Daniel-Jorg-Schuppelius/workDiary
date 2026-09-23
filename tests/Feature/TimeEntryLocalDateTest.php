@@ -12,7 +12,9 @@ namespace Tests\Feature;
 
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Enums\Timesheet\{TimesheetKind, TimesheetStatus};
-use App\Models\{Project, TimeEntry, Timesheet, User};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\{TimeEntry, Timesheet};
 use App\Services\Timesheet\Stopwatch;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

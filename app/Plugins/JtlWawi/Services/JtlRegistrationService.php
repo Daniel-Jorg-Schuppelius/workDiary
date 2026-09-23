@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\JtlWawi\Services;
 
-use App\Models\JtlConnection;
+use App\Models\Plugins\JtlWawi\JtlConnection;
 use App\Plugins\JtlWawi\Api\JtlGatewayFactory;
 use App\Plugins\JtlWawi\JtlWawiPlugin;
 use Illuminate\Support\Str;

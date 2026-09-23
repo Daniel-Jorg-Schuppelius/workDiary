@@ -10,7 +10,8 @@
 
 namespace App\Plugins\Zammad;
 
-use App\Models\{Organization, ZammadConnection};
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Zammad\ZammadConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
 use App\Plugins\Zammad\Contracts\ZammadGatewayFactory;
@@ -23,7 +24,7 @@ use Throwable;
  * - Referenz-Provider der Anbindungs-Lückenanalyse: Tickets einer zugeordneten
  *   Zammad-Gruppe (Queue) kommen als WorkDiary-Aufgaben an, damit Zeiterfassung/
  *   Nachweise/Abrechnung dort laufen. Das Ticketsystem bleibt führend.
- * - Import ist **idempotent** über {@see \App\Models\ExternalReference}
+ * - Import ist **idempotent** über {@see \App\Models\Integration\ExternalReference}
  *   (Plugin `zammad`, Typ `ticket`); Replays erzeugen keine Dubletten.
  * - Polling ({@see Console\ZammadSyncCommand}) ist die verlässliche Quelle;
  *   Webhook ({@see Http\Controllers\ZammadWebhookController}) stößt nur an —

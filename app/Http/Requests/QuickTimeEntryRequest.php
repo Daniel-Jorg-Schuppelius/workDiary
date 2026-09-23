@@ -24,10 +24,10 @@ class QuickTimeEntryRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'project_id' => \App\Models\Project::class,
-        'task_id' => \App\Models\Task::class,
+        'project_id' => \App\Models\Project\Project::class,
+        'task_id' => \App\Models\Project\Task::class,
         'diary_entry_id' => \App\Models\DiaryEntry::class,
-        'tag_ids' => \App\Models\Tag::class,
+        'tag_ids' => \App\Models\Classification\Tag::class,
     ];
 
     /**

@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Plugins\CardDav;
 
-use App\Models\{CardDavConnection, Customer, ExternalReference, IntegrationInboxItem, Organization};
+use App\Models\Customer\Customer;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\Organization;
+use App\Models\Plugins\CardDav\CardDavConnection;
 use App\Plugins\CardDav\CardDavPlugin;
 use App\Plugins\CardDav\Contracts\{CardDavGateway, CardDavGatewayFactory};
 use App\Plugins\CardDav\Services\{CardDavCardChange, CardDavContactImporter, CardDavSyncPage};

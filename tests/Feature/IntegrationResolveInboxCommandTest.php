@@ -10,7 +10,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Customer, ExternalReference, IntegrationInboxItem};
+use App\Models\Customer\Customer;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

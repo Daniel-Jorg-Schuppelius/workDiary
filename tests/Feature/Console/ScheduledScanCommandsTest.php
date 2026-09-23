@@ -12,7 +12,7 @@ namespace Tests\Feature\Console;
 
 use App\Models\CloudIntake\CloudDocumentConnection;
 use App\Models\Domain\DomainProviderConnection;
-use App\Models\HelpView;
+use App\Models\Platform\HelpView;
 use App\Services\Security\OsvAdvisoryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Http, Queue};

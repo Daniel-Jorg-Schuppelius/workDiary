@@ -14,8 +14,9 @@ namespace App\Services\Passenger;
 
 use App\Enums\Diary\Status;
 use App\Enums\Passenger\{RideOperationMode, RideOrderChannel, RidePriceKind, RideStatus};
-use App\Models\{DiaryEntry, Organization, User, Vehicle};
+use App\Models\{DiaryEntry, Vehicle};
 use App\Models\Passenger\{PassengerConcession, PassengerFareTariff, PassengerRide, PassengerVehicleProfile};
+use App\Models\Platform\{Organization, User};
 use App\Services\Invoicing\TaxResolver;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;

@@ -13,8 +13,12 @@ declare(strict_types=1);
 namespace App\Models\Claims;
 
 use App\Enums\Claims\{ClaimSource, ClaimStatus};
-use App\Models\{Article, Asset, Classification, Customer, DiaryEntry, Invoice, Project, Protocol, PurchaseOrder, ServiceTicket, StockLot, StockSerial, Supplier, User};
+use App\Models\{Article, Asset, DiaryEntry, Invoice, Protocol, PurchaseOrder, ServiceTicket, StockLot, StockSerial, Supplier};
+use App\Models\Classification\Classification;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 

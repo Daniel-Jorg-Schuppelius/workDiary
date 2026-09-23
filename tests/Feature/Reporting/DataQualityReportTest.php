@@ -11,7 +11,9 @@
 namespace Tests\Feature\Reporting;
 
 use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequirementSeverity};
-use App\Models\{ClassificationRequirement, DiaryEntry, EntryType, User};
+use App\Models\Classification\{ClassificationRequirement, EntryType};
+use App\Models\DiaryEntry;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;

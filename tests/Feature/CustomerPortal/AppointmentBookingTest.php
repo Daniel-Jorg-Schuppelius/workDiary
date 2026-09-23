@@ -12,7 +12,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\CustomerPortal;
 
-use App\Models\{AppointmentRequest, BookableService, Customer, DiaryEntry, User};
+use App\Models\Calendar\AppointmentRequest;
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\Platform\User;
+use App\Models\Sales\BookableService;
 use App\Services\Appointments\AppointmentRequestService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

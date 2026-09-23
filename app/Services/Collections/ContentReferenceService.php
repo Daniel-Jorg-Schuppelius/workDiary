@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Collections;
 
-use App\Models\{ContentReference, IdeaMap, IdeaNode, KnowledgeArticle, User};
+use App\Models\Ideas\{IdeaMap, IdeaNode};
+use App\Models\Knowledge\{ContentReference, KnowledgeArticle};
+use App\Models\Platform\User;
 use App\Support\Sqid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;

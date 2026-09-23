@@ -10,7 +10,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\{MinimumWageReference, User};
+use App\Models\MinimumWageReference;
+use App\Models\Platform\User;
 use App\Services\Payroll\EurostatMinimumWageImporter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

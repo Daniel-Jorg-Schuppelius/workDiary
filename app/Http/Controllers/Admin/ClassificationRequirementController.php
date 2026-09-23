@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\ClassificationRequirement;
+use App\Models\Classification\ClassificationRequirement;
 use App\Services\Classification\{RequirementIndexFilter, RequirementInput, RequirementPresets};
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request};

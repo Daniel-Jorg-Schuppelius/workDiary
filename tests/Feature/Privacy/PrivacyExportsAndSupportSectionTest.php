@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Privacy;
 
-use App\Models\{AuditLog, Organization, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{Organization, User};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

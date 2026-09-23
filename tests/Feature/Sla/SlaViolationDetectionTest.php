@@ -11,7 +11,8 @@
 namespace Tests\Feature\Sla;
 
 use App\Enums\ServiceTicket\{ServiceTicketStatus, SlaViolationKind};
-use App\Models\{Organization, ServiceTicket, SlaViolation};
+use App\Models\Platform\Organization;
+use App\Models\{ServiceTicket, SlaViolation};
 use App\Services\ServiceTicket\SlaViolationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -96,7 +97,7 @@ class SlaViolationDetectionTest extends TestCase {
     public function test_service_acknowledge_sets_cause_and_actor(): void {
         $service = app(SlaViolationService::class);
         $ticket = ServiceTicket::factory()->create(['organization_id' => $this->org->id]);
-        $actor = \App\Models\User::factory()->create(['organization_id' => $this->org->id]);
+        $actor = \App\Models\Platform\User::factory()->create(['organization_id' => $this->org->id]);
 
         $violation = SlaViolation::factory()->create([
             'organization_id' => $this->org->id,

@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins\Etsy;
 
-use App\Models\{EtsyConnection, PluginSetting};
+use App\Models\Platform\PluginSetting;
+use App\Models\Plugins\Etsy\EtsyConnection;
 use App\Plugins\Etsy\EtsyPlugin;
 use App\Plugins\PluginHealth;
 use Illuminate\Foundation\Testing\RefreshDatabase;

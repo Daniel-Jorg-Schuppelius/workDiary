@@ -15,7 +15,7 @@ use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Models\AssetFinance\AssetFinanceContract;
 use App\Models\Contract\Contract;
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Contract\ContractService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

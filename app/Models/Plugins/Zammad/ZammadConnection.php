@@ -11,7 +11,7 @@
 namespace App\Models\Plugins\Zammad;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization};
-use App\Models\Project;
+use App\Models\Project\Project;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

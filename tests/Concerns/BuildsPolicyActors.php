@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Concerns;
 
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use BackedEnum;
 use Spatie\Permission\PermissionRegistrar;
 

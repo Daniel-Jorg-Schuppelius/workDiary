@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Plugins\JtlWawi;
 
-use App\Models\{Article, ArticleVariant, ExternalArticleMapping, JtlConnection, JtlWarehouseMapping, StockMovement, User, Warehouse};
+use App\Models\{Article, ArticleVariant, StockMovement, Warehouse};
+use App\Models\Integration\ExternalArticleMapping;
+use App\Models\Platform\User;
+use App\Models\Plugins\JtlWawi\{JtlConnection, JtlWarehouseMapping};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission as SpatiePermission;
 use Spatie\Permission\PermissionRegistrar;

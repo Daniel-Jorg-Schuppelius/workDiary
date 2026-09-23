@@ -11,7 +11,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ParsesIndexQuery;
-use App\Models\{Customer, Floor, Room, Site};
+use App\Models\Customer\Customer;
+use App\Models\{Floor, Room, Site};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -130,7 +131,7 @@ class SiteController extends Controller {
     /** @return array<string, mixed> */
     private function validateSite(Request $request): array {
         $rawCustomerId = $request->input('customer_id');
-        $customerId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Customer::class, $rawCustomerId);
+        $customerId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Customer\Customer::class, $rawCustomerId);
 
         $request->merge([
             'customer_id' => $customerId,

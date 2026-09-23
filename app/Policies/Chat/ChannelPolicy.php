@@ -11,7 +11,7 @@
 namespace App\Policies\Chat;
 
 use App\Models\Chat\Channel;
-use App\Models\User;
+use App\Models\Platform\User;
 
 class ChannelPolicy {
     // KEIN pauschaler Admin-Bypass: private Kanäle und Direktnachrichten bleiben

@@ -14,7 +14,7 @@ namespace App\Console\Commands\Security;
 
 use App\Models\Applications\JobApplication;
 use App\Models\Finance\{BankAccount, BankTransaction, SepaMandate};
-use App\Models\{SystemSetting, User};
+use App\Models\Platform\{SystemSetting, User};
 use App\Support\Crypto\BlindIndex;
 use Illuminate\Console\Command;
 

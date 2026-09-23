@@ -10,7 +10,7 @@
      für ALLE Nutzer des betroffenen Scopes; aktives Nur-Lesen-Fenster
      zeigt den Einschränkungshinweis (Vollsperre rendert ohnehin 503). --}}
 @php
-    $orgId = app()->bound('currentOrganization') && app('currentOrganization') instanceof \App\Models\Organization
+    $orgId = app()->bound('currentOrganization') && app('currentOrganization') instanceof \App\Models\Platform\Organization
         ? (int) app('currentOrganization')->id
         : null;
     $effective = \App\Models\MaintenanceWindow::effectiveFor($orgId);

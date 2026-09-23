@@ -12,7 +12,8 @@ namespace Tests\Feature\TimeApproval;
 
 use App\Enums\TimeApproval\MonthClosureStatus;
 use App\Enums\User\Permission as P;
-use App\Models\{Attendance, MonthClosureEvent, User};
+use App\Models\{Attendance, MonthClosureEvent};
+use App\Models\Platform\User;
 use App\Services\TimeApproval\{MonthClosureService, MonthClosureWorkflowException};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Gitlab\Services;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\Gitlab\Api\GitlabClient;
 use App\Plugins\Gitlab\{GitlabConfig, GitlabPlugin};
 use App\Plugins\Support\GitIssueImport\AbstractGitIssueImporter;

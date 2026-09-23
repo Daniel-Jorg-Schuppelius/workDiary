@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace App\Models\Costing;
 
-use App\Models\{BillOfQuantity, Project};
+use App\Models\BillOfQuantity;
 use App\Models\Catalog\CatalogRegistry;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Project\Project;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 

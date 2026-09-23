@@ -12,8 +12,9 @@ namespace Tests\Feature\Domain;
 
 use App\Enums\Domain\{DomainConnectionStatus, DomainDnsRecordType};
 use App\Enums\User\Permission;
-use App\Models\{Customer, ForeignCustomer, Organization, User};
+use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Domain\{DomainDnsRecordProjection, DomainDnsZoneProjection, DomainProjection, DomainProviderConnection, DomainResellerAccount};
+use App\Models\Platform\{Organization, User};
 use App\Services\Domain\DomainDnsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -151,7 +152,7 @@ class DomainHttpTest extends TestCase {
 
     /** Vollaudit 2026-07 (M34): Kundenakte zeigt zugeordnete Domains (Feature 083, MVP-394). */
     public function test_customer_file_shows_assigned_domains(): void {
-        $customer = \App\Models\Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $customer = \App\Models\Customer\Customer::factory()->create(['organization_id' => $this->organization->id]);
         $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
         DomainProjection::factory()->create([
             'organization_id' => $this->organization->id,

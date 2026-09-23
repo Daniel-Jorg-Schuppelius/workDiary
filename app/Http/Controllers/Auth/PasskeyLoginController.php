@@ -12,7 +12,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Auth\Concerns\ResolvesWorkMode;
 use App\Http\Controllers\Controller;
-use App\Models\{SsoConnection, User};
+use App\Models\Auth\SsoConnection;
+use App\Models\Platform\User;
 use App\Services\Auth\WebAuthnService;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Auth;

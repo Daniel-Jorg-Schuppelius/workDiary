@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Models;
+namespace App\Models\Integration;
 
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};

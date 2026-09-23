@@ -49,7 +49,7 @@
         <x-select-field name="owner_user_id" :label="__('isms.field.owner')">
                 <option value="">—</option>
                 @foreach ($owners as $owner)
-                    <option value="{{ $owner->sqid }}" @selected((string) old('owner_user_id', \App\Support\Sqid::encode(\App\Models\User::class, $vulnerability?->owner_user_id)) === $owner->sqid)>{{ $owner->name }}</option>
+                    <option value="{{ $owner->sqid }}" @selected((string) old('owner_user_id', \App\Support\Sqid::encode(\App\Models\Platform\User::class, $vulnerability?->owner_user_id)) === $owner->sqid)>{{ $owner->name }}</option>
                 @endforeach
         </x-select-field>
         <x-input-field name="due_on" type="date" :label="__('isms.field.due_on')" :value="old('due_on', $vulnerability?->due_on?->toDateString())" />

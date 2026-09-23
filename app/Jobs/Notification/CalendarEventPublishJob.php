@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Jobs\Notification;
 
 use App\Jobs\Concerns\RetriesTransientFailures;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\Contracts\{CalendarPublisher, PluginCapability};
 use App\Plugins\PluginManager;
 use App\Plugins\Support\Calendar\RemoteCalendarEvent;

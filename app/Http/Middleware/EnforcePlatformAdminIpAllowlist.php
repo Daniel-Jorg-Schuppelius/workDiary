@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Enums\Security\SecurityEventType;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Security\SecurityEventLogger;
 use Closure;
 use Illuminate\Http\Request;

@@ -14,7 +14,7 @@ use App\Enums\Finance\GobdExportStatus;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Jobs\Finance\GobdExportJob;
-use App\Models\GobdExport;
+use App\Models\Audit\GobdExport;
 use App\Services\Finance\GdpduExportService;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};

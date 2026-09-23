@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{PluginError, PluginState, User};
+use App\Models\Platform\{PluginError, PluginState, User};
 use App\Plugins\{PluginErrorRecorder, PluginManager};
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -164,7 +164,7 @@ class PluginErrorController extends Controller {
         } else {
             // Sqids aus der Liste (W3.3); Alt-Aufrufe mit roher ID bleiben lesbar.
             $ids = array_values(array_filter(array_map(
-                static fn ($v): ?int => \App\Support\Sqid::decodeOrNumeric(\App\Models\PluginError::class, (string) $v),
+                static fn ($v): ?int => \App\Support\Sqid::decodeOrNumeric(\App\Models\Platform\PluginError::class, (string) $v),
                 (array) $request->input('ids', []),
             )));
             if ($ids === []) {

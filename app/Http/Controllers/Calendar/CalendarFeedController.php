@@ -8,13 +8,14 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Calendar;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 /**
  * Verwaltet den persönlichen Kalender-Feed-Token. Anlegen/Rotieren

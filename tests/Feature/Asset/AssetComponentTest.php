@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Asset;
 
-use App\Models\{Article, Asset, AssetComponent, Organization, User};
+use App\Models\{Article, Asset, AssetComponent};
+use App\Models\Platform\{Organization, User};
 use App\Services\Asset\AssetComponentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

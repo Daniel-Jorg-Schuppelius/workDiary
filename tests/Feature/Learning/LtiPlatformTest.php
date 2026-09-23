@@ -12,7 +12,7 @@ namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\LearningUnitKind;
 use App\Models\Learning\{LearningEnrollment, LearningLtiLink, LearningLtiTool, LearningUnit};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningCourseService, LearningEnrollmentService, LearningLtiPlatformService};
 use DateTimeImmutable;
 use ELearningToolkit\Lti\{InMemoryNonceStore, Keys, LaunchValidator, LoginInitiation, MessageType, Registration, Roles};

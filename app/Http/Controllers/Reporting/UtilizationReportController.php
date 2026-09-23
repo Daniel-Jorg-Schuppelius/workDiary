@@ -14,7 +14,7 @@ use App\Enums\Reporting\{ReportTargetMetric, ReportTargetScope};
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Reporting\{ReportFilters, ReportTargetEvaluator, UtilizationReportBuilder};
 use App\Support\CarbonFmt;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -128,7 +128,7 @@ class UtilizationReportController extends Controller {
      * sonst org-weit) — Bullet-Kontrakt.
      *
      * @param  list<array{userId:int, userName:string, targetMinutes:int, trackedMinutes:int, billableMinutes:int, invoicedMinutes:int, utilization:?float, billableRate:?float, realization:?float}>  $rows
-     * @param  \Illuminate\Support\Collection<int, \App\Models\ReportTarget>  $targetPool
+     * @param  \Illuminate\Support\Collection<int, \App\Models\Reporting\ReportTarget>  $targetPool
      * @return list<array{x: string, y: float, target: ?float, url: string}>
      */
     private function bulletSeries(array $rows, \Illuminate\Support\Collection $targetPool): array {
@@ -194,7 +194,7 @@ class UtilizationReportController extends Controller {
 
     /**
      * @param  array{rows: list<array{userId:int, userName:string, targetMinutes:int, trackedMinutes:int, billableMinutes:int, invoicedMinutes:int, utilization:?float, billableRate:?float, realization:?float}>, totals: array{targetMinutes:int, trackedMinutes:int, billableMinutes:int, invoicedMinutes:int, utilization:?float, billableRate:?float, realization:?float}, hasInvoiceData: bool, monthly: list<array{month:string, utilization:?float, billableRate:?float}>, monthlyBoxes: list<array{x:string, min:float, q1:float, median:float, q3:float, max:float, n:int}>}  $result
-     * @param  \Illuminate\Support\Collection<int, \App\Models\ReportTarget>  $targetPool
+     * @param  \Illuminate\Support\Collection<int, \App\Models\Reporting\ReportTarget>  $targetPool
      * @param  array<string, mixed>  $filters
      */
     private function exportPdf(array $result, \Illuminate\Support\Collection $targetPool, string $label, string $from, string $to, array $filters, Request $request): SymfonyResponse {

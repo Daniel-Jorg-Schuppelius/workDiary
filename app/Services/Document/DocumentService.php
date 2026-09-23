@@ -12,7 +12,8 @@ namespace App\Services\Document;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
 use App\Jobs\ExtractDocumentTextJob;
-use App\Models\{Document, DocumentVersion, User};
+use App\Models\Document\{Document, DocumentVersion};
+use App\Models\Platform\User;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;

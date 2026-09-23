@@ -10,7 +10,7 @@
 
 namespace App\Services\Finance\Targets;
 
-use App\Models\ExternalReference;
+use App\Models\Integration\ExternalReference;
 
 /**
  * Ergebnis einer Ziel-Übergabe (Feature 045, Teil B): API-Ziele liefern eine

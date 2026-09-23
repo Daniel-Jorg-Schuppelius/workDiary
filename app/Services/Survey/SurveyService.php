@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Survey;
 
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use App\Models\Survey\{Survey, SurveyAnswer, SurveyInvitation, SurveyResponse};
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Support\{Carbon, Str};

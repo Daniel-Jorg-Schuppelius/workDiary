@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Plugins\Etsy;
 
-use App\Models\{EtsyConnection, EtsyReceipt, IntegrationOutboxEntry, PluginSetting, User};
+use App\Models\Integration\IntegrationOutboxEntry;
+use App\Models\Platform\{PluginSetting, User};
+use App\Models\Plugins\Etsy\{EtsyConnection, EtsyReceipt};
 use App\Plugins\Etsy\EtsyPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
@@ -121,7 +123,7 @@ final class EtsyShipmentTest extends TestCase {
     }
 
     public function test_ship_of_foreign_org_receipt_is_not_found(): void {
-        $other = \App\Models\Organization::factory()->create();
+        $other = \App\Models\Platform\Organization::factory()->create();
         $foreign = EtsyReceipt::create([
             'organization_id' => $other->id,
             'receipt_id' => 999,

@@ -10,17 +10,18 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Communication;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Models\Communication\CustomerCircular;
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use App\Services\Communication\CustomerCircularService;
 use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use RuntimeException;
+use App\Http\Controllers\Controller;
 
 /**
  * Kundenrundschreiben (Feature 119, MVP-608).

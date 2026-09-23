@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Contracts;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 
 /**
  * Providerneutraler Aufgaben-Sync-Vertrag (Feature 055, MVP-111): ein Plugin

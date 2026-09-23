@@ -14,7 +14,10 @@ namespace Tests\Feature\Search;
 
 use App\Enums\User\Permission;
 use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection, AiTextSuggestion};
-use App\Models\{Customer, ForeignCustomer, Project, TimeEntry, User};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Services\Ai\Dto\SummarizeRequest;
 use App\Services\Ai\Suggestions\SearchAnswerSuggestionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

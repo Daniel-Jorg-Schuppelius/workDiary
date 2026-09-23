@@ -10,12 +10,15 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Services\Stammdaten;
 
-use App\Models\{Customer, CustomerMergeDismissal, Organization};
+use App\Models\Customer\Customer;
+use App\Models\Customer\CustomerMergeDismissal;
+use App\Models\Platform\Organization;
 use App\Services\Integration\Match\{EntityMatcher, MatchProfile};
 use App\Services\Integration\Profiles\CustomerMatchProfile;
 use Illuminate\Database\Eloquent\{Collection as EloquentCollection, Model};
+use App\Services\Stammdaten\AbstractDuplicateFinder;
 
 /**
  * Findet Dubletten-Kandidaten unter den Kunden einer Organisation. Nutzt das

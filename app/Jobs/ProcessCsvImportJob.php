@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Enums\Import\{ImportErrorCode, ImportRunState};
-use App\Models\{AuditLog, ImportRun, ImportRunError, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Integration\{ImportRun, ImportRunError};
+use App\Models\Platform\User;
 use App\Plugins\Support\TimeWritebackObserver;
 use App\Services\Import\{CsvPreflightAnalyzer, DocumentZipImportService, EntitySpecRegistry, ImportOutcome};
 use App\Services\Import\Source\ImportSourceFactory;
@@ -229,7 +231,7 @@ class ProcessCsvImportJob implements ShouldQueue {
      * @param  list<array{row:int, raw:array<string,string>, norm:array<string,mixed>}>  $chunk
      * @return array{0:int,1:int,2:int,3:int}
      */
-    private function processChunk(ImportRun $run, \App\Services\Import\EntitySpec $spec, array $chunk, \App\Models\Organization $organization): array {
+    private function processChunk(ImportRun $run, \App\Services\Import\EntitySpec $spec, array $chunk, \App\Models\Platform\Organization $organization): array {
         $created = 0;
         $updated = 0;
         $skipped = 0;

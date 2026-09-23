@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Auth\Sso;
 
 use App\Enums\Auth\SsoProtocol;
-use App\Models\{OrganizationSsoDomain, SsoConnection, SsoIdentity, User};
+use App\Models\Auth\{SsoConnection, SsoIdentity};
+use App\Models\Platform\{OrganizationSsoDomain, User};
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Support\Facades\Log;
 

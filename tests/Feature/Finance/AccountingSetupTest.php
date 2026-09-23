@@ -15,7 +15,7 @@ use App\Enums\Migration\{AccountingMigrationStatus, MigrationProvider};
 use App\Models\Accounting\{AccountingFiscalYear, AccountingPeriod, AccountingProfile, AccountingSovereigntyPeriod};
 use App\Models\Finance\DatevBookingBatch;
 use App\Models\Migration\AccountingMigrationRun;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, AccountingSovereigntyException, AccountingSovereigntyResolver, FiscalYearService};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;

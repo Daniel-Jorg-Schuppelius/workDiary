@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Isms;
 
 use App\Enums\Isms\AdvisoryFormat;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Plugins\Support\PluginHttpFactory;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;

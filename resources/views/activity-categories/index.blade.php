@@ -20,7 +20,7 @@
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Verwaltet die Kategorien für nicht-projektgebundene Arbeitszeit.')">
         <x-slot:actions>
-            @can('create', App\Models\ActivityCategory::class)
+            @can('create', App\Models\Classification\ActivityCategory::class)
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
                             :href="route('activity-categories.create').'?dialog=1'"

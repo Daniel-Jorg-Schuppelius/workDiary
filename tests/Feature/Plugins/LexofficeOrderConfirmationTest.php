@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Article, ArticleVariant, Customer, ExternalReference, ManufacturingOrder};
+use App\Models\{Article, ArticleVariant, ManufacturingOrder};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
 use App\Plugins\Lexoffice\{LexofficeOrderConfirmationService, LexofficePlugin, LexofficeQuotationService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;

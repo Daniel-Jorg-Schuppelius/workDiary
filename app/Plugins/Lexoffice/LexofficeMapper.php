@@ -10,7 +10,8 @@
 
 namespace App\Plugins\Lexoffice;
 
-use App\Models\{Customer, Supplier, TimeEntry};
+use App\Models\Customer\Customer;
+use App\Models\{Supplier, TimeEntry};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -126,7 +127,7 @@ class LexofficeMapper {
         }
 
         $shipping = [];
-        foreach ($contact->addresses()->where('kind', \App\Models\ContactAddress::KIND_SHIPPING)->get() as $addr) {
+        foreach ($contact->addresses()->where('kind', \App\Models\Contacts\ContactAddress::KIND_SHIPPING)->get() as $addr) {
             $entry = array_filter([
                 'supplement' => $addr->supplement,
                 'street' => $addr->street,

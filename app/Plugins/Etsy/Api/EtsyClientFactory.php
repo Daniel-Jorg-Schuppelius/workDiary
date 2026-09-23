@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Etsy\Api;
 
-use App\Models\EtsyConnection;
+use App\Models\Plugins\Etsy\EtsyConnection;
 use App\Plugins\Etsy\EtsyConfig;
 use App\Plugins\Support\PluginHttpFactory;
 use RuntimeException;

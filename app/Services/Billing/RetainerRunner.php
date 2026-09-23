@@ -12,7 +12,8 @@ namespace App\Services\Billing;
 
 use App\Enums\Billing\BillingAgreementMode;
 use App\Models\Billing\CustomerBillingAgreement;
-use App\Models\{Invoice, Organization};
+use App\Models\Invoice;
+use App\Models\Platform\Organization;
 use App\Support\Tz;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;

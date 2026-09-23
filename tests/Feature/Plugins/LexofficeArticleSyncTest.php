@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\LexofficeArticle;
+use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Plugins\Lexoffice\LexofficeArticleSync;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
@@ -216,7 +216,7 @@ class LexofficeArticleSyncTest extends TestCase {
             'conflict_type' => 'article',
             'referenceable_id' => $local->id,
             'external_id' => 'lex-8',
-            'status' => \App\Models\PendingExternalConflict::STATUS_OPEN,
+            'status' => \App\Models\Integration\PendingExternalConflict::STATUS_OPEN,
         ]);
     }
 

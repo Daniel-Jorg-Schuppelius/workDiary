@@ -12,7 +12,9 @@ namespace Tests\Feature\Plugins\JtlWawi;
 
 use App\Enums\Inventory\StockState;
 use App\Jobs\Integration\InventoryOutboxDeliveryJob;
-use App\Models\{Article, ArticleVariant, ExternalArticleMapping, JtlConnection, JtlStockSnapshot, JtlWarehouseMapping, Warehouse};
+use App\Models\{Article, ArticleVariant, Warehouse};
+use App\Models\Integration\ExternalArticleMapping;
+use App\Models\Plugins\JtlWawi\{JtlConnection, JtlStockSnapshot, JtlWarehouseMapping};
 use App\Plugins\JtlWawi\Services\{JtlWawiInventoryProvider, JtlWawiOutboxDispatcher};
 use App\Services\Inventory\{InventoryLedger, InventoryOutboxService, InventoryProviderResolver, ReadOnlyInventoryProvider};
 use Illuminate\Foundation\Testing\RefreshDatabase;

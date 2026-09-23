@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Reselling;
 
 use App\Enums\Reselling\SubscriptionProvider;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Models\Reselling\ResaleSubscription;
 use App\Services\Reselling\Register\DomainSubscriptionSync;
 use Illuminate\Console\Command;

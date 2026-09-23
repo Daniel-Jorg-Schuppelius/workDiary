@@ -14,8 +14,10 @@ namespace App\Http\Controllers\Learning;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\{Attachment, AuditLog, User};
+use App\Models\Attachments\Attachment;
+use App\Models\Audit\AuditLog;
 use App\Models\Learning\{LearningAnswer, LearningQuizAttempt, LearningSubmission, LearningTimeSession};
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningAssignmentService, LearningQuizService, LearningTimeService};
 use App\Support\MorphMap;
 use Illuminate\Http\{RedirectResponse, Request};

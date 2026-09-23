@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Routing;
 
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\FakePluginHttp;

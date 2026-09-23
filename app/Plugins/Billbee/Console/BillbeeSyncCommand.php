@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Billbee\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\{Organization, PluginSetting};
+use App\Models\Platform\{Organization, PluginSetting};
 use App\Plugins\Billbee\BillbeePlugin;
 use App\Plugins\Billbee\Services\{BillbeeArticleMappingService, BillbeeOrderImportService};
 use CommonToolkit\Helper\Data\JsonHelper;

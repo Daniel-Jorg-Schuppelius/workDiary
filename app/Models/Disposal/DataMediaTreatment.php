@@ -14,7 +14,7 @@ namespace App\Models\Disposal;
 
 use App\Enums\Disposal\{DataMediumType, DinCategory, MediaTreatmentMethod};
 use App\Models\Concerns\HasSqid;
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

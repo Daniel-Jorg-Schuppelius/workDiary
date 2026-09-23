@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Enums\Inventory\ValuationMethod;
-use App\Models\{Article, ArticleVariant, Organization};
+use App\Models\{Article, ArticleVariant};
+use App\Models\Platform\Organization;
 
 /**
  * Löst das Bewertungsverfahren je Organisation auf (Feature 048, E3). Kaskade:

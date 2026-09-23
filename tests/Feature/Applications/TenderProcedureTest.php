@@ -14,7 +14,7 @@ namespace Tests\Feature\Applications;
 
 use App\Enums\Applications\TenderProcedureType;
 use App\Models\Applications\ApplicationOpportunity;
-use App\Models\User;
+use App\Models\Platform\User;
 use ERechnungToolkit\Enums\GaebAwardCategory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

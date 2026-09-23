@@ -12,8 +12,9 @@ namespace App\Services\Flextime;
 
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Enums\Vacation\VacationStatus;
-use App\Models\{Attendance, FlexBalance, TimeEntry, User, Vacation};
-use App\Services\HolidayService;
+use App\Models\{Attendance, FlexBalance, TimeEntry, Vacation};
+use App\Models\Platform\User;
+use App\Services\Calendar\HolidayService;
 use Carbon\{CarbonImmutable, CarbonInterface};
 
 class FlexCalculator {

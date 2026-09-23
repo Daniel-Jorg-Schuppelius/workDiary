@@ -15,7 +15,7 @@ namespace App\Http\Requests\Finance\Resale;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Http\Requests\Finance\Concerns\ResolvesResaleHolder;
-use App\Models\{Customer, ForeignCustomer};
+use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Reselling\ResaleSubscription;
 use App\Rules\ExistsInCurrentOrganization;
 use Carbon\CarbonImmutable;

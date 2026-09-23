@@ -11,7 +11,8 @@
 namespace Database\Factories;
 
 use App\Enums\Attendance\CheckpointKind;
-use App\Models\{AttendanceCheckpoint, Organization};
+use App\Models\AttendanceCheckpoint;
+use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

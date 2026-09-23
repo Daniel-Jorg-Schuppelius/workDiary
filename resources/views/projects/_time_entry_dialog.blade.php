@@ -115,7 +115,7 @@
                 <x-select-field name="task_id" :label="__('Aufgabe (optional)')">
                     <option value="">{{ __('Keine Aufgabe') }}</option>
                     @foreach ($tasks as $t)
-                        <option value="{{ $t->sqid }}" @selected((string) old('task_id', \App\Support\Sqid::encode(\App\Models\Task::class, $entry?->task_id)) === $t->sqid)>{{ $t->title }}</option>
+                        <option value="{{ $t->sqid }}" @selected((string) old('task_id', \App\Support\Sqid::encode(\App\Models\Project\Task::class, $entry?->task_id)) === $t->sqid)>{{ $t->title }}</option>
                     @endforeach
                 </x-select-field>
             @endif
@@ -151,7 +151,7 @@
                 <x-select-field name="rework_reason_classification_id" :label="__('Nacharbeitsgrund')">
                     <option value="">{{ __('— keiner —') }}</option>
                     @foreach ($reworkOptions as $option)
-                        <option value="{{ $option->sqid }}" @selected((string) old('rework_reason_classification_id', \App\Support\Sqid::encode(\App\Models\Classification::class, $entry?->rework_reason_classification_id)) === $option->sqid)>{{ $option->display_label }}</option>
+                        <option value="{{ $option->sqid }}" @selected((string) old('rework_reason_classification_id', \App\Support\Sqid::encode(\App\Models\Classification\Classification::class, $entry?->rework_reason_classification_id)) === $option->sqid)>{{ $option->display_label }}</option>
                     @endforeach
                 </x-select-field>
             @endif
@@ -159,7 +159,7 @@
                 <x-select-field name="goodwill_reason_classification_id" :label="__('Kulanzgrund')">
                     <option value="">{{ __('— keiner —') }}</option>
                     @foreach ($goodwillOptions as $option)
-                        <option value="{{ $option->sqid }}" @selected((string) old('goodwill_reason_classification_id', \App\Support\Sqid::encode(\App\Models\Classification::class, $entry?->goodwill_reason_classification_id)) === $option->sqid)>{{ $option->display_label }}</option>
+                        <option value="{{ $option->sqid }}" @selected((string) old('goodwill_reason_classification_id', \App\Support\Sqid::encode(\App\Models\Classification\Classification::class, $entry?->goodwill_reason_classification_id)) === $option->sqid)>{{ $option->display_label }}</option>
                     @endforeach
                 </x-select-field>
             @endif

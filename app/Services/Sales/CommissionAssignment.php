@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Sales;
 
 use App\Enums\Sales\CommissionAssignmentSource;
-use App\Models\{Lead, User};
+use App\Models\Platform\User;
+use App\Models\Sales\Lead;
 
 /**
  * Ergebnis der Zuordnung Beleg → Vertriebsperson (Feature 146): wer bekommt

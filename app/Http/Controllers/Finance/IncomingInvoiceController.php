@@ -14,7 +14,8 @@ namespace App\Http\Controllers\Finance;
 
 use App\Enums\Document\DocumentType;
 use App\Http\Controllers\Controller;
-use App\Models\{Document, User};
+use App\Models\Document\Document;
+use App\Models\Platform\User;
 use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
 use App\Support\CarbonFmt;
 use CommonToolkit\Helper\Data\CryptoHelper;

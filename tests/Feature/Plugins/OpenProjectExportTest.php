@@ -11,7 +11,10 @@
 namespace Tests\Feature\Plugins;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{ExternalReference, PluginSetting, Project, TimeEntry, User};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\{PluginSetting, User};
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\OpenProject\Services\{OpenProjectExportService, OpenProjectStructureSync};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -96,7 +99,7 @@ class OpenProjectExportTest extends TestCase {
         $project = $this->mappedProject('9');
         $entry = $this->timeEntry($project);
 
-        $outbox = \App\Models\IntegrationOutboxEntry::query()
+        $outbox = \App\Models\Integration\IntegrationOutboxEntry::query()
             ->where('operation', \App\Plugins\OpenProject\Services\OpenProjectOutboxDispatcher::OP_ENTRY_CREATE)
             ->where('idempotency_key', OpenProjectPlugin::ID . '-entry-create:' . $entry->getKey())
             ->firstOrFail();

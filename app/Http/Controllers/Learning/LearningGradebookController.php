@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Learning;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningGradebookComponent, LearningManualGrade};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningGradebookService, LearningReportCardPdfRenderer};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request, Response};

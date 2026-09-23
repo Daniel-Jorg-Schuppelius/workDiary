@@ -14,8 +14,9 @@ namespace App\Services\Club;
 
 use App\Enums\Club\{ClubAvailabilityStatus, ClubEventKind, ClubEventRoleKind, ClubEventVisibility, ClubLineupSlot, ClubLineupStatus, ClubMatchProposalSource, ClubParticipationSource, ClubProposalStatus, ClubResultFormat};
 use App\Enums\Event\EventStatus;
+use App\Models\Calendar\Event;
 use App\Models\Club\{ClubEventRole, ClubGroup, ClubLineupEntry, ClubMatchAvailability, ClubMatchDetails, ClubMatchProposal, ClubMember, ClubSeason};
-use App\Models\{Event, Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\AssertsStatusTransition;
 use App\Support\Tz;
 use Carbon\{CarbonImmutable, CarbonInterface};

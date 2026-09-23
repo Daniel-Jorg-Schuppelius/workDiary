@@ -11,7 +11,7 @@
 namespace App\Console\Commands\Billing;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeInvoiceService};
 use App\Services\Billing\RetainerRunner;
 use Illuminate\Console\Command;

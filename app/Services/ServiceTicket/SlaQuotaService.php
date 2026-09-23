@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\ServiceTicket;
 
-use App\Models\{DiaryEntry, Project, SlaContract, SlaContractQuota, TimeEntry};
+use App\Models\{DiaryEntry, SlaContract, SlaContractQuota, TimeEntry};
+use App\Models\Project\Project;
 use App\Models\Scopes\OrganizationScope;
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};

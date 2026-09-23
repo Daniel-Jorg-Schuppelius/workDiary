@@ -8,14 +8,17 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Calendar;
 
 use App\Enums\Event\ParticipantStatus;
-use App\Models\{Event, EventParticipant, User};
+use App\Models\Calendar\Event;
+use App\Models\Calendar\EventParticipant;
+use App\Models\Platform\User;
 use App\Services\Event\CertificateService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
+use App\Http\Controllers\Controller;
 
 class EventParticipantController extends Controller {
     public function __construct(

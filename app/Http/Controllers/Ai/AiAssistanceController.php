@@ -16,7 +16,14 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Ai\AiTextSuggestion;
-use App\Models\{CommunicationNote, CustomerQuery, DiaryEntry, Document, ImportRun, Organization, Project, Quote, QuoteItem, User};
+use App\Models\Communication\CommunicationNote;
+use App\Models\Customer\CustomerQuery;
+use App\Models\DiaryEntry;
+use App\Models\Document\Document;
+use App\Models\Integration\ImportRun;
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
+use App\Models\Sales\{Quote, QuoteItem};
 use App\Services\Ai\Exceptions\AiException;
 use App\Services\Ai\Suggestions\{CaseNarrativeSuggestionService, CommunicationNoteSuggestionService, DocumentMetadataSuggestionService, DocumentTranslationSuggestionService, ImportMappingSuggestionService, PlanActualExplainService, PortalQuerySuggestionService, SearchAnswerSuggestionService, SupportDiagnosisSuggestionService};
 use App\Services\Search\ActivitySearchCriteria;
@@ -265,7 +272,7 @@ class AiAssistanceController extends Controller {
         }
     }
 
-    /** Gleiche Schranke wie {@see \App\Http\Controllers\CustomerQueryController}. */
+    /** Gleiche Schranke wie {@see \App\Http\Controllers\Customer\CustomerQueryController}. */
     private function authorizePortalQueries(): void {
         $user = Auth::user();
         abort_unless(

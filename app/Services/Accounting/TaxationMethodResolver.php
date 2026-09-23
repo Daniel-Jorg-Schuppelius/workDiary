@@ -14,7 +14,7 @@ namespace App\Services\Accounting;
 
 use App\Enums\Finance\{OpenItemDirection, TaxationMethod};
 use App\Models\Accounting\{AccountingOpenItem, AccountingTaxationPeriod};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Enums\CurrencyCode;

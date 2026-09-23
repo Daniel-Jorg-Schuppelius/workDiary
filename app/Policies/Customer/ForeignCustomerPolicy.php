@@ -8,10 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Policies;
+namespace App\Policies\Customer;
 
 use App\Enums\User\UserRole;
-use App\Models\{ForeignCustomer, User};
+use App\Models\Customer\Customer\ForeignCustomer;
+use App\Models\Platform\User;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 /**

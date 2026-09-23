@@ -14,8 +14,9 @@ namespace App\Http\Controllers\AssetCompliance;
 
 use App\Enums\AssetCompliance\{AssetComplianceBlockMode, AssetInspectionKind};
 use App\Http\Controllers\Controller;
-use App\Models\{Asset, User};
+use App\Models\Asset;
 use App\Models\AssetCompliance\{AssetComplianceNormReference, AssetComplianceProfile};
+use App\Models\Platform\User;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\AssetCompliance\AssetComplianceService;
 use App\Support\Sqid;
@@ -46,7 +47,7 @@ class AssetComplianceProfileController extends Controller {
             'blockModes' => AssetComplianceBlockMode::cases(),
             'assets' => Asset::query()->orderBy('name')->get(['id', 'name']),
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
-            'externalContacts' => \App\Models\ExternalContact::query()->orderBy('name')->limit(200)->get(['id', 'name']),
+            'externalContacts' => \App\Models\Contacts\ExternalContact::query()->orderBy('name')->limit(200)->get(['id', 'name']),
             'norms' => AssetComplianceNormReference::query()
                 ->forOrganization($organizationId)
                 ->orderBy('inspection_kind')
@@ -125,7 +126,7 @@ class AssetComplianceProfileController extends Controller {
         Gate::authorize('create', AssetComplianceProfile::class);
         $this->ensureOwnProfile($profile);
 
-        foreach (['asset_id' => Asset::class, 'responsible_user_id' => User::class, 'external_contact_id' => \App\Models\ExternalContact::class] as $field => $model) {
+        foreach (['asset_id' => Asset::class, 'responsible_user_id' => User::class, 'external_contact_id' => \App\Models\Contacts\ExternalContact::class] as $field => $model) {
             if ($request->filled($field)) {
                 $request->merge([$field => Sqid::decodeOrNumeric($model, $request->input($field))]);
             }

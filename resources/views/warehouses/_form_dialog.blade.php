@@ -16,7 +16,7 @@
     $references = [
         'site' => ['field' => 'site_id', 'model' => \App\Models\Site::class, 'options' => $sites ?? [], 'label' => __('inventory.field.site')],
         'vehicle' => ['field' => 'vehicle_id', 'model' => \App\Models\Vehicle::class, 'options' => $vehicles ?? [], 'label' => __('inventory.field.vehicle')],
-        'team' => ['field' => 'team_id', 'model' => \App\Models\Team::class, 'options' => $teams ?? [], 'label' => __('inventory.field.team')],
+        'team' => ['field' => 'team_id', 'model' => \App\Models\Platform\Team::class, 'options' => $teams ?? [], 'label' => __('inventory.field.team')],
     ];
 @endphp
 

@@ -10,7 +10,8 @@
 
 namespace App\Policies;
 
-use App\Models\{MaterialUsage, Timesheet, User};
+use App\Models\{MaterialUsage, Timesheet};
+use App\Models\Platform\User;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class MaterialUsagePolicy {

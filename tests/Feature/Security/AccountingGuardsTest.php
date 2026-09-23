@@ -12,7 +12,7 @@ namespace Tests\Feature\Security;
 
 use App\Enums\Finance\{AccountType, AccountingEntryStatus, ProfitDetermination};
 use App\Models\Accounting\{AccountingAccount, AccountingEntry};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService};
 use App\Services\Accounting\Posting\PostingInboxService;
 use Carbon\CarbonImmutable;
@@ -135,11 +135,11 @@ class AccountingGuardsTest extends TestCase {
         // Zeiten. Die Reservierungsprüfung lief nur beim Anlegen — beide
         // ließen sich bestätigen und übertragen, der Kunde bekam die Stunden
         // doppelt berechnet.
-        $kunde = \App\Models\Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $kunde = \App\Models\Customer\Customer::factory()->create(['organization_id' => $this->organization->id]);
         $von = CarbonImmutable::create(2026, 5, 1);
         $bis = $von->endOfMonth();
 
-        $projekt = \App\Models\Project::factory()->create([
+        $projekt = \App\Models\Project\Project::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $kunde->id,
         ]);

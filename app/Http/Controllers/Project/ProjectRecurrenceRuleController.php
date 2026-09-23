@@ -8,16 +8,21 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Project;
 
-use App\Http\Requests\SaveRecurrenceRuleRequest;
-use App\Models\{Customer, EntryType, Project, RecurrenceRule, User};
+use App\Http\Requests\Project\SaveRecurrenceRuleRequest;
+use App\Models\Customer\Customer\Customer;
+use App\Models\Classification\EntryType;
+use App\Models\Project\Project\Project;
+use App\Models\Project\Project\RecurrenceRule;
+use App\Models\Platform\User;
 use App\Services\Recurrence\RecurrenceGenerator;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use App\Http\Controllers\Controller;
 
 class ProjectRecurrenceRuleController extends Controller {
     public function create(Project $project): View {

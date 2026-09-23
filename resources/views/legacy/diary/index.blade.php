@@ -438,7 +438,7 @@
                             <select name="user_id" class="select select-bordered select-sm w-full">
                                 <option value="">{{ __('Alle') }}</option>
                                 @foreach ($vacationUsers ?? [] as $u)
-                                    @php /** @var \App\Models\User $u */ @endphp
+                                    @php /** @var \App\Models\Platform\User $u */ @endphp
                                     <option value="{{ $u->sqid }}" @selected((string) ($filters['user_id'] ?? '') === $u->sqid)>{{ $u->name }}</option>
                                 @endforeach
                             </select>

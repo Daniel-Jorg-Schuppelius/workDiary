@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Peppol;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\{Organization, PluginSetting};
+use App\Models\Platform\{Organization, PluginSetting};
 use App\Plugins\PeppolAccessPoint\PeppolAccessPointPlugin;
 use App\Services\Peppol\PeppolInboundService;
 use CommonToolkit\Helper\Data\JsonHelper;

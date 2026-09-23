@@ -14,8 +14,10 @@ namespace App\Services\Club;
 
 use App\Enums\Club\{ClubParticipationStatus, ClubResourceKind};
 use App\Enums\Event\EventStatus;
+use App\Models\Calendar\Event;
 use App\Models\Club\{ClubMember, ClubResource, ClubResourceBooking, ClubResourceClearance, ClubResourceClosure};
-use App\Models\{Event, Organization, Room, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\Room;
 use App\Services\Asset\AssetUsageGuard;
 use App\Services\Event\RoomBookingService;
 use Carbon\{CarbonImmutable, CarbonInterface};

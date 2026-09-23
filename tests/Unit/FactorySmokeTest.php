@@ -17,7 +17,7 @@ use App\Models\Contract\Contract;
 use App\Models\Finance\{AccountingVoucher, BillingTransferEvent, BillingTransferItem, BillingTransferPosition, DatevBookingEvent, DatevBookingSource, PaymentReconciliationEvent, PaymentRun, PaymentRunItem, SepaMandate};
 use App\Models\Investments\InvestmentCase;
 use App\Models\Migration\{AccountingMigrationItem, AccountingMigrationRun};
-use App\Models\{Quote, QuoteItem};
+use App\Models\Sales\{Quote, QuoteItem};
 use App\Models\Survey\{Survey, SurveyInvitation, SurveyQuestion};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;

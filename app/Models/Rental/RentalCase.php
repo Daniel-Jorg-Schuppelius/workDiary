@@ -14,7 +14,10 @@ namespace App\Models\Rental;
 
 use App\Enums\Rental\RentalCaseStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
-use App\Models\{Customer, DiaryEntry, Project, Site, User};
+use App\Models\Customer\Customer;
+use App\Models\{DiaryEntry, Site};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 

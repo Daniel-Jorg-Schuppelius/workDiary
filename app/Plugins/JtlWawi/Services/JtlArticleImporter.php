@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\JtlWawi\Services;
 
-use App\Models\{Article, ArticleVariant, ExternalArticleMapping, IntegrationInboxItem, JtlConnection};
+use App\Models\{Article, ArticleVariant};
+use App\Models\Integration\{ExternalArticleMapping, IntegrationInboxItem};
+use App\Models\Plugins\JtlWawi\JtlConnection;
 use App\Plugins\JtlWawi\Api\{JtlApiException, JtlGatewayFactory};
 use App\Plugins\JtlWawi\JtlWawiPlugin;
 

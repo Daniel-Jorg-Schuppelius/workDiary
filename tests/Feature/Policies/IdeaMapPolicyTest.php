@@ -14,8 +14,9 @@ namespace Tests\Feature\Policies;
 
 use App\Enums\Ideas\IdeaShareRole;
 use App\Enums\User\Permission as P;
-use App\Models\{IdeaMap, IdeaMapShare, Organization, Team, User};
-use App\Policies\IdeaMapPolicy;
+use App\Models\Ideas\{IdeaMap, IdeaMapShare};
+use App\Models\Platform\{Organization, Team, User};
+use App\Policies\Knowledge\IdeaMapPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};

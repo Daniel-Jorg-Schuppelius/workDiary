@@ -15,7 +15,7 @@ use App\Enums\User\UserRole;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Notification\NotificationRule;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Support\Sqid;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};

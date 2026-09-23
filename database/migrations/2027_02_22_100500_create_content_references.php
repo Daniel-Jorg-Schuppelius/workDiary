@@ -44,7 +44,7 @@ return new class extends Migration {
                 'INSERT INTO content_references (organization_id, source_type, source_id, target_type, target_id, kind, created_by, created_at, updated_at) '
                 . 'SELECT a.organization_id, ?, l.knowledge_article_id, l.linkable_type, l.linkable_id, ?, l.created_by_user_id, l.created_at, l.created_at '
                 . 'FROM knowledge_article_links l INNER JOIN knowledge_articles a ON a.id = l.knowledge_article_id',
-                ['App\Models\KnowledgeArticle', 'linked'],
+                ['App\Models\Knowledge\KnowledgeArticle', 'linked'],
             );
             Schema::drop('knowledge_article_links');
         }
@@ -53,7 +53,7 @@ return new class extends Migration {
             DB::statement(
                 'INSERT INTO content_references (organization_id, source_type, source_id, target_type, target_id, kind, created_by, created_at, updated_at) '
                 . 'SELECT organization_id, ?, idea_node_id, target_type, target_id, kind, created_by, created_at, updated_at FROM idea_node_references',
-                ['App\Models\IdeaNode'],
+                ['App\Models\Ideas\IdeaNode'],
             );
             Schema::drop('idea_node_references');
         }
@@ -86,12 +86,12 @@ return new class extends Migration {
         DB::statement(
             'INSERT INTO knowledge_article_links (knowledge_article_id, linkable_type, linkable_id, created_by_user_id, created_at) '
             . 'SELECT source_id, target_type, target_id, created_by, created_at FROM content_references WHERE source_type = ? AND kind = ? AND created_by IS NOT NULL',
-            ['App\Models\KnowledgeArticle', 'linked'],
+            ['App\Models\Knowledge\KnowledgeArticle', 'linked'],
         );
         DB::statement(
             'INSERT INTO idea_node_references (organization_id, idea_node_id, target_type, target_id, kind, created_by, created_at, updated_at) '
             . 'SELECT organization_id, source_id, target_type, target_id, kind, created_by, created_at, updated_at FROM content_references WHERE source_type = ?',
-            ['App\Models\IdeaNode'],
+            ['App\Models\Ideas\IdeaNode'],
         );
 
         Schema::dropIfExists('content_references');

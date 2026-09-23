@@ -8,11 +8,15 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Calendar;
 
 use App\Enums\Event\{EventStatus, EventType, EventVisibility, ParticipantRole, ParticipantStatus};
 use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesGlobalDateRange};
-use App\Models\{Customer, Event, EventCategory, Room, User};
+use App\Models\Customer\Customer;
+use App\Models\Calendar\Event;
+use App\Models\Calendar\EventCategory;
+use App\Models\Room;
+use App\Models\Platform\User;
 use App\Services\Event\EventService;
 use App\Support\ErrorText;
 use App\Support\{LookupCache, Sqid, Tz};
@@ -22,6 +26,7 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use RuntimeException;
+use App\Http\Controllers\Controller;
 
 class EventController extends Controller {
     use ParsesIndexQuery;
@@ -101,7 +106,7 @@ class EventController extends Controller {
         ]);
     }
 
-    public function calendar(Request $request, \App\Services\HolidayService $holidays): View {
+    public function calendar(Request $request, \App\Services\Calendar\HolidayService $holidays): View {
         Gate::authorize('viewAny', Event::class);
 
         // Globaler Header-Zeitraum (analog Schichtplan). Bei Mehrmonats-Range

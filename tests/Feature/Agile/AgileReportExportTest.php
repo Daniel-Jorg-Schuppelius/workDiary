@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Agile;
 
-use App\Models\{AuditLog, Organization, Project, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
 use App\Services\Agile\{AgileBoardService, AgileWorkItemService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

@@ -11,7 +11,8 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\{SlaViolation, User};
+use App\Models\Platform\User;
+use App\Models\SlaViolation;
 use App\Policies\Concerns\HasAdminBypass;
 
 class SlaViolationPolicy extends PermissionPolicy {

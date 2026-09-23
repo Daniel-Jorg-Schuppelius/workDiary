@@ -8,11 +8,12 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Policies;
+namespace App\Policies\Knowledge;
 
 use App\Enums\Knowledge\ArticleStatus;
 use App\Enums\User\Permission as P;
-use App\Models\{KnowledgeArticle, User};
+use App\Models\Knowledge\KnowledgeArticle;
+use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
 
 /**

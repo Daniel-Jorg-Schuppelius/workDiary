@@ -17,7 +17,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\{AccountingAccount, AccountingFiscalYear, AccountingSovereigntyPeriod, AccountingVatFilingPeriod};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Accounting\{AccountingProfileService, AccountingSovereigntyResolver, FiscalYearService, TaxationMethodResolver, VatFilingProfileResolver};
 use App\Services\Accounting\Filing\VatSpecialPrepaymentService;
 use App\Services\Accounting\Reports\VatPreviewBuilder;
@@ -353,7 +353,7 @@ class AccountingSetupController extends Controller {
      * Vorschlag für den Jahresbeginn: der Tag nach dem letzten Jahr, sonst der
      * konfigurierte Geschäftsjahresmonat im laufenden Kalenderjahr.
      */
-    private function suggestedFiscalYearStart(\App\Models\Organization $organization): CarbonImmutable {
+    private function suggestedFiscalYearStart(\App\Models\Platform\Organization $organization): CarbonImmutable {
         $last = AccountingFiscalYear::query()
             ->where('organization_id', $organization->id)
             ->orderByDesc('ends_on')

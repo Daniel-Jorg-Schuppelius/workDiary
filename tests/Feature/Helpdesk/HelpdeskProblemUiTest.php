@@ -11,7 +11,9 @@
 namespace Tests\Feature\Helpdesk;
 
 use App\Enums\User\Permission;
-use App\Models\{ContentReference, Organization, Problem, ServiceTicket, User};
+use App\Models\Knowledge\ContentReference;
+use App\Models\Platform\{Organization, User};
+use App\Models\{Problem, ServiceTicket};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;

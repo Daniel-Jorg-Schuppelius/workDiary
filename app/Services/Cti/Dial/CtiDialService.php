@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Cti\Dial;
 
-use App\Models\{CtiConnection, Organization};
+use App\Models\Cti\CtiConnection;
+use App\Models\Platform\Organization;
 use CommonToolkit\Helper\Data\PhoneNumberHelper;
 
 /**

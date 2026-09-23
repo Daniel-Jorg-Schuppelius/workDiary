@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Export;
 
 use App\Enums\Export\{ExportFormat, ExportRunState};
-use App\Models\{ExportRun, Organization, User};
+use App\Models\Integration\ExportRun;
+use App\Models\Platform\{Organization, User};
 use App\Support\{CsvExport, XlsxExport};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\CSV\StringHelper;

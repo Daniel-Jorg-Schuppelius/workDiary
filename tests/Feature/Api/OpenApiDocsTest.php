@@ -38,7 +38,7 @@ class OpenApiDocsTest extends TestCase {
     public function test_swagger_docs_route_serves_json(): void {
         Artisan::call('l5-swagger:generate');
         // Die Doku liegt seit S-61 hinter der Anmeldung.
-        $response = $this->actingAs(\App\Models\User::factory()->create())->get('/docs');
+        $response = $this->actingAs(\App\Models\Platform\User::factory()->create())->get('/docs');
         $response->assertOk();
         $body = $response->getContent();
         $this->assertNotFalse($body);
@@ -99,7 +99,7 @@ class OpenApiDocsTest extends TestCase {
     }
 
     public function test_swagger_ui_renders(): void {
-        $response = $this->actingAs(\App\Models\User::factory()->create())->get('/api/documentation');
+        $response = $this->actingAs(\App\Models\Platform\User::factory()->create())->get('/api/documentation');
         $response->assertOk();
         $response->assertSee('Swagger UI', false);
     }

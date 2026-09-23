@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Help;
 
-use App\Models\{HelpTopic, User};
+use App\Models\Platform\{HelpTopic, User};
 use App\Services\Help\HelpTopicResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

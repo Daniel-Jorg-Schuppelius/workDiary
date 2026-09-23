@@ -10,13 +10,16 @@
 
 namespace App\Plugins\Todoist\Http\Controllers;
 
-use App\Models\{ExternalReference, Project, TodoistConnection, TodoistProjectLink, User};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\User;
+use App\Models\Plugins\Todoist\{TodoistConnection, TodoistProjectLink};
+use App\Models\Project\Project;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
 use App\Plugins\Todoist\Api\{TodoistApiClient, TodoistOAuth};
 use App\Plugins\Todoist\Services\TodoistPreflightService;
 use App\Plugins\Todoist\{TodoistConfig, TodoistPlugin};
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Artisan;

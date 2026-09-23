@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\CustomerPortal;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Asset, User};
+use App\Models\Asset;
+use App\Models\Platform\User;
 use App\Models\Rental\RentalRequest;
 use App\Services\Rental\RentalRequestService;
 use App\Support\{ErrorText, Sqid, Tz};

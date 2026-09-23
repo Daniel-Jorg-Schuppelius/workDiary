@@ -11,7 +11,11 @@
 namespace App\Plugins\Lexoffice;
 
 use APIToolkit\API\Authentication\BearerAuthentication;
-use App\Models\{ContactAddress, Customer, ExternalReference, ExternalReferenceAlias, IntegrationInboxItem, Organization, Supplier};
+use App\Models\Contacts\ContactAddress;
+use App\Models\Customer\Customer;
+use App\Models\Integration\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem};
+use App\Models\Platform\Organization;
+use App\Models\Supplier;
 use App\Plugins\Support\PluginHttpFactory;
 use CommonToolkit\ValueObjects\VatNumber;
 use Illuminate\Database\Eloquent\{Builder, Model};

@@ -11,9 +11,9 @@
 ])
 
 @php
-    /** @var \App\Models\Organization|null $organization */
+    /** @var \App\Models\Platform\Organization|null $organization */
     $show = $organization !== null && $organization->inMaintenance()
-        && auth()->user() instanceof \App\Models\User && auth()->user()->isAdmin();
+        && auth()->user() instanceof \App\Models\Platform\User && auth()->user()->isAdmin();
     $until = $show ? $organization->maintenanceSettings()['until'] : null;
 @endphp
 

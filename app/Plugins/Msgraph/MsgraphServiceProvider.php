@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Msgraph;
 
-use App\Models\Task;
+use App\Models\Project\Task;
 use App\Plugins\Msgraph\Api\{MsgraphMailOAuth, MsgraphOAuth};
 use App\Plugins\Msgraph\Mail\{MsgraphMailTransport, StampOrganizationMailHeader};
 use App\Plugins\Msgraph\Observers\MsgraphTodoTaskObserver;

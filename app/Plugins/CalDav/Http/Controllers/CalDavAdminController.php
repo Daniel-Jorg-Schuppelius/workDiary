@@ -11,7 +11,8 @@
 namespace App\Plugins\CalDav\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{CalDavConnection, PluginState};
+use App\Models\Platform\PluginState;
+use App\Models\Plugins\CalDav\CalDavConnection;
 use App\Plugins\CalDav\CalDavPlugin;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use Illuminate\Http\{RedirectResponse, Request};

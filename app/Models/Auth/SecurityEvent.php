@@ -8,12 +8,13 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Auth;
 
 use App\Casts\IpAddressCast;
 use App\Enums\Security\SecurityEventType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Platform\User;
 
 /**
  * Persistiertes Sicherheitsereignis (Feature 096, MVP-445) — plattformweit,

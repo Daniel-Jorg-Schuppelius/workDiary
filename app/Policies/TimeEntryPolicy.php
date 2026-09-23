@@ -10,7 +10,8 @@
 
 namespace App\Policies;
 
-use App\Models\{TimeEntry, User};
+use App\Models\Platform\User;
+use App\Models\TimeEntry;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 use App\Services\Timekeeping\TimeEntryEditPolicy;
 

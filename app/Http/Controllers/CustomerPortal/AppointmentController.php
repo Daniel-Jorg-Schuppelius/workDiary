@@ -14,10 +14,11 @@ namespace App\Http\Controllers\CustomerPortal;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Models\{AppointmentRequest, BookableService, User};
+use App\Models\Calendar\AppointmentRequest;
+use App\Models\Platform\User;
+use App\Models\Sales\BookableService;
 use App\Services\Appointments\{AppointmentRequestService, AppointmentSlotService};
-use App\Services\SqidEncoder;
-use App\Support\ErrorText;
+use App\Support\{ErrorText, SqidEncoder};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;

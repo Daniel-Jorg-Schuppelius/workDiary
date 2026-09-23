@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\MeterReading;
 
-use App\Models\{Asset, Organization, User};
+use App\Models\Asset;
+use App\Models\Platform\{Organization, User};
 use App\Services\MeterReading\MeterReadingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;

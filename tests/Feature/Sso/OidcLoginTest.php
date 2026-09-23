@@ -11,7 +11,8 @@
 namespace Tests\Feature\Sso;
 
 use App\Enums\Auth\SsoProtocol;
-use App\Models\{Organization, OrganizationSsoDomain, SsoConnection, SsoIdentity, User};
+use App\Models\Auth\{SsoConnection, SsoIdentity};
+use App\Models\Platform\{Organization, OrganizationSsoDomain, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Jose\Component\Core\{AlgorithmManager, JWK};
 use Jose\Component\KeyManagement\JWKFactory;

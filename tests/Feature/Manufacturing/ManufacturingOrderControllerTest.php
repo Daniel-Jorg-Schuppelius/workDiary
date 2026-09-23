@@ -11,7 +11,8 @@
 namespace Tests\Feature\Manufacturing;
 
 use App\Enums\Manufacturing\ManufacturingOrderStatus;
-use App\Models\{Article, ArticleVariant, ManufacturingOrder, ProcedureMaterialRequirement, ProcedureTemplateVersion, User, Warehouse};
+use App\Models\{Article, ArticleVariant, ManufacturingOrder, ProcedureMaterialRequirement, ProcedureTemplateVersion, Warehouse};
+use App\Models\Platform\User;
 use App\Services\Manufacturing\ManufacturingOrderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -180,10 +181,10 @@ final class ManufacturingOrderControllerTest extends TestCase {
     public function test_push_delivery_note_to_lexoffice(): void {
         $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'api_key' => 'test-key']);
 
-        $customer = \App\Models\Customer::factory()->create([
+        $customer = \App\Models\Customer\Customer::factory()->create([
             'organization_id' => $this->organization->id, 'email' => 'kunde@example.com',
         ]);
-        \App\Models\ExternalReference::create([
+        \App\Models\Integration\ExternalReference::create([
             'organization_id' => $this->organization->id,
             'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,
             'external_type' => \App\Plugins\Lexoffice\LexofficePlugin::EXT_TYPE_CONTACT,
@@ -229,10 +230,10 @@ final class ManufacturingOrderControllerTest extends TestCase {
     public function test_push_order_confirmation_to_lexoffice(): void {
         $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'api_key' => 'test-key']);
 
-        $customer = \App\Models\Customer::factory()->create([
+        $customer = \App\Models\Customer\Customer::factory()->create([
             'organization_id' => $this->organization->id, 'email' => 'kunde@example.com',
         ]);
-        \App\Models\ExternalReference::create([
+        \App\Models\Integration\ExternalReference::create([
             'organization_id' => $this->organization->id,
             'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,
             'external_type' => \App\Plugins\Lexoffice\LexofficePlugin::EXT_TYPE_CONTACT,
@@ -271,10 +272,10 @@ final class ManufacturingOrderControllerTest extends TestCase {
     public function test_push_quotation_to_lexoffice(): void {
         $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'api_key' => 'test-key']);
 
-        $customer = \App\Models\Customer::factory()->create([
+        $customer = \App\Models\Customer\Customer::factory()->create([
             'organization_id' => $this->organization->id, 'email' => 'kunde@example.com',
         ]);
-        \App\Models\ExternalReference::create([
+        \App\Models\Integration\ExternalReference::create([
             'organization_id' => $this->organization->id,
             'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,
             'external_type' => \App\Plugins\Lexoffice\LexofficePlugin::EXT_TYPE_CONTACT,

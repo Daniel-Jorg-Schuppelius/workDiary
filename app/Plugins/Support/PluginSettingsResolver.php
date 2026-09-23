@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support;
 
-use App\Models\PluginSetting;
+use App\Models\Platform\PluginSetting;
 use App\Plugins\Contracts\Plugin;
 
 /**

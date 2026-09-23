@@ -12,7 +12,7 @@ namespace Tests\Feature\Plugins\JtlWawi;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
 use App\Models\Finance\AccountingVoucher;
-use App\Models\JtlConnection;
+use App\Models\Plugins\JtlWawi\JtlConnection;
 use App\Plugins\JtlWawi\Services\JtlVoucherPullService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;

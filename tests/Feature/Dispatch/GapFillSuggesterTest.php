@@ -11,7 +11,10 @@
 namespace Tests\Feature\Dispatch;
 
 use App\Enums\Diary\{Mode, Status};
-use App\Models\{Customer, DiaryEntry, DiaryEntryEvent, Project, Qualification, User};
+use App\Models\Customer\Customer;
+use App\Models\{DiaryEntry, DiaryEntryEvent, Qualification};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Services\Dispatch\GapFillSuggester;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

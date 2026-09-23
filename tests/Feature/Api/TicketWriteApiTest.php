@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Api;
 
 use App\Enums\User\Permission;
-use App\Models\{ServiceTicket, User};
+use App\Models\Platform\User;
+use App\Models\ServiceTicket;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\WithOrganization;

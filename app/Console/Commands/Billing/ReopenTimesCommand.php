@@ -11,7 +11,9 @@
 namespace App\Console\Commands\Billing;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\{Customer, Organization, TimeEntry};
+use App\Models\Customer\Customer;
+use App\Models\Platform\Organization;
+use App\Models\TimeEntry;
 use App\Support\{MorphMap, Sqid};
 use CommonToolkit\Helper\Data\DateHelper;
 use Illuminate\Console\Command;

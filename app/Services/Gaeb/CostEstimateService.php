@@ -12,9 +12,11 @@ declare(strict_types=1);
 
 namespace App\Services\Gaeb;
 
-use App\Models\{BillOfQuantity, Project, User};
+use App\Models\BillOfQuantity;
 use App\Models\Catalog\CatalogRegistry;
 use App\Models\Costing\{CostEstimate, CostEstimateItem};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Entities\Gaeb\{GaebBoq, GaebCostElement, GaebCosting};

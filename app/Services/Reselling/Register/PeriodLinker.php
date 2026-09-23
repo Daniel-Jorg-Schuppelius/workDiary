@@ -125,7 +125,7 @@ final class PeriodLinker {
             return $line;
         }
         $organization = $line->getRelationValue('organization');
-        $resolved = $organization instanceof \App\Models\Organization ? $this->mirror->lineById($organization, $line->getMorphClass(), (int) $line->getKey()) : null;
+        $resolved = $organization instanceof \App\Models\Platform\Organization ? $this->mirror->lineById($organization, $line->getMorphClass(), (int) $line->getKey()) : null;
         if ($resolved === null) {
             throw new \InvalidArgumentException((string) __('resale.link.error.line_missing'));
         }

@@ -13,7 +13,7 @@ namespace App\Policies\Learning;
 use App\Enums\Learning\LearningCourseStatus;
 use App\Enums\User\Permission as P;
 use App\Models\Learning\LearningCourse;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
 
 /**

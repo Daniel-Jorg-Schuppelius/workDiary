@@ -11,7 +11,10 @@
 namespace App\Plugins\OpenProject\Services;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{ExternalReference, IntegrationInboxItem, Organization, Project, Task, TimeEntry};
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\Organization;
+use App\Models\Project\{Project, Task};
+use App\Models\TimeEntry;
 use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\OpenProject\Sources\{OpenProjectApiClient, OpenProjectEntry};
 use App\Plugins\Support\{PersistsTimeImportInbox, ReconcilesRemoteDeletions, RemoteSyncWindow, RemoteTimeFingerprint, TimeWritebackObserver};
@@ -26,7 +29,7 @@ use Illuminate\Support\Collection;
  *  - {@see importTimes()} liest die Zeiteinträge im Fenster [$from, $to] und legt
  *    für gemappte Projekte einen {@see TimeEntry} an (idempotent über die
  *    `entry`-Reference); nicht gemappte Projekte → universelle Zuordnungs-Inbox
- *    ({@see \App\Models\IntegrationInboxItem}, gruppiert nach Projekt).
+ *    ({@see \App\Models\Integration\IntegrationInboxItem}, gruppiert nach Projekt).
  *  - Die Inbox bucht Gruppen gegen ein Projekt ({@see bookInboxGroup()}), merkt die
  *    Projekt-Reference (→ Folgeimporte matchen automatisch) und bucht die Einträge.
  *

@@ -14,7 +14,8 @@ namespace App\Policies\Agile;
 
 use App\Enums\User\Permission;
 use App\Models\Agile\AgileBoard;
-use App\Models\{Project, User};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 
 /**
  * Projektboard-Policy (Feature 064): agile Rechte öffnen NIE fremde

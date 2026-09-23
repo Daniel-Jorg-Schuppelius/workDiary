@@ -11,7 +11,7 @@
 namespace App\Services\Install;
 
 use App\Enums\User\UserRole;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Support\Facades\{Config, DB, Hash};
 use Illuminate\Support\Str;
 use RuntimeException;

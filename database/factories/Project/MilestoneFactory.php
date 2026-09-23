@@ -8,9 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace Database\Factories;
+namespace Database\Factories\Project;
 
-use App\Models\{Milestone, Project, User};
+use App\Models\Project\Project\Milestone;
+use App\Models\Project\Project\Project;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

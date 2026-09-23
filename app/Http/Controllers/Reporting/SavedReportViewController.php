@@ -8,13 +8,15 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Models\{SavedReportView, User};
+use App\Models\Reporting\SavedReportView;
+use App\Models\Platform\User;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Route as RouteFacade};
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 /**
  * Gespeicherte Report-Ansichten (MVP-529, Q1 „Auswertungs-Modelle"):

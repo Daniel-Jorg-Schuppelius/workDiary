@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Purchase;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\{Expense, Organization};
+use App\Models\Expense;
+use App\Models\Platform\Organization;
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;

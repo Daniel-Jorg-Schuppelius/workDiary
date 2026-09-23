@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Ideas;
 
-use App\Models\{IdeaMap, IdeaNode};
+use App\Models\Ideas\{IdeaMap, IdeaNode};
 use CommonToolkit\Builders\XmlDocumentBuilder;
 use CommonToolkit\Entities\XML\{Attribute, Element};
 use Illuminate\Support\Collection;

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\JtlWawi\Api;
 
-use App\Models\JtlConnection;
+use App\Models\Plugins\JtlWawi\JtlConnection;
 use App\Plugins\JtlWawi\JtlWawiPlugin;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Carbon\CarbonInterface;

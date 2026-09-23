@@ -16,7 +16,8 @@ use App\Enums\Claims\{ClaimKind, ClaimSource, ClaimStatus, ClaimVerdict};
 use App\Enums\Classification\ClassificationDomain;
 use App\Http\Controllers\Controller;
 use App\Models\Claims\{ClaimCase, ClaimDecision};
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Claims\ClaimCaseService;
@@ -199,10 +200,10 @@ class ClaimCaseController extends Controller {
     /** @return array<string, mixed> */
     private function validated(Request $request): array {
         $fieldModels = [
-            'customer_id' => \App\Models\Customer::class,
-            'responsible_user_id' => \App\Models\User::class,
+            'customer_id' => \App\Models\Customer\Customer::class,
+            'responsible_user_id' => \App\Models\Platform\User::class,
             'diary_entry_id' => \App\Models\DiaryEntry::class,
-            'project_id' => \App\Models\Project::class,
+            'project_id' => \App\Models\Project\Project::class,
             'service_ticket_id' => \App\Models\ServiceTicket::class,
             'protocol_id' => \App\Models\Protocol::class,
             'asset_id' => \App\Models\Asset::class,
@@ -211,9 +212,9 @@ class ClaimCaseController extends Controller {
             'supplier_id' => \App\Models\Supplier::class,
             'purchase_order_id' => \App\Models\PurchaseOrder::class,
             'stock_serial_id' => \App\Models\StockSerial::class,
-            'defect_type_classification_id' => \App\Models\Classification::class,
-            'root_cause_classification_id' => \App\Models\Classification::class,
-            'goodwill_reason_classification_id' => \App\Models\Classification::class,
+            'defect_type_classification_id' => \App\Models\Classification\Classification::class,
+            'root_cause_classification_id' => \App\Models\Classification\Classification::class,
+            'goodwill_reason_classification_id' => \App\Models\Classification\Classification::class,
         ];
         foreach ($fieldModels as $field => $model) {
             if ($request->filled($field)) {

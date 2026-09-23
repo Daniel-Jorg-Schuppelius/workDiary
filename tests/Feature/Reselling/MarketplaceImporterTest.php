@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Reselling;
 
 use App\Enums\Reselling\{CompanyMappingMode, SubscriptionProvider, SubscriptionStatus};
-use App\Models\{Customer, ForeignCustomer, LexofficeArticle};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Models\Reselling\{CompanyMapping, ResaleImport, ResalePriceEntry, ResaleSubscription};
 use App\Services\Reselling\Register\MarketplaceImporter;
 use App\Support\XlsxExport;

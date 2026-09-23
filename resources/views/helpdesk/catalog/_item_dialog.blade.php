@@ -20,7 +20,7 @@
 
         return [
             'type' => $type,
-            'user' => $type === 'user' ? \App\Support\Sqid::encode(\App\Models\User::class, (int) ($rule['value'] ?? 0)) : '',
+            'user' => $type === 'user' ? \App\Support\Sqid::encode(\App\Models\Platform\User::class, (int) ($rule['value'] ?? 0)) : '',
             'role' => $type === 'role' ? (string) ($rule['value'] ?? '') : '',
         ];
     })->values()->all();
@@ -29,7 +29,7 @@
     $visibility = (array) ($item->visibility ?? []);
     $visibilityRoles = (array) ($visibility['roles'] ?? []);
     $visibilityCustomerSqids = array_map(
-        fn($id): string => \App\Support\Sqid::encode(\App\Models\Customer::class, (int) $id),
+        fn($id): string => \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, (int) $id),
         (array) ($visibility['customer_ids'] ?? []),
     );
     $procedureTemplateId = (int) (($item->fulfillment_config ?? [])['procedure_template_id'] ?? 0);

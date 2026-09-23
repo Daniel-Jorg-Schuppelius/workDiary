@@ -12,7 +12,7 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AccountType, ProfitDetermination};
 use App\Models\Accounting\{AccountingAccount, AccountingEvent};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService, LedgerDatevExportService, OpeningBalanceImportService};
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
@@ -214,7 +214,7 @@ class AccountingOpeningAndDatevTest extends TestCase {
         $receivable = app(ChartOfAccountsService::class)->create($this->org, [
             'number' => '1400', 'name' => 'Forderungen', 'type' => AccountType::Asset, 'is_open_item' => true, 'datev_account' => '1400',
         ]);
-        $customer = \App\Models\Customer::factory()->create(['organization_id' => $this->org->id]);
+        $customer = \App\Models\Customer\Customer::factory()->create(['organization_id' => $this->org->id]);
         $invoice = \App\Models\Invoice::query()->create([
             'organization_id' => $this->org->id,
             'customer_id' => $customer->id,

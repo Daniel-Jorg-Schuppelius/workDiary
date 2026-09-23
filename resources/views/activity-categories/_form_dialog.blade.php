@@ -8,7 +8,7 @@
 --}}
 {{-- Variablen: $category, $isEdit --}}
 @php
-    /** @var \App\Models\ActivityCategory|null $category */
+    /** @var \App\Models\Classification\ActivityCategory|null $category */
     /** @var bool $isEdit */
     $isEdit ??= false;
     $action  = $isEdit ? route('activity-categories.update', $category) : route('activity-categories.store');

@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Import\Specs\Concerns;
 
-use App\Models\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem, Organization};
+use App\Models\Integration\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem};
+use App\Models\Platform\Organization;
 use App\Services\Import\ImportOutcome;
 use App\Services\Integration\Match\{EntityMatcher, MatchProfile};
 use CommonToolkit\Enums\HashAlgorithm;

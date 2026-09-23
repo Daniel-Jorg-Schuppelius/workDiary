@@ -206,7 +206,7 @@ class ChartOfAccountsController extends Controller {
     }
 
     /** @return array<string, mixed> */
-    private function validated(Request $request, \App\Models\Organization $organization, ?AccountingAccount $account = null): array {
+    private function validated(Request $request, \App\Models\Platform\Organization $organization, ?AccountingAccount $account = null): array {
         $data = $request->validate([
             'number' => ['required', 'string', 'max:16'],
             'name' => ['required', 'string', 'max:191'],

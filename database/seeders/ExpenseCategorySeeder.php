@@ -10,7 +10,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\{ExpenseCategory, Organization};
+use App\Models\ExpenseCategory;
+use App\Models\Platform\Organization;
 use Illuminate\Database\Seeder;
 
 /**

@@ -12,8 +12,10 @@ namespace Tests\Feature\Claims;
 
 use App\Enums\Claims\{ClaimFinancialKind, ClaimKind, ClaimRmaDisposition, ClaimStatus, ClaimVerdict};
 use App\Enums\Inventory\{SerialSource, SerialStatus, StockState};
-use App\Models\{Article, ArticleVariant, Customer, Invoice, StockSerial, User, Warehouse};
+use App\Models\{Article, ArticleVariant, Invoice, StockSerial, Warehouse};
 use App\Models\Claims\ClaimCase;
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Services\Claims\{ClaimCaseService, ClaimFinancialService, ClaimRmaService};
 use App\Services\Inventory\InventoryLedger;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -273,7 +275,7 @@ final class ClaimsLifecycleTest extends TestCase {
 
     /** B1/MVP-007: Ursachencode-Selects der Fallakte senden Sqids (Konvention: Sqid in Formularen). */
     public function test_show_renders_classification_options_as_sqids(): void {
-        $classification = \App\Models\Classification::query()->create([
+        $classification = \App\Models\Classification\Classification::query()->create([
             'organization_id' => $this->organization->id,
             'domain' => \App\Enums\Classification\ClassificationDomain::DefectType->value,
             'code' => 'leak',
@@ -327,7 +329,7 @@ final class ClaimsLifecycleTest extends TestCase {
     }
 
     public function test_module_gating_blocks_without_license(): void {
-        $freeOrg = \App\Models\Organization::factory()->free()->create();
+        $freeOrg = \App\Models\Platform\Organization::factory()->free()->create();
         app(PermissionRegistrar::class)->setPermissionsTeamId($freeOrg->id);
         $freeAdmin = User::factory()->admin()->create(['organization_id' => $freeOrg->id]);
 

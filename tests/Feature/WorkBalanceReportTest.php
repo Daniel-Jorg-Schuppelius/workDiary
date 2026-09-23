@@ -12,7 +12,9 @@ namespace Tests\Feature;
 
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
-use App\Models\{Attendance, Project, TimeEntry, User};
+use App\Models\{Attendance, TimeEntry};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Services\Reporting\WorkBalanceCalculator;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;

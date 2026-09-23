@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\OrgaMax\Services;
 
-use App\Models\{OrgaMaxConnection, Organization, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\Plugins\OrgaMax\OrgaMaxConnection;
 use App\Plugins\OrgaMax\Api\{OrgaMaxClientFactory, OrgaMaxTokenService};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Str;

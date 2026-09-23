@@ -12,7 +12,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\TimeAccount\{CarryoverPolicy, TimeAccountSource, TimeAccountUnit};
 use App\Http\Controllers\Controller;
-use App\Models\{Organization, ShiftType, TimeAccount, TimeAccountRule, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\{ShiftType, TimeAccount, TimeAccountRule};
 use App\Services\TimeAccount\TimeAccountPostingService;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;

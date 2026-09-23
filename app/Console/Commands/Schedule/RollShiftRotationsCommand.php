@@ -11,7 +11,7 @@
 namespace App\Console\Commands\Schedule;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Schedule\ShiftRotationRoller;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;

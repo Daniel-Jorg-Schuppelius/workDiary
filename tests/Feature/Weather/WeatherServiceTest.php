@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Weather;
 
-use App\Models\WeatherSnapshot;
+use App\Models\Weather\WeatherSnapshot;
 use App\Services\Weather\{OpenMeteoProvider, WeatherService};
 use GuzzleHttp\{Client, HandlerStack};
 use GuzzleHttp\Handler\MockHandler;

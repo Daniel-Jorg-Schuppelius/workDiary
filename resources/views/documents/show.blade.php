@@ -16,7 +16,7 @@
 
 @section('content')
 @php
-    /** @var \App\Models\Document $document */
+    /** @var \App\Models\Document\Document $document */
 @endphp
 <x-page-shell>
     <x-slot:toolbar>

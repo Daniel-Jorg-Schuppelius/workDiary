@@ -12,7 +12,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Requests\{StoreShiftTypeRequest, UpdateShiftTypeRequest};
-use App\Models\{ShiftType, User};
+use App\Models\Platform\User;
+use App\Models\ShiftType;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;

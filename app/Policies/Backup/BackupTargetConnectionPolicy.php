@@ -11,14 +11,14 @@
 namespace App\Policies\Backup;
 
 use App\Models\Backup\BackupTargetConnection;
-use App\Models\User;
+use App\Models\Platform\User;
 
 /**
  * Backupziel-Verbindungen (Feature 017 Phase 32): SYSTEMWEITE Verwaltung —
  * ausschließlich Plattform-Admin (`is_platform_admin`), NIE org-delegierbar.
  * Bewusst KEIN {@see \App\Policies\Concerns\HasAdminBypass}: ein org-lokaler
  * Admin darf Installations-Backups weder sehen noch verwalten (Muster
- * Mandantenverwaltung, {@see \App\Policies\OrganizationPolicy}).
+ * Mandantenverwaltung, {@see \App\Policies\Platform\OrganizationPolicy}).
  */
 class BackupTargetConnectionPolicy {
     public function before(User $user, string $ability): ?bool {

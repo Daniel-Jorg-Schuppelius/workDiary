@@ -10,8 +10,10 @@
 
 namespace Tests\Feature\Metering;
 
-use App\Models\{Asset, Customer, Invoice, MeterReading, Organization, User};
+use App\Models\{Asset, Invoice, MeterReading};
+use App\Models\Customer\Customer;
 use App\Models\Metering\{MeterBillingAgreement, MeterBillingRun};
+use App\Models\Platform\{Organization, User};
 use App\Services\Metering\MeterBillingService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

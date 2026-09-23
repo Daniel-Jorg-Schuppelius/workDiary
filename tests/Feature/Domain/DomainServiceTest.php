@@ -11,8 +11,10 @@
 namespace Tests\Feature\Domain;
 
 use App\Enums\Domain\{DomainConnectionStatus, DomainProviderCommandStatus, DomainSyncStatus};
-use App\Models\{Customer, ExternalReference, User};
+use App\Models\Customer\Customer;
 use App\Models\Domain\{DomainAccountingEntry, DomainProjection, DomainProviderConnection, DomainResellerAccount};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\User;
 use App\Plugins\Support\Domain\DomainRateBudgetException;
 use App\Services\Domain\{DomainAccountingService, DomainActionException, DomainAvailabilityService, DomainCommandService, DomainConnectionService, DomainCustomerMappingService, DomainDangerousActionService, DomainDnsService, DomainEventPollingService, DomainInvoiceService, DomainReportService, DomainSyncService};
 use Illuminate\Database\QueryException;
@@ -309,7 +311,7 @@ class DomainServiceTest extends TestCase {
 
         // Kundenzuordnung hebt den Eigenbestand auf; fremder Endkunde wird verworfen.
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
-        $foreignOfOther = \App\Models\ForeignCustomer::factory()->create([
+        $foreignOfOther = \App\Models\Customer\ForeignCustomer::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => Customer::factory()->create(['organization_id' => $this->organization->id])->id,
         ]);

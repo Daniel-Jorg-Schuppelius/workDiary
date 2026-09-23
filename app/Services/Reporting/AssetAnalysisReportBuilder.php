@@ -12,7 +12,8 @@ namespace App\Services\Reporting;
 
 use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
-use App\Models\{Asset, DiaryEntry, ExternalReference, OpenIssue, Protocol, TimeEntry};
+use App\Models\{Asset, DiaryEntry, OpenIssue, Protocol, TimeEntry};
+use App\Models\Integration\ExternalReference;
 use App\Support\MorphMap;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;

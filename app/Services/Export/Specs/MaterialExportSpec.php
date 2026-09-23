@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Export\Specs;
 
 use App\Enums\Export\ExportEntity;
-use App\Models\{Material, Organization};
+use App\Models\Material;
+use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Model;
 
 /**

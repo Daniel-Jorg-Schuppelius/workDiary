@@ -11,7 +11,8 @@
 namespace App\Services\Invoicing\EInvoice;
 
 use App\Enums\Invoicing\XRechnungSyntax;
-use App\Models\{Invoice, InvoiceItem, Organization};
+use App\Models\{Invoice, InvoiceItem};
+use App\Models\Platform\Organization;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Money;

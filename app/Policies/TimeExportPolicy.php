@@ -12,7 +12,8 @@ namespace App\Policies;
 
 use App\Enums\TimeExport\TimeExportStatus;
 use App\Enums\User\Permission as P;
-use App\Models\{TimeExport, User};
+use App\Models\Platform\User;
+use App\Models\TimeExport;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 /**

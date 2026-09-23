@@ -12,7 +12,7 @@ namespace App\Services\Domain;
 
 use App\Enums\Domain\{DomainCapabilityArea, DomainProviderCommandStatus, DomainRenewalMode, DomainSyncStatus};
 use App\Models\Domain\{DomainProjection, DomainProviderCommand, DomainProviderConnection};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Support\Carbon;
 
 /**

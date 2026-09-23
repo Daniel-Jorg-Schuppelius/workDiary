@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Isms\SbomGenerator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;

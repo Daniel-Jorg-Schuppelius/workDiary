@@ -14,7 +14,7 @@ namespace App\Services\Learning;
 
 use App\Enums\Learning\{LearningAudience, LearningCourseKind, LearningCourseStatus, LearningTimePolicy, LearningUnitKind};
 use App\Models\Learning\{LearningCourse, LearningCourseCategory, LearningCourseVersion, LearningSection, LearningUnit};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Training\TrainingCatalogService;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Facades\DB;

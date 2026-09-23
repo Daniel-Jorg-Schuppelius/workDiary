@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Whistleblowing;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Models\Whistleblowing\{Portal, WhistleblowingCase};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

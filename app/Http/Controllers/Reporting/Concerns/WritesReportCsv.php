@@ -11,7 +11,8 @@
 namespace App\Http\Controllers\Reporting\Concerns;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Models\{AuditLog, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\User;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Http\{Request, Response};

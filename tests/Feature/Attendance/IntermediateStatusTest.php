@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Attendance;
 
-use App\Models\{AttendanceTerminal, User, UserBadge};
+use App\Models\AttendanceTerminal;
+use App\Models\Platform\{User, UserBadge};
 use App\Services\Attendance\{AttendanceClockService, EmergencyAttendanceService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

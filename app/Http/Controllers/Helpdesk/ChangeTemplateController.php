@@ -14,7 +14,8 @@ namespace App\Http\Controllers\Helpdesk;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\{Change, ChangeTemplate, User};
+use App\Models\{Change, ChangeTemplate};
+use App\Models\Platform\User;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;

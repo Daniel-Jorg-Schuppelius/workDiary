@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Accounting;
 
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingTransfer};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Model;

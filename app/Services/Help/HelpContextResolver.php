@@ -10,7 +10,7 @@
 
 namespace App\Services\Help;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Str;

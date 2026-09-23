@@ -13,10 +13,10 @@ namespace App\Http\Controllers;
 use App\Enums\Gaeb\{BoqItemStatus, BoqItemType, BoqProgressSource, GaebPhase};
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Models\{Article, BillOfQuantity, BoqItem, Material, Project};
+use App\Models\{Article, BillOfQuantity, BoqItem, Material};
+use App\Models\Project\Project;
 use App\Services\Gaeb\{BoqCostingService, BoqExportService, BoqImportConflictException, BoqProgressService, BoqWorkflowException, BoqWorkflowService, GaebImportService};
-use App\Services\SqidEncoder;
-use App\Support\ErrorText;
+use App\Support\{ErrorText, SqidEncoder};
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\Helper\FileSystem\File;
 use ERechnungToolkit\Enums\GaebFormat;
@@ -622,9 +622,9 @@ class BillOfQuantityController extends Controller {
         ]));
     }
 
-    private function actorOrFail(): \App\Models\User {
+    private function actorOrFail(): \App\Models\Platform\User {
         $user = Auth::user();
-        abort_unless($user instanceof \App\Models\User, 403);
+        abort_unless($user instanceof \App\Models\Platform\User, 403);
 
         return $user;
     }

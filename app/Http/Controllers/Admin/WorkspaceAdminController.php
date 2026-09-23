@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Navigation\NavFocusService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;

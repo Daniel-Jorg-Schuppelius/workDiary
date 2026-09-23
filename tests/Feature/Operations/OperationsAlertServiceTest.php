@@ -11,7 +11,8 @@
 namespace Tests\Feature\Operations;
 
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskStatus, OperationsTaskType};
-use App\Models\{OperationsTask, User};
+use App\Models\Platform\User;
+use App\Models\Project\OperationsTask;
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

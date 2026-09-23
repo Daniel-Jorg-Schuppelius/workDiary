@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{LexofficeVoucher, User};
+use App\Models\Platform\User;
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Plugins\Lexoffice\{LexofficeDunningService, LexofficePlugin};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;

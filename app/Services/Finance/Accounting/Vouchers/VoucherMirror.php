@@ -12,8 +12,10 @@ declare(strict_types=1);
 
 namespace App\Services\Finance\Accounting\Vouchers;
 
-use App\Models\{Customer, ExternalReference, Supplier};
+use App\Models\Customer\Customer;
 use App\Models\Finance\AccountingVoucher;
+use App\Models\Integration\ExternalReference;
+use App\Models\Supplier;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Carbon;
 

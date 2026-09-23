@@ -12,7 +12,9 @@ namespace Tests\Feature\Classification;
 
 use App\Enums\Classification\ClassificationDomain;
 use App\Exceptions\ClassificationValidationException;
-use App\Models\{AuditLog, Classification, Organization, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Classification\Classification;
+use App\Models\Platform\{Organization, User};
 use App\Services\Classification\{ClassificationManager, ClassificationResolver};
 use Database\Seeders\ClassificationSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

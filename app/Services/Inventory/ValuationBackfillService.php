@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Inventory;
 
-use App\Models\{Organization, StockValuation, StockValuationLayer};
+use App\Models\Platform\Organization;
+use App\Models\{StockValuation, StockValuationLayer};
 use Illuminate\Support\Carbon;
 
 /**

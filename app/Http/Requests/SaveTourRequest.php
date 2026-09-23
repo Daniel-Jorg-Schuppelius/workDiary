@@ -22,7 +22,7 @@ class SaveTourRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'user_id' => \App\Models\User::class,
+        'user_id' => \App\Models\Platform\User::class,
         'vehicle_id' => \App\Models\Vehicle::class,
     ];
 

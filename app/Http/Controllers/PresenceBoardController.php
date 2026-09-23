@@ -12,10 +12,11 @@ namespace App\Http\Controllers;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Enums\Vacation\VacationStatus;
-use App\Models\{Organization, ScheduledShift, SickLeave, User, Vacation};
+use App\Models\Platform\{Organization, User};
+use App\Models\{ScheduledShift, SickLeave, Vacation};
 use App\Services\Attendance\EmergencyAttendanceService;
+use App\Services\Calendar\HolidayService;
 use App\Services\Flextime\WorkScheduleResolver;
-use App\Services\HolidayService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;

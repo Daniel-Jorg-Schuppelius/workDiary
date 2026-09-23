@@ -12,9 +12,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\Attendance\CheckpointKind;
 use App\Http\Controllers\Controller;
-use App\Models\{AttendanceCheckpoint, AttendanceTerminal, Organization, Site, User, UserBadge, UserTerminalPin, Vehicle};
+use App\Models\{AttendanceCheckpoint, AttendanceTerminal, Site, Vehicle};
+use App\Models\Platform\{Organization, User, UserBadge, UserTerminalPin};
 use App\Services\Attendance\TerminalPinService;
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;

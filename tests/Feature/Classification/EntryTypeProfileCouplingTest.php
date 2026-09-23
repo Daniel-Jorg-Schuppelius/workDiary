@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Classification;
 
-use App\Models\{EntryType, Organization};
+use App\Models\Classification\EntryType;
+use App\Models\Platform\Organization;
 use App\Services\Classification\BranchProfileInstaller;
 use Database\Seeders\EntryTypeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

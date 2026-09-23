@@ -84,7 +84,7 @@
                 @if ($message->attachments->isNotEmpty())
                     <div class="mt-1.5 flex flex-wrap gap-2">
                         @foreach ($message->attachments as $att)
-                            @php $url = \App\Http\Controllers\AttachmentController::downloadUrl($att); @endphp
+                            @php $url = \App\Http\Controllers\Attachments\AttachmentController::downloadUrl($att); @endphp
                             @if ($att->isImage())
                                 <a href="{{ $url }}" target="_blank" rel="noopener" class="block">
                                     <img src="{{ $url }}" alt="{{ $att->original_name }}" class="max-h-48 rounded-xl object-cover">

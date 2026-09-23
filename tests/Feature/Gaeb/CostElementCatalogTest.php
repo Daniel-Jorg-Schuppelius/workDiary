@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Gaeb;
 
 use App\Models\Costing\{CostElement, CostElementCatalog};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Gaeb\CostElementCatalogService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -212,7 +212,7 @@ final class CostElementCatalogTest extends TestCase {
 
     /** Fremde Kataloge sind nicht erreichbar. */
     public function test_foreign_catalog_is_not_reachable(): void {
-        $other = \App\Models\Organization::factory()->create();
+        $other = \App\Models\Platform\Organization::factory()->create();
         $foreign = CostElementCatalog::query()->create([
             'organization_id' => $other->id,
             'name' => 'Fremd',

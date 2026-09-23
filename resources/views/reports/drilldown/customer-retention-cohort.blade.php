@@ -19,7 +19,7 @@
     );
     $selfParams = array_merge($backParams, array_filter(['cohort' => $cohort, 'year' => $year]));
     $customerLink = fn (int $id): string => route('reports.customer-project', array_merge($standardFilters->toQueryParams(), [
-        'customer' => \App\Support\Sqid::encode(\App\Models\Customer::class, $id),
+        'customer' => \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $id),
     ]));
 @endphp
 

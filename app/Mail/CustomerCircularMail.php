@@ -11,7 +11,7 @@
 namespace App\Mail;
 
 use App\Models\Communication\CustomerCircular;
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\{Content, Envelope};

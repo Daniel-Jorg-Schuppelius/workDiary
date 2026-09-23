@@ -10,7 +10,8 @@
 
 namespace App\Plugins\Msgraph\Http\Controllers;
 
-use App\Models\{MsgraphMailConnection, User};
+use App\Models\Platform\User;
+use App\Models\Plugins\Msgraph\MsgraphMailConnection;
 use App\Plugins\Msgraph\Api\{MsgraphMailClient, MsgraphMailOAuth};
 use App\Plugins\Msgraph\MsgraphConfig;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;

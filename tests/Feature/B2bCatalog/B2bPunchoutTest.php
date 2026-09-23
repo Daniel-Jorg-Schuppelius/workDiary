@@ -14,7 +14,8 @@ namespace Tests\Feature\B2bCatalog;
 
 use App\Models\Article;
 use App\Models\B2b\{B2bCatalogAccess, B2bCatalogItem};
-use App\Models\{Customer, Organization};
+use App\Models\Customer\Customer;
+use App\Models\Platform\Organization;
 use App\Services\Licensing\FeatureFlagResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

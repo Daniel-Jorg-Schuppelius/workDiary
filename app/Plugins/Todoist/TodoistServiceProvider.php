@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Todoist;
 
-use App\Models\Task;
+use App\Models\Project\Task;
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Plugins\Todoist\Api\TodoistOAuth;
 use App\Plugins\Todoist\Observers\TodoistTaskObserver;

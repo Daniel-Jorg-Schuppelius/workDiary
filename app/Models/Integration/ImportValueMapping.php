@@ -8,11 +8,14 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Integration;
 
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Classification\Classification\Classification;
+use App\Models\Classification\Tag;
+use App\Models\Platform\User;
 
 /**
  * Persistentes Wert-Mapping des CSV-/XLSX-Imports (Rang 58, A13):

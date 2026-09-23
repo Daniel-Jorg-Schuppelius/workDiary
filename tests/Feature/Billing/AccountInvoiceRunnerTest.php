@@ -12,7 +12,10 @@ namespace Tests\Feature\Billing;
 
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Billing\{CustomerBillingAgreement, CustomerBillingRate};
-use App\Models\{Customer, Invoice, Project, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\{Invoice, TimeEntry};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Services\Billing\AccountInvoiceRunner;
 use App\Services\Invoicing\InvoiceGenerator;
 use App\Support\Tz;

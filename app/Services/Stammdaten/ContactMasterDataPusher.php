@@ -10,7 +10,8 @@
 
 namespace App\Services\Stammdaten;
 
-use App\Models\{Customer, Supplier};
+use App\Models\Customer\Customer;
+use App\Models\Supplier;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
 use Throwable;
@@ -85,7 +86,7 @@ class ContactMasterDataPusher {
     private function linkedPluginIds(Customer|Supplier $contact): array {
         return array_values(array_unique(array_map(
             strval(...),
-            \App\Models\ExternalReference::query()
+            \App\Models\Integration\ExternalReference::query()
                 ->where('organization_id', $contact->organization_id)
                 ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
                 ->forReferenceable($contact)

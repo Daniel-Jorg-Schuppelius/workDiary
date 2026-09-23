@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Webdav;
 
-use App\Models\WebdavConnection;
+use App\Models\Plugins\Webdav\WebdavConnection;
 use App\Plugins\Support\Mirror\{MirrorConnection, MirrorTarget, RemoteFileGateway};
 use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
 

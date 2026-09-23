@@ -10,7 +10,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Install\InstallationManager;
 use Closure;
 use Illuminate\Http\Request;

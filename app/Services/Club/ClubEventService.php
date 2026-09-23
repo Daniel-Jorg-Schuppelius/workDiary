@@ -14,8 +14,9 @@ namespace App\Services\Club;
 
 use App\Enums\Club\{ClubEventKind, ClubEventVisibility, ClubGroupMembershipStatus, ClubParticipationSource, ClubParticipationStatus};
 use App\Enums\Event\{EventStatus, EventVisibility};
+use App\Models\Calendar\Event;
 use App\Models\Club\{ClubEventDetails, ClubEventParticipation, ClubGuardian, ClubMember};
-use App\Models\{Event, Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\AssertsStatusTransition;
 use App\Services\Event\EventService;
 use App\Services\Participation\EventSeatService;

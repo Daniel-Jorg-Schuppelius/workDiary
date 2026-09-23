@@ -13,7 +13,7 @@ namespace Tests\Feature\Club;
 use App\Enums\Club\{ClubGroupMembershipStatus, ClubMembershipKind};
 use App\Enums\User\UserRole;
 use App\Models\Club\{ClubGroup, ClubGuardian, ClubMember};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Club\{ClubGroupService, ClubMemberService};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -12,9 +12,10 @@ namespace Tests\Feature\Isms;
 
 use App\Enums\Isms\NormConformityStatus;
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
-use App\Models\{Document, Organization, User};
+use App\Models\Document\Document;
 use App\Models\Isms\{IsmsCertificate, IsmsNormStatus, IsmsRequirement, IsmsScope};
 use App\Models\Notification\NotificationRule;
+use App\Models\Platform\{Organization, User};
 use App\Services\Isms\ConformityService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;

@@ -15,7 +15,7 @@ namespace App\Dashboard\Widgets;
 use App\Dashboard\Widget;
 use App\Enums\Dashboard\WidgetGroup;
 use App\Models\Chat\Channel;
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Contracts\View\View;
 
 /** Ungelesene Chat-Nachrichten, nach Kanal aufgeschlüsselt. */

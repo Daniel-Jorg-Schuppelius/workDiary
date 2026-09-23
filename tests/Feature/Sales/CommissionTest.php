@@ -13,8 +13,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Sales;
 
 use App\Enums\Sales\{CommissionAssignmentSource, CommissionScope, CommissionSettlementStatus, CommissionStatus};
-use App\Models\{Article, Customer, Invoice, Lead, Organization, User};
+use App\Models\{Article, Invoice};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
 use App\Models\Sales\{CommissionRule, InvoiceCommission};
+use App\Models\Sales\Lead;
 use App\Services\Sales\{CommissionAccrualService, CommissionRuleResolver, CommissionSettlementService};
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;

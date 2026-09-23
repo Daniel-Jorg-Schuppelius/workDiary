@@ -12,7 +12,7 @@ namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\{LearningCourseStatus, LearningEnrollmentSource, LearningEnrollmentStatus, LearningQuestionKind, LearningUnitKind};
 use App\Models\Learning\{LearningCertificate, LearningCourse, LearningEnrollment, LearningQuestion, LearningQuestionCategory};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\LearnDashImportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

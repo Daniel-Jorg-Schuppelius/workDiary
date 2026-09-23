@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Accounting;
 
 use App\Models\Accounting\{AccountingAccount, AccountingEntry};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Support\Toolkit\CsvFacade;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;

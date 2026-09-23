@@ -11,7 +11,9 @@
 namespace App\Plugins\Lexoffice\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Customer, ExternalReference, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\User;
 use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;

@@ -14,7 +14,8 @@ use App\Enums\Demo\DemoIndustry;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\RequiresPlatformOperator;
 use App\Http\Controllers\Controller;
-use App\Models\{AuditLog, Organization, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{Organization, User};
 use App\Services\Demo\DemoSeederService;
 use App\Support\{MorphMap, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -36,7 +37,7 @@ class DemoTenantController extends Controller {
         $organization = $user->organization;
         abort_if($organization === null, 404);
 
-        $isEmpty = \App\Models\Customer::query()->where('organization_id', $organization->id)->doesntExist()
+        $isEmpty = \App\Models\Customer\Customer::query()->where('organization_id', $organization->id)->doesntExist()
             && \App\Models\DiaryEntry::query()->where('organization_id', $organization->id)->doesntExist();
 
         return view('admin.demo.index', [

@@ -8,11 +8,13 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Classification;
 
 use App\Enums\Diary\Priority;
-use App\Models\{EntryType, Organization};
+use App\Models\Classification\Classification\EntryType;
+use App\Models\Platform\Organization;
 use Illuminate\Validation\Rule;
+use App\Http\Requests\BaseFormRequest;
 
 class SaveEntryTypeRequest extends BaseFormRequest {
     protected function prepareForValidation(): void {

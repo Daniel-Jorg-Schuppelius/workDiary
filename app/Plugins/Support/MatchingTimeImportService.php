@@ -13,7 +13,10 @@ declare(strict_types=1);
 namespace App\Plugins\Support;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{ExternalReference, IntegrationInboxItem, Organization, Project, TimeEntry};
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\Organization;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Support\{MorphMap, Tz};
 
 /**

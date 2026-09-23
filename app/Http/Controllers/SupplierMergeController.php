@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\{MergesDuplicates, ResolvesCurrentOrganization};
-use App\Models\{Organization, Supplier, SupplierMergeDismissal};
-use App\Services\{SupplierDuplicateFinder, SupplierMergeService};
+use App\Models\Platform\Organization;
+use App\Models\{Supplier, SupplierMergeDismissal};
+use App\Services\Stammdaten\{SupplierDuplicateFinder, SupplierMergeService};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;

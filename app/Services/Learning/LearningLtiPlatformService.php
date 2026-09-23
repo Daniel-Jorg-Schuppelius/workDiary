@@ -14,7 +14,7 @@ namespace App\Services\Learning;
 
 use App\Enums\Learning\LearningUnitKind;
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningLtiLink, LearningLtiTool, LearningUnit};
-use App\Models\User;
+use App\Models\Platform\User;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\WebLinkHelper;
 use ELearningToolkit\Lti\{AuthenticationRequest, Claims, DeepLinkingResponse, DeepLinkingSettings, IdTokenBuilder, Keys, LoginInitiation, LtiException, Registration, Roles};

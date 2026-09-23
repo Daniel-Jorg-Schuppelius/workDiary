@@ -11,7 +11,7 @@
 namespace App\Plugins\Msgraph\Api;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
-use App\Models\MsgraphConnection;
+use App\Models\Plugins\Msgraph\MsgraphConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\Calendar\{RemoteCalendarEvent, RemoteCalendarGateway, RemoteCalendarItem};
 use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
@@ -27,7 +27,7 @@ use Throwable;
  *
  * - Anlegen: POST `/me/events` bzw. `/me/calendars/{id}/events` mit
  *   `transactionId` = stabile UID (Graph-seitige Create-Idempotenz);
- *   die Remote-Event-ID trägt die {@see \App\Models\ExternalReference}.
+ *   die Remote-Event-ID trägt die {@see \App\Models\Integration\ExternalReference}.
  * - Ändern: PATCH `/me/events/{id}`; Löschen: DELETE (404 = idempotent ok).
  * - Fehlersemantik wie CalDAV-Gateway: Transport-/HTTP-Fehler ⇒ null/false.
  */

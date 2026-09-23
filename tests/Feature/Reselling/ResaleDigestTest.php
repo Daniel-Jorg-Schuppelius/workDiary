@@ -14,7 +14,9 @@ namespace Tests\Feature\Reselling;
 
 use App\Console\Commands\Reselling\ResaleDigestCommand;
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
-use App\Models\{Customer, LexofficeVoucherLine, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\Plugins\Lexoffice\LexofficeVoucherLine;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResalePriceEntry, ResaleSubscription};
 use App\Notifications\Finance\ResalePeriodsDigestNotification;
 use App\Services\Reselling\Register\PeriodPlanner;

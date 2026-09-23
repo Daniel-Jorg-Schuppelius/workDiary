@@ -11,7 +11,7 @@
 namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\LearningUnitKind;
-use App\Models\ExternalParticipant;
+use App\Models\Communication\ExternalParticipant;
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningLtiPlatform, LearningLtiSubject};
 use App\Services\Learning\{LearningCourseService, LearningLtiToolService};
 use DateTimeImmutable;

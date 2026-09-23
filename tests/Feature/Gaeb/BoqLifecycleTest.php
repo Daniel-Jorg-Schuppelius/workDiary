@@ -11,7 +11,8 @@
 namespace Tests\Feature\Gaeb;
 
 use App\Enums\Gaeb\{BoqChangeOrderInitiator, BoqChangeOrderPhase, BoqChangeOrderStatus, BoqItemStatus, BoqItemType, BoqProgressSource, GaebPhase};
-use App\Models\{BillOfQuantity, BoqItem, User};
+use App\Models\{BillOfQuantity, BoqItem};
+use App\Models\Platform\User;
 use App\Services\Gaeb\{BoqCostingService, BoqExportService, BoqProgressService, BoqWorkflowException, BoqWorkflowService, GaebImportService};
 use CommonToolkit\ValueObjects\Money;
 use Database\Seeders\GaebDemoSeeder;

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Github;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
 use App\Plugins\Github\Api\{GithubApiException, GithubClientFactory};
@@ -28,7 +28,7 @@ use Throwable;
  *   PAT verschlüsselt in plugin_settings — Auto-Form der Plugin-Karte, kein
  *   eigener Verbindungsfluss nötig) kommen als WorkDiary-Aufgaben an; GitHub
  *   bleibt führend. Pull Requests werden gefiltert (`pull_request`-Schlüssel).
- * - Import ist **idempotent** über {@see \App\Models\ExternalReference}
+ * - Import ist **idempotent** über {@see \App\Models\Integration\ExternalReference}
  *   (Plugin `github`, Typ `issue`, Schlüssel `owner/repo#number`).
  * - Polling ({@see Console\GithubSyncCommand}, `since`-Aufholpunkt) ist die
  *   verlässliche Quelle; der Webhook

@@ -10,7 +10,7 @@
 
 namespace App\Support;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Duration;
 use Illuminate\Support\Facades\Auth;

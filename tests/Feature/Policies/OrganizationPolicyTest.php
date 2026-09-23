@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Policies;
 
-use App\Models\{Organization, User};
-use App\Policies\OrganizationPolicy;
+use App\Models\Platform\{Organization, User};
+use App\Policies\Platform\OrganizationPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\RemoteSupport\Import;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, RemoteSession};
 use App\Plugins\RemoteSupport\{RemoteSessionImporter, RemoteSupportConfig};
 use App\Services\Import\{ImportOutcome, ValidationIssue};

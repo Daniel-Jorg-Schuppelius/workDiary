@@ -13,7 +13,7 @@ namespace App\Http\Controllers\CustomerPortal;
 use App\Enums\Auth\TwoFactorType;
 use App\Http\Controllers\Controller;
 use App\Models\Auth\TwoFactorCredential;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Auth\{EmailOtpService, TwoFactorService, WebAuthnService};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};

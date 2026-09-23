@@ -53,7 +53,7 @@
                   class="space-y-4 rounded-box border border-base-300 bg-base-100 p-4">
                 @csrf
                 @method('PUT')
-                <input type="hidden" name="user_id" value="{{ \App\Support\Sqid::encode(\App\Models\User::class, (int) $tour->user_id) }}">
+                <input type="hidden" name="user_id" value="{{ \App\Support\Sqid::encode(\App\Models\Platform\User::class, (int) $tour->user_id) }}">
                 <input type="hidden" name="tour_date" value="{{ $tour->tour_date?->toDateString() }}">
 
                 <div class="grid gap-3 md:grid-cols-2">
@@ -125,7 +125,7 @@
                         <form method="POST" action="{{ route('tours.update', $tour) }}">
                             @csrf
                             @method('PUT')
-                            <input type="hidden" name="user_id" value="{{ \App\Support\Sqid::encode(\App\Models\User::class, (int) $tour->user_id) }}">
+                            <input type="hidden" name="user_id" value="{{ \App\Support\Sqid::encode(\App\Models\Platform\User::class, (int) $tour->user_id) }}">
                             <input type="hidden" name="tour_date" value="{{ $tour->tour_date?->toDateString() }}">
                             @foreach ($stops as $s)
                                 <input type="hidden" name="order_ids[]" value="{{ $s->sqid }}">

@@ -13,7 +13,7 @@ namespace App\Plugins\Nextcloud\Http\Controllers;
 use App\Enums\Backup\{BackupProvider, BackupTargetStatus};
 use App\Http\Controllers\Controller;
 use App\Models\Backup\BackupTargetConnection;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Plugins\Nextcloud\Api\NextcloudBackupClient;
 use App\Plugins\Nextcloud\NextcloudConfig;
 use App\Services\Backup\BackupNaming;

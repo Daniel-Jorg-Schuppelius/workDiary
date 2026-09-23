@@ -11,10 +11,10 @@
     Namensbestandteile, Kommunikation, Adresse und Bankverbindung.
 
     Erwartet:
-      $user (App\Models\User|null) – bestehender Datensatz oder null beim Anlegen
+      $user (App\Models\Platform\User|null) – bestehender Datensatz oder null beim Anlegen
 --}}
 @php
-    /** @var \App\Models\User|null $user */
+    /** @var \App\Models\Platform\User|null $user */
     $user = $user ?? null;
     $addr = $user?->primaryAddress();
     $bank = $user?->primaryBankAccount();

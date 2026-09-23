@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Support;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -133,7 +133,7 @@ class SupportReportControllerTest extends TestCase {
 
     public function test_json_download_excludes_customer_and_app_key(): void {
         $admin = User::factory()->admin()->create();
-        $customer = \App\Models\Customer::factory()->create([
+        $customer = \App\Models\Customer\Customer::factory()->create([
             'organization_id' => $admin->organization_id,
             'created_by' => $admin->id,
             'name' => 'Negativ-Test-Kunde-ABC-XYZ',

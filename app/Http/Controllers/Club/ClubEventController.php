@@ -16,8 +16,10 @@ use App\Enums\Club\{ClubEventKind, ClubParticipationSource, ClubParticipationSta
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Club\{CancelClubEventRequest, RegisterClubEventMemberRequest, SaveClubEventRequest};
+use App\Models\Calendar\Event;
 use App\Models\Club\{ClubDepartment, ClubEventDetails, ClubEventParticipation, ClubGroup, ClubMember};
-use App\Models\{Event, Room, User};
+use App\Models\Platform\User;
+use App\Models\Room;
 use App\Services\Club\ClubEventService;
 use App\Services\UI\DateRangeContext;
 use App\Support\{ErrorText, Sqid, Tz};

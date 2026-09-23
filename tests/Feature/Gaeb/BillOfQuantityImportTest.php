@@ -11,7 +11,8 @@
 namespace Tests\Feature\Gaeb;
 
 use App\Enums\Gaeb\{BoqItemStatus, GaebImportStatus};
-use App\Models\{BillOfQuantity, BoqItem, User};
+use App\Models\{BillOfQuantity, BoqItem};
+use App\Models\Platform\User;
 use App\Services\Gaeb\{BoqImportConflictException, GaebImportService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

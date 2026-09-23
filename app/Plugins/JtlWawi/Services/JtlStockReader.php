@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\JtlWawi\Services;
 
 use App\Enums\Inventory\StockState;
-use App\Models\{ArticleVariant, JtlStockSnapshot, Warehouse};
+use App\Models\{ArticleVariant, Warehouse};
+use App\Models\Plugins\JtlWawi\JtlStockSnapshot;
 use App\Plugins\JtlWawi\Api\JtlGatewayFactory;
 use App\Plugins\JtlWawi\JtlWawiPlugin;
 use CommonToolkit\Helper\Data\NumberHelper;

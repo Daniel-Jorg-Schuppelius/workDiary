@@ -8,21 +8,23 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Project;
 
 use App\Enums\Diary\{LocationMode, Priority};
 use App\Enums\Recurrence\RecurrenceFrequency;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use Illuminate\Validation\Rule;
+use App\Http\Requests\BaseFormRequest;
+use App\Http\Requests\SaveDiaryEntryRequest;
 
 class SaveRecurrenceRuleRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'customer_id' => \App\Models\Customer::class,
-        'entry_type_id' => \App\Models\EntryType::class,
-        'assigned_user_id' => \App\Models\User::class,
+        'customer_id' => \App\Models\Customer\Customer\Customer::class,
+        'entry_type_id' => \App\Models\Classification\EntryType::class,
+        'assigned_user_id' => \App\Models\Platform\User::class,
     ];
 
     protected function prepareForValidation(): void {
@@ -88,7 +90,7 @@ class SaveRecurrenceRuleRequest extends BaseFormRequest {
         ];
     }
 
-    private function resolveEntryType(): ?\App\Models\EntryType {
+    private function resolveEntryType(): ?\App\Models\Classification\EntryType {
         $raw = $this->input('entry_type_id');
         if (! $raw) {
             return null;
@@ -96,9 +98,9 @@ class SaveRecurrenceRuleRequest extends BaseFormRequest {
 
         // rules() läuft VOR der Sqid-Dekodierung in validationData() — Formulare senden Sqids (s. SaveDiaryEntryRequest).
         $id = is_string($raw) && ! ctype_digit($raw)
-            ? app(\App\Services\SqidEncoder::class)->decode(\App\Models\EntryType::class, $raw)
+            ? app(\App\Support\SqidEncoder::class)->decode(\App\Models\Classification\EntryType::class, $raw)
             : (int) $raw;
 
-        return $id ? \App\Models\EntryType::query()->find($id) : null;
+        return $id ? \App\Models\Classification\EntryType::query()->find($id) : null;
     }
 }

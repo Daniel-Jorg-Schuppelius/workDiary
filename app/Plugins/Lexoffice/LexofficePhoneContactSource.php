@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Plugins\Lexoffice;
 
 use APIToolkit\API\Authentication\BearerAuthentication;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\Support\PluginHttpFactory;
 use App\Services\Contacts\{ExternalPhoneContact, ExternalPhoneContactSource};
 use RuntimeException;

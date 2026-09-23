@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Calendly\Jobs;
 
 use App\Jobs\Concerns\RetriesTransientFailures;
-use App\Models\{CalendlyWebhookDelivery, Organization};
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Calendly\CalendlyWebhookDelivery;
 use App\Plugins\Calendly\CalendlyPlugin;
 use App\Plugins\Calendly\Services\CalendlyIngestService;
 use App\Support\OrganizationContext;

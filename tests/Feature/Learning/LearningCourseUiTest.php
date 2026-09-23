@@ -12,7 +12,7 @@ namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\{LearningCourseStatus, LearningTimePolicy, LearningUnitKind};
 use App\Models\Learning\LearningCourse;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Learning\LearningCourseService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

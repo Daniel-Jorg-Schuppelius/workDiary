@@ -14,7 +14,9 @@ namespace Tests\Feature\Admin;
 
 use App\Enums\Import\{ImportEntity, ImportRunState};
 use App\Jobs\ProcessCsvImportJob;
-use App\Models\{Customer, ImportRun, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ImportRun;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{Queue, Storage};

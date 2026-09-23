@@ -13,7 +13,7 @@ namespace Tests\Feature\Learning;
 use App\Console\Commands\SystemHealthCommand;
 use App\Enums\Learning\LearningUnitKind;
 use App\Models\Learning\{LearningCmi5Unit, LearningEnrollment, LearningUnit};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningCmi5Service, LearningCourseService, LearningEnrollmentService, ScormContentToken};
 use App\Support\Learning\ScormContentRoutes;
 use Illuminate\Foundation\Testing\RefreshDatabase;

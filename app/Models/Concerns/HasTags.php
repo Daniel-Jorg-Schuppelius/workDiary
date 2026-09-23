@@ -10,7 +10,7 @@
 
 namespace App\Models\Concerns;
 
-use App\Models\Tag;
+use App\Models\Classification\Tag;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Auth;
 

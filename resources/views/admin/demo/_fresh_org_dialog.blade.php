@@ -13,7 +13,7 @@
 @php
     /** @var array<int, \App\Enums\Demo\DemoIndustry> $industries */
     /** @var \App\Enums\Demo\DemoIndustry $defaultIndustry */
-    /** @var \Illuminate\Support\Collection<int, \App\Models\User> $platformAdmins */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $platformAdmins */
     /** @var array{source: string, plan: string} $licenseOutlook */
 @endphp
 <x-modal

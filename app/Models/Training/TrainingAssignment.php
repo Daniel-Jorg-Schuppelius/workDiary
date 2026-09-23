@@ -12,8 +12,8 @@ namespace App\Models\Training;
 
 use App\Enums\Training\TrainingAssignmentState;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Platform\User;
 use App\Models\Safety\{SafetyInstruction, SafetyInstructionParticipant};
-use App\Models\User;
 use Database\Factories\Training\TrainingAssignmentFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;

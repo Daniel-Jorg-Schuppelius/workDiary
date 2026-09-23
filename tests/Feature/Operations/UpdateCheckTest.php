@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Operations;
 
-use App\Models\{ComponentUpdate, User};
+use App\Models\Platform\{ComponentUpdate, User};
 use App\Services\Updates\UpdateCheckService;
 use App\Settings\SettingScope;
 use App\Support\Setting;

@@ -12,7 +12,9 @@ namespace Tests\Unit;
 
 use App\Enums\Tour\TourStatus;
 use App\Enums\Travel\TravelLogVehicle;
-use App\Models\{Customer, DiaryEntry, Tour, TravelLog, User};
+use App\Models\Customer\Customer;
+use App\Models\{DiaryEntry, Tour, TravelLog};
+use App\Models\Platform\User;
 use App\Services\Travel\TravelChargeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

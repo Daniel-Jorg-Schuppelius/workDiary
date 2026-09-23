@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Search\Indexing;
 
 use App\Enums\Search\SearchSourceType;
-use App\Models\{Comment, DiaryEntry, ServiceTicketMessage};
+use App\Models\Communication\Comment;
+use App\Models\{DiaryEntry, ServiceTicketMessage};
 use App\Services\Search\Indexing\Sources\{CommunicationNoteSource, DiaryEntrySource, DocumentSource, KnowledgeArticleSource, LearningCourseSource, OpenIssueSource, ProtocolSource, RemoteSessionSource, SearchSource, ServiceTicketSource, TimeEntrySource, TimesheetSource};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;

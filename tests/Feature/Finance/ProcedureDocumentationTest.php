@@ -15,7 +15,7 @@ use App\Enums\User\Permission;
 use App\Models\Backup\BackupTargetConnection;
 use App\Models\Finance\ProcedureDocumentation;
 use App\Models\Integration\WebhookEndpoint;
-use App\Models\{Organization, PluginSetting, User};
+use App\Models\Platform\{Organization, PluginSetting, User};
 use App\Services\Finance\ProcedureDocumentation\{ProcedureDocumentationBuilder, ProcedureDocumentationService};
 use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\CryptoHelper;

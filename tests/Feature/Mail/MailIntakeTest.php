@@ -10,7 +10,13 @@
 
 namespace Tests\Feature\Mail;
 
-use App\Models\{CommunicationNote, Customer, Document, EmailConnection, ExternalReference, IntegrationInboxItem, Invoice, Organization, User};
+use App\Models\Communication\CommunicationNote;
+use App\Models\Customer\Customer;
+use App\Models\Document\Document;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Invoice;
+use App\Models\Mail\EmailConnection;
+use App\Models\Platform\{Organization, User};
 use App\Services\Mail\{MailAttachment, MailInboxResolutionService, MailIntakeService, MailboxGateway, ParsedMessage};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

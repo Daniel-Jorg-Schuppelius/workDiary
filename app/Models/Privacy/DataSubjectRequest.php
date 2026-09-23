@@ -14,9 +14,9 @@ namespace App\Models\Privacy;
 
 use App\Enums\Privacy\{DataSubjectRequestStatus, DataSubjectRequestType};
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Platform\User;
 use App\Models\Privacy\Casts\RecordEncrypted;
 use App\Models\Privacy\Concerns\ProvidesRecordDek;
-use App\Models\User;
 use App\Services\Privacy\DataProtectionCryptoService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};

@@ -8,7 +8,7 @@
 --}}
 {{-- Dialog: Restore-Test protokollieren (Feature 017, §6.3) --}}
 @php
-    /** @var \App\Models\RestoreTest $restoreTest */
+    /** @var \App\Models\Platform\RestoreTest $restoreTest */
     $today = \Illuminate\Support\Carbon::now()->format('Y-m-d');
 @endphp
 <x-modal

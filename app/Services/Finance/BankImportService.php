@@ -14,7 +14,7 @@ namespace App\Services\Finance;
 
 use App\Enums\Finance\{BalanceCheck, MatchStatus};
 use App\Models\Finance\{BankAccount, BankStatement, BankTransaction};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Concerns\ResolvesActorId;
 use App\Services\Finance\Banking\{BankStatementParser, NormalizedStatement, NormalizedTransaction};
 use App\Support\Crypto\BlindIndex;

@@ -14,7 +14,7 @@ namespace App\Services\Notification\Sms;
 
 use App\Enums\Notification\SmsDeliveryStatus;
 use App\Models\Notification\NotificationDispatchLog;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 

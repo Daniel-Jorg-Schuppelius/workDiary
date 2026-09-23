@@ -10,9 +10,8 @@
 
 namespace Tests\Unit\Support;
 
-use App\Models\Customer;
-use App\Services\SqidEncoder;
-use App\Support\Sqid;
+use App\Models\Customer\Customer;
+use App\Support\{Sqid, SqidEncoder};
 use Tests\TestCase;
 
 class SqidHelperTest extends TestCase {
@@ -47,7 +46,7 @@ class SqidHelperTest extends TestCase {
     }
 
     public function test_decode_or_numeric_does_not_cross_decode_other_models(): void {
-        $sqid = app(SqidEncoder::class)->encode(\App\Models\User::class, 5);
+        $sqid = app(SqidEncoder::class)->encode(\App\Models\Platform\User::class, 5);
 
         // Sqid eines fremden Modells ist keine gültige Customer-Sqid und auch
         // nicht numerisch → Default.

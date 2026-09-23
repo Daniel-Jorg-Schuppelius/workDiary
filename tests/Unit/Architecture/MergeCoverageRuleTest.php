@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Architecture;
 
-use App\Services\{AbstractEntityMergeService, ArticleMergeService, AssetMergeService, CustomerMergeService, ProjectMergeService, SupplierMergeService};
+use App\Services\Stammdaten\{AbstractEntityMergeService, ArticleMergeService, AssetMergeService, CustomerMergeService, ProjectMergeService, SupplierMergeService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use ReflectionMethod;

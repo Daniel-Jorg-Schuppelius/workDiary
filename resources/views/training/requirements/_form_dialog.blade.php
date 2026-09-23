@@ -13,7 +13,7 @@
     $isEdit = $requirement !== null;
     $courseSqid = \App\Support\Sqid::encodeOrNull(\App\Models\Training\TrainingCourse::class, $requirement?->training_course_id);
     $isTeam = $requirement?->subject_kind === \App\Enums\Training\TrainingRequirementSubject::Team;
-    $teamSqid = $isTeam ? \App\Support\Sqid::encode(\App\Models\Team::class, (int) $requirement->subject_key) : null;
+    $teamSqid = $isTeam ? \App\Support\Sqid::encode(\App\Models\Platform\Team::class, (int) $requirement->subject_key) : null;
     $roleValue = $isTeam ? null : $requirement?->subject_key;
 @endphp
 

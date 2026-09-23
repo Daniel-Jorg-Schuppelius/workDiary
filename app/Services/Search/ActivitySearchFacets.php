@@ -13,8 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Search;
 
 use App\Enums\Search\SearchSourceType;
+use App\Models\Classification\Tag;
 use App\Models\Concerns\HasTags;
-use App\Models\{ContentCollection, SearchDocument, Tag, User};
+use App\Models\Knowledge\ContentCollection;
+use App\Models\Platform\User;
+use App\Models\Search\SearchDocument;
 use App\Services\Collections\{CollectableTypes, ContentCollectionService};
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;

@@ -10,7 +10,7 @@ namespace Tests\Feature\Learning;
 
 use App\Enums\User\UserRole;
 use App\Models\Learning\{Competency, CompetencyRequirement, LearningCourse, UserCompetency};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Learning\LearningCourseService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

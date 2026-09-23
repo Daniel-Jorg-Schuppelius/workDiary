@@ -14,9 +14,11 @@ namespace App\Http\Controllers\Learning;
 
 use App\Enums\Learning\LearningProgressStatus;
 use App\Http\Controllers\Controller;
-use App\Models\{Attachment, CommunicationNote, User};
+use App\Models\Attachments\Attachment;
+use App\Models\Communication\CommunicationNote;
 use App\Models\Learning\{LearningAssignment, LearningCertificate, LearningEnrollment, LearningQuestion, LearningQuiz, LearningQuizAttempt, LearningSubmission, LearningUnit};
 use App\Models\Media\MediaRendition;
+use App\Models\Platform\User;
 use App\Services\Ai\Exceptions\AiException;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Communication\CommunicationNoteService;
@@ -170,7 +172,7 @@ class MyLearningController extends Controller {
                     ->select('id'))
                 ->get()
                 ->keyBy('learning_cmi5_unit_id'),
-            'eventParticipations' => \App\Models\EventParticipant::query()
+            'eventParticipations' => \App\Models\Calendar\EventParticipant::query()
                 ->where('user_id', $enrollment->user_id)
                 ->whereIn('event_id', $enrollment->course?->units->pluck('event_id')->filter()->all() ?? [])
                 ->get()

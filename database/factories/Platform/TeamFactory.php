@@ -8,9 +8,9 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace Database\Factories;
+namespace Database\Factories\Platform;
 
-use App\Models\Team;
+use App\Models\Platform\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

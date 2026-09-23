@@ -12,10 +12,11 @@ namespace App\Http\Controllers\Isms;
 
 use App\Enums\Isms\NormConformityStatus;
 use App\Http\Controllers\Controller;
-use App\Models\{Document, User};
+use App\Models\Document\Document;
 use App\Models\Isms\{IsmsNormStatus, IsmsRequirement, IsmsScope};
+use App\Models\Platform\User;
 use App\Services\Isms\{ConformityService, ScopeService};
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use CommonToolkit\Helper\Data\DateHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;

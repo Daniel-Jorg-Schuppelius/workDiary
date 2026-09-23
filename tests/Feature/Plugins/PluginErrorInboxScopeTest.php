@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Organization, PluginError, PluginState, User};
+use App\Models\Platform\{Organization, PluginError, PluginState, User};
 use App\Plugins\Contracts\{Plugin, PluginCapability};
 use App\Plugins\{PluginDefaults, PluginManager};
 use Illuminate\Foundation\Testing\RefreshDatabase;

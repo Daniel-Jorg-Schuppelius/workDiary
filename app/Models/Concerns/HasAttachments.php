@@ -10,7 +10,7 @@
 
 namespace App\Models\Concerns;
 
-use App\Models\Attachment;
+use App\Models\Attachments\Attachment;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 

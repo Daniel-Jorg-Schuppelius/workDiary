@@ -12,7 +12,7 @@ namespace Tests\Feature\Isms;
 
 use App\Enums\Isms\{Exploitability, VulnerabilityStatus};
 use App\Models\Isms\{IsmsAudit, IsmsAuditProgram, IsmsRequirement, IsmsVulnerability};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Isms\{CsafFeedService, RequirementService, VexExportService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;

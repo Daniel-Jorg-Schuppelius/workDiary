@@ -11,7 +11,10 @@
 namespace Tests\Feature\Plugins\Calendly;
 
 use App\Enums\Diary\Status;
-use App\Models\{AppointmentRequest, CalendlyConnection, IntegrationInboxItem, PluginError, User};
+use App\Models\Calendar\AppointmentRequest;
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Platform\{PluginError, User};
+use App\Models\Plugins\Calendly\CalendlyConnection;
 use App\Plugins\Calendly\Services\{CalendlyConfirmService, CalendlyIngestService, CalendlyOutboundService};
 use App\Services\Diary\OrderService;
 use Carbon\CarbonImmutable;

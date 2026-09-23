@@ -10,7 +10,7 @@
 
 namespace App\Services\Help;
 
-use App\Models\{HelpTopic, User};
+use App\Models\Platform\{HelpTopic, User};
 use App\Services\Licensing\FeatureFlagResolver;
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Facades\App;

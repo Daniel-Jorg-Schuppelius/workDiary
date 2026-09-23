@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Tenant;
 
-use App\Models\{Customer, DiaryEntry, Expense, Organization, TravelLog, User};
+use App\Models\Customer\Customer;
+use App\Models\{DiaryEntry, Expense, TravelLog};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;

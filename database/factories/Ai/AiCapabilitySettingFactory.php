@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Database\Factories\Ai;
 
 use App\Models\Ai\AiCapabilitySetting;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

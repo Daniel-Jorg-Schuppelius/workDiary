@@ -12,7 +12,10 @@ declare(strict_types=1);
 
 namespace App\Services\Reporting;
 
-use App\Models\{Customer, EntryType, Project, Team, User};
+use App\Models\Classification\EntryType;
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Team, User};
+use App\Models\Project\Project;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -117,8 +120,8 @@ final readonly class ReportFilters {
      * Kunden-Stammabfragen (Builder, die direkt über customers aggregieren):
      * org-weit ausgeblendete Kunden herausfiltern.
      *
-     * @param  Builder<\App\Models\Customer>  $query
-     * @return Builder<\App\Models\Customer>
+     * @param  Builder<\App\Models\Customer\Customer>  $query
+     * @return Builder<\App\Models\Customer\Customer>
      */
     public function applyToCustomerQuery(Builder $query): Builder {
         if ($this->customerExclusionActive()) {

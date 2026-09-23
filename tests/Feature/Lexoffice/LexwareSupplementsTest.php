@@ -14,7 +14,11 @@ namespace Tests\Feature\Lexoffice;
 
 use App\Enums\Lexoffice\{LexofficeHandoverStatus, LexwareCoverage, LexwareFeature, LexwarePlan};
 use App\Enums\User\Permission;
-use App\Models\{Customer, ExternalReference, Invoice, InvoiceSchedule, LexofficeInvoiceHandover, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\{Invoice, InvoiceSchedule};
+use App\Models\Platform\{Organization, User};
+use App\Models\Plugins\Lexoffice\LexofficeInvoiceHandover;
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
 use App\Plugins\Lexoffice\Tariff\{FeatureAvailability, LexwareFeatureResolver, LexwarePlanMatrix};
 use App\Settings\SettingScope;

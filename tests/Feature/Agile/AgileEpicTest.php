@@ -12,7 +12,8 @@ namespace Tests\Feature\Agile;
 
 use App\Enums\Agile\AgileColumnCategory;
 use App\Models\Agile\{AgileEvent, AgileWorkItem};
-use App\Models\{Organization, Project, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
 use App\Services\Agile\{AgileBoardService, AgileWorkItemService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;

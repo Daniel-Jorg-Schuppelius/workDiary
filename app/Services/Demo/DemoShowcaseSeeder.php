@@ -10,7 +10,10 @@
 
 namespace App\Services\Demo;
 
-use App\Models\{Customer, Invoice, Organization, Project, User};
+use App\Models\Customer\Customer;
+use App\Models\Invoice;
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
 use Illuminate\Support\Collection;
 
 /**
@@ -316,7 +319,7 @@ class DemoShowcaseSeeder {
         }
 
         try {
-            $customer = \App\Models\Customer::query()
+            $customer = \App\Models\Customer\Customer::query()
                 ->where('organization_id', $organization->id)
                 ->orderBy('id')
                 ->first();
@@ -369,7 +372,7 @@ class DemoShowcaseSeeder {
         }
 
         try {
-            $customer = \App\Models\Customer::query()
+            $customer = \App\Models\Customer\Customer::query()
                 ->where('organization_id', $organization->id)
                 ->orderBy('id')
                 ->first();
@@ -433,7 +436,7 @@ class DemoShowcaseSeeder {
         }
 
         try {
-            $customer = \App\Models\Customer::query()
+            $customer = \App\Models\Customer\Customer::query()
                 ->where('organization_id', $organization->id)
                 ->orderBy('id')
                 ->first();
@@ -442,7 +445,7 @@ class DemoShowcaseSeeder {
             }
 
             // Entsorgungsfachbetrieb als externes Kontaktprofil (Feature 033).
-            $disposer = \App\Models\ExternalContact::query()->create([
+            $disposer = \App\Models\Contacts\ExternalContact::query()->create([
                 'organization_id' => $organization->id,
                 'name' => (string) __('Muster-Entsorgung GmbH (Demo)'),
                 'email' => 'entsorgung@example.com',

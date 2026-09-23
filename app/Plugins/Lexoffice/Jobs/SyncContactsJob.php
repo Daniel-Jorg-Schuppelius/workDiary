@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Lexoffice\Jobs;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeContactSync, LexofficeMatchPolicy, LexofficeNumberAuthority};
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\{ShouldBeUnique, ShouldQueue};

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Media;
 
 use App\Enums\Media\{MediaRenditionKind, MediaState};
-use App\Models\Attachment;
+use App\Models\Attachments\Attachment;
 use App\Models\Media\MediaRendition;
 use Closure;
 use Illuminate\Support\Collection;

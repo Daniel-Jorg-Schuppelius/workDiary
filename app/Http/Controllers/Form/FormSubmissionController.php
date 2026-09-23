@@ -8,11 +8,17 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Form;
 
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
-use App\Models\{Asset, Customer, DiaryEntry, FormSubmission, FormTemplate, Project, User};
+use App\Models\Asset;
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\Form\FormSubmission;
+use App\Models\Form\FormTemplate;
+use App\Models\Project\Project;
+use App\Models\Platform\User;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Content\ContentSubjectResolver;
 use App\Services\Form\{FormService, FormSubmissionPdfRenderer};
@@ -21,6 +27,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\Document\DocumentController;
 
 /**
  * Ausgefüllte Formulare (Feature 032): Ausfüll-Dialog (Modal, dynamisch

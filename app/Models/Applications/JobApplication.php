@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Applications;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Support\Crypto\BlindIndex;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Model;

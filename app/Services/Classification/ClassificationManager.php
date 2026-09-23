@@ -12,7 +12,7 @@ namespace App\Services\Classification;
 
 use App\Enums\Classification\ClassificationDomain;
 use App\Exceptions\ClassificationValidationException;
-use App\Models\Classification;
+use App\Models\Classification\Classification;
 use App\Models\Concerns\Auditable;
 use CommonToolkit\Helper\Data\ColorHelper;
 use Illuminate\Support\Facades\DB;

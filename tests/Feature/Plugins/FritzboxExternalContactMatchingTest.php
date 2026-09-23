@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Customer, ExternalReference, IntegrationInboxItem, MsgraphContactConnection, PluginSetting, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\{PluginSetting, User};
+use App\Models\Plugins\Msgraph\MsgraphContactConnection;
+use App\Models\TimeEntry;
 use App\Plugins\Fritzbox\{FritzboxImportService, FritzboxPlugin};
 use App\Plugins\Fritzbox\Sources\FritzboxCall;
 use App\Plugins\Lexoffice\{LexofficePhoneContactSource, LexofficePlugin};

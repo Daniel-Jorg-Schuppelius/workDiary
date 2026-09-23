@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Terminal;
 
-use App\Models\{AttendanceTerminal, FlexBalance, FlexEligibility, User, UserBadge, VacationEntitlement};
+use App\Models\{AttendanceTerminal, FlexBalance, FlexEligibility, VacationEntitlement};
+use App\Models\Platform\{User, UserBadge};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\WithOrganization;

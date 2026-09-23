@@ -12,8 +12,10 @@ namespace Tests\Feature\Notification;
 
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Enums\OpenIssue\OpenIssueStatus;
-use App\Models\{Asset, AssetAssignment, Document, MaintenancePlan, OpenIssue, Organization, User};
+use App\Models\{Asset, AssetAssignment, MaintenancePlan, OpenIssue};
+use App\Models\Document\Document;
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

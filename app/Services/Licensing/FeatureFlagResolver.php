@@ -10,7 +10,7 @@
 
 namespace App\Services\Licensing;
 
-use App\Models\{LicenseFlagOverride, Organization};
+use App\Models\Platform\{LicenseFlagOverride, Organization};
 use App\Modules\ModuleRegistry;
 use Illuminate\Support\Facades\Schema;
 

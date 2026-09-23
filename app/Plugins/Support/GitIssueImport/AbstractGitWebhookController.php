@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Support\GitIssueImport;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Organization, PluginSetting};
+use App\Models\Platform\{Organization, PluginSetting};
 use Illuminate\Http\{JsonResponse, Request};
 use Throwable;
 

@@ -12,7 +12,7 @@ namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\LearningBlockKind;
 use App\Models\Learning\LearningUnit;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningContentService, LearningCourseService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

@@ -8,9 +8,10 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Services;
+namespace App\Services\Customer;
 
-use App\Models\{Customer, TimeEntry};
+use App\Models\Customer\Customer\Customer;
+use App\Models\TimeEntry;
 use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;

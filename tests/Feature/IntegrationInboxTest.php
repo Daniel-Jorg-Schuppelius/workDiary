@@ -11,7 +11,9 @@
 namespace Tests\Feature;
 
 use App\Enums\User\UserRole;
-use App\Models\{Customer, ExternalReference, IntegrationInboxItem, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -55,7 +57,7 @@ class IntegrationInboxTest extends TestCase {
         // Regression: Event nutzt `title` statt `name` — die Zielauswahl darf
         // nicht auf orderBy('name') brechen (SQLSTATE 42S22 Unknown column 'name').
         $this->item();
-        \App\Models\Event::factory()->create([
+        \App\Models\Calendar\Event::factory()->create([
             'organization_id' => $this->organization->id,
             'title' => 'Jahreshauptversammlung',
         ]);
@@ -99,7 +101,7 @@ class IntegrationInboxTest extends TestCase {
         // Outbox-Fehlschlag wie aus IntegrationOutboxDeliveryJob::compensateEntry():
         // technischer Operations-Key als Titel, betroffener Zeiteintrag als referenceable.
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Semso Multimedia']);
-        $project = \App\Models\Project::factory()->create([
+        $project = \App\Models\Project\Project::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
             'name' => 'Fernwartung',
@@ -140,7 +142,7 @@ class IntegrationInboxTest extends TestCase {
 
     /** Konflikt-Item mit Zeiteintrag + Toggl-Plugin-Setup für inspectConflict. */
     private function togglConflictItem(): array {
-        \App\Models\PluginSetting::query()->create([
+        \App\Models\Platform\PluginSetting::query()->create([
             'organization_id' => $this->organization->id,
             'plugin_id' => 'toggl',
             'enabled' => true,
@@ -265,7 +267,7 @@ class IntegrationInboxTest extends TestCase {
         // Project::uniqueSlug(null) → TypeError/Fehlerseite. Jetzt fachliche
         // Flash-Meldung; der Eintrag bleibt offen.
         $item = $this->item([
-            'target_type' => (new \App\Models\Project)->getMorphClass(),
+            'target_type' => (new \App\Models\Project\Project)->getMorphClass(),
             'external_type' => 'project',
             'external_id' => 'tg-p1',
             'dedupe_key' => 'project:tg-p1',

@@ -10,7 +10,7 @@
 
 namespace App\Plugins;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\Support\PluginOrgContext;
 
 /**

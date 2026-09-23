@@ -14,7 +14,8 @@ namespace App\Models\Privacy;
 
 use App\Enums\Privacy\{IncidentStatus, IncidentType};
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Models\Privacy\Casts\RecordEncrypted;
 use App\Models\Privacy\Concerns\ProvidesRecordDek;
 use App\Services\Privacy\DataProtectionCryptoService;

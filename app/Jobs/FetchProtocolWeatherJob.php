@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Jobs\Concerns\RetriesTransientFailures;
-use App\Models\{Organization, Protocol};
+use App\Models\Platform\Organization;
+use App\Models\Protocol;
 use App\Services\Weather\WeatherService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

@@ -8,10 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Platform;
 
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\User;
+use App\Models\Platform\User;
+use App\Http\Requests\BaseFormRequest;
 
 class SaveTeamRequest extends BaseFormRequest {
     use DecodesSqidInputs;

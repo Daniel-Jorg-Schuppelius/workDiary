@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Applications;
 
 use App\Models\Applications\{ApplicationContractNegotiation, ApplicationContractVersion, ApplicationOpportunity, JobApplication};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\ServiceTicket\ApprovalService;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\Facades\DB;

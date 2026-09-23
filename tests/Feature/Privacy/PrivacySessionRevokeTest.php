@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Privacy;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Security\SessionManagementService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

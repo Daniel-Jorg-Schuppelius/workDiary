@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Invoicing;
 
-use App\Models\{Customer, Invoice, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Invoice;
+use App\Models\Platform\{Organization, User};
 use App\Services\Invoicing\{GirocodeService, InvoicePdfRenderer};
 use App\Settings\SettingScope;
 use App\Support\{MorphMap, Setting};
@@ -79,7 +81,7 @@ class GirocodeTest extends TestCase {
     }
 
     private function legal(): array {
-        return app(\App\Services\BrandingService::class)->legalFor($this->org);
+        return app(\App\Services\UI\BrandingService::class)->legalFor($this->org);
     }
 
     public function test_payload_carries_iban_amount_and_invoice_number(): void {

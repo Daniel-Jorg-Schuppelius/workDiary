@@ -11,7 +11,7 @@
 namespace Tests\Feature\Sustainability;
 
 use App\Enums\User\UserRole;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Sustainability\{SustainabilityActivityRecord, SustainabilityCriterion, SustainabilityFactorSet, SustainabilityMeasure};
 use App\Services\Sustainability\{EmissionCalculationService, SustainabilityAssessmentService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

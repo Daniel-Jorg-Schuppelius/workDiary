@@ -8,9 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace Database\Factories;
+namespace Database\Factories\Attachments;
 
-use App\Models\{Attachment, DiaryEntry, User};
+use App\Models\Attachments\Attachments\Attachment;
+use App\Models\DiaryEntry;
+use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

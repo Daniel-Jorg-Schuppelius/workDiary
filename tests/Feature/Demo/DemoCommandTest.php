@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Demo;
 
-use App\Models\{Customer, DiaryEntry, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

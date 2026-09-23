@@ -10,9 +10,10 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Auth;
 
 use Illuminate\Http\Response;
+use App\Http\Controllers\Controller;
 
 /**
  * CVD-Meldekanal nach RFC 9116: /.well-known/security.txt (CRA-Welle 1,

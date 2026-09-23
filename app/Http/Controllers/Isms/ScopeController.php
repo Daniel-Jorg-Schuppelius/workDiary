@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Isms;
 
 use App\Http\Controllers\Controller;
 use App\Models\Isms\IsmsScope;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Isms\ScopeService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};

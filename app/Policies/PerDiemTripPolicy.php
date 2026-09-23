@@ -11,7 +11,8 @@
 namespace App\Policies;
 
 use App\Enums\Expense\PerDiemTripStatus;
-use App\Models\{PerDiemTrip, User};
+use App\Models\PerDiemTrip;
+use App\Models\Platform\User;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class PerDiemTripPolicy {

@@ -11,7 +11,8 @@
 namespace Tests\Feature\Operations;
 
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskType};
-use App\Models\{OperationsTask, User};
+use App\Models\Platform\User;
+use App\Models\Project\OperationsTask;
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;

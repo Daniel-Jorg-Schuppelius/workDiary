@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\{AttendanceTerminal, FlexBalance, Organization, User};
+use App\Models\{AttendanceTerminal, FlexBalance};
+use App\Models\Platform\{Organization, User};
 use App\Services\Absence\VacationBalanceService;
 use App\Services\Attendance\TerminalStampService;
 use Illuminate\Http\{JsonResponse, Request};

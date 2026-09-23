@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Github\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\Github\Api\GithubClientFactory;
 use App\Plugins\Github\GithubConfig;
 use App\Plugins\Github\Services\GithubIssueImporter;

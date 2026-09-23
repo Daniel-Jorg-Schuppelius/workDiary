@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Finance\Concerns;
 
-use App\Models\{Customer, ForeignCustomer};
+use App\Models\Customer\{Customer, ForeignCustomer};
 use Illuminate\Validation\Validator;
 
 /**

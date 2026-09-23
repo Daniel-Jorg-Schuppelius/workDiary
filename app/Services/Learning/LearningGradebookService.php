@@ -14,7 +14,7 @@ namespace App\Services\Learning;
 
 use App\Enums\Learning\LearningSubmissionStatus;
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningGradebookComponent, LearningManualGrade, LearningQuizAttempt, LearningSubmission, LearningUnit};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Support\CsvExport;
 use CommonToolkit\Enums\Common\CSV\QuotingStyle;
 use CommonToolkit\Helper\Data\CSV\StringHelper;

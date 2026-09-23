@@ -11,7 +11,10 @@
 namespace Tests\Feature\Plugins;
 
 use App\Enums\TimeApproval\MonthClosureStatus;
-use App\Models\{Customer, ForeignCustomer, IntegrationInboxItem, MonthClosure, TimeEntry, User};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\{MonthClosure, TimeEntry};
+use App\Models\Platform\User;
 use App\Plugins\Fritzbox\{FritzboxImportService, FritzboxPlugin};
 use App\Plugins\Fritzbox\Sources\FritzboxCall;
 use Carbon\CarbonImmutable;

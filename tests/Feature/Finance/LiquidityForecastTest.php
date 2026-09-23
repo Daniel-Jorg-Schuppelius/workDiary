@@ -12,7 +12,10 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AccountType, PostingAccountRole, PostingSourceKind, ProfitDetermination, SettlementKind};
 use App\Models\Accounting\{AccountingAccount, AccountingPostingRule};
-use App\Models\{Customer, Document, IncomingEInvoice, Invoice, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Document\Document;
+use App\Models\{IncomingEInvoice, Invoice};
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService};
 use App\Services\Accounting\Posting\{PostingInboxService, PostingSourceRegistry};
 use App\Services\Accounting\Reports\LiquidityForecastBuilder;

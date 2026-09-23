@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Notification\DeadlineScans;
 
 use App\Enums\Rental\RentalCaseStatus;
-use App\Models\{Organization, Rental\RentalCase};
+use App\Models\Platform\Organization;
+use App\Models\Rental\RentalCase;
 use App\Services\Notification\NotificationDispatcher;
 use App\Services\Rental\RentalCaseService;
 

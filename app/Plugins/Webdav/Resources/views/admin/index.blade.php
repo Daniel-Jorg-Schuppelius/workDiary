@@ -93,7 +93,7 @@
             <div class="form-control">
                 <span class="label-text">{{ __('webdav.field.sources') }}</span>
                 <div class="flex flex-wrap gap-4 pt-1">
-                    @foreach (\App\Models\WebdavConnection::SOURCES as $source)
+                    @foreach (\App\Models\Plugins\Webdav\WebdavConnection::SOURCES as $source)
                         <label class="label cursor-pointer justify-start gap-2">
                             <input type="checkbox" name="sources[]" value="{{ $source }}" class="checkbox checkbox-sm"
                                    @checked(in_array($source, $currentSources, true))>

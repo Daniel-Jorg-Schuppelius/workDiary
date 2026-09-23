@@ -13,7 +13,10 @@ namespace Tests\Feature;
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Mail\InvoiceMail;
-use App\Models\{Customer, Invoice, InvoiceMailTemplate, Project, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\{Invoice, InvoiceMailTemplate, TimeEntry};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Testing\TestResponse;
@@ -347,7 +350,7 @@ class InvoiceTest extends TestCase {
     }
 
     public function test_foreign_customer_appears_in_booking_line(): void {
-        $foreign = \App\Models\ForeignCustomer::create([
+        $foreign = \App\Models\Customer\ForeignCustomer::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'name' => 'Thieme',
@@ -546,7 +549,7 @@ class InvoiceTest extends TestCase {
             'created_by' => $this->admin->id,
         ]);
 
-        \App\Models\ExternalReference::create([
+        \App\Models\Integration\ExternalReference::create([
             'organization_id' => $this->organization->id,
             'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,
             'external_type' => \App\Plugins\Lexoffice\LexofficeInvoiceService::EXT_TYPE_INVOICE,
@@ -572,7 +575,7 @@ class InvoiceTest extends TestCase {
             'created_by' => $this->admin->id,
         ]);
 
-        \App\Models\ExternalReference::create([
+        \App\Models\Integration\ExternalReference::create([
             'organization_id' => $this->organization->id,
             'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,
             'external_type' => \App\Plugins\Lexoffice\LexofficeInvoiceService::EXT_TYPE_INVOICE,
@@ -729,9 +732,9 @@ class InvoiceTest extends TestCase {
             'to' => ['kunde@example.test'],
         ], $invoice)->assertRedirect();
 
-        $dispatch = \App\Models\DocumentDispatch::query()
+        $dispatch = \App\Models\Document\DocumentDispatch::query()
             ->where('invoice_id', $invoice->id)
-            ->where('channel', \App\Models\DocumentDispatch::CHANNEL_EMAIL)
+            ->where('channel', \App\Models\Document\DocumentDispatch::CHANNEL_EMAIL)
             ->latest('id')
             ->firstOrFail();
 

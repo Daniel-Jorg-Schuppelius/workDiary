@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Import;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode, ImportRunState};
-use App\Models\{ImportRun, ImportRunError, Organization, User};
+use App\Models\Integration\{ImportRun, ImportRunError};
+use App\Models\Platform\{Organization, User};
 use App\Services\Import\Source\{CsvImportSource, ImportSource, ImportSourceFactory};
 use CommonToolkit\Helper\Data\CSV\StringHelper;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
@@ -233,7 +234,7 @@ class CsvPreflightAnalyzer {
                 if ($spec instanceof \App\Services\Import\HasMappableValues) {
                     $raw = $normalized[$spec->mappableColumn()] ?? null;
                     foreach ($spec->splitMappableValues(is_string($raw) ? $raw : null) as $value) {
-                        $unresolvedValues[\App\Models\ImportValueMapping::normalize($value)] = $value;
+                        $unresolvedValues[\App\Models\Integration\ImportValueMapping::normalize($value)] = $value;
                     }
                 }
 

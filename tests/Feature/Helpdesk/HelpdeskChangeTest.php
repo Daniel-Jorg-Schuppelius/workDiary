@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Helpdesk;
 
-use App\Models\{Change, ChangeTemplate, Organization, User};
+use App\Models\{Change, ChangeTemplate};
+use App\Models\Platform\{Organization, User};
 use App\Services\ServiceTicket\ChangeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

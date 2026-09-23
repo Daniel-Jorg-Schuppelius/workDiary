@@ -77,11 +77,11 @@ enum ImportEntity: string implements HasLabel {
      */
     public function modelClass(): ?string {
         return match ($this) {
-            self::Customers => \App\Models\Customer::class,
+            self::Customers => \App\Models\Customer\Customer::class,
             self::Suppliers => \App\Models\Supplier::class,
             self::Articles => \App\Models\Article::class,
-            self::Projects => \App\Models\Project::class,
-            self::Users => \App\Models\User::class,
+            self::Projects => \App\Models\Project\Project::class,
+            self::Users => \App\Models\Platform\User::class,
             self::Materials => \App\Models\Material::class,
             self::Vehicles => \App\Models\Vehicle::class,
             self::ScheduledShifts => \App\Models\ScheduledShift::class,
@@ -89,11 +89,11 @@ enum ImportEntity: string implements HasLabel {
             self::Attendances => \App\Models\Attendance::class,
             self::ProjectTimes => \App\Models\TimeEntry::class,
             self::Invoices => \App\Models\Invoice::class,
-            self::Quotes => \App\Models\Quote::class,
+            self::Quotes => \App\Models\Sales\Quote::class,
             self::Assets => \App\Models\Asset::class,
             // Ansprechpartner leben als JSON-Liste am Kunden/Lieferanten (kein eigenes Modell).
             self::ContactPersons => null,
-            self::Documents => \App\Models\Document::class,
+            self::Documents => \App\Models\Document\Document::class,
             self::ClubMembers => \App\Models\Club\ClubMember::class,
         };
     }

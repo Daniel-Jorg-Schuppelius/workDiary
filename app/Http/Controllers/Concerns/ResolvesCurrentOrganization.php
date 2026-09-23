@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Concerns;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -70,7 +70,7 @@ trait ResolvesCurrentOrganization {
             return $organization;
         }
 
-        /** @var \App\Models\User|null $user */
+        /** @var \App\Models\Platform\User|null $user */
         $user = Auth::user();
 
         return $user?->organization;

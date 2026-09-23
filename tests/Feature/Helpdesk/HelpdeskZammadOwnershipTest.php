@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Helpdesk;
 
-use App\Models\{ExternalReference, Organization, ServiceQueue, ServiceTicket, User, ZammadConnection};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\{Organization, User};
+use App\Models\Plugins\Zammad\ZammadConnection;
+use App\Models\{ServiceQueue, ServiceTicket};
 use App\Plugins\Zammad\Contracts\ZammadGateway;
 use App\Plugins\Zammad\Services\{ZammadOutboxDispatcher, ZammadTicketImporter};
 use App\Plugins\Zammad\ZammadPlugin;

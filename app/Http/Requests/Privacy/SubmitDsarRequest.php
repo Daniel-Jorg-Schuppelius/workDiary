@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Privacy;
 
 use App\Enums\Privacy\DataSubjectRequestType;
-use App\Http\Controllers\AttachmentController;
+use App\Http\Controllers\Attachments\AttachmentController;
 use App\Http\Requests\BaseFormRequest;
 use App\Services\Attachments\FileAttacher;
 use Illuminate\Http\UploadedFile;

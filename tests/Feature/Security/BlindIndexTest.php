@@ -10,8 +10,9 @@
 
 namespace Tests\Feature\Security;
 
-use App\Models\{Customer, Organization};
+use App\Models\Customer\Customer;
 use App\Models\Finance\BankAccount;
+use App\Models\Platform\Organization;
 use App\Support\Crypto\BlindIndex;
 use CommonToolkit\Helper\Data\BankHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;

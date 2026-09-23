@@ -13,7 +13,11 @@ namespace Tests\Feature\Billing;
 use App\Enums\Finance\BillingMode;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Billing\{CustomerBillingAgreement, CustomerBillingRate};
-use App\Models\{Customer, ExternalReference, Invoice, Project, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\{Invoice, TimeEntry};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Services\Billing\{RetainerLexofficeService, RetainerRunner};
 use App\Services\Invoicing\InvoiceGenerator;
@@ -149,7 +153,7 @@ class RetainerLexofficeTest extends TestCase {
         $this->fakeInvoiceApi();
         // Für den Monat liegt die Rechnung schon in Lexoffice — ein Push legte
         // dort einen zweiten Beleg für dieselbe Pauschale an.
-        $voucher = \App\Models\LexofficeVoucher::create([
+        $voucher = \App\Models\Plugins\Lexoffice\LexofficeVoucher::create([
             'organization_id' => $this->organization->id,
             'external_id' => 'lex-existing-1',
             'customer_id' => $this->customer->id,

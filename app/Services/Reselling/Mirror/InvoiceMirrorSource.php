@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Mirror;
 
-use App\Models\{Customer, Organization};
+use App\Models\Customer\Customer;
+use App\Models\Platform\Organization;
 use App\Models\Reselling\ResalePeriodLink;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;

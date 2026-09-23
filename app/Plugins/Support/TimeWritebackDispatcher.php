@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Support;
 
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
-use App\Models\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry, TimeEntry};
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry};
+use App\Models\TimeEntry;
 use App\Support\MorphMap;
 
 /**
@@ -77,7 +78,7 @@ abstract class TimeWritebackDispatcher implements IntegrationOutboxDispatcher {
             ->whereKey((int) ($payload['time_entry_id'] ?? 0))
             ->where('organization_id', $outbox->organization_id)
             ->first();
-        $organization = \App\Models\Organization::query()->find($outbox->organization_id);
+        $organization = \App\Models\Platform\Organization::query()->find($outbox->organization_id);
         if ($timeEntry === null || $organization === null) {
             return true; // inzwischen gelöscht — die Löschung braucht keinen Spiegel
         }

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Mail;
 
-use App\Models\EmailConnection;
+use App\Models\Mail\EmailConnection;
 
 /**
  * Transport-Abstraktion für ein Eingangspostfach (Feature 056, MVP-117): neue

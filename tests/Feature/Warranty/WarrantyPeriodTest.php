@@ -12,8 +12,11 @@ namespace Tests\Feature\Warranty;
 
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Enums\Warranty\{WarrantyBasis, WarrantySide, WarrantyStatus};
-use App\Models\{Customer, Organization, Project, Supplier, User};
+use App\Models\Customer\Customer;
 use App\Models\Notification\NotificationRule;
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
+use App\Models\Supplier;
 use App\Models\Warranty\WarrantyPeriod;
 use App\Services\Warranty\WarrantyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

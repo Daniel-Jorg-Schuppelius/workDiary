@@ -11,9 +11,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
-use App\Models\User;
-use App\Services\Calendar\WeekViewService;
-use App\Services\HolidayService;
+use App\Models\Platform\User;
+use App\Services\Calendar\{HolidayService, WeekViewService};
 use App\Services\UI\DateRangeContext;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Enums\Weekday;

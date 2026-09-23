@@ -11,7 +11,8 @@
 namespace Tests\Feature\Manufacturing;
 
 use App\Enums\Manufacturing\{ProcurementStatus, SubstituteStatus};
-use App\Models\{Article, ManufacturingOrder, ManufacturingOrderMaterial, MaterialSubstitute, Organization, ProcurementRequest};
+use App\Models\{Article, ManufacturingOrder, ManufacturingOrderMaterial, MaterialSubstitute, ProcurementRequest};
+use App\Models\Platform\Organization;
 use App\Services\Manufacturing\ShortageService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
@@ -58,7 +59,7 @@ final class ShortageTest extends TestCase {
         $this->assertSame($this->substitute->id, (int) $sub->substitute_article_id);
         $this->assertSame('Lieferengpass', $sub->reason);
 
-        $approver = \App\Models\User::factory()->create(['organization_id' => $this->organization->id]);
+        $approver = \App\Models\Platform\User::factory()->create(['organization_id' => $this->organization->id]);
         $this->shortage->approveSubstitute($sub, $approver->id);
         $this->assertSame(SubstituteStatus::Approved, $sub->fresh()->status);
         $this->assertSame($approver->id, (int) $sub->fresh()->approved_by);

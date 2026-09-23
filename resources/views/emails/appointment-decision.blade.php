@@ -1,5 +1,5 @@
 @component('mail::message')
-@if ($request->status === \App\Models\AppointmentRequest::STATUS_CONFIRMED)
+@if ($request->status === \App\Models\Calendar\AppointmentRequest::STATUS_CONFIRMED)
 # {{ __('Ihr Termin ist bestätigt') }}
 
 {{ __(':service am :date Uhr.', ['service' => $request->service_label, 'date' => $request->start_at?->orgTz()->format('d.m.Y H:i')]) }}

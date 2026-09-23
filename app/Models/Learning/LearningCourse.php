@@ -11,8 +11,9 @@
 namespace App\Models\Learning;
 
 use App\Enums\Learning\{LearningAccessKind, LearningAudience, LearningCourseKind, LearningCourseStatus, LearningEnrollmentStatus, LearningInstructionSuitability, LearningTimePolicy};
-use App\Models\{Article, Organization, Qualification, User};
+use App\Models\{Article, Qualification};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, HasTags};
+use App\Models\Platform\{Organization, User};
 use App\Models\Training\TrainingCourse;
 use Database\Factories\Learning\LearningCourseFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};

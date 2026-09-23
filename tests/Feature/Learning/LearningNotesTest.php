@@ -11,8 +11,10 @@
 namespace Tests\Feature\Learning;
 
 use App\Enums\Communication\CommunicationVisibility;
-use App\Models\{CommunicationNote, SearchDocument, User};
+use App\Models\Communication\CommunicationNote;
 use App\Models\Learning\{LearningCourse, LearningEnrollment};
+use App\Models\Platform\User;
+use App\Models\Search\SearchDocument;
 use App\Services\Communication\CommunicationNoteService;
 use App\Services\Learning\{LearningCourseService, LearningEnrollmentService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

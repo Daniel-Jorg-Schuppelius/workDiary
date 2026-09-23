@@ -16,7 +16,7 @@ use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\Resale\{LinkResalePeriodRequest, QuickLinkResalePeriodRequest, WaiveResalePeriodRequest};
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
 use App\Services\Reselling\Register\{LicenseMonths, LinkProposer, PeriodLinker};
@@ -66,7 +66,7 @@ class ResalePeriodController extends Controller {
         $customer = $customerId !== null ? Customer::query()->find($customerId) : null;
         if ($customer !== null) {
             $query->whereHas('subscription', static fn(Builder $s) => $s->where(static fn(Builder $w) => $w->where('customer_id', $customer->id)
-                ->orWhereIn('foreign_customer_id', \App\Models\ForeignCustomer::query()->where('customer_id', $customer->id)->select('id'))));
+                ->orWhereIn('foreign_customer_id', \App\Models\Customer\ForeignCustomer::query()->where('customer_id', $customer->id)->select('id'))));
         }
         if ($filters['q'] !== '') {
             $q = $filters['q'];

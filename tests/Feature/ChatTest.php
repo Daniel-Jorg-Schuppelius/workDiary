@@ -11,7 +11,7 @@
 namespace Tests\Feature;
 
 use App\Models\Chat\Channel;
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -172,7 +172,7 @@ class ChatTest extends TestCase {
             'disk' => 'local', 'path' => 'attachments/chat/missing.txt',
             'original_name' => 'x.txt', 'mime' => 'text/plain', 'size' => 1,
         ]);
-        $url = \App\Http\Controllers\AttachmentController::downloadUrl($att);
+        $url = \App\Http\Controllers\Attachments\AttachmentController::downloadUrl($att);
 
         // Nicht-Mitglied derselben Organisation: trotz gültiger Signatur verboten.
         $intruder = User::factory()->user()->create(['organization_id' => $owner->organization_id]);

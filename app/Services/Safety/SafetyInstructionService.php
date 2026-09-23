@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Safety;
 
 use App\Enums\Safety\InstructionSignatureMethod;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Safety\{SafetyInstruction, SafetyInstructionParticipant};
 use App\Services\Concerns\AssignsSequentialNo;
 use App\Services\Training\TrainingAssignmentService;

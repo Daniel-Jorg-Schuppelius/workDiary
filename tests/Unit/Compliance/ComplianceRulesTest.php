@@ -10,7 +10,7 @@
 
 namespace Tests\Unit\Compliance;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Compliance\{AttendanceComplianceChecker, AttendanceComplianceFinding};
 use App\Services\Timekeeping\BreakRuleEvaluator;
 use Carbon\CarbonImmutable;

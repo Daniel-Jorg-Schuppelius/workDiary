@@ -12,7 +12,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{AutomationRule, AutomationRuleRun, User};
+use App\Models\Automation\{AutomationRule, AutomationRuleRun};
+use App\Models\Platform\User;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;

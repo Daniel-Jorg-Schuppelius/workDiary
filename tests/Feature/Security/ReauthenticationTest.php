@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Security;
 
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Notifications\GenericEventNotification;
 use App\Support\Auth\RecentAuthentication;
 use Illuminate\Foundation\Testing\RefreshDatabase;

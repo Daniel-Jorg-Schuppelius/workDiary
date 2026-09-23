@@ -14,7 +14,7 @@ namespace App\Http\Controllers\Privacy;
 
 use App\Enums\Privacy\IncidentType;
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use App\Models\Privacy\{Incident, Measure};
 use App\Services\Privacy\{IncidentService, SupervisoryAuthorityDirectory};
 use App\Support\{Sqid, Tz};

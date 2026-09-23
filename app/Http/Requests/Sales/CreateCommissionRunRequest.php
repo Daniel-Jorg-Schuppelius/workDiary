@@ -10,10 +10,11 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Sales;
 
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Validation\Rule;
+use App\Http\Requests\BaseFormRequest;
 
 /**
  * Abrechnungslauf anlegen (Feature 146, MVP-729). Ein Lauf rechnet genau eine

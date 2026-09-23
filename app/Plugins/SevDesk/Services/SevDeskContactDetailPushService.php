@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\SevDesk\Services;
 
-use App\Models\{Customer, ExternalReference};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
 use App\Plugins\SevDesk\Api\SevDeskClient;
 use App\Plugins\SevDesk\SevDeskPlugin;
 use App\Services\Finance\Accounting\ContactPushService;

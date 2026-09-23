@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Finance;
 
-use App\Models\{CashEntry, CashRegister, Customer, Invoice, User};
+use App\Models\{CashEntry, CashRegister, Invoice};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Services\Finance\{CashBookService, GdpduExportService};
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -251,7 +253,7 @@ class CashBookTest extends TestCase {
             ->get(route('cash-registers.show', $this->register))
             ->assertOk();
 
-        $foreignOrg = \App\Models\Organization::factory()->create();
+        $foreignOrg = \App\Models\Platform\Organization::factory()->create();
         $foreignAdmin = User::factory()->admin()->create(['organization_id' => $foreignOrg->id]);
         $this->actingAs($foreignAdmin)
             ->get(route('cash-registers.show', $this->register))

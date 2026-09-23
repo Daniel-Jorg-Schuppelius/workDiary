@@ -11,7 +11,8 @@
 namespace Tests\Feature\Software;
 
 use App\Exceptions\SoftwareInstallationException;
-use App\Models\{Asset, Organization, Software, User};
+use App\Models\{Asset, Software};
+use App\Models\Platform\{Organization, User};
 use App\Services\Software\SoftwareInstallationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -105,8 +106,8 @@ class SoftwareInstallationServiceTest extends TestCase {
     }
 
     public function test_asset_room_mismatch_with_customer_is_rejected_by_service(): void {
-        $customer = \App\Models\Customer::factory()->for($this->organization)->create();
-        $otherCustomer = \App\Models\Customer::factory()->for($this->organization)->create();
+        $customer = \App\Models\Customer\Customer::factory()->for($this->organization)->create();
+        $otherCustomer = \App\Models\Customer\Customer::factory()->for($this->organization)->create();
         $room = \App\Models\Room::factory()->for($this->organization)->create([
             'customer_id' => $otherCustomer->id,
         ]);

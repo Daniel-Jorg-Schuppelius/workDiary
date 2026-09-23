@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Contacts;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 
 /** Erweiterungspunkt für externe Kontaktverzeichnisse mit Rufnummern. */
 interface ExternalPhoneContactSource {

@@ -12,8 +12,9 @@ namespace Tests\Feature\AssetCompliance;
 
 use App\Enums\Asset\AssetBlockReason;
 use App\Enums\AssetCompliance\{AssetComplianceBlockMode, AssetComplianceStatus};
-use App\Models\{Asset, AssetBlock, User};
+use App\Models\{Asset, AssetBlock};
 use App\Models\AssetCompliance\AssetComplianceProfile;
+use App\Models\Platform\User;
 use App\Services\Asset\AssetUsageGuard;
 use App\Services\AssetCompliance\AssetComplianceService;
 use Database\Seeders\AssetComplianceCatalogSeeder;
@@ -319,7 +320,7 @@ final class AssetComplianceLifecycleTest extends TestCase {
             'ttl_days' => 14,
         ])->assertRedirect();
 
-        $participant = \App\Models\ExternalParticipant::query()
+        $participant = \App\Models\Communication\ExternalParticipant::query()
             ->where('subject_type', $schedule->getMorphClass())
             ->where('subject_id', $schedule->id)
             ->firstOrFail();
@@ -367,7 +368,7 @@ final class AssetComplianceLifecycleTest extends TestCase {
     }
 
     public function test_module_gating_blocks_without_license(): void {
-        $freeOrg = \App\Models\Organization::factory()->free()->create();
+        $freeOrg = \App\Models\Platform\Organization::factory()->free()->create();
         app(PermissionRegistrar::class)->setPermissionsTeamId($freeOrg->id);
         $freeAdmin = User::factory()->admin()->create(['organization_id' => $freeOrg->id]);
 

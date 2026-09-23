@@ -11,7 +11,7 @@
 namespace Tests\Feature\Learning;
 
 use App\Models\Learning\{LearningCertificate, LearningIssuerKey};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningCourseService, LearningCredentialService, LearningEnrollmentService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;

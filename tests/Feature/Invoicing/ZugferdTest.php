@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Invoicing;
 
-use App\Models\{Customer, Invoice, User};
+use App\Models\Customer\Customer;
+use App\Models\Invoice;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

@@ -10,7 +10,7 @@
 
 namespace App\Rules;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\TimeApproval\MonthClosureService;
 use Carbon\CarbonImmutable;
 use Closure;

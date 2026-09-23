@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Reselling;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Reselling\Register\ResaleLocalDraftRun;
 use Illuminate\Console\Command;
 

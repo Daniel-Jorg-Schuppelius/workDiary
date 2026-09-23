@@ -12,7 +12,8 @@ namespace Tests\Feature;
 
 use App\Enums\User\Permission as P;
 use App\Mail\CustomerPortalInvitationMail;
-use App\Models\{Customer, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
 use App\Services\CustomerPortal\PortalAccessService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{DB, Mail};

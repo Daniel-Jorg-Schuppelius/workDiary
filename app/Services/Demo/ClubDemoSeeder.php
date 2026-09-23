@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Demo;
 
 use App\Enums\Club\{ClubAvailabilityStatus, ClubEventKind, ClubEventRoleKind, ClubEventVisibility, ClubFeePaymentMethod, ClubFeeTariffKind, ClubGuardianPermission, ClubHorseKind, ClubLineupSlot, ClubParticipationSource, ClubResultFormat};
+use App\Models\Calendar\Event;
 use App\Models\Club\{ClubFeeAccount, ClubFeeClaim, ClubGrade, ClubGradingSystem, ClubGroup, ClubHorse, ClubMember, ClubResource, ClubSportProfile};
-use App\Models\{Event, Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Club\{ClubAttendanceService, ClubCompetitionService, ClubEventService, ClubExamService, ClubFeePaymentService, ClubFeeRunService, ClubFeeService, ClubGradingService, ClubGroupService, ClubHorseService, ClubMatchService, ClubMemberService, ClubResourceService, ClubStarterPackService, ClubTeamService};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;

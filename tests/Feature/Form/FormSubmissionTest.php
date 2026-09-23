@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Form;
 
-use App\Models\{DiaryEntry, FormSubmission, FormTemplate, User};
+use App\Models\DiaryEntry;
+use App\Models\Form\{FormSubmission, FormTemplate};
+use App\Models\Platform\User;
 use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

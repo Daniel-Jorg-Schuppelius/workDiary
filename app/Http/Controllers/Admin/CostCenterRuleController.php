@@ -11,9 +11,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{CostCenter, CostCenterRule, Team, User};
+use App\Models\{CostCenter, CostCenterRule};
+use App\Models\Platform\{Team, User};
 use App\Rules\ExistsInCurrentOrganization;
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;

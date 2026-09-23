@@ -12,7 +12,9 @@ namespace Tests\Feature\Permit;
 
 use App\Enums\Permit\PermitStatus;
 use App\Enums\User\UserRole;
-use App\Models\{Event, Permit, User};
+use App\Models\Calendar\Event;
+use App\Models\Permit;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;

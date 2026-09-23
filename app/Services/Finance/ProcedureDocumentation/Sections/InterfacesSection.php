@@ -16,7 +16,7 @@ use App\Enums\Numbering\NumberScope;
 use App\Enums\Plugin\PluginHealthStatus;
 use App\Models\Accounting\{AccountingProfile, AccountingSovereigntyPeriod};
 use App\Models\Integration\WebhookEndpoint;
-use App\Models\{Organization, PluginState};
+use App\Models\Platform\{Organization, PluginState};
 use App\Plugins\PluginManager;
 use App\Services\Accounting\AccountingSovereigntyResolver;
 use App\Services\Finance\ProcedureDocumentation\{FormatsSectionValues, ProcedureSection, SectionContext};

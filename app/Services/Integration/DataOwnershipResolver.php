@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Integration;
 
 use App\Enums\Integration\DataDomain;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 
 /**
  * Zentrale Datenführerschaft je Org und Datenbereich (Restpunkt 69):

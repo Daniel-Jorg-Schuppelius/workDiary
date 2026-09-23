@@ -10,7 +10,7 @@
 
 namespace App\Policies\Concerns;
 
-use App\Models\User;
+use App\Models\Platform\User;
 
 trait HasAdminBypass {
     public function before(User $user, string $ability): ?bool {

@@ -10,13 +10,14 @@
 
 declare(strict_types=1);
 
-namespace App\Models;
+namespace App\Models\Platform;
 
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Platform\User;
 
 /**
  * Eigener Arbeitsbereich einer Person (Feature 082 Phase 2, MVP-731).

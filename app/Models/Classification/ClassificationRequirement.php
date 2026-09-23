@@ -8,11 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Classification;
 
 use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequirementSeverity};
 use App\Models\Concerns\{Auditable, BelongsToOrganization};
-use Database\Factories\ClassificationRequirementFactory;
+use Database\Factories\Classification\ClassificationRequirementFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

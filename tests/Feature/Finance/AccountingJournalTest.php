@@ -12,7 +12,7 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AccountType, AccountingEntryStatus, ProfitDetermination};
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingEvent};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, AccountingSovereigntyException, ChartOfAccountsService, FiscalYearService, JournalService};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;

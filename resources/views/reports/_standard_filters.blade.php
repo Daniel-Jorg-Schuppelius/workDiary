@@ -59,7 +59,7 @@
             {{-- Gruppierung nur ohne Kundenfilter (sonst ist der Kunde schon gewählt). --}}
             <x-project-options :projects="$filterProjects ?? collect()"
                 :group="$standardFilters->customerId === null"
-                :selected="\App\Support\Sqid::encode(\App\Models\Project::class, $standardFilters->projectId)" />
+                :selected="\App\Support\Sqid::encode(\App\Models\Project\Project::class, $standardFilters->projectId)" />
         </select>
     </x-filter-field>
 @endif

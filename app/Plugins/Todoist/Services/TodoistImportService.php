@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Plugins\Todoist\Services;
 
 use App\Enums\Task\{TaskPriority, TaskStatus};
-use App\Models\{ExternalReference, Task, TodoistConnection, TodoistProjectLink};
+use App\Models\Integration\ExternalReference;
+use App\Models\Plugins\Todoist\{TodoistConnection, TodoistProjectLink};
+use App\Models\Project\Task;
 use App\Plugins\Support\TaskSync\{AbstractTaskSyncService, TaskSyncLink};
 use App\Plugins\Todoist\Api\TodoistApiClient;
 use App\Plugins\Todoist\Observers\TodoistTaskObserver;

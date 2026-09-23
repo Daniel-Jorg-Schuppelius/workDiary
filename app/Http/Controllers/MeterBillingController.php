@@ -14,8 +14,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Requests\SaveMeterBillingAgreementRequest;
-use App\Models\{Asset, Customer, Project};
+use App\Models\Asset;
+use App\Models\Customer\Customer;
 use App\Models\Metering\{MeterBillingAgreement, MeterBillingRun};
+use App\Models\Project\Project;
 use App\Services\Metering\MeterBillingService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;

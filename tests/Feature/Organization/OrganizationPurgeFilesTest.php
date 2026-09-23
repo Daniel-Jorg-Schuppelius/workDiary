@@ -10,8 +10,9 @@
 
 namespace Tests\Feature\Organization;
 
-use App\Models\{Organization, OrganizationAuditLog};
-use App\Services\OrganizationLifecycleService;
+use App\Models\Audit\OrganizationAuditLog;
+use App\Models\Platform\Organization;
+use App\Services\Org\OrganizationLifecycleService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{DB, Storage};
 use Tests\TestCase;

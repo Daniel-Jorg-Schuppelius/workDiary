@@ -10,7 +10,7 @@
 
 namespace App\Plugins\CardDav;
 
-use App\Models\CardDavConnection;
+use App\Models\Plugins\CardDav\CardDavConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\CardDav\Contracts\CardDavGatewayFactory;
 use App\Plugins\Contracts\Plugin;
@@ -24,7 +24,7 @@ use Throwable;
  * - **Inbox-First** (MVP-103): Kontakte werden über den IntegrationResolver
  *   als Zuordnungsvorschläge zu Kunden eingespeist — kein Auto-Merge, kein
  *   Direkt-Schreiben, keine Neuanlage.
- * - **Idempotent** über UID+ETag ({@see \App\Models\CardDavCard}-Spiegel);
+ * - **Idempotent** über UID+ETag ({@see \App\Models\Plugins\CardDav\CardDavCard}-Spiegel);
  *   Delta-Sync per RFC-6578-sync-collection mit ETag-Fallback.
  *
  * Bewusst KEINE Capability: {@see \App\Plugins\Contracts\ContactSyncer} ist

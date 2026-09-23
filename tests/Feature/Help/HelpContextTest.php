@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Help;
 
-use App\Models\{HelpTopic, User};
+use App\Models\Platform\{HelpTopic, User};
 use App\Services\Help\HelpContextResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Route;

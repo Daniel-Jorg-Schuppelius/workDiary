@@ -11,7 +11,11 @@
 namespace Tests\Feature\Plugins\Calendly;
 
 use App\Enums\Diary\Status;
-use App\Models\{AppointmentRequest, Customer, DiaryEntry, DiaryEntryEvent, IntegrationInboxItem, User};
+use App\Models\Calendar\AppointmentRequest;
+use App\Models\Customer\Customer;
+use App\Models\{DiaryEntry, DiaryEntryEvent};
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Platform\User;
 use App\Plugins\Calendly\Services\CalendlyConfirmService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

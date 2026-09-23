@@ -11,7 +11,9 @@
 namespace Tests\Feature;
 
 use App\Enums\User\UserRole;
-use App\Models\{DiaryEntry, Tag, User};
+use App\Models\Classification\Tag;
+use App\Models\DiaryEntry;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;

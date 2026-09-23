@@ -13,8 +13,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\{AvailabilityWindow, CoverageRequirement, DesiredShift, Organization, User};
-use App\Policies\{AvailabilityWindowPolicy, CoverageRequirementPolicy, DesiredShiftPolicy};
+use App\Models\Calendar\AvailabilityWindow;
+use App\Models\{CoverageRequirement, DesiredShift};
+use App\Models\Platform\{Organization, User};
+use App\Policies\Calendar\AvailabilityWindowPolicy;
+use App\Policies\{CoverageRequirementPolicy, DesiredShiftPolicy};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;

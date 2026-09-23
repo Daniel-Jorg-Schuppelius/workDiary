@@ -10,7 +10,7 @@
 
 namespace Tests\Unit\Services;
 
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 

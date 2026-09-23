@@ -14,7 +14,8 @@ namespace App\Dashboard\Widgets;
 
 use App\Dashboard\Widget;
 use App\Enums\Dashboard\WidgetGroup;
-use App\Models\{FlexBalance, User};
+use App\Models\FlexBalance;
+use App\Models\Platform\User;
 use App\Services\Flextime\FlexTrafficLight;
 use Illuminate\Contracts\View\View;
 

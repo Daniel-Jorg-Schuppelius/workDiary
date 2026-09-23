@@ -14,7 +14,7 @@ namespace App\Services\Construction;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Construction\ConstructionNotice;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 
 /**

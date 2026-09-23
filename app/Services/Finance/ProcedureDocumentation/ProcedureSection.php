@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Finance\ProcedureDocumentation;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 
 /**
  * Ein Abschnitt des generierten Systemteils der GoBD-Verfahrensdokumentation

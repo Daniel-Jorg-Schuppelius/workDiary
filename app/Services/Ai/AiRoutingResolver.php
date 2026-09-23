@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Ai;
 
 use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Ai\Dto\AiCapability;
 use App\Services\Ai\Exceptions\AiUnavailableException;
 use App\Services\Licensing\ModuleStatusResolver;

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 
 /**
  * Zentrale Auflösung des Container-gebundenen Org-Kontexts der Plugin-Schicht

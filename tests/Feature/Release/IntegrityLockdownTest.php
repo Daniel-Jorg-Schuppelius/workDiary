@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Release;
 
 use App\Enums\Security\IntegrityCheckStatus;
-use App\Models\{AuditLog, IntegrityCheck, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{IntegrityCheck, User};
 use App\Services\Release\{IntegrityComparison, IntegrityLockdownService, ReleaseManifestService};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;

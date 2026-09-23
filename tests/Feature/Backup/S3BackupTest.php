@@ -12,7 +12,7 @@ namespace Tests\Feature\Backup;
 
 use App\Enums\Backup\BackupProvider;
 use App\Models\Backup\BackupTargetConnection;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Plugins\S3\Api\S3BackupClient;
 use Aws\Command;
 use Aws\{MockHandler, Result};

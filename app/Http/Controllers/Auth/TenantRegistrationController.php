@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Enums\User\UserRole;
 use App\Http\Controllers\Controller;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Hash};
 use Illuminate\Validation\Rules\Password;

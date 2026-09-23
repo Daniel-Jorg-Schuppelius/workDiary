@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Navigation\NavigationRegistry;
 use App\Services\Reporting\ReportsOverviewService;
 use Illuminate\Http\Request;

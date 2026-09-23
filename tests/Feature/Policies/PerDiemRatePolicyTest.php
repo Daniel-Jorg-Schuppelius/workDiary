@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Policies;
 
-use App\Models\{PerDiemRate, User};
+use App\Models\PerDiemRate;
+use App\Models\Platform\User;
 use App\Policies\PerDiemRatePolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;

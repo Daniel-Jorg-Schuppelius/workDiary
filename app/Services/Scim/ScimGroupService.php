@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Scim;
 
-use App\Models\{Organization, ScimGroup, Team, User};
-use App\Services\SqidEncoder;
+use App\Models\Auth\ScimGroup;
+use App\Models\Platform\{Organization, Team, User};
+use App\Support\SqidEncoder;
 
 /**
  * Provisioning-Logik für den SCIM-2.0-Gruppenendpunkt (Feature 057, MVP-121 →

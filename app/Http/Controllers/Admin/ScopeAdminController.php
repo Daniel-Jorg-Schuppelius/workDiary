@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\User\{Permission, UserRole};
 use App\Http\Controllers\Controller;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Licensing\{ModuleCatalog, ModuleScopeService, ModuleStatusResolver};
 use App\Services\Navigation\StartPageResolver;
 use App\Settings\SettingScope;

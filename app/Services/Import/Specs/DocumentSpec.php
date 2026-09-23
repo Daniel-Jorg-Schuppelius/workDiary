@@ -14,7 +14,8 @@ namespace App\Services\Import\Specs;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
-use App\Models\{Document, Organization, User};
+use App\Models\Document\Document;
+use App\Models\Platform\{Organization, User};
 use App\Services\Attachments\FileAttacher;
 use App\Services\Document\DocumentService;
 use App\Services\Import\{ImportOutcome, ValidationIssue};

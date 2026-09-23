@@ -13,9 +13,9 @@
     /** @var int $year */
     /** @var \Carbon\CarbonImmutable $from */
     /** @var \Carbon\CarbonImmutable $to */
-    /** @var \Illuminate\Support\Collection<int, \App\Models\User> $users */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users */
     /** @var \Illuminate\Support\Collection<int, \App\Models\Vacation> $vacations */
-    /** @var \App\Services\HolidayService $holidays */
+    /** @var \App\Services\Calendar\HolidayService $holidays */
     /** @var bool $anonymous */
 
     // Group vacations per user_id => Collection

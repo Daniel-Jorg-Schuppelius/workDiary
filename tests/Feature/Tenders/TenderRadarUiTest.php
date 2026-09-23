@@ -14,7 +14,7 @@ namespace Tests\Feature\Tenders;
 
 use App\Enums\Applications\TenderProcedureType;
 use App\Models\Applications\ApplicationOpportunity;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Tenders\{TenderFilterProfile, TenderNotice, TenderNoticeMatch};
 use App\Services\Tenders\TenderNoticeMatcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;

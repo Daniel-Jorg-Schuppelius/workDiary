@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\JtlWawi;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\JtlWawi\Console\JtlSyncCommand;
 use App\Plugins\JtlWawi\Services\{JtlStockReader, JtlWawiInventoryProvider, JtlWawiOutboxDispatcher};
 use App\Plugins\Support\PluginServiceProviderBase;

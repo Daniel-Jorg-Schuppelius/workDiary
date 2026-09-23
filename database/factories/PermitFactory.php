@@ -11,7 +11,8 @@
 namespace Database\Factories;
 
 use App\Enums\Permit\PermitStatus;
-use App\Models\{Organization, Permit};
+use App\Models\Permit;
+use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

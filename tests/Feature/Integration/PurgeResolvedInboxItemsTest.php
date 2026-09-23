@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Integration;
 
-use App\Models\IntegrationInboxItem;
+use App\Models\Integration\IntegrationInboxItem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;

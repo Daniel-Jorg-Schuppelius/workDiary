@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Billbee;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\Billbee\Console\BillbeeSyncCommand;
 use App\Plugins\Billbee\Services\{BillbeeInventoryProvider, BillbeeStockDispatcher};
 use App\Plugins\Support\PluginServiceProviderBase;

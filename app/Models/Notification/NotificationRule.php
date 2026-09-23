@@ -12,7 +12,7 @@ namespace App\Models\Notification;
 
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use Database\Factories\NotificationRuleFactory;
+use Database\Factories\Notification\NotificationRuleFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 

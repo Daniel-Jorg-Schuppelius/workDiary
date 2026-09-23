@@ -12,7 +12,10 @@ namespace Tests\Feature\Asset;
 
 use App\Enums\Asset\{AssetClass, AssetOwnership, AssetStatus};
 use App\Exceptions\AssetValidationException;
-use App\Models\{Asset, AuditLog, Customer, Organization, User};
+use App\Models\Asset;
+use App\Models\Audit\AuditLog;
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
 use App\Services\Asset\{AssetNumberGenerator, AssetService, AssetStatusMachine};
 use App\Services\Numbering\NumberSequenceService;
 use App\Support\MorphMap;

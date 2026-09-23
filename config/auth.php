@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Models\User;
+use App\Models\Platform\User;
 
 return [
 

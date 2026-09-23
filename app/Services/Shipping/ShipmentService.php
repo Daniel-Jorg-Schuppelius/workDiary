@@ -12,7 +12,9 @@ namespace App\Services\Shipping;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Shipping\ShipmentStatus;
-use App\Models\{Attachment, CarrierConnection, ExternalReference, Shipment};
+use App\Models\Attachments\Attachment;
+use App\Models\{CarrierConnection, Shipment};
+use App\Models\Integration\ExternalReference;
 use App\Plugins\Contracts\ShippingProvider;
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Support\Facades\Storage;

@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Recipes;
 
 use App\Enums\Classification\ClassificationDomain;
-use App\Models\{Article, ArticleUnit, Organization, ProcedureTemplate, ProcedureTemplateVersion};
+use App\Models\{Article, ArticleUnit, ProcedureTemplate, ProcedureTemplateVersion};
+use App\Models\Platform\Organization;
 use App\Models\Recipes\{RecipeMenu, RecipeProfile};
 use App\Services\Manufacturing\{BomResolver, MaterialDemandCalculator};
 use CommonToolkit\ValueObjects\Money;

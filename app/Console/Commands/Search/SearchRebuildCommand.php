@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Search;
 
 use App\Console\Commands\Search\Concerns\SelectsSearchScope;
-use App\Models\SearchDocument;
+use App\Models\Search\SearchDocument;
 use App\Services\Search\Indexing\{SearchContext, SearchIndexer, SearchSourceRegistry};
 use App\Services\Search\SearchVocabulary;
 use Illuminate\Console\Command;

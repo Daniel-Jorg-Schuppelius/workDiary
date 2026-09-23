@@ -12,7 +12,9 @@ namespace Tests\Feature\Helpdesk;
 
 use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Enums\User\Permission;
-use App\Models\{AuditLog, Organization, ServiceQueue, ServiceTicket, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{Organization, User};
+use App\Models\{ServiceQueue, ServiceTicket};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;

@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Plugins\Zammad\Services;
 
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
-use App\Models\{ExternalReference, IntegrationOutboxEntry, TimeEntry, ZammadConnection};
+use App\Models\Integration\{ExternalReference, IntegrationOutboxEntry};
+use App\Models\Plugins\Zammad\ZammadConnection;
+use App\Models\TimeEntry;
 use App\Plugins\Zammad\Contracts\ZammadGatewayFactory;
 use App\Plugins\Zammad\ZammadPlugin;
 use RuntimeException;

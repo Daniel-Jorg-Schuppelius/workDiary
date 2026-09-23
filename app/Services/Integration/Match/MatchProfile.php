@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Integration\Match;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\{Builder, Model};
 
 /**

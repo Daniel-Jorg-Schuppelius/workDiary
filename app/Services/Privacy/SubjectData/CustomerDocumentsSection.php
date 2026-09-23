@@ -12,7 +12,10 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy\SubjectData;
 
-use App\Models\{Customer, Invoice, Quote, User};
+use App\Models\Customer\Customer;
+use App\Models\Invoice;
+use App\Models\Platform\User;
+use App\Models\Sales\Quote;
 use Illuminate\Database\Eloquent\Model;
 
 /** Beleg- und Kontoverknüpfungen des Kunden — Zähler + Zeitraum je Familie. */

@@ -56,7 +56,7 @@ final class RemoteCalendarEvent implements RemoteCalendarItem {
 
     /**
      * Änderungs-Fingerprint für das idempotente Publish (Hash-Vergleich in
-     * der {@see \App\Models\ExternalReference}-Payload — CalDAV-Muster).
+     * der {@see \App\Models\Integration\ExternalReference}-Payload — CalDAV-Muster).
      */
     public function fingerprint(): string {
         return CryptoHelper::hash(JsonHelper::encode([

@@ -12,7 +12,7 @@ namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\{LearningEnrollmentStatus, LearningSubmissionStatus, LearningUnitKind};
 use App\Models\Learning\{LearningAssignment, LearningEnrollment, LearningSubmission};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningAssignmentService, LearningCourseService, LearningEnrollmentService, LearningGradebookService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

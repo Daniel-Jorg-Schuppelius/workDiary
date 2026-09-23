@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\JtlWawi\Services;
 
-use App\Models\{IntegrationInboxItem, JtlConnection};
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Plugins\JtlWawi\JtlConnection;
 use App\Plugins\JtlWawi\Api\JtlGatewayFactory;
 use App\Plugins\JtlWawi\JtlWawiPlugin;
 

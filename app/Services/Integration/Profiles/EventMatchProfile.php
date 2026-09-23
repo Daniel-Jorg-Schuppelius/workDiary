@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Integration\Profiles;
 
-use App\Models\{Event, Organization};
+use App\Models\Calendar\Event;
+use App\Models\Platform\Organization;
 use App\Services\Integration\Match\{AbstractMatchProfile, ExactField, FuzzyField, MatchStrategy};
 use Illuminate\Database\Eloquent\{Builder, Model};
 

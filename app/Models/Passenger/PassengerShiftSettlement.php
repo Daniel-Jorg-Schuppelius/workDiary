@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Models\Passenger;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\{User, Vehicle};
+use App\Models\Platform\User;
+use App\Models\Vehicle;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;

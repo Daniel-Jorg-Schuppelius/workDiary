@@ -15,7 +15,7 @@ namespace Tests\Feature\Ai;
 use App\Enums\Ai\AiConnectionStatus;
 use App\Enums\User\Permission;
 use App\Models\Ai\{AiCapabilitySetting, AiMemoryEntry, AiProviderConnection};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{RegistersAiCapabilities, WithOrganization};
 use Tests\Support\FakeAiProviderFactory;

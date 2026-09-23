@@ -8,11 +8,12 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Platform;
 
 use App\Services\Routing\{GeocodingException, NominatimGeocoder};
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Arr;
+use App\Http\Controllers\Controller;
 
 /**
  * Internal AJAX endpoint used by Blade forms (TravelLog/Customer) to

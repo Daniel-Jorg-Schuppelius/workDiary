@@ -12,7 +12,7 @@ namespace App\Services\Isms;
 
 use App\Enums\Isms\AuditStatus;
 use App\Models\Isms\{IsmsAudit, IsmsScope};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Concerns\AssignsSequentialNo;
 use App\Services\Isms\Concerns\{AssertsIsmsTransition, ResolvesAuditReferences};
 use Illuminate\Support\Facades\DB;

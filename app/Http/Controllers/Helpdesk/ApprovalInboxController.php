@@ -14,7 +14,9 @@ namespace App\Http\Controllers\Helpdesk;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\{Approval, Change, ServiceRequest, User};
+use App\Models\Approval\Approval;
+use App\Models\{Change, ServiceRequest};
+use App\Models\Platform\User;
 use App\Services\ServiceTicket\{ChangeService, ServiceRequestService};
 use App\Support\{ErrorText, Sqid};
 use App\Support\MorphMap;

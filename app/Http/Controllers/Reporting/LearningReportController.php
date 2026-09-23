@@ -46,7 +46,7 @@ class LearningReportController extends Controller {
         $organization = $this->currentOrganization();
 
         // Trainer-Scoping (MVP-786): mit Org-Schalter zählen nur die eigenen Kurse.
-        /** @var \App\Models\User $user */
+        /** @var \App\Models\Platform\User $user */
         $user = \Illuminate\Support\Facades\Auth::user();
         $courseIds = \App\Models\Learning\LearningCourse::scopingEnabled($organization) && ! $user->isAdmin() && ! $user->can(Permission::LearningManage->value)
             ? array_values(array_map('intval', \App\Models\Learning\LearningCourse::query()->where('organization_id', $organization->id)->visibleTo($user)->pluck('id')->all()))

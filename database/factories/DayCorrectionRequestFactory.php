@@ -11,7 +11,8 @@
 namespace Database\Factories;
 
 use App\Enums\TimeApproval\DayCorrectionStatus;
-use App\Models\{DayClosure, DayCorrectionRequest, User};
+use App\Models\{DayClosure, DayCorrectionRequest};
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

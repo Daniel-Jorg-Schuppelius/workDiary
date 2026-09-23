@@ -11,7 +11,9 @@
 namespace Tests\Feature\TimeApproval;
 
 use App\Enums\TimeApproval\{MonthClosureStatus, TimeCorrectionStatus};
-use App\Models\{MonthClosure, Project, TimeEntry, User};
+use App\Models\{MonthClosure, TimeEntry};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Services\TimeApproval\{TimeCorrectionService, TimeCorrectionWorkflowException};
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;

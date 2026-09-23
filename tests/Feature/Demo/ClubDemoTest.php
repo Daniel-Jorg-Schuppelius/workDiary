@@ -16,7 +16,7 @@ use App\Enums\Club\{ClubAttendanceSheetStatus, ClubEntryStatus, ClubEventRoleKin
 use App\Enums\Demo\DemoIndustry;
 use App\Models\Club\{ClubAttendanceRequirement, ClubAttendanceSheet, ClubCompetitionDetails, ClubCompetitionEntry, ClubDepartment, ClubEventRole, ClubExamCandidate, ClubFeeAccount, ClubFeeClaim, ClubFeeClaimItem, ClubFeeDunning, ClubFeePayment, ClubFeeRun, ClubGroup, ClubGroupMembership, ClubGuardian, ClubHorse, ClubHorseAssignment, ClubHorseUse, ClubMatchDetails, ClubMember, ClubPerformance, ClubResourceBooking, ClubResourceClosure, ClubSportProfile, ClubSquadMember};
 use App\Models\Finance\PaymentRun;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Club\{ClubCompetitionService, ClubGradingService, ClubStarterPackService};
 use App\Services\Demo\DemoSeederService;
 use Carbon\CarbonImmutable;

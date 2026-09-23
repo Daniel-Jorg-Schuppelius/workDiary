@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Etsy\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\{Organization, PluginSetting};
+use App\Models\Platform\{Organization, PluginSetting};
 use App\Plugins\Etsy\EtsyPlugin;
 use App\Plugins\Etsy\Services\{EtsyLedgerImportService, EtsyReceiptImportService};
 use CommonToolkit\Helper\Data\JsonHelper;

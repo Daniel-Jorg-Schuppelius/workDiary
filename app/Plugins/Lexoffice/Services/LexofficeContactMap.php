@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Lexoffice\Services;
 
-use App\Models\{Customer, ExternalReference, Organization};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\Organization;
 use App\Models\Reselling\ResaleSubscription;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use Illuminate\Support\Collection;

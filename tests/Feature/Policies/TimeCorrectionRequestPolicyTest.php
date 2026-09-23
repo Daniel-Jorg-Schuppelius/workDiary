@@ -14,7 +14,8 @@ namespace Tests\Feature\Policies;
 
 use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Enums\User\Permission as P;
-use App\Models\{Organization, TimeCorrectionRequest, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\TimeCorrectionRequest;
 use App\Policies\TimeCorrectionRequestPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};

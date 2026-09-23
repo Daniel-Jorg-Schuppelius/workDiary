@@ -12,7 +12,8 @@ namespace Tests\Feature\Helpdesk;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\ServiceTicket\ServiceTicketStatus;
-use App\Models\{Organization, ServiceQueue, ServiceTicket, SlaContract, TicketRoutingRule, TicketRuleExecution, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\{ServiceQueue, ServiceTicket, SlaContract, TicketRoutingRule, TicketRuleExecution};
 use App\Services\ServiceTicket\{ServiceTicketService, TicketRoutingService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

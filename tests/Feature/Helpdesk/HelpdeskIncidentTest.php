@@ -11,7 +11,8 @@
 namespace Tests\Feature\Helpdesk;
 
 use App\Enums\ServiceTicket\{ServiceTicketPriority, TicketSeverity};
-use App\Models\{Organization, ServiceTicket, ServiceTicketLink, ServiceTicketMessage, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\{ServiceTicket, ServiceTicketLink, ServiceTicketMessage};
 use App\Services\ServiceTicket\TicketIncidentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -56,7 +57,7 @@ final class HelpdeskIncidentTest extends TestCase {
         $ticket = $service->classify($ticket, TicketSeverity::High, TicketSeverity::High, ServiceTicketPriority::Low, $this->agent);
         $this->assertSame(ServiceTicketPriority::Low, $ticket->priority);
         $this->assertTrue(
-            \App\Models\AuditLog::query()->where('event', 'service_ticket.priority_overridden')->exists(),
+            \App\Models\Audit\AuditLog::query()->where('event', 'service_ticket.priority_overridden')->exists(),
         );
 
         // Org-Matrix über Setting übersteuert den Default.

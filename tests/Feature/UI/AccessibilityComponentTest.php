@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\UI;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Blade, View};
 use Illuminate\Support\{MessageBag, ViewErrorBag};
@@ -198,7 +198,7 @@ class AccessibilityComponentTest extends TestCase {
         ]);
         // Ein Datensatz, damit die Tabelle (statt des Leer-Zustands ohne <thead>)
         // rendert und die scope="col"-Härtung end-to-end greift.
-        \App\Models\Customer::factory()->create([
+        \App\Models\Customer\Customer::factory()->create([
             'organization_id' => $this->organization->id,
         ]);
 

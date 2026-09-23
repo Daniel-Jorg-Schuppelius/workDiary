@@ -11,7 +11,9 @@
 namespace Tests\Feature\Automation;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\{AutomationRule, AutomationRuleRun, Expense, ExpenseCategory, User};
+use App\Models\Automation\{AutomationRule, AutomationRuleRun};
+use App\Models\{Expense, ExpenseCategory};
+use App\Models\Platform\User;
 use App\Services\Expense\ExpenseService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;

@@ -14,7 +14,7 @@ namespace App\Services\Accounting;
 
 use App\Enums\Finance\{AccountingEntryStatus, AccountingPeriodStatus};
 use App\Models\Accounting\{AccountingEntry, AccountingFiscalYear, AccountingPeriod};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\Preflight\{AccountingPreflightCheck, AccountingPreflightReport};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;

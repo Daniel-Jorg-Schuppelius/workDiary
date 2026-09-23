@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Concerns;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 
 /**
  * Mandantensperre für öffentliche, tokenbasierte Wege (Sicherheitsscan

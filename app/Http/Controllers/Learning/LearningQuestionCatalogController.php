@@ -17,7 +17,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Learning\{LearningQuestion, LearningQuestionCategory, LearningQuiz};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Rules\MaxLineLength;
 use App\Services\Learning\{LearningQuestionCatalogService, LearningQuestionEditorService};
 use App\Support\Sqid;

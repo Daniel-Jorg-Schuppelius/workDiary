@@ -10,9 +10,10 @@
 
 declare(strict_types=1);
 
-namespace App\Policies;
+namespace App\Policies\Sales;
 
-use App\Models\{Quote, User};
+use App\Models\Sales\Quote;
+use App\Models\Platform\User;
 
 /**
  * Angebote (Feature 066, MVP-170): gleiche Rechte-Basis wie Rechnungen

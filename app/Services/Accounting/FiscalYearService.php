@@ -14,7 +14,7 @@ namespace App\Services\Accounting;
 
 use App\Enums\Finance\AccountingPeriodStatus;
 use App\Models\Accounting\{AccountingFiscalYear, AccountingPeriod};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;

@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Ai\Suggestions;
 
 use App\Models\Ai\AiTextSuggestion;
-use App\Models\{Organization, Quote, QuoteItem, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\Sales\{Quote, QuoteItem};
 use App\Services\Ai\{AiInvocationService, AiMemoryService};
 use App\Services\Ai\Dto\{AiTranslationResult, TranslateRequest};
 use App\Services\Ai\Exceptions\AiException;

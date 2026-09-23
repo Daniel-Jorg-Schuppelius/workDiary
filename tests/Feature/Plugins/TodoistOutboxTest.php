@@ -12,7 +12,10 @@ namespace Tests\Feature\Plugins;
 
 use App\Enums\Integration\IntegrationOutboxStatus;
 use App\Enums\Task\{TaskPriority, TaskStatus};
-use App\Models\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry, Task, TodoistConnection, TodoistProjectLink, User};
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry};
+use App\Models\Platform\User;
+use App\Models\Plugins\Todoist\{TodoistConnection, TodoistProjectLink};
+use App\Models\Project\Task;
 use App\Plugins\Todoist\Services\{TodoistImportService, TodoistOutboxDispatcher};
 use App\Plugins\Todoist\TodoistPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -134,7 +137,7 @@ final class TodoistOutboxTest extends TestCase {
     }
 
     public function test_status_change_moves_task_to_mapped_section(): void {
-        \App\Models\TodoistSectionLink::query()->create([
+        \App\Models\Plugins\Todoist\TodoistSectionLink::query()->create([
             'organization_id' => $this->organization->id,
             'todoist_project_link_id' => $this->link->id,
             'todoist_section_id' => 'sec-progress',

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Policies\Club;
 
 use App\Models\Club\ClubAttendanceRequirement;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
 
 /** Nachweisliste (MVP-855): Anforderungen pflegt die Verwaltung, Bericht und Export sehen Register und Gruppenleitung. */

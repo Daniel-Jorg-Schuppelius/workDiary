@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Calendly\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{CalendlyWebhookDelivery, CalendlyWebhookSubscription};
+use App\Models\Plugins\Calendly\{CalendlyWebhookDelivery, CalendlyWebhookSubscription};
 use App\Plugins\Calendly\Jobs\CalendlyIngestJob;
 use App\Plugins\Support\{RecordsWebhookDeliveries, WebhookSignature};
 use Illuminate\Http\{JsonResponse, Request};

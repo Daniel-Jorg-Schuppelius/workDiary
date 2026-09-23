@@ -15,7 +15,7 @@ namespace App\Http\Requests\Club;
 use App\Enums\Club\ClubGuardianPermission;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
 

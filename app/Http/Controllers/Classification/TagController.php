@@ -8,14 +8,15 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Classification;
 
-use App\Models\Tag;
+use App\Models\Classification\Classification\Tag;
 use App\Support\{Setting, SortableQuery};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 class TagController extends Controller {
     public function index(Request $request): View {

@@ -14,7 +14,8 @@ namespace Tests\Feature\Policies;
 
 use App\Enums\TimeApproval\DayClosureStatus;
 use App\Enums\User\Permission as P;
-use App\Models\{DayClosure, Organization, User};
+use App\Models\DayClosure;
+use App\Models\Platform\{Organization, User};
 use App\Policies\DayClosurePolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};

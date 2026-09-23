@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Contracts;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 
 /**
  * Mobilitätsdaten-Bereitstellung nach § 3a PBefG / MDV (MVP-456, Konzept §9):

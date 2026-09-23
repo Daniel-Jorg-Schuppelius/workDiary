@@ -24,11 +24,11 @@
                 <div class="flex flex-wrap items-center gap-2">
                     @if ($connection)
                         <span class="badge badge-ghost badge-sm">{{ __('jtl_wawi.mode.' . $connection->mode) }}</span>
-                        @if ($connection->status === \App\Models\JtlConnection::STATUS_ACTIVE)
+                        @if ($connection->status === \App\Models\Plugins\JtlWawi\JtlConnection::STATUS_ACTIVE)
                             <span class="badge badge-success badge-sm">{{ __('jtl_wawi.status.active') }}</span>
-                        @elseif ($connection->status === \App\Models\JtlConnection::STATUS_PENDING_REGISTRATION)
+                        @elseif ($connection->status === \App\Models\Plugins\JtlWawi\JtlConnection::STATUS_PENDING_REGISTRATION)
                             <span class="badge badge-warning badge-sm">{{ __('jtl_wawi.status.pending_registration') }}</span>
-                        @elseif ($connection->status === \App\Models\JtlConnection::STATUS_BLOCKED)
+                        @elseif ($connection->status === \App\Models\Plugins\JtlWawi\JtlConnection::STATUS_BLOCKED)
                             <span class="badge badge-error badge-sm">{{ __('jtl_wawi.status.blocked') }}: {{ $connection->blocked_reason }}</span>
                         @else
                             <span class="badge badge-ghost badge-sm">{{ __('jtl_wawi.status.' . $connection->status) }}</span>
@@ -112,7 +112,7 @@
         @if ($connection && $connection->isOnPremise() && ! $connection->isActive())
             <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-3">
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('jtl_wawi.registration.heading') }}</h2>
-                @if ($connection->status === \App\Models\JtlConnection::STATUS_PENDING_REGISTRATION)
+                @if ($connection->status === \App\Models\Plugins\JtlWawi\JtlConnection::STATUS_PENDING_REGISTRATION)
                     <div class="alert alert-info text-sm">{{ __('jtl_wawi.registration.waiting') }}</div>
                     <form method="POST" action="{{ route('admin.jtl.connection.check') }}">
                         @csrf
@@ -130,7 +130,7 @@
 
         {{-- Verbindung --}}
         <form method="POST" action="{{ route('admin.jtl.connection.store') }}"
-              x-data="{ mode: @js(old('mode', $connection->mode ?? \App\Models\JtlConnection::MODE_ON_PREMISE)) }"
+              x-data="{ mode: @js(old('mode', $connection->mode ?? \App\Models\Plugins\JtlWawi\JtlConnection::MODE_ON_PREMISE)) }"
               class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-3">
             @csrf
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('jtl_wawi.connection.heading') }}</h2>

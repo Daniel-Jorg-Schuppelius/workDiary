@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Observers;
 
 use App\Jobs\ReindexSearchContextJob;
-use App\Models\{Customer, ForeignCustomer, Project};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Project\Project;
 use App\Services\Search\Indexing\SearchContext;
 use Illuminate\Database\Eloquent\Model;
 

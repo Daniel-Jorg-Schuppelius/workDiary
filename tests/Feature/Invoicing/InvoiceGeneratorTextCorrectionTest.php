@@ -12,7 +12,10 @@ namespace Tests\Feature\Invoicing;
 
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Customer, Project, TextCorrection, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{TextCorrection, User};
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Services\Invoicing\InvoiceGenerator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

@@ -10,18 +10,24 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Document;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Enums\User\Permission as P;
 use App\Models\Construction\ConstructionNotice;
-use App\Models\{InvoiceMailTemplate, ManufacturingOrder, Project, PurchaseOrder, Quote, StockDelivery};
+use App\Models\InvoiceMailTemplate;
+use App\Models\ManufacturingOrder;
+use App\Models\Project\Project;
+use App\Models\PurchaseOrder;
+use App\Models\Sales\Quote;
+use App\Models\StockDelivery;
 use App\Services\Construction\ConstructionNoticeService;
 use App\Services\Document\DocumentMailService;
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
+use App\Http\Controllers\Controller;
 
 /**
  * Generischer Belegversand (Feature 128, MVP-692): EIN Versanddialog für

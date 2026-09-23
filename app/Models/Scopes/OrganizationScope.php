@@ -10,7 +10,7 @@
 
 namespace App\Models\Scopes;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\{Builder, Model, Scope};
 
 /** @implements Scope<Model> */

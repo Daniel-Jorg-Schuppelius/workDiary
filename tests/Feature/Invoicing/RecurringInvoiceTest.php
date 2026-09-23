@@ -11,7 +11,9 @@
 namespace Tests\Feature\Invoicing;
 
 use App\Models\Contract\Contract;
-use App\Models\{Customer, Invoice, InvoiceSchedule, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\{Invoice, InvoiceSchedule};
+use App\Models\Platform\{Organization, User};
 use App\Services\Invoicing\RecurringInvoiceService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;

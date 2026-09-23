@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Metering;
 
-use App\Models\{Customer, Invoice, MeterReading};
+use App\Models\Customer\Customer;
+use App\Models\{Invoice, MeterReading};
 use App\Models\Metering\{MeterBillingAgreement, MeterBillingRun};
 use App\Services\Finance\BillingModeResolver;
 use App\Services\Invoicing\{InvoiceGenerator, TaxResolver};

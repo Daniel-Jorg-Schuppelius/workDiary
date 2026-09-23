@@ -10,9 +10,10 @@
 
 declare(strict_types=1);
 
-namespace Database\Factories;
+namespace Database\Factories\Platform;
 
-use App\Models\{Organization, TextCorrection};
+use App\Models\Platform\Organization;
+use App\Models\Platform\TextCorrection;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

@@ -8,13 +8,15 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Project;
 
-use App\Http\Requests\SaveMilestoneRequest;
-use App\Models\{Milestone, Project};
+use App\Http\Requests\Project\SaveMilestoneRequest;
+use App\Models\Project\Project\Milestone;
+use App\Models\Project\Project\Project;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 class MilestoneController extends Controller {
     public function create(Project $project): View {

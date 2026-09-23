@@ -12,10 +12,12 @@ namespace App\Http\Controllers;
 
 use App\Enums\Vacation\VacationStatus;
 use App\Http\Controllers\Concerns\{FiltersDiaryEntries, ResolvesGlobalDateRange};
+use App\Models\Classification\{EntryType, Tag};
 use App\Models\Contracts\HasTimeWindow;
-use App\Models\{DiaryEntry, EmergencyAssignment, EntryType, OnCallShift, SickLeave, Tag, User, Vacation};
+use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift, SickLeave, Vacation};
+use App\Models\Platform\User;
 use App\Services\Absence\VacationBalanceService;
-use App\Services\HolidayService;
+use App\Services\Calendar\HolidayService;
 use App\Services\UI\DateRangeContext;
 use App\Support\{SortableQuery, Sqid};
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;

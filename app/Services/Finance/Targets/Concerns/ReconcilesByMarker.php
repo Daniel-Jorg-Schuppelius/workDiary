@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Finance\Targets\Concerns;
 
-use App\Models\ExternalReference;
 use App\Models\Finance\BillingTransfer;
+use App\Models\Integration\ExternalReference;
 
 /**
  * Gemeinsame Idempotenz-/Nachweis-Bausteine der Marker-Reconciliation

@@ -10,9 +10,10 @@
 
 namespace App\Console\Commands\Billing;
 
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Services\Billing\{CustomerAccountStatementService, ExcelHistoryImporter};
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;

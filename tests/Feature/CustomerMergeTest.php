@@ -11,11 +11,15 @@
 namespace Tests\Feature;
 
 use App\Models\Billing\CustomerBillingAgreement;
-use App\Models\{Customer, CustomerMergeDismissal, ExternalReference, Project, Quote, User};
+use App\Models\Customer\{Customer, CustomerMergeDismissal};
 use App\Models\Disposal\DisposalJob;
 use App\Models\Finance\SepaMandate;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\Sales\Quote;
 use App\Plugins\Toggl\{TogglImportService, TogglPlugin};
-use App\Services\{CustomerDuplicateFinder, CustomerMergeService};
+use App\Services\Stammdaten\{CustomerDuplicateFinder, CustomerMergeService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

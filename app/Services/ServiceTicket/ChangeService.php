@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\ServiceTicket;
 
-use App\Models\{Approval, Asset, Change, ChangeTemplate, User};
+use App\Models\Approval\Approval;
+use App\Models\{Asset, Change, ChangeTemplate};
+use App\Models\Platform\User;
 use Illuminate\Support\Facades\DB;
 
 /**

@@ -10,7 +10,11 @@
 
 namespace Tests\Feature\Customers;
 
-use App\Models\{Customer, LexofficeVoucher, MaterialCostAllocation, Project, User};
+use App\Models\Customer\Customer;
+use App\Models\MaterialCostAllocation;
+use App\Models\Platform\User;
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
+use App\Models\Project\Project;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

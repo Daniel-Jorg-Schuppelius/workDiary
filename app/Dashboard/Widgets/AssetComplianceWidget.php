@@ -16,7 +16,7 @@ use App\Dashboard\Widget;
 use App\Enums\Dashboard\WidgetGroup;
 use App\Enums\User\Permission;
 use App\Models\AssetCompliance\AssetComplianceAssignment;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Support\Query\DateRange;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;

@@ -14,7 +14,7 @@ use App\Enums\Isms\{AuditStatus, CorrectiveActionStatus, FindingKind, FindingSta
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Models\Isms\{IsmsAudit, IsmsAuditFinding, IsmsCorrectiveAction, IsmsScope};
 use App\Models\Notification\NotificationRule;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Isms\AuditService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;

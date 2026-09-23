@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Contracts\Inventory\ExternalInventoryDispatcher;
-use App\Services\AbstractPluginDispatcherResolver;
+use App\Services\Integration\AbstractPluginDispatcherResolver;
 
 /**
  * Registry der externen Bestands-Dispatcher (Feature 048, MVP-072). Muss als

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Lexoffice\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\LexofficeWebhookDelivery;
+use App\Models\Plugins\Lexoffice\LexofficeWebhookDelivery;
 use App\Plugins\Lexoffice\Jobs\{SyncContactsJob, SyncVouchersJob};
 use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Plugins\Support\{RecordsWebhookDeliveries, WebhookSignature};

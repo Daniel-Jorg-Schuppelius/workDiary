@@ -8,10 +8,12 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Platform;
 
 use App\Enums\User\Permission;
-use App\Models\{AuditLog, OnboardingProgress, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\OnboardingProgress;
+use App\Models\Platform\User;
 use App\Services\Onboarding\OnboardingChecklistResolver;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
@@ -19,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Gate, Route};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
+use App\Http\Controllers\Controller;
 
 class OnboardingController extends Controller {
     /** @var list<string> */

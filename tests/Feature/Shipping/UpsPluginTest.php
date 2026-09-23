@@ -12,7 +12,8 @@ namespace Tests\Feature\Shipping;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2Token;
 use App\Enums\Shipping\ShipmentStatus;
-use App\Models\{CarrierConnection, Organization, Shipment};
+use App\Models\{CarrierConnection, Shipment};
+use App\Models\Platform\Organization;
 use App\Plugins\Contracts\{PluginCapability, ShippingProvider};
 use App\Plugins\PluginDiscovery;
 use App\Plugins\Ups\UpsPlugin;

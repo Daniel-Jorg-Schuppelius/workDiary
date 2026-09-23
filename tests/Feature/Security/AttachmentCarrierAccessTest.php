@@ -11,7 +11,9 @@
 namespace Tests\Feature\Security;
 
 use App\Enums\ServiceTicket\{ServiceTicketStatus, TicketMessageKind};
-use App\Models\{Attachment, ServiceTicket, ServiceTicketMessage, User};
+use App\Models\Attachments\Attachment;
+use App\Models\Platform\User;
+use App\Models\{ServiceTicket, ServiceTicketMessage};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Spatie\Permission\PermissionRegistrar;

@@ -11,7 +11,8 @@
 namespace App\Http\Controllers\CustomerPortal;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Document, DocumentVersion, User};
+use App\Models\Document\{Document, DocumentVersion};
+use App\Models\Platform\User;
 use Illuminate\Support\Facades\{Auth, Storage};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;

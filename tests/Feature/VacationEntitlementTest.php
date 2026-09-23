@@ -11,7 +11,8 @@
 namespace Tests\Feature;
 
 use App\Enums\Vacation\{VacationStatus, VacationType};
-use App\Models\{Organization, User, Vacation, VacationEntitlement};
+use App\Models\Platform\{Organization, User};
+use App\Models\{Vacation, VacationEntitlement};
 use App\Services\Absence\VacationBalanceService;
 use App\Support\Sqid;
 use Carbon\Carbon;

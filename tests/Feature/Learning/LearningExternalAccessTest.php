@@ -11,8 +11,9 @@
 namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\LearningEnrollmentStatus;
-use App\Models\{ExternalParticipant, User};
+use App\Models\Communication\ExternalParticipant;
 use App\Models\Learning\{LearningAccessToken, LearningCourse, LearningEnrollment};
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningAccessService, LearningCourseService, LearningEnrollmentService};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;

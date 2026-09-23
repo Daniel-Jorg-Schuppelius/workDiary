@@ -108,7 +108,7 @@
                 <td class="max-w-md truncate">
                     {{ $entry->purpose }}
                     @foreach ($entry->attachments as $receipt)
-                        <a href="{{ \App\Http\Controllers\AttachmentController::downloadUrl($receipt) }}"
+                        <a href="{{ \App\Http\Controllers\Attachments\AttachmentController::downloadUrl($receipt) }}"
                            class="link link-hover align-middle"
                            title="{{ __('Beleg: :name', ['name' => $receipt->original_name]) }}">
                             <x-icon name="attach_file" class="text-muted" />

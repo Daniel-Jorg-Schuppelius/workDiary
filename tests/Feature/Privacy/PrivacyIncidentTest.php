@@ -11,7 +11,8 @@
 namespace Tests\Feature\Privacy;
 
 use App\Enums\Privacy\{ControllerRole, IncidentStatus, IncidentType};
-use App\Models\{Customer, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\{Dpia, Incident, ProcessingActivity};
 use App\Services\Privacy\{DataProtectionPermissions, IncidentService, PrivacyDeadlineService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

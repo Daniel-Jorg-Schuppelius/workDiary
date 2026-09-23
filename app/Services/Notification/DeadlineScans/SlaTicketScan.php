@@ -121,17 +121,17 @@ class SlaTicketScan extends AbstractDeadlineScan {
         return $sent;
     }
 
-    private function resolveEscalationRecipient(ServiceTicket $ticket, string $notify): ?\App\Models\User {
+    private function resolveEscalationRecipient(ServiceTicket $ticket, string $notify): ?\App\Models\Platform\User {
         if ($notify === '') {
             return $ticket->assignedTo;
         }
         if (ctype_digit($notify)) {
-            return \App\Models\User::query()->withoutGlobalScopes()
+            return \App\Models\Platform\User::query()->withoutGlobalScopes()
                 ->where('organization_id', $ticket->organization_id)
                 ->find((int) $notify);
         }
 
-        return \App\Models\User::query()->withoutGlobalScopes()
+        return \App\Models\Platform\User::query()->withoutGlobalScopes()
             ->where('organization_id', $ticket->organization_id)
             ->whereNull('deactivated_at')
             ->role($notify)

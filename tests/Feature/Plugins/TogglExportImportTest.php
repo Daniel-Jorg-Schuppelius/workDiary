@@ -11,9 +11,13 @@
 namespace Tests\Feature\Plugins;
 
 use App\Enums\Project\ProjectStatus;
-use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, Project, TimeEntry, User};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Integration\{ExternalReference, ExternalReferenceAlias};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Plugins\Toggl\TogglExportImporter;
-use App\Services\{CustomerMergeService, ProjectMergeService};
+use App\Services\Stammdaten\{CustomerMergeService, ProjectMergeService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -481,7 +485,7 @@ class TogglExportImportTest extends TestCase {
 
     public function test_single_mode_books_configured_default_user_not_owner(): void {
         $default = User::factory()->create(['organization_id' => $this->organization->id, 'email' => 'standard@example.com']);
-        \App\Models\PluginSetting::query()->create([
+        \App\Models\Platform\PluginSetting::query()->create([
             'organization_id' => $this->organization->id,
             'plugin_id' => \App\Plugins\Toggl\TogglPlugin::ID,
             'enabled' => true,

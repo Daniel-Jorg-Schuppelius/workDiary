@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Models\{User, UserDashboardWidget};
+use App\Models\Platform\{User, UserDashboardWidget};
 use App\Services\Attendance\AttendanceClockService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

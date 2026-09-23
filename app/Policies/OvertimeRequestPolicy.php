@@ -12,7 +12,8 @@ namespace App\Policies;
 
 use App\Enums\TimeApproval\OvertimeRequestStatus;
 use App\Enums\User\Permission as P;
-use App\Models\{OvertimeRequest, User};
+use App\Models\OvertimeRequest;
+use App\Models\Platform\User;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 /**

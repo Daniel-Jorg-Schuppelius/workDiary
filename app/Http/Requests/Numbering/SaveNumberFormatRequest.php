@@ -8,10 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Numbering;
 
 use App\Enums\Numbering\NumberScope;
 use Illuminate\Validation\Rule;
+use App\Http\Requests\BaseFormRequest;
 
 class SaveNumberFormatRequest extends BaseFormRequest {
     /** @return array<string, array<int, mixed>> */

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Integration;
 
-use App\Models\IntegrationInboxItem;
+use App\Models\Integration\IntegrationInboxItem;
 use Illuminate\Database\Eloquent\Model;
 
 /**

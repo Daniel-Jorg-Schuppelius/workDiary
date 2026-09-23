@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Schedule;
 
 use App\Enums\Shift\AvailabilityKind;
-use App\Models\{AvailabilityWindow, DesiredShift, ScheduledShift};
+use App\Models\Calendar\AvailabilityWindow;
+use App\Models\{DesiredShift, ScheduledShift};
 use Illuminate\Support\Collection;
 
 /**

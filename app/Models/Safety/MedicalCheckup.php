@@ -12,7 +12,7 @@ namespace App\Models\Safety;
 
 use App\Enums\Safety\MedicalCheckupKind;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use Database\Factories\Safety\MedicalCheckupFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

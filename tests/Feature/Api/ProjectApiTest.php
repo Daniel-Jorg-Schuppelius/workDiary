@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Api;
 
 use App\Enums\Project\ProjectStatus;
-use App\Models\{Project, User};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;

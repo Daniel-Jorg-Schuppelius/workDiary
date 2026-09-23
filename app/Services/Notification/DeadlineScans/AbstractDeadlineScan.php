@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Notification\DeadlineScans;
 
 use App\Enums\Notification\NotificationEvent;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Notification\NotificationDispatcher;
 use Closure;
 use Illuminate\Database\Eloquent\Model;

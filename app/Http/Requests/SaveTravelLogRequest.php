@@ -20,9 +20,9 @@ class SaveTravelLogRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'project_id' => \App\Models\Project::class,
-        'task_id' => \App\Models\Task::class,
-        'customer_id' => \App\Models\Customer::class,
+        'project_id' => \App\Models\Project\Project::class,
+        'task_id' => \App\Models\Project\Task::class,
+        'customer_id' => \App\Models\Customer\Customer::class,
         'attendance_id' => \App\Models\Attendance::class,
         'vehicle_id' => \App\Models\Vehicle::class,
         'corrects_travel_log_id' => \App\Models\TravelLog::class,

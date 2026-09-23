@@ -11,7 +11,13 @@
 namespace Tests\Feature\Timeline;
 
 use App\Enums\Timesheet\TimesheetStatus;
-use App\Models\{Attachment, Comment, CommunicationNote, Customer, DiaryEntry, Document, MaterialUsage, OpenIssue, Project, Protocol, TimeEntry, Timesheet, User};
+use App\Models\Attachments\Attachment;
+use App\Models\Communication\{Comment, CommunicationNote};
+use App\Models\Customer\Customer;
+use App\Models\{DiaryEntry, MaterialUsage, OpenIssue, Protocol, TimeEntry, Timesheet};
+use App\Models\Document\Document;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;

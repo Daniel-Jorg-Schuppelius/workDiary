@@ -16,7 +16,9 @@ use App\Enums\Import\{ImportEntity, ImportRunState};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessCsvImportJob;
-use App\Models\{AuditLog, ImportRun, ImportRunError, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Integration\{ImportRun, ImportRunError};
+use App\Models\Platform\User;
 use App\Services\Import\{CsvPreflightAnalyzer, DocumentZipImportService};
 use App\Support\MorphMap;
 use App\Support\Toolkit\CsvFacade;
@@ -228,13 +230,13 @@ class ImportController extends Controller {
         $isUserMapping = $pendingColumn === 'user_email';
 
         $tagOptions = $hasPending && ! $isUserMapping
-            ? \App\Models\Tag::query()->where('organization_id', $import->organization_id)->orderBy('name')->get(['id', 'name'])
+            ? \App\Models\Classification\Tag::query()->where('organization_id', $import->organization_id)->orderBy('name')->get(['id', 'name'])
             : collect();
         // Für x-user-select: Sqid als Wert, Name + E-Mail als Label (die
         // Adresse ist hier das Unterscheidungsmerkmal).
         $userOptions = $isUserMapping
-            ? \App\Models\User::query()->where('organization_id', $import->organization_id)->orderBy('name')->get(['id', 'name', 'email'])
-                ->map(fn (\App\Models\User $u): array => ['sqid' => $u->sqid, 'label' => $u->name . ' (' . $u->email . ')'])
+            ? \App\Models\Platform\User::query()->where('organization_id', $import->organization_id)->orderBy('name')->get(['id', 'name', 'email'])
+                ->map(fn (\App\Models\Platform\User $u): array => ['sqid' => $u->sqid, 'label' => $u->name . ' (' . $u->email . ')'])
                 ->all()
             : [];
 
@@ -287,8 +289,8 @@ class ImportController extends Controller {
 
         foreach ($data['mappings'] as $entry) {
             $value = (string) $entry['value'];
-            $normalized = \App\Models\ImportValueMapping::normalize($value);
-            if (! $pending->contains(fn (string $p): bool => \App\Models\ImportValueMapping::normalize($p) === $normalized)) {
+            $normalized = \App\Models\Integration\ImportValueMapping::normalize($value);
+            if (! $pending->contains(fn (string $p): bool => \App\Models\Integration\ImportValueMapping::normalize($p) === $normalized)) {
                 continue; // nur offene Werte dieses Laufs
             }
             if ($isUserMapping && ! in_array($entry['action'], ['user', 'ignore'], true)) {
@@ -298,41 +300,41 @@ class ImportController extends Controller {
             $tagId = null;
             $classificationId = null;
             $userId = null;
-            $kind = \App\Models\ImportValueMapping::KIND_IGNORE;
+            $kind = \App\Models\Integration\ImportValueMapping::KIND_IGNORE;
             if ($entry['action'] === 'user') {
                 if (! $isUserMapping) {
                     continue;
                 }
-                $user = \App\Models\User::query()
+                $user = \App\Models\Platform\User::query()
                     ->where('organization_id', $import->organization_id)
-                    ->whereKey(\App\Support\Sqid::decodeOrNumeric(\App\Models\User::class, $entry['user_id'] ?? null) ?? 0)
+                    ->whereKey(\App\Support\Sqid::decodeOrNumeric(\App\Models\Platform\User::class, $entry['user_id'] ?? null) ?? 0)
                     ->first();
                 if ($user === null) {
                     continue;
                 }
                 $userId = $user->id;
-                $kind = \App\Models\ImportValueMapping::KIND_USER;
+                $kind = \App\Models\Integration\ImportValueMapping::KIND_USER;
             } elseif ($entry['action'] === 'new') {
-                $tagId = \App\Models\Tag::findOrCreateByName($value, is_int(Auth::id()) ? Auth::id() : null)->id;
-                $kind = \App\Models\ImportValueMapping::KIND_TAG;
+                $tagId = \App\Models\Classification\Tag::findOrCreateByName($value, is_int(Auth::id()) ? Auth::id() : null)->id;
+                $kind = \App\Models\Integration\ImportValueMapping::KIND_TAG;
             } elseif ($entry['action'] === 'tag') {
-                $tag = \App\Models\Tag::query()
+                $tag = \App\Models\Classification\Tag::query()
                     ->where('organization_id', $import->organization_id)
-                    ->whereKey(\App\Support\Sqid::decodeOrNumeric(\App\Models\Tag::class, $entry['tag_id'] ?? null) ?? 0)
+                    ->whereKey(\App\Support\Sqid::decodeOrNumeric(\App\Models\Classification\Tag::class, $entry['tag_id'] ?? null) ?? 0)
                     ->first();
                 if ($tag === null) {
                     continue;
                 }
                 $tagId = $tag->id;
-                $kind = \App\Models\ImportValueMapping::KIND_TAG;
+                $kind = \App\Models\Integration\ImportValueMapping::KIND_TAG;
             } elseif ($entry['action'] === 'classification') {
                 // A13: nur für Entitäten, deren Zielmodell Klassifikationen
                 // trägt; org-gescoped (eigene + Plattform-Defaults, aktiv).
                 if (! $import->entity->supportsClassifications()) {
                     continue;
                 }
-                $classification = \App\Models\Classification::query()
-                    ->whereKey(\App\Support\Sqid::decodeOrNumeric(\App\Models\Classification::class, $entry['classification_id'] ?? null) ?? 0)
+                $classification = \App\Models\Classification\Classification::query()
+                    ->whereKey(\App\Support\Sqid::decodeOrNumeric(\App\Models\Classification\Classification::class, $entry['classification_id'] ?? null) ?? 0)
                     ->where('active', true)
                     ->where(fn ($q) => $q->whereNull('organization_id')->orWhere('organization_id', $import->organization_id))
                     ->first();
@@ -340,10 +342,10 @@ class ImportController extends Controller {
                     continue;
                 }
                 $classificationId = $classification->id;
-                $kind = \App\Models\ImportValueMapping::KIND_CLASSIFICATION;
+                $kind = \App\Models\Integration\ImportValueMapping::KIND_CLASSIFICATION;
             }
 
-            \App\Models\ImportValueMapping::query()->updateOrCreate(
+            \App\Models\Integration\ImportValueMapping::query()->updateOrCreate(
                 [
                     'organization_id' => $import->organization_id,
                     'entity' => $import->entity->value,
@@ -352,7 +354,7 @@ class ImportController extends Controller {
                 ['target_kind' => $kind, 'tag_id' => $tagId, 'classification_id' => $classificationId, 'user_id' => $userId],
             );
 
-            $pending = $pending->reject(fn (string $p): bool => \App\Models\ImportValueMapping::normalize($p) === $normalized)->values();
+            $pending = $pending->reject(fn (string $p): bool => \App\Models\Integration\ImportValueMapping::normalize($p) === $normalized)->values();
         }
 
         $import->unresolved_values = $pending->isEmpty() ? null : [$pendingColumn => $pending->all()];

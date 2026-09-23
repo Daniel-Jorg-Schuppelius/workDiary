@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\{SsoConnection, User};
+use App\Models\Auth\SsoConnection;
+use App\Models\Platform\User;
 use App\Support\Auth\RecentAuthentication;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Hash, RateLimiter};

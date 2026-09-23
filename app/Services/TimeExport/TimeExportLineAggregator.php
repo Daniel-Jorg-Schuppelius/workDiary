@@ -11,11 +11,12 @@
 namespace App\Services\TimeExport;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Attendance, OnCallShift, SickLeave, TimeEntry, TimeExport, TimeExportLine, User, Vacation};
+use App\Models\{Attendance, OnCallShift, SickLeave, TimeEntry, TimeExport, TimeExportLine, Vacation};
+use App\Models\Platform\User;
 use App\Models\Scopes\OrganizationScope;
 use App\Models\Surcharge\SurchargeRule;
+use App\Services\Calendar\HolidayService;
 use App\Services\Flextime\FlexCalculator;
-use App\Services\HolidayService;
 use App\Services\Surcharge\TimeRuleEngine;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;

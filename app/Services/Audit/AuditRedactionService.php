@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Audit;
 
-use App\Models\{AuditLog, AuditRedaction, User};
+use App\Models\Audit\{AuditLog, AuditRedaction};
 use App\Models\Concerns\HashChainable;
+use App\Models\Platform\User;
 use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Facades\DB;

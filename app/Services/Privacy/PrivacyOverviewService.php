@@ -11,7 +11,8 @@
 namespace App\Services\Privacy;
 
 use App\Enums\User\Permission;
-use App\Models\{AuditLog, Organization, PluginSetting, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{Organization, PluginSetting, User};
 use App\Plugins\PluginManager;
 use App\Services\Security\SessionManagementService;
 use App\Support\MorphMap;

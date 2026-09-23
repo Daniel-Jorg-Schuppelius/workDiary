@@ -8,7 +8,7 @@
 --}}
 {{-- Dialog: Rollen- und Gruppen-Zuweisung für ein Org-Mitglied. --}}
 @php
-    /** @var \App\Models\User $member */
+    /** @var \App\Models\Platform\User $member */
     /** @var \Illuminate\Support\Collection $roles */
     /** @var \Illuminate\Support\Collection $groups */
     /** @var array<int, int> $assignedRoles */

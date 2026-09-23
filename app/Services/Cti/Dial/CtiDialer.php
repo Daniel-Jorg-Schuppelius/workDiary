@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Cti\Dial;
 
-use App\Models\CtiConnection;
+use App\Models\Cti\CtiConnection;
 
 /**
  * Startet einen ausgehenden Anruf über die Telefonanlage (Click-to-Dial,

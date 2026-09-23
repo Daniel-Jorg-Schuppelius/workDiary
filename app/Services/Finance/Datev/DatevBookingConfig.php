@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Finance\Datev;
 
 use App\Enums\Finance\ChartOfAccounts;
-use App\Models\{Customer, Expense, Organization};
+use App\Models\Customer\Customer;
+use App\Models\Expense;
+use App\Models\Platform\Organization;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Decimal;
 

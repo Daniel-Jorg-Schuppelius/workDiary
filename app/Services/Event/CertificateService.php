@@ -11,7 +11,8 @@
 namespace App\Services\Event;
 
 use App\Enums\Event\ParticipantStatus;
-use App\Models\{Event, EventParticipant, User};
+use App\Models\Calendar\{Event, EventParticipant};
+use App\Models\Platform\User;
 use App\Notifications\Event\CertificateExpiryNotification;
 use App\Support\Query\DateRange;
 use Illuminate\Support\{Carbon, Collection};

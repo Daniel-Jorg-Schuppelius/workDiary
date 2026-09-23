@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Mail;
 
-use App\Models\EmailConnection;
+use App\Models\Mail\EmailConnection;
 use Illuminate\Support\{Carbon, Str};
 
 /**

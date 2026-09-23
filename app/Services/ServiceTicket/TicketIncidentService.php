@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\ServiceTicket;
 
 use App\Enums\ServiceTicket\{ServiceTicketPriority, TicketSeverity};
-use App\Models\{Organization, ServiceTicket, ServiceTicketLink, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\{ServiceTicket, ServiceTicketLink};
 use App\Support\Setting;
 use Illuminate\Database\Eloquent\Model;
 

@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Platform;
 
 use App\Casts\{ByteSizeCast, IpAddressCast};
 use Illuminate\Database\Eloquent\Model;

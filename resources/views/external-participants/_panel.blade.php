@@ -13,7 +13,7 @@
 --}}
 
 @php
-    use App\Models\ExternalParticipant;
+    use App\Models\Communication\ExternalParticipant;
     $canManage = auth()->check() && \Illuminate\Support\Facades\Gate::allows('manageForSubject', [ExternalParticipant::class, $subject]);
     $participants = $subject->relationLoaded('externalParticipants')
         ? $subject->externalParticipants

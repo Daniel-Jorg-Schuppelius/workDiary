@@ -15,7 +15,7 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('ideas.subtitle')">
     <x-slot:actions>
-        @can('create', \App\Models\IdeaMap::class)
+        @can('create', \App\Models\Ideas\IdeaMap::class)
             <button type="button" class="btn btn-sm btn-ghost gap-1"
                     data-open-dialog="ideas-import-dialog">
                 <x-icon name="upload_file" class="text-base" />
@@ -112,7 +112,7 @@
     @endif
 </x-index-page>
 
-@can('create', \App\Models\IdeaMap::class)
+@can('create', \App\Models\Ideas\IdeaMap::class)
     {{-- Import FreeMind/OPML (MVP-138): eigener Upload-Dialog, XXE-gehärtet serverseitig --}}
     <x-modal id="ideas-import-dialog" :embedded="false" icon="upload_file"
              :eyebrow="__('ideas.title.index')" :title="__('ideas.import.title')"

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\SevDesk\Console;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\SevDesk\Services\SevDeskVoucherPullService;
 use Illuminate\Console\Command;
 use Throwable;

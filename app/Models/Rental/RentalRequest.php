@@ -13,15 +13,17 @@ declare(strict_types=1);
 namespace App\Models\Rental;
 
 use App\Enums\Rental\RentalRequestStatus;
-use App\Models\{Asset, Customer, User};
+use App\Models\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
  * Verleih-Anfrage aus dem Kundenportal (Feature 073, MVP-714) — zweiphasig
- * wie {@see \App\Models\AppointmentRequest}: der Kunde fragt Gerät ODER
+ * wie {@see \App\Models\Calendar\AppointmentRequest}: der Kunde fragt Gerät ODER
  * Gerätegruppe für einen Zeitraum an, erst die interne Annahme erzeugt
  * Verleihakte (Entwurf) und Vormerkung über die bestehenden Schreibstellen.
  *

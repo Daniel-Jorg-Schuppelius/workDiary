@@ -11,7 +11,8 @@
 namespace Tests\Feature\Sso;
 
 use App\Enums\Auth\SsoProtocol;
-use App\Models\{Organization, SsoConnection, User};
+use App\Models\Auth\SsoConnection;
+use App\Models\Platform\{Organization, User};
 use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
@@ -164,7 +165,7 @@ final class SsoAdminTest extends TestCase {
             'issuer' => 'https://idp.example',
             'client_id' => 'client-1',
         ]);
-        \App\Models\SsoIdentity::query()->create([
+        \App\Models\Auth\SsoIdentity::query()->create([
             'sso_connection_id' => $connection->id,
             'user_id' => $this->admin->id,
             'subject' => 'subject-1',

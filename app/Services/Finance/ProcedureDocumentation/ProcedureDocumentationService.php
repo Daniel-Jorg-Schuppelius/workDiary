@@ -15,7 +15,7 @@ namespace App\Services\Finance\ProcedureDocumentation;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Enums\Finance\ProcedureDocumentationStatus;
 use App\Models\Finance\ProcedureDocumentation;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\{AssertsStatusTransition, AssignsSequentialNo};
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 use CommonToolkit\Helper\Data\CryptoHelper;

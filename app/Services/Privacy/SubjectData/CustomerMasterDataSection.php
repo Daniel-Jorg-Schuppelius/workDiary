@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy\SubjectData;
 
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use Illuminate\Database\Eloquent\Model;
 
 /** Kunden-Stammdaten inkl. Ansprechpartnerliste und Bankverbindung der Kundenzeile. */

@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Models\Rental;
 
 use App\Enums\Rental\{RentalCondition, RentalReturnFollowUp};
-use App\Models\{Asset, User};
+use App\Models\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany};
 

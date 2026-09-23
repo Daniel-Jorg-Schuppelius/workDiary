@@ -11,7 +11,11 @@
 namespace App\Plugins\Lexoffice;
 
 use APIToolkit\API\Authentication\BearerAuthentication;
-use App\Models\{Customer, ExternalReference, LexofficeVoucher, Organization, Supplier};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
+use App\Models\Supplier;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use App\Support\Billing\VoucherTypes;
 use Illuminate\Support\Carbon;

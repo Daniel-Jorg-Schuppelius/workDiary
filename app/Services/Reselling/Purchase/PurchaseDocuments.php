@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Purchase;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Models\Reselling\ResalePurchaseEntry;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;

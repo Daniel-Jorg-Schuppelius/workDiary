@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Operations;
 
-use App\Models\{BackupHeartbeat, OperationsTask, RestoreTest, User};
+use App\Models\Platform\{BackupHeartbeat, RestoreTest, User};
+use App\Models\Project\OperationsTask;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;

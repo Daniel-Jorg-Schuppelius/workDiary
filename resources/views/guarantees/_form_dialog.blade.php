@@ -74,7 +74,7 @@
             <select id="g-form-customer" name="customer_id" class="select select-bordered w-full">
                 <option value="">—</option>
                 @foreach ($customers as $c)
-                    <option value="{{ $c->sqid }}" @selected(old('customer_id', $guarantee?->customer_id !== null ? \App\Support\Sqid::encode(\App\Models\Customer::class, (int) $guarantee->customer_id) : null) === $c->sqid)>{{ $c->displayLabel() }}</option>
+                    <option value="{{ $c->sqid }}" @selected(old('customer_id', $guarantee?->customer_id !== null ? \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, (int) $guarantee->customer_id) : null) === $c->sqid)>{{ $c->displayLabel() }}</option>
                 @endforeach
             </select>
         </div>
@@ -94,7 +94,7 @@
             <label class="label" for="g-form-project"><span class="label-text">{{ __('guarantee.column.project') }}</span></label>
             <select id="g-form-project" name="project_id" class="select select-bordered w-full">
                 <option value="">—</option>
-                <x-project-options :projects="$projects" :selected="old('project_id', $guarantee?->project_id !== null ? \App\Support\Sqid::encode(\App\Models\Project::class, (int) $guarantee->project_id) : '')" />
+                <x-project-options :projects="$projects" :selected="old('project_id', $guarantee?->project_id !== null ? \App\Support\Sqid::encode(\App\Models\Project\Project::class, (int) $guarantee->project_id) : '')" />
             </select>
         </div>
         <div>
@@ -102,7 +102,7 @@
             <select id="g-form-responsible" name="responsible_user_id" class="select select-bordered w-full">
                 <option value="">—</option>
                 @foreach ($users as $u)
-                    <option value="{{ $u->sqid }}" @selected(old('responsible_user_id', $guarantee?->responsible_user_id !== null ? \App\Support\Sqid::encode(\App\Models\User::class, (int) $guarantee->responsible_user_id) : null) === $u->sqid)>{{ $u->name }}</option>
+                    <option value="{{ $u->sqid }}" @selected(old('responsible_user_id', $guarantee?->responsible_user_id !== null ? \App\Support\Sqid::encode(\App\Models\Platform\User::class, (int) $guarantee->responsible_user_id) : null) === $u->sqid)>{{ $u->name }}</option>
                 @endforeach
             </select>
         </div>

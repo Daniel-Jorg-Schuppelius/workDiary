@@ -13,7 +13,10 @@ namespace Tests\Feature\Reporting;
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Protocol\ProtocolType;
-use App\Models\{Asset, AuditLog, DiaryEntry, OpenIssue, Project, Protocol, User};
+use App\Models\{Asset, DiaryEntry, OpenIssue, Protocol};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
@@ -129,7 +132,7 @@ class AssetAnalysisReportTest extends TestCase {
                 'billable' => true,
             ]);
 
-            \App\Models\ExternalReference::create([
+            \App\Models\Integration\ExternalReference::create([
                 'organization_id' => $this->organization->id,
                 'plugin_id' => 'remote-support',
                 'external_type' => 'session',

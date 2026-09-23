@@ -28,7 +28,7 @@
                 <option value="">{{ __('Bitte wählen') }}</option>
                 @foreach ($assignableUsers as $u)
                     @php($uid = (int) ($u['id'] ?? $u->id))
-                    @php($usqid = \App\Support\Sqid::encode(\App\Models\User::class, $uid))
+                    @php($usqid = \App\Support\Sqid::encode(\App\Models\Platform\User::class, $uid))
                     <option value="{{ $usqid }}" @selected(old('user_id', $prefillUser) === $usqid)>{{ $u['name'] ?? $u->name }}</option>
                 @endforeach
             </select>

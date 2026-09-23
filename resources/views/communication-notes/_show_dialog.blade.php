@@ -93,7 +93,7 @@
             {{-- Umwandeln (MVP-813): Entwurf im Wissensarchiv mit Herkunftsverweis; vertrauliche Notizen nicht. --}}
             @if (! $note->confidential
                 && app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.knowledge')
-                && \Illuminate\Support\Facades\Gate::allows('create', \App\Models\KnowledgeArticle::class))
+                && \Illuminate\Support\Facades\Gate::allows('create', \App\Models\Knowledge\KnowledgeArticle::class))
                 <x-action-form :action="route('communication-notes.convert-knowledge', $note)">
                     <x-icon-btn icon="school" tone="outline" size="sm" type="submit" show-label>{{ __('communication.convert.action') }}</x-icon-btn>
                 </x-action-form>

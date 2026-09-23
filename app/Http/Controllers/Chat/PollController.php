@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Chat;
 use App\Events\Chat\{MessageSent, PollVoted};
 use App\Http\Controllers\Controller;
 use App\Models\Chat\{Channel, Poll};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Support\Tz;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Gate};

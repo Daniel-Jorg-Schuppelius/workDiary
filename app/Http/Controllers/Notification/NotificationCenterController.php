@@ -8,12 +8,13 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Notification;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Support\Setting;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
+use App\Http\Controllers\Controller;
 
 /**
  * Notification-Center (MVP-018): Liste der eigenen Database-Notifications,

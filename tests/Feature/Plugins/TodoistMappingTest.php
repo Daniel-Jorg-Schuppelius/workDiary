@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{ExternalReference, Project, TodoistConnection, TodoistProjectLink, User};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\User;
+use App\Models\Plugins\Todoist\{TodoistConnection, TodoistProjectLink};
+use App\Models\Project\Project;
 use App\Plugins\Todoist\Services\TodoistPreflightService;
 use App\Plugins\Todoist\TodoistPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -131,7 +134,7 @@ final class TodoistMappingTest extends TestCase {
     }
 
     public function test_collaborator_assignment_is_org_scoped(): void {
-        $orgB = \App\Models\Organization::factory()->create();
+        $orgB = \App\Models\Platform\Organization::factory()->create();
         app(PermissionRegistrar::class)->setPermissionsTeamId($orgB->id);
         $stranger = User::factory()->user()->create(['organization_id' => $orgB->id]);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
@@ -186,7 +189,7 @@ final class TodoistMappingTest extends TestCase {
     }
 
     public function test_link_of_other_org_is_not_bindable(): void {
-        $orgB = \App\Models\Organization::factory()->create();
+        $orgB = \App\Models\Platform\Organization::factory()->create();
         $foreign = TodoistProjectLink::query()->create([
             'organization_id' => $orgB->id,
             'todoist_project_id' => 'tp-x',

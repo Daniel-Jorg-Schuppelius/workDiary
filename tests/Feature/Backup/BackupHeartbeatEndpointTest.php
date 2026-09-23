@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Backup;
 
-use App\Models\{AuditLog, BackupHeartbeat};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\BackupHeartbeat;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

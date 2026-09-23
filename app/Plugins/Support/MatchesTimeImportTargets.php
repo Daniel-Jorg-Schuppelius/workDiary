@@ -12,7 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support;
 
-use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, Organization, Project, User};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Integration\{ExternalReference, ExternalReferenceAlias};
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
 use App\Services\Integration\ProjectKeywordMatcher;
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Database\Eloquent\Model;

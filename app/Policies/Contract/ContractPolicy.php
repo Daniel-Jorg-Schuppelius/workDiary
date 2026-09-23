@@ -14,9 +14,9 @@ namespace App\Policies\Contract;
 
 use App\Enums\User\Permission as P;
 use App\Models\Contract\Contract;
-use App\Models\User;
+use App\Models\Platform\User;
+use App\Policies\Auth\PermissionPolicy;
 use App\Policies\Concerns\HasAdminBypass;
-use App\Policies\PermissionPolicy;
 
 /**
  * Policy des allgemeinen Vertrags (Welle D, CLM). Ein einheitliches

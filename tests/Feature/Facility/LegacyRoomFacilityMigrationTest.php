@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Facility;
 
-use App\Models\{Customer, Room};
+use App\Models\Customer\Customer;
+use App\Models\Room;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\Concerns\WithOrganization;

@@ -62,7 +62,7 @@ class DunningMail extends Mailable implements ShouldQueue {
         if ($this->dispatchId === null) {
             return;
         }
-        $dispatch = \App\Models\DocumentDispatch::query()->withoutGlobalScopes()->find($this->dispatchId);
+        $dispatch = \App\Models\Document\DocumentDispatch::query()->withoutGlobalScopes()->find($this->dispatchId);
         $dispatch?->forceFill([
             'status' => 'failed',
             'meta' => [...(array) $dispatch->meta, 'error' => mb_substr($exception->getMessage(), 0, 500)],

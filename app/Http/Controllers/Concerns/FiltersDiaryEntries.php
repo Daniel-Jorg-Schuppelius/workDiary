@@ -11,7 +11,10 @@
 namespace App\Http\Controllers\Concerns;
 
 use App\Enums\Diary\{LocationMode, Mode};
-use App\Models\{Customer, DiaryEntry, EntryType, Project, Tag};
+use App\Models\Classification\{EntryType, Tag};
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\Project\Project;
 use App\Support\Sqid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;

@@ -10,7 +10,10 @@
 
 namespace App\Http\Controllers\Reporting\Concerns;
 
-use App\Models\{Customer, EntryType, Project, Team, User};
+use App\Models\Classification\EntryType;
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Team, User};
+use App\Models\Project\Project;
 use App\Services\Reporting\ReportFilters;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;

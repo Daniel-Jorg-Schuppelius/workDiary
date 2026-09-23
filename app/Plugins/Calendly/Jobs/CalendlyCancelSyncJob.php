@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Calendly\Jobs;
 
-use App\Models\{AppointmentRequest, CalendlyConnection};
+use App\Models\Calendar\AppointmentRequest;
+use App\Models\Plugins\Calendly\CalendlyConnection;
 use App\Plugins\Calendly\CalendlyPlugin;
 use App\Plugins\Calendly\Services\CalendlyOutboundService;
 use App\Plugins\PluginErrorRecorder;

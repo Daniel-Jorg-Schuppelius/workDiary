@@ -13,7 +13,7 @@ namespace App\Legacy;
 use App\Legacy\Auth\LegacyUserProvider;
 use App\Legacy\Models\{LegacyDiaryEntry, LegacyUser};
 use App\Legacy\Support\{LegacyConnectivity, LegacyRoleResolver};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Hashing\Hasher;
 

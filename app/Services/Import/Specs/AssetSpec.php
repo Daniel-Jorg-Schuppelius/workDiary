@@ -14,7 +14,8 @@ namespace App\Services\Import\Specs;
 
 use App\Enums\Asset\{AssetClass, AssetHealth, AssetOwnership, AssetStatus};
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
-use App\Models\{Asset, Organization};
+use App\Models\Asset;
+use App\Models\Platform\Organization;
 use App\Services\Import\{ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\Concerns\{ResolvesImportReferences, ValidatesImportDates};
 use Throwable;

@@ -15,7 +15,7 @@ namespace App\Models\Reselling;
 use App\Casts\MoneyCast;
 use App\Enums\Reselling\PeriodStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Reselling\Mirror\InvoiceMirror;
 use App\Services\Reselling\Register\LicenseMonths;
 use App\Support\Query\DateRange;

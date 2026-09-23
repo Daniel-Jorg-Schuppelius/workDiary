@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\SevDesk;
 
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{ContactSyncer, Plugin};
 use App\Plugins\SevDesk\Api\{SevDeskApiException, SevDeskClient, SevDeskClientFactory};

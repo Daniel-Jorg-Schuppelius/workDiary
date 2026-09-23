@@ -14,7 +14,9 @@ namespace Tests\Feature\Ai;
 
 use App\Enums\User\Permission;
 use App\Models\Ai\{AiCapabilitySetting, AiMemoryEntry, AiProviderConnection, AiTextSuggestion};
-use App\Models\{Customer, Invoice, InvoiceItem, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\{Invoice, InvoiceItem, TimeEntry};
+use App\Models\Platform\User;
 use App\Services\Ai\Suggestions\ItemTextSuggestionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{RegistersAiCapabilities, WithOrganization};

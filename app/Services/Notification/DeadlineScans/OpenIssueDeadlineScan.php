@@ -14,7 +14,8 @@ namespace App\Services\Notification\DeadlineScans;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\OpenIssue\OpenIssueStatus;
-use App\Models\{OpenIssue, User};
+use App\Models\OpenIssue;
+use App\Models\Platform\User;
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Support\Carbon;
 

@@ -12,7 +12,10 @@ namespace Tests\Feature\Demo;
 
 use App\Enums\Demo\DemoIndustry;
 use App\Enums\Procedure\ProcedureRunStatus;
-use App\Models\{Asset, Classification, Customer, DiaryEntry, Organization, ProcedureRun, ProcedureTemplate, Tag, User};
+use App\Models\{Asset, DiaryEntry, ProcedureRun, ProcedureTemplate};
+use App\Models\Classification\{Classification, Tag};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
 use App\Services\Demo\{DemoBlueprintProvider, DemoSeederService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;

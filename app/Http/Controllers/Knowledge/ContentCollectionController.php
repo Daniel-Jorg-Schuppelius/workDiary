@@ -8,10 +8,12 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Knowledge;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Models\{ContentCollection, ContentCollectionItem, User};
+use App\Models\Knowledge\ContentCollection;
+use App\Models\Knowledge\ContentCollectionItem;
+use App\Models\Platform\User;
 use App\Services\Collections\{CollectableTypes, ContentCollectionService};
 use App\Support\Sqid;
 use Illuminate\Database\Eloquent\Model;
@@ -19,6 +21,7 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 /**
  * Sammlungen (MVP-809, Feature 155): Baum und Inhalte an einer Stelle,

@@ -11,7 +11,9 @@
 namespace App\Observers;
 
 use App\Enums\Notification\NotificationEvent;
-use App\Models\{Attachment, DiaryEntry, User};
+use App\Models\Attachments\Attachment;
+use App\Models\DiaryEntry;
+use App\Models\Platform\User;
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Support\Facades\{Log, Storage};
 

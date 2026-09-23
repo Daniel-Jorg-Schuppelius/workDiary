@@ -11,7 +11,8 @@
 namespace Tests\Feature;
 
 use App\Enums\User\UserRole;
-use App\Models\{DiaryEntry, User};
+use App\Models\DiaryEntry;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

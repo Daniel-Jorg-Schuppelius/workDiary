@@ -10,7 +10,7 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Attachment;
+use App\Models\Attachments\Attachment;
 use App\Support\{MorphMap, Sqid};
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

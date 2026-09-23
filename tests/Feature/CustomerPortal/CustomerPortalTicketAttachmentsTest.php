@@ -11,7 +11,10 @@
 namespace Tests\Feature\CustomerPortal;
 
 use App\Enums\ServiceTicket\TicketMessageKind;
-use App\Models\{Attachment, Customer, Organization, ServiceTicket, ServiceTicketMessage, User};
+use App\Models\Attachments\Attachment;
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
+use App\Models\{ServiceTicket, ServiceTicketMessage};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;

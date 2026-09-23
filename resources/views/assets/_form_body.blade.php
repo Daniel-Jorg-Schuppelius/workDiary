@@ -9,7 +9,7 @@
 @php
     /** @var \App\Models\Asset $asset */
     /** @var array<int|string, string> $customers */
-    /** @var \Illuminate\Support\Collection<int, \App\Models\ForeignCustomer> $foreignCustomers */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Customer\ForeignCustomer> $foreignCustomers */
     /** @var array<string, string> $classOptions */
     /** @var array<string, string> $statusOptions */
     /** @var array<string, string> $categoryOptions */

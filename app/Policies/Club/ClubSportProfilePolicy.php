@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Policies\Club;
 
 use App\Models\Club\ClubSportProfile;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
 
 /** Sportartenprofile (MVP-852): lesen wie das Register (auch Gruppenleitung), ändern nur Vereinsverwaltung. */

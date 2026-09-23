@@ -15,7 +15,7 @@ namespace App\Observers;
 use App\Enums\Finance\{AccountingEntryStatus, PostingSourceKind};
 use App\Models\Accounting\AccountingEntry;
 use App\Models\Finance\PaymentAllocation;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Accounting\JournalService;
 use Illuminate\Support\Facades\{Auth, Log};
 

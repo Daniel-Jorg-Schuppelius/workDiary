@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Customer, ExternalReference, PluginSetting};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\PluginSetting;
 use App\Plugins\Support\MatchingTimeImportService;
 use App\Plugins\Toggl\TogglPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;

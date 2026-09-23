@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\CustomerPortal;
 
-use App\Models\{Customer, DiaryEntry, Invoice, OpenIssue, User};
+use App\Models\Customer\Customer;
+use App\Models\{DiaryEntry, Invoice, OpenIssue};
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Auth, Hash};
 use Spatie\Permission\PermissionRegistrar;

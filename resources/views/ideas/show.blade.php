@@ -120,7 +120,7 @@
             'can_update' => $canUpdate && ! $map->isArchived(),
             'nodes' => $map->nodes->map(fn ($n) => [
                 'sqid' => $n->sqid,
-                'parent' => $n->parent_id !== null ? app(\App\Services\SqidEncoder::class)->encode(\App\Models\IdeaNode::class, (int) $n->parent_id) : null,
+                'parent' => $n->parent_id !== null ? app(\App\Support\SqidEncoder::class)->encode(\App\Models\Ideas\IdeaNode::class, (int) $n->parent_id) : null,
                 'is_root' => (bool) $n->is_root,
                 'title' => $n->title,
                 'note' => $n->note,
@@ -139,14 +139,14 @@
             ],
             // Querverbindungen (MVP-137): Endpunkte als Knoten-Sqid.
             'links' => $map->links->map(fn ($l) => [
-                'from' => app(\App\Services\SqidEncoder::class)->encode(\App\Models\IdeaNode::class, (int) $l->source_node_id),
-                'to' => app(\App\Services\SqidEncoder::class)->encode(\App\Models\IdeaNode::class, (int) $l->target_node_id),
+                'from' => app(\App\Support\SqidEncoder::class)->encode(\App\Models\Ideas\IdeaNode::class, (int) $l->source_node_id),
+                'to' => app(\App\Support\SqidEncoder::class)->encode(\App\Models\Ideas\IdeaNode::class, (int) $l->target_node_id),
                 'label' => $l->label,
                 'color' => $l->color,
             ])->values(),
             // Boundaries (MVP-137): Elternknoten als Sqid, Bereich start..end.
             'summaries' => $map->summaries->map(fn ($s) => [
-                'parent' => app(\App\Services\SqidEncoder::class)->encode(\App\Models\IdeaNode::class, (int) $s->parent_node_id),
+                'parent' => app(\App\Support\SqidEncoder::class)->encode(\App\Models\Ideas\IdeaNode::class, (int) $s->parent_node_id),
                 'start' => (int) $s->start_index,
                 'end' => (int) $s->end_index,
                 'label' => $s->label,
@@ -166,9 +166,9 @@
             ],
             // Überführungsziele (MVP-109): nur anbieten, was lizenziert UND erlaubt ist.
             'convert_targets' => array_values(array_filter([
-                app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.kanban') && auth()->user()->can('create', \App\Models\Task::class) ? 'task' : null,
-                auth()->user()->can('create', \App\Models\Project::class) ? 'project' : null,
-                app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.knowledge') && auth()->user()->can('create', \App\Models\KnowledgeArticle::class) ? 'knowledge' : null,
+                app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.kanban') && auth()->user()->can('create', \App\Models\Project\Task::class) ? 'task' : null,
+                auth()->user()->can('create', \App\Models\Project\Project::class) ? 'project' : null,
+                app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.knowledge') && auth()->user()->can('create', \App\Models\Knowledge\KnowledgeArticle::class) ? 'knowledge' : null,
             ])),
             'labels' => [
                 'new_node' => __('ideas.editor.new_node'),

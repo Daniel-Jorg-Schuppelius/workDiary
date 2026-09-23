@@ -22,7 +22,7 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
  *
  * Jedes Modell mit `HasAttachments` braucht deshalb eines von dreien:
  * eine eigene Policy, eine Auflösung auf sein Elternobjekt in
- * {@see \App\Policies\AttachmentPolicy} oder einen Eintrag in der Liste
+ * {@see \App\Policies\Attachments\AttachmentPolicy} oder einen Eintrag in der Liste
  * bewusst org-weiter Träger.
  */
 class AttachmentCarrierPolicyRuleTest extends TestCase {
@@ -43,7 +43,7 @@ class AttachmentCarrierPolicyRuleTest extends TestCase {
     ];
 
     public function test_every_attachment_carrier_is_covered(): void {
-        $policySource = (string) file_get_contents($this->repoRoot() . '/app/Policies/AttachmentPolicy.php');
+        $policySource = (string) file_get_contents($this->repoRoot() . '/app/Policies/Attachments/AttachmentPolicy.php');
         $missing = [];
 
         foreach ($this->phpFiles('app/Models') as $file) {

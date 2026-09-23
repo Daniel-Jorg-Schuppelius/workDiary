@@ -15,7 +15,8 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{SupportAccessGrant, User};
+use App\Models\Auth\SupportAccessGrant;
+use App\Models\Platform\User;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 

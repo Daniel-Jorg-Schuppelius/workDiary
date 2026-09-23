@@ -8,10 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Policies;
+namespace App\Policies\Document;
 
 use App\Enums\User\Permission as P;
-use App\Models\{Document, User};
+use App\Models\Document\Document\Document;
+use App\Models\Platform\User;
 use App\Services\Hr\PersonnelFilePermissions as HR;
 
 /**

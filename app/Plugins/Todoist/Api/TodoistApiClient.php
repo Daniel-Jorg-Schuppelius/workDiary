@@ -11,7 +11,7 @@
 namespace App\Plugins\Todoist\Api;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
-use App\Models\TodoistConnection;
+use App\Models\Plugins\Todoist\TodoistConnection;
 use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
 use App\Plugins\Todoist\TodoistConfig;
 use RuntimeException;

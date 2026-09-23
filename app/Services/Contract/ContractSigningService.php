@@ -16,7 +16,8 @@ use App\Enums\Contract\{ContractObligationKind, EvidenceReviewStatus, SignatureL
 use App\Enums\Notification\NotificationEvent;
 use App\Mail\AgreementLinkMail;
 use App\Models\Contract\{Contract, ContractSignatureEvidence, ContractSignatureLink, ContractSignatureRequest, ContractSigningManifestItem, ContractSigningRevision};
-use App\Models\{DocumentVersion, Organization, User};
+use App\Models\Document\DocumentVersion;
+use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\AssertsStatusTransition;
 use App\Services\Notification\NotificationDispatcher;
 use App\Support\DocumentLocale;

@@ -47,7 +47,7 @@
                 // projects-Liste oben — daher nur die Sqid).
                 'recentEntries' => $entryBarRecentEntries->map(fn ($e) => [
                     'description' => (string) $e->description,
-                    'projectId' => \App\Support\Sqid::encode(\App\Models\Project::class, (int) $e->project_id),
+                    'projectId' => \App\Support\Sqid::encode(\App\Models\Project\Project::class, (int) $e->project_id),
                 ])->values()->all(),
                 'description' => old('description'),
                 'optionsUrl' => route('today.entry-bar.options', ['project' => '__ID__']),

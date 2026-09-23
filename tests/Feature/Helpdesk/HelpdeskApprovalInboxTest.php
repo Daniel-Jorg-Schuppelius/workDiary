@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Helpdesk;
 
-use App\Models\{Approval, BusinessService, Organization, RequestItem, ServiceOffering, ServiceQueue, ServiceRequest, User};
+use App\Models\Approval\Approval;
+use App\Models\{BusinessService, RequestItem, ServiceQueue, ServiceRequest};
+use App\Models\Platform\{Organization, User};
+use App\Models\Sales\ServiceOffering;
 use App\Services\ServiceTicket\ServiceRequestService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

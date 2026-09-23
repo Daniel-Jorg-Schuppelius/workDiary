@@ -10,11 +10,12 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Platform;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Navigation\StartPageResolver;
 use Illuminate\Http\{RedirectResponse, Request};
+use App\Http\Controllers\Controller;
 
 /**
  * Ziel nach dem Login (MVP-799). Eigene Route statt Auflösung im Login selbst:

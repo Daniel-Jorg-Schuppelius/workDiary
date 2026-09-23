@@ -14,8 +14,9 @@ namespace App\Services\Ideas;
 
 use App\Enums\Ideas\IdeaNodeColor;
 use App\Exceptions\IdeaMapConflictException;
-use App\Models\{IdeaMap, IdeaNode, IdeaNodeLink, IdeaNodeSummary, User};
-use App\Services\SqidEncoder;
+use App\Models\Ideas\{IdeaMap, IdeaNode, IdeaNodeLink, IdeaNodeSummary};
+use App\Models\Platform\User;
+use App\Support\SqidEncoder;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 

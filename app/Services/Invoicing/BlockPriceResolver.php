@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
-use App\Models\{Customer, TimeEntry};
+use App\Models\Customer\Customer;
+use App\Models\TimeEntry;
 use App\Services\Billing\OrganizationDefaultRateResolver;
 
 /**

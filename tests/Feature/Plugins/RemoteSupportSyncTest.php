@@ -11,7 +11,11 @@
 namespace Tests\Feature\Plugins;
 
 use App\Enums\Asset\AssetClass;
-use App\Models\{Asset, Customer, ForeignCustomer, PluginSetting, Project, RemotePendingSession, TimeEntry, User};
+use App\Models\{Asset, TimeEntry};
+use App\Models\Auth\RemotePendingSession;
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Platform\{PluginSetting, User};
+use App\Models\Project\Project;
 use App\Plugins\RemoteSupport\Providers\{RemoteSession, TeamViewerClient};
 use App\Plugins\RemoteSupport\{RemoteDeviceRegistry, RemotePendingAssignmentService, RemoteSessionImporter, RemoteSupportConfig, RemoteSupportPlugin};
 use Carbon\CarbonImmutable;

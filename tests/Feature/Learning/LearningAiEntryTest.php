@@ -13,7 +13,7 @@ namespace Tests\Feature\Learning;
 use App\Enums\Learning\{LearningEnrollmentStatus, LearningUnitKind};
 use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection};
 use App\Models\Learning\{LearningCourse, LearningQuiz};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningAiSuggestionService, LearningCourseService, LearningEnrollmentService, LearningOutlineParser};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

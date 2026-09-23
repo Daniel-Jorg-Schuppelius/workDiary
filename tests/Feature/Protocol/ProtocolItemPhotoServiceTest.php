@@ -11,7 +11,9 @@
 namespace Tests\Feature\Protocol;
 
 use App\Enums\Protocol\{ProtocolEventType, ProtocolItemPhotoPhase, ProtocolItemType, ProtocolType};
-use App\Models\{Attachment, DiaryEntry, ProtocolEvent, ProtocolItem, ProtocolItemPhoto, User};
+use App\Models\Attachments\Attachment;
+use App\Models\{DiaryEntry, ProtocolEvent, ProtocolItem, ProtocolItemPhoto};
+use App\Models\Platform\User;
 use App\Services\Protocol\{ProtocolItemPhotoService, ProtocolItemValidator, ProtocolService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

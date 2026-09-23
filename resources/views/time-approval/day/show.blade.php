@@ -34,7 +34,7 @@
 
     $prevDay = $day->subDay()->toDateString();
     $nextDay = $day->addDay()->toDateString();
-    $userParam = $isOwnDay ? [] : ['user' => \App\Support\Sqid::encode(\App\Models\User::class, $targetUser->id)];
+    $userParam = $isOwnDay ? [] : ['user' => \App\Support\Sqid::encode(\App\Models\Platform\User::class, $targetUser->id)];
 
     // Wird von den hier verbliebenen Inline-Sektionen A) Anwesenheit (Stempeln)
     // und B) Zeiteinträge („Zeit buchen") genutzt. Die übrigen Status-Flags

@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use App\Enums\Learning\LearningQuestionKind;
-use App\Models\{Attachment, User};
+use App\Models\Attachments\Attachment;
 use App\Models\Learning\{LearningQuestion, LearningQuiz};
+use App\Models\Platform\User;
 use App\Services\Attachments\FileAttacher;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\UploadedFile;

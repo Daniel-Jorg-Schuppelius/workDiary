@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Models\DocumentDispatch;
+use App\Models\Document\DocumentDispatch;
 use Illuminate\Mail\Events\MessageSent;
 
 /**

@@ -10,7 +10,7 @@
 
 namespace App\Services\Auth;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 

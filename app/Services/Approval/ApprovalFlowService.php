@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Approval;
 
 use App\Enums\Approval\ApprovalDecision;
-use App\Models\{ApprovalStep, User};
+use App\Models\Approval\ApprovalStep;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 

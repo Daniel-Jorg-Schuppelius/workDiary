@@ -14,7 +14,9 @@ namespace App\Plugins\Support\Mirror;
 
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
 use App\Enums\Protocol\ProtocolStatus;
-use App\Models\{Document, IntegrationOutboxEntry, Invoice, Protocol};
+use App\Models\Document\Document;
+use App\Models\Integration\IntegrationOutboxEntry;
+use App\Models\{Invoice, Protocol};
 use App\Services\Invoicing\InvoicePdfRenderer;
 use App\Services\Protocol\ProtocolPdfRenderer;
 use Illuminate\Support\Facades\Storage;

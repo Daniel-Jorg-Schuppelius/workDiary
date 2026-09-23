@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\ServiceTicket;
 
-use App\Models\{Approval, User};
+use App\Models\Approval\Approval;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 
 /**

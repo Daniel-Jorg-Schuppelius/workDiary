@@ -12,7 +12,7 @@
 @section('nav-title', __('Datenschutz'))
 
 @php
-    /** @var \App\Models\Organization $organization */
+    /** @var \App\Models\Platform\Organization $organization */
     /** @var int $memberCount */
     /** @var \Illuminate\Support\Collection $sessions */
     /** @var \Illuminate\Support\Collection $tokens */

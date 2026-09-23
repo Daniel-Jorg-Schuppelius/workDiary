@@ -8,13 +8,14 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Platform;
 
-use App\Http\Requests\SaveUserBookmarkRequest;
-use App\Models\UserBookmark;
+use App\Http\Requests\Platform\SaveUserBookmarkRequest;
+use App\Models\Platform\UserBookmark;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
+use App\Http\Controllers\Controller;
 
 class UserBookmarkController extends Controller {
     public function index(Request $request): View {

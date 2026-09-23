@@ -27,7 +27,7 @@ return new class extends Migration {
             ->whereNotNull('lexoffice_voucher_id')
             ->where(static fn($q) => $q->whereNull('document_type')->orWhereNull('document_id'))
             ->update([
-                'document_type' => (new \App\Models\LexofficeVoucher)->getMorphClass(),
+                'document_type' => (new \App\Models\Plugins\Lexoffice\LexofficeVoucher)->getMorphClass(),
                 'document_id' => DB::raw('lexoffice_voucher_id'),
             ]);
 
@@ -43,7 +43,7 @@ return new class extends Migration {
         });
 
         DB::table('resale_purchase_entries')
-            ->where('document_type', (new \App\Models\LexofficeVoucher)->getMorphClass())
+            ->where('document_type', (new \App\Models\Plugins\Lexoffice\LexofficeVoucher)->getMorphClass())
             ->whereNotNull('document_id')
             ->update(['lexoffice_voucher_id' => DB::raw('document_id')]);
     }

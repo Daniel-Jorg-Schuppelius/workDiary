@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Export;
 
 use App\Enums\Export\ExportEntity;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Model;
 
 /**

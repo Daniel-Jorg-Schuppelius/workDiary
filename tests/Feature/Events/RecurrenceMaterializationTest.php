@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Events;
 
-use App\Models\{Event, User};
+use App\Models\Calendar\Event;
+use App\Models\Platform\User;
 use App\Services\Event\RecurrenceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

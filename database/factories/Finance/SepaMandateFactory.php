@@ -11,7 +11,7 @@
 namespace Database\Factories\Finance;
 
 use App\Enums\Finance\{MandateKind, MandateStatus};
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use App\Models\Finance\SepaMandate;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

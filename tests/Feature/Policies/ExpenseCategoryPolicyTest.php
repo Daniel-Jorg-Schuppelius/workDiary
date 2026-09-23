@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Policies;
 
-use App\Models\{ExpenseCategory, User};
+use App\Models\ExpenseCategory;
+use App\Models\Platform\User;
 use App\Policies\ExpenseCategoryPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;

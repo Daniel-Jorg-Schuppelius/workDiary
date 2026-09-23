@@ -11,7 +11,8 @@
 namespace Tests\Feature\Inventory;
 
 use App\Enums\Inventory\{ReservationStatus, StockState};
-use App\Models\{Article, ArticleVariant, Organization, StockReservation, Warehouse};
+use App\Models\{Article, ArticleVariant, StockReservation, Warehouse};
+use App\Models\Platform\Organization;
 use App\Services\Inventory\{InventoryLedger, ReservationService, StockLevelService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;

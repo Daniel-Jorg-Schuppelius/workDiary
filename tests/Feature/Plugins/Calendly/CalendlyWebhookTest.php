@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins\Calendly;
 
-use App\Models\{CalendlyConnection, CalendlyWebhookDelivery, CalendlyWebhookSubscription};
+use App\Models\Plugins\Calendly\{CalendlyConnection, CalendlyWebhookDelivery, CalendlyWebhookSubscription};
 use App\Plugins\Calendly\Jobs\CalendlyIngestJob;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;

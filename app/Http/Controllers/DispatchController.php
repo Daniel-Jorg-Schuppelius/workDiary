@@ -12,7 +12,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\Diary\DispatchStatus;
 use App\Enums\User\Permission;
-use App\Models\{DiaryEntry, User};
+use App\Models\DiaryEntry;
+use App\Models\Platform\User;
 use App\Services\Dispatch\{DispatchConflictChecker, DispatchStatusResolver};
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};

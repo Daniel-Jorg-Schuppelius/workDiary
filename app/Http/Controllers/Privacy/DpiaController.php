@@ -82,7 +82,7 @@ class DpiaController extends Controller {
             ->where('step', $stepCode)
             ->firstOrFail();
 
-        /** @var \App\Models\User $actor */
+        /** @var \App\Models\Platform\User $actor */
         $actor = $request->user();
 
         try {

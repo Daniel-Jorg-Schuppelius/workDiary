@@ -11,7 +11,8 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission;
-use App\Models\{User, VehicleReservation};
+use App\Models\Platform\User;
+use App\Models\VehicleReservation;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 /**

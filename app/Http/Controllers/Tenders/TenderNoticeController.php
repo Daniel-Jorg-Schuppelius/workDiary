@@ -14,8 +14,8 @@ namespace App\Http\Controllers\Tenders;
 
 use App\Http\Controllers\Controller;
 use App\Models\Applications\ApplicationOpportunity;
+use App\Models\Platform\User;
 use App\Models\Tenders\{TenderFilterProfile, TenderNoticeMatch};
-use App\Models\User;
 use App\Services\Tenders\TenderNoticeConverter;
 use App\Support\ErrorText;
 use Illuminate\Contracts\View\View;

@@ -12,8 +12,11 @@ declare(strict_types=1);
 
 namespace App\Models\Metering;
 
-use App\Models\{Asset, Customer, Project, User};
+use App\Models\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;

@@ -14,7 +14,7 @@ namespace App\Services\Accounting;
 
 use App\Enums\Finance\{AccountingSovereignty, ProfitDetermination};
 use App\Models\Accounting\{AccountingProfile, AccountingSovereigntyPeriod};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\Preflight\AccountingPreflightReport;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;

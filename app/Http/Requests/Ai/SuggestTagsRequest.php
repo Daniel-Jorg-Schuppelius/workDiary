@@ -15,7 +15,7 @@ namespace App\Http\Requests\Ai;
 use App\Enums\Classification\ClassificationDomain;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
 

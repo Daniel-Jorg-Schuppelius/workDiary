@@ -15,7 +15,7 @@ namespace App\Jobs\Integration;
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
 use App\Contracts\PluginDispatcher;
 use App\Jobs\AbstractOutboxDeliveryJob;
-use App\Models\{IntegrationInboxItem, IntegrationOutboxEntry};
+use App\Models\Integration\{IntegrationInboxItem, IntegrationOutboxEntry};
 use App\Services\Integration\{IntegrationOutboxDispatcherResolver, IntegrationOutboxService};
 use Illuminate\Database\Eloquent\{Builder, Model};
 

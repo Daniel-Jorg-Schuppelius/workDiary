@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\CustomerPortal;
 
 use App\Enums\CustomerPortal\{PortalCapability, PortalTimeDetail};
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Services\Licensing\FeatureFlagResolver;
 
 /**

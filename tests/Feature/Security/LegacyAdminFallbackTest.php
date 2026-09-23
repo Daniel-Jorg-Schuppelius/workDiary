@@ -11,7 +11,7 @@
 namespace Tests\Feature\Security;
 
 use App\Legacy\Support\LegacyRoleResolver;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;

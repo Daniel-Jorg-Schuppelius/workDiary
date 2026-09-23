@@ -14,7 +14,7 @@ namespace Database\Factories\Ai;
 
 use App\Enums\Ai\{AiConnectionStatus, AiFamily, AiProviderType};
 use App\Models\Ai\AiProviderConnection;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

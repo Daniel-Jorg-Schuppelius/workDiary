@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Github\Services;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\Github\Api\GithubClient;
 use App\Plugins\Github\{GithubConfig, GithubPlugin};
 use App\Plugins\Support\GitIssueImport\AbstractGitIssueImporter;

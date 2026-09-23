@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\TimeTracking;
 
-use App\Models\{Organization, PluginSetting};
+use App\Models\Platform\{Organization, PluginSetting};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 

@@ -11,8 +11,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{CtiConnection, Organization, User};
-use App\Services\SqidEncoder;
+use App\Models\Cti\CtiConnection;
+use App\Models\Platform\{Organization, User};
+use App\Support\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;

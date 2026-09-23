@@ -10,7 +10,8 @@
 
 namespace App\Http\Resources;
 
-use App\Models\{Project, Timesheet};
+use App\Models\Project\Project;
+use App\Models\Timesheet;
 use App\Support\Sqid;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;

@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Workspace;
 
-use App\Models\{User, UserWorkspace};
+use App\Models\Platform\{User, UserWorkspace};
 use App\Services\Navigation\{NavFocusService, NavigationRegistry};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

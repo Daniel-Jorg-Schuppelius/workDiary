@@ -10,8 +10,8 @@
 
 namespace App\Models\Learning;
 
+use App\Models\Communication\ExternalParticipant;
 use App\Models\Concerns\BelongsToOrganization;
-use App\Models\ExternalParticipant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

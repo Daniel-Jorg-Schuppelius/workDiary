@@ -11,7 +11,9 @@
 namespace App\Plugins\Lexoffice;
 
 use APIToolkit\API\Authentication\BearerAuthentication;
-use App\Models\{Customer, ExternalReference, ManufacturingOrder};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\ManufacturingOrder;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use RuntimeException;
 

@@ -15,7 +15,7 @@ namespace App\Services\Reselling\Register;
 use App\Enums\Contract\ContractObligationKind;
 use App\Enums\Reselling\RenewalMode;
 use App\Models\Contract\{Contract, ContractObligation};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use App\Services\Contract\ContractService;
 use App\Support\DocumentLocale;

@@ -8,14 +8,15 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Contacts;
 
 use App\Enums\ExternalParticipant\ExternalParty;
 use App\Enums\User\Permission;
-use App\Models\ExternalContact;
+use App\Models\Contacts\ExternalContact;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 /**
  * Verwaltung wiederverwendbarer externer Kontakt-/Rollenprofile (Feature 033,

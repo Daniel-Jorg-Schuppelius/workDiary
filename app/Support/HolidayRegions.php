@@ -16,7 +16,7 @@ namespace App\Support;
  * Kuratierte Auswahl wählbarer Feiertags-Rechtsräume (Yasumi-Provider) für
  * die Organisations-Einstellungen (Feature 034).
  *
- * Der Wert ist exakt der Yasumi-Provider-Pfad, den {@see \App\Services\HolidayService}
+ * Der Wert ist exakt der Yasumi-Provider-Pfad, den {@see \App\Services\Calendar\HolidayService}
  * an Yasumi::create() übergibt. Die Auswahl ist auf den DACH-Raum fokussiert
  * (alle 16 deutschen Bundesländer + bundesweit, Österreich); weitere Länder
  * können hier additiv ergänzt werden, ohne die Feiertagsberechnung anzufassen.

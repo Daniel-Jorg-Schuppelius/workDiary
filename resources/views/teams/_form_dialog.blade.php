@@ -8,7 +8,7 @@
 --}}
 {{-- Dialog: Arbeits-Team anlegen oder bearbeiten. --}}
 @php
-    /** @var \App\Models\Team $team */
+    /** @var \App\Models\Platform\Team $team */
     /** @var \Illuminate\Database\Eloquent\Collection $orgUsers */
     /** @var list<int> $assignedMemberIds */
     $isEdit = $isEdit ?? (bool) ($team->id ?? false);
@@ -35,7 +35,7 @@
         </x-form-group>
 
         <x-form-group :label="__('Teamleiter')" name="lead_user_id">
-            @php($leadSqid = (string) old('lead_user_id', $team->lead_user_id ? \App\Support\Sqid::encode(\App\Models\User::class, $team->lead_user_id) : ''))
+            @php($leadSqid = (string) old('lead_user_id', $team->lead_user_id ? \App\Support\Sqid::encode(\App\Models\Platform\User::class, $team->lead_user_id) : ''))
             <select name="lead_user_id" class="select select-bordered w-full">
                 <option value="">{{ __('— kein Teamleiter —') }}</option>
                 @foreach ($orgUsers as $u)
@@ -55,7 +55,7 @@
             <h3 class="card-title text-base">{{ __('Mitglieder') }}</h3>
             <p class="text-xs text-muted">{{ __('Der Teamleiter wird automatisch als Mitglied geführt.') }}</p>
 
-            @php($selectedMembers = (array) old('member_ids', array_map(fn($id) => \App\Support\Sqid::encode(\App\Models\User::class, $id), $assignedMemberIds)))
+            @php($selectedMembers = (array) old('member_ids', array_map(fn($id) => \App\Support\Sqid::encode(\App\Models\Platform\User::class, $id), $assignedMemberIds)))
             <x-user-checklist
                 name="member_ids"
                 :users="$orgUsers"

@@ -11,7 +11,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\User\Permission as P;
-use App\Models\{PendingExternalConflict, User};
+use App\Models\Integration\PendingExternalConflict;
+use App\Models\Platform\User;
 use App\Services\Inventory\InventoryConflictResolver;
 use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};

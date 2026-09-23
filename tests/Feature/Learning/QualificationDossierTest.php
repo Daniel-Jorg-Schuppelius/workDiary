@@ -11,7 +11,8 @@
 namespace Tests\Feature\Learning;
 
 use App\Models\Learning\LearningCertificate;
-use App\Models\{Qualification, User, UserQualification};
+use App\Models\Platform\{User, UserQualification};
+use App\Models\Qualification;
 use App\Services\Learning\QualificationDossierService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

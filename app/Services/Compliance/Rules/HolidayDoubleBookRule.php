@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Compliance\Rules;
 
-use App\Models\{Holiday, ScheduledShift};
+use App\Models\Platform\Holiday;
+use App\Models\ScheduledShift;
 use App\Services\Compliance\{ComplianceRule, ComplianceViolation};
 
 /** Warnt, wenn an einem Feiertag eine Schicht geplant wird (organisationsbezogen). */

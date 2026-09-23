@@ -14,7 +14,7 @@ namespace App\Services\Accounting;
 
 use App\Enums\Finance\AccountingEntryStatus;
 use App\Models\Accounting\{AccountingEntry, AccountingEntryLine, AccountingOpenItem};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Finance\Datev\{DatevBookingAdapter, DatevBookingConfig, DatevBookingFieldResolver};
 use App\Services\Finance\FinancialFormatsSupport;
 use App\Support\Toolkit\CsvFacade;

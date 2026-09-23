@@ -14,7 +14,7 @@ namespace App\Services\Learning;
 
 use App\Mail\LearningAccessLinkMail;
 use App\Models\Learning\{LearningAccessToken, LearningEnrollment};
-use App\Models\User;
+use App\Models\Platform\User;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\{DB, Mail};

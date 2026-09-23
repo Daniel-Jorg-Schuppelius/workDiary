@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Ai;
 
 use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Ai\AiRoutingResolver;
 use App\Services\Ai\Exceptions\AiUnavailableException;
 use Illuminate\Foundation\Testing\RefreshDatabase;

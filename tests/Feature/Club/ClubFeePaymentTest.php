@@ -16,7 +16,7 @@ use App\Enums\User\UserRole;
 use App\Mail\ClubFeeNoticeMail;
 use App\Models\Club\{ClubFeeAccount, ClubFeeClaim, ClubFeeDunning, ClubFeePayment, ClubFeeTariff, ClubMember};
 use App\Models\Finance\{BankAccount, BankStatement, BankTransaction, PaymentAllocation, SepaMandate};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Club\{ClubFeePaymentService, ClubFeeRunService, ClubFeeService};
 use App\Services\Finance\{FinancialFormatsSupport, ReconciliationService};
 use App\Services\Finance\Sepa\PaymentRunService;

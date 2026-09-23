@@ -9,14 +9,14 @@
   Kommunikations-Panel (MVP-012). Erwartet: $notable (Model), $notableKind ('diary'|'customer'|'project')
 --}}
 @php
-    /** @var \App\Models\User $panelUser */
+    /** @var \App\Models\Platform\User $panelUser */
     $panelUser = \Illuminate\Support\Facades\Auth::user();
-    $canViewAny = \Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\CommunicationNote::class);
+    $canViewAny = \Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Communication\CommunicationNote::class);
 @endphp
 
 @if ($canViewAny)
 @php
-    /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\CommunicationNote> $notes */
+    /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Communication\CommunicationNote> $notes */
     $notes = $notable->communicationNotes()
         ->visibleTo($panelUser)
         ->with(['creator', 'participants', 'nextActionUser'])
@@ -25,14 +25,14 @@
        serverseitig auditieren (1× je Note+Viewer+Tag, Log-Flut vermieden). */
     app(\App\Services\Communication\CommunicationNoteService::class)->recordConfidentialViews($notes, $panelUser);
     $openFollowUps = $notes->filter->hasOpenFollowUp()->sortBy('next_action_due_at');
-    $canCreate = \Illuminate\Support\Facades\Gate::allows('create', \App\Models\CommunicationNote::class);
-    $canPublish = \Illuminate\Support\Facades\Gate::allows('publishToCustomer', \App\Models\CommunicationNote::class);
-    $canManageConfidential = \Illuminate\Support\Facades\Gate::allows('manageConfidential', \App\Models\CommunicationNote::class);
+    $canCreate = \Illuminate\Support\Facades\Gate::allows('create', \App\Models\Communication\CommunicationNote::class);
+    $canPublish = \Illuminate\Support\Facades\Gate::allows('publishToCustomer', \App\Models\Communication\CommunicationNote::class);
+    $canManageConfidential = \Illuminate\Support\Facades\Gate::allows('manageConfidential', \App\Models\Communication\CommunicationNote::class);
     // Notiz strukturieren (Feature 148, MVP-732): Chips je Feld, nie Auto-Apply.
     $aiView = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
     $aiStructureUsable = $aiView->capabilityUsable(\App\Services\Ai\Suggestions\CommunicationNoteSuggestionService::CAPABILITY);
     $aiStructure = $aiStructureUsable
-        ? $aiView->openSuggestionsFor((new \App\Models\CommunicationNote)->getMorphClass(), $notes, \App\Services\Ai\Suggestions\CommunicationNoteSuggestionService::CAPABILITY)
+        ? $aiView->openSuggestionsFor((new \App\Models\Communication\CommunicationNote)->getMorphClass(), $notes, \App\Services\Ai\Suggestions\CommunicationNoteSuggestionService::CAPABILITY)
         : collect();
 @endphp
 

@@ -15,7 +15,7 @@ namespace App\Http\Controllers\CustomerPortal;
 use App\Enums\Contract\{ContractKind, SigningRevisionStatus};
 use App\Http\Controllers\{ArticleExportController, Controller};
 use App\Models\Contract\ContractSigningRevision;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Contract\ContractSigningService;
 use App\Support\Sqid;
 use Illuminate\Contracts\View\View;

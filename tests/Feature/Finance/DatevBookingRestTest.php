@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Finance;
 
-use App\Models\{Customer, Expense, ExpenseCategory, Invoice, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\{Expense, ExpenseCategory, Invoice};
+use App\Models\Platform\{Organization, User};
 use App\Services\Finance\Datev\{DatevBookingConfig, DatevMasterDataExporter};
 use App\Services\Finance\{DatevBookingException, DatevBookingService, FinancialFormatsSupport};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -268,7 +270,7 @@ class DatevBookingRestTest extends TestCase {
         $this->assertStringContainsString('text/csv', (string) $response->headers->get('Content-Type'));
         $this->assertSame(
             1,
-            \App\Models\AuditLog::query()->where('event', 'finance.datev.gl_accounts_exported')->count(),
+            \App\Models\Audit\AuditLog::query()->where('event', 'finance.datev.gl_accounts_exported')->count(),
         );
     }
 

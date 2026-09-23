@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Policies\Club;
 
 use App\Models\Club\ClubHorse;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
 
 /** Pferde (MVP-854): lesen wie das Register (auch Gruppenleitung), Profile pflegt die Vereinsverwaltung. */

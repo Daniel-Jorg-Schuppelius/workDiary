@@ -11,7 +11,9 @@
 namespace Tests\Feature\Plugins;
 
 use App\Enums\Task\TaskStatus;
-use App\Models\{ExternalReference, IntegrationOutboxEntry, PluginSetting, Task};
+use App\Models\Integration\{ExternalReference, IntegrationOutboxEntry};
+use App\Models\Platform\PluginSetting;
+use App\Models\Project\Task;
 use App\Plugins\Github\GithubPlugin;
 use App\Plugins\Github\Services\GithubIssueWritebackDispatcher;
 use App\Plugins\Gitlab\GitlabPlugin;

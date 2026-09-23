@@ -27,7 +27,7 @@
 
     <input type="hidden" name="date" value="{{ $day->toDateString() }}" />
     @if (! $isOwnDay)
-        <input type="hidden" name="user" value="{{ \App\Support\Sqid::encode(\App\Models\User::class, $targetUser->id) }}" />
+        <input type="hidden" name="user" value="{{ \App\Support\Sqid::encode(\App\Models\Platform\User::class, $targetUser->id) }}" />
     @endif
 
     <p class="text-sm opacity-70">{{ __('day-close.hint.reopen_intro') }}</p>

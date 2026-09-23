@@ -18,7 +18,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
 use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Support\{CarbonFmt, ChartBucket, Tz};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{Request, Response};

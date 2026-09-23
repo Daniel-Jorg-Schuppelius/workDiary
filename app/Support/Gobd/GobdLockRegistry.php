@@ -55,16 +55,16 @@ final class GobdLockRegistry {
         // wären unbemerkt geblieben.
         'AccountingMigrationEvent' => ['file' => 'app/Models/Migration/AccountingMigrationEvent.php', 'table' => 'accounting_migration_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
         // Ebenfalls hash-verkettet und bis 2026-08-31 nicht im Gate (S-59).
-        'AuditRedaction' => ['file' => 'app/Models/AuditRedaction.php', 'table' => 'audit_redactions', 'mechanism' => self::MECHANISM_APPEND_ONLY],
+        'AuditRedaction' => ['file' => 'app/Models/Audit/AuditRedaction.php', 'table' => 'audit_redactions', 'mechanism' => self::MECHANISM_APPEND_ONLY],
         // Restpunkte aus S-59, nachgezogen 2026-08-31.
-        'ApprovalStep' => ['file' => 'app/Models/ApprovalStep.php', 'table' => 'approval_steps', 'mechanism' => self::MECHANISM_APPEND_ONLY],
+        'ApprovalStep' => ['file' => 'app/Models/Approval/ApprovalStep.php', 'table' => 'approval_steps', 'mechanism' => self::MECHANISM_APPEND_ONLY],
         'InvoiceItem' => ['file' => 'app/Models/InvoiceItem.php', 'table' => 'invoice_items', 'mechanism' => self::MECHANISM_FREEZE],
         'TimeExport' => ['file' => 'app/Models/TimeExport.php', 'table' => 'time_exports', 'mechanism' => self::MECHANISM_FREEZE],
         'TimeExportLine' => ['file' => 'app/Models/TimeExportLine.php', 'table' => 'time_export_lines', 'mechanism' => self::MECHANISM_FREEZE],
         'PrivacyIncidentEvent' => ['file' => 'app/Models/Privacy/IncidentEvent.php', 'table' => 'privacy_incident_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
         'PrivacyRequestEvent' => ['file' => 'app/Models/Privacy/RequestEvent.php', 'table' => 'privacy_request_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
         'WhistleblowingCaseEvent' => ['file' => 'app/Models/Whistleblowing/CaseEvent.php', 'table' => 'whistleblowing_case_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
-        'WeatherSnapshot' => ['file' => 'app/Models/WeatherSnapshot.php', 'table' => 'weather_snapshots', 'mechanism' => self::MECHANISM_APPEND_ONLY],
+        'WeatherSnapshot' => ['file' => 'app/Models/Weather/WeatherSnapshot.php', 'table' => 'weather_snapshots', 'mechanism' => self::MECHANISM_APPEND_ONLY],
         'DocumentRenderSnapshot' => ['file' => 'app/Models/DocumentDesign/DocumentRenderSnapshot.php', 'table' => 'document_render_snapshots', 'mechanism' => self::MECHANISM_APPEND_ONLY],
         'AgileEvent' => ['file' => 'app/Models/Agile/AgileEvent.php', 'table' => 'agile_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
         'AssetInspectionEvent' => ['file' => 'app/Models/AssetCompliance/AssetInspectionEvent.php', 'table' => 'asset_inspection_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
@@ -80,8 +80,8 @@ final class GobdLockRegistry {
 
         // HashChained-Ereignisketten (append-only, Hash-Kette)
         'CashEntry' => ['file' => 'app/Models/CashEntry.php', 'table' => 'cash_entries', 'mechanism' => self::MECHANISM_CHAIN], // MVP-414 Kassenbuch
-        'AuditLog' => ['file' => 'app/Models/AuditLog.php', 'table' => 'audit_logs', 'mechanism' => self::MECHANISM_CHAIN],
-        'OrganizationAuditLog' => ['file' => 'app/Models/OrganizationAuditLog.php', 'table' => 'organization_audit_logs', 'mechanism' => self::MECHANISM_CHAIN],
+        'AuditLog' => ['file' => 'app/Models/Audit/AuditLog.php', 'table' => 'audit_logs', 'mechanism' => self::MECHANISM_CHAIN],
+        'OrganizationAuditLog' => ['file' => 'app/Models/Audit/OrganizationAuditLog.php', 'table' => 'organization_audit_logs', 'mechanism' => self::MECHANISM_CHAIN],
         'BillingTransferEvent' => ['file' => 'app/Models/Finance/BillingTransferEvent.php', 'table' => 'billing_transfer_events', 'mechanism' => self::MECHANISM_CHAIN],
         'DatevBookingEvent' => ['file' => 'app/Models/Finance/DatevBookingEvent.php', 'table' => 'datev_booking_events', 'mechanism' => self::MECHANISM_CHAIN],
         'AccountingEvent' => ['file' => 'app/Models/Accounting/AccountingEvent.php', 'table' => 'accounting_events', 'mechanism' => self::MECHANISM_CHAIN], // MVP-672

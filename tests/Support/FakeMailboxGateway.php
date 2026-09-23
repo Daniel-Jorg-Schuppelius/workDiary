@@ -10,7 +10,7 @@
 
 namespace Tests\Support;
 
-use App\Models\EmailConnection;
+use App\Models\Mail\EmailConnection;
 use App\Services\Mail\{MailboxGateway, ParsedMessage};
 
 /**

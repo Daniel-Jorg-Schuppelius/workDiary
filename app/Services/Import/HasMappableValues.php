@@ -35,5 +35,5 @@ interface HasMappableValues {
      *
      * @return list<string>
      */
-    public function unresolvedMappableValues(\App\Models\Organization $organization, ?string $raw, string $entity): array;
+    public function unresolvedMappableValues(\App\Models\Platform\Organization $organization, ?string $raw, string $entity): array;
 }

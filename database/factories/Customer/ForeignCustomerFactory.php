@@ -8,9 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace Database\Factories;
+namespace Database\Factories\Customer;
 
-use App\Models\{Customer, ForeignCustomer, User};
+use App\Models\Customer\Customer\Customer;
+use App\Models\Customer\Customer\ForeignCustomer;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

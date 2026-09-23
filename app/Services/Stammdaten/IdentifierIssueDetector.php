@@ -42,7 +42,7 @@ class IdentifierIssueDetector {
     /**
      * Befunde eines Kontakts **samt** seiner Bankverbindungen.
      *
-     * Die hinterlegten Bankverbindungen ({@see \App\Models\ContactBankAccount})
+     * Die hinterlegten Bankverbindungen ({@see \App\Models\Contacts\ContactBankAccount})
      * haben keine eigene Detailseite — ohne diesen Durchgriff bliebe eine falsche
      * IBAN dort unsichtbar, obwohl sie im Zahlungsverkehr landet.
      *

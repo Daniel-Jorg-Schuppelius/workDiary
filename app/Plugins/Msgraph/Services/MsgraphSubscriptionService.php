@@ -14,7 +14,8 @@ namespace App\Plugins\Msgraph\Services;
 
 use App\Enums\CloudIntake\CloudIntakeProvider;
 use App\Models\CloudIntake\CloudDocumentConnection;
-use App\Models\{EmailConnection, MsgraphConnection, MsgraphMailConnection, MsgraphTaskConnection, MsgraphTaskListLink};
+use App\Models\Mail\EmailConnection;
+use App\Models\Plugins\Msgraph\{MsgraphConnection, MsgraphMailConnection, MsgraphTaskConnection, MsgraphTaskListLink};
 use App\Plugins\Msgraph\Api\{GraphSubscriptionClient, MsgraphCalendarClient, MsgraphIntakeClient, MsgraphMailClient, MsgraphTodoClient};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\{Carbon, Str};

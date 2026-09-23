@@ -15,7 +15,7 @@ namespace App\Services\Accounting\Posting;
 use App\Enums\Finance\{AccountingEntryStatus, PostingAccountRole, PostingSourceKind};
 use App\Models\Accounting\{AccountingAccount, AccountingEntry};
 use App\Models\Finance\BankTransaction;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingSovereigntyResolver, InternalTransferService, JournalService};
 use App\Services\TimeExport\CostCenterResolver;
 use App\Support\Setting;

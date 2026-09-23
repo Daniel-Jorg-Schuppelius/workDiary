@@ -14,7 +14,10 @@ namespace Tests\Feature\Reselling;
 
 use App\Enums\Finance\BillingMode;
 use App\Enums\Reselling\PeriodStatus;
-use App\Models\{Article, Customer, ExternalReference, Invoice, InvoiceItem, LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
+use App\Models\{Article, Invoice, InvoiceItem};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Plugins\Lexoffice\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
 use App\Models\Reselling\{ResalePeriodLink, ResaleSubscription};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Services\LexofficeInvoiceMirrorSource;

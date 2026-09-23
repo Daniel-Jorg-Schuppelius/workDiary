@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Reporting\Concerns;
 
 use App\Enums\User\Permission;
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Support\Facades\Auth;
 
 /**

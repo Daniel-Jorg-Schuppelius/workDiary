@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Search\Indexing\Sources;
 
 use App\Enums\Search\SearchSourceType;
-use App\Models\{Document, User};
+use App\Models\Document\Document;
+use App\Models\Platform\User;
 use App\Services\Content\ContentSubjectResolver;
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
 use App\Support\MorphMap;
@@ -33,7 +34,7 @@ use Illuminate\Database\Eloquent\{Builder, Model};
  * - **Vertrauliche Dokumente tragen `restricted`.** Damit gilt im Index
  *   dieselbe Regel wie in der Liste: Erfasser oder `document.confidential.manage`.
  *
- * Der Dateitext kommt aus {@see \App\Models\DocumentVersionText}, den der
+ * Der Dateitext kommt aus {@see \App\Models\Document\DocumentVersionText}, den der
  * {@see \App\Jobs\ExtractDocumentTextJob} einmal je Version füllt; fehlt er
  * noch, wird das Dokument ohne ihn indiziert und nach der Extraktion erneut.
  */

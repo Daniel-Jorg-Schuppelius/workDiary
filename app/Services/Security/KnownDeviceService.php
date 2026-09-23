@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Security;
 
 use App\Enums\Notification\NotificationEvent;
-use App\Models\{User, UserKnownDevice};
+use App\Models\Auth\UserKnownDevice;
+use App\Models\Platform\User;
 use App\Notifications\GenericEventNotification;
 use CommonToolkit\Helper\Data\{CryptoHelper, UserAgentHelper};
 use CommonToolkit\Helper\Geo\IpLocationHelper;

@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Reselling;
 
 use App\Enums\Reselling\{SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
-use App\Models\{Customer, ForeignCustomer, LexofficeArticle};
+use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Domain\{DomainProjection, DomainProviderConnection};
+use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Models\Reselling\{ResalePriceEntry, ResaleSubscription};
 use App\Services\Reselling\Register\DomainSubscriptionSync;
 use Carbon\CarbonImmutable;

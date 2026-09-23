@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Sharepoint\Api;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
-use App\Models\SharepointConnection;
+use App\Models\Plugins\Sharepoint\SharepointConnection;
 use App\Plugins\Sharepoint\{SharepointConfig, SharepointPlugin};
 use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
 use App\Plugins\Support\Mirror\RemoteFileGateway;

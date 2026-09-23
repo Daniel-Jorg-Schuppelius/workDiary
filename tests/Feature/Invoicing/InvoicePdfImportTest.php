@@ -13,7 +13,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Invoicing;
 
 use App\Enums\Invoicing\InvoiceDeliveryFormat;
-use App\Models\{Customer, Document, Invoice, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Document\Document;
+use App\Models\Invoice;
+use App\Models\Platform\{Organization, User};
 use App\Services\Invoicing\EInvoice\XRechnungGenerator;
 use Dompdf\Dompdf;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -10,7 +10,8 @@
 
 namespace App\Services\Flextime;
 
-use App\Models\{User, WorkSchedule};
+use App\Models\Platform\User;
+use App\Models\WorkSchedule;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 

@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\{EmailConnection, Organization};
+use App\Models\Mail\EmailConnection;
+use App\Models\Platform\Organization;
 use App\Services\Mail\{MailIntakeService, MailboxGateway};
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;

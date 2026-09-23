@@ -11,7 +11,8 @@
 namespace Database\Factories;
 
 use App\Enums\Safety\{SafetyEventKind, SafetyEventSeverity, SafetyEventStatus};
-use App\Models\{SafetyEvent, User};
+use App\Models\Platform\User;
+use App\Models\SafetyEvent;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

@@ -10,7 +10,7 @@
 
 namespace App\Plugins;
 
-use App\Models\PluginState;
+use App\Models\Platform\PluginState;
 use App\Plugins\Contracts\{Plugin, PluginCapability, PluginCapabilityContract, SlotRenderer};
 use App\Plugins\Support\PluginOrgContext;
 use Illuminate\Support\Collection;

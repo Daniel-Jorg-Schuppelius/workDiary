@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use App\Enums\Attendance\AttendanceStatus;
-use App\Models\{Attendance, User, WorkSchedule};
+use App\Models\{Attendance, WorkSchedule};
+use App\Models\Platform\User;
 use Illuminate\Support\Carbon;
 
 /**

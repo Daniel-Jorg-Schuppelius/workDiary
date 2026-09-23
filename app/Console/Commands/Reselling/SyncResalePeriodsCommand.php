@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Reselling;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Models\Reselling\ResaleSubscription;
 use App\Services\Reselling\Register\{PeriodPlanner, ResaleContractObligationSync};
 use Illuminate\Console\Command;

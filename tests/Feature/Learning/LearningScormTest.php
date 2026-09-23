@@ -12,7 +12,7 @@ namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\{LearningProgressStatus, LearningUnitKind};
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningScormPackage, LearningUnit, LearningXapiStatement};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningCourseService, LearningEnrollmentService, LearningScormService};
 use ELearningToolkit\Scorm\ScormVersion;
 use Illuminate\Foundation\Testing\RefreshDatabase;

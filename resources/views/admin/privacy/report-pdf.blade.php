@@ -17,7 +17,7 @@
 
 @php
     /** @var \Carbon\CarbonInterface $generated_at */
-    /** @var \App\Models\Organization $organization */
+    /** @var \App\Models\Platform\Organization $organization */
     /** @var string $operating_mode */
     /** @var int $member_count */
     /** @var int $session_count */

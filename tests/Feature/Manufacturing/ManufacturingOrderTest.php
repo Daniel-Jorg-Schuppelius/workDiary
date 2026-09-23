@@ -11,7 +11,8 @@
 namespace Tests\Feature\Manufacturing;
 
 use App\Enums\Manufacturing\ManufacturingOrderStatus;
-use App\Models\{Article, ManufacturingOrder, Organization, ProcedureMaterialRequirement, ProcedureTemplateVersion};
+use App\Models\{Article, ManufacturingOrder, ProcedureMaterialRequirement, ProcedureTemplateVersion};
+use App\Models\Platform\Organization;
 use App\Services\Manufacturing\{ManufacturingOrderService, MaterialDemandCalculator};
 use CommonToolkit\Enums\RoundingMode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -131,7 +132,7 @@ final class ManufacturingOrderTest extends TestCase {
             'default_procedure_template_version_id' => $this->version->id,
         ]);
         $order = $this->service->release($this->service->createDraft($this->organization, $product, null, '5', 'Stk'));
-        $user = \App\Models\User::factory()->create(['organization_id' => $this->organization->id]);
+        $user = \App\Models\Platform\User::factory()->create(['organization_id' => $this->organization->id]);
 
         $this->service->startExecution($order, $user->id);
 

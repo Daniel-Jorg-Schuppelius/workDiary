@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Patrols;
 
-use App\Models\{OpenIssue, User};
+use App\Models\OpenIssue;
 use App\Models\Patrol\{PatrolRoute, PatrolRun};
+use App\Models\Platform\User;
 use App\Services\Patrol\PatrolService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

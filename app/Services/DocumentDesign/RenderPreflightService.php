@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\DocumentDesign;
 
 use App\Enums\DocumentDesign\{InformationBlock, InformationBlockState, PageFormat, RenderDocumentKind, TableStylePreset};
-use App\Models\DocumentDesign\DocumentRenderProfileVersion;
+use App\Models\Document\DocumentDesign\DocumentRenderProfileVersion;
 use CommonToolkit\Helper\Data\ColorHelper;
 
 /**

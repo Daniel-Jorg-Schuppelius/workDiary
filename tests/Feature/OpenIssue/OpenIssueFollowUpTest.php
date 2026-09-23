@@ -14,7 +14,11 @@ namespace Tests\Feature\OpenIssue;
 
 use App\Enums\Diary\{LocationMode, Mode};
 use App\Enums\Project\ProjectStatus;
-use App\Models\{AuditLog, Customer, DiaryEntry, OpenIssue, Organization, Project, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Customer\Customer;
+use App\Models\{DiaryEntry, OpenIssue};
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

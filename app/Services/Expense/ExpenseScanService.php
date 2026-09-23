@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Expense;
 
-use App\Models\{Expense, Organization, User};
+use App\Models\Expense;
+use App\Models\Platform\{Organization, User};
 use App\Services\Invoicing\InvoicePdfImportService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;

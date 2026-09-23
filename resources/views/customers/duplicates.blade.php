@@ -11,7 +11,7 @@
 @section('nav-title', __('Kunden-Abgleich'))
 
 @php
-    use App\Services\CustomerDuplicateFinder;
+    use App\Services\Stammdaten\CustomerDuplicateFinder;
 
     $reasonLabels = [
         'vat_id' => __('USt-IdNr.'),

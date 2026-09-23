@@ -12,7 +12,8 @@ namespace Tests\Feature\Learning;
 
 use App\Enums\Search\SearchSourceType;
 use App\Models\Learning\LearningCourse;
-use App\Models\{SearchDocument, User};
+use App\Models\Platform\User;
+use App\Models\Search\SearchDocument;
 use App\Services\Learning\{LearningCourseService, LearningEnrollmentService};
 use App\Services\Search\{ActivitySearchCriteria, ActivitySearchResult, ActivitySearchService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

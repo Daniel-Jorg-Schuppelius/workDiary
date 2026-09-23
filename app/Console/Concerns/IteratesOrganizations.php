@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Concerns;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\{Builder, Collection};
 use Throwable;

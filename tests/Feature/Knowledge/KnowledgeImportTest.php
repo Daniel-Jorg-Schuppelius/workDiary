@@ -12,7 +12,11 @@ namespace Tests\Feature\Knowledge;
 
 use App\Enums\CloudIntake\CloudIntakeProvider;
 use App\Models\CloudIntake\CloudDocumentConnection;
-use App\Models\{CommunicationNote, ContentCollection, ContentReference, ExternalReference, KnowledgeArticle, MsgraphOneNoteConnection, User};
+use App\Models\Communication\CommunicationNote;
+use App\Models\Integration\ExternalReference;
+use App\Models\Knowledge\{ContentCollection, ContentReference, KnowledgeArticle};
+use App\Models\Platform\User;
+use App\Models\Plugins\Msgraph\MsgraphOneNoteConnection;
 use App\Plugins\Msgraph\Api\MsgraphOneNoteClient;
 use App\Plugins\Msgraph\MsgraphConfig;
 use App\Plugins\Support\Intake\{IntakeChangePage, IntakeItem};

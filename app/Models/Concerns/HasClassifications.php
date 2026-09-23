@@ -10,7 +10,7 @@
 
 namespace App\Models\Concerns;
 
-use App\Models\Classification;
+use App\Models\Classification\Classification;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 /**

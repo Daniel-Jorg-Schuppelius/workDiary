@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\OrgaMax\Services;
 
-use App\Models\OrgaMaxConnection;
+use App\Models\Plugins\OrgaMax\OrgaMaxConnection;
 
 /**
  * Scope-Preflight (Feature 077, MVP-306): je Capability die in orgaMAX

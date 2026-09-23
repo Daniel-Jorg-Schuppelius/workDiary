@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\{MergesDuplicates, ResolvesCurrentOrganization};
-use App\Models\{Article, ArticleMergeDismissal, Organization};
-use App\Services\{ArticleDuplicateFinder, ArticleMergeService};
+use App\Models\{Article, ArticleMergeDismissal};
+use App\Models\Platform\Organization;
+use App\Services\Stammdaten\{ArticleDuplicateFinder, ArticleMergeService};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;

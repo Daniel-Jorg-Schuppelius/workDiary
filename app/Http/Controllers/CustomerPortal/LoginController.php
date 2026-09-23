@@ -53,7 +53,7 @@ class LoginController extends Controller {
         // Defense-in-Depth: Der CustomerUserProvider filtert bereits auf
         // customer_id IS NOT NULL. Hier zusaetzlich pruefen, ob das Modell
         // tatsaechlich einem Kunden zugeordnet ist (kein Fehlkonfig-Fall).
-        if (! $user instanceof \App\Models\User || ! $user->isCustomer()) {
+        if (! $user instanceof \App\Models\Platform\User || ! $user->isCustomer()) {
             $request->session()->invalidate();
             $request->session()->regenerateToken();
             throw ValidationException::withMessages([

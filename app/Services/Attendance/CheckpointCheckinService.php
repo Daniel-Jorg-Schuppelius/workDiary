@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Attendance;
 
 use App\Enums\Attendance\AttendanceSource;
-use App\Models\{Attendance, AttendanceCheckpoint, User};
+use App\Models\{Attendance, AttendanceCheckpoint};
+use App\Models\Platform\User;
 use CommonToolkit\Helper\Geo\GeoHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;

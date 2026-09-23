@@ -11,7 +11,9 @@
 namespace Database\Factories;
 
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
-use App\Models\{Project, TimeEntry, User};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

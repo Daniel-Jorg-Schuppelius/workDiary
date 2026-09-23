@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins\Etsy;
 
-use App\Models\{EtsyConnection, EtsyReceipt, EtsyWebhookDelivery, PluginSetting};
+use App\Models\Platform\PluginSetting;
+use App\Models\Plugins\Etsy\{EtsyConnection, EtsyReceipt, EtsyWebhookDelivery};
 use App\Plugins\Etsy\EtsyPlugin;
 use App\Plugins\Etsy\Jobs\EtsyWebhookIngestJob;
 use Illuminate\Foundation\Testing\RefreshDatabase;

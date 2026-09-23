@@ -10,7 +10,8 @@
 
 namespace App\Services\Calendar;
 
-use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift, User};
+use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift};
+use App\Models\Platform\User;
 use App\Support\{Setting, Tz};
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Enums\Weekday;

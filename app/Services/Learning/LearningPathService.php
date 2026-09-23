@@ -14,7 +14,7 @@ namespace App\Services\Learning;
 
 use App\Enums\Learning\{LearningCourseStatus, LearningEnrollmentSource};
 use App\Models\Learning\{LearningEnrollment, LearningPath, LearningPathItem};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Support\{Carbon, Collection};
 use Illuminate\Support\Facades\DB;
 

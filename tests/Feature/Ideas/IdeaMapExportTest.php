@@ -11,7 +11,8 @@
 namespace Tests\Feature\Ideas;
 
 use App\Enums\Ideas\IdeaShareRole;
-use App\Models\{IdeaMap, User};
+use App\Models\Ideas\IdeaMap;
+use App\Models\Platform\User;
 use App\Services\Ideas\{IdeaMapExportService, IdeaMapService, IdeaNodeService};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -65,7 +66,7 @@ final class IdeaMapExportTest extends TestCase {
         $root = $this->map->rootNode()->firstOrFail();
         $child = $this->map->nodes()->where('is_root', false)->firstOrFail();
 
-        \App\Models\IdeaNodeLink::query()->create([
+        \App\Models\Ideas\IdeaNodeLink::query()->create([
             'organization_id' => $this->organization->id,
             'idea_map_id' => $this->map->id,
             'source_node_id' => $root->id,
@@ -73,7 +74,7 @@ final class IdeaMapExportTest extends TestCase {
             'label' => 'hängt zusammen',
             'color' => '#2563eb',
         ]);
-        \App\Models\IdeaNodeSummary::query()->create([
+        \App\Models\Ideas\IdeaNodeSummary::query()->create([
             'organization_id' => $this->organization->id,
             'idea_map_id' => $this->map->id,
             'parent_node_id' => $root->id,

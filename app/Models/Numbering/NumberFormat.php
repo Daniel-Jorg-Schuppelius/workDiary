@@ -8,11 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Numbering;
 
 use App\Enums\Numbering\NumberScope;
 use App\Models\Concerns\{Auditable, BelongsToOrganization};
-use Database\Factories\NumberFormatFactory;
+use Database\Factories\Numbering\NumberFormatFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;

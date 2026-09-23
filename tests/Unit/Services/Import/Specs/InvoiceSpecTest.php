@@ -14,7 +14,9 @@ namespace Tests\Unit\Services\Import\Specs;
 
 use App\Enums\Finance\BillingMode;
 use App\Enums\Import\ImportErrorCode;
-use App\Models\{Customer, Invoice, Organization};
+use App\Models\Customer\Customer;
+use App\Models\Invoice;
+use App\Models\Platform\Organization;
 use App\Services\Import\ImportOutcome;
 use App\Services\Import\Specs\InvoiceSpec;
 use Illuminate\Foundation\Testing\RefreshDatabase;

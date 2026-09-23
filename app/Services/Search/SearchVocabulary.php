@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Search;
 
-use App\Models\{SearchDocument, SearchTerm};
+use App\Models\Search\{SearchDocument, SearchTerm};
 
 /**
  * Wortverzeichnis des Suchindex je Organisation (Feature 153, MVP-772) —

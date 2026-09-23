@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Patrol;
 
 use App\Enums\OpenIssue\OpenIssueSource;
-use App\Models\{OpenIssue, User};
+use App\Models\OpenIssue;
 use App\Models\Patrol\{PatrolCheckpoint, PatrolRoute, PatrolRun};
+use App\Models\Platform\User;
 use Illuminate\Support\{Carbon, Str};
 use RuntimeException;
 
@@ -184,7 +185,7 @@ class PatrolService {
      * nicht stillschweigend erfunden.
      */
     private function writeLogbookEntry(PatrolRun $run, User $actor, int $missed, int $late): void {
-        $entryType = \App\Models\EntryType::query()
+        $entryType = \App\Models\Classification\EntryType::query()
             ->where('slug', 'revierfahrt')
             ->first();
         if ($entryType === null) {

@@ -42,7 +42,7 @@
     <x-select-field span="2" name="activity_category_id" :label="__('Kategorie (optional)')">
         <option value="">— {{ __('keine Kategorie') }} —</option>
         @foreach ($categories as $c)
-            <option value="{{ $c->sqid }}" @selected((string) old('activity_category_id', \App\Support\Sqid::encode(\App\Models\ActivityCategory::class, $entry?->activity_category_id)) === $c->sqid)>
+            <option value="{{ $c->sqid }}" @selected((string) old('activity_category_id', \App\Support\Sqid::encode(\App\Models\Classification\ActivityCategory::class, $entry?->activity_category_id)) === $c->sqid)>
                 {{ $c->label }} ({{ $c->activity_type->label() }})
             </option>
         @endforeach

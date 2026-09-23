@@ -12,7 +12,7 @@ namespace Tests\Feature\Integration;
 
 use App\Enums\Integration\WebhookEvent;
 use App\Models\Integration\WebhookEndpoint;
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\Concerns\WithOrganization;

@@ -14,7 +14,8 @@ namespace App\Http\Controllers\Helpdesk;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{Problem, ServiceTicket, User};
+use App\Models\Platform\User;
+use App\Models\{Problem, ServiceTicket};
 use App\Services\ServiceTicket\ProblemService;
 use App\Support\{ErrorText, Sqid, Tz};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -257,10 +258,10 @@ class ProblemController extends Controller {
         return $tickets;
     }
 
-    private function knownErrorArticle(Problem $problem): ?\App\Models\KnowledgeArticle {
+    private function knownErrorArticle(Problem $problem): ?\App\Models\Knowledge\KnowledgeArticle {
         $link = app(\App\Services\ServiceTicket\ProblemService::class)->knownErrorLink($problem);
 
-        return $link !== null ? \App\Models\KnowledgeArticle::query()->find($link->source_id) : null;
+        return $link !== null ? \App\Models\Knowledge\KnowledgeArticle::query()->find($link->source_id) : null;
     }
 
     private function actor(): User {

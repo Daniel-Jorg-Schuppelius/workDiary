@@ -12,7 +12,7 @@ namespace Database\Factories\CloudIntake;
 
 use App\Enums\CloudIntake\{CloudIntakeConnectionStatus, CloudIntakeProvider};
 use App\Models\CloudIntake\CloudDocumentConnection;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

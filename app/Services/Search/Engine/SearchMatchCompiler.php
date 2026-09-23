@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Search\Engine;
 
-use App\Models\SearchDocument;
+use App\Models\Search\SearchDocument;
 use App\Services\Search\Query\ParsedSearchQuery;
 use Illuminate\Database\Eloquent\Builder;
 

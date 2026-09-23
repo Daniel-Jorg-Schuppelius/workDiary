@@ -8,19 +8,24 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Document;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
 use App\Enums\Hr\HrDocumentCategory;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, HasTags};
 use App\Services\Content\ContentSubjectResolver;
 use App\Support\MorphMap;
-use Database\Factories\DocumentFactory;
+use Database\Factories\Document\DocumentFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
 use Illuminate\Support\Carbon;
+use App\Models\Asset;
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\Document\DocumentVersion;
+use App\Models\Project\Project;
 
 /**
  * Verwaltetes Dokument (MVP-031): typisierte Datei mit Metadaten,

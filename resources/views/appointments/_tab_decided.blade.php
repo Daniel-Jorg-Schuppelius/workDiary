@@ -33,7 +33,7 @@
                 </td>
                 <td class="max-w-72">
                     @php($entryUrl = \App\Support\EntityUrl::byType(\App\Models\DiaryEntry::class, $request->diary_entry_id))
-                    @if ($request->status === \App\Models\AppointmentRequest::STATUS_DECLINED && filled($request->decline_reason))
+                    @if ($request->status === \App\Models\Calendar\AppointmentRequest::STATUS_DECLINED && filled($request->decline_reason))
                         <span class="line-clamp-2" title="{{ $request->decline_reason }}">{{ $request->decline_reason }}</span>
                     @elseif ($entryUrl !== null)
                         <a href="{{ $entryUrl }}" class="link link-hover inline-flex items-center gap-1">

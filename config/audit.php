@@ -23,11 +23,11 @@ return [
     | audit:export iterieren über diese Liste.
     */
     'chains' => [
-        'audit_logs' => App\Models\AuditLog::class,
+        'audit_logs' => App\Models\Audit\AuditLog::class,
         // Nachweiskette der Schwärzungen (S-21): der Eingriff in die eine
         // Kette ist nur dann belegt, wenn die andere selbst geprüft wird.
-        'audit_redactions' => App\Models\AuditRedaction::class,
-        'organization_audit_logs' => App\Models\OrganizationAuditLog::class,
+        'audit_redactions' => App\Models\Audit\AuditRedaction::class,
+        'organization_audit_logs' => App\Models\Audit\OrganizationAuditLog::class,
         'whistleblowing_case_events' => App\Models\Whistleblowing\CaseEvent::class,
         'privacy_request_events' => App\Models\Privacy\RequestEvent::class,
         'privacy_incident_events' => App\Models\Privacy\IncidentEvent::class,

@@ -11,7 +11,7 @@
 namespace App\Models\Concerns;
 
 use App\Exceptions\MissingOrganizationException;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Scopes\OrganizationScope;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;

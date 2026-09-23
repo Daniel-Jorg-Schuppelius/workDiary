@@ -10,7 +10,7 @@
 
 namespace App\Plugins\RemoteSupport;
 
-use App\Models\PluginSetting;
+use App\Models\Platform\PluginSetting;
 use App\Plugins\Support\PluginOrgContext;
 
 /**

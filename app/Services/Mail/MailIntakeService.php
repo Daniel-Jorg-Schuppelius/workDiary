@@ -12,7 +12,10 @@ declare(strict_types=1);
 
 namespace App\Services\Mail;
 
-use App\Models\{Customer, EmailConnection, IntegrationInboxItem, Organization};
+use App\Models\Customer\Customer;
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Mail\EmailConnection;
+use App\Models\Platform\Organization;
 use App\Services\Integration\Match\{EntityMatcher, MatchStrategy};
 use App\Services\Integration\Profiles\CustomerMatchProfile;
 use CommonToolkit\Helper\Data\EmailHelper;
@@ -209,7 +212,7 @@ class MailIntakeService {
      * @return 'einvoice'|'skipped'|null
      */
     private function intakeEInvoices(Organization $organization, EmailConnection $connection, ParsedMessage $message): ?string {
-        $actor = \App\Models\User::query()
+        $actor = \App\Models\Platform\User::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $connection->organization_id)
             ->where('id', (int) $connection->created_by)
@@ -357,7 +360,7 @@ class MailIntakeService {
         $known = [];
 
         $customer = $ticket->customer_id !== null
-            ? \App\Models\Customer::query()->withoutGlobalScopes()->whereKey($ticket->customer_id)->first()
+            ? \App\Models\Customer\Customer::query()->withoutGlobalScopes()->whereKey($ticket->customer_id)->first()
             : null;
         if ($customer !== null) {
             $known[] = (string) $customer->email;
@@ -365,7 +368,7 @@ class MailIntakeService {
                 $known[] = (string) ($person['email'] ?? '');
             }
 
-            foreach (\App\Models\User::query()->withoutGlobalScopes()
+            foreach (\App\Models\Platform\User::query()->withoutGlobalScopes()
                 ->where('organization_id', $ticket->organization_id)
                 ->where('customer_id', $customer->getKey())
                 ->pluck('email') as $portalEmail) {
@@ -374,7 +377,7 @@ class MailIntakeService {
         }
 
         if ($ticket->reported_by_user_id !== null) {
-            $known[] = (string) \App\Models\User::query()->withoutGlobalScopes()
+            $known[] = (string) \App\Models\Platform\User::query()->withoutGlobalScopes()
                 ->whereKey($ticket->reported_by_user_id)->value('email');
         }
 

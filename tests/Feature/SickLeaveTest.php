@@ -12,7 +12,8 @@ namespace Tests\Feature;
 
 use App\Enums\Sickness\SickLeaveKind;
 use App\Http\Controllers\SickLeaveController;
-use App\Models\{SickLeave, User};
+use App\Models\Platform\User;
+use App\Models\SickLeave;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;

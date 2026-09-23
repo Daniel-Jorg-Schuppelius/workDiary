@@ -14,7 +14,7 @@ namespace App\Services\Import\Specs;
 
 use App\Enums\Article\{ArticleStatus, ArticleType};
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Import\{ImportOutcome, InboxFirstSpec, ValidationIssue};
 use App\Services\Import\Specs\Concerns\DedupsAndStages;
 use App\Services\Integration\Profiles\ArticleMatchProfile;

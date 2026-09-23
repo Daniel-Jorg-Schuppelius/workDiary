@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Msgraph\Jobs;
 
 use App\Jobs\Concerns\RetriesTransientFailures;
-use App\Models\{EmailConnection, Organization};
+use App\Models\Mail\EmailConnection;
+use App\Models\Platform\Organization;
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Services\Mail\{MailIntakeService, MailboxGateway};
 use Illuminate\Bus\Queueable;

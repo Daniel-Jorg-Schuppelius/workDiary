@@ -14,7 +14,9 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 use App\Enums\Diary\Status;
 use App\Enums\Protocol\{ProtocolStatus, ProtocolType};
 use App\Exceptions\ClassificationRequirementException;
-use App\Models\{ClassificationRequirement, DiaryEntry, EntryType, Organization, Protocol, User};
+use App\Models\Classification\{ClassificationRequirement, EntryType};
+use App\Models\{DiaryEntry, Protocol};
+use App\Models\Platform\{Organization, User};
 use App\Services\Diary\OrderService;
 use App\Services\Protocol\ProtocolService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

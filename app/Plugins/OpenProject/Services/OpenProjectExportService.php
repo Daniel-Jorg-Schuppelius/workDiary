@@ -10,7 +10,10 @@
 
 namespace App\Plugins\OpenProject\Services;
 
-use App\Models\{ExternalReference, Organization, Project, Task, TimeEntry, User};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\{Project, Task};
+use App\Models\TimeEntry;
 use App\Plugins\OpenProject\Exceptions\{OpenProjectApiException, OpenProjectRateLimitException};
 use App\Plugins\OpenProject\OpenProjectPlugin;
 use App\Plugins\OpenProject\Sources\OpenProjectApiClient;

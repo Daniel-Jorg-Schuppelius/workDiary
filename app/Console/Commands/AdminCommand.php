@@ -10,7 +10,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Install\InstallationManager;
 use Illuminate\Console\Command;
 

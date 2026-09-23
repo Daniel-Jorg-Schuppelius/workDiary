@@ -11,7 +11,7 @@
 namespace App\Policies\Backup;
 
 use App\Models\Backup\BackupGeneration;
-use App\Models\User;
+use App\Models\Platform\User;
 
 /**
  * Backup-Generationen (Feature 017 Phase 32): Sicht + Legal-Hold +

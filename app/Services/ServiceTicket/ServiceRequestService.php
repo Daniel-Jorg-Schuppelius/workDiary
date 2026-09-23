@@ -13,7 +13,10 @@ declare(strict_types=1);
 namespace App\Services\ServiceTicket;
 
 use App\Enums\ServiceTicket\{ServiceTicketKind, ServiceTicketSource};
-use App\Models\{Approval, DiaryEntry, Project, RequestItem, ServiceQueue, ServiceRequest, ServiceTicket, Task, User};
+use App\Models\Approval\Approval;
+use App\Models\{DiaryEntry, RequestItem, ServiceQueue, ServiceRequest, ServiceTicket};
+use App\Models\Platform\User;
+use App\Models\Project\{Project, Task};
 use Illuminate\Support\Facades\DB;
 
 /**

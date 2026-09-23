@@ -8,7 +8,7 @@
 --}}
 {{-- Organisation-Settings (Pagination, Invoicing, Uploads, Validation, Notifications, UI). --}}
 @php
-    /** @var \App\Models\Organization|null $organization */
+    /** @var \App\Models\Platform\Organization|null $organization */
     $stored = (array) ($organization?->settings ?? []);
 
     $tabs = [
@@ -70,7 +70,7 @@
                  Projekt-Abrechnungsregeln überschreiben sie. --}}
             @php
                 $serviceArticles = $organization !== null
-                    ? \App\Models\LexofficeArticle::query()
+                    ? \App\Models\Plugins\Lexoffice\LexofficeArticle::query()
                         ->withoutGlobalScopes()
                         ->where('organization_id', $organization->id)
                         ->active()

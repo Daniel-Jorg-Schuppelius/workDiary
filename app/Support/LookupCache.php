@@ -10,7 +10,8 @@
 
 namespace App\Support;
 
-use App\Models\{Organization, Tag, User};
+use App\Models\Classification\Tag;
+use App\Models\Platform\{Organization, User};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 

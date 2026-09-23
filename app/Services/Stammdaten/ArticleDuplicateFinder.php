@@ -10,12 +10,15 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Services\Stammdaten;
 
-use App\Models\{Article, ArticleMergeDismissal, Organization};
+use App\Models\Article;
+use App\Models\ArticleMergeDismissal;
+use App\Models\Platform\Organization;
 use App\Services\Integration\Match\{EntityMatcher, MatchProfile};
 use App\Services\Integration\Profiles\ArticleDuplicateMatchProfile;
 use Illuminate\Database\Eloquent\{Collection as EloquentCollection, Model};
+use App\Services\Stammdaten\AbstractDuplicateFinder;
 
 /**
  * Findet Dubletten-Kandidaten unter den Artikeln einer Organisation (Audit
@@ -58,7 +61,7 @@ class ArticleDuplicateFinder extends AbstractDuplicateFinder {
     }
 
     /**
-     * Paare ausschliessen, die der {@see \App\Services\ArticleMergeService}
+     * Paare ausschliessen, die der {@see \App\Services\Stammdaten\ArticleMergeService}
      * ohnehin ablehnen wuerde - ein Vorschlag, der beim Klick scheitert,
      * waere schlechter als keiner.
      */

@@ -16,7 +16,7 @@ use RecursiveIteratorIterator;
 
 /**
  * Architektur-Gate gegen Cross-Tenant-User-Leaks (Bauturbo Welle D,
- * „User-Modell org-scoping absichern"): Das {@see \App\Models\User}-Modell
+ * „User-Modell org-scoping absichern"): Das {@see \App\Models\Platform\User}-Modell
  * trägt aus Sicherheitsgründen bewusst KEINEN globalen `OrganizationScope`
  * (Authenticatable-/Org-Wechsel-Sonderfall, siehe
  * ../WorkDiary-Architecture/security/tenant-audit-2026.md, Allow-List Z. 111).
@@ -25,8 +25,8 @@ use RecursiveIteratorIterator;
  * (Mitglieder-/Assignee-/Empfänger-/Report-Picker, Dropdowns, plucks), muss die
  * Mandantengrenze SELBST ziehen — sonst listet sie Nutzer ALLER Organisationen
  * (genau die wiederkehrende Whitebox-Bug-Klasse, zuletzt A17: sechs Reporting-
- * Controller). Der kanonische Weg ist {@see \App\Models\User::scopeInCurrentOrganization()}
- * bzw. {@see \App\Models\User::scopeForOrganization()} oder ein expliziter
+ * Controller). Der kanonische Weg ist {@see \App\Models\Platform\User::scopeInCurrentOrganization()}
+ * bzw. {@see \App\Models\Platform\User::scopeForOrganization()} oder ein expliziter
  * `->where('organization_id', …)`-Filter.
  *
  * Dieses Gate erkennt rohe `User::query()`/`User::where()`/`User::pluck()`/
@@ -64,7 +64,7 @@ class UserOrgScopingRuleTest extends TestCase {
 
     /**
      * Einstiegs-Muster für Query-Ausdrücke auf dem User-Modell. Nur der reale
-     * `App\Models\User` (Wortgrenze davor), nicht LegacyUser/CustomerUser/SsoUser.
+     * `App\Models\Platform\User` (Wortgrenze davor), nicht LegacyUser/CustomerUser/SsoUser.
      *
      * Die Liste deckt bewusst JEDEN Query-Einstieg ab, nicht nur die naheliegenden:
      * Bis zum Sicherheitsaudit 2026-09-13 kannte sie fünf Muster, `User::orderBy(`
@@ -162,11 +162,11 @@ class UserOrgScopingRuleTest extends TestCase {
         // Org-bedingter Filter; Expense trägt immer organization_id (Fallback ohne Org unerreichbar).
         'app/Services/Expense/ApproverResolver.php' => 'Basis-Query wird bei vorhandener Expense-Org gefiltert (Expense ist tenant-scoped).',
         // Öffentliche, sessionlose Token-Route: Auflösung über den Feed-Token, danach Org-Bindung.
-        'app/Http/Controllers/IcsFeedController.php' => 'Persönlicher ICS-Feed: Lookup über calendar_feed_token_hash (Public-Route, bindet danach Org).',
+        'app/Http/Controllers/Calendar/IcsFeedController.php' => 'Persönlicher ICS-Feed: Lookup über calendar_feed_token_hash (Public-Route, bindet danach Org).',
         // Korrelierte Sortier-Subquery (orderBy): whereColumn bindet users.id an
         // die bereits org-gescopten time_entries des Projekts — kein Cross-Tenant-Leak,
         // löst nur den Namen des jeweils sichtbaren Zeiteintrags auf.
-        'app/Http/Controllers/ProjectController.php' => 'Korrelierte orderBy-Subquery über whereColumn an org-gescopte time_entries gebunden (Sortierung nach Nutzername).',
+        'app/Http/Controllers/Project/ProjectController.php' => 'Korrelierte orderBy-Subquery über whereColumn an org-gescopte time_entries gebunden (Sortierung nach Nutzername).',
     ];
 
     public function test_no_unscoped_user_list_queries_in_org_contexts(): void {

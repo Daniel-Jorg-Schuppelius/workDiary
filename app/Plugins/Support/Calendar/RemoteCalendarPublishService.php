@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\Calendar;
 
-use App\Models\ExternalReference;
+use App\Models\Integration\ExternalReference;
 use Illuminate\Support\Carbon;
 
 /**

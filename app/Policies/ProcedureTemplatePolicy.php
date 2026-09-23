@@ -11,7 +11,8 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\{ProcedureTemplate, User};
+use App\Models\Platform\User;
+use App\Models\ProcedureTemplate;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class ProcedureTemplatePolicy {

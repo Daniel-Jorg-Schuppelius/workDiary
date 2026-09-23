@@ -8,13 +8,14 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Dashboard;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Dashboard\{DashboardLayoutService, DashboardService};
 use App\Support\Dashboard\DashboardLayoutItem;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 class DashboardController extends Controller {
     /**

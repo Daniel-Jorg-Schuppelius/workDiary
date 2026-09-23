@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Finance\Accounting;
 
-use App\Models\{Customer, ExternalReference, Organization};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\Organization;
 use App\Plugins\Contracts\ContactSyncer;
 use App\Plugins\PluginManager;
 use App\Support\Setting;

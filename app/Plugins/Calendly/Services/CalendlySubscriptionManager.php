@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Calendly\Services;
 
-use App\Models\{CalendlyConnection, CalendlyWebhookSubscription};
+use App\Models\Plugins\Calendly\{CalendlyConnection, CalendlyWebhookSubscription};
 use App\Plugins\Calendly\Api\CalendlyClient;
 use Illuminate\Support\Str;
 

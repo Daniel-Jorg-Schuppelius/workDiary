@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 
 /**
  * Org-Kontext-Bind mit garantiertem Restore (Vollaudit 2026-07, M42): ersetzt

@@ -12,7 +12,7 @@ namespace App\Models\Backup;
 
 use App\Enums\Backup\{BackupProvider, BackupTargetStatus};
 use App\Models\Concerns\{Auditable, HasConnectionHealth, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};

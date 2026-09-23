@@ -11,7 +11,7 @@
 namespace App\Services\Classification;
 
 use App\Enums\Classification\ClassificationDomain;
-use App\Models\Classification;
+use App\Models\Classification\Classification;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 

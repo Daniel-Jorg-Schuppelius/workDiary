@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins\GoogleCalendar;
 
-use App\Models\{GoogleCalendarConnection, User};
+use App\Models\Platform\User;
+use App\Models\Plugins\GoogleCalendar\GoogleCalendarConnection;
 use App\Plugins\Contracts\{CalendarPublisher, PluginCapability};
 use App\Plugins\GoogleCalendar\Api\{GoogleCalendarClient, GoogleCalendarOAuth};
 use App\Plugins\GoogleCalendar\GoogleCalendarPlugin;

@@ -10,7 +10,11 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Customer, ExternalReference, IntegrationInboxItem, PluginSetting, Project, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\{PluginSetting, User};
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Plugins\Kimai\{KimaiConfig, KimaiExportService, KimaiImportService, KimaiPlugin};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
@@ -291,7 +295,7 @@ class KimaiApiTest extends TestCase {
             'billable' => true,
         ]);
 
-        $outbox = \App\Models\IntegrationOutboxEntry::query()
+        $outbox = \App\Models\Integration\IntegrationOutboxEntry::query()
             ->where('operation', \App\Plugins\Kimai\Services\KimaiOutboxDispatcher::OP_ENTRY_CREATE)
             ->where('idempotency_key', KimaiPlugin::ID . '-entry-create:' . $entry->getKey())
             ->firstOrFail();

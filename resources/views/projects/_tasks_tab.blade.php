@@ -9,11 +9,11 @@
 {{-- Tab: Aufgaben — erwartet: $project, $topTasks, $milestones --}}
 @php
     use App\Enums\Task\TaskStatus;
-    use App\Models\Task;
+    use App\Models\Project\Task;
     /**
-     * @var \App\Models\Project $project
-     * @var \Illuminate\Support\Collection<int, \App\Models\Task> $topTasks
-     * @var \Illuminate\Support\Collection<int, \App\Models\Milestone> $milestones
+     * @var \App\Models\Project\Project $project
+     * @var \Illuminate\Support\Collection<int, \App\Models\Project\Task> $topTasks
+     * @var \Illuminate\Support\Collection<int, \App\Models\Project\Milestone> $milestones
      */
     // Aktuelle Filter (rückwärtskompatibel zu alten Parametern task_status / task_milestone).
     $statusFilter    = (string) request()->input('status', request()->input('task_status', ''));

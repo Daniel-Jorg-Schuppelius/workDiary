@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Backup;
 
-use App\Models\AuditLog;
+use App\Models\Audit\AuditLog;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

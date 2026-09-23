@@ -12,7 +12,7 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AccountType, PostingAccountRole, PostingSourceKind, ProfitDetermination};
 use App\Models\Accounting\{AccountingAccount, AccountingPostingRule};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService, OpeningBalanceImportService};
 use App\Services\Accounting\Filing\VatSpecialPrepaymentService;
 use Carbon\CarbonImmutable;

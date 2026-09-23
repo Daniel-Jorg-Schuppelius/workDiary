@@ -11,7 +11,9 @@
 namespace Tests\Feature\Knowledge;
 
 use App\Enums\User\Permission;
-use App\Models\{Customer, SafetyEvent, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\SafetyEvent;
 use App\Services\Collections\ContentCollectionService;
 use App\Services\Licensing\FeatureFlagResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;

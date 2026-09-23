@@ -11,7 +11,9 @@
 namespace App\Services\Diagnostics;
 
 use App\Enums\Licensing\ModuleStatus;
-use App\Models\{AttendanceTerminal, AuditLog, BackupHeartbeat, Organization};
+use App\Models\AttendanceTerminal;
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{BackupHeartbeat, Organization};
 use App\Services\Licensing\{LicenseService, LicenseStatus, ModuleStatusResolver};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\JsonHelper;
@@ -36,14 +38,14 @@ class DiagnosticsService {
      * @var array<string, class-string<\Illuminate\Database\Eloquent\Model>>
      */
     public const CONNECTION_MODELS = [
-        'email' => \App\Models\EmailConnection::class,
-        'msgraph' => \App\Models\MsgraphConnection::class,
-        'sharepoint' => \App\Models\SharepointConnection::class,
-        'webdav' => \App\Models\WebdavConnection::class,
-        'caldav' => \App\Models\CalDavConnection::class,
-        'carddav' => \App\Models\CardDavConnection::class,
-        'google_calendar' => \App\Models\GoogleCalendarConnection::class,
-        'cti' => \App\Models\CtiConnection::class,
+        'email' => \App\Models\Mail\EmailConnection::class,
+        'msgraph' => \App\Models\Plugins\Msgraph\MsgraphConnection::class,
+        'sharepoint' => \App\Models\Plugins\Sharepoint\SharepointConnection::class,
+        'webdav' => \App\Models\Plugins\Webdav\WebdavConnection::class,
+        'caldav' => \App\Models\Plugins\CalDav\CalDavConnection::class,
+        'carddav' => \App\Models\Plugins\CardDav\CardDavConnection::class,
+        'google_calendar' => \App\Models\Plugins\GoogleCalendar\GoogleCalendarConnection::class,
+        'cti' => \App\Models\Cti\CtiConnection::class,
         'carrier' => \App\Models\CarrierConnection::class,
         'cloud_documents' => \App\Models\CloudIntake\CloudDocumentConnection::class,
         'domain_provider' => \App\Models\Domain\DomainProviderConnection::class,
@@ -115,11 +117,11 @@ class DiagnosticsService {
         try {
             $updates = app(\App\Services\Updates\UpdateCheckService::class);
             $now = CarbonImmutable::now();
-            $open = \App\Models\ComponentUpdate::query()
+            $open = \App\Models\Platform\ComponentUpdate::query()
                 ->whereNull('acknowledged_at')
                 ->where(fn($q) => $q->whereNull('snoozed_until')->orWhere('snoozed_until', '<=', $now))
                 ->count();
-            $snoozed = \App\Models\ComponentUpdate::query()
+            $snoozed = \App\Models\Platform\ComponentUpdate::query()
                 ->where('snoozed_until', '>', $now)
                 ->count();
             $metrics['update_mode'] = $updates->mode();
@@ -210,8 +212,8 @@ class DiagnosticsService {
     public function checkOperations(): DiagnosticSection {
         $open = [];
         try {
-            /** @var \Illuminate\Support\Collection<int, \App\Models\OperationsTask> $tasks */
-            $tasks = \App\Models\OperationsTask::query()
+            /** @var \Illuminate\Support\Collection<int, \App\Models\Project\OperationsTask> $tasks */
+            $tasks = \App\Models\Project\OperationsTask::query()
                 ->whereIn('status', [
                     \App\Enums\Operations\OperationsTaskStatus::Open->value,
                     \App\Enums\Operations\OperationsTaskStatus::Snoozed->value,
@@ -439,14 +441,14 @@ class DiagnosticsService {
         // fehlschlagende und überfällige Jobs sichtbar machen.
         $jobsTotal = count(app(\App\Scheduling\JobRegistry::class)->all());
         $jobsPaused = count(array_filter(
-            \App\Models\ScheduledJobOverride::systemMap(),
+            \App\Models\Platform\ScheduledJobOverride::systemMap(),
             static fn(array $override): bool => $override['enabled'] === false,
         ));
         $jobsFailing = 0;
         $jobsOverdue = 0;
         try {
-            $jobsFailing = \App\Models\ScheduledJobState::query()->where('consecutive_failures', '>', 0)->count();
-            $jobsOverdue = \App\Models\ScheduledJobState::query()->whereNotNull('overdue_notified_at')->count();
+            $jobsFailing = \App\Models\Platform\ScheduledJobState::query()->where('consecutive_failures', '>', 0)->count();
+            $jobsOverdue = \App\Models\Platform\ScheduledJobState::query()->whereNotNull('overdue_notified_at')->count();
         } catch (\Throwable) {
             // Tabelle fehlt (vor Migration) — Zahlen bleiben 0.
         }
@@ -675,8 +677,8 @@ class DiagnosticsService {
 
         // OSV-Sicherheitslage (Rang 70): DB-Stand, kein Netzwerkaufruf —
         // gepflegt durch `security:advisories-pull` (Scheduler/Sicherheitsseite).
-        $openAdvisories = \App\Models\SecurityAdvisory::query()->whereNull('resolved_at')->count();
-        $openHighAdvisories = \App\Models\SecurityAdvisory::openHighOrCritical();
+        $openAdvisories = \App\Models\Auth\SecurityAdvisory::query()->whereNull('resolved_at')->count();
+        $openHighAdvisories = \App\Models\Auth\SecurityAdvisory::openHighOrCritical();
         if ($openHighAdvisories > 0) {
             $status = DiagnosticStatus::worst($status, DiagnosticStatus::Warn);
             $messages[] = sprintf(

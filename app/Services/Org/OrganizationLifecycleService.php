@@ -8,10 +8,12 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Services;
+namespace App\Services\Org;
 
-use App\Http\Controllers\OrganizationSwitchController;
-use App\Models\{Organization, OrganizationAuditLog, User};
+use App\Http\Controllers\Platform\OrganizationSwitchController;
+use App\Models\Platform\Organization;
+use App\Models\Audit\OrganizationAuditLog;
+use App\Models\Platform\User;
 use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\JsonHelper;
 use CommonToolkit\Helper\FileSystem\{File as ToolkitFile, Files, Folder as ToolkitFolder};
@@ -64,7 +66,7 @@ class OrganizationLifecycleService {
         'organization_audit_logs',
         // Der revisionssichere Änderungs-Trail (Hash-Kette) überdauert den
         // Purge bewusst – ein Löschen würde die GoBD-Unveränderbarkeit
-        // verletzen und die Kette zerreißen ({@see App\Models\AuditLog}).
+        // verletzen und die Kette zerreißen ({@see App\Models\Audit\AuditLog}).
         'audit_logs',
     ];
 

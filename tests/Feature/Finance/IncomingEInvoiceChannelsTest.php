@@ -10,7 +10,11 @@
 
 namespace Tests\Feature\Finance;
 
-use App\Models\{Customer, Document, EmailConnection, IncomingEInvoice, Invoice, Supplier, User};
+use App\Models\Customer\Customer;
+use App\Models\Document\Document;
+use App\Models\{IncomingEInvoice, Invoice, Supplier};
+use App\Models\Mail\EmailConnection;
+use App\Models\Platform\User;
 use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, XRechnungGenerator};
 use App\Services\Mail\{MailAttachment, MailIntakeService, ParsedMessage};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -144,7 +148,7 @@ final class IncomingEInvoiceChannelsTest extends TestCase {
         $this->assertSame('skipped', $result);
         $this->assertSame(1, IncomingEInvoice::query()->count());
         $this->assertSame($documents, Document::query()->count());
-        $this->assertSame(0, \App\Models\IntegrationInboxItem::query()->count());
+        $this->assertSame(0, \App\Models\Integration\IntegrationInboxItem::query()->count());
     }
 
     public function test_mail_without_einvoice_flag_falls_through_to_inbox(): void {

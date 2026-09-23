@@ -11,7 +11,8 @@
 namespace Tests\Feature\Events;
 
 use App\Enums\Event\{ParticipantRole, ParticipantStatus};
-use App\Models\{Event, EventCategory, User};
+use App\Models\Calendar\{Event, EventCategory};
+use App\Models\Platform\User;
 use App\Services\Event\CertificateService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

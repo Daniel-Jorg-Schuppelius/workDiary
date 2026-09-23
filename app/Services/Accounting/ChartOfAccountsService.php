@@ -14,7 +14,7 @@ namespace App\Services\Accounting;
 
 use App\Enums\Finance\{AccountType, BalanceSide, EuerCategory};
 use App\Models\Accounting\{AccountingAccount, AccountingEntryLine};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Support\Toolkit\CsvFacade;
 use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use Illuminate\Support\Facades\DB;

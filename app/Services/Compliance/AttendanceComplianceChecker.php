@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Compliance;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Timekeeping\BreakRuleEvaluator;
 use Carbon\CarbonImmutable;
 

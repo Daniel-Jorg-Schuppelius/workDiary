@@ -12,7 +12,8 @@ namespace Tests\Feature;
 
 use App\Enums\User\Permission;
 use App\Enums\Vehicle\{VehiclePropulsion, VehicleType};
-use App\Models\{User, Vehicle};
+use App\Models\Platform\User;
+use App\Models\Vehicle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

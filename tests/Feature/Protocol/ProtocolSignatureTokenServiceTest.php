@@ -11,7 +11,8 @@
 namespace Tests\Feature\Protocol;
 
 use App\Enums\Protocol\{ProtocolSignatureRole, ProtocolType};
-use App\Models\{DiaryEntry, Protocol, ProtocolSignatureToken, User};
+use App\Models\{DiaryEntry, Protocol, ProtocolSignatureToken};
+use App\Models\Platform\User;
 use App\Services\Protocol\{ProtocolService, ProtocolSignatureTokenService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;

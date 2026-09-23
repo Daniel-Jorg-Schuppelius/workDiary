@@ -12,7 +12,11 @@ declare(strict_types=1);
 
 namespace App\Services\Integration;
 
-use App\Models\{AuditLog, Customer, ExternalReference, IntegrationInboxItem, Organization, Supplier};
+use App\Models\Audit\AuditLog;
+use App\Models\Customer\Customer;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\Organization;
+use App\Models\Supplier;
 use App\Services\Stammdaten\ContactDetailsWriter;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;
@@ -161,7 +165,7 @@ class InboxActionService {
         $actor = Auth::user();
         AuditLog::create([
             'organization_id' => $item->organization_id,
-            'user_id' => $actor instanceof \App\Models\User ? (int) $actor->getKey() : null,
+            'user_id' => $actor instanceof \App\Models\Platform\User ? (int) $actor->getKey() : null,
             'event' => 'integration.inbox_resolved',
             'auditable_type' => MorphMap::stableKey($item::class),
             'auditable_id' => $item->getKey(),

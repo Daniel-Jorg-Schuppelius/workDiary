@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Audit;
 
 use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Models\Isms\IsmsAuditPackage;
@@ -16,6 +16,7 @@ use App\Services\Isms\AuditPackageService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Http\Controllers\Controller;
 
 /**
  * Öffentlicher Prüfer-Download finalisierter Auditpakete (Feature 046,

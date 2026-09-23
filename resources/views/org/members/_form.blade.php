@@ -34,7 +34,7 @@
             <x-select-field name="deputy_user_id" span="2" :label="__('Stellvertretung (bei Abwesenheit)')">
                 <option value="">{{ __('— keine —') }}</option>
                 @foreach ($deputyOptions as $deputy)
-                    <option value="{{ $deputy->sqid }}" @selected((string) old('deputy_user_id', $member?->deputy_user_id ? \App\Support\Sqid::encode(\App\Models\User::class, (int) $member->deputy_user_id) : '') === $deputy->sqid)>
+                    <option value="{{ $deputy->sqid }}" @selected((string) old('deputy_user_id', $member?->deputy_user_id ? \App\Support\Sqid::encode(\App\Models\Platform\User::class, (int) $member->deputy_user_id) : '') === $deputy->sqid)>
                         {{ $deputy->name }}
                     </option>
                 @endforeach

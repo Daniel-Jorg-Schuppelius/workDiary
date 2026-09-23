@@ -14,7 +14,8 @@ namespace Tests\Feature\CustomerPortal;
 
 use App\Enums\CustomerPortal\PortalCapability;
 use App\Enums\Reselling\{BillingFrequency, PeriodStatus, SubscriptionStatus};
-use App\Models\{Customer, ForeignCustomer, User};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Platform\User;
 use App\Models\Reselling\ResaleSubscription;
 use App\Services\CustomerPortal\PortalVisibility;
 use App\Services\Licensing\FeatureFlagResolver;

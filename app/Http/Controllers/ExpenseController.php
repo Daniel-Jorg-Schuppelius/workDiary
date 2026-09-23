@@ -13,7 +13,10 @@ namespace App\Http\Controllers;
 use App\Enums\Expense\{ExpenseStatus, PaymentMethod};
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Requests\SaveExpenseRequest;
-use App\Models\{Customer, Expense, ExpenseCategory, Project, User};
+use App\Models\Customer\Customer;
+use App\Models\{Expense, ExpenseCategory};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Services\Billing\ExpenseLinkProviderResolver;
 use App\Services\Expense\ExpenseService;
 use App\Support\{CsvExport, SortableQuery};
@@ -114,7 +117,7 @@ class ExpenseController extends Controller {
 
         /** @var \Illuminate\Http\UploadedFile $file */
         $file = $request->file('receipt');
-        /** @var \App\Models\User $actor */
+        /** @var \App\Models\Platform\User $actor */
         $actor = Auth::user();
         $organization = $this->currentOrganization();
 

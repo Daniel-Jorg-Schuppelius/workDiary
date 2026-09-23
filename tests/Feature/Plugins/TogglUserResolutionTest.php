@@ -10,7 +10,11 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Customer, ExternalReference, IntegrationInboxItem, PluginSetting, Project, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\{PluginSetting, User};
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Plugins\Support\MatchingTimeImportService;
 use App\Plugins\Toggl\{TogglConfig, TogglImportService, TogglPlugin};
 use App\Support\Sqid;
@@ -285,7 +289,7 @@ class TogglUserResolutionTest extends TestCase {
         ]));
         $this->runImport($config);
 
-        $otherOrg = \App\Models\Organization::factory()->create();
+        $otherOrg = \App\Models\Platform\Organization::factory()->create();
         $foreign = User::factory()->user()->create(['organization_id' => $otherOrg->id]);
 
         $this->actingAs($this->admin)

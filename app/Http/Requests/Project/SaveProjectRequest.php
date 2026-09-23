@@ -8,14 +8,19 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Project;
 
 use App\Enums\Project\ProjectStatus;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\{Customer, ForeignCustomer, Project, Team, User};
+use App\Models\Customer\Customer\Customer;
+use App\Models\Customer\Customer\ForeignCustomer;
+use App\Models\Project\Project\Project;
+use App\Models\Platform\Team;
+use App\Models\Platform\User;
 use Closure;
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Validation\Rule;
+use App\Http\Requests\BaseFormRequest;
 
 class SaveProjectRequest extends BaseFormRequest {
     use DecodesSqidInputs;

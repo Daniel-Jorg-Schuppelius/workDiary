@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support;
 
-use App\Models\{ExternalReference, Organization, TimeEntry};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\Organization;
+use App\Models\TimeEntry;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;

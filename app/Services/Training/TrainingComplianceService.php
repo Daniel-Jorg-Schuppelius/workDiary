@@ -14,8 +14,8 @@ namespace App\Services\Training;
 
 use App\Enums\Training\TrainingAssignmentState;
 use App\Enums\User\UserRole;
+use App\Models\Platform\User;
 use App\Models\Training\{TrainingAssignment, TrainingCourse};
-use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;

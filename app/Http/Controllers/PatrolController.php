@@ -14,10 +14,10 @@ namespace App\Http\Controllers;
 
 use App\Enums\User\Permission;
 use App\Models\Patrol\{PatrolCheckpoint, PatrolRoute, PatrolRun};
-use App\Models\{Site, User};
+use App\Models\Platform\User;
+use App\Models\Site;
 use App\Services\Patrol\PatrolService;
-use App\Services\SqidEncoder;
-use App\Support\ErrorText;
+use App\Support\{ErrorText, SqidEncoder};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;

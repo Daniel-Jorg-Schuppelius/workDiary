@@ -17,7 +17,7 @@
 
         /** @var string $tab */
         /** @var bool $isAdmin */
-        /** @var \Illuminate\Support\Collection<int, \App\Models\User> $users */
+        /** @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users */
         /** @var array<string,int> $counts */
         /** @var array<string,int> $tabKpis */
         /** @var array<string,mixed> $filters */

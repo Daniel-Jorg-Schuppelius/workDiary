@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Security;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Auth\TwoFactorService;
 use PragmaRX\Google2FAQRCode\Google2FA;
 use Tests\TestCase;

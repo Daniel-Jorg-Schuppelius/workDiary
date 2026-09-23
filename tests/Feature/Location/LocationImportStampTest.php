@@ -11,8 +11,9 @@
 namespace Tests\Feature\Location;
 
 use App\Http\Controllers\Api\LocationController;
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
 use App\Models\Location\{CustomerGeofence, LocationPendingEntry, LocationPoint, LocationVisit};
+use App\Models\Platform\User;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Location\GoogleTimelineImporter;
 use Illuminate\Foundation\Testing\RefreshDatabase;

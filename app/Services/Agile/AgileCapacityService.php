@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Agile;
 
-use App\Models\{Project, Vacation, WorkSchedule};
+use App\Models\Project\Project;
+use App\Models\{Vacation, WorkSchedule};
 use Illuminate\Support\Carbon;
 
 /**

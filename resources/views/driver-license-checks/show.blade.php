@@ -11,7 +11,7 @@
 
 @php
 /**
- * @var \App\Models\User $driver
+ * @var \App\Models\Platform\User $driver
  * @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\DriverLicenseCheck> $checks
  * @var bool $overdue
  */
@@ -28,7 +28,7 @@
                 @can(\App\Enums\User\Permission::VehicleManage->value)
                     <x-icon-btn icon="add" tone="primary" size="sm"
                                 data-entry-modal-trigger
-                                :href="route('driver-license-checks.create', ['user' => \App\Support\Sqid::encode(\App\Models\User::class, (int) $driver->id), 'dialog' => 1])"
+                                :href="route('driver-license-checks.create', ['user' => \App\Support\Sqid::encode(\App\Models\Platform\User::class, (int) $driver->id), 'dialog' => 1])"
                                 show-label>{{ __('Kontrolle dokumentieren') }}</x-icon-btn>
                 @endcan
             </x-slot:actions>

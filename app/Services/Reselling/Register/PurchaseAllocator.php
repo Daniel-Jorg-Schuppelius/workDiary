@@ -14,7 +14,7 @@ namespace App\Services\Reselling\Register;
 
 use App\Enums\Reselling\SubscriptionProvider;
 use App\Models\Domain\DomainAccountingEntry;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Reselling\{ResalePeriod, ResalePurchaseEntry, ResaleSubscription};
 use App\Services\Reselling\Marketplace\{MarketplaceCompany, NameTokenMatcher, ProviderInvoice};
 use App\Services\Reselling\Purchase\PurchaseDocument;

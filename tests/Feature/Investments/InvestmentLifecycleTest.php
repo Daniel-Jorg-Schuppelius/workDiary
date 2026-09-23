@@ -12,7 +12,7 @@ namespace Tests\Feature\Investments;
 
 use App\Enums\User\UserRole;
 use App\Models\Investments\InvestmentCase;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Investments\InvestmentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

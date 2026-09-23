@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Api;
 
-use App\Models\{Customer, Expense, ExpenseCategory, Invoice, Material, User};
+use App\Models\Customer\Customer;
+use App\Models\{Expense, ExpenseCategory, Invoice, Material};
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\WithOrganization;

@@ -11,8 +11,10 @@
 namespace App\Http\Controllers\Location;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Customer, Project, Site};
+use App\Models\Customer\Customer;
 use App\Models\Location\CustomerGeofence;
+use App\Models\Project\Project;
+use App\Models\Site;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;

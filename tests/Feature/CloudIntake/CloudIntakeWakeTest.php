@@ -11,7 +11,7 @@
 namespace Tests\Feature\CloudIntake;
 
 use App\Models\CloudIntake\CloudDocumentConnection;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\CloudIntake\{CloudIntakeRunner, IntakeWakeSignal};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

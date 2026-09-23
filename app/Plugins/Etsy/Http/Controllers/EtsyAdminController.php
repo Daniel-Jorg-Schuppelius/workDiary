@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Etsy\Http\Controllers;
 
-use App\Models\{EtsyConnection, EtsyReceipt, IntegrationInboxItem, User};
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Platform\User;
+use App\Models\Plugins\Etsy\{EtsyConnection, EtsyReceipt};
 use App\Plugins\Etsy\Api\{EtsyClientFactory, EtsyOAuthGrant};
 use App\Plugins\Etsy\{EtsyConfig, EtsyPlugin};
 use App\Plugins\Etsy\Services\{EtsyLedgerImportService, EtsyReceiptImportService};
@@ -68,7 +70,7 @@ class EtsyAdminController extends ConnectionOAuthController {
 
         // Ledger-Summen je Art (90 Tage) — amount ist Etsy-roh in kleinster
         // Währungseinheit (MVP-498), die Anzeige teilt durch 100.
-        $ledgerSums = \App\Models\EtsyLedgerEntry::query()
+        $ledgerSums = \App\Models\Plugins\Etsy\EtsyLedgerEntry::query()
             ->where('organization_id', $organization->id)
             ->where('posted_at', '>=', now()->subDays(90))
             ->selectRaw('ledger_type, currency, SUM(amount) as amount_sum, COUNT(*) as entries')

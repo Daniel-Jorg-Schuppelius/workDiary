@@ -8,9 +8,10 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Policies;
+namespace App\Policies\Classification;
 
-use App\Models\{EntryType, User};
+use App\Models\Classification\Classification\EntryType;
+use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
 
 class EntryTypePolicy {

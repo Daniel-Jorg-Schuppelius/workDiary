@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Metrics;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Metrics\OperationsMetricsService;
 use App\Settings\SettingScope;
 use App\Support\Setting;
@@ -56,7 +56,7 @@ class MetricsPageTest extends TestCase {
      * size_bytes als Objekt, die Backup-Kachel castete es nach int → 500.
      */
     public function test_backup_tile_renders_heartbeat_size(): void {
-        \App\Models\BackupHeartbeat::query()->create([
+        \App\Models\Platform\BackupHeartbeat::query()->create([
             'occurred_at' => now()->subHour(),
             'size_bytes' => 5 * 1024 * 1024,
             'source' => 'cron',

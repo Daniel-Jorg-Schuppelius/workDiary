@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Msgraph\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{EmailConnection, MsgraphConnection, MsgraphTaskListLink};
+use App\Models\Mail\EmailConnection;
+use App\Models\Plugins\Msgraph\{MsgraphConnection, MsgraphTaskListLink};
 use App\Plugins\Msgraph\Jobs\{MsgraphCalendarWakeJob, MsgraphMailWakeJob, MsgraphTodoWakeJob};
 use App\Plugins\Support\WebhookSignature;
 use Illuminate\Http\{Request, Response};

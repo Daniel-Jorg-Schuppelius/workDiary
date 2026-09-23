@@ -11,7 +11,7 @@
 namespace App\Console\Commands;
 
 use App\Console\Concerns\UpdatesEnvFile;
-use App\Models\AuditLog;
+use App\Models\Audit\AuditLog;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;

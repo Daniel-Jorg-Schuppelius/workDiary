@@ -11,7 +11,7 @@
 namespace App\Models\Isms;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\Document;
+use App\Models\Document\Document;
 use Database\Factories\Isms\IsmsCertificateFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};

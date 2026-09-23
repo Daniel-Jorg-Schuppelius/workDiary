@@ -17,7 +17,8 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Club\{SaveFeeAccountRequest, SaveFeeAssignmentRequest, SaveFeeExemptionRequest};
 use App\Models\Club\{ClubFeeAccount, ClubFeeAssignment, ClubFeeExemption, ClubFeeTariff, ClubMember};
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Services\Club\{ClubFeeCalculator, ClubFeeService};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -74,7 +75,7 @@ class ClubFeeAccountController extends Controller {
             'payments' => \App\Models\Club\ClubFeePayment::query()->where('club_fee_account_id', $account->id)->with(['claim:id,number', 'createdBy:id,name'])->orderByDesc('paid_on')->orderByDesc('id')->limit(50)->get(),
             'credit' => app(\App\Services\Club\ClubFeePaymentService::class)->creditBalance($account),
             'mandate' => app(\App\Services\Club\ClubFeePaymentService::class)->mandateFor($account),
-            'portalUser' => $account->user_id !== null ? \App\Models\User::query()->find($account->user_id) : null,
+            'portalUser' => $account->user_id !== null ? \App\Models\Platform\User::query()->find($account->user_id) : null,
             'today' => CarbonImmutable::today(),
             'canManage' => Gate::allows('update', $account),
         ]);

@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Reselling;
 
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
-use App\Models\{Customer, ExternalReference, ForeignCustomer, LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Integration\ExternalReference;
+use App\Models\Plugins\Lexoffice\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Services\Reselling\Register\{LinkProposer, PeriodPlanner};
@@ -210,7 +212,7 @@ class LinkProposerTest extends TestCase {
         [$p2025, $p2026] = $subscription->periods()->get();
         $this->assertTrue($p2025->isProposedOnly());
 
-        $voucherSqid = \App\Support\Sqid::encode(\App\Models\LexofficeVoucher::class, LexofficeVoucher::query()->where('voucher_number', 'RE/2025/0820')->value('id'));
+        $voucherSqid = \App\Support\Sqid::encode(\App\Models\Plugins\Lexoffice\LexofficeVoucher::class, LexofficeVoucher::query()->where('voucher_number', 'RE/2025/0820')->value('id'));
         $this->actingAs($admin)->get(route('finance.resale.periods.index'))->assertOk()->assertSee('RE/2025/0820')->assertSee(__('resale.link.proposed_hint'))
             ->assertSee(route('lexoffice.vouchers.preview', $voucherSqid), false);
 
@@ -243,7 +245,7 @@ class LinkProposerTest extends TestCase {
         $this->actingAs($admin)->get(route('finance.resale.periods.link.create', $p2026->sqid))->assertOk()
             ->assertSee('RE/2026/0001')->assertSee('Pos. 1')->assertSee('1 × 12 ' . __('resale.link.months_short'))
             ->assertDontSee('Business Support');
-        $this->actingAs($admin)->post(route('finance.resale.periods.link.store', $p2026->sqid), ['line_id' => \App\Support\Sqid::encode(\App\Models\LexofficeVoucherLine::class, $line?->id), 'months' => 12])
+        $this->actingAs($admin)->post(route('finance.resale.periods.link.store', $p2026->sqid), ['line_id' => \App\Support\Sqid::encode(\App\Models\Plugins\Lexoffice\LexofficeVoucherLine::class, $line?->id), 'months' => 12])
             ->assertRedirect(route('finance.resale.show', $subscription->sqid));
         $p2026->refresh();
         $this->assertSame(PeriodStatus::Billed, $p2026->status);
@@ -261,7 +263,7 @@ class LinkProposerTest extends TestCase {
         // Schnellzuordnung in Lizenzen: 1 × 12 Monate je Lizenz.
         $this->actingAs($admin)->post(route('finance.resale.links.quick', $subscription->sqid), [
             'period_id' => $p2026->sqid,
-            'line_id' => \App\Support\Sqid::encode(\App\Models\LexofficeVoucherLine::class, $line?->id),
+            'line_id' => \App\Support\Sqid::encode(\App\Models\Plugins\Lexoffice\LexofficeVoucherLine::class, $line?->id),
             'licences' => 1,
             'per_licence' => 12,
         ])->assertRedirect(route('finance.resale.show', $subscription->sqid))->assertSessionHas('success');
@@ -625,7 +627,7 @@ class LinkProposerTest extends TestCase {
         $this->assertSame([], $this->contactsFor($this->subscription(['label' => 'Exchange Online (Plan 1)', 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01'])), 'ohne Halter (Inbox)');
 
         // Fremder Mandant mit demselben Kontaktschlüssel: jeder sieht nur seine eigene Verknüpfung.
-        $otherOrg = \App\Models\Organization::factory()->create();
+        $otherOrg = \App\Models\Platform\Organization::factory()->create();
         $stranger = Customer::factory()->create(['organization_id' => $otherOrg->id, 'name' => 'Fremd GmbH']);
         ExternalReference::create([
             'organization_id' => $otherOrg->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,

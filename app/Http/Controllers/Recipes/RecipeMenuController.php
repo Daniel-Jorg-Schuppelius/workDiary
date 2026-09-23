@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Recipes;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Organization, ProcedureTemplate, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\ProcedureTemplate;
 use App\Models\Recipes\{RecipeMenu, RecipeMenuItem, RecipeProfile};
 use App\Services\Recipes\RecipeService;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -112,7 +113,7 @@ class RecipeMenuController extends Controller {
 
         $template = ProcedureTemplate::query()
             ->where('organization_id', $organization->id)
-            ->whereKey(app(\App\Services\SqidEncoder::class)->decode(ProcedureTemplate::class, (string) $data['dish']))
+            ->whereKey(app(\App\Support\SqidEncoder::class)->decode(ProcedureTemplate::class, (string) $data['dish']))
             ->first();
         abort_unless($template instanceof ProcedureTemplate, 404);
 

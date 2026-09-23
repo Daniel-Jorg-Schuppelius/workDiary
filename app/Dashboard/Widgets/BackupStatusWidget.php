@@ -15,7 +15,7 @@ namespace App\Dashboard\Widgets;
 use App\Dashboard\Widget;
 use App\Enums\Dashboard\WidgetGroup;
 use App\Enums\User\Permission;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Backup\BackupStatusService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;

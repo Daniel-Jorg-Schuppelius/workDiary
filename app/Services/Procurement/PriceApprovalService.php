@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Procurement;
 
-use App\Models\{Article, PriceChangeRequest, SupplierCatalogItem, User};
+use App\Models\{Article, PriceChangeRequest, SupplierCatalogItem};
+use App\Models\Platform\User;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Money;

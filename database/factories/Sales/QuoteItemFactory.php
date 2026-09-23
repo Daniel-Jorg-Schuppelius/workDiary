@@ -8,9 +8,10 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace Database\Factories;
+namespace Database\Factories\Sales;
 
-use App\Models\{Quote, QuoteItem};
+use App\Models\Sales\Quote;
+use App\Models\Sales\QuoteItem;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

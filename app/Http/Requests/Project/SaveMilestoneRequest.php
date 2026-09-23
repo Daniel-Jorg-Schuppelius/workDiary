@@ -8,7 +8,9 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Project;
+
+use App\Http\Requests\BaseFormRequest;
 
 class SaveMilestoneRequest extends BaseFormRequest {
     /** @return array<string, mixed> */

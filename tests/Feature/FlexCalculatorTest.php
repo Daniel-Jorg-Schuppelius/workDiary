@@ -12,7 +12,9 @@ namespace Tests\Feature;
 
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Project, TimeEntry, User, WorkSchedule};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\{TimeEntry, WorkSchedule};
 use App\Services\Flextime\FlexCalculator;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

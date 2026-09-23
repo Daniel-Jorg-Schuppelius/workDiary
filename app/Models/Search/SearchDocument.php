@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Models;
+namespace App\Models\Search;
 
 use App\Enums\Search\SearchSourceType;
 use App\Models\Concerns\BelongsToOrganization;

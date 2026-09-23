@@ -14,8 +14,8 @@ namespace App\Services\Club;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Club\{ClubFeeClaim, ClubFeeDunning};
-use App\Services\BrandingService;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Services\UI\BrandingService;
 
 /** Beitragsmitteilung als PDF (MVP-850) über den Dokument-Renderer; Bankblock und Verwendungszweck wie beim Beleg. */
 class ClubFeeNoticePdfRenderer {

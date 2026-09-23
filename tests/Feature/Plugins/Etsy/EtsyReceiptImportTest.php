@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Plugins\Etsy;
 
-use App\Models\{Customer, EtsyConnection, EtsyReceipt, ExternalReference, IntegrationInboxItem, Organization, PluginSetting, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\{Organization, PluginSetting, User};
+use App\Models\Plugins\Etsy\{EtsyConnection, EtsyReceipt};
 use App\Plugins\Etsy\EtsyPlugin;
 use App\Plugins\Etsy\Services\EtsyReceiptImportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -244,14 +247,14 @@ class EtsyReceiptImportTest extends TestCase {
         ]);
         app(EtsyReceiptImportService::class)->import($this->organization);
 
-        $mapped = \App\Models\ExternalArticleMapping::query()
+        $mapped = \App\Models\Integration\ExternalArticleMapping::query()
             ->where('plugin_id', EtsyPlugin::ID)
             ->where('external_id', '111')
             ->firstOrFail();
         $this->assertSame($variant->id, (int) $mapped->article_variant_id);
         $this->assertSame('synced', $mapped->sync_status);
 
-        $pending = \App\Models\ExternalArticleMapping::query()
+        $pending = \App\Models\Integration\ExternalArticleMapping::query()
             ->where('plugin_id', EtsyPlugin::ID)
             ->where('external_id', '222')
             ->firstOrFail();

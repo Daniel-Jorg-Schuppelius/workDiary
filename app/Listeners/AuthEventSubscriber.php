@@ -14,7 +14,8 @@ namespace App\Listeners;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Security\SecurityEventType;
-use App\Models\{AuditLog, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\User;
 use App\Notifications\GenericEventNotification;
 use App\Services\Security\{KnownDeviceService, SecurityEventLogger};
 use App\Support\MorphMap;

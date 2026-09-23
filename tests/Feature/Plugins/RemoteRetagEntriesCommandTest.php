@@ -11,7 +11,10 @@
 namespace Tests\Feature\Plugins;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{ExternalReference, Project, TimeEntry, User};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Plugins\RemoteSupport\{RemoteSessionImporter, RemoteSupportPlugin};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

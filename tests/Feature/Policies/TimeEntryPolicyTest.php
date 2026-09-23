@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Policies;
 
-use App\Models\{Organization, TimeEntry, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\TimeEntry;
 use App\Policies\TimeEntryPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};

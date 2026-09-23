@@ -8,13 +8,14 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Communication;
 
 use App\Casts\IpAddressCast;
 use App\Models\Concerns\AppendOnly;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use App\Models\Communication\ExternalParticipant;
 
 /**
  * Append-only Nachweis aller externen Aktionen (Feature 033): Zugriff,

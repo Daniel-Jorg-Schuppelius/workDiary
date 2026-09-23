@@ -14,7 +14,7 @@ namespace App\Services\Agile;
 
 use App\Enums\Agile\AgileColumnCategory;
 use App\Models\Agile\{AgileBoard, AgileEvent, AgileSprint, AgileSprintItem, AgileWorkItem};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use RuntimeException;

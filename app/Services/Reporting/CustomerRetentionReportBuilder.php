@@ -10,7 +10,9 @@
 
 namespace App\Services\Reporting;
 
-use App\Models\{Customer, DiaryEntry, Project, TimeEntry};
+use App\Models\Customer\Customer;
+use App\Models\{DiaryEntry, TimeEntry};
+use App\Models\Project\Project;
 use Carbon\CarbonImmutable;
 
 /**

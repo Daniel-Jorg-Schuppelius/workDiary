@@ -12,7 +12,7 @@ namespace Database\Factories\Domain;
 
 use App\Enums\Domain\{DomainConnectionStatus, DomainProviderEnvironment};
 use App\Models\Domain\DomainProviderConnection;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\Support\Domain\DomainCapabilityMatrix;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

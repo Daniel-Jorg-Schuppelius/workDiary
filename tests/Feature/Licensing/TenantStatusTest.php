@@ -11,7 +11,7 @@
 namespace Tests\Feature\Licensing;
 
 use App\Enums\Organization\TenantStatus;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

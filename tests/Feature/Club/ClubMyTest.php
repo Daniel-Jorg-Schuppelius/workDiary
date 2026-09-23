@@ -12,9 +12,10 @@ namespace Tests\Feature\Club;
 
 use App\Enums\Club\{ClubEventVisibility, ClubParticipationSource, ClubParticipationStatus};
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
+use App\Models\Calendar\Event;
 use App\Models\Club\{ClubEventParticipation, ClubGroup, ClubMember, ClubNotification};
-use App\Models\{Event, User};
 use App\Models\Notification\NotificationRule;
+use App\Models\Platform\User;
 use App\Notifications\GenericEventNotification;
 use App\Services\Club\{ClubAttendanceService, ClubEventService, ClubGroupService, ClubMemberService, ClubPortalContext};
 use App\Services\Notification\DeadlineScans\{ClubEventReminderScan, DeadlineScanOptions};

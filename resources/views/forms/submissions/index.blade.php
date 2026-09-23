@@ -36,7 +36,7 @@
                     </ul>
                 </div>
             @endif
-            @can('viewAny', \App\Models\FormTemplate::class)
+            @can('viewAny', \App\Models\Form\FormTemplate::class)
                 <x-icon-btn icon="assignment" tone="outline" size="sm"
                             :href="route('form-templates.index')"
                             show-label>{{ __('form.title.templates') }}</x-icon-btn>

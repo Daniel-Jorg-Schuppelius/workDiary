@@ -14,7 +14,9 @@ namespace Tests\Feature;
 
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Timesheet\TimesheetStatus;
-use App\Models\{Project, Timesheet, User};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\Timesheet;
 use App\Services\Timesheet\Stopwatch;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

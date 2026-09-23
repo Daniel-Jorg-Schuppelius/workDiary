@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Seeders;
 
-use App\Models\{ActivityCategory, ExpenseCategory, Organization};
+use App\Models\Classification\ActivityCategory;
+use App\Models\ExpenseCategory;
+use App\Models\Platform\Organization;
 use Database\Seeders\{ActivityCategorySeeder, ExpenseCategorySeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

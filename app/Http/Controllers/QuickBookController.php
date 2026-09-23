@@ -12,7 +12,9 @@ namespace App\Http\Controllers;
 
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Models\{Project, Task, TimeEntry, User};
+use App\Models\Platform\User;
+use App\Models\Project\{Project, Task};
+use App\Models\TimeEntry;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};

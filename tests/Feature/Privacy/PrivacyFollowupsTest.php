@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Privacy;
 
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\{ComplianceFinding, Dpia, DpiaStep, PrivacyAttachment, PrivacyRequirement, ProcessingActivity, TechnicalMeasure};
 use App\Services\Classification\BranchProfileInstaller;
 use App\Services\Privacy\{ComplianceAnalysisService, DataProtectionPermissions, DpiaWorkflowService};

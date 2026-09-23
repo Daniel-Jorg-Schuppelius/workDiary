@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Help;
 
-use App\Models\HelpTopic;
+use App\Models\Platform\HelpTopic;
 use App\Services\Help\{HelpTopicLoader, HelpTopicReindexer};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;

@@ -8,10 +8,13 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace Database\Factories;
+namespace Database\Factories\Communication;
 
 use App\Enums\ExternalParticipant\{ExternalAbility, ExternalParty};
-use App\Models\{DiaryEntry, ExternalParticipant, Organization, User};
+use App\Models\DiaryEntry;
+use App\Models\Communication\ExternalParticipant;
+use App\Models\Platform\Organization;
+use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\{Carbon, Str};

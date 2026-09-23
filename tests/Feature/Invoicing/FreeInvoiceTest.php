@@ -13,7 +13,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Invoicing;
 
 use App\Enums\Article\ArticleType;
-use App\Models\{Article, ArticleVariant, Customer, Invoice, InvoiceItem, Organization, Project, User};
+use App\Models\{Article, ArticleVariant, Invoice, InvoiceItem};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
 use App\Services\Invoicing\{InvoiceIssueException, InvoiceIssueService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

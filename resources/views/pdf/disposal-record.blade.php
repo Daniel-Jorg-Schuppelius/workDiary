@@ -8,7 +8,7 @@
 --}}
 @php
     /** @var \App\Models\Disposal\DisposalJob $job */
-    /** @var \App\Models\Organization|null $organization */
+    /** @var \App\Models\Platform\Organization|null $organization */
     /** @var string $hash */
     /** @var string|null $signatureDataUri */
     /** @var \Illuminate\Support\Carbon $generatedAt */

@@ -11,7 +11,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\TimeApproval\DayClosureStatus;
-use App\Models\{DayClosure, DayCorrectionRequest, User};
+use App\Models\{DayClosure, DayCorrectionRequest};
+use App\Models\Platform\User;
 use App\Services\Attendance\AttendanceClockService;
 use App\Services\TimeApproval\{DayCloseService, DayCloseWorkflowException};
 use App\Support\Sqid;

@@ -11,8 +11,8 @@
 namespace Tests\Feature\DocumentDesign;
 
 use App\Enums\DocumentDesign\{RenderDocumentFamily, RenderDocumentKind};
-use App\Models\DocumentDesign\DocumentRenderProfile;
-use App\Models\{Organization, User};
+use App\Models\Document\DocumentDesign\DocumentRenderProfile;
+use App\Models\Platform\{Organization, User};
 use App\Services\DocumentDesign\{DocumentDesignRenderer, RenderProfileService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -273,7 +273,7 @@ class CiBaseDesignTest extends TestCase {
         $invoiceProfile = $service->createProfile($org, 'Rechnungen', ['invoice'], false, $admin);
         $this->assertTrue($service->activate($invoiceProfile->versions()->firstOrFail(), $admin)->ok());
 
-        $customer = \App\Models\Customer::factory()->create(['organization_id' => $org->id]);
+        $customer = \App\Models\Customer\Customer::factory()->create(['organization_id' => $org->id]);
         $invoice = \App\Models\Invoice::create([
             'organization_id' => $org->id,
             'customer_id' => $customer->id,

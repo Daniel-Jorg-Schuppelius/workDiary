@@ -11,7 +11,8 @@
 namespace App\Services\Knowledge;
 
 use App\Enums\Knowledge\{ArticleStatus, ArticleVisibility};
-use App\Models\{ContentReference, KnowledgeArticle, KnowledgeArticleFeedback, User};
+use App\Models\Knowledge\{ContentReference, KnowledgeArticle, KnowledgeArticleFeedback};
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;

@@ -16,7 +16,8 @@ use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskStatus, Operatio
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{OperationsTask, User};
+use App\Models\Platform\User;
+use App\Models\Project\OperationsTask;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Support\Setting;
 use Carbon\CarbonImmutable;

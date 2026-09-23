@@ -14,7 +14,7 @@ namespace App\Console\Commands;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Enums\Notification\NotificationEvent;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Inventory\LotService;
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Console\Command;

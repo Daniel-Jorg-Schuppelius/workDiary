@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Stammdaten;
 
-use App\Models\{Article, ArticleVariant, ContactBankAccount, Customer, User};
+use App\Models\{Article, ArticleVariant};
+use App\Models\Contacts\ContactBankAccount;
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Services\Stammdaten\IdentifierIssueDetector;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

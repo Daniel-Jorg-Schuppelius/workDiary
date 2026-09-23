@@ -15,7 +15,7 @@ namespace Tests\Feature\Policies\Isms;
 use App\Enums\User\Permission as P;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Isms\{IsmsAdvisory, IsmsAudit, IsmsAuditPackage, IsmsControl, IsmsManagementReview, IsmsNormStatus, IsmsRequirement, IsmsRisk, IsmsScope, IsmsSecurityIncident, IsmsSoftwareInstallation, IsmsSoftwareProduct, IsmsSupplierAssessment, IsmsVulnerability};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Policies\Isms\{IsmsAdvisoryPolicy, IsmsAuditPackagePolicy, IsmsAuditPolicy, IsmsControlPolicy, IsmsManagementReviewPolicy, IsmsNormStatusPolicy, IsmsRequirementPolicy, IsmsRiskPolicy, IsmsScopePolicy, IsmsSecurityIncidentPolicy, IsmsSoftwareInstallationPolicy, IsmsSoftwareProductPolicy, IsmsSupplierAssessmentPolicy, IsmsVulnerabilityPolicy};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;

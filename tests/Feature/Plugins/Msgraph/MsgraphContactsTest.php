@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Plugins\Msgraph;
 
-use App\Models\{Customer, ExternalReference, MsgraphContactConnection, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\User;
+use App\Models\Plugins\Msgraph\MsgraphContactConnection;
 use App\Plugins\Contracts\{ContactSyncer, PluginCapability};
 use App\Plugins\Msgraph\MsgraphPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -12,7 +12,8 @@ namespace App\Services\Billing;
 
 use App\Enums\Billing\AccountPaymentSource;
 use App\Models\Billing\{CustomerAccountPayment, CustomerBillingAgreement, CustomerBillingStatement};
-use App\Models\{TimeEntry, User};
+use App\Models\Platform\User;
+use App\Models\TimeEntry;
 use App\Support\Query\DateRange;
 use App\Support\Tz;
 use Carbon\CarbonInterface;
@@ -450,7 +451,7 @@ class CustomerAccountStatementService {
                 'id' => $entry->id,
                 'date' => $entry->date?->toDateString(),
                 'weekday' => $entry->date?->translatedFormat('l'),
-                'category' => $category instanceof \App\Models\ActivityCategory
+                'category' => $category instanceof \App\Models\Classification\ActivityCategory
                     ? $category->label
                     : TimeEntry::activityLabel($entry->activity_type),
                 'start' => $localStart?->format('H:i'),

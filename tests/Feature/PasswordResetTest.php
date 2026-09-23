@@ -10,7 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Notifications\PasswordResetLink;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{DB, Hash, Notification};

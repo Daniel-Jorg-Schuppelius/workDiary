@@ -13,7 +13,7 @@ namespace Tests\Feature\CloudIntake;
 use App\Enums\CloudIntake\{CloudIntakeConnectionStatus, CloudIntakeProvider, CloudIntakeRouteTarget};
 use App\Enums\User\Permission;
 use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentRoute};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\FakePluginHttp;

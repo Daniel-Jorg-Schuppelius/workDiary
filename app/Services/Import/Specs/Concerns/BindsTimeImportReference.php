@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Import\Specs\Concerns;
 
-use App\Models\{ExternalReference, Organization};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\Organization;
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\Model;

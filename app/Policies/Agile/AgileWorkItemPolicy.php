@@ -14,7 +14,7 @@ namespace App\Policies\Agile;
 
 use App\Enums\User\Permission;
 use App\Models\Agile\AgileWorkItem;
-use App\Models\User;
+use App\Models\Platform\User;
 
 /** Arbeitselement-Policy (Feature 064) — immer inkl. Projektsicht. */
 class AgileWorkItemPolicy {

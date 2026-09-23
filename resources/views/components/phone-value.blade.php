@@ -21,7 +21,7 @@
     $_number = trim((string) $number);
     $_organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
     $_canDial = $_number !== ''
-        && $_organization instanceof \App\Models\Organization
+        && $_organization instanceof \App\Models\Platform\Organization
         && app(\App\Services\Cti\Dial\CtiDialService::class)->connectionFor($_organization) !== null;
 @endphp
 

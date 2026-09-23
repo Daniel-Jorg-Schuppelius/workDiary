@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Scheduling;
 
 use App\Enums\Scheduling\JobRunStatus;
-use App\Models\{ScheduledJobRun, ScheduledJobState};
+use App\Models\Platform\{ScheduledJobRun, ScheduledJobState};
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Events\{ScheduledBackgroundTaskFinished, ScheduledTaskFailed, ScheduledTaskFinished, ScheduledTaskSkipped, ScheduledTaskStarting};
 use Illuminate\Support\Facades\Log;

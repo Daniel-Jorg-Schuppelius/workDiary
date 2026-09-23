@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Club;
 
 use App\Enums\Club\{ClubAttendanceSheetStatus, ClubAttendanceStatus, ClubEntryStatus, ClubEventKind, ClubEventRoleKind, ClubEventVisibility, ClubGroupMembershipStatus, ClubParticipationSource, ClubSportFamily};
+use App\Models\Calendar\Event;
 use App\Models\Club\{ClubAttendanceRecord, ClubAttendanceRequirement, ClubCompetitionDetails, ClubCompetitionEntry, ClubEventRole, ClubMember, ClubPerformance, ClubSportProfile, ClubStartRight};
-use App\Models\{Event, Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\AssertsStatusTransition;
 use App\Support\Query\DateRange;
 use App\Support\Tz;

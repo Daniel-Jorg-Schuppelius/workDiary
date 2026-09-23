@@ -12,7 +12,8 @@ namespace App\Plugins\Webdav\Http\Controllers;
 
 use App\Enums\Document\DocumentType;
 use App\Http\Controllers\Controller;
-use App\Models\{PluginState, WebdavConnection};
+use App\Models\Platform\PluginState;
+use App\Models\Plugins\Webdav\WebdavConnection;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Webdav\WebdavPlugin;
 use Illuminate\Http\{RedirectResponse, Request};

@@ -36,7 +36,7 @@ final class CsvImportSource implements ImportSource {
     }
 
     /**
-     * Aufgelöster Delimiter (wird auf dem {@see \App\Models\ImportRun}
+     * Aufgelöster Delimiter (wird auf dem {@see \App\Models\Integration\ImportRun}
      * persistiert, damit der Job dieselbe Trennung nutzt).
      */
     public function delimiter(): string {

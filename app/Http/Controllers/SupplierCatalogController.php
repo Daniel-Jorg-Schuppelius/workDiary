@@ -16,8 +16,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Requests\SaveSupplierCatalogSourceRequest;
 use App\Models\{Article, ArticleVariant, PricingChangeAlert, Supplier, SupplierCatalogImport, SupplierCatalogItem, SupplierCatalogSource, Warehouse};
 use App\Services\Procurement\{CatalogArticleAdopter, CatalogFetchService, CatalogImportDispatcher, CatalogLinkService, PriceSuggestionService, ShopinfoParser};
-use App\Services\SqidEncoder;
-use App\Support\ErrorText;
+use App\Support\{ErrorText, SqidEncoder};
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -422,7 +421,7 @@ class SupplierCatalogController extends Controller {
         // Vier-Augen-Modus (MVP-095): statt direkter Übernahme entsteht ein
         // Freigabe-Antrag, den eine zweite Person genehmigen muss.
         if ($this->currentOrganization()->pricingApprovalMode() === 'four_eyes') {
-            /** @var \App\Models\User $requester */
+            /** @var \App\Models\Platform\User $requester */
             $requester = Auth::user();
 
             try {
@@ -465,7 +464,7 @@ class SupplierCatalogController extends Controller {
             return redirect()->route('supplier-catalogs.show', $supplierCatalog)->with('error', __('procurement.oci.flash.missing_context'));
         }
 
-        /** @var \App\Models\User $user */
+        /** @var \App\Models\Platform\User $user */
         $user = Auth::user();
 
         // Quelle als ID (kein Sqid am Modell): die HMAC-Signatur der URL

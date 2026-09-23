@@ -30,7 +30,7 @@
             <x-page-toolbar>
                 <x-slot:actions>
                     <x-icon-btn icon="list" tone="ghost" size="sm" :href="route('events.index')" show-label>{{ __('Liste') }}</x-icon-btn>
-                    @can('create', App\Models\Event::class)
+                    @can('create', App\Models\Calendar\Event::class)
                         <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger :href="route('events.create').'?dialog=1'" show-label>
                             {{ __('Neue Veranstaltung') }}
                         </x-icon-btn>

@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Surveys;
 
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Models\Survey\{Survey, SurveyInvitation, SurveyResponse};
 use App\Services\Survey\SurveyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
-use App\Models\Task;
+use App\Models\Project\Task;
 use App\Services\Agile\AgileBoardService;
 
 /**

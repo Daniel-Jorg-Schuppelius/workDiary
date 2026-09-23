@@ -11,7 +11,7 @@
 namespace Tests\Feature\Applications;
 
 use App\Models\Applications\ApplicationOpportunity;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Applications\{ContractNegotiationService, RecruitingService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

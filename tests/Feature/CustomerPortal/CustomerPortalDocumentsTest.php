@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\CustomerPortal;
 
-use App\Models\{Customer, DiaryEntry, Document, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\Document\Document;
+use App\Models\Platform\{Organization, User};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;

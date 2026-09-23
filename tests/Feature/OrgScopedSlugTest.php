@@ -10,7 +10,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Customer, Supplier};
+use App\Models\Customer\Customer;
+use App\Models\Supplier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

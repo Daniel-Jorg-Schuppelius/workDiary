@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Finance;
 
 use App\Enums\Finance\TransferChannel;
+use App\Models\Customer\ForeignCustomer;
 use App\Models\Finance\{BillingTransfer, BillingTransferPosition};
-use App\Models\{ForeignCustomer, MaterialUsage, Project, TimeEntry};
+use App\Models\{MaterialUsage, TimeEntry};
+use App\Models\Project\Project;
 use App\Services\Invoicing\{BillableTimeAggregator, BlockPrice, BlockPriceResolver, ServiceDefaultResolver, TextCorrectionService};
 use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\StringHelper;

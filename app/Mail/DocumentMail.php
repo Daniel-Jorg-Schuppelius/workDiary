@@ -14,7 +14,9 @@ namespace App\Mail;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Construction\ConstructionNotice;
-use App\Models\{DocumentDispatch, PurchaseOrder, Quote, StockDelivery};
+use App\Models\Document\DocumentDispatch;
+use App\Models\{PurchaseOrder, StockDelivery};
+use App\Models\Sales\Quote;
 use App\Services\Document\DocumentMailService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

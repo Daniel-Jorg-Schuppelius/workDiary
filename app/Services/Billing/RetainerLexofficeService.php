@@ -11,7 +11,9 @@
 namespace App\Services\Billing;
 
 use App\Models\Billing\CustomerBillingAgreement;
-use App\Models\{Customer, ExternalReference, Invoice};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Invoice;
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
 use App\Plugins\PluginManager;
 use App\Services\Invoicing\InvoiceGenerator;

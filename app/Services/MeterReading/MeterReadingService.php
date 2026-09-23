@@ -10,7 +10,8 @@
 
 namespace App\Services\MeterReading;
 
-use App\Models\{Asset, MeterReading, User};
+use App\Models\{Asset, MeterReading};
+use App\Models\Platform\User;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

@@ -14,9 +14,13 @@ namespace App\Services\Collections;
 
 use App\Enums\Knowledge\ArticleStatus;
 use App\Enums\User\Permission;
-use App\Models\{CommunicationNote, Document, IdeaMap, KnowledgeArticle, User};
+use App\Models\Communication\CommunicationNote;
 use App\Models\Concerns\HasTags;
+use App\Models\Document\Document;
+use App\Models\Ideas\IdeaMap;
+use App\Models\Knowledge\KnowledgeArticle;
 use App\Models\Learning\{LearningCourse, LearningPath};
+use App\Models\Platform\User;
 use App\Services\Content\ContentSubjectResolver;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Support\Sqid;

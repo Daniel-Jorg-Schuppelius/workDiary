@@ -12,7 +12,7 @@ namespace App\Services\Isms;
 
 use App\Enums\Isms\{ControlImplementationStatus, RequirementSource};
 use App\Models\Isms\{IsmsApplicabilityStatement, IsmsRequirement, IsmsScope};
-use App\Models\User;
+use App\Models\Platform\User;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;

@@ -12,7 +12,7 @@
 @props(['subject'])
 
 @php
-    $importOrigin = \App\Models\ExternalReference::query()->withoutGlobalScopes()
+    $importOrigin = \App\Models\Integration\ExternalReference::query()->withoutGlobalScopes()
         ->where('organization_id', $subject->getAttribute('organization_id'))
         ->forReferenceable($subject)
         ->whereIn('external_type', ['obsidian_note', 'onenote_page'])

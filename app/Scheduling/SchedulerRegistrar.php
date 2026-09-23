@@ -40,7 +40,7 @@ class SchedulerRegistrar {
     public function __construct(private readonly JobRegistry $registry) {}
 
     public function register(Schedule $schedule): void {
-        $overrides = \App\Models\ScheduledJobOverride::systemMap();
+        $overrides = \App\Models\Platform\ScheduledJobOverride::systemMap();
         $window = $this->operatingWindow();
         $watchdog = null;
 
@@ -121,7 +121,7 @@ class SchedulerRegistrar {
 
     /** Eingestellte Kadenz vor der Verschiebung ins Betriebsfenster (Umplanen-Dialog). */
     public function configuredCadence(JobDefinition $definition): Cadence {
-        $overrides = \App\Models\ScheduledJobOverride::systemMap();
+        $overrides = \App\Models\Platform\ScheduledJobOverride::systemMap();
 
         return $this->resolveCadence($definition, $overrides[$definition->key]['cadence'] ?? null);
     }

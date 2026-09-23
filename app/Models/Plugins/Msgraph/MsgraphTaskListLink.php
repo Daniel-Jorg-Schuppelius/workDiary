@@ -11,7 +11,7 @@
 namespace App\Models\Plugins\Msgraph;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization};
-use App\Models\Project;
+use App\Models\Project\Project;
 use App\Plugins\Support\TaskSync\TaskSyncLink;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

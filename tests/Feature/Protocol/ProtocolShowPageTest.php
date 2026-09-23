@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Protocol;
 
-use App\Models\{ExternalParticipant, Organization, Protocol, User};
+use App\Models\Communication\ExternalParticipant;
+use App\Models\Platform\{Organization, User};
+use App\Models\Protocol;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

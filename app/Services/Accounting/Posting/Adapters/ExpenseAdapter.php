@@ -14,7 +14,8 @@ namespace App\Services\Accounting\Posting\Adapters;
 
 use App\Enums\Expense\ExpenseStatus;
 use App\Enums\Finance\{PostingAccountRole, PostingSourceKind};
-use App\Models\{Expense, Organization, User};
+use App\Models\Expense;
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\Posting\{PostingProposal, PostingProposalLine};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;

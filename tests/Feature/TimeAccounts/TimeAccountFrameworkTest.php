@@ -12,7 +12,8 @@ namespace Tests\Feature\TimeAccounts;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Enums\TimeAccount\{CarryoverPolicy, TimeAccountSource, TimeAccountUnit};
-use App\Models\{ScheduledShift, ShiftType, TimeAccount, TimeAccountBalance, TimeAccountEntry, User};
+use App\Models\Platform\User;
+use App\Models\{ScheduledShift, ShiftType, TimeAccount, TimeAccountBalance, TimeAccountEntry};
 use App\Models\Surcharge\{SurchargeRule, TimeRuleResult};
 use App\Services\TimeAccount\TimeAccountPostingService;
 use Carbon\CarbonImmutable;
@@ -267,7 +268,7 @@ class TimeAccountFrameworkTest extends TestCase {
     }
 
     public function test_org_isolation_on_admin_page(): void {
-        $foreign = \App\Models\Organization::factory()->create();
+        $foreign = \App\Models\Platform\Organization::factory()->create();
         TimeAccount::query()->create([
             'organization_id' => $foreign->id,
             'code' => 'fremd',

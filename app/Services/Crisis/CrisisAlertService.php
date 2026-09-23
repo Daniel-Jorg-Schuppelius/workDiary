@@ -15,7 +15,7 @@ namespace App\Services\Crisis;
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Crisis\{CrisisCase, CrisisTeamAssignment};
 use App\Models\Notification\NotificationDispatchLog;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Notifications\GenericEventNotification;
 use App\Services\Notification\Sms\SmsChannelService;
 

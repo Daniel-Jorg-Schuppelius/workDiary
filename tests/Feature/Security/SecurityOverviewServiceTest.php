@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Security;
 
-use App\Models\{AuditLog, Organization, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{Organization, User};
 use App\Services\Security\SecurityOverviewService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

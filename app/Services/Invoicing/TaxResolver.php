@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
-use App\Models\{Customer, Organization, TaxRule};
+use App\Models\Customer\Customer;
+use App\Models\Platform\Organization;
+use App\Models\TaxRule;
 use CommonToolkit\Helper\Data\Validator;
 
 /**

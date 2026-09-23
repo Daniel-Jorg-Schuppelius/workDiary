@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Metrics;
 
-use App\Models\{FeatureUsageCounter, Organization};
+use App\Models\Platform\{FeatureUsageCounter, Organization};
 use App\Services\Metrics\OperationsMetricsService;
 use App\Settings\SettingScope;
 use App\Support\Setting;

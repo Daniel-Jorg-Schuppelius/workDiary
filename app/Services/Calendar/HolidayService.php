@@ -10,9 +10,9 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Services\Calendar;
 
-use App\Models\Holiday as CustomHoliday;
+use App\Models\Platform\Holiday as CustomHoliday;
 use App\Support\Setting;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Support\Facades\Schema;

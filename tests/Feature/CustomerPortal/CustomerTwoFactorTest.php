@@ -11,7 +11,8 @@
 namespace Tests\Feature\CustomerPortal;
 
 use App\Mail\TwoFactorCodeMail;
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Hash, Mail};
 use PragmaRX\Google2FAQRCode\Google2FA;

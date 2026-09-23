@@ -14,7 +14,7 @@ namespace App\Services\Privacy\SubjectData;
 
 use App\Enums\Learning\LearningEnrollmentStatus;
 use App\Models\Learning\{LearningBooking, LearningCertificate, LearningEnrollment, LearningQuizAttempt, LearningTimeSession};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 
 /**

@@ -12,7 +12,7 @@
 <x-card padding="p-0">
     <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
         <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Aufträge') }}</span>
-        <a href="{{ route('diary.index', ['project' => \App\Support\Sqid::encode(\App\Models\Project::class, $project->id)]) }}"
+        <a href="{{ route('diary.index', ['project' => \App\Support\Sqid::encode(\App\Models\Project\Project::class, $project->id)]) }}"
            class="btn btn-sm btn-ghost">{{ __('In der Arbeitsliste öffnen') }}</a>
     </header>
     <ul class="divide-y divide-base-300">

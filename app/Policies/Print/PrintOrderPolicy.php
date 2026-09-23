@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Policies\Print;
 
 use App\Enums\User\Permission as P;
+use App\Models\Platform\User;
 use App\Models\Print\PrintOrder;
-use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
 
 /**

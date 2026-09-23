@@ -11,7 +11,8 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\{ClassificationRequirementException, InvalidOrderTransitionException};
-use App\Models\{DiaryEntry, Protocol, User};
+use App\Models\{DiaryEntry, Protocol};
+use App\Models\Platform\User;
 use App\Services\Diary\OrderService;
 use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};

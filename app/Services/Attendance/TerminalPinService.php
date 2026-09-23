@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Attendance;
 
-use App\Models\{User, UserTerminalPin};
+use App\Models\Platform\{User, UserTerminalPin};
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;

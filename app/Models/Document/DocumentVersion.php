@@ -8,13 +8,16 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Document;
 
 use App\Models\Concerns\{AppendOnly, HasSqid};
-use Database\Factories\DocumentVersionFactory;
+use Database\Factories\Document\DocumentVersionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasOne};
+use App\Models\Document\DocumentVersionText;
+use App\Models\Document\Document\Document;
+use App\Models\Material;
 
 /**
  * Unveränderliche Datei-Version eines Dokuments (MVP-031). Append-only:

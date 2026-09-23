@@ -14,7 +14,7 @@ namespace App\Services\Club;
 
 use App\Enums\Club\{ClubMembershipKind, ClubResultFormat, ClubSportFamily};
 use App\Models\Club\{ClubGroup, ClubMember, ClubSeason, ClubSportProfile, ClubSquad, ClubSquadMember};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Database\Eloquent\Builder;

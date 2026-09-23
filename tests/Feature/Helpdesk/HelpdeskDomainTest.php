@@ -11,7 +11,8 @@
 namespace Tests\Feature\Helpdesk;
 
 use App\Enums\ServiceTicket\{ServiceTicketKind, ServiceTicketStatus, TicketCloseCode, TicketSeverity};
-use App\Models\{Organization, ServiceTicket, SlaClockSegment, SlaContract, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\{ServiceTicket, SlaClockSegment, SlaContract};
 use App\Services\ServiceTicket\ServiceTicketService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

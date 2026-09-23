@@ -11,7 +11,8 @@
 namespace Tests\Feature;
 
 use App\Enums\Diary\{Mode, Status};
-use App\Models\{DiaryEntry, Qualification, User};
+use App\Models\{DiaryEntry, Qualification};
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\Concerns\WithOrganization;

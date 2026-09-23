@@ -13,7 +13,7 @@ namespace Tests\Feature\Learning;
 use App\Console\Commands\SystemHealthCommand;
 use App\Enums\Learning\LearningUnitKind;
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningScormPackage, LearningUnit};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningCourseService, LearningEnrollmentService, LearningScormService, ScormContentToken};
 use App\Support\Learning\{ScormContentHost, ScormContentRoutes};
 use Carbon\CarbonImmutable;

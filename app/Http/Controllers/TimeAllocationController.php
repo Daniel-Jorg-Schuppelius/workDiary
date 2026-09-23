@@ -81,7 +81,7 @@ class TimeAllocationController extends Controller {
      */
     private function targetGroups(): array {
         $sources = [
-            'project' => \App\Models\Project::query()->orderBy('name')->pluck('name', 'id'),
+            'project' => \App\Models\Project\Project::query()->orderBy('name')->pluck('name', 'id'),
             'cost_center' => \App\Models\CostCenter::query()->where('active', true)->orderBy('code')
                 ->get(['id', 'code', 'label'])
                 ->mapWithKeys(fn (\App\Models\CostCenter $c): array => [(int) $c->id => trim($c->code . ' — ' . $c->label)]),
@@ -90,7 +90,7 @@ class TimeAllocationController extends Controller {
             'vehicle' => \App\Models\Vehicle::query()->orderBy('label')->get(['id', 'label', 'license_plate'])
                 ->mapWithKeys(fn (\App\Models\Vehicle $v): array => [(int) $v->id => trim(($v->label ?? '') . ' ' . ($v->license_plate ?? '')) ?: '#' . $v->id]),
             // Tätigkeiten haben label statt name.
-            'activity_category' => \App\Models\ActivityCategory::query()->where('active', true)->orderBy('label')->pluck('label', 'id'),
+            'activity_category' => \App\Models\Classification\ActivityCategory::query()->where('active', true)->orderBy('label')->pluck('label', 'id'),
         ];
 
         $groups = [];

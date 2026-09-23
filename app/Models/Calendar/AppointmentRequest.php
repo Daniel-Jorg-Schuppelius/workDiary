@@ -8,12 +8,15 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Calendar;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use App\Models\Sales\BookableService;
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
 
 /**
  * Quellenagnostischer Terminwunsch (Feature 095, minimaler 087-Intake-Kern):
@@ -126,7 +129,7 @@ class AppointmentRequest extends Model {
         'cancellation' => 'array',
     ];
 
-    /** @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\BookableService, $this> */
+    /** @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Sales\BookableService, $this> */
     public function bookableService(): \Illuminate\Database\Eloquent\Relations\BelongsTo {
         return $this->belongsTo(BookableService::class);
     }

@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Cti;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth, HasSqid};
 use CommonToolkit\Helper\Data\CryptoHelper;

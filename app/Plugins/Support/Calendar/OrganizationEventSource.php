@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\Calendar;
 
-use App\Models\{Event, Organization};
+use App\Models\Calendar\Event;
+use App\Models\Platform\Organization;
 use App\Services\Event\IcsFeedService;
 use DateTimeZone;
 

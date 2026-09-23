@@ -14,7 +14,7 @@ namespace App\Services\Accounting\Reports;
 
 use App\Enums\Finance\OpenItemDirection;
 use App\Models\Accounting\{AccountingAccount, AccountingOpenItem};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Decimal;

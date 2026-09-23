@@ -11,7 +11,7 @@
 namespace App\Console\Commands;
 
 use App\Enums\Backup\RestoreTestResult;
-use App\Models\RestoreTest;
+use App\Models\Platform\RestoreTest;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Throwable;

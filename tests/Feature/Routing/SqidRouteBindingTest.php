@@ -10,8 +10,9 @@
 
 namespace Tests\Feature\Routing;
 
-use App\Models\{Customer, User};
-use App\Services\SqidEncoder;
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Support\SqidEncoder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

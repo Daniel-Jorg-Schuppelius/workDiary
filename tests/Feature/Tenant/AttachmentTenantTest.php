@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Tenant;
 
-use App\Models\{Attachment, DiaryEntry, Organization, User};
+use App\Models\Attachments\Attachment;
+use App\Models\DiaryEntry;
+use App\Models\Platform\{Organization, User};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;

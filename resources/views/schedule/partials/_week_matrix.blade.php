@@ -14,8 +14,8 @@
     /** @var \Carbon\Carbon $from */
     /** @var \Carbon\Carbon $to */
     /** @var \Illuminate\Support\Collection<int, \App\Models\OnCallShift> $shifts */
-    /** @var \Illuminate\Support\Collection<int, \App\Models\User> $users */
-    /** @var \App\Services\HolidayService $holidays */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users */
+    /** @var \App\Services\Calendar\HolidayService $holidays */
     /** @var bool $isAdmin */
     $weekDays = [];
     $cursor   = $from->copy();

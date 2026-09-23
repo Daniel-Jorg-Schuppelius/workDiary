@@ -9,7 +9,7 @@
  */
 
 use App\Models\Chat\Channel;
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Support\Facades\Broadcast;
 
 Broadcast::channel('App.Models.User.{id}', function (User $user, int $id) {

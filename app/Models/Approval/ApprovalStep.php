@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Approval;
 
 use App\Enums\Approval\ApprovalDecision;
 use App\Models\Concerns\{AppendOnly, BelongsToOrganization, HasSqid};

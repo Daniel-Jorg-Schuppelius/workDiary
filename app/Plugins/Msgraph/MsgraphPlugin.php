@@ -12,7 +12,8 @@ namespace App\Plugins\Msgraph;
 
 use App\Models\Backup\BackupTargetConnection;
 use App\Models\CloudIntake\CloudDocumentConnection;
-use App\Models\{MsgraphConnection, Organization};
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Msgraph\MsgraphConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{BackupTarget, CalendarPublisher, DocumentIntakeSource, PluginCapability};
 use App\Plugins\Msgraph\Api\{MsgraphBackupClient, MsgraphCalendarClient, MsgraphIntakeClient};
@@ -29,11 +30,11 @@ use Throwable;
  * Microsoft-365-Kalender-Anbindung (MVP-328, Bauturbo A8) — Nur-Publish-Pilot
  * neben CalDAV/ICS.
  *
- * - **Publiziert** WorkDiary-Termine ({@see \App\Models\Event}) über Microsoft
+ * - **Publiziert** WorkDiary-Termine ({@see \App\Models\Calendar\Event}) über Microsoft
  *   Graph in einen wählbaren Kalender des verbundenen M365-Kontos
  *   (OAuth2 Authorization-Code + PKCE, delegated `Calendars.ReadWrite`).
  * - **Idempotent** über stabile UIDs (`transactionId`) +
- *   {@see \App\Models\ExternalReference} (Remote-Event-ID): Anlegen/Ändern/
+ *   {@see \App\Models\Integration\ExternalReference} (Remote-Event-ID): Anlegen/Ändern/
  *   Löschen (bei Absage) erzeugen keine Dubletten — CalDAV-Muster.
  * - Pro Organisation verbunden ({@see MsgraphConnection}, Tokens verschlüsselt
  *   at-rest); Rückimport externer Termine ist bewusst NICHT Teil des Piloten.
@@ -105,22 +106,22 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Con
 
     /**
      * Pusht den Kunden idempotent als Outlook-Kontakt des verbundenen Kontos:
-     * bestehende {@see \App\Models\ExternalReference} ⇒ PATCH; remote gelöscht
+     * bestehende {@see \App\Models\Integration\ExternalReference} ⇒ PATCH; remote gelöscht
      * (404) ⇒ Neuanlage; sonst POST mit Immutable-ID. Keine Dubletten.
      */
-    public function pushContact(\App\Models\Customer $customer): string {
-        $connection = \App\Models\MsgraphContactConnection::query()
+    public function pushContact(\App\Models\Customer\Customer $customer): string {
+        $connection = \App\Models\Plugins\Msgraph\MsgraphContactConnection::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $customer->organization_id)
             ->first();
-        if (! $connection instanceof \App\Models\MsgraphContactConnection || ! $connection->isActive()) {
+        if (! $connection instanceof \App\Models\Plugins\Msgraph\MsgraphContactConnection || ! $connection->isActive()) {
             throw new \RuntimeException((string) __('msgraph_contacts.flash.no_connection'));
         }
 
         $client = new \App\Plugins\Msgraph\Api\MsgraphContactsClient($connection);
         $payload = $this->contactPayload($customer);
 
-        $ref = \App\Models\ExternalReference::query()
+        $ref = \App\Models\Integration\ExternalReference::query()
             ->withoutGlobalScopes()
             ->where('plugin_id', self::ID)
             ->where('external_type', self::EXT_TYPE_CONTACT)
@@ -130,7 +131,7 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Con
 
         try {
             $externalId = null;
-            if ($ref instanceof \App\Models\ExternalReference && trim((string) $ref->external_id) !== '') {
+            if ($ref instanceof \App\Models\Integration\ExternalReference && trim((string) $ref->external_id) !== '') {
                 if ($client->updateContact((string) $ref->external_id, $payload)) {
                     $externalId = (string) $ref->external_id;
                 }
@@ -143,7 +144,7 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Con
             throw $e;
         }
 
-        \App\Models\ExternalReference::query()->withoutGlobalScopes()->updateOrCreate(
+        \App\Models\Integration\ExternalReference::query()->withoutGlobalScopes()->updateOrCreate(
             [
                 'plugin_id' => self::ID,
                 'external_type' => self::EXT_TYPE_CONTACT,
@@ -168,7 +169,7 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Con
      *
      * @return array<string, mixed>
      */
-    private function contactPayload(\App\Models\Customer $customer): array {
+    private function contactPayload(\App\Models\Customer\Customer $customer): array {
         $displayName = trim((string) ($customer->contact_name ?: $customer->name));
 
         $payload = [
@@ -218,7 +219,7 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Con
             if (! $org instanceof Organization) {
                 return null;
             }
-            $members = \App\Models\User::query()
+            $members = \App\Models\Platform\User::query()
                 ->where('organization_id', $org->id)
                 ->whereNull('customer_id')
                 ->whereNull('deactivated_at')
@@ -246,14 +247,14 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Con
             return view('msgraph::events.availability')->render();
         }
 
-        if ($slot !== 'customer-show.actions' || ! $context instanceof \App\Models\Customer) {
+        if ($slot !== 'customer-show.actions' || ! $context instanceof \App\Models\Customer\Customer) {
             return null;
         }
 
-        $connection = \App\Models\MsgraphContactConnection::query()
+        $connection = \App\Models\Plugins\Msgraph\MsgraphContactConnection::query()
             ->where('organization_id', $context->organization_id)
             ->first();
-        if (! $connection instanceof \App\Models\MsgraphContactConnection || ! $connection->isActive()) {
+        if (! $connection instanceof \App\Models\Plugins\Msgraph\MsgraphContactConnection || ! $connection->isActive()) {
             return null;
         }
 
@@ -471,7 +472,7 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Con
             ])->count();
 
         // Mail-Verbindung (Feature 102): auto-disabled = Versand steht.
-        $mail = \App\Models\MsgraphMailConnection::query()
+        $mail = \App\Models\Plugins\Msgraph\MsgraphMailConnection::query()
             ->where('organization_id', $org->id)
             ->whereNotNull('disabled_at')
             ->count();

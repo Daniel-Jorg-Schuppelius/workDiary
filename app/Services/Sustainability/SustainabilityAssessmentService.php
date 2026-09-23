@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Sustainability;
 
+use App\Models\Platform\User;
 use App\Models\Sustainability\{SustainabilityAssessment, SustainabilityCriterion};
-use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 /**

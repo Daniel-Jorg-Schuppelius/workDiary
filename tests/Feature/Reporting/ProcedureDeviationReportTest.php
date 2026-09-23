@@ -11,7 +11,9 @@
 namespace Tests\Feature\Reporting;
 
 use App\Enums\Procedure\{ProcedureDeviationProposedAction, ProcedureDeviationSeverity, ProcedureDeviationType};
-use App\Models\{AuditLog, DiaryEntry, OpenIssue, ProcedureDeviation, ProcedureRun, ProcedureStepDef, ProcedureStepRun, ProcedureTemplate, ProcedureTemplateVersion, User};
+use App\Models\Audit\AuditLog;
+use App\Models\{DiaryEntry, OpenIssue, ProcedureDeviation, ProcedureRun, ProcedureStepDef, ProcedureStepRun, ProcedureTemplate, ProcedureTemplateVersion};
+use App\Models\Platform\User;
 use App\Services\Reporting\ProcedureDeviationReportBuilder;
 use App\Support\{MorphMap, Sqid};
 use Carbon\CarbonImmutable;

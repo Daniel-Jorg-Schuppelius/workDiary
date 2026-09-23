@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Peppol;
 
-use App\Models\{Customer, IncomingEInvoice, Invoice, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\{IncomingEInvoice, Invoice};
+use App\Models\Platform\{Organization, User};
 use App\Plugins\PeppolAccessPoint\PeppolAccessPointPlugin;
 use App\Plugins\PluginManager;
 use App\Services\Invoicing\EInvoice\XRechnungGenerator;

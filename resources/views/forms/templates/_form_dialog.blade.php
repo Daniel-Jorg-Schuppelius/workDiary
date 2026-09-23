@@ -63,13 +63,13 @@
         @endphp
         <x-select-field name="target_entry_type" :label="__('form.field.target_entry_type')">
             <option value="">{{ __('alle') }}</option>
-            @foreach (\App\Models\EntryType::query()->orderBy('label')->get(['id', 'label']) as $entryType)
+            @foreach (\App\Models\Classification\EntryType::query()->orderBy('label')->get(['id', 'label']) as $entryType)
                 <option value="{{ $entryType->sqid }}" @selected($targetEntryTypeId === $entryType->id)>{{ $entryType->label }}</option>
             @endforeach
         </x-select-field>
         <x-select-field name="target_customer" :label="__('form.field.target_customer')">
             <option value="">{{ __('alle') }}</option>
-            @foreach (\App\Models\Customer::query()->orderBy('name')->limit(500)->get(['id', 'name']) as $targetCustomer)
+            @foreach (\App\Models\Customer\Customer::query()->orderBy('name')->limit(500)->get(['id', 'name']) as $targetCustomer)
                 <option value="{{ $targetCustomer->sqid }}" @selected($targetCustomerId === $targetCustomer->id)>{{ $targetCustomer->name }}</option>
             @endforeach
         </x-select-field>

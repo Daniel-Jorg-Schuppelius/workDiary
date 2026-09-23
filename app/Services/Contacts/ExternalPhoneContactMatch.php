@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Contacts;
 
-use App\Models\{Customer, ForeignCustomer};
+use App\Models\Customer\{Customer, ForeignCustomer};
 
 /** Ergebnis eines eindeutigen oder rein informativen Verzeichnis-Treffers. */
 final readonly class ExternalPhoneContactMatch {

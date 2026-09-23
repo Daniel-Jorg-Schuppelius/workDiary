@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Org;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -24,7 +24,7 @@ use Illuminate\Support\Str;
  * personengebunden stehen und sind seit Migration 101000 per RESTRICT-FK
  * geschützt. Hard-Delete bleibt nur für Konten OHNE Nachweise erlaubt
  * (Fehlanlage). Ein deaktiviertes Konto gibt seinen Lizenzsitz frei
- * ({@see \App\Models\Organization::activeUserCount()}).
+ * ({@see \App\Models\Platform\Organization::activeUserCount()}).
  */
 class UserOffboardingService {
     /**
@@ -88,7 +88,7 @@ class UserOffboardingService {
      * Person noch hält oder offen hat — aus dem Bestand berechnet, kein eigenes
      * Modell. Zutrittsmedien sperren den Austritt weiterhin im Controller.
      *
-     * @return array{media: \Illuminate\Database\Eloquent\Collection<int, \App\Models\AccessMedium>, assets: \Illuminate\Database\Eloquent\Collection<int, \App\Models\AssetAssignment>, tasks: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task>, open_attendances: int}
+     * @return array{media: \Illuminate\Database\Eloquent\Collection<int, \App\Models\AccessMedium>, assets: \Illuminate\Database\Eloquent\Collection<int, \App\Models\AssetAssignment>, tasks: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Project\Task>, open_attendances: int}
      */
     public function handoverChecklist(User $member): array {
         return [
@@ -97,7 +97,7 @@ class UserOffboardingService {
                 ->where('assigned_to_user_id', $member->id)
                 ->with('asset')
                 ->get(),
-            'tasks' => \App\Models\Task::query()
+            'tasks' => \App\Models\Project\Task::query()
                 ->whereHas('assignees', fn ($query) => $query->whereKey($member->id))
                 ->where('status', '!=', \App\Enums\Task\TaskStatus::Done->value)
                 ->orderBy('title')

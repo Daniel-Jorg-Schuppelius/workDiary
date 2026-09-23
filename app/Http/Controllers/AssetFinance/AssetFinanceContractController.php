@@ -14,9 +14,11 @@ namespace App\Http\Controllers\AssetFinance;
 
 use App\Enums\AssetFinance\{AssetFinanceKind, AssetFinanceStatus, AssetFinanceTermKind};
 use App\Http\Controllers\Controller;
-use App\Models\{Asset, CostCenter, Project, Supplier, User};
+use App\Models\{Asset, CostCenter, Supplier};
 use App\Models\AssetFinance\AssetFinanceContract;
 use App\Models\Investments\{InvestmentCase, InvestmentLink};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\AssetFinance\AssetFinanceService;
 use App\Support\{ErrorText, Sqid};

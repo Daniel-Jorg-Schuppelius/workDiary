@@ -16,7 +16,7 @@ use App\Enums\Club\ClubEventRoleKind;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Club\ClubMember;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
 

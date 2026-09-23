@@ -11,7 +11,8 @@
 namespace App\Plugins\Fritzbox\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{IntegrationInboxItem, Organization};
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Platform\Organization;
 use App\Plugins\Fritzbox\{FritzboxConfig, FritzboxImportService, FritzboxPlugin};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Services\Contacts\ExternalPhoneContactDirectory;
@@ -48,7 +49,7 @@ class FritzboxController extends Controller {
         $config = FritzboxConfig::resolve($admin->organization_id);
 
         // MVP-534: Stempel-Rufnummern (Rufnummer → Benutzer) + aktive MSNs.
-        $stampNumbers = \App\Models\ExternalReference::forPlugin((int) $admin->organization_id, FritzboxPlugin::ID, FritzboxImportService::EXT_TYPE_STAMP_NUMBER)
+        $stampNumbers = \App\Models\Integration\ExternalReference::forPlugin((int) $admin->organization_id, FritzboxPlugin::ID, FritzboxImportService::EXT_TYPE_STAMP_NUMBER)
             ->with('referenceable')
             ->orderBy('external_id')
             ->get();
@@ -63,12 +64,12 @@ class FritzboxController extends Controller {
                 trim($config['stamp_out_line']),
                 trim($config['stamp_toggle_line']),
             ]),
-            'stampUserOptions' => \App\Models\User::query()
+            'stampUserOptions' => \App\Models\Platform\User::query()
                 ->where('organization_id', $admin->organization_id)
                 ->whereNull('deactivated_at')
                 ->orderBy('name')
                 ->get(['id', 'name'])
-                ->map(fn (\App\Models\User $u): array => ['sqid' => \App\Support\Sqid::encode(\App\Models\User::class, (int) $u->id), 'name' => (string) $u->name])
+                ->map(fn (\App\Models\Platform\User $u): array => ['sqid' => \App\Support\Sqid::encode(\App\Models\Platform\User::class, (int) $u->id), 'name' => (string) $u->name])
                 ->values()
                 ->all(),
             'contactDirectorySources' => (bool) $config['external_contact_matching']
@@ -86,11 +87,11 @@ class FritzboxController extends Controller {
             'number' => ['required', 'string', 'max:40'],
         ]);
 
-        $userId = \App\Support\Sqid::decodeOrNumeric(\App\Models\User::class, (string) $data['user']);
-        $user = \App\Models\User::query()
+        $userId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Platform\User::class, (string) $data['user']);
+        $user = \App\Models\Platform\User::query()
             ->where('organization_id', $admin->organization_id)
             ->find((int) ($userId ?? 0));
-        if (! $user instanceof \App\Models\User) {
+        if (! $user instanceof \App\Models\Platform\User) {
             return back()->withErrors(['user' => __('Unbekannter Benutzer.')]);
         }
 
@@ -110,7 +111,7 @@ class FritzboxController extends Controller {
 
         $data = $request->validate(['number' => ['required', 'string', 'max:40']]);
 
-        \App\Models\ExternalReference::forPlugin((int) $admin->organization_id, FritzboxPlugin::ID, FritzboxImportService::EXT_TYPE_STAMP_NUMBER)
+        \App\Models\Integration\ExternalReference::forPlugin((int) $admin->organization_id, FritzboxPlugin::ID, FritzboxImportService::EXT_TYPE_STAMP_NUMBER)
             ->forExternalId((string) $data['number'])
             ->get()->each->delete();
 

@@ -10,7 +10,11 @@
 
 namespace App\Plugins\RemoteSupport;
 
-use App\Models\{Asset, Customer, ForeignCustomer, Organization, Project, RemotePendingSession};
+use App\Models\Asset;
+use App\Models\Auth\RemotePendingSession;
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Platform\Organization;
+use App\Models\Project\Project;
 use App\Plugins\RemoteSupport\Providers\RemoteSession;
 use App\Services\Integration\ProjectKeywordMatcher;
 use Carbon\CarbonImmutable;

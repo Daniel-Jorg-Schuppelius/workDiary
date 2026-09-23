@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Chat;
 use App\Events\Chat\{MessageDeleted, MessageSent, MessageUpdated};
 use App\Http\Controllers\Controller;
 use App\Models\Chat\{Channel, Message};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Attachments\FileAttacher;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};

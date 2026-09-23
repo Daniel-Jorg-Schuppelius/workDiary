@@ -11,7 +11,8 @@
 namespace Database\Factories;
 
 use App\Enums\Software\{SoftwareKind, SoftwareLicenseType};
-use App\Models\{Organization, Software};
+use App\Models\Platform\Organization;
+use App\Models\Software;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<Software> */

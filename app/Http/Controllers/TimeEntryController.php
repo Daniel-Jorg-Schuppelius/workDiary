@@ -13,13 +13,14 @@ namespace App\Http\Controllers;
 use App\Enums\Classification\ClassificationDomain;
 use App\Http\Controllers\Concerns\{BuildsTimeEntryOptions, ProvidesTimeEntryTagPicker};
 use App\Http\Requests\{ReassignTimeEntriesRequest, SaveTimeEntryRequest};
-use App\Models\{Project, TimeEntry};
-use App\Models\User;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Services\Billing\AgreementRateResolver;
 use App\Services\Classification\ClassificationResolver;
 use App\Services\Flextime\CoreTimeValidator;
-use App\Services\SqidEncoder;
 use App\Services\Timekeeping\TimeEntryReassignService;
+use App\Support\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -103,7 +104,7 @@ class TimeEntryController extends Controller {
     /**
      * Nacharbeits-/Kulanzgründe (Feature 014) für den Erfassungs-Dialog.
      *
-     * @return array{reworkOptions: Collection<int, \App\Models\Classification>, goodwillOptions: Collection<int, \App\Models\Classification>}
+     * @return array{reworkOptions: Collection<int, \App\Models\Classification\Classification>, goodwillOptions: Collection<int, \App\Models\Classification\Classification>}
      */
     private function classificationOptions(Project $project): array {
         $resolver = app(ClassificationResolver::class);

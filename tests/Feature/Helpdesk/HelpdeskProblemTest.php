@@ -11,7 +11,9 @@
 namespace Tests\Feature\Helpdesk;
 
 use App\Enums\ServiceTicket\ServiceTicketStatus;
-use App\Models\{ContentReference, Organization, Problem, ServiceTicket, User};
+use App\Models\Knowledge\ContentReference;
+use App\Models\Platform\{Organization, User};
+use App\Models\{Problem, ServiceTicket};
 use App\Services\ServiceTicket\{ProblemService, ServiceTicketService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -98,7 +100,7 @@ final class HelpdeskProblemTest extends TestCase {
         $this->assertStringContainsString('Druckertreiber-Konflikt', $article->title);
 
         // Statt der Kategorie `known_error` liegt der Artikel in der Sammlung „Known Errors“ (MVP-814) — einmal.
-        $items = \App\Models\ContentCollectionItem::query()->withoutGlobalScopes()
+        $items = \App\Models\Knowledge\ContentCollectionItem::query()->withoutGlobalScopes()
             ->where('collectable_type', $article->getMorphClass())
             ->where('collectable_id', $article->id)
             ->with('collection')

@@ -12,7 +12,7 @@ namespace App\Services\Isms;
 
 use App\Enums\Isms\ControlImplementationStatus;
 use App\Models\Isms\{IsmsControl, IsmsRequirement};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Support\Facades\DB;
 
 /**

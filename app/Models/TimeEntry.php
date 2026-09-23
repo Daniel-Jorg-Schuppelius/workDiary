@@ -13,7 +13,7 @@ namespace App\Models;
 use App\Casts\MoneyCast;
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, HasTags};
-use App\Services\RateCalculator;
+use App\Services\Billing\RateCalculator;
 use App\Support\Formats;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
@@ -85,19 +85,19 @@ class TimeEntry extends Model {
     /**
      * Nacharbeitsgrund (Rang 59, Domäne rework_reason).
      *
-     * @return BelongsTo<\App\Models\Classification, $this>
+     * @return BelongsTo<\App\Models\Classification\Classification, $this>
      */
     public function reworkReason(): BelongsTo {
-        return $this->belongsTo(\App\Models\Classification::class, 'rework_reason_classification_id');
+        return $this->belongsTo(\App\Models\Classification\Classification::class, 'rework_reason_classification_id');
     }
 
     /**
      * Kulanzgrund (Rang 59, Domäne goodwill_reason).
      *
-     * @return BelongsTo<\App\Models\Classification, $this>
+     * @return BelongsTo<\App\Models\Classification\Classification, $this>
      */
     public function goodwillReason(): BelongsTo {
-        return $this->belongsTo(\App\Models\Classification::class, 'goodwill_reason_classification_id');
+        return $this->belongsTo(\App\Models\Classification\Classification::class, 'goodwill_reason_classification_id');
     }
 
     protected $fillable = [

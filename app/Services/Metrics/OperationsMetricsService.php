@@ -10,7 +10,14 @@
 
 namespace App\Services\Metrics;
 
-use App\Models\{Attachment, AuditLog, BackupHeartbeat, CommunicationNote, DiaryEntry, Document, DocumentVersion, FeatureUsageCounter, FormSubmission, KnowledgeArticle, Organization, PluginError, Protocol, SystemSetting, User};
+use App\Models\Attachments\Attachment;
+use App\Models\Audit\AuditLog;
+use App\Models\Communication\CommunicationNote;
+use App\Models\{DiaryEntry, Protocol};
+use App\Models\Document\{Document, DocumentVersion};
+use App\Models\Form\FormSubmission;
+use App\Models\Knowledge\KnowledgeArticle;
+use App\Models\Platform\{BackupHeartbeat, FeatureUsageCounter, Organization, PluginError, SystemSetting, User};
 use App\Settings\SettingsRegistry;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;

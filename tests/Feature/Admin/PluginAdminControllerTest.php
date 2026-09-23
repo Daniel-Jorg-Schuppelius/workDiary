@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\{PluginError, PluginSetting, PluginState, User};
+use App\Models\Platform\{PluginError, PluginSetting, PluginState, User};
 use App\Plugins\Contracts\{Plugin, PluginCapability};
 use App\Plugins\{PluginDefaults, PluginHealth, PluginManager};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -80,8 +80,8 @@ class PluginAdminControllerTest extends TestCase {
             ->post(route('admin.plugins.toggle', 'admintest'))
             ->assertRedirect();
 
-        /** @var \App\Models\AuditLog|null $log */
-        $log = \App\Models\AuditLog::query()
+        /** @var \App\Models\Audit\AuditLog|null $log */
+        $log = \App\Models\Audit\AuditLog::query()
             ->withoutGlobalScopes()
             ->where('event', 'integration.changed')
             ->first();
@@ -188,7 +188,7 @@ class PluginAdminControllerTest extends TestCase {
             ])
             ->assertRedirect();
 
-        $log = \App\Models\AuditLog::query()
+        $log = \App\Models\Audit\AuditLog::query()
             ->withoutGlobalScopes()
             ->where('event', 'integration.settings_changed')
             ->firstOrFail();

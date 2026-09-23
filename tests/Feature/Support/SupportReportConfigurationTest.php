@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Support;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Support\SupportReportBuilder;
 use App\Settings\{SettingScope, SettingsRegistry};
 use App\Support\Setting;

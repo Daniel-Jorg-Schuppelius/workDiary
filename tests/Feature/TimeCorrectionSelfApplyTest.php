@@ -13,7 +13,8 @@ namespace Tests\Feature;
 use App\Enums\Attendance\AttendanceSource;
 use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Enums\User\Permission as P;
-use App\Models\{Attendance, Organization, TimeCorrectionRequest, User};
+use App\Models\{Attendance, TimeCorrectionRequest};
+use App\Models\Platform\{Organization, User};
 use App\Services\TimeApproval\TimeCorrectionService;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
@@ -86,7 +87,7 @@ class TimeCorrectionSelfApplyTest extends TestCase {
             'auditable_type' => MorphMap::stableKey(Attendance::class),
             'auditable_id' => $att->id,
         ]);
-        $log = \App\Models\AuditLog::query()->where('event', 'attendance.correctedByApproval')->firstOrFail();
+        $log = \App\Models\Audit\AuditLog::query()->where('event', 'attendance.correctedByApproval')->firstOrFail();
         $this->assertSame((int) $req->id, (int) $log->changes['correction_request_id']);
     }
 

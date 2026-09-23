@@ -11,7 +11,11 @@
 namespace Tests\Feature\Plugins;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{ExternalReference, IntegrationOutboxEntry, PluginSetting, Project, Tag, TimeEntry, User};
+use App\Models\Classification\Tag;
+use App\Models\Integration\{ExternalReference, IntegrationOutboxEntry};
+use App\Models\Platform\{PluginSetting, User};
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Plugins\Support\MatchingTimeImportService;
 use App\Plugins\Toggl\Services\TogglOutboxDispatcher;
 use App\Plugins\Toggl\{TogglConfig, TogglExportService, TogglImportService, TogglPlugin};

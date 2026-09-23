@@ -12,7 +12,11 @@ namespace Tests\Feature\Billing;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
 use App\Enums\Expense\{ExpenseStatus, PaymentMethod};
-use App\Models\{Customer, Expense, Invoice, LexofficeVoucher, OrgaMaxInvoice, PluginSetting, Supplier, User};
+use App\Models\Customer\Customer;
+use App\Models\{Expense, Invoice, Supplier};
+use App\Models\Platform\{PluginSetting, User};
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
+use App\Models\Plugins\OrgaMax\OrgaMaxInvoice;
 use App\Plugins\Lexoffice\{LexofficeExpenseLinkProvider, LexofficePlugin};
 use App\Services\Billing\{DocumentFeedFilters, DocumentFeedQuery};
 use App\Support\Billing\VoucherTypes;

@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth\Concerns;
 
 use App\Legacy\LegacyBridge;
-use App\Models\{SsoConnection, User};
+use App\Models\Auth\SsoConnection;
+use App\Models\Platform\User;
 use Illuminate\Support\Facades\DB;
 
 /**

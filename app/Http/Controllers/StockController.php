@@ -12,7 +12,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\Inventory\OwnershipType;
 use App\Enums\User\Permission as P;
-use App\Models\{ArticleVariant, Customer, StockLevelSetting, StockMovement, StockReservation, Warehouse, WarehouseBin};
+use App\Models\{ArticleVariant, StockLevelSetting, StockMovement, StockReservation, Warehouse, WarehouseBin};
+use App\Models\Customer\Customer;
 use App\Services\Inventory\{CustomerStockAllocationService, InventoryLedger, ReservationService, StockLevelService, ValuationService};
 use App\Support\{ErrorText, Sqid};
 use App\Support\MorphMap;
@@ -198,7 +199,7 @@ class StockController extends Controller {
         $allowNegative = (bool) ($data['allow_negative'] ?? false);
         if ($allowNegative) {
             Gate::authorize(P::InventoryNegative->value);
-            \App\Models\AuditLog::query()->create([
+            \App\Models\Audit\AuditLog::query()->create([
                 'organization_id' => $variant->organization_id,
                 'user_id' => $actor,
                 'event' => 'inventory.negativeApproved',

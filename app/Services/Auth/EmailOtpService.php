@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Auth;
 
 use App\Mail\TwoFactorCodeMail;
-use App\Models\User;
+use App\Models\Platform\User;
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Facades\{Cache, Hash, Log, Mail, RateLimiter};
 use Throwable;

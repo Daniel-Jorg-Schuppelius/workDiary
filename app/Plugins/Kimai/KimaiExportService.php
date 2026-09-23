@@ -12,7 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\Kimai;
 
-use App\Models\{ExternalReference, Organization, Project, TimeEntry};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\Organization;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Plugins\Kimai\Exceptions\KimaiApiException;
 use App\Plugins\Kimai\Sources\KimaiApiClient;
 use App\Plugins\Support\AbstractTimeEntryPushService;

@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Models\Club;
 
+use App\Models\Calendar\Event;
 use App\Models\Concerns\BelongsToOrganization;
-use App\Models\Event;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

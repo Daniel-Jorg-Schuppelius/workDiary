@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers\Auth\Concerns;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Http\{RedirectResponse, Request};
 
 /**

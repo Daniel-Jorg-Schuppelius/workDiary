@@ -10,7 +10,7 @@
 
 namespace App\Services\Help;
 
-use App\Models\HelpTopic;
+use App\Models\Platform\HelpTopic;
 
 class HelpTopicReindexer {
     public function __construct(

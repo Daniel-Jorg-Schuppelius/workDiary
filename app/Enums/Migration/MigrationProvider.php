@@ -40,7 +40,7 @@ enum MigrationProvider: string implements HasLabel {
     }
 
     /**
-     * `external_type` der {@see \App\Models\ExternalReference} dieses
+     * `external_type` der {@see \App\Models\Integration\ExternalReference} dieses
      * Systems je Datenbereich — die Plugins legen ihre Fremd-IDs
      * unterschiedlich ab (Lexoffice führt Kunden und Lieferanten gemeinsam
      * als „contact").

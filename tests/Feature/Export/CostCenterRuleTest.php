@@ -12,7 +12,8 @@ namespace Tests\Feature\Export;
 
 use App\Enums\Attendance\AttendanceStatus;
 use App\Enums\User\Permission as P;
-use App\Models\{Attendance, CostCenter, CostCenterRule, MonthClosure, Team, TimeExport, User};
+use App\Models\{Attendance, CostCenter, CostCenterRule, MonthClosure, TimeExport};
+use App\Models\Platform\{Team, User};
 use App\Services\TimeApproval\MonthClosureService;
 use App\Services\TimeExport\{CostCenterResolver, TimeExportService};
 use Carbon\CarbonImmutable;
@@ -157,7 +158,7 @@ class CostCenterRuleTest extends TestCase {
         ])->assertSessionHasErrors('user_id');
 
         // Fremde Org sieht die Regel nicht.
-        $orgB = \App\Models\Organization::factory()->create();
+        $orgB = \App\Models\Platform\Organization::factory()->create();
         $foreign = CostCenterRule::query()->create(['organization_id' => $orgB->id, 'cost_center' => 'B-1', 'priority' => 0]);
         $this->get(route('admin.cost-center-rules.edit', $foreign))->assertNotFound();
     }
@@ -225,7 +226,7 @@ class CostCenterRuleTest extends TestCase {
         $admin->givePermissionTo([P::CostCenterRuleViewAny->value, P::CostCenterRuleManage->value]);
         $admin->unsetRelation('permissions');
 
-        $orgB = \App\Models\Organization::factory()->create();
+        $orgB = \App\Models\Platform\Organization::factory()->create();
         $foreign = CostCenter::query()->create([
             'organization_id' => $orgB->id,
             'code' => 'B-4200',

@@ -11,7 +11,8 @@
 namespace Tests\Feature;
 
 use App\Enums\Shift\{DutyPlanPeriodType, DutyPlanStatus};
-use App\Models\{DutyPlan, Organization};
+use App\Models\DutyPlan;
+use App\Models\Platform\Organization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

@@ -10,7 +10,7 @@
 
 namespace App\Console\Commands\License;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Licensing\LicenseService;
 use Illuminate\Console\Command;
 

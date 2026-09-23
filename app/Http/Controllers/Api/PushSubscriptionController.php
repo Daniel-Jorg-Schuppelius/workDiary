@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\{PushSubscription, User};
+use App\Models\Platform\{PushSubscription, User};
 use App\Rules\SafePushEndpoint;
 use Illuminate\Http\{JsonResponse, Request};
 use OpenApi\Attributes as OA;

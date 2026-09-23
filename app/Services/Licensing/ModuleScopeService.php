@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Licensing;
 
 use App\Enums\Licensing\ModuleStatus;
-use App\Models\{AuditLog, LicenseFlagOverride, Organization, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{LicenseFlagOverride, Organization, User};
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\FileSystem\File;

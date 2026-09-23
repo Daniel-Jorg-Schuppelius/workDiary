@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Concerns;
 
-use App\Models\{Customer, Supplier};
+use App\Models\Customer\Customer;
+use App\Models\Supplier;
 use App\Services\Stammdaten\ContactDetailsWriter;
 
 /**

@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Customers;
 
-use App\Models\{Article, ArticleVariant, Customer, StockMovement, User, Warehouse};
+use App\Models\{Article, ArticleVariant, StockMovement, Warehouse};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Services\Inventory\{CustomerStockAllocationService, InventoryLedger, ValuationService};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

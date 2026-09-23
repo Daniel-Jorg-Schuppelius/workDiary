@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Plugins\SevDesk;
 
-use App\Models\{Customer, ExternalReference, PluginSetting};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\PluginSetting;
 use App\Plugins\SevDesk\Services\SevDeskContactDetailPushService;
 use App\Plugins\SevDesk\SevDeskPlugin;
 use App\Services\Finance\Accounting\ContactPushService;

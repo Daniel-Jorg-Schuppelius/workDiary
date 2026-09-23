@@ -11,8 +11,10 @@
 namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\{LearningAudience, LearningEnrollmentSource, LearningEnrollmentStatus, LearningProgressStatus, LearningSubmissionStatus, LearningUnitKind};
-use App\Models\{Customer, ExternalParticipant, User};
+use App\Models\Communication\ExternalParticipant;
+use App\Models\Customer\Customer;
 use App\Models\Learning\{LearningAssignment, LearningCourse, LearningCourseCategory, LearningEnrollment, LearningSubmission, LearningUnit};
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningAccessService, LearningAssignmentService, LearningCoursePortabilityService, LearningCourseService, LearningEnrollmentService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

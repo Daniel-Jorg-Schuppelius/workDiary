@@ -17,8 +17,8 @@
 
 @section('content')
 @php
-    /** @var \App\Models\Organization $organization */
-    /** @var \App\Services\ThemeService $theme */
+    /** @var \App\Models\Platform\Organization $organization */
+    /** @var \App\Services\UI\ThemeService $theme */
     $builtin = $theme->builtinThemes();
     $lightThemes = array_values(array_filter($builtin, fn($t) => $t['scheme'] === 'light'));
     $darkThemes = array_values(array_filter($builtin, fn($t) => $t['scheme'] === 'dark'));

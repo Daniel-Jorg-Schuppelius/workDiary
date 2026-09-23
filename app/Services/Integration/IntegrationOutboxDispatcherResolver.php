@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Services\Integration;
 
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
-use App\Services\AbstractPluginDispatcherResolver;
 
 /**
  * Registry der generischen Outbox-Dispatcher (Feature 055, MVP-114). Muss als

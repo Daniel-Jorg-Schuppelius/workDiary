@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Integration;
 
-use App\Models\Project;
+use App\Models\Project\Project;
 
 /**
  * Treffer der Schlüsselwort-Zuordnung (MVP-483) samt Begründung — der

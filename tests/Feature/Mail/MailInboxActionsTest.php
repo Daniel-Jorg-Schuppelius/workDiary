@@ -10,7 +10,12 @@
 
 namespace Tests\Feature\Mail;
 
-use App\Models\{Customer, Document, EmailConnection, IntegrationInboxItem, ServiceQueue, ServiceTicket, User};
+use App\Models\Customer\Customer;
+use App\Models\Document\Document;
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Mail\EmailConnection;
+use App\Models\Platform\User;
+use App\Models\{ServiceQueue, ServiceTicket};
 use App\Services\Mail\{MailAttachment, MailIntakeService, ParsedMessage};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

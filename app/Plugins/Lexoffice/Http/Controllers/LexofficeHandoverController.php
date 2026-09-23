@@ -105,7 +105,7 @@ class LexofficeHandoverController extends Controller {
     }
 
     /** @param \Illuminate\Database\Eloquent\Collection<int, Invoice> $invoices */
-    private function zip(\App\Models\Organization $organization, \Illuminate\Database\Eloquent\Collection $invoices): Response|RedirectResponse {
+    private function zip(\App\Models\Platform\Organization $organization, \Illuminate\Database\Eloquent\Collection $invoices): Response|RedirectResponse {
         try {
             $files = $this->handovers->export($organization, $invoices, $this->authUser());
         } catch (RuntimeException $e) {

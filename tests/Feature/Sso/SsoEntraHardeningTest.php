@@ -11,7 +11,8 @@
 namespace Tests\Feature\Sso;
 
 use App\Enums\Auth\SsoProtocol;
-use App\Models\{Organization, OrganizationSsoDomain, SsoConnection, SsoIdentity, User};
+use App\Models\Auth\{SsoConnection, SsoIdentity};
+use App\Models\Platform\{Organization, OrganizationSsoDomain, User};
 use App\Services\Auth\Sso\{EntraIssuer, SsoLoginException, SsoLoginService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

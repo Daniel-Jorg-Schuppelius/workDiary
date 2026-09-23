@@ -63,7 +63,7 @@ class InvoiceMail extends Mailable implements ShouldQueue {
         if ($this->dispatchId === null) {
             return;
         }
-        $dispatch = \App\Models\DocumentDispatch::query()->withoutGlobalScopes()->find($this->dispatchId);
+        $dispatch = \App\Models\Document\DocumentDispatch::query()->withoutGlobalScopes()->find($this->dispatchId);
         $dispatch?->forceFill([
             'status' => 'failed',
             'meta' => [...(array) $dispatch->meta, 'error' => mb_substr($exception->getMessage(), 0, 500)],
@@ -135,7 +135,7 @@ class InvoiceMail extends Mailable implements ShouldQueue {
         // Vollaudit 2026-07 (M26): Dateihash am Zustellnachweis — wie beim
         // Download-Kanal, berechnet über exakt die versendeten Payloads.
         if ($this->dispatchId !== null) {
-            \App\Models\DocumentDispatch::query()->withoutGlobalScopes()
+            \App\Models\Document\DocumentDispatch::query()->withoutGlobalScopes()
                 ->whereKey($this->dispatchId)
                 ->whereNull('sha256')
                 ->update(['sha256' => \CommonToolkit\Helper\Data\CryptoHelper::hash(implode('', $payloads))]);

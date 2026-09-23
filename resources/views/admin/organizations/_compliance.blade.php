@@ -8,8 +8,8 @@
 --}}
 {{-- Compliance-Settings für eine Organisation. --}}
 @php
-    /** @var \App\Models\Organization|null $organization */
-    $current = $organization?->complianceSettings() ?? \App\Models\Organization::COMPLIANCE_DEFAULTS;
+    /** @var \App\Models\Platform\Organization|null $organization */
+    $current = $organization?->complianceSettings() ?? \App\Models\Platform\Organization::COMPLIANCE_DEFAULTS;
     $ruleLabels = [
         'overlap'             => __('Überlappende Schichten'),
         'rest_period'         => __('Mindestruhezeit'),
@@ -29,7 +29,7 @@
 <x-form-group :legend="__('Compliance-Modus')" icon="policy" tone="warning" cols="1"
               :description="__('Steuert, wie streng die ArbZG-Prüfungen beim Speichern reagieren.')">
     <x-select-field name="compliance[mode]" :label="__('Modus')">
-        @foreach (\App\Models\Organization::$complianceModes as $mode)
+        @foreach (\App\Models\Platform\Organization::$complianceModes as $mode)
             <option value="{{ $mode }}" @selected(old('compliance.mode', $current['mode']) === $mode)>
                 @switch($mode)
                     @case('off') {{ __('Aus') }} @break

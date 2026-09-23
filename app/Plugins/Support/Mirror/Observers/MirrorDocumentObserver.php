@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Support\Mirror\Observers;
 
 use App\Enums\Document\DocumentStatus;
-use App\Models\Document;
+use App\Models\Document\Document;
 use App\Plugins\Support\Mirror\{MirrorOutboxDispatcher, MirrorTargetRegistry};
 use App\Services\Integration\IntegrationOutboxService;
 

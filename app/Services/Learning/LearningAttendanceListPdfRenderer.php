@@ -14,7 +14,7 @@ namespace App\Services\Learning;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Enums\Event\ParticipantStatus;
-use App\Models\EventParticipant;
+use App\Models\Calendar\EventParticipant;
 use App\Models\Learning\LearningUnit;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;

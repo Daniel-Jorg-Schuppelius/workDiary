@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Surcharge;
 
 use App\Enums\Shift\ScheduledShiftStatus;
-use App\Models\{ScheduledShift, User};
+use App\Models\Platform\User;
+use App\Models\ScheduledShift;
 use App\Models\Surcharge\SurchargeRule;
 use App\Support\Query\DateRange;
 use App\Support\Tz;

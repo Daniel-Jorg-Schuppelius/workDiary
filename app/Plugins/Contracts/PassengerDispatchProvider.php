@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Contracts;
 
-use App\Models\Organization;
 use App\Models\Passenger\PassengerRide;
+use App\Models\Platform\Organization;
 
 /**
  * Externe Fahrtvermittlung (MVP-456, Konzept §9): Annahme und Statusabgleich

@@ -75,8 +75,8 @@ class SystemHealthCommandTest extends TestCase {
 
     public function test_organizations_without_own_plugin_credentials_are_reported(): void {
         config(['plugins.allow_env_secret_fallback' => false, 'plugins.lexoffice.api_key' => 'betreiber-schluessel']);
-        $organization = \App\Models\Organization::factory()->create();
-        \App\Models\PluginSetting::query()->create([
+        $organization = \App\Models\Platform\Organization::factory()->create();
+        \App\Models\Platform\PluginSetting::query()->create([
             'organization_id' => $organization->id,
             'plugin_id' => 'lexoffice',
             'enabled' => true,
@@ -90,8 +90,8 @@ class SystemHealthCommandTest extends TestCase {
 
     public function test_an_own_credential_clears_the_plugin_warning(): void {
         config(['plugins.allow_env_secret_fallback' => false, 'plugins.lexoffice.api_key' => 'betreiber-schluessel', 'plugins.lexoffice.enabled' => false]);
-        $organization = \App\Models\Organization::factory()->create();
-        \App\Models\PluginSetting::query()->create([
+        $organization = \App\Models\Platform\Organization::factory()->create();
+        \App\Models\Platform\PluginSetting::query()->create([
             'organization_id' => $organization->id,
             'plugin_id' => 'lexoffice',
             'enabled' => true,
@@ -104,7 +104,7 @@ class SystemHealthCommandTest extends TestCase {
     }
 
     public function test_active_lti_registrations_warn_without_https(): void {
-        $organization = \App\Models\Organization::factory()->create();
+        $organization = \App\Models\Platform\Organization::factory()->create();
         \App\Models\Learning\LearningLtiTool::query()->create([
             'organization_id' => $organization->id,
             'name' => 'Brandschutz-Tool',

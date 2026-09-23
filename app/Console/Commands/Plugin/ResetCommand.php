@@ -10,7 +10,7 @@
 
 namespace App\Console\Commands\Plugin;
 
-use App\Models\PluginState;
+use App\Models\Platform\PluginState;
 use App\Plugins\{PluginErrorRecorder, PluginManager};
 use Illuminate\Console\Command;
 

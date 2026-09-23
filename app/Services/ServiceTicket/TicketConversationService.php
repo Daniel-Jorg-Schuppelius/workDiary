@@ -14,7 +14,8 @@ namespace App\Services\ServiceTicket;
 
 use App\Enums\ServiceTicket\{ServiceTicketStatus, TicketMessageKind};
 use App\Jobs\ServiceTicketReplyMailJob;
-use App\Models\{ServiceTicket, ServiceTicketMessage, User};
+use App\Models\Platform\User;
+use App\Models\{ServiceTicket, ServiceTicketMessage};
 use App\Services\Mail\MailAttachmentStore;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{DB, Storage};
@@ -137,7 +138,7 @@ class TicketConversationService {
 
         // ticket.customerReplied (P3): Bearbeiter informieren.
         if ($ticket->assigned_to_user_id !== null) {
-            $assignee = \App\Models\User::query()->find($ticket->assigned_to_user_id);
+            $assignee = \App\Models\Platform\User::query()->find($ticket->assigned_to_user_id);
             if ($assignee !== null) {
                 app(\App\Services\Notification\NotificationDispatcher::class)->notify(
                     \App\Enums\Notification\NotificationEvent::TicketCustomerReplied,
@@ -218,7 +219,7 @@ class TicketConversationService {
 
     /**
      * Hochgeladene Dateien als Anhänge speichern (gleiche Ablage wie
-     * {@see \App\Http\Controllers\AttachmentController::store()}: Disk
+     * {@see \App\Http\Controllers\Attachments\AttachmentController::store()}: Disk
      * `local`, UUID-Dateiname, sanitisierter Originalname). Öffentlich für
      * Ticket-Anhänge bei der Portal-Anlage (MVP-152); die Datei-Policy
      * (Typ/Größe) prüft der jeweilige Controller VOR dem Aufruf.

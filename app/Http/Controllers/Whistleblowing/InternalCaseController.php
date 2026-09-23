@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Whistleblowing;
 use App\Enums\Whistleblowing\{CaseRole, CaseStatus};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Whistleblowing\{AssignWhistleblowingCaseRequest, DeclareWhistleblowingConflictRequest, ExportWhistleblowingCaseRequest, GrantWhistleblowingEmergencyAccessRequest, MarkWhistleblowingSubjectRequest, StoreWhistleblowingMessageRequest, UpdateWhistleblowingCaseStatusRequest};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Models\Whistleblowing\WhistleblowingCase;
 use App\Services\Whistleblowing\{
     WhistleblowingAccessService,

@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Msgraph\Services;
 
-use App\Models\{ExternalReference, IntegrationInboxItem, MsgraphConnection};
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Plugins\Msgraph\MsgraphConnection;
 use App\Plugins\Msgraph\Api\MsgraphCalendarClient;
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Support\Calendar\RemoteCalendarPublishService;
@@ -303,7 +304,7 @@ class MsgraphCalendarImportService {
             'dedupe_key' => $dedupeKey,
         ], [
             'source' => MsgraphPlugin::ID,
-            'target_type' => (new \App\Models\Event())->getMorphClass(),
+            'target_type' => (new \App\Models\Calendar\Event())->getMorphClass(),
             'external_type' => RemoteCalendarPublishService::EXTERNAL_TYPE,
             'external_id' => (string) ($snapshot['remote_id'] ?? ''),
             'case_type' => $caseType,

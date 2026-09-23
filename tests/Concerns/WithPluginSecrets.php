@@ -10,7 +10,7 @@
 
 namespace Tests\Concerns;
 
-use App\Models\{Organization, PluginSetting};
+use App\Models\Platform\{Organization, PluginSetting};
 use LogicException;
 
 /**

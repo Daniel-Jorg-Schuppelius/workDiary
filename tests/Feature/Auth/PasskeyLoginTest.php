@@ -11,7 +11,8 @@
 namespace Tests\Feature\Auth;
 
 use App\Enums\Auth\{SsoProtocol, TwoFactorType};
-use App\Models\{SsoConnection, User};
+use App\Models\Auth\SsoConnection;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -97,7 +98,7 @@ final class PasskeyLoginTest extends TestCase {
     }
 
     public function test_verify_rejects_portal_and_deactivated_accounts(): void {
-        $customer = \App\Models\Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $customer = \App\Models\Customer\Customer::factory()->create(['organization_id' => $this->organization->id]);
         $portal = User::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id]);
         $this->credentialFor($portal, 'cred-portal');
 

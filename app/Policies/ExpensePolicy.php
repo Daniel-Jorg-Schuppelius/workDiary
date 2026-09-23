@@ -11,7 +11,8 @@
 namespace App\Policies;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\{Expense, User};
+use App\Models\Expense;
+use App\Models\Platform\User;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class ExpensePolicy {

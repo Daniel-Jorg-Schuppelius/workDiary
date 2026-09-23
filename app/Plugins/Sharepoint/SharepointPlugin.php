@@ -10,7 +10,8 @@
 
 namespace App\Plugins\Sharepoint;
 
-use App\Models\{Organization, SharepointConnection};
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Sharepoint\SharepointConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\Sharepoint\Api\SharepointDriveClient;
@@ -21,15 +22,15 @@ use Throwable;
  * SharePoint-Dokumentablage über Microsoft Graph (MVP-330, Bauturbo A10) —
  * weiterer Mirror-Zweig neben der WebDAV-Ablage (Feature 058/MVP-127).
  *
- * - **Spiegelt** freigegebene DMS-Dokumente ({@see \App\Models\Document},
+ * - **Spiegelt** freigegebene DMS-Dokumente ({@see \App\Models\Document\Document},
  *   Status `Active`) in eine SharePoint-Dokumentbibliothek — nach Regel
  *   Dokumenttyp→Zielordner, mit Übergabenachweis (SHA-256 + Zeit + Ziel) in
- *   {@see \App\Models\ExternalReference}. WebDAV gegen SharePoint Online ist
+ *   {@see \App\Models\Integration\ExternalReference}. WebDAV gegen SharePoint Online ist
  *   tot (Legacy-Auth abgeschaltet) → Transport über Graph
  *   (`PUT …:/content` bzw. `createUploadSession` ab 4 MB).
  * - WorkDiary bleibt führend und revisionssicher; **kein Rückkanal**. Externe
  *   Änderungen an gespiegelten Dateien führen zu sichtbaren Konflikten
- *   ({@see \App\Models\IntegrationInboxItem}), nie zu stiller Übernahme.
+ *   ({@see \App\Models\Integration\IntegrationInboxItem}), nie zu stiller Übernahme.
  * - Zustellung/Retry/Idempotenz über die generische Integrations-Outbox
  *   (Feature 055) via gemeinsamem Spiegel-Kern
  *   {@see \App\Plugins\Support\Mirror\MirrorOutboxDispatcher}.

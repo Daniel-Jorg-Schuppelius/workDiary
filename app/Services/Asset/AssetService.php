@@ -12,7 +12,8 @@ namespace App\Services\Asset;
 
 use App\Enums\Asset\{AssetHealth, AssetOwnership, AssetStatus};
 use App\Exceptions\AssetValidationException;
-use App\Models\{Asset, Room, User};
+use App\Models\{Asset, Room};
+use App\Models\Platform\User;
 use Illuminate\Support\Carbon;
 
 class AssetService {

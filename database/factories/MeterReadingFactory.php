@@ -10,7 +10,8 @@
 
 namespace Database\Factories;
 
-use App\Models\{Asset, MeterReading, Organization};
+use App\Models\{Asset, MeterReading};
+use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<MeterReading> */

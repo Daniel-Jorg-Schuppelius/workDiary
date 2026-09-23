@@ -8,9 +8,10 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Policies;
+namespace App\Policies\Platform;
 
-use App\Models\{Organization, User};
+use App\Models\Platform\Organization;
+use App\Models\Platform\User;
 
 class OrganizationPolicy {
     /**

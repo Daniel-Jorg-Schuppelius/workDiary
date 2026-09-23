@@ -12,7 +12,8 @@ namespace App\Services\Procedure;
 
 use App\Enums\Procedure\{ProcedureRunEventType, ProcedureRunStatus, ProcedureStepRunStatus, ProcedureStepType};
 use App\Exceptions\{ProcedureDeviationValidationException, ProcedureRunIncompleteException, ProcedureStepBlockedException};
-use App\Models\{ProcedureBackupProof, ProcedureRun, ProcedureRunEvent, ProcedureStepDef, ProcedureStepRun, ProcedureTemplate, ProcedureTemplateVersion, User};
+use App\Models\Platform\User;
+use App\Models\{ProcedureBackupProof, ProcedureRun, ProcedureRunEvent, ProcedureStepDef, ProcedureStepRun, ProcedureTemplate, ProcedureTemplateVersion};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

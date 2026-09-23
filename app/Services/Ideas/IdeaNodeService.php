@@ -14,7 +14,8 @@ namespace App\Services\Ideas;
 
 use App\Enums\Ideas\IdeaNodeColor;
 use App\Exceptions\IdeaNodeConflictException;
-use App\Models\{IdeaMap, IdeaNode, User};
+use App\Models\Ideas\{IdeaMap, IdeaNode};
+use App\Models\Platform\User;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 

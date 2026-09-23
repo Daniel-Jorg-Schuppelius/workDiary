@@ -11,7 +11,8 @@
 namespace App\Services\Expense;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\{Expense, ExpenseCategory, User};
+use App\Models\{Expense, ExpenseCategory};
+use App\Models\Platform\User;
 use App\Notifications\Expense\{ExpenseDecidedNotification, ExpenseSubmittedNotification};
 use Illuminate\Support\Facades\{DB, Notification};
 use Illuminate\Validation\ValidationException;

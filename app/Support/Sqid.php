@@ -12,8 +12,6 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Services\SqidEncoder;
-
 /**
  * Lenient-statischer Zugriff auf den {@see SqidEncoder}.
  *
@@ -23,8 +21,8 @@ use App\Services\SqidEncoder;
  * Views/Filter — null/leere/0-Werte ergeben '' bzw. null statt einer Exception.
  *
  * Verwendung in Blade-Templates und Filter-Parsing, z. B.:
- *   <option value="{{ \App\Support\Sqid::encode(\App\Models\Customer::class, $id) }}">
- *   $customerId = \App\Support\Sqid::decode(\App\Models\Customer::class, $request->query('customer'));
+ *   <option value="{{ \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $id) }}">
+ *   $customerId = \App\Support\Sqid::decode(\App\Models\Customer\Customer::class, $request->query('customer'));
  */
 final class Sqid {
     /**

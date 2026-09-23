@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Finance;
 
-use App\Models\{Customer, Project, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;
@@ -339,7 +342,7 @@ class OpenTimesWorklistTest extends TestCase {
     }
 
     public function test_mark_billed_ignores_other_organizations(): void {
-        $otherOrg = \App\Models\Organization::factory()->create();
+        $otherOrg = \App\Models\Platform\Organization::factory()->create();
         $otherWorker = User::factory()->user()->create(['organization_id' => $otherOrg->id]);
         $foreign = TimeEntry::factory()->administration()->create([
             'organization_id' => $otherOrg->id,

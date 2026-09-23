@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Survey;
 
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

@@ -8,16 +8,17 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Reporting;
 
 use App\Enums\Reporting\{ReportTargetMetric, ReportTargetPeriod, ReportTargetScope};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Carbon\CarbonInterface;
-use Database\Factories\ReportTargetFactory;
+use Database\Factories\Reporting\ReportTargetFactory;
 use Illuminate\Database\Eloquent\{Builder, Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use App\Models\Platform\User;
 
 /**
  * Feature 002 (Zielwerte & Benchmarks): Soll-Wert für eine Kennzahl, optional

@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Learning;
 
-use App\Models\{AuditLog, Qualification, User, UserQualification};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{User, UserQualification};
+use App\Models\Qualification;
 use App\Services\UI\DateRangeContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -199,7 +201,7 @@ class LearningDossierUiTest extends TestCase {
 
         $this->actingAs($manager)->get(route('learning.dossier.json'))->assertForbidden();
         $this->actingAs($manager)->get(route('learning.dossier.json', ['named' => 1, 'reason' => '  ']))->assertForbidden();
-        $this->assertSame(0, \App\Models\AuditLog::query()->where('event', 'learning.dossierDisclosed')->count());
+        $this->assertSame(0, \App\Models\Audit\AuditLog::query()->where('event', 'learning.dossierDisclosed')->count());
 
         $this->actingAs($manager)->get(route('learning.dossier.index'))
             ->assertOk()
@@ -222,7 +224,7 @@ class LearningDossierUiTest extends TestCase {
         // nur falsch, sondern ein Datenabfluss.
         $this->workerWithProof('Petra Meier', '2027-01-01');
 
-        $foreign = \App\Models\Organization::factory()->create();
+        $foreign = \App\Models\Platform\Organization::factory()->create();
         User::factory()->aussendienst()->create([
             'organization_id' => $foreign->id,
             'name' => 'Fremder Kollege',

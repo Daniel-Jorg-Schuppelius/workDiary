@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Updates;
 
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskType};
-use App\Models\{ComponentUpdate, PluginState};
+use App\Models\Platform\{ComponentUpdate, PluginState};
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use App\Services\Release\ReleaseManifestService;
 use App\Support\Setting;

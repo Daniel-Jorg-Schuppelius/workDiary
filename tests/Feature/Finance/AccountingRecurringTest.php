@@ -12,7 +12,8 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AccountType, AccountingEntryStatus, ProfitDetermination, RecurringInterval, RecurringRunStatus, RecurringTemplateKind, RecurringTemplateStatus};
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingRecurringRun, AccountingRecurringTemplate};
-use App\Models\{IncomingEInvoice, Organization, User};
+use App\Models\IncomingEInvoice;
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, RecurringAccountingService};
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
@@ -159,7 +160,7 @@ class AccountingRecurringTest extends TestCase {
         $run = $this->service()->runOnce($template, $this->admin);
         $this->assertNotNull($run);
 
-        $document = \App\Models\Document::factory()->create(['organization_id' => $this->org->id]);
+        $document = \App\Models\Document\Document::factory()->create(['organization_id' => $this->org->id]);
         $incoming = IncomingEInvoice::query()->create([
             'organization_id' => $this->org->id,
             'document_id' => $document->id,
@@ -184,7 +185,7 @@ class AccountingRecurringTest extends TestCase {
     public function test_a_closed_run_cannot_be_fulfilled_twice(): void {
         $template = $this->template(RecurringTemplateKind::DocumentExpectation);
         $run = $this->service()->runOnce($template, $this->admin);
-        $document = \App\Models\Document::factory()->create(['organization_id' => $this->org->id]);
+        $document = \App\Models\Document\Document::factory()->create(['organization_id' => $this->org->id]);
         $this->service()->fulfill($run, $document);
 
         $this->expectException(ValidationException::class);

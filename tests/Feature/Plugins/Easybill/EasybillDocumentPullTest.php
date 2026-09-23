@@ -13,8 +13,13 @@ namespace Tests\Feature\Plugins\Easybill;
 use App\Enums\Finance\{BillingMode, TransferChannel, TransferTarget};
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Customer, Document, ExternalReference, PluginSetting, Project, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\Document\Document;
 use App\Models\Finance\BillingTransfer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\{PluginSetting, User};
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Plugins\Easybill\EasybillPlugin;
 use App\Plugins\Easybill\Services\EasybillDocumentPullService;
 use App\Services\Finance\BillingTransferService;
@@ -199,7 +204,7 @@ class EasybillDocumentPullTest extends TestCase {
         $this->assertSame('easybill-RE-1001.xml', $xmlVersion->original_name);
         $pdfVersion = $document->versions()->where('version_no', 2)->firstOrFail();
         $this->assertSame('easybill-RE-1001.pdf', $pdfVersion->original_name);
-        $payload = (array) \App\Models\ExternalReference::query()->firstOrFail()->payload;
+        $payload = (array) \App\Models\Integration\ExternalReference::query()->firstOrFail()->payload;
         $this->assertSame(hash('sha256', '%PDF-1.4 fake'), $payload['document_pdf_sha256'] ?? null);
     }
 }

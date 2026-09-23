@@ -11,7 +11,11 @@
 namespace Tests\Feature;
 
 use App\Enums\Project\ProjectStatus;
-use App\Models\{AuditLog, Customer, ExternalReference, Project, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Support\MorphMap;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
@@ -148,7 +152,7 @@ class CustomerControllerTest extends TestCase {
         // vergeben. Externes Anlegen mit fixer Nummer aktualisiert die
         // Sequenz nicht — entweder per Factory die Sequenz vorsetzen oder
         // (wie hier) explizit den last_value setzen.
-        \App\Models\NumberSequence::create([
+        \App\Models\Numbering\NumberSequence::create([
             'organization_id' => $this->organization->id,
             'scope' => \App\Enums\Numbering\NumberScope::Customer->value,
             'period' => null,
@@ -261,7 +265,7 @@ class CustomerControllerTest extends TestCase {
         // (Sicherheitsscan S-21) — geprüft wird über das Modell, dass die
         // Normalisierung greift, und über die Rohzeile, dass nichts im
         // Klartext in der Spalte steht.
-        $customer = \App\Models\Customer::query()->where('name', 'Bankkunde')->firstOrFail();
+        $customer = \App\Models\Customer\Customer::query()->where('name', 'Bankkunde')->firstOrFail();
 
         $this->assertSame('Max Beispiel', $customer->bank_account_holder);
         $this->assertSame('DE89370400440532013000', $customer->bank_iban);
@@ -491,7 +495,7 @@ class CustomerControllerTest extends TestCase {
     }
 
     public function test_customer_show_filters_lexoffice_vouchers_by_global_range(): void {
-        \App\Models\PluginSetting::query()->create([
+        \App\Models\Platform\PluginSetting::query()->create([
             'organization_id' => $this->organization->id,
             'plugin_id' => LexofficePlugin::ID,
             'enabled' => true,
@@ -508,13 +512,13 @@ class CustomerControllerTest extends TestCase {
             'external_id' => 'lex-contact-1', 'synced_at' => now(),
         ]);
 
-        \App\Models\LexofficeVoucher::query()->create([
+        \App\Models\Plugins\Lexoffice\LexofficeVoucher::query()->create([
             'organization_id' => $this->organization->id, 'external_id' => 'voucher-in',
             'customer_id' => $customer->id, 'voucher_type' => 'salesinvoice', 'voucher_status' => 'open',
             'voucher_number' => 'RE-IN-RANGE', 'voucher_date' => '2026-06-15',
             'total_amount' => '100.00', 'currency' => 'EUR', 'archived' => false,
         ]);
-        \App\Models\LexofficeVoucher::query()->create([
+        \App\Models\Plugins\Lexoffice\LexofficeVoucher::query()->create([
             'organization_id' => $this->organization->id, 'external_id' => 'voucher-out',
             'customer_id' => $customer->id, 'voucher_type' => 'orderconfirmation', 'voucher_status' => 'open',
             'voucher_number' => 'AB-OUT-RANGE', 'voucher_date' => '2026-01-15',

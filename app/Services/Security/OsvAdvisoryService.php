@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Security;
 
-use App\Models\SecurityAdvisory;
+use App\Models\Auth\SecurityAdvisory;
 use App\Plugins\Support\PluginHttpFactory;
 use CommonToolkit\Helper\FileSystem\File;
 use RuntimeException;

@@ -10,7 +10,10 @@
 
 namespace App\Plugins\Toggl\Services;
 
-use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, IntegrationInboxItem, Organization, Project, User};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Integration\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem};
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
 use App\Plugins\Toggl\Sources\TogglApiClient;
 use App\Plugins\Toggl\{TogglConfig, TogglImportService, TogglOptionBuilder, TogglPlugin};
 use App\Support\Sqid;

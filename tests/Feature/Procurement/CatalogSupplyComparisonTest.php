@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Procurement;
 
-use App\Models\{Article, ArticleSupply, Supplier, User};
+use App\Models\{Article, ArticleSupply, Supplier};
+use App\Models\Platform\User;
 use App\Services\Procurement\SupplySourceComparator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Purchase;
 
-use App\Models\{Document, IncomingEInvoice, Organization};
+use App\Models\Document\Document;
+use App\Models\IncomingEInvoice;
+use App\Models\Platform\Organization;
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;

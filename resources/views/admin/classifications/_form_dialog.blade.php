@@ -7,8 +7,8 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 @php
-    /** @var \App\Models\Classification $classification */
-    /** @var \App\Models\Classification|null $sourceClassification */
+    /** @var \App\Models\Classification\Classification $classification */
+    /** @var \App\Models\Classification\Classification|null $sourceClassification */
     /** @var array<string, string> $domainLabels */
     $isEdit = (bool) ($classification->id ?? false);
     $selectedDomain = old('domain', $classification->domain?->value);

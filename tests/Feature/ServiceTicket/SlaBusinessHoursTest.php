@@ -11,8 +11,9 @@
 namespace Tests\Feature\ServiceTicket;
 
 use App\Enums\ServiceTicket\ServiceTicketPriority;
-use App\Models\{Holiday, SlaContract};
-use App\Services\HolidayService;
+use App\Models\Platform\Holiday;
+use App\Models\SlaContract;
+use App\Services\Calendar\HolidayService;
 use App\Services\ServiceTicket\SlaTimer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

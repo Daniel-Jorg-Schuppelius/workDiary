@@ -10,7 +10,7 @@
 
 namespace App\Services\Event;
 
-use App\Models\Event;
+use App\Models\Calendar\Event;
 use App\Support\Tz;
 use DateTimeImmutable;
 use Illuminate\Support\Carbon;

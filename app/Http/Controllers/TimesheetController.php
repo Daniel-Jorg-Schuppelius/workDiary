@@ -12,7 +12,10 @@ namespace App\Http\Controllers;
 
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Http\Requests\SaveTimesheetRequest;
-use App\Models\{Customer, Project, TimeEntry, Timesheet, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\{TimeEntry, Timesheet};
 use App\Services\Material\MaterialProviderRegistry;
 use App\Services\Timesheet\{Stopwatch, TimesheetResolver};
 use App\Services\UI\DateRangeContext;
@@ -145,10 +148,10 @@ class TimesheetController extends Controller {
         Gate::authorize('create', Timesheet::class);
 
         $rawCustomerId = $request->input('customer_id');
-        $customerId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Customer::class, $rawCustomerId);
+        $customerId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Customer\Customer::class, $rawCustomerId);
 
         $rawProjectId = $request->input('project_id');
-        $projectId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Project::class, $rawProjectId);
+        $projectId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Project\Project::class, $rawProjectId);
 
         $request->merge([
             'customer_id' => $customerId,

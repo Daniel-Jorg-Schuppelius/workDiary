@@ -12,8 +12,12 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{BillingMode, TransferTarget};
 use App\Enums\Migration\{AccountingMigrationStatus, MigrationDataArea, MigrationProvider};
-use App\Models\{Customer, ExternalReference, LexofficeVoucher, OrgaMaxInvoice, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
 use App\Models\Migration\{AccountingMigrationEvent, AccountingMigrationItem, AccountingMigrationRun};
+use App\Models\Platform\{Organization, User};
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
+use App\Models\Plugins\OrgaMax\OrgaMaxInvoice;
 use App\Services\AccountingMigration\{AccountingMigrationService, CutoverGuard};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

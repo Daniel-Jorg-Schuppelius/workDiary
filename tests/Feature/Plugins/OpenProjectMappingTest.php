@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{ExternalReference, PluginSetting, Project, User};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\{PluginSetting, User};
+use App\Models\Project\Project;
 use App\Plugins\OpenProject\OpenProjectPlugin;
 use App\Plugins\OpenProject\Services\OpenProjectStructureSync;
 use Illuminate\Foundation\Testing\RefreshDatabase;

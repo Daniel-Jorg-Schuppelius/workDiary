@@ -11,8 +11,9 @@
 namespace App\Services\Finance;
 
 use App\Enums\Finance\DatevBatchStatus;
-use App\Models\{Expense, Invoice, Organization, User};
+use App\Models\{Expense, Invoice};
 use App\Models\Finance\{DatevBookingBatch, DatevBookingEvent, DatevBookingSource};
+use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\ResolvesActorId;
 use App\Services\Export\ExportRunner;
 use App\Services\Finance\Datev\{DatevBookingAdapter, DatevBookingConfig, DatevBookingFieldResolver};

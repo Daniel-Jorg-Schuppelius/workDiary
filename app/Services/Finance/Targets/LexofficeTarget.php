@@ -12,8 +12,9 @@ namespace App\Services\Finance\Targets;
 
 use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Enums\Finance\{TransferChannel, TransferTarget};
-use App\Models\{Customer, ExternalReference};
+use App\Models\Customer\Customer;
 use App\Models\Finance\BillingTransfer;
+use App\Models\Integration\ExternalReference;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeMapper, LexofficePlugin, LexofficeService};
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use App\Services\Finance\BillingPositionBuilder;

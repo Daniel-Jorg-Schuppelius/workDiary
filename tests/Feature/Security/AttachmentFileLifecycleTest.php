@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Security;
 
-use App\Models\{Attachment, KnowledgeArticle};
+use App\Models\Attachments\Attachment;
+use App\Models\Knowledge\KnowledgeArticle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\Concerns\WithOrganization;

@@ -12,7 +12,12 @@ namespace Tests\Feature\Content;
 
 use App\Enums\Document\DocumentType;
 use App\Enums\Knowledge\ArticleStatus;
-use App\Models\{Customer, DiaryEntry, Document, KnowledgeArticle, Project, User};
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\Document\Document;
+use App\Models\Knowledge\KnowledgeArticle;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Services\Content\ContentSubjectResolver;
 use App\Services\Document\DocumentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

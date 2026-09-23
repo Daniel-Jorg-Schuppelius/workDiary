@@ -14,7 +14,7 @@ namespace App\Services\Accounting\Reports;
 
 use App\Enums\Finance\{AccountType, PostingAccountRole, SettlementKind};
 use App\Models\Accounting\{AccountingAccount, AccountingOpenItem, AccountingPostingRule, AccountingTaxCode};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Accounting\TaxationMethodResolver;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;

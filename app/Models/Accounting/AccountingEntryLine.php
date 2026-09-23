@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Models\Accounting;
 
 use App\Casts\MoneyCast;
-use App\Models\{Asset, CostCenter, Project};
+use App\Models\{Asset, CostCenter};
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Project\Project;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Model;

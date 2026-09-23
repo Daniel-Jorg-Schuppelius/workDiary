@@ -8,11 +8,12 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Communication;
 
 use App\Enums\ExternalParticipant\ExternalAbility;
 use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
-use App\Models\{ExternalParticipant, Organization};
+use App\Models\Communication\ExternalParticipant;
+use App\Models\Platform\Organization;
 use App\Services\Attachments\FileAttacher;
 use App\Services\ExternalParticipant\ExternalParticipantService;
 use App\Support\CarbonFmt;
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
+use App\Http\Controllers\Controller;
 
 /**
  * Öffentlicher, login-freier Zugriff externer Beteiligter (Feature 033).
@@ -151,7 +153,7 @@ class PublicExternalParticipantController extends Controller {
                 'meta' => CarbonFmt::fdatetime($subject->occurred_at),
                 'summary' => \CommonToolkit\Helper\Data\StringHelper::truncate((string) $subject->description, 280),
             ],
-            $subject instanceof \App\Models\Document => [
+            $subject instanceof \App\Models\Document\Document\Document => [
                 'title' => (string) $subject->title,
                 'meta' => $subject->created_at !== null ? CarbonFmt::fdatetime($subject->created_at) : '',
                 'summary' => null,

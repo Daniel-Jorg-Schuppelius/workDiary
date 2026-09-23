@@ -14,7 +14,11 @@ namespace App\Services\Mail;
 
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType};
 use App\Enums\Document\DocumentType;
-use App\Models\{CommunicationNote, Customer, Document, ExternalReference, IntegrationInboxItem, User};
+use App\Models\Communication\CommunicationNote;
+use App\Models\Customer\Customer;
+use App\Models\Document\Document;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\User;
 use App\Services\Communication\CommunicationNoteService;
 use App\Services\Document\DocumentService;
 use App\Services\Integration\InboxActionService;
@@ -199,7 +203,7 @@ class MailInboxResolutionService {
 
     /**
      * Kopiert die beim Intake persistierten (angenommenen) Anhänge als
-     * {@see \App\Models\Attachment} an die Notiz. Die Quelle im `mail-intake/`
+     * {@see \App\Models\Attachments\Attachment} an die Notiz. Die Quelle im `mail-intake/`
      * bleibt erhalten (für eine spätere DMS-Übernahme / Retention-Purge).
      */
     private function attachStoredFilesToNote(IntegrationInboxItem $item, CommunicationNote $note, User $actor): int {

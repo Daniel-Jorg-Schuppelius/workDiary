@@ -10,7 +10,8 @@
 
 namespace App\Models\Concerns;
 
-use App\Models\{AuditLog, Organization, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{Organization, User};
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -201,7 +202,7 @@ trait Auditable {
         return collect($attributes)
             ->except($excluded)
             ->map(fn(mixed $value, string $key): mixed => $value !== null && in_array($key, $this->auditRedact(), true)
-                ? \App\Models\AuditLog::REDACTED
+                ? \App\Models\Audit\AuditLog::REDACTED
                 : $value)
             ->all();
     }

@@ -8,14 +8,26 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Classification;
 
 use App\Models\Concerns\{BelongsToOrganization, GeneratesUniqueSlug, HasSqid};
 use CommonToolkit\Helper\Data\StringHelper;
-use Database\Factories\TagFactory;
+use Database\Factories\Classification\TagFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphToMany};
+use App\Models\Asset;
+use App\Models\Communication\CommunicationNote;
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\Document\Document;
+use App\Models\EmergencyAssignment;
+use App\Models\Knowledge\KnowledgeArticle;
+use App\Models\OnCallShift;
+use App\Models\Protocol;
+use App\Models\Supplier;
+use App\Models\TimeEntry;
+use App\Models\Platform\User;
 
 class Tag extends Model {
     use BelongsToOrganization;

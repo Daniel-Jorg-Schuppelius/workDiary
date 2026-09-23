@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Finance\ProcedureDocumentation\Sections;
 
 use App\Enums\Numbering\NumberScope;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Finance\ProcedureDocumentation\{FormatsSectionValues, ProcedureSection, SectionContext};
 use App\Services\Numbering\{NumberAuthority, NumberSequenceService};
 

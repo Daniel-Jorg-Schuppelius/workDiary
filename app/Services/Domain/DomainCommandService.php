@@ -12,7 +12,7 @@ namespace App\Services\Domain;
 
 use App\Enums\Domain\{DomainCapabilityArea, DomainProviderCommandStatus};
 use App\Models\Domain\{DomainProviderCommand, DomainProviderConnection};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Plugins\Support\Domain\{DomainCapabilityBlockedException, DomainProviderException};
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Database\Eloquent\Model;

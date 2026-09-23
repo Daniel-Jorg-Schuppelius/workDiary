@@ -8,11 +8,17 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Communication;
 
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType, CommunicationVisibility, ParticipantParty};
 use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesCurrentOrganization};
-use App\Models\{CommunicationNote, Customer, DiaryEntry, Organization, Project, Tag, User};
+use App\Models\Communication\CommunicationNote;
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\Platform\Organization;
+use App\Models\Project\Project;
+use App\Models\Classification\Tag;
+use App\Models\Platform\User;
 use App\Services\Communication\CommunicationNoteService;
 use App\Services\Ideas\NodeConversionService;
 use App\Support\{EntityUrl, Sqid, Tz};
@@ -22,6 +28,7 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 class CommunicationNoteController extends Controller {
     use ParsesIndexQuery;
@@ -49,7 +56,7 @@ class CommunicationNoteController extends Controller {
         'protocol' => \App\Models\Protocol::class,
         'asset' => \App\Models\Asset::class,
         // Feature 091: Qualifizierungs-Notizen an der Lead-Akte.
-        'lead' => \App\Models\Lead::class,
+        'lead' => \App\Models\Sales\Lead::class,
         // Feature 149 (MVP-789): private Lernnotizen an der Einschreibung.
         'learning_enrollment' => \App\Models\Learning\LearningEnrollment::class,
     ];
@@ -314,7 +321,7 @@ class CommunicationNoteController extends Controller {
         }
 
         return redirect()
-            ->route('knowledge.show', Sqid::encode(\App\Models\KnowledgeArticle::class, $reference->target_id))
+            ->route('knowledge.show', Sqid::encode(\App\Models\Knowledge\KnowledgeArticle::class, $reference->target_id))
             ->with($reference->wasRecentlyCreated ? 'success' : 'info', (string) __($reference->wasRecentlyCreated ? 'communication.convert.flash.created' : 'communication.convert.flash.existing'));
     }
 

@@ -11,8 +11,10 @@
 namespace Tests\Feature\Plugins\CalDav;
 
 use App\Enums\Plugin\PluginHealthStatus;
-use App\Models\{CalDavConnection, Event, ExternalReference};
-use App\Models\PluginState;
+use App\Models\Calendar\Event;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\PluginState;
+use App\Models\Plugins\CalDav\CalDavConnection;
 use App\Plugins\CalDav\CalDavPlugin;
 use App\Plugins\CalDav\Contracts\{CalDavGateway, CalDavGatewayFactory};
 use App\Plugins\Contracts\{CalendarPublisher, PluginCapability};

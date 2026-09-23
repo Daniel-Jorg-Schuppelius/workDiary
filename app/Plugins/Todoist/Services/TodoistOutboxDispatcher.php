@@ -14,7 +14,9 @@ namespace App\Plugins\Todoist\Services;
 
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
 use App\Enums\Task\{TaskPriority, TaskStatus};
-use App\Models\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry, Task, TodoistConnection, TodoistProjectLink};
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry};
+use App\Models\Plugins\Todoist\{TodoistConnection, TodoistProjectLink};
+use App\Models\Project\Task;
 use App\Plugins\Todoist\Api\TodoistApiClient;
 use App\Plugins\Todoist\TodoistPlugin;
 use CommonToolkit\Helper\Data\CryptoHelper;

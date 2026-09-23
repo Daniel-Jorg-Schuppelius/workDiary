@@ -12,7 +12,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\Facility\{RoomRequirementKind, RoomUsageType};
 use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesGlobalDateRange};
-use App\Models\{Building, CleaningProfile, Customer, Floor, Room, Site};
+use App\Models\{Building, CleaningProfile, Floor, Room, Site};
+use App\Models\Customer\Customer;
 use App\Services\Event\RoomBookingService;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};

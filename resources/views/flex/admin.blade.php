@@ -11,8 +11,8 @@
 @section('nav-title', __('Gleitzeit – Team'))
 @section('content')
 @php
-    /** @var \Illuminate\Support\Collection<int, \App\Models\User> $users */
-    /** @var \App\Models\User $user */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users */
+    /** @var \App\Models\Platform\User $user */
     /** @var \App\Services\Calendar\WeekViewService $service */
 @endphp
 <x-page-shell>

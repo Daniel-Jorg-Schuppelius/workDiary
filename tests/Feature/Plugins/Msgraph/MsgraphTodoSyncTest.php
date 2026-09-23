@@ -11,7 +11,10 @@
 namespace Tests\Feature\Plugins\Msgraph;
 
 use App\Enums\Task\{TaskPriority, TaskStatus};
-use App\Models\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry, MsgraphTaskConnection, MsgraphTaskListLink, Project, Task, User};
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry};
+use App\Models\Platform\User;
+use App\Models\Plugins\Msgraph\{MsgraphTaskConnection, MsgraphTaskListLink};
+use App\Models\Project\{Project, Task};
 use App\Plugins\Contracts\{PluginCapability, TaskSyncer};
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Msgraph\Observers\MsgraphTodoTaskObserver;

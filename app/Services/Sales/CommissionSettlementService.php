@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Sales;
 
 use App\Enums\Sales\{CommissionSettlementStatus, CommissionStatus};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Sales\{CommissionSettlementRun, InvoiceCommission};
 use App\Support\CsvExport;
 use App\Support\Query\DateRange;

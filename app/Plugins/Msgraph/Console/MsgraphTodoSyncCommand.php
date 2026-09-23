@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Msgraph\Console;
 
-use App\Models\{MsgraphTaskConnection, Organization};
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Msgraph\MsgraphTaskConnection;
 use App\Plugins\Msgraph\Services\MsgraphTodoSyncService;
 use Illuminate\Console\Command;
 

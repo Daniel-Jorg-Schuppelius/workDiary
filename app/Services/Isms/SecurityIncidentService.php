@@ -13,7 +13,7 @@ namespace App\Services\Isms;
 use App\Enums\Isms\{IncidentSeverity, SecurityIncidentStatus};
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Isms\{IsmsControl, IsmsRisk, IsmsSecurityIncident};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Concerns\AssignsSequentialNo;
 use App\Services\Isms\Concerns\AssertsIsmsTransition;
 use App\Services\Notification\NotificationDispatcher;

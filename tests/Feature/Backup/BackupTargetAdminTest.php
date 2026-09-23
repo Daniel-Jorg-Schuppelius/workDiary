@@ -11,7 +11,7 @@
 namespace Tests\Feature\Backup;
 
 use App\Models\Backup\{BackupGeneration, BackupTargetConnection};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

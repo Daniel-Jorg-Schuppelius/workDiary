@@ -12,7 +12,9 @@ namespace Tests\Feature;
 
 use App\Enums\Diary\{DispatchStatus, Mode, Status};
 use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketStatus};
-use App\Models\{Customer, DiaryEntry, Organization, ServiceTicket, User};
+use App\Models\Customer\Customer;
+use App\Models\{DiaryEntry, ServiceTicket};
+use App\Models\Platform\{Organization, User};
 use App\Services\Dispatch\{DispatchBoardService, DispatchStatusResolver};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

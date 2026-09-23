@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Policies\Privacy;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Models\Privacy\ProcessingActivity;
 use App\Policies\Privacy\ProcessingActivityPolicy;
 use App\Services\Privacy\DataProtectionPermissions;
@@ -99,8 +99,8 @@ final class ProcessingActivityPolicyTest extends TestCase {
     }
 
     public function test_admins_have_no_bypass(): void {
-        $orgAdmin = \App\Models\User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-        $platformAdmin = \App\Models\User::factory()->platformAdmin()->create(['organization_id' => $this->organization->id]);
+        $orgAdmin = \App\Models\Platform\User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $platformAdmin = \App\Models\Platform\User::factory()->platformAdmin()->create(['organization_id' => $this->organization->id]);
         $this->actAsTeam($this->organization);
         $activity = $this->activity();
 

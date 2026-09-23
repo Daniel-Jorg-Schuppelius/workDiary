@@ -8,7 +8,7 @@
 --}}
 {{-- Variablen: $category, $isEdit --}}
 @php
-    /** @var \App\Models\EventCategory|null $category */
+    /** @var \App\Models\Calendar\EventCategory|null $category */
     /** @var bool $isEdit */
     $isEdit ??= false;
     $action  = $isEdit ? route('event-categories.update', $category) : route('event-categories.store');

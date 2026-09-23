@@ -11,7 +11,8 @@
 namespace Tests\Feature\Ideas;
 
 use App\Enums\Ideas\IdeaShareRole;
-use App\Models\{IdeaMap, Team, User};
+use App\Models\Ideas\IdeaMap;
+use App\Models\Platform\{Team, User};
 use App\Notifications\GenericEventNotification;
 use App\Services\Ideas\IdeaMapService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -11,7 +11,9 @@
 namespace Tests\Feature\Plugins;
 
 use App\Enums\Asset\AssetClass;
-use App\Models\{Asset, Customer, TimeEntry, User};
+use App\Models\{Asset, TimeEntry};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Plugins\Fritzbox\FritzboxImportService;
 use App\Plugins\Fritzbox\Sources\FritzboxCall;
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, RemoteSession};

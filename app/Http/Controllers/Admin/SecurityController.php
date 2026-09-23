@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\RequiresPlatformOperator;
 use App\Http\Controllers\Controller;
-use App\Models\SecurityAdvisory;
+use App\Models\Auth\SecurityAdvisory;
 use App\Services\Security\{OsvAdvisoryService, SecurityOverviewService};
 use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};

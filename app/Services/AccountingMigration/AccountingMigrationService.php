@@ -14,7 +14,7 @@ namespace App\Services\AccountingMigration;
 
 use App\Enums\Migration\{AccountingMigrationStatus, MigrationDataArea, MigrationProvider};
 use App\Models\Migration\{AccountingMigrationEvent, AccountingMigrationItem, AccountingMigrationRun};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -199,7 +199,7 @@ class AccountingMigrationService {
                 // Stichtag je Kunde inkl. gesperrtem Quellsystem — die Sperre
                 // ist damit richtungsunabhängig (siehe CutoverGuard).
                 $cutoverOn = $run->cutover_on ?? now();
-                \App\Models\Customer::query()
+                \App\Models\Customer\Customer::query()
                     ->withoutGlobalScopes()
                     ->where('organization_id', $organization->id)
                     ->update([
@@ -301,7 +301,7 @@ class AccountingMigrationService {
         // MVP-690 (G3): Lexoffice-Belegbilder MÜSSEN vor dem Abschluss lokal
         // gesichert sein — nach Vertragsende ist die API weg (GoBD).
         if ($run->source() === \App\Enums\Migration\MigrationProvider::Lexoffice) {
-            $unmaterialized = \App\Models\LexofficeVoucher::query()
+            $unmaterialized = \App\Models\Plugins\Lexoffice\LexofficeVoucher::query()
                 ->where('organization_id', $run->organization_id)
                 ->whereNull('file_materialized_at')
                 ->count();

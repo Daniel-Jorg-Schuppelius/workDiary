@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\{DB, Schema};
  * Lokaler Belegspiegel für orgaMAX-Rechnungen (Feature 077-Fix, MVP-653).
  *
  * **Behobener Bestandsfehler:** Die Belegprojektion hängte bisher JEDE
- * Rechnung als {@see \App\Models\ExternalReference} an dieselbe
+ * Rechnung als {@see \App\Models\Integration\ExternalReference} an dieselbe
  * `OrgaMaxConnection`. Der Unique-Index `extref_unique`
  * (plugin_id, external_type, referenceable_type, referenceable_id) lässt je
  * Zielmodell aber nur EINE Referenz zu — ab der zweiten Rechnung brach die
@@ -94,7 +94,7 @@ return new class extends Migration {
             ]);
 
             DB::table('external_references')->where('id', $reference->id)->update([
-                'referenceable_type' => 'App\Models\OrgaMaxInvoice',
+                'referenceable_type' => 'App\Models\Plugins\OrgaMax\OrgaMaxInvoice',
                 'referenceable_id' => $invoiceId,
             ]);
         }

@@ -14,7 +14,10 @@ namespace Tests\Feature\Reselling;
 
 use App\Enums\Expense\ExpenseStatus;
 use App\Enums\Reselling\SubscriptionProvider;
-use App\Models\{Document, Expense, IncomingEInvoice, LexofficeVoucher, Organization, Supplier};
+use App\Models\Document\Document;
+use App\Models\{Expense, IncomingEInvoice, Supplier};
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Models\Reselling\{ResalePurchaseEntry, ResaleSubscription};
 use App\Services\Reselling\Purchase\{PurchaseDocument, PurchaseDocumentSource, PurchaseDocuments};
 use App\Services\Reselling\Register\{PeriodPlanner, PurchaseAllocator};

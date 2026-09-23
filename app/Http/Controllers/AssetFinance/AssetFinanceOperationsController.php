@@ -50,7 +50,7 @@ class AssetFinanceOperationsController extends Controller {
         Gate::authorize('update', $contract);
 
         if ($request->filled('responsible_user_id')) {
-            $request->merge(['responsible_user_id' => Sqid::decodeOrNumeric(\App\Models\User::class, $request->input('responsible_user_id'))]);
+            $request->merge(['responsible_user_id' => Sqid::decodeOrNumeric(\App\Models\Platform\User::class, $request->input('responsible_user_id'))]);
         }
 
         $data = $request->validate([

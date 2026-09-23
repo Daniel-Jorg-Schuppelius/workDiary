@@ -15,7 +15,7 @@ namespace App\Http\Controllers\CustomerPortal;
 use App\Enums\Learning\{LearningAudience, LearningCourseStatus, LearningProgressStatus};
 use App\Http\Controllers\Controller;
 use App\Models\Learning\{LearningCourse, LearningCourseCategory, LearningEnrollment, LearningUnit};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningBookingService, LearningEnrollmentService};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};

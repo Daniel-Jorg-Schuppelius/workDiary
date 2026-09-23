@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Plugins\GoogleCalendar;
 
-use App\Models\{Event, ExternalReference, GoogleCalendarConnection, Organization};
+use App\Models\Calendar\Event;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\Organization;
+use App\Models\Plugins\GoogleCalendar\GoogleCalendarConnection;
 use App\Plugins\GoogleCalendar\Api\GoogleCalendarClient;
 use App\Plugins\GoogleCalendar\GoogleCalendarPlugin;
 use App\Plugins\Support\Calendar\RemoteCalendarPublishService;

@@ -63,9 +63,9 @@ class PatrolScanController extends Controller {
         // (Sicherheitsaudit 2026-09-13): `EnforceTenantStatus` greift nur bei
         // angemeldeten Zugriffen — ein Waechter-Geraet hat keine Sitzung. Ohne
         // diese Pruefung scannte ein gesperrter Mandant unbegrenzt weiter.
-        $organization = \App\Models\Organization::query()->withoutGlobalScopes()
+        $organization = \App\Models\Platform\Organization::query()->withoutGlobalScopes()
             ->whereKey($device->organization_id)->first();
-        if ($organization instanceof \App\Models\Organization) {
+        if ($organization instanceof \App\Models\Platform\Organization) {
             if ($organization->maintenanceBlocksIngest()) {
                 return response()->json(['error' => 'maintenance'], 503, ['Retry-After' => '3600']);
             }

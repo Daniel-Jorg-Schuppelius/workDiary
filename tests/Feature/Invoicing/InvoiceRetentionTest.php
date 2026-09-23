@@ -12,9 +12,11 @@ namespace Tests\Feature\Invoicing;
 
 use App\Enums\Invoicing\{RetentionKind, RetentionStatus};
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
-use App\Models\{Customer, Invoice, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Invoice;
 use App\Models\Invoicing\InvoiceRetention;
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
+use App\Models\Platform\{Organization, User};
 use App\Services\Finance\MatchingService;
 use App\Services\Invoicing\{InvoicePdfRenderer, RetentionService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

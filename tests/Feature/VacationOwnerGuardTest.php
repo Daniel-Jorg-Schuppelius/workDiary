@@ -11,7 +11,8 @@
 namespace Tests\Feature;
 
 use App\Enums\Vacation\{VacationStatus, VacationType};
-use App\Models\{User, Vacation};
+use App\Models\Platform\User;
+use App\Models\Vacation;
 use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

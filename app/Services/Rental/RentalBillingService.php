@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Rental;
 
 use App\Enums\Rental\{RentalChargeKind, RentalChargeStatus, RentalDepositStatus};
-use App\Models\{Invoice, User};
+use App\Models\Invoice;
+use App\Models\Platform\User;
 use App\Models\Rental\{RentalCase, RentalCharge, RentalDeposit};
 use App\Services\Finance\BillingModeResolver;
 use App\Services\Invoicing\{InvoiceGenerator, TaxResolver};

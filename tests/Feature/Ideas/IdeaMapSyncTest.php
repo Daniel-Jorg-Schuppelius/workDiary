@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Ideas;
 
-use App\Models\{ContentReference, IdeaMap, IdeaNode, IdeaNodeLink, User};
+use App\Models\Ideas\{IdeaMap, IdeaNode, IdeaNodeLink};
+use App\Models\Knowledge\ContentReference;
+use App\Models\Platform\User;
 use App\Services\Ideas\{IdeaMapService, IdeaNodeService};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -12,7 +12,8 @@ namespace App\Services\TimeApproval;
 
 use App\Enums\TimeApproval\{DayClosureStatus, DayCorrectionStatus};
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
-use App\Models\{Attendance, DayClosure, DayCorrectionRequest, TimeEntry, User};
+use App\Models\{Attendance, DayClosure, DayCorrectionRequest, TimeEntry};
+use App\Models\Platform\User;
 use App\Services\Concerns\ResolvesActorId;
 use App\Services\Flextime\FlexCalculator;
 use App\Services\Timekeeping\BreakRuleEvaluator;

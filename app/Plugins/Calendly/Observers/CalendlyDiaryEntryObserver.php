@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Calendly\Observers;
 
 use App\Enums\Diary\Status;
-use App\Models\{AppointmentRequest, DiaryEntry};
+use App\Models\Calendar\AppointmentRequest;
+use App\Models\DiaryEntry;
 use App\Plugins\Calendly\Jobs\CalendlyCancelSyncJob;
 
 /**

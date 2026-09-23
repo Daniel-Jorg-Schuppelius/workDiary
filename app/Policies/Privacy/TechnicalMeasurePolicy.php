@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Policies\Privacy;
 
+use App\Models\Platform\User;
 use App\Models\Privacy\TechnicalMeasure;
-use App\Models\User;
 use App\Policies\Concerns\ChecksOwnership;
 
 /** TOM-Katalog. Ohne Admin-Bypass, organisationsgebunden. */

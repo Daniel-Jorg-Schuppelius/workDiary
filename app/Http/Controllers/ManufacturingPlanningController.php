@@ -14,7 +14,7 @@ use App\Enums\Procedure\ProcedureStepType;
 use App\Models\{Article, ManufacturingOrder, ProcedureTemplateVersion};
 use App\Services\Manufacturing\{ManufacturingQualityService, MrpService};
 use App\Services\Procedure\SpcService;
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;

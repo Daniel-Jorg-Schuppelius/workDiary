@@ -11,7 +11,7 @@
 namespace App\Services\Classification;
 
 use App\Enums\Classification\{ClassificationDomain, ClassificationRequirementPhase, ClassificationRequirementSeverity};
-use App\Models\ClassificationRequirement;
+use App\Models\Classification\ClassificationRequirement;
 use Illuminate\Database\Eloquent\Builder;
 
 class RequirementIndexFilter {

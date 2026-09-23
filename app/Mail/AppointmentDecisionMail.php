@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Mail;
 
-use App\Models\AppointmentRequest;
+use App\Models\Calendar\AppointmentRequest;
 use App\Services\Event\IcsFeedService;
 use App\Support\Tz;
 use Illuminate\Bus\Queueable;

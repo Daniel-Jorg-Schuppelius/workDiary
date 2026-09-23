@@ -11,7 +11,7 @@
 namespace App\Services\Location;
 
 use App\Models\Location\LocationPoint;
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Support\Carbon;
 
 /**

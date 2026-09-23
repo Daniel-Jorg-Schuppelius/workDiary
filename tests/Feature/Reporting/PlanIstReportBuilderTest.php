@@ -10,8 +10,11 @@
 
 namespace Tests\Feature\Reporting;
 
-use App\Models\{Attendance, Customer, DiaryEntry, Project, ScheduledShift, ShiftType, Site, TimeEntry, User, WorkSchedule};
+use App\Models\{Attendance, DiaryEntry, ScheduledShift, ShiftType, Site, TimeEntry, WorkSchedule};
+use App\Models\Customer\Customer;
 use App\Models\Location\{CustomerGeofence, LocationVisit};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Services\Reporting\PlanIstReportBuilder;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -398,7 +401,7 @@ class PlanIstReportBuilderTest extends TestCase {
 
     public function test_extended_dimensions_are_org_isolated(): void {
         // Fremde Organisation mit Schichten, Projektzeiten und Ortsbesuchen.
-        $otherOrg = \App\Models\Organization::factory()->create();
+        $otherOrg = \App\Models\Platform\Organization::factory()->create();
         $foreignUser = User::factory()->create(['organization_id' => $otherOrg->id]);
         $foreignType = ShiftType::factory()->create(['organization_id' => $otherOrg->id, 'name' => 'Fremdschicht']);
         ScheduledShift::factory()->published()->create([

@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{ExternalReference, User};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\User;
 use App\Services\Integration\MatchProfileRegistry;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;

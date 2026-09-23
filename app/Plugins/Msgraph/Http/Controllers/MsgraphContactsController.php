@@ -10,7 +10,9 @@
 
 namespace App\Plugins\Msgraph\Http\Controllers;
 
-use App\Models\{Customer, MsgraphContactConnection, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\Plugins\Msgraph\MsgraphContactConnection;
 use App\Plugins\Msgraph\Api\{MsgraphContactsClient, MsgraphContactsOAuth};
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\PluginManager;

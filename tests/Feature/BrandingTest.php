@@ -10,8 +10,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Attachment, Organization, User};
-use App\Services\BrandingService;
+use App\Models\Attachments\Attachment;
+use App\Models\Platform\{Organization, User};
+use App\Services\UI\BrandingService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

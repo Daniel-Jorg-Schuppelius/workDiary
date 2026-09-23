@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\CalDav\Services;
 
-use App\Models\{CalDavConnection, Event, ExternalReference, IntegrationInboxItem};
+use App\Models\Calendar\Event;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Plugins\CalDav\CalDavConnection;
 use App\Plugins\CalDav\CalDavPlugin;
 use App\Plugins\CalDav\Contracts\CalDavGatewayFactory;
 use App\Plugins\Support\Calendar\RemoteCalendarPublishService;

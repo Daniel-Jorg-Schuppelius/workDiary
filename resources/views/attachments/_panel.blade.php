@@ -7,8 +7,8 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 @php
-    use App\Http\Controllers\AttachmentController;
-    use App\Models\Attachment;
+    use App\Http\Controllers\Attachments\AttachmentController;
+    use App\Models\Attachments\Attachment;
     /** @var \Illuminate\Database\Eloquent\Model $parent */
     /** @var string $parentType */
     $attachments = $parent->attachments;

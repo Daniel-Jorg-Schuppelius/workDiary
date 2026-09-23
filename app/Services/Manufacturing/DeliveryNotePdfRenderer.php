@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
-use App\Models\{Organization, StockDelivery};
+use App\Models\Platform\Organization;
+use App\Models\StockDelivery;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 
 /**

@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Procurement;
 
-use App\Models\{Article, ArticleVariant, PurchaseOrder, Supplier, User, Warehouse};
+use App\Models\{Article, ArticleVariant, PurchaseOrder, Supplier, Warehouse};
+use App\Models\Platform\User;
 use App\Services\Procurement\{PurchaseOrderService, UglInvoiceReconciler};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;

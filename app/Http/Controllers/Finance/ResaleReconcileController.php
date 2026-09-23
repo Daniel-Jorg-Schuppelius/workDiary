@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Finance;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\Resale\{AssignResaleLineRequest, RehomeResaleSubscriptionRequest};
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use App\Services\Reselling\Mirror\InvoiceMirror;
 use App\Services\Reselling\Register\{LinkProposer, PeriodLinker, RecipientReconciler};

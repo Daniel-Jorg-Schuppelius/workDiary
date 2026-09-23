@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Plans;
 
-use App\Models\PlanModuleGrace;
+use App\Models\Platform\PlanModuleGrace;
 use App\Services\Licensing\ModuleCatalog;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;

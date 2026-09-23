@@ -12,7 +12,10 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Customer, Invoice, Project, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\{Invoice, TimeEntry};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Services\Finance\BillingModeLockedException;
 use App\Services\Invoicing\InvoiceGenerator;
 use Illuminate\Foundation\Testing\RefreshDatabase;

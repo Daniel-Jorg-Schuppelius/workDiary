@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Accounting\Posting\Adapters;
 
 use App\Enums\Finance\{AllocationKind, PostingAccountRole, PostingSourceKind, SettlementKind};
-use App\Models\{Expense, Invoice, Organization};
+use App\Models\{Expense, Invoice};
 use App\Models\Finance\{BankTransaction, PaymentAllocation};
+use App\Models\Platform\Organization;
 use App\Services\Accounting\Posting\{PostingProposal, PostingProposalLine};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -131,7 +132,7 @@ class PaymentAdapter extends AbstractPostingAdapter {
                 $moneyOnDebit ? '0.00' : $absolute,
                 $moneyOnDebit ? $absolute : '0.00',
                 $purpose,
-                $target instanceof Invoice ? \App\Models\Customer::class : \App\Models\User::class,
+                $target instanceof Invoice ? \App\Models\Customer\Customer::class : \App\Models\Platform\User::class,
                 $target instanceof Invoice ? $target->customer_id : ($target instanceof Expense ? $target->user_id : null),
             );
 

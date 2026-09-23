@@ -10,7 +10,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift, Tag, User};
+use App\Models\Classification\Tag;
+use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift};
+use App\Models\Platform\User;
 use App\Services\UI\DateRangeContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -171,7 +173,7 @@ class TagsTest extends TestCase {
         $user = User::factory()->user()->create();
         $own = Tag::create(['name' => 'Eigen', 'organization_id' => $user->organization_id]);
 
-        $foreignOrg = \App\Models\Organization::factory()->create();
+        $foreignOrg = \App\Models\Platform\Organization::factory()->create();
         $foreign = Tag::query()->create(['name' => 'Fremd', 'organization_id' => $foreignOrg->id]);
 
         $this->actingAs($user)

@@ -10,7 +10,8 @@
 
 namespace Database\Factories;
 
-use App\Models\{Asset, Organization, Software, SoftwareInstallation};
+use App\Models\{Asset, Software, SoftwareInstallation};
+use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<SoftwareInstallation> */

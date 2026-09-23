@@ -14,7 +14,8 @@ namespace App\Services\Notification\DeadlineScans;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\ServiceTicket\ServiceTicketStatus;
-use App\Models\{Problem, ServiceTicket, User};
+use App\Models\Platform\User;
+use App\Models\{Problem, ServiceTicket};
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Support\Carbon;
 

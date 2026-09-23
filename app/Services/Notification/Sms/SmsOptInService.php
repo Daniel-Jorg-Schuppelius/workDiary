@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Notification\Sms;
 
 use App\Enums\Notification\SmsDeliveryStatus;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Plugins\Contracts\SmsProvider;
 use App\Support\PhoneSearchKey;
 use CommonToolkit\Enums\HashAlgorithm;

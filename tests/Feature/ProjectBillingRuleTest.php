@@ -12,7 +12,11 @@ namespace Tests\Feature;
 
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Customer, LexofficeArticle, Project, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\Plugins\Lexoffice\LexofficeArticle;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Plugins\Lexoffice\LexofficeMapper;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

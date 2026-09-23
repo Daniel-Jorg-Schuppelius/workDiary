@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Club;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Club\SaveClubGuardianRequest;
 use App\Models\Club\{ClubGuardian, ClubMember};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Club\ClubMemberService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;

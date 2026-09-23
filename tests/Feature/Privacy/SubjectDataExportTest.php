@@ -12,9 +12,14 @@ namespace Tests\Feature\Privacy;
 
 use App\Enums\Privacy\{DataSubjectKind, DataSubjectRequestType};
 use App\Models\Applications\JobApplication;
-use App\Models\{AuditLog, ContactAddress, ContactBankAccount, Customer, Lead, Organization, SickLeave, Supplier, TimeEntry, User, Vacation};
+use App\Models\Audit\AuditLog;
+use App\Models\Contacts\{ContactAddress, ContactBankAccount};
+use App\Models\Customer\Customer;
 use App\Models\Location\LocationPoint;
+use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\{DataSubjectRequest, PrivacyAttachment};
+use App\Models\Sales\Lead;
+use App\Models\{SickLeave, Supplier, TimeEntry, Vacation};
 use App\Services\Privacy\{DataProtectionPermissions, DataSubjectRequestService, SubjectDataExporter};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -178,7 +183,7 @@ class SubjectDataExportTest extends TestCase {
             'account_holder' => 'Muster GmbH', 'iban' => 'DE02120300000000202051', 'bic' => 'BYLADEM1001',
             'bank_name' => 'Testbank', 'is_primary' => true,
         ]);
-        \App\Models\CommunicationNote::factory()->create([
+        \App\Models\Communication\CommunicationNote::factory()->create([
             'organization_id' => $org->id,
             'notable_type' => $customer->getMorphClass(), 'notable_id' => $customer->id,
         ]);

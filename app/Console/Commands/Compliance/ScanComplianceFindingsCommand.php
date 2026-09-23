@@ -11,7 +11,7 @@
 namespace App\Console\Commands\Compliance;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Compliance\{AttendancePlausibilityScanService, ComplianceFindingRecorder, ComplianceScanService, CoreTimeScanService, DrivingTimeComplianceChecker};
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;

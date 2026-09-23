@@ -305,7 +305,7 @@
                 </div>
                 @if($timesheet->signatureAttachment)
                     <div>
-                        <img src="{{ \App\Http\Controllers\AttachmentController::downloadUrl($timesheet->signatureAttachment) }}"
+                        <img src="{{ \App\Http\Controllers\Attachments\AttachmentController::downloadUrl($timesheet->signatureAttachment) }}"
                              alt="signature" class="max-h-32 rounded border border-base-300 bg-white p-2">
                     </div>
                 @endif

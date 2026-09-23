@@ -14,7 +14,8 @@ namespace App\Services\Accounting;
 
 use App\Enums\Finance\AccountingEntryStatus;
 use App\Models\Accounting\{AccountingEntry, AccountingEntryLine, AccountingPeriod, AccountingProfile};
-use App\Models\{CostCenter, Organization, User};
+use App\Models\CostCenter;
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\Posting\PostingInboxService;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;

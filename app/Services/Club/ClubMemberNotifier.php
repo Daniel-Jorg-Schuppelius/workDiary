@@ -14,8 +14,9 @@ namespace App\Services\Club;
 
 use App\Enums\Club\{ClubGuardianPermission, ClubNotificationStatus, ClubParticipationStatus};
 use App\Enums\Notification\NotificationEvent;
+use App\Models\Calendar\Event;
 use App\Models\Club\{ClubEventParticipation, ClubMember, ClubNotification};
-use App\Models\{Event, Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Notifications\GenericEventNotification;
 use App\Services\Notification\NotificationDispatcher;
 use App\Support\Query\DateRange;

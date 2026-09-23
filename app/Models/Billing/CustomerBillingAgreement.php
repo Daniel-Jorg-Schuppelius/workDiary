@@ -13,7 +13,7 @@ namespace App\Models\Billing;
 use App\Casts\MoneyCast;
 use App\Enums\Billing\BillingAgreementMode;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;

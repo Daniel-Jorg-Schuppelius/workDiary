@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Register;
 
 use App\Enums\Reselling\ResaleArticleRole;
-use App\Models\{Article, LexofficeArticle};
+use App\Models\Article;
+use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Services\Reselling\Marketplace\ProductNameMatcher;
 
 /**

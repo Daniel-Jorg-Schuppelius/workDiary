@@ -10,12 +10,13 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Services\Stammdaten;
 
-use App\Models\Project;
+use App\Models\Project\Project;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use App\Services\Stammdaten\AbstractEntityMergeService;
 
 /**
  * Führt zwei lokale Projekt-Datensätze zusammen (Dubletten-Bereinigung, z. B.

@@ -12,7 +12,8 @@ namespace Tests\Feature\Notification;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Jobs\Notification\ChatWebhookDeliveryJob;
-use App\Models\{ChatWebhook, Customer};
+use App\Models\ChatWebhook;
+use App\Models\Customer\Customer;
 use App\Models\Notification\NotificationRule;
 use App\Services\Notification\{ChatMessageFormatter, NotificationDispatcher};
 use Illuminate\Foundation\Testing\RefreshDatabase;

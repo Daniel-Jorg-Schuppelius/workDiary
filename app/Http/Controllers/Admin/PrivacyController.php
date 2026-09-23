@@ -12,7 +12,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\{AuditLog, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\User;
 use App\Services\Privacy\PrivacyOverviewService;
 use App\Services\Security\SessionManagementService;
 use App\Support\{MorphMap, Sqid};

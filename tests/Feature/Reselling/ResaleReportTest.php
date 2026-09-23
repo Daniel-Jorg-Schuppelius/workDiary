@@ -14,8 +14,8 @@ namespace Tests\Feature\Reselling;
 
 use App\Dashboard\Widgets\ResalePeriodsWidget;
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
-use App\Models\Customer;
-use App\Models\{LexofficeVoucher, LexofficeVoucherLine};
+use App\Models\Customer\Customer;
+use App\Models\Plugins\Lexoffice\{LexofficeVoucher, LexofficeVoucherLine};
 use App\Models\Reselling\{ResalePeriodLink, ResaleSubscription};
 use App\Services\Reselling\Register\PeriodPlanner;
 use Illuminate\Foundation\Testing\RefreshDatabase;

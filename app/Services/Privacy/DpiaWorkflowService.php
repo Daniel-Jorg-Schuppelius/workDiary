@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy;
 
+use App\Models\Platform\User;
 use App\Models\Privacy\{Dpia, DpiaStep};
-use App\Models\User;
 use RuntimeException;
 
 /**

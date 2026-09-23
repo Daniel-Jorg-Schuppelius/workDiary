@@ -14,7 +14,7 @@ namespace App\Services\Disposal;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Disposal\DisposalJob;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use CommonToolkit\Helper\Data\DataUrlHelper;

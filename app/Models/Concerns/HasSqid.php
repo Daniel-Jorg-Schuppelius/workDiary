@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Concerns;
 
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use Illuminate\Database\Eloquent\Model;
 
 /**

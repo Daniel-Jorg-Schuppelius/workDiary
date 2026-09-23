@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Todoist\Observers;
 
-use App\Models\{ExternalReference, Task, TodoistConnection, TodoistProjectLink};
+use App\Models\Integration\ExternalReference;
+use App\Models\Plugins\Todoist\{TodoistConnection, TodoistProjectLink};
+use App\Models\Project\Task;
 use App\Plugins\Todoist\Services\{TodoistImportService, TodoistOutboxDispatcher};
 use App\Plugins\Todoist\TodoistPlugin;
 use App\Services\Integration\IntegrationOutboxService;

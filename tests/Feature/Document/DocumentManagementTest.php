@@ -11,7 +11,9 @@
 namespace Tests\Feature\Document;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
-use App\Models\{Customer, Document, DocumentVersion, User};
+use App\Models\Customer\Customer;
+use App\Models\Document\{Document, DocumentVersion};
+use App\Models\Platform\User;
 use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

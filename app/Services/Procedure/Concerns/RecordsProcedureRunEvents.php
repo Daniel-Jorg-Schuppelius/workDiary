@@ -11,7 +11,8 @@
 namespace App\Services\Procedure\Concerns;
 
 use App\Enums\Procedure\ProcedureRunEventType;
-use App\Models\{ProcedureRun, ProcedureRunEvent, ProcedureStepRun, User};
+use App\Models\Platform\User;
+use App\Models\{ProcedureRun, ProcedureRunEvent, ProcedureStepRun};
 
 /**
  * Zentraler Schreiber für ProcedureRunEvents (Vollaudit 2026-07, N38) —

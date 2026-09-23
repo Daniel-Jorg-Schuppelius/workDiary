@@ -12,7 +12,8 @@ namespace Tests\Feature\Protocol;
 
 use App\Enums\Asset\AssetOwnership;
 use App\Enums\Protocol\{ProtocolItemPhotoPhase, ProtocolItemType, ProtocolStatus, ProtocolType};
-use App\Models\{Asset, DiaryEntry, Protocol, ProtocolItemPhoto, User};
+use App\Models\{Asset, DiaryEntry, Protocol, ProtocolItemPhoto};
+use App\Models\Platform\User;
 use App\Services\Protocol\ProtocolService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -58,7 +59,7 @@ class ProtocolControllerTest extends TestCase {
             'customer_id' => null,
             'owned_by' => AssetOwnership::Organization->value,
         ]);
-        $existing = \App\Models\Tag::create([
+        $existing = \App\Models\Classification\Tag::create([
             'name' => 'Wartung',
             'organization_id' => $user->organization_id,
         ]);
@@ -91,7 +92,7 @@ class ProtocolControllerTest extends TestCase {
             'created_by_user_id' => $user->id,
             'status' => ProtocolStatus::Draft->value,
         ]);
-        $protocol->tags()->attach(\App\Models\Tag::create([
+        $protocol->tags()->attach(\App\Models\Classification\Tag::create([
             'name' => 'Alt',
             'organization_id' => $user->organization_id,
         ]));

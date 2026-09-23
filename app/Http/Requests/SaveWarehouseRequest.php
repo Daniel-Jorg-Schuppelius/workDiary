@@ -12,7 +12,8 @@ namespace App\Http\Requests;
 
 use App\Enums\Inventory\WarehouseKind;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\{Site, Team, Vehicle, Warehouse};
+use App\Models\Platform\Team;
+use App\Models\{Site, Vehicle, Warehouse};
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
 
@@ -87,7 +88,7 @@ class SaveWarehouseRequest extends BaseFormRequest {
     private function currentOrganizationId(): ?int {
         if (app()->bound('currentOrganization')) {
             $organization = app('currentOrganization');
-            if ($organization instanceof \App\Models\Organization) {
+            if ($organization instanceof \App\Models\Platform\Organization) {
                 return (int) $organization->id;
             }
         }

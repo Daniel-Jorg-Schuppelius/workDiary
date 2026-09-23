@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Security;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Crypt, DB};

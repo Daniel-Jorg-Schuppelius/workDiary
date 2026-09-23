@@ -10,7 +10,8 @@
 
 namespace App\Plugins\CalDav;
 
-use App\Models\{CalDavConnection, Organization};
+use App\Models\Platform\Organization;
+use App\Models\Plugins\CalDav\CalDavConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\CalDav\Contracts\{CalDavGatewayFactory, CalendarSource};
 use App\Plugins\CalDav\Services\{CalDavRemoteCalendarGateway, CalendarPublishItem, EventCalendarSource, ScheduleCalendarSource};
@@ -24,10 +25,10 @@ use Throwable;
 /**
  * On-Premise-Kalenderanbindung CalDAV (Feature 058, MVP-126).
  *
- * - **Publiziert** WorkDiary-Termine ({@see \App\Models\Event}) in einen
+ * - **Publiziert** WorkDiary-Termine ({@see \App\Models\Calendar\Event}) in einen
  *   externen CalDAV-Kalender (Nextcloud/ownCloud als Referenz, generisch
  *   RFC 4791) — Datenhoheit bleibt beim Kunden, ohne Microsoft-/Google-Konto.
- * - **Idempotent** über stabile UIDs + {@see \App\Models\ExternalReference}:
+ * - **Idempotent** über stabile UIDs + {@see \App\Models\Integration\ExternalReference}:
  *   Anlegen/Ändern/Löschen (bei Absage) erzeugen keine Dubletten.
  * - Pro Organisation konfiguriert ({@see CalDavConnection}: Basis-URL,
  *   App-Passwort verschlüsselt at-rest, Ziel-Collection).

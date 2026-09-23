@@ -184,13 +184,13 @@
                                             @if (! $subscription->isAssignment())
                                                 {{-- Halterwechsel im Zeitverlauf: alle Lizenzen dieser Periode an den anderen Kunden abtreten. --}}
                                                 <x-icon-btn icon="call_split" size="xs" tone="ghost" data-entry-modal-trigger
-                                                            :href="route('finance.resale.transfer.create', ['subscription' => $subscription->sqid, 'customer' => \App\Support\Sqid::encode(\App\Models\Customer::class, $targetId), 'quantity' => (int) round($candidate['row']['licences']), 'starts_on' => $period->starts_on->toDateString(), 'ends_on' => $period->ends_on->toDateString()])"
+                                                            :href="route('finance.resale.transfer.create', ['subscription' => $subscription->sqid, 'customer' => \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $targetId), 'quantity' => (int) round($candidate['row']['licences']), 'starts_on' => $period->starts_on->toDateString(), 'ends_on' => $period->ends_on->toDateString()])"
                                                             show-label>{{ __('resale.transfer.action_period', ['customer' => $recipient]) }}</x-icon-btn>
                                             @endif
                                             <form method="POST" action="{{ route('finance.resale.reconcile.rehome', $customer) }}" data-confirm-dialog data-confirm-message="{{ __('resale.reconcile.confirm.rehome', ['subscription' => $subscription->label, 'customer' => $recipient]) }}" data-confirm-tone="error">
                                                 @csrf
                                                 <input type="hidden" name="period_id" value="{{ $period->sqid }}">
-                                                <input type="hidden" name="target_id" value="{{ \App\Support\Sqid::encode(\App\Models\Customer::class, $targetId) }}">
+                                                <input type="hidden" name="target_id" value="{{ \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $targetId) }}">
                                                 <x-icon-btn icon="swap_horiz" size="xs" tone="warning" type="submit" show-label>{{ __('resale.reconcile.action.rehome', ['customer' => $recipient]) }}</x-icon-btn>
                                             </form>
                                         </span>

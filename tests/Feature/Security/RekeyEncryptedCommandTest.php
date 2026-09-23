@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Security;
 
 use App\Models\Finance\BankAccount;
-use App\Models\{Organization, SystemSetting};
+use App\Models\Platform\{Organization, SystemSetting};
 use Illuminate\Encryption\EncryptionServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

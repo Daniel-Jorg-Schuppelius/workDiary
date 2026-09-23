@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Security;
 
-use App\Models\KnowledgeArticle;
+use App\Models\Knowledge\KnowledgeArticle;
 use App\Services\Attachments\FileAttacher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

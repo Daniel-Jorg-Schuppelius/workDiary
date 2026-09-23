@@ -11,7 +11,10 @@
 namespace Tests\Feature\Document;
 
 use App\Enums\User\Permission as P;
-use App\Models\{Customer, Document, Tag, User};
+use App\Models\Classification\Tag;
+use App\Models\Customer\Customer;
+use App\Models\Document\Document;
+use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

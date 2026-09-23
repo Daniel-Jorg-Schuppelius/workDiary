@@ -12,7 +12,7 @@ namespace App\Http\Requests;
 
 use App\Enums\Diary\{LocationMode, Mode, Priority};
 use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
-use App\Models\EntryType;
+use App\Models\Classification\EntryType;
 use Illuminate\Validation\Rule;
 
 class SaveDiaryEntryRequest extends BaseFormRequest {
@@ -20,15 +20,15 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'user_id' => \App\Models\User::class,
-        'entry_type_id' => \App\Models\EntryType::class,
-        'customer_id' => \App\Models\Customer::class,
-        'assigned_user_id' => \App\Models\User::class,
+        'user_id' => \App\Models\Platform\User::class,
+        'entry_type_id' => \App\Models\Classification\EntryType::class,
+        'customer_id' => \App\Models\Customer\Customer::class,
+        'assigned_user_id' => \App\Models\Platform\User::class,
         'tour_id' => \App\Models\Tour::class,
         // Gegenstand des Auftrags (Feature 009; Vollaudit 2026-07, M5).
         'asset_id' => \App\Models\Asset::class,
         // Folgeauftrag aus offenem Punkt (Feature 139): Prefill-Hidden-Felder.
-        'project_id' => \App\Models\Project::class,
+        'project_id' => \App\Models\Project\Project::class,
         'open_issue_id' => \App\Models\OpenIssue::class,
     ];
 
@@ -147,7 +147,7 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
         // rules() läuft VOR der Sqid-Dekodierung in validationData(): Formulare senden Sqids (nur Altbestand/intern
         // numerische IDs). Ohne Dekodierung wäre der Typ hier nicht auffindbar und die requires_*-Pflichten liefen ins Leere.
         $id = is_string($raw) && ! ctype_digit($raw)
-            ? app(\App\Services\SqidEncoder::class)->decode(EntryType::class, $raw)
+            ? app(\App\Support\SqidEncoder::class)->decode(EntryType::class, $raw)
             : (int) $raw;
 
         return $id ? EntryType::query()->find($id) : null;

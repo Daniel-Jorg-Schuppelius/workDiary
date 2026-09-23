@@ -14,7 +14,9 @@ namespace Tests\Feature\Hr;
 
 use App\Enums\Hr\HrDocumentCategory;
 use App\Enums\Privacy\{DataSubjectKind, DataSubjectRequestType};
-use App\Models\{AuditLog, Document, Organization, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Document\Document;
+use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\{PrivacyAttachment, RetentionProposal};
 use App\Services\Hr\PersonnelFilePermissions;
 use App\Services\Org\UserOffboardingService;

@@ -69,7 +69,7 @@ class Locales {
     public static function current(): string {
         // 1) Angemeldeter Benutzer
         $user = \Illuminate\Support\Facades\Auth::user();
-        if ($user instanceof \App\Models\User) {
+        if ($user instanceof \App\Models\Platform\User) {
             $pref = (array) ($user->preferences ?? []);
             $userLocale = is_string($pref['locale'] ?? null) ? $pref['locale'] : null;
             if ($userLocale !== null && self::isSupported($userLocale)) {
@@ -80,7 +80,7 @@ class Locales {
         // 2) Aktive Organisation
         if (app()->bound('currentOrganization')) {
             $org = app('currentOrganization');
-            if ($org instanceof \App\Models\Organization
+            if ($org instanceof \App\Models\Platform\Organization
                 && is_string($org->locale) && self::isSupported($org->locale)) {
                 return $org->locale;
             }

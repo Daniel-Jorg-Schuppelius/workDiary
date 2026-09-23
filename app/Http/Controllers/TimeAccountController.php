@@ -10,7 +10,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{TimeAccount, TimeAccountBalance, TimeAccountEntry, User};
+use App\Models\Platform\User;
+use App\Models\{TimeAccount, TimeAccountBalance, TimeAccountEntry};
 use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

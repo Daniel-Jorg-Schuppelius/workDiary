@@ -11,7 +11,8 @@
 namespace Tests\Feature\Schedule;
 
 use App\Enums\Shift\{ScheduledShiftStatus, ShiftExchangeStatus};
-use App\Models\{ScheduledShift, ShiftExchange, User};
+use App\Models\Platform\User;
+use App\Models\{ScheduledShift, ShiftExchange};
 use App\Services\Schedule\{ShiftExchangeException, ShiftExchangeService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

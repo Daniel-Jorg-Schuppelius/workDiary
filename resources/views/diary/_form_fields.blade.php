@@ -28,7 +28,7 @@
     $rawDefaultEntryTypeId = old('entry_type_id', $entry?->entry_type_id ?? ($prefillEntryTypeId ?? 0));
     $defaultEntryTypeSqid = '0';
     if (is_numeric($rawDefaultEntryTypeId) && (int) $rawDefaultEntryTypeId > 0) {
-        $defaultEntryTypeSqid = \App\Support\Sqid::encode(\App\Models\EntryType::class, (int) $rawDefaultEntryTypeId);
+        $defaultEntryTypeSqid = \App\Support\Sqid::encode(\App\Models\Classification\EntryType::class, (int) $rawDefaultEntryTypeId);
     } elseif (is_string($rawDefaultEntryTypeId) && $rawDefaultEntryTypeId !== '' && $rawDefaultEntryTypeId !== '0') {
         $defaultEntryTypeSqid = $rawDefaultEntryTypeId;
     }
@@ -67,7 +67,7 @@
     <x-form-group :legend="__('Zuordnung')" icon="person" tone="primary">
         <x-select-field name="user_id" :label="__('Benutzer')" required>
             @foreach ($assignableUsers as $u)
-                <option value="{{ $u->sqid }}" @selected((string) old('user_id', \App\Support\Sqid::encode(\App\Models\User::class, $defaultUserId)) === $u->sqid)>{{ $u->name }}</option>
+                <option value="{{ $u->sqid }}" @selected((string) old('user_id', \App\Support\Sqid::encode(\App\Models\Platform\User::class, $defaultUserId)) === $u->sqid)>{{ $u->name }}</option>
             @endforeach
         </x-select-field>
     </x-form-group>
@@ -136,7 +136,7 @@
     {{-- Folgeauftrag (Feature 139): Rückverknüpfung + Projekt aus dem Subjekt des Punkts. --}}
     <input type="hidden" name="open_issue_id" value="{{ old('open_issue_id', $prefillOpenIssueSqid) }}">
     @if ($prefillProjectId !== null)
-        <input type="hidden" name="project_id" value="{{ old('project_id', \App\Support\Sqid::encode(\App\Models\Project::class, $prefillProjectId)) }}">
+        <input type="hidden" name="project_id" value="{{ old('project_id', \App\Support\Sqid::encode(\App\Models\Project\Project::class, $prefillProjectId)) }}">
     @endif
 @endif
 
@@ -226,7 +226,7 @@
     <x-select-field name="customer_id" :label="__('Kunde')" x-bind:required="requiresCustomer">
         <option value="">—</option>
         @foreach ($customerOptions as $c)
-            <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $entry?->customer_id ?? $prefillCustomerId)) === $c->sqid)>
+            <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $entry?->customer_id ?? $prefillCustomerId)) === $c->sqid)>
                 {{ $c->name }}@if ($c->company) — {{ $c->company }}@endif
             </option>
         @endforeach
@@ -235,7 +235,7 @@
     <x-select-field name="assigned_user_id" :label="__('Zuständig')">
         <option value="">—</option>
         @foreach ($assignableUsers as $u)
-            <option value="{{ $u->sqid }}" @selected((string) old('assigned_user_id', \App\Support\Sqid::encode(\App\Models\User::class, $entry?->assigned_user_id)) === $u->sqid)>{{ $u->name }}</option>
+            <option value="{{ $u->sqid }}" @selected((string) old('assigned_user_id', \App\Support\Sqid::encode(\App\Models\Platform\User::class, $entry?->assigned_user_id)) === $u->sqid)>{{ $u->name }}</option>
         @endforeach
     </x-select-field>
 

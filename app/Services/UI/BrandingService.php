@@ -8,10 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Services;
+namespace App\Services\UI;
 
-use App\Http\Controllers\AttachmentController;
-use App\Models\{Attachment, Organization};
+use App\Http\Controllers\Attachments\AttachmentController;
+use App\Models\Attachments\Attachments\Attachment;
+use App\Models\Platform\Organization;
 use CommonToolkit\Helper\Data\{ColorHelper, DataUrlHelper};
 use Illuminate\Support\Facades\{Auth, Storage};
 

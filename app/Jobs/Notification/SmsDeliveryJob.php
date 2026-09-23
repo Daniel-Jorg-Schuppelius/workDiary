@@ -14,7 +14,7 @@ namespace App\Jobs\Notification;
 
 use App\Enums\Notification\SmsDeliveryStatus;
 use App\Models\Notification\NotificationDispatchLog;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Notification\Sms\SmsChannelService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

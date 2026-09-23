@@ -13,7 +13,9 @@ namespace Tests\Feature\Rental;
 use App\Enums\Asset\AssetBlockReason;
 use App\Enums\Rental\{RentalCaseStatus, RentalChargeKind, RentalChargeStatus, RentalDepositStatus, RentalRateCardStatus, RentalReturnFollowUp};
 use App\Exceptions\{AssetNotUsableException, RentalConflictException};
-use App\Models\{Asset, Customer, User};
+use App\Models\Asset;
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Models\Rental\{RentalCase, RentalProfile, RentalRateCard, RentalReservation};
 use App\Services\Asset\{AssetBlockService, AssetUsageGuard};
 use App\Services\Rental\{RentalAvailabilityService, RentalBillingService, RentalCaseService};
@@ -567,7 +569,7 @@ final class RentalLifecycleTest extends TestCase {
     }
 
     public function test_module_gating_blocks_without_license(): void {
-        $freeOrg = \App\Models\Organization::factory()->free()->create();
+        $freeOrg = \App\Models\Platform\Organization::factory()->free()->create();
         app(PermissionRegistrar::class)->setPermissionsTeamId($freeOrg->id);
         $freeAdmin = User::factory()->admin()->create(['organization_id' => $freeOrg->id]);
 

@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Scim;
 
-use App\Models\{Organization, ScimGroup, ScimToken, Team, User};
+use App\Models\Auth\{ScimGroup, ScimToken};
+use App\Models\Platform\{Organization, Team, User};
 use App\Services\Scim\ScimGroupService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;

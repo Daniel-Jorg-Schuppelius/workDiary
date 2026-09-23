@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Models\Project;
+use App\Models\Project\Project;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\{DB, Schema};
 

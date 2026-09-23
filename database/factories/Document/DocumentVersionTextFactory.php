@@ -10,9 +10,10 @@
 
 declare(strict_types=1);
 
-namespace Database\Factories;
+namespace Database\Factories\Document;
 
-use App\Models\{DocumentVersion, DocumentVersionText};
+use App\Models\Document\Document\DocumentVersion;
+use App\Models\Document\Document\DocumentVersionText;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<DocumentVersionText> */

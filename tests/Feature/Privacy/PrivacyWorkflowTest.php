@@ -11,7 +11,7 @@
 namespace Tests\Feature\Privacy;
 
 use App\Enums\Privacy\{ControllerRole, DataSubjectRequestStatus, DataSubjectRequestType, ProcessingActivityStatus};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\DataSubjectRequest;
 use App\Services\Privacy\{DataProtectionPermissions, DataSubjectRequestService, ProcessingActivityService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

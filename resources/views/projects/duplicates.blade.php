@@ -11,7 +11,7 @@
 @section('nav-title', __('Projekt-Abgleich'))
 
 @php
-    use App\Services\ProjectDuplicateFinder;
+    use App\Services\Stammdaten\ProjectDuplicateFinder;
 
     $reasonLabels = [
         'number' => __('Projektnr.'),

@@ -11,7 +11,8 @@
 namespace App\Plugins\Lexoffice;
 
 use APIToolkit\API\Authentication\BearerAuthentication;
-use App\Models\{Customer, Supplier, TimeEntry};
+use App\Models\Customer\Customer;
+use App\Models\{Supplier, TimeEntry};
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\JsonHelper;

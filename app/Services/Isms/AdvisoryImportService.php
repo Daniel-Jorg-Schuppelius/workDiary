@@ -12,7 +12,7 @@ namespace App\Services\Isms;
 
 use App\Enums\Isms\{AdvisoryFormat, Exploitability, VulnerabilitySource, VulnerabilityStatus};
 use App\Models\Isms\{IsmsAdvisory, IsmsSoftwareProduct, IsmsVulnerability};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Facades\{DB, Storage};
 use Illuminate\Validation\ValidationException;

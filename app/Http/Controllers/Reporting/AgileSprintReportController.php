@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Agile\{AgileBoard, AgileSprint};
-use App\Models\{Milestone, Project};
+use App\Models\Project\{Milestone, Project};
 use App\Services\Agile\{AgileMetricsService, AgileWorkItemService};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;

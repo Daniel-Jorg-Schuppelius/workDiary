@@ -8,14 +8,19 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Project;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Http\Requests\{SaveProjectBillingRuleRequest, SaveProjectBillingSettingsRequest, SaveProjectRatesRequest};
-use App\Models\{LexofficeArticle, Project, ProjectBillingRule};
+use App\Http\Requests\Project\SaveProjectBillingRuleRequest;
+use App\Http\Requests\Project\SaveProjectBillingSettingsRequest;
+use App\Http\Requests\Project\SaveProjectRatesRequest;
+use App\Models\Plugins\Lexoffice\LexofficeArticle;
+use App\Models\Project\Project\Project;
+use App\Models\Project\Project\ProjectBillingRule;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use App\Http\Controllers\Controller;
 
 class ProjectBillingRuleController extends Controller {
     public function create(Project $project, Request $request): View {

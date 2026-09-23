@@ -12,7 +12,10 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Document\DocumentType;
 use App\Enums\Whistleblowing\AttachmentScanStatus;
-use App\Models\{Customer, Document, Invoice, User};
+use App\Models\Customer\Customer;
+use App\Models\Document\Document;
+use App\Models\Invoice;
+use App\Models\Platform\User;
 use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, XRechnungGenerator};
 use App\Services\Whistleblowing\Scanning\ScanDriver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -143,11 +146,11 @@ final class IncomingEInvoiceTest extends TestCase {
         $this->assertSame('ER-2026-0042', $incoming->summary['number']);
 
         // Dublette: identischer Inhalt wird abgewiesen (kein zweites Document).
-        $documents = \App\Models\Document::query()->count();
+        $documents = \App\Models\Document\Document::query()->count();
         $this->actingAs($this->admin)->post(route('finance.incoming-invoices.store'), [
             'file' => \Illuminate\Http\UploadedFile::fake()->createWithContent('kopie.xml', $xml),
         ])->assertRedirect(route('finance.incoming-invoices.show', $incoming->document_id));
-        $this->assertSame($documents, \App\Models\Document::query()->count());
+        $this->assertSame($documents, \App\Models\Document\Document::query()->count());
         $this->assertSame(1, \App\Models\IncomingEInvoice::query()->count());
 
         // Workflow (MVP-167): Zahlungsfreigabe erst NACH fachlicher Freigabe.

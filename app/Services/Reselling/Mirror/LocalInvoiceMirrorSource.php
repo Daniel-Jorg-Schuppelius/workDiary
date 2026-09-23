@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Mirror;
 
 use App\Enums\Reselling\ResaleArticleRole;
-use App\Models\{Article, Customer, Invoice, InvoiceItem, Organization};
+use App\Models\{Article, Invoice, InvoiceItem};
+use App\Models\Customer\Customer;
+use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriodLink, ResaleSubscription};
 use App\Services\Finance\BillingModeResolver;
 use App\Services\Reselling\Marketplace\ProductNameMatcher;

@@ -8,17 +8,19 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Communication;
 
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType, CommunicationVisibility};
 use App\Enums\User\Permission;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, HasTags};
 use App\Support\MorphMap;
-use Database\Factories\CommunicationNoteFactory;
+use Database\Factories\Communication\CommunicationNoteFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
+use App\Models\Communication\CommunicationNoteParticipant;
+use App\Models\Customer\Customer;
 
 /**
  * Kommunikationsnotiz (MVP-012): dokumentiertes Kommunikationsereignis

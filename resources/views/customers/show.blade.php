@@ -226,7 +226,7 @@
                     @endisset
                 </div>
                 <div x-show="isTab('foreign')" x-cloak>
-                    @can('create', App\Models\ForeignCustomer::class)
+                    @can('create', App\Models\Customer\ForeignCustomer::class)
                         <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger
                                     :href="route('foreign-customers.create', ['customer' => $customer->sqid])"
                                     show-label>{{ __('Fremdkunde anlegen') }}</x-icon-btn>

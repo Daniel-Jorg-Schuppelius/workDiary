@@ -19,7 +19,7 @@ namespace App\Plugins\Support;
  * {@see TimeWritebackDispatcher} arbeitet ausschließlich gegen diesen Vertrag,
  * sodass Konflikterkennung und Outbox-Semantik nur einmal existieren.
  *
- * `$context` ist der Payload der {@see \App\Models\ExternalReference} des
+ * `$context` ist der Payload der {@see \App\Models\Integration\ExternalReference} des
  * Eintrags (Workspace-/Projekt-IDs u. ä.) — je Plugin verschieden, deshalb
  * nicht Teil der Signatur.
  *

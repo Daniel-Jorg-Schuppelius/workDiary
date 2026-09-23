@@ -11,7 +11,10 @@
 namespace Tests\Feature\Helpdesk;
 
 use App\Enums\ServiceTicket\SlaViolationKind;
-use App\Models\{Customer, EmailConnection, ServiceQueue, ServiceTicket, ServiceTicketMessage, SlaViolation, User};
+use App\Models\Customer\Customer;
+use App\Models\Mail\EmailConnection;
+use App\Models\Platform\User;
+use App\Models\{ServiceQueue, ServiceTicket, ServiceTicketMessage, SlaViolation};
 use App\Services\Mail\{MailAttachment, MailIntakeService, ParsedMessage};
 use App\Services\ServiceTicket\TicketConversationService;
 use App\Services\Timeline\ServiceTicketTimelineService;

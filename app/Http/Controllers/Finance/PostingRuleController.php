@@ -118,7 +118,7 @@ class PostingRuleController extends Controller {
     }
 
     /** @return array<string, mixed> */
-    private function validated(Request $request, \App\Models\Organization $organization): array {
+    private function validated(Request $request, \App\Models\Platform\Organization $organization): array {
         $data = $request->validate([
             'source_kind' => ['required', 'string', 'in:' . implode(',', array_column(PostingSourceKind::cases(), 'value'))],
             'role' => ['required', 'string', 'in:' . implode(',', array_column(PostingAccountRole::cases(), 'value'))],

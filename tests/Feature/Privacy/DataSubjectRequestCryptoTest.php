@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Privacy;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Models\Privacy\{DataSubjectRequest, RequestEvent};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;

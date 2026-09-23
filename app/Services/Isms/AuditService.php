@@ -12,7 +12,7 @@ namespace App\Services\Isms;
 
 use App\Enums\Isms\{AuditStatus, CorrectiveActionStatus, FindingStatus};
 use App\Models\Isms\{IsmsAudit, IsmsAuditFinding, IsmsCorrectiveAction, IsmsManagementReview, IsmsScope};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Validation\ValidationException;
 
 /**

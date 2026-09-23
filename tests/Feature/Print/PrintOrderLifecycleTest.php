@@ -15,7 +15,9 @@ namespace Tests\Feature\Print;
 use App\Enums\Asset\AssetBlockReason;
 use App\Enums\Print\{PreflightStatus, PrintOrderStatus};
 use App\Exceptions\AssetNotUsableException;
-use App\Models\{Article, Asset, Document, ManufacturingOrder, User};
+use App\Models\{Article, Asset, ManufacturingOrder};
+use App\Models\Document\Document;
+use App\Models\Platform\User;
 use App\Models\Print\PrintOrder;
 use App\Services\Asset\AssetBlockService;
 use App\Services\Document\DocumentService;
@@ -91,16 +93,16 @@ class PrintOrderLifecycleTest extends TestCase {
         $installer = app(\App\Services\Classification\BranchProfileInstaller::class);
         $installer->install($this->organization, 'druck-kopiershop', $this->actor);
 
-        $this->assertTrue(\App\Models\Classification::query()
+        $this->assertTrue(\App\Models\Classification\Classification::query()
             ->where('organization_id', $this->organization->id)
             ->where('domain', 'product_group')->where('code', 'visitenkarten')->exists());
         $this->assertTrue(\App\Models\ProcedureTemplate::query()
             ->where('organization_id', $this->organization->id)
             ->where('code', 'DR_DRUCKFREIGABE')->exists());
 
-        $count = \App\Models\Classification::query()->where('organization_id', $this->organization->id)->count();
+        $count = \App\Models\Classification\Classification::query()->where('organization_id', $this->organization->id)->count();
         $installer->install($this->organization, 'druck-kopiershop', $this->actor);
-        $this->assertSame($count, \App\Models\Classification::query()->where('organization_id', $this->organization->id)->count());
+        $this->assertSame($count, \App\Models\Classification\Classification::query()->where('organization_id', $this->organization->id)->count());
 
         $settings = (array) $this->organization->refresh()->settings;
         $this->assertSame('druck-kopiershop', $settings['branch_profile_code'] ?? null);

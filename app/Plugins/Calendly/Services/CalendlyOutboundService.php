@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Calendly\Services;
 
-use App\Models\CalendlyConnection;
+use App\Models\Plugins\Calendly\CalendlyConnection;
 use App\Plugins\Calendly\Api\CalendlyClient;
 use Carbon\CarbonImmutable;
 

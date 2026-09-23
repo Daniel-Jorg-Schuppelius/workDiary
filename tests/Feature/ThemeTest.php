@@ -10,8 +10,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Organization, User};
-use App\Services\ThemeService;
+use App\Models\Platform\{Organization, User};
+use App\Services\UI\ThemeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -31,7 +31,7 @@ class ThemeTest extends TestCase {
 
     private function actingResolver(Organization $org, User $user): ThemeService {
         $this->actingAs($user);
-        $this->app->forgetInstance(\App\Services\BrandingService::class);
+        $this->app->forgetInstance(\App\Services\UI\BrandingService::class);
         $this->app->forgetInstance(ThemeService::class);
 
         return app(ThemeService::class);

@@ -14,7 +14,8 @@ namespace App\Plugins\Support\Mirror\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Enums\Document\DocumentStatus;
-use App\Models\{Document, Organization};
+use App\Models\Document\Document;
+use App\Models\Platform\Organization;
 use App\Plugins\Support\Mirror\{MirrorOutboxDispatcher, MirrorTarget};
 use App\Services\Integration\IntegrationOutboxService;
 use Illuminate\Console\Command;

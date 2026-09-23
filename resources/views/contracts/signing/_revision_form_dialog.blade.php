@@ -14,7 +14,7 @@
     use App\Enums\Contract\{ContractKind, SignatureParty};
     $isEdit = $revision !== null;
     $contractItem = $isEdit ? $revision->manifestItems->first(fn ($i) => $i->isContract()) : null;
-    $attachmentIds = $isEdit ? $revision->manifestItems->reject(fn ($i) => $i->isContract())->pluck('document_version_id')->map(fn ($id) => \App\Support\Sqid::encode(\App\Models\DocumentVersion::class, (int) $id))->all() : [];
+    $attachmentIds = $isEdit ? $revision->manifestItems->reject(fn ($i) => $i->isContract())->pluck('document_version_id')->map(fn ($id) => \App\Support\Sqid::encode(\App\Models\Document\DocumentVersion::class, (int) $id))->all() : [];
     $customerReq = $isEdit ? $revision->requests->first(fn ($r) => $r->party === SignatureParty::Customer) : null;
     $orgReq = $isEdit ? $revision->requests->first(fn ($r) => $r->party === SignatureParty::Organization) : null;
 @endphp

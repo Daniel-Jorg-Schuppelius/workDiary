@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Http\Controllers\Admin\SupportImpersonationController;
-use App\Models\{SupportAccessGrant, User};
+use App\Models\Auth\SupportAccessGrant;
+use App\Models\Platform\User;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

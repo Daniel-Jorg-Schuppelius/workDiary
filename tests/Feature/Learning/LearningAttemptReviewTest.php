@@ -11,8 +11,9 @@
 namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\{LearningQuestionKind, LearningUnitKind};
-use App\Models\{AuditLog, User};
+use App\Models\Audit\AuditLog;
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningQuestion, LearningQuiz, LearningQuizAttemptWaiver, LearningUnit};
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningCourseService, LearningEnrollmentService, LearningQuestionCatalogService, LearningQuizService, LearningReportService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

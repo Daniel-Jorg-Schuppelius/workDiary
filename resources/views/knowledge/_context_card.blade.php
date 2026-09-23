@@ -18,21 +18,21 @@
     $featuresKnowledge = app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.knowledge');
 @endphp
 
-@if ($featuresKnowledge && \Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\KnowledgeArticle::class))
+@if ($featuresKnowledge && \Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Knowledge\KnowledgeArticle::class))
     @php
         $subjectSqid = \App\Support\Sqid::encode(get_class($subject), (int) $subject->getKey());
         // Verknüpfungen seit MVP-811 als Verweise: Quelle Artikel, Art `linked`.
-        $knowledgeLinks = \App\Models\ContentReference::query()
-            ->where('source_type', (new \App\Models\KnowledgeArticle)->getMorphClass())
-            ->where('kind', \App\Models\ContentReference::KIND_LINKED)
+        $knowledgeLinks = \App\Models\Knowledge\ContentReference::query()
+            ->where('source_type', (new \App\Models\Knowledge\KnowledgeArticle)->getMorphClass())
+            ->where('kind', \App\Models\Knowledge\ContentReference::KIND_LINKED)
             ->where('target_type', $subject->getMorphClass())
             ->where('target_id', $subject->getKey())
-            ->whereHasMorph('source', [\App\Models\KnowledgeArticle::class])
+            ->whereHasMorph('source', [\App\Models\Knowledge\KnowledgeArticle::class])
             ->with('source')
             ->get();
         $knowledgeSuggestions = app(\App\Services\Knowledge\KnowledgeArticleService::class)
             ->suggestFor($subject, $texts);
-        $canCreateKnowledge = \Illuminate\Support\Facades\Gate::allows('create', \App\Models\KnowledgeArticle::class);
+        $canCreateKnowledge = \Illuminate\Support\Facades\Gate::allows('create', \App\Models\Knowledge\KnowledgeArticle::class);
     @endphp
 
     <x-card as="section" id="knowledge-context" :title="__('knowledge.title.index')" icon="school" :count="$knowledgeLinks->count()">

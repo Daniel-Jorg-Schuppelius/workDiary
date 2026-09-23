@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
-use App\Models\{ContactAddress, ContactBankAccount, Customer, Supplier};
+use App\Models\Contacts\{ContactAddress, ContactBankAccount};
+use App\Models\Customer\Customer;
+use App\Models\Supplier;
 use Illuminate\Database\Eloquent\Model;
 
 /**

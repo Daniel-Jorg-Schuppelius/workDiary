@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Import\Specs\Concerns;
 
-use App\Models\{Classification, ImportValueMapping, Organization, Tag};
+use App\Models\Classification\{Classification, Tag};
+use App\Models\Integration\ImportValueMapping;
+use App\Models\Platform\Organization;
 use App\Services\Classification\ClassificationManager;
 use Illuminate\Database\Eloquent\Model;
 

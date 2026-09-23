@@ -14,13 +14,13 @@
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @php
-    /** @var \Illuminate\Pagination\LengthAwarePaginator<int, \App\Models\Task> $tasks */
+    /** @var \Illuminate\Pagination\LengthAwarePaginator<int, \App\Models\Project\Task> $tasks */
 @endphp
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Wiederverwendbare Tätigkeiten ohne Projektbezug.')">
         <x-slot:actions>
-            @can('create', App\Models\Task::class)
+            @can('create', App\Models\Project\Task::class)
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
                             :href="route('tasks.global.create').'?dialog=1'"

@@ -10,8 +10,12 @@
 
 namespace Tests\Unit\Architecture;
 
-use App\Models\{BackupHeartbeat, Classification, GeocodeCache, HelpTopic, HelpView, ImportRunError, LicenseFlagOverride, MonthClosureEvent, OpenIssueEvent, Organization, OrganizationAuditLog, PerDiemRate, PluginError, PluginState, ProcedureBackupProof, ProcedureRunEvent, ProcedureStepDef, ProcedureStepRun, ProcedureTemplateVersion, ProtocolEvent, ProtocolItem, ProtocolItemPhoto, ProtocolSignature, ProtocolSignatureToken, TimeCorrectionItem, TimeExportEvent, TimeExportLine, User, UserBookmark, UserDashboardWidget, UserFilterPreset, UserGroup};
+use App\Models\Audit\OrganizationAuditLog;
+use App\Models\Classification\Classification;
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Integration\ImportRunError;
+use App\Models\{MonthClosureEvent, OpenIssueEvent, PerDiemRate, ProcedureBackupProof, ProcedureRunEvent, ProcedureStepDef, ProcedureStepRun, ProcedureTemplateVersion, ProtocolEvent, ProtocolItem, ProtocolItemPhoto, ProtocolSignature, ProtocolSignatureToken, TimeCorrectionItem, TimeExportEvent, TimeExportLine};
+use App\Models\Platform\{BackupHeartbeat, GeocodeCache, HelpTopic, HelpView, LicenseFlagOverride, Organization, PluginError, PluginState, User, UserBookmark, UserDashboardWidget, UserFilterPreset, UserGroup};
 use Illuminate\Database\Eloquent\Model;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -104,13 +108,13 @@ class TenantTraitCoverageTest extends TestCase {
         // gebundenen SsoConnection — Mandantengrenze transitiv über
         // sso_connection_id (alle Zugriffe filtern darüber); zusätzlich prüft
         // SsoLoginService die Org des Users gegen die Org der Verbindung.
-        \App\Models\SsoIdentity::class,
+        \App\Models\Auth\SsoIdentity::class,
         // SSO-Login-Discovery (Feature 057-Ausbau): Domain→Organisation wird im
         // Gast-Kontext (unauthentifiziert, vor Org-Kontext) aufgelöst — ein
         // Org-Global-Scope würde den Login brechen. Domain ist global unique;
         // die Admin-CRUD in SsoAdminController filtert explizit auf
         // organization_id.
-        \App\Models\OrganizationSsoDomain::class,
+        \App\Models\Platform\OrganizationSsoDomain::class,
         // Globale Hilfe-Inhalte (HelpTopic) und anonyme Hilfe-Telemetrie (HelpView,
         // nullable organization_id) gehören bewusst nicht zur Mandantengrenze.
         HelpTopic::class,
@@ -124,7 +128,7 @@ class TenantTraitCoverageTest extends TestCase {
         // Qualifikations-Zuordnung je User (Pivot user_qualifications, Feature
         // 013): transitiv mandantenfähig über user_id → users.organization_id,
         // analog UserBookmark — kein eigenes organization_id-Feld nötig.
-        \App\Models\UserQualification::class,
+        \App\Models\Platform\UserQualification::class,
         // Katalogstamm (Feature 109, MVP-637): DIN-276-Kostengruppen und
         // StLB-Leistungsbereiche werden AUSGELIEFERT (organization_id NULL) und
         // können je Org ergänzt werden. Ein Org-Global-Scope würde genau die
@@ -160,7 +164,7 @@ class TenantTraitCoverageTest extends TestCase {
         // todoist_user_id); nullable organization_id, ein Global-Scope würde
         // signierte, aber unzuordenbare Zustellungen ausblenden. Siehe
         // Allow-List im Audit-Doc.
-        \App\Models\TodoistWebhookDelivery::class,
+        \App\Models\Plugins\Todoist\TodoistWebhookDelivery::class,
         // Lexoffice-Webhook-Dedup (Audit 2026-08, W1.3): Betriebsprotokoll im
         // sessionlosen Webhook-Kontext, angelegt VOR der Verarbeitung
         // (persist-before-process). Die Organisation steckt im URL-Token und
@@ -168,27 +172,27 @@ class TenantTraitCoverageTest extends TestCase {
         // nichts, würde aber die Dedup-Abfrage vom Request-Kontext abhängig
         // machen. Mandantentrennung ist über den Token-Vergleich abgesichert
         // (WebhookTenantTest).
-        \App\Models\LexofficeWebhookDelivery::class,
+        \App\Models\Plugins\Lexoffice\LexofficeWebhookDelivery::class,
         // Calendly-Webhook-Dedup (Feature 095): analog TodoistWebhookDelivery ein
         // Betriebsprotokoll, das VOR der Org-Zuordnung entsteht (Token→Org+
         // signing_key, dann Signaturprüfung); nullable organization_id, kein
         // Global-Scope. Siehe Allow-List im Audit-Doc.
-        \App\Models\CalendlyWebhookDelivery::class,
+        \App\Models\Plugins\Calendly\CalendlyWebhookDelivery::class,
         // Etsy-Webhook-Dedup (Feature 101, MVP-496): analog Todoist/Calendly ein
         // Betriebsprotokoll, das VOR der Org-Zuordnung entsteht (webhook_token→
         // Connection, dann Svix-Signaturprüfung); nullable organization_id,
         // kein Global-Scope. Siehe Allow-List im Audit-Doc.
-        \App\Models\EtsyWebhookDelivery::class,
+        \App\Models\Plugins\Etsy\EtsyWebhookDelivery::class,
         // Zeiterfassungs-Webhook-Dedup (Feature 124, MVP-613): analog
         // Todoist/Calendly ein Betriebsprotokoll, das VOR der Org-Zuordnung
         // entsteht (Workspace→Org, dann Signaturprüfung); nullable
         // organization_id, kein Global-Scope. Eine Tabelle für Toggl UND
         // Clockify, unterschieden über `plugin_id`. Siehe Allow-List im Audit-Doc.
-        \App\Models\TimeTrackingWebhookDelivery::class,
+        \App\Models\Integration\TimeTrackingWebhookDelivery::class,
         // Restore-Test-Register (Feature 017): plattformweites Protokoll der
         // Wiederherstellungs-Tests — analog BackupHeartbeat findet der
         // Restore-Vorgang ohne Tenant-Kontext statt. Siehe Allow-List im Audit-Doc.
-        \App\Models\RestoreTest::class,
+        \App\Models\Platform\RestoreTest::class,
         // Plugin-Lifecycle (Installation/Schema/Health) und Plugin-Fehlerinbox sind
         // systemweit (instance-wide) — Plugins werden global installiert, per-Mandanten-
         // Aktivierung erfolgt über PluginSetting. PluginState/PluginError dienen Admin-
@@ -216,20 +220,20 @@ class TenantTraitCoverageTest extends TestCase {
         // Beteiligte einer Kommunikationsnotiz (MVP-012) — Mandantengrenze
         // transitiv über die tenant-gebundene CommunicationNote (eigene
         // organization_id wäre redundant). Siehe Allow-List im Audit-Doc.
-        \App\Models\CommunicationNoteParticipant::class,
+        \App\Models\Communication\CommunicationNoteParticipant::class,
         // Datei-Version eines Dokuments (MVP-031) — append-only Kind-Tabelle,
         // Mandantengrenze transitiv über das tenant-gebundene Document
         // (documents.organization_id). Siehe Allow-List im Audit-Doc.
-        \App\Models\DocumentVersion::class,
+        \App\Models\Document\DocumentVersion::class,
         // Ausgelesener Dateitext einer Version (MVP-819) — abgeleitetes
         // Material für den Tätigkeitsindex, Kind der Version und damit
         // transitiv an documents.organization_id gebunden. Siehe Allow-List im
         // Audit-Doc.
-        \App\Models\DocumentVersionText::class,
+        \App\Models\Document\DocumentVersionText::class,
         // Wissensbasis (Feature 011): Feedback ist Kind-Tabelle des
         // tenant-gebundenen KnowledgeArticle — Mandantengrenze transitiv
         // (knowledge_articles.organization_id). Siehe Allow-List im Audit-Doc.
-        \App\Models\KnowledgeArticleFeedback::class,
+        \App\Models\Knowledge\KnowledgeArticleFeedback::class,
         // Append-only Event-Hash-Ketten (Hinweisgeber-/Datenschutzmodul) —
         // analog OrganizationAuditLog: nullable organization_id BEWUSST ohne
         // FK und ohne Global-Scope, da die Ketten (config('audit.chains'))
@@ -251,7 +255,7 @@ class TenantTraitCoverageTest extends TestCase {
         // Command-/Gate-Kontexten (plans:purge, PlanModuleService) ohne
         // Tenant-Kontext orgübergreifend gelesen und immer explizit nach
         // organization_id gefiltert — bewusst ohne Global-Scope.
-        \App\Models\PlanModuleGrace::class,
+        \App\Models\Platform\PlanModuleGrace::class,
         // Zweiter Faktor eines Users (TOTP/E-Mail/WebAuthn): über user_id
         // (FK cascade) an den User gebunden und damit transitiv
         // mandantenfähig — analog UserBookmark; Zugriff ausschließlich über
@@ -314,7 +318,7 @@ class TenantTraitCoverageTest extends TestCase {
         // Akteur ist der externe Beteiligte (kein interner User), Zugriff
         // ausschließlich über die ExternalParticipant-Relation. Siehe
         // Allow-List im Audit-Doc.
-        \App\Models\ExternalParticipantEvent::class,
+        \App\Models\Communication\ExternalParticipantEvent::class,
         // Artikelstamm (MVP-060): Optionsdefinitionen/-werte und alternative
         // Einheiten sind Kind-Tabellen des tenant-gebundenen Article —
         // Mandantengrenze transitiv über articles.organization_id
@@ -364,30 +368,30 @@ class TenantTraitCoverageTest extends TestCase {
         // Update-Erkennung und OSV-Sicherheitshinweise gelten je
         // Installation; Zugriff nur über Betreiber-Permissions
         // (platform.*), nie über fachliche Mandanten-Views.
-        \App\Models\SystemSetting::class,
-        \App\Models\ScheduledJobOverride::class,
-        \App\Models\ScheduledJobRun::class,
-        \App\Models\ScheduledJobState::class,
-        \App\Models\ComponentUpdate::class,
-        \App\Models\SecurityAdvisory::class,
+        \App\Models\Platform\SystemSetting::class,
+        \App\Models\Platform\ScheduledJobOverride::class,
+        \App\Models\Platform\ScheduledJobRun::class,
+        \App\Models\Platform\ScheduledJobState::class,
+        \App\Models\Platform\ComponentUpdate::class,
+        \App\Models\Auth\SecurityAdvisory::class,
         // Betriebsaufgaben + Wartungsfenster (MVP-055/058): haben
         // organization_id (installationsweite Zeilen hängen an der
         // Betreiber-Org, is_system-Flag), aber BEWUSST ohne Global-Scope —
         // Scanner/Watchdog laufen ohne Tenant-Kontext und die Controller
         // filtern explizit auf die aktuelle Organisation (Cross-Org → 404,
         // getestet in OperationsTaskCenterTest/MaintenanceWindowTest).
-        \App\Models\OperationsTask::class,
+        \App\Models\Project\OperationsTask::class,
         \App\Models\MaintenanceWindow::class,
         // Quelltext-Integritätsprüfungen (Feature 095) und Sicherheitsereignisse
         // (Feature 096): installationsweite Nachweise ohne Mandantenbezug — die
         // Baseline und die Angriffserkennung gelten je Installation, Zugriff nur
         // über Plattform-Admin (isGlobalAdmin), nie über fachliche Mandanten-Views.
-        \App\Models\IntegrityCheck::class,
-        \App\Models\SecurityEvent::class,
+        \App\Models\Platform\IntegrityCheck::class,
+        \App\Models\Auth\SecurityEvent::class,
         // Bekannte Anmelde-Geräte (Feature 096): über user_id (FK cascade) an den
         // User gebunden und damit transitiv mandantenfähig — analog UserBookmark;
         // Zugriff ausschließlich über den eigenen User beim Login.
-        \App\Models\UserKnownDevice::class,
+        \App\Models\Auth\UserKnownDevice::class,
         // Feature 149 (LTI 1.3): Signaturschlüssel und verbrauchte Nonces gehören
         // der Instanz — Aussteller ist die Anwendung, nicht die Organisation.
         \App\Models\Learning\LearningLtiKey::class,

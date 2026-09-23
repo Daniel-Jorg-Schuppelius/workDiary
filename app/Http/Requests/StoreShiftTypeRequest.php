@@ -10,7 +10,7 @@
 
 namespace App\Http\Requests;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 

@@ -32,7 +32,7 @@ class RekeyEncryptedCoverageRuleTest extends TestCase {
         'app/Http/Controllers/B2bCatalog/B2bPunchoutController.php' => 'transienter Session-Token, nicht persistiert',
         'app/Services/Applications/CareerFormState.php' => 'transienter Formular-Token, nicht persistiert',
         'app/Services/Shipping/CarrierTokenCache.php' => 'Cache-Eintrag — nach Rotation schlicht neu geholt',
-        'app/Models/SystemSetting.php' => 'in DIRECT_USERS registriert (value, is_sensitive=1)',
+        'app/Models/Platform/SystemSetting.php' => 'in DIRECT_USERS registriert (value, is_sensitive=1)',
     ];
 
     public function test_direct_crypt_users_are_registered_or_transient(): void {
@@ -58,10 +58,10 @@ class RekeyEncryptedCoverageRuleTest extends TestCase {
 
         $this->assertGreaterThanOrEqual(45, count($map), 'Ableitung eingebrochen? Es gab 47 Modelle mit encrypted-Casts + SystemSetting.');
         foreach ([
-            \App\Models\User::class => 'two_factor_secret',
-            \App\Models\ContactBankAccount::class => 'iban',
+            \App\Models\Platform\User::class => 'two_factor_secret',
+            \App\Models\Contacts\ContactBankAccount::class => 'iban',
             \App\Models\IncomingEInvoice::class => 'creditor_iban',
-            \App\Models\SystemSetting::class => 'value',
+            \App\Models\Platform\SystemSetting::class => 'value',
         ] as $class => $field) {
             $this->assertArrayHasKey($field, $map[$class] ?? [], $class);
         }

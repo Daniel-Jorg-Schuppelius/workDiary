@@ -8,9 +8,10 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Policies;
+namespace App\Policies\Platform;
 
-use App\Models\{User, UserGroup};
+use App\Models\Platform\User;
+use App\Models\Platform\UserGroup;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 /**

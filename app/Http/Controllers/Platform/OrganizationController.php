@@ -8,15 +8,18 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Platform;
 
-use App\Models\{Organization, User};
-use App\Services\OrganizationLifecycleService;
+use App\Models\Platform\Organization;
+use App\Models\Platform\User;
+use App\Services\Org\OrganizationLifecycleService;
 use App\Support\{Setting, SortableQuery};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\Platform\OrganizationSwitchController;
 
 class OrganizationController extends Controller {
     public function index(Request $request): View {

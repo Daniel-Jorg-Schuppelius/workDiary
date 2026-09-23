@@ -11,7 +11,8 @@
 namespace Tests\Feature\Security;
 
 use App\Enums\Security\SecurityEventType;
-use App\Models\{SecurityEvent, User};
+use App\Models\Auth\SecurityEvent;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

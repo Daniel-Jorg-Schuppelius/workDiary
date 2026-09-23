@@ -11,7 +11,7 @@
 namespace Tests\Feature\Plugins;
 
 use App\Events\{PluginHealthChanged, PluginRecovered};
-use App\Models\PluginState;
+use App\Models\Platform\PluginState;
 use App\Plugins\Contracts\{Plugin, PluginCapability};
 use App\Plugins\{PluginDefaults, PluginHealth, PluginManager};
 use Illuminate\Foundation\Testing\RefreshDatabase;

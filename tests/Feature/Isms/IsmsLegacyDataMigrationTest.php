@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Isms;
 
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{DB, Schema};

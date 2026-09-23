@@ -14,7 +14,8 @@ namespace App\Services\Notification\DeadlineScans;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Warranty\WarrantyStatus;
-use App\Models\{User, Warranty\WarrantyPeriod};
+use App\Models\Platform\User;
+use App\Models\Warranty\WarrantyPeriod;
 use App\Services\Notification\NotificationDispatcher;
 use App\Services\Warranty\WarrantyService;
 use Illuminate\Support\Carbon;

@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Policies;
 
-use App\Models\{Quote, User};
-use App\Policies\QuotePolicy;
+use App\Models\Platform\User;
+use App\Models\Sales\Quote;
+use App\Policies\Sales\QuotePolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};
 use Tests\TestCase;

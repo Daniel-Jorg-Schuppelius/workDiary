@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Media;
 
 use App\Enums\Media\{MediaRenditionKind, MediaState, SubtitleSource};
-use App\Models\{Attachment, User};
+use App\Models\Attachments\Attachment;
 use App\Models\Media\MediaRendition;
+use App\Models\Platform\User;
 use App\Services\Licensing\LimitGuard;
 use CommonToolkit\Helper\FileSystem\{File, Folder};
 use CommonToolkit\Helper\Media\MediaHelper;

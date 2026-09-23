@@ -11,7 +11,11 @@
 namespace Tests\Feature\Plugins;
 
 use App\Enums\Timesheet\TimesheetStatus;
-use App\Models\{Customer, ExternalReference, Invoice, InvoiceItem, PluginSetting, Project, TimeEntry, Timesheet, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\{Invoice, InvoiceItem, TimeEntry, Timesheet};
+use App\Models\Platform\{PluginSetting, User};
+use App\Models\Project\Project;
 use App\Plugins\Toggl\TogglPlugin;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

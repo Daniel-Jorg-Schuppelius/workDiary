@@ -14,9 +14,9 @@ namespace App\Services\Privacy;
 
 use App\Enums\Numbering\NumberScope;
 use App\Enums\Privacy\{ControllerRole, IncidentStatus, IncidentType};
-use App\Models\{Customer, Organization};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\{Incident, IncidentEvent, Measure};
-use App\Models\User;
 use App\Services\Numbering\NumberSequenceService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

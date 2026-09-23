@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Clockify;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\Clockify\Exceptions\ClockifyApiException;
 use App\Plugins\Clockify\Sources\{ClockifyApiClient, ClockifyCsvParser};
 use App\Plugins\Support\{ImportedTimeEntry, MatchingTimeImportService, RemoteSyncWindow};

@@ -14,7 +14,8 @@ namespace App\Http\Controllers\Helpdesk;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{ServiceQueue, SlaContract, Team};
+use App\Models\Platform\Team;
+use App\Models\{ServiceQueue, SlaContract};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{DB, Gate};
 use Illuminate\View\View;
@@ -132,7 +133,7 @@ class ServiceQueueController extends Controller {
         $data['team_id'] = $data['team_id'] ?? null;
         $data['default_sla_contract_id'] = $data['default_sla_contract_id'] ?? null;
         if ($queue === null) {
-            /** @var \App\Models\User $user */
+            /** @var \App\Models\Platform\User $user */
             $user = \Illuminate\Support\Facades\Auth::user();
             $data['organization_id'] = (int) $this->currentOrganization()->id;
         }

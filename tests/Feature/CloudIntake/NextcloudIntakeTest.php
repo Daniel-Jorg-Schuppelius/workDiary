@@ -13,7 +13,7 @@ namespace Tests\Feature\CloudIntake;
 use App\Enums\CloudIntake\{CloudIntakeConnectionStatus, CloudIntakeItemStatus, CloudIntakeProvider};
 use App\Enums\User\Permission;
 use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Plugins\Contracts\{BackupTarget, DocumentIntakeSource, PluginCapability};
 use App\Plugins\Nextcloud\Api\NextcloudIntakeClient;
 use App\Plugins\Nextcloud\Contracts\NextcloudTransportFactory;

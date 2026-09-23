@@ -11,7 +11,11 @@
 namespace Tests\Feature\Plugins\Calendly;
 
 use App\Enums\Sales\LeadSource;
-use App\Models\{AppointmentRequest, Customer, IntegrationInboxItem, Lead, PluginSetting};
+use App\Models\Calendar\AppointmentRequest;
+use App\Models\Customer\Customer;
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Platform\PluginSetting;
+use App\Models\Sales\Lead;
 use App\Plugins\Calendly\CalendlyPlugin;
 use App\Plugins\Calendly\Services\CalendlyIngestService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

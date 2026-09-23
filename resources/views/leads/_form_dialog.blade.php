@@ -8,7 +8,7 @@
 --}}
 @php
     use App\Enums\Sales\LeadSource;
-    /** @var \App\Models\Lead|null $lead */
+    /** @var \App\Models\Sales\Lead|null $lead */
     $isEdit = $lead !== null;
     $action = $isEdit ? route('leads.update', $lead) : route('leads.store');
 @endphp

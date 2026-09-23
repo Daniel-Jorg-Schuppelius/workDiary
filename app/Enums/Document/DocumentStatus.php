@@ -16,7 +16,7 @@ use App\Enums\Contracts\HasLabel;
 /**
  * Dokument-Status (MVP-031). `expired` wird im MVP nicht per Cron
  * persistiert, sondern aus `valid_until` berechnet angezeigt
- * ({@see \App\Models\Document::effectiveStatus()}); archivieren ist
+ * ({@see \App\Models\Document\Document::effectiveStatus()}); archivieren ist
  * eine manuelle Aktion.
  */
 enum DocumentStatus: string implements HasLabel {

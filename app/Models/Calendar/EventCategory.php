@@ -8,14 +8,15 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Calendar;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use Database\Factories\EventCategoryFactory;
+use Database\Factories\Calendar\EventCategoryFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use App\Models\Calendar\Event;
 
 /**
  * @property int $id

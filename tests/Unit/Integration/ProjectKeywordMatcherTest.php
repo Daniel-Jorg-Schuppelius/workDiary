@@ -11,7 +11,9 @@
 namespace Tests\Unit\Integration;
 
 use App\Enums\Project\ProjectStatus;
-use App\Models\{Customer, ForeignCustomer, Organization, Project};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Platform\Organization;
+use App\Models\Project\Project;
 use App\Services\Integration\ProjectKeywordMatcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

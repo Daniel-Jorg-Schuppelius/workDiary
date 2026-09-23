@@ -10,7 +10,7 @@
 
 {{-- Shared body for EntryType create/edit (standalone + dialog) --}}
 @php
-    /** @var \App\Models\EntryType $entryType */
+    /** @var \App\Models\Classification\EntryType $entryType */
     $isEdit = $entryType?->exists ?? false;
     $statusOptions = $statusOptions ?? [];
     $priorityOptions = $priorityOptions ?? \App\Enums\Diary\Priority::cases();

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Cti\Dial;
 
 use APIToolkit\API\Authentication\BearerAuthentication;
-use App\Models\CtiConnection;
+use App\Models\Cti\CtiConnection;
 use App\Plugins\Support\PluginHttpFactory;
 
 /**

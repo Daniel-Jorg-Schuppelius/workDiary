@@ -13,9 +13,9 @@
 
     /**
      * @var \App\Models\Location\CustomerGeofence|null $geofence
-     * @var \Illuminate\Support\Collection<int, \App\Models\Customer> $customers
+     * @var \Illuminate\Support\Collection<int, \App\Models\Customer\Customer> $customers
      * @var \Illuminate\Support\Collection<int, \App\Models\Site> $sites
-     * @var \Illuminate\Support\Collection<int, \App\Models\Project> $projects
+     * @var \Illuminate\Support\Collection<int, \App\Models\Project\Project> $projects
      */
     $defaults = (array) config('location.defaults', []);
     $selectedCustomer = old('customer_id', Sqid::encodeOrNull(Customer::class,

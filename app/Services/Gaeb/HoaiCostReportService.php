@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Gaeb;
 
 use App\Models\Costing\CostEstimate;
-use App\Models\Project;
+use App\Models\Project\Project;
 use CommonToolkit\Helper\Data\StringHelper;
 
 /**

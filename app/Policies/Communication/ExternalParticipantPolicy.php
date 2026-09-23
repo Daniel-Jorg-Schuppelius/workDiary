@@ -8,10 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Policies;
+namespace App\Policies\Communication;
 
 use App\Enums\User\Permission;
-use App\Models\{ExternalParticipant, User};
+use App\Models\Communication\ExternalParticipant;
+use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;

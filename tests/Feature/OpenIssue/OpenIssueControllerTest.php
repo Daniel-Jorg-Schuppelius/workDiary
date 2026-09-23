@@ -11,7 +11,8 @@
 namespace Tests\Feature\OpenIssue;
 
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueStatus, OpenIssueVisibility};
-use App\Models\{DiaryEntry, OpenIssue, User};
+use App\Models\{DiaryEntry, OpenIssue};
+use App\Models\Platform\User;
 use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

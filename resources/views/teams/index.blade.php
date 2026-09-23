@@ -16,7 +16,7 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Operative Arbeits-Teams verwalten – Mitglieder, Teamleiter und zugewiesene Aufträge.')">
     <x-slot:actions>
-        @can('create', \App\Models\Team::class)
+        @can('create', \App\Models\Platform\Team::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger
                         :href="route('teams.create')"

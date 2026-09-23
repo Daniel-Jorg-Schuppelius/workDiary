@@ -12,7 +12,7 @@ namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\{LearningQuestionKind, LearningUnitKind};
 use App\Models\Learning\{LearningCourse, LearningQuestion, LearningQuiz, LearningUnit};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningAnswerGrader, LearningCourseService, LearningEnrollmentService, LearningQuestionEditorService, LearningQuizService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

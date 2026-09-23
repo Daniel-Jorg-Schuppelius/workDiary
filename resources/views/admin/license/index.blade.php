@@ -170,7 +170,7 @@
 
     {{-- Org-gebundene Lizenz (Tier + Add-on-Module) --}}
     @php
-        /** @var \App\Models\Organization|null $org */
+        /** @var \App\Models\Platform\Organization|null $org */
         /** @var \App\Services\Licensing\LicenseResult|null $orgLicense */
         /** @var string $orgBadgeTone */
         /** @var int|null $orgExpiresIn */

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Accounting\Reports;
 
 use App\Models\Accounting\AccountingProfile;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Accounting\TaxationMethodResolver;
 use Carbon\CarbonImmutable;
 

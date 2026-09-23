@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Policies\Club;
 
 use App\Models\Club\ClubResource;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
 
 /** Sportstätten (MVP-853): lesen wie das Register (auch Gruppenleitung), Stammdaten und Sperrzeiten nur Vereinsverwaltung, Freigaben auch Leitung. */

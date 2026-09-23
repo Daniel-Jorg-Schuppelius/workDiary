@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\CalDav\Contracts;
 
-use App\Models\CalDavConnection;
+use App\Models\Plugins\CalDav\CalDavConnection;
 
 /**
  * Erzeugt je Anbindung ein {@see CalDavGateway} (Feature 058). Über den Container

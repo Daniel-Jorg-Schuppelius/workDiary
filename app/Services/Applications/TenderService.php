@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Applications;
 
 use App\Models\Applications\{ApplicationOpportunity, ApplicationSubmission};
-use App\Models\{Project, User};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\Facades\DB;
 

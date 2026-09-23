@@ -14,8 +14,8 @@ namespace App\Services\Contract;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Contract\ContractSigningRevision;
-use App\Services\BrandingService;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Services\UI\BrandingService;
 use App\Support\DocumentLocale;
 
 /**

@@ -8,14 +8,19 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Knowledge;
 
 use App\Enums\Ideas\IdeaShareRole;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Http\Requests\SaveIdeaMapRequest;
-use App\Models\{AuditLog, IdeaMap, IdeaMapShare, IdeaNode, Team, User};
+use App\Http\Requests\Knowledge\SaveIdeaMapRequest;
+use App\Models\Audit\AuditLog;
+use App\Models\Ideas\IdeaMap;
+use App\Models\Ideas\IdeaMapShare;
+use App\Models\Ideas\IdeaNode;
+use App\Models\Platform\Team;
+use App\Models\Platform\User;
 use App\Services\Ideas\{IdeaMapImportService, IdeaMapService};
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use App\Support\{ErrorText, Tz};
 use App\Support\MorphMap;
 use CommonToolkit\Helper\FileSystem\File;
@@ -23,12 +28,13 @@ use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Cache, Gate};
 use Illuminate\View\View;
 use RuntimeException;
+use App\Http\Controllers\Controller;
 
 /**
  * Ideenlandkarten (Feature 054, MVP-104/105). Datenschutz-Grundsatz: Die
  * Übersicht listet AUSSCHLIESSLICH über {@see IdeaMap::scopeVisibleTo()}
  * (eigene + freigegebene Karten) — nie „alle der Org, Policy filtert schon".
- * Jede Einzel-Route autorisiert zusätzlich über die {@see \App\Policies\IdeaMapPolicy}.
+ * Jede Einzel-Route autorisiert zusätzlich über die {@see \App\Policies\Knowledge\IdeaMapPolicy}.
  * Modul-Gating über `ideas.*` → module.ideas.
  */
 class IdeaMapController extends Controller {
@@ -305,12 +311,12 @@ class IdeaMapController extends Controller {
     /**
      * Auswahloptionen für Kontextbezüge (MVP-109), org-gescopt.
      *
-     * @return array{customers: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Customer>, projects: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Project>}
+     * @return array{customers: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Customer\Customer>, projects: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Project\Project>}
      */
     private function contextOptions(): array {
         return [
-            'customers' => \App\Models\Customer::query()->orderBy('name')->limit(500)->get(['id', 'name']),
-            'projects' => \App\Models\Project::query()->orderBy('name')->limit(500)->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
+            'customers' => \App\Models\Customer\Customer::query()->orderBy('name')->limit(500)->get(['id', 'name']),
+            'projects' => \App\Models\Project\Project::query()->orderBy('name')->limit(500)->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
         ];
     }
 

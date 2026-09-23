@@ -12,7 +12,10 @@ namespace Tests\Unit;
 
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Customer, Project, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Services\Invoicing\{BillableTimeAggregator, BillingBlock};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;

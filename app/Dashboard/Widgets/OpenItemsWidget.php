@@ -17,7 +17,7 @@ use App\Enums\Dashboard\WidgetGroup;
 use App\Enums\Finance\OpenItemStatus;
 use App\Enums\User\Permission;
 use App\Models\Accounting\AccountingOpenItem;
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
 

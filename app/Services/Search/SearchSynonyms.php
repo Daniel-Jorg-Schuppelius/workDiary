@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Search;
 
-use App\Models\SearchSynonymGroup;
+use App\Models\Search\SearchSynonymGroup;
 
 /**
  * Aktive Synonymgruppen einer Organisation als Nachschlagetabelle

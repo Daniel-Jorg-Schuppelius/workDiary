@@ -10,13 +10,14 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Services\Stammdaten;
 
 use App\Enums\Inventory\StockCountStatus;
 use App\Enums\Manufacturing\ManufacturingOrderStatus;
 use App\Models\Article;
 use Illuminate\Support\Facades\{DB, Schema};
 use InvalidArgumentException;
+use App\Services\Stammdaten\AbstractEntityMergeService;
 
 /**
  * Führt zwei Artikel zusammen (Audit 2026-08, W2.9; Semantik und Sperren:

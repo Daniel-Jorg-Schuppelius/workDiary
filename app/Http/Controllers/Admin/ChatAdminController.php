@@ -12,9 +12,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\Notification\ChatWebhookDeliveryJob;
-use App\Models\{ChatWebhook, Organization, User};
+use App\Models\ChatWebhook;
+use App\Models\Platform\{Organization, User};
 use App\Services\Notification\ChatMessageFormatter;
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;

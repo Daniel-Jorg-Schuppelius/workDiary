@@ -12,7 +12,7 @@ namespace Tests\Feature\Applications;
 
 use App\Enums\User\UserRole;
 use App\Models\Applications\{JobApplication, JobRequisition};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Applications\RecruitingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

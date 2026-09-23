@@ -65,7 +65,7 @@ class ArticleExportController extends Controller {
         }
 
         // Preislisten-Abfluss ist auditpflichtig (Muster der Report-Exporte).
-        \App\Models\AuditLog::create([
+        \App\Models\Audit\AuditLog::create([
             'organization_id' => $this->currentOrganization()->id,
             'user_id' => $request->user()?->id,
             'event' => 'datanorm.exported',

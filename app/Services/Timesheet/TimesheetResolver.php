@@ -11,7 +11,9 @@
 namespace App\Services\Timesheet;
 
 use App\Enums\Timesheet\TimesheetStatus;
-use App\Models\{Project, Timesheet, User};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\Timesheet;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 

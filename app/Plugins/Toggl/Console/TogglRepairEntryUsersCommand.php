@@ -11,7 +11,9 @@
 namespace App\Plugins\Toggl\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\{ExternalReference, Organization, TimeEntry};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\Organization;
+use App\Models\TimeEntry;
 use App\Plugins\Toggl\Sources\{TogglApiClient, TogglCsvParser};
 use App\Plugins\Toggl\{TogglConfig, TogglImportService, TogglPlugin};
 use App\Services\Timekeeping\TimeEntryEditPolicy;

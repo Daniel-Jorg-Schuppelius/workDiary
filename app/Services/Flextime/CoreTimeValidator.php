@@ -10,7 +10,8 @@
 
 namespace App\Services\Flextime;
 
-use App\Models\{TimeEntry, User, WorkSchedule};
+use App\Models\Platform\User;
+use App\Models\{TimeEntry, WorkSchedule};
 use App\Support\Tz;
 use CommonToolkit\ValueObjects\Duration;
 use InvalidArgumentException;

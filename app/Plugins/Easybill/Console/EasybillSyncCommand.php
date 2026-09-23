@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Easybill\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\PluginSetting;
+use App\Models\Platform\PluginSetting;
 use App\Plugins\Easybill\EasybillPlugin;
 use App\Plugins\Easybill\Services\EasybillDocumentPullService;
 use CommonToolkit\Helper\Data\JsonHelper;
@@ -37,11 +37,11 @@ class EasybillSyncCommand extends Command {
         // C6-Skelett (Vollaudit 2026-07, M55): IteratesOrganizations bindet je
         // Org den currentOrganization-Kontext (inkl. Restore).
         $failures = $this->forEachOrganization(
-            function (\App\Models\Organization $organization) use ($pull): void {
+            function (\App\Models\Platform\Organization $organization) use ($pull): void {
                 $counters = $pull->pull((int) $organization->id);
                 $this->info(sprintf('Org %d: %s', $organization->id, JsonHelper::encode($counters)));
             },
-            onError: function (\App\Models\Organization $organization, Throwable $e): void {
+            onError: function (\App\Models\Platform\Organization $organization, Throwable $e): void {
                 $this->error(sprintf('Org %d: %s', $organization->id, class_basename($e)));
                 report($e);
             },

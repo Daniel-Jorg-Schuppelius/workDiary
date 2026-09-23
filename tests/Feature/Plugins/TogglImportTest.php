@@ -10,7 +10,11 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Customer, ExternalReference, ForeignCustomer, IntegrationInboxItem, PluginSetting, Project, TimeEntry, User};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\{PluginSetting, User};
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Plugins\Support\ImportedTimeEntry;
 use App\Plugins\Toggl\Sources\TogglEntry;
 use App\Plugins\Toggl\{TogglConfig, TogglImportService, TogglPlugin};
@@ -525,7 +529,7 @@ class TogglImportTest extends TestCase {
         $this->assertSame(['Support', 'Wartung'], $entry->tags()->pluck('name')->sort()->values()->all());
         $this->assertSame(
             [$this->organization->id, $this->organization->id],
-            \App\Models\Tag::query()->withoutGlobalScopes()->pluck('organization_id')->map(fn ($id) => (int) $id)->all(),
+            \App\Models\Classification\Tag::query()->withoutGlobalScopes()->pluck('organization_id')->map(fn ($id) => (int) $id)->all(),
         );
     }
 
@@ -547,7 +551,7 @@ class TogglImportTest extends TestCase {
 
         $entry = TimeEntry::query()->where('project_id', $project->id)->firstOrFail();
         $this->assertSame(['Vor-Ort', 'Wartung'], $entry->tags()->pluck('name')->sort()->values()->all());
-        $this->assertSame(2, \App\Models\Tag::query()->withoutGlobalScopes()->count());
+        $this->assertSame(2, \App\Models\Classification\Tag::query()->withoutGlobalScopes()->count());
     }
 
     public function test_book_inbox_group_applies_snapshot_tags(): void {
@@ -580,7 +584,7 @@ class TogglImportTest extends TestCase {
             'kind' => \App\Enums\TimeEntry\TimeEntryKind::Work,
             'description' => 'Alte Beschreibung',
         ]);
-        $manual = \App\Models\Tag::create(['name' => 'Manuell', 'organization_id' => $this->organization->id]);
+        $manual = \App\Models\Classification\Tag::create(['name' => 'Manuell', 'organization_id' => $this->organization->id]);
         $existing->tags()->sync([$manual->id]);
 
         ExternalReference::query()->create([
@@ -1104,7 +1108,7 @@ class TogglImportTest extends TestCase {
             ->assertSee('zweit@gmx.de');
 
         // Alias-Zeile lässt sich entfernen (Route trägt die Sqid, nicht die rohe ID).
-        $alias = \App\Models\ExternalReferenceAlias::query()
+        $alias = \App\Models\Integration\ExternalReferenceAlias::query()
             ->where('external_type', TogglImportService::EXT_TYPE_USER_EMAIL)
             ->where('external_id', 'zweit@gmx.de')
             ->firstOrFail();

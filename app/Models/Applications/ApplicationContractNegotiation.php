@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Models\Applications;
 
-use App\Models\{Approval, User};
+use App\Models\Approval\Approval;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany, MorphTo};
 

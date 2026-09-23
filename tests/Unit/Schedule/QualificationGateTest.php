@@ -10,7 +10,8 @@
 
 namespace Tests\Unit\Schedule;
 
-use App\Models\{Qualification, ScheduledShift, ShiftType, User};
+use App\Models\Platform\User;
+use App\Models\{Qualification, ScheduledShift, ShiftType};
 use App\Services\Schedule\QualificationGate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

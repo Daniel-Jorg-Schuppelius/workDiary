@@ -12,9 +12,10 @@ namespace App\Http\Controllers;
 
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Models\{Organization, Supplier, SupplierCatalogSource, User, Warehouse};
+use App\Models\Platform\{Organization, User};
+use App\Models\{Supplier, SupplierCatalogSource, Warehouse};
 use App\Services\Procurement\OciCartImportService;
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 

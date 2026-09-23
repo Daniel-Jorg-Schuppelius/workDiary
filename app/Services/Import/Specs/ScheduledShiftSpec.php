@@ -14,7 +14,9 @@ namespace App\Services\Import\Specs;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Enums\Shift\ScheduledShiftStatus;
-use App\Models\{ImportValueMapping, Organization, ScheduledShift, ShiftType, User};
+use App\Models\Integration\ImportValueMapping;
+use App\Models\Platform\{Organization, User};
+use App\Models\{ScheduledShift, ShiftType};
 use App\Services\Import\{HasMappableValues, ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\Concerns\{ParsesLocalDateTime, ResolvesImportUsers};
 use CommonToolkit\Helper\Data\EmailHelper;

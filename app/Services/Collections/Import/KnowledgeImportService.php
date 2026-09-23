@@ -13,7 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Collections\Import;
 
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType};
-use App\Models\{CommunicationNote, ContentCollection, ExternalReference, KnowledgeArticle, Organization, User};
+use App\Models\Communication\CommunicationNote;
+use App\Models\Integration\ExternalReference;
+use App\Models\Knowledge\{ContentCollection, KnowledgeArticle};
+use App\Models\Platform\{Organization, User};
 use App\Services\Collections\{ContentCollectionService, ContentReferenceService};
 use App\Services\Communication\CommunicationNoteService;
 use App\Services\Knowledge\KnowledgeArticleService;

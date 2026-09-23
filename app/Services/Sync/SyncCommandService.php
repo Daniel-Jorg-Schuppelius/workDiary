@@ -11,9 +11,14 @@
 namespace App\Services\Sync;
 
 use App\Enums\Sync\SyncCommandStatus;
-use App\Http\Controllers\FormSubmissionController;
-use App\Models\{Attendance, AuditLog, Comment, DiaryEntry, FormSubmission, FormTemplate, SyncCommand, TimeCorrectionRequest, User};
+use App\Http\Controllers\Form\FormSubmissionController;
+use App\Models\{Attendance, DiaryEntry, TimeCorrectionRequest};
+use App\Models\Audit\AuditLog;
+use App\Models\Communication\Comment;
+use App\Models\Form\{FormSubmission, FormTemplate};
+use App\Models\Integration\SyncCommand;
 use App\Models\Learning\{LearningEnrollment, LearningUnit};
+use App\Models\Platform\User;
 use App\Services\Attendance\{AttendanceClockService, StampPlausibility};
 use App\Services\Form\FormService;
 use App\Services\Learning\LearningEnrollmentService;

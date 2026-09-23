@@ -11,9 +11,9 @@
 namespace App\Http\Controllers\Customers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SaveBillingAgreementRequest;
+use App\Http\Requests\Billing\SaveBillingAgreementRequest;
 use App\Models\Billing\{CustomerBillingAgreement, CustomerBillingRate};
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use App\Services\Billing\CustomerAccountStatementService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{DB, Gate};
@@ -29,7 +29,7 @@ class BillingAgreementController extends Controller {
         Gate::authorize('update', $customer);
 
         $agreement = $customer->billingAgreement()->with('rates')->first();
-        $categories = \App\Models\ActivityCategory::query()->active()->orderBy('label')->get();
+        $categories = \App\Models\Classification\ActivityCategory::query()->active()->orderBy('label')->get();
 
         return view('customers.billing._agreement_form_dialog', [
             'customer' => $customer,

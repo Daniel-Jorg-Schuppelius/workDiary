@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Msgraph\Mail;
 
-use App\Models\MsgraphMailConnection;
+use App\Models\Plugins\Msgraph\MsgraphMailConnection;
 use App\Plugins\Msgraph\Api\MsgraphMailClient;
 use Symfony\Component\Mailer\Exception\TransportException;
 use Symfony\Component\Mailer\SentMessage;
@@ -128,7 +128,7 @@ class MsgraphMailTransport extends AbstractTransport {
         // meint deren Postfach.
         $contextOrg = app()->bound('currentOrganization') ? app('currentOrganization') : null;
 
-        if ($contextOrg instanceof \App\Models\Organization) {
+        if ($contextOrg instanceof \App\Models\Platform\Organization) {
             $connection = (clone $query)->where('organization_id', $contextOrg->id)->first();
 
             if ($connection instanceof MsgraphMailConnection && $connection->isActive()) {

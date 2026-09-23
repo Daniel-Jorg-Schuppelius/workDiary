@@ -15,7 +15,7 @@
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @php
-    /** @var \App\Models\Organization $organization */
+    /** @var \App\Models\Platform\Organization $organization */
     /** @var \Illuminate\Contracts\Pagination\LengthAwarePaginator $entries */
     /** @var \Illuminate\Database\Eloquent\Collection $actors */
     /** @var array<string, string> $filters */

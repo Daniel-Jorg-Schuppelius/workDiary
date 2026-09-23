@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Help;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Help\HelpTopicLoader;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;

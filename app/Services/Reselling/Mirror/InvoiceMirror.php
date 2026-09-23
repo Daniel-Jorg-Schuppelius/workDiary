@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Mirror;
 
-use App\Models\{Customer, Organization};
+use App\Models\Customer\Customer;
+use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink};
 use App\Services\Reselling\Register\LinkProposer;
 use Carbon\CarbonImmutable;

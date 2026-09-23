@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Security;
 
-use App\Models\{CalDavConnection, WebdavConnection, ZammadConnection};
+use App\Models\Plugins\CalDav\CalDavConnection;
+use App\Models\Plugins\Webdav\WebdavConnection;
+use App\Models\Plugins\Zammad\ZammadConnection;
 use App\Plugins\CalDav\Services\HttpCalDavGateway;
 use App\Plugins\Support\PluginApiClient;
 use App\Plugins\Webdav\Services\HttpWebdavGateway;

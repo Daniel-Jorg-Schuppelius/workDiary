@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Platform;
 
 use App\Models\Concerns\{Auditable, GeneratesUniqueSlug, HasSqid, Searchable};
 use App\Models\Scopes\OrganizationScope;
@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
 use Illuminate\Support\Carbon;
 use Spatie\Permission\Traits\HasRoles;
+use App\Models\Platform\Organization;
+use App\Models\Platform\User;
 
 /**
  * Organisationsspezifische Benutzergruppe für die Rechteverwaltung im

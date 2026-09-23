@@ -12,7 +12,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AttachmentResource;
-use App\Models\{Asset, Attachment, Comment, DiaryEntry, EmergencyAssignment, OnCallShift};
+use App\Models\{Asset, DiaryEntry, EmergencyAssignment, OnCallShift};
+use App\Models\Attachments\Attachment;
+use App\Models\Communication\Comment;
 use App\Services\Attachments\FileAttacher;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};

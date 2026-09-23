@@ -11,7 +11,8 @@
 namespace Tests\Feature\Ideas;
 
 use App\Enums\Ideas\IdeaShareRole;
-use App\Models\{IdeaMap, IdeaNode, User};
+use App\Models\Ideas\{IdeaMap, IdeaNode};
+use App\Models\Platform\User;
 use App\Services\Ideas\{IdeaMapService, IdeaNodeService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

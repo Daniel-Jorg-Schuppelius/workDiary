@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\{Organization, ShiftExchange, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\ShiftExchange;
 use App\Policies\ShiftExchangePolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};

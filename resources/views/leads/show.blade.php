@@ -14,7 +14,7 @@
 
 @php
     use App\Enums\Sales\LeadStatus;
-    /** @var \App\Models\Lead $lead */
+    /** @var \App\Models\Sales\Lead $lead */
 @endphp
 
 @section('content')

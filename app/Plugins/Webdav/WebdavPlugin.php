@@ -11,7 +11,7 @@
 namespace App\Plugins\Webdav;
 
 use App\Models\Backup\BackupTargetConnection;
-use App\Models\WebdavConnection;
+use App\Models\Plugins\Webdav\WebdavConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{BackupTarget, Plugin};
 use App\Plugins\Support\Backup\{BackupAccount, BackupRemoteObject};
@@ -23,13 +23,13 @@ use Throwable;
 /**
  * On-Premise-Dokumentablage über WebDAV (Feature 058, MVP-127).
  *
- * - **Spiegelt** freigegebene DMS-Dokumente ({@see \App\Models\Document},
+ * - **Spiegelt** freigegebene DMS-Dokumente ({@see \App\Models\Document\Document},
  *   Status `Active`) in eine externe WebDAV-Ablage (Nextcloud/ownCloud,
  *   generisch) — nach Regel Dokumenttyp→Zielordner, mit Übergabenachweis
- *   (SHA-256 + Zeit + Ziel) in {@see \App\Models\ExternalReference}.
+ *   (SHA-256 + Zeit + Ziel) in {@see \App\Models\Integration\ExternalReference}.
  * - WorkDiary bleibt führend und revisionssicher; **kein Rückkanal**. Externe
  *   Änderungen an gespiegelten Dateien führen zu sichtbaren Konflikten
- *   ({@see \App\Models\IntegrationInboxItem}), nie zu stiller Übernahme.
+ *   ({@see \App\Models\Integration\IntegrationInboxItem}), nie zu stiller Übernahme.
  * - Zustellung/Retry/Idempotenz über die generische Integrations-Outbox
  *   (Feature 055) via {@see Services\WebdavOutboxDispatcher}.
  *

@@ -8,11 +8,12 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Platform;
 
 use App\Enums\Backup\RestoreTestResult;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
+use App\Http\Requests\BaseFormRequest;
 
 class LogRestoreTestRequest extends BaseFormRequest {
     /**

@@ -13,7 +13,10 @@ namespace App\Http\Controllers;
 use App\Enums\Invoicing\InvoiceDeliveryFormat;
 use App\Http\Requests\SaveInvoiceItemRequest;
 use App\Mail\InvoiceMail;
-use App\Models\{Customer, Expense, ExternalReference, Invoice, InvoiceItem, InvoiceMailTemplate, Project};
+use App\Models\Customer\Customer;
+use App\Models\{Expense, Invoice, InvoiceItem, InvoiceMailTemplate};
+use App\Models\Integration\ExternalReference;
+use App\Models\Project\Project;
 use App\Services\Expense\ExpenseInvoicingService;
 use App\Services\Invoicing\InvoiceGenerator;
 use App\Services\Invoicing\{InvoiceIssueException, InvoiceIssueService};
@@ -29,7 +32,7 @@ class InvoiceController extends Controller {
         Gate::authorize('create', Invoice::class);
         $customers = Customer::query()->orderBy('name')->get();
         $projects = Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']);
-        $foreignCustomers = \App\Models\ForeignCustomer::query()->whereNull('archived_at')->orderBy('name')->get(['id', 'name', 'company', 'customer_id']);
+        $foreignCustomers = \App\Models\Customer\ForeignCustomer::query()->whereNull('archived_at')->orderBy('name')->get(['id', 'name', 'company', 'customer_id']);
         $globalRange = app(DateRangeContext::class)->current();
         $defaultFrom = $globalRange['from']->toDateString();
         $defaultTo = $globalRange['to']->toDateString();
@@ -51,7 +54,7 @@ class InvoiceController extends Controller {
         $request->merge([
             'customer_id' => \App\Support\Sqid::decodeOrNumeric(Customer::class, $request->input('customer_id')),
             'project_id' => \App\Support\Sqid::decodeOrNumeric(Project::class, $request->input('project_id')),
-            'foreign_customer_id' => \App\Support\Sqid::decodeOrNumeric(\App\Models\ForeignCustomer::class, $request->input('foreign_customer_id')),
+            'foreign_customer_id' => \App\Support\Sqid::decodeOrNumeric(\App\Models\Customer\ForeignCustomer::class, $request->input('foreign_customer_id')),
         ]);
 
         $data = $request->validate([
@@ -66,8 +69,8 @@ class InvoiceController extends Controller {
         $customer = Customer::query()->findOrFail($data['customer_id']);
         /** @var Project|null $project */
         $project = isset($data['project_id']) ? Project::query()->find($data['project_id']) : null;
-        /** @var \App\Models\ForeignCustomer|null $foreignCustomer */
-        $foreignCustomer = isset($data['foreign_customer_id']) ? \App\Models\ForeignCustomer::query()->find($data['foreign_customer_id']) : null;
+        /** @var \App\Models\Customer\ForeignCustomer|null $foreignCustomer */
+        $foreignCustomer = isset($data['foreign_customer_id']) ? \App\Models\Customer\ForeignCustomer::query()->find($data['foreign_customer_id']) : null;
 
         try {
             $preview = $gen->previewTimeEntries($customer, $project, [
@@ -87,13 +90,13 @@ class InvoiceController extends Controller {
         Gate::authorize('create', Invoice::class);
 
         $rawCustomerId = $request->input('customer_id');
-        $customerId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Customer::class, $rawCustomerId);
+        $customerId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Customer\Customer::class, $rawCustomerId);
 
         $rawProjectId = $request->input('project_id');
-        $projectId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Project::class, $rawProjectId);
+        $projectId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Project\Project::class, $rawProjectId);
 
         $rawForeignId = $request->input('foreign_customer_id');
-        $foreignCustomerId = \App\Support\Sqid::decodeOrNumeric(\App\Models\ForeignCustomer::class, $rawForeignId);
+        $foreignCustomerId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Customer\ForeignCustomer::class, $rawForeignId);
 
         $request->merge([
             'customer_id' => $customerId,
@@ -134,8 +137,8 @@ class InvoiceController extends Controller {
         $customer = Customer::query()->findOrFail($data['customer_id']);
         /** @var Project|null $project */
         $project = isset($data['project_id']) ? Project::query()->find($data['project_id']) : null;
-        /** @var \App\Models\ForeignCustomer|null $foreignCustomer */
-        $foreignCustomer = isset($data['foreign_customer_id']) ? \App\Models\ForeignCustomer::query()->find($data['foreign_customer_id']) : null;
+        /** @var \App\Models\Customer\ForeignCustomer|null $foreignCustomer */
+        $foreignCustomer = isset($data['foreign_customer_id']) ? \App\Models\Customer\ForeignCustomer::query()->find($data['foreign_customer_id']) : null;
 
         // Hoheits-Sperre (Feature 045): führt ein externes Programm (Lexoffice/DATEV)
         // die Fakturierung des Kunden, ist die lokale Rechnungserstellung gesperrt.
@@ -204,7 +207,7 @@ class InvoiceController extends Controller {
      * Entwurf statt einer zweiten Rechnungsnummer. Sperre statt Session, weil
      * zwei gleichzeitige Requests dieselbe Session lesen würden.
      */
-    private function manualDraft(InvoiceGenerator $gen, Customer $customer, ?Project $project, ?\App\Models\ForeignCustomer $foreignCustomer, ?string $token): Invoice {
+    private function manualDraft(InvoiceGenerator $gen, Customer $customer, ?Project $project, ?\App\Models\Customer\ForeignCustomer $foreignCustomer, ?string $token): Invoice {
         $token = $token !== null ? preg_replace('/[^A-Za-z0-9\-]/', '', $token) : null;
         if ($token === null || $token === '') {
             return $gen->emptyDraft($customer, $project, $foreignCustomer);
@@ -413,15 +416,15 @@ class InvoiceController extends Controller {
      *
      * @param  array<string, mixed>  $meta
      */
-    private function recordDispatch(Invoice $invoice, string $channel, ?string $format, ?string $recipient, ?string $sha256, array $meta = []): \App\Models\DocumentDispatch {
-        return \App\Models\DocumentDispatch::query()->create([
+    private function recordDispatch(Invoice $invoice, string $channel, ?string $format, ?string $recipient, ?string $sha256, array $meta = []): \App\Models\Document\DocumentDispatch {
+        return \App\Models\Document\DocumentDispatch::query()->create([
             'organization_id' => $invoice->organization_id,
             'invoice_id' => $invoice->id,
             'document_kind' => \App\Enums\DocumentDesign\RenderDocumentKind::Invoice->value,
             'document_id' => $invoice->id,
             'channel' => $channel,
             'format' => $format,
-            'status' => $channel === \App\Models\DocumentDispatch::CHANNEL_EMAIL ? 'queued' : 'sent',
+            'status' => $channel === \App\Models\Document\DocumentDispatch::CHANNEL_EMAIL ? 'queued' : 'sent',
             'recipient' => $recipient,
             'sha256' => $sha256,
             'meta' => $meta !== [] ? $meta : null,
@@ -551,7 +554,7 @@ class InvoiceController extends Controller {
             'filename' => $filename,
             'sha256' => CryptoHelper::hash($xml),
         ]);
-        $this->recordDispatch($invoice, \App\Models\DocumentDispatch::CHANNEL_DOWNLOAD, $format, null, CryptoHelper::hash($xml), ['filename' => $filename]);
+        $this->recordDispatch($invoice, \App\Models\Document\DocumentDispatch::CHANNEL_DOWNLOAD, $format, null, CryptoHelper::hash($xml), ['filename' => $filename]);
 
         return response($xml, 200, [
             'Content-Type' => 'application/xml; charset=UTF-8',
@@ -592,7 +595,7 @@ class InvoiceController extends Controller {
         ]);
         $this->recordDispatch(
             $invoice,
-            \App\Models\DocumentDispatch::CHANNEL_DOWNLOAD,
+            \App\Models\Document\DocumentDispatch::CHANNEL_DOWNLOAD,
             'gaeb_' . strtolower($phase->value),
             null,
             CryptoHelper::hash($result['content']),
@@ -649,7 +652,7 @@ class InvoiceController extends Controller {
             'filename' => $filename,
             'sha256' => CryptoHelper::hash($pdf),
         ]);
-        $this->recordDispatch($invoice, \App\Models\DocumentDispatch::CHANNEL_DOWNLOAD, 'zugferd_pdf', null, CryptoHelper::hash($pdf), ['filename' => $filename]);
+        $this->recordDispatch($invoice, \App\Models\Document\DocumentDispatch::CHANNEL_DOWNLOAD, 'zugferd_pdf', null, CryptoHelper::hash($pdf), ['filename' => $filename]);
 
         return response($pdf, 200, [
             'Content-Type' => 'application/pdf',
@@ -1008,7 +1011,7 @@ class InvoiceController extends Controller {
         // (InvoiceMailTemplate nutzt HasSqid); rohe IDs (Tests/API) bleiben gültig.
         $rawTemplate = $request->input('template_id');
         if (is_string($rawTemplate) && $rawTemplate !== '' && ! ctype_digit($rawTemplate)) {
-            $request->merge(['template_id' => app(\App\Services\SqidEncoder::class)->decode(InvoiceMailTemplate::class, $rawTemplate)]);
+            $request->merge(['template_id' => app(\App\Support\SqidEncoder::class)->decode(InvoiceMailTemplate::class, $rawTemplate)]);
         }
 
         $data = $request->validate([
@@ -1077,7 +1080,7 @@ class InvoiceController extends Controller {
         // Zustellnachweis (MVP-168): jeder Versand ist ein eigener Versuch.
         // Vollaudit 2026-07 (M26): Dispatch VOR dem Queuen — Status/Message-ID/
         // Dateihash schreibt der Versandpfad (Listener + Mailable) nach.
-        $dispatch = $this->recordDispatch($invoice, \App\Models\DocumentDispatch::CHANNEL_EMAIL, $deliveryFormat->dispatchFormat(), implode(', ', $data['to']), null, [
+        $dispatch = $this->recordDispatch($invoice, \App\Models\Document\DocumentDispatch::CHANNEL_EMAIL, $deliveryFormat->dispatchFormat(), implode(', ', $data['to']), null, [
             'cc' => $data['cc'] ?? [],
             'template_id' => $template->id,
         ]);
@@ -1109,7 +1112,7 @@ class InvoiceController extends Controller {
         Gate::authorize('create', Invoice::class);
         abort_unless($invoice->isProforma(), 404);
 
-        /** @var \App\Models\User $actor */
+        /** @var \App\Models\Platform\User $actor */
         $actor = Auth::user();
         $real = $quotes->proformaToInvoice($invoice, $actor);
 

@@ -12,7 +12,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Models\{SlaContract, User};
+use App\Models\Platform\User;
+use App\Models\SlaContract;
 use App\Services\ServiceTicket\SlaQuotaService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -48,7 +49,7 @@ class SlaContractController extends Controller {
             'canManage' => $canManage,
             // Projekt-Auswahl fürs Admin-Formular (W5.4), org-gescopt via Global Scope.
             'projects' => $canManage
-                ? \App\Models\Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id'])
+                ? \App\Models\Project\Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id'])
                 : collect(),
         ]);
     }
@@ -85,7 +86,7 @@ class SlaContractController extends Controller {
         // gültig. Dekodierte Kopie validieren statt mergen, damit old('project_id')
         // bei Fehlern der Sqid bleibt (vgl. DecodesSqidInputs).
         $input = $request->all();
-        $input['project_id'] = \App\Support\Sqid::decodeOrNumeric(\App\Models\Project::class, $request->input('project_id'));
+        $input['project_id'] = \App\Support\Sqid::decodeOrNumeric(\App\Models\Project\Project::class, $request->input('project_id'));
         $data = \Illuminate\Support\Facades\Validator::make($input, [
             'code' => ['required', 'string', 'min:2', 'max:60'],
             'label' => ['required', 'string', 'min:2', 'max:180'],

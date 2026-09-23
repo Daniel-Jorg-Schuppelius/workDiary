@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Account;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Notification\Sms\{SmsOptInService, SmsProviderResolver};
 use App\Support\{ErrorText, PhoneSearchKey};
 use Illuminate\Contracts\View\View;

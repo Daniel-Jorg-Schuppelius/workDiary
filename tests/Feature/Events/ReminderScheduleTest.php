@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Events;
 
-use App\Models\{Event, EventCategory, EventReminder, User};
+use App\Models\Calendar\{Event, EventCategory, EventReminder};
+use App\Models\Platform\User;
 use App\Services\Event\ReminderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

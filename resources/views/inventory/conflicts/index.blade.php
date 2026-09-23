@@ -54,8 +54,8 @@
                         <td class="text-right font-mono">{{ $snap['qty_base'] ?? '—' }}</td>
                         <td>
                             @php($tone = match ($conflict->status) {
-                                \App\Models\PendingExternalConflict::STATUS_OPEN => 'warning',
-                                \App\Models\PendingExternalConflict::STATUS_COMPENSATED => 'info',
+                                \App\Models\Integration\PendingExternalConflict::STATUS_OPEN => 'warning',
+                                \App\Models\Integration\PendingExternalConflict::STATUS_COMPENSATED => 'info',
                                 default => 'success',
                             })
                             <x-status-badge :tone="$tone">{{ __('inventory.conflict.status.' . $conflict->status) }}</x-status-badge>

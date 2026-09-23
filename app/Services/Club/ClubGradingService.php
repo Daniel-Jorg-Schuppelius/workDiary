@@ -14,7 +14,7 @@ namespace App\Services\Club;
 
 use App\Enums\Club\{ClubCountingBasis, ClubEventKind, ClubGradeSource, ClubGradingVersionStatus, ClubProofKind};
 use App\Models\Club\{ClubGrade, ClubGradeRequirement, ClubGradingSystem, ClubGradingVersion, ClubMember, ClubMemberGrade, ClubMemberProof};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Support\Facades\DB;

@@ -10,13 +10,13 @@
 
 @section('content')
 @php
-    /** @var \App\Models\User $user */
+    /** @var \App\Models\Platform\User $user */
     /** @var \Carbon\CarbonImmutable $month */
     /** @var \Carbon\CarbonImmutable $end */
     /** @var list<string> $dates */
     /** @var \Illuminate\Support\Collection<string, \Illuminate\Support\Collection<int, \App\Models\ScheduledShift>> $shifts */
     /** @var \Illuminate\Support\Collection<int, \App\Models\Vacation> $vacations */
-    /** @var \App\Services\HolidayService $holidays */
+    /** @var \App\Services\Calendar\HolidayService $holidays */
     /** @var bool $anonymous */
 
     $totalMinutes = 0;

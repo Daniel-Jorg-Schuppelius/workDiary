@@ -11,14 +11,19 @@
 namespace App\Services\Customer;
 
 use App\Enums\User\Permission;
-use App\Models\{ActivityCategory, AuditLog, Customer, ExternalReference, Invoice, LexofficeVoucher, MaterialCostAllocation, TimeEntry, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Classification\ActivityCategory;
+use App\Models\Customer\Customer;
 use App\Models\Domain\{DomainProjection, DomainResellerAccount};
+use App\Models\Integration\ExternalReference;
+use App\Models\{Invoice, MaterialCostAllocation, TimeEntry};
+use App\Models\Platform\User;
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Models\Reselling\ResaleSubscription;
 use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
 use App\Services\Billing\CustomerAccountStatementService;
-use App\Services\CustomerStatsService;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Stammdaten\IdentifierIssueDetector;
 use App\Services\Timeline\DiaryEntryTimelineService;
@@ -256,7 +261,7 @@ class CustomerDetailAssembler {
         // Peppol-Registrierungsstand (Feature 066, MVP-734): der zuletzt
         // gespeicherte SMP-Befund, nie eine Live-Auflösung im Seitenaufbau.
         $peppolParticipant = \App\Services\Peppol\PeppolParticipantService::forCustomer($customer);
-        $peppolLookup = $peppolParticipant === null ? null : \App\Models\PeppolParticipantLookup::query()
+        $peppolLookup = $peppolParticipant === null ? null : \App\Models\Plugins\Peppol\PeppolParticipantLookup::query()
             ->where('organization_id', $customer->organization_id)
             ->where('participant', $peppolParticipant->canonical())
             ->first();

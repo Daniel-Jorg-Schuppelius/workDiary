@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Support;
 
-use App\Models\{AuditLog, Customer, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Services\Support\SupportReportBuilder;
 use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\JsonHelper;
@@ -92,7 +94,7 @@ class SupportReportBuilderTest extends TestCase {
     }
 
     public function test_plugin_error_block_contains_only_counts_no_messages(): void {
-        \App\Models\PluginError::query()->create([
+        \App\Models\Platform\PluginError::query()->create([
             'plugin_id' => 'demo-plugin',
             'organization_id' => null,
             'phase' => 'runtime',
@@ -164,7 +166,7 @@ class SupportReportBuilderTest extends TestCase {
             'organization_id' => $this->organization->id,
             'user_id' => null,
             'event' => 'support.test',
-            'auditable_type' => MorphMap::stableKey(\App\Models\Organization::class),
+            'auditable_type' => MorphMap::stableKey(\App\Models\Platform\Organization::class),
             'auditable_id' => $this->organization->id,
             'changes' => [],
         ]);

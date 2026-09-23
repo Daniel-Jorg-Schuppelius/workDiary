@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Training;
 
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Training\{TrainingAssignment, TrainingCourse, TrainingCourseVersion};
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Facades\DB;

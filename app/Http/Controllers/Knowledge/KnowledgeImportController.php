@@ -8,12 +8,17 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Knowledge;
 
 use App\Enums\CloudIntake\CloudIntakeConnectionStatus;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Models\CloudIntake\CloudDocumentConnection;
-use App\Models\{CommunicationNote, ContentCollection, KnowledgeArticle, MsgraphOneNoteConnection, Organization, User};
+use App\Models\Communication\CommunicationNote;
+use App\Models\Knowledge\ContentCollection;
+use App\Models\Knowledge\KnowledgeArticle;
+use App\Models\Platform\Organization;
+use App\Models\Platform\User;
+use App\Models\Plugins\Msgraph\MsgraphOneNoteConnection;
 use App\Plugins\Contracts\DocumentIntakeSource;
 use App\Plugins\Msgraph\Api\MsgraphOneNoteClient;
 use App\Plugins\Msgraph\MsgraphConfig;
@@ -26,6 +31,7 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Throwable;
+use App\Http\Controllers\Controller;
 
 /**
  * Einbahn-Übernahme aus Obsidian und OneNote (MVP-815, Feature 155): Dialoge

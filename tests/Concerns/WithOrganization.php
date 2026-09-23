@@ -10,7 +10,7 @@
 
 namespace Tests\Concerns;
 
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 

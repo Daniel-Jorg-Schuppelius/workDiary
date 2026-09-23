@@ -16,7 +16,7 @@ use App\Enums\Guarantee\GuaranteeStatus;
 use App\Enums\Invoicing\RetentionStatus;
 use App\Models\Guarantee\Guarantee;
 use App\Models\Invoicing\InvoiceRetention;
-use App\Models\User;
+use App\Models\Platform\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;

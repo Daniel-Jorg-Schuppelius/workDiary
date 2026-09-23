@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Reporting;
 
-use App\Models\{Customer, Invoice, LexofficeVoucher, User};
+use App\Models\Customer\Customer;
+use App\Models\Invoice;
+use App\Models\Platform\User;
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Services\Reporting\PaymentBehaviorReportBuilder;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

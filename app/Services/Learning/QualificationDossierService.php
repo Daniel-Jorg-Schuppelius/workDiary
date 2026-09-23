@@ -14,7 +14,7 @@ namespace App\Services\Learning;
 
 use App\Enums\Learning\LearningEnrollmentStatus;
 use App\Models\Learning\{LearningCertificate, LearningEnrollment};
-use App\Models\{Organization, User, UserQualification};
+use App\Models\Platform\{Organization, User, UserQualification};
 use App\Models\Safety\SafetyInstructionParticipant;
 use App\Models\Training\TrainingAssignment;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};

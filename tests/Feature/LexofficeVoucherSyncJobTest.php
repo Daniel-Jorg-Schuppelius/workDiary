@@ -10,7 +10,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Customer, ExternalReference, LexofficeVoucher, PluginSetting, Supplier, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\{PluginSetting, User};
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
+use App\Models\Supplier;
 use App\Plugins\Lexoffice\Jobs\{SyncOwnerVouchersJob, SyncVouchersJob};
 use App\Plugins\Lexoffice\{LexofficePlugin, LexofficeVoucherSync};
 use Illuminate\Foundation\Testing\RefreshDatabase;

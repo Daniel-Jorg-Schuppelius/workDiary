@@ -18,7 +18,7 @@
     $inFormTz = static fn ($value): ?string => $value === null ? null : \Illuminate\Support\Carbon::parse($value)->setTimezone($formTz)->format('Y-m-d\TH:i');
     $selectedGroups = collect(old('club_group_ids', $event?->clubGroups->pluck('sqid')->all() ?? []))->map(fn ($v) => (string) $v)->all();
     $selectedGrades = collect(old('target_grade_ids', $offer?->targetGrades->pluck('sqid')->all() ?? []))->map(fn ($v) => (string) $v)->all();
-    $selectedExaminers = collect(old('examiner_user_ids', collect($offer?->examinerIds() ?? [])->map(fn ($id) => \App\Support\Sqid::encode(\App\Models\User::class, $id))->all()))->map(fn ($v) => (string) $v)->all();
+    $selectedExaminers = collect(old('examiner_user_ids', collect($offer?->examinerIds() ?? [])->map(fn ($id) => \App\Support\Sqid::encode(\App\Models\Platform\User::class, $id))->all()))->map(fn ($v) => (string) $v)->all();
     $selectedSystem = old('club_grading_system_id', $offer?->club_grading_system_id ? \App\Support\Sqid::encode(\App\Models\Club\ClubGradingSystem::class, $offer->club_grading_system_id) : '');
     $selectedDepartment = old('club_department_id', $details?->club_department_id ? \App\Support\Sqid::encode(\App\Models\Club\ClubDepartment::class, $details->club_department_id) : '');
     $selectedLeader = old('leader_user_id', $event?->responsibleUser?->sqid ?? '');

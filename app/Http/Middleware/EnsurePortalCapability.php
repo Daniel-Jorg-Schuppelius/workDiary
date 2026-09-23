@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Enums\CustomerPortal\PortalCapability;
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Services\CustomerPortal\PortalVisibility;
 use Closure;
 use Illuminate\Http\Request;

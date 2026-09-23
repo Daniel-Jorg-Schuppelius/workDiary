@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{TodoistConnection, User};
+use App\Models\Platform\User;
+use App\Models\Plugins\Todoist\TodoistConnection;
 use App\Plugins\Todoist\Api\TodoistOAuth;
 use App\Support\MorphMap;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};

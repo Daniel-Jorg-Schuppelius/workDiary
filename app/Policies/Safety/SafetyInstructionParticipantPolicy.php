@@ -10,8 +10,8 @@
 
 namespace App\Policies\Safety;
 
+use App\Models\Platform\User;
 use App\Models\Safety\SafetyInstructionParticipant;
-use App\Models\User;
 
 /**
  * Teilnahme-Nachweis (Feature 132): Signieren darf ausschließlich die

@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\Mirror;
 
-use App\Models\{Document, DocumentVersion, ExternalReference, IntegrationInboxItem};
+use App\Models\Document\{Document, DocumentVersion};
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;

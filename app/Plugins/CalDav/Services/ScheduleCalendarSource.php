@@ -14,7 +14,8 @@ namespace App\Plugins\CalDav\Services;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Enums\Vacation\VacationStatus;
-use App\Models\{Organization, ScheduledShift, Vacation};
+use App\Models\Platform\Organization;
+use App\Models\{ScheduledShift, Vacation};
 use App\Plugins\CalDav\Contracts\CalendarSource;
 use App\Services\Event\IcsFeedService;
 

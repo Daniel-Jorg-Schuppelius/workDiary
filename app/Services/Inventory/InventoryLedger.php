@@ -111,7 +111,7 @@ class InventoryLedger {
         }
 
         if (! array_key_exists($orgId, $this->modeCache)) {
-            $organization = \App\Models\Organization::query()->find($orgId);
+            $organization = \App\Models\Platform\Organization::query()->find($orgId);
             $this->modeCache[$orgId] = $organization !== null
                 ? app(InventoryProviderResolver::class)->modeFor($organization)
                 : null;

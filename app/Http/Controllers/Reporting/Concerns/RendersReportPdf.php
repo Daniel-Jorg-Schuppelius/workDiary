@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Reporting\Concerns;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;

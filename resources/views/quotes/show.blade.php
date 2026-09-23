@@ -127,7 +127,7 @@
         $aiDraft = $quote->status === 'draft' && auth()->user()?->can('update', $quote);
         $aiSuggestEnabled = $aiDraft && $aiViewData->capabilityUsable(\App\Services\Ai\Suggestions\ItemTextSuggestionService::CAPABILITY_QUOTE_ITEM);
         $aiSuggestions = $aiSuggestEnabled
-            ? $aiViewData->openSuggestionsFor((new \App\Models\QuoteItem)->getMorphClass(), $quote->items, \App\Services\Ai\Suggestions\ItemTextSuggestionService::CAPABILITY_QUOTE_ITEM)
+            ? $aiViewData->openSuggestionsFor((new \App\Models\Sales\QuoteItem)->getMorphClass(), $quote->items, \App\Services\Ai\Suggestions\ItemTextSuggestionService::CAPABILITY_QUOTE_ITEM)
             : collect();
         $aiColspan = 7 + ($quote->decided_at !== null ? 1 : 0);
         // Belegsprache-Übersetzung (Feature 148, MVP-732): nur wenn die
@@ -136,10 +136,10 @@
             && $aiViewData->capabilityUsable(\App\Services\Ai\Suggestions\DocumentTranslationSuggestionService::CAPABILITY)
             && \App\Services\Ai\Suggestions\DocumentTranslationSuggestionService::isTranslatable($quote);
         $aiTranslations = $aiTranslateEnabled
-            ? $aiViewData->openSuggestionsFor((new \App\Models\QuoteItem)->getMorphClass(), $quote->items, \App\Services\Ai\Suggestions\DocumentTranslationSuggestionService::CAPABILITY)
+            ? $aiViewData->openSuggestionsFor((new \App\Models\Sales\QuoteItem)->getMorphClass(), $quote->items, \App\Services\Ai\Suggestions\DocumentTranslationSuggestionService::CAPABILITY)
             : collect();
         $aiTermsSuggestion = $aiTranslateEnabled
-            ? $aiViewData->openSuggestionsFor((new \App\Models\Quote)->getMorphClass(), collect([$quote]), \App\Services\Ai\Suggestions\DocumentTranslationSuggestionService::CAPABILITY)->get($quote->id)
+            ? $aiViewData->openSuggestionsFor((new \App\Models\Sales\Quote)->getMorphClass(), collect([$quote]), \App\Services\Ai\Suggestions\DocumentTranslationSuggestionService::CAPABILITY)->get($quote->id)
             : null;
     @endphp
     @include('ai._learn_prompt')

@@ -11,7 +11,8 @@
 namespace Tests\Feature\Manufacturing;
 
 use App\Enums\Inventory\{SerialSource, SerialStatus};
-use App\Models\{Article, ArticleVariant, Customer, ProcedureMaterialRequirement, ProcedureTemplateVersion, StockSerial, Warehouse};
+use App\Models\{Article, ArticleVariant, ProcedureMaterialRequirement, ProcedureTemplateVersion, StockSerial, Warehouse};
+use App\Models\Customer\Customer;
 use App\Services\Manufacturing\{DeliveryService, ManufacturingOrderService, ManufacturingReportService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

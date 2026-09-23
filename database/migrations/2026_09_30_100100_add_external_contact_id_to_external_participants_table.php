@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Verknüpft eine Einladung optional mit einem wiederverwendbaren
- * {@see \App\Models\ExternalContact}-Stammdatensatz (Feature 033, Rang 30).
+ * {@see \App\Models\Contacts\ExternalContact}-Stammdatensatz (Feature 033, Rang 30).
  * Nullable + nullOnDelete: die Einladung überlebt das Löschen des Stammdatensatzes
  * (Name/E-Mail bleiben denormalisiert als Nachweis erhalten).
  */

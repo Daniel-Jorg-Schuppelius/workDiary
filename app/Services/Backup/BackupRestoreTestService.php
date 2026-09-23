@@ -12,7 +12,7 @@ namespace App\Services\Backup;
 
 use App\Enums\Backup\RestoreTestResult;
 use App\Models\Backup\BackupGeneration;
-use App\Models\RestoreTest;
+use App\Models\Platform\RestoreTest;
 use App\Plugins\Contracts\BackupTarget;
 use App\Services\Backup\Exceptions\BackupPreflightException;
 use CommonToolkit\Helper\FileSystem\{File, Folder};

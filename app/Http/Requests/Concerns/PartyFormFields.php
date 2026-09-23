@@ -10,7 +10,7 @@
 
 namespace App\Http\Requests\Concerns;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Illuminate\Support\Facades\Auth;
 
 /**

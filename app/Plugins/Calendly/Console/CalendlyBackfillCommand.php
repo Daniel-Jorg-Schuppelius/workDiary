@@ -11,7 +11,7 @@
 namespace App\Plugins\Calendly\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\PluginSetting;
+use App\Models\Platform\PluginSetting;
 use App\Plugins\Calendly\CalendlyPlugin;
 use App\Plugins\Calendly\Services\CalendlyBackfillService;
 use App\Support\OrganizationContext;

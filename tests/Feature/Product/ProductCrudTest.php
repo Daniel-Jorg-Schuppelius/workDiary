@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Product;
 
-use App\Models\{Article, Asset, Product, User};
+use App\Models\{Article, Asset, Product};
+use App\Models\Platform\User;
 use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

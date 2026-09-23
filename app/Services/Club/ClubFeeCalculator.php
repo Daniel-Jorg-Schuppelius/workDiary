@@ -15,7 +15,7 @@ namespace App\Services\Club;
 use App\Enums\Club\{ClubFeePositionKind, ClubFeeProration, ClubGroupMembershipStatus};
 use App\Enums\Finance\RecurringInterval;
 use App\Models\Club\{ClubFeeAssignment, ClubFeeExemption, ClubFeeSurcharge, ClubFeeTariff, ClubFeeTariffRate, ClubGroupMembership, ClubMember};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\{Decimal, Money};

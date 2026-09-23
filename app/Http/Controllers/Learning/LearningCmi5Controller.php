@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Learning;
 use App\Enums\Learning\LearningUnitKind;
 use App\Http\Controllers\Controller;
 use App\Models\Learning\{LearningCmi5Package, LearningCmi5Unit, LearningCourse, LearningEnrollment, LearningUnit};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\{LearningCmi5LaunchService, LearningCmi5Service, ScormContentToken, ScormPackageFiles};
 use App\Support\Learning\ScormContentHost;
 use ELearningToolkit\Cmi5\Cmi5Exception;

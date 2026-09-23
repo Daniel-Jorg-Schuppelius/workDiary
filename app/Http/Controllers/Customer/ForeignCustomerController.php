@@ -8,16 +8,20 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery};
-use App\Http\Requests\SaveForeignCustomerRequest;
-use App\Models\{AuditLog, Customer, ForeignCustomer, Project};
+use App\Http\Requests\Customer\SaveForeignCustomerRequest;
+use App\Models\Audit\AuditLog;
+use App\Models\Customer\Customer\Customer;
+use App\Models\Customer\Customer\ForeignCustomer;
+use App\Models\Project\Project\Project;
 use App\Support\MorphMap;
 use App\Support\{Setting, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 /**
  * CRUD für Fremdkunden (Endkunden) — die Kundschaft einer Firma (Customer).

@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Privacy;
 
-use App\Models\{PluginSetting, User};
+use App\Models\Platform\{PluginSetting, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

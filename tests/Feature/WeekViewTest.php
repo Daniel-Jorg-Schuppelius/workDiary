@@ -10,7 +10,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift, User};
+use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift};
+use App\Models\Platform\User;
 use App\Services\Calendar\WeekViewService;
 use App\Services\UI\DateRangeContext;
 use Carbon\CarbonImmutable;

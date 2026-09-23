@@ -11,7 +11,7 @@
 namespace Tests\Feature\Privacy;
 
 use App\Enums\Privacy\{DataSubjectRequestType, IncidentType};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Privacy\{DataSubjectRequestService, IncidentService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

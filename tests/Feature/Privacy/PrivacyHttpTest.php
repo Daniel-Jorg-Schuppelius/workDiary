@@ -11,7 +11,7 @@
 namespace Tests\Feature\Privacy;
 
 use App\Enums\Privacy\DataSubjectRequestType;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Privacy\{DataProtectionPermissions, DataSubjectRequestService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

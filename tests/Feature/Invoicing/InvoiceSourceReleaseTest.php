@@ -12,7 +12,10 @@ namespace Tests\Feature\Invoicing;
 
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Customer, Invoice, MaterialUsage, Project, TimeEntry, Timesheet, User};
+use App\Models\Customer\Customer;
+use App\Models\{Invoice, MaterialUsage, TimeEntry, Timesheet};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\Concerns\WithOrganization;

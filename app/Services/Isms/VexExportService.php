@@ -14,7 +14,7 @@ namespace App\Services\Isms;
 
 use App\Enums\Isms\{Exploitability, VulnerabilityStatus};
 use App\Models\Isms\IsmsVulnerability;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 
 /**
  * CSAF-VEX-Generator für eigene Releases (Nachtrag 044c, AR §22): erzeugt

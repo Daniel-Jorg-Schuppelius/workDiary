@@ -14,7 +14,7 @@ namespace App\Services\Learning;
 
 use App\Enums\Learning\LearningSubmissionStatus;
 use App\Models\Learning\{LearningAssignment, LearningEnrollment, LearningSubmission};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;

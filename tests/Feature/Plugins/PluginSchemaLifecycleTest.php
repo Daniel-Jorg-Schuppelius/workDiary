@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\PluginState;
+use App\Models\Platform\PluginState;
 use App\Plugins\Contracts\{Plugin, PluginCapability};
 use App\Plugins\{PluginDefaults, PluginSchemaManager};
 use Illuminate\Support\Facades\{DB, Schema};

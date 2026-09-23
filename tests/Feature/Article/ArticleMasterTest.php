@@ -11,7 +11,9 @@
 namespace Tests\Feature\Article;
 
 use App\Enums\Article\{ArticleStatus, ArticleType};
-use App\Models\{Article, ArticleOptionDefinition, ArticleOptionValue, ArticleUnit, ExternalArticleMapping, Organization};
+use App\Models\{Article, ArticleOptionDefinition, ArticleOptionValue, ArticleUnit};
+use App\Models\Integration\ExternalArticleMapping;
+use App\Models\Platform\Organization;
 use App\Services\Article\{ArticleService, UnitConverter, VariantResolver};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;

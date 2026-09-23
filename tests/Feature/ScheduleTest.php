@@ -11,7 +11,8 @@
 namespace Tests\Feature;
 
 use App\Enums\Shift\ScheduledShiftStatus;
-use App\Models\{ScheduledShift, User};
+use App\Models\Platform\User;
+use App\Models\ScheduledShift;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -59,7 +60,7 @@ class ScheduleTest extends TestCase {
     public function test_schedule_user_list_stays_inside_the_own_tenant(): void {
         $own = User::factory()->user()->create(['name' => 'Eigene Person']);
         $foreign = User::factory()->user()->create([
-            'organization_id' => \App\Models\Organization::factory()->create()->id,
+            'organization_id' => \App\Models\Platform\Organization::factory()->create()->id,
             'name' => 'Fremde Person',
         ]);
 

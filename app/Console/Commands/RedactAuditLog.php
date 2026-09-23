@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Audit\AuditRedactionService;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Relations\Relation;

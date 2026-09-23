@@ -16,7 +16,7 @@ use App\Dashboard\Widget;
 use App\Enums\Dashboard\WidgetGroup;
 use App\Enums\User\Permission;
 use App\Models\Learning\{LearningAnswer, LearningCourse, LearningTimeSession};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Learning\LearningAssignmentService;
 use Illuminate\Contracts\View\View;
 

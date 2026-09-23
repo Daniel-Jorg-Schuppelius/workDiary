@@ -12,7 +12,7 @@ namespace App\Services\Isms;
 
 use App\Enums\Isms\{AssessmentKind, AssessmentStatus, RiskStatus};
 use App\Models\Isms\{IsmsControl, IsmsRisk, IsmsRiskAssessment};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Concerns\AssignsSequentialNo;
 use App\Services\Isms\Concerns\AssertsIsmsTransition;
 use Illuminate\Support\Carbon;

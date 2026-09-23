@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Licensing;
 
-use App\Models\{Organization, PlanModuleGrace};
+use App\Models\Platform\{Organization, PlanModuleGrace};
 use Illuminate\Support\Carbon;
 
 /**

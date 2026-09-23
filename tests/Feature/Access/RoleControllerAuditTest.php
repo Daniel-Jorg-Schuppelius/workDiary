@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Access;
 
-use App\Models\{AuditLog, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\User;
 use App\Services\Whistleblowing\WhistleblowingPermissions;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

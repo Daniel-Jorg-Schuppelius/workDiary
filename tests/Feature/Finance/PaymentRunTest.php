@@ -11,8 +11,10 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\PaymentRunStatus;
-use App\Models\{Document, IncomingEInvoice, Organization, User};
+use App\Models\Document\Document;
 use App\Models\Finance\{BankAccount, PaymentRun};
+use App\Models\IncomingEInvoice;
+use App\Models\Platform\{Organization, User};
 use App\Services\Finance\FinancialFormatsSupport;
 use App\Services\Finance\Sepa\{PaymentProposalService, PaymentRunService};
 use Carbon\CarbonImmutable;
@@ -117,7 +119,7 @@ class PaymentRunTest extends TestCase {
 
     /** @param array<string, mixed> $attributes */
     private function mandate(array $attributes = []): \App\Models\Finance\SepaMandate {
-        $customer = \App\Models\Customer::create([
+        $customer = \App\Models\Customer\Customer::create([
             'organization_id' => $this->org->id,
             'name' => 'ACME GmbH',
             'currency' => 'EUR',

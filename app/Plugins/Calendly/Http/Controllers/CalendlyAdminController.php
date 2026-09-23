@@ -10,7 +10,9 @@
 
 namespace App\Plugins\Calendly\Http\Controllers;
 
-use App\Models\{AppointmentRequest, CalendlyConnection, CalendlyWebhookSubscription, User};
+use App\Models\Calendar\AppointmentRequest;
+use App\Models\Platform\User;
+use App\Models\Plugins\Calendly\{CalendlyConnection, CalendlyWebhookSubscription};
 use App\Plugins\Calendly\Api\{CalendlyClient, CalendlyOAuth};
 use App\Plugins\Calendly\CalendlyConfig;
 use App\Plugins\Calendly\Services\{CalendlyBackfillService, CalendlyConfirmService, CalendlyOutboundService, CalendlySubscriptionManager};

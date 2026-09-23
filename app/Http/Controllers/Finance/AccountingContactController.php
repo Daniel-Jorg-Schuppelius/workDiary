@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use App\Plugins\Contracts\ContactSyncer;
 use App\Plugins\PluginManager;
 use App\Services\Finance\Accounting\ContactPushService;

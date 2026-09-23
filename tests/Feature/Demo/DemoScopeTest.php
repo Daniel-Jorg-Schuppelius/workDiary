@@ -11,7 +11,7 @@
 namespace Tests\Feature\Demo;
 
 use App\Enums\Demo\DemoIndustry;
-use App\Models\{LicenseFlagOverride, Organization, User};
+use App\Models\Platform\{LicenseFlagOverride, Organization, User};
 use App\Services\Demo\DemoSeederService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;

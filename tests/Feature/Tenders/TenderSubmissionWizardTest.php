@@ -14,7 +14,7 @@ namespace Tests\Feature\Tenders;
 
 use App\Enums\Applications\TenderProcedureType;
 use App\Models\Applications\{ApplicationOpportunity, TenderCompetitorBid};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Applications\TenderSubmissionPreflight;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

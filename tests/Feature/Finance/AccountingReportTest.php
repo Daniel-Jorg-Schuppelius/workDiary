@@ -12,7 +12,7 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AccountType, ProfitDetermination};
 use App\Models\Accounting\AccountingAccount;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService};
 use App\Services\Accounting\Reports\{AccountLedgerBuilder, DataQualityBuilder, EuerPreviewBuilder, ExportContextBuilder, LiquidityBuilder, ProfitAndLossBuilder, TrialBalanceBuilder, VatPreviewBuilder};
 use Carbon\CarbonImmutable;

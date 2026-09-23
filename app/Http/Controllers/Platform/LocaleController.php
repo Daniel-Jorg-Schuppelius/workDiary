@@ -8,12 +8,13 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Platform;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Support\Locales;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Controller;
 
 class LocaleController extends Controller {
     public function switch(Request $request, string $locale): RedirectResponse {

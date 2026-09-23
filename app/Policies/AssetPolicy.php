@@ -11,7 +11,8 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\{Asset, User};
+use App\Models\Asset;
+use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
 
 class AssetPolicy extends PermissionPolicy {

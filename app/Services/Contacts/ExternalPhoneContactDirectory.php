@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\Contacts;
 
-use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, Organization};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Integration\{ExternalReference, ExternalReferenceAlias};
+use App\Models\Platform\Organization;
 use CommonToolkit\Helper\Data\PhoneNumberHelper;
 use Illuminate\Support\Facades\Log;
 

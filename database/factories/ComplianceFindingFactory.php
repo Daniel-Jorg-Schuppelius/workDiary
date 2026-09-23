@@ -11,7 +11,8 @@
 namespace Database\Factories;
 
 use App\Enums\Compliance\ComplianceFindingStatus;
-use App\Models\{ComplianceFinding, Organization, User};
+use App\Models\ComplianceFinding;
+use App\Models\Platform\{Organization, User};
 use App\Services\Compliance\AttendanceComplianceChecker;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;

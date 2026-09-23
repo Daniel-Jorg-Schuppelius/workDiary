@@ -11,7 +11,7 @@
 namespace App\Plugins\Lexoffice\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\LexofficeVoucher;
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeVoucherFileService};
 use Illuminate\Console\Command;
 

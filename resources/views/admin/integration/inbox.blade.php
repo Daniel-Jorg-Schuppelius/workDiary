@@ -11,7 +11,7 @@
 @section('nav-title', __('Zuordnungs-Inbox'))
 
 @php
-    use App\Models\IntegrationInboxItem;
+    use App\Models\Integration\IntegrationInboxItem;
 
     $caseLabels = [
         IntegrationInboxItem::CASE_UNMATCHED => __('Nicht zugeordnet'),
@@ -65,7 +65,7 @@
         </form>
     </x-slot:actions>
 
-    @php $customerOptions = $assignTargets[\App\Models\Customer::class] ?? (reset($assignTargets) ?: []); @endphp
+    @php $customerOptions = $assignTargets[\App\Models\Customer\Customer::class] ?? (reset($assignTargets) ?: []); @endphp
 
     {{-- Quellen-Tabs: eine Ansicht je Plugin (Toggl, FritzBox, …), Zähler =
          offene Einzel-Items der Quelle (Gruppen hängen an eigenen Zählern). --}}
@@ -291,7 +291,7 @@
                             <input type="hidden" name="group_key" value="{{ $g['group_key'] }}">
                             <select name="customer" class="select select-sm select-bordered" @if (! ($g['customer_sqid'] ?? null)) required @endif>
                                 <option value="">{{ ($g['customer_name'] ?? null) ? __('Zugeordnet: :name', ['name' => $g['customer_name']]) : __('… Kunde auswählen') }}</option>
-                                @foreach (($assignTargets[\App\Models\Customer::class] ?? []) as $sqid => $label)
+                                @foreach (($assignTargets[\App\Models\Customer\Customer::class] ?? []) as $sqid => $label)
                                     <option value="{{ $sqid }}">{{ $label }}</option>
                                 @endforeach
                             </select>
@@ -538,7 +538,7 @@
                                     <input type="hidden" name="item" value="{{ $item->sqid }}">
                                     <select name="customer" class="join-item select select-sm select-bordered">
                                         <option value="">{{ __('mail.inbox.book_customer_placeholder') }}</option>
-                                        @foreach (($assignTargets[\App\Models\Customer::class] ?? []) as $sqid => $label)
+                                        @foreach (($assignTargets[\App\Models\Customer\Customer::class] ?? []) as $sqid => $label)
                                             <option value="{{ $sqid }}">{{ $label }}</option>
                                         @endforeach
                                     </select>
@@ -614,7 +614,7 @@
                                         @csrf
                                         <select name="target" required class="join-item select select-sm select-bordered">
                                             <option value="">{{ __('… bestehendem zuordnen') }}</option>
-                                            @if (\App\Support\MorphMap::is($item->target_type, \App\Models\Project::class) && $assignProjects !== null)
+                                            @if (\App\Support\MorphMap::is($item->target_type, \App\Models\Project\Project::class) && $assignProjects !== null)
                                                 {{-- Projekt-Dropdowns immer über die Komponente (Kundengruppierung). --}}
                                                 <x-project-options :projects="$assignProjects" />
                                             @else

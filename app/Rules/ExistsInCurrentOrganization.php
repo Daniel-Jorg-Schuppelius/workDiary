@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Prüft, dass ein Fremdschlüssel auf einen Datensatz der AKTIVEN Organisation
- * zeigt. Modelle wie {@see \App\Models\User} tragen `organization_id` direkt,
+ * zeigt. Modelle wie {@see \App\Models\Platform\User} tragen `organization_id` direkt,
  * unterliegen aber keinem globalen Org-Scope; ein reines `exists:users,id`
  * erlaubt sonst, einen Datensatz einer fremden Organisation zuzuweisen
  * (Cross-Tenant-Injection). Diese Rule schließt das Org-übergreifend.

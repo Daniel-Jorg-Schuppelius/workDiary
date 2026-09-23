@@ -14,7 +14,7 @@ namespace App\Services\Learning;
 
 use App\Enums\Learning\{LearningEnrollmentSource, LearningEnrollmentStatus, LearningQuestionKind, LearningUnitKind};
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningQuiz, LearningSection, LearningUnit};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use CommonToolkit\Exceptions\Parsers\DocumentLimitExceededException;
 use CommonToolkit\Helper\Data\{EmailHelper, StringHelper};
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;

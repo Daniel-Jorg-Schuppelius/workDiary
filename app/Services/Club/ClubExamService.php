@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Club;
 
 use App\Enums\Club\{ClubEventKind, ClubExamCandidateStatus, ClubGradeSource, ClubParticipationSource};
+use App\Models\Calendar\Event;
 use App\Models\Club\{ClubAttendanceRecord, ClubExamCandidate, ClubExamOffer, ClubGrade, ClubGradeRequirement, ClubMember};
-use App\Models\{Event, Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\AssertsStatusTransition;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;

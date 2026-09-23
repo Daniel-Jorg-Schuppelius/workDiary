@@ -12,8 +12,15 @@ declare(strict_types=1);
 
 namespace App\Services\Content;
 
-use App\Models\{Asset, CommunicationNote, Customer, DiaryEntry, Document, FormSubmission, IdeaMap, Project, User};
+use App\Models\{Asset, DiaryEntry};
+use App\Models\Communication\CommunicationNote;
+use App\Models\Customer\Customer;
 use App\Models\Disposal\DisposalJob;
+use App\Models\Document\Document;
+use App\Models\Form\FormSubmission;
+use App\Models\Ideas\IdeaMap;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use Closure;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\MorphTo;

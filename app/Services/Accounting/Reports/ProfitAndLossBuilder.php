@@ -14,7 +14,7 @@ namespace App\Services\Accounting\Reports;
 
 use App\Enums\Finance\AccountType;
 use App\Models\Accounting\AccountingAccount;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Accounting\AccountingBudgetService;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;

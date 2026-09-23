@@ -14,7 +14,8 @@ namespace Tests\Feature\Policies;
 
 use App\Enums\TimeExport\TimeExportStatus;
 use App\Enums\User\Permission as P;
-use App\Models\{Organization, TimeExport};
+use App\Models\Platform\Organization;
+use App\Models\TimeExport;
 use App\Policies\TimeExportPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};

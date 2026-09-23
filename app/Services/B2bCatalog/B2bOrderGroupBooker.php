@@ -13,9 +13,10 @@ declare(strict_types=1);
 namespace App\Services\B2bCatalog;
 
 use App\Models\B2b\B2bOrder;
-use App\Models\{Customer, Organization};
+use App\Models\Customer\Customer;
+use App\Models\Platform\Organization;
 use App\Services\Integration\InboxGroupBooker;
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
@@ -87,7 +88,7 @@ class B2bOrderGroupBooker implements InboxGroupBooker {
         }
 
         $actor = Auth::user();
-        if (! $actor instanceof \App\Models\User) {
+        if (! $actor instanceof \App\Models\Platform\User) {
             throw new \RuntimeException((string) __('b2b_catalog.error.customer_required'));
         }
 

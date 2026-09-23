@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Ideas;
 
 use App\Enums\Ideas\{IdeaMapVisibility, IdeaNodeColor};
-use App\Models\{IdeaMap, IdeaNode, IdeaNodeLink, Organization, User};
+use App\Models\Ideas\{IdeaMap, IdeaNode, IdeaNodeLink};
+use App\Models\Platform\{Organization, User};
 use CommonToolkit\Helper\Data\XmlHelper;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;

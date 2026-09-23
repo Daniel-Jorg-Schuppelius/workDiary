@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Jobs\Ai;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Ai\{AiInvocationService, AiRoutingResolver};
 use App\Services\Ai\Contracts\{AiRequestInterface, AiResultHandlerInterface};
 use App\Services\Ai\Exceptions\{AiBudgetExceededException, AiUnavailableException};

@@ -11,7 +11,8 @@
 namespace Database\Factories;
 
 use App\Enums\Protocol\{ProtocolStatus, ProtocolType, ProtocolVisibility};
-use App\Models\{DiaryEntry, Protocol, User};
+use App\Models\{DiaryEntry, Protocol};
+use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

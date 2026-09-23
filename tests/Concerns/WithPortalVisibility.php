@@ -11,7 +11,7 @@
 namespace Tests\Concerns;
 
 use App\Enums\CustomerPortal\PortalCapability;
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 
 /**
  * Portal-Bereichsfreigaben (MVP-511) für Feature-Tests: seit Default-Deny

@@ -11,8 +11,8 @@
 namespace Database\Factories\Safety;
 
 use App\Enums\Safety\InstructionSignatureMethod;
+use App\Models\Platform\User;
 use App\Models\Safety\{SafetyInstruction, SafetyInstructionParticipant};
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

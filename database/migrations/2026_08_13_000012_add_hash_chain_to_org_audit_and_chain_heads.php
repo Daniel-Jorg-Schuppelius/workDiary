@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-use App\Models\OrganizationAuditLog;
+use App\Models\Audit\OrganizationAuditLog;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\{DB, Schema};

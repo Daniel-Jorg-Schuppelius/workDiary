@@ -11,7 +11,8 @@
 namespace App\Services\Classification;
 
 use App\Enums\Classification\{ClassificationDomain, ClassificationRequirementPhase, ClassificationRequirementSeverity};
-use App\Models\{ClassificationRequirement, Organization};
+use App\Models\Classification\ClassificationRequirement;
+use App\Models\Platform\Organization;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;

@@ -12,7 +12,7 @@ namespace Tests\Feature\Backup;
 
 use App\Enums\Backup\{BackupProvider, BackupTargetStatus};
 use App\Models\Backup\BackupTargetConnection;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Plugins\Support\PluginApiClient;
 use App\Plugins\Webdav\Api\WebdavBackupClient;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};

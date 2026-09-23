@@ -11,8 +11,9 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{MandateKind, MandateStatus, PaymentRunKind};
-use App\Models\{Customer, Organization, User};
+use App\Models\Customer\Customer;
 use App\Models\Finance\{BankAccount, SepaMandate};
+use App\Models\Platform\{Organization, User};
 use App\Services\Finance\FinancialFormatsSupport;
 use App\Services\Finance\Sepa\PaymentRunService;
 use App\Settings\SettingScope;

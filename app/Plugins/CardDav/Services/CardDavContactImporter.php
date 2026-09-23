@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Plugins\CardDav\Services;
 
 use App\Enums\Integration\{ConflictFieldPolicy, ImportMatchPolicy};
-use App\Models\{CardDavCard, CardDavConnection, IntegrationInboxItem, Organization};
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Platform\Organization;
+use App\Models\Plugins\CardDav\{CardDavCard, CardDavConnection};
 use App\Plugins\CardDav\CardDavPlugin;
 use App\Plugins\CardDav\Contracts\CardDavGatewayFactory;
 use App\Services\Integration\IntegrationResolver;

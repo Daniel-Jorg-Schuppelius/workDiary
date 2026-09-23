@@ -28,5 +28,5 @@ use Illuminate\Support\Facades\Route;
  * weder Sitzung noch Mandant noch Datenbank, und bekommt deshalb keins davon.
  * Header setzt der Controller selbst.
  */
-Route::get('/.well-known/security.txt', \App\Http\Controllers\SecurityTxtController::class)->name('security.txt');
+Route::get('/.well-known/security.txt', \App\Http\Controllers\Auth\SecurityTxtController::class)->name('security.txt');
 Route::redirect('/security.txt', '/.well-known/security.txt');

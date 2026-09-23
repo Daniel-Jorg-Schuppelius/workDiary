@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\{AuditLog, LicenseFlagOverride, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{LicenseFlagOverride, User};
 use App\Services\Licensing\{FeatureFlagResolver, LicensePayload, LicenseResult, LicenseService, LicenseStatus};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

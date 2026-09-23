@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\JtlWawi;
 
-use App\Models\JtlConnection;
+use App\Models\Plugins\JtlWawi\JtlConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\JtlWawi\Api\{JtlApiException, JtlGatewayFactory};

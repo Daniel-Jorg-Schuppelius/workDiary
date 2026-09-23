@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Finance\Gdpdu;
 
-use App\Models\{Expense, Invoice, Organization};
+use App\Models\{Expense, Invoice};
 use App\Models\Finance\PaymentAllocation;
+use App\Models\Platform\Organization;
 use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 

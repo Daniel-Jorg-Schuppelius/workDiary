@@ -11,7 +11,9 @@
 namespace App\Console\Commands\Billing;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\{Customer, Organization, Project};
+use App\Models\Customer\Customer;
+use App\Models\Platform\Organization;
+use App\Models\Project\Project;
 use App\Services\Billing\TimeEntryBillableSyncService;
 use Illuminate\Console\Command;
 

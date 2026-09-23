@@ -8,15 +8,29 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Attachments;
 
-use App\Models\{Asset, Attachment, Comment, Customer, DiaryEntry, EmergencyAssignment, Expense, KnowledgeArticle, OnCallShift, Organization, ServiceTicket, Supplier, Task, User};
+use App\Models\Asset;
+use App\Models\Attachments\Attachments\Attachment;
+use App\Models\Communication\Comment;
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\EmergencyAssignment;
+use App\Models\Expense;
+use App\Models\Knowledge\KnowledgeArticle;
+use App\Models\OnCallShift;
+use App\Models\Platform\Organization;
+use App\Models\ServiceTicket;
+use App\Models\Supplier;
+use App\Models\Project\Task;
+use App\Models\Platform\User;
 use App\Services\Attachments\{FileAttacher, ImageMetaUploader};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\{Auth, Gate, Storage, URL};
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Http\Controllers\Controller;
 
 class AttachmentController extends Controller {
     public function __construct(private readonly ImageMetaUploader $imageUploader) {}
@@ -237,7 +251,7 @@ class AttachmentController extends Controller {
         abort_if($attachment->attachable instanceof \App\Models\CashEntry, 403);
         // Portal-Rückfragen (MVP-712): Text UND Anhänge sind nach dem Absenden
         // Nachweis — auch intern nicht löschbar.
-        abort_if($attachment->attachable instanceof \App\Models\CustomerQuery, 403);
+        abort_if($attachment->attachable instanceof \App\Models\Customer\CustomerQuery, 403);
 
         Gate::authorize('delete', $attachment);
 

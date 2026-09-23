@@ -15,7 +15,7 @@ namespace App\Models\Club;
 use App\Casts\MoneyCast;
 use App\Enums\Club\ClubFeeRunStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\User;
+use App\Models\Platform\User;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Model;

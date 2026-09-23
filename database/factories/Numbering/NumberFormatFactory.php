@@ -8,10 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace Database\Factories;
+namespace Database\Factories\Numbering;
 
 use App\Enums\Numbering\NumberScope;
-use App\Models\{NumberFormat, Organization};
+use App\Models\Numbering\NumberFormat;
+use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<NumberFormat> */

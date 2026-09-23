@@ -11,7 +11,7 @@
 namespace Tests\Unit\Finance;
 
 use App\Enums\Finance\BillingMode;
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use App\Services\Finance\BillingModeResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

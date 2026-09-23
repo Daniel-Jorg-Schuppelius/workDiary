@@ -13,7 +13,7 @@ namespace Tests\Feature\Integration;
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
 use App\Enums\Integration\IntegrationOutboxStatus;
 use App\Jobs\Integration\IntegrationOutboxDeliveryJob;
-use App\Models\{IntegrationInboxItem, IntegrationOutboxEntry};
+use App\Models\Integration\{IntegrationInboxItem, IntegrationOutboxEntry};
 use App\Services\Integration\{IntegrationOutboxDispatcherResolver, IntegrationOutboxService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;

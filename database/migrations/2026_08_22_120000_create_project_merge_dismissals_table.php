@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Merkt Projekt-Paare, die der Anwender im Projekt-Abgleich bewusst als „kein
- * Duplikat" markiert hat. Der {@see \App\Services\ProjectDuplicateFinder} schlägt
+ * Duplikat" markiert hat. Der {@see \App\Services\Stammdaten\ProjectDuplicateFinder} schlägt
  * diese Paare danach nicht mehr vor. Das Paar wird normalisiert (kleinere ID
  * zuerst), damit Reihenfolge keine Rolle spielt.
  */

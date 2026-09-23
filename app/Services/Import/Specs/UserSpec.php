@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Import\Specs;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Import\{ImportOutcome, ValidationIssue};
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Support\Str;

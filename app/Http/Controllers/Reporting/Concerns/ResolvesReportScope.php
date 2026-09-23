@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers\Reporting\Concerns;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 

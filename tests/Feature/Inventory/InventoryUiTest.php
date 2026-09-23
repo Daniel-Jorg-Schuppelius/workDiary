@@ -11,7 +11,9 @@
 namespace Tests\Feature\Inventory;
 
 use App\Enums\Inventory\StockCountType;
-use App\Models\{Article, ArticleVariant, LabelTemplate, StockCount, User, Warehouse};
+use App\Models\{Article, ArticleVariant, StockCount, Warehouse};
+use App\Models\Platform\User;
+use App\Models\Print\LabelTemplate;
 use App\Services\Inventory\{InventoryLedger, StocktakeService, ValuationService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

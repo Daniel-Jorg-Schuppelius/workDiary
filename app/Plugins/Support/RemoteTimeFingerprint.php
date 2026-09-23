@@ -16,7 +16,7 @@ use CommonToolkit\Helper\Data\CryptoHelper;
 /**
  * Fingerabdruck eines importierten Zeiteintrags im Fremdsystem.
  *
- * Wird beim Import in der {@see \App\Models\ExternalReference} hinterlegt und
+ * Wird beim Import in der {@see \App\Models\Integration\ExternalReference} hinterlegt und
  * vor dem Zurückschreiben erneut über den dann aktuellen Fremdstand gebildet.
  * Weichen die beiden ab, hat jemand drüben nachgearbeitet — dann wird nicht
  * überschrieben, sondern ein Konflikt in die Inbox gestellt.

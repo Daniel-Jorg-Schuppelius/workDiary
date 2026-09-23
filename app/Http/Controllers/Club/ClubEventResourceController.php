@@ -14,8 +14,9 @@ namespace App\Http\Controllers\Club;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Club\SaveResourceBookingRequest;
+use App\Models\Calendar\Event;
 use App\Models\Club\{ClubEventDetails, ClubMember, ClubResource, ClubResourceBooking};
-use App\Models\{Event, User};
+use App\Models\Platform\User;
 use App\Services\Club\ClubResourceService;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;

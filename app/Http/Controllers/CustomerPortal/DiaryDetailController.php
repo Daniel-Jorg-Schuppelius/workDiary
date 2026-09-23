@@ -11,7 +11,9 @@
 namespace App\Http\Controllers\CustomerPortal;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Attachment, DiaryEntry, MaterialUsage, TimeEntry, User};
+use App\Models\Attachments\Attachment;
+use App\Models\{DiaryEntry, MaterialUsage, TimeEntry};
+use App\Models\Platform\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, URL};
 use Illuminate\View\View;

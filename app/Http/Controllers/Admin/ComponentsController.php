@@ -234,7 +234,7 @@ class ComponentsController extends Controller {
         Gate::authorize(Permission::MetricsView->value);
 
         $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
-        abort_unless($organization instanceof \App\Models\Organization, 404);
+        abort_unless($organization instanceof \App\Models\Platform\Organization, 404);
 
         $document = $vex->generate($organization);
         $json = JsonHelper::encode($document, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
@@ -356,7 +356,7 @@ class ComponentsController extends Controller {
     }
 
     /** Routinehinweis zurückstellen (auditiert via ComponentUpdate). */
-    public function snoozeUpdate(\Illuminate\Http\Request $request, \App\Models\ComponentUpdate $componentUpdate): RedirectResponse {
+    public function snoozeUpdate(\Illuminate\Http\Request $request, \App\Models\Platform\ComponentUpdate $componentUpdate): RedirectResponse {
         Gate::authorize(Permission::MetricsView->value);
         // Update-Stand und Hinweise gelten für die ganze Installation
         // (Sicherheitsaudit 2026-09-17, tenant-platform-ops-4).
@@ -369,7 +369,7 @@ class ComponentsController extends Controller {
     }
 
     /** Hinweis dauerhaft quittieren (Anzeige bleibt, Meldungen stumm). */
-    public function acknowledgeUpdate(\Illuminate\Http\Request $request, \App\Models\ComponentUpdate $componentUpdate): RedirectResponse {
+    public function acknowledgeUpdate(\Illuminate\Http\Request $request, \App\Models\Platform\ComponentUpdate $componentUpdate): RedirectResponse {
         Gate::authorize(Permission::MetricsView->value);
         // Update-Stand und Hinweise gelten für die ganze Installation
         // (Sicherheitsaudit 2026-09-17, tenant-platform-ops-4).

@@ -14,7 +14,7 @@ namespace App\Services\Applications;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Applications\{EmployeeDraft, JobApplication, JobPosting};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Notification\NotificationDispatcher;
 use App\Support\Crypto\BlindIndex;
 use Illuminate\Support\Facades\{DB, Hash, Log, Storage};
@@ -309,7 +309,7 @@ class RecruitingService {
 
         // Vollaudit 2026-07 (H8): Lizenz-Nutzerlimit auch bei Übernahme aus dem Recruiting.
         app(\App\Services\Licensing\LimitGuard::class)->ensureCanCreateUser(
-            \App\Models\Organization::query()->withoutGlobalScopes()->findOrFail((int) $draft->organization_id),
+            \App\Models\Platform\Organization::query()->withoutGlobalScopes()->findOrFail((int) $draft->organization_id),
             $actor,
         );
 

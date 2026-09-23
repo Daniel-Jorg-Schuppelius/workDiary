@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Club;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Club\{SavePerformanceRequest, SaveStartRightRequest};
 use App\Models\Club\{ClubMember, ClubPerformance, ClubSportProfile, ClubStartRight};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Club\ClubCompetitionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Auth, Gate};

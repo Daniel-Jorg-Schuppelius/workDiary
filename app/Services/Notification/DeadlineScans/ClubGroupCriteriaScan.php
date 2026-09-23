@@ -14,7 +14,7 @@ namespace App\Services\Notification\DeadlineScans;
 
 use App\Enums\Club\ClubGroupMembershipStatus;
 use App\Models\Club\ClubGroupMembership;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Club\{ClubFeeService, ClubGroupService, ClubMemberService};
 use App\Services\Notification\NotificationDispatcher;
 use Carbon\CarbonImmutable;

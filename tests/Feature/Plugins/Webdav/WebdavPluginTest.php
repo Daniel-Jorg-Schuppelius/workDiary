@@ -12,7 +12,10 @@ namespace Tests\Feature\Plugins\Webdav;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
 use App\Jobs\Integration\IntegrationOutboxDeliveryJob;
-use App\Models\{Document, DocumentVersion, ExternalReference, IntegrationOutboxEntry, User, WebdavConnection};
+use App\Models\Document\{Document, DocumentVersion};
+use App\Models\Integration\{ExternalReference, IntegrationOutboxEntry};
+use App\Models\Platform\User;
+use App\Models\Plugins\Webdav\WebdavConnection;
 use App\Plugins\{PluginDiscovery, PluginHealth};
 use App\Plugins\Support\Mirror\{DocumentMirrorService, MirrorOutboxDispatcher, RemoteFileGateway};
 use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;

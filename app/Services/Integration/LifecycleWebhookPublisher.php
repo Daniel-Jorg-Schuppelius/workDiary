@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Integration;
 
 use App\Enums\Integration\WebhookEvent;
-use App\Models\{Customer, Invoice, Project, Protocol, PurchaseOrder, ServiceTicket, Supplier, Timesheet};
+use App\Models\Customer\Customer;
+use App\Models\{Invoice, Protocol, PurchaseOrder, ServiceTicket, Supplier, Timesheet};
+use App\Models\Project\Project;
 use App\Support\Sqid;
 use Illuminate\Support\Facades\Log;
 use Throwable;

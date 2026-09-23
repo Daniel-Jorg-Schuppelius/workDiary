@@ -11,7 +11,7 @@
 namespace Tests\Feature\Licensing;
 
 use App\Enums\Licensing\ModuleStatus;
-use App\Models\{LicenseFlagOverride, Organization};
+use App\Models\Platform\{LicenseFlagOverride, Organization};
 use App\Services\Licensing\ModuleStatusResolver;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

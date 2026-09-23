@@ -12,7 +12,7 @@ namespace App\Http\Controllers\CustomerPortal;
 
 use App\Http\Controllers\Controller;
 use App\Models\Billing\{CustomerBillingAgreement, CustomerBillingStatement};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Billing\CustomerAccountStatementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, URL};

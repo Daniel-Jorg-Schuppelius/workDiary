@@ -14,7 +14,7 @@ namespace App\Http\Requests\Club;
 
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use App\Rules\ExistsInCurrentOrganization;
 
 /** Beitragskonto (MVP-849): bestehender Kunde oder neuer Debitor. */

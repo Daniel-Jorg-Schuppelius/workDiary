@@ -14,7 +14,9 @@ namespace App\Console\Commands\Operations;
 
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskType};
 use App\Enums\Support\ProblemReportStatus;
-use App\Models\{Organization, ProblemReport, SupportAccessGrant};
+use App\Models\Auth\SupportAccessGrant;
+use App\Models\Platform\Organization;
+use App\Models\ProblemReport;
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use Illuminate\Console\Command;
 
@@ -103,7 +105,7 @@ class OperationsScanCommand extends Command {
      * das deckt die Onboarding-Checkliste (backup.heartbeat) ab.
      */
     private function scanBackupHeartbeat(OperationsAlertService $alerts): void {
-        $last = \App\Models\BackupHeartbeat::query()->orderByDesc('occurred_at')->first();
+        $last = \App\Models\Platform\BackupHeartbeat::query()->orderByDesc('occurred_at')->first();
         if ($last === null) {
             return;
         }
@@ -134,12 +136,12 @@ class OperationsScanCommand extends Command {
     private function scanRestoreTests(OperationsAlertService $alerts): void {
         // Ohne Backup-Betrieb (kein Heartbeat) wäre eine Restore-Test-
         // Aufgabe reiner Lärm auf Frischinstallationen.
-        if (!\App\Models\BackupHeartbeat::query()->exists()) {
+        if (!\App\Models\Platform\BackupHeartbeat::query()->exists()) {
             return;
         }
 
         $thresholdDays = (int) \App\Support\Setting::get('backup.restore_test_overdue_days', 180);
-        $lastTest = \App\Models\RestoreTest::query()->orderByDesc('tested_on')->first();
+        $lastTest = \App\Models\Platform\RestoreTest::query()->orderByDesc('tested_on')->first();
 
         if ($lastTest === null) {
             $alerts->report(new OperationsSignal(

@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Admin;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode, ImportRunState};
-use App\Models\{ImportRun, Material, User, Vehicle};
+use App\Models\Integration\ImportRun;
+use App\Models\{Material, Vehicle};
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;

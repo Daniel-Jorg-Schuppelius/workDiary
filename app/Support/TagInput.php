@@ -10,7 +10,7 @@
 
 namespace App\Support;
 
-use App\Models\Tag;
+use App\Models\Classification\Tag;
 
 /**
  * Kanonische Normalisierung der Tag-Formularfelder (Vollaudit 2026-07, M40) —

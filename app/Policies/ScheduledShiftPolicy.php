@@ -10,7 +10,8 @@
 
 namespace App\Policies;
 
-use App\Models\{ScheduledShift, User};
+use App\Models\Platform\User;
+use App\Models\ScheduledShift;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class ScheduledShiftPolicy {

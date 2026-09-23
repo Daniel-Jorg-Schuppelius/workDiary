@@ -18,13 +18,13 @@
         ['min_minutes' => $minMinutes > 0 ? $minMinutes : null, 'hide_zero' => $hideZero ? 1 : null],
         $standardFilters->toQueryParams(),
     ));
-    $customerUrl = fn (int $id): string => route('customers.show', \App\Support\Sqid::encode(\App\Models\Customer::class, $id));
+    $customerUrl = fn (int $id): string => route('customers.show', \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $id));
     $diaryRangeUrl = fn (int $id): string => route('diary.index', [
-        'customer' => \App\Support\Sqid::encode(\App\Models\Customer::class, $id),
+        'customer' => \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $id),
         'from' => $from->toDateString(),
         'to' => $to->toDateString(),
-        'project' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId),
-        'user' => \App\Support\Sqid::encode(\App\Models\User::class, $userId),
+        'project' => \App\Support\Sqid::encode(\App\Models\Project\Project::class, $projectId),
+        'user' => \App\Support\Sqid::encode(\App\Models\Platform\User::class, $userId),
     ]);
 @endphp
 
@@ -87,9 +87,9 @@
                     <td><a href="{{ $customerUrl($row['customerId']) }}" class="link link-hover">{{ $row['customerName'] }}</a></td>
                     <td class="text-right tabular-nums">
                         <a href="{{ route('reports.customers.drilldown.protocols', array_filter([
-                            'customer_id' => \App\Support\Sqid::encode(\App\Models\Customer::class, $row['customerId']),
-                            'project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId),
-                            'user_id' => \App\Support\Sqid::encode(\App\Models\User::class, $userId),
+                            'customer_id' => \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $row['customerId']),
+                            'project_id' => \App\Support\Sqid::encode(\App\Models\Project\Project::class, $projectId),
+                            'user_id' => \App\Support\Sqid::encode(\App\Models\Platform\User::class, $userId),
                         ])) }}" class="link link-hover">{{ $row['reworkEntryCount'] }}</a>
                     </td>
                 </tr>
@@ -140,9 +140,9 @@
                     @php
                         $diaryUrl = $diaryRangeUrl($row['customerId']);
                         $reportDrilldownBase = array_filter([
-                            'customer_id' => \App\Support\Sqid::encode(\App\Models\Customer::class, $row['customerId']),
-                            'project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId),
-                            'user_id' => \App\Support\Sqid::encode(\App\Models\User::class, $userId),
+                            'customer_id' => \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $row['customerId']),
+                            'project_id' => \App\Support\Sqid::encode(\App\Models\Project\Project::class, $projectId),
+                            'user_id' => \App\Support\Sqid::encode(\App\Models\Platform\User::class, $userId),
                         ]);
                     @endphp
                     <tr>

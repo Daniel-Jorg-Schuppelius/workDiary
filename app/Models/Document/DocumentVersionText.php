@@ -8,14 +8,15 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Document;
 
 use App\Enums\Document\DocumentTextFailure;
-use Database\Factories\DocumentVersionTextFactory;
+use Database\Factories\Document\DocumentVersionTextFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use App\Models\Document\Document\DocumentVersion;
 
 /**
  * Ausgelesener Text einer Dokumentversion (MVP-819) — abgeleitetes Material

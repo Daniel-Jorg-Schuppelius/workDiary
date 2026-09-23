@@ -14,7 +14,8 @@ namespace App\Services\Procurement;
 
 use App\Enums\Article\{ArticleStatus, ArticleType};
 use App\Enums\Procurement\CatalogItemStatus;
-use App\Models\{Article, ArticleOptionDefinition, ArticleOptionValue, ArticleVariant, Organization, SupplierCatalogItem, SupplierCatalogSource};
+use App\Models\{Article, ArticleOptionDefinition, ArticleOptionValue, ArticleVariant, SupplierCatalogItem, SupplierCatalogSource};
+use App\Models\Platform\Organization;
 use App\Services\Article\{ArticleService, VariantResolver};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;

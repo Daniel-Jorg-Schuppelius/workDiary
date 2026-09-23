@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Mail;
 
 use App\Models\Club\ClubFeeClaim;
-use App\Models\DocumentDispatch;
+use App\Models\Document\DocumentDispatch;
 use App\Services\Club\ClubFeeNoticePdfRenderer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

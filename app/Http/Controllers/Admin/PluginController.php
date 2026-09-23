@@ -12,7 +12,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{AuditLog, PluginSetting, PluginState, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{PluginSetting, PluginState, User};
 use App\Plugins\{PluginCompatibility, PluginManager};
 use App\Support\{ErrorText, MorphMap};
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
@@ -57,7 +58,7 @@ class PluginController extends Controller {
 
         // Offene Fehler je Plugin (W4a): Badge in der Übersicht verlinkt auf die
         // gefilterte Inbox — eigener Org-Scope + globale Fehler, ein Query.
-        $errorCounts = \App\Models\PluginError::query()
+        $errorCounts = \App\Models\Platform\PluginError::query()
             ->whereNull('acknowledged_at')
             ->where(function ($q) use ($organizationId): void {
                 $q->whereNull('organization_id')->orWhere('organization_id', $organizationId);

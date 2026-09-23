@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Ai;
 
 use App\Models\Ai\AiProviderConnection;
-use App\Models\{AuditLog, Organization};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\Organization;
 use App\Services\Ai\Contracts\{AiRequestInterface, LlmProviderInterface, TranslatesTextInterface};
 use App\Services\Ai\Dto\{AiCapability, AiClassificationResult, AiExtractionResult, AiFindResult, AiInvocationResult, AiTextResult, AiTranslationResult, ClassifyRequest, ExplainRequest, ExtractRequest, FindRequest, FormulateRequest, SummarizeRequest, TranslateRequest};
 use App\Services\Ai\Exceptions\{AiException, AiUnavailableException};
@@ -146,7 +147,7 @@ class AiInvocationService {
             $actor = Auth::user();
             AuditLog::create([
                 'organization_id' => $organization->id,
-                'user_id' => $actor instanceof \App\Models\User ? (int) $actor->getKey() : null,
+                'user_id' => $actor instanceof \App\Models\Platform\User ? (int) $actor->getKey() : null,
                 'event' => 'ai.invoked',
                 'auditable_type' => MorphMap::stableKey($connection::class),
                 'auditable_id' => $connection->getKey(),

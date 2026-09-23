@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\CalDav\Console;
 
-use App\Models\CalDavConnection;
+use App\Models\Plugins\CalDav\CalDavConnection;
 use App\Plugins\CalDav\Services\CalDavCalendarImportService;
 use Illuminate\Console\Command;
 use Throwable;

@@ -11,7 +11,8 @@
 namespace Tests\Feature\Agile;
 
 use App\Models\Agile\AgileBoard;
-use App\Models\{Organization, Project, User};
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
 use App\Services\Agile\{AgileBoardService, AgileConflictException};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

@@ -11,7 +11,7 @@
 namespace Tests\Feature\Privacy;
 
 use App\Enums\Privacy\{AgreementStatus, ProcessorRole};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\{ProcessingAgreement, Processor};
 use App\Services\Privacy\{AgreementService, DataProtectionPermissions};
 use Illuminate\Foundation\Testing\RefreshDatabase;

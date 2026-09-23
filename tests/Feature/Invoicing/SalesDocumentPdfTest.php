@@ -12,7 +12,10 @@ namespace Tests\Feature\Invoicing;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Mail\DunningMail;
-use App\Models\{Customer, Invoice, Organization, Quote, User};
+use App\Models\Customer\Customer;
+use App\Models\Invoice;
+use App\Models\Platform\{Organization, User};
+use App\Models\Sales\Quote;
 use App\Services\DocumentDesign\{DocumentDesignRenderer, RenderProfileService};
 use App\Services\Invoicing\{DunningPdfRenderer, OrderConfirmationPdfRenderer, QuotePdfRenderer, QuoteService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -190,7 +193,7 @@ class SalesDocumentPdfTest extends TestCase {
         $this->assertDatabaseHas('document_dispatches', [
             'invoice_id' => $invoice->id,
         ]);
-        $dispatch = \App\Models\DocumentDispatch::query()->firstOrFail();
+        $dispatch = \App\Models\Document\DocumentDispatch::query()->firstOrFail();
         $this->assertSame('dunning', $dispatch->meta['kind'] ?? null);
         $this->assertSame(12.5, (float) ($dispatch->meta['fee'] ?? 0));
     }

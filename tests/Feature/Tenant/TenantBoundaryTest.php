@@ -10,7 +10,14 @@
 
 namespace Tests\Feature\Tenant;
 
-use App\Models\{CommunicationNote, Document, Event, FeatureUsageCounter, FormSubmission, FormTemplate, KnowledgeArticle, Milestone, Organization, PerDiemTrip, Project, Task, TimeEntry, Timesheet, User};
+use App\Models\Calendar\Event;
+use App\Models\Communication\CommunicationNote;
+use App\Models\Document\Document;
+use App\Models\Form\{FormSubmission, FormTemplate};
+use App\Models\Knowledge\KnowledgeArticle;
+use App\Models\{PerDiemTrip, TimeEntry, Timesheet};
+use App\Models\Platform\{FeatureUsageCounter, Organization, User};
+use App\Models\Project\{Milestone, Project, Task};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -94,7 +101,7 @@ class TenantBoundaryTest extends TestCase {
     }
 
     public function test_billing_transfer_is_not_visible_cross_organization(): void {
-        $customerB = $this->withOrg($this->orgB, fn() => \App\Models\Customer::factory()->create());
+        $customerB = $this->withOrg($this->orgB, fn() => \App\Models\Customer\Customer::factory()->create());
         $transferB = $this->withOrg($this->orgB, fn() => \App\Models\Finance\BillingTransfer::factory()->create([
             'customer_id' => $customerB->id,
             'created_by_user_id' => $this->userB->id,
@@ -145,7 +152,7 @@ class TenantBoundaryTest extends TestCase {
         $allocationB = $this->withOrg($this->orgB, function () {
             $statement = \App\Models\Finance\BankStatement::factory()->create();
             $transaction = \App\Models\Finance\BankTransaction::factory()->create(['bank_statement_id' => $statement->id]);
-            $customer = \App\Models\Customer::factory()->create();
+            $customer = \App\Models\Customer\Customer::factory()->create();
             $invoice = \App\Models\Invoice::create([
                 'organization_id' => $this->orgB->id,
                 'customer_id' => $customer->id,
@@ -798,7 +805,7 @@ class TenantBoundaryTest extends TestCase {
     }
 
     public function test_availability_window_is_not_visible_cross_organization(): void {
-        $windowB = $this->withOrg($this->orgB, fn() => \App\Models\AvailabilityWindow::factory()->create([
+        $windowB = $this->withOrg($this->orgB, fn() => \App\Models\Calendar\AvailabilityWindow::factory()->create([
             'organization_id' => $this->orgB->id,
             'user_id' => $this->userB->id,
         ]));
@@ -806,8 +813,8 @@ class TenantBoundaryTest extends TestCase {
         $this->assertSame((int) $this->orgB->id, (int) $windowB->organization_id);
 
         app()->instance('currentOrganization', $this->orgA);
-        $this->assertNull(\App\Models\AvailabilityWindow::find($windowB->id));
-        $this->assertSame(0, \App\Models\AvailabilityWindow::query()->count());
+        $this->assertNull(\App\Models\Calendar\AvailabilityWindow::find($windowB->id));
+        $this->assertSame(0, \App\Models\Calendar\AvailabilityWindow::query()->count());
     }
 
     public function test_desired_shift_is_not_visible_cross_organization(): void {

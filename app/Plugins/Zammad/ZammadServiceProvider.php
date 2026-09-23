@@ -10,7 +10,8 @@
 
 namespace App\Plugins\Zammad;
 
-use App\Models\{Task, TimeEntry};
+use App\Models\Project\Task;
+use App\Models\TimeEntry;
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Plugins\Zammad\Contracts\ZammadGatewayFactory;
 use App\Plugins\Zammad\Observers\{ZammadTaskObserver, ZammadTimeEntryObserver};

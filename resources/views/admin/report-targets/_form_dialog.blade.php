@@ -10,7 +10,7 @@
   Feature 002 (Zielwerte): Dialog zum Anlegen/Bearbeiten eines Zielwerts.
 --}}
 @php
-    /** @var \App\Models\ReportTarget $target */
+    /** @var \App\Models\Reporting\ReportTarget $target */
     $isEdit = $target?->exists ?? false;
     $currentScope = old('scope', $target->scope?->value ?? 'org');
     $currentScopeId = old('scope_id', $target->scope_id);
@@ -65,7 +65,7 @@
                     <select name="scope_id" class="select select-bordered select-sm w-full">
                         <option value="">{{ __('reporting.target.none') }}</option>
                         <x-project-options :projects="$projects"
-                            :selected="$currentScope === 'project' ? \App\Support\Sqid::encode(\App\Models\Project::class, $currentScopeId) : ''" />
+                            :selected="$currentScope === 'project' ? \App\Support\Sqid::encode(\App\Models\Project\Project::class, $currentScopeId) : ''" />
                     </select>
                 </template>
                 <template x-if="is('user')">

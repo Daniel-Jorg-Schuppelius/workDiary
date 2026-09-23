@@ -10,7 +10,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{CommunicationNote, DiaryEntry, Document, MaterialUsage, Protocol, TimeEntry, User};
+use App\Models\Communication\CommunicationNote;
+use App\Models\{DiaryEntry, MaterialUsage, Protocol, TimeEntry};
+use App\Models\Document\Document;
+use App\Models\Platform\User;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Timeline\DiaryEntryTimelineService;
 use Illuminate\Support\Facades\{Auth, Gate};

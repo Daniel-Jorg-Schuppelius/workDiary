@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Finance\ProcedureDocumentation\Sections;
 
 use App\Models\Accounting\{AccountingAccount, AccountingFiscalYear, AccountingProfile};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Accounting\{AccountingSovereigntyResolver, ChartOfAccountsTemplateService, TaxationMethodResolver, VatFilingProfileResolver};
 use App\Services\Finance\ProcedureDocumentation\{FormatsSectionValues, ProcedureSection, SectionContext};
 

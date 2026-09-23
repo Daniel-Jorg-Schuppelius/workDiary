@@ -16,7 +16,7 @@ use App\Enums\Claims\{ClaimRmaDisposition, ClaimRmaStatus};
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState};
 use App\Enums\Numbering\NumberScope;
 use App\Models\Claims\{ClaimCase, ClaimInspection, ClaimRmaReturn};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Inventory\{InventoryLedger, SerialService, StockPosting};
 use App\Services\Numbering\NumberSequenceService;
 use Illuminate\Support\Facades\DB;

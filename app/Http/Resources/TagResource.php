@@ -10,7 +10,7 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Tag;
+use App\Models\Classification\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 

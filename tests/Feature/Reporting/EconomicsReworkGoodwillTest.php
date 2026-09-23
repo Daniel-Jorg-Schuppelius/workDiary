@@ -10,7 +10,11 @@
 
 namespace Tests\Feature\Reporting;
 
-use App\Models\{Classification, Customer, Project, TimeEntry, User};
+use App\Models\Classification\Classification;
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use App\Services\Reporting\EconomicsReportBuilder;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

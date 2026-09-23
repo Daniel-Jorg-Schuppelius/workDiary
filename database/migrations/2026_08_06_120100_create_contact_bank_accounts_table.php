@@ -40,7 +40,7 @@ return new class extends Migration {
             $table->index(['accountable_type', 'accountable_id'], 'contact_bank_accounts_owner_idx');
         });
 
-        $this->backfill('customers', \App\Models\Customer::class);
+        $this->backfill('customers', \App\Models\Customer\Customer::class);
         $this->backfill('suppliers', \App\Models\Supplier::class);
     }
 

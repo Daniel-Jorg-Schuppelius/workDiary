@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy\SubjectData;
 
-use App\Models\{Customer, Lead};
+use App\Models\Customer\Customer;
+use App\Models\Sales\Lead;
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
 
@@ -39,7 +40,7 @@ class CommunicationNotesSection extends AbstractSubjectSection {
             $this->family(
                 'communication_notes',
                 __('Kommunikationsnotizen'),
-                \App\Models\CommunicationNote::query()->withoutGlobalScopes()
+                \App\Models\Communication\CommunicationNote::query()->withoutGlobalScopes()
                     ->where('organization_id', (int) $subject->getAttribute('organization_id'))
                     ->where('notable_type', $subject->getMorphClass())
                     ->where('notable_id', $subject->getKey()),

@@ -13,7 +13,9 @@ namespace Tests\Feature\DocumentDesign;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Enums\Protocol\ProtocolType;
 use App\Enums\Timesheet\TimesheetStatus;
-use App\Models\{DiaryEntry, Organization, Project, Timesheet, User};
+use App\Models\{DiaryEntry, Timesheet};
+use App\Models\Platform\{Organization, User};
+use App\Models\Project\Project;
 use App\Services\DocumentDesign\{DocumentDesignRenderer, RenderProfileService};
 use App\Services\Protocol\ProtocolService;
 use App\Services\Timesheet\SignatureService;
@@ -54,7 +56,7 @@ class EvidenceSnapshotTest extends TestCase {
     /** Aktiviert nach dem Einfrieren eine NEUE Profilversion (Profilwechsel). */
     private function supersedeActiveVersion(): void {
         $profiles = app(RenderProfileService::class);
-        $profile = \App\Models\DocumentDesign\DocumentRenderProfile::query()->where('is_default', true)->firstOrFail();
+        $profile = \App\Models\Document\DocumentDesign\DocumentRenderProfile::query()->where('is_default', true)->firstOrFail();
         $draft = $profiles->newDraftFrom($profile->versions()->orderByDesc('version')->firstOrFail(), $this->admin);
         $this->assertTrue($profiles->activate($draft, $this->admin)->ok());
         $this->assertNotSame($this->frozenVersionId, (int) $profile->refresh()->active_version_id);
@@ -107,7 +109,7 @@ class EvidenceSnapshotTest extends TestCase {
     }
 
     public function test_form_submission_freezes_design_snapshot(): void {
-        $template = \App\Models\FormTemplate::factory()->active()->create([
+        $template = \App\Models\Form\FormTemplate::factory()->active()->create([
             'organization_id' => $this->org->id,
             'created_by_user_id' => $this->admin->id,
             'fields' => [

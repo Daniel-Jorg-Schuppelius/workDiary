@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\GoogleCalendar\Services;
 
-use App\Models\{Event, ExternalReference, GoogleCalendarConnection, IntegrationInboxItem};
+use App\Models\Calendar\Event;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Plugins\GoogleCalendar\GoogleCalendarConnection;
 use App\Plugins\GoogleCalendar\Api\GoogleCalendarClient;
 use App\Plugins\GoogleCalendar\GoogleCalendarPlugin;
 use App\Plugins\Support\Calendar\RemoteCalendarPublishService;

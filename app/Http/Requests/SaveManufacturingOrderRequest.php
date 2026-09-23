@@ -24,7 +24,7 @@ class SaveManufacturingOrderRequest extends BaseFormRequest {
         'article' => \App\Models\Article::class,
         'variant' => \App\Models\ArticleVariant::class,
         'warehouse' => \App\Models\Warehouse::class,
-        'customer' => \App\Models\Customer::class,
+        'customer' => \App\Models\Customer\Customer::class,
     ];
 
     /** @return array<string, mixed> */

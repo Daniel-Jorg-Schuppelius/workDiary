@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Audit;
 
-use App\Models\{AuditLog, Organization, User};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\{Organization, User};
 use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\{JsonHelper, StringHelper};
 use Illuminate\Console\Command;

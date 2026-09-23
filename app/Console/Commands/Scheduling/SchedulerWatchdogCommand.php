@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Scheduling;
 
 use App\Enums\Scheduling\JobRunStatus;
-use App\Models\{ScheduledJobOverride, ScheduledJobRun, ScheduledJobState};
+use App\Models\Platform\{ScheduledJobOverride, ScheduledJobRun, ScheduledJobState};
 use App\Scheduling\{JobRegistry, SchedulerRegistrar};
 use App\Support\Setting;
 use Carbon\CarbonImmutable;
@@ -152,11 +152,11 @@ class SchedulerWatchdogCommand extends Command {
 
         return $this->pluginActiveCache[$binding] ??= (function () use ($binding): bool {
             if ($binding === '*') {
-                return \App\Models\PluginSetting::anyPluginEnabled();
+                return \App\Models\Platform\PluginSetting::anyPluginEnabled();
             }
 
             foreach (explode(',', $binding) as $pluginId) {
-                if (\App\Models\PluginSetting::enabledAnywhere(trim($pluginId))) {
+                if (\App\Models\Platform\PluginSetting::enabledAnywhere(trim($pluginId))) {
                     return true;
                 }
             }

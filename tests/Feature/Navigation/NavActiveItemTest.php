@@ -94,7 +94,7 @@ class NavActiveItemTest extends TestCase {
      * jeweils zwei Punkte gleichzeitig hell.
      */
     public function test_no_real_page_lights_up_two_entries(): void {
-        $user = \App\Models\User::factory()->admin()->create();
+        $user = \App\Models\Platform\User::factory()->admin()->create();
         $this->actingAs($user);
 
         foreach ([

@@ -31,9 +31,9 @@ class SaveDisposalJobRequest extends BaseFormRequest {
      * @var array<string, class-string>
      */
     protected array $sqidFields = [
-        'customer_id' => \App\Models\Customer::class,
+        'customer_id' => \App\Models\Customer\Customer::class,
         'diary_entry_id' => \App\Models\DiaryEntry::class,
-        'responsible_user_id' => \App\Models\User::class,
+        'responsible_user_id' => \App\Models\Platform\User::class,
     ];
 
     /** @return array<string, mixed> */

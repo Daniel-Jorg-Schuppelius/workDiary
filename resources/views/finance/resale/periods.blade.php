@@ -64,7 +64,7 @@
                                 <td class="whitespace-nowrap"><span class="font-mono text-xs">{{ $line->voucherNumber }}</span> <span class="text-xs text-muted tabular-nums">{{ $line->voucherDate?->fdate() }}</span></td>
                                 <td class="text-sm">
                                     @if ($line->recipientCustomerId !== null)
-                                        <a href="{{ route('finance.resale.reconcile.show', \App\Support\Sqid::encode(\App\Models\Customer::class, $line->recipientCustomerId)) }}" class="link link-hover">{{ $line->recipientName ?? '—' }}</a>
+                                        <a href="{{ route('finance.resale.reconcile.show', \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $line->recipientCustomerId)) }}" class="link link-hover">{{ $line->recipientName ?? '—' }}</a>
                                     @else
                                         {{ $line->recipientName ?? '—' }}
                                     @endif

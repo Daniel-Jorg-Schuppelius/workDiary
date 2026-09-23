@@ -11,8 +11,9 @@
 namespace Tests\Feature\Notification;
 
 use App\Enums\Notification\{NotificationEvent, SmsDeliveryStatus};
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
+use App\Models\Platform\User;
 use App\Plugins\PluginManager;
 use App\Plugins\SevenIo\SevenIoPlugin;
 use App\Plugins\Sipgate\SipgatePlugin;

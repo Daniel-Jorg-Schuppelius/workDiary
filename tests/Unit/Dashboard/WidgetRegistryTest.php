@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Dashboard;
 
 use App\Dashboard\{Widget, WidgetRegistry};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Contracts\View\View;
 use PHPUnit\Framework\TestCase;
 

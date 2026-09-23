@@ -12,8 +12,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\{AttendanceTerminal, AuditLog, User};
+use App\Models\AttendanceTerminal;
+use App\Models\Audit\AuditLog;
 use App\Models\Location\LocationDeviceToken;
+use App\Models\Platform\User;
 use App\Services\Auth\UserSessionInvalidator;
 use App\Services\Security\SessionManagementService;
 use App\Support\{MorphMap, Sqid};
@@ -231,7 +233,7 @@ class SessionController extends Controller {
         return back()->with('success', __('sessions.flash.terminal_deactivated'));
     }
 
-    private function organization(Request $request): \App\Models\Organization {
+    private function organization(Request $request): \App\Models\Platform\Organization {
         /** @var User $actor */
         $actor = $request->user();
         $organization = $actor->organization;

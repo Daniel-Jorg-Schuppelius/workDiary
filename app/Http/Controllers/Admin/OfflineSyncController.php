@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\Sync\SyncCommandStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\SyncCommand;
+use App\Models\Integration\SyncCommand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;

@@ -11,7 +11,10 @@
 namespace Tests\Feature;
 
 use App\Enums\Project\ProjectStatus;
-use App\Models\{Project, Tag, TimeEntry, User};
+use App\Models\Classification\Tag;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\TimeEntry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -94,7 +97,7 @@ class TimeEntryTagsTest extends TestCase {
     }
 
     public function test_foreign_org_tag_id_is_rejected(): void {
-        $foreignOrg = \App\Models\Organization::factory()->create();
+        $foreignOrg = \App\Models\Platform\Organization::factory()->create();
         $foreignTag = Tag::query()->withoutGlobalScopes()->create([
             'name' => 'Fremd',
             'organization_id' => $foreignOrg->id,

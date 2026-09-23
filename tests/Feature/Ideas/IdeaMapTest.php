@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Ideas;
 
-use App\Models\{IdeaNode, User};
+use App\Models\Ideas\IdeaNode;
+use App\Models\Platform\User;
 use App\Services\Ideas\{IdeaMapService, IdeaNodeService};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -14,7 +14,9 @@ namespace App\Models\Disposal;
 
 use App\Enums\Disposal\DisposalProofType;
 use App\Models\Concerns\HasSqid;
-use App\Models\{Document, ExternalContact, User};
+use App\Models\Contacts\ExternalContact;
+use App\Models\Document\Document;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

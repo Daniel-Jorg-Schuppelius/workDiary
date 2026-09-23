@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support;
 
-use App\Models\{ExternalReference, IntegrationInboxItem, Organization, TimeEntry, User};
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\{Organization, User};
+use App\Models\TimeEntry;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
@@ -39,7 +41,7 @@ trait PersistsTimeImportInbox {
             ->forPlugin($organization, $this->pluginId(), $this->entryExternalType())
             ->forExternalId($entryKey)
             ->exists()
-            || \App\Models\ExternalReferenceAlias::query()
+            || \App\Models\Integration\ExternalReferenceAlias::query()
                 ->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
                 ->where('plugin_id', $this->pluginId())

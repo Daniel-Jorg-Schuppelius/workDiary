@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Reselling;
 
 use App\Enums\Reselling\{SubscriptionProvider, SubscriptionStatus};
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use App\Models\Reselling\{ResaleImport, ResalePriceEntry, ResaleSubscription};
 use App\Services\Reselling\Register\MarketplaceImporter;
 use App\Support\XlsxExport;

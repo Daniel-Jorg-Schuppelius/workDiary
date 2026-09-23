@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Collections;
 
-use App\Models\{Tag, User};
+use App\Models\Classification\Tag;
+use App\Models\Platform\User;
 use App\Services\Content\{ContentSubject, ContentSubjectResolver};
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -123,7 +124,7 @@ class KnowledgeHubService {
     }
 
     /**
-     * @param  Builder<\App\Models\CommunicationNote>|Builder<\App\Models\IdeaMap>|Builder<\App\Models\Document>|Builder<\App\Models\Learning\LearningCourse>|Builder<\App\Models\Learning\LearningPath>|Builder<\App\Models\KnowledgeArticle>  $builder
+     * @param  Builder<\App\Models\Communication\CommunicationNote>|Builder<\App\Models\Ideas\IdeaMap>|Builder<\App\Models\Document\Document>|Builder<\App\Models\Learning\LearningCourse>|Builder<\App\Models\Learning\LearningPath>|Builder<\App\Models\Knowledge\KnowledgeArticle>  $builder
      * @param  list<int>|null  $collectionIds
      */
     private function filter(Builder $builder, string $key, string $query, ?int $tagId, ?array $collectionIds): void {

@@ -11,7 +11,8 @@
 namespace Tests\Feature\Plugins\Billbee;
 
 use App\Jobs\Integration\InventoryOutboxDeliveryJob;
-use App\Models\{Article, ArticleVariant, InventoryOutboxEntry, PluginSetting, Warehouse};
+use App\Models\{Article, ArticleVariant, InventoryOutboxEntry, Warehouse};
+use App\Models\Platform\PluginSetting;
 use App\Plugins\Billbee\BillbeePlugin;
 use App\Plugins\Billbee\Services\{BillbeeInventoryProvider, BillbeeStockDispatcher};
 use App\Services\Inventory\{InventoryLedger, InventoryProviderResolver};

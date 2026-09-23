@@ -15,8 +15,8 @@
 
 @section('content')
 @php
-    /** @var \App\Services\OrganizationLifecycleService $orgLifecycle */
-    $orgLifecycle = app(\App\Services\OrganizationLifecycleService::class);
+    /** @var \App\Services\Org\OrganizationLifecycleService $orgLifecycle */
+    $orgLifecycle = app(\App\Services\Org\OrganizationLifecycleService::class);
     $cooldownHours = $orgLifecycle->cooldownHours();
 @endphp
 <x-index-page overflow="clip" :subtitle="__('Mandanten der Plattform verwalten und konfigurieren.')">
@@ -74,7 +74,7 @@
                     <td class="font-mono text-sm text-muted">{{ $org->slug }}</td>
                     <td>
                         <x-status-badge size="sm" :tone="$org->plan === 'enterprise' ? 'primary' : ($org->plan === 'pro' ? 'secondary' : 'ghost')">
-                            {{ \App\Models\Organization::planLabel($org->plan) }}
+                            {{ \App\Models\Platform\Organization::planLabel($org->plan) }}
                         </x-status-badge>
                     </td>
                     <td class="text-center">{{ $org->users_count }}</td>

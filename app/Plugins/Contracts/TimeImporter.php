@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Contracts;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 
 /**
  * Plugins mit dieser Fähigkeit ({@see PluginCapability::TimeImport}) importieren

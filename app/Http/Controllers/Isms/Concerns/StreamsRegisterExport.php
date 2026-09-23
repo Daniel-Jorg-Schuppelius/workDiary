@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Isms\Concerns;
 
 use App\Models\Isms\IsmsScope;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Isms\RegisterExportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, Gate};

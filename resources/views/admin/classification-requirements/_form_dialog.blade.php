@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 @php
-    /** @var \App\Models\ClassificationRequirement $requirement */
+    /** @var \App\Models\Classification\ClassificationRequirement $requirement */
     /** @var array<string, string> $entryTypeOptions */
     /** @var array<string, array{enforce_phase: string, severity: string, min_count: int, max_count: int|null, allow_multi: bool}> $entryTypePresets */
     /** @var array<string, array{enforce_phase: string, severity: string, min_count: int, max_count: int|null, allow_multi: bool}> $requiredDomainPresets */

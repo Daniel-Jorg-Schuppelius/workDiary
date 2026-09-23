@@ -69,11 +69,11 @@ class SurchargeRuleController extends Controller {
     /**
      * MVP-513: Auswahllisten für Regel-Bedingungen (Team/Standort/Schichttyp).
      *
-     * @return array{conditionTeams: \Illuminate\Support\Collection<int, \App\Models\Team>, conditionSites: \Illuminate\Support\Collection<int, \App\Models\Site>, conditionShiftTypes: \Illuminate\Support\Collection<int, \App\Models\ShiftType>}
+     * @return array{conditionTeams: \Illuminate\Support\Collection<int, \App\Models\Platform\Team>, conditionSites: \Illuminate\Support\Collection<int, \App\Models\Site>, conditionShiftTypes: \Illuminate\Support\Collection<int, \App\Models\ShiftType>}
      */
     private function conditionOptions(): array {
         return [
-            'conditionTeams' => \App\Models\Team::query()->orderBy('name')->get(['id', 'name']),
+            'conditionTeams' => \App\Models\Platform\Team::query()->orderBy('name')->get(['id', 'name']),
             'conditionSites' => \App\Models\Site::query()->orderBy('name')->get(['id', 'name']),
             'conditionShiftTypes' => \App\Models\ShiftType::query()->orderBy('name')->get(['id', 'name']),
         ];
@@ -157,7 +157,7 @@ class SurchargeRuleController extends Controller {
         ]);
 
         $conditions = array_filter([
-            'team_ids' => $this->decodeIds(\App\Models\Team::class, $data['condition_team_ids'] ?? []),
+            'team_ids' => $this->decodeIds(\App\Models\Platform\Team::class, $data['condition_team_ids'] ?? []),
             'site_ids' => $this->decodeIds(\App\Models\Site::class, $data['condition_site_ids'] ?? []),
             'shift_type_ids' => $this->decodeIds(\App\Models\ShiftType::class, $data['condition_shift_type_ids'] ?? []),
         ], static fn (array $ids): bool => $ids !== []);

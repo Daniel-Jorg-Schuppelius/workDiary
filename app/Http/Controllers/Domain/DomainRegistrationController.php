@@ -63,7 +63,7 @@ class DomainRegistrationController extends Controller {
         ]);
 
         $connection = $this->connection($data['connection']);
-        $customer = (new \App\Models\Customer())->resolveRouteBinding($data['customer']);
+        $customer = (new \App\Models\Customer\Customer())->resolveRouteBinding($data['customer']);
         if ($customer === null) {
             return back()->with('error', __('domain.errors.customer_required'));
         }

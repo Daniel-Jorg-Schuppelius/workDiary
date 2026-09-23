@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Customers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use App\Services\Peppol\PeppolParticipantService;
 use App\Support\ErrorText;
 use Illuminate\Http\RedirectResponse;

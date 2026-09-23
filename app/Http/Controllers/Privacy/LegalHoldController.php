@@ -14,7 +14,8 @@ namespace App\Http\Controllers\Privacy;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Models\Privacy\{ComplianceFinding, LegalHold};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Privacy\LegalHoldService;

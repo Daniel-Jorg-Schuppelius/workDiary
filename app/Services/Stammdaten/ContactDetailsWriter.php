@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Stammdaten;
 
-use App\Models\{ContactAddress, Customer, Supplier};
+use App\Models\Contacts\ContactAddress;
+use App\Models\Customer\Customer;
+use App\Models\Supplier;
 
 /**
  * Schreibweg für Kontakt-Adresse/-Bankverbindung (Vollscan 2026-08-23, F8,

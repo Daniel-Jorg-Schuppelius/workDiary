@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Diagnostics;
 
-use App\Models\{AuditLog, BackupHeartbeat};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\BackupHeartbeat;
 use App\Services\Diagnostics\{DiagnosticStatus, DiagnosticsService};
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
@@ -102,7 +103,7 @@ class DiagnosticsServiceTest extends TestCase {
         $section = app(DiagnosticsService::class)->checkConnections();
         $this->assertSame(DiagnosticStatus::Unknown, $section->status); // keine Konnektoren konfiguriert
 
-        $connection = \App\Models\EmailConnection::query()->create([
+        $connection = \App\Models\Mail\EmailConnection::query()->create([
             'organization_id' => $this->organization->id,
             'name' => 'Rechnungspostfach',
             'host' => 'imap.example.test',
@@ -122,7 +123,7 @@ class DiagnosticsServiceTest extends TestCase {
         $this->assertSame(DiagnosticStatus::Ok, $section->status);
         $this->assertSame(0, $section->metrics['open_total']);
 
-        \App\Models\OperationsTask::query()->create([
+        \App\Models\Project\OperationsTask::query()->create([
             'organization_id' => $this->organization->id,
             'type' => \App\Enums\Operations\OperationsTaskType::cases()[0]->value,
             'severity' => \App\Enums\Operations\OperationsTaskSeverity::Critical->value,
@@ -139,7 +140,7 @@ class DiagnosticsServiceTest extends TestCase {
     }
 
     public function test_terminals_section_warns_on_stale_active_terminal(): void {
-        $org = \App\Models\Organization::factory()->create();
+        $org = \App\Models\Platform\Organization::factory()->create();
         $this->app->instance('currentOrganization', $org);
 
         // Aktives Terminal ohne Kontakt seit 3 Tagen → stale.
@@ -261,7 +262,7 @@ class DiagnosticsServiceTest extends TestCase {
             'organization_id' => $this->organization->id,
             'user_id' => null,
             'event' => 'backup.completed',
-            'auditable_type' => MorphMap::stableKey(\App\Models\Organization::class),
+            'auditable_type' => MorphMap::stableKey(\App\Models\Platform\Organization::class),
             'auditable_id' => $this->organization->id,
             'changes' => [],
         ]);

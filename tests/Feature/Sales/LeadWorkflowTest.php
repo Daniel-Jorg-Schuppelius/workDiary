@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Sales;
 
 use App\Enums\Sales\LeadStatus;
-use App\Models\{Customer, Lead, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
+use App\Models\Sales\Lead;
 use App\Services\Sales\LeadService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

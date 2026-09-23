@@ -13,7 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Sales;
 
 use App\Enums\Sales\{LeadSource, LeadStatus};
-use App\Models\{AppointmentRequest, Customer, Lead, User};
+use App\Models\Calendar\AppointmentRequest;
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\Sales\Lead;
 use Illuminate\Support\{Carbon, Collection};
 use RuntimeException;
 

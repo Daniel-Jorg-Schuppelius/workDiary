@@ -14,7 +14,7 @@ namespace App\Services\Learning;
 
 use App\Enums\ExternalParticipant\ExternalParty;
 use App\Enums\Learning\LearningCourseStatus;
-use App\Models\ExternalParticipant;
+use App\Models\Communication\ExternalParticipant;
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningLtiPlatform, LearningLtiSubject};
 use App\Services\ExternalParticipant\ExternalParticipantService;
 use App\Support\Sqid;

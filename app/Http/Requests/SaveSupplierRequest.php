@@ -20,7 +20,7 @@ class SaveSupplierRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'tag_ids' => \App\Models\Tag::class,
+        'tag_ids' => \App\Models\Classification\Tag::class,
     ];
 
     /** @return array<string, mixed> */

@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Policies\Finance;
 
 use App\Enums\User\Permission;
-use App\Models\User;
-use App\Policies\PermissionPolicy;
+use App\Models\Platform\User;
+use App\Policies\Auth\PermissionPolicy;
 
 /**
  * Verfahrensdokumentation (Feature 134): bewusst KEIN neues Recht — dasselbe

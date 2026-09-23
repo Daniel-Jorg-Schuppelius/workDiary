@@ -11,7 +11,7 @@
 ])
 
 @php
-    /** @var \App\Models\Organization|null $organization */
+    /** @var \App\Models\Platform\Organization|null $organization */
     $show = $organization !== null && (bool) ($organization->is_demo ?? false);
 @endphp
 

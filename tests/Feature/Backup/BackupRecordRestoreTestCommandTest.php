@@ -11,7 +11,7 @@
 namespace Tests\Feature\Backup;
 
 use App\Enums\Backup\RestoreTestResult;
-use App\Models\{BackupHeartbeat, RestoreTest};
+use App\Models\Platform\{BackupHeartbeat, RestoreTest};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;

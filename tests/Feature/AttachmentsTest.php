@@ -11,7 +11,9 @@
 namespace Tests\Feature;
 
 use App\Enums\Asset\AssetOwnership;
-use App\Models\{Asset, Attachment, DiaryEntry, User};
+use App\Models\{Asset, DiaryEntry};
+use App\Models\Attachments\Attachment;
+use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -58,7 +60,7 @@ class AttachmentsTest extends TestCase {
         $admin = User::factory()->admin()->create();
         $parents = [
             'supplier' => \App\Models\Supplier::factory()->create(['organization_id' => $admin->organization_id]),
-            'knowledge' => \App\Models\KnowledgeArticle::factory()->create(['organization_id' => $admin->organization_id]),
+            'knowledge' => \App\Models\Knowledge\KnowledgeArticle::factory()->create(['organization_id' => $admin->organization_id]),
             'service-ticket' => \App\Models\ServiceTicket::factory()->create(['organization_id' => $admin->organization_id]),
         ];
 

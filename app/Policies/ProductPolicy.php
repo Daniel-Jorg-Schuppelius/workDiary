@@ -11,7 +11,8 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\{Product, User};
+use App\Models\Platform\User;
+use App\Models\Product;
 use App\Policies\Concerns\HasAdminBypass;
 
 /**

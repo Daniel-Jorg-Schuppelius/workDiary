@@ -11,7 +11,7 @@
 namespace Tests\Feature\Console;
 
 use App\Console\Commands\InstallCommand;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Install\InstallationManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery\MockInterface;

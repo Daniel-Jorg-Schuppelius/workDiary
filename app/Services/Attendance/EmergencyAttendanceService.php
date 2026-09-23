@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Attendance;
 
 use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
-use App\Models\{Attendance, AttendanceTerminal, DiaryEntry, SickLeave, TimeEntry, User, Vacation};
+use App\Models\{Attendance, AttendanceTerminal, DiaryEntry, SickLeave, TimeEntry, Vacation};
+use App\Models\Platform\User;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;

@@ -14,7 +14,10 @@ namespace Tests\Feature\Import;
 
 use App\Enums\Import\{ImportEntity, ImportRunState};
 use App\Models\Accounting\AccountingEntry;
-use App\Models\{Customer, ImportRun, Invoice, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ImportRun;
+use App\Models\Invoice;
+use App\Models\Platform\User;
 use App\Services\Accounting\Posting\Adapters\SalesInvoiceAdapter;
 use App\Services\Import\Specs\InvoiceSpec;
 use App\Services\Invoicing\DunningService;

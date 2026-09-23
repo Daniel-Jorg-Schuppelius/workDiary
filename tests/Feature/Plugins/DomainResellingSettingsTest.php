@@ -12,7 +12,7 @@ namespace Tests\Feature\Plugins;
 
 use App\Enums\Domain\DomainProviderEnvironment;
 use App\Models\Domain\DomainProviderConnection;
-use App\Models\{PluginSetting, User};
+use App\Models\Platform\{PluginSetting, User};
 use App\Plugins\DomainReselling\{DomainResellingConfig, DomainResellingPlugin};
 use App\Plugins\Support\Domain\DomainRateBudgetException;
 use App\Services\Domain\DomainAvailabilityService;

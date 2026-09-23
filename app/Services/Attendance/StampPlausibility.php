@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Attendance;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\TimeApproval\DayCloseService;
 use Carbon\CarbonImmutable;
 use Illuminate\Validation\ValidationException;

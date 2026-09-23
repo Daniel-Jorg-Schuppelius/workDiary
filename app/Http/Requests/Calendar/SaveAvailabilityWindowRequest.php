@@ -8,10 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Calendar;
 
 use App\Enums\Shift\AvailabilityKind;
-use App\Models\{AvailabilityWindow, User};
+use App\Models\Calendar\AvailabilityWindow;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;

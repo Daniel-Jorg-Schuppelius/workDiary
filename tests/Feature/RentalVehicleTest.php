@@ -12,7 +12,8 @@ namespace Tests\Feature;
 
 use App\Enums\Travel\TravelLogVehicle;
 use App\Enums\Vehicle\{VehicleOwnership, VehiclePropulsion, VehicleType};
-use App\Models\{DiaryEntry, User, Vehicle};
+use App\Models\{DiaryEntry, Vehicle};
+use App\Models\Platform\User;
 use App\Services\Routing\TourService;
 use Carbon\CarbonImmutable;
 use Database\Seeders\EntryTypeSeeder;
@@ -124,7 +125,7 @@ class RentalVehicleTest extends TestCase {
         // Organisationen sind nicht referenzierbar.
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $driver = User::factory()->user()->create(['organization_id' => $this->organization->id]);
-        $foreignOrg = \App\Models\Organization::factory()->create();
+        $foreignOrg = \App\Models\Platform\Organization::factory()->create();
         $foreignVehicle = Vehicle::factory()->create(['organization_id' => $foreignOrg->id]);
 
         $this->actingAs($admin)

@@ -16,7 +16,7 @@ use App\Enums\Training\TrainingRequirementSubject;
 use App\Enums\User\UserRole;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\Team;
+use App\Models\Platform\Team;
 use App\Models\Training\{TrainingCourse, TrainingRequirement};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Training\TrainingAssignmentService;

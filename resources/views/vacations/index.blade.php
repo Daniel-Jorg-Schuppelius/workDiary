@@ -11,7 +11,7 @@
 
 @php
 /**
- * @var \Illuminate\Support\Collection<int, \App\Models\User>|\Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @var \Illuminate\Support\Collection<int, \App\Models\Platform\User>|\Illuminate\Database\Eloquent\Collection<int, \App\Models\Platform\User> $users
  * @var bool $isAdmin
  * @var array<string, mixed> $counts
  * @var array<string, mixed> $filters
@@ -41,7 +41,7 @@
                     @foreach ($users as $u)
                         @php
                             $uid = (int) ($u['id'] ?? $u->id);
-                            $usqid = \App\Support\Sqid::encode(\App\Models\User::class, $uid);
+                            $usqid = \App\Support\Sqid::encode(\App\Models\Platform\User::class, $uid);
                         @endphp
                         <option value="{{ $usqid }}" @selected((string) ($filters['user_id'] ?? '') === $usqid)>{{ $u['name'] ?? $u->name }}</option>
                     @endforeach

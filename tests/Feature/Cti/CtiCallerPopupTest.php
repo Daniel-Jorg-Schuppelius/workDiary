@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Cti;
 
-use App\Models\{CtiConnection, Customer, User};
+use App\Models\Cti\CtiConnection;
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\WithOrganization;

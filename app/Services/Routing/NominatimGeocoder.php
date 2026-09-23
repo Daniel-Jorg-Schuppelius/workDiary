@@ -10,7 +10,7 @@
 
 namespace App\Services\Routing;
 
-use App\Models\GeocodeCache;
+use App\Models\Platform\GeocodeCache;
 use App\Plugins\Support\PluginHttpFactory;
 use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Support\Carbon;

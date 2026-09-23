@@ -8,7 +8,7 @@
 --}}
 {{-- Dialog: Benutzergruppe anlegen oder bearbeiten. --}}
 @php
-    /** @var \App\Models\UserGroup $group */
+    /** @var \App\Models\Platform\UserGroup $group */
     /** @var array<int, \App\Enums\User\Permission[]> $permissions */
     /** @var \Illuminate\Database\Eloquent\Collection $roles */
     /** @var list<int> $assignedRoles */

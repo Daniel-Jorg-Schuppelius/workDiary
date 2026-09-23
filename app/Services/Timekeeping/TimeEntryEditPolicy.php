@@ -10,7 +10,8 @@
 
 namespace App\Services\Timekeeping;
 
-use App\Models\{TimeEntry, User};
+use App\Models\Platform\User;
+use App\Models\TimeEntry;
 use App\Services\TimeApproval\MonthClosureService;
 use App\Support\Setting;
 use Carbon\{CarbonImmutable, CarbonInterface};

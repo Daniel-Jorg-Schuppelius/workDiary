@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Todoist\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\{Organization, TodoistConnection, TodoistProjectLink};
+use App\Models\Platform\Organization;
+use App\Models\Plugins\Todoist\{TodoistConnection, TodoistProjectLink};
 use App\Plugins\Todoist\Api\TodoistApiClient;
 use App\Plugins\Todoist\Services\{TodoistImportService, TodoistSyncService};
 use App\Plugins\Todoist\TodoistConfig;

@@ -8,22 +8,24 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Project;
 
 use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\{Project, User};
+use App\Models\Project\Project\Project;
+use App\Models\Platform\User;
 use Closure;
 use Illuminate\Validation\Rule;
+use App\Http\Requests\BaseFormRequest;
 
 class SaveTaskRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'milestone_id' => \App\Models\Milestone::class,
-        'parent_task_id' => \App\Models\Task::class,
-        'assignee_ids' => \App\Models\User::class,
+        'milestone_id' => \App\Models\Project\Project\Milestone::class,
+        'parent_task_id' => \App\Models\Project\Project\Task::class,
+        'assignee_ids' => \App\Models\Platform\User::class,
     ];
 
     protected function prepareForValidation(): void {

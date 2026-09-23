@@ -14,7 +14,7 @@ namespace App\Services\Ai;
 
 use App\Enums\Ai\AiFamily;
 use App\Models\Ai\AiUsagePeriod;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Ai\Exceptions\AiBudgetExceededException;
 use Illuminate\Support\Carbon;
 

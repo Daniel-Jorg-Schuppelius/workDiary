@@ -10,10 +10,11 @@
 
 declare(strict_types=1);
 
-namespace App\Policies;
+namespace App\Policies\Audit;
 
 use App\Enums\User\Permission;
-use App\Models\User;
+use App\Models\Platform\User;
+use App\Policies\Auth\PermissionPolicy;
 
 /**
  * Zugriff auf die GoBD-Z3-Datenträgerüberlassung (Feature 063, MVP-132):

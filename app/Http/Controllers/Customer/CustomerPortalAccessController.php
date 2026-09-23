@@ -8,15 +8,17 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Customer;
 
 use App\Enums\User\Permission;
-use App\Models\{Customer, User};
+use App\Models\Customer\Customer\Customer;
+use App\Models\Platform\User;
 use App\Services\CustomerPortal\PortalAccessService;
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 /**
  * Interne Verwaltung der Kundenportal-Zugänge an der Kundenakte (MVP-510):

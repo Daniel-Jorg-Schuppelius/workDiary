@@ -11,7 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Calendar\WeekViewService;
 use App\Services\Flextime\{FlexCalculator, FlexForecastService, FlexTrafficLight, WorkScheduleResolver};
 use App\Services\UI\DateRangeContext;

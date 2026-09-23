@@ -14,9 +14,11 @@ namespace App\Plugins\Support\GitIssueImport;
 
 use App\Enums\Integration\DataDomain;
 use App\Enums\Task\TaskStatus;
-use App\Models\{ExternalReference, IntegrationInboxItem, Organization, PluginSetting, Project, Task};
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\{Organization, PluginSetting};
+use App\Models\Project\{Project, Task};
 use App\Services\Integration\DataOwnershipResolver;
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use Illuminate\Support\Carbon;
 
 /**

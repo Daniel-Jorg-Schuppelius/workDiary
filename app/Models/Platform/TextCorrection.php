@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Models;
+namespace App\Models\Platform;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use CommonToolkit\Helper\Data\StringHelper;
@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use App\Models\Platform\User;
 
 /**
  * Schreibfehler-Wörterbuch-Eintrag (falsch => richtig). Wirkt deterministisch

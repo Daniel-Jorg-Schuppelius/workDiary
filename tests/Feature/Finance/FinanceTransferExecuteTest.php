@@ -13,8 +13,12 @@ namespace Tests\Feature\Finance;
 use App\Enums\Finance\{BillingMode, TransferChannel, TransferStatus, TransferTarget};
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Customer, ExternalReference, MaterialUsage, Project, TimeEntry, Timesheet, User};
+use App\Models\Customer\Customer;
 use App\Models\Finance\BillingTransfer;
+use App\Models\Integration\ExternalReference;
+use App\Models\{MaterialUsage, TimeEntry, Timesheet};
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Services\Finance\BillingTransferService;
 use App\Services\Finance\Targets\{FileTarget, LexofficeTarget};
@@ -185,7 +189,7 @@ class FinanceTransferExecuteTest extends TestCase {
      * dem Projektnamen und ohne Beschreibung.
      */
     public function test_execute_lexoffice_sends_default_service_article_and_text(): void {
-        \App\Models\LexofficeArticle::create([
+        \App\Models\Plugins\Lexoffice\LexofficeArticle::create([
             'organization_id' => $this->organization->id,
             'external_id' => 'art-42',
             'name' => 'IT-Dienstleistung',

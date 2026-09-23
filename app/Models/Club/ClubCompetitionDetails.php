@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Models\Club;
 
 use App\Casts\MoneyCast;
+use App\Models\Calendar\Event;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\Event;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Model;

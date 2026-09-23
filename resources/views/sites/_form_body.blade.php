@@ -10,7 +10,7 @@
 @php
     /**
      * @var \App\Models\Site|null $site
-     * @var \Illuminate\Support\Collection<int, \App\Models\Customer> $customers
+     * @var \Illuminate\Support\Collection<int, \App\Models\Customer\Customer> $customers
      */
 @endphp
 
@@ -19,7 +19,7 @@
         <select name="customer_id" required class="select select-bordered w-full @error('customer_id') select-error @enderror">
             <option value="">{{ __('— bitte wählen —') }}</option>
             @foreach ($customers as $c)
-                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $site?->customer_id ?? \App\Support\Sqid::decode(\App\Models\Customer::class, request('customer'))) ) === $c->sqid)>{{ $c->name }}</option>
+                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $site?->customer_id ?? \App\Support\Sqid::decode(\App\Models\Customer\Customer::class, request('customer'))) ) === $c->sqid)>{{ $c->name }}</option>
             @endforeach
         </select>
     </x-input-field>

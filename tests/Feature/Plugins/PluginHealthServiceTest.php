@@ -11,7 +11,7 @@
 namespace Tests\Feature\Plugins;
 
 use App\Events\{PluginHealthChanged, PluginRecovered};
-use App\Models\PluginState;
+use App\Models\Platform\PluginState;
 use App\Plugins\Contracts\{Plugin, PluginCapability};
 use App\Plugins\{PluginDefaults, PluginHealth, PluginHealthService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -94,7 +94,7 @@ class PluginHealthServiceTest extends TestCase {
     /** E-4/W3d: stabiler failing-Übergang erzeugt eine Warning-Betriebsaufgabe; Recovery löst sie auf. */
     public function test_stable_failing_creates_warning_task_and_recovery_resolves(): void {
         // Betriebsaufgaben brauchen eine Organisation (vgl. OperationsTaskCenterTest).
-        $organization = \App\Models\Organization::factory()->create();
+        $organization = \App\Models\Platform\Organization::factory()->create();
         app()->instance('currentOrganization', $organization);
 
         config()->set('plugins.health_flap_threshold', 1);
@@ -107,7 +107,7 @@ class PluginHealthServiceTest extends TestCase {
         $this->plugin->result = PluginHealth::failing('api down');
         $service->check($this->plugin, $orgId);
 
-        $task = \App\Models\OperationsTask::query()
+        $task = \App\Models\Project\OperationsTask::query()
             ->where('dedupe_key', 'plugin_failing:switchable:' . $orgId)
             ->first();
         $this->assertNotNull($task, 'failing-Übergang muss eine Betriebsaufgabe erzeugen.');

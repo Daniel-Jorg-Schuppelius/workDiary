@@ -8,17 +8,18 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Platform;
 
-use App\Http\Requests\SaveUserFilterPresetRequest;
-use App\Models\UserFilterPreset;
+use App\Http\Requests\Platform\SaveUserFilterPresetRequest;
+use App\Models\Platform\UserFilterPreset;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 class UserFilterPresetController extends Controller {
     public function index(Request $request): View {
-        /** @var \App\Models\User $user */
+        /** @var \App\Models\Platform\User $user */
         $user = Auth::user();
 
         $scope = $request->string('scope')->toString();
@@ -36,7 +37,7 @@ class UserFilterPresetController extends Controller {
     }
 
     public function store(SaveUserFilterPresetRequest $request): RedirectResponse {
-        /** @var \App\Models\User $user */
+        /** @var \App\Models\Platform\User $user */
         $user = Auth::user();
 
         $data = $request->validated();
@@ -69,7 +70,7 @@ class UserFilterPresetController extends Controller {
         $query = $data['query'] ?? $preset->query;
         $isDefault = (bool) ($data['is_default'] ?? false);
 
-        /** @var \App\Models\User $user */
+        /** @var \App\Models\Platform\User $user */
         $user = Auth::user();
 
         DB::transaction(function () use ($user, $preset, $data, $query, $isDefault): void {

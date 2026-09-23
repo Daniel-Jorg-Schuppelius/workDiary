@@ -14,9 +14,9 @@ namespace App\Http\Controllers\Passenger;
 
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
-use App\Models\Organization;
 use App\Models\Passenger\PassengerShiftSettlement;
-use App\Models\{User, Vehicle};
+use App\Models\Platform\{Organization, User};
+use App\Models\Vehicle;
 use App\Services\Passenger\PassengerRideService;
 use App\Support\{ErrorText, Sqid};
 use App\Support\Query\DateRange;

@@ -11,7 +11,10 @@
 namespace Tests\Feature\Operations;
 
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskStatus, OperationsTaskType};
-use App\Models\{OperationsTask, ProblemReport, SupportAccessGrant, User};
+use App\Models\Auth\SupportAccessGrant;
+use App\Models\Platform\User;
+use App\Models\ProblemReport;
+use App\Models\Project\OperationsTask;
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -76,7 +79,7 @@ class OperationsTaskCenterTest extends TestCase {
         $this->assertSame(OperationsTaskStatus::Open, $this->freshTask($task)->status);
 
         $this->assertTrue(
-            \App\Models\AuditLog::query()
+            \App\Models\Audit\AuditLog::query()
                 ->where('auditable_type', MorphMap::stableKey(OperationsTask::class))
                 ->where('auditable_id', $task->id)
                 ->where('event', 'updated')
@@ -180,13 +183,13 @@ class OperationsTaskCenterTest extends TestCase {
         // Der Watchdog meldet Überfälligkeit NUR, wenn das Plugin irgendwo aktiv ist
         // (sonst reines Rauschen auf Instanzen ohne Toggl). Precondition explizit
         // setzen, damit der Überfälligkeitspfad überhaupt geprüft wird.
-        \App\Models\PluginSetting::query()->create([
+        \App\Models\Platform\PluginSetting::query()->create([
             'organization_id' => $this->admin->organization_id,
             'plugin_id' => 'toggl',
             'enabled' => true,
             'settings' => [],
         ]);
-        \App\Models\ScheduledJobState::query()->create([
+        \App\Models\Platform\ScheduledJobState::query()->create([
             'job_key' => 'toggl.import',
             'last_started_at' => now()->subHours(3),
             'last_success_at' => now()->subHours(3),

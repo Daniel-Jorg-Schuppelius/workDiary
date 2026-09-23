@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use App\Models\Learning\{Competency, CompetencyRequirement, LearningEnrollment, UserCompetency};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 

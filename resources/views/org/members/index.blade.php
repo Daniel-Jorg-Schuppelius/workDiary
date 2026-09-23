@@ -82,7 +82,7 @@
                                                 :href="route('users.flex-eligibility.index', $member)"
                                                 :label="__('flex.eligibility.nav_title')" />
                                 @endcan
-                                @can('viewPersonnelFile', [\App\Models\Document::class, $member])
+                                @can('viewPersonnelFile', [\App\Models\Document\Document::class, $member])
                                     {{-- Digitale Personalakte (Feature 141): nur hrFile-Kreis, kein Admin-Bypass. --}}
                                     <x-icon-btn icon="folder_shared"
                                                 :href="route('org.members.personnel-file.index', $member)"

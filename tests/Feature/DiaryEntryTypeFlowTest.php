@@ -10,7 +10,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Customer, EntryType, User};
+use App\Models\Classification\EntryType;
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -212,7 +214,7 @@ class DiaryEntryTypeFlowTest extends TestCase {
     }
 
     public function test_recurrence_rule_mirrors_type_requirements(): void {
-        $project = \App\Models\Project::factory()->create(['organization_id' => $this->admin->organization_id]);
+        $project = \App\Models\Project\Project::factory()->create(['organization_id' => $this->admin->organization_id]);
         $customer = Customer::factory()->create(['organization_id' => $this->admin->organization_id]);
         $customerType = $this->createTypeViaAdminUi();
         $addressType = EntryType::factory()->create([

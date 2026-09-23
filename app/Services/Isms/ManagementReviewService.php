@@ -12,7 +12,7 @@ namespace App\Services\Isms;
 
 use App\Enums\Isms\ReviewStatus;
 use App\Models\Isms\{IsmsManagementReview, IsmsScope};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Concerns\AssignsSequentialNo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

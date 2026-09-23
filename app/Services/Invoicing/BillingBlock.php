@@ -11,7 +11,7 @@
 namespace App\Services\Invoicing;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\Project;
+use App\Models\Project\Project;
 use Illuminate\Support\Carbon;
 
 /**

@@ -10,7 +10,8 @@
 
 namespace App\Policies;
 
-use App\Models\{PerDiemRate, User};
+use App\Models\PerDiemRate;
+use App\Models\Platform\User;
 
 class PerDiemRatePolicy {
     /**

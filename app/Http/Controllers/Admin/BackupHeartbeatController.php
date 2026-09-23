@@ -11,7 +11,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{AuditLog, BackupHeartbeat};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\BackupHeartbeat;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, Request};

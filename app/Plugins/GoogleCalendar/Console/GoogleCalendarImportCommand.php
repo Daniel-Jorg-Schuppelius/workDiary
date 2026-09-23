@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\GoogleCalendar\Console;
 
-use App\Models\GoogleCalendarConnection;
+use App\Models\Plugins\GoogleCalendar\GoogleCalendarConnection;
 use App\Plugins\GoogleCalendar\Services\GoogleCalendarImportService;
 use Illuminate\Console\Command;
 use Throwable;

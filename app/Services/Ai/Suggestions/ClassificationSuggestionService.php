@@ -13,7 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Ai\Suggestions;
 
 use App\Enums\Classification\ClassificationDomain;
-use App\Models\{Classification, Customer, DiaryEntry, Organization, Tag};
+use App\Models\Classification\{Classification, Tag};
+use App\Models\Customer\Customer;
+use App\Models\DiaryEntry;
+use App\Models\Platform\Organization;
 use App\Services\Ai\AiInvocationService;
 use App\Services\Ai\Dto\{AiClassificationResult, ClassifyRequest};
 use App\Services\Ai\Exceptions\AiException;

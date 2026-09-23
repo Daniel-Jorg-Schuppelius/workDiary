@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Services\DocumentDesign;
 
 use App\Enums\DocumentDesign\{InformationBlock, InformationBlockState, LetterheadPageRole, PageFormat, RenderDocumentFamily, RenderDocumentKind, RenderProfileStatus, TableStylePreset};
-use App\Models\DocumentDesign\{DocumentRenderProfile, DocumentRenderProfileVersion, LetterheadAsset};
-use App\Models\{Organization, User};
+use App\Models\Document\DocumentDesign\{DocumentRenderProfile, DocumentRenderProfileVersion, LetterheadAsset};
+use App\Models\Platform\{Organization, User};
 use CommonToolkit\Helper\Data\ColorHelper;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\Facades\DB;
@@ -267,7 +267,7 @@ class RenderProfileService {
         // aktive Profil gewinnt vor der org-weiten Kette — sofern es die Art
         // abdeckt (explizite Arten, Familie oder ohne jede Einschränkung).
         if ($customerId !== null) {
-            $profileId = \App\Models\Customer::query()
+            $profileId = \App\Models\Customer\Customer::query()
                 ->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
                 ->whereKey($customerId)
@@ -396,7 +396,7 @@ class RenderProfileService {
      * Branding-Referenz (#83): trägt eine Version `use_brand_colors`, werden
      * Akzent- und Kopfzeilenfarbe beim Rendern/Preflight aus dem
      * Organisationsbranding aufgelöst — Single Source of Truth bleibt der
-     * {@see \App\Services\BrandingService}-Datenstand, es entsteht keine
+     * {@see \App\Services\UI\BrandingService}-Datenstand, es entsteht keine
      * Farbkopie im Profil.
      */
     private function withResolvedBrandColors(DocumentRenderProfileVersion $version): DocumentRenderProfileVersion {

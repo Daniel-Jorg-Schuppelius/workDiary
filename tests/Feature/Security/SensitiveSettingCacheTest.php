@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Security;
 
-use App\Models\SystemSetting;
+use App\Models\Platform\SystemSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;

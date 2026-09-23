@@ -14,7 +14,7 @@ namespace App\Dashboard\Widgets;
 
 use App\Dashboard\Widget;
 use App\Enums\Dashboard\{WidgetGroup, WidgetWidth};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Dashboard\DashboardService;
 use Illuminate\Contracts\View\View;
 

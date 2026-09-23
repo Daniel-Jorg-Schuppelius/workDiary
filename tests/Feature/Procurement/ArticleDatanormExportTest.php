@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Procurement;
 
-use App\Models\{Article, User};
+use App\Models\Article;
+use App\Models\Platform\User;
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use ERechnungToolkit\Parsers\DatanormParser;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -35,7 +36,7 @@ final class ArticleDatanormExportTest extends TestCase {
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 
-        $group = \App\Models\SalesDiscountGroup::query()->create([
+        $group = \App\Models\Sales\SalesDiscountGroup::query()->create([
             'organization_id' => $this->organization->id,
             'code' => 'R10', 'kind' => 'discount', 'value' => '10', 'label' => 'Standardrabatt',
         ]);
@@ -113,7 +114,7 @@ final class ArticleDatanormExportTest extends TestCase {
         $this->assertSame(10.0, $rab->getDiscountGroup('R10')?->getValue());
 
         // Preislisten-Abfluss ist auditiert.
-        $this->assertSame(1, \App\Models\AuditLog::query()->where('event', 'datanorm.exported')->count());
+        $this->assertSame(1, \App\Models\Audit\AuditLog::query()->where('event', 'datanorm.exported')->count());
     }
 
     public function test_export_includes_z_and_c_records_for_copper_tiers_and_assembly(): void {
@@ -178,7 +179,7 @@ final class ArticleDatanormExportTest extends TestCase {
     }
 
     public function test_b2b_datpreis_applies_group_and_customer_override(): void {
-        $customer = \App\Models\Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $customer = \App\Models\Customer\Customer::factory()->create(['organization_id' => $this->organization->id]);
         [$access] = \App\Models\B2b\B2bCatalogAccess::issue((int) $this->organization->id, (int) $customer->id, 'Konditionen', 'einkauf-kond');
         // WD-1001 (VK 89,50, Gruppe R10 = 10 %) OHNE custom_price freigeben.
         \App\Models\B2b\B2bCatalogItem::query()->create([
@@ -192,9 +193,9 @@ final class ArticleDatanormExportTest extends TestCase {
         $this->assertSame('80.55', $catalog->getPriceChanges()[0]->getPrice()?->getAmount());
 
         // Kunden-Override 20 %: 89,50 − 20 % = 71,60.
-        \App\Models\SalesDiscountGroupOverride::query()->create([
+        \App\Models\Sales\SalesDiscountGroupOverride::query()->create([
             'organization_id' => $this->organization->id,
-            'sales_discount_group_id' => \App\Models\SalesDiscountGroup::query()->where('code', 'R10')->firstOrFail()->id,
+            'sales_discount_group_id' => \App\Models\Sales\SalesDiscountGroup::query()->where('code', 'R10')->firstOrFail()->id,
             'customer_id' => $customer->id, 'kind' => 'discount', 'value' => '20',
         ]);
         $response = $this->actingAs($this->admin)->get(route('b2b-catalog.datanorm', $access));
@@ -209,18 +210,18 @@ final class ArticleDatanormExportTest extends TestCase {
         $this->actingAs($this->admin)->post(route('articles.sales-discount-groups.store'), [
             'code' => 'f5', 'kind' => 'factor', 'value' => '0.95', 'label' => 'Faktor 0,95',
         ])->assertRedirect();
-        $this->assertSame('F5', \App\Models\SalesDiscountGroup::query()->where('label', 'Faktor 0,95')->firstOrFail()->code);
+        $this->assertSame('F5', \App\Models\Sales\SalesDiscountGroup::query()->where('label', 'Faktor 0,95')->firstOrFail()->code);
     }
 
     public function test_revoked_b2b_access_cannot_export_datpreis(): void {
-        $customer = \App\Models\Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $customer = \App\Models\Customer\Customer::factory()->create(['organization_id' => $this->organization->id]);
         [$access] = \App\Models\B2b\B2bCatalogAccess::issue((int) $this->organization->id, (int) $customer->id, 'Widerrufen', 'einkauf-alt');
         $access->forceFill(['revoked_at' => now()])->save();
 
         $this->actingAs($this->admin)
             ->get(route('b2b-catalog.datanorm', $access))
             ->assertRedirect();
-        $this->assertSame(0, \App\Models\AuditLog::query()->where('event', 'datanorm.exported')->count());
+        $this->assertSame(0, \App\Models\Audit\AuditLog::query()->where('event', 'datanorm.exported')->count());
     }
 
     public function test_datpreis_export_contains_current_prices(): void {
@@ -237,7 +238,7 @@ final class ArticleDatanormExportTest extends TestCase {
     }
 
     public function test_b2b_access_exports_customer_specific_datpreis(): void {
-        $customer = \App\Models\Customer::factory()->create([
+        $customer = \App\Models\Customer\Customer::factory()->create([
             'organization_id' => $this->organization->id, 'company' => 'ACME GmbH',
         ]);
         [$access] = \App\Models\B2b\B2bCatalogAccess::issue((int) $this->organization->id, (int) $customer->id, 'ACME Einkauf', 'einkauf-acme');

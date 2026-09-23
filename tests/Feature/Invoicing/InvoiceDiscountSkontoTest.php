@@ -11,7 +11,9 @@
 namespace Tests\Feature\Invoicing;
 
 use App\Enums\Finance\AllocationKind;
-use App\Models\{Customer, Invoice, User};
+use App\Models\Customer\Customer;
+use App\Models\Invoice;
+use App\Models\Platform\User;
 use App\Services\Finance\MatchingService;
 use App\Services\Invoicing\InvoiceGenerator;
 use Carbon\Carbon;

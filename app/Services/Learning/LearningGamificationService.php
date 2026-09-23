@@ -14,7 +14,7 @@ namespace App\Services\Learning;
 
 use App\Enums\Learning\LearningEnrollmentStatus;
 use App\Models\Learning\LearningEnrollment;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 
 /**
  * Punkte, Abzeichen und Bestenliste (Feature 149, MVP-747).

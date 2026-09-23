@@ -34,7 +34,7 @@
                     {{ __('Kalender-Abo') }}
                 </x-icon-btn>
             @endcan
-            @can('create', App\Models\Event::class)
+            @can('create', App\Models\Calendar\Event::class)
                 <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger :href="route('events.create').'?dialog=1'" show-label>
                     {{ __('Neue Veranstaltung') }}
                 </x-icon-btn>

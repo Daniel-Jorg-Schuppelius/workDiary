@@ -15,8 +15,11 @@ namespace App\Services\Privacy;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Enums\Privacy\DataSubjectKind;
 use App\Models\Applications\JobApplication;
-use App\Models\{Customer, Lead, Supplier, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Models\Privacy\{DataSubjectRequest, PrivacyAttachment};
+use App\Models\Sales\Lead;
+use App\Models\Supplier;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 use App\Services\Privacy\SubjectData\{ApplicationRecordsSection,
     AuditTrailSection,
@@ -260,7 +263,7 @@ class SubjectDataExporter {
      */
     private function personnelFileContents(User $member, string $number): array {
         $files = [];
-        $documents = \App\Models\Document::query()->withoutGlobalScopes()
+        $documents = \App\Models\Document\Document::query()->withoutGlobalScopes()
             ->whereNull('deleted_at')
             ->personnelFilesOf($member)
             ->with('currentVersion')

@@ -11,7 +11,10 @@
 namespace Tests\Feature\Sla;
 
 use App\Enums\ServiceTicket\SlaViolationKind;
-use App\Models\{Customer, Project, ServiceTicket, SlaContract, SlaContractQuota, SlaViolation, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
+use App\Models\{ServiceTicket, SlaContract, SlaContractQuota, SlaViolation, TimeEntry};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};

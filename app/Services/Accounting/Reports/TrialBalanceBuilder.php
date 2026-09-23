@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Accounting\Reports;
 
 use App\Models\Accounting\AccountingAccount;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 

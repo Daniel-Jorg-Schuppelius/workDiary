@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Admin;
 
 use App\Enums\Export\ExportRunState;
-use App\Models\{Customer, ExportRun, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExportRun;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\PermissionRegistrar;
@@ -80,7 +82,7 @@ class DataTransferControllerTest extends TestCase {
     public function test_download_rejects_run_from_other_organization(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 
-        $otherOrg = \App\Models\Organization::factory()->create();
+        $otherOrg = \App\Models\Platform\Organization::factory()->create();
         $other = ExportRun::create([
             'organization_id' => $otherOrg->id,
             'entity' => 'customers',

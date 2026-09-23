@@ -13,7 +13,10 @@ declare(strict_types=1);
 namespace App\Services\CustomerPortal;
 
 use App\Enums\CustomerPortal\PortalCapability;
-use App\Models\{Customer, DiaryEntry, Document, TimeEntry, User};
+use App\Models\Customer\Customer;
+use App\Models\{DiaryEntry, TimeEntry};
+use App\Models\Document\Document;
+use App\Models\Platform\User;
 use App\Support\Sqid;
 use Illuminate\Database\Eloquent\Model;
 

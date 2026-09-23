@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Finance\ProcedureDocumentation\Sections;
 
 use App\Console\Commands\SystemHealthCommand;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Services\Finance\ProcedureDocumentation\{FormatsSectionValues, ProcedureSection, SectionContext};
 use App\Services\Licensing\{LicenseService, ModuleStatusResolver};
 use App\Services\Release\ReleaseManifestService;

@@ -12,7 +12,7 @@ namespace Tests\Feature\Licensing;
 
 use App\Enums\Inventory\OutboxStatus;
 use App\Jobs\Integration\InventoryOutboxDeliveryJob;
-use App\Models\{LicenseFlagOverride, Organization};
+use App\Models\Platform\{LicenseFlagOverride, Organization};
 use App\Services\Inventory\{ExternalInventoryDispatcherResolver, InventoryOutboxService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

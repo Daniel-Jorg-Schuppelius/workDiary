@@ -14,7 +14,7 @@ namespace App\Services\Finance\Gdpdu;
 
 use App\Enums\Finance\DatevBatchStatus;
 use App\Models\Finance\DatevBookingBatch;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;

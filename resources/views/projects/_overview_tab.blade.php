@@ -38,7 +38,7 @@
         <x-card padding="p-0">
             <header class="flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3">
                 <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Milestones') }}</span>
-                @can('create', \App\Models\Milestone::class)
+                @can('create', \App\Models\Project\Milestone::class)
                     <x-icon-btn icon="add"
                                 data-entry-modal-trigger
                                 :href="route('projects.milestones.create', $project)"
@@ -95,7 +95,7 @@
         <x-card>
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <span class="text-sm text-muted">{{ __('Noch keine Milestones angelegt.') }}</span>
-                @can('create', \App\Models\Milestone::class)
+                @can('create', \App\Models\Project\Milestone::class)
                     <x-icon-btn icon="add"
                                 data-entry-modal-trigger
                                 :href="route('projects.milestones.create', $project)"
@@ -109,7 +109,7 @@
     <x-card padding="p-0">
         <header class="flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3">
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Letzte Aufträge') }}</span>
-            <a href="{{ route('diary.index', ['project' => \App\Support\Sqid::encode(\App\Models\Project::class, $project->id)]) }}"
+            <a href="{{ route('diary.index', ['project' => \App\Support\Sqid::encode(\App\Models\Project\Project::class, $project->id)]) }}"
                class="text-xs text-primary hover:underline">{{ __('Alle in der Arbeitsliste') }}</a>
         </header>
         @if ($entries->isEmpty())
@@ -159,7 +159,7 @@
     @php
         $projectIdeaMaps = (app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.ideas')
                 && auth()->user()?->can(\App\Enums\User\Permission::IdeasViewAny->value))
-            ? \App\Models\IdeaMap::query()
+            ? \App\Models\Ideas\IdeaMap::query()
                 ->visibleTo(auth()->user())
                 ->where('project_id', $project->id)
                 ->whereNull('archived_at')

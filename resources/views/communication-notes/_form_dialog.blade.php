@@ -132,7 +132,7 @@
         <x-select-field name="next_action_user_id" :label="__('communication.field.next_action_user')">
             <option value="">—</option>
             @foreach ($users as $user)
-                <option value="{{ $user->sqid }}" @selected((string) old('next_action_user_id', \App\Support\Sqid::encode(\App\Models\User::class, $note?->next_action_user_id)) === $user->sqid)>{{ $user->name }}</option>
+                <option value="{{ $user->sqid }}" @selected((string) old('next_action_user_id', \App\Support\Sqid::encode(\App\Models\Platform\User::class, $note?->next_action_user_id)) === $user->sqid)>{{ $user->name }}</option>
             @endforeach
         </x-select-field>
     </x-form-group>

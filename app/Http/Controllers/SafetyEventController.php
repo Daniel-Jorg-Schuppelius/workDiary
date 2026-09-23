@@ -12,7 +12,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\Safety\{SafetyEventKind, SafetyEventSeverity, SafetyEventStatus};
 use App\Enums\User\Permission;
-use App\Models\{DiaryEntry, SafetyEvent, User};
+use App\Models\{DiaryEntry, SafetyEvent};
+use App\Models\Platform\User;
 use App\Services\Safety\SafetyEventService;
 use App\Support\{Sqid, Tz};
 use Illuminate\Database\Eloquent\Model;

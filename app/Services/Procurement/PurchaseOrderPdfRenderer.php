@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Procurement;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
-use App\Models\{Organization, PurchaseOrder};
+use App\Models\Platform\Organization;
+use App\Models\PurchaseOrder;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 
 /**

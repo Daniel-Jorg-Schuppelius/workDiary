@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\{ExternalReference, IntegrationInboxItem, Organization};
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\Organization;
 use App\Services\Integration\{InboxActionService, MatchProfileRegistry};
 use App\Services\Integration\Match\{EntityMatcher, MatchResult};
 use Illuminate\Console\Command;

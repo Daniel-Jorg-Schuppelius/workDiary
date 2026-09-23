@@ -109,12 +109,12 @@ class AllocationReportController extends Controller {
             $names[$alias] = match ($alias) {
                 'cost_center' => \App\Models\CostCenter::query()->whereIn('id', $ids)->get(['id', 'code', 'label'])
                     ->mapWithKeys(fn (\App\Models\CostCenter $c): array => [(int) $c->id => trim($c->code . ' — ' . $c->label)])->all(),
-                'task' => \App\Models\Task::query()->whereIn('id', $ids)->pluck('title', 'id')->all(),
+                'task' => \App\Models\Project\Task::query()->whereIn('id', $ids)->pluck('title', 'id')->all(),
                 // Fahrzeuge haben kein name-Feld: Label + Kennzeichen.
                 'vehicle' => \App\Models\Vehicle::query()->whereIn('id', $ids)->get(['id', 'label', 'license_plate'])
                     ->mapWithKeys(fn (\App\Models\Vehicle $v): array => [(int) $v->id => trim(($v->label ?? '') . ' ' . ($v->license_plate ?? '')) ?: '#' . $v->id])->all(),
                 // Tätigkeiten haben label statt name.
-                'activity_category' => \App\Models\ActivityCategory::query()->whereIn('id', $ids)->pluck('label', 'id')->all(),
+                'activity_category' => \App\Models\Classification\ActivityCategory::query()->whereIn('id', $ids)->pluck('label', 'id')->all(),
                 default => TimeAllocation::TYPES[$alias]::query()->whereIn('id', $ids)->pluck('name', 'id')->all(),
             };
         }

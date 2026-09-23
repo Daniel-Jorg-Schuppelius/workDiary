@@ -9,7 +9,7 @@
 @php
     use App\Enums\CustomerPortal\PortalCapability;
 
-    /** @var \App\Models\User|null $portalUser */
+    /** @var \App\Models\Platform\User|null $portalUser */
     $portalUser = auth('customer')->user();
     // Zentrale Bereichsfreigaben (MVP-511): Navigation zeigt nur, was für
     // diesen Kunden ausdrücklich freigegeben ist (Default-Deny).

@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Integration;
 
 use App\Enums\Project\ProjectStatus;
-use App\Models\{Customer, ForeignCustomer, Organization, Project};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Platform\Organization;
+use App\Models\Project\Project;
 use CommonToolkit\Enums\SearchMode;
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Database\Eloquent\Collection;

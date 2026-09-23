@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Settings;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Settings\SettingsRegistry;
 use App\Support\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -78,7 +78,7 @@ class SettingsAdminUiTest extends TestCase {
         $this->assertDatabaseHas('audit_logs', ['event' => 'settings.exported']);
 
         // Ohne Recht kein Export.
-        $user = \App\Models\User::factory()->user()->create(['organization_id' => $this->admin->organization_id]);
+        $user = \App\Models\Platform\User::factory()->user()->create(['organization_id' => $this->admin->organization_id]);
         $this->actingAs($user)->get(route('admin.settings.export'))->assertForbidden();
     }
 

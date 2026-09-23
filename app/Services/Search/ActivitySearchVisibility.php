@@ -14,7 +14,11 @@ namespace App\Services\Search;
 
 use App\Enums\Search\SearchSourceType;
 use App\Enums\User\Permission;
-use App\Models\{CommunicationNote, Document, KnowledgeArticle, SearchDocument, User};
+use App\Models\Communication\CommunicationNote;
+use App\Models\Document\Document;
+use App\Models\Knowledge\KnowledgeArticle;
+use App\Models\Platform\User;
+use App\Models\Search\SearchDocument;
 use App\Plugins\PluginManager;
 use App\Plugins\RemoteSupport\RemoteSupportPlugin;
 use App\Services\Licensing\FeatureFlagResolver;

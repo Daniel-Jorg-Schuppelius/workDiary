@@ -11,8 +11,11 @@
 namespace App\Models\Learning;
 
 use App\Enums\Learning\LearningBookingStatus;
-use App\Models\{Article, Customer, ExternalParticipant, User};
+use App\Models\Article;
+use App\Models\Communication\ExternalParticipant;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;

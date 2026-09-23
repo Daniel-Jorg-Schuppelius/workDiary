@@ -11,9 +11,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Customer, EmailConnection, IntegrationInboxItem, Organization, User};
+use App\Models\Customer\Customer;
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Mail\EmailConnection;
+use App\Models\Platform\{Organization, User};
 use App\Services\Mail\{MailInboxResolutionService, MailIntakeService};
-use App\Services\SqidEncoder;
+use App\Support\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Artisan, Auth};
 use Illuminate\View\View;
@@ -72,8 +75,8 @@ class MailAdminController extends Controller {
 
         // Graph-Postfach braucht eine aktive Graph-Mail-Verbindung der Org.
         if ($isMsgraph) {
-            $mail = \App\Models\MsgraphMailConnection::query()->where('organization_id', $organization->id)->first();
-            if (! $mail instanceof \App\Models\MsgraphMailConnection || ! $mail->isActive()) {
+            $mail = \App\Models\Plugins\Msgraph\MsgraphMailConnection::query()->where('organization_id', $organization->id)->first();
+            if (! $mail instanceof \App\Models\Plugins\Msgraph\MsgraphMailConnection || ! $mail->isActive()) {
                 return back()->with('error', __('mail.flash.msgraph_connection_required'))->withInput();
             }
         }

@@ -14,7 +14,9 @@ namespace Tests\Feature\Invoicing;
 
 use App\Enums\Invoicing\InvoiceDeliveryFormat;
 use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection};
-use App\Models\{Customer, Invoice, User};
+use App\Models\Customer\Customer;
+use App\Models\Invoice;
+use App\Models\Platform\User;
 use App\Services\Ai\Dto\ExtractRequest;
 use App\Services\Invoicing\InvoicePdfImportService;
 use Dompdf\Dompdf;

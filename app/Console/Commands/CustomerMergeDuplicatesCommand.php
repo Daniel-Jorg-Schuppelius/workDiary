@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\Organization;
-use App\Services\{CustomerDuplicateFinder, CustomerMergeService};
+use App\Models\Platform\Organization;
+use App\Services\Stammdaten\{CustomerDuplicateFinder, CustomerMergeService};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
@@ -23,7 +23,7 @@ use Illuminate\Support\Collection;
  * Dry-Run; erst `--apply` schreibt. Unsichere Kandidaten (likely/fuzzy) bleiben
  * stets der manuellen Inbox vorbehalten.
  *
- * @extends MergeDuplicatesCommand<\App\Models\Customer>
+ * @extends MergeDuplicatesCommand<\App\Models\Customer\Customer>
  */
 class CustomerMergeDuplicatesCommand extends MergeDuplicatesCommand {
     protected $signature = 'customer:merge-duplicates ' . self::ORGANIZATION_OPTION . '

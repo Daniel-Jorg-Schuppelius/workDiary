@@ -12,7 +12,8 @@ namespace Tests\Feature\Procedure;
 
 use App\Enums\Procedure\{ProcedureRunEventType, ProcedureRunStatus, ProcedureStepRunStatus, ProcedureStepType};
 use App\Exceptions\{ProcedureRunIncompleteException, ProcedureStepBlockedException};
-use App\Models\{DiaryEntry, Organization, ProcedureRun, ProcedureTemplate, User};
+use App\Models\{DiaryEntry, ProcedureRun, ProcedureTemplate};
+use App\Models\Platform\{Organization, User};
 use App\Services\Procedure\{ProcedureExecutionService, ProcedureTemplateService, WaitStepService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

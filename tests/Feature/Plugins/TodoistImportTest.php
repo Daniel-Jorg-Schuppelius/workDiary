@@ -11,7 +11,10 @@
 namespace Tests\Feature\Plugins;
 
 use App\Enums\Task\{TaskPriority, TaskStatus};
-use App\Models\{ExternalReference, IntegrationInboxItem, Task, TodoistConnection, TodoistProjectLink, User};
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\User;
+use App\Models\Plugins\Todoist\{TodoistConnection, TodoistProjectLink};
+use App\Models\Project\Task;
 use App\Plugins\Todoist\Services\TodoistImportService;
 use App\Plugins\Todoist\TodoistPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -147,7 +147,7 @@ final class PriceComparisonTest extends TestCase {
         $this->bid('bieter-a.x84', [0 => '10.00', 1 => '20.00']);
         $this->bid('bieter-b.x84', [0 => '15.00', 1 => '20.00']);
 
-        $admin = \App\Models\User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $admin = \App\Models\Platform\User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 
         $this->actingAs($admin)
             ->get(route('bill-of-quantities.price-comparison', $this->boq))

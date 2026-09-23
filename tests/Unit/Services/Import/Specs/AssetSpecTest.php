@@ -14,7 +14,9 @@ namespace Tests\Unit\Services\Import\Specs;
 
 use App\Enums\Asset\{AssetClass, AssetOwnership, AssetStatus};
 use App\Enums\Import\ImportErrorCode;
-use App\Models\{Asset, Customer, Organization};
+use App\Models\Asset;
+use App\Models\Customer\Customer;
+use App\Models\Platform\Organization;
 use App\Services\Import\ImportOutcome;
 use App\Services\Import\Specs\AssetSpec;
 use Illuminate\Foundation\Testing\RefreshDatabase;

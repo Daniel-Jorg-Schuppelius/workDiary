@@ -15,7 +15,7 @@ namespace App\Services\Accounting;
 use App\Enums\Finance\{RecurringRunStatus, RecurringTemplateKind, RecurringTemplateStatus};
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Accounting\{AccountingRecurringRun, AccountingRecurringTemplate};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Notification\NotificationDispatcher;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;

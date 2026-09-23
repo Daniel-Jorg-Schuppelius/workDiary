@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use App\Models\Learning\{LearningQuestion, LearningQuestionCategory, LearningQuiz, LearningQuizDrawRule};
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;

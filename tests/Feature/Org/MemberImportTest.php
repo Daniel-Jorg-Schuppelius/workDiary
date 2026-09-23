@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Org;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Tests\Concerns\WithOrganization;

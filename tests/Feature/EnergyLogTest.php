@@ -10,7 +10,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\{EnergyLog, User, Vehicle};
+use App\Models\{EnergyLog, Vehicle};
+use App\Models\Platform\User;
 use App\Services\Fleet\EnergyLogService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

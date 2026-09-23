@@ -14,7 +14,7 @@ namespace App\Jobs;
 
 use App\Enums\Search\SearchSourceType;
 use App\Exceptions\DocumentTextUnavailableException;
-use App\Models\{DocumentVersion, DocumentVersionText};
+use App\Models\Document\{DocumentVersion, DocumentVersionText};
 use App\Services\Document\DocumentTextExtractor;
 use App\Services\Search\Indexing\SearchIndexer;
 use Illuminate\Bus\Queueable;

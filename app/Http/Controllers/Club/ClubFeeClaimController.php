@@ -16,7 +16,7 @@ use App\Enums\Club\ClubFeeClaimStatus;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Club\{ClubFeeAccount, ClubFeeClaim};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Club\{ClubFeeNoticePdfRenderer, ClubFeeRunService};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;

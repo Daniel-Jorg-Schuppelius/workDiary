@@ -16,7 +16,7 @@ use App\Enums\Migration\{AccountingMigrationStatus, MigrationDataArea, Migration
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Migration\{AccountingMigrationItem, AccountingMigrationRun};
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\AccountingMigration\AccountingMigrationService;
 use App\Support\ErrorText;
 use Carbon\CarbonImmutable;
@@ -117,7 +117,7 @@ class AccountingMigrationController extends Controller {
         $organization = $this->organization($user);
         $run = $this->run($organization, $sqid);
 
-        $itemId = app(\App\Services\SqidEncoder::class)->decode(AccountingMigrationItem::class, $itemSqid);
+        $itemId = app(\App\Support\SqidEncoder::class)->decode(AccountingMigrationItem::class, $itemSqid);
         $item = $itemId === null ? null : $run->items()->whereKey($itemId)->first();
         abort_unless($item instanceof AccountingMigrationItem, 404);
 
@@ -207,7 +207,7 @@ class AccountingMigrationController extends Controller {
     }
 
     private function run(Organization $organization, string $sqid): AccountingMigrationRun {
-        $id = app(\App\Services\SqidEncoder::class)->decode(AccountingMigrationRun::class, $sqid);
+        $id = app(\App\Support\SqidEncoder::class)->decode(AccountingMigrationRun::class, $sqid);
         $run = $id === null ? null : AccountingMigrationRun::query()
             ->where('organization_id', $organization->id)
             ->whereKey($id)

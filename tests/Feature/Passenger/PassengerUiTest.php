@@ -14,7 +14,8 @@ namespace Tests\Feature\Passenger;
 
 use App\Enums\Passenger\{RideOperationMode, RideStatus};
 use App\Models\Passenger\{PassengerConcession, PassengerFareTariff, PassengerRide, PassengerShiftSettlement, PassengerVehicleProfile};
-use App\Models\{Qualification, User, Vehicle};
+use App\Models\Platform\User;
+use App\Models\{Qualification, Vehicle};
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Passenger\PassengerRideService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

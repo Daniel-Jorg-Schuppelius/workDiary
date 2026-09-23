@@ -11,7 +11,8 @@
 namespace App\Models\Domain;
 
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
-use App\Models\{Customer, Document};
+use App\Models\Customer\Customer;
+use App\Models\Document\Document;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;

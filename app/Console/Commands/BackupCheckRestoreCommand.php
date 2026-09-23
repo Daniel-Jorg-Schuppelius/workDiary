@@ -10,7 +10,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\{AuditLog, BackupHeartbeat};
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\BackupHeartbeat;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\JsonHelper;

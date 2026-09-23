@@ -30,7 +30,7 @@ class ClaimActionController extends Controller {
         Gate::authorize('update', $claim);
 
         if ($request->filled('assigned_user_id')) {
-            $request->merge(['assigned_user_id' => Sqid::decodeOrNumeric(\App\Models\User::class, $request->input('assigned_user_id'))]);
+            $request->merge(['assigned_user_id' => Sqid::decodeOrNumeric(\App\Models\Platform\User::class, $request->input('assigned_user_id'))]);
         }
         $data = $request->validate([
             'kind' => ['required', Rule::enum(ClaimActionKind::class)],

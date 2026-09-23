@@ -14,7 +14,11 @@ use App\Enums\Diary\Status;
 use App\Enums\OpenIssue\OpenIssueEventType;
 use App\Enums\Protocol\ProtocolEventType;
 use App\Enums\Timesheet\TimesheetStatus;
-use App\Models\{CommunicationNote, DiaryEntry, Document, MaterialUsage, OpenIssue, OpenIssueEvent, Project, Protocol, ProtocolEvent, TimeEntry, Timesheet, User};
+use App\Models\Communication\CommunicationNote;
+use App\Models\{DiaryEntry, MaterialUsage, OpenIssue, OpenIssueEvent, Protocol, ProtocolEvent, TimeEntry, Timesheet};
+use App\Models\Document\Document;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Services\Timeline\DiaryEntryTimelineService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -257,7 +261,7 @@ class DiaryEntryTimelineTest extends TestCase {
 
     public function test_customer_timeline_aggregates_orders_notes_and_documents(): void {
         $user = User::factory()->user()->create();
-        $customer = \App\Models\Customer::factory()->create(['organization_id' => $user->organization_id]);
+        $customer = \App\Models\Customer\Customer::factory()->create(['organization_id' => $user->organization_id]);
 
         $entry = DiaryEntry::factory()->for($user)->create([
             'organization_id' => $user->organization_id,
@@ -273,7 +277,7 @@ class DiaryEntryTimelineTest extends TestCase {
         ]);
         Document::factory()->create([
             'organization_id' => $user->organization_id,
-            'documentable_type' => MorphMap::alias(\App\Models\Customer::class),
+            'documentable_type' => MorphMap::alias(\App\Models\Customer\Customer::class),
             'documentable_id' => $customer->id,
             'created_by_user_id' => $user->id,
             'title' => 'Rahmenvertrag',
@@ -326,7 +330,7 @@ class DiaryEntryTimelineTest extends TestCase {
 
     public function test_customer_timeline_mixes_all_sources_and_respects_type_filter(): void {
         $admin = User::factory()->admin()->create();
-        $customer = \App\Models\Customer::factory()->create(['organization_id' => $admin->organization_id]);
+        $customer = \App\Models\Customer\Customer::factory()->create(['organization_id' => $admin->organization_id]);
 
         $entry = DiaryEntry::factory()->for($admin)->create([
             'organization_id' => $admin->organization_id,
@@ -363,7 +367,7 @@ class DiaryEntryTimelineTest extends TestCase {
             'total' => 119.00,
         ]);
 
-        \App\Models\Quote::query()->create([
+        \App\Models\Sales\Quote::query()->create([
             'organization_id' => $admin->organization_id,
             'customer_id' => $customer->id,
             'number' => 'AN-2026-007',
@@ -409,7 +413,7 @@ class DiaryEntryTimelineTest extends TestCase {
 
     public function test_customer_timeline_is_org_isolated(): void {
         $userA = User::factory()->admin()->create();
-        $customerA = \App\Models\Customer::factory()->create(['organization_id' => $userA->organization_id]);
+        $customerA = \App\Models\Customer\Customer::factory()->create(['organization_id' => $userA->organization_id]);
         DiaryEntry::factory()->for($userA)->create([
             'organization_id' => $userA->organization_id,
             'customer_id' => $customerA->id,
@@ -417,7 +421,7 @@ class DiaryEntryTimelineTest extends TestCase {
         ]);
 
         $userB = User::factory()->admin()->create();
-        $customerB = \App\Models\Customer::factory()->create(['organization_id' => $userB->organization_id]);
+        $customerB = \App\Models\Customer\Customer::factory()->create(['organization_id' => $userB->organization_id]);
         DiaryEntry::factory()->for($userB)->create([
             'organization_id' => $userB->organization_id,
             'customer_id' => $customerB->id,

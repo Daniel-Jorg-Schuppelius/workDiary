@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Models\Club;
 
 use App\Enums\Club\ClubLineupStatus;
+use App\Models\Calendar\Event;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\{Event, User};
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;

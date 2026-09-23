@@ -17,7 +17,7 @@ use App\Enums\Contracts\HasLabel;
  * Dokumentierte Billbee-Bestellstatus (Feature 093 / MVP-433) — ersetzt das
  * frühere STATE_LABELS-Const-Array am Model (Vollaudit 2026-07, M53).
  * Labels laufen wie überall über lang enums.* (5 Sprachen, D1-Vertrag);
- * unbekannte Werte zeigt {@see \App\Models\BillbeeOrder::stateLabel()}
+ * unbekannte Werte zeigt {@see \App\Models\Plugins\Billbee\BillbeeOrder::stateLabel()}
  * weiterhin als '#<int>' (tryFrom-Fallback).
  */
 enum BillbeeOrderState: int implements HasLabel {

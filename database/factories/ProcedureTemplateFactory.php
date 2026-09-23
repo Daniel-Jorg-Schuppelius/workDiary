@@ -10,7 +10,8 @@
 
 namespace Database\Factories;
 
-use App\Models\{Organization, ProcedureTemplate};
+use App\Models\Platform\Organization;
+use App\Models\ProcedureTemplate;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

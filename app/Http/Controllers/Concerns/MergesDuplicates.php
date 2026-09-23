@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Concerns;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Support\ErrorText;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -25,7 +25,7 @@ use Illuminate\Validation\ValidationException;
  * Customer- und ProjectMergeController waren nach Entitätsnamen-Normalisierung
  * zu ~75 % identisch (Paar-Auflösung, Feldauswahl, Bulk-Merge über
  * „quelle:ziel"-Sqid-Paare, Dismissal-Upsert, Berechtigung). Das Service-Layer
- * hatte mit {@see AbstractEntityMergeService}/{@see \App\Services\AbstractDuplicateFinder}
+ * hatte mit {@see AbstractEntityMergeService}/{@see \App\Services\Stammdaten\AbstractDuplicateFinder}
  * längst seine Abstraktion — dem Controller-Layer fehlte sie. Das Concern
  * schließt die Lücke, bevor mit Supplier (W2.3) die dritte Kopie entstünde.
  *

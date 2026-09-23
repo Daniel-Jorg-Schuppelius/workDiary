@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Procurement;
 
-use App\Models\{Article, ArticleSupply, PurchaseOrder, PurchaseOrderLine, Supplier, User, Warehouse};
+use App\Models\{Article, ArticleSupply, PurchaseOrder, PurchaseOrderLine, Supplier, Warehouse};
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;

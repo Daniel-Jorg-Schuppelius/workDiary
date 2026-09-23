@@ -12,7 +12,7 @@ namespace App\Services\Domain;
 
 use App\Enums\Domain\DomainCapabilityArea;
 use App\Models\Domain\{DomainProjection, DomainProviderCommand};
-use App\Models\User;
+use App\Models\Platform\User;
 
 /**
  * Hochrisikoaktionen (Feature 083, MVP-390): DeleteDomain, PushDomain,

@@ -12,7 +12,7 @@ namespace App\Services\Domain;
 
 use App\Enums\Domain\{DomainCapabilityArea, DomainDnsRecordType};
 use App\Models\Domain\{DomainDnsRecordProjection, DomainDnsZoneProjection, DomainProviderCommand, DomainProviderConnection};
-use App\Models\User;
+use App\Models\Platform\User;
 use Illuminate\Support\Carbon;
 
 /**

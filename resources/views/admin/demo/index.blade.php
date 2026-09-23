@@ -12,7 +12,7 @@
 @section('nav-title', __('Demo-Mandant'))
 
 @php
-    /** @var \App\Models\Organization $organization */
+    /** @var \App\Models\Platform\Organization $organization */
     /** @var bool $isEmpty */
     /** @var array<int, \App\Enums\Demo\DemoIndustry> $industries */
     /** @var \App\Enums\Demo\DemoIndustry $currentIndustry */

@@ -9,7 +9,7 @@
 {{-- Variablen: $event, $isEdit, $isDialog, $categories, $rooms, $users, $customers,
                  $types, $statuses, $visibilities, $roles, $prefillStart, $prefillEnd --}}
 @php
-    /** @var \App\Models\Event|null $event */
+    /** @var \App\Models\Calendar\Event|null $event */
     /** @var bool $isEdit */
     /** @var bool $isDialog */
     /** @var \Illuminate\Support\Collection $categories */
@@ -80,7 +80,7 @@
         <x-select-field name="category_id" :label="__('Kategorie')">
             <option value="">—</option>
             @foreach ($categories as $cat)
-                <option value="{{ $cat->sqid }}" @selected((string) old('category_id', \App\Support\Sqid::encode(\App\Models\EventCategory::class, $event?->category_id)) === $cat->sqid)>{{ $cat->name }}</option>
+                <option value="{{ $cat->sqid }}" @selected((string) old('category_id', \App\Support\Sqid::encode(\App\Models\Calendar\EventCategory::class, $event?->category_id)) === $cat->sqid)>{{ $cat->name }}</option>
             @endforeach
         </x-select-field>
 
@@ -150,14 +150,14 @@
         <x-select-field name="responsible_user_id" :label="__('Verantwortlich')" required>
             <option value="">—</option>
             @foreach ($users as $u)
-                <option value="{{ $u->sqid }}" @selected((string) old('responsible_user_id', \App\Support\Sqid::encode(\App\Models\User::class, $event?->responsible_user_id ?? auth()->id())) === $u->sqid)>{{ $u->name }}</option>
+                <option value="{{ $u->sqid }}" @selected((string) old('responsible_user_id', \App\Support\Sqid::encode(\App\Models\Platform\User::class, $event?->responsible_user_id ?? auth()->id())) === $u->sqid)>{{ $u->name }}</option>
             @endforeach
         </x-select-field>
 
         <x-select-field name="customer_id" :label="__('Externer Anbieter')">
             <option value="">—</option>
             @foreach ($customers as $c)
-                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $event?->customer_id)) === $c->sqid)>{{ $c->name }}</option>
+                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $event?->customer_id)) === $c->sqid)>{{ $c->name }}</option>
             @endforeach
         </x-select-field>
 

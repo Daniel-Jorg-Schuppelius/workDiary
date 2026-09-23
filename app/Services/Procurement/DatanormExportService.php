@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Procurement;
 
-use App\Models\{Article, ArticleVariant, Organization};
+use App\Models\{Article, ArticleVariant};
 use App\Models\B2b\{B2bCatalogAccess, B2bCatalogItem};
+use App\Models\Platform\Organization;
 use App\Support\UnitCodeMapper;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
@@ -100,7 +101,7 @@ class DatanormExportService {
             // Kundenindividuelle Preise sind immer Nettopreise. Rangfolge
             // (MVP-567): custom_price → Kunden-Override der Verkaufs-
             // Rabattgruppe → Standardsatz der Gruppe → Standard-VK.
-            $overrides = \App\Models\SalesDiscountGroupOverride::query()
+            $overrides = \App\Models\Sales\SalesDiscountGroupOverride::query()
                 ->where('customer_id', (int) $access->customer_id)
                 ->get()
                 ->keyBy('sales_discount_group_id');
@@ -153,7 +154,7 @@ class DatanormExportService {
      * Netto-VK aus der Verkaufs-Rabattgruppe des Artikels (MVP-567): der
      * Kunden-Override ersetzt den Standardsatz; ohne Gruppe null.
      *
-     * @param  \Illuminate\Support\Collection<int, \App\Models\SalesDiscountGroupOverride>  $overrides  je Gruppen-ID
+     * @param  \Illuminate\Support\Collection<int, \App\Models\Sales\SalesDiscountGroupOverride>  $overrides  je Gruppen-ID
      */
     private function groupNetPrice(Article $article, $overrides): ?Money {
         $group = $article->salesDiscountGroup;
@@ -170,8 +171,8 @@ class DatanormExportService {
             $list->withScale(4),
             [new \ERechnungToolkit\Entities\Datanorm\DatanormDiscount(
                 match ($kind) {
-                    \App\Models\SalesDiscountGroup::KIND_FACTOR => \ERechnungToolkit\Enums\DatanormDiscountKind::Factor,
-                    \App\Models\SalesDiscountGroup::KIND_SURCHARGE => \ERechnungToolkit\Enums\DatanormDiscountKind::Surcharge,
+                    \App\Models\Sales\SalesDiscountGroup::KIND_FACTOR => \ERechnungToolkit\Enums\DatanormDiscountKind::Factor,
+                    \App\Models\Sales\SalesDiscountGroup::KIND_SURCHARGE => \ERechnungToolkit\Enums\DatanormDiscountKind::Surcharge,
                     default => \ERechnungToolkit\Enums\DatanormDiscountKind::Discount,
                 },
                 $value
@@ -288,8 +289,8 @@ class DatanormExportService {
                     $catalog->addDiscountGroup(new \ERechnungToolkit\Entities\Datanorm\DatanormDiscountGroup(
                         $salesGroup->code,
                         match ($salesGroup->kind) {
-                            \App\Models\SalesDiscountGroup::KIND_FACTOR => \ERechnungToolkit\Enums\DatanormDiscountKind::Factor,
-                            \App\Models\SalesDiscountGroup::KIND_SURCHARGE => \ERechnungToolkit\Enums\DatanormDiscountKind::Surcharge,
+                            \App\Models\Sales\SalesDiscountGroup::KIND_FACTOR => \ERechnungToolkit\Enums\DatanormDiscountKind::Factor,
+                            \App\Models\Sales\SalesDiscountGroup::KIND_SURCHARGE => \ERechnungToolkit\Enums\DatanormDiscountKind::Surcharge,
                             default => \ERechnungToolkit\Enums\DatanormDiscountKind::Discount,
                         },
                         (float) $salesGroup->value,

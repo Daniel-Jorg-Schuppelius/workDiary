@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{LexofficeVoucher, PluginSetting};
+use App\Models\Platform\PluginSetting;
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Plugins\Contracts\{PaymentSyncer, PluginCapability};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;

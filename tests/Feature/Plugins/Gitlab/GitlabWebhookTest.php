@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins\Gitlab;
 
-use App\Models\{PluginSetting, Task};
+use App\Models\Platform\PluginSetting;
+use App\Models\Project\Task;
 use App\Plugins\Gitlab\GitlabPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;

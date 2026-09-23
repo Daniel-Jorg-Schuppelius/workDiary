@@ -11,7 +11,8 @@
 namespace Tests\Feature\Fleet;
 
 use App\Exceptions\DriverLicenseCheckOverdueException;
-use App\Models\{DriverLicenseCheck, User, Vehicle};
+use App\Models\{DriverLicenseCheck, Vehicle};
+use App\Models\Platform\User;
 use App\Services\Dispatch\VehicleReservationService;
 use App\Services\Fleet\DriverLicenseCheckService;
 use App\Support\Sqid;
@@ -137,7 +138,7 @@ class DriverLicenseCheckTest extends TestCase {
             ])
             ->assertForbidden();
 
-        $foreignOrg = \App\Models\Organization::factory()->create();
+        $foreignOrg = \App\Models\Platform\Organization::factory()->create();
         $foreignAdmin = User::factory()->admin()->create(['organization_id' => $foreignOrg->id]);
         $this->actingAs($foreignAdmin)
             ->get(route('driver-license-checks.show', $this->driver))

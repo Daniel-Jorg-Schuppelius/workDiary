@@ -12,7 +12,8 @@ namespace Tests\Feature\Software;
 
 use App\Enums\Software\{SoftwareKind, SoftwareLicenseType};
 use App\Enums\User\UserRole;
-use App\Models\{Asset, Software, User};
+use App\Models\{Asset, Software};
+use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;

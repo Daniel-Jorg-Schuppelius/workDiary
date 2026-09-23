@@ -11,7 +11,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SaveMaterialUsageRequest;
-use App\Models\{Material, MaterialUsage, Project, Timesheet};
+use App\Models\{Material, MaterialUsage, Timesheet};
+use App\Models\Project\Project;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;

@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Reselling;
 
 use App\Enums\Reselling\CompanyMappingMode;
-use App\Models\{Customer, ForeignCustomer, Organization};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Platform\Organization;
 use App\Models\Reselling\CompanyMapping;
 use App\Services\Reselling\Marketplace\MarketplaceCompany;
 use App\Services\Reselling\Register\HolderResolver;

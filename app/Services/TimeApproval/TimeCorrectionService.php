@@ -12,7 +12,8 @@ namespace App\Services\TimeApproval;
 
 use App\Enums\Attendance\AttendanceSource;
 use App\Enums\TimeApproval\TimeCorrectionStatus;
-use App\Models\{Attendance, TimeCorrectionItem, TimeCorrectionRequest, TimeEntry, User};
+use App\Models\{Attendance, TimeCorrectionItem, TimeCorrectionRequest, TimeEntry};
+use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\{Auth, DB};

@@ -14,7 +14,7 @@ namespace App\Models\Finance;
 
 use App\Enums\Finance\{MandateKind, MandateStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\Customer;
+use App\Models\Customer\Customer;
 use App\Support\Crypto\BlindIndex;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

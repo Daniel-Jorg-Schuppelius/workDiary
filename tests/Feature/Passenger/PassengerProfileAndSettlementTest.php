@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Passenger;
 
-use App\Models\{Classification, ProcedureTemplate, Qualification, Tag};
+use App\Models\Classification\{Classification, Tag};
 use App\Models\Passenger\PassengerShiftSettlement;
+use App\Models\{ProcedureTemplate, Qualification};
 use App\Services\Classification\BranchProfileInstaller;
 use App\Services\Passenger\PassengerRideService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -8,12 +8,14 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Models;
+namespace App\Models\Customer;
 
 use App\Enums\Customer\CustomerQueryStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
+use App\Models\Customer\Customer\Customer;
+use App\Models\ProtocolSignatureToken;
 
 /**
  * Kunden-Rückfrage (Feature 012, Kundenportal & Freigaben).

@@ -17,8 +17,8 @@ use App\Enums\Contracts\HasLabel;
  * SaaS-Mandantenstatus einer Organisation (Feature 021).
  *
  * Wird in `organizations.tenant_status` gespeichert. Ist die Spalte NULL,
- * leitet {@see \App\Models\Organization::tenantStatus()} den Status aus
- * Testphase ({@see \App\Models\Organization::$trial_ends_at}), Aktiv-Flag
+ * leitet {@see \App\Models\Platform\Organization::tenantStatus()} den Status aus
+ * Testphase ({@see \App\Models\Platform\Organization::$trial_ends_at}), Aktiv-Flag
  * und dem Lizenz-Ablauf (inkl. Grace-Period) ab.
  */
 enum TenantStatus: string implements HasLabel {

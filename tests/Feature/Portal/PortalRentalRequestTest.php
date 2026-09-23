@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Portal;
 
 use App\Enums\Rental\{RentalRequestStatus, RentalReservationKind};
-use App\Models\{Asset, Customer, Organization, User};
+use App\Models\Asset;
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
 use App\Models\Rental\{RentalProfile, RentalRequest, RentalReservation};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

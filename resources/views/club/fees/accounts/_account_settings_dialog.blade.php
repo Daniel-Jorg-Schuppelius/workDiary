@@ -31,7 +31,7 @@
         <x-select-field name="user_id" :label="__('club.fees.field.portal_user')">
             <option value="">–</option>
             @foreach ($users as $user)
-                <option value="{{ $user->sqid }}" @selected(old('user_id', $account->user_id ? \App\Support\Sqid::encode(\App\Models\User::class, $account->user_id) : '') === $user->sqid)>{{ $user->name }}</option>
+                <option value="{{ $user->sqid }}" @selected(old('user_id', $account->user_id ? \App\Support\Sqid::encode(\App\Models\Platform\User::class, $account->user_id) : '') === $user->sqid)>{{ $user->name }}</option>
             @endforeach
         </x-select-field>
     </x-form-group>

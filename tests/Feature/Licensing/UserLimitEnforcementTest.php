@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Licensing;
 
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Licensing\{LicensePayload, LicenseResult, LicenseService, LicenseStatus};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

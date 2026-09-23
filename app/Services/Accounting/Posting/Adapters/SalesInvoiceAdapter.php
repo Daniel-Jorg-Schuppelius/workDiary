@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Accounting\Posting\Adapters;
 
 use App\Enums\Finance\{PostingAccountRole, PostingSourceKind};
-use App\Models\{Customer, Invoice, Organization};
+use App\Models\Customer\Customer;
+use App\Models\Invoice;
+use App\Models\Platform\Organization;
 use App\Services\Accounting\Posting\{PostingProposal, PostingProposalLine};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;

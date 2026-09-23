@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Club;
 
 use App\Models\Club\{ClubGuardian, ClubMember};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Support\Query\DateRange;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Support\{Carbon, Collection};

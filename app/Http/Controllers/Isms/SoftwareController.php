@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Isms;
 use App\Enums\Isms\{SoftwareCategory, SupportStatus};
 use App\Http\Controllers\Controller;
 use App\Models\Isms\{IsmsSoftwareInstallation, IsmsSoftwareProduct};
-use App\Models\User;
+use App\Models\Platform\User;
 use App\Services\Isms\SoftwareInventoryService;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};

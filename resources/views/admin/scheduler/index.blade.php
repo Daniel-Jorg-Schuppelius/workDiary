@@ -87,7 +87,7 @@
             @php
                 /** @var \App\Scheduling\JobDefinition $definition */
                 $definition = $job['definition'];
-                /** @var \App\Models\ScheduledJobState|null $state */
+                /** @var \App\Models\Platform\ScheduledJobState|null $state */
                 $state = $job['state'];
             @endphp
             <tr @class(['hover', 'opacity-60' => ! $job['enabled']])>

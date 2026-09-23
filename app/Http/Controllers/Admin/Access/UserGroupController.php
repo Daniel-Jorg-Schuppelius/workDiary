@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Admin\Access;
 use App\Enums\User\{Permission as PermissionEnum, UserRole};
 use App\Http\Controllers\Concerns\{AuditsAccessChanges, ParsesIndexQuery, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
-use App\Models\{User, UserGroup};
+use App\Models\Platform\{User, UserGroup};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{Auth, DB, Gate};

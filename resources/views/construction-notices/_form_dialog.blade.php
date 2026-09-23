@@ -40,7 +40,7 @@
             <label class="label" for="cn-form-project"><span class="label-text">{{ __('construction.column.project') }}</span></label>
             <select id="cn-form-project" name="project_id" class="select select-bordered w-full">
                 <option value="">—</option>
-                <x-project-options :projects="$projects" :selected="old('project_id', $notice?->project_id ? \App\Support\Sqid::encode(\App\Models\Project::class, $notice->project_id) : '')" />
+                <x-project-options :projects="$projects" :selected="old('project_id', $notice?->project_id ? \App\Support\Sqid::encode(\App\Models\Project\Project::class, $notice->project_id) : '')" />
             </select>
         </div>
         <div>

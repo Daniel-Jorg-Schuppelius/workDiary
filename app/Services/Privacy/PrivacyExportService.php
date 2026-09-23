@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy;
 
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Models\Privacy\{DataSubjectRequest, ProcessingActivity};
 
 /**

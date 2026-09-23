@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Jobs\Location;
 
 use App\Jobs\Concerns\RetriesTransientFailures;
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Location\{VisitBuilder, VisitMaterializer};
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

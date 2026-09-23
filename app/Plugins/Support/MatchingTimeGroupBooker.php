@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support;
 
-use App\Models\{Organization, User};
+use App\Models\Platform\{Organization, User};
 use App\Services\Integration\Concerns\ResolvesInboxTargets;
 use App\Services\Integration\{InboxGroupBooker, ProjectKeywordMatcher};
 use App\Support\Sqid;

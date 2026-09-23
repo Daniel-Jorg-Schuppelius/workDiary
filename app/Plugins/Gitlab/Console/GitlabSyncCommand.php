@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Gitlab\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\Organization;
+use App\Models\Platform\Organization;
 use App\Plugins\Gitlab\Api\GitlabClientFactory;
 use App\Plugins\Gitlab\GitlabConfig;
 use App\Plugins\Gitlab\Services\GitlabIssueImporter;
