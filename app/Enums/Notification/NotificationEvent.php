@@ -122,6 +122,8 @@ enum NotificationEvent: string implements HasLabel {
     case ClubEventCancelled = 'club.eventCancelled';
     /** Synchron: ClubEventService::cancelRegistration() — Mitglied von der Warteliste nachgerückt */
     case ClubWaitlistPromoted = 'club.waitlistPromoted';
+    /** Synchron: ClubHorseService::flagUnavailable() — Pferd gesperrt, betroffene Reitstunde zur Neuplanung (MVP-854) */
+    case ClubHorseUnavailable = 'club.horseUnavailable';
     /** Synchron: LearningTimeService::stop() — Lernzeit außerhalb der Arbeitszeit wartet auf Freigabe */
     case LearningTimeApprovalRequested = 'learning.timeApprovalRequested';
     /** Synchron: LearningQuestionService::ask() — Frage einer lernenden Person an Verantwortliche/Trainer (MVP-789) */
@@ -513,6 +515,7 @@ enum NotificationEvent: string implements HasLabel {
             self::ClubEventRescheduled,
             self::ClubEventCancelled,
             self::ClubWaitlistPromoted => 'groups',
+            self::ClubHorseUnavailable => 'bedroom_baby',
             self::OpenIssueAssigned,
             self::OpenIssueDueSoon,
             self::OpenIssueOverdue => 'assignment_late',

@@ -40,6 +40,9 @@
                 @if ($canViewAttendance)
                     <x-icon-btn icon="fact_check" tone="outline" size="sm" :href="route('club.my.attendance')" show-label>{{ __('club.my.action.attendance') }}</x-icon-btn>
                 @endif
+                @if ($hasFeeAccounts)
+                    <x-icon-btn icon="account_balance_wallet" tone="outline" size="sm" :href="route('club.my.fees')" show-label>{{ __('club.fees.title.my') }}</x-icon-btn>
+                @endif
                 <x-help-button topic="club.my" />
             </x-slot:actions>
         </x-page-toolbar>
@@ -91,6 +94,11 @@
                                 @if ($event->isCancelled())
                                     <x-status-badge tone="error" size="xs" :label="__('club.events.label.cancelled')" />
                                 @endif
+                                @if (isset($horseByEvent) && $horseByEvent->has($event->id))
+                                    {{-- Blockform: ein @php(...) vor einem späteren @php…@endphp würde vom Compiler verschluckt. --}}
+                                    @php $horseAssignment = $horseByEvent->get($event->id); @endphp
+                                    <span class="block text-xs"><x-icon name="bedroom_baby" class="text-muted" /> {{ $horseAssignment->horse?->name ?? __('club.horses.label.own_horse') }}@if ($horseAssignment->needsReview()) <span class="text-warning">({{ __('club.resources.label.replan') }})</span>@endif</span>
+                                @endif
                                 @if ($registrationCloses && ! $event->isCancelled())
                                     <span class="block text-xs text-muted">{{ __('club.my.label.registration_until', ['when' => $registrationCloses->orgTz()->format('d.m.Y H:i')]) }}</span>
                                 @endif
@@ -103,7 +111,32 @@
                                 @endif
                             </td>
                             <td class="text-right">
-                                @if ($canRegister && ! $event->isCancelled())
+                                @if ($details?->kind === \App\Enums\Club\ClubEventKind::Exam && ! $event->isCancelled())
+                                    @php $candidate = $candidates->get($event->id); @endphp
+                                    @if ($candidate)
+                                        <x-status-badge :tone="$candidate->status->tone()" size="sm">{{ $candidate->status->label() }}</x-status-badge>
+                                    @elseif ($canRegister && $row['eligible'] && $event->started_at->isFuture())
+                                        <x-action-form :action="route('club.my.exam.request', $event)">
+                                            <x-icon-btn type="submit" icon="workspace_premium" tone="primary" size="xs" show-label>{{ __('club.exams.action.request') }}</x-icon-btn>
+                                        </x-action-form>
+                                    @endif
+                                @elseif ($details?->kind === \App\Enums\Club\ClubEventKind::Competition && ! $event->isCancelled() && isset($competitionByEvent) && $competitionByEvent->has($event->id))
+                                    @php $competition = $competitionByEvent->get($event->id); $myEntries = $entriesByEvent->get($event->id, collect()); @endphp
+                                    @foreach ($myEntries as $myEntry)
+                                        <x-status-badge :tone="$myEntry->status->tone()" size="xs">{{ $competition->discipline($myEntry->discipline_code)['label'] ?? $myEntry->discipline_code }} · {{ $myEntry->status->label() }}</x-status-badge>
+                                    @endforeach
+                                    @if ($canRegister && $row['eligible'] && ($registrationCloses === null || $registrationCloses->isFuture()) && $event->started_at->isFuture())
+                                        <form method="POST" action="{{ route('club.my.compete', $event) }}" class="mt-1 flex flex-wrap items-center justify-end gap-1" data-entry-form>
+                                            @csrf
+                                            <select name="disciplines[]" class="select select-bordered select-xs w-36" aria-label="{{ __('club.competitions.field.discipline') }}" required>
+                                                @foreach ($competition->disciplines as $code)
+                                                    <option value="{{ $code }}">{{ $competition->discipline($code)['label'] ?? $code }}</option>
+                                                @endforeach
+                                            </select>
+                                            <x-icon-btn type="submit" icon="emoji_events" tone="primary" size="xs" show-label>{{ __('club.competitions.action.enter') }}</x-icon-btn>
+                                        </form>
+                                    @endif
+                                @elseif ($canRegister && ! $event->isCancelled())
                                     @if ($active)
                                         @if ($cancellationCloses === null || $cancellationCloses->isFuture())
                                             <x-action-form :action="route('club.my.cancel', $event)" :confirm="__('club.my.confirm.cancel', ['title' => $event->title])" confirm-icon="person_remove" confirm-tone="warning">
@@ -125,6 +158,56 @@
                     @endforelse
                 </x-table>
             </x-card>
+
+            @if ($matches->isNotEmpty())
+                {{-- Spieltage (MVP-852): Zusage/Absage; Nominierung erst nach Freigabe sichtbar. --}}
+                <x-card :title="__('club.matches.card.my')" icon="sports_soccer" :count="$matches->count()">
+                    <p class="mb-2 text-xs text-muted">{{ __('club.matches.hint.my') }}</p>
+                    <x-table :bare="true" size="sm">
+                        <x-slot:head>
+                            <tr>
+                                <th>{{ __('club.events.field.starts') }}</th>
+                                <th>{{ __('club.matches.field.opponent') }}</th>
+                                <th>{{ __('club.matches.field.availability') }}</th>
+                                <th></th>
+                            </tr>
+                        </x-slot:head>
+                        @foreach ($matches as $row)
+                            @php($event = $row['event'])
+                            @php($match = $row['match'])
+                            <tr class="align-top">
+                                <td class="whitespace-nowrap text-sm tabular-nums">{{ $event->started_at->orgTz()->format('d.m.Y H:i') }}@if ($match->meet_at)<span class="block text-xs text-muted">{{ __('club.matches.label.meet_at', ['when' => $match->meet_at->orgTz()->format('H:i')]) }}</span>@endif</td>
+                                <td class="text-sm">
+                                    <span class="font-medium">{{ $match->team?->name }} · {{ $match->opponent_name }}</span>
+                                    <span class="block text-xs text-muted">{{ $match->is_home ? __('club.matches.label.home') : __('club.matches.label.away') }}@if ($match->venue) · {{ $match->venue }}@endif @if ($match->competition) · {{ $match->competition }}@endif</span>
+                                    @if ($row['nominated']->isNotEmpty())
+                                        <x-status-badge tone="success" size="xs" icon="verified">{{ __('club.matches.label.nominated_as', ['slot' => $row['nominated']->map(fn ($e) => $e->slot->label() . ($e->pairing_no ? ' ' . $e->pairing_no : ''))->implode(', ')]) }}</x-status-badge>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if ($row['availability'])
+                                        <x-status-badge :tone="$row['availability']->status->tone()" size="xs" :icon="$row['availability']->status->icon()">{{ $row['availability']->status->label() }}</x-status-badge>
+                                    @else
+                                        <span class="text-xs text-muted">{{ __('club.matches.label.no_answer') }}</span>
+                                    @endif
+                                </td>
+                                <td class="text-right">
+                                    @if ($canRegister && ! $event->isCancelled() && $event->started_at->isFuture())
+                                        <div class="flex justify-end gap-1">
+                                            @foreach (\App\Enums\Club\ClubAvailabilityStatus::cases() as $status)
+                                                <x-action-form :action="route('club.my.availability', $event)" class="inline">
+                                                    <input type="hidden" name="status" value="{{ $status->value }}">
+                                                    <x-icon-btn type="submit" :icon="$status->icon()" :tone="$row['availability']?->status === $status ? 'primary' : 'ghost'" size="xs" :label="$status->label()" />
+                                                </x-action-form>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </x-table>
+                </x-card>
+            @endif
 
             @if ($recent->isNotEmpty())
                 <x-card :title="__('club.my.card.recent')" icon="history" :count="$recent->count()">
@@ -152,6 +235,27 @@
                     <p class="text-2xl font-semibold tabular-nums">{{ $hours }}:{{ str_pad((string) $minutes, 2, '0', STR_PAD_LEFT) }} <span class="text-sm font-normal text-muted">{{ __('club.my.label.hours') }}</span></p>
                     <p class="text-xs text-muted">{{ __('club.my.hint.attendance', ['from' => $range['from']->format('d.m.Y'), 'to' => $range['to']->format('d.m.Y')]) }}</p>
                     <a href="{{ route('club.my.attendance') }}" class="link link-primary text-sm">{{ __('club.my.action.attendance') }}</a>
+                </x-card>
+            @endif
+
+            @if ($grading->isNotEmpty())
+                <x-card :title="__('club.grading.title.member')" icon="military_tech">
+                    @foreach ($grading as $row)
+                        <div class="border-b border-base-200 py-2 text-sm last:border-0">
+                            <p class="text-xs text-muted">{{ $row['system']->name }} · {{ $row['system']->discipline }}</p>
+                            <p>
+                                <strong>{{ $row['current']?->grade?->name ?? __('club.grading.label.no_grade') }}</strong>
+                                @if ($row['current'])
+                                    <a href="{{ route('club.my.certificate', $row['current']) }}" class="link link-primary ml-2 text-xs">{{ __('club.exams.action.certificate') }}</a>
+                                @endif
+                            </p>
+                            @if ($row['report'] && $row['next'])
+                                <p class="text-xs text-muted">{{ __('club.grading.field.next_grade') }}: {{ $row['next']->name }}</p>
+                                @if ($row['report']->progressText())<p class="text-sm">{{ $row['report']->progressText() }}</p>@endif
+                                <x-status-badge :tone="$row['report']->met ? 'success' : 'warning'" size="xs" :label="$row['report']->met ? __('club.grading.label.eligible') : __('club.grading.label.not_eligible')" />
+                            @endif
+                        </div>
+                    @endforeach
                 </x-card>
             @endif
 

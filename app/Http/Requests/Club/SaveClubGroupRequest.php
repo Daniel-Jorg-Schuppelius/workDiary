@@ -28,6 +28,10 @@ class SaveClubGroupRequest extends BaseFormRequest {
     protected array $sqidFields = [
         'club_department_id' => ClubDepartment::class,
         'leader_user_id' => User::class,
+        'club_grading_system_id' => \App\Models\Club\ClubGradingSystem::class,
+        'club_sport_profile_id' => \App\Models\Club\ClubSportProfile::class,
+        'min_grade_id' => \App\Models\Club\ClubGrade::class,
+        'max_grade_id' => \App\Models\Club\ClubGrade::class,
     ];
 
     /** @return array<string, mixed> */
@@ -42,6 +46,13 @@ class SaveClubGroupRequest extends BaseFormRequest {
             'min_age' => ['nullable', 'integer', 'min:0', 'max:120'],
             'max_age' => ['nullable', 'integer', 'min:0', 'max:120', 'gte:min_age'],
             'criteria_note' => ['nullable', 'string', 'max:255'],
+            'discipline' => ['nullable', 'string', 'max:60'],
+            'club_grading_system_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('club_grading_systems')],
+            'min_grade_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('club_grades')],
+            'max_grade_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('club_grades')],
+            'is_team' => ['sometimes', 'boolean'],
+            'club_sport_profile_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('club_sport_profiles')],
+            'age_class' => ['nullable', 'string', 'max:20'],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }

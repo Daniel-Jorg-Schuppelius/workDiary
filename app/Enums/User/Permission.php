@@ -442,6 +442,12 @@ enum Permission: string implements HasLabel {
     case ClubViewAny = 'club.viewAny';
     case ClubManage = 'club.manage';
     case ClubGroupLead = 'club.groups.lead';
+    /** Graduierungsordnungen, Anerkennungen, Nachweise (MVP-846). */
+    case ClubGradingManage = 'club.grading.manage';
+    /** Prüfungsergebnisse erfassen (MVP-847). */
+    case ClubExaminer = 'club.exams.examine';
+    /** Beiträge: Tarife, Konten, Zuordnungen, Befreiungen (MVP-849); Läufe, Zahlungen, Einzug (850/851). */
+    case ClubFeesManage = 'club.fees.manage';
 
         // ── Trainingsmanagement (Feature 145) ──────────────────────────────
     case TrainingViewAny = 'training.viewAny';

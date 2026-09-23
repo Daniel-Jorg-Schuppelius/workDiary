@@ -36,6 +36,7 @@
         <x-input-field name="title" :label="__('club.events.field.title')" required maxlength="200" span="2" :value="old('title', $event?->title)" />
         <x-select-field name="kind" :label="__('club.events.field.kind')" required>
             @foreach (\App\Enums\Club\ClubEventKind::cases() as $kind)
+                @continue(in_array($kind, [\App\Enums\Club\ClubEventKind::Match, \App\Enums\Club\ClubEventKind::Competition], true) && $details?->kind !== $kind)
                 <option value="{{ $kind->value }}" @selected(old('kind', $details?->kind->value ?? 'training') === $kind->value)>{{ $kind->label() }}</option>
             @endforeach
         </x-select-field>
@@ -54,6 +55,7 @@
         @empty
             <p class="text-sm text-muted md:col-span-2">{{ __('club.empty.groups') }}</p>
         @endforelse
+        <x-input-field name="discipline" :label="__('club.field.discipline')" maxlength="60" :value="old('discipline', $details?->discipline)" :hint="__('club.grading.hint.event_discipline')" />
         <x-select-field name="club_department_id" :label="__('club.field.department')" span="2">
             <option value="">{{ __('club.label.no_department') }}</option>
             @foreach ($departments as $department)

@@ -15,9 +15,11 @@ namespace App\Services\Finance;
 use App\Enums\Billing\AccountPaymentSource;
 use App\Enums\Finance\{AllocationKind, MatchStatus};
 use App\Models\Billing\{CustomerAccountPayment, CustomerBillingAgreement};
+use App\Models\Club\ClubFeeClaim;
 use App\Models\{Expense, Invoice, User};
 use App\Models\Finance\{BankTransaction, PaymentAllocation, PaymentReconciliationEvent};
 use App\Services\Billing\CustomerAccountStatementService;
+use App\Services\Club\ClubFeePaymentService;
 use App\Services\Concerns\ResolvesActorId;
 use Illuminate\Support\Facades\DB;
 
@@ -38,7 +40,7 @@ class ReconciliationService {
      * Bestätigt eine oder mehrere Zuordnungen für einen Bankumsatz und setzt die
      * Wirkung auf die Ziele.
      *
-     * @param  list<array{type: class-string<Invoice>|class-string<Expense>|class-string<CustomerBillingAgreement>, id: int, amount: float, kind?: AllocationKind, note?: string|null}>  $allocations
+     * @param  list<array{type: class-string<Invoice>|class-string<Expense>|class-string<CustomerBillingAgreement>|class-string<ClubFeeClaim>, id: int, amount: float, kind?: AllocationKind, note?: string|null}>  $allocations
      */
     public function confirm(BankTransaction $transaction, array $allocations, ?User $actor = null): BankTransaction {
         if ($allocations === []) {
@@ -108,6 +110,8 @@ class ReconciliationService {
                 $this->revertExpense($target, $allocation);
             } elseif ($target instanceof CustomerBillingAgreement) {
                 $this->revertAccount($allocation);
+            } elseif ($target instanceof ClubFeeClaim) {
+                app(ClubFeePaymentService::class)->revertBankAllocation($allocation);
             }
 
             // Verbleiben keine aktiven Zuordnungen, ist der Umsatz wieder offen.
@@ -190,7 +194,7 @@ class ReconciliationService {
 
         return DB::transaction(function () use ($returnTransaction, $original, $reason, $actorId): BankTransaction {
             $target = $original->allocatable;
-            if (! $target instanceof Invoice && ! $target instanceof Expense && ! $target instanceof CustomerBillingAgreement) {
+            if (! $target instanceof Invoice && ! $target instanceof Expense && ! $target instanceof CustomerBillingAgreement && ! $target instanceof ClubFeeClaim) {
                 throw new BankImportException('targetNotFound', (string) __('bank.reconcile.error.target_not_found'), [
                     'allocation_id' => $original->id,
                 ]);
@@ -213,6 +217,9 @@ class ReconciliationService {
 
             if ($target instanceof Invoice) {
                 $this->revertInvoice($target);
+            } elseif ($target instanceof ClubFeeClaim) {
+                // Beitragsforderung: Rücklastschrift kompensiert die gebuchte Zahlung genau einmal, Rest öffnet sich, Einzug gesperrt.
+                app(ClubFeePaymentService::class)->chargebackFromBank($original, $returnTransaction, $compensation, $reason);
             } elseif ($target instanceof CustomerBillingAgreement) {
                 // GoBD-Symmetrie: Original-Zahlung bleibt, der Rückläufer wird
                 // als NEGATIVE Konto-Zahlung gebucht (Saldo öffnet sich wieder).
@@ -267,11 +274,16 @@ class ReconciliationService {
         });
     }
 
-    private function applyEffect(Invoice|Expense|CustomerBillingAgreement $target, BankTransaction $transaction, ?int $actorId = null, ?PaymentAllocation $allocation = null): void {
+    private function applyEffect(Invoice|Expense|CustomerBillingAgreement|ClubFeeClaim $target, BankTransaction $transaction, ?int $actorId = null, ?PaymentAllocation $allocation = null): void {
         if ($target instanceof Invoice) {
             $this->applyInvoiceEffect($target, $transaction, $actorId);
         } elseif ($target instanceof CustomerBillingAgreement) {
             $this->applyAccountEffect($target, $transaction, $allocation);
+        } elseif ($target instanceof ClubFeeClaim) {
+            // Beitragsforderung (Feature 159, MVP-851): Zahlung buchen oder eine bereits gebuchte wiedererkennen.
+            if ($allocation !== null) {
+                app(ClubFeePaymentService::class)->bookBankAllocation($target, $transaction, $allocation);
+            }
         } else {
             $this->applyExpenseEffect($target, $transaction);
         }
@@ -457,12 +469,15 @@ class ReconciliationService {
         return round($allocated, 2);
     }
 
-    private function deriveKind(Invoice|Expense|CustomerBillingAgreement $target, float $amount): AllocationKind {
+    private function deriveKind(Invoice|Expense|CustomerBillingAgreement|ClubFeeClaim $target, float $amount): AllocationKind {
         if ($target instanceof Expense) {
             return AllocationKind::Reimbursement;
         }
         if ($target instanceof CustomerBillingAgreement) {
             return AllocationKind::Payment;
+        }
+        if ($target instanceof ClubFeeClaim) {
+            return $this->matching->kindForInvoice($amount, $target->openAmount()->toFloat());
         }
 
         return $this->matching->kindForInvoice($amount, $target->total?->toFloat() ?? 0.0);
@@ -476,15 +491,15 @@ class ReconciliationService {
         return $transaction->end_to_end_id ?? ('TX-' . $transaction->id);
     }
 
-    private function resolveTarget(?int $organizationId, string $type, int $id): Invoice|Expense|CustomerBillingAgreement {
-        /** @var Invoice|Expense|CustomerBillingAgreement|null $target */
+    private function resolveTarget(?int $organizationId, string $type, int $id): Invoice|Expense|CustomerBillingAgreement|ClubFeeClaim {
+        /** @var Invoice|Expense|CustomerBillingAgreement|ClubFeeClaim|null $target */
         $target = $type::query()->where('organization_id', $organizationId)->find($id);
 
         if ($target instanceof CustomerBillingAgreement && ! $target->active) {
             $target = null; // inaktives Kundenkonto nie bebuchen
         }
 
-        if (! $target instanceof Invoice && ! $target instanceof Expense && ! $target instanceof CustomerBillingAgreement) {
+        if (! $target instanceof Invoice && ! $target instanceof Expense && ! $target instanceof CustomerBillingAgreement && ! $target instanceof ClubFeeClaim) {
             throw new BankImportException('targetNotFound', (string) __('bank.reconcile.error.target_not_found'), [
                 'type' => $type,
                 'id' => $id,

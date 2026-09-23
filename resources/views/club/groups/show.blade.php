@@ -92,6 +92,82 @@
                 @endif
             </x-card>
 
+            @if ($group->is_team)
+                {{-- Saisonkader (MVP-852): Kader je Saison, Gastspieler mit Herkunft; Vorsaisons bleiben erhalten. --}}
+                <x-card :title="__('club.teams.card.squad') . ($season ? ' · ' . $season->name : '')" icon="group_add" :count="$squadMembers->count()">
+                    <div class="mb-2 flex flex-wrap items-center gap-2">
+                        @if ($seasons->isNotEmpty())
+                            <form method="GET" action="{{ route('club.groups.show', $group) }}" class="flex items-center gap-2">
+                                <label for="squad-season" class="text-xs text-muted">{{ __('club.teams.field.season') }}</label>
+                                <select id="squad-season" name="season" class="select select-bordered select-xs" data-autosubmit>
+                                    @foreach ($seasons as $option)
+                                        <option value="{{ $option->sqid }}" @selected($season?->id === $option->id)>{{ $option->name }}</option>
+                                    @endforeach
+                                </select>
+                            </form>
+                        @endif
+                        @if ($canManage)
+                            <x-icon-btn icon="calendar_month" tone="ghost" size="xs" data-entry-modal-trigger :href="route('club.seasons.create')" show-label>{{ __('club.teams.action.create_season') }}</x-icon-btn>
+                        @endif
+                        @if ($canDecide && $season)
+                            <x-icon-btn icon="group_add" tone="primary" size="xs" data-entry-modal-trigger :href="route('club.groups.squad.create', [$group, 'season' => $season->sqid])" show-label>{{ __('club.teams.action.add_squad_member') }}</x-icon-btn>
+                        @endif
+                        <x-icon-btn icon="sports_soccer" tone="outline" size="xs" class="ml-auto" :href="route('club.matches.index', ['team' => $group->sqid])" show-label>{{ __('club.matches.title.index') }}</x-icon-btn>
+                        @if ($canDecide)
+                            <x-icon-btn icon="upload_file" tone="outline" size="xs" data-entry-modal-trigger :href="route('club.matches.proposals.import.create', ['team' => $group->sqid])" show-label>{{ __('club.matches.action.import') }}</x-icon-btn>
+                        @endif
+                    </div>
+                    @if ($profile)
+                        <p class="mb-2 text-xs text-muted">{{ __('club.teams.label.profile_summary', ['name' => $profile->name, 'family' => $profile->family->label(), 'field' => $profile->squad_size_field ?? '–', 'bench' => $profile->squad_size_bench ?? '–']) }}</p>
+                    @else
+                        <p class="mb-2 text-xs text-warning">{{ __('club.teams.hint.no_profile') }}</p>
+                    @endif
+                    @if ($season === null)
+                        <p class="text-sm text-muted">{{ __('club.teams.empty.seasons') }}</p>
+                    @else
+                        <x-table :bare="true" size="sm">
+                            <x-slot:head>
+                                <tr>
+                                    <th>{{ __('club.field.member') }}</th>
+                                    <th class="text-center">{{ __('club.teams.field.jersey_no') }}</th>
+                                    <th>{{ __('club.teams.field.position') }}</th>
+                                    @if ($profile?->hasPairings())<th class="text-center">{{ __('club.teams.field.strength_rank') }}</th>@endif
+                                    <th>{{ __('club.field.valid_from') }}</th>
+                                    <th></th>
+                                </tr>
+                            </x-slot:head>
+                            @forelse ($squadMembers as $entry)
+                                @php($ended = $entry->valid_to !== null && $entry->valid_to->lt($today))
+                                <tr class="{{ $ended ? 'opacity-60' : '' }}">
+                                    <td class="text-sm">
+                                        @if ($entry->member)
+                                            <a href="{{ route('club.members.show', $entry->member) }}" class="link link-hover font-medium">{{ $entry->member->fullName() }}</a>
+                                            <span class="block text-xs text-muted">{{ __('club.teams.label.age_class_of', ['age' => app(\App\Services\Club\ClubTeamService::class)->ageClassOf($entry->member, $group, $today) ?? '–']) }}</span>
+                                        @endif
+                                        @if ($entry->isGuest())<span class="badge badge-ghost badge-xs">{{ __('club.teams.label.guest', ['origin' => $entry->guest_origin]) }}</span>@endif
+                                    </td>
+                                    <td class="text-center text-sm tabular-nums">{{ $entry->jersey_no ?? '–' }}</td>
+                                    <td class="text-sm">{{ $profile?->positionLabel($entry->position_code) ?? $entry->position_code ?? '–' }}</td>
+                                    @if ($profile?->hasPairings())<td class="text-center text-sm tabular-nums">{{ $entry->strength_rank ?? '–' }}</td>@endif
+                                    <td class="text-sm tabular-nums">{{ $entry->valid_from->format('d.m.Y') }}@if ($entry->valid_to) – {{ $entry->valid_to->format('d.m.Y') }}@endif</td>
+                                    <td class="text-right">
+                                        @if ($canDecide)
+                                            <x-icon-btn icon="edit" tone="ghost" size="xs" data-entry-modal-trigger :href="route('club.groups.squad.edit', [$group, $entry])" :label="__('club.action.edit')" />
+                                            @unless ($ended)
+                                                <x-action-form :action="route('club.groups.squad.end', [$group, $entry])" :confirm="__('club.teams.confirm.end_squad_member', ['name' => $entry->member?->fullName() ?? ''])" confirm-icon="person_remove" confirm-tone="warning" class="inline">
+                                                    <x-icon-btn type="submit" icon="person_remove" tone="ghost" size="xs" class="btn-warning" :label="__('club.action.end')" />
+                                                </x-action-form>
+                                            @endunless
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <x-table.empty icon="group_add" :colspan="$profile?->hasPairings() ? 6 : 5" :title="__('club.teams.empty.squad')" compact />
+                            @endforelse
+                        </x-table>
+                    @endif
+                </x-card>
+            @endif
             <x-card :title="__('club.card.requests')" icon="pending_actions" :count="$requested->count()">
                 <x-table :bare="true" size="sm">
                     <x-slot:head>

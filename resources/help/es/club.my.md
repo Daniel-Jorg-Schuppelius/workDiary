@@ -19,3 +19,5 @@ related:
 **Mi asistencia:** Solo cuenta lo que la dirección ha confirmado; una inscripción no es un justificante. La suma se refiere al periodo de la cabecera, la lista muestra cada justificante confirmado. Aquí no se ven ausencias de otros, listas de socios ajenas ni datos de contacto.
 
 **Mensajes:** Recordatorios, aplazamientos, cancelaciones y plazas asignadas le llegan a través de su cuenta de usuario (según las reglas de notificación de la organización), en su defecto a la dirección de correo registrada; igualmente a los representantes con el derecho «recibir mensajes». Cada mensaje se entrega una sola vez; la administración ve los errores de entrega en la cita. Un mensaje no cuenta como leído.
+
+**Mis cuotas:** Si figura como persona obligada al pago de una cuenta de cuotas, ve sus notificaciones (también en PDF), vencimientos, pagos registrados, saldo a favor e importes abiertos. Un cobro exportado cuenta como pagado solo cuando se registra el abono. Los derechos de representación para inscripciones no bastan: la gestión de cuotas fija expresamente a la persona obligada al pago.

@@ -185,6 +185,8 @@ class ClubAttendanceService {
             $record->update($values + ['recorded_by_user_id' => $actor->id, 'recorded_at' => now()]);
             $record->audit('club.attendance.corrected', ['reason' => $reason, 'status' => $status->value, 'minutes' => $values['minutes']]);
             $this->bump($sheet);
+            // Korrigierter Nachweis → betroffene Prüfungskandidaten zur fachlichen Überprüfung (MVP-847); erteilte Grade bleiben.
+            app(ClubExamService::class)->flagReviewForRecord($record);
 
             return $record->refresh();
         });

@@ -752,7 +752,36 @@ class NavigationRegistry {
                         : null,
                     $clubAdmin ? ['route' => 'club.members.index', 'label' => __('club.nav.members'), 'icon' => 'groups', 'modal' => false, 'matches' => ['club.members.*']] : null,
                     $clubAdmin ? ['route' => 'club.groups.index', 'label' => __('club.nav.groups'), 'icon' => 'diversity_3', 'modal' => false, 'matches' => ['club.groups.*']] : null,
+                    // Graduierungen (MVP-846): eigenes Recht, unabhängig von der Registerpflege.
+                    Gate::allows('viewAny', \App\Models\Club\ClubGradingSystem::class)
+                        ? ['route' => 'club.grading.index', 'label' => __('club.nav.grading'), 'icon' => 'military_tech', 'modal' => false, 'matches' => ['club.grading.*']]
+                        : null,
+                    Gate::allows('viewAny', \App\Models\Club\ClubExamOffer::class)
+                        ? ['route' => 'club.exams.index', 'label' => __('club.nav.exams'), 'icon' => 'workspace_premium', 'modal' => false, 'matches' => ['club.exams.*']]
+                        : null,
+                    // Beiträge (MVP-849): Kassenwart-Recht, Register liest mit.
+                    Gate::allows('viewAny', \App\Models\Club\ClubFeeAccount::class)
+                        ? ['route' => 'club.fees.accounts.index', 'label' => __('club.nav.fees'), 'icon' => 'payments', 'modal' => false, 'matches' => ['club.fees.*']]
+                        : null,
                     $clubAdmin ? ['route' => 'club.events.index', 'label' => __('club.nav.events'), 'icon' => 'event', 'modal' => false, 'matches' => ['club.events.*']] : null,
+                    // Spieltage und Sportarten (MVP-852): Leitung sieht ihre Mannschaften, Profile pflegt die Verwaltung.
+                    Gate::allows('viewAny', \App\Models\Club\ClubEventDetails::class)
+                        ? ['route' => 'club.matches.index', 'label' => __('club.nav.matches'), 'icon' => 'sports_soccer', 'modal' => false, 'matches' => ['club.matches.*']]
+                        : null,
+                    // Wettkämpfe und Nachweisliste (MVP-855).
+                    Gate::allows('viewAny', \App\Models\Club\ClubEventDetails::class)
+                        ? ['route' => 'club.competitions.index', 'label' => __('club.nav.competitions'), 'icon' => 'emoji_events', 'modal' => false, 'matches' => ['club.competitions.*', 'club.requirements.*']]
+                        : null,
+                    Gate::allows('create', \App\Models\Club\ClubSportProfile::class)
+                        ? ['route' => 'club.profiles.index', 'label' => __('club.nav.profiles'), 'icon' => 'sports', 'modal' => false, 'matches' => ['club.profiles.*']]
+                        : null,
+                    Gate::allows('viewAny', \App\Models\Club\ClubResource::class)
+                        ? ['route' => 'club.resources.index', 'label' => __('club.nav.resources'), 'icon' => 'stadium', 'modal' => false, 'matches' => ['club.resources.*']]
+                        : null,
+                    // Pferde (MVP-854): nur wenn der Verein Pferde führt.
+                    Gate::allows('viewAny', \App\Models\Club\ClubHorse::class) && \App\Models\Club\ClubHorse::query()->exists()
+                        ? ['route' => 'club.horses.index', 'label' => __('club.nav.horses'), 'icon' => 'bedroom_baby', 'modal' => false, 'matches' => ['club.horses.*']]
+                        : null,
                     $clubAdmin ? ['route' => 'club.attendance.index', 'label' => __('club.nav.attendance'), 'icon' => 'fact_check', 'modal' => false, 'matches' => ['club.attendance.*']] : null,
                     $clubAdmin ? ['route' => 'club.departments.index', 'label' => __('club.nav.departments'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['club.departments.*']] : null,
                     $clubAdmin ? ['route' => 'club.proposals.index', 'label' => __('club.nav.proposals'), 'icon' => 'swap_horiz', 'modal' => false, 'matches' => ['club.proposals.*']] : null,

@@ -809,6 +809,49 @@ class DemoBlueprintProvider {
                 'background_title' => 'Demo-Technikeinsatz',
                 'procedure_code' => 'VT_SOUNDCHECK',
             ],
+            // Sportverein (MVP-848): Arbeitstagebuch der Geschäftsstelle; die
+            // Vereinsdaten selbst legt der ClubDemoSeeder an.
+            DemoIndustry::Verein => [
+                'customers' => [
+                    ['name' => 'Stadt Musterstadt, Sportamt', 'city' => 'Musterstadt'],
+                    ['name' => 'Bäckerei Beispiel (Sponsor)', 'city' => 'Musterstadt'],
+                    ['name' => 'Grundschule am Park', 'city' => 'Musterstadt'],
+                ],
+                'projects' => [
+                    0 => ['Hallenbelegung Sporthalle Nord', 'Sportfest Stadtpark'],
+                    1 => ['Trikotsponsoring E-Jugend'],
+                    2 => ['Schul-AG Judo', 'Bewegungstag Grundschule'],
+                ],
+                'asset' => [
+                    'name' => 'Vereinsbus MU-SV 9 (9-Sitzer)',
+                    'manufacturer' => 'Beispiel Fahrzeugbau',
+                    'model' => 'Kleinbus 9-Sitzer',
+                    'class' => AssetClass::Vehicle,
+                    'location' => 'Vereinsheim Musterstadt',
+                ],
+                'materials' => [
+                    ['sku' => 'VE-BALL-5', 'name' => 'Trainingsball Größe 5', 'unit' => 'Stk', 'price' => '18.5000'],
+                    ['sku' => 'VE-EH-SET', 'name' => 'Erste-Hilfe-Set Sport', 'unit' => 'Stk', 'price' => '34.9000'],
+                    ['sku' => 'VE-HUT-20', 'name' => 'Markierungshütchen 20er-Set', 'unit' => 'Set', 'price' => '12.0000'],
+                ],
+                'main_case' => [
+                    'title' => 'Sportfest Stadtpark, Aufbau und Helferplanung — Beispielauftrag',
+                    'content' => 'Sportfest des Vereins im Stadtpark: Sportstätten und Bühne belegt, Helfer und Terminrollen eingeteilt, Erste Hilfe mit dem Sanitätsdienst abgestimmt. Befund: Stromanschluss für die Zeitmessung fehlt. Plan: 480 min.',
+                    'time_desc' => 'Demo-Zeiterfassung Sportfest',
+                    'open_issue_title' => 'Stromanschluss Zeitmessung klären',
+                    'open_issue_desc' => 'Für die Zeitmessung an der Laufbahn fehlt ein abgesicherter Anschluss; vor dem Aufbautag mit dem Sportamt klären.',
+                    'protocol_title' => 'Sicherheits- und Aufbaucheck Sportfest',
+                    'protocol_items' => [
+                        ['label' => 'Sportstätten und Ressourcen belegt', 'result' => ProtocolItemResult::Ok],
+                        ['label' => 'Erste Hilfe und Sanitätsdienst bestätigt', 'result' => ProtocolItemResult::Ok],
+                        ['label' => 'Stromanschluss Zeitmessung geklärt', 'result' => ProtocolItemResult::Open],
+                    ],
+                    'comm_subject' => 'Abstimmung Platzbelegung mit dem Sportamt',
+                    'comm_body' => 'Telefonat mit dem Sportamt zur Belegung des Stadtparks und der Laufbahn am Sportfest-Wochenende.',
+                ],
+                'background_title' => 'Demo-Trainingsbetrieb',
+                'procedure_code' => 'VE_SPORTFEST',
+            ],
         };
     }
 }

@@ -51,6 +51,8 @@ enum DemoIndustry: string implements HasLabel {
     case TaxiMietwagen = 'taxi-mietwagen';
     case Veranstalter = 'veranstalter';
     case Veranstaltungstechnik = 'veranstaltungstechnik';
+    // Musterbranche 20 (MVP-848): Sportverein mit Vereinsverwaltung.
+    case Verein = 'verein';
 
     /** Branchenprofil-Code für den BranchProfileInstaller (database/data/branchprofiles/*.php). */
     public function branchProfileCode(): string {
@@ -74,6 +76,7 @@ enum DemoIndustry: string implements HasLabel {
             self::TaxiMietwagen => 'taxi-mietwagen',
             self::Veranstalter => 'veranstalter',
             self::Veranstaltungstechnik => 'veranstaltungstechnik',
+            self::Verein => 'verein',
         };
     }
 
@@ -99,6 +102,7 @@ enum DemoIndustry: string implements HasLabel {
             self::TaxiMietwagen => 'Taxi & Mietwagen',
             self::Veranstalter => 'Veranstalter & Event-Organisation',
             self::Veranstaltungstechnik => 'Veranstaltungstechnik',
+            self::Verein => 'Sportverein',
         };
     }
 
@@ -124,6 +128,7 @@ enum DemoIndustry: string implements HasLabel {
             self::TaxiMietwagen => 'Muster Taxi & Mietwagen GmbH',
             self::Veranstalter => 'Muster Events GmbH',
             self::Veranstaltungstechnik => 'Muster Veranstaltungstechnik GmbH',
+            self::Verein => 'TSV Musterstadt e. V.',
         };
     }
 

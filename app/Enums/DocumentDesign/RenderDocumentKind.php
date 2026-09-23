@@ -45,6 +45,8 @@ enum RenderDocumentKind: string implements HasLabel {
     case CreditNote = 'credit_note';
     case ProformaInvoice = 'proforma_invoice';
     case Dunning = 'dunning';
+    /** Beitragsmitteilung der Vereinsverwaltung (Feature 159, MVP-850) — kein Steuerausweis. */
+    case FeeNotice = 'fee_notice';
     // … sowie bislang unregistrierte Nachweis- und Spezialarten.
     case CaseFile = 'case_file';
     case Label = 'label';
@@ -76,6 +78,7 @@ enum RenderDocumentKind: string implements HasLabel {
             self::CreditNote => __('Gutschrift'),
             self::ProformaInvoice => __('Pro-forma-Rechnung'),
             self::Dunning => __('Mahnung'),
+            self::FeeNotice => __('club.fees.pdf.kind'),
             self::CaseFile => __('Fallakte'),
             self::Label => __('Etikett'),
             self::ConstructionObstructionNotice => __('construction.kind.obstruction'),
@@ -89,7 +92,7 @@ enum RenderDocumentKind: string implements HasLabel {
     public function family(): RenderDocumentFamily {
         return match ($this) {
             self::Invoice, self::Quote, self::OrderConfirmation,
-            self::CreditNote, self::ProformaInvoice, self::Dunning => RenderDocumentFamily::Sales,
+            self::CreditNote, self::ProformaInvoice, self::Dunning, self::FeeNotice => RenderDocumentFamily::Sales,
             self::PurchaseOrder, self::DeliveryNote => RenderDocumentFamily::Procurement,
             self::Protocol, self::ManufacturingRecord, self::Timesheet,
             self::Form, self::Report, self::CaseFile,
@@ -147,7 +150,7 @@ enum RenderDocumentKind: string implements HasLabel {
     public function fallbackKind(): ?self {
         return match ($this) {
             self::Quote, self::OrderConfirmation, self::CreditNote,
-            self::ProformaInvoice, self::Dunning => self::Invoice,
+            self::ProformaInvoice, self::Dunning, self::FeeNotice => self::Invoice,
             self::CaseFile, self::ConstructionObstructionNotice,
             self::ConstructionConcernNotice, self::Certificate, self::SigningCertificate => self::Report,
             default => null,
@@ -201,7 +204,7 @@ enum RenderDocumentKind: string implements HasLabel {
                 InformationBlock::ItemsTable,
                 InformationBlock::Totals,
             ],
-            self::Dunning => [
+            self::Dunning, self::FeeNotice => [
                 InformationBlock::RecipientAddress,
                 InformationBlock::DocumentMeta,
                 InformationBlock::CompanyIdentity,

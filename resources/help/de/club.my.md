@@ -19,3 +19,5 @@ related:
 **Meine Anwesenheit:** Zählt nur, was die Leitung bestätigt hat; eine Anmeldung ist kein Nachweis. Die Summe bezieht sich auf den Zeitraum der Kopfzeile, die Liste zeigt jeden bestätigten Nachweis. Fehlzeiten anderer, fremde Mitgliederlisten oder Kontaktdaten sind hier nicht sichtbar.
 
 **Nachrichten:** Erinnerungen, Verschiebungen, Absagen und Nachrücken erreichen Sie über Ihr Benutzerkonto (nach den Benachrichtigungsregeln der Organisation), sonst über die hinterlegte Mailadresse; Vertretungen mit Recht „Nachrichten erhalten“ ebenso. Jede Nachricht wird nur einmal zugestellt, Zustellfehler sieht die Verwaltung am Termin. Eine Nachricht gilt nicht als gelesen.
+
+**Meine Beiträge:** Sind Sie als zahlungspflichtige Person eines Beitragskontos hinterlegt, sehen Sie Ihre Beitragsmitteilungen (auch als PDF), Fälligkeiten, gebuchten Zahlungen, Guthaben und offenen Beträge. Ein exportierter Einzug gilt erst als bezahlt, wenn die Gutschrift gebucht ist. Vertretungsrechte für Anmeldungen reichen dafür nicht — die Beitragsverwaltung legt die zahlungspflichtige Person ausdrücklich fest.

@@ -131,12 +131,35 @@ class ClubMember extends Model {
         return $this->hasMany(ClubNotification::class);
     }
 
+    /** @return HasMany<ClubFeeAssignment, $this> */
+    public function feeAssignments(): HasMany {
+        return $this->hasMany(ClubFeeAssignment::class)->orderByDesc('valid_from');
+    }
+
+    /** @return HasMany<ClubFeeExemption, $this> */
+    public function feeExemptions(): HasMany {
+        return $this->hasMany(ClubFeeExemption::class)->orderByDesc('starts_on');
+    }
+
     /** @return HasMany<ClubGroupChangeProposal, $this> */
     public function proposals(): HasMany {
         return $this->hasMany(ClubGroupChangeProposal::class);
     }
 
-    public function fullName(): string {
+    /** @return HasMany<ClubSquadMember, $this> */
+    public function squadMemberships(): HasMany {
+        return $this->hasMany(ClubSquadMember::class);
+    }
+
+    /** @return HasMany<ClubPerformance, $this> */
+    public function performances(): HasMany {
+        return $this->hasMany(ClubPerformance::class);
+    }
+
+    /** @return HasMany<ClubStartRight, $this> */
+    public function startRights(): HasMany {
+        return $this->hasMany(ClubStartRight::class);
+    }    public function fullName(): string {
         return trim($this->first_name . ' ' . $this->last_name);
     }
 

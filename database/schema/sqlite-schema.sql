@@ -16813,46 +16813,6 @@ CREATE INDEX "open_issues_subject_status_idx" on "open_issues"(
   "subject_id",
   "status"
 );
-CREATE TABLE IF NOT EXISTS "invoice_items"(
-  "id" integer primary key autoincrement not null,
-  "invoice_id" integer not null,
-  "time_entry_id" integer,
-  "description" text not null,
-  "quantity" numeric not null default('1'),
-  "unit" varchar not null default('h'),
-  "unit_price" numeric not null default('0'),
-  "amount" numeric not null default('0'),
-  "position" integer not null default('0'),
-  "created_at" datetime,
-  "updated_at" datetime,
-  "expense_id" integer,
-  "organization_id" integer,
-  "service_date" date,
-  "material_usage_id" integer,
-  "tour_id" integer,
-  "tax_rate" numeric,
-  "tax_category" varchar,
-  "rental_charge_id" integer,
-  "settled_invoice_id" integer,
-  "ai_assisted_at" datetime,
-  "discount_percent" numeric,
-  "discount_amount" numeric,
-  "article_id" integer,
-  "service_from" date,
-  "service_to" date,
-  foreign key("settled_invoice_id") references invoices("id") on delete set null on update no action,
-  foreign key("material_usage_id") references material_usages("id") on delete set null on update no action,
-  foreign key("expense_id") references expenses("id") on delete set null on update no action,
-  foreign key("invoice_id") references invoices("id") on delete cascade on update no action,
-  foreign key("time_entry_id") references time_entries("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("tour_id") references tours("id") on delete set null on update no action,
-  foreign key("rental_charge_id") references rental_charges("id") on delete set null on update no action,
-  foreign key("article_id") references "articles"("id") on delete set null
-);
-CREATE INDEX "idx_invoice_items_org" on "invoice_items"("organization_id");
-CREATE INDEX "invoice_items_expense_id_index" on "invoice_items"("expense_id");
-CREATE INDEX "invoice_items_invoice_id_index" on "invoice_items"("invoice_id");
 CREATE TABLE IF NOT EXISTS "quote_items"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -19625,6 +19585,46 @@ CREATE TABLE IF NOT EXISTS "document_version_texts"(
 CREATE UNIQUE INDEX "doc_version_texts_version_unique" on "document_version_texts"(
   "document_version_id"
 );
+CREATE TABLE IF NOT EXISTS "invoice_items"(
+  "id" integer primary key autoincrement not null,
+  "invoice_id" integer not null,
+  "time_entry_id" integer,
+  "description" text not null,
+  "quantity" numeric not null default('1'),
+  "unit" varchar not null default('h'),
+  "unit_price" numeric not null default('0'),
+  "amount" numeric not null default('0'),
+  "position" integer not null default('0'),
+  "created_at" datetime,
+  "updated_at" datetime,
+  "expense_id" integer,
+  "organization_id" integer,
+  "service_date" date,
+  "material_usage_id" integer,
+  "tour_id" integer,
+  "tax_rate" numeric,
+  "tax_category" varchar,
+  "rental_charge_id" integer,
+  "settled_invoice_id" integer,
+  "ai_assisted_at" datetime,
+  "discount_percent" numeric,
+  "discount_amount" numeric,
+  "article_id" integer,
+  "service_from" date,
+  "service_to" date,
+  foreign key("article_id") references articles("id") on delete set null on update no action,
+  foreign key("rental_charge_id") references rental_charges("id") on delete set null on update no action,
+  foreign key("tour_id") references tours("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete set null on update no action,
+  foreign key("time_entry_id") references time_entries("id") on delete set null on update no action,
+  foreign key("invoice_id") references invoices("id") on delete cascade on update no action,
+  foreign key("expense_id") references expenses("id") on delete set null on update no action,
+  foreign key("material_usage_id") references material_usages("id") on delete set null on update no action,
+  foreign key("settled_invoice_id") references invoices("id") on delete set null on update no action
+);
+CREATE INDEX "idx_invoice_items_org" on "invoice_items"("organization_id");
+CREATE INDEX "invoice_items_expense_id_index" on "invoice_items"("expense_id");
+CREATE INDEX "invoice_items_invoice_id_index" on "invoice_items"("invoice_id");
 CREATE TABLE IF NOT EXISTS "contract_signing_revisions"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -19813,23 +19813,6 @@ CREATE INDEX "lih_org_status_idx" on "lexoffice_invoice_handovers"(
   "organization_id",
   "status"
 );
-CREATE TABLE IF NOT EXISTS "club_departments"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "name" varchar not null,
-  "description" text,
-  "discipline" varchar,
-  "is_active" tinyint(1) not null default '1',
-  "sort_order" integer not null default '0',
-  "created_at" datetime,
-  "updated_at" datetime,
-  "deleted_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade
-);
-CREATE INDEX "club_dep_org_sort_idx" on "club_departments"(
-  "organization_id",
-  "sort_order"
-);
 CREATE TABLE IF NOT EXISTS "club_members"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -19888,35 +19871,6 @@ CREATE TABLE IF NOT EXISTS "club_membership_periods"(
 CREATE INDEX "club_period_member_start_idx" on "club_membership_periods"(
   "club_member_id",
   "starts_on"
-);
-CREATE TABLE IF NOT EXISTS "club_groups"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "club_department_id" integer,
-  "name" varchar not null,
-  "description" text,
-  "leader_user_id" integer,
-  "max_members" integer,
-  "admission_mode" varchar not null default 'leader',
-  "min_age" integer,
-  "max_age" integer,
-  "criteria_note" varchar,
-  "is_active" tinyint(1) not null default '1',
-  "created_at" datetime,
-  "updated_at" datetime,
-  "deleted_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("club_department_id") references "club_departments"("id") on delete set null,
-  foreign key("leader_user_id") references "users"("id") on delete set null
-);
-CREATE INDEX "club_group_org_dep_name_idx" on "club_groups"(
-  "organization_id",
-  "club_department_id",
-  "name"
-);
-CREATE INDEX "club_group_org_leader_idx" on "club_groups"(
-  "organization_id",
-  "leader_user_id"
 );
 CREATE TABLE IF NOT EXISTS "club_group_memberships"(
   "id" integer primary key autoincrement not null,
@@ -20009,6 +19963,7 @@ CREATE TABLE IF NOT EXISTS "club_event_details"(
   "cancellation_lead_hours" integer,
   "created_at" datetime,
   "updated_at" datetime,
+  "discipline" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("event_id") references "events"("id") on delete cascade,
   foreign key("club_department_id") references "club_departments"("id") on delete set null
@@ -20205,6 +20160,1121 @@ CREATE INDEX "club_notif_member_created_idx" on "club_notifications"(
 CREATE INDEX "club_notif_event_status_idx" on "club_notifications"(
   "event_id",
   "status"
+);
+CREATE TABLE IF NOT EXISTS "club_grading_systems"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "name" varchar not null,
+  "discipline" varchar not null,
+  "description" text,
+  "is_active" tinyint(1) not null default '1',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE INDEX "club_grading_sys_org_disc_idx" on "club_grading_systems"(
+  "organization_id",
+  "discipline"
+);
+CREATE TABLE IF NOT EXISTS "club_grades"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_grading_system_id" integer not null,
+  "name" varchar not null,
+  "rank" integer not null,
+  "color" varchar,
+  "is_active" tinyint(1) not null default '1',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_grading_system_id") references "club_grading_systems"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "club_grades_system_name_uq" on "club_grades"(
+  "club_grading_system_id",
+  "name"
+);
+CREATE INDEX "club_grades_system_rank_idx" on "club_grades"(
+  "club_grading_system_id",
+  "rank"
+);
+CREATE TABLE IF NOT EXISTS "club_grading_versions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_grading_system_id" integer not null,
+  "version_no" integer not null,
+  "status" varchar not null default 'draft',
+  "valid_from" date,
+  "unit_minutes" integer,
+  "accepts_external_credits" tinyint(1) not null default '0',
+  "notes" text,
+  "activated_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_grading_system_id") references "club_grading_systems"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "club_grading_ver_system_no_uq" on "club_grading_versions"(
+  "club_grading_system_id",
+  "version_no"
+);
+CREATE TABLE IF NOT EXISTS "club_grade_requirements"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_grading_version_id" integer not null,
+  "club_grade_id" integer not null,
+  "previous_grade_id" integer,
+  "min_minutes" integer,
+  "min_sessions" integer,
+  "min_minutes_per_session" integer,
+  "counting_basis" varchar not null default 'since_previous_grade',
+  "window_months" integer,
+  "wait_months" integer,
+  "min_age" integer,
+  "counted_event_kinds" text,
+  "counted_group_ids" text,
+  "required_proof_label" varchar,
+  "requires_approval" tinyint(1) not null default '0',
+  "allows_exception" tinyint(1) not null default '0',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_grading_version_id") references "club_grading_versions"("id") on delete cascade,
+  foreign key("club_grade_id") references "club_grades"("id") on delete cascade,
+  foreign key("previous_grade_id") references "club_grades"("id") on delete set null
+);
+CREATE UNIQUE INDEX "club_grade_req_version_grade_uq" on "club_grade_requirements"(
+  "club_grading_version_id",
+  "club_grade_id"
+);
+CREATE TABLE IF NOT EXISTS "club_member_proofs"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_member_id" integer not null,
+  "kind" varchar not null,
+  "label" varchar not null,
+  "discipline" varchar,
+  "minutes" integer,
+  "sessions" integer,
+  "obtained_on" date not null,
+  "valid_until" date,
+  "origin" varchar,
+  "confirmed_by_user_id" integer,
+  "note" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete cascade,
+  foreign key("confirmed_by_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "club_member_proofs_member_kind_idx" on "club_member_proofs"(
+  "club_member_id",
+  "kind"
+);
+CREATE TABLE IF NOT EXISTS "club_exam_offers"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "event_id" integer not null,
+  "club_grading_system_id" integer not null,
+  "club_grading_version_id" integer not null,
+  "examiner_user_ids" text,
+  "notes" text,
+  "results_released_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("event_id") references "events"("id") on delete cascade,
+  foreign key("club_grading_system_id") references "club_grading_systems"("id") on delete cascade,
+  foreign key("club_grading_version_id") references "club_grading_versions"("id") on delete restrict
+);
+CREATE UNIQUE INDEX "club_exam_offer_event_uq" on "club_exam_offers"(
+  "event_id"
+);
+CREATE TABLE IF NOT EXISTS "club_exam_offer_grades"(
+  "id" integer primary key autoincrement not null,
+  "club_exam_offer_id" integer not null,
+  "club_grade_id" integer not null,
+  foreign key("club_exam_offer_id") references "club_exam_offers"("id") on delete cascade,
+  foreign key("club_grade_id") references "club_grades"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "club_exam_offer_grade_uq" on "club_exam_offer_grades"(
+  "club_exam_offer_id",
+  "club_grade_id"
+);
+CREATE TABLE IF NOT EXISTS "club_exam_candidates"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_exam_offer_id" integer not null,
+  "club_member_id" integer not null,
+  "target_grade_id" integer not null,
+  "status" varchar not null default 'requested',
+  "requested_at" datetime,
+  "requested_by_user_id" integer,
+  "admitted_at" datetime,
+  "admitted_by_user_id" integer,
+  "approved_at" datetime,
+  "approved_by_user_id" integer,
+  "exception_reason" varchar,
+  "exception_by_user_id" integer,
+  "eligibility_met" tinyint(1),
+  "eligibility_report" text,
+  "checked_at" datetime,
+  "review_required_at" datetime,
+  "review_note" varchar,
+  "result_recorded_at" datetime,
+  "result_by_user_id" integer,
+  "result_note" varchar,
+  "awarded_member_grade_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_exam_offer_id") references "club_exam_offers"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete cascade,
+  foreign key("target_grade_id") references "club_grades"("id") on delete restrict,
+  foreign key("requested_by_user_id") references "users"("id") on delete set null,
+  foreign key("admitted_by_user_id") references "users"("id") on delete set null,
+  foreign key("approved_by_user_id") references "users"("id") on delete set null,
+  foreign key("exception_by_user_id") references "users"("id") on delete set null,
+  foreign key("result_by_user_id") references "users"("id") on delete set null,
+  foreign key("awarded_member_grade_id") references "club_member_grades"("id") on delete set null
+);
+CREATE UNIQUE INDEX "club_exam_cand_offer_member_uq" on "club_exam_candidates"(
+  "club_exam_offer_id",
+  "club_member_id"
+);
+CREATE INDEX "club_exam_cand_member_status_idx" on "club_exam_candidates"(
+  "club_member_id",
+  "status"
+);
+CREATE TABLE IF NOT EXISTS "club_exam_candidate_records"(
+  "id" integer primary key autoincrement not null,
+  "club_exam_candidate_id" integer not null,
+  "club_attendance_record_id" integer not null,
+  foreign key("club_exam_candidate_id") references "club_exam_candidates"("id") on delete cascade,
+  foreign key("club_attendance_record_id") references "club_attendance_records"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "club_exam_cand_record_uq" on "club_exam_candidate_records"(
+  "club_exam_candidate_id",
+  "club_attendance_record_id"
+);
+CREATE TABLE IF NOT EXISTS "club_member_grades"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_member_id" integer not null,
+  "club_grading_system_id" integer not null,
+  "club_grade_id" integer not null,
+  "obtained_on" date not null,
+  "source" varchar not null,
+  "evidence" varchar,
+  "confirmed_by_user_id" integer,
+  "revoked_at" datetime,
+  "revoked_by_user_id" integer,
+  "revoke_reason" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "club_exam_candidate_id" integer,
+  foreign key("revoked_by_user_id") references users("id") on delete set null on update no action,
+  foreign key("confirmed_by_user_id") references users("id") on delete set null on update no action,
+  foreign key("club_grade_id") references club_grades("id") on delete cascade on update no action,
+  foreign key("club_grading_system_id") references club_grading_systems("id") on delete cascade on update no action,
+  foreign key("club_member_id") references club_members("id") on delete cascade on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("club_exam_candidate_id") references "club_exam_candidates"("id") on delete set null
+);
+CREATE INDEX "club_member_grades_member_sys_idx" on "club_member_grades"(
+  "club_member_id",
+  "club_grading_system_id",
+  "obtained_on"
+);
+CREATE TABLE IF NOT EXISTS "club_fee_tariffs"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "name" varchar not null,
+  "kind" varchar not null default 'individual',
+  "description" text,
+  "min_age" integer,
+  "max_age" integer,
+  "is_active" tinyint(1) not null default '1',
+  "sort_order" integer not null default '0',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE INDEX "club_fee_tariffs_org_active_idx" on "club_fee_tariffs"(
+  "organization_id",
+  "is_active"
+);
+CREATE TABLE IF NOT EXISTS "club_fee_tariff_rates"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_fee_tariff_id" integer not null,
+  "valid_from" date not null,
+  "interval" varchar not null,
+  "amount" numeric not null,
+  "currency" varchar not null default 'EUR',
+  "anchor_month" integer not null default '1',
+  "due_days" integer not null default '14',
+  "proration" varchar not null default 'full',
+  "admission_fee" numeric,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_fee_tariff_id") references "club_fee_tariffs"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "club_fee_rates_tariff_from_uq" on "club_fee_tariff_rates"(
+  "club_fee_tariff_id",
+  "valid_from"
+);
+CREATE TABLE IF NOT EXISTS "club_fee_surcharges"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_department_id" integer not null,
+  "name" varchar not null,
+  "interval" varchar not null,
+  "amount" numeric not null,
+  "currency" varchar not null default 'EUR',
+  "anchor_month" integer not null default '1',
+  "valid_from" date not null,
+  "valid_to" date,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_department_id") references "club_departments"("id") on delete cascade
+);
+CREATE INDEX "club_fee_surcharges_org_dept_idx" on "club_fee_surcharges"(
+  "organization_id",
+  "club_department_id"
+);
+CREATE TABLE IF NOT EXISTS "club_fee_assignments"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_fee_account_id" integer not null,
+  "club_member_id" integer not null,
+  "club_fee_tariff_id" integer not null,
+  "valid_from" date not null,
+  "valid_to" date,
+  "discount_percent" numeric,
+  "discount_reason" varchar,
+  "review_required_at" datetime,
+  "review_note" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_fee_account_id") references "club_fee_accounts"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete cascade,
+  foreign key("club_fee_tariff_id") references "club_fee_tariffs"("id") on delete restrict
+);
+CREATE INDEX "club_fee_assign_member_from_idx" on "club_fee_assignments"(
+  "club_member_id",
+  "valid_from"
+);
+CREATE INDEX "club_fee_assign_account_from_idx" on "club_fee_assignments"(
+  "club_fee_account_id",
+  "valid_from"
+);
+CREATE TABLE IF NOT EXISTS "club_fee_exemptions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_member_id" integer not null,
+  "kind" varchar not null default 'exemption',
+  "percent" numeric,
+  "starts_on" date not null,
+  "ends_on" date,
+  "reason" varchar not null,
+  "created_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete cascade,
+  foreign key("created_by_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "club_fee_exempt_member_from_idx" on "club_fee_exemptions"(
+  "club_member_id",
+  "starts_on"
+);
+CREATE TABLE IF NOT EXISTS "club_fee_runs"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "year" integer not null,
+  "month" integer not null,
+  "status" varchar not null default 'draft',
+  "positions" text,
+  "issues" text,
+  "total" numeric not null default '0',
+  "currency" varchar not null default 'EUR',
+  "claims_count" integer not null default '0',
+  "notes" text,
+  "created_by_user_id" integer,
+  "calculated_at" datetime,
+  "released_at" datetime,
+  "released_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by_user_id") references "users"("id") on delete set null,
+  foreign key("released_by_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "club_fee_runs_org_month_idx" on "club_fee_runs"(
+  "organization_id",
+  "year",
+  "month"
+);
+CREATE TABLE IF NOT EXISTS "club_fee_claim_items"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_fee_claim_id" integer not null,
+  "club_member_id" integer,
+  "kind" varchar not null,
+  "source_key" varchar not null,
+  "label" varchar not null,
+  "period_start" date not null,
+  "period_end" date not null,
+  "amount" numeric not null,
+  "currency" varchar not null default 'EUR',
+  "basis" text,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_fee_claim_id") references "club_fee_claims"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete set null
+);
+CREATE UNIQUE INDEX "club_fee_items_org_source_uq" on "club_fee_claim_items"(
+  "organization_id",
+  "source_key"
+);
+CREATE INDEX "club_fee_items_claim_idx" on "club_fee_claim_items"(
+  "club_fee_claim_id"
+);
+CREATE TABLE IF NOT EXISTS "club_fee_payments"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_fee_account_id" integer not null,
+  "club_fee_claim_id" integer,
+  "amount" numeric not null,
+  "currency" varchar not null default 'EUR',
+  "paid_on" date not null,
+  "method" varchar not null default 'transfer',
+  "source" varchar not null default 'manual',
+  "reference" varchar,
+  "note" varchar,
+  "bank_transaction_id" integer,
+  "payment_allocation_id" integer,
+  "payment_run_item_id" integer,
+  "chargeback_of_id" integer,
+  "created_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_fee_account_id") references "club_fee_accounts"("id") on delete cascade,
+  foreign key("club_fee_claim_id") references "club_fee_claims"("id") on delete set null,
+  foreign key("bank_transaction_id") references "bank_transactions"("id") on delete set null,
+  foreign key("payment_allocation_id") references "payment_allocations"("id") on delete set null,
+  foreign key("payment_run_item_id") references "payment_run_items"("id") on delete set null,
+  foreign key("chargeback_of_id") references "club_fee_payments"("id") on delete set null,
+  foreign key("created_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "club_fee_pay_chargeback_uq" on "club_fee_payments"(
+  "chargeback_of_id"
+);
+CREATE INDEX "club_fee_pay_account_paid_idx" on "club_fee_payments"(
+  "club_fee_account_id",
+  "paid_on"
+);
+CREATE INDEX "club_fee_pay_claim_idx" on "club_fee_payments"(
+  "club_fee_claim_id"
+);
+CREATE TABLE IF NOT EXISTS "club_fee_dunnings"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_fee_claim_id" integer not null,
+  "level" integer not null,
+  "issued_on" date not null,
+  "pay_until" date,
+  "fee" numeric,
+  "currency" varchar not null default 'EUR',
+  "fee_claim_id" integer,
+  "note" varchar,
+  "created_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_fee_claim_id") references "club_fee_claims"("id") on delete cascade,
+  foreign key("fee_claim_id") references "club_fee_claims"("id") on delete set null,
+  foreign key("created_by_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "club_fee_dun_claim_level_idx" on "club_fee_dunnings"(
+  "club_fee_claim_id",
+  "level"
+);
+CREATE TABLE IF NOT EXISTS "club_fee_accounts"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "customer_id" integer not null,
+  "name" varchar not null,
+  "email" varchar,
+  "notes" text,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "user_id" integer,
+  "sepa_mandate_id" integer,
+  foreign key("customer_id") references customers("id") on delete restrict on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("user_id") references "users"("id") on delete set null,
+  foreign key("sepa_mandate_id") references "sepa_mandates"("id") on delete set null
+);
+CREATE UNIQUE INDEX "club_fee_accounts_customer_uq" on "club_fee_accounts"(
+  "customer_id"
+);
+CREATE TABLE IF NOT EXISTS "club_fee_claims"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_fee_run_id" integer,
+  "club_fee_account_id" integer not null,
+  "customer_id" integer not null,
+  "sequence" integer not null,
+  "number" varchar not null,
+  "kind" varchar not null default('claim'),
+  "corrects_claim_id" integer,
+  "status" varchar not null default('open'),
+  "period_start" date not null,
+  "period_end" date not null,
+  "issued_on" date not null,
+  "due_on" date not null,
+  "total" numeric not null,
+  "paid_amount" numeric not null default('0'),
+  "currency" varchar not null default('EUR'),
+  "payer_snapshot" text,
+  "reason" varchar,
+  "notes" text,
+  "dunning_level" integer not null default('0'),
+  "dunned_at" datetime,
+  "dunning_blocked_at" datetime,
+  "dunning_block_reason" varchar,
+  "paid_at" datetime,
+  "cancelled_at" datetime,
+  "cancelled_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "payment_run_item_id" integer,
+  "collection_attempts" integer not null default '0',
+  "collection_blocked_at" datetime,
+  "collection_block_reason" varchar,
+  foreign key("cancelled_by_user_id") references users("id") on delete set null on update no action,
+  foreign key("corrects_claim_id") references club_fee_claims("id") on delete set null on update no action,
+  foreign key("customer_id") references customers("id") on delete restrict on update no action,
+  foreign key("club_fee_account_id") references club_fee_accounts("id") on delete restrict on update no action,
+  foreign key("club_fee_run_id") references club_fee_runs("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("payment_run_item_id") references "payment_run_items"("id") on delete set null
+);
+CREATE INDEX "club_fee_claims_account_status_idx" on "club_fee_claims"(
+  "club_fee_account_id",
+  "status"
+);
+CREATE UNIQUE INDEX "club_fee_claims_org_seq_uq" on "club_fee_claims"(
+  "organization_id",
+  "sequence"
+);
+CREATE INDEX "club_fee_claims_org_status_due_idx" on "club_fee_claims"(
+  "organization_id",
+  "status",
+  "due_on"
+);
+CREATE TABLE IF NOT EXISTS "club_sport_profiles"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "name" varchar not null,
+  "family" varchar not null,
+  "positions" text,
+  "squad_size_field" integer,
+  "squad_size_bench" integer,
+  "result_format" varchar not null default 'goals',
+  "has_doubles" tinyint(1) not null default '0',
+  "age_cutoff" varchar,
+  "disciplines" text,
+  "resource_types" text,
+  "notes" text,
+  "is_active" tinyint(1) not null default '1',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "club_sport_profiles_org_name_uq" on "club_sport_profiles"(
+  "organization_id",
+  "name"
+);
+CREATE TABLE IF NOT EXISTS "club_seasons"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "name" varchar not null,
+  "starts_on" date not null,
+  "ends_on" date not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "club_seasons_org_name_uq" on "club_seasons"(
+  "organization_id",
+  "name"
+);
+CREATE TABLE IF NOT EXISTS "club_departments"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "name" varchar not null,
+  "description" text,
+  "discipline" varchar,
+  "is_active" tinyint(1) not null default('1'),
+  "sort_order" integer not null default('0'),
+  "created_at" datetime,
+  "updated_at" datetime,
+  "deleted_at" datetime,
+  "club_sport_profile_id" integer,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("club_sport_profile_id") references "club_sport_profiles"("id") on delete set null
+);
+CREATE INDEX "club_dep_org_sort_idx" on "club_departments"(
+  "organization_id",
+  "sort_order"
+);
+CREATE TABLE IF NOT EXISTS "club_groups"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_department_id" integer,
+  "name" varchar not null,
+  "description" text,
+  "leader_user_id" integer,
+  "max_members" integer,
+  "admission_mode" varchar not null default('leader'),
+  "min_age" integer,
+  "max_age" integer,
+  "criteria_note" varchar,
+  "is_active" tinyint(1) not null default('1'),
+  "created_at" datetime,
+  "updated_at" datetime,
+  "deleted_at" datetime,
+  "discipline" varchar,
+  "club_grading_system_id" integer,
+  "min_grade_id" integer,
+  "max_grade_id" integer,
+  "is_team" tinyint(1) not null default '0',
+  "club_sport_profile_id" integer,
+  "age_class" varchar,
+  foreign key("max_grade_id") references club_grades("id") on delete set null on update no action,
+  foreign key("min_grade_id") references club_grades("id") on delete set null on update no action,
+  foreign key("club_grading_system_id") references club_grading_systems("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("club_department_id") references club_departments("id") on delete set null on update no action,
+  foreign key("leader_user_id") references users("id") on delete set null on update no action,
+  foreign key("club_sport_profile_id") references "club_sport_profiles"("id") on delete set null
+);
+CREATE INDEX "club_group_org_dep_name_idx" on "club_groups"(
+  "organization_id",
+  "club_department_id",
+  "name"
+);
+CREATE INDEX "club_group_org_leader_idx" on "club_groups"(
+  "organization_id",
+  "leader_user_id"
+);
+CREATE TABLE IF NOT EXISTS "club_squads"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_group_id" integer not null,
+  "club_season_id" integer not null,
+  "name" varchar,
+  "notes" text,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_group_id") references "club_groups"("id") on delete cascade,
+  foreign key("club_season_id") references "club_seasons"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "club_squads_group_season_uq" on "club_squads"(
+  "club_group_id",
+  "club_season_id"
+);
+CREATE TABLE IF NOT EXISTS "club_squad_members"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_squad_id" integer not null,
+  "club_member_id" integer not null,
+  "valid_from" date not null,
+  "valid_to" date,
+  "guest_origin" varchar,
+  "jersey_no" integer,
+  "position_code" varchar,
+  "strength_rank" integer,
+  "notes" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_squad_id") references "club_squads"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "club_squad_members_uq" on "club_squad_members"(
+  "club_squad_id",
+  "club_member_id",
+  "valid_from"
+);
+CREATE INDEX "club_squad_members_member_idx" on "club_squad_members"(
+  "club_member_id",
+  "valid_to"
+);
+CREATE TABLE IF NOT EXISTS "club_match_details"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "event_id" integer not null,
+  "club_group_id" integer not null,
+  "club_squad_id" integer,
+  "club_season_id" integer,
+  "opponent_name" varchar not null,
+  "competition" varchar,
+  "is_home" tinyint(1) not null default '1',
+  "venue" varchar,
+  "meet_at" datetime,
+  "lineup_status" varchar not null default 'draft',
+  "lineup_released_at" datetime,
+  "lineup_released_by_user_id" integer,
+  "lineup_conflict_note" varchar,
+  "result" text,
+  "result_summary" varchar,
+  "result_note" text,
+  "result_recorded_at" datetime,
+  "result_recorded_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("event_id") references "events"("id") on delete cascade,
+  foreign key("club_group_id") references "club_groups"("id") on delete cascade,
+  foreign key("club_squad_id") references "club_squads"("id") on delete set null,
+  foreign key("club_season_id") references "club_seasons"("id") on delete set null,
+  foreign key("lineup_released_by_user_id") references "users"("id") on delete set null,
+  foreign key("result_recorded_by_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "club_match_details_group_season_idx" on "club_match_details"(
+  "club_group_id",
+  "club_season_id"
+);
+CREATE UNIQUE INDEX "club_match_details_event_id_unique" on "club_match_details"(
+  "event_id"
+);
+CREATE TABLE IF NOT EXISTS "club_event_roles"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "event_id" integer not null,
+  "role" varchar not null,
+  "club_member_id" integer,
+  "user_id" integer,
+  "name" varchar,
+  "note" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("event_id") references "events"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete set null,
+  foreign key("user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "club_event_roles_event_role_idx" on "club_event_roles"(
+  "event_id",
+  "role"
+);
+CREATE TABLE IF NOT EXISTS "club_match_availabilities"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "event_id" integer not null,
+  "club_member_id" integer not null,
+  "status" varchar not null,
+  "note" varchar,
+  "responded_at" datetime not null,
+  "responded_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("event_id") references "events"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete cascade,
+  foreign key("responded_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "club_match_availabilities_uq" on "club_match_availabilities"(
+  "event_id",
+  "club_member_id"
+);
+CREATE TABLE IF NOT EXISTS "club_lineup_entries"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "event_id" integer not null,
+  "club_member_id" integer not null,
+  "slot" varchar not null,
+  "slot_key" varchar not null,
+  "position_code" varchar,
+  "jersey_no" integer,
+  "order_no" integer not null default '0',
+  "pairing_no" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("event_id") references "events"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "club_lineup_entries_uq" on "club_lineup_entries"(
+  "event_id",
+  "club_member_id",
+  "slot_key"
+);
+CREATE INDEX "club_lineup_entries_member_idx" on "club_lineup_entries"(
+  "club_member_id",
+  "event_id"
+);
+CREATE TABLE IF NOT EXISTS "club_match_proposals"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_group_id" integer not null,
+  "source" varchar not null,
+  "dedupe_key" varchar not null,
+  "starts_at" datetime not null,
+  "ends_at" datetime,
+  "opponent_name" varchar not null,
+  "competition" varchar,
+  "is_home" tinyint(1) not null default '1',
+  "venue" varchar,
+  "raw" text,
+  "status" varchar not null default 'open',
+  "event_id" integer,
+  "duplicate_event_id" integer,
+  "imported_by_user_id" integer,
+  "decided_by_user_id" integer,
+  "decided_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_group_id") references "club_groups"("id") on delete cascade,
+  foreign key("event_id") references "events"("id") on delete set null,
+  foreign key("duplicate_event_id") references "events"("id") on delete set null,
+  foreign key("imported_by_user_id") references "users"("id") on delete set null,
+  foreign key("decided_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "club_match_proposals_org_key_uq" on "club_match_proposals"(
+  "organization_id",
+  "dedupe_key"
+);
+CREATE INDEX "club_match_proposals_group_status_idx" on "club_match_proposals"(
+  "club_group_id",
+  "status"
+);
+CREATE TABLE IF NOT EXISTS "club_resources"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "parent_id" integer,
+  "room_id" integer,
+  "asset_id" integer,
+  "name" varchar not null,
+  "kind" varchar not null,
+  "capacity" integer not null default '1',
+  "setup_minutes" integer not null default '0',
+  "teardown_minutes" integer not null default '0',
+  "requires_clearance" tinyint(1) not null default '0',
+  "is_active" tinyint(1) not null default '1',
+  "sort_order" integer not null default '0',
+  "notes" text,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("parent_id") references "club_resources"("id") on delete cascade,
+  foreign key("room_id") references "rooms"("id") on delete set null,
+  foreign key("asset_id") references "assets"("id") on delete set null
+);
+CREATE UNIQUE INDEX "club_resources_org_name_uq" on "club_resources"(
+  "organization_id",
+  "name"
+);
+CREATE INDEX "club_resources_org_parent_idx" on "club_resources"(
+  "organization_id",
+  "parent_id"
+);
+CREATE TABLE IF NOT EXISTS "club_resource_bookings"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_resource_id" integer not null,
+  "event_id" integer not null,
+  "club_member_id" integer,
+  "quantity" integer not null default '1',
+  "starts_at" datetime not null,
+  "ends_at" datetime not null,
+  "setup_minutes" integer not null default '0',
+  "teardown_minutes" integer not null default '0',
+  "note" varchar,
+  "flagged_at" datetime,
+  "flag_reason" varchar,
+  "created_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_resource_id") references "club_resources"("id") on delete cascade,
+  foreign key("event_id") references "events"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete set null,
+  foreign key("created_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "club_resource_bookings_uq" on "club_resource_bookings"(
+  "event_id",
+  "club_resource_id"
+);
+CREATE INDEX "club_resource_bookings_window_idx" on "club_resource_bookings"(
+  "club_resource_id",
+  "starts_at",
+  "ends_at"
+);
+CREATE TABLE IF NOT EXISTS "club_resource_closures"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_resource_id" integer not null,
+  "starts_at" datetime not null,
+  "ends_at" datetime not null,
+  "reason" varchar not null,
+  "created_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_resource_id") references "club_resources"("id") on delete cascade,
+  foreign key("created_by_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "club_resource_closures_window_idx" on "club_resource_closures"(
+  "club_resource_id",
+  "starts_at",
+  "ends_at"
+);
+CREATE TABLE IF NOT EXISTS "club_resource_clearances"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_resource_id" integer not null,
+  "club_member_id" integer not null,
+  "granted_on" date not null,
+  "valid_to" date,
+  "granted_by_user_id" integer,
+  "note" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_resource_id") references "club_resources"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete cascade,
+  foreign key("granted_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "club_resource_clearances_uq" on "club_resource_clearances"(
+  "club_resource_id",
+  "club_member_id"
+);
+CREATE TABLE IF NOT EXISTS "club_horses"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_resource_id" integer not null,
+  "name" varchar not null,
+  "kind" varchar not null,
+  "owner_member_id" integer,
+  "contact" varchar,
+  "max_uses_per_day" integer,
+  "suitable_for" varchar,
+  "is_active" tinyint(1) not null default '1',
+  "notes" text,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_resource_id") references "club_resources"("id") on delete cascade,
+  foreign key("owner_member_id") references "club_members"("id") on delete set null
+);
+CREATE UNIQUE INDEX "club_horses_org_name_uq" on "club_horses"(
+  "organization_id",
+  "name"
+);
+CREATE UNIQUE INDEX "club_horses_club_resource_id_unique" on "club_horses"(
+  "club_resource_id"
+);
+CREATE TABLE IF NOT EXISTS "club_horse_groups"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_horse_id" integer not null,
+  "club_group_id" integer not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_horse_id") references "club_horses"("id") on delete cascade,
+  foreign key("club_group_id") references "club_groups"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "club_horse_groups_uq" on "club_horse_groups"(
+  "club_horse_id",
+  "club_group_id"
+);
+CREATE TABLE IF NOT EXISTS "club_horse_assignments"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "event_id" integer not null,
+  "club_member_id" integer not null,
+  "club_horse_id" integer,
+  "club_resource_booking_id" integer,
+  "own_horse" tinyint(1) not null default '0',
+  "override_note" varchar,
+  "needs_review_at" datetime,
+  "review_reason" varchar,
+  "assigned_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("event_id") references "events"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete cascade,
+  foreign key("club_horse_id") references "club_horses"("id") on delete set null,
+  foreign key("club_resource_booking_id") references "club_resource_bookings"("id") on delete set null,
+  foreign key("assigned_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "club_horse_assignments_uq" on "club_horse_assignments"(
+  "event_id",
+  "club_member_id"
+);
+CREATE INDEX "club_horse_assignments_horse_idx" on "club_horse_assignments"(
+  "club_horse_id",
+  "event_id"
+);
+CREATE TABLE IF NOT EXISTS "club_horse_uses"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "event_id" integer not null,
+  "club_horse_id" integer not null,
+  "club_member_id" integer,
+  "minutes" integer not null,
+  "note" varchar,
+  "recorded_by_user_id" integer,
+  "recorded_at" datetime not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("event_id") references "events"("id") on delete cascade,
+  foreign key("club_horse_id") references "club_horses"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete set null,
+  foreign key("recorded_by_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "club_horse_uses_horse_idx" on "club_horse_uses"(
+  "club_horse_id",
+  "recorded_at"
+);
+CREATE INDEX "club_horse_uses_event_member_idx" on "club_horse_uses"(
+  "event_id",
+  "club_member_id"
+);
+CREATE TABLE IF NOT EXISTS "club_competition_details"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "event_id" integer not null,
+  "club_sport_profile_id" integer not null,
+  "disciplines" text not null,
+  "venue" varchar,
+  "organizer" varchar,
+  "entry_fee" numeric,
+  "currency" varchar not null default 'EUR',
+  "requires_start_right" tinyint(1) not null default '1',
+  "notes" text,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("event_id") references "events"("id") on delete cascade,
+  foreign key("club_sport_profile_id") references "club_sport_profiles"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "club_competition_details_event_id_unique" on "club_competition_details"(
+  "event_id"
+);
+CREATE TABLE IF NOT EXISTS "club_competition_entries"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "event_id" integer not null,
+  "club_member_id" integer not null,
+  "discipline_code" varchar not null,
+  "status" varchar not null default 'registered',
+  "review_reason" varchar,
+  "fee_amount" numeric,
+  "currency" varchar not null default 'EUR',
+  "registered_by_user_id" integer,
+  "registered_at" datetime not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("event_id") references "events"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete cascade,
+  foreign key("registered_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "club_competition_entries_uq" on "club_competition_entries"(
+  "event_id",
+  "club_member_id",
+  "discipline_code"
+);
+CREATE TABLE IF NOT EXISTS "club_start_rights"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_member_id" integer not null,
+  "club_sport_profile_id" integer,
+  "reference" varchar,
+  "valid_from" date not null,
+  "valid_to" date,
+  "note" varchar,
+  "granted_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete cascade,
+  foreign key("club_sport_profile_id") references "club_sport_profiles"("id") on delete set null,
+  foreign key("granted_by_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "club_start_rights_member_idx" on "club_start_rights"(
+  "club_member_id",
+  "club_sport_profile_id"
+);
+CREATE TABLE IF NOT EXISTS "club_performances"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_member_id" integer not null,
+  "club_sport_profile_id" integer not null,
+  "event_id" integer,
+  "discipline_code" varchar not null,
+  "performed_on" date not null,
+  "value" numeric not null,
+  "unit" varchar,
+  "lower_is_better" tinyint(1) not null default '0',
+  "placement" integer,
+  "note" varchar,
+  "confirmed_at" datetime,
+  "confirmed_by_user_id" integer,
+  "recorded_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete cascade,
+  foreign key("club_sport_profile_id") references "club_sport_profiles"("id") on delete cascade,
+  foreign key("event_id") references "events"("id") on delete set null,
+  foreign key("confirmed_by_user_id") references "users"("id") on delete set null,
+  foreign key("recorded_by_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "club_performances_member_idx" on "club_performances"(
+  "club_member_id",
+  "club_sport_profile_id",
+  "discipline_code"
+);
+CREATE INDEX "club_performances_event_idx" on "club_performances"(
+  "event_id",
+  "discipline_code"
+);
+CREATE TABLE IF NOT EXISTS "club_attendance_requirements"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "name" varchar not null,
+  "club_group_id" integer,
+  "club_department_id" integer,
+  "required_count" integer not null,
+  "period_months" integer not null,
+  "event_kind" varchar,
+  "is_active" tinyint(1) not null default '1',
+  "notes" text,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_group_id") references "club_groups"("id") on delete set null,
+  foreign key("club_department_id") references "club_departments"("id") on delete set null
+);
+CREATE UNIQUE INDEX "club_attendance_requirements_org_name_uq" on "club_attendance_requirements"(
+  "organization_id",
+  "name"
 );
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
@@ -20989,54 +22059,63 @@ INSERT INTO migrations VALUES(779,'2027_02_19_110900_add_workspace_lookup_to_plu
 INSERT INTO migrations VALUES(780,'2027_02_19_111000_hash_serial_passport_token',1);
 INSERT INTO migrations VALUES(781,'2027_02_19_111100_add_options_to_backup_target_connections',1);
 INSERT INTO migrations VALUES(782,'2027_02_19_111200_add_center_columns_to_help_topics',1);
-INSERT INTO migrations VALUES(783,'2027_02_19_111300_create_reselling_reconciliation_runs_table',2);
-INSERT INTO migrations VALUES(784,'2027_02_19_111400_create_reselling_company_mappings_table',3);
-INSERT INTO migrations VALUES(785,'2027_02_19_111500_add_strict_products_to_reselling_reconciliation_runs',4);
-INSERT INTO migrations VALUES(786,'2027_02_20_100000_create_resale_subscriptions_table',5);
-INSERT INTO migrations VALUES(787,'2027_02_20_100100_create_resale_periods_table',5);
-INSERT INTO migrations VALUES(788,'2027_02_20_100200_create_resale_imports_and_price_catalog',6);
-INSERT INTO migrations VALUES(789,'2027_02_20_100300_create_lexoffice_voucher_lines_table',7);
-INSERT INTO migrations VALUES(790,'2027_02_20_100400_create_resale_period_links_table',8);
-INSERT INTO migrations VALUES(791,'2027_02_20_100500_drop_reselling_reconciliation_runs_table',9);
-INSERT INTO migrations VALUES(792,'2027_02_20_100600_create_resale_purchase_entries_table',10);
-INSERT INTO migrations VALUES(793,'2027_02_20_100700_add_resale_role_to_lexoffice_articles',11);
-INSERT INTO migrations VALUES(794,'2027_02_20_100800_add_service_period_to_lexoffice_vouchers',12);
-INSERT INTO migrations VALUES(795,'2027_02_20_100900_add_parent_id_to_resale_subscriptions',13);
-INSERT INTO migrations VALUES(796,'2027_02_20_101000_add_lines_sync_failure_to_lexoffice_vouchers',14);
-INSERT INTO migrations VALUES(797,'2027_02_20_101100_add_draft_reference_to_resale_periods',14);
-INSERT INTO migrations VALUES(798,'2027_02_20_101200_add_document_morph_to_resale_purchase_entries',15);
-INSERT INTO migrations VALUES(799,'2027_02_20_101300_add_resale_role_to_articles',15);
-INSERT INTO migrations VALUES(800,'2027_02_20_101400_add_service_period_to_invoice_items',15);
-INSERT INTO migrations VALUES(801,'2027_02_20_101500_drop_lexoffice_voucher_id_from_resale_purchase_entries',16);
-INSERT INTO migrations VALUES(802,'2027_02_20_101600_add_encrypted_flag_to_whistleblowing_attachments',17);
-INSERT INTO migrations VALUES(803,'2027_02_20_101700_create_learning_cmi5_tables',18);
-INSERT INTO migrations VALUES(804,'2027_02_20_101800_create_learning_lti_tables',19);
-INSERT INTO migrations VALUES(805,'2027_02_20_101900_create_search_index_tables',20);
-INSERT INTO migrations VALUES(806,'2027_02_21_100000_create_learning_question_catalog_tables',21);
-INSERT INTO migrations VALUES(807,'2027_02_21_100100_add_learning_quiz_flow_columns',22);
-INSERT INTO migrations VALUES(808,'2027_02_21_100200_add_learning_course_kind_and_prerequisites',23);
-INSERT INTO migrations VALUES(809,'2027_02_21_100300_create_learning_quiz_attempt_waivers_table',24);
-INSERT INTO migrations VALUES(810,'2027_02_21_100400_create_learning_course_trainers_table',25);
-INSERT INTO migrations VALUES(811,'2027_02_21_100500_add_learning_course_options',26);
-INSERT INTO migrations VALUES(812,'2027_02_21_100600_create_learning_gradebook_tables',27);
-INSERT INTO migrations VALUES(813,'2027_02_21_100700_add_learning_question_refinements',28);
-INSERT INTO migrations VALUES(814,'2027_02_21_100800_add_learning_course_to_survey_invitations',29);
-INSERT INTO migrations VALUES(815,'2027_02_22_100000_create_attendance_checkpoints',30);
-INSERT INTO migrations VALUES(816,'2027_02_22_100100_create_legal_holds',31);
-INSERT INTO migrations VALUES(817,'2027_02_22_100200_add_correction_to_expenses',32);
-INSERT INTO migrations VALUES(818,'2027_02_22_100300_create_user_terminal_pins',33);
-INSERT INTO migrations VALUES(819,'2027_02_22_100400_create_collections',34);
-INSERT INTO migrations VALUES(820,'2027_02_22_100500_create_content_references',35);
-INSERT INTO migrations VALUES(821,'2027_02_22_100600_move_knowledge_categories_to_collections',36);
-INSERT INTO migrations VALUES(822,'2027_02_22_100700_create_msgraph_onenote_connections',37);
-INSERT INTO migrations VALUES(823,'2027_02_22_100800_sso_domain_unique_per_organization',38);
-INSERT INTO migrations VALUES(824,'2027_02_22_100900_create_document_version_texts',39);
-INSERT INTO migrations VALUES(825,'2027_02_22_101000_widen_invoice_item_description',40);
-INSERT INTO migrations VALUES(826,'2027_02_22_101100_convert_local_times_to_utc',41);
-INSERT INTO migrations VALUES(827,'2027_02_22_101200_convert_imported_sync_times_to_utc',42);
-INSERT INTO migrations VALUES(828,'2027_02_23_100000_create_contract_signing_tables',43);
-INSERT INTO migrations VALUES(829,'2027_02_23_100100_create_lexoffice_invoice_handovers_table',44);
-INSERT INTO migrations VALUES(830,'2027_02_23_100200_create_club_tables',45);
-INSERT INTO migrations VALUES(831,'2027_02_23_100300_create_club_event_tables',46);
-INSERT INTO migrations VALUES(832,'2027_02_23_100400_create_club_attendance_tables',47);
-INSERT INTO migrations VALUES(833,'2027_02_23_100500_create_club_notifications_table',48);
+INSERT INTO migrations VALUES(783,'2027_02_19_111300_create_reselling_reconciliation_runs_table',1);
+INSERT INTO migrations VALUES(784,'2027_02_19_111400_create_reselling_company_mappings_table',1);
+INSERT INTO migrations VALUES(785,'2027_02_19_111500_add_strict_products_to_reselling_reconciliation_runs',1);
+INSERT INTO migrations VALUES(786,'2027_02_20_100000_create_resale_subscriptions_table',1);
+INSERT INTO migrations VALUES(787,'2027_02_20_100100_create_resale_periods_table',1);
+INSERT INTO migrations VALUES(788,'2027_02_20_100200_create_resale_imports_and_price_catalog',1);
+INSERT INTO migrations VALUES(789,'2027_02_20_100300_create_lexoffice_voucher_lines_table',1);
+INSERT INTO migrations VALUES(790,'2027_02_20_100400_create_resale_period_links_table',1);
+INSERT INTO migrations VALUES(791,'2027_02_20_100500_drop_reselling_reconciliation_runs_table',1);
+INSERT INTO migrations VALUES(792,'2027_02_20_100600_create_resale_purchase_entries_table',1);
+INSERT INTO migrations VALUES(793,'2027_02_20_100700_add_resale_role_to_lexoffice_articles',1);
+INSERT INTO migrations VALUES(794,'2027_02_20_100800_add_service_period_to_lexoffice_vouchers',1);
+INSERT INTO migrations VALUES(795,'2027_02_20_100900_add_parent_id_to_resale_subscriptions',1);
+INSERT INTO migrations VALUES(796,'2027_02_20_101000_add_lines_sync_failure_to_lexoffice_vouchers',1);
+INSERT INTO migrations VALUES(797,'2027_02_20_101100_add_draft_reference_to_resale_periods',1);
+INSERT INTO migrations VALUES(798,'2027_02_20_101200_add_document_morph_to_resale_purchase_entries',1);
+INSERT INTO migrations VALUES(799,'2027_02_20_101300_add_resale_role_to_articles',1);
+INSERT INTO migrations VALUES(800,'2027_02_20_101400_add_service_period_to_invoice_items',1);
+INSERT INTO migrations VALUES(801,'2027_02_20_101500_drop_lexoffice_voucher_id_from_resale_purchase_entries',1);
+INSERT INTO migrations VALUES(802,'2027_02_20_101600_add_encrypted_flag_to_whistleblowing_attachments',1);
+INSERT INTO migrations VALUES(803,'2027_02_20_101700_create_learning_cmi5_tables',1);
+INSERT INTO migrations VALUES(804,'2027_02_20_101800_create_learning_lti_tables',1);
+INSERT INTO migrations VALUES(805,'2027_02_20_101900_create_search_index_tables',1);
+INSERT INTO migrations VALUES(806,'2027_02_21_100000_create_learning_question_catalog_tables',1);
+INSERT INTO migrations VALUES(807,'2027_02_21_100100_add_learning_quiz_flow_columns',1);
+INSERT INTO migrations VALUES(808,'2027_02_21_100200_add_learning_course_kind_and_prerequisites',1);
+INSERT INTO migrations VALUES(809,'2027_02_21_100300_create_learning_quiz_attempt_waivers_table',1);
+INSERT INTO migrations VALUES(810,'2027_02_21_100400_create_learning_course_trainers_table',1);
+INSERT INTO migrations VALUES(811,'2027_02_21_100500_add_learning_course_options',1);
+INSERT INTO migrations VALUES(812,'2027_02_21_100600_create_learning_gradebook_tables',1);
+INSERT INTO migrations VALUES(813,'2027_02_21_100700_add_learning_question_refinements',1);
+INSERT INTO migrations VALUES(814,'2027_02_21_100800_add_learning_course_to_survey_invitations',1);
+INSERT INTO migrations VALUES(815,'2027_02_22_100000_create_attendance_checkpoints',1);
+INSERT INTO migrations VALUES(816,'2027_02_22_100100_create_legal_holds',1);
+INSERT INTO migrations VALUES(817,'2027_02_22_100200_add_correction_to_expenses',1);
+INSERT INTO migrations VALUES(818,'2027_02_22_100300_create_user_terminal_pins',1);
+INSERT INTO migrations VALUES(819,'2027_02_22_100400_create_collections',1);
+INSERT INTO migrations VALUES(820,'2027_02_22_100500_create_content_references',1);
+INSERT INTO migrations VALUES(821,'2027_02_22_100600_move_knowledge_categories_to_collections',1);
+INSERT INTO migrations VALUES(822,'2027_02_22_100700_create_msgraph_onenote_connections',1);
+INSERT INTO migrations VALUES(823,'2027_02_22_100800_sso_domain_unique_per_organization',1);
+INSERT INTO migrations VALUES(824,'2027_02_22_100900_create_document_version_texts',1);
+INSERT INTO migrations VALUES(825,'2027_02_22_101000_widen_invoice_item_description',1);
+INSERT INTO migrations VALUES(826,'2027_02_22_101100_convert_local_times_to_utc',1);
+INSERT INTO migrations VALUES(827,'2027_02_22_101200_convert_imported_sync_times_to_utc',1);
+INSERT INTO migrations VALUES(828,'2027_02_23_100000_create_contract_signing_tables',1);
+INSERT INTO migrations VALUES(829,'2027_02_23_100100_create_lexoffice_invoice_handovers_table',1);
+INSERT INTO migrations VALUES(830,'2027_02_23_100200_create_club_tables',1);
+INSERT INTO migrations VALUES(831,'2027_02_23_100300_create_club_event_tables',1);
+INSERT INTO migrations VALUES(832,'2027_02_23_100400_create_club_attendance_tables',1);
+INSERT INTO migrations VALUES(833,'2027_02_23_100500_create_club_notifications_table',1);
+INSERT INTO migrations VALUES(834,'2027_02_23_100600_create_club_grading_tables',1);
+INSERT INTO migrations VALUES(835,'2027_02_23_100700_create_club_exam_tables',1);
+INSERT INTO migrations VALUES(836,'2027_02_23_100800_create_club_fee_tables',1);
+INSERT INTO migrations VALUES(837,'2027_02_23_100900_create_club_fee_claim_tables',1);
+INSERT INTO migrations VALUES(838,'2027_02_23_101000_create_club_fee_payment_tables',1);
+INSERT INTO migrations VALUES(839,'2027_02_23_101100_create_club_team_tables',1);
+INSERT INTO migrations VALUES(840,'2027_02_23_101200_create_club_resource_tables',1);
+INSERT INTO migrations VALUES(841,'2027_02_23_101300_create_club_horse_tables',1);
+INSERT INTO migrations VALUES(842,'2027_02_23_101400_create_club_competition_tables',1);

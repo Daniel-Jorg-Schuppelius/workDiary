@@ -15,7 +15,7 @@ namespace App\Services\Notification\DeadlineScans;
 use App\Enums\Club\ClubGroupMembershipStatus;
 use App\Models\Club\ClubGroupMembership;
 use App\Models\Organization;
-use App\Services\Club\{ClubGroupService, ClubMemberService};
+use App\Services\Club\{ClubFeeService, ClubGroupService, ClubMemberService};
 use App\Services\Notification\NotificationDispatcher;
 use Carbon\CarbonImmutable;
 
@@ -30,6 +30,7 @@ class ClubGroupCriteriaScan extends AbstractDeadlineScan {
     public function __construct(
         private readonly ClubGroupService $groups,
         private readonly ClubMemberService $members,
+        private readonly ClubFeeService $fees,
     ) {}
 
     public function key(): string {
@@ -55,6 +56,8 @@ class ClubGroupCriteriaScan extends AbstractDeadlineScan {
 
             $this->members->syncCurrentKinds($organization, $today);
             $created += $this->groups->refreshProposals($organization, $today);
+            // Beitragstarife mit Altersgrenzen (MVP-849): Markierung, kein automatischer Wechsel.
+            $created += $this->fees->flagAgeMismatches($organization, $today);
         }
 
         if ($created > 0) {

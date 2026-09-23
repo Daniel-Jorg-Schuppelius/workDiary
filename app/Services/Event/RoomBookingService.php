@@ -36,9 +36,15 @@ class RoomBookingService {
         int $setupMinutesBefore = 0,
         int $teardownMinutesAfter = 0,
         ?int $ignoreEventId = null,
+        bool $includeClubResources = true,
     ): Collection {
         $blockStart = $startedAt->copy()->subMinutes($setupMinutesBefore);
         $blockEnd = $endedAt->copy()->addMinutes($teardownMinutesAfter);
+        // Sportstätten (Feature 159, MVP-853): Teilflächen/Tische einer Halle, die an
+        // diesen Raum gebunden ist, blockieren ihn mit — keine isolierten Kalender.
+        $clubEvents = $includeClubResources
+            ? app(\App\Services\Club\ClubResourceService::class)->eventsBlockingRoom($room, $blockStart, $blockEnd, $ignoreEventId)
+            : new Collection();
 
         // Grobe DB-Filter ±1 Tag um den Anfrage-Block, damit auch bestehende
         // Buchungen mit Setup-/Teardown-Puffer erfasst werden. Feinprüfung
@@ -71,6 +77,8 @@ class RoomBookingService {
 
                 return $start->lt($blockEnd) && $end->gt($blockStart);
             })
+            ->merge($clubEvents)
+            ->unique('id')
             ->values();
     }
 

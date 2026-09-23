@@ -59,7 +59,7 @@ class MatchingService {
      */
     public function suggestFor(BankTransaction $transaction, int $limit = 5): array {
         $suggestions = $transaction->isCredit()
-            ? array_merge($this->suggestInvoices($transaction), $this->suggestAccountAgreements($transaction))
+            ? array_merge($this->suggestInvoices($transaction), $this->suggestAccountAgreements($transaction), $this->suggestFeeClaims($transaction))
             : $this->suggestExpenses($transaction);
 
         usort($suggestions, static fn(array $a, array $b): int => $b['score'] <=> $a['score']);
@@ -112,6 +112,53 @@ class MatchingService {
                 'score' => $score,
                 'reasons' => array_values(array_unique($reasons)),
                 'open_amount' => $latest?->balance?->toFloat() ?? 0.0,
+                'foreign_currency' => false,
+            ];
+        }
+
+        return $results;
+    }
+
+    /**
+     * Beitragsforderungen (Feature 159, MVP-851): Referenz = Nummer der Forderung,
+     * Betrag gegen den Restbetrag, Fälligkeit nahe dem Buchungsdatum.
+     *
+     * @return list<array{target: Model, kind: AllocationKind, score: int, reasons: list<string>, open_amount: float, foreign_currency: bool}>
+     */
+    private function suggestFeeClaims(BankTransaction $transaction): array {
+        $amount = (float) $transaction->amount;
+        $refs = $this->normalizedRefs($transaction);
+        $results = [];
+        $claims = \App\Models\Club\ClubFeeClaim::query()->open()->with('account:id,name')->get();
+        foreach ($claims as $claim) {
+            $open = $claim->openAmount()->toFloat();
+            if ($open <= 0.0) {
+                continue;
+            }
+            $score = 0;
+            $reasons = [];
+            if ($this->referenceMatches($claim->number, $refs)) {
+                $score += self::SCORE_REFERENCE;
+                $reasons[] = 'reference';
+            }
+            [$amountScore, $amountReason] = $this->scoreAmount($amount, $open);
+            if ($amountScore > 0) {
+                $score += $amountScore;
+                $reasons[] = $amountReason;
+            }
+            if ($this->dateNear($claim->due_on->toDateString(), $transaction->booking_date->toDateString())) {
+                $score += self::SCORE_DATE_NEAR;
+                $reasons[] = 'date';
+            }
+            if ($score <= 0) {
+                continue;
+            }
+            $results[] = [
+                'target' => $claim,
+                'kind' => $this->kindForInvoice($amount, $open),
+                'score' => $score,
+                'reasons' => array_values(array_unique($reasons)),
+                'open_amount' => round($open, 2),
                 'foreign_currency' => false,
             ];
         }

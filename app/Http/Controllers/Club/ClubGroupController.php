@@ -16,9 +16,9 @@ use App\Enums\Club\ClubGroupMembershipStatus;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Club\{AdmitClubGroupMemberRequest, DecideGroupMembershipRequest, EndGroupMembershipRequest, SaveClubGroupRequest};
-use App\Models\Club\{ClubDepartment, ClubGroup, ClubGroupMembership, ClubMember};
+use App\Models\Club\{ClubDepartment, ClubGroup, ClubGroupMembership, ClubMember, ClubSeason, ClubSportProfile};
 use App\Models\User;
-use App\Services\Club\ClubGroupService;
+use App\Services\Club\{ClubGroupService, ClubTeamService};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -118,7 +118,7 @@ class ClubGroupController extends Controller {
             'canManage' => Gate::allows('update', $group),
             'canDecide' => Gate::allows('decide', $group),
             'canOverride' => Gate::allows('override', $group),
-        ]);
+        ] + $this->squadData($group, $today));
     }
 
     public function edit(ClubGroup $group): View {
@@ -277,6 +277,36 @@ class ClubGroupController extends Controller {
         return [
             'departments' => ClubDepartment::query()->where('is_active', true)->orderBy('sort_order')->orderBy('name')->get(['id', 'name']),
             'leaders' => User::query()->inCurrentOrganization()->whereNull('deactivated_at')->orderBy('name')->get(['id', 'name']),
+            // Gradkriterien (MVP-846): Ordnungen mit ihren Graden.
+            'gradingSystems' => \App\Models\Club\ClubGradingSystem::query()->where('is_active', true)->with('grades')->orderBy('name')->get(),
+            // Sportartenprofile (MVP-852) für Mannschaften.
+            'profiles' => ClubSportProfile::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
+        ];
+    }
+
+    /**
+     * Saisonkader der Mannschaft (MVP-852): gewählte Saison (Query `season`), sonst die laufende, sonst die jüngste.
+     *
+     * @return array<string, mixed>
+     */
+    private function squadData(ClubGroup $group, CarbonImmutable $today): array {
+        if (! $group->is_team) {
+            return ['seasons' => collect(), 'season' => null, 'squad' => null, 'squadMembers' => collect(), 'profile' => null];
+        }
+        $teams = app(ClubTeamService::class);
+        $seasons = ClubSeason::query()->orderByDesc('starts_on')->get();
+        $seasonId = Sqid::decodeOrNumeric(ClubSeason::class, (string) request()->query('season', ''));
+        $season = ($seasonId !== null ? $seasons->firstWhere('id', $seasonId) : null)
+            ?? $seasons->first(fn(ClubSeason $s): bool => $s->contains($today))
+            ?? $seasons->first();
+        $squad = $season !== null ? $teams->squadFor($group, $season, false) : null;
+
+        return [
+            'seasons' => $seasons,
+            'season' => $season,
+            'squad' => $squad,
+            'squadMembers' => $squad !== null ? $squad->members()->with('member')->orderByRaw('CASE WHEN valid_to IS NULL THEN 0 ELSE 1 END')->orderBy('strength_rank')->orderBy('jersey_no')->get() : collect(),
+            'profile' => $teams->profileFor($group),
         ];
     }
 }

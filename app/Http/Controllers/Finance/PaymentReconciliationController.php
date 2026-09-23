@@ -259,7 +259,7 @@ class PaymentReconciliationController extends Controller {
 
         $validated = $request->validate([
             'allocations' => ['required', 'array', 'min:1'],
-            'allocations.*.type' => ['required', 'string', 'in:invoice,expense,account'],
+            'allocations.*.type' => ['required', 'string', 'in:invoice,expense,account,fee'],
             'allocations.*.id' => ['required', 'string'],
             'allocations.*.amount' => ['required', 'numeric', 'min:0.01'],
             'allocations.*.kind' => ['nullable', 'string'],
@@ -271,6 +271,7 @@ class PaymentReconciliationController extends Controller {
             $targetClass = match ($row['type']) {
                 'invoice' => Invoice::class,
                 'account' => \App\Models\Billing\CustomerBillingAgreement::class,
+                'fee' => \App\Models\Club\ClubFeeClaim::class,
                 default => Expense::class,
             };
             $targetId = Sqid::decode($targetClass, (string) $row['id']);

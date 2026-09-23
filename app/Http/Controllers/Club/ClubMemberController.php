@@ -114,10 +114,25 @@ class ClubMemberController extends Controller {
             'proposals' => fn($query) => $query->where('status', \App\Enums\Club\ClubProposalStatus::Open->value)->with(['group:id,name', 'suggestedGroup:id,name']),
         ]);
 
+        $gradingEnabled = app(\App\Services\Club\ClubGradingService::class)->isEnabled($this->currentOrganization());
+
         return view('club.members.show', [
             'member' => $member,
             'canManage' => Gate::allows('update', $member),
             'today' => CarbonImmutable::today(),
+            // Graduierung (MVP-846): gültige Grade je Ordnung, Details auf eigener Seite.
+            'gradingEnabled' => $gradingEnabled,
+            // Beitrag (MVP-849): aktuelle Zuordnung, nur für Beitragsverwaltung/Register — Gruppenleitung sieht keine Beitragsdaten.
+            'feeAssignment' => Gate::allows('viewAny', \App\Models\Club\ClubFeeAccount::class) ? app(\App\Services\Club\ClubFeeService::class)->currentAssignment($member) : null,
+            'canViewFees' => Gate::allows('viewAny', \App\Models\Club\ClubFeeAccount::class),
+            // Wettkampf (MVP-855): Bestleistungen (nur bestätigte Werte), letzte Leistungen, Startrechte.
+            'bests' => app(\App\Services\Club\ClubCompetitionService::class)->bests($member),
+            'performances' => \App\Models\Club\ClubPerformance::query()->where('club_member_id', $member->id)->with(['profile:id,name', 'event:id,title'])->orderByDesc('performed_on')->limit(20)->get(),
+            'startRights' => \App\Models\Club\ClubStartRight::query()->where('club_member_id', $member->id)->with('profile:id,name')->orderByDesc('valid_from')->get(),
+            'canRecordPerformance' => Gate::allows('create', \App\Models\Club\ClubPerformance::class),
+            'canGrantStartRight' => Gate::allows('grantStartRight', \App\Models\Club\ClubPerformance::class),
+            'hasProfiles' => \App\Models\Club\ClubSportProfile::query()->where('is_active', true)->whereNotNull('disciplines')->exists(),
+            'memberGrades' => $gradingEnabled ? \App\Models\Club\ClubMemberGrade::query()->valid()->where('club_member_id', $member->id)->with(['grade', 'system'])->orderByDesc('obtained_on')->get() : collect(),
         ]);
     }
 

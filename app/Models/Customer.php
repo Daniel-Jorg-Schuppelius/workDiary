@@ -316,6 +316,16 @@ class Customer extends Model {
     }
 
     /** @return HasOne<\App\Models\Billing\CustomerBillingAgreement, $this> */
+    /**
+     * Beitragskonto der Vereinsverwaltung (MVP-849) — höchstens eines je Kunde.
+     *
+     * @return HasOne<\App\Models\Club\ClubFeeAccount, $this>
+     */
+    public function feeAccount(): HasOne {
+        return $this->hasOne(\App\Models\Club\ClubFeeAccount::class);
+    }
+
+    /** @return HasOne<\App\Models\Billing\CustomerBillingAgreement, $this> */
     public function billingAgreement(): HasOne {
         return $this->hasOne(\App\Models\Billing\CustomerBillingAgreement::class);
     }

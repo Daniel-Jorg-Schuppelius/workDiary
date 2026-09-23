@@ -27,6 +27,10 @@ enum ClubCriteriaResult: string implements HasLabel {
     case AgeBelow = 'age_below';
     case AgeAbove = 'age_above';
     case ReviewRequired = 'review_required';
+    case GradeBelow = 'grade_below';
+    case GradeAbove = 'grade_above';
+    /** Kein gültiger Grad in der Ordnung der Gruppe — gewährt keinen Zugang. */
+    case GradeUnknown = 'grade_unknown';
 
     public function label(): string {
         return (string) __('enums.club.criteria-result.' . $this->value);
@@ -35,8 +39,8 @@ enum ClubCriteriaResult: string implements HasLabel {
     public function tone(): string {
         return match ($this) {
             self::Met => 'success',
-            self::AgeBelow, self::AgeAbove => 'warning',
-            self::ReviewRequired => 'info',
+            self::AgeBelow, self::AgeAbove, self::GradeBelow, self::GradeAbove => 'warning',
+            self::ReviewRequired, self::GradeUnknown => 'info',
         };
     }
 

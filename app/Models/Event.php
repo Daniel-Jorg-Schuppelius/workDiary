@@ -130,6 +130,31 @@ class Event extends Model {
         return $this->belongsToMany(\App\Models\Club\ClubGroup::class, 'club_event_groups')->withPivot('organization_id')->withTimestamps();
     }
 
+    /** @return HasOne<\App\Models\Club\ClubMatchDetails, $this> */
+    public function clubMatch(): HasOne {
+        return $this->hasOne(\App\Models\Club\ClubMatchDetails::class);
+    }
+
+    /** @return HasMany<\App\Models\Club\ClubLineupEntry, $this> */
+    public function clubLineupEntries(): HasMany {
+        return $this->hasMany(\App\Models\Club\ClubLineupEntry::class);
+    }
+
+    /** @return HasMany<\App\Models\Club\ClubEventRole, $this> */
+    public function clubRoles(): HasMany {
+        return $this->hasMany(\App\Models\Club\ClubEventRole::class);
+    }
+
+    /** @return HasOne<\App\Models\Club\ClubCompetitionDetails, $this> */
+    public function clubCompetition(): HasOne {
+        return $this->hasOne(\App\Models\Club\ClubCompetitionDetails::class);
+    }
+
+    /** @return HasMany<\App\Models\Club\ClubCompetitionEntry, $this> */
+    public function clubCompetitionEntries(): HasMany {
+        return $this->hasMany(\App\Models\Club\ClubCompetitionEntry::class);
+    }
+
     /** @return HasMany<\App\Models\Club\ClubEventParticipation, $this> */
     public function clubParticipations(): HasMany {
         return $this->hasMany(\App\Models\Club\ClubEventParticipation::class);

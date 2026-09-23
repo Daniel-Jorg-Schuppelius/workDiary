@@ -40,6 +40,7 @@ class SaveClubEventRequest extends BaseFormRequest {
             'kind' => ['required', 'string', Rule::enum(ClubEventKind::class)],
             'visibility' => ['required', 'string', Rule::enum(ClubEventVisibility::class)],
             'club_department_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('club_departments')],
+            'discipline' => ['nullable', 'string', 'max:60'],
             'club_group_ids' => ['nullable', 'array', 'max:50'],
             'club_group_ids.*' => ['integer', new ExistsInCurrentOrganization('club_groups')],
             'started_at' => ['required', 'date'],

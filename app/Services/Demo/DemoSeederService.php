@@ -249,6 +249,9 @@ class DemoSeederService {
             'learning' => 0,
             'showcase' => $fullShowcase ? 'full' : 'profile',
             'modules_active' => 0,
+            'club_members' => 0,
+            'club_events' => 0,
+            'club_claims' => 0,
         ];
 
         DB::transaction(function () use ($organization, $faker, $actor, $industry, $blueprint, $fullShowcase, &$counts): void {
@@ -372,6 +375,16 @@ class DemoSeederService {
             // Lernplattform-Demo (Feature 149, MVP-748): freigegebener Kurs
             // mit Inhalt, Prüfung und laufender Einschreibung.
             $counts['learning'] = $showcase->seedLearning($organization, $users->first());
+
+            // Vereinsverwaltung (Feature 159, MVP-848): nur die Musterbranche
+            // Sportverein bekommt den fiktiven Mehrspartenverein — in anderen
+            // Branchen wäre er auch im Vollumfang fremd.
+            if ($industry === DemoIndustry::Verein && ($activeModules === null || in_array('module.club', $activeModules, true))) {
+                $club = app(ClubDemoSeeder::class)->seed($organization, $profileActor, $users);
+                $counts['club_members'] = $club['members'];
+                $counts['club_events'] = $club['events'];
+                $counts['club_claims'] = $club['claims'];
+            }
         });
 
         return $counts;
@@ -401,6 +414,9 @@ class DemoSeederService {
      */
     private function doReset(Organization $organization, ?User $actor, ?DemoIndustry $industry, bool $fullShowcase): array {
         DB::transaction(function () use ($organization): void {
+            // Vereinsdaten zuerst — Beitragskonten hängen an Kunden, Vereinstermine an Nutzern.
+            app(ClubDemoSeeder::class)->purge($organization);
+
             $diaryIds = DiaryEntry::query()->where('organization_id', $organization->id)->pluck('id');
 
             // Demo-Anhänge inkl. Storage-Dateien (query()->delete() der

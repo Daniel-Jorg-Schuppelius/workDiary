@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ClubEventKind $kind
  * @property ClubEventVisibility $visibility
  * @property int|null $club_department_id
+ * @property string|null $discipline
  * @property int|null $registration_lead_hours
  * @property int|null $cancellation_lead_hours
  */
@@ -47,6 +48,7 @@ class ClubEventDetails extends Model {
         'kind',
         'visibility',
         'club_department_id',
+        'discipline',
         'registration_lead_hours',
         'cancellation_lead_hours',
     ];

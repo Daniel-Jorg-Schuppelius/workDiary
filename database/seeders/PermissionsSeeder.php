@@ -454,6 +454,7 @@ class PermissionsSeeder extends Seeder {
             // Vereinsverwaltung (Feature 159): Teamleitung ist Gruppenleitung —
             // sieht und führt nur die eigenen Gruppen, keine Registerpflege.
             PermissionEnum::ClubGroupLead,
+            PermissionEnum::ClubExaminer,
             // Trainingsmanagement (Feature 145): Teamleitung führt Katalog,
             // Pflichtmatrix und Soll-Einträge ihres Bereichs.
             PermissionEnum::TrainingViewAny,
@@ -592,6 +593,7 @@ class PermissionsSeeder extends Seeder {
             // Gruppen, Vertretungen und den CSV-Erstimport.
             PermissionEnum::ClubViewAny,
             PermissionEnum::ClubManage,
+            PermissionEnum::ClubGradingManage,
             // Plan/Ist-Anwesenheit org-weit (Rang 38).
             PermissionEnum::ReportPresenceTeam,
             PermissionEnum::ReportPresenceOrganization,
@@ -641,6 +643,8 @@ class PermissionsSeeder extends Seeder {
 
         $buchhaltung = [
             PermissionEnum::OrganizationView,
+            // Vereinsverwaltung (Feature 159, MVP-849): Kassenwart führt Beitragstarife, Konten und Befreiungen.
+            PermissionEnum::ClubFeesManage,
             // Feature 072: kaufmännische Reklamationsfolgen (Gutschrift/
             // Minderung/Storno) freigeben und übergeben.
             PermissionEnum::ClaimViewAny,

@@ -30,6 +30,8 @@ enum AssetBlockReason: string implements HasLabel {
     case RentalDamage = 'rental_damage';
     case PolicyHold = 'policy_hold';
     case Manual = 'manual';
+    // Wartung/Instandsetzung (Boote, Geräte, Pferdeausrüstung — MVP-853).
+    case Maintenance = 'maintenance';
     case Other = 'other';
 
     public function label(): string {
@@ -42,6 +44,7 @@ enum AssetBlockReason: string implements HasLabel {
             self::RentalDamage => (string) __('Verleihschaden'),
             self::PolicyHold => (string) __('Interne Sperre'),
             self::Manual => (string) __('Manuell gesperrt'),
+            self::Maintenance => (string) __('Wartung'),
             self::Other => (string) __('Sonstiger Grund'),
         };
     }

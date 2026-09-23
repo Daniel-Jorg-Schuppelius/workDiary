@@ -28,6 +28,8 @@ enum ClubEventKind: string implements HasLabel {
     case Course = 'course';
     case Exam = 'exam';
     case Meeting = 'meeting';
+    case Match = 'match';
+    case Competition = 'competition';
     case Other = 'other';
 
     public function label(): string {
@@ -40,6 +42,8 @@ enum ClubEventKind: string implements HasLabel {
             self::Course => 'school',
             self::Exam => 'workspace_premium',
             self::Meeting => 'groups',
+            self::Match => 'sports_soccer',
+            self::Competition => 'emoji_events',
             self::Other => 'event',
         };
     }
@@ -50,7 +54,7 @@ enum ClubEventKind: string implements HasLabel {
             self::Training => EventType::Training,
             self::Course, self::Exam => EventType::Workshop,
             self::Meeting => EventType::Meeting,
-            self::Other => EventType::InternalBriefing,
+            self::Other, self::Match, self::Competition => EventType::InternalBriefing,
         };
     }
 }

@@ -4892,6 +4892,31 @@ CREATE TABLE `club_attendance_records` (
   CONSTRAINT `club_attendance_records_recorded_by_user_id_foreign` FOREIGN KEY (`recorded_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_attendance_requirements`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_attendance_requirements` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `name` varchar(120) NOT NULL,
+  `club_group_id` bigint(20) unsigned DEFAULT NULL,
+  `club_department_id` bigint(20) unsigned DEFAULT NULL,
+  `required_count` smallint(5) unsigned NOT NULL,
+  `period_months` smallint(5) unsigned NOT NULL,
+  `event_kind` varchar(20) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_attendance_requirements_org_name_uq` (`organization_id`,`name`),
+  KEY `club_attendance_requirements_club_group_id_foreign` (`club_group_id`),
+  KEY `club_attendance_requirements_club_department_id_foreign` (`club_department_id`),
+  CONSTRAINT `club_attendance_requirements_club_department_id_foreign` FOREIGN KEY (`club_department_id`) REFERENCES `club_departments` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_attendance_requirements_club_group_id_foreign` FOREIGN KEY (`club_group_id`) REFERENCES `club_groups` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_attendance_requirements_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `club_attendance_revisions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -4943,6 +4968,60 @@ CREATE TABLE `club_attendance_sheets` (
   CONSTRAINT `club_attendance_sheets_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_competition_details`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_competition_details` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `event_id` bigint(20) unsigned NOT NULL,
+  `club_sport_profile_id` bigint(20) unsigned NOT NULL,
+  `disciplines` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`disciplines`)),
+  `venue` varchar(200) DEFAULT NULL,
+  `organizer` varchar(150) DEFAULT NULL,
+  `entry_fee` decimal(10,2) DEFAULT NULL,
+  `currency` varchar(3) NOT NULL DEFAULT 'EUR',
+  `requires_start_right` tinyint(1) NOT NULL DEFAULT 1,
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_competition_details_event_id_unique` (`event_id`),
+  KEY `club_competition_details_organization_id_foreign` (`organization_id`),
+  KEY `club_competition_details_club_sport_profile_id_foreign` (`club_sport_profile_id`),
+  CONSTRAINT `club_competition_details_club_sport_profile_id_foreign` FOREIGN KEY (`club_sport_profile_id`) REFERENCES `club_sport_profiles` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_competition_details_event_id_foreign` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_competition_details_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_competition_entries`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_competition_entries` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `event_id` bigint(20) unsigned NOT NULL,
+  `club_member_id` bigint(20) unsigned NOT NULL,
+  `discipline_code` varchar(30) NOT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'registered',
+  `review_reason` varchar(255) DEFAULT NULL,
+  `fee_amount` decimal(10,2) DEFAULT NULL,
+  `currency` varchar(3) NOT NULL DEFAULT 'EUR',
+  `registered_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `registered_at` datetime NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_competition_entries_uq` (`event_id`,`club_member_id`,`discipline_code`),
+  KEY `club_competition_entries_organization_id_foreign` (`organization_id`),
+  KEY `club_competition_entries_club_member_id_foreign` (`club_member_id`),
+  KEY `club_competition_entries_registered_by_user_id_foreign` (`registered_by_user_id`),
+  CONSTRAINT `club_competition_entries_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_competition_entries_event_id_foreign` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_competition_entries_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_competition_entries_registered_by_user_id_foreign` FOREIGN KEY (`registered_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `club_departments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -4952,6 +5031,7 @@ CREATE TABLE `club_departments` (
   `name` varchar(120) NOT NULL,
   `description` text DEFAULT NULL,
   `discipline` varchar(120) DEFAULT NULL,
+  `club_sport_profile_id` bigint(20) unsigned DEFAULT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `sort_order` smallint(5) unsigned NOT NULL DEFAULT 0,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -4959,6 +5039,8 @@ CREATE TABLE `club_departments` (
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `club_dep_org_sort_idx` (`organization_id`,`sort_order`),
+  KEY `club_departments_club_sport_profile_id_foreign` (`club_sport_profile_id`),
+  CONSTRAINT `club_departments_club_sport_profile_id_foreign` FOREIGN KEY (`club_sport_profile_id`) REFERENCES `club_sport_profiles` (`id`) ON DELETE SET NULL,
   CONSTRAINT `club_departments_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -4972,6 +5054,7 @@ CREATE TABLE `club_event_details` (
   `kind` varchar(16) NOT NULL DEFAULT 'training',
   `visibility` varchar(16) NOT NULL DEFAULT 'groups',
   `club_department_id` bigint(20) unsigned DEFAULT NULL,
+  `discipline` varchar(60) DEFAULT NULL,
   `registration_lead_hours` smallint(5) unsigned DEFAULT NULL,
   `cancellation_lead_hours` smallint(5) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -5037,6 +5120,556 @@ CREATE TABLE `club_event_participations` (
   CONSTRAINT `club_event_participations_event_id_foreign` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE,
   CONSTRAINT `club_event_participations_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `club_event_participations_registered_by_user_id_foreign` FOREIGN KEY (`registered_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_event_roles`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_event_roles` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `event_id` bigint(20) unsigned NOT NULL,
+  `role` varchar(30) NOT NULL,
+  `club_member_id` bigint(20) unsigned DEFAULT NULL,
+  `user_id` bigint(20) unsigned DEFAULT NULL,
+  `name` varchar(120) DEFAULT NULL,
+  `note` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `club_event_roles_organization_id_foreign` (`organization_id`),
+  KEY `club_event_roles_club_member_id_foreign` (`club_member_id`),
+  KEY `club_event_roles_user_id_foreign` (`user_id`),
+  KEY `club_event_roles_event_role_idx` (`event_id`,`role`),
+  CONSTRAINT `club_event_roles_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_event_roles_event_id_foreign` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_event_roles_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_event_roles_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_exam_candidate_records`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_exam_candidate_records` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `club_exam_candidate_id` bigint(20) unsigned NOT NULL,
+  `club_attendance_record_id` bigint(20) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_exam_cand_record_uq` (`club_exam_candidate_id`,`club_attendance_record_id`),
+  KEY `club_exam_candidate_records_club_attendance_record_id_foreign` (`club_attendance_record_id`),
+  CONSTRAINT `club_exam_candidate_records_club_attendance_record_id_foreign` FOREIGN KEY (`club_attendance_record_id`) REFERENCES `club_attendance_records` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_exam_candidate_records_club_exam_candidate_id_foreign` FOREIGN KEY (`club_exam_candidate_id`) REFERENCES `club_exam_candidates` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_exam_candidates`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_exam_candidates` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_exam_offer_id` bigint(20) unsigned NOT NULL,
+  `club_member_id` bigint(20) unsigned NOT NULL,
+  `target_grade_id` bigint(20) unsigned NOT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'requested',
+  `requested_at` timestamp NULL DEFAULT NULL,
+  `requested_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `admitted_at` timestamp NULL DEFAULT NULL,
+  `admitted_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `approved_at` timestamp NULL DEFAULT NULL,
+  `approved_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `exception_reason` varchar(255) DEFAULT NULL,
+  `exception_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `eligibility_met` tinyint(1) DEFAULT NULL,
+  `eligibility_report` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`eligibility_report`)),
+  `checked_at` timestamp NULL DEFAULT NULL,
+  `review_required_at` timestamp NULL DEFAULT NULL,
+  `review_note` varchar(255) DEFAULT NULL,
+  `result_recorded_at` timestamp NULL DEFAULT NULL,
+  `result_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `result_note` varchar(255) DEFAULT NULL,
+  `awarded_member_grade_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_exam_cand_offer_member_uq` (`club_exam_offer_id`,`club_member_id`),
+  KEY `club_exam_candidates_organization_id_foreign` (`organization_id`),
+  KEY `club_exam_candidates_target_grade_id_foreign` (`target_grade_id`),
+  KEY `club_exam_candidates_requested_by_user_id_foreign` (`requested_by_user_id`),
+  KEY `club_exam_candidates_admitted_by_user_id_foreign` (`admitted_by_user_id`),
+  KEY `club_exam_candidates_approved_by_user_id_foreign` (`approved_by_user_id`),
+  KEY `club_exam_candidates_exception_by_user_id_foreign` (`exception_by_user_id`),
+  KEY `club_exam_candidates_result_by_user_id_foreign` (`result_by_user_id`),
+  KEY `club_exam_candidates_awarded_member_grade_id_foreign` (`awarded_member_grade_id`),
+  KEY `club_exam_cand_member_status_idx` (`club_member_id`,`status`),
+  CONSTRAINT `club_exam_candidates_admitted_by_user_id_foreign` FOREIGN KEY (`admitted_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_exam_candidates_approved_by_user_id_foreign` FOREIGN KEY (`approved_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_exam_candidates_awarded_member_grade_id_foreign` FOREIGN KEY (`awarded_member_grade_id`) REFERENCES `club_member_grades` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_exam_candidates_club_exam_offer_id_foreign` FOREIGN KEY (`club_exam_offer_id`) REFERENCES `club_exam_offers` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_exam_candidates_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_exam_candidates_exception_by_user_id_foreign` FOREIGN KEY (`exception_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_exam_candidates_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_exam_candidates_requested_by_user_id_foreign` FOREIGN KEY (`requested_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_exam_candidates_result_by_user_id_foreign` FOREIGN KEY (`result_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_exam_candidates_target_grade_id_foreign` FOREIGN KEY (`target_grade_id`) REFERENCES `club_grades` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_exam_offer_grades`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_exam_offer_grades` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `club_exam_offer_id` bigint(20) unsigned NOT NULL,
+  `club_grade_id` bigint(20) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_exam_offer_grade_uq` (`club_exam_offer_id`,`club_grade_id`),
+  KEY `club_exam_offer_grades_club_grade_id_foreign` (`club_grade_id`),
+  CONSTRAINT `club_exam_offer_grades_club_exam_offer_id_foreign` FOREIGN KEY (`club_exam_offer_id`) REFERENCES `club_exam_offers` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_exam_offer_grades_club_grade_id_foreign` FOREIGN KEY (`club_grade_id`) REFERENCES `club_grades` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_exam_offers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_exam_offers` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `event_id` bigint(20) unsigned NOT NULL,
+  `club_grading_system_id` bigint(20) unsigned NOT NULL,
+  `club_grading_version_id` bigint(20) unsigned NOT NULL,
+  `examiner_user_ids` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`examiner_user_ids`)),
+  `notes` text DEFAULT NULL,
+  `results_released_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_exam_offer_event_uq` (`event_id`),
+  KEY `club_exam_offers_organization_id_foreign` (`organization_id`),
+  KEY `club_exam_offers_club_grading_system_id_foreign` (`club_grading_system_id`),
+  KEY `club_exam_offers_club_grading_version_id_foreign` (`club_grading_version_id`),
+  CONSTRAINT `club_exam_offers_club_grading_system_id_foreign` FOREIGN KEY (`club_grading_system_id`) REFERENCES `club_grading_systems` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_exam_offers_club_grading_version_id_foreign` FOREIGN KEY (`club_grading_version_id`) REFERENCES `club_grading_versions` (`id`),
+  CONSTRAINT `club_exam_offers_event_id_foreign` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_exam_offers_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_fee_accounts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_fee_accounts` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `customer_id` bigint(20) unsigned NOT NULL,
+  `name` varchar(160) NOT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `user_id` bigint(20) unsigned DEFAULT NULL,
+  `sepa_mandate_id` bigint(20) unsigned DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_fee_accounts_customer_uq` (`customer_id`),
+  KEY `club_fee_accounts_organization_id_foreign` (`organization_id`),
+  KEY `club_fee_accounts_user_id_foreign` (`user_id`),
+  KEY `club_fee_accounts_sepa_mandate_id_foreign` (`sepa_mandate_id`),
+  CONSTRAINT `club_fee_accounts_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`),
+  CONSTRAINT `club_fee_accounts_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_fee_accounts_sepa_mandate_id_foreign` FOREIGN KEY (`sepa_mandate_id`) REFERENCES `sepa_mandates` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_fee_accounts_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_fee_assignments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_fee_assignments` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_fee_account_id` bigint(20) unsigned NOT NULL,
+  `club_member_id` bigint(20) unsigned NOT NULL,
+  `club_fee_tariff_id` bigint(20) unsigned NOT NULL,
+  `valid_from` date NOT NULL,
+  `valid_to` date DEFAULT NULL,
+  `discount_percent` decimal(5,2) DEFAULT NULL,
+  `discount_reason` varchar(255) DEFAULT NULL,
+  `review_required_at` timestamp NULL DEFAULT NULL,
+  `review_note` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `club_fee_assignments_organization_id_foreign` (`organization_id`),
+  KEY `club_fee_assignments_club_fee_tariff_id_foreign` (`club_fee_tariff_id`),
+  KEY `club_fee_assign_member_from_idx` (`club_member_id`,`valid_from`),
+  KEY `club_fee_assign_account_from_idx` (`club_fee_account_id`,`valid_from`),
+  CONSTRAINT `club_fee_assignments_club_fee_account_id_foreign` FOREIGN KEY (`club_fee_account_id`) REFERENCES `club_fee_accounts` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_fee_assignments_club_fee_tariff_id_foreign` FOREIGN KEY (`club_fee_tariff_id`) REFERENCES `club_fee_tariffs` (`id`),
+  CONSTRAINT `club_fee_assignments_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_fee_assignments_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_fee_claim_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_fee_claim_items` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_fee_claim_id` bigint(20) unsigned NOT NULL,
+  `club_member_id` bigint(20) unsigned DEFAULT NULL,
+  `kind` varchar(16) NOT NULL,
+  `source_key` varchar(191) NOT NULL,
+  `label` varchar(160) NOT NULL,
+  `period_start` date NOT NULL,
+  `period_end` date NOT NULL,
+  `amount` decimal(12,2) NOT NULL,
+  `currency` varchar(3) NOT NULL DEFAULT 'EUR',
+  `basis` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`basis`)),
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_fee_items_org_source_uq` (`organization_id`,`source_key`),
+  KEY `club_fee_claim_items_club_member_id_foreign` (`club_member_id`),
+  KEY `club_fee_items_claim_idx` (`club_fee_claim_id`),
+  CONSTRAINT `club_fee_claim_items_club_fee_claim_id_foreign` FOREIGN KEY (`club_fee_claim_id`) REFERENCES `club_fee_claims` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_fee_claim_items_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_fee_claim_items_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_fee_claims`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_fee_claims` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_fee_run_id` bigint(20) unsigned DEFAULT NULL,
+  `club_fee_account_id` bigint(20) unsigned NOT NULL,
+  `customer_id` bigint(20) unsigned NOT NULL,
+  `sequence` int(10) unsigned NOT NULL,
+  `number` varchar(32) NOT NULL,
+  `kind` varchar(16) NOT NULL DEFAULT 'claim',
+  `corrects_claim_id` bigint(20) unsigned DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'open',
+  `period_start` date NOT NULL,
+  `period_end` date NOT NULL,
+  `issued_on` date NOT NULL,
+  `due_on` date NOT NULL,
+  `total` decimal(12,2) NOT NULL,
+  `paid_amount` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `currency` varchar(3) NOT NULL DEFAULT 'EUR',
+  `payer_snapshot` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`payer_snapshot`)),
+  `reason` varchar(255) DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `dunning_level` tinyint(3) unsigned NOT NULL DEFAULT 0,
+  `dunned_at` timestamp NULL DEFAULT NULL,
+  `dunning_blocked_at` timestamp NULL DEFAULT NULL,
+  `dunning_block_reason` varchar(255) DEFAULT NULL,
+  `payment_run_item_id` bigint(20) unsigned DEFAULT NULL,
+  `collection_attempts` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `collection_blocked_at` timestamp NULL DEFAULT NULL,
+  `collection_block_reason` varchar(255) DEFAULT NULL,
+  `paid_at` timestamp NULL DEFAULT NULL,
+  `cancelled_at` timestamp NULL DEFAULT NULL,
+  `cancelled_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_fee_claims_org_seq_uq` (`organization_id`,`sequence`),
+  KEY `club_fee_claims_club_fee_run_id_foreign` (`club_fee_run_id`),
+  KEY `club_fee_claims_customer_id_foreign` (`customer_id`),
+  KEY `club_fee_claims_corrects_claim_id_foreign` (`corrects_claim_id`),
+  KEY `club_fee_claims_cancelled_by_user_id_foreign` (`cancelled_by_user_id`),
+  KEY `club_fee_claims_account_status_idx` (`club_fee_account_id`,`status`),
+  KEY `club_fee_claims_org_status_due_idx` (`organization_id`,`status`,`due_on`),
+  KEY `club_fee_claims_payment_run_item_id_foreign` (`payment_run_item_id`),
+  CONSTRAINT `club_fee_claims_cancelled_by_user_id_foreign` FOREIGN KEY (`cancelled_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_fee_claims_club_fee_account_id_foreign` FOREIGN KEY (`club_fee_account_id`) REFERENCES `club_fee_accounts` (`id`),
+  CONSTRAINT `club_fee_claims_club_fee_run_id_foreign` FOREIGN KEY (`club_fee_run_id`) REFERENCES `club_fee_runs` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_fee_claims_corrects_claim_id_foreign` FOREIGN KEY (`corrects_claim_id`) REFERENCES `club_fee_claims` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_fee_claims_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`),
+  CONSTRAINT `club_fee_claims_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_fee_claims_payment_run_item_id_foreign` FOREIGN KEY (`payment_run_item_id`) REFERENCES `payment_run_items` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_fee_dunnings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_fee_dunnings` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_fee_claim_id` bigint(20) unsigned NOT NULL,
+  `level` tinyint(3) unsigned NOT NULL,
+  `issued_on` date NOT NULL,
+  `pay_until` date DEFAULT NULL,
+  `fee` decimal(10,2) DEFAULT NULL,
+  `currency` varchar(3) NOT NULL DEFAULT 'EUR',
+  `fee_claim_id` bigint(20) unsigned DEFAULT NULL,
+  `note` varchar(255) DEFAULT NULL,
+  `created_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `club_fee_dunnings_organization_id_foreign` (`organization_id`),
+  KEY `club_fee_dunnings_fee_claim_id_foreign` (`fee_claim_id`),
+  KEY `club_fee_dunnings_created_by_user_id_foreign` (`created_by_user_id`),
+  KEY `club_fee_dun_claim_level_idx` (`club_fee_claim_id`,`level`),
+  CONSTRAINT `club_fee_dunnings_club_fee_claim_id_foreign` FOREIGN KEY (`club_fee_claim_id`) REFERENCES `club_fee_claims` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_fee_dunnings_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_fee_dunnings_fee_claim_id_foreign` FOREIGN KEY (`fee_claim_id`) REFERENCES `club_fee_claims` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_fee_dunnings_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_fee_exemptions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_fee_exemptions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_member_id` bigint(20) unsigned NOT NULL,
+  `kind` varchar(16) NOT NULL DEFAULT 'exemption',
+  `percent` decimal(5,2) DEFAULT NULL,
+  `starts_on` date NOT NULL,
+  `ends_on` date DEFAULT NULL,
+  `reason` varchar(255) NOT NULL,
+  `created_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `club_fee_exemptions_organization_id_foreign` (`organization_id`),
+  KEY `club_fee_exemptions_created_by_user_id_foreign` (`created_by_user_id`),
+  KEY `club_fee_exempt_member_from_idx` (`club_member_id`,`starts_on`),
+  CONSTRAINT `club_fee_exemptions_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_fee_exemptions_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_fee_exemptions_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_fee_payments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_fee_payments` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_fee_account_id` bigint(20) unsigned NOT NULL,
+  `club_fee_claim_id` bigint(20) unsigned DEFAULT NULL,
+  `amount` decimal(12,2) NOT NULL,
+  `currency` varchar(3) NOT NULL DEFAULT 'EUR',
+  `paid_on` date NOT NULL,
+  `method` varchar(16) NOT NULL DEFAULT 'transfer',
+  `source` varchar(16) NOT NULL DEFAULT 'manual',
+  `reference` varchar(140) DEFAULT NULL,
+  `note` varchar(255) DEFAULT NULL,
+  `bank_transaction_id` bigint(20) unsigned DEFAULT NULL,
+  `payment_allocation_id` bigint(20) unsigned DEFAULT NULL,
+  `payment_run_item_id` bigint(20) unsigned DEFAULT NULL,
+  `chargeback_of_id` bigint(20) unsigned DEFAULT NULL,
+  `created_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_fee_pay_chargeback_uq` (`chargeback_of_id`),
+  KEY `club_fee_payments_organization_id_foreign` (`organization_id`),
+  KEY `club_fee_payments_bank_transaction_id_foreign` (`bank_transaction_id`),
+  KEY `club_fee_payments_payment_allocation_id_foreign` (`payment_allocation_id`),
+  KEY `club_fee_payments_payment_run_item_id_foreign` (`payment_run_item_id`),
+  KEY `club_fee_payments_created_by_user_id_foreign` (`created_by_user_id`),
+  KEY `club_fee_pay_account_paid_idx` (`club_fee_account_id`,`paid_on`),
+  KEY `club_fee_pay_claim_idx` (`club_fee_claim_id`),
+  CONSTRAINT `club_fee_payments_bank_transaction_id_foreign` FOREIGN KEY (`bank_transaction_id`) REFERENCES `bank_transactions` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_fee_payments_chargeback_of_id_foreign` FOREIGN KEY (`chargeback_of_id`) REFERENCES `club_fee_payments` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_fee_payments_club_fee_account_id_foreign` FOREIGN KEY (`club_fee_account_id`) REFERENCES `club_fee_accounts` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_fee_payments_club_fee_claim_id_foreign` FOREIGN KEY (`club_fee_claim_id`) REFERENCES `club_fee_claims` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_fee_payments_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_fee_payments_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_fee_payments_payment_allocation_id_foreign` FOREIGN KEY (`payment_allocation_id`) REFERENCES `payment_allocations` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_fee_payments_payment_run_item_id_foreign` FOREIGN KEY (`payment_run_item_id`) REFERENCES `payment_run_items` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_fee_runs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_fee_runs` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `year` smallint(5) unsigned NOT NULL,
+  `month` tinyint(3) unsigned NOT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'draft',
+  `positions` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`positions`)),
+  `issues` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`issues`)),
+  `total` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `currency` varchar(3) NOT NULL DEFAULT 'EUR',
+  `claims_count` int(10) unsigned NOT NULL DEFAULT 0,
+  `notes` text DEFAULT NULL,
+  `created_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `calculated_at` timestamp NULL DEFAULT NULL,
+  `released_at` timestamp NULL DEFAULT NULL,
+  `released_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `club_fee_runs_created_by_user_id_foreign` (`created_by_user_id`),
+  KEY `club_fee_runs_released_by_user_id_foreign` (`released_by_user_id`),
+  KEY `club_fee_runs_org_month_idx` (`organization_id`,`year`,`month`),
+  CONSTRAINT `club_fee_runs_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_fee_runs_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_fee_runs_released_by_user_id_foreign` FOREIGN KEY (`released_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_fee_surcharges`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_fee_surcharges` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_department_id` bigint(20) unsigned NOT NULL,
+  `name` varchar(120) NOT NULL,
+  `interval` varchar(16) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `currency` varchar(3) NOT NULL DEFAULT 'EUR',
+  `anchor_month` tinyint(3) unsigned NOT NULL DEFAULT 1,
+  `valid_from` date NOT NULL,
+  `valid_to` date DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `club_fee_surcharges_club_department_id_foreign` (`club_department_id`),
+  KEY `club_fee_surcharges_org_dept_idx` (`organization_id`,`club_department_id`),
+  CONSTRAINT `club_fee_surcharges_club_department_id_foreign` FOREIGN KEY (`club_department_id`) REFERENCES `club_departments` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_fee_surcharges_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_fee_tariff_rates`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_fee_tariff_rates` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_fee_tariff_id` bigint(20) unsigned NOT NULL,
+  `valid_from` date NOT NULL,
+  `interval` varchar(16) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `currency` varchar(3) NOT NULL DEFAULT 'EUR',
+  `anchor_month` tinyint(3) unsigned NOT NULL DEFAULT 1,
+  `due_days` smallint(5) unsigned NOT NULL DEFAULT 14,
+  `proration` varchar(8) NOT NULL DEFAULT 'full',
+  `admission_fee` decimal(10,2) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_fee_rates_tariff_from_uq` (`club_fee_tariff_id`,`valid_from`),
+  KEY `club_fee_tariff_rates_organization_id_foreign` (`organization_id`),
+  CONSTRAINT `club_fee_tariff_rates_club_fee_tariff_id_foreign` FOREIGN KEY (`club_fee_tariff_id`) REFERENCES `club_fee_tariffs` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_fee_tariff_rates_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_fee_tariffs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_fee_tariffs` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `name` varchar(120) NOT NULL,
+  `kind` varchar(16) NOT NULL DEFAULT 'individual',
+  `description` text DEFAULT NULL,
+  `min_age` tinyint(3) unsigned DEFAULT NULL,
+  `max_age` tinyint(3) unsigned DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `sort_order` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `club_fee_tariffs_org_active_idx` (`organization_id`,`is_active`),
+  CONSTRAINT `club_fee_tariffs_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_grade_requirements`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_grade_requirements` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_grading_version_id` bigint(20) unsigned NOT NULL,
+  `club_grade_id` bigint(20) unsigned NOT NULL,
+  `previous_grade_id` bigint(20) unsigned DEFAULT NULL,
+  `min_minutes` int(10) unsigned DEFAULT NULL,
+  `min_sessions` smallint(5) unsigned DEFAULT NULL,
+  `min_minutes_per_session` smallint(5) unsigned DEFAULT NULL,
+  `counting_basis` varchar(32) NOT NULL DEFAULT 'since_previous_grade',
+  `window_months` smallint(5) unsigned DEFAULT NULL,
+  `wait_months` smallint(5) unsigned DEFAULT NULL,
+  `min_age` tinyint(3) unsigned DEFAULT NULL,
+  `counted_event_kinds` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`counted_event_kinds`)),
+  `counted_group_ids` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`counted_group_ids`)),
+  `required_proof_label` varchar(120) DEFAULT NULL,
+  `requires_approval` tinyint(1) NOT NULL DEFAULT 0,
+  `allows_exception` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_grade_req_version_grade_uq` (`club_grading_version_id`,`club_grade_id`),
+  KEY `club_grade_requirements_organization_id_foreign` (`organization_id`),
+  KEY `club_grade_requirements_club_grade_id_foreign` (`club_grade_id`),
+  KEY `club_grade_requirements_previous_grade_id_foreign` (`previous_grade_id`),
+  CONSTRAINT `club_grade_requirements_club_grade_id_foreign` FOREIGN KEY (`club_grade_id`) REFERENCES `club_grades` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_grade_requirements_club_grading_version_id_foreign` FOREIGN KEY (`club_grading_version_id`) REFERENCES `club_grading_versions` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_grade_requirements_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_grade_requirements_previous_grade_id_foreign` FOREIGN KEY (`previous_grade_id`) REFERENCES `club_grades` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_grades`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_grades` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_grading_system_id` bigint(20) unsigned NOT NULL,
+  `name` varchar(80) NOT NULL,
+  `rank` smallint(5) unsigned NOT NULL,
+  `color` varchar(32) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_grades_system_name_uq` (`club_grading_system_id`,`name`),
+  KEY `club_grades_organization_id_foreign` (`organization_id`),
+  KEY `club_grades_system_rank_idx` (`club_grading_system_id`,`rank`),
+  CONSTRAINT `club_grades_club_grading_system_id_foreign` FOREIGN KEY (`club_grading_system_id`) REFERENCES `club_grading_systems` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_grades_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_grading_systems`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_grading_systems` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `name` varchar(120) NOT NULL,
+  `discipline` varchar(60) NOT NULL,
+  `description` text DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `club_grading_sys_org_disc_idx` (`organization_id`,`discipline`),
+  CONSTRAINT `club_grading_systems_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_grading_versions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_grading_versions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_grading_system_id` bigint(20) unsigned NOT NULL,
+  `version_no` smallint(5) unsigned NOT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'draft',
+  `valid_from` date DEFAULT NULL,
+  `unit_minutes` smallint(5) unsigned DEFAULT NULL,
+  `accepts_external_credits` tinyint(1) NOT NULL DEFAULT 0,
+  `notes` text DEFAULT NULL,
+  `activated_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_grading_ver_system_no_uq` (`club_grading_system_id`,`version_no`),
+  KEY `club_grading_versions_organization_id_foreign` (`organization_id`),
+  CONSTRAINT `club_grading_versions_club_grading_system_id_foreign` FOREIGN KEY (`club_grading_system_id`) REFERENCES `club_grading_systems` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_grading_versions_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `club_group_change_proposals`;
@@ -5111,7 +5744,14 @@ CREATE TABLE `club_groups` (
   `min_age` tinyint(3) unsigned DEFAULT NULL,
   `max_age` tinyint(3) unsigned DEFAULT NULL,
   `criteria_note` varchar(255) DEFAULT NULL,
+  `discipline` varchar(60) DEFAULT NULL,
+  `club_grading_system_id` bigint(20) unsigned DEFAULT NULL,
+  `min_grade_id` bigint(20) unsigned DEFAULT NULL,
+  `max_grade_id` bigint(20) unsigned DEFAULT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `is_team` tinyint(1) NOT NULL DEFAULT 0,
+  `club_sport_profile_id` bigint(20) unsigned DEFAULT NULL,
+  `age_class` varchar(20) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
@@ -5120,8 +5760,16 @@ CREATE TABLE `club_groups` (
   KEY `club_groups_leader_user_id_foreign` (`leader_user_id`),
   KEY `club_group_org_dep_name_idx` (`organization_id`,`club_department_id`,`name`),
   KEY `club_group_org_leader_idx` (`organization_id`,`leader_user_id`),
+  KEY `club_groups_club_grading_system_id_foreign` (`club_grading_system_id`),
+  KEY `club_groups_min_grade_id_foreign` (`min_grade_id`),
+  KEY `club_groups_max_grade_id_foreign` (`max_grade_id`),
+  KEY `club_groups_club_sport_profile_id_foreign` (`club_sport_profile_id`),
   CONSTRAINT `club_groups_club_department_id_foreign` FOREIGN KEY (`club_department_id`) REFERENCES `club_departments` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_groups_club_grading_system_id_foreign` FOREIGN KEY (`club_grading_system_id`) REFERENCES `club_grading_systems` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_groups_club_sport_profile_id_foreign` FOREIGN KEY (`club_sport_profile_id`) REFERENCES `club_sport_profiles` (`id`) ON DELETE SET NULL,
   CONSTRAINT `club_groups_leader_user_id_foreign` FOREIGN KEY (`leader_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_groups_max_grade_id_foreign` FOREIGN KEY (`max_grade_id`) REFERENCES `club_grades` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_groups_min_grade_id_foreign` FOREIGN KEY (`min_grade_id`) REFERENCES `club_grades` (`id`) ON DELETE SET NULL,
   CONSTRAINT `club_groups_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -5153,6 +5801,307 @@ CREATE TABLE `club_guardians` (
   CONSTRAINT `club_guardians_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `club_guardians_revoked_by_user_id_foreign` FOREIGN KEY (`revoked_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `club_guardians_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_horse_assignments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_horse_assignments` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `event_id` bigint(20) unsigned NOT NULL,
+  `club_member_id` bigint(20) unsigned NOT NULL,
+  `club_horse_id` bigint(20) unsigned DEFAULT NULL,
+  `club_resource_booking_id` bigint(20) unsigned DEFAULT NULL,
+  `own_horse` tinyint(1) NOT NULL DEFAULT 0,
+  `override_note` varchar(255) DEFAULT NULL,
+  `needs_review_at` datetime DEFAULT NULL,
+  `review_reason` varchar(255) DEFAULT NULL,
+  `assigned_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_horse_assignments_uq` (`event_id`,`club_member_id`),
+  KEY `club_horse_assignments_organization_id_foreign` (`organization_id`),
+  KEY `club_horse_assignments_club_member_id_foreign` (`club_member_id`),
+  KEY `club_horse_assignments_club_resource_booking_id_foreign` (`club_resource_booking_id`),
+  KEY `club_horse_assignments_assigned_by_user_id_foreign` (`assigned_by_user_id`),
+  KEY `club_horse_assignments_horse_idx` (`club_horse_id`,`event_id`),
+  CONSTRAINT `club_horse_assignments_assigned_by_user_id_foreign` FOREIGN KEY (`assigned_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_horse_assignments_club_horse_id_foreign` FOREIGN KEY (`club_horse_id`) REFERENCES `club_horses` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_horse_assignments_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_horse_assignments_club_resource_booking_id_foreign` FOREIGN KEY (`club_resource_booking_id`) REFERENCES `club_resource_bookings` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_horse_assignments_event_id_foreign` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_horse_assignments_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_horse_groups`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_horse_groups` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_horse_id` bigint(20) unsigned NOT NULL,
+  `club_group_id` bigint(20) unsigned NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_horse_groups_uq` (`club_horse_id`,`club_group_id`),
+  KEY `club_horse_groups_organization_id_foreign` (`organization_id`),
+  KEY `club_horse_groups_club_group_id_foreign` (`club_group_id`),
+  CONSTRAINT `club_horse_groups_club_group_id_foreign` FOREIGN KEY (`club_group_id`) REFERENCES `club_groups` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_horse_groups_club_horse_id_foreign` FOREIGN KEY (`club_horse_id`) REFERENCES `club_horses` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_horse_groups_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_horse_uses`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_horse_uses` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `event_id` bigint(20) unsigned NOT NULL,
+  `club_horse_id` bigint(20) unsigned NOT NULL,
+  `club_member_id` bigint(20) unsigned DEFAULT NULL,
+  `minutes` smallint(5) unsigned NOT NULL,
+  `note` varchar(255) DEFAULT NULL,
+  `recorded_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `recorded_at` datetime NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `club_horse_uses_organization_id_foreign` (`organization_id`),
+  KEY `club_horse_uses_club_member_id_foreign` (`club_member_id`),
+  KEY `club_horse_uses_recorded_by_user_id_foreign` (`recorded_by_user_id`),
+  KEY `club_horse_uses_horse_idx` (`club_horse_id`,`recorded_at`),
+  KEY `club_horse_uses_event_member_idx` (`event_id`,`club_member_id`),
+  CONSTRAINT `club_horse_uses_club_horse_id_foreign` FOREIGN KEY (`club_horse_id`) REFERENCES `club_horses` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_horse_uses_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_horse_uses_event_id_foreign` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_horse_uses_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_horse_uses_recorded_by_user_id_foreign` FOREIGN KEY (`recorded_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_horses`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_horses` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_resource_id` bigint(20) unsigned NOT NULL,
+  `name` varchar(120) NOT NULL,
+  `kind` varchar(20) NOT NULL,
+  `owner_member_id` bigint(20) unsigned DEFAULT NULL,
+  `contact` varchar(190) DEFAULT NULL,
+  `max_uses_per_day` smallint(5) unsigned DEFAULT NULL,
+  `suitable_for` varchar(255) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_horses_org_name_uq` (`organization_id`,`name`),
+  UNIQUE KEY `club_horses_club_resource_id_unique` (`club_resource_id`),
+  KEY `club_horses_owner_member_id_foreign` (`owner_member_id`),
+  CONSTRAINT `club_horses_club_resource_id_foreign` FOREIGN KEY (`club_resource_id`) REFERENCES `club_resources` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_horses_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_horses_owner_member_id_foreign` FOREIGN KEY (`owner_member_id`) REFERENCES `club_members` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_lineup_entries`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_lineup_entries` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `event_id` bigint(20) unsigned NOT NULL,
+  `club_member_id` bigint(20) unsigned NOT NULL,
+  `slot` varchar(20) NOT NULL,
+  `slot_key` varchar(20) NOT NULL,
+  `position_code` varchar(30) DEFAULT NULL,
+  `jersey_no` smallint(5) unsigned DEFAULT NULL,
+  `order_no` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `pairing_no` smallint(5) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_lineup_entries_uq` (`event_id`,`club_member_id`,`slot_key`),
+  KEY `club_lineup_entries_organization_id_foreign` (`organization_id`),
+  KEY `club_lineup_entries_member_idx` (`club_member_id`,`event_id`),
+  CONSTRAINT `club_lineup_entries_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_lineup_entries_event_id_foreign` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_lineup_entries_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_match_availabilities`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_match_availabilities` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `event_id` bigint(20) unsigned NOT NULL,
+  `club_member_id` bigint(20) unsigned NOT NULL,
+  `status` varchar(20) NOT NULL,
+  `note` varchar(255) DEFAULT NULL,
+  `responded_at` datetime NOT NULL,
+  `responded_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_match_availabilities_uq` (`event_id`,`club_member_id`),
+  KEY `club_match_availabilities_organization_id_foreign` (`organization_id`),
+  KEY `club_match_availabilities_club_member_id_foreign` (`club_member_id`),
+  KEY `club_match_availabilities_responded_by_user_id_foreign` (`responded_by_user_id`),
+  CONSTRAINT `club_match_availabilities_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_match_availabilities_event_id_foreign` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_match_availabilities_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_match_availabilities_responded_by_user_id_foreign` FOREIGN KEY (`responded_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_match_details`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_match_details` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `event_id` bigint(20) unsigned NOT NULL,
+  `club_group_id` bigint(20) unsigned NOT NULL,
+  `club_squad_id` bigint(20) unsigned DEFAULT NULL,
+  `club_season_id` bigint(20) unsigned DEFAULT NULL,
+  `opponent_name` varchar(150) NOT NULL,
+  `competition` varchar(120) DEFAULT NULL,
+  `is_home` tinyint(1) NOT NULL DEFAULT 1,
+  `venue` varchar(200) DEFAULT NULL,
+  `meet_at` datetime DEFAULT NULL,
+  `lineup_status` varchar(20) NOT NULL DEFAULT 'draft',
+  `lineup_released_at` datetime DEFAULT NULL,
+  `lineup_released_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `lineup_conflict_note` varchar(255) DEFAULT NULL,
+  `result` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`result`)),
+  `result_summary` varchar(60) DEFAULT NULL,
+  `result_note` text DEFAULT NULL,
+  `result_recorded_at` datetime DEFAULT NULL,
+  `result_recorded_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_match_details_event_id_unique` (`event_id`),
+  KEY `club_match_details_organization_id_foreign` (`organization_id`),
+  KEY `club_match_details_club_squad_id_foreign` (`club_squad_id`),
+  KEY `club_match_details_club_season_id_foreign` (`club_season_id`),
+  KEY `club_match_details_lineup_released_by_user_id_foreign` (`lineup_released_by_user_id`),
+  KEY `club_match_details_result_recorded_by_user_id_foreign` (`result_recorded_by_user_id`),
+  KEY `club_match_details_group_season_idx` (`club_group_id`,`club_season_id`),
+  CONSTRAINT `club_match_details_club_group_id_foreign` FOREIGN KEY (`club_group_id`) REFERENCES `club_groups` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_match_details_club_season_id_foreign` FOREIGN KEY (`club_season_id`) REFERENCES `club_seasons` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_match_details_club_squad_id_foreign` FOREIGN KEY (`club_squad_id`) REFERENCES `club_squads` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_match_details_event_id_foreign` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_match_details_lineup_released_by_user_id_foreign` FOREIGN KEY (`lineup_released_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_match_details_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_match_details_result_recorded_by_user_id_foreign` FOREIGN KEY (`result_recorded_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_match_proposals`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_match_proposals` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_group_id` bigint(20) unsigned NOT NULL,
+  `source` varchar(10) NOT NULL,
+  `dedupe_key` varchar(64) NOT NULL,
+  `starts_at` datetime NOT NULL,
+  `ends_at` datetime DEFAULT NULL,
+  `opponent_name` varchar(150) NOT NULL,
+  `competition` varchar(120) DEFAULT NULL,
+  `is_home` tinyint(1) NOT NULL DEFAULT 1,
+  `venue` varchar(200) DEFAULT NULL,
+  `raw` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`raw`)),
+  `status` varchar(20) NOT NULL DEFAULT 'open',
+  `event_id` bigint(20) unsigned DEFAULT NULL,
+  `duplicate_event_id` bigint(20) unsigned DEFAULT NULL,
+  `imported_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `decided_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `decided_at` datetime DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_match_proposals_org_key_uq` (`organization_id`,`dedupe_key`),
+  KEY `club_match_proposals_event_id_foreign` (`event_id`),
+  KEY `club_match_proposals_duplicate_event_id_foreign` (`duplicate_event_id`),
+  KEY `club_match_proposals_imported_by_user_id_foreign` (`imported_by_user_id`),
+  KEY `club_match_proposals_decided_by_user_id_foreign` (`decided_by_user_id`),
+  KEY `club_match_proposals_group_status_idx` (`club_group_id`,`status`),
+  CONSTRAINT `club_match_proposals_club_group_id_foreign` FOREIGN KEY (`club_group_id`) REFERENCES `club_groups` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_match_proposals_decided_by_user_id_foreign` FOREIGN KEY (`decided_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_match_proposals_duplicate_event_id_foreign` FOREIGN KEY (`duplicate_event_id`) REFERENCES `events` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_match_proposals_event_id_foreign` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_match_proposals_imported_by_user_id_foreign` FOREIGN KEY (`imported_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_match_proposals_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_member_grades`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_member_grades` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_member_id` bigint(20) unsigned NOT NULL,
+  `club_grading_system_id` bigint(20) unsigned NOT NULL,
+  `club_grade_id` bigint(20) unsigned NOT NULL,
+  `obtained_on` date NOT NULL,
+  `source` varchar(16) NOT NULL,
+  `club_exam_candidate_id` bigint(20) unsigned DEFAULT NULL,
+  `evidence` varchar(255) DEFAULT NULL,
+  `confirmed_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `revoked_at` timestamp NULL DEFAULT NULL,
+  `revoked_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `revoke_reason` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `club_member_grades_organization_id_foreign` (`organization_id`),
+  KEY `club_member_grades_club_grading_system_id_foreign` (`club_grading_system_id`),
+  KEY `club_member_grades_club_grade_id_foreign` (`club_grade_id`),
+  KEY `club_member_grades_confirmed_by_user_id_foreign` (`confirmed_by_user_id`),
+  KEY `club_member_grades_revoked_by_user_id_foreign` (`revoked_by_user_id`),
+  KEY `club_member_grades_member_sys_idx` (`club_member_id`,`club_grading_system_id`,`obtained_on`),
+  KEY `club_member_grades_club_exam_candidate_id_foreign` (`club_exam_candidate_id`),
+  CONSTRAINT `club_member_grades_club_exam_candidate_id_foreign` FOREIGN KEY (`club_exam_candidate_id`) REFERENCES `club_exam_candidates` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_member_grades_club_grade_id_foreign` FOREIGN KEY (`club_grade_id`) REFERENCES `club_grades` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_member_grades_club_grading_system_id_foreign` FOREIGN KEY (`club_grading_system_id`) REFERENCES `club_grading_systems` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_member_grades_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_member_grades_confirmed_by_user_id_foreign` FOREIGN KEY (`confirmed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_member_grades_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_member_grades_revoked_by_user_id_foreign` FOREIGN KEY (`revoked_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_member_proofs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_member_proofs` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_member_id` bigint(20) unsigned NOT NULL,
+  `kind` varchar(24) NOT NULL,
+  `label` varchar(120) NOT NULL,
+  `discipline` varchar(60) DEFAULT NULL,
+  `minutes` int(10) unsigned DEFAULT NULL,
+  `sessions` smallint(5) unsigned DEFAULT NULL,
+  `obtained_on` date NOT NULL,
+  `valid_until` date DEFAULT NULL,
+  `origin` varchar(160) DEFAULT NULL,
+  `confirmed_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `note` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `club_member_proofs_organization_id_foreign` (`organization_id`),
+  KEY `club_member_proofs_confirmed_by_user_id_foreign` (`confirmed_by_user_id`),
+  KEY `club_member_proofs_member_kind_idx` (`club_member_id`,`kind`),
+  CONSTRAINT `club_member_proofs_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_member_proofs_confirmed_by_user_id_foreign` FOREIGN KEY (`confirmed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_member_proofs_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `club_members`;
@@ -5236,6 +6185,268 @@ CREATE TABLE `club_notifications` (
   CONSTRAINT `club_notifications_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE CASCADE,
   CONSTRAINT `club_notifications_event_id_foreign` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE,
   CONSTRAINT `club_notifications_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_performances`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_performances` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_member_id` bigint(20) unsigned NOT NULL,
+  `club_sport_profile_id` bigint(20) unsigned NOT NULL,
+  `event_id` bigint(20) unsigned DEFAULT NULL,
+  `discipline_code` varchar(30) NOT NULL,
+  `performed_on` date NOT NULL,
+  `value` decimal(12,3) NOT NULL,
+  `unit` varchar(20) DEFAULT NULL,
+  `lower_is_better` tinyint(1) NOT NULL DEFAULT 0,
+  `placement` smallint(5) unsigned DEFAULT NULL,
+  `note` varchar(255) DEFAULT NULL,
+  `confirmed_at` datetime DEFAULT NULL,
+  `confirmed_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `recorded_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `club_performances_organization_id_foreign` (`organization_id`),
+  KEY `club_performances_club_sport_profile_id_foreign` (`club_sport_profile_id`),
+  KEY `club_performances_confirmed_by_user_id_foreign` (`confirmed_by_user_id`),
+  KEY `club_performances_recorded_by_user_id_foreign` (`recorded_by_user_id`),
+  KEY `club_performances_member_idx` (`club_member_id`,`club_sport_profile_id`,`discipline_code`),
+  KEY `club_performances_event_idx` (`event_id`,`discipline_code`),
+  CONSTRAINT `club_performances_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_performances_club_sport_profile_id_foreign` FOREIGN KEY (`club_sport_profile_id`) REFERENCES `club_sport_profiles` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_performances_confirmed_by_user_id_foreign` FOREIGN KEY (`confirmed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_performances_event_id_foreign` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_performances_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_performances_recorded_by_user_id_foreign` FOREIGN KEY (`recorded_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_resource_bookings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_resource_bookings` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_resource_id` bigint(20) unsigned NOT NULL,
+  `event_id` bigint(20) unsigned NOT NULL,
+  `club_member_id` bigint(20) unsigned DEFAULT NULL,
+  `quantity` smallint(5) unsigned NOT NULL DEFAULT 1,
+  `starts_at` datetime NOT NULL,
+  `ends_at` datetime NOT NULL,
+  `setup_minutes` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `teardown_minutes` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `note` varchar(255) DEFAULT NULL,
+  `flagged_at` datetime DEFAULT NULL,
+  `flag_reason` varchar(255) DEFAULT NULL,
+  `created_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_resource_bookings_uq` (`event_id`,`club_resource_id`),
+  KEY `club_resource_bookings_organization_id_foreign` (`organization_id`),
+  KEY `club_resource_bookings_club_member_id_foreign` (`club_member_id`),
+  KEY `club_resource_bookings_created_by_user_id_foreign` (`created_by_user_id`),
+  KEY `club_resource_bookings_window_idx` (`club_resource_id`,`starts_at`,`ends_at`),
+  CONSTRAINT `club_resource_bookings_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_resource_bookings_club_resource_id_foreign` FOREIGN KEY (`club_resource_id`) REFERENCES `club_resources` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_resource_bookings_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_resource_bookings_event_id_foreign` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_resource_bookings_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_resource_clearances`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_resource_clearances` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_resource_id` bigint(20) unsigned NOT NULL,
+  `club_member_id` bigint(20) unsigned NOT NULL,
+  `granted_on` date NOT NULL,
+  `valid_to` date DEFAULT NULL,
+  `granted_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `note` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_resource_clearances_uq` (`club_resource_id`,`club_member_id`),
+  KEY `club_resource_clearances_organization_id_foreign` (`organization_id`),
+  KEY `club_resource_clearances_club_member_id_foreign` (`club_member_id`),
+  KEY `club_resource_clearances_granted_by_user_id_foreign` (`granted_by_user_id`),
+  CONSTRAINT `club_resource_clearances_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_resource_clearances_club_resource_id_foreign` FOREIGN KEY (`club_resource_id`) REFERENCES `club_resources` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_resource_clearances_granted_by_user_id_foreign` FOREIGN KEY (`granted_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_resource_clearances_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_resource_closures`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_resource_closures` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_resource_id` bigint(20) unsigned NOT NULL,
+  `starts_at` datetime NOT NULL,
+  `ends_at` datetime NOT NULL,
+  `reason` varchar(255) NOT NULL,
+  `created_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `club_resource_closures_organization_id_foreign` (`organization_id`),
+  KEY `club_resource_closures_created_by_user_id_foreign` (`created_by_user_id`),
+  KEY `club_resource_closures_window_idx` (`club_resource_id`,`starts_at`,`ends_at`),
+  CONSTRAINT `club_resource_closures_club_resource_id_foreign` FOREIGN KEY (`club_resource_id`) REFERENCES `club_resources` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_resource_closures_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_resource_closures_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_resources`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_resources` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `parent_id` bigint(20) unsigned DEFAULT NULL,
+  `room_id` bigint(20) unsigned DEFAULT NULL,
+  `asset_id` bigint(20) unsigned DEFAULT NULL,
+  `name` varchar(120) NOT NULL,
+  `kind` varchar(30) NOT NULL,
+  `capacity` smallint(5) unsigned NOT NULL DEFAULT 1,
+  `setup_minutes` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `teardown_minutes` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `requires_clearance` tinyint(1) NOT NULL DEFAULT 0,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `sort_order` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_resources_org_name_uq` (`organization_id`,`name`),
+  KEY `club_resources_parent_id_foreign` (`parent_id`),
+  KEY `club_resources_room_id_foreign` (`room_id`),
+  KEY `club_resources_asset_id_foreign` (`asset_id`),
+  KEY `club_resources_org_parent_idx` (`organization_id`,`parent_id`),
+  CONSTRAINT `club_resources_asset_id_foreign` FOREIGN KEY (`asset_id`) REFERENCES `assets` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_resources_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_resources_parent_id_foreign` FOREIGN KEY (`parent_id`) REFERENCES `club_resources` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_resources_room_id_foreign` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_seasons`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_seasons` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `name` varchar(60) NOT NULL,
+  `starts_on` date NOT NULL,
+  `ends_on` date NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_seasons_org_name_uq` (`organization_id`,`name`),
+  CONSTRAINT `club_seasons_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_sport_profiles`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_sport_profiles` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `name` varchar(120) NOT NULL,
+  `family` varchar(30) NOT NULL,
+  `positions` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`positions`)),
+  `squad_size_field` smallint(5) unsigned DEFAULT NULL,
+  `squad_size_bench` smallint(5) unsigned DEFAULT NULL,
+  `result_format` varchar(20) NOT NULL DEFAULT 'goals',
+  `has_doubles` tinyint(1) NOT NULL DEFAULT 0,
+  `age_cutoff` varchar(5) DEFAULT NULL,
+  `disciplines` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`disciplines`)),
+  `resource_types` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`resource_types`)),
+  `notes` text DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_sport_profiles_org_name_uq` (`organization_id`,`name`),
+  CONSTRAINT `club_sport_profiles_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_squad_members`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_squad_members` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_squad_id` bigint(20) unsigned NOT NULL,
+  `club_member_id` bigint(20) unsigned NOT NULL,
+  `valid_from` date NOT NULL,
+  `valid_to` date DEFAULT NULL,
+  `guest_origin` varchar(120) DEFAULT NULL,
+  `jersey_no` smallint(5) unsigned DEFAULT NULL,
+  `position_code` varchar(30) DEFAULT NULL,
+  `strength_rank` smallint(5) unsigned DEFAULT NULL,
+  `notes` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_squad_members_uq` (`club_squad_id`,`club_member_id`,`valid_from`),
+  KEY `club_squad_members_organization_id_foreign` (`organization_id`),
+  KEY `club_squad_members_member_idx` (`club_member_id`,`valid_to`),
+  CONSTRAINT `club_squad_members_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_squad_members_club_squad_id_foreign` FOREIGN KEY (`club_squad_id`) REFERENCES `club_squads` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_squad_members_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_squads`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_squads` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_group_id` bigint(20) unsigned NOT NULL,
+  `club_season_id` bigint(20) unsigned NOT NULL,
+  `name` varchar(120) DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `club_squads_group_season_uq` (`club_group_id`,`club_season_id`),
+  KEY `club_squads_organization_id_foreign` (`organization_id`),
+  KEY `club_squads_club_season_id_foreign` (`club_season_id`),
+  CONSTRAINT `club_squads_club_group_id_foreign` FOREIGN KEY (`club_group_id`) REFERENCES `club_groups` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_squads_club_season_id_foreign` FOREIGN KEY (`club_season_id`) REFERENCES `club_seasons` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_squads_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `club_start_rights`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `club_start_rights` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `club_member_id` bigint(20) unsigned NOT NULL,
+  `club_sport_profile_id` bigint(20) unsigned DEFAULT NULL,
+  `reference` varchar(120) DEFAULT NULL,
+  `valid_from` date NOT NULL,
+  `valid_to` date DEFAULT NULL,
+  `note` varchar(255) DEFAULT NULL,
+  `granted_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `club_start_rights_organization_id_foreign` (`organization_id`),
+  KEY `club_start_rights_club_sport_profile_id_foreign` (`club_sport_profile_id`),
+  KEY `club_start_rights_granted_by_user_id_foreign` (`granted_by_user_id`),
+  KEY `club_start_rights_member_idx` (`club_member_id`,`club_sport_profile_id`),
+  CONSTRAINT `club_start_rights_club_member_id_foreign` FOREIGN KEY (`club_member_id`) REFERENCES `club_members` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `club_start_rights_club_sport_profile_id_foreign` FOREIGN KEY (`club_sport_profile_id`) REFERENCES `club_sport_profiles` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_start_rights_granted_by_user_id_foreign` FOREIGN KEY (`granted_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `club_start_rights_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `collection_items`;
@@ -7119,8 +8330,8 @@ CREATE TABLE `disposal_handovers` (
   PRIMARY KEY (`id`),
   KEY `disposal_handovers_external_contact_id_foreign` (`external_contact_id`),
   KEY `disposal_handovers_document_id_foreign` (`document_id`),
-  KEY `disposal_handovers_created_by_user_id_foreign` (`created_by_user_id`),
   KEY `disposal_handovers_job_idx` (`disposal_job_id`,`handed_over_on`),
+  KEY `disposal_handovers_created_by_user_id_foreign` (`created_by_user_id`),
   CONSTRAINT `disposal_handovers_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `disposal_handovers_disposal_job_id_foreign` FOREIGN KEY (`disposal_job_id`) REFERENCES `disposal_jobs` (`id`) ON DELETE CASCADE,
   CONSTRAINT `disposal_handovers_document_id_foreign` FOREIGN KEY (`document_id`) REFERENCES `documents` (`id`) ON DELETE SET NULL,
@@ -7166,8 +8377,8 @@ CREATE TABLE `disposal_job_events` (
   `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`payload`)),
   `created_at` timestamp NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `disposal_job_events_actor_user_id_foreign` (`actor_user_id`),
   KEY `disposal_job_events_idx` (`disposal_job_id`,`created_at`),
+  KEY `disposal_job_events_actor_user_id_foreign` (`actor_user_id`),
   CONSTRAINT `disposal_job_events_actor_user_id_foreign` FOREIGN KEY (`actor_user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `disposal_job_events_disposal_job_id_foreign` FOREIGN KEY (`disposal_job_id`) REFERENCES `disposal_jobs` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -7207,9 +8418,9 @@ CREATE TABLE `disposal_jobs` (
   KEY `disposal_jobs_record_document_id_foreign` (`record_document_id`),
   KEY `disposal_jobs_signature_attachment_id_foreign` (`signature_attachment_id`),
   KEY `disposal_jobs_completed_by_foreign` (`completed_by`),
-  KEY `disposal_jobs_created_by_user_id_foreign` (`created_by_user_id`),
   KEY `disposal_jobs_org_status_idx` (`organization_id`,`status`),
   KEY `disposal_jobs_customer_idx` (`customer_id`,`picked_up_on`),
+  KEY `disposal_jobs_created_by_user_id_foreign` (`created_by_user_id`),
   CONSTRAINT `disposal_jobs_completed_by_foreign` FOREIGN KEY (`completed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `disposal_jobs_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `disposal_jobs_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE,
@@ -7374,8 +8585,8 @@ CREATE TABLE `document_versions` (
   `created_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `doc_versions_doc_no_unique` (`document_id`,`version_no`),
-  KEY `document_versions_uploaded_by_user_id_foreign` (`uploaded_by_user_id`),
   KEY `doc_versions_doc_idx` (`document_id`),
+  KEY `document_versions_uploaded_by_user_id_foreign` (`uploaded_by_user_id`),
   CONSTRAINT `document_versions_document_id_foreign` FOREIGN KEY (`document_id`) REFERENCES `documents` (`id`) ON DELETE CASCADE,
   CONSTRAINT `document_versions_uploaded_by_user_id_foreign` FOREIGN KEY (`uploaded_by_user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -7408,7 +8619,6 @@ CREATE TABLE `documents` (
   `hr_category` varchar(32) DEFAULT NULL,
   `retention_until` date DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `documents_created_by_user_id_foreign` (`created_by_user_id`),
   KEY `documents_org_status_idx` (`organization_id`,`status`),
   KEY `documents_org_type_idx` (`organization_id`,`document_type`),
   KEY `documents_org_valid_idx` (`organization_id`,`valid_until`),
@@ -7416,6 +8626,7 @@ CREATE TABLE `documents` (
   KEY `documents_customer_released_by_foreign` (`customer_released_by`),
   KEY `documents_org_custvis_idx` (`organization_id`,`customer_visible`),
   KEY `documents_hr_idx` (`documentable_type`,`documentable_id`,`hr_category`),
+  KEY `documents_created_by_user_id_foreign` (`created_by_user_id`),
   CONSTRAINT `documents_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `documents_customer_released_by_foreign` FOREIGN KEY (`customer_released_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `documents_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
@@ -8510,8 +9721,8 @@ CREATE TABLE `external_wage_items` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `external_wage_items_user_id_foreign` (`user_id`),
   KEY `ewi_org_user_date_idx` (`organization_id`,`user_id`,`item_date`),
+  KEY `external_wage_items_user_id_foreign` (`user_id`),
   CONSTRAINT `external_wage_items_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `external_wage_items_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -8716,9 +9927,9 @@ CREATE TABLE `form_submissions` (
   PRIMARY KEY (`id`),
   KEY `form_submissions_form_template_id_foreign` (`form_template_id`),
   KEY `form_sub_subject_idx` (`subject_type`,`subject_id`),
-  KEY `form_submissions_submitted_by_user_id_foreign` (`submitted_by_user_id`),
   KEY `form_sub_org_tpl_idx` (`organization_id`,`form_template_id`),
   KEY `form_sub_org_at_idx` (`organization_id`,`submitted_at`),
+  KEY `form_submissions_submitted_by_user_id_foreign` (`submitted_by_user_id`),
   CONSTRAINT `form_submissions_form_template_id_foreign` FOREIGN KEY (`form_template_id`) REFERENCES `form_templates` (`id`) ON DELETE CASCADE,
   CONSTRAINT `form_submissions_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `form_submissions_submitted_by_user_id_foreign` FOREIGN KEY (`submitted_by_user_id`) REFERENCES `users` (`id`)
@@ -11870,7 +13081,6 @@ CREATE TABLE `learning_questions` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `learning_questions_organization_id_foreign` (`organization_id`),
   KEY `learning_questions_learning_question_category_id_foreign` (`learning_question_category_id`),
   KEY `lrn_q_org_cat_idx` (`organization_id`,`learning_question_category_id`),
   CONSTRAINT `learning_questions_learning_question_category_id_foreign` FOREIGN KEY (`learning_question_category_id`) REFERENCES `learning_question_categories` (`id`) ON DELETE SET NULL,
@@ -13204,9 +14414,9 @@ CREATE TABLE `month_closure_events` (
   `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`payload`)),
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
-  KEY `month_closure_events_actor_user_id_foreign` (`actor_user_id`),
   KEY `month_closure_events_chrono_idx` (`month_closure_id`,`created_at`),
   KEY `month_closure_events_event_index` (`event`),
+  KEY `month_closure_events_actor_user_id_foreign` (`actor_user_id`),
   CONSTRAINT `month_closure_events_actor_user_id_foreign` FOREIGN KEY (`actor_user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `month_closure_events_month_closure_id_foreign` FOREIGN KEY (`month_closure_id`) REFERENCES `month_closures` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -13238,11 +14448,11 @@ CREATE TABLE `month_closures` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `month_closures_period_unique` (`organization_id`,`user_id`,`period_year`,`period_month`),
-  KEY `month_closures_user_id_foreign` (`user_id`),
   KEY `month_closures_submitted_by_user_id_foreign` (`submitted_by_user_id`),
   KEY `month_closures_decided_by_user_id_foreign` (`decided_by_user_id`),
   KEY `month_closures_locked_by_user_id_foreign` (`locked_by_user_id`),
   KEY `month_closures_status_idx` (`organization_id`,`status`,`period_year`,`period_month`),
+  KEY `month_closures_user_id_foreign` (`user_id`),
   CONSTRAINT `month_closures_decided_by_user_id_foreign` FOREIGN KEY (`decided_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `month_closures_locked_by_user_id_foreign` FOREIGN KEY (`locked_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `month_closures_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
@@ -13864,11 +15074,11 @@ CREATE TABLE `overtime_requests` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `overtime_requests_user_id_foreign` (`user_id`),
   KEY `ovr_req_by_fk` (`requested_by_user_id`),
   KEY `ovr_dec_by_fk` (`decided_by_user_id`),
   KEY `ovr_org_user_date_idx` (`organization_id`,`user_id`,`scope_date`),
   KEY `ovr_org_status_idx` (`organization_id`,`status`),
+  KEY `overtime_requests_user_id_foreign` (`user_id`),
   CONSTRAINT `overtime_requests_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `overtime_requests_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `ovr_dec_by_fk` FOREIGN KEY (`decided_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
@@ -15967,8 +17177,8 @@ CREATE TABLE `protocol_events` (
   `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`payload`)),
   `created_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `protocol_events_actor_user_id_foreign` (`actor_user_id`),
   KEY `protocol_events_protocol_idx` (`protocol_id`,`created_at`),
+  KEY `protocol_events_actor_user_id_foreign` (`actor_user_id`),
   CONSTRAINT `protocol_events_actor_user_id_foreign` FOREIGN KEY (`actor_user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `protocol_events_protocol_id_foreign` FOREIGN KEY (`protocol_id`) REFERENCES `protocols` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -16105,10 +17315,10 @@ CREATE TABLE `protocols` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `protocols_supersedes_id_foreign` (`supersedes_id`),
-  KEY `protocols_created_by_user_id_foreign` (`created_by_user_id`),
   KEY `protocols_subject_idx` (`subject_type`,`subject_id`,`occurred_at`),
   KEY `protocols_org_type_status_idx` (`organization_id`,`type`,`status`),
   KEY `protocol_weather_fk` (`weather_snapshot_id`),
+  KEY `protocols_created_by_user_id_foreign` (`created_by_user_id`),
   CONSTRAINT `protocol_weather_fk` FOREIGN KEY (`weather_snapshot_id`) REFERENCES `weather_snapshots` (`id`) ON DELETE SET NULL,
   CONSTRAINT `protocols_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `protocols_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
@@ -17382,11 +18592,11 @@ CREATE TABLE `safety_events` (
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `safety_events_org_no_uq` (`organization_id`,`event_no`),
-  KEY `safety_events_reported_by_user_id_foreign` (`reported_by_user_id`),
   KEY `safety_events_closed_by_user_id_foreign` (`closed_by_user_id`),
   KEY `safety_events_org_status_idx` (`organization_id`,`status`,`severity`),
   KEY `safety_events_kind_idx` (`kind`,`occurred_at`),
   KEY `safety_events_subject_idx` (`subject_type`,`subject_id`),
+  KEY `safety_events_reported_by_user_id_foreign` (`reported_by_user_id`),
   CONSTRAINT `safety_events_closed_by_user_id_foreign` FOREIGN KEY (`closed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `safety_events_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `safety_events_reported_by_user_id_foreign` FOREIGN KEY (`reported_by_user_id`) REFERENCES `users` (`id`)
@@ -18664,7 +19874,6 @@ CREATE TABLE `stock_movements` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `stock_mov_idem_unique` (`organization_id`,`idempotency_key`),
-  KEY `stock_movements_warehouse_id_foreign` (`warehouse_id`),
   KEY `stock_movements_actor_user_id_foreign` (`actor_user_id`),
   KEY `stock_movements_organization_id_index` (`organization_id`),
   KEY `stock_mov_bucket_idx` (`article_variant_id`,`warehouse_id`,`stock_state`),
@@ -18704,7 +19913,6 @@ CREATE TABLE `stock_reservations` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `stock_reservations_warehouse_id_foreign` (`warehouse_id`),
   KEY `stock_reservations_created_by_foreign` (`created_by`),
   KEY `stock_reservations_organization_id_index` (`organization_id`),
   KEY `stock_resv_bucket_idx` (`article_variant_id`,`warehouse_id`,`status`),
@@ -19968,11 +21176,11 @@ CREATE TABLE `time_account_entries` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `tacce_org_fk` (`organization_id`),
-  KEY `tacce_user_fk` (`user_id`),
   KEY `tacce_posted_fk` (`posted_by`),
   KEY `tacce_reversal_fk` (`reversal_of_id`),
   KEY `tacce_acc_user_date_idx` (`time_account_id`,`user_id`,`booking_date`),
   KEY `tacce_source_idx` (`time_account_id`,`source_type`,`source_id`),
+  KEY `tacce_user_fk` (`user_id`),
   CONSTRAINT `tacce_account_fk` FOREIGN KEY (`time_account_id`) REFERENCES `time_accounts` (`id`) ON DELETE CASCADE,
   CONSTRAINT `tacce_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `tacce_posted_fk` FOREIGN KEY (`posted_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
@@ -20165,7 +21373,6 @@ CREATE TABLE `time_entries` (
   `billing_travel_minutes` smallint(5) unsigned NOT NULL DEFAULT 0,
   `billing_travel_manual` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
-  KEY `time_entries_organization_id_foreign` (`organization_id`),
   KEY `time_entries_task_id_foreign` (`task_id`),
   KEY `time_entries_project_id_index` (`project_id`),
   KEY `time_entries_user_id_index` (`user_id`),
@@ -20263,10 +21470,10 @@ CREATE TABLE `time_export_lines` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `time_export_lines_user_id_foreign` (`user_id`),
   KEY `tel_export_user_idx` (`time_export_id`,`user_id`),
   KEY `tel_export_wage_idx` (`time_export_id`,`wage_type`),
   KEY `tel_sur_rule_fk` (`surcharge_rule_id`),
+  KEY `time_export_lines_user_id_foreign` (`user_id`),
   CONSTRAINT `tel_sur_rule_fk` FOREIGN KEY (`surcharge_rule_id`) REFERENCES `surcharge_rules` (`id`) ON DELETE SET NULL,
   CONSTRAINT `time_export_lines_time_export_id_foreign` FOREIGN KEY (`time_export_id`) REFERENCES `time_exports` (`id`) ON DELETE CASCADE,
   CONSTRAINT `time_export_lines_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
@@ -21062,8 +22269,8 @@ CREATE TABLE `vacation_entitlements` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `vac_entitlements_org_user_year_uq` (`organization_id`,`user_id`,`year`),
-  KEY `vacation_entitlements_user_id_foreign` (`user_id`),
   KEY `vac_entitlements_org_year_idx` (`organization_id`,`year`),
+  KEY `vacation_entitlements_user_id_foreign` (`user_id`),
   CONSTRAINT `vacation_entitlements_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `vacation_entitlements_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -22354,236 +23561,245 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (597,'2026_12_01_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (598,'2026_12_01_100000_add_two_way_to_msgraph_connections',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (599,'2026_12_02_100000_add_msgraph_webhooks_and_todo_delta',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (600,'2026_12_03_100000_add_provider_type_and_sso_email_domains',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (601,'2026_12_04_100000_add_portal_invite_fields_to_users',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (602,'2026_12_04_100000_widen_audit_logs_event_column',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (603,'2026_12_04_100100_fix_column_widths_for_strict_sql',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (604,'2026_12_04_100200_add_attendances_open_unique_for_mysql',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (605,'2026_12_05_100000_add_portal_visibility_settings',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (606,'2026_12_05_100100_add_cost_center_fk_to_cost_center_rules',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (607,'2026_12_06_100000_add_priority_to_shift_wishes',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (608,'2026_12_06_100100_add_validity_and_status_to_terminal_credentials',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (609,'2026_12_06_100200_add_holiday_provider_to_sites',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (610,'2026_12_06_100300_add_conditions_to_surcharge_rules',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (611,'2026_12_06_100400_create_time_rule_results_table',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (612,'2026_12_06_100500_create_time_allocations_table',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (613,'2026_12_06_100600_create_time_dimension_tables',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (614,'2026_12_06_100700_create_overtime_requests_table',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (615,'2026_12_06_100800_create_shift_rotations_tables',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (616,'2026_12_06_100900_add_vacation_two_stage_and_deputy',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (617,'2026_12_06_101000_add_approval_to_duty_plans',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (618,'2026_12_06_101100_add_ideal_staff_to_coverage_requirements',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (619,'2026_12_06_101200_add_on_call_times_to_shift_types',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (620,'2026_12_06_101300_create_external_wage_items_table',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (621,'2026_12_06_101400_create_time_accounts_tables',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (622,'2026_12_06_101500_create_saved_report_views_table',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (623,'2026_12_06_101600_add_qualification_minima_to_coverage_requirements',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (624,'2026_12_06_101700_create_approval_steps_table',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (625,'2026_12_06_101800_add_intermediate_statuses_to_attendances',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (626,'2026_12_06_101900_add_components_to_vacation_entitlements',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (627,'2026_12_06_102000_prune_profile_foreign_default_entry_types',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (628,'2026_12_06_102100_add_einvoice_options_and_pdf_import_to_invoices',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (629,'2026_12_06_102200_add_delivery_format_to_customers',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (630,'2026_12_06_102300_add_user_target_to_import_value_mappings',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (631,'2026_12_06_102400_add_sheet_name_to_supplier_catalog_sources',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (632,'2026_12_06_102500_add_extra_attributes_and_list_price_to_supplier_catalog_items',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (633,'2026_12_06_102600_add_datanorm_conditions_to_supplier_catalogs',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (634,'2026_12_06_102600_add_denormalized_amounts_to_incoming_einvoices',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (635,'2026_12_06_102700_add_category_to_articles',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (636,'2026_12_06_102700_add_gaeb_traits_to_boq_items',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (637,'2026_12_06_102800_add_text_complements_to_boq_items',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (638,'2026_12_06_102800_create_sales_discount_groups',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (639,'2026_12_06_102900_add_unit_price_components_to_boq',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (640,'2026_12_06_102900_create_article_sale_price_histories',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (641,'2026_12_06_103000_add_assembly_minutes_to_articles',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (642,'2026_12_06_103000_add_change_order_fields_to_boq_items',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (643,'2026_12_06_103100_add_bid_traits_to_boq',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (644,'2026_12_06_103100_create_metal_quotations',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (645,'2026_12_06_103200_add_external_id_to_boq_sections',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (646,'2026_12_06_103200_create_sales_discount_group_overrides',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (647,'2026_12_06_103300_add_format_to_boq_import_and_export',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (648,'2026_12_06_103300_add_matchcode_to_supplier_catalog_items',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (649,'2026_12_06_103400_add_copper_fields_and_price_tiers_to_articles',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (650,'2026_12_06_103400_create_boq_catalog_tables',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (651,'2027_01_10_090000_add_tender_fields_to_application_opportunities',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (652,'2027_01_10_100000_create_tender_notice_tables',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (653,'2027_01_10_110000_create_tender_competitor_bids',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (654,'2027_01_10_120000_add_package_fields_to_gaeb_imports',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (655,'2027_01_10_130000_create_catalog_registry_tables',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (656,'2027_01_10_140000_create_catalog_assignment_rules',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (657,'2027_01_10_150000_create_boq_change_orders',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (658,'2027_01_10_160000_create_cost_estimates',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (659,'2027_01_10_170000_create_boq_calculation_data',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (660,'2027_01_10_180000_create_cost_element_catalogs',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (661,'2027_01_10_190000_link_cost_elements_to_articles',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (662,'2027_01_10_200000_add_excluded_buyers_to_tender_filter_profiles',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (663,'2027_01_10_210000_add_accounting_category_to_expense_categories',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (664,'2027_01_11_100000_add_ci_base_design_inheritance',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (665,'2027_01_12_100000_consolidate_invoice_templates_into_render_profiles',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (666,'2027_01_12_110000_create_leads_table',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (667,'2027_01_12_120000_create_access_media_tables',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (668,'2027_01_12_130000_create_survey_tables',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (669,'2027_01_12_140000_create_patrol_tables',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (670,'2027_01_12_150000_create_bookable_services_and_extend_appointment_requests',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (671,'2027_01_13_100000_drop_invoice_templates_table',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (672,'2027_01_12_160000_add_signature_to_access_medium_handovers',3);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (673,'2027_01_14_100000_add_landscape_support_to_document_design',3);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (674,'2027_01_15_100000_create_accounting_migration_tables',3);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (675,'2027_01_16_100000_create_orgamax_invoices_table',3);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (676,'2027_01_17_100000_add_timesheets_open_day_unique',3);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (677,'2027_01_18_100000_create_lexoffice_webhook_deliveries_table',3);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (678,'2027_01_19_100000_create_supplier_merge_dismissals_table',3);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (679,'2027_01_20_100000_create_article_merge_dismissals_table',4);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (680,'2027_01_21_100000_add_dial_fields_to_cti_connections',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (681,'2027_01_22_100000_add_subscription_resource_to_cloud_document_connections',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (682,'2027_01_23_100000_add_follow_up_to_quotes',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (683,'2027_01_24_100000_create_invoice_retentions_table',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (684,'2027_01_25_100000_create_guarantees_table',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (685,'2027_01_26_100000_create_warranty_periods_table',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (686,'2027_01_27_100000_create_meter_billing_agreements_table',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (687,'2027_01_28_100000_create_supplier_credentials_tables',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (688,'2027_01_29_100000_create_asset_components_table',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (689,'2027_01_30_100000_create_customer_circulars_tables',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (690,'2027_01_30_110000_add_bulk_mail_optout_to_customers',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (691,'2027_01_31_100000_create_payment_runs_tables',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (692,'2027_02_01_100000_add_two_way_to_calendar_connections',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (693,'2027_02_02_100000_create_accounting_vouchers_table',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (694,'2027_02_03_100000_create_time_tracking_webhook_deliveries_table',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (695,'2027_02_04_100000_add_base_kind_to_invoice_retentions',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (696,'2027_02_05_100000_add_phone_search_keys_to_contacts',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (697,'2027_02_06_100000_add_approval_and_serial_links',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (698,'2027_02_07_100000_create_accounting_profile_tables',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (699,'2027_02_08_100000_create_accounting_ledger_tables',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (700,'2027_02_09_100000_create_accounting_posting_rules_table',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (701,'2027_02_10_100000_create_accounting_open_item_tables',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (702,'2027_02_11_100000_widen_accounting_entry_rule_version',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (703,'2027_02_12_100000_create_accounting_recurring_tables',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (704,'2027_02_13_100000_create_accounting_taxation_periods_table',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (705,'2027_02_14_100000_add_euer_fields_to_accounting_accounts',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (706,'2027_02_15_100000_create_accounting_transfers_table',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (707,'2027_02_16_100000_create_vat_filing_tables',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (708,'2027_02_17_100000_create_accounting_filing_obligations_table',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (709,'2027_02_18_100000_add_ustva_fields_to_tax_codes',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (710,'2027_02_19_100000_scope_holiday_and_tag_uniques_to_organization',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (711,'2027_02_19_100100_encrypt_incoming_einvoice_creditor_bank_details',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (712,'2027_02_19_100200_replace_duty_plan_db_enums_with_strings',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (713,'2027_02_19_100300_add_creditor_iban_confirmation_to_incoming_einvoices',6);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (714,'2027_02_19_100400_restrict_user_fks_on_append_only_evidence_tables',6);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (715,'2027_02_19_100500_harden_stock_movements_ledger_constraints',6);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (716,'2027_02_19_100600_drop_audit_log_user_org_foreign_keys',6);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (717,'2027_02_19_100700_add_missing_reference_foreign_keys',6);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (718,'2027_02_19_100800_require_organization_on_core_tenant_tables',6);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (719,'2027_02_19_100900_drop_unbuilt_reserve_columns',6);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (720,'2027_02_19_101000_add_offboarding_and_restrict_evidence_user_fks',6);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (721,'2027_02_19_101100_add_local_file_to_lexoffice_vouchers',6);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (722,'2027_02_19_101200_add_dunning_blocked_at_to_invoices',6);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (723,'2027_02_19_101300_add_document_kind_to_invoice_mail_templates',6);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (724,'2027_02_19_101400_generalize_invoice_dispatches_to_document_dispatches',6);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (725,'2027_02_19_101500_add_anonymized_at_to_users',6);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (726,'2027_02_19_101600_create_safety_register_tables',7);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (727,'2027_02_19_101700_create_fixed_assets_table',8);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (728,'2027_02_19_101800_create_procedure_documentations_table',9);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (729,'2027_02_19_101900_add_logbook_fields_to_vehicles_and_travel_logs',10);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (730,'2027_02_19_102000_add_asset_id_to_vehicles',10);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (731,'2027_02_19_102100_add_follow_up_diary_entry_id_to_open_issues',11);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (732,'2027_02_19_102200_add_article_id_to_invoice_and_quote_items',11);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (733,'2027_02_19_102300_add_bins_and_kind_to_warehouses',12);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (734,'2027_02_19_102400_add_hr_fields_to_documents',13);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (735,'2027_02_19_102500_add_cost_center_dimension_and_accounting_budgets',14);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (736,'2027_02_19_102600_create_rental_requests_and_portal_profile_fields',15);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (737,'2027_02_19_102700_create_weather_warnings_table',16);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (738,'2027_02_19_102800_add_subject_to_driving_time_rules_to_vehicles',17);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (739,'2027_02_19_102900_add_document_locale_to_customers',18);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (740,'2027_02_19_103000_add_measured_composite_indexes',19);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (741,'2027_02_19_103100_rechain_audit_hashes_per_organization',19);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (742,'2027_02_19_103200_add_run_state_to_gobd_exports',19);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (743,'2027_02_19_103300_drop_unbuilt_planning_and_contact_columns',20);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (744,'2027_02_19_103400_create_training_management_tables',21);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (745,'2027_02_19_103500_create_privacy_dsar_portal_tables',22);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (746,'2027_02_19_103600_create_construction_notices_table',22);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (747,'2027_02_19_103700_create_commission_tables',23);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (748,'2027_02_19_103800_add_sms_channel_to_notification_dispatch_log',24);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (749,'2027_02_19_103900_add_voucher_semantics_to_accounting_vouchers',25);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (750,'2027_02_19_104000_create_user_workspaces_table',25);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (751,'2027_02_19_104100_add_peppol_participant_and_lookups',26);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (752,'2027_02_19_104200_add_width_to_user_dashboard_widgets',27);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (753,'2027_02_19_104300_add_tab_key_to_user_dashboard_widgets',27);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (754,'2027_02_19_104400_create_learning_platform_tables',28);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (755,'2027_02_19_104500_create_learning_enrollment_tables',29);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (756,'2027_02_19_104600_create_learning_time_sessions_table',30);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (757,'2027_02_19_104700_create_learning_quiz_tables',31);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (758,'2027_02_19_104800_create_learning_assignment_tables',32);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (759,'2027_02_19_104900_create_learning_certificates_table',33);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (760,'2027_02_19_105000_link_learning_units_to_events',34);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (761,'2027_02_19_105100_create_learning_access_tokens_table',35);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (762,'2027_02_19_105200_create_learning_bookings_table',36);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (763,'2027_02_19_105300_create_learning_paths_and_competencies',36);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (764,'2027_02_19_105400_add_course_completion_trigger_to_surveys',37);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (765,'2027_02_19_105500_create_learning_issuer_keys_table',38);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (766,'2027_02_19_105600_create_learning_scorm_tables',39);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (767,'2027_02_19_105700_add_heartbeat_to_learning_time_sessions',40);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (768,'2027_02_19_105800_add_asset_to_learning_courses',41);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (769,'2027_02_19_105900_create_learning_content_translations',42);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (770,'2027_02_19_110000_create_media_renditions_table',43);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (771,'2027_02_19_110100_widen_issuer_key_for_rsa',44);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (772,'2027_02_19_110200_add_subtitle_review_to_media_renditions',45);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (773,'2027_02_19_110300_restrict_evidence_authorship_user_fks',46);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (774,'2027_02_19_110400_add_sftp_host_fingerprint_to_time_export_delivery_configs',47);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (775,'2027_02_19_110500_encrypt_bank_and_health_columns',48);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (776,'2027_02_19_110600_create_audit_redactions_table',48);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (777,'2027_02_19_110700_hash_public_link_tokens',49);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (778,'2027_02_19_110800_add_verification_to_sso_domains',49);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (779,'2027_02_19_110900_add_workspace_lookup_to_plugin_settings',49);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (780,'2027_02_19_111000_hash_serial_passport_token',50);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (781,'2027_02_19_111100_add_options_to_backup_target_connections',51);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (782,'2027_02_19_111200_add_center_columns_to_help_topics',52);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (783,'2027_02_19_111300_create_reselling_reconciliation_runs_table',53);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (784,'2027_02_19_111400_create_reselling_company_mappings_table',54);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (785,'2027_02_19_111500_add_strict_products_to_reselling_reconciliation_runs',55);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (786,'2027_02_20_100000_create_resale_subscriptions_table',56);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (787,'2027_02_20_100100_create_resale_periods_table',56);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (788,'2027_02_20_100200_create_resale_imports_and_price_catalog',57);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (789,'2027_02_20_100300_create_lexoffice_voucher_lines_table',58);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (790,'2027_02_20_100400_create_resale_period_links_table',59);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (791,'2027_02_20_100500_drop_reselling_reconciliation_runs_table',60);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (792,'2027_02_20_100600_create_resale_purchase_entries_table',61);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (793,'2027_02_20_100700_add_resale_role_to_lexoffice_articles',62);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (794,'2027_02_20_100800_add_service_period_to_lexoffice_vouchers',63);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (795,'2027_02_20_100900_add_parent_id_to_resale_subscriptions',64);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (796,'2027_02_20_101000_add_lines_sync_failure_to_lexoffice_vouchers',65);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (797,'2027_02_20_101100_add_draft_reference_to_resale_periods',65);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (798,'2027_02_20_101200_add_document_morph_to_resale_purchase_entries',66);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (799,'2027_02_20_101300_add_resale_role_to_articles',66);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (800,'2027_02_20_101400_add_service_period_to_invoice_items',66);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (801,'2027_02_20_101500_drop_lexoffice_voucher_id_from_resale_purchase_entries',67);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (802,'2027_02_20_101600_add_encrypted_flag_to_whistleblowing_attachments',68);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (803,'2027_02_20_101700_create_learning_cmi5_tables',69);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (804,'2027_02_20_101800_create_learning_lti_tables',70);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (805,'2027_02_20_101900_create_search_index_tables',71);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (806,'2027_02_21_100000_create_learning_question_catalog_tables',72);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (807,'2027_02_21_100100_add_learning_quiz_flow_columns',73);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (808,'2027_02_21_100200_add_learning_course_kind_and_prerequisites',74);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (809,'2027_02_21_100300_create_learning_quiz_attempt_waivers_table',75);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (810,'2027_02_21_100400_create_learning_course_trainers_table',76);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (811,'2027_02_21_100500_add_learning_course_options',77);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (812,'2027_02_21_100600_create_learning_gradebook_tables',78);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (813,'2027_02_21_100700_add_learning_question_refinements',79);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (814,'2027_02_21_100800_add_learning_course_to_survey_invitations',80);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (815,'2027_02_22_100000_create_attendance_checkpoints',81);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (816,'2027_02_22_100100_create_legal_holds',82);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (817,'2027_02_22_100200_add_correction_to_expenses',83);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (818,'2027_02_22_100300_create_user_terminal_pins',84);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (819,'2027_02_22_100400_create_collections',85);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (820,'2027_02_22_100500_create_content_references',86);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (821,'2027_02_22_100600_move_knowledge_categories_to_collections',87);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (822,'2027_02_22_100700_create_msgraph_onenote_connections',88);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (823,'2027_02_22_100800_sso_domain_unique_per_organization',89);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (824,'2027_02_22_100900_create_document_version_texts',90);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (825,'2027_02_22_101000_widen_invoice_item_description',91);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (826,'2027_02_22_101100_convert_local_times_to_utc',92);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (827,'2027_02_22_101200_convert_imported_sync_times_to_utc',93);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (828,'2027_02_23_100000_create_contract_signing_tables',94);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (829,'2027_02_23_100100_create_lexoffice_invoice_handovers_table',95);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (830,'2027_02_23_100200_create_club_tables',96);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (831,'2027_02_23_100300_create_club_event_tables',97);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (832,'2027_02_23_100400_create_club_attendance_tables',98);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (833,'2027_02_23_100500_create_club_notifications_table',99);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (601,'2026_12_04_100000_add_portal_invite_fields_to_users',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (602,'2026_12_04_100000_widen_audit_logs_event_column',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (603,'2026_12_04_100100_fix_column_widths_for_strict_sql',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (604,'2026_12_04_100200_add_attendances_open_unique_for_mysql',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (605,'2026_12_05_100000_add_portal_visibility_settings',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (606,'2026_12_05_100100_add_cost_center_fk_to_cost_center_rules',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (607,'2026_12_06_100000_add_priority_to_shift_wishes',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (608,'2026_12_06_100100_add_validity_and_status_to_terminal_credentials',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (609,'2026_12_06_100200_add_holiday_provider_to_sites',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (610,'2026_12_06_100300_add_conditions_to_surcharge_rules',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (611,'2026_12_06_100400_create_time_rule_results_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (612,'2026_12_06_100500_create_time_allocations_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (613,'2026_12_06_100600_create_time_dimension_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (614,'2026_12_06_100700_create_overtime_requests_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (615,'2026_12_06_100800_create_shift_rotations_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (616,'2026_12_06_100900_add_vacation_two_stage_and_deputy',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (617,'2026_12_06_101000_add_approval_to_duty_plans',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (618,'2026_12_06_101100_add_ideal_staff_to_coverage_requirements',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (619,'2026_12_06_101200_add_on_call_times_to_shift_types',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (620,'2026_12_06_101300_create_external_wage_items_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (621,'2026_12_06_101400_create_time_accounts_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (622,'2026_12_06_101500_create_saved_report_views_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (623,'2026_12_06_101600_add_qualification_minima_to_coverage_requirements',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (624,'2026_12_06_101700_create_approval_steps_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (625,'2026_12_06_101800_add_intermediate_statuses_to_attendances',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (626,'2026_12_06_101900_add_components_to_vacation_entitlements',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (627,'2026_12_06_102000_prune_profile_foreign_default_entry_types',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (628,'2026_12_06_102100_add_einvoice_options_and_pdf_import_to_invoices',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (629,'2026_12_06_102200_add_delivery_format_to_customers',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (630,'2026_12_06_102300_add_user_target_to_import_value_mappings',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (631,'2026_12_06_102400_add_sheet_name_to_supplier_catalog_sources',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (632,'2026_12_06_102500_add_extra_attributes_and_list_price_to_supplier_catalog_items',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (633,'2026_12_06_102600_add_datanorm_conditions_to_supplier_catalogs',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (634,'2026_12_06_102600_add_denormalized_amounts_to_incoming_einvoices',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (635,'2026_12_06_102700_add_category_to_articles',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (636,'2026_12_06_102700_add_gaeb_traits_to_boq_items',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (637,'2026_12_06_102800_add_text_complements_to_boq_items',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (638,'2026_12_06_102800_create_sales_discount_groups',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (639,'2026_12_06_102900_add_unit_price_components_to_boq',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (640,'2026_12_06_102900_create_article_sale_price_histories',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (641,'2026_12_06_103000_add_assembly_minutes_to_articles',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (642,'2026_12_06_103000_add_change_order_fields_to_boq_items',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (643,'2026_12_06_103100_add_bid_traits_to_boq',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (644,'2026_12_06_103100_create_metal_quotations',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (645,'2026_12_06_103200_add_external_id_to_boq_sections',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (646,'2026_12_06_103200_create_sales_discount_group_overrides',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (647,'2026_12_06_103300_add_format_to_boq_import_and_export',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (648,'2026_12_06_103300_add_matchcode_to_supplier_catalog_items',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (649,'2026_12_06_103400_add_copper_fields_and_price_tiers_to_articles',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (650,'2026_12_06_103400_create_boq_catalog_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (651,'2027_01_10_090000_add_tender_fields_to_application_opportunities',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (652,'2027_01_10_100000_create_tender_notice_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (653,'2027_01_10_110000_create_tender_competitor_bids',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (654,'2027_01_10_120000_add_package_fields_to_gaeb_imports',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (655,'2027_01_10_130000_create_catalog_registry_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (656,'2027_01_10_140000_create_catalog_assignment_rules',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (657,'2027_01_10_150000_create_boq_change_orders',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (658,'2027_01_10_160000_create_cost_estimates',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (659,'2027_01_10_170000_create_boq_calculation_data',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (660,'2027_01_10_180000_create_cost_element_catalogs',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (661,'2027_01_10_190000_link_cost_elements_to_articles',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (662,'2027_01_10_200000_add_excluded_buyers_to_tender_filter_profiles',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (663,'2027_01_10_210000_add_accounting_category_to_expense_categories',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (664,'2027_01_11_100000_add_ci_base_design_inheritance',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (665,'2027_01_12_100000_consolidate_invoice_templates_into_render_profiles',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (666,'2027_01_12_110000_create_leads_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (667,'2027_01_12_120000_create_access_media_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (668,'2027_01_12_130000_create_survey_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (669,'2027_01_12_140000_create_patrol_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (670,'2027_01_12_150000_create_bookable_services_and_extend_appointment_requests',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (671,'2027_01_12_160000_add_signature_to_access_medium_handovers',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (672,'2027_01_13_100000_drop_invoice_templates_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (673,'2027_01_14_100000_add_landscape_support_to_document_design',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (674,'2027_01_15_100000_create_accounting_migration_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (675,'2027_01_16_100000_create_orgamax_invoices_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (676,'2027_01_17_100000_add_timesheets_open_day_unique',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (677,'2027_01_18_100000_create_lexoffice_webhook_deliveries_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (678,'2027_01_19_100000_create_supplier_merge_dismissals_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (679,'2027_01_20_100000_create_article_merge_dismissals_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (680,'2027_01_21_100000_add_dial_fields_to_cti_connections',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (681,'2027_01_22_100000_add_subscription_resource_to_cloud_document_connections',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (682,'2027_01_23_100000_add_follow_up_to_quotes',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (683,'2027_01_24_100000_create_invoice_retentions_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (684,'2027_01_25_100000_create_guarantees_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (685,'2027_01_26_100000_create_warranty_periods_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (686,'2027_01_27_100000_create_meter_billing_agreements_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (687,'2027_01_28_100000_create_supplier_credentials_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (688,'2027_01_29_100000_create_asset_components_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (689,'2027_01_30_100000_create_customer_circulars_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (690,'2027_01_30_110000_add_bulk_mail_optout_to_customers',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (691,'2027_01_31_100000_create_payment_runs_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (692,'2027_02_01_100000_add_two_way_to_calendar_connections',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (693,'2027_02_02_100000_create_accounting_vouchers_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (694,'2027_02_03_100000_create_time_tracking_webhook_deliveries_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (695,'2027_02_04_100000_add_base_kind_to_invoice_retentions',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (696,'2027_02_05_100000_add_phone_search_keys_to_contacts',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (697,'2027_02_06_100000_add_approval_and_serial_links',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (698,'2027_02_07_100000_create_accounting_profile_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (699,'2027_02_08_100000_create_accounting_ledger_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (700,'2027_02_09_100000_create_accounting_posting_rules_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (701,'2027_02_10_100000_create_accounting_open_item_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (702,'2027_02_11_100000_widen_accounting_entry_rule_version',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (703,'2027_02_12_100000_create_accounting_recurring_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (704,'2027_02_13_100000_create_accounting_taxation_periods_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (705,'2027_02_14_100000_add_euer_fields_to_accounting_accounts',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (706,'2027_02_15_100000_create_accounting_transfers_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (707,'2027_02_16_100000_create_vat_filing_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (708,'2027_02_17_100000_create_accounting_filing_obligations_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (709,'2027_02_18_100000_add_ustva_fields_to_tax_codes',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (710,'2027_02_19_100000_scope_holiday_and_tag_uniques_to_organization',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (711,'2027_02_19_100100_encrypt_incoming_einvoice_creditor_bank_details',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (712,'2027_02_19_100200_replace_duty_plan_db_enums_with_strings',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (713,'2027_02_19_100300_add_creditor_iban_confirmation_to_incoming_einvoices',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (714,'2027_02_19_100400_restrict_user_fks_on_append_only_evidence_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (715,'2027_02_19_100500_harden_stock_movements_ledger_constraints',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (716,'2027_02_19_100600_drop_audit_log_user_org_foreign_keys',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (717,'2027_02_19_100700_add_missing_reference_foreign_keys',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (718,'2027_02_19_100800_require_organization_on_core_tenant_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (719,'2027_02_19_100900_drop_unbuilt_reserve_columns',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (720,'2027_02_19_101000_add_offboarding_and_restrict_evidence_user_fks',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (721,'2027_02_19_101100_add_local_file_to_lexoffice_vouchers',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (722,'2027_02_19_101200_add_dunning_blocked_at_to_invoices',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (723,'2027_02_19_101300_add_document_kind_to_invoice_mail_templates',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (724,'2027_02_19_101400_generalize_invoice_dispatches_to_document_dispatches',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (725,'2027_02_19_101500_add_anonymized_at_to_users',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (726,'2027_02_19_101600_create_safety_register_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (727,'2027_02_19_101700_create_fixed_assets_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (728,'2027_02_19_101800_create_procedure_documentations_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (729,'2027_02_19_101900_add_logbook_fields_to_vehicles_and_travel_logs',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (730,'2027_02_19_102000_add_asset_id_to_vehicles',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (731,'2027_02_19_102100_add_follow_up_diary_entry_id_to_open_issues',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (732,'2027_02_19_102200_add_article_id_to_invoice_and_quote_items',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (733,'2027_02_19_102300_add_bins_and_kind_to_warehouses',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (734,'2027_02_19_102400_add_hr_fields_to_documents',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (735,'2027_02_19_102500_add_cost_center_dimension_and_accounting_budgets',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (736,'2027_02_19_102600_create_rental_requests_and_portal_profile_fields',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (737,'2027_02_19_102700_create_weather_warnings_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (738,'2027_02_19_102800_add_subject_to_driving_time_rules_to_vehicles',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (739,'2027_02_19_102900_add_document_locale_to_customers',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (740,'2027_02_19_103000_add_measured_composite_indexes',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (741,'2027_02_19_103100_rechain_audit_hashes_per_organization',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (742,'2027_02_19_103200_add_run_state_to_gobd_exports',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (743,'2027_02_19_103300_drop_unbuilt_planning_and_contact_columns',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (744,'2027_02_19_103400_create_training_management_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (745,'2027_02_19_103500_create_privacy_dsar_portal_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (746,'2027_02_19_103600_create_construction_notices_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (747,'2027_02_19_103700_create_commission_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (748,'2027_02_19_103800_add_sms_channel_to_notification_dispatch_log',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (749,'2027_02_19_103900_add_voucher_semantics_to_accounting_vouchers',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (750,'2027_02_19_104000_create_user_workspaces_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (751,'2027_02_19_104100_add_peppol_participant_and_lookups',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (752,'2027_02_19_104200_add_width_to_user_dashboard_widgets',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (753,'2027_02_19_104300_add_tab_key_to_user_dashboard_widgets',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (754,'2027_02_19_104400_create_learning_platform_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (755,'2027_02_19_104500_create_learning_enrollment_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (756,'2027_02_19_104600_create_learning_time_sessions_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (757,'2027_02_19_104700_create_learning_quiz_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (758,'2027_02_19_104800_create_learning_assignment_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (759,'2027_02_19_104900_create_learning_certificates_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (760,'2027_02_19_105000_link_learning_units_to_events',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (761,'2027_02_19_105100_create_learning_access_tokens_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (762,'2027_02_19_105200_create_learning_bookings_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (763,'2027_02_19_105300_create_learning_paths_and_competencies',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (764,'2027_02_19_105400_add_course_completion_trigger_to_surveys',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (765,'2027_02_19_105500_create_learning_issuer_keys_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (766,'2027_02_19_105600_create_learning_scorm_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (767,'2027_02_19_105700_add_heartbeat_to_learning_time_sessions',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (768,'2027_02_19_105800_add_asset_to_learning_courses',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (769,'2027_02_19_105900_create_learning_content_translations',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (770,'2027_02_19_110000_create_media_renditions_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (771,'2027_02_19_110100_widen_issuer_key_for_rsa',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (772,'2027_02_19_110200_add_subtitle_review_to_media_renditions',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (773,'2027_02_19_110300_restrict_evidence_authorship_user_fks',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (774,'2027_02_19_110400_add_sftp_host_fingerprint_to_time_export_delivery_configs',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (775,'2027_02_19_110500_encrypt_bank_and_health_columns',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (776,'2027_02_19_110600_create_audit_redactions_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (777,'2027_02_19_110700_hash_public_link_tokens',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (778,'2027_02_19_110800_add_verification_to_sso_domains',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (779,'2027_02_19_110900_add_workspace_lookup_to_plugin_settings',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (780,'2027_02_19_111000_hash_serial_passport_token',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (781,'2027_02_19_111100_add_options_to_backup_target_connections',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (782,'2027_02_19_111200_add_center_columns_to_help_topics',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (783,'2027_02_19_111300_create_reselling_reconciliation_runs_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (784,'2027_02_19_111400_create_reselling_company_mappings_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (785,'2027_02_19_111500_add_strict_products_to_reselling_reconciliation_runs',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (786,'2027_02_20_100000_create_resale_subscriptions_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (787,'2027_02_20_100100_create_resale_periods_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (788,'2027_02_20_100200_create_resale_imports_and_price_catalog',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (789,'2027_02_20_100300_create_lexoffice_voucher_lines_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (790,'2027_02_20_100400_create_resale_period_links_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (791,'2027_02_20_100500_drop_reselling_reconciliation_runs_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (792,'2027_02_20_100600_create_resale_purchase_entries_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (793,'2027_02_20_100700_add_resale_role_to_lexoffice_articles',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (794,'2027_02_20_100800_add_service_period_to_lexoffice_vouchers',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (795,'2027_02_20_100900_add_parent_id_to_resale_subscriptions',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (796,'2027_02_20_101000_add_lines_sync_failure_to_lexoffice_vouchers',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (797,'2027_02_20_101100_add_draft_reference_to_resale_periods',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (798,'2027_02_20_101200_add_document_morph_to_resale_purchase_entries',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (799,'2027_02_20_101300_add_resale_role_to_articles',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (800,'2027_02_20_101400_add_service_period_to_invoice_items',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (801,'2027_02_20_101500_drop_lexoffice_voucher_id_from_resale_purchase_entries',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (802,'2027_02_20_101600_add_encrypted_flag_to_whistleblowing_attachments',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (803,'2027_02_20_101700_create_learning_cmi5_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (804,'2027_02_20_101800_create_learning_lti_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (805,'2027_02_20_101900_create_search_index_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (806,'2027_02_21_100000_create_learning_question_catalog_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (807,'2027_02_21_100100_add_learning_quiz_flow_columns',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (808,'2027_02_21_100200_add_learning_course_kind_and_prerequisites',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (809,'2027_02_21_100300_create_learning_quiz_attempt_waivers_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (810,'2027_02_21_100400_create_learning_course_trainers_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (811,'2027_02_21_100500_add_learning_course_options',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (812,'2027_02_21_100600_create_learning_gradebook_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (813,'2027_02_21_100700_add_learning_question_refinements',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (814,'2027_02_21_100800_add_learning_course_to_survey_invitations',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (815,'2027_02_22_100000_create_attendance_checkpoints',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (816,'2027_02_22_100100_create_legal_holds',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (817,'2027_02_22_100200_add_correction_to_expenses',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (818,'2027_02_22_100300_create_user_terminal_pins',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (819,'2027_02_22_100400_create_collections',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (820,'2027_02_22_100500_create_content_references',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (821,'2027_02_22_100600_move_knowledge_categories_to_collections',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (822,'2027_02_22_100700_create_msgraph_onenote_connections',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (823,'2027_02_22_100800_sso_domain_unique_per_organization',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (824,'2027_02_22_100900_create_document_version_texts',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (825,'2027_02_22_101000_widen_invoice_item_description',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (826,'2027_02_22_101100_convert_local_times_to_utc',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (827,'2027_02_22_101200_convert_imported_sync_times_to_utc',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (828,'2027_02_23_100000_create_contract_signing_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (829,'2027_02_23_100100_create_lexoffice_invoice_handovers_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (830,'2027_02_23_100200_create_club_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (831,'2027_02_23_100300_create_club_event_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (832,'2027_02_23_100400_create_club_attendance_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (833,'2027_02_23_100500_create_club_notifications_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (834,'2027_02_23_100600_create_club_grading_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (835,'2027_02_23_100700_create_club_exam_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (836,'2027_02_23_100800_create_club_fee_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (837,'2027_02_23_100900_create_club_fee_claim_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (838,'2027_02_23_101000_create_club_fee_payment_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (839,'2027_02_23_101100_create_club_team_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (840,'2027_02_23_101200_create_club_resource_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (841,'2027_02_23_101300_create_club_horse_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (842,'2027_02_23_101400_create_club_competition_tables',1);

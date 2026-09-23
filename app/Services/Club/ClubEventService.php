@@ -99,7 +99,13 @@ class ClubEventService {
             $details->audit('club.event.updated', ['future' => $applyToFuture]);
             $event->refresh();
             if (! $oldStart->equalTo($event->started_at) || ! $oldEnd->equalTo($event->ended_at)) {
+                // Ressourcen (MVP-853) wandern mit; ein Konflikt wirft und rollt die ganze Änderung zurück.
+                app(ClubResourceService::class)->moveWithEvent($event, $oldStart, $oldEnd);
                 $this->notifier->rescheduled($event, $oldStart);
+                if ($details->kind === ClubEventKind::Exam) {
+                    // Prüfung verschoben → Zulassung zum neuen Stichtag neu bewerten (MVP-847); lazy gegen den Zyklus Exam→Event.
+                    app(ClubExamService::class)->recheckForEvent($event);
+                }
             }
 
             if ($applyToFuture) {
@@ -135,12 +141,14 @@ class ClubEventService {
         DB::transaction(function () use ($event, $actor, $reason, $applyToFuture): void {
             $details = $this->detailsOf($event);
             $this->events->cancel($event, $reason);
+            app(ClubResourceService::class)->releaseAll($event, $actor);
             $details->audit('club.event.cancelled', ['reason' => $reason, 'future' => $applyToFuture, 'actor_id' => $actor->id]);
             $this->notifier->cancelled($event->refresh());
 
             if ($applyToFuture) {
                 foreach ($this->futureOccurrences($event) as $occurrence) {
                     $this->events->cancel($occurrence, $reason);
+                    app(ClubResourceService::class)->releaseAll($occurrence, $actor);
                     $this->notifier->cancelled($occurrence->refresh());
                 }
             }
@@ -436,6 +444,7 @@ class ClubEventService {
                 'kind' => $details->kind->value,
                 'visibility' => $details->visibility->value,
                 'club_department_id' => $details->club_department_id,
+                'discipline' => $details->discipline,
                 'registration_lead_hours' => $details->registration_lead_hours,
                 'cancellation_lead_hours' => $details->cancellation_lead_hours,
             ],
@@ -533,6 +542,7 @@ class ClubEventService {
             'kind' => ClubEventKind::from((string) $data['kind'])->value,
             'visibility' => ClubEventVisibility::from((string) ($data['visibility'] ?? ClubEventVisibility::Groups->value))->value,
             'club_department_id' => $this->nullableInt($data['club_department_id'] ?? null),
+            'discipline' => $this->nullableString($data['discipline'] ?? null),
             'registration_lead_hours' => $this->nullableInt($data['registration_lead_hours'] ?? null),
             'cancellation_lead_hours' => $this->nullableInt($data['cancellation_lead_hours'] ?? null),
         ];

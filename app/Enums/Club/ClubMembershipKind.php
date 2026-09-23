@@ -27,6 +27,8 @@ enum ClubMembershipKind: string implements HasLabel {
     case Passive = 'passive';
     case Supporting = 'supporting';
     case Paused = 'paused';
+    // Gastspieler eines Partnervereins (MVP-852): ohne Beitrag, Login oder Gruppenmitgliedschaft.
+    case Guest = 'guest';
 
     public function label(): string {
         return (string) __('enums.club.membership-kind.' . $this->value);
@@ -38,6 +40,7 @@ enum ClubMembershipKind: string implements HasLabel {
             self::Passive => 'info',
             self::Supporting => 'secondary',
             self::Paused => 'warning',
+            self::Guest => 'ghost',
         };
     }
 }

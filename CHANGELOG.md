@@ -65,6 +65,154 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Vertretungen mit Recht „Nachrichten erhalten“. Ein Zustellprotokoll
   verhindert Doppelmeldungen bei Wiederholung und zeigt Zustellfehler am
   Termin; einen Gelesen-Status gibt es bewusst nicht. Hilfe ×5.
+- Vereinsverwaltung (Feature 159, MVP-846): **Optionales Graduierungsmodul**
+  (Vereinseinstellung, Recht `club.grading.manage`). Je Disziplin eine
+  Ordnung mit benannten, geordneten Graden und versionierten Voraussetzungen
+  als UND-Liste: Vorgrad, Mindestanwesenheit in Minuten oder Terminen,
+  Zählzeitraum (seit Vorgrad, seit Eintritt, festes Fenster), Wartezeit in
+  Kalendermonaten ohne Überlauf, Mindestalter am Prüfungstag, Pflichtlehrgang
+  als bestätigter Nachweis, fachliche Freigabe. Die Zulassungsprüfung zählt
+  nur bestätigte Anwesenheit vor Prüfungsbeginn in der passenden Disziplin
+  und zeigt erfüllte und fehlende Punkte samt Fortschritt („18 Stunden
+  45 Minuten von 20 Stunden; noch 1 Stunde 15 Minuten“), unabhängig vom
+  Zeitraum der Kopfzeile. Anerkennung mitgebrachter Grade mit Datum und Beleg,
+  Widerruf als begründeter Vorgang, Lehrgangs- und externe Trainingsnachweise
+  (letztere nur, wenn die Regelversion sie erlaubt). Gruppen können Mindest-
+  und Höchstgrad einer Ordnung verlangen; ohne gültigen Grad kein Zugang, ein
+  neuer Grad erzeugt einen Wechselvorschlag statt einer automatischen
+  Entfernung. Keine Verbandsregeln im Code; Hilfe ×5.
+- Vereinsverwaltung (Feature 159, MVP-847): **Prüfungen und Gradvergabe**.
+  Prüfungsangebote sind Termine der Art „Prüfung“ mit Ordnung, Zielgraden,
+  Prüfern und der beim Anlegen eingefrorenen Regelversion. Kandidaten legt die
+  Leitung an oder Mitglieder fragen sie aus „Mein Verein“ an: erfüllte
+  Voraussetzungen führen zur Zulassung mit Platz, fehlende bleiben Anfrage;
+  fachliche Freigabe und begründete Ausnahmezulassung (nur wenn die Regel sie
+  erlaubt) sind eigene Schritte, Zulassung und Platz getrennte Angaben. Am
+  Prüfungstag wird neu geprüft; Verschiebung oder Korrektur eines verwendeten
+  Nachweises markiert Kandidaten zur Überprüfung, entfernt aber niemanden.
+  Prüfer erfassen bestanden, nicht bestanden oder nicht angetreten — nur
+  „bestanden“ vergibt den Zielgrad, genau einmal und mit Verweis auf die
+  Prüfung; Fehlversuche ändern weder Grad noch Trainingszeit.
+  Graduierungsbescheinigung als PDF je gültigem Grad, Widerruf sichtbar
+  gedruckt. Recht `club.exams.examine`; Hilfe ×5.
+- Vereinsverwaltung (Feature 159, MVP-849): **Beitragstarife und
+  Beitragskonten** (Recht `club.fees.manage`, Rolle Buchhaltung). Frei
+  benennbare Tarife (Einzel- oder Familienbeitrag, optionale Altersgrenzen)
+  mit Sätzen je Gültigkeitsdatum: Rhythmus, Betrag, Abrechnungsanker,
+  Fälligkeit, Anteilsregel (volle Periode oder taggenau) und Aufnahmegebühr;
+  Abteilungszuschläge als eigene Positionen. Beitragskonten sind
+  Zahlungspflichtige im Kunden-/Debitorenstamm (bestehender Kunde oder neuer
+  Debitor), Mitglieder werden ausdrücklich mit Zeitraum, Tarif und optionalem
+  Nachlass zugeordnet — nie automatisch anhand E-Mail oder IBAN. Familientarif
+  ergibt genau eine Grundbeitragsposition je Konto und Periode. Befreiungen
+  und Ermäßigungen mit Zeitraum und Grund; eine Mitgliedschaftspause allein
+  erlässt nichts. Altersgrenzen erzeugen einen Wechselvorschlag, den die
+  Beitragsverwaltung mit Wirksamkeitsdatum bestätigt. Beitragsvorschau je
+  Abrechnungsmonat mit Berechnungsgrund und sichtbaren Fehlern; Forderungen
+  entstehen erst mit dem Beitragslauf (MVP-850). Keine Vereinssätze im Code;
+  Hilfe ×5.
+- Vereinsverwaltung (Feature 159, MVP-855): **Individual-, Wettkampf- und
+  Schießsport**. Wettkämpfe als Vereinstermin mit Disziplinen des
+  Sportartenprofils (Einheit und Vergleichsrichtung), Ort, Ausrichter,
+  Meldeschluss und optionaler Meldegebühr, die je Disziplin als eigene
+  Beitragsposition im Abrechnungsmonat entsteht. Meldungen je Disziplin
+  (Leitung oder Mitglied im Portal): ohne gültiges Startrecht „zur Klärung“
+  statt Ablehnung; Klärung mit Vermerk, Rückzug ohne Gebühr. Startrecht als
+  dokumentierte Prüfung mit Gültigkeit, je Sportart oder für alle; kein
+  Verbandsabgleich. Leistungen manuell mit Wert, Platzierung und Bezug zu
+  Training/Wettkampf, Einheit und Richtung eingefroren; Bestätigung als
+  eigener Schritt, Korrektur protokolliert und hebt sie auf; Bestleistung je
+  Disziplin nur aus bestätigten Werten — kleinere Zeit bzw. größere Weite
+  gewinnt je Disziplin. Nachweisliste aus bestätigten Anwesenheiten gegen vom
+  Verein konfigurierte Anforderungen (Anzahl je Zeitraum, Gruppe/Abteilung,
+  Terminart) mit CSV-Export — keine gesetzlichen Schwellen, keine
+  Waffenverwaltung. Standaufsicht als Pflichtrolle bei Schießsport-Terminen
+  (Hinweis). Hilfe ×5.
+- Vereinsverwaltung (Feature 159, MVP-854): **Reitbetrieb**. Schlankes
+  Pferdeprofil (Schul-/Privatpferd mit Besitzer, Kontakt, Reitgruppen,
+  Eignung, Einsatzgrenze je Tag, Ruhepuffer) auf einer Ressource der Art
+  „Pferd“ — Belegung, Ruhepuffer, Sperrzeiten und Eignungsfreigaben laufen
+  über die Sportstätten. Zuordnung Reiter–Pferd je Reitstunde durch die
+  Leitung (eigenes Pferd ausdrücklich, Privatpferd nur für die Besitzerin
+  bzw. den Besitzer): ein Pferd ist nie zeitgleich doppelt vergeben, gesperrte
+  Pferde sind nicht zuteilbar; fehlende Eignungsfreigabe und Einsatzgrenze
+  lassen sich nur ausdrücklich mit Begründung übergehen (protokolliert). Der
+  Ausfall eines Pferdes markiert betroffene Stunden zur Neuplanung und
+  benachrichtigt die Reitleitung; keine automatische Ersatzzuteilung.
+  Pferdeeinsatz in Minuten je Pferd, getrennt von der Reiteranwesenheit — ein
+  Pferdewechsel verdoppelt keine Trainingszeit. Portal zeigt das zugeordnete
+  Pferd. Hilfe ×5.
+- Vereinsverwaltung (Feature 159, MVP-853): **Sportstätten und Ressourcen**.
+  Hallen, Teilflächen (Hälfte, Drittel), Tische, Plätze, Bahnen/Stände,
+  Boote und Geräte als Ressourcenbaum mit gemeinsamer Konfliktprüfung: Die
+  Belegung der ganzen Halle sperrt alle Teilflächen und Tische darunter,
+  freie Teilflächen sind parallel nutzbar; Ressourcen mit mehreren Einheiten
+  (z. B. vier Bahnen) werden mengenweise belegt, Auf-/Abbaupuffer zählen
+  mit. Räume werden angebunden (Terminkalender und Ressourcenbelegung teilen
+  sich einen Kalender in beide Richtungen), Boote/Geräte an Assets — Sperren
+  des gemeinsamen Sperrmodells (neuer Grund „Wartung“) verhindern die
+  Belegung. Belegung je Termin/Spieltag prüft Kapazität, Baum, Raumkalender,
+  Sperrzeiten und Asset-Sperren in einer Transaktion mit Zeilensperren; zwei
+  konkurrierende Buchungen werden nie beide bestätigt. Verschiebung eines
+  Termins nimmt Belegungen mit, bei Konflikt bleibt alles beim Alten; Absage
+  gibt frei. Sperrzeiten (Witterung, Wartung) markieren bestehende
+  Belegungen zur Neuplanung statt sie zu löschen. Einweisungs-/
+  Eignungsfreigaben je Mitglied und Ressource, befristbar; fehlende Freigaben
+  werden am Termin angezeigt. Hilfe ×5.
+- Vereinsverwaltung (Feature 159, MVP-852): **Mannschaften und Spielbetrieb**.
+  Eine Sportart ist ein Sportartenprofil (Konfiguration statt Sonderfall):
+  Sportfamilie, Positionen, Kadergrößen Feld/Bank, Ergebnisformat (Tore,
+  Punkte je Abschnitt, Sätze), Einzel/Doppel, Stichtag der Altersklasse,
+  Disziplinen und Ressourcentypen. Gruppen werden zur Mannschaft mit Profil
+  (eigenes oder das der Abteilung) und Altersklasse; Alterskriterien gelten
+  am Stichtag innerhalb der Saison. Saisons und Saisonkader je Mannschaft
+  mit Gültigkeit, Trikot, Position und Spielstärke-Rang; Gastspieler eines
+  Partnervereins als Mitglied der Art „Gast“ mit Herkunft — ohne Beitrag,
+  Login oder Gruppenmitgliedschaft; Vorsaisons bleiben erhalten. Spieltage
+  als Vereinstermin mit Gegner, Wettbewerb, Heim/Auswärts, Spielort und
+  Treffzeit. Verfügbarkeit (Zusage ist keine Nominierung), Aufstellung im
+  Format des Profils mit Prüfung von Kadergrößen, Positionen, Trikots und
+  Paarungen — eine Person in Einzel und Doppel bleibt eine Person —,
+  Konfliktprüfung vor der Freigabe (zeitgleicher Einsatz in anderer
+  Mannschaft, Absage) mit begründetem Übergehen; Nominierte werden
+  Teilnehmer, Anwesenheit bleibt separat. Terminrollen (Schiedsrichter,
+  Zeitnehmer, Fahrdienst, Standaufsicht …) zählen als Teilnahme, nicht als
+  Kaderplatz. Ergebnis manuell im Profilformat mit Protokoll. Spielplan-
+  Import aus CSV/ICS als Vorschlagsliste: vor der Übernahme entsteht nichts,
+  bekannte Zeilen werden übersprungen, Dubletten zu bestehenden Spieltagen
+  markiert. „Mein Verein“ mit Zusage/Absage und eigener Nominierung.
+  Hilfe ×5.
+- Vereinsverwaltung (Feature 159, MVP-851): **Zahlungen und Einzug**.
+  Zahlungen sind eigene Buchungen je Beitragskonto (Überweisung, Bar, SEPA,
+  Sonstiges); ohne Forderung werden sie der Fälligkeit nach zugeordnet
+  (Familien-Sammelzahlung), ein Rest wird Guthaben und lässt sich verrechnen.
+  Der Bankabgleich kennt Beitragsforderungen als Zieltyp und erkennt eine
+  bereits gebuchte Zahlung gleicher Höhe wieder, statt sie doppelt
+  anzurechnen. Rücklastschriften kompensieren genau eine Zahlung, öffnen den
+  Restbetrag und sperren den erneuten Einzug bis zur Freigabe; Bankgebühren
+  werden Nachforderungen. Dreistufige Mahnung (Erinnerung, Mahnung, letzte
+  Mahnung) mit je gesetztem Zahlungsziel und Gebühr als Nachforderung, PDF und
+  Mail mit Zustellnachweis, Mahnsperre für strittige Forderungen. SEPA-Einzug
+  als Sammellauf über die vorhandenen Zahlungsläufe: Vorschlag mit Mandat,
+  Reservierung je Forderung mit eindeutiger Versuchsreferenz, Freigabe und
+  Export im Finanzmodul; der Export ist keine Zahlung, erst der gebuchte
+  Eingang. „Mein Verein“ zeigt zahlungspflichtigen Personen ihre
+  Beitragsmitteilungen, Zahlungen und offenen Beträge; Vertretungsrechte
+  reichen dafür nicht. Hilfe ×5.
+- Vereinsverwaltung (Feature 159, MVP-850): **Beitragslauf, Forderungen und
+  Beitragsmitteilung**. Ein Lauf friert die Vorschau eines Abrechnungsmonats
+  ein; Fehler sperren die Freigabe. Die Freigabe erzeugt je Beitragskonto
+  genau eine Forderung mit Positionen — Wiederholung, Nachholung und
+  paralleler Lauf erzeugen keine Doppelung, weil jede fachliche Quelle und
+  Periode nur einmal beansprucht werden kann (Unique-Schlüssel); spätere
+  Tarif- oder Familienwechsel verändern freigegebene Beträge nicht. Bei
+  extern geführter Abrechnung bleiben Vorschau und Übergabeliste (CSV)
+  möglich, die lokale Freigabe ist gesperrt. Beitragsmitteilung als PDF
+  (neue Dokumentart mit Fallback auf das Rechnungsdesign, Bankblock,
+  Zahlungsreferenz, konfigurierbarer Fußtext) mit E-Mail-Versand und
+  Zustellnachweis, getrennt von der Freigabe. Offene Posten mit
+  Überfälligkeit, Storno unbezahlter Forderungen mit Grund (Periode wird
+  frei) und verknüpfte Korrekturen statt Überschreiben. Hilfe ×5.
 - Kunden-Sonderkonditionen (Feature 098): **Monatsdetail in der Verwaltung**.
   Der Monat im Abrechnungspanel ist jetzt verlinkt und zeigt dieselben Zeilen
   wie Kundenportal und PDF-Nachweis (Datum, Tätigkeit, Von/Bis, Dauer,

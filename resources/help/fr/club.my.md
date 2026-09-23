@@ -19,3 +19,5 @@ related:
 **Mes présences :** Seul compte ce que l'encadrement a confirmé ; une inscription n'est pas un justificatif. Le total porte sur la période de l'en-tête, la liste montre chaque justificatif confirmé. Les absences d'autrui, les listes de membres et les coordonnées ne sont pas visibles ici.
 
 **Messages :** Rappels, reports, annulations et places attribuées vous parviennent via votre compte utilisateur (selon les règles de notification de l'organisation), sinon via l'adresse e-mail enregistrée ; de même pour les représentants disposant du droit « recevoir des messages ». Chaque message n'est envoyé qu'une fois, les échecs d'envoi sont visibles par l'administration au rendez-vous. Un message ne vaut pas lecture.
+
+**Mes cotisations :** Si vous êtes enregistré comme personne redevable d'un compte de cotisation, vous voyez vos avis (aussi en PDF), échéances, paiements enregistrés, avoir et montants ouverts. Un prélèvement exporté ne vaut payé qu'une fois le crédit enregistré. Les droits de représentation pour les inscriptions ne suffisent pas — la gestion des cotisations fixe la personne redevable explicitement.

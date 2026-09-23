@@ -142,6 +142,13 @@ class ClubEventController extends Controller {
             'canParticipants' => Gate::allows('manageParticipants', $details),
             // Zustellprotokoll (MVP-845): Fehler sichtbar, kein Gelesen-Status.
             'clubNotifications' => $event->clubNotifications()->with('member:id,first_name,last_name')->orderByDesc('id')->limit(50)->get(),
+            // Ressourcen (MVP-853): Belegungen und fehlende Freigaben.
+            'resourceBookings' => \App\Models\Club\ClubResourceBooking::query()->where('event_id', $event->id)->with(['resource:id,name,parent_id,kind', 'member:id,first_name,last_name'])->orderBy('starts_at')->get(),
+            // Reitbetrieb (MVP-854): Reiter–Pferd je Stunde, wenn der Verein Pferde führt.
+            'horseOptions' => app(\App\Services\Club\ClubHorseService::class)->horsesFor($event),
+            'riderRows' => \App\Models\Club\ClubHorse::query()->exists() ? app(\App\Services\Club\ClubHorseService::class)->ridersFor($event) : collect(),
+            'showHorses' => \App\Models\Club\ClubHorse::query()->exists(),
+            'missingClearances' => app(\App\Services\Club\ClubResourceService::class)->missingClearances($event),
             'isCancelled' => $event->cancelled_at !== null,
         ]);
     }

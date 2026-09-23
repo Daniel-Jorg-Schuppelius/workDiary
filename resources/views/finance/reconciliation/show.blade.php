@@ -226,8 +226,10 @@
                                                 $target = $suggestion['target'];
                                                 // Kundenkonto (Feature 098) als dritter Zieltyp neben Invoice/Expense.
                                                 $isAccount = $target instanceof \App\Models\Billing\CustomerBillingAgreement;
+                                                $isFee = $target instanceof \App\Models\Club\ClubFeeClaim;
                                                 $targetLabel = match (true) {
                                                     $target instanceof \App\Models\Invoice => $target->number,
+                                                    $isFee => __('club.fees.pdf.kind') . ' ' . $target->number . ' · ' . ($target->account?->name ?? ''),
                                                     $isAccount => __('customer-billing.panel_title') . ': ' . ($target->customer?->name ?? '#' . $target->customer_id),
                                                     default => __('bank.title.menu') . ' #' . $target->id,
                                                 };
@@ -245,7 +247,7 @@
                                                     </span>
                                                 </label>
                                                 <input type="hidden" name="allocations[{{ $index }}][type]"
-                                                       value="{{ $target instanceof \App\Models\Invoice ? 'invoice' : ($isAccount ? 'account' : 'expense') }}"
+                                                       value="{{ $target instanceof \App\Models\Invoice ? 'invoice' : ($isAccount ? 'account' : ($isFee ? 'fee' : 'expense')) }}"
                                                        :disabled="unpicked({{ $index }})">
                                                 <input type="hidden" name="allocations[{{ $index }}][id]" value="{{ $target->sqid }}"
                                                        :disabled="unpicked({{ $index }})">

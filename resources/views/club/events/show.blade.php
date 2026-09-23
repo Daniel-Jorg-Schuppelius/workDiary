@@ -49,6 +49,12 @@
                                     show-label>{{ __('club.events.action.cancel_event') }}</x-icon-btn>
                     @endunless
                 @endif
+                @if ($details->kind === \App\Enums\Club\ClubEventKind::Match)
+                    <x-icon-btn icon="sports_soccer" tone="outline" size="sm" :href="route('club.matches.show', $event)" show-label>{{ __('club.matches.action.open') }}</x-icon-btn>
+                @endif
+                @if ($details->kind === \App\Enums\Club\ClubEventKind::Competition)
+                    <x-icon-btn icon="emoji_events" tone="outline" size="sm" :href="route('club.competitions.show', $event)" show-label>{{ __('club.competitions.action.open') }}</x-icon-btn>
+                @endif
                 <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
                             :href="route('club.events.index')"
                             show-label>{{ __('club.action.back') }}</x-icon-btn>
@@ -147,6 +153,12 @@
         </div>
 
         <div class="space-y-4">
+            @if ($showHorses)
+                @include('club.events._horses_card', ['canParticipants' => $canParticipants])
+            @endif
+
+            @include('club.events._resources_card', ['canParticipants' => $canParticipants])
+
             <x-card :title="__('club.events.card.details')" icon="info">
                 <x-detail-grid>
                     <x-detail-grid.row :label="__('club.events.field.kind')" :value="$details->kind->label()" />

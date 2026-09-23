@@ -19,3 +19,5 @@ related:
 **Le mie presenze:** Conta solo ciò che la direzione ha confermato; un'iscrizione non è un'attestazione. La somma si riferisce al periodo dell'intestazione, l'elenco mostra ogni attestazione confermata. Assenze di altri, elenchi di soci altrui o dati di contatto non sono visibili qui.
 
 **Messaggi:** Promemoria, spostamenti, annullamenti e posti assegnati la raggiungono tramite il suo account utente (secondo le regole di notifica dell'organizzazione), altrimenti tramite l'indirizzo e-mail registrato; lo stesso vale per i rappresentanti con il diritto «ricevere messaggi». Ogni messaggio viene consegnato una sola volta; gli errori di consegna sono visibili all'amministrazione presso l'appuntamento. Un messaggio non vale come letto.
+
+**Le mie quote:** Se è registrato come persona obbligata al pagamento di un conto quote, vede i suoi avvisi (anche in PDF), scadenze, pagamenti registrati, credito e importi aperti. Un addebito esportato vale come pagato solo quando l'accredito è registrato. I diritti di rappresentanza per le iscrizioni non bastano: la gestione quote fissa esplicitamente la persona obbligata al pagamento.

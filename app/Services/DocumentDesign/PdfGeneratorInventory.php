@@ -59,6 +59,10 @@ final class PdfGeneratorInventory {
         'app/Services/Learning/LearningReportCardPdfRenderer.php' => ['certificate'],
         'app/Services/Learning/LearningDossierPdfRenderer.php' => ['report'],
         'app/Services/Learning/LearningAttendanceListPdfRenderer.php' => ['report'],
+        // Vereinsverwaltung (Feature 159, MVP-847): Graduierungsbescheinigung — dieselbe Dokumentart wie das Zertifikat.
+        'app/Services/Club/ClubGradeCertificatePdfRenderer.php' => ['certificate'],
+        // Beitragsmitteilung (MVP-850): eigene Dokumentart, Fallback auf das Rechnungsdesign.
+        'app/Services/Club/ClubFeeNoticePdfRenderer.php' => ['fee_notice'],
         'app/Services/Timesheet/PdfRenderer.php' => ['timesheet'],
         'app/Services/Form/FormSubmissionPdfRenderer.php' => ['form'],
         'app/Http/Controllers/Reporting/Concerns/RendersReportPdf.php' => ['report'],

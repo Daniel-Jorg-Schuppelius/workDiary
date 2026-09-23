@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Club;
 
 use App\Enums\Club\{ClubCriteriaResult, ClubGroupMembershipStatus, ClubProposalStatus};
-use App\Models\Club\{ClubGroup, ClubGroupChangeProposal, ClubGroupMembership, ClubMember};
+use App\Models\Club\{ClubGrade, ClubGradingSystem, ClubGroup, ClubGroupChangeProposal, ClubGroupMembership, ClubMember};
 use App\Models\{Organization, User};
 use App\Services\Concerns\AssertsStatusTransition;
 use App\Support\Query\DateRange;
@@ -32,21 +32,41 @@ use Illuminate\Validation\ValidationException;
 class ClubGroupService {
     use AssertsStatusTransition;
 
-    /** Alterskriterium am Stichtag: Grenzen inklusive, leere Grenze offen, ohne Geburtsdatum Prüfung nötig. */
+    /**
+     * Kriterien am Stichtag: Alter (Grenzen inklusive, leere Grenze offen, ohne
+     * Geburtsdatum Prüfung nötig) und Grad (MVP-846: gültiger Grad der Ordnung
+     * der Gruppe im Rangbereich; unbekannter Grad gewährt keinen Zugang).
+     */
     public function evaluate(ClubGroup $group, ClubMember $member, CarbonInterface $on): ClubCriteriaResult {
-        if (! $group->hasAgeCriteria()) {
-            return ClubCriteriaResult::Met;
+        if ($group->hasAgeCriteria()) {
+            // Mannschaften prüfen das Alter am Stichtag des Sportartenprofils innerhalb der Saison (MVP-852).
+            $age = $member->ageOn(app(ClubTeamService::class)->ageReferenceDate($group, $on));
+            if ($age === null) {
+                return ClubCriteriaResult::ReviewRequired;
+            }
+            if ($group->min_age !== null && $age < $group->min_age) {
+                return ClubCriteriaResult::AgeBelow;
+            }
+            if ($group->max_age !== null && $age > $group->max_age) {
+                return ClubCriteriaResult::AgeAbove;
+            }
         }
 
-        $age = $member->ageOn($on);
-        if ($age === null) {
-            return ClubCriteriaResult::ReviewRequired;
-        }
-        if ($group->min_age !== null && $age < $group->min_age) {
-            return ClubCriteriaResult::AgeBelow;
-        }
-        if ($group->max_age !== null && $age > $group->max_age) {
-            return ClubCriteriaResult::AgeAbove;
+        if ($group->hasGradeCriteria()) {
+            $system = $group->gradingSystem;
+            $current = $system instanceof ClubGradingSystem ? app(ClubGradingService::class)->currentGrade($member, $system, $on) : null;
+            $rank = $current?->grade?->rank;
+            if ($rank === null) {
+                return ClubCriteriaResult::GradeUnknown;
+            }
+            $min = $group->minGrade;
+            $max = $group->maxGrade;
+            if ($min instanceof ClubGrade && $rank < $min->rank) {
+                return ClubCriteriaResult::GradeBelow;
+            }
+            if ($max instanceof ClubGrade && $rank > $max->rank) {
+                return ClubCriteriaResult::GradeAbove;
+            }
         }
 
         return ClubCriteriaResult::Met;
@@ -201,12 +221,13 @@ class ClubGroupService {
      *
      * @return int neu angelegte Vorschläge
      */
-    public function refreshProposals(Organization $organization, ?CarbonInterface $today = null): int {
+    public function refreshProposals(Organization $organization, ?CarbonInterface $today = null, ?ClubMember $only = null): int {
         $day = CarbonImmutable::instance($today ?? CarbonImmutable::today())->startOfDay();
         $created = 0;
 
         $memberships = ClubGroupMembership::query()
             ->where('organization_id', $organization->id)
+            ->when($only !== null, fn(Builder $query) => $query->where('club_member_id', $only?->id))
             ->where('status', ClubGroupMembershipStatus::Active->value)
             ->where('valid_from', '<', DateRange::dayAfter($day))
             ->where(function (Builder $query) use ($day): void {
@@ -214,7 +235,7 @@ class ClubGroupService {
             })
             ->whereHas('group', function (Builder $query): void {
                 $query->where('is_active', true)->where(function (Builder $inner): void {
-                    $inner->whereNotNull('min_age')->orWhereNotNull('max_age');
+                    $inner->whereNotNull('min_age')->orWhereNotNull('max_age')->orWhereNotNull('min_grade_id')->orWhereNotNull('max_grade_id');
                 });
             })
             ->with(['group', 'member'])
@@ -346,7 +367,7 @@ class ClubGroupService {
             ->whereKeyNot($current->id)
             ->where('club_department_id', $current->club_department_id)
             ->get()
-            ->filter(fn(ClubGroup $group): bool => $group->hasAgeCriteria()
+            ->filter(fn(ClubGroup $group): bool => $group->hasCriteria()
                 && $this->evaluate($group, $member, $day)->isMet()
                 && $group->hasCapacityOn($day));
 
@@ -437,6 +458,29 @@ class ClubGroupService {
             throw ValidationException::withMessages(['leader_user_id' => __('club.error.user_foreign')]);
         }
 
+        $systemId = $this->nullableInt($attributes['club_grading_system_id'] ?? null);
+        $minGradeId = $this->nullableInt($attributes['min_grade_id'] ?? null);
+        $maxGradeId = $this->nullableInt($attributes['max_grade_id'] ?? null);
+        if ($systemId === null) {
+            $minGradeId = null;
+            $maxGradeId = null;
+        } else {
+            $grades = ClubGrade::query()->whereIn('id', array_filter([$minGradeId, $maxGradeId]))->where('club_grading_system_id', $systemId)->get()->keyBy('id');
+            if (($minGradeId !== null && ! $grades->has($minGradeId)) || ($maxGradeId !== null && ! $grades->has($maxGradeId))) {
+                throw ValidationException::withMessages(['min_grade_id' => __('club.grading.error.grade_foreign')]);
+            }
+            $minGrade = $minGradeId !== null ? $grades->get($minGradeId) : null;
+            $maxGrade = $maxGradeId !== null ? $grades->get($maxGradeId) : null;
+            if ($minGrade !== null && $maxGrade !== null && $minGrade->rank > $maxGrade->rank) {
+                throw ValidationException::withMessages(['max_grade_id' => __('club.grading.error.grade_range')]);
+            }
+        }
+
+        $profileId = $this->nullableInt($attributes['club_sport_profile_id'] ?? null);
+        if ($profileId !== null && ! \App\Models\Club\ClubSportProfile::query()->whereKey($profileId)->where('organization_id', $organizationId)->exists()) {
+            throw ValidationException::withMessages(['club_sport_profile_id' => __('club.teams.error.profile_foreign')]);
+        }
+
         $mode = $attributes['admission_mode'] ?? null;
         $mode = $mode instanceof \App\Enums\Club\ClubAdmissionMode ? $mode : \App\Enums\Club\ClubAdmissionMode::tryFrom((string) $mode);
 
@@ -450,6 +494,13 @@ class ClubGroupService {
             'min_age' => $minAge,
             'max_age' => $maxAge,
             'criteria_note' => $this->nullableString($attributes['criteria_note'] ?? null),
+            'discipline' => $this->nullableString($attributes['discipline'] ?? null),
+            'club_grading_system_id' => $systemId,
+            'min_grade_id' => $minGradeId,
+            'max_grade_id' => $maxGradeId,
+            'is_team' => (bool) ($attributes['is_team'] ?? false),
+            'club_sport_profile_id' => $profileId,
+            'age_class' => $this->nullableString($attributes['age_class'] ?? null),
             'is_active' => (bool) ($attributes['is_active'] ?? true),
         ];
     }

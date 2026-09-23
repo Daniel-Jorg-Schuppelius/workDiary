@@ -586,8 +586,17 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(\App\Models\Club\ClubGroupChangeProposal::class, \App\Policies\Club\ClubGroupChangeProposalPolicy::class);
         Gate::policy(\App\Models\Club\ClubEventDetails::class, \App\Policies\Club\ClubEventDetailsPolicy::class);
         Gate::policy(\App\Models\Club\ClubAttendanceSheet::class, \App\Policies\Club\ClubAttendanceSheetPolicy::class);
+        Gate::policy(\App\Models\Club\ClubGradingSystem::class, \App\Policies\Club\ClubGradingSystemPolicy::class);
+        Gate::policy(\App\Models\Club\ClubExamOffer::class, \App\Policies\Club\ClubExamOfferPolicy::class);
+        Gate::policy(\App\Models\Club\ClubFeeAccount::class, \App\Policies\Club\ClubFeeAccountPolicy::class);
+        Gate::policy(\App\Models\Club\ClubSportProfile::class, \App\Policies\Club\ClubSportProfilePolicy::class);
+        Gate::policy(\App\Models\Club\ClubResource::class, \App\Policies\Club\ClubResourcePolicy::class);
+        Gate::policy(\App\Models\Club\ClubHorse::class, \App\Policies\Club\ClubHorsePolicy::class);
+        Gate::policy(\App\Models\Club\ClubPerformance::class, \App\Policies\Club\ClubPerformancePolicy::class);
+        Gate::policy(\App\Models\Club\ClubAttendanceRequirement::class, \App\Policies\Club\ClubAttendanceRequirementPolicy::class);
         // „Mein Verein“ (MVP-845): verknüpftes Mitglied oder aktive Vertretung — unabhängig von club.*-Rechten.
-        Gate::define('club-my', static fn(\App\Models\User $user): bool => app(\App\Services\Club\ClubPortalContext::class)->hasSubjects($user));
+        Gate::define('club-my', static fn(\App\Models\User $user): bool => app(\App\Services\Club\ClubPortalContext::class)->hasSubjects($user)
+            || \App\Models\Club\ClubFeeAccount::query()->where('user_id', $user->id)->exists());
 
         // Provisionen (Feature 146).
         Gate::policy(\App\Models\Sales\CommissionRule::class, \App\Policies\Sales\CommissionRulePolicy::class);

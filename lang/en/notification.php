@@ -101,6 +101,7 @@ return [
         'club_event_rescheduled' => '“:title” (:name) was rescheduled — new start :date, previously :previous.',
         'club_event_cancelled' => '“:title” on :date (:name) was cancelled.',
         'club_waitlist_promoted' => 'A seat became available for “:title” on :date — :name is registered.',
+        'club_horse_unavailable' => 'Horse “:horse” is unavailable (:reason): “:title” on :date with :rider needs a new assignment.',
         'learning_booking_confirmed' => 'Your booking for the course “:course” has been confirmed.',
         'learning_booking_rejected' => 'Your booking for the course “:course” has been declined.',
         'learning_time_approval_requested' => ':name recorded :minutes minutes of learning time for “:course” outside working hours — approval needed.',

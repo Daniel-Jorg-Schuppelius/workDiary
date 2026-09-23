@@ -131,6 +131,96 @@
         </div>
 
         <div class="space-y-4">
+            @if ($canViewFees)
+                {{-- Beitrag (MVP-849): aktuelle Zuordnung; Details am Beitragskonto. --}}
+                <x-card :title="__('club.fees.card.member_fee')" icon="payments">
+                    @if ($feeAssignment)
+                        <p class="text-sm"><strong>{{ $feeAssignment->tariff?->name }}</strong> <span class="text-xs text-muted">{{ $feeAssignment->valid_from->format('d.m.Y') }} – {{ $feeAssignment->valid_to?->format('d.m.Y') ?? __('club.label.open_end') }}</span></p>
+                        @if ($feeAssignment->account)
+                            <a href="{{ route('club.fees.accounts.show', $feeAssignment->account) }}" class="link link-primary text-sm">{{ $feeAssignment->account->name }}</a>
+                        @endif
+                    @else
+                        <p class="text-sm text-muted">{{ __('club.fees.label.no_assignment') }}</p>
+                    @endif
+                </x-card>
+            @endif
+
+            @if ($gradingEnabled)
+                {{-- Graduierung (MVP-846): gültige Grade, Details und Voraussetzungen auf eigener Seite. --}}
+                <x-card :title="__('club.grading.title.member')" icon="military_tech" :count="$memberGrades->count()">
+                    <ul class="space-y-1 text-sm">
+                        @forelse ($memberGrades as $memberGrade)
+                            <li><span class="font-medium">{{ $memberGrade->grade?->name }}</span> <span class="text-xs text-muted">{{ $memberGrade->system?->discipline }} · {{ $memberGrade->obtained_on->format('d.m.Y') }}</span></li>
+                        @empty
+                            <li class="text-muted">{{ __('club.grading.label.no_grade') }}</li>
+                        @endforelse
+                    </ul>
+                    <a href="{{ route('club.members.grading', $member) }}" class="link link-primary mt-2 inline-block text-sm">{{ __('club.grading.action.open_member') }}</a>
+                </x-card>
+            @endif
+
+            @if ($hasProfiles || $performances->isNotEmpty() || $startRights->isNotEmpty())
+                {{-- Wettkampf (MVP-855): Bestleistungen nur aus bestätigten Werten; Startrecht als dokumentierte Prüfung. --}}
+                <x-card :title="__('club.competitions.card.performances')" icon="timer" :count="$performances->count()">
+                    @if ($bests->isNotEmpty())
+                        <ul class="mb-2 space-y-1 text-sm">
+                            @foreach ($bests as $best)
+                                <li><span class="font-medium">{{ $best->discipline_code }}</span> {{ $best->formattedValue() }} <span class="text-xs text-muted">{{ $best->profile?->name }} · {{ $best->performed_on->format('d.m.Y') }} · {{ __('club.competitions.label.best') }}</span></li>
+                            @endforeach
+                        </ul>
+                    @endif
+                    <ul class="space-y-1 text-sm">
+                        @forelse ($performances as $performance)
+                            <li class="flex flex-wrap items-center gap-2">
+                                <span class="tabular-nums">{{ $performance->performed_on->format('d.m.Y') }}</span>
+                                <span>{{ $performance->discipline_code }} {{ $performance->formattedValue() }}@if ($performance->placement) · {{ __('club.competitions.label.place', ['no' => $performance->placement]) }}@endif</span>
+                                @if ($performance->event)<span class="text-xs text-muted">{{ $performance->event->title }}</span>@endif
+                                @if ($performance->isConfirmed())
+                                    <x-status-badge tone="success" size="xs" :label="__('club.competitions.label.confirmed')" />
+                                @else
+                                    <x-status-badge tone="warning" size="xs" :label="__('club.competitions.label.unconfirmed')" />
+                                    @if ($canRecordPerformance)
+                                        <x-action-form :action="route('club.members.performances.confirm', [$member, $performance])" class="inline">
+                                            <x-icon-btn type="submit" icon="check" tone="ghost" size="xs" :label="__('club.competitions.action.confirm')" />
+                                        </x-action-form>
+                                    @endif
+                                @endif
+                                @if ($canRecordPerformance)
+                                    <x-icon-btn icon="edit" tone="ghost" size="xs" data-entry-modal-trigger :href="route('club.members.performances.edit', [$member, $performance])" :label="__('club.competitions.action.correct_performance')" />
+                                @endif
+                            </li>
+                        @empty
+                            <li class="text-muted">{{ __('club.competitions.empty.performances') }}</li>
+                        @endforelse
+                    </ul>
+                    @if ($canRecordPerformance && $hasProfiles)
+                        <div class="mt-2"><x-icon-btn icon="add" tone="outline" size="xs" data-entry-modal-trigger :href="route('club.members.performances.create', $member)" show-label>{{ __('club.competitions.action.record_performance') }}</x-icon-btn></div>
+                    @endif
+                </x-card>
+
+                <x-card :title="__('club.competitions.card.start_rights')" icon="badge" :count="$startRights->count()">
+                    <ul class="space-y-1 text-sm">
+                        @forelse ($startRights as $right)
+                            <li class="flex flex-wrap items-center gap-2 {{ $right->isValidOn($today) ? '' : 'opacity-60' }}">
+                                <span class="font-medium">{{ $right->profile?->name ?? __('club.competitions.label.all_profiles') }}</span>
+                                @if ($right->reference)<span class="font-mono text-xs">{{ $right->reference }}</span>@endif
+                                <span class="text-xs text-muted">{{ $right->valid_from->format('d.m.Y') }}@if ($right->valid_to) – {{ $right->valid_to->format('d.m.Y') }}@endif</span>
+                                @if ($canGrantStartRight)
+                                    <x-action-form :action="route('club.members.startrights.destroy', [$member, $right])" method="DELETE" class="ml-auto">
+                                        <x-icon-btn type="submit" icon="close" tone="ghost" size="xs" :label="__('club.competitions.action.revoke_start_right')" />
+                                    </x-action-form>
+                                @endif
+                            </li>
+                        @empty
+                            <li class="text-muted">{{ __('club.competitions.empty.start_rights') }}</li>
+                        @endforelse
+                    </ul>
+                    <p class="mt-2 text-xs text-muted">{{ __('club.competitions.hint.start_right') }}</p>
+                    @if ($canGrantStartRight)
+                        <div class="mt-2"><x-icon-btn icon="add" tone="outline" size="xs" data-entry-modal-trigger :href="route('club.members.startrights.create', $member)" show-label>{{ __('club.competitions.action.grant_start_right') }}</x-icon-btn></div>
+                    @endif
+                </x-card>
+            @endif
             <x-card :title="__('club.card.guardians')" icon="family_restroom" :count="$member->guardians->count()">
                 @if ($canManage && ! $hasLeft)
                     <div class="mb-3">

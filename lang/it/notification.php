@@ -101,6 +101,7 @@ return [
         'club_event_rescheduled' => '«:title» (:name) è stato spostato — nuovo inizio :date, prima :previous.',
         'club_event_cancelled' => '«:title» del :date (:name) è stato annullato.',
         'club_waitlist_promoted' => 'Si è liberato un posto per «:title» il :date — :name è iscritto/a.',
+        'club_horse_unavailable' => 'Il cavallo «:horse» non è disponibile (:reason): «:title» il :date con :rider richiede una nuova assegnazione.',
         'learning_booking_confirmed' => 'La sua prenotazione per il corso «:course» è stata confermata.',
         'learning_booking_rejected' => 'La sua prenotazione per il corso «:course» è stata rifiutata.',
         'learning_time_approval_requested' => ':name ha registrato :minutes minuti di apprendimento per «:course» fuori dall’orario di lavoro — serve l’approvazione.',

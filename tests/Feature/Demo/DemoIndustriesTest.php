@@ -56,6 +56,8 @@ final class DemoIndustriesTest extends TestCase {
             'taxi-mietwagen' => [DemoIndustry::TaxiMietwagen, 'taxi-mietwagen', 'personenfahrt', 'TX_FAHRTAUFTRAG_ANNAHME', '#vorbestellung', 'Krankenfahrt', 'Taxi MU-TX'],
             'veranstalter' => [DemoIndustry::Veranstalter, 'veranstalter', 'durchfuehrung', 'VA_GENEHMIGUNGEN', '#genehmigung', 'Stadtfest', 'Mobile Bühne'],
             'veranstaltungstechnik' => [DemoIndustry::Veranstaltungstechnik, 'veranstaltungstechnik', 'aufbau', 'VT_SOUNDCHECK', '#ton', 'Konferenz', 'Line-Array'],
+            // Musterbranche 20 (MVP-848).
+            'verein' => [DemoIndustry::Verein, 'verein', 'veranstaltung', 'VE_SPORTFEST', '#sportfest', 'Sportfest', 'Vereinsbus'],
         ];
     }
 
@@ -70,7 +72,7 @@ final class DemoIndustriesTest extends TestCase {
             $this->assertNotSame('', $industry->label());
             $this->assertStringContainsString('Muster', $industry->companyName());
         }
-        $this->assertCount(19, DemoIndustry::all());
+        $this->assertCount(20, DemoIndustry::all());
     }
 
     /**

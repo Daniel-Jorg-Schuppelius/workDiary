@@ -16,7 +16,7 @@ use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\Club\ClubDepartmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
 /**
  * Abteilung/Sparte eines Vereins (MVP-842): bündelt Gruppen; `discipline`
@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $discipline
  * @property bool $is_active
  * @property int $sort_order
+ * @property int|null $club_sport_profile_id
  */
 class ClubDepartment extends Model {
     use Auditable;
@@ -46,6 +47,7 @@ class ClubDepartment extends Model {
         'name',
         'description',
         'discipline',
+        'club_sport_profile_id',
         'is_active',
         'sort_order',
     ];
@@ -58,5 +60,10 @@ class ClubDepartment extends Model {
     /** @return HasMany<ClubGroup, $this> */
     public function groups(): HasMany {
         return $this->hasMany(ClubGroup::class)->orderBy('name');
+    }
+
+    /** @return BelongsTo<ClubSportProfile, $this> */
+    public function sportProfile(): BelongsTo {
+        return $this->belongsTo(ClubSportProfile::class, 'club_sport_profile_id');
     }
 }
