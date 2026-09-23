@@ -447,7 +447,7 @@ Route::middleware('auth')->group(function () {
             });
 
         // ── Datenschutzmanagement (Feature 043, MVP 1) ──────────────────────
-        // Modul-Gate via module.datenschutz (config/plans.routes); Autorisierung
+        // Modul-Gate via module.datenschutz (Modul-Manifest); Autorisierung
         // pro Aktion ueber die Privacy-Policies (Rolle `datenschutz`).
         Route::prefix('compliance/datenschutz')->name('dataprotection.')->group(function (): void {
             // VVT (Verzeichnis von Verarbeitungstaetigkeiten)
@@ -573,7 +573,7 @@ Route::middleware('auth')->group(function () {
 
         // ── ISMS / ISO-27001-Auditbereitschaft (Feature 044 auf dem ───────
         // gemeinsamen Managementsystem-Kern aus Feature 046).
-        // Modul-Gate via module.isms (config/plans.routes, NUR Enterprise);
+        // Modul-Gate via module.isms (Modul-Manifeste, NUR Enterprise);
         // Autorisierung pro Aktion ueber die Isms-Policies (isms.viewAny/
         // view fuer Lesen+SoA, isms.manage fuer Pflege/Katalog-Import).
         Route::prefix('compliance/isms')->name('isms.')->group(function (): void {
@@ -1911,7 +1911,7 @@ Route::middleware('auth')->group(function () {
 
         // VOB/B-Schreiben (Feature 062, MVP-728): Behinderungsanzeige (§ 6)
         // und Bedenkenanmeldung (§ 4 Abs. 3). Modul-Gate: module.bau
-        // (construction-notices.* in config/plans.routes); Autorisierung über
+        // (construction-notices.* in Modul-Manifeste); Autorisierung über
         // die Projektrechte wie bei den Gewährleistungsfristen.
         Route::prefix('vobb-schreiben')->name('construction-notices.')->group(function (): void {
             Route::get('/', [\App\Http\Controllers\ConstructionNoticeController::class, 'index'])->name('index');
@@ -2126,7 +2126,7 @@ Route::middleware('auth')->group(function () {
         });
 
         // ── Domainverwaltung / DomainReselling (Feature 083, module.domain) ──
-        // Gating via config/plans.routes: admin.domain-provider.*/domains.*/domain-reseller.* → module.domain.
+        // Gating via Modul-Manifeste: admin.domain-provider.*/domains.*/domain-reseller.* → module.domain.
         Route::prefix('admin/domainreselling')->name('admin.domain-provider.')->group(function (): void {
             Route::get('/', [\App\Http\Controllers\Admin\Domain\DomainProviderConnectionController::class, 'index'])->name('index');
             Route::get('verbinden', [\App\Http\Controllers\Admin\Domain\DomainProviderConnectionController::class, 'create'])->name('create');
@@ -2139,7 +2139,7 @@ Route::middleware('auth')->group(function () {
         });
 
         // ── KI-Assistenz (Feature 025, MVP-400/401, module.ai) ──
-        // Gating via config/plans.routes: admin.ai.* → module.ai.
+        // Gating via Modul-Manifeste: admin.ai.* → module.ai.
         Route::prefix('admin/ki')->name('admin.ai.')->group(function (): void {
             Route::get('/', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'index'])->name('index');
             Route::get('verbinden', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'create'])->name('create');
@@ -2194,7 +2194,7 @@ Route::middleware('auth')->group(function () {
         });
 
         // ── KI-Leistungstexte an Belegen (Feature 084, module.ai) ──
-        // Gating via config/plans.routes: ai.suggestions.* → module.ai.
+        // Gating via Modul-Manifeste: ai.suggestions.* → module.ai.
         Route::prefix('ki/vorschlaege')->name('ai.suggestions.')->group(function (): void {
             // Statische Segmente VOR dem {suggestion}-Wildcard.
             Route::post('rechnungen/{invoice}', [\App\Http\Controllers\Ai\AiSuggestionController::class, 'invoiceAll'])->name('invoice-all');
@@ -2212,14 +2212,14 @@ Route::middleware('auth')->group(function () {
         });
 
         // ── KI-Tag-/Katalogvorschläge aus Freitext (Feature 143, MVP-711; JSON) ──
-        // Gating via config/plans.routes: ai.suggest.* → module.ai. Rate-Guard
+        // Gating via Modul-Manifeste: ai.suggest.* → module.ai. Rate-Guard
         // je Nutzer; das Budget prüft der AiInvocationService selbst.
         Route::prefix('ai/suggest')->name('ai.suggest.')->middleware('throttle:30,1')->group(function (): void {
             Route::post('tags', [\App\Http\Controllers\Ai\AiClassificationSuggestionController::class, 'tags'])->name('tags');
         });
 
         // ── KI-Assistenz Welle 2/3 (Feature 148, MVP-732, module.ai) ──
-        // Gating via config/plans.routes: ai.assist.* → module.ai. Rechte je
+        // Gating via Modul-Manifeste: ai.assist.* → module.ai. Rechte je
         // Einsatzstelle im Controller (Fach-Policy + ai.use).
         Route::prefix('ki/assistenz')->name('ai.assist.')->group(function (): void {
             // Statische Segmente VOR dem {suggestion}-Wildcard.

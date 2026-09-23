@@ -226,6 +226,8 @@ php artisan optimize:clear
 php artisan config:cache
 php artisan route:cache
 php artisan event:cache
+# Modul-Manifeste (MVP-861): Liste einmal einlesen statt je Request zu suchen.
+php artisan modules:cache
 
 echo "→ Queue-Worker neu starten (laufende Worker laden den neuen Code)"
 # Ohne Restart arbeiten dauerhaft laufende Worker (Supervisor/systemd) mit dem

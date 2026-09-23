@@ -183,7 +183,7 @@ $sanctumRoutes = static function (): void {
     // ── Read-only-Resources Kernentitäten (MVP-718, Vollscan J11) ──────────
     // Lesen bleibt bewusst read-first: Anlage/Statuswechsel laufen über die
     // Web-Workflows (GoBD, Freigaben). Plan-/Modul-Gating wie im Web über
-    // config('plans.routes') (api.articles.* → module.lager usw.).
+    // die Modul-Manifeste (api.articles.* → module.lager usw.).
     Route::get('articles', [ArticleApiController::class, 'index'])->middleware('ability:articles:read')->name('articles.index');
     Route::get('articles/{article}', [ArticleApiController::class, 'show'])->middleware('ability:articles:read')->name('articles.show');
     Route::get('articles/{article}/variants', [ArticleApiController::class, 'variants'])->middleware('ability:articles:read')->name('articles.variants');
@@ -201,7 +201,7 @@ $sanctumRoutes = static function (): void {
 
     // ── Lernplattform (Feature 149, MVP-791): lesend + Selbsteinschreibung ──
     // Abschluss, Bewertung und Nachweis bleiben Web-Workflows; Plan-Gating
-    // über config('plans.routes') (api.learning.* → module.lms).
+    // über die Modul-Manifeste (api.learning.* → module.lms).
     Route::get('learning/courses', [\App\Http\Controllers\Api\LearningApiController::class, 'courses'])->middleware('ability:learning:read')->name('learning.courses.index');
     Route::get('learning/courses/{course}', [\App\Http\Controllers\Api\LearningApiController::class, 'course'])->middleware('ability:learning:read')->name('learning.courses.show');
     Route::post('learning/courses/{course}/enroll', [\App\Http\Controllers\Api\LearningApiController::class, 'enroll'])->middleware('ability:learning:write')->name('learning.courses.enroll');

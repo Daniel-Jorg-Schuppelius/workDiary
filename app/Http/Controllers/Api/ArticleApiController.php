@@ -24,7 +24,7 @@ use OpenApi\Attributes as OA;
 /**
  * REST-API Artikel (MVP-718, Vollscan J11): read-only — Liste mit Filtern,
  * Detail inkl. Varianten, Varianten-Liste. Ability `articles:read`, Plan-Gating
- * `module.lager` (config plans.routes), ArticlePolicy wie im Web.
+ * `module.lager` (Modul-Manifest), ArticlePolicy wie im Web.
  */
 class ArticleApiController extends Controller {
     #[OA\Get(

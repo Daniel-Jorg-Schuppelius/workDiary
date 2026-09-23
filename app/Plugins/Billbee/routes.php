@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 
 /*
  * Billbee-Admin (MVP-433/434): Bestellspiegel + Sync — Muster JTL-Wawi
- * (Admin-Gate im Controller, Modul-Gating über plans.routes).
+ * (Admin-Gate im Controller, Modul-Gating über das Modul-Manifest).
  */
 Route::middleware(['web', 'auth', \App\Http\Middleware\EnforcePlanModules::class])
     ->prefix('admin/billbee')

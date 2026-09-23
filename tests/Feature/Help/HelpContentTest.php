@@ -188,7 +188,7 @@ class HelpContentTest extends TestCase {
         /** @var list<string> $validModules */
         $validModules = array_values(array_unique(array_map(
             'strval',
-            array_values((array) config('plans.routes', [])),
+            array_values($this->app->make(\App\Modules\ModuleRegistry::class)->routeMap()),
         )));
         $this->assertNotEmpty($validModules);
 

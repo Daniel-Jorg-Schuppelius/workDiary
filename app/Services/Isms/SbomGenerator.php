@@ -11,6 +11,7 @@
 namespace App\Services\Isms;
 
 use App\Plugins\PluginManager;
+use App\Services\Licensing\ModuleCatalog;
 use CommonToolkit\Helper\Data\JsonHelper;
 use CommonToolkit\Helper\FileSystem\File;
 use CommonToolkit\Helper\Shell;
@@ -39,7 +40,7 @@ class SbomGenerator {
      * @param  string|null  $composerLockJson  Inhalt von composer.lock (null ⇒ base_path)
      * @param  string|null  $packageLockJson  Inhalt von package-lock.json (null ⇒ base_path)
      * @param  list<array{id: string, name: string, version: string}>|null  $plugins  null ⇒ PluginManager
-     * @param  array<string, string>|null  $modules  Modul-Code ⇒ Label (null ⇒ config plans.labels)
+     * @param  array<string, string>|null  $modules  Modul-Code ⇒ Label (null ⇒ Modulkatalog aus den Manifesten)
      * @return array<string, mixed>
      */
     public function generate(
@@ -491,7 +492,7 @@ class SbomGenerator {
     /** @return array<string, string> */
     private function defaultModules(): array {
         /** @var array<string, string> $labels */
-        $labels = (array) config('plans.labels', []);
+        $labels = app(ModuleCatalog::class)->labels();
 
         return $labels;
     }

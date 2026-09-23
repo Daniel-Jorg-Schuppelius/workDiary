@@ -11,8 +11,8 @@
 namespace App\Services\Licensing;
 
 use App\Models\{LicenseFlagOverride, Organization};
+use App\Modules\ModuleRegistry;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
 
 /**
  * Löst Feature-Flags auf (MVP-047 §4 / Folge zu MVP-047).
@@ -34,7 +34,7 @@ class FeatureFlagResolver {
     /** @var array<string, bool>|null */
     private ?array $resolved = null;
 
-    public function __construct(private readonly LicenseService $licenses) {}
+    public function __construct(private readonly LicenseService $licenses, private readonly ModuleRegistry $modules) {}
 
     public function isEnabled(string $code): bool {
         $map = $this->resolve();
@@ -48,56 +48,13 @@ class FeatureFlagResolver {
     }
 
     /**
-     * Modul-Code, dem eine Route zugeordnet ist (config plans.routes), oder null,
-     * wenn die Route nicht gegatet ist (Core). Erste passende Regel gewinnt.
+     * Lizenzcode, dem eine Route zugeordnet ist (Manifeste, MVP-861), oder
+     * null, wenn die Route nicht gegatet ist (Core). Spezifischstes Muster
+     * gewinnt; die REST-API erbt die Zuordnung der gleichnamigen Web-Route
+     * (Sicherheitsscan 2026-08-23, S-12).
      */
     public function moduleForRoute(?string $routeName): ?string {
-        if ($routeName === null) {
-            return null;
-        }
-        /** @var array<string, string> $map */
-        $map = (array) config('plans.routes', []);
-
-        foreach ($this->routeNameVariants($routeName) as $candidate) {
-            foreach ($map as $pattern => $module) {
-                if (Str::is($pattern, $candidate)) {
-                    return (string) $module;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Die REST-API erbt die Modulzuordnung der gleichnamigen Web-Route
-     * (Sicherheitsscan 2026-08-23, S-12).
-     *
-     * `config('plans.routes')` ordnet Namenspräfixe einem Modul zu — bis 2026-08-31
-     * nur für die Oberfläche. Über einen Sanctum-Token blieb ein nicht gebuchtes
-     * Modul damit nutzbar, obwohl die Weboberfläche es mit 423 verweigerte.
-     *
-     * Abgeleitet statt gespiegelt: 70 zusätzliche Einträge in der Konfiguration
-     * wären dieselbe Aussage ein zweites Mal — und liefen beim nächsten neuen
-     * Modul auseinander. Welcher Bereich zu welchem Modul gehört, ist eine
-     * fachliche Entscheidung; dass die API demselben Zuschnitt folgt, ist keine.
-     *
-     * Bereiche ohne Web-Zuordnung (Tagebuch, Aufgaben, Anwesenheit, Stoppuhr …)
-     * bleiben auch hier ungegated — sie sind Kern, nicht Modul.
-     *
-     * @return list<string>
-     */
-    private function routeNameVariants(string $routeName): array {
-        $variants = [$routeName];
-
-        foreach (['api.legacy.', 'api.'] as $prefix) {
-            if (str_starts_with($routeName, $prefix)) {
-                $variants[] = substr($routeName, strlen($prefix));
-                break;
-            }
-        }
-
-        return $variants;
+        return $this->modules->moduleForRoute($routeName);
     }
 
     /** Ist die Route fuer den aktuellen Plan/Lizenz erreichbar? (Core-Routen immer.) */
@@ -183,9 +140,11 @@ class FeatureFlagResolver {
         // wirksam, wenn seine Voraussetzung aktiv ist (z. B. service_desk
         // setzt helpdesk voraus) — greift NACH allen Overrides, damit auch
         // ein deaktiviertes Basis-Modul das abhängige mitzieht.
-        foreach ((array) config('plans.requires', []) as $module => $requirement) {
-            if (($map[$module] ?? false) === true && ($map[(string) $requirement] ?? false) !== true) {
-                $map[$module] = false;
+        foreach ($this->modules->licenseRequirements() as $module => $requirements) {
+            foreach ($requirements as $requirement) {
+                if (($map[$module] ?? false) === true && ($map[$requirement] ?? false) !== true) {
+                    $map[$module] = false;
+                }
             }
         }
 

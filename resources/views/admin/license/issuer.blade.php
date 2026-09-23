@@ -107,7 +107,7 @@
                     @foreach ($moduleCodes as $code)
                         <label class="label cursor-pointer justify-start gap-2 py-0.5">
                             <input type="checkbox" name="addons[]" value="{{ $code }}" class="checkbox checkbox-xs" @checked(in_array($code, $oldAddons, true))>
-                            <span class="text-sm">{{ config('plans.labels')[$code] ?? $code }}</span>
+                            <span class="text-sm">{{ app(\App\Services\Licensing\ModuleCatalog::class)->labels()[$code] ?? $code }}</span>
                         </label>
                     @endforeach
                 </div>

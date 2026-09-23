@@ -14,7 +14,7 @@ namespace App\Http\Middleware;
 
 use App\Enums\Licensing\ModuleStatus;
 use App\Models\Organization;
-use App\Services\Licensing\{FeatureFlagResolver, ModuleStatusResolver};
+use App\Services\Licensing\{FeatureFlagResolver, ModuleCatalog, ModuleStatusResolver};
 use Closure;
 use Illuminate\Http\{JsonResponse, Request};
 use Symfony\Component\HttpFoundation\Response;
@@ -23,7 +23,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 /**
  * Hartes Modul-Gating: sperrt Routen, deren Modul der aktuelle Plan/Lizenz
  * nicht enthaelt ODER die Organisation lokal deaktiviert hat (MVP-052). Die
- * Map liegt in config('plans.routes'). Nicht gelistete Routen gelten als Core.
+ * Zuordnung liefern die Modul-Manifeste (MVP-861). Nicht gelistete Routen gelten als Core.
  * HTML-Aufrufer erhalten 423 (→ errors/423-Upsell), API-Aufrufer ein JSON.
  * Die Meldung unterscheidet „nicht lizenziert" von „org-deaktiviert".
  */
@@ -63,7 +63,7 @@ class EnforcePlanModules {
     }
 
     private function deny(Request $request, string $module, ?ModuleStatus $status): Response {
-        $label = (string) (config('plans.labels')[$module] ?? $module);
+        $label = app(ModuleCatalog::class)->label($module);
 
         // MVP-052 Akzeptanz 4: unterscheidbare deutsche Meldung.
         if ($status === ModuleStatus::InactiveByCustomer) {

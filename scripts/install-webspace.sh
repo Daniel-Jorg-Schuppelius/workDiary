@@ -246,6 +246,7 @@ if [[ "$SKIP_CACHE" -eq 0 ]]; then
     php artisan config:cache
     php artisan route:cache
     php artisan event:cache
+php artisan modules:cache
 fi
 
 log "Starte Queue-Worker neu, falls vorhanden"

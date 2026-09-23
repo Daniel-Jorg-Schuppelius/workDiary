@@ -43,6 +43,13 @@ use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider {
     public function register(): void {
+        // Modulregister (MVP-861): Manifeste unter app/Modules/Manifests, optional
+        // gecacht (modules:cache) — Quelle für Routen-Gate, Navigation, Katalog.
+        $this->app->singleton(\App\Modules\ModuleRegistry::class, static fn ($app): \App\Modules\ModuleRegistry => new \App\Modules\ModuleRegistry(
+            $app->path('Modules/Manifests'),
+            $app->bootstrapPath('cache/modules.php'),
+        ));
+
         // Wetterprovider (Feature 062): je Org über Setting `weather.provider`
         // aufgelöst. Org-Kontext muss VOR der Container-Auflösung gebunden sein
         // (vgl. FetchProtocolWeatherJob).

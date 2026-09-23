@@ -67,7 +67,7 @@
                         </p>
                         <div class="mt-2 flex flex-wrap gap-1">
                             @foreach ($recommendation['modules'] as $code)
-                                <span class="badge badge-outline badge-sm">{{ __((string) (config('plans.labels')[$code] ?? $code)) }}</span>
+                                <span class="badge badge-outline badge-sm">{{ __((string) (app(\App\Services\Licensing\ModuleCatalog::class)->labels()[$code] ?? $code)) }}</span>
                             @endforeach
                         </div>
                     </div>

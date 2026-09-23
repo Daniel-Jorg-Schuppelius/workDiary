@@ -12,7 +12,7 @@ namespace App\Services\Release;
 
 use App\Plugins\PluginManager;
 use App\Services\Isms\SbomGenerator;
-use App\Services\Licensing\FeatureFlagResolver;
+use App\Services\Licensing\{FeatureFlagResolver, ModuleCatalog};
 use App\Services\Licensing\{LicenseSeal, LicenseService};
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use CommonToolkit\Helper\FileSystem\File;
@@ -130,7 +130,7 @@ class ReleaseManifestService {
      */
     private function modules(): array {
         /** @var array<string, string> $labels */
-        $labels = (array) config('plans.labels', []);
+        $labels = app(ModuleCatalog::class)->labels();
 
         $modules = [];
         foreach ($labels as $code => $label) {

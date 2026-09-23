@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Plans;
 
 use App\Models\PlanModuleGrace;
+use App\Services\Licensing\ModuleCatalog;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -55,7 +56,7 @@ class PurgeDowngradedModules extends Command {
 
         foreach ($due as $grace) {
             $module = $grace->module;
-            $label = (string) (config('plans.labels')[$module] ?? $module);
+            $label = app(ModuleCatalog::class)->label($module);
 
             if (($purgeable[$module] ?? false) !== true) {
                 // Aufbewahrungspflichtig: niemals loeschen, nur als verarbeitet markieren.

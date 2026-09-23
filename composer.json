@@ -105,6 +105,7 @@
         "lang:coverage": "@php scripts/translations-coverage.php",
         "help:coverage": "@php artisan help:coverage",
         "features:check": "@php scripts/check-feature-status.php",
+        "modules:check": "@php artisan modules:check",
         "lang:sync-core": "@php scripts/sync-laravel-core-lang.php",
         "lang:sync-core:write": "@php scripts/sync-laravel-core-lang.php --write",
         "lang:sync-core:replace": "@php scripts/sync-laravel-core-lang.php --replace --write",
@@ -117,7 +118,8 @@
             "@lang:check",
             "@lang:coverage",
             "@help:coverage",
-            "@features:check"
+            "@features:check",
+            "@modules:check"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

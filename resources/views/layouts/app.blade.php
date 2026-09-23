@@ -1386,7 +1386,7 @@
                                 continue; // aufbewahrungspflichtig → keine Loeschung, kein Hinweis
                             }
                             $_graceItems[] = [
-                                'label' => __((string) (config('plans.labels')[$_g->module] ?? $_g->module)),
+                                'label' => __((string) (app(\App\Services\Licensing\ModuleCatalog::class)->labels()[$_g->module] ?? $_g->module)),
                                 'until' => $_g->grace_until,
                             ];
                         }

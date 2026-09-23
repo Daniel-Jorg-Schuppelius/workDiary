@@ -15,6 +15,7 @@ namespace App\Services\Navigation;
 use App\Enums\User\Permission;
 use App\Legacy\LegacyBridge;
 use App\Models\User;
+use App\Modules\ModuleRegistry;
 use App\Plugins\PluginManager;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Support\OrganizationContext;
@@ -55,6 +56,7 @@ class NavigationRegistry {
         private readonly FeatureFlagResolver $features,
         private readonly NavGate $gate,
         private readonly NavFocusService $focus,
+        private readonly ModuleRegistry $modules,
     ) {}
 
     /**
@@ -222,117 +224,21 @@ class NavigationRegistry {
     }
 
     /**
-     * Sektions-Schlüssel → Modul (hartes Sidebar-Gating auf Sektionsebene).
+     * Sektions-Schlüssel → Modul (hartes Sidebar-Gating auf Sektionsebene) — aus den Manifesten (MVP-861).
      *
      * @return array<string, string>
      */
     public function moduleBySectionKey(): array {
-        return [
-            'plan' => 'module.planung',
-            'travel-expenses' => 'module.spesen',
-            'fleet' => 'module.fuhrpark',
-            'facility' => 'module.liegenschaften',
-            'location' => 'module.standorterfassung',
-            'sales' => 'module.vertrieb',
-            'compliance' => 'module.compliance',
-            'datenschutz' => 'module.datenschutz',
-            'isms' => 'module.isms',
-        ];
+        return $this->modules->navigationMaps()['sections'];
     }
 
     /**
-     * Item-Route → Modul (feines Sidebar-Gating einzelner Einträge).
+     * Item-Route → Modul (feines Sidebar-Gating einzelner Einträge) — aus den Manifesten (MVP-861).
      *
      * @return array<string, string>
      */
     public function moduleByItemRoute(): array {
-        return [
-            'kanban.index' => 'module.kanban',
-            'agile.reports.overview' => 'module.agile_projects',
-            'tenders.index' => 'module.applications',
-            'tender-radar.index' => 'module.applications',
-            'tenders.cockpit' => 'module.applications',
-            'investments.index' => 'module.investments',
-            'crisis.index' => 'module.crisis_management',
-            'sustainability.index' => 'module.sustainability',
-            'claims.index' => 'module.claims',
-            'claims.reports.index' => 'module.claims',
-            'passenger-rides.index' => 'module.fuhrpark',
-            'passenger-masterdata.index' => 'module.fuhrpark',
-            'passenger-settlements.index' => 'module.fuhrpark',
-            'print-orders.index' => 'module.lager',
-            'domains.index' => 'module.domain',
-            'domain-reseller.index' => 'module.domain',
-            'domains.reports' => 'module.domain',
-            'admin.domain-provider.index' => 'module.domain',
-            'admin.document-design.index' => 'module.dokumentdesign',
-            'admin.ai.index' => 'module.ai',
-            'rental.index' => 'module.rental',
-            'rental.calendar' => 'module.rental',
-            'rental.profiles.index' => 'module.rental',
-            'rental.rates.index' => 'module.rental',
-            'rental.reports.index' => 'module.rental',
-            'rental.requests.index' => 'module.rental',
-            'disposal.index' => 'module.entsorgung',
-            'disposal.reports.index' => 'module.entsorgung',
-            'asset-finance.index' => 'module.asset_finance',
-            'asset-finance.deadlines.index' => 'module.asset_finance',
-            'asset-finance.reports.index' => 'module.asset_finance',
-            'contracts.index' => 'module.contracts',
-            'asset-compliance.index' => 'module.asset_compliance',
-            'asset-compliance.profiles.index' => 'module.asset_compliance',
-            'asset-compliance.schedules.index' => 'module.asset_compliance',
-            'asset-compliance.reports.index' => 'module.asset_compliance',
-            'crisis.exercises.index' => 'module.crisis_management',
-            'recruiting.requisitions.index' => 'module.applications',
-            'recruiting.applications.index' => 'module.applications',
-            'documents.index' => 'module.documents',
-            'knowledge.index' => 'module.knowledge',
-            'ideas.index' => 'module.ideas',
-            'form-submissions.index' => 'module.forms',
-            'finance.open-times.index' => 'module.finance',
-            'finance.dunning.index' => 'module.finance',
-            'finance.transfers.index' => 'module.finance',
-            'finance.reconciliation.index' => 'module.finance',
-            'finance.resale.index' => 'module.reselling',
-            'finance.bank-accounts.index' => 'module.finance',
-            'finance.datev.index' => 'module.finance',
-            'finance.gobd.index' => 'module.finance',
-            'finance.procedure-documentation.index' => 'module.finance',
-            'finance.payment-runs.index' => 'module.finance',
-            'finance.mandates.index' => 'module.finance',
-            'finance.accounting.setup' => 'module.finance',
-            'finance.accounting.accounts.index' => 'module.finance',
-            'finance.accounting.journal.index' => 'module.finance',
-            'finance.accounting.inbox.index' => 'module.finance',
-            'finance.accounting.open-items.index' => 'module.finance',
-            'finance.accounting.recurring.index' => 'module.finance',
-            'finance.accounting.closing.index' => 'module.finance',
-            'finance.accounting.filings.index' => 'module.finance',
-            'reports.accounting.index' => 'module.finance',
-            'reports.accounting.recapitulative' => 'module.finance',
-            'reports.accounting.bwa' => 'module.finance',
-            'finance.accounting.rules.index' => 'module.finance',
-            'finance.accounting.fixed-assets.index' => 'module.finance',
-            // Lager & Fertigung: ohne module.lager ausblenden statt nur per Route-Gate (423) sperren.
-            'articles.index' => 'module.lager',
-            'warehouses.index' => 'module.lager',
-            'manufacturing-orders.index' => 'module.lager',
-            'serials.index' => 'module.lager',
-            'purchase-orders.index' => 'module.lager',
-            'supplier-catalogs.index' => 'module.lager',
-            'pricing-margin-rules.index' => 'module.lager',
-            'inventory.scan' => 'module.lager',
-            'work-centers.index' => 'module.lager',
-            'inventory.lots' => 'module.lager',
-            'inventory.label-templates.index' => 'module.lager',
-            'b2b-catalog.index' => 'module.b2b_katalog',
-            'construction-notices.index' => 'module.bau',
-            'bill-of-quantities.index' => 'module.bau',
-            'bill-of-quantities.packages' => 'module.bau',
-            'catalog-rules.index' => 'module.bau',
-            'cost-catalogs.index' => 'module.bau',
-        ];
+        return $this->modules->navigationMaps()['items'];
     }
 
     /**
@@ -341,11 +247,7 @@ class NavigationRegistry {
      * @return array<string, string>
      */
     public function moduleByGroupKey(): array {
-        return [
-            'reports-team' => 'module.auswertungen_team',
-            'reports-projects' => 'module.auswertungen_team',
-            'reports-resources' => 'module.auswertungen_team',
-        ];
+        return $this->modules->navigationMaps()['groups'];
     }
 
     /**

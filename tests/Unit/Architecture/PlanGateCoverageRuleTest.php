@@ -20,7 +20,7 @@ use Tests\TestCase;
 /**
  * Gate zu S-55 (Sicherheitsscan 2026-08-23).
  *
- * `config('plans.routes')` ordnet Namenspräfixe einem Modul zu, und
+ * Die Modul-Manifeste (MVP-861) ordnen Namenspräfixe einem Modul zu, und
  * {@see EnforcePlanModules} setzt das mit 423 durch. Die Kern-Routen liegen in
  * einer Gruppe mit dieser Middleware — die Plugin-Routen mit **denselben**
  * Präfixen (`customers.lexoffice.*`, `invoices.lexoffice.*`,
@@ -58,7 +58,7 @@ class PlanGateCoverageRuleTest extends TestCase {
 
     public function test_gemappte_routen_tragen_das_plan_gate(): void {
         /** @var array<string, string> $map */
-        $map = (array) config('plans.routes', []);
+        $map = $this->app->make(\App\Modules\ModuleRegistry::class)->routeMap();
         $this->assertNotEmpty($map, 'Ohne Zuordnung prüft der Test nichts.');
 
         $violations = [];

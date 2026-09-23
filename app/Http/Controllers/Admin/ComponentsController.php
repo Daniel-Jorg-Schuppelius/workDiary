@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Plugins\PluginManager;
 use App\Services\Isms\SbomGenerator;
 use App\Services\Licensing\{FeatureFlagResolver, LicenseService};
+use App\Services\Licensing\ModuleCatalog;
 use App\Services\Release\{ReleaseManifestService, ReleaseVerifier};
 use App\Services\Updates\UpdateCheckService;
 use App\Support\ErrorText;
@@ -54,7 +55,7 @@ class ComponentsController extends Controller {
         $dbConnection = (string) config('database.default', '');
 
         /** @var array<string, string> $moduleLabels */
-        $moduleLabels = (array) config('plans.labels', []);
+        $moduleLabels = app(ModuleCatalog::class)->labels();
         $modules = [];
         foreach ($moduleLabels as $code => $label) {
             $modules[] = [

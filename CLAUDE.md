@@ -93,6 +93,26 @@ Alias oder Klassenname sein → mit `classFor()` auflösen, Alias speichern.
 Enum-Casts (`'kind_type' => KindEnum::class`) sind keine Morph-Werte. Zieht
 eine Klasse um, bleibt ihr `legacy`-Schlüssel und nur der Wert wird nachgeführt.
 
+## Modul-Manifeste: eine Quelle je Modul (MVP-861)
+
+Jedes Modul hat ein Manifest unter `app/Modules/Manifests/<Name>Manifest.php`
+(Basis `App\Modules\Manifest`, Register `App\Modules\ModuleRegistry`). Das
+Manifest nennt Code, Art (`ModuleKind::Platform|Core|Feature`), Lizenzcode,
+Label und Beschreibung, Domänenordner, **Tabellen**, Routenmuster fürs
+Modul-Gate, Rechtegruppen, Navigationsschlüssel, `requires()` und Plugins.
+`config/plans.php` enthält nur noch Tarife, Presets und Purge-Regeln.
+
+- **Neue Tabelle, neuer Ordner, neue Rechtegruppe, neues Lizenzmodul →
+  Manifest ergänzen.** `php artisan modules:check` (im `composer qa`) und das
+  Gate `ModuleManifestCoverageRuleTest` verlangen genau eine Zuordnung.
+- Routen-Gate: `routePatterns()` des Manifests (spezifischstes Muster
+  gewinnt); Sidebar-Gating: `navigation()`; Modulkatalog und Gate-Meldung:
+  `label()`/`description()` über `ModuleCatalog`.
+- Ein Lizenzcode kann mehrere Manifeste tragen (Lager: Inventory,
+  Manufacturing, Procurement); genau eines ist Eigentümer (`ownsLicense()`).
+- Betrieb: `modules:cache` nach dem Deploy (steht in deploy.sh), `modules:clear`
+  beim Entwickeln nach neuen Manifesten.
+
 ## Verweise
 
 Die gesamte Entwicklungs-/Architekturdoku liegt im Schwester-Repo

@@ -204,7 +204,7 @@
                 </div>
                 <div>
                     <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Zugebuchte Module') }}</dt>
-                    <dd class="text-xs break-all">{{ count($orgModules['addons']) ? collect($orgModules['addons'])->map(fn ($c) => config('plans.labels')[$c] ?? $c)->implode(', ') : '—' }}</dd>
+                    <dd class="text-xs break-all">{{ count($orgModules['addons']) ? collect($orgModules['addons'])->map(fn ($c) => app(\App\Services\Licensing\ModuleCatalog::class)->labels()[$c] ?? $c)->implode(', ') : '—' }}</dd>
                 </div>
                 @if ($op !== null && $orgUsable)
                     <div>
@@ -291,7 +291,7 @@
                                 @foreach ($moduleCodes as $code)
                                     <label class="label cursor-pointer justify-start gap-2 py-0.5">
                                         <input type="checkbox" name="addons[]" value="{{ $code }}" class="checkbox checkbox-xs" @checked(in_array($code, $oldAddons, true))>
-                                        <span class="text-sm">{{ config('plans.labels')[$code] ?? $code }}</span>
+                                        <span class="text-sm">{{ app(\App\Services\Licensing\ModuleCatalog::class)->labels()[$code] ?? $code }}</span>
                                         <span class="font-mono text-[0.65rem] text-muted">{{ $code }}</span>
                                     </label>
                                 @endforeach
