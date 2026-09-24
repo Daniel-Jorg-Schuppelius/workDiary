@@ -10,7 +10,7 @@
 
 namespace App\Http\Resources;
 
-use App\Models\{Material, MaterialUsage};
+use App\Models\Material\{Material, MaterialUsage};
 use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

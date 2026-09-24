@@ -12,8 +12,10 @@ namespace App\Http\Controllers\CustomerPortal;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attachments\Attachment;
-use App\Models\{DiaryEntry, MaterialUsage, TimeEntry};
+use App\Models\Diary\DiaryEntry;
+use App\Models\Material\MaterialUsage;
 use App\Models\Platform\User;
+use App\Models\Time\TimeEntry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, URL};
 use Illuminate\View\View;
@@ -69,7 +71,7 @@ class DiaryDetailController extends Controller {
      * Kundensichtbare Inhalte des Auftrags — einzige Datenquelle für
      * Portal-Detail UND PDF (identischer Sichtbarkeitsschnitt).
      *
-     * @return array{photos: \Illuminate\Support\Collection<int, Attachment>, materials: \Illuminate\Support\Collection<int, MaterialUsage>, protocols: \Illuminate\Support\Collection<int, \App\Models\Protocol>}
+     * @return array{photos: \Illuminate\Support\Collection<int, Attachment>, materials: \Illuminate\Support\Collection<int, MaterialUsage>, protocols: \Illuminate\Support\Collection<int, \App\Models\Protocol\Protocol>}
      */
     private function customerViewData(DiaryEntry $diary): array {
         $photos = $diary->attachments()

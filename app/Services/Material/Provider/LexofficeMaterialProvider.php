@@ -11,7 +11,7 @@
 namespace App\Services\Material\Provider;
 
 use APIToolkit\API\Authentication\BearerAuthentication;
-use App\Models\Material;
+use App\Models\Material\Material;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use App\Services\Material\MaterialProviderInterface;
 use Illuminate\Support\Collection;

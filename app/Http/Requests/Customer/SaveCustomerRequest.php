@@ -10,10 +10,10 @@
 
 namespace App\Http\Requests\Customer;
 
-use App\Http\Requests\Concerns\{DecodesSqidInputs, PartyFormFields};
-use App\Models\Customer\Customer\Customer;
-use Illuminate\Validation\Rule;
 use App\Http\Requests\BaseFormRequest;
+use App\Http\Requests\Concerns\{DecodesSqidInputs, PartyFormFields};
+use App\Models\Customer\Customer;
+use Illuminate\Validation\Rule;
 
 class SaveCustomerRequest extends BaseFormRequest {
     use DecodesSqidInputs;

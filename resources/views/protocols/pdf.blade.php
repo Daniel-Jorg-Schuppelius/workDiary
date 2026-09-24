@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 @php
-    /** @var \App\Models\Protocol $protocol */
+    /** @var \App\Models\Protocol\Protocol $protocol */
     /** @var string $hash */
     /** @var \Illuminate\Support\Carbon $generatedAt */
 @endphp

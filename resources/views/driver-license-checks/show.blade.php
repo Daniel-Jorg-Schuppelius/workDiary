@@ -12,7 +12,7 @@
 @php
 /**
  * @var \App\Models\Platform\User $driver
- * @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\DriverLicenseCheck> $checks
+ * @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Fleet\DriverLicenseCheck> $checks
  * @var bool $overdue
  */
 @endphp

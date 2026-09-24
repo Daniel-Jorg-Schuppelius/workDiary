@@ -14,7 +14,7 @@ use App\Enums\Integration\WebhookEvent;
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Jobs\Notification\{CalendarEventPublishJob, ChatWebhookDeliveryJob};
 use App\Jobs\Notification\WebPushDeliveryJob;
-use App\Models\ChatWebhook;
+use App\Models\Chat\ChatWebhook;
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
 use App\Models\Platform\{Organization, User};
 use App\Notifications\GenericEventNotification;

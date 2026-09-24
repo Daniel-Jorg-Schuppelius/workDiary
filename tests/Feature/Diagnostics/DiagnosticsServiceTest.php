@@ -144,7 +144,7 @@ class DiagnosticsServiceTest extends TestCase {
         $this->app->instance('currentOrganization', $org);
 
         // Aktives Terminal ohne Kontakt seit 3 Tagen → stale.
-        \App\Models\AttendanceTerminal::query()->create([
+        \App\Models\Time\AttendanceTerminal::query()->create([
             'organization_id' => $org->id,
             'name' => 'Eingang',
             'token_hash' => hash('sha256', 'stale'),
@@ -152,7 +152,7 @@ class DiagnosticsServiceTest extends TestCase {
             'last_seen_at' => CarbonImmutable::now()->subDays(3),
         ]);
         // Aktives Terminal mit frischem Kontakt → ok.
-        \App\Models\AttendanceTerminal::query()->create([
+        \App\Models\Time\AttendanceTerminal::query()->create([
             'organization_id' => $org->id,
             'name' => 'Werkstatt',
             'token_hash' => hash('sha256', 'fresh'),

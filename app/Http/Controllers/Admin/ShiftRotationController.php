@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Platform\{Organization, User};
-use App\Models\{ShiftRotation, ShiftRotationAssignment, ShiftType};
+use App\Models\Schedule\{ShiftRotation, ShiftRotationAssignment, ShiftType};
 use App\Services\Schedule\ShiftRotationRoller;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;

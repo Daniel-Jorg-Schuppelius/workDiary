@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Policies;
 
 use App\Enums\User\Permission as P;
+use App\Models\Fleet\VehicleReservation;
 use App\Models\Platform\{Organization, User};
-use App\Models\VehicleReservation;
-use App\Policies\VehicleReservationPolicy;
+use App\Policies\Fleet\VehicleReservationPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};
 use Tests\TestCase;

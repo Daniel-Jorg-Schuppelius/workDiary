@@ -14,7 +14,7 @@ use App\Models\Customer\Customer;
 use App\Models\Finance\AccountingVoucher;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\{Organization, User};
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Plugins\SevDesk\Services\SevDeskVoucherPullService;
 use App\Plugins\SevDesk\SevDeskPlugin;
 use App\Services\Finance\Accounting\ContactPushService;

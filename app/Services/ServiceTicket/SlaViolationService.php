@@ -12,7 +12,7 @@ namespace App\Services\ServiceTicket;
 
 use App\Enums\ServiceTicket\SlaViolationKind;
 use App\Models\Platform\User;
-use App\Models\{ServiceTicket, SlaViolation};
+use App\Models\ServiceTicket\{ServiceTicket, SlaViolation};
 use Illuminate\Support\Carbon;
 use Throwable;
 

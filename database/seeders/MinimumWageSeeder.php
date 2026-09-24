@@ -10,8 +10,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\MinimumWage;
 use App\Models\Platform\Organization;
+use App\Models\Time\MinimumWage;
 use Illuminate\Database\Seeder;
 
 /**

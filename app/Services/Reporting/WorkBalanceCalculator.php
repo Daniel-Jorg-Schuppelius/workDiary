@@ -12,8 +12,8 @@ namespace App\Services\Reporting;
 
 use App\Enums\Attendance\AttendanceStatus;
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
-use App\Models\{Attendance, TimeEntry};
 use App\Models\Platform\User;
+use App\Models\Time\{Attendance, TimeEntry};
 use App\Services\Flextime\FlexCalculator;
 use Carbon\{CarbonImmutable, CarbonInterface};
 

@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use App\Enums\Learning\LearningEnrollmentStatus;
+use App\Models\Hr\UserQualification;
 use App\Models\Learning\{LearningCertificate, LearningEnrollment};
-use App\Models\Platform\{Organization, User, UserQualification};
+use App\Models\Platform\{Organization, User};
 use App\Models\Safety\SafetyInstructionParticipant;
 use App\Models\Training\TrainingAssignment;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};

@@ -13,7 +13,7 @@ namespace Tests\Feature\Finance;
 use App\Enums\Finance\{AccountType, PostingAccountRole, PostingSourceKind, ProfitDetermination};
 use App\Models\Accounting\{AccountingAccount, AccountingPostingRule, AccountingTaxCode};
 use App\Models\Customer\Customer;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsTemplateService, FiscalYearService};
 use App\Services\Accounting\Posting\PostingSourceRegistry;

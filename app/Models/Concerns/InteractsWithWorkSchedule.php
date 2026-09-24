@@ -10,7 +10,7 @@
 
 namespace App\Models\Concerns;
 
-use App\Models\{FlexEligibility, WorkSchedule};
+use App\Models\Time\{FlexEligibility, WorkSchedule};
 use App\Services\Sickness\ContinuedPaymentService;
 use App\Support\Sickness\ContinuedPaymentStatus;
 use Carbon\CarbonInterface;

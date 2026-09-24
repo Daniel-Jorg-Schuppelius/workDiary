@@ -1,0 +1,66 @@
+<?php
+/*
+ * Created on   : Sat Jun 13 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : DiaryEntryEvent.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace App\Models\Diary;
+
+use App\Models\Concerns\{AppendOnly, BelongsToOrganization};
+use App\Models\Platform\User;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+/**
+ * @property int $id
+ * @property int $diary_entry_id
+ * @property int $organization_id
+ * @property string $event
+ * @property string|null $from_status
+ * @property string $to_status
+ * @property int|null $actor_user_id
+ * @property string $actor_kind
+ * @property string|null $note
+ * @property array<string, mixed>|null $payload
+ * @property \Illuminate\Support\Carbon $occurred_at
+ */
+class DiaryEntryEvent extends Model {
+    // Lebenszyklusereignisse: nie ändern, nie löschen.
+    use AppendOnly;
+
+    use BelongsToOrganization;
+
+    public const UPDATED_AT = null;
+
+    protected $fillable = [
+        'diary_entry_id',
+        'organization_id',
+        'event',
+        'from_status',
+        'to_status',
+        'actor_user_id',
+        'actor_kind',
+        'note',
+        'payload',
+        'occurred_at',
+    ];
+
+    protected $casts = [
+        'payload' => 'array',
+        'occurred_at' => 'immutable_datetime',
+    ];
+
+    /** @return BelongsTo<DiaryEntry, $this> */
+    public function diaryEntry(): BelongsTo {
+        return $this->belongsTo(DiaryEntry::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function actor(): BelongsTo {
+        return $this->belongsTo(User::class, 'actor_user_id');
+    }
+}

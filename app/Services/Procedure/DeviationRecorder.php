@@ -14,7 +14,7 @@ use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueVisibility
 use App\Enums\Procedure\{ProcedureDeviationProposedAction, ProcedureDeviationSeverity, ProcedureDeviationType, ProcedureRunEventType, ProcedureStepRunStatus};
 use App\Exceptions\ProcedureDeviationValidationException;
 use App\Models\Platform\User;
-use App\Models\{ProcedureDeviation, ProcedureRun, ProcedureStepRun};
+use App\Models\Procedure\{ProcedureDeviation, ProcedureRun, ProcedureStepRun};
 use App\Services\OpenIssue\OpenIssueService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

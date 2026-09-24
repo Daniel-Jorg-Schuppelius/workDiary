@@ -20,7 +20,7 @@ use App\Models\Contract\{Contract, ContractObligation};
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
 use App\Models\Platform\User;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Contract\ContractService;
 use App\Services\Licensing\FeatureFlagResolver;

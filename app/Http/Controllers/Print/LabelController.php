@@ -11,11 +11,11 @@
 namespace App\Http\Controllers\Print;
 
 use App\Enums\User\Permission as P;
-use App\Models\ArticleVariant;
-use App\Models\Print\LabelTemplate;
+use App\Http\Controllers\Controller;
+use App\Models\Article\ArticleVariant;
+use App\Models\Inventory\{StockLot, StockSerial};
 use App\Models\Platform\Organization;
-use App\Models\StockLot;
-use App\Models\StockSerial;
+use App\Models\Print\LabelTemplate;
 use App\Services\Inventory\LabelService;
 use App\Support\SqidEncoder;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
@@ -25,7 +25,6 @@ use BaconQrCode\Writer;
 use CommonToolkit\Helper\Data\DataUrlHelper;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Controller;
 
 /**
  * Etikettendruck (Feature 048, E5): erzeugt ein druckbares Etikett (PDF) für

@@ -52,7 +52,7 @@ class CostElementCatalogController extends Controller {
         return view('gaeb.cost-catalogs.show', [
             'catalog' => $catalog,
             'elements' => $catalog->elements()->with('article')->paginate(100),
-            'articles' => \App\Models\Article::query()->orderBy('name')->limit(500)->get(['id', 'name', 'number']),
+            'articles' => \App\Models\Article\Article::query()->orderBy('name')->limit(500)->get(['id', 'name', 'number']),
             'canManage' => Gate::allows(P::ProjectImport->value),
         ]);
     }
@@ -97,11 +97,11 @@ class CostElementCatalogController extends Controller {
 
         $raw = $request->input('article');
         $articleId = is_string($raw) && $raw !== ''
-            ? app(\App\Support\SqidEncoder::class)->decode(\App\Models\Article::class, $raw)
+            ? app(\App\Support\SqidEncoder::class)->decode(\App\Models\Article\Article::class, $raw)
             : null;
 
         // Der Org-Scope liegt am Modell; ein fremder Sqid findet nichts.
-        if ($articleId !== null && ! \App\Models\Article::query()->whereKey($articleId)->exists()) {
+        if ($articleId !== null && ! \App\Models\Article\Article::query()->whereKey($articleId)->exists()) {
             return back()->with('error', __('Artikel nicht gefunden.'));
         }
 

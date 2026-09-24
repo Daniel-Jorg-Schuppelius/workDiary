@@ -11,7 +11,7 @@
 namespace App\Plugins\Lexoffice;
 
 use APIToolkit\API\Authentication\BearerAuthentication;
-use App\Models\ArticleVariant;
+use App\Models\Article\ArticleVariant;
 use App\Models\Integration\{ExternalArticleMapping, IntegrationInboxItem, PendingExternalConflict};
 use App\Models\Platform\Organization;
 use App\Models\Plugins\Lexoffice\LexofficeArticle;

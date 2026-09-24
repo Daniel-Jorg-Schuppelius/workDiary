@@ -14,7 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Legacy\Http\Concerns\{ManagesLegacyDutyCrud, RequiresLegacyAdmin};
 use App\Legacy\Http\Requests\SaveLegacyDutyRequest;
 use App\Legacy\Models\LegacyOnCall;
-use App\Models\OnCallShift;
+use App\Models\Diary\OnCallShift;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 

@@ -8,7 +8,7 @@
 --}}
 {{-- Dialog wrapper for ExpenseCategory create/edit --}}
 @php
-    /** @var \App\Models\ExpenseCategory $category */
+    /** @var \App\Models\Travel\ExpenseCategory $category */
     $isEdit = $category?->exists ?? false;
 @endphp
 <x-modal

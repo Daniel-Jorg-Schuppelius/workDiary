@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Enums\Inventory\ValuationMethod;
-use App\Models\{Article, ArticleVariant};
+use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Platform\Organization;
 
 /**

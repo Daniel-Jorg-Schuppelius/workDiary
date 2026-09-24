@@ -11,7 +11,7 @@
 namespace Database\Factories\Document;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
-use App\Models\Document\Document\Document;
+use App\Models\Document\Document;
 use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;

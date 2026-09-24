@@ -14,7 +14,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
 use App\Models\Platform\User;
-use App\Models\TimeAccount;
+use App\Models\Time\TimeAccount;
 use App\Support\{Sqid, XlsxExport};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;

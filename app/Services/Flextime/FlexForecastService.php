@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Flextime;
 
 use App\Enums\Shift\ScheduledShiftStatus;
-use App\Models\{FlexBalance, ScheduledShift};
 use App\Models\Platform\User;
+use App\Models\Schedule\ScheduledShift;
+use App\Models\Time\FlexBalance;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\Duration;

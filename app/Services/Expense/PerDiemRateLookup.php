@@ -11,7 +11,7 @@
 namespace App\Services\Expense;
 
 use App\Exceptions\PerDiemRateMissingException;
-use App\Models\PerDiemRate;
+use App\Models\Travel\PerDiemRate;
 use Carbon\CarbonImmutable;
 
 class PerDiemRateLookup {

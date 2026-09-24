@@ -12,7 +12,8 @@ namespace App\Http\Controllers\Reporting\Concerns;
 
 use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
-use App\Models\{DiaryEntry, OpenIssue, Protocol};
+use App\Models\Diary\{DiaryEntry, OpenIssue};
+use App\Models\Protocol\Protocol;
 use App\Support\{MorphMap, Tz};
 use Carbon\CarbonImmutable;
 use Closure;

@@ -42,7 +42,7 @@ class EnforceMaintenanceMode {
 
         // Geplante Wartungsfenster (MVP-055): system- oder org-weit,
         // zeitbasiert wirksam, optional Nur-Lesen-Betrieb.
-        $window = \App\Models\MaintenanceWindow::effectiveFor($org?->id !== null ? (int) $org->id : null);
+        $window = \App\Models\Asset\MaintenanceWindow::effectiveFor($org?->id !== null ? (int) $org->id : null);
         if ($window !== null) {
             $user = $request->user();
             $isBypassed = $user !== null && $user->isAdmin();
@@ -74,7 +74,7 @@ class EnforceMaintenanceMode {
         return $this->deny($request, $org);
     }
 
-    private function denyWindow(Request $request, \App\Models\MaintenanceWindow $window): Response {
+    private function denyWindow(Request $request, \App\Models\Asset\MaintenanceWindow $window): Response {
         $message = trim((string) $window->message);
         if ($message === '') {
             $message = $window->read_only

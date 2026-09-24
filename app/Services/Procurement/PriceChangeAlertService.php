@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Procurement;
 
-use App\Models\{Article, PricingChangeAlert, SupplierCatalogItem};
+use App\Models\Article\{Article, PricingChangeAlert};
+use App\Models\Supplier\SupplierCatalogItem;
 
 /**
  * Erzeugt Kalkulationswarnungen bei Einkaufspreisänderungen (Feature 050,
@@ -46,7 +47,7 @@ class PriceChangeAlertService {
         // EK neu berechnet und regulär bewertet.
         if ($item->price_type === 'list'
             && $item->discount_group !== null
-            && ! \App\Models\SupplierCatalogDiscountGroup::query()
+            && ! \App\Models\Supplier\SupplierCatalogDiscountGroup::query()
                 ->where('supplier_catalog_source_id', $item->supplier_catalog_source_id)
                 ->where('code', $item->discount_group)
                 ->exists()) {

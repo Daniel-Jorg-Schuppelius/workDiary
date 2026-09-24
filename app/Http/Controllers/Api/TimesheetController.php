@@ -12,10 +12,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SaveTimesheetRequest;
+use App\Http\Requests\Time\SaveTimesheetRequest;
 use App\Http\Resources\TimesheetResource;
 use App\Models\Project\Project;
-use App\Models\Timesheet;
+use App\Models\Time\Timesheet;
 use App\Services\Timesheet\{PdfRenderer, SignatureService};
 use App\Support\Sqid;
 use Illuminate\Http\{Request, Response};

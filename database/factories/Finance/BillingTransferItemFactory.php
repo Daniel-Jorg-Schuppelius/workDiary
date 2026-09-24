@@ -11,7 +11,7 @@
 namespace Database\Factories\Finance;
 
 use App\Models\Finance\{BillingTransfer, BillingTransferItem};
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

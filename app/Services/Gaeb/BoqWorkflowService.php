@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Gaeb;
 
 use App\Enums\Gaeb\{BoqItemStatus, BoqItemType};
-use App\Models\{BillOfQuantity, BoqItem};
+use App\Models\Gaeb\{BillOfQuantity, BoqItem};
 use Illuminate\Support\Collection;
 
 /**

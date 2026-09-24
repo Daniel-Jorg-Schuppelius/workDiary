@@ -14,7 +14,7 @@ namespace Tests\Feature\CustomerPortal;
 
 use App\Models\Calendar\AppointmentRequest;
 use App\Models\Customer\Customer;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Sales\BookableService;
 use App\Services\Appointments\AppointmentRequestService;

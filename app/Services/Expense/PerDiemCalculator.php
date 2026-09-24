@@ -11,7 +11,7 @@
 namespace App\Services\Expense;
 
 use App\Enums\Expense\PerDiemDayKind;
-use App\Models\{PerDiemDay, PerDiemTrip};
+use App\Models\Travel\{PerDiemDay, PerDiemTrip};
 use Carbon\{CarbonImmutable, CarbonInterface, CarbonPeriod};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;

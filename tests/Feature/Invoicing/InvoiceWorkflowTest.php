@@ -11,7 +11,7 @@
 namespace Tests\Feature\Invoicing;
 
 use App\Models\Customer\Customer;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Services\Invoicing\TaxResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -89,7 +89,7 @@ final class InvoiceWorkflowTest extends TestCase {
      */
     public function test_sending_a_draft_issues_it_with_a_frozen_tax_context(): void {
         \Illuminate\Support\Facades\Mail::fake();
-        $template = \App\Models\InvoiceMailTemplate::query()->create([
+        $template = \App\Models\Invoicing\InvoiceMailTemplate::query()->create([
             'organization_id' => null, 'name' => 'T', 'is_default' => true,
             'subject' => 'R {{invoice_number}}', 'body_html' => '<p>x</p>', 'body_text' => 'x',
         ]);
@@ -112,7 +112,7 @@ final class InvoiceWorkflowTest extends TestCase {
     public function test_sending_respects_the_approval_requirement(): void {
         \Illuminate\Support\Facades\Mail::fake();
         $this->org->update(['settings' => ['invoicing' => ['require_approval' => '1']]]);
-        $template = \App\Models\InvoiceMailTemplate::query()->create([
+        $template = \App\Models\Invoicing\InvoiceMailTemplate::query()->create([
             'organization_id' => null, 'name' => 'T', 'is_default' => true,
             'subject' => 'R {{invoice_number}}', 'body_html' => '<p>x</p>', 'body_text' => 'x',
         ]);

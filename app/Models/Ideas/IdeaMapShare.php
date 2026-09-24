@@ -12,10 +12,10 @@ namespace App\Models\Ideas;
 
 use App\Enums\Ideas\IdeaShareRole;
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Platform\{Team, User};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Ideas\IdeaMap;
 
 /**
  * Freigabe einer Ideenlandkarte an genau EINE Person ODER EIN Team

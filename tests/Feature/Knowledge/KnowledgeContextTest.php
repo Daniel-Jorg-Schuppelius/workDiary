@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Knowledge;
 
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Knowledge\KnowledgeArticle;
 use App\Models\Platform\User;
 use App\Services\Knowledge\KnowledgeArticleService;

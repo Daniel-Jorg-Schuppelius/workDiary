@@ -11,6 +11,7 @@
 namespace App\Models\Knowledge;
 
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo, Relation};
 use Illuminate\Database\Query\Builder as QueryBuilder;

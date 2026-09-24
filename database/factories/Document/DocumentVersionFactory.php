@@ -10,8 +10,7 @@
 
 namespace Database\Factories\Document;
 
-use App\Models\Document\Document\Document;
-use App\Models\Document\Document\DocumentVersion;
+use App\Models\Document\{Document, DocumentVersion};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;

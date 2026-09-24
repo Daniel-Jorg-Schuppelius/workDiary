@@ -12,9 +12,12 @@ namespace Tests\Feature\Shipping;
 
 use App\Enums\Manufacturing\DeliveryFacturationStatus;
 use App\Enums\Shipping\ShipmentStatus;
-use App\Models\{ArticleVariant, CarrierConnection, ManufacturingOrder, Shipment, StockDelivery, Warehouse};
+use App\Models\Article\ArticleVariant;
 use App\Models\Customer\Customer;
+use App\Models\Inventory\{StockDelivery, Warehouse};
+use App\Models\Manufacturing\ManufacturingOrder;
 use App\Models\Platform\User;
+use App\Models\Shipping\{CarrierConnection, Shipment};
 use App\Services\Shipping\ShippingProviderRegistry;
 use App\Services\Timeline\{DiaryEntryTimelineService, TimelineItem};
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -13,7 +13,7 @@ namespace App\Services\Timesheet;
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Models\Timesheet;
+use App\Models\Time\Timesheet;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 

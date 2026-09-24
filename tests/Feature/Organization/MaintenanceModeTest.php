@@ -10,9 +10,9 @@
 
 namespace Tests\Feature\Organization;
 
-use App\Models\AttendanceTerminal;
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\{User, UserBadge};
+use App\Models\Time\AttendanceTerminal;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

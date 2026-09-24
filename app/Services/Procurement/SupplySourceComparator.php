@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Procurement;
 
-use App\Models\{Article, ArticleSupply};
+use App\Models\Article\{Article, ArticleSupply};
 use Illuminate\Support\Collection;
 
 /**

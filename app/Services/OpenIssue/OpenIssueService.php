@@ -12,7 +12,7 @@ namespace App\Services\OpenIssue;
 
 use App\Enums\OpenIssue\{OpenIssueEventType, OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
 use App\Exceptions\InvalidOpenIssueTransitionException;
-use App\Models\{DiaryEntry, OpenIssue, OpenIssueEvent};
+use App\Models\Diary\{DiaryEntry, OpenIssue, OpenIssueEvent};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;

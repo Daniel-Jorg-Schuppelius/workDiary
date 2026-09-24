@@ -11,7 +11,7 @@
 namespace App\Observers;
 
 use App\Enums\Notification\NotificationEvent;
-use App\Models\EmergencyAssignment;
+use App\Models\Diary\EmergencyAssignment;
 use App\Models\Platform\User;
 use App\Services\Notification\NotificationDispatcher;
 use App\Support\CarbonFmt;

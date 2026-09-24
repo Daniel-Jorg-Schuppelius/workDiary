@@ -14,7 +14,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
-use App\Models\ServiceTicket;
+use App\Models\ServiceTicket\ServiceTicket;
 use App\Services\ServiceTicket\ServiceTicketService;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Gate;

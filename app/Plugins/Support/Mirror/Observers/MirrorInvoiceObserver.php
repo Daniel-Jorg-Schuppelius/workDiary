@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\Mirror\Observers;
 
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Plugins\Support\Mirror\{MirrorOutboxDispatcher, MirrorTargetRegistry};
 use App\Services\Integration\IntegrationOutboxService;
 

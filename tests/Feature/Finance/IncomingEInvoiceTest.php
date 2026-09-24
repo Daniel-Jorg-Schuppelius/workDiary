@@ -14,7 +14,7 @@ use App\Enums\Document\DocumentType;
 use App\Enums\Whistleblowing\AttachmentScanStatus;
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, XRechnungGenerator};
 use App\Services\Whistleblowing\Scanning\ScanDriver;
@@ -113,7 +113,7 @@ final class IncomingEInvoiceTest extends TestCase {
 
         $this->assertSame('infected', $result['status']);
         $this->assertNull($result['incoming']);
-        $this->assertSame(0, \App\Models\IncomingEInvoice::query()->withoutGlobalScopes()->count());
+        $this->assertSame(0, \App\Models\Invoicing\IncomingEInvoice::query()->withoutGlobalScopes()->count());
         $this->assertSame(0, Document::query()->withoutGlobalScopes()->count());
     }
 
@@ -139,10 +139,10 @@ final class IncomingEInvoiceTest extends TestCase {
             'file' => \Illuminate\Http\UploadedFile::fake()->createWithContent('rechnung.xml', $xml),
         ])->assertRedirect();
 
-        $incoming = \App\Models\IncomingEInvoice::query()->firstOrFail();
+        $incoming = \App\Models\Invoicing\IncomingEInvoice::query()->firstOrFail();
         $this->assertSame(hash('sha256', $xml), $incoming->sha256);
         $this->assertSame('upload', $incoming->source);
-        $this->assertSame(\App\Models\IncomingEInvoice::STATUS_RECEIVED, $incoming->status);
+        $this->assertSame(\App\Models\Invoicing\IncomingEInvoice::STATUS_RECEIVED, $incoming->status);
         $this->assertSame('ER-2026-0042', $incoming->summary['number']);
 
         // Dublette: identischer Inhalt wird abgewiesen (kein zweites Document).
@@ -151,26 +151,26 @@ final class IncomingEInvoiceTest extends TestCase {
             'file' => \Illuminate\Http\UploadedFile::fake()->createWithContent('kopie.xml', $xml),
         ])->assertRedirect(route('finance.incoming-invoices.show', $incoming->document_id));
         $this->assertSame($documents, \App\Models\Document\Document::query()->count());
-        $this->assertSame(1, \App\Models\IncomingEInvoice::query()->count());
+        $this->assertSame(1, \App\Models\Invoicing\IncomingEInvoice::query()->count());
 
         // Workflow (MVP-167): Zahlungsfreigabe erst NACH fachlicher Freigabe.
         $this->actingAs($this->admin)
             ->post(route('finance.incoming-invoices.decide', $incoming), ['decision' => 'payment_released'])
             ->assertSessionHas('error');
-        $this->assertSame(\App\Models\IncomingEInvoice::STATUS_RECEIVED, $incoming->fresh()->status);
+        $this->assertSame(\App\Models\Invoicing\IncomingEInvoice::STATUS_RECEIVED, $incoming->fresh()->status);
 
         $this->actingAs($this->admin)
             ->post(route('finance.incoming-invoices.decide', $incoming), ['decision' => 'approved'])
             ->assertSessionHas('success');
-        $this->assertSame(\App\Models\IncomingEInvoice::STATUS_APPROVED, $incoming->fresh()->status);
+        $this->assertSame(\App\Models\Invoicing\IncomingEInvoice::STATUS_APPROVED, $incoming->fresh()->status);
 
         $this->actingAs($this->admin)
             ->post(route('finance.incoming-invoices.decide', $incoming), ['decision' => 'payment_released'])
             ->assertSessionHas('success');
-        $this->assertSame(\App\Models\IncomingEInvoice::STATUS_PAYMENT_RELEASED, $incoming->fresh()->status);
+        $this->assertSame(\App\Models\Invoicing\IncomingEInvoice::STATUS_PAYMENT_RELEASED, $incoming->fresh()->status);
 
         // Ablehnung braucht eine Anmerkung.
-        $second = \App\Models\IncomingEInvoice::query()->create([
+        $second = \App\Models\Invoicing\IncomingEInvoice::query()->create([
             'organization_id' => $incoming->organization_id,
             'document_id' => $incoming->document_id,
             'sha256' => str_repeat('a', 64),

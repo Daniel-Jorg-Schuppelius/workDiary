@@ -76,7 +76,7 @@ class MailIntakeService {
 
         // Ticket-Pipeline (Feature 065, P2): bei Queue-Postfach greift zuerst das
         // Mail-Threading (In-Reply-To/References oder Ticket-Nr. im Betreff → bestehendes Ticket).
-        $queue = \App\Models\ServiceQueue::query()
+        $queue = \App\Models\ServiceTicket\ServiceQueue::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $connection->organization_id)
             ->where('email_connection_id', $connection->id)
@@ -85,7 +85,7 @@ class MailIntakeService {
             $ticket = $this->matchThreadedTicket($organization, $message);
             if ($ticket !== null) {
                 // Dedupe auch hier über die Message-ID.
-                $seen = \App\Models\ServiceTicketMessage::query()
+                $seen = \App\Models\ServiceTicket\ServiceTicketMessage::query()
                     ->withoutGlobalScopes()
                     ->where('organization_id', $organization->id)
                     ->where('message_id', $message->messageId)
@@ -311,10 +311,10 @@ class MailIntakeService {
      * Ticket-Nachrichten, dann Ticket-Nummer im Betreff ([TICKET-NO]).
      * Nur org-eigene Treffer — fremde Message-IDs (Spoofing) laufen ins Leere.
      */
-    private function matchThreadedTicket(Organization $organization, ParsedMessage $message): ?\App\Models\ServiceTicket {
+    private function matchThreadedTicket(Organization $organization, ParsedMessage $message): ?\App\Models\ServiceTicket\ServiceTicket {
         $referencedIds = array_values(array_filter([$message->inReplyTo, ...$message->references]));
         if ($referencedIds !== []) {
-            $known = \App\Models\ServiceTicketMessage::query()
+            $known = \App\Models\ServiceTicket\ServiceTicketMessage::query()
                 ->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
                 ->whereIn('message_id', $referencedIds)
@@ -326,7 +326,7 @@ class MailIntakeService {
         }
 
         if (preg_match('/\[([A-Z0-9\-\/]{4,30})\]/i', $message->subject, $matches) === 1) {
-            $ticket = \App\Models\ServiceTicket::query()
+            $ticket = \App\Models\ServiceTicket\ServiceTicket::query()
                 ->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
                 ->where('ticket_no', $matches[1])
@@ -351,7 +351,7 @@ class MailIntakeService {
      * des Kunden, seiner Ansprechpartner und Portalzugänge, die meldende Person
      * sowie jede Adresse, die im Verlauf schon angeschrieben wurde.
      */
-    private function senderBelongsToTicket(\App\Models\ServiceTicket $ticket, ParsedMessage $message): bool {
+    private function senderBelongsToTicket(\App\Models\ServiceTicket\ServiceTicket $ticket, ParsedMessage $message): bool {
         $sender = EmailHelper::normalize((string) $message->fromEmail);
         if ($sender === '') {
             return false;
@@ -383,7 +383,7 @@ class MailIntakeService {
 
         // Empfänger früherer Nachrichten des Vorgangs: wer bereits angeschrieben
         // wurde, darf antworten (auch ohne Stammdatensatz).
-        foreach (\App\Models\ServiceTicketMessage::query()->withoutGlobalScopes()
+        foreach (\App\Models\ServiceTicket\ServiceTicketMessage::query()->withoutGlobalScopes()
             ->where('service_ticket_id', $ticket->getKey())
             ->get(['to', 'cc']) as $previous) {
             foreach ([...(array) ($previous->to ?? []), ...(array) ($previous->cc ?? [])] as $recipient) {

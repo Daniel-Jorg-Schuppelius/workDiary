@@ -12,8 +12,10 @@ declare(strict_types=1);
 
 namespace App\Services\Inventory;
 
-use App\Models\{ArticleVariant, MaterialCostAllocation, StockMovement, Warehouse};
+use App\Models\Article\ArticleVariant;
 use App\Models\Customer\Customer;
+use App\Models\Inventory\{StockMovement, Warehouse};
+use App\Models\Material\MaterialCostAllocation;
 use App\Support\DecimalQty;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Carbon;

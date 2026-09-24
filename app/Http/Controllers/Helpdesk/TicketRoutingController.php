@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Helpdesk;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{ServiceTicket, TicketRoutingRule};
+use App\Models\ServiceTicket\{ServiceTicket, TicketRoutingRule};
 use App\Services\ServiceTicket\TicketRoutingService;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request};

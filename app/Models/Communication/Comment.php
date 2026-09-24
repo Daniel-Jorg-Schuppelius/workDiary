@@ -11,6 +11,7 @@
 namespace App\Models\Communication;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Platform\User;
 use Database\Factories\Communication\CommentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

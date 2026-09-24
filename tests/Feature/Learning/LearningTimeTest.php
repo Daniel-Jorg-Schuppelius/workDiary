@@ -12,10 +12,10 @@ namespace Tests\Feature\Learning;
 
 use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
 use App\Enums\Learning\LearningTimePolicy;
-use App\Models\Attendance;
 use App\Models\Communication\ExternalParticipant;
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningTimeSession};
 use App\Models\Platform\User;
+use App\Models\Time\Attendance;
 use App\Services\Learning\{LearningCourseService, LearningEnrollmentService, LearningTimeService, LearningWorkTimeClassifier};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

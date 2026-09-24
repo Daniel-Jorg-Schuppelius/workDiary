@@ -14,7 +14,7 @@ namespace App\Services\ServiceTicket;
 
 use App\Models\Knowledge\ContentReference;
 use App\Models\Platform\User;
-use App\Models\{Problem, ServiceTicket};
+use App\Models\ServiceTicket\{Problem, ServiceTicket};
 use Illuminate\Support\Facades\DB;
 
 /**

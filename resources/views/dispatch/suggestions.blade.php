@@ -69,7 +69,7 @@
                         @foreach ($suggestion['warnings'] as $warning)
                             <p class="mt-1 text-sm text-warning">⚠ {{ $warning }}</p>
                         @endforeach
-                        @can('viewAny', \App\Models\DiaryEntry::class)
+                        @can('viewAny', \App\Models\Diary\DiaryEntry::class)
                             <div class="mt-2 flex flex-wrap gap-2">
                                 <form method="POST" action="{{ route('dispatch.suggestions.apply', $suggestion['entry']) }}" class="flex flex-wrap items-center gap-1">
                                     @csrf

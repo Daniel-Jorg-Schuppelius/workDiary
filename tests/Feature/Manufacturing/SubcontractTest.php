@@ -11,7 +11,9 @@
 namespace Tests\Feature\Manufacturing;
 
 use App\Enums\Manufacturing\ProcurementMode;
-use App\Models\{Article, Supplier, Warehouse};
+use App\Models\Article\Article;
+use App\Models\Inventory\Warehouse;
+use App\Models\Supplier\Supplier;
 use App\Services\Manufacturing\{ManufacturingOrderService, SubcontractService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

@@ -47,7 +47,7 @@
                 </tr>
             </x-slot:head>
             @foreach ($profiles as $key => $label)
-                @php /** @var \App\Models\TimeExportDeliveryConfig|null $cfg */ $cfg = $deliveryConfigs[$key] ?? null; @endphp
+                @php /** @var \App\Models\Time\TimeExportDeliveryConfig|null $cfg */ $cfg = $deliveryConfigs[$key] ?? null; @endphp
                 <tr>
                     <td>{{ $label }}</td>
                     <td>
@@ -89,7 +89,7 @@
             </tr>
         </x-slot:head>
         @forelse ($mappings as $mapping)
-            @php /** @var \App\Models\WageTypeMapping $mapping */ @endphp
+            @php /** @var \App\Models\Time\WageTypeMapping $mapping */ @endphp
             <tr>
                 <td>{{ $profiles[$mapping->profile] ?? $mapping->profile }}</td>
                 <td class="font-mono text-sm">{{ $mapping->wage_type }}</td>

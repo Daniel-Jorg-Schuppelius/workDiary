@@ -98,14 +98,14 @@
                         <tr>
                             <td class="font-medium">
                                 @if ($row['invoiceId'] !== null)
-                                    <a href="{{ route('invoices.show', \App\Support\Sqid::encode(\App\Models\Invoice::class, $row['invoiceId'])) }}" class="link link-hover">{{ $row['number'] }}</a>
+                                    <a href="{{ route('invoices.show', \App\Support\Sqid::encode(\App\Models\Invoicing\Invoice::class, $row['invoiceId'])) }}" class="link link-hover">{{ $row['number'] }}</a>
                                 @else
                                     {{ $row['number'] }}
                                     <span class="badge badge-ghost badge-xs ml-1">Lexoffice</span>
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route('invoices.index', ['customer' => \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $row['customerId']), 'status' => \App\Models\Invoice::STATUS_ISSUED]) }}" class="link link-hover">{{ $row['customerName'] }}</a>
+                                <a href="{{ route('invoices.index', ['customer' => \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $row['customerId']), 'status' => \App\Models\Invoicing\Invoice::STATUS_ISSUED]) }}" class="link link-hover">{{ $row['customerName'] }}</a>
                             </td>
                             <td class="text-right tabular-nums">{{ $row['dueOn'] }}</td>
                             <td class="text-right tabular-nums">{{ $row['daysOverdue'] }}</td>

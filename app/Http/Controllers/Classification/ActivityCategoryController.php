@@ -11,13 +11,13 @@
 namespace App\Http\Controllers\Classification;
 
 use App\Http\Controllers\Concerns\ParsesIndexQuery;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Classification\SaveActivityCategoryRequest;
-use App\Models\Classification\Classification\ActivityCategory;
+use App\Models\Classification\ActivityCategory;
 use App\Support\Setting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class ActivityCategoryController extends Controller {
     use ParsesIndexQuery;

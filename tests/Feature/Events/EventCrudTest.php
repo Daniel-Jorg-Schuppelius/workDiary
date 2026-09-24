@@ -12,8 +12,8 @@ namespace Tests\Feature\Events;
 
 use App\Enums\Event\{EventStatus, EventType, EventVisibility, ParticipantRole};
 use App\Models\Calendar\{Event, EventCategory};
+use App\Models\Facility\Room;
 use App\Models\Platform\User;
-use App\Models\Room;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\WithOrganization;

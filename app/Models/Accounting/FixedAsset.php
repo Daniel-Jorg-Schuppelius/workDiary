@@ -14,7 +14,7 @@ namespace App\Models\Accounting;
 
 use App\Casts\MoneyCast;
 use App\Enums\Finance\{DepreciationMethod, FixedAssetStatus};
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Carbon\CarbonImmutable;

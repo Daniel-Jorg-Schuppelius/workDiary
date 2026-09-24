@@ -12,7 +12,8 @@ namespace Tests\Feature\Dispatch;
 
 use App\Enums\Diary\{Mode, Status};
 use App\Models\Customer\Customer;
-use App\Models\{DiaryEntry, DiaryEntryEvent, Qualification};
+use App\Models\Diary\{DiaryEntry, DiaryEntryEvent};
+use App\Models\Hr\Qualification;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Services\Dispatch\GapFillSuggester;

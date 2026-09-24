@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Api;
 use App\Enums\Diary\Status;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DiaryEntryResource;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Services\Archive\ArchiveService;
 use Illuminate\Http\{JsonResponse, Request};

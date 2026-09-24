@@ -12,11 +12,10 @@ namespace App\Models\Project;
 
 use App\Casts\{MoneyCast, PercentageCast};
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Material;
-use App\Models\Project\Project\Project;
 
 class ProjectBillingRule extends Model {
     use BelongsToOrganization;

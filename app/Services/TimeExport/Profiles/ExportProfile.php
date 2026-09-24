@@ -10,7 +10,7 @@
 
 namespace App\Services\TimeExport\Profiles;
 
-use App\Models\TimeExport;
+use App\Models\Time\TimeExport;
 
 /**
  * Vertrag für ein Lohn-Export-Profil (MVP-019).

@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\EmergencyAssignmentResource;
-use App\Models\EmergencyAssignment;
+use App\Models\Diary\EmergencyAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use OpenApi\Attributes as OA;

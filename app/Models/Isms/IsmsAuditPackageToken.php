@@ -22,7 +22,7 @@ use Illuminate\Support\Carbon;
  * begrenzter, lesender Prüferzugang").
  *
  * Der Klartext-Token wird NICHT gespeichert; persistiert wird nur der
- * SHA-256-Hash (Muster {@see \App\Models\ProtocolSignatureToken} /
+ * SHA-256-Hash (Muster {@see \App\Models\Protocol\ProtocolSignatureToken} /
  * Laravel Password-Reset). Der Klartext wird nach der Erstellung genau
  * EINMAL angezeigt.
  *

@@ -10,7 +10,7 @@
 
 namespace Tests\Unit\Manufacturing;
 
-use App\Models\{ProcedureParameterDefinition, ProcedureTemplateVersion};
+use App\Models\Procedure\{ProcedureParameterDefinition, ProcedureTemplateVersion};
 use App\Services\Manufacturing\ParameterResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;

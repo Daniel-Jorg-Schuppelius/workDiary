@@ -10,7 +10,7 @@
 
 namespace App\Services\Billing;
 
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Services\Billing\Feed\{DocumentFeedSourceRegistry, FeedProjection};
 use CommonToolkit\Enums\CountryCode;
 use CommonToolkit\Helper\Data\NumberHelper;

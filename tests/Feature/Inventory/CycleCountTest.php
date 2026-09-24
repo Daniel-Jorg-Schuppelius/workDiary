@@ -11,7 +11,8 @@
 namespace Tests\Feature\Inventory;
 
 use App\Enums\Inventory\StockCountType;
-use App\Models\{Article, ArticleVariant, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\Warehouse;
 use App\Services\Inventory\{CycleCountPlanner, StocktakeService, ValuationService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -71,7 +72,7 @@ final class CycleCountTest extends TestCase {
         $this->artisan('inventory:cycle-counts', ['--class' => 'A', '--org' => $this->organization->id])->assertExitCode(0);
 
         app()->instance('currentOrganization', $this->organization);
-        $this->assertGreaterThan(0, \App\Models\StockCount::query()->where('count_type', 'cycle')->count());
+        $this->assertGreaterThan(0, \App\Models\Inventory\StockCount::query()->where('count_type', 'cycle')->count());
     }
 
     public function test_record_by_scan_hits_matching_line(): void {

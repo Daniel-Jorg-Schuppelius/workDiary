@@ -11,7 +11,8 @@
 namespace Tests\Feature\Inventory;
 
 use App\Enums\User\Permission as P;
-use App\Models\{Article, ArticleVariant, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\Warehouse;
 use App\Models\Platform\User;
 use App\Services\Inventory\InventoryLedger;
 use App\Support\MorphMap;

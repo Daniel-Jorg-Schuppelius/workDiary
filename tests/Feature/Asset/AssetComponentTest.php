@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Asset;
 
-use App\Models\{Article, Asset, AssetComponent};
+use App\Models\Article\Article;
+use App\Models\Asset\{Asset, AssetComponent};
 use App\Models\Platform\{Organization, User};
 use App\Services\Asset\AssetComponentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -175,14 +176,14 @@ class AssetComponentTest extends TestCase {
     }
 
     /** Seriennummer der Bestandsführung; die Variante ist dort Pflicht. */
-    private function stockSerial(string $serialNo): \App\Models\StockSerial {
+    private function stockSerial(string $serialNo): \App\Models\Inventory\StockSerial {
         $article = Article::factory()->create(['organization_id' => $this->org->id, 'name' => 'Filter F7']);
-        $variant = \App\Models\ArticleVariant::factory()->create([
+        $variant = \App\Models\Article\ArticleVariant::factory()->create([
             'organization_id' => $this->org->id,
             'article_id' => $article->id,
         ]);
 
-        return \App\Models\StockSerial::query()->create([
+        return \App\Models\Inventory\StockSerial::query()->create([
             'organization_id' => $this->org->id,
             'article_id' => $article->id,
             'article_variant_id' => $variant->id,

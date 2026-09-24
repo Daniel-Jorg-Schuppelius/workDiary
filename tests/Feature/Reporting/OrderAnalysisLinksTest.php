@@ -10,8 +10,9 @@
 
 namespace Tests\Feature\Reporting;
 
-use App\Models\{Asset, DiaryEntry};
+use App\Models\Asset\Asset;
 use App\Models\Customer\Customer;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

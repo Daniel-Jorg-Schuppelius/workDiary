@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Enums\Numbering\NumberScope;
-use App\Models\{Article, ArticleVariant, StockSerial};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\StockSerial;
 use App\Models\Platform\Organization;
 use App\Services\Numbering\NumberSequenceService;
 use CommonToolkit\Helper\Data\StringHelper;

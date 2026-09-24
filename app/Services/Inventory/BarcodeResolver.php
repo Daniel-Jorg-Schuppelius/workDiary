@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Enums\Inventory\BarcodeMatchType;
-use App\Models\{Article, ArticleVariant, StockLot, StockSerial};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\{StockLot, StockSerial};
 
 /**
  * Löst einen gescannten Code (Feature 048, E5) zur passenden Entität auf:

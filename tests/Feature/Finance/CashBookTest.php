@@ -10,8 +10,9 @@
 
 namespace Tests\Feature\Finance;
 
-use App\Models\{CashEntry, CashRegister, Invoice};
 use App\Models\Customer\Customer;
+use App\Models\Finance\{CashEntry, CashRegister};
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Services\Finance\{CashBookService, GdpduExportService};
 use Carbon\Carbon;

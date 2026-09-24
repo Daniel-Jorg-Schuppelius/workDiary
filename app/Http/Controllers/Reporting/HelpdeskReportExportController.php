@@ -18,7 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\Audit\AuditLog;
 use App\Models\Knowledge\KnowledgeArticle;
-use App\Models\{Problem, ServiceQueue, ServiceTicket, SlaClockSegment, TicketSatisfaction};
+use App\Models\ServiceTicket\{Problem, ServiceQueue, ServiceTicket, SlaClockSegment, TicketSatisfaction};
 use App\Services\ServiceTicket\HelpdeskMetricsService;
 use App\Support\{CarbonFmt, Sqid, Tz};
 use App\Support\MorphMap;

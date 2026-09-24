@@ -13,7 +13,7 @@ namespace Tests\Feature\Search;
 use App\Models\Attachments\Attachment;
 use App\Models\Communication\Comment;
 use App\Models\Customer\Customer;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

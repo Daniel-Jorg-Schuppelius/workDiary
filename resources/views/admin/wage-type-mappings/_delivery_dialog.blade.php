@@ -8,7 +8,7 @@
 --}}
 {{-- Dialog: automatische Export-Lieferung je Profil (A21 · MVP-019) --}}
 @php
-    /** @var \App\Models\TimeExportDeliveryConfig $config */
+    /** @var \App\Models\Time\TimeExportDeliveryConfig $config */
     $mailEnabled = (bool) old('mail_enabled', $config->mail_enabled);
     $sftpEnabled = (bool) old('sftp_enabled', $config->sftp_enabled);
     $recipientsRaw = old('mail_recipients_raw', implode("\n", $config->mailRecipients()));

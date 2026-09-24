@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Finance;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Finance\{BankAccount, PaymentRun, PaymentRunItem, SepaMandate};
-use App\Models\IncomingEInvoice;
+use App\Models\Invoicing\IncomingEInvoice;
 use App\Services\Finance\FinancialFormatsSupport;
 use App\Services\Finance\Sepa\{PaymentProposalService, PaymentRunService};
 use App\Support\{ErrorText, Sqid};

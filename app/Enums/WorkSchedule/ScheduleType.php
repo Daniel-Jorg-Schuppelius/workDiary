@@ -14,7 +14,7 @@ use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
 /**
- * Arbeitszeit-Typ eines {@see \App\Models\WorkSchedule}. Steuert, wie das
+ * Arbeitszeit-Typ eines {@see \App\Models\Time\WorkSchedule}. Steuert, wie das
  * Tagessoll ermittelt wird. Werte sind stabil (DB), Labels über
  * `work_schedule.type.<value>` übersetzt.
  *

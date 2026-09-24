@@ -18,7 +18,7 @@ use App\Enums\Support\{ProblemReportDeliveryTarget, ProblemReportSeverity, Probl
 use App\Http\Middleware\AssignRequestId;
 use App\Mail\ProblemReportForwardMail;
 use App\Models\Platform\User;
-use App\Models\ProblemReport;
+use App\Models\ServiceTicket\ProblemReport;
 use App\Services\Diagnostics\DiagnosticsService;
 use App\Services\Numbering\NumberSequenceService;
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};

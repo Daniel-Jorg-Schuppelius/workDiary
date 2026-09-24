@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 @php
-    /** @var \App\Models\Permit $permit */
+    /** @var \App\Models\Asset\Permit $permit */
     /** @var array<string, string> $statusOptions */
     /** @var \Illuminate\Support\Collection<int, \App\Models\Calendar\Event> $eventOptions */
     $currentStatus = old('status', $permit->status?->value ?? \App\Enums\Permit\PermitStatus::Required->value);

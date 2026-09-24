@@ -11,7 +11,7 @@
 namespace Tests\Feature\Procurement;
 
 use App\Models\Platform\User;
-use App\Models\{Supplier, SupplierCatalogItem, SupplierCatalogSource};
+use App\Models\Supplier\{Supplier, SupplierCatalogItem, SupplierCatalogSource};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\PermissionRegistrar;

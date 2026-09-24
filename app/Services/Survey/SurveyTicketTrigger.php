@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Survey;
 
 use App\Mail\SurveyInvitationMail;
-use App\Models\ServiceTicket;
+use App\Models\ServiceTicket\ServiceTicket;
 use App\Models\Survey\Survey;
 use Illuminate\Support\Facades\{Log, Mail};
 use RuntimeException;

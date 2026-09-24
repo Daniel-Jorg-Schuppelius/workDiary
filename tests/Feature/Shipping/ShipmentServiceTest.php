@@ -12,9 +12,9 @@ namespace Tests\Feature\Shipping;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Shipping\ShipmentStatus;
-use App\Models\{CarrierConnection, Shipment};
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
+use App\Models\Shipping\{CarrierConnection, Shipment};
 use App\Notifications\GenericEventNotification;
 use App\Services\Shipping\{ShipmentPackage, ShipmentRecipient, ShipmentRequest, ShipmentService, ShippingProviderRegistry, TrackingEvent, TrackingResult};
 use Illuminate\Foundation\Testing\RefreshDatabase;

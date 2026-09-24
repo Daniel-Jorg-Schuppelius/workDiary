@@ -14,7 +14,7 @@ use App\Http\Controllers\Api\LocationController;
 use App\Models\Customer\Customer;
 use App\Models\Location\{CustomerGeofence, LocationDeviceToken, LocationPendingEntry, LocationPoint, LocationVisit};
 use App\Models\Platform\User;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Location\VisitMaterializer;
 use Illuminate\Foundation\Testing\RefreshDatabase;

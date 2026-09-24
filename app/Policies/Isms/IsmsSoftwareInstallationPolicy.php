@@ -11,8 +11,8 @@
 namespace App\Policies\Isms;
 
 use App\Enums\User\Permission as P;
-use App\Policies\Auth\PermissionPolicy;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * Zugriffsregeln Software-Installationen (Feature 044): identisch zum

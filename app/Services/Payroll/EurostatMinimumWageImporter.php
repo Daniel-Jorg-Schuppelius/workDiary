@@ -10,7 +10,7 @@
 
 namespace App\Services\Payroll;
 
-use App\Models\MinimumWageReference;
+use App\Models\Time\MinimumWageReference;
 use App\Plugins\Support\PluginHttpFactory;
 use RuntimeException;
 

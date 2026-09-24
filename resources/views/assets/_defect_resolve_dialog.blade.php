@@ -8,8 +8,8 @@
 --}}
 
 @php
-    /** @var \App\Models\Asset $asset */
-    /** @var \App\Models\AssetDefect $defect */
+    /** @var \App\Models\Asset\Asset $asset */
+    /** @var \App\Models\Asset\AssetDefect $defect */
     /** @var string $action */
     $isWriteOff = $action === 'writeOff';
 @endphp

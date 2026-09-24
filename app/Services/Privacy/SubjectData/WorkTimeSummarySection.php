@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy\SubjectData;
 
+use App\Models\Absence\{SickLeave, Vacation};
 use App\Models\Platform\User;
-use App\Models\{SickLeave, TimeEntry, Vacation};
+use App\Models\Time\TimeEntry;
 use Illuminate\Database\Eloquent\Model;
 
 /**

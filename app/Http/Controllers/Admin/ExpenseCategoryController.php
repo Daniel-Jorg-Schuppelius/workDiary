@@ -11,8 +11,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SaveExpenseCategoryRequest;
-use App\Models\ExpenseCategory;
+use App\Http\Requests\Travel\SaveExpenseCategoryRequest;
+use App\Models\Travel\ExpenseCategory;
 use App\Support\{Setting, SortableQuery};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;

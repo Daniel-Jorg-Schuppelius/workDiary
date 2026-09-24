@@ -16,7 +16,7 @@
 <x-index-page overflow="clip" :subtitle="__('inventory.subtitle.warehouses')">
     <x-slot:actions>
         <x-icon-btn icon="warehouse" size="sm" :href="route('inventory.stock')" show-label>{{ __('inventory.stock') }}</x-icon-btn>
-        @can('create', App\Models\Warehouse::class)
+        @can('create', App\Models\Inventory\Warehouse::class)
             <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger
                         :href="route('warehouses.create')" show-label>{{ __('inventory.action.create_warehouse') }}</x-icon-btn>
         @endcan

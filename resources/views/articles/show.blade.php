@@ -11,7 +11,7 @@
 @section('nav-title', __('article.title'))
 
 @php
-    /** @var \App\Models\Article $article */
+    /** @var \App\Models\Article\Article $article */
     $canManage = auth()->user()?->can('update', $article) ?? false;
 @endphp
 

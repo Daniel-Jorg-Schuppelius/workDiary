@@ -9,8 +9,10 @@
 namespace Tests\Feature\Terminal;
 
 use App\Enums\Attendance\{AttendanceSource, CheckpointKind};
-use App\Models\{Attendance, AttendanceCheckpoint, AttendanceTerminal, Site, Vehicle};
+use App\Models\Facility\Site;
+use App\Models\Fleet\Vehicle;
 use App\Models\Platform\{Organization, User};
+use App\Models\Time\{Attendance, AttendanceCheckpoint, AttendanceTerminal};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

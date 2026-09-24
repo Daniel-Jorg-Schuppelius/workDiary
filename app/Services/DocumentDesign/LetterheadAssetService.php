@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\DocumentDesign;
 
 use App\Enums\DocumentDesign\{LetterheadAssetStatus, LetterheadPageRole, PageFormat};
-use App\Models\Document\DocumentDesign\LetterheadAsset;
+use App\Models\DocumentDesign\LetterheadAsset;
 use App\Models\Platform\{Organization, User};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\FileSystem\File;

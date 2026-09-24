@@ -14,8 +14,8 @@ use App\Enums\Attendance\AttendanceStatus;
 use App\Enums\TimeApproval\MonthClosureStatus;
 use App\Enums\TimeExport\TimeExportStatus;
 use App\Enums\User\Permission as P;
-use App\Models\{Attendance, MonthClosure, TimeExportEvent};
 use App\Models\Platform\User;
+use App\Models\Time\{Attendance, MonthClosure, TimeExportEvent};
 use App\Services\TimeApproval\MonthClosureService;
 use App\Services\TimeExport\{TimeExportException, TimeExportService};
 use Carbon\CarbonImmutable;
@@ -350,7 +350,7 @@ class TimeExportServiceTest extends TestCase {
         $user = $this->makeUser();
         $this->seedAttendance($user, 8 * 60); // Mo 15.01.2024
 
-        \App\Models\Vacation::query()->create([
+        \App\Models\Absence\Vacation::query()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $user->id,
             'start_date' => '2024-01-02', // Di–Mi → 2 Werktage
@@ -358,14 +358,14 @@ class TimeExportServiceTest extends TestCase {
             'type' => \App\Enums\Vacation\VacationType::Vacation,
             'status' => \App\Enums\Vacation\VacationStatus::Approved,
         ]);
-        \App\Models\SickLeave::query()->create([
+        \App\Models\Absence\SickLeave::query()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $user->id,
             'start_date' => '2024-01-08', // Mo–Di → 2 Werktage
             'end_date' => '2024-01-09',
             'kind' => \App\Enums\Sickness\SickLeaveKind::Initial,
         ]);
-        \App\Models\OnCallShift::query()->create([
+        \App\Models\Diary\OnCallShift::query()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $user->id,
             'start_at' => '2024-01-20 08:00:00', // 8 h Bereitschaft
@@ -376,7 +376,7 @@ class TimeExportServiceTest extends TestCase {
             'name' => 'Reisen',
             'status' => \App\Enums\Project\ProjectStatus::Active->value,
         ]);
-        \App\Models\TimeEntry::query()->create([
+        \App\Models\Time\TimeEntry::query()->create([
             'organization_id' => $this->organization->id,
             'project_id' => $project->id,
             'user_id' => $user->id,
@@ -428,7 +428,7 @@ class TimeExportServiceTest extends TestCase {
         $this->service->delete($built, 'Fehlerhafte Periode, Neuaufbau folgt.', $admin);
 
         $this->assertDatabaseMissing('time_exports', ['id' => $built->id]);
-        $this->assertSame(0, \App\Models\TimeExportLine::query()->where('time_export_id', $built->id)->count());
+        $this->assertSame(0, \App\Models\Time\TimeExportLine::query()->where('time_export_id', $built->id)->count());
         Storage::disk('local')->assertMissing($file);
         $log = \App\Models\Audit\AuditLog::query()->where('event', 'export.deleted')->firstOrFail();
         $this->assertSame('Fehlerhafte Periode, Neuaufbau folgt.', $log->changes['reason']);

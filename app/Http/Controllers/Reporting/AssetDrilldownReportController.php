@@ -13,8 +13,10 @@ namespace App\Http\Controllers\Reporting;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{BuildsOpenIssueDrilldown, RendersReportPdf, WritesReportCsv};
-use App\Models\{Asset, DiaryEntry, OpenIssue, Protocol};
+use App\Models\Asset\Asset;
+use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Platform\User;
+use App\Models\Protocol\Protocol;
 use App\Services\Asset\RecurringDefectService;
 use App\Support\MorphMap;
 use Illuminate\Http\{Request, Response};
@@ -217,7 +219,7 @@ class AssetDrilldownReportController extends Controller {
             return '#' . $filters['asset_id'];
         }
         if ($filters['product_id'] !== null) {
-            $product = \App\Models\Product::query()->find($filters['product_id']);
+            $product = \App\Models\Article\Product::query()->find($filters['product_id']);
             if ($product !== null) {
                 return $product->name;
             }

@@ -10,7 +10,7 @@
 
 namespace App\Exceptions;
 
-use App\Models\ProcedureStepRun;
+use App\Models\Procedure\ProcedureStepRun;
 use RuntimeException;
 
 /**

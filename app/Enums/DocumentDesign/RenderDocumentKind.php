@@ -158,14 +158,14 @@ enum RenderDocumentKind: string implements HasLabel {
     }
 
     /**
-     * Render-Art eines Rechnungsbelegs nach {@see \App\Models\Invoice}-Typ:
+     * Render-Art eines Rechnungsbelegs nach {@see \App\Models\Invoicing\Invoice}-Typ:
      * Gutschrift und Pro-forma tragen eigene Arten, alle übrigen Typen
      * (Storno, Abschlag, Teil-/Schlussrechnung, Retainer) bleiben `invoice`.
      */
     public static function forInvoiceType(string $type): self {
         return match ($type) {
-            \App\Models\Invoice::TYPE_CREDIT_NOTE => self::CreditNote,
-            \App\Models\Invoice::TYPE_PROFORMA => self::ProformaInvoice,
+            \App\Models\Invoicing\Invoice::TYPE_CREDIT_NOTE => self::CreditNote,
+            \App\Models\Invoicing\Invoice::TYPE_PROFORMA => self::ProformaInvoice,
             default => self::Invoice,
         };
     }

@@ -11,7 +11,7 @@
 namespace App\Models\Learning;
 
 use App\Enums\Learning\LearningBookingStatus;
-use App\Models\Article;
+use App\Models\Article\Article;
 use App\Models\Communication\ExternalParticipant;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;

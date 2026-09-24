@@ -14,7 +14,7 @@
     /** @var \Carbon\CarbonImmutable $from */
     /** @var \Carbon\CarbonImmutable $to */
     /** @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users */
-    /** @var \Illuminate\Support\Collection<int, \App\Models\Vacation> $vacations */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Absence\Vacation> $vacations */
     /** @var \App\Services\Calendar\HolidayService $holidays */
     /** @var bool $anonymous */
 

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Gaeb;
 
 use App\Enums\Gaeb\{BoqItemStatus, BoqProgressSource};
-use App\Models\{BoqItem, BoqItemProgress};
+use App\Models\Gaeb\{BoqItem, BoqItemProgress};
 use Illuminate\Support\Carbon;
 
 /**

@@ -13,7 +13,7 @@ namespace App\Services\Procedure;
 use App\Enums\Procedure\{ProcedureBackupScope, ProcedureBackupStorageTarget, ProcedureBackupVerifyMethod, ProcedureRunEventType, ProcedureStepRunStatus, ProcedureStepType};
 use App\Exceptions\{ProcedureBackupValidationException, ProcedureStepBlockedException};
 use App\Models\Platform\User;
-use App\Models\{ProcedureBackupProof, ProcedureStepRun};
+use App\Models\Procedure\{ProcedureBackupProof, ProcedureStepRun};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 

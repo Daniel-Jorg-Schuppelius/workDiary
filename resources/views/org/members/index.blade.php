@@ -77,7 +77,7 @@
                                 $mayManageMember = ! $member->isGlobalAdmin() || (bool) auth()->user()?->isGlobalAdmin();
                             @endphp
                             <div class="flex justify-end gap-1">
-                                @can('viewAny', [\App\Models\FlexEligibility::class, $member])
+                                @can('viewAny', [\App\Models\Time\FlexEligibility::class, $member])
                                     <x-icon-btn icon="schedule"
                                                 :href="route('users.flex-eligibility.index', $member)"
                                                 :label="__('flex.eligibility.nav_title')" />

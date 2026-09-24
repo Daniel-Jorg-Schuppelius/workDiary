@@ -14,7 +14,8 @@ namespace App\Models\Passenger;
 
 use App\Enums\Passenger\{RideOperationMode, RideOrderChannel, RidePriceKind, RideStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\{DiaryEntry, Vehicle};
+use App\Models\Diary\DiaryEntry;
+use App\Models\Fleet\Vehicle;
 use App\Models\Platform\User;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Database\Eloquent\{Builder, Model};

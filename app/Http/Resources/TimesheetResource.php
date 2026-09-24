@@ -11,7 +11,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Project\Project;
-use App\Models\Timesheet;
+use App\Models\Time\Timesheet;
 use App\Support\Sqid;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;

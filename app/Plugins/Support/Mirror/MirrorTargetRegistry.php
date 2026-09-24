@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Support\Mirror;
 
 use App\Models\Document\Document;
-use App\Models\{Invoice, Protocol};
+use App\Models\Invoicing\Invoice;
+use App\Models\Protocol\Protocol;
 use App\Plugins\Support\Mirror\Observers\{MirrorDocumentObserver, MirrorInvoiceObserver, MirrorProtocolObserver};
 
 /**

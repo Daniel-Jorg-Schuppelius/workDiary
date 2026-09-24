@@ -12,7 +12,7 @@
     <x-select-field name="vehicle_id" :label="__('Fahrzeug')" required>
         <option value="">—</option>
         @foreach ($vehicles as $v)
-            <option value="{{ $v->sqid }}" @selected((string) old('vehicle_id', \App\Support\Sqid::encode(\App\Models\Vehicle::class, $log?->vehicle_id ?? $defaultVehicleId)) === $v->sqid)>{{ $v->displayName() }}</option>
+            <option value="{{ $v->sqid }}" @selected((string) old('vehicle_id', \App\Support\Sqid::encode(\App\Models\Fleet\Vehicle::class, $log?->vehicle_id ?? $defaultVehicleId)) === $v->sqid)>{{ $v->displayName() }}</option>
         @endforeach
     </x-select-field>
     <x-select-field name="energy_type" :label="__('Typ')" required>

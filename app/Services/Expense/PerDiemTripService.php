@@ -11,7 +11,7 @@
 namespace App\Services\Expense;
 
 use App\Enums\Expense\{ExpenseStatus, PaymentMethod, PerDiemTripStatus};
-use App\Models\{Expense, ExpenseCategory, PerDiemDay, PerDiemTrip, TravelLog};
+use App\Models\Travel\{Expense, ExpenseCategory, PerDiemDay, PerDiemTrip, TravelLog};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\DB;

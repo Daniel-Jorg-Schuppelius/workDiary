@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\MeterReading;
 
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Platform\{Organization, User};
 use App\Services\MeterReading\MeterReadingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

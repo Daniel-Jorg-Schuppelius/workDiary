@@ -13,7 +13,7 @@ namespace App\Services\Classification;
 use App\Enums\Classification\{ClassificationDomain, ClassificationRequirementPhase};
 use App\Exceptions\ClassificationRequirementException;
 use App\Models\Classification\ClassificationRequirement;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 
 /**
  * Prüft Pflichtklassifikationen pro Auftragstyp und Phase.

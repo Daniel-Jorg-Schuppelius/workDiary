@@ -94,7 +94,7 @@
                 @foreach ($riskRows as $row)
                     <tr>
                         <td class="font-medium">
-                            <a href="{{ route('suppliers.show', \App\Support\Sqid::encode(\App\Models\Supplier::class, $row['supplierId'])) }}" class="link link-hover">
+                            <a href="{{ route('suppliers.show', \App\Support\Sqid::encode(\App\Models\Supplier\Supplier::class, $row['supplierId'])) }}" class="link link-hover">
                                 {{ $row['supplierName'] }}
                             </a>
                         </td>
@@ -154,7 +154,7 @@
                 @foreach ($tableRows as $row)
                     <tr>
                         <td class="font-medium">
-                            <a href="{{ route('suppliers.show', \App\Support\Sqid::encode(\App\Models\Supplier::class, $row['supplierId'])) }}" class="link link-hover">
+                            <a href="{{ route('suppliers.show', \App\Support\Sqid::encode(\App\Models\Supplier\Supplier::class, $row['supplierId'])) }}" class="link link-hover">
                                 {{ $row['supplierName'] }}
                             </a>
                         </td>

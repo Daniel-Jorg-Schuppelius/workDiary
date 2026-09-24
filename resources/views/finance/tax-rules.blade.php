@@ -31,12 +31,12 @@
             @csrf
             <input aria-label="{{ __('Ländercode') }}" name="country" required maxlength="2" class="input input-sm input-bordered uppercase" placeholder="DE" value="DE">
             <select name="category" class="select select-sm select-bordered">
-                @foreach (\App\Models\TaxRule::CATEGORIES as $category)
+                @foreach (\App\Models\Finance\TaxRule::CATEGORIES as $category)
                     <option value="{{ $category }}">{{ __("values.$category") }}</option>
                 @endforeach
             </select>
             <select name="rate_type" class="select select-sm select-bordered">
-                @foreach (\App\Models\TaxRule::RATE_TYPES as $type)
+                @foreach (\App\Models\Finance\TaxRule::RATE_TYPES as $type)
                     <option value="{{ $type }}">{{ __("values.$type") }}</option>
                 @endforeach
             </select>

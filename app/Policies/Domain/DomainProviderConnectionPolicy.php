@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Policies\Domain;
 
 use App\Enums\User\Permission as P;
-use App\Policies\Auth\PermissionPolicy;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * DomainReselling-Verbindung (Feature 083): view = Verbindung/Health sehen,

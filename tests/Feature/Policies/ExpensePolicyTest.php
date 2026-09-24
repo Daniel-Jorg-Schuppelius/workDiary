@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Policies;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\Expense;
 use App\Models\Platform\User;
-use App\Policies\ExpensePolicy;
+use App\Models\Travel\Expense;
+use App\Policies\Travel\ExpensePolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};

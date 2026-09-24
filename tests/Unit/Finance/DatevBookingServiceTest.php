@@ -12,7 +12,7 @@ namespace Tests\Unit\Finance;
 
 use App\Enums\Finance\ChartOfAccounts;
 use App\Models\Customer\Customer;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Services\Finance\Datev\DatevBookingConfig;
 use App\Services\Finance\DatevBookingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -12,8 +12,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Gaeb;
 
-use App\Models\{Article, ArticleVariant, Supplier, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\Warehouse;
 use App\Models\Platform\User;
+use App\Models\Supplier\Supplier;
 use App\Services\Gaeb\GaebOrderExportService;
 use App\Services\Procurement\PurchaseOrderService;
 use ERechnungToolkit\Enums\GaebPhase;
@@ -70,7 +72,7 @@ final class PurchaseOrderGaebExportTest extends TestCase {
         ]);
     }
 
-    private function orderWithLine(): \App\Models\PurchaseOrder {
+    private function orderWithLine(): \App\Models\Procurement\PurchaseOrder {
         $order = app(PurchaseOrderService::class)->createDraft($this->organization, $this->supplier, $this->warehouse);
 
         $this->actingAs($this->admin)->post(route('purchase-orders.lines.add', $order), [

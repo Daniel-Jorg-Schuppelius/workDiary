@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Procurement;
 
 use App\Enums\Procurement\CatalogSourceFormat;
-use App\Models\{SupplierCatalogImport, SupplierCatalogSource};
+use App\Models\Supplier\{SupplierCatalogImport, SupplierCatalogSource};
 use RuntimeException;
 
 /**

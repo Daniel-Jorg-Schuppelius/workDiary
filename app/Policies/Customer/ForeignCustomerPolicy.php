@@ -11,7 +11,7 @@
 namespace App\Policies\Customer;
 
 use App\Enums\User\UserRole;
-use App\Models\Customer\Customer\ForeignCustomer;
+use App\Models\Customer\ForeignCustomer;
 use App\Models\Platform\User;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 

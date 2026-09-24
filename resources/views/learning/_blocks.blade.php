@@ -255,7 +255,7 @@
                 // Ein Lauf braucht einen Tätigkeitsbericht als Anker — im Kurs
                 // zeigt der Block deshalb den gültigen Ablauf, gestartet wird
                 // im Bericht.
-                $procedure = \App\Models\ProcedureTemplate::query()->find($block['procedure_template_id'] ?? null);
+                $procedure = \App\Models\Procedure\ProcedureTemplate::query()->find($block['procedure_template_id'] ?? null);
                 $procedureVersion = $procedure ? app(\App\Services\Procedure\ProcedureTemplateService::class)->currentVersionFor($procedure) : null;
                 $procedureSteps = $procedureVersion ? $procedureVersion->steps()->orderBy('sort_order')->get(['label', 'description', 'required']) : collect();
             @endphp

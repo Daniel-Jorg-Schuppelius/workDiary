@@ -10,14 +10,14 @@
 
 namespace App\Models\Auth;
 
+use App\Models\Asset\Asset;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Platform\User;
+use App\Models\Time\TimeEntry;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use App\Models\Asset;
-use App\Models\TimeEntry;
-use App\Models\Platform\User;
 
 /**
  * Eine Fernwartungs-Verbindung, deren Geräte-ID noch keinem Asset zugeordnet ist.

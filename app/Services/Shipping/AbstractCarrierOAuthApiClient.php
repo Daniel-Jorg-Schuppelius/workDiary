@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Shipping;
 
 use APIToolkit\API\Authentication\OAuth2\{OAuth2ClientCredentialsAuthentication, OAuth2ClientCredentialsGrant};
-use App\Models\CarrierConnection;
+use App\Models\Shipping\CarrierConnection;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use RuntimeException;
 

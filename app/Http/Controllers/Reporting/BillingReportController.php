@@ -14,7 +14,8 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\Customer\Customer;
-use App\Models\{Invoice, TimeEntry};
+use App\Models\Invoicing\Invoice;
+use App\Models\Time\TimeEntry;
 use App\Services\Reporting\{LexofficeRevenueMirror, ReportFilters};
 use App\Support\ChartBucket;
 use App\Support\Query\DateRange;
@@ -211,8 +212,8 @@ class BillingReportController extends Controller {
         $validation = ['checked' => 0, 'passed' => 0, 'failed' => 0];
         $transferred = 0;
 
-        /** @var Collection<int, \App\Models\IncomingEInvoice> $records */
-        $records = \App\Models\IncomingEInvoice::query()
+        /** @var Collection<int, \App\Models\Invoicing\IncomingEInvoice> $records */
+        $records = \App\Models\Invoicing\IncomingEInvoice::query()
             ->whereBetween('received_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
             ->get(['status', 'summary', 'transferred_at']);
 

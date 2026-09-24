@@ -14,7 +14,7 @@ namespace App\Services\Rental;
 
 use App\Enums\Rental\RentalReservationKind;
 use App\Exceptions\{AssetNotUsableException, RentalConflictException};
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Rental\{RentalProfile, RentalReservation};
 use App\Services\Asset\AssetUsageGuard;
 use App\Support\CarbonFmt;

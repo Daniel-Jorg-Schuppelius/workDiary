@@ -10,12 +10,11 @@
 
 namespace App\Models\Sales;
 
+use App\Models\Article\Article;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Article;
-use App\Models\Sales\SalesDiscountGroupOverride;
 
 /**
  * Verkaufs-Rabattgruppe (Feature 107, W9): org-weite Standard-Kondition für

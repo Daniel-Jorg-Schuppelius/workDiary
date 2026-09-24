@@ -12,7 +12,7 @@ namespace Tests\Feature\Reporting;
 
 use App\Models\Communication\CommunicationNote;
 use App\Models\Customer\Customer;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Document\Document;
 use App\Models\Platform\User;
 use App\Models\Project\Project;

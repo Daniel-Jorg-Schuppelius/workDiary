@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\CustomerPortal;
 
 use App\Http\Controllers\Controller;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;

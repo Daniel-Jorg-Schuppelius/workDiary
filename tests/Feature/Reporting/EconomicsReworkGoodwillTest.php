@@ -14,7 +14,7 @@ use App\Models\Classification\Classification;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Services\Reporting\EconomicsReportBuilder;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

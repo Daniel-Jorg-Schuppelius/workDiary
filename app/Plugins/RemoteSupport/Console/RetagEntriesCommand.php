@@ -13,7 +13,7 @@ namespace App\Plugins\RemoteSupport\Console;
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Plugins\RemoteSupport\{RemoteSessionImporter, RemoteSupportPlugin};
 use Illuminate\Console\Command;
 

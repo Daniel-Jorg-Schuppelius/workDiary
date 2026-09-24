@@ -14,7 +14,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use PDFToolkit\Registries\PDFReaderRegistry;

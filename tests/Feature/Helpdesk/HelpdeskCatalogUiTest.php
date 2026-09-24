@@ -11,10 +11,12 @@
 namespace Tests\Feature\Helpdesk;
 
 use App\Enums\User\Permission;
-use App\Models\{BusinessService, ProcedureTemplate, RequestItem, ServiceRequest, ServiceTicket};
 use App\Models\Form\FormTemplate;
 use App\Models\Platform\{Organization, User};
+use App\Models\Procedure\ProcedureTemplate;
+use App\Models\Procurement\RequestItem;
 use App\Models\Sales\ServiceOffering;
+use App\Models\ServiceTicket\{BusinessService, ServiceRequest, ServiceTicket};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Gaeb;
 
-use App\Models\{PurchaseOrder, PurchaseOrderLine};
+use App\Models\Procurement\{PurchaseOrder, PurchaseOrderLine};
 use App\Services\Invoicing\EInvoice\XRechnungGenerator;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;

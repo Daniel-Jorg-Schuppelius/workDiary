@@ -17,7 +17,7 @@
 
 @section('content')
 @php
-    /** @var \App\Models\Protocol $protocol */
+    /** @var \App\Models\Protocol\Protocol $protocol */
     $subject = $protocol->subject;
     $subjectLabel = $subject?->title ?? $subject?->name;
 @endphp
@@ -84,7 +84,7 @@
         $aiTextUsable = $aiEditable && $aiViewData->capabilityUsable(\App\Services\Ai\Suggestions\ProtocolTextSuggestionService::CAPABILITY_TEXT);
         $aiClassifyUsable = $aiEditable && $aiViewData->capabilityUsable(\App\Services\Ai\Suggestions\ProtocolTextSuggestionService::CAPABILITY_CLASSIFY);
         $aiItems = $protocol->items->flatMap(fn ($i) => collect([$i])->merge($i->children));
-        $aiMorph = (new \App\Models\ProtocolItem)->getMorphClass();
+        $aiMorph = (new \App\Models\Protocol\ProtocolItem)->getMorphClass();
         $aiTextSuggestions = $aiTextUsable ? $aiViewData->openSuggestionsFor($aiMorph, $aiItems, \App\Services\Ai\Suggestions\ProtocolTextSuggestionService::CAPABILITY_TEXT) : collect();
         $aiClassifySuggestions = $aiClassifyUsable ? $aiViewData->openSuggestionsFor($aiMorph, $aiItems, \App\Services\Ai\Suggestions\ProtocolTextSuggestionService::CAPABILITY_CLASSIFY) : collect();
         $aiActions = $aiTextUsable || $aiClassifyUsable;

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Msgraph\Observers;
 
 use App\Enums\Vacation\VacationStatus;
-use App\Models\Vacation;
+use App\Models\Absence\Vacation;
 use App\Plugins\Msgraph\Services\MsgraphOutOfOfficeService;
 
 /**

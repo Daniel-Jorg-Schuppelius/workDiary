@@ -13,7 +13,7 @@ namespace Tests\Feature\Plugins;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\{PluginSetting, User};
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\OpenProject\Services\{OpenProjectImportService, OpenProjectStructureSync};
 use App\Services\Stammdaten\ProjectMergeService;

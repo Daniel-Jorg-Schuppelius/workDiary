@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\RequiresPlatformOperator;
 use App\Http\Controllers\Controller;
-use App\Models\MaintenanceWindow;
+use App\Models\Asset\MaintenanceWindow;
 use App\Models\Platform\Organization;
 use App\Services\Operations\MaintenanceWindowService;
 use App\Support\{ErrorText, Setting, Tz};

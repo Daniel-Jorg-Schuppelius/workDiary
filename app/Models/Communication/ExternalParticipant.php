@@ -12,12 +12,12 @@ namespace App\Models\Communication;
 
 use App\Enums\ExternalParticipant\{ExternalAbility, ExternalParty};
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Contacts\ExternalContact;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
 use Illuminate\Support\Carbon;
-use App\Models\Contacts\ExternalContact;
-use App\Models\Communication\ExternalParticipantEvent;
 
 /**
  * Kontextbezogene externe Einladung (Feature 033): Subunternehmer, Prüfer

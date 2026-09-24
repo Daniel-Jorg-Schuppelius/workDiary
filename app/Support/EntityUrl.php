@@ -12,10 +12,14 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\{Asset, DiaryEntry, ManufacturingOrder, Protocol, SafetyEvent};
+use App\Models\Asset\Asset;
 use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Learning\LearningEnrollment;
+use App\Models\Manufacturing\ManufacturingOrder;
 use App\Models\Project\Project;
+use App\Models\Protocol\Protocol;
+use App\Models\Safety\SafetyEvent;
 use App\Models\Sales\Lead;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;

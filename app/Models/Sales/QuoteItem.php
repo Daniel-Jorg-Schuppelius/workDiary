@@ -13,12 +13,11 @@ declare(strict_types=1);
 namespace App\Models\Sales;
 
 use App\Casts\{MoneyCast, PercentageCast};
+use App\Models\Article\Article;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Article;
-use App\Models\Sales\Quote;
 
 /**
  * Angebotsposition (Feature 066, MVP-170) — optional = Eventualposition,

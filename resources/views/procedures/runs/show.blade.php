@@ -55,7 +55,7 @@
                 <ol class="space-y-3">
                     @foreach ($steps as $i => $step)
                         @php
-                            /** @var \App\Models\ProcedureStepRun $sr */
+                            /** @var \App\Models\Procedure\ProcedureStepRun $sr */
                             $sr = $step['stepRun'];
                             $def = $step['def'];
                             $isFinal = $sr->status->isFinal();

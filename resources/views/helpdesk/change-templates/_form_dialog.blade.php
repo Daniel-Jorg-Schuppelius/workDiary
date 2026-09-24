@@ -12,7 +12,7 @@
   $template, $isEdit.
 --}}
 @php
-    /** @var \App\Models\ChangeTemplate $template */
+    /** @var \App\Models\ServiceTicket\ChangeTemplate $template */
     /** @var bool $isEdit */
     $action = $isEdit ? route('servicedesk.change-templates.update', $template) : route('servicedesk.change-templates.store');
 @endphp

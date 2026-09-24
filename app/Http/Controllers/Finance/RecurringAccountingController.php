@@ -17,7 +17,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\{AccountingAccount, AccountingRecurringRun, AccountingRecurringTemplate};
-use App\Models\InvoiceSchedule;
+use App\Models\Invoicing\InvoiceSchedule;
 use App\Services\Accounting\RecurringAccountingService;
 use App\Support\Sqid;
 use CommonToolkit\ValueObjects\Decimal;

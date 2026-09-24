@@ -112,7 +112,7 @@
         @php $ws = $member?->workSchedule(); @endphp
         <input type="text" id="weekly-hours-display" class="input input-bordered w-full" disabled
                value="{{ $ws ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($ws->weekly_minutes / 60, 2, withThousandsSeparator: true) . ' h' : __('— kein Arbeitszeit-Modell —') }}">
-        @can('create', \App\Models\WorkSchedule::class)
+        @can('create', \App\Models\Time\WorkSchedule::class)
             @if ($member)
                 <a href="{{ route('users.work-schedule.edit', $member) }}" data-entry-modal-trigger
                    class="link link-primary mt-1 inline-flex items-center gap-1 text-xs">

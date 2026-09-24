@@ -11,7 +11,7 @@
 namespace App\Services\Software;
 
 use App\Exceptions\SoftwareInstallationException;
-use App\Models\{Asset, Software, SoftwareInstallation};
+use App\Models\Asset\{Asset, Software, SoftwareInstallation};
 use App\Models\Platform\User;
 
 class SoftwareInstallationService {

@@ -12,7 +12,7 @@ namespace Tests\Feature\Admin;
 
 use App\Enums\Diary\{Priority, Status};
 use App\Models\Classification\EntryType;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use Database\Seeders\EntryTypeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

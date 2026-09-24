@@ -33,7 +33,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * Interne Fallbearbeitung (Abschnitt 7.3 / 13.2). Jeder Zugriff wird ueber die
- * {@see \App\Policies\WhistleblowingCasePolicy} autorisiert (Permission UND
+ * {@see \App\Policies\Whistleblowing\WhistleblowingCasePolicy} autorisiert (Permission UND
  * Fall-Zuweisung). Die Liste zeigt KEINE Inhaltsvorschau.
  */
 class InternalCaseController extends Controller {

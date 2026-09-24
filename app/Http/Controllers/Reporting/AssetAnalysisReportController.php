@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Customer\Customer;
 use App\Services\Reporting\{AssetAnalysisReportBuilder, ReportFilters};
 use App\Support\{CarbonFmt, Sqid};

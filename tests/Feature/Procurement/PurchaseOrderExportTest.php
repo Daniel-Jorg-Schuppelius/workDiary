@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Procurement;
 
-use App\Models\{Article, ArticleVariant, Supplier, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\Warehouse;
+use App\Models\Supplier\Supplier;
 use App\Services\Procurement\{PurchaseOrderExportService, PurchaseOrderService};
 use DOMDocument;
 use DOMXPath;
@@ -77,7 +79,7 @@ final class PurchaseOrderExportTest extends TestCase {
         ]);
     }
 
-    private function makeOrder(): \App\Models\PurchaseOrder {
+    private function makeOrder(): \App\Models\Procurement\PurchaseOrder {
         $orders = app(PurchaseOrderService::class);
         $po = $orders->createDraft($this->organization, $this->supplier, $this->warehouse);
         $orders->addLine($po, $this->article, '10', [

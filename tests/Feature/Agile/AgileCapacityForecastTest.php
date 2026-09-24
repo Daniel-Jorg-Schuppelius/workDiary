@@ -10,10 +10,11 @@
 
 namespace Tests\Feature\Agile;
 
+use App\Models\Absence\Vacation;
 use App\Models\Agile\AgileSprint;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
-use App\Models\{Vacation, WorkSchedule};
+use App\Models\Time\WorkSchedule;
 use App\Services\Agile\{AgileBoardService, AgileMetricsService, AgileSprintService, AgileWorkItemService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

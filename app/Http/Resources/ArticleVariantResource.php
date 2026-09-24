@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Models\{Article, ArticleVariant};
+use App\Models\Article\{Article, ArticleVariant};
 use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

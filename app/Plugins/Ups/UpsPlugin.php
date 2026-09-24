@@ -11,7 +11,7 @@
 namespace App\Plugins\Ups;
 
 use App\Enums\Shipping\ShipmentStatus;
-use App\Models\CarrierConnection;
+use App\Models\Shipping\CarrierConnection;
 use App\Plugins\AbstractPlugin;
 use App\Plugins\Contracts\{PluginCapability, ShippingProvider};
 use App\Plugins\Support\ChecksCarrierHealth;

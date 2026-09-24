@@ -11,7 +11,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Platform\User;
-use App\Models\{ScheduledShift, ShiftType};
+use App\Models\Schedule\{ScheduledShift, ShiftType};
 use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

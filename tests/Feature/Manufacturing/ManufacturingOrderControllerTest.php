@@ -11,8 +11,11 @@
 namespace Tests\Feature\Manufacturing;
 
 use App\Enums\Manufacturing\ManufacturingOrderStatus;
-use App\Models\{Article, ArticleVariant, ManufacturingOrder, ProcedureMaterialRequirement, ProcedureTemplateVersion, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\Warehouse;
+use App\Models\Manufacturing\ManufacturingOrder;
 use App\Models\Platform\User;
+use App\Models\Procedure\{ProcedureMaterialRequirement, ProcedureTemplateVersion};
 use App\Services\Manufacturing\ManufacturingOrderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -199,7 +202,7 @@ final class ManufacturingOrderControllerTest extends TestCase {
             'warehouse_id' => $this->warehouse->id,
         ]);
         $variant = ArticleVariant::query()->where('article_id', $this->product->id)->firstOrFail();
-        $delivery = \App\Models\StockDelivery::query()->create([
+        $delivery = \App\Models\Inventory\StockDelivery::query()->create([
             'organization_id' => $this->organization->id,
             'manufacturing_order_id' => $order->id,
             'article_variant_id' => $variant->id,

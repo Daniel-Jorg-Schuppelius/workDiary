@@ -10,7 +10,7 @@
 
 namespace App\Mail;
 
-use App\Models\TimeExport;
+use App\Models\Time\TimeExport;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\{Attachment, Content, Envelope};
@@ -21,7 +21,7 @@ use Illuminate\Queue\SerializesModels;
  *
  * Versendet die unveränderte Export-Datei (exakt die Bytes aus dem Storage —
  * GoBD: der Anhang entspricht bitgenau dem gespeicherten, gehashten Paket)
- * an die im {@see \App\Models\TimeExportDeliveryConfig} hinterlegten
+ * an die im {@see \App\Models\Time\TimeExportDeliveryConfig} hinterlegten
  * Empfänger. Wird synchron aus {@see \App\Jobs\DeliverTimeExportJob}
  * verschickt (kein eigenes ShouldQueue — Retry/Idempotenz steuert der Job).
  */

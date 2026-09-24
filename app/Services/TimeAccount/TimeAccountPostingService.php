@@ -16,9 +16,11 @@ use App\Enums\Attendance\AttendanceStatus;
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Enums\TimeAccount\{CarryoverPolicy, TimeAccountSource};
 use App\Enums\Vacation\VacationStatus;
-use App\Models\{Attendance, ExternalWageItem, ScheduledShift, SickLeave, TimeAccount, TimeAccountEntry, TimeAccountRule, Vacation};
+use App\Models\Absence\{SickLeave, Vacation};
 use App\Models\Platform\{Organization, User};
+use App\Models\Schedule\ScheduledShift;
 use App\Models\Surcharge\TimeRuleResult;
+use App\Models\Time\{Attendance, ExternalWageItem, TimeAccount, TimeAccountEntry, TimeAccountRule};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
@@ -171,7 +173,7 @@ final class TimeAccountPostingService {
             $running = 0.0;
             foreach ($rows as $row) {
                 $running += (float) $row->turnover;
-                \App\Models\TimeAccountBalance::query()->withoutGlobalScopes()->updateOrCreate(
+                \App\Models\Time\TimeAccountBalance::query()->withoutGlobalScopes()->updateOrCreate(
                     [
                         'time_account_id' => $accountId,
                         'user_id' => $userId,

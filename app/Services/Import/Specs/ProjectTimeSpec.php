@@ -17,7 +17,7 @@ use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Models\Integration\{ImportValueMapping, IntegrationInboxItem};
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\{Project, Task};
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Services\Import\{HasMappableValues, ImportOutcome, InboxFirstSpec, ValidationIssue};
 use App\Services\Import\Specs\Concerns\{BindsTimeImportReference, ParsesLocalDateTime, ResolvesImportUsers};
 use App\Services\TimeApproval\MonthClosureService;

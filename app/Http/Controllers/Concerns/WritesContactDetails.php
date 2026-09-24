@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Concerns;
 
 use App\Models\Customer\Customer;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Services\Stammdaten\ContactDetailsWriter;
 
 /**

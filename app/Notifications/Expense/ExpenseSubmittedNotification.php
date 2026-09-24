@@ -10,7 +10,7 @@
 
 namespace App\Notifications\Expense;
 
-use App\Models\Expense;
+use App\Models\Travel\Expense;
 use App\Notifications\DirectNotification;
 use App\Support\NotificationText;
 use Illuminate\Notifications\Messages\MailMessage;

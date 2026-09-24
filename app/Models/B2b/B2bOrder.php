@@ -15,7 +15,7 @@ namespace App\Models\B2b;
 use App\Casts\MoneyCast;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Database\Eloquent\{Builder, Model};

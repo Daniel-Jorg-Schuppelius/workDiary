@@ -11,8 +11,9 @@
 namespace Tests\Feature\Procurement;
 
 use App\Enums\Procurement\CatalogItemStatus;
-use App\Models\{Article, PricingMarginRule, Supplier, SupplierCatalogItem, SupplierCatalogSource};
+use App\Models\Article\{Article, PricingMarginRule};
 use App\Models\Platform\User;
+use App\Models\Supplier\{Supplier, SupplierCatalogItem, SupplierCatalogSource};
 use App\Services\Procurement\{CatalogLinkService, PriceSuggestionService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;

@@ -11,7 +11,7 @@
 namespace Database\Factories\Classification;
 
 use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequirementSeverity};
-use App\Models\Classification\Classification\ClassificationRequirement;
+use App\Models\Classification\ClassificationRequirement;
 use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

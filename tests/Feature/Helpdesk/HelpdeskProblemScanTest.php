@@ -13,7 +13,7 @@ namespace Tests\Feature\Helpdesk;
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
 use App\Models\Platform\User;
-use App\Models\Problem;
+use App\Models\ServiceTicket\Problem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\Concerns\WithOrganization;

@@ -16,7 +16,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Attachments\AttachmentController;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
-use App\Models\ServiceTicket;
+use App\Models\ServiceTicket\ServiceTicket;
 use App\Services\Attachments\FileAttacher;
 use App\Services\ServiceTicket\TicketConversationService;
 use App\Support\ErrorText;

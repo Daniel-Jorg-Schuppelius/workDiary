@@ -12,7 +12,10 @@ namespace Tests\Feature\Procurement;
 
 use App\Enums\Manufacturing\ProcurementStatus;
 use App\Enums\Procurement\PurchaseOrderStatus;
-use App\Models\{Article, ArticleSupply, ArticleVariant, ProcurementRequest, Supplier, Warehouse};
+use App\Models\Article\{Article, ArticleSupply, ArticleVariant};
+use App\Models\Inventory\Warehouse;
+use App\Models\Procurement\ProcurementRequest;
+use App\Models\Supplier\Supplier;
 use App\Services\Inventory\{InventoryLedger, StockLevelService};
 use App\Services\Procurement\{GoodsReceiptService, ProcurementSuggestionService, PurchaseOrderService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -99,7 +102,7 @@ final class PurchaseOrderTest extends TestCase {
         }
 
         $receipts->receive($line, '4', lotNo: 'CH-2026-001', bestBefore: '2027-01-31');
-        $lot = \App\Models\StockLot::query()->where('lot_no', 'CH-2026-001')->firstOrFail();
+        $lot = \App\Models\Inventory\StockLot::query()->where('lot_no', 'CH-2026-001')->firstOrFail();
         $this->assertSame('2027-01-31', \Illuminate\Support\Carbon::parse((string) $lot->best_before)->toDateString());
         $this->assertSame('4.0000', app(\App\Services\Inventory\LotService::class)->onHand($lot));
 
@@ -127,7 +130,7 @@ final class PurchaseOrderTest extends TestCase {
 
         app(GoodsReceiptService::class)->receive($line, '5');
 
-        $movement = \App\Models\StockMovement::query()
+        $movement = \App\Models\Inventory\StockMovement::query()
             ->where('article_variant_id', $this->variant->id)
             ->where('movement_type', 'receipt')
             ->latest('id')->firstOrFail();

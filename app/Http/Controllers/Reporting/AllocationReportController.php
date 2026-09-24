@@ -14,7 +14,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
-use App\Models\TimeAllocation;
+use App\Models\Time\TimeAllocation;
 use App\Support\MorphMap;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -96,7 +96,7 @@ class AllocationReportController extends Controller {
             $ids = $typeRows->pluck('allocatable_id')->all();
             if ($alias === 'dimension') {
                 // Freie Dimension: Wert → Name + zugehöriger Typ (für die Gruppe).
-                foreach (\App\Models\TimeDimensionValue::query()->whereIn('id', $ids)->with('type:id,name')->get() as $value) {
+                foreach (\App\Models\Time\TimeDimensionValue::query()->whereIn('id', $ids)->with('type:id,name')->get() as $value) {
                     $names[$alias][(int) $value->id] = (string) $value->name;
                     $dimensionMeta[(int) $value->id] = [
                         'key' => 'dimension:' . (int) $value->dimension_type_id,
@@ -107,12 +107,12 @@ class AllocationReportController extends Controller {
                 continue;
             }
             $names[$alias] = match ($alias) {
-                'cost_center' => \App\Models\CostCenter::query()->whereIn('id', $ids)->get(['id', 'code', 'label'])
-                    ->mapWithKeys(fn (\App\Models\CostCenter $c): array => [(int) $c->id => trim($c->code . ' — ' . $c->label)])->all(),
+                'cost_center' => \App\Models\Finance\CostCenter::query()->whereIn('id', $ids)->get(['id', 'code', 'label'])
+                    ->mapWithKeys(fn (\App\Models\Finance\CostCenter $c): array => [(int) $c->id => trim($c->code . ' — ' . $c->label)])->all(),
                 'task' => \App\Models\Project\Task::query()->whereIn('id', $ids)->pluck('title', 'id')->all(),
                 // Fahrzeuge haben kein name-Feld: Label + Kennzeichen.
-                'vehicle' => \App\Models\Vehicle::query()->whereIn('id', $ids)->get(['id', 'label', 'license_plate'])
-                    ->mapWithKeys(fn (\App\Models\Vehicle $v): array => [(int) $v->id => trim(($v->label ?? '') . ' ' . ($v->license_plate ?? '')) ?: '#' . $v->id])->all(),
+                'vehicle' => \App\Models\Fleet\Vehicle::query()->whereIn('id', $ids)->get(['id', 'label', 'license_plate'])
+                    ->mapWithKeys(fn (\App\Models\Fleet\Vehicle $v): array => [(int) $v->id => trim(($v->label ?? '') . ' ' . ($v->license_plate ?? '')) ?: '#' . $v->id])->all(),
                 // Tätigkeiten haben label statt name.
                 'activity_category' => \App\Models\Classification\ActivityCategory::query()->whereIn('id', $ids)->pluck('label', 'id')->all(),
                 default => TimeAllocation::TYPES[$alias]::query()->whereIn('id', $ids)->pluck('name', 'id')->all(),

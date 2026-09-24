@@ -11,7 +11,7 @@
 namespace App\Policies\Document;
 
 use App\Enums\User\Permission as P;
-use App\Models\Document\Document\Document;
+use App\Models\Document\Document;
 use App\Models\Platform\User;
 use App\Services\Hr\PersonnelFilePermissions as HR;
 

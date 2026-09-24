@@ -11,8 +11,8 @@
 namespace Tests\Feature\Schedule;
 
 use App\Enums\Shift\{DutyPlanStatus, ScheduledShiftStatus};
-use App\Models\{DutyPlan, ScheduledShift};
 use App\Models\Platform\User;
+use App\Models\Schedule\{DutyPlan, ScheduledShift};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

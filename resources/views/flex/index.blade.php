@@ -16,7 +16,7 @@
     /** @var \App\Models\Platform\User|null $authUser */
     /** @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users */
     /** @var \App\Services\Calendar\WeekViewService $service */
-    /** @var \App\Models\WorkSchedule $schedule */
+    /** @var \App\Models\Time\WorkSchedule $schedule */
     /** @var \App\Enums\WorkSchedule\ScheduleType $scheduleType */
     /** @var bool $tracksTarget */
     /** @var bool $modelChanged */

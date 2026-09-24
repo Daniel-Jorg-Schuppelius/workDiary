@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enums\Asset\AssetClass;
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Auth\RemotePendingSession;
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;

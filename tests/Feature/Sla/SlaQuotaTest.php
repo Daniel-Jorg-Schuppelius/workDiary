@@ -12,10 +12,12 @@ namespace Tests\Feature\Sla;
 
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Models\Customer\Customer;
-use App\Models\{DiaryEntry, SlaContract, SlaContractQuota, TimeEntry};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Notification\NotificationRule;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Models\ServiceTicket\{SlaContract, SlaContractQuota};
+use App\Models\Time\TimeEntry;
 use App\Services\ServiceTicket\SlaQuotaService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

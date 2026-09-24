@@ -10,7 +10,7 @@
 
 namespace App\Http\Resources;
 
-use App\Models\OnCallShift;
+use App\Models\Diary\OnCallShift;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 

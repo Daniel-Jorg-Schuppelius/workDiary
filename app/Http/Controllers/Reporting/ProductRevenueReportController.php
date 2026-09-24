@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
-use App\Models\Article;
+use App\Models\Article\Article;
 use App\Services\Reporting\ProductRevenueReportBuilder;
 use App\Support\CarbonFmt;
 use CommonToolkit\Helper\Data\NumberHelper;

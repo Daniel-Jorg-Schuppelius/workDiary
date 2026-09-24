@@ -11,8 +11,8 @@
 namespace Tests\Feature;
 
 use App\Enums\User\EmploymentType;
-use App\Models\{MinimumWage, WorkSchedule};
 use App\Models\Platform\User;
+use App\Models\Time\{MinimumWage, WorkSchedule};
 use App\Services\Payroll\{MinimumWageService, PayrollClassifier};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

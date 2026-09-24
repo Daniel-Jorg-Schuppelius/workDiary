@@ -14,7 +14,7 @@ use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Enums\User\Permission;
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\{Organization, User};
-use App\Models\{ServiceQueue, ServiceTicket};
+use App\Models\ServiceTicket\{ServiceQueue, ServiceTicket};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;

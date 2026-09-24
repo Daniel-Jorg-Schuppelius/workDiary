@@ -27,7 +27,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Öffentlicher OCI-4.0-Punchout-Katalog (Feature 099, MVP-457) — workDiary in
- * der LIEFERANTEN-Rolle, Rollenumkehr zu {@see \App\Http\Controllers\OciCartController}.
+ * der LIEFERANTEN-Rolle, Rollenumkehr zu {@see \App\Http\Controllers\B2bCatalog\OciCartController}.
  *
  * Sessionloser Flow: Das Einkaufssystem POSTet USERNAME/PASSWORD/HOOK_URL an
  * den Einstieg; danach trägt ein verschlüsseltes, zeitbegrenztes Browse-Token
@@ -102,7 +102,7 @@ class B2bPunchoutController extends Controller {
                 }
             })
             ->orderBy(
-                \App\Models\Article::query()->select('number')
+                \App\Models\Article\Article::query()->select('number')
                     ->whereColumn('articles.id', 'b2b_catalog_items.article_id')
             )
             ->paginate(50)

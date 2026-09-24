@@ -12,7 +12,7 @@ namespace Tests\Feature\Protocol;
 
 use App\Models\Communication\ExternalParticipant;
 use App\Models\Platform\{Organization, User};
-use App\Models\Protocol;
+use App\Models\Protocol\Protocol;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

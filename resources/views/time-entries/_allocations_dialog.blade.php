@@ -8,7 +8,7 @@
 --}}
 {{-- Dialog: Zeitaufteilung eines Eintrags (Feature 103, MVP-514) --}}
 @php
-    /** @var \App\Models\TimeEntry $entry */
+    /** @var \App\Models\Time\TimeEntry $entry */
     $existing = $entry->allocations->values();
     $rowCount = max(3, $existing->count() + 2);
 @endphp
@@ -31,7 +31,7 @@
     <div class="space-y-2">
         @for ($i = 0; $i < $rowCount; $i++)
             @php
-                /** @var \App\Models\TimeAllocation|null $allocation */
+                /** @var \App\Models\Time\TimeAllocation|null $allocation */
                 $allocation = $existing[$i] ?? null;
                 $selected = $allocation !== null && $allocation->typeAlias() !== null
                     ? $allocation->typeAlias() . ':' . \App\Support\Sqid::encode($allocation->allocatable_type, $allocation->allocatable_id)

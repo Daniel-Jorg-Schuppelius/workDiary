@@ -13,7 +13,7 @@ namespace Tests\Feature\Content;
 use App\Enums\Document\DocumentType;
 use App\Enums\Knowledge\ArticleStatus;
 use App\Models\Customer\Customer;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Document\Document;
 use App\Models\Knowledge\KnowledgeArticle;
 use App\Models\Platform\User;
@@ -134,7 +134,7 @@ final class SubjectChainTest extends TestCase {
     }
 
     public function test_document_page_renders_the_chain_without_breaking_markup(): void {
-        $asset = \App\Models\Asset::factory()->create([
+        $asset = \App\Models\Asset\Asset::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'name' => 'ZR-DB-SRV01A',

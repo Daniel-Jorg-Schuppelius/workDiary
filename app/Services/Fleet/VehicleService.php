@@ -10,7 +10,7 @@
 
 namespace App\Services\Fleet;
 
-use App\Models\Vehicle;
+use App\Models\Fleet\Vehicle;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 

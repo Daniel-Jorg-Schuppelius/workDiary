@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Manufacturing;
 
-use App\Models\{Article, ArticleVariant, ProcedureTemplateVersion, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\Warehouse;
+use App\Models\Procedure\ProcedureTemplateVersion;
 use App\Services\Inventory\InventoryLedger;
 use CommonToolkit\Helper\Data\NumberHelper;
 

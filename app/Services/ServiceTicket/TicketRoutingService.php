@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\ServiceTicket;
 
-use App\Models\{ServiceTicket, TicketRoutingRule, TicketRuleExecution};
+use App\Models\ServiceTicket\{ServiceTicket, TicketRoutingRule, TicketRuleExecution};
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -120,7 +120,7 @@ class TicketRoutingService {
     /** @param array<string, mixed> $actions */
     private function applyActions(ServiceTicket $ticket, array $actions): void {
         if (isset($actions['set_queue'])) {
-            $queueId = \App\Models\ServiceQueue::query()
+            $queueId = \App\Models\ServiceTicket\ServiceQueue::query()
                 ->where('organization_id', $ticket->organization_id)
                 ->whereKey((int) $actions['set_queue'])
                 ->value('id');
@@ -135,7 +135,7 @@ class TicketRoutingService {
             }
         }
         if (isset($actions['set_sla'])) {
-            $contract = \App\Models\SlaContract::query()
+            $contract = \App\Models\ServiceTicket\SlaContract::query()
                 ->where('organization_id', $ticket->organization_id)
                 ->whereKey((int) $actions['set_sla'])
                 ->first();
@@ -144,7 +144,7 @@ class TicketRoutingService {
             }
         }
         if (isset($actions['set_team'])) {
-            $queue = \App\Models\ServiceQueue::query()
+            $queue = \App\Models\ServiceTicket\ServiceQueue::query()
                 ->where('organization_id', $ticket->organization_id)
                 ->where('team_id', (int) $actions['set_team'])
                 ->value('id');

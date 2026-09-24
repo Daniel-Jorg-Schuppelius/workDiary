@@ -13,9 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Weather;
 
 use App\Models\Customer\Customer;
-use App\Models\{DiaryEntry, Protocol, Site};
+use App\Models\Diary\DiaryEntry;
+use App\Models\Facility\Site;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
+use App\Models\Protocol\Protocol;
 use App\Models\Weather\WeatherSnapshot;
 use App\Services\Weather\Contracts\WeatherProvider;
 use Carbon\CarbonInterface;

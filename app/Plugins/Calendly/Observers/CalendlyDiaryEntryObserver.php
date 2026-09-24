@@ -14,7 +14,7 @@ namespace App\Plugins\Calendly\Observers;
 
 use App\Enums\Diary\Status;
 use App\Models\Calendar\AppointmentRequest;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Plugins\Calendly\Jobs\CalendlyCancelSyncJob;
 
 /**

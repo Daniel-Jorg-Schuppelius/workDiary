@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Security;
 
+use App\Models\Absence\SickLeave;
 use App\Models\Audit\{AuditLog, AuditRedaction};
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
-use App\Models\SickLeave;
 use App\Services\Audit\{AuditChainVerifier, AuditRedactionService};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

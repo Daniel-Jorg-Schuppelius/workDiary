@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\AssetCompliance;
 
 use App\Enums\AssetCompliance\AssetInspectionScheduleStatus;
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use App\Models\Contacts\ExternalContact;
 use App\Models\Platform\User;

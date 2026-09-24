@@ -14,7 +14,7 @@ namespace App\Services\Reselling\Draft;
 
 use App\Enums\Numbering\NumberScope;
 use App\Models\Customer\Customer;
-use App\Models\{Invoice, InvoiceItem};
+use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Platform\{Organization, User};
 use App\Models\Reselling\ResalePeriod;
 use App\Services\Finance\BillingModeResolver;

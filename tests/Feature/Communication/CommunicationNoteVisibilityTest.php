@@ -11,7 +11,7 @@
 namespace Tests\Feature\Communication;
 
 use App\Models\Communication\CommunicationNote;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -14,7 +14,7 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Qualifikationen und Zertifikate der Mitarbeiter verwalten.')">
     <x-slot:actions>
-        @can('create', \App\Models\Qualification::class)
+        @can('create', \App\Models\Hr\Qualification::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger
                         :href="route('qualifications.create')"

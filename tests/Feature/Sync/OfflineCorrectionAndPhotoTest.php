@@ -10,10 +10,10 @@
 
 namespace Tests\Feature\Sync;
 
-use App\Models\{Attendance, TimeCorrectionRequest};
 use App\Models\Form\{FormSubmission, FormTemplate};
 use App\Models\Integration\SyncCommand;
 use App\Models\Platform\User;
+use App\Models\Time\{Attendance, TimeCorrectionRequest};
 use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

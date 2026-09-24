@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Rental;
 use App\Enums\Rental\RentalCaseStatus;
 use App\Exceptions\{AssetNotUsableException, RentalConflictException};
 use App\Http\Controllers\Controller;
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
@@ -229,8 +229,8 @@ class RentalCaseController extends Controller {
         $fieldModels = [
             'customer_id' => Customer::class,
             'project_id' => Project::class,
-            'diary_entry_id' => \App\Models\DiaryEntry::class,
-            'site_id' => \App\Models\Site::class,
+            'diary_entry_id' => \App\Models\Diary\DiaryEntry::class,
+            'site_id' => \App\Models\Facility\Site::class,
             'responsible_user_id' => User::class,
             'rental_rate_card_id' => RentalRateCard::class,
         ];

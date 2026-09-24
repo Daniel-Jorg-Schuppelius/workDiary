@@ -11,7 +11,7 @@
 namespace Database\Factories\Classification;
 
 use App\Enums\Classification\ClassificationDomain;
-use App\Models\Classification\Classification\Classification;
+use App\Models\Classification\Classification;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

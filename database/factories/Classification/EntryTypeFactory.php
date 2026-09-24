@@ -10,7 +10,7 @@
 
 namespace Database\Factories\Classification;
 
-use App\Models\Classification\Classification\EntryType;
+use App\Models\Classification\EntryType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 

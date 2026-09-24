@@ -11,10 +11,11 @@
 namespace Tests\Feature\Plugins;
 
 use App\Enums\Asset\AssetClass;
-use App\Models\{Asset, TimeEntry};
+use App\Models\Asset\Asset;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Models\Time\TimeEntry;
 use App\Plugins\RemoteSupport\Providers\{RemoteSession, TeamViewerClient};
 use App\Plugins\RemoteSupport\{RemoteDeviceRegistry, RemoteSessionImporter};
 use Carbon\CarbonImmutable;

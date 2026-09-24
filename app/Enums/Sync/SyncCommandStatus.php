@@ -18,7 +18,7 @@ use App\Enums\Contracts\HasLabel;
  *
  * `conflict` ist seit dem Offline-Nachtrag von Stempelzeiten real
  * (Audit 2026-08, W4.1): `attendance.correct` vergleicht `base_version`
- * gegen {@see \App\Models\Attendance::correctionVersion()}. Der Unterschied
+ * gegen {@see \App\Models\Time\Attendance::correctionVersion()}. Der Unterschied
  * zu `rejected` ist keine Nuance — eine Ablehnung ist endgültig und darf
  * erneut gesendet werden, ein Konflikt verlangt vorher eine Entscheidung des
  * Nutzers (fremden Stand übernehmen oder die eigene Fassung durchsetzen).

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Reporting;
 
 use App\Enums\Procedure\{ProcedureDeviationSeverity, ProcedureDeviationType};
-use App\Models\{ProcedureDeviation, ProcedureTemplate};
+use App\Models\Procedure\{ProcedureDeviation, ProcedureTemplate};
 use App\Support\ChartBucket;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;

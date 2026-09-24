@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Inventory;
 
-use App\Models\{StockLot, StockValuationLayer};
+use App\Models\Inventory\{StockLot, StockValuationLayer};
 use App\Support\DecimalQty;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;

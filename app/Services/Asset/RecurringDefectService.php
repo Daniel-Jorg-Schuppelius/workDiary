@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Asset;
 
-use App\Models\{Asset, AssetDefect};
+use App\Models\Asset\{Asset, AssetDefect};
 use App\Models\Scopes\OrganizationScope;
 use Carbon\{CarbonImmutable, CarbonInterface};
 

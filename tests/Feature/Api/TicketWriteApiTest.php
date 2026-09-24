@@ -14,7 +14,7 @@ namespace Tests\Feature\Api;
 
 use App\Enums\User\Permission;
 use App\Models\Platform\User;
-use App\Models\ServiceTicket;
+use App\Models\ServiceTicket\ServiceTicket;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\WithOrganization;

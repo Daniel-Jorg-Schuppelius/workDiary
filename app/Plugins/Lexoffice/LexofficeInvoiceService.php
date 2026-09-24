@@ -12,7 +12,7 @@ namespace App\Plugins\Lexoffice;
 
 use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Models\Integration\ExternalReference;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use RuntimeException;
 

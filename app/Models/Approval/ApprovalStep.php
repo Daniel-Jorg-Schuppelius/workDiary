@@ -12,6 +12,7 @@ namespace App\Models\Approval;
 
 use App\Enums\Approval\ApprovalDecision;
 use App\Models\Concerns\{AppendOnly, BelongsToOrganization, HasSqid};
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 

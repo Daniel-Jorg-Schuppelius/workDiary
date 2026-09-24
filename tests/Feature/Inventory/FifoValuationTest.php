@@ -11,7 +11,8 @@
 namespace Tests\Feature\Inventory;
 
 use App\Enums\Inventory\ValuationMethod;
-use App\Models\{Article, ArticleVariant, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\Warehouse;
 use App\Services\Inventory\{FifoValuationService, InventoryValuationManager, ValuationService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

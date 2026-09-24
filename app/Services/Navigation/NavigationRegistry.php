@@ -386,7 +386,7 @@ class NavigationRegistry {
             'label' => __('Fuhrpark'),
             'collapsible' => true,
             'items' => [
-                ...(Gate::allows('viewAny', \App\Models\Asset::class) ? [
+                ...(Gate::allows('viewAny', \App\Models\Asset\Asset::class) ? [
                     ['route' => 'assets.index', 'label' => __('Objekte & Assets'), 'icon' => 'precision_manufacturing', 'modal' => false, 'matches' => ['assets.*']],
                     // Feature 092: Transponder/Karten/Codes als verwalteter Bestand.
                     ['route' => 'access-media.index', 'label' => __('Zutrittsmedien'), 'icon' => 'key', 'modal' => false, 'matches' => ['access-media.*']],
@@ -423,16 +423,16 @@ class NavigationRegistry {
                 Gate::allows(Permission::HelpdeskQueueManage->value)
                     ? ['route' => 'helpdesk.routing.index', 'label' => __('Ticket-Routing'), 'icon' => 'alt_route', 'modal' => false, 'matches' => ['helpdesk.routing.*']]
                     : null,
-                Gate::allows('viewAny', \App\Models\RequestItem::class)
+                Gate::allows('viewAny', \App\Models\Procurement\RequestItem::class)
                     ? ['route' => 'servicedesk.catalog.index', 'label' => __('Servicekatalog'), 'icon' => 'storefront', 'modal' => false, 'matches' => ['servicedesk.catalog.*']]
                     : null,
                 Gate::allows(Permission::ServiceRequestApprove->value)
                     ? ['route' => 'servicedesk.approvals.index', 'label' => __('Genehmigungen'), 'icon' => 'approval', 'modal' => false, 'matches' => ['servicedesk.approvals.*']]
                     : null,
-                Gate::allows('viewAny', \App\Models\Problem::class)
+                Gate::allows('viewAny', \App\Models\ServiceTicket\Problem::class)
                     ? ['route' => 'servicedesk.problems.index', 'label' => __('Probleme'), 'icon' => 'troubleshoot', 'modal' => false, 'matches' => ['servicedesk.problems.*']]
                     : null,
-                Gate::allows('viewAny', \App\Models\Change::class)
+                Gate::allows('viewAny', \App\Models\ServiceTicket\Change::class)
                     ? ['route' => 'servicedesk.changes.index', 'label' => __('Changes'), 'icon' => 'published_with_changes', 'modal' => false, 'matches' => ['servicedesk.changes.*', 'servicedesk.change-templates.*']]
                     : null,
                 Gate::allows(Permission::SlaContractView->value)
@@ -701,8 +701,8 @@ class NavigationRegistry {
         // (viewAny). Standen bis MVP-820 unter „Wissen & Doku" — ein Meldewesen
         // gehört zum Arbeitsschutz, nicht in die Wissensordnung. Das eigene Recht
         // öffnet die Sektion auch für Melder ohne GBU-Zugriff.
-        $showSafetyEvents = Gate::allows('viewAny', \App\Models\SafetyEvent::class)
-            || Gate::allows('create', \App\Models\SafetyEvent::class);
+        $showSafetyEvents = Gate::allows('viewAny', \App\Models\Safety\SafetyEvent::class)
+            || Gate::allows('create', \App\Models\Safety\SafetyEvent::class);
         if ($showSafetyRegister || $showTraining || $showSafetyEvents) {
             $sidebarSections[] = [
                 'key' => 'safety',
@@ -1585,8 +1585,8 @@ class NavigationRegistry {
     private function countOverdueDocuments(int $organizationId): int {
         $today = \Illuminate\Support\Carbon::today()->toDateString();
 
-        $invoices = \App\Models\Invoice::query()
-            ->whereIn('status', [\App\Models\Invoice::STATUS_ISSUED, \App\Models\Invoice::STATUS_PARTIALLY_PAID])
+        $invoices = \App\Models\Invoicing\Invoice::query()
+            ->whereIn('status', [\App\Models\Invoicing\Invoice::STATUS_ISSUED, \App\Models\Invoicing\Invoice::STATUS_PARTIALLY_PAID])
             ->whereNotNull('due_on')
             ->where('due_on', '<', $today)
             ->count();

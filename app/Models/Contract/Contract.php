@@ -18,7 +18,7 @@ use App\Models\Customer\Customer;
 use App\Models\Document\Document;
 use App\Models\Platform\User;
 use App\Models\Reselling\ResaleSubscription;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;

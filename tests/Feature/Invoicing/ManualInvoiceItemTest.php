@@ -12,7 +12,7 @@ namespace Tests\Feature\Invoicing;
 
 use App\Enums\Project\ProjectStatus;
 use App\Models\Customer\Customer;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;

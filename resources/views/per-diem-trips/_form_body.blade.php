@@ -51,7 +51,7 @@
     <x-select-field name="travel_log_id" :label="__('Bezug zum Fahrtenbuch')" span="2">
         <option value="">—</option>
         @foreach ($travelLogs as $tl)
-            <option value="{{ $tl->sqid }}" @selected((string) old('travel_log_id', \App\Support\Sqid::encode(\App\Models\TravelLog::class, $trip?->travel_log_id)) === $tl->sqid)>
+            <option value="{{ $tl->sqid }}" @selected((string) old('travel_log_id', \App\Support\Sqid::encode(\App\Models\Travel\TravelLog::class, $trip?->travel_log_id)) === $tl->sqid)>
                 {{ $tl->started_at?->fdate() }} · {{ $tl->from_address ?: '?' }} → {{ $tl->to_address ?: '?' }}
             </option>
         @endforeach

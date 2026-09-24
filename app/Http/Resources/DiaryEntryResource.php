@@ -10,7 +10,7 @@
 
 namespace App\Http\Resources;
 
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 

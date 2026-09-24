@@ -14,7 +14,7 @@ use App\Models\Communication\CommunicationNote;
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\{Organization, User};
 use App\Services\Mail\{MailAttachment, MailInboxResolutionService, MailIntakeService, MailboxGateway, ParsedMessage};

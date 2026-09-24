@@ -11,8 +11,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Attendance;
 use App\Models\Platform\User;
+use App\Models\Time\Attendance;
 use App\Services\Attendance\AttendanceClockService;
 use App\Support\{ErrorText, Setting};
 use Illuminate\Http\{JsonResponse, Request};

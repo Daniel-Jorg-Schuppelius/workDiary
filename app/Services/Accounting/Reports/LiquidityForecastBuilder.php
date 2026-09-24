@@ -17,7 +17,7 @@ use App\Models\Accounting\{AccountingFilingObligation, AccountingOpenItem, Accou
 use App\Models\AssetFinance\AssetFinanceRateSchedule;
 use App\Models\Customer\Customer;
 use App\Models\Finance\PaymentRun;
-use App\Models\{IncomingEInvoice, InvoiceSchedule};
+use App\Models\Invoicing\{IncomingEInvoice, InvoiceSchedule};
 use App\Models\Platform\Organization;
 use App\Services\Accounting\Filing\{VatFilingPeriodService, VatReturnService};
 use App\Support\Query\DateRange;

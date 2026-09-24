@@ -12,7 +12,7 @@ namespace Tests\Feature\Privacy;
 
 use App\Models\Audit\AuditLog;
 use App\Models\Customer\Customer;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\RetentionProposal;
 use App\Services\Privacy\Retention\{RetentionRegistry, RetentionScanService};

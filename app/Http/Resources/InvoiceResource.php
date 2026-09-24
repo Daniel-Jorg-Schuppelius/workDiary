@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Project\Project;
 use App\Support\Sqid;
 use Illuminate\Http\Request;

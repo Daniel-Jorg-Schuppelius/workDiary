@@ -14,7 +14,7 @@ use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\{PluginSetting, User};
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\OpenProject\Services\{OpenProjectExportService, OpenProjectStructureSync};
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -11,8 +11,8 @@
 namespace Tests\Feature\Reporting;
 
 use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
-use App\Models\Attendance;
 use App\Models\Platform\{Team, User};
+use App\Models\Time\Attendance;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;

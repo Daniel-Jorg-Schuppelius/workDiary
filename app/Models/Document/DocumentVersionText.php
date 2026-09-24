@@ -16,7 +16,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use App\Models\Document\Document\DocumentVersion;
 
 /**
  * Ausgelesener Text einer Dokumentversion (MVP-819) — abgeleitetes Material

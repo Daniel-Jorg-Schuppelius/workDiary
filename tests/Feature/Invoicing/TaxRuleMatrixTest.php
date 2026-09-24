@@ -11,7 +11,8 @@
 namespace Tests\Feature\Invoicing;
 
 use App\Models\Customer\Customer;
-use App\Models\{Invoice, TaxRule};
+use App\Models\Finance\TaxRule;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Services\Invoicing\TaxResolver;
 use Database\Seeders\TaxRulesSeeder;

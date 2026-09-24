@@ -11,8 +11,8 @@
 @section('nav-title', __('Artikel zusammenführen'))
 
 @php
-    /** @var \App\Models\Article $source */
-    /** @var \App\Models\Article $target */
+    /** @var \App\Models\Article\Article $source */
+    /** @var \App\Models\Article\Article $target */
 
     // Reine Anzeigefelder (Identität) — nicht übersteuerbar.
     $identityFields = [

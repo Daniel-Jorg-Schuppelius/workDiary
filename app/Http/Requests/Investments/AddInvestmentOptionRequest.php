@@ -24,7 +24,7 @@ class AddInvestmentOptionRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'supplier_id' => \App\Models\Supplier::class,
+        'supplier_id' => \App\Models\Supplier\Supplier::class,
     ];
 
     /** @return array<string, mixed> */

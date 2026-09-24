@@ -15,7 +15,7 @@ namespace App\Plugins\Calendly\Services;
 use App\Enums\Diary\{DispatchStatus, Status};
 use App\Exceptions\InvalidOrderTransitionException;
 use App\Models\Calendar\AppointmentRequest;
-use App\Models\{DiaryEntry, DiaryEntryEvent};
+use App\Models\Diary\{DiaryEntry, DiaryEntryEvent};
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\User;
 use App\Models\Plugins\Calendly\CalendlyConnection;

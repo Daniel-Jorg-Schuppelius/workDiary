@@ -15,8 +15,8 @@ namespace App\Policies\AssetFinance;
 use App\Enums\User\Permission as P;
 use App\Models\AssetFinance\AssetFinanceContract;
 use App\Models\Platform\User;
-use App\Policies\Auth\PermissionPolicy;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * Policy der Leasing-/Finanzierungsakte (Feature 074). Konditionen, Raten,

@@ -17,7 +17,7 @@ use App\Http\Controllers\Attachments\AttachmentController;
 use App\Models\Attachments\Attachment;
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\User;
-use App\Models\{ServiceTicket, ServiceTicketMessage, SlaClockSegment, SlaViolation};
+use App\Models\ServiceTicket\{ServiceTicket, ServiceTicketMessage, SlaClockSegment, SlaViolation};
 use App\Support\MorphMap;
 
 /**

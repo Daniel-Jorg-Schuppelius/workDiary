@@ -14,8 +14,9 @@ use App\Http\Controllers\Reporting\SupplierValueReportController;
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\User;
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Services\Reporting\SupplierValueReportBuilder;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -124,7 +125,7 @@ class SupplierValueReportTest extends TestCase {
 
         $log = AuditLog::query()->where('event', 'report.exported')->latest('id')->first();
         $this->assertNotNull($log);
-        $this->assertSame(SupplierValueReportController::class, $log->auditable_type);
+        $this->assertSame(MorphMap::stableKey(SupplierValueReportController::class), $log->auditable_type);
         $this->assertSame('supplier-value', $log->changes['report_code'] ?? null);
     }
 

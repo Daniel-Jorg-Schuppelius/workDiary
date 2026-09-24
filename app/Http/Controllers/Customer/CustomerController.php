@@ -12,11 +12,12 @@ namespace App\Http\Controllers\Customer;
 
 use App\Enums\Import\ImportEntity;
 use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery, ResolvesGlobalDateRange};
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\Diary\DiaryController;
 use App\Http\Requests\Customer\SaveCustomerRequest;
-use App\Models\Customer\Customer\Customer;
-use App\Models\Platform\Organization;
 use App\Models\Classification\Tag;
-use App\Models\Platform\User;
+use App\Models\Customer\Customer;
+use App\Models\Platform\{Organization, User};
 use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
@@ -28,8 +29,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\DiaryController;
 
 class CustomerController extends Controller {
     use \App\Http\Controllers\Concerns\WritesContactDetails;

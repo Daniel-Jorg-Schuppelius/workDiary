@@ -16,7 +16,7 @@
     $aiView = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
     $aiNarrativeUsable = $aiView->capabilityUsable(\App\Services\Ai\Suggestions\CaseNarrativeSuggestionService::CAPABILITY);
     $aiNarrative = $aiNarrativeUsable
-        ? $aiView->openSuggestionsFor((new \App\Models\DiaryEntry)->getMorphClass(), collect([$diary]), \App\Services\Ai\Suggestions\CaseNarrativeSuggestionService::CAPABILITY)->get($diary->id)
+        ? $aiView->openSuggestionsFor((new \App\Models\Diary\DiaryEntry)->getMorphClass(), collect([$diary]), \App\Services\Ai\Suggestions\CaseNarrativeSuggestionService::CAPABILITY)->get($diary->id)
         : null;
 @endphp
 <x-card as="section" id="timeline" :title="__('timeline.title.section')" icon="history">

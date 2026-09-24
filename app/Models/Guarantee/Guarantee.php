@@ -20,7 +20,7 @@ use App\Models\Customer\Customer;
 use App\Models\Invoicing\InvoiceRetention;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

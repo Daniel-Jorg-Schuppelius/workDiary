@@ -11,7 +11,7 @@
 namespace Tests\Feature\Shipping;
 
 use App\Enums\Shipping\ShipmentStatus;
-use App\Models\{CarrierConnection, Shipment};
+use App\Models\Shipping\{CarrierConnection, Shipment};
 use App\Plugins\Contracts\{PluginCapability, ShippingProvider};
 use App\Plugins\Fedex\FedexPlugin;
 use App\Plugins\PluginDiscovery;

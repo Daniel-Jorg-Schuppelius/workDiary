@@ -11,7 +11,7 @@
 namespace Tests\Feature\Inventory;
 
 use App\Enums\Inventory\OutboxStatus;
-use App\Models\{InventoryOutboxEntry, StockMovement};
+use App\Models\Inventory\{InventoryOutboxEntry, StockMovement};
 use App\Services\Inventory\{ExternalStockMirror, InventoryOutboxService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;

@@ -18,7 +18,7 @@ use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDa
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\Accounting\AccountingAccount;
-use App\Models\CostCenter;
+use App\Models\Finance\CostCenter;
 use App\Services\Accounting\Filing\{FilingDeadlineCalculator, RecapitulativeStatementService, VatFilingPeriodService, VatReturnService};
 use App\Services\Accounting\{OpenItemService, TaxationMethodResolver, VatFilingProfileResolver};
 use App\Services\Accounting\Reports\{AbstractAccountingReportBuilder, AccountLedgerBuilder, BwaBuilder, DataQualityBuilder, EuerPreviewBuilder, ExportContextBuilder, LiquidityBuilder, LiquidityForecastBuilder, ProfitAndLossBuilder, TrialBalanceBuilder};

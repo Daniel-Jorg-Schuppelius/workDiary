@@ -13,7 +13,7 @@ namespace App\Services\Protocol;
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueVisibility};
 use App\Enums\Protocol\{ProtocolEventType, ProtocolSignatureMethod, ProtocolSignatureRole};
 use App\Models\Platform\User;
-use App\Models\{Protocol, ProtocolEvent, ProtocolSignatureToken};
+use App\Models\Protocol\{Protocol, ProtocolEvent, ProtocolSignatureToken};
 use App\Services\OpenIssue\OpenIssueService;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\Model;

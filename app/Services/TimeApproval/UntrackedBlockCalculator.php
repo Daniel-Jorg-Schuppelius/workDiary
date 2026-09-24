@@ -10,7 +10,7 @@
 
 namespace App\Services\TimeApproval;
 
-use App\Models\{Attendance, TimeEntry};
+use App\Models\Time\{Attendance, TimeEntry};
 use Carbon\CarbonImmutable;
 
 /**

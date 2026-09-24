@@ -13,7 +13,7 @@ namespace App\Http\Controllers\CustomerPortal;
 use App\Enums\CustomerPortal\PortalTimeDetail;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Services\CustomerPortal\PortalVisibility;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\{Auth, DB};

@@ -20,7 +20,7 @@ use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Privacy\DataSubjectRequest;
 use App\Models\Sales\Lead;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Services\Privacy\{DataSubjectRequestService, PrivacyExportService, SubjectDataExporter};
 use App\Support\Sqid;
 use CommonToolkit\Helper\Data\JsonHelper;

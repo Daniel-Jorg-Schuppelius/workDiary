@@ -12,10 +12,10 @@ namespace App\Models\Calendar;
 
 use App\Enums\Event\ReminderChannel;
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use App\Models\Calendar\Event;
 
 /**
  * @property int $id

@@ -33,7 +33,7 @@
             <label class="label" for="m-form-asset"><span class="label-text">{{ __('metering.column.asset') }}</span></label>
             <select id="m-form-asset" name="asset_id" class="select select-bordered w-full">
                 @foreach ($assets as $a)
-                    <option value="{{ $a->sqid }}" @selected(old('asset_id', $agreement?->asset_id !== null ? \App\Support\Sqid::encode(\App\Models\Asset::class, (int) $agreement->asset_id) : null) === $a->sqid)>{{ $a->name }}</option>
+                    <option value="{{ $a->sqid }}" @selected(old('asset_id', $agreement?->asset_id !== null ? \App\Support\Sqid::encode(\App\Models\Asset\Asset::class, (int) $agreement->asset_id) : null) === $a->sqid)>{{ $a->name }}</option>
                 @endforeach
             </select>
         </div>

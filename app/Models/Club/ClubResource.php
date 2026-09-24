@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Models\Club;
 
 use App\Enums\Club\ClubResourceKind;
-use App\Models\{Asset, Room};
+use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Facility\Room;
 use Illuminate\Database\Eloquent\{Collection, Model};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 

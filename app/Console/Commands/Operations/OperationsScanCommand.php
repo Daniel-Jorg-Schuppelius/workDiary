@@ -16,7 +16,7 @@ use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskType};
 use App\Enums\Support\ProblemReportStatus;
 use App\Models\Auth\SupportAccessGrant;
 use App\Models\Platform\Organization;
-use App\Models\ProblemReport;
+use App\Models\ServiceTicket\ProblemReport;
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use Illuminate\Console\Command;
 

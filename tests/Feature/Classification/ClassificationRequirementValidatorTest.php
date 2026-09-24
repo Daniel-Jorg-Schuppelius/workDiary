@@ -13,7 +13,7 @@ namespace Tests\Feature\Classification;
 use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequirementSeverity};
 use App\Models\Audit\AuditLog;
 use App\Models\Classification\{ClassificationRequirement, EntryType};
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
 use App\Services\Classification\ClassificationRequirementValidator;
 use Illuminate\Foundation\Testing\RefreshDatabase;

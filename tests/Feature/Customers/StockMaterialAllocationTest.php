@@ -10,8 +10,9 @@
 
 namespace Tests\Feature\Customers;
 
-use App\Models\{Article, ArticleVariant, StockMovement, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Customer\Customer;
+use App\Models\Inventory\{StockMovement, Warehouse};
 use App\Models\Platform\User;
 use App\Services\Inventory\{CustomerStockAllocationService, InventoryLedger, ValuationService};
 use App\Support\MorphMap;

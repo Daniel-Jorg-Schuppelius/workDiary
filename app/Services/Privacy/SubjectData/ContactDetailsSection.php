@@ -14,7 +14,7 @@ namespace App\Services\Privacy\SubjectData;
 
 use App\Models\Contacts\{ContactAddress, ContactBankAccount};
 use App\Models\Customer\Customer;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
 

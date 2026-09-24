@@ -15,7 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\Customer\Customer;
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Services\Reporting\ReportFilters;
 use App\Support\{Sqid, XlsxExport};
 use CommonToolkit\Helper\Data\NumberHelper;

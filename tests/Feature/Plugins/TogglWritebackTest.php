@@ -13,7 +13,7 @@ namespace Tests\Feature\Plugins;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry};
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Plugins\Support\{ImportedTimeEntry, MatchingTimeImportService, RemoteTimeFingerprint, TimeWritebackDispatcher, TimeWritebackObserver};
 use App\Plugins\Toggl\Services\TogglOutboxDispatcher;
 use App\Plugins\Toggl\{TogglImportService, TogglPlugin};

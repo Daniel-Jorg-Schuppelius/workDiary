@@ -11,7 +11,7 @@
 namespace App\Services\Expense;
 
 use App\Enums\Expense\PerDiemTripStatus;
-use App\Models\PerDiemTrip;
+use App\Models\Travel\PerDiemTrip;
 use Carbon\CarbonImmutable;
 
 /**

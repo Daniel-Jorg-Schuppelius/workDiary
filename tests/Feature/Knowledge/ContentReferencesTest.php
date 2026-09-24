@@ -198,7 +198,7 @@ final class ContentReferencesTest extends TestCase {
     }
 
     public function test_diary_page_leaves_knowledge_links_to_the_knowledge_card(): void {
-        $entry = \App\Models\DiaryEntry::factory()->create(['organization_id' => $this->organization->id, 'user_id' => $this->admin->id]);
+        $entry = \App\Models\Diary\DiaryEntry::factory()->create(['organization_id' => $this->organization->id, 'user_id' => $this->admin->id]);
         $map = app(IdeaMapService::class)->create($this->organization, $this->admin, 'Karte Auftrag');
         $node = app(IdeaNodeService::class)->create($map, $map->rootNode()->firstOrFail(), 'Folgeauftrag prüfen', $this->admin);
         app(NodeConversionService::class)->linkTo($node, $entry, $this->admin);

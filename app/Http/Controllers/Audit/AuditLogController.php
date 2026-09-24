@@ -11,23 +11,21 @@
 namespace App\Http\Controllers\Audit;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
-use App\Models\Attachments\Attachments\Attachment;
+use App\Http\Controllers\Controller;
+use App\Models\Attachments\Attachment;
 use App\Models\Audit\AuditLog;
 use App\Models\Communication\Comment;
 use App\Models\Customer\Customer;
-use App\Models\DiaryEntry;
-use App\Models\EmergencyAssignment;
+use App\Models\Diary\{DiaryEntry, EmergencyAssignment, OnCallShift};
 use App\Models\Integration\ImportRun;
 use App\Models\Numbering\NumberSequence;
-use App\Models\OnCallShift;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Services\UI\DateRangeContext;
 use App\Support\{LookupCache, SortableQuery};
 use App\Support\MorphMap;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class AuditLogController extends Controller {
     use ResolvesGlobalDateRange;

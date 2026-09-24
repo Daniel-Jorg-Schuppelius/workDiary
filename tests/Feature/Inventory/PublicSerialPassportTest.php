@@ -11,8 +11,9 @@
 namespace Tests\Feature\Inventory;
 
 use App\Enums\Inventory\{SerialSource, SerialStatus};
-use App\Models\{Article, ArticleVariant, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Customer\Customer;
+use App\Models\Inventory\Warehouse;
 use App\Services\Inventory\{SerialPassportService, SerialService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

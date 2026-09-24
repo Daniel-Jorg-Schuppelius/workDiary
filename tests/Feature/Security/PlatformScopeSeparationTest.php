@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Security;
 
-use App\Models\MaintenanceWindow;
+use App\Models\Asset\MaintenanceWindow;
 use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

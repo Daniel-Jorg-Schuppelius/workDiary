@@ -11,7 +11,7 @@
 @section('nav-title', __('article.title'))
 
 @php
-    /** @var \App\Models\Article $article */
+    /** @var \App\Models\Article\Article $article */
     /** @var array<string, mixed> $result */
     $eur = fn (string $v, int $d = 2): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $v, $d, withThousandsSeparator: true) . ' €';
     $qty = fn (string $v): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $v, 2);
@@ -88,7 +88,7 @@
                     <td class="text-right tabular-nums">{{ $eur($row['unit_cost'], 4) }}</td>
                     <td class="text-right tabular-nums {{ $devTone($row['deviation_pct']) }}">{{ $pct($row['deviation_pct']) }}</td>
                     <td class="text-right">
-                        <x-icon-btn icon="open_in_new" :href="route('manufacturing-orders.show', \App\Support\Sqid::encode(\App\Models\ManufacturingOrder::class, $row['order_id']))" :label="__('article.costing.open_order')" />
+                        <x-icon-btn icon="open_in_new" :href="route('manufacturing-orders.show', \App\Support\Sqid::encode(\App\Models\Manufacturing\ManufacturingOrder::class, $row['order_id']))" :label="__('article.costing.open_order')" />
                     </td>
                 </tr>
             @empty

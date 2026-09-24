@@ -12,8 +12,9 @@ namespace Tests\Feature\Procedure;
 
 use App\Enums\Procedure\{ProcedureRunEventType, ProcedureRunStatus, ProcedureStepRunStatus, ProcedureStepType};
 use App\Exceptions\{ProcedureRunIncompleteException, ProcedureStepBlockedException};
-use App\Models\{DiaryEntry, ProcedureRun, ProcedureTemplate};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
+use App\Models\Procedure\{ProcedureRun, ProcedureTemplate};
 use App\Services\Procedure\{ProcedureExecutionService, ProcedureTemplateService, WaitStepService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -252,7 +253,7 @@ class ProcedureExecutionServiceTest extends TestCase {
     }
 
     /** Step-Run eines Laufs anhand des Schritt-Codes. */
-    private function stepRunByCode(ProcedureRun $run, string $code): \App\Models\ProcedureStepRun {
+    private function stepRunByCode(ProcedureRun $run, string $code): \App\Models\Procedure\ProcedureStepRun {
         $stepRun = $run->stepRuns()->with('stepDef')->get()
             ->first(fn($sr) => $sr->stepDef?->code === $code);
         $this->assertNotNull($stepRun, "Step-Run '$code' fehlt.");

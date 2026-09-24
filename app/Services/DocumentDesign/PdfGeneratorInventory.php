@@ -66,8 +66,8 @@ final class PdfGeneratorInventory {
         'app/Services/Timesheet/PdfRenderer.php' => ['timesheet'],
         'app/Services/Form/FormSubmissionPdfRenderer.php' => ['form'],
         'app/Http/Controllers/Reporting/Concerns/RendersReportPdf.php' => ['report'],
-        'app/Http/Controllers/DiaryCaseFileController.php' => ['case_file'],
-        'app/Http/Controllers/PerDiemTripController.php' => ['report'],
+        'app/Http/Controllers/Diary/DiaryCaseFileController.php' => ['case_file'],
+        'app/Http/Controllers/Travel/PerDiemTripController.php' => ['report'],
         'app/Http/Controllers/CustomerPortal/DiaryDetailController.php' => ['report'],
         'app/Http/Controllers/CustomerPortal/BillingController.php' => ['report'],
         'app/Http/Controllers/Privacy/IncidentController.php' => ['report'],
@@ -80,7 +80,7 @@ final class PdfGeneratorInventory {
         // HOAI-Stufenbericht (Feature 109, MVP-644).
         'app/Http/Controllers/Gaeb/HoaiCostReportController.php' => ['report'],
         // Rundgangsbericht (Feature 089, MVP-665-Folgepunkt).
-        'app/Http/Controllers/PatrolController.php' => ['report'],
+        'app/Http/Controllers/Patrol/PatrolController.php' => ['report'],
         'app/Http/Controllers/Whistleblowing/WhistleblowingPortalController.php' => ['report'],
         // Spezialformat (deklariert eingeschränkt, siehe RenderDocumentKind::capabilityNote())
         'app/Http/Controllers/Print/LabelController.php' => ['label'],

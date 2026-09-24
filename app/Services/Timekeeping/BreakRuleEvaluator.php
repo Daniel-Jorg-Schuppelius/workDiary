@@ -10,7 +10,7 @@
 
 namespace App\Services\Timekeeping;
 
-use App\Models\Attendance;
+use App\Models\Time\Attendance;
 
 /**
  * Evaluates statutory break requirements (German ArbZG §4 by default,

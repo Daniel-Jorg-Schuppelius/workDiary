@@ -10,16 +10,15 @@
 
 namespace App\Http\Controllers\Calendar;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Calendar\SaveAvailabilityWindowRequest;
-use App\Http\Requests\SaveDesiredShiftRequest;
+use App\Http\Requests\Schedule\SaveDesiredShiftRequest;
 use App\Models\Calendar\AvailabilityWindow;
-use App\Models\DesiredShift;
-use App\Models\ShiftType;
 use App\Models\Platform\User;
+use App\Models\Schedule\{DesiredShift, ShiftType};
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Self-Service für Verfügbarkeiten & Wunschdienste (Feature 007).

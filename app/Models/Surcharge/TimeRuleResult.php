@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Models\Surcharge;
 
-use App\Models\{Attendance, TimeExport};
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Platform\User;
+use App\Models\Time\{Attendance, TimeExport};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

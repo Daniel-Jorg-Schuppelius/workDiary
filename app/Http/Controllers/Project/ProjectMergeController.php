@@ -13,15 +13,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Project;
 
 use App\Http\Controllers\Concerns\{MergesDuplicates, ResolvesCurrentOrganization};
+use App\Http\Controllers\Controller;
 use App\Models\Platform\Organization;
-use App\Models\Project\Project\Project;
-use App\Models\Project\Project\ProjectMergeDismissal;
-use App\Services\Stammdaten\ProjectDuplicateFinder;
-use App\Services\Stammdaten\ProjectMergeService;
+use App\Models\Project\{Project, ProjectMergeDismissal};
+use App\Services\Stammdaten\{ProjectDuplicateFinder, ProjectMergeService};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Projekt-Abgleich: stellt Dubletten-Kandidaten gegenüber und führt sie nach

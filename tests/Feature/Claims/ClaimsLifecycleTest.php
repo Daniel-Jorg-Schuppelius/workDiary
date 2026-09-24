@@ -12,9 +12,11 @@ namespace Tests\Feature\Claims;
 
 use App\Enums\Claims\{ClaimFinancialKind, ClaimKind, ClaimRmaDisposition, ClaimStatus, ClaimVerdict};
 use App\Enums\Inventory\{SerialSource, SerialStatus, StockState};
-use App\Models\{Article, ArticleVariant, Invoice, StockSerial, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Claims\ClaimCase;
 use App\Models\Customer\Customer;
+use App\Models\Inventory\{StockSerial, Warehouse};
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Services\Claims\{ClaimCaseService, ClaimFinancialService, ClaimRmaService};
 use App\Services\Inventory\InventoryLedger;
@@ -238,7 +240,7 @@ final class ClaimsLifecycleTest extends TestCase {
     }
 
     public function test_recourse_submission_sets_response_deadline(): void {
-        $supplier = \App\Models\Supplier::factory()->create(['organization_id' => $this->organization->id]);
+        $supplier = \App\Models\Supplier\Supplier::factory()->create(['organization_id' => $this->organization->id]);
         $case = $this->openCase(['supplier_id' => $supplier->id]);
         $teamlead = $this->userWithRole('teamleitung');
 

@@ -13,7 +13,7 @@ namespace App\Services\Location;
 use App\Models\Location\{CustomerGeofence, LocationPendingEntry, LocationVisit};
 use App\Models\Platform\User;
 use App\Models\Scopes\OrganizationScope;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 

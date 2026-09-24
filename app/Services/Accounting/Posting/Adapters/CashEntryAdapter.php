@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Accounting\Posting\Adapters;
 
 use App\Enums\Finance\{PostingAccountRole, PostingSourceKind};
-use App\Models\CashEntry;
+use App\Models\Finance\CashEntry;
 use App\Models\Platform\Organization;
 use App\Services\Accounting\Posting\{PostingProposal, PostingProposalLine};
 use Carbon\CarbonImmutable;
@@ -123,7 +123,7 @@ class CashEntryAdapter extends AbstractPostingAdapter {
             bookedOn: $bookedOn,
             memo: (string) __('accounting.inbox.memo.cash_entry', [
                 'purpose' => (string) $source->purpose,
-                'register' => (string) ($source->register instanceof \App\Models\CashRegister ? $source->register->name : '—'),
+                'register' => (string) ($source->register instanceof \App\Models\Finance\CashRegister ? $source->register->name : '—'),
             ]),
             lines: $lines,
             blockers: array_values(array_unique($blockers)),

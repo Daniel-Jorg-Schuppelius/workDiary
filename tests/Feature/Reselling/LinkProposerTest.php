@@ -378,7 +378,7 @@ class LinkProposerTest extends TestCase {
         $period = $subscription->periods()->firstOrFail();
         ResalePeriodLink::query()->create([
             'organization_id' => $this->organization->id, 'period_id' => $period->id, 'subscription_id' => $subscription->id,
-            'linkable_type' => (new \App\Models\InvoiceItem)->getMorphClass(), 'linkable_id' => 4711,
+            'linkable_type' => (new \App\Models\Invoicing\InvoiceItem)->getMorphClass(), 'linkable_id' => 4711,
             'voucher_number' => 'RE-2026-0001', 'voucher_date' => '2026-09-01', 'quantity' => 1, 'months' => 12, 'amount' => '247.20', 'currency' => 'EUR', 'origin' => LinkOrigin::Proposed,
         ]);
         $period->forceFill(['status' => PeriodStatus::Billed])->save();
@@ -389,7 +389,7 @@ class LinkProposerTest extends TestCase {
         $period->refresh();
         $this->assertSame(PeriodStatus::Billed, $period->status, 'lokaler Entwurfsbezug deckt die Periode');
         $this->assertSame(1, $period->links()->count(), 'kein zusätzlicher Spiegel-Bezug');
-        $this->assertSame(MorphMap::alias(\App\Models\InvoiceItem::class), $period->links()->first()?->linkable_type);
+        $this->assertSame(MorphMap::alias(\App\Models\Invoicing\InvoiceItem::class), $period->links()->first()?->linkable_type);
         $this->assertSame(1, $result['lines_without_subscription'], 'die Spiegelposition bleibt frei — und sichtbar');
     }
 

@@ -13,7 +13,7 @@ namespace Tests\Feature\Finance;
 use App\Enums\Finance\{AccountType, ProfitDetermination, SettlementKind, TaxationMethod};
 use App\Models\Accounting\{AccountingAccount, AccountingEvent, AccountingPostingRule, AccountingTaxationPeriod};
 use App\Models\Customer\Customer;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService, TaxationMethodResolver};
 use App\Services\Accounting\Reports\VatPreviewBuilder;

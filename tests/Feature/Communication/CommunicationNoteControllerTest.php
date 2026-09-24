@@ -12,7 +12,7 @@ namespace Tests\Feature\Communication;
 
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType, CommunicationVisibility, ParticipantParty};
 use App\Models\Communication\CommunicationNote;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -61,10 +61,10 @@ class CommunicationNoteControllerTest extends TestCase {
     public function test_notes_can_be_stored_against_protocol_and_asset(): void {
         $user = User::factory()->user()->create();
         app()->instance('currentOrganization', $user->organization);
-        $protocol = \App\Models\Protocol::factory()->create(['organization_id' => $user->organization_id]);
-        $asset = \App\Models\Asset::factory()->create(['organization_id' => $user->organization_id]);
+        $protocol = \App\Models\Protocol\Protocol::factory()->create(['organization_id' => $user->organization_id]);
+        $asset = \App\Models\Asset\Asset::factory()->create(['organization_id' => $user->organization_id]);
 
-        foreach ([['protocol', \App\Models\Protocol::class, $protocol], ['asset', \App\Models\Asset::class, $asset]] as [$kind, $class, $model]) {
+        foreach ([['protocol', \App\Models\Protocol\Protocol::class, $protocol], ['asset', \App\Models\Asset\Asset::class, $asset]] as [$kind, $class, $model]) {
             $this->actingAs($user)
                 ->post(route('communication-notes.store'), [
                     'notable_kind' => $kind,

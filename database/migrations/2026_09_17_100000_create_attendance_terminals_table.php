@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Hardware-Stempelterminal je Organisation (Feature 061, MVP-130): fest
  * montiertes Terminal (RFID/NFC/PIN) am Werkstatt-/Halleneingang, optional einem
- * Standort ({@see \App\Models\Site}) zugeordnet. Der Ingest-Endpunkt ist über
+ * Standort ({@see \App\Models\Facility\Site}) zugeordnet. Der Ingest-Endpunkt ist über
  * einen Gerätetoken im Pfad autorisiert — gespeichert wird nur der SHA-256-Hash
  * (Klartext einmalig, Muster wie `location_device_tokens`). `last_seen_at` trägt
  * den Gesundheitsstatus (Terminalausfall sichtbar).

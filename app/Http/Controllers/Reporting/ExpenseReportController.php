@@ -14,7 +14,7 @@ use App\Enums\Expense\ExpenseStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{ResolvesReportScope, ResolvesStandardReportFilters};
-use App\Models\Expense;
+use App\Models\Travel\Expense;
 use App\Support\ChartBucket;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;

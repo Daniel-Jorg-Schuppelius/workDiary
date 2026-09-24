@@ -14,7 +14,8 @@ namespace App\Services\Dispatch;
 
 use App\Enums\Asset\AssetBlockReason;
 use App\Exceptions\{AssetNotUsableException, DriverLicenseCheckOverdueException, VehicleInspectionOverdueException, VehicleReservationConflictException};
-use App\Models\{DiaryEntry, Vehicle, VehicleReservation};
+use App\Models\Diary\DiaryEntry;
+use App\Models\Fleet\{Vehicle, VehicleReservation};
 use App\Services\Asset\AssetUsageGuard;
 use App\Services\AssetCompliance\AssetComplianceService;
 use App\Services\Fleet\DriverLicenseCheckService;

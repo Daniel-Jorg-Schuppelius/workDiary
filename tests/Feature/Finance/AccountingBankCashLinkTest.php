@@ -14,7 +14,7 @@ use App\Enums\Finance\{AccountType, AllocationKind, PostingAccountRole, PostingS
 use App\Models\Accounting\{AccountingAccount, AccountingPostingRule, AccountingTransfer};
 use App\Models\Customer\Customer;
 use App\Models\Finance\{BankStatement, BankTransaction, PaymentAllocation};
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, InternalTransferService};
 use App\Services\Accounting\Posting\{PostingInboxService, PostingSourceRegistry};

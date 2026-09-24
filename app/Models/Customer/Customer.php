@@ -13,17 +13,18 @@ namespace App\Models\Customer;
 use App\Casts\MoneyCast;
 use App\Enums\Numbering\NumberScope;
 use App\Enums\Project\ProjectStatus;
+use App\Models\Asset\Asset;
 use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasClassifications, HasCommunicationNotes, HasContactAndBankDetails, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSequentialNumber, HasSqid, HasTags, Searchable};
+use App\Models\Contacts\{ContactAddress, ContactBankAccount};
+use App\Models\Facility\{Room, Site};
+use App\Models\Integration\ExternalReference;
+use App\Models\Material\MaterialCostAllocation;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne, MorphMany};
 use Illuminate\Support\Carbon;
-use App\Models\Asset;
-use App\Models\Customer\ForeignCustomer;
-use App\Models\MaterialCostAllocation;
-use App\Models\Project\Project;
-use App\Models\Room;
-use App\Models\Site;
 
 /**
  * @property int $id

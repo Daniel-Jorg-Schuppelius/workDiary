@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Disposal;
 
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Concerns\{HasAttachments, HasSqid};
 use Database\Factories\Disposal\DisposalItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

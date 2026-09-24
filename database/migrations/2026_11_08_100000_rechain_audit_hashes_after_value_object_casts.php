@@ -11,8 +11,8 @@
 declare(strict_types=1);
 
 use App\Models\Audit\AuditLog;
-use App\Models\CashEntry;
 use App\Models\Concerns\HashChainable;
+use App\Models\Finance\CashEntry;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\{DB, Log, Schema};
 

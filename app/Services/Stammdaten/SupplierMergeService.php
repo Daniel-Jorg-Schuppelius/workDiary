@@ -12,10 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Stammdaten;
 
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
-use App\Services\Stammdaten\AbstractEntityMergeService;
 
 /**
  * Führt zwei lokale Lieferanten-Datensätze zusammen (Audit 2026-08, W2.3).

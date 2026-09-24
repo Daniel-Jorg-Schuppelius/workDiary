@@ -10,7 +10,7 @@ namespace Tests\Feature\Classification;
 
 use App\Enums\Procedure\ProcedureStepType;
 use App\Models\Platform\{Organization, User};
-use App\Models\{ProcedureStepDef, ProcedureTemplate};
+use App\Models\Procedure\{ProcedureStepDef, ProcedureTemplate};
 use App\Services\Classification\BranchProfileInstaller;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

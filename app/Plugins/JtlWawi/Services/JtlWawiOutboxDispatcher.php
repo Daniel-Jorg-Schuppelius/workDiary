@@ -14,7 +14,8 @@ namespace App\Plugins\JtlWawi\Services;
 
 use App\Contracts\Inventory\ExternalInventoryDispatcher;
 use App\Enums\Inventory\{StockMovementType, StockState};
-use App\Models\{ArticleVariant, InventoryOutboxEntry, StockSerial, Warehouse};
+use App\Models\Article\ArticleVariant;
+use App\Models\Inventory\{InventoryOutboxEntry, StockSerial, Warehouse};
 use App\Plugins\JtlWawi\Api\{JtlGateway, JtlGatewayFactory};
 use App\Plugins\JtlWawi\JtlWawiPlugin;
 use Illuminate\Support\Carbon;

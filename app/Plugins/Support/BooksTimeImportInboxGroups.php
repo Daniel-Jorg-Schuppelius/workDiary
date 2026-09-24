@@ -16,7 +16,7 @@ use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Integration\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem};
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Support\Collection;

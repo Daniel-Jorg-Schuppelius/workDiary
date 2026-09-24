@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Asset;
 
 use App\Exceptions\AssetNotUsableException;
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 
 /**
  * Einsatzprüfung über Modulgrenzen (D12): Verleih, Disposition und

@@ -67,7 +67,7 @@
             </select>
         </x-filter-field>
         <x-slot:extra>
-            @can('create', \App\Models\Vacation::class)
+            @can('create', \App\Models\Absence\Vacation::class)
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
                             :href="route('vacations.create') . '?dialog=1'"

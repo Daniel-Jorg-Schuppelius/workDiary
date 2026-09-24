@@ -11,8 +11,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SavePerDiemRateRequest;
-use App\Models\PerDiemRate;
+use App\Http\Requests\Travel\SavePerDiemRateRequest;
+use App\Models\Travel\PerDiemRate;
 use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;

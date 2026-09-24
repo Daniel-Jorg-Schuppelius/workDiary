@@ -15,7 +15,7 @@ namespace App\Http\Requests\Finance;
 use App\Enums\Reselling\ResaleArticleRole;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\Article;
+use App\Models\Article\Article;
 use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;

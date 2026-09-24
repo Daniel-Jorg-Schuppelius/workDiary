@@ -15,7 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Isms\{IsmsScope, IsmsSupplierAssessment};
 use App\Models\Platform\User;
 use App\Models\Privacy\ProcessingAgreement;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Services\Isms\SupplierAssessmentService;
 use App\Support\{Sqid, SqidEncoder};
 use Illuminate\Http\{RedirectResponse, Request};

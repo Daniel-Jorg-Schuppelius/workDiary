@@ -11,7 +11,7 @@
 namespace Tests\Feature\KeyHandover;
 
 use App\Enums\KeyHandover\KeyHandoverDirection;
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Platform\{Organization, User};
 use App\Services\KeyHandover\KeyHandoverService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

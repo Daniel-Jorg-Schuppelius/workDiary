@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Models\TaxRule;
+use App\Models\Finance\TaxRule;
 use Illuminate\Database\Seeder;
 
 /**

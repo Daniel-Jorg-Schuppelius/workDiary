@@ -7,14 +7,14 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 @php
-    /** @var \App\Models\Asset $asset */
+    /** @var \App\Models\Asset\Asset $asset */
     /** @var array<int|string, string> $customers */
     /** @var \Illuminate\Support\Collection<int, \App\Models\Customer\ForeignCustomer> $foreignCustomers */
     /** @var array<string, string> $classOptions */
     /** @var array<string, string> $statusOptions */
     /** @var array<string, string> $categoryOptions */
     /** @var array{customer_id:?int, foreign_customer_id:?int, site_id:?int, building_id:?int, floor_id:?int, room_id:?int} $prefill */
-    $asset = $asset ?? new \App\Models\Asset();
+    $asset = $asset ?? new \App\Models\Asset\Asset();
     $prefill = $prefill ?? ['customer_id' => null, 'foreign_customer_id' => null, 'site_id' => null, 'building_id' => null, 'floor_id' => null, 'room_id' => null];
     $pickerCustomers = collect($customers)
         ->map(fn ($name, $id) => (object) ['id' => (int) $id, 'name' => (string) $name])
@@ -48,7 +48,7 @@
     <x-select-field name="product_id" :label="__('products.field.product')" span="2" :hint="__('products.field.product_help')">
         <option value="">{{ __('products.field.no_product') }}</option>
         @foreach ($products ?? [] as $productOption)
-            <option value="{{ $productOption->sqid }}" @selected((string) old('product_id', \App\Support\Sqid::encode(\App\Models\Product::class, $asset->product_id ?? null)) === $productOption->sqid)>{{ $productOption->name }}</option>
+            <option value="{{ $productOption->sqid }}" @selected((string) old('product_id', \App\Support\Sqid::encode(\App\Models\Article\Product::class, $asset->product_id ?? null)) === $productOption->sqid)>{{ $productOption->name }}</option>
         @endforeach
     </x-select-field>
 

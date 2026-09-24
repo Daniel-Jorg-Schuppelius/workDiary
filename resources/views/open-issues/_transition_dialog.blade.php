@@ -8,7 +8,7 @@
 --}}
 
 @php
-    /** @var \App\Models\OpenIssue $issue */
+    /** @var \App\Models\Diary\OpenIssue $issue */
     $field = $requiresResolution ? 'resolution' : 'reason';
     $tone = $action === 'complete' ? 'success' : ($action === 'block' ? 'error' : 'warning');
     $icon = [

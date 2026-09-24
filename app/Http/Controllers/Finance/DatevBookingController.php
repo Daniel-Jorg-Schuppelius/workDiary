@@ -12,9 +12,9 @@ namespace App\Http\Controllers\Finance;
 
 use App\Enums\Finance\{ChartOfAccounts, DatevBatchStatus};
 use App\Http\Controllers\Controller;
-use App\Models\ExpenseCategory;
 use App\Models\Finance\DatevBookingBatch;
 use App\Models\Platform\{Organization, User};
+use App\Models\Travel\ExpenseCategory;
 use App\Services\Finance\Datev\DatevBookingConfig;
 use App\Services\Finance\{DatevBookingException, DatevBookingService, FinancialFormatsSupport};
 use App\Support\Sqid;

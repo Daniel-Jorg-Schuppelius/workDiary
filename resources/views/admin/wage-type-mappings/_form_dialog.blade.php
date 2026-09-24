@@ -8,7 +8,7 @@
 --}}
 {{-- Dialog: Lohnart-Zuordnung anlegen/bearbeiten (A21 · MVP-019) --}}
 @php
-    /** @var \App\Models\WageTypeMapping $mapping */
+    /** @var \App\Models\Time\WageTypeMapping $mapping */
     $isEdit = $mapping->exists;
 @endphp
 <x-modal

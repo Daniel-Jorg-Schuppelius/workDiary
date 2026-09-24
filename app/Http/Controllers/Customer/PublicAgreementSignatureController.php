@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Customer;
 
 use App\Enums\Contract\SignatureLinkPurpose;
+use App\Http\Controllers\Article\ArticleExportController;
 use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Http\Controllers\Contract\ContractSigningController;
+use App\Http\Controllers\Controller;
 use App\Models\Contract\{ContractSignatureLink, ContractSigningRevision};
 use App\Models\Platform\Organization;
 use App\Services\Contract\ContractSigningService;
@@ -24,8 +26,6 @@ use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\App;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\{HeaderUtils, Response};
-use App\Http\Controllers\ArticleExportController;
-use App\Http\Controllers\Controller;
 
 /**
  * Öffentliche Signatur- und Abrufseiten einer Kundenvereinbarung (Feature

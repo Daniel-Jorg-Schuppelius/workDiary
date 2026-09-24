@@ -18,7 +18,7 @@ enum VacationType: string implements HasLabel {
 
     case Vacation = 'vacation';
 
-    /** @deprecated Krankheit wird ab Mai 2026 über App\Models\SickLeave geführt; Case bleibt für historische Daten. */
+    /** @deprecated Krankheit wird ab Mai 2026 über App\Models\Absence\SickLeave geführt; Case bleibt für historische Daten. */
     case Sick = 'sick';
 
     case Special = 'special';

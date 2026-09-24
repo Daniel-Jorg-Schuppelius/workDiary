@@ -12,7 +12,7 @@ namespace Tests\Feature\AssetCompliance;
 
 use App\Enums\Asset\AssetBlockReason;
 use App\Enums\AssetCompliance\{AssetComplianceBlockMode, AssetComplianceStatus};
-use App\Models\{Asset, AssetBlock};
+use App\Models\Asset\{Asset, AssetBlock};
 use App\Models\AssetCompliance\AssetComplianceProfile;
 use App\Models\Platform\User;
 use App\Services\Asset\AssetUsageGuard;

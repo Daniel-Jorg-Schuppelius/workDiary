@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Inventory;
 
-use App\Models\{Article, ArticleVariant, StockLot, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\{StockLot, Warehouse};
 use App\Models\Platform\User;
 use App\Services\Inventory\LotService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -11,9 +11,9 @@
 namespace Tests\Feature\Safety;
 
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
+use App\Models\Hr\Qualification;
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
 use App\Models\Platform\User;
-use App\Models\Qualification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

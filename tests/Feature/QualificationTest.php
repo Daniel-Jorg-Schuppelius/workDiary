@@ -10,8 +10,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Hr\Qualification;
 use App\Models\Platform\Organization;
-use App\Models\Qualification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

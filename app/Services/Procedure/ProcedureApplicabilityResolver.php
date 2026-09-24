@@ -10,7 +10,8 @@
 
 namespace App\Services\Procedure;
 
-use App\Models\{DiaryEntry, ProcedureTemplate, ProcedureTemplateVersion};
+use App\Models\Diary\DiaryEntry;
+use App\Models\Procedure\{ProcedureTemplate, ProcedureTemplateVersion};
 use Illuminate\Support\{Carbon, Collection};
 
 /**

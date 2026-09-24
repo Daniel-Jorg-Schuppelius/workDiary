@@ -34,7 +34,7 @@ use Illuminate\Support\Str;
  */
 final class ManifestChecker {
     /** @var list<string> Schichtordner, deren Unterordner Domänen sind */
-    private const LAYERS = ['app/Models', 'app/Services', 'app/Http/Controllers', 'app/Policies'];
+    private const LAYERS = ['app/Models', 'app/Services', 'app/Http/Controllers', 'app/Policies', 'app/Http/Requests', 'database/factories'];
 
     /**
      * Technische Unterordner, die keine Domäne sind — Name → Begründung.

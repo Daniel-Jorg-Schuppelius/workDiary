@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Finance\Gdpdu;
 
-use App\Models\IncomingEInvoice;
+use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\Organization;
 use Carbon\CarbonInterface;
 

@@ -14,7 +14,7 @@ use App\Enums\Timesheet\TimesheetStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TimeEntryResource;
 use App\Models\Project\Project;
-use App\Models\Timesheet;
+use App\Models\Time\Timesheet;
 use App\Services\Timesheet\Stopwatch;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -65,7 +65,7 @@ class StopwatchController extends Controller {
         $request->merge([
             'project_id' => Sqid::decode(Project::class, $request->input('project_id')),
             'task_id' => Sqid::decode(\App\Models\Project\Task::class, $request->input('task_id')),
-            'diary_entry_id' => Sqid::decode(\App\Models\DiaryEntry::class, $request->input('diary_entry_id')),
+            'diary_entry_id' => Sqid::decode(\App\Models\Diary\DiaryEntry::class, $request->input('diary_entry_id')),
             'timesheet_id' => Sqid::decode(Timesheet::class, $request->input('timesheet_id')),
         ]);
 

@@ -11,7 +11,7 @@
 namespace App\Console\Commands\ServiceTicket;
 
 use App\Enums\ServiceTicket\ServiceTicketStatus;
-use App\Models\ServiceTicket;
+use App\Models\ServiceTicket\ServiceTicket;
 use App\Services\ServiceTicket\SlaViolationService;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection;

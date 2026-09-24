@@ -10,8 +10,8 @@
 
 namespace App\Http\Requests\Customer;
 
-use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Http\Requests\BaseFormRequest;
+use App\Http\Requests\Concerns\DecodesSqidInputs;
 
 /**
  * Validierung für Fremdkunden (Endkunden). Leichtgewichtiger Kontakt; die
@@ -23,7 +23,7 @@ class SaveForeignCustomerRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'customer_id' => \App\Models\Customer\Customer\Customer::class,
+        'customer_id' => \App\Models\Customer\Customer::class,
     ];
 
     /** @return array<string, mixed> */
@@ -38,7 +38,7 @@ class SaveForeignCustomerRequest extends BaseFormRequest {
                 'max:16',
                 \Illuminate\Validation\Rule::unique('foreign_customers', 'matchcode')
                     ->where(fn($q) => $q->where('organization_id', $this->user()?->organization_id))
-                    ->ignore($this->route('foreignCustomer') instanceof \App\Models\Customer\Customer\ForeignCustomer ? $this->route('foreignCustomer')->id : null),
+                    ->ignore($this->route('foreignCustomer') instanceof \App\Models\Customer\ForeignCustomer ? $this->route('foreignCustomer')->id : null),
             ],
             'company' => ['nullable', 'string', 'max:200'],
             'contact_name' => ['nullable', 'string', 'max:200'],

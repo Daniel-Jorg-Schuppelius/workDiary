@@ -11,8 +11,8 @@
 namespace Tests\Unit\Expense;
 
 use App\Enums\Expense\PerDiemDayKind;
-use App\Models\{PerDiemRate, PerDiemTrip};
 use App\Models\Platform\User;
+use App\Models\Travel\{PerDiemRate, PerDiemTrip};
 use App\Services\Expense\PerDiemCalculator;
 use Database\Seeders\PerDiemRateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

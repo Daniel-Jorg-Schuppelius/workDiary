@@ -12,7 +12,7 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{BalanceCheck, BankStatementFormat, MatchStatus, TransactionDirection};
 use App\Models\Customer\Customer;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Services\Finance\{BankImportException, BankImportService, FinancialFormatsSupport, MatchingService};
 use App\Services\Finance\Banking\BankStatementParser;

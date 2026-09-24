@@ -30,7 +30,7 @@
         <x-select-field name="supplier_id" :label="__('isms.field.supplier_link')">
                 <option value="">{{ __('isms.hint.supplier_freetext') }}</option>
                 @foreach ($suppliers as $supplier)
-                    <option value="{{ $supplier->sqid }}" @selected((string) old('supplier_id', \App\Support\Sqid::encode(\App\Models\Supplier::class, $assessment?->supplier_id)) === $supplier->sqid)>{{ $supplier->name }}{{ $supplier->number ? ' (' . $supplier->number . ')' : '' }}</option>
+                    <option value="{{ $supplier->sqid }}" @selected((string) old('supplier_id', \App\Support\Sqid::encode(\App\Models\Supplier\Supplier::class, $assessment?->supplier_id)) === $supplier->sqid)>{{ $supplier->name }}{{ $supplier->number ? ' (' . $supplier->number . ')' : '' }}</option>
                 @endforeach
         </x-select-field>
         <x-input-field name="supplier_name" :label="__('isms.field.supplier_name')" maxlength="250" :value="old('supplier_name', $assessment?->supplier_name)" placeholder="{{ __('isms.hint.supplier_name') }}" />

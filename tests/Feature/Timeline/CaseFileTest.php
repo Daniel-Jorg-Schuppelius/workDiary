@@ -14,10 +14,13 @@ use App\Enums\Timesheet\TimesheetStatus;
 use App\Models\Attachments\Attachment;
 use App\Models\Communication\{Comment, CommunicationNote};
 use App\Models\Customer\Customer;
-use App\Models\{DiaryEntry, MaterialUsage, OpenIssue, Protocol, TimeEntry, Timesheet};
+use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Document\Document;
+use App\Models\Material\MaterialUsage;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Models\Protocol\Protocol;
+use App\Models\Time\{TimeEntry, Timesheet};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
@@ -32,8 +35,8 @@ class CaseFileTest extends TestCase {
         $user = User::factory()->user()->create();
         $orgId = (int) $user->organization_id;
 
-        $subjectAsset = \App\Models\Asset::factory()->create(['organization_id' => $orgId, 'name' => 'Heizanlage Keller']);
-        $issuedAsset = \App\Models\Asset::factory()->create(['organization_id' => $orgId, 'name' => 'Messkoffer 7']);
+        $subjectAsset = \App\Models\Asset\Asset::factory()->create(['organization_id' => $orgId, 'name' => 'Heizanlage Keller']);
+        $issuedAsset = \App\Models\Asset\Asset::factory()->create(['organization_id' => $orgId, 'name' => 'Messkoffer 7']);
 
         $entry = DiaryEntry::factory()->for($user)->create([
             'organization_id' => $orgId,
@@ -41,7 +44,7 @@ class CaseFileTest extends TestCase {
             'asset_id' => $subjectAsset->id,
         ]);
 
-        \App\Models\AssetAssignment::factory()->create([
+        \App\Models\Asset\AssetAssignment::factory()->create([
             'organization_id' => $orgId,
             'asset_id' => $issuedAsset->id,
             'diary_entry_id' => $entry->id,

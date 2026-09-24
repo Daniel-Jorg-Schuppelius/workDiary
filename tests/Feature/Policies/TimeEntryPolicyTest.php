@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Policies;
 
 use App\Models\Platform\{Organization, User};
-use App\Models\TimeEntry;
-use App\Policies\TimeEntryPolicy;
+use App\Models\Time\TimeEntry;
+use App\Policies\Time\TimeEntryPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};
 use Tests\TestCase;

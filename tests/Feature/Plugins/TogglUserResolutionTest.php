@@ -14,7 +14,7 @@ use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\{PluginSetting, User};
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Plugins\Support\MatchingTimeImportService;
 use App\Plugins\Toggl\{TogglConfig, TogglImportService, TogglPlugin};
 use App\Support\Sqid;

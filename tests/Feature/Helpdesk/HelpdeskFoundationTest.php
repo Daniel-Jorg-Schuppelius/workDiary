@@ -11,7 +11,7 @@
 namespace Tests\Feature\Helpdesk;
 
 use App\Models\Platform\{Organization, User};
-use App\Models\{ServiceQueue, ServiceTicket};
+use App\Models\ServiceTicket\{ServiceQueue, ServiceTicket};
 use App\Services\Licensing\FeatureFlagResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

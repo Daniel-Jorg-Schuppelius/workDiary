@@ -18,7 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Ai\AiTextSuggestion;
 use App\Models\Communication\CommunicationNote;
 use App\Models\Customer\CustomerQuery;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Document\Document;
 use App\Models\Integration\ImportRun;
 use App\Models\Platform\{Organization, User};

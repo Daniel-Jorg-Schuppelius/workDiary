@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Inventory;
 
-use App\Models\{ArticleVariant, StockMovement, Warehouse};
+use App\Models\Article\ArticleVariant;
 use App\Models\Integration\PendingExternalConflict;
+use App\Models\Inventory\{StockMovement, Warehouse};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;

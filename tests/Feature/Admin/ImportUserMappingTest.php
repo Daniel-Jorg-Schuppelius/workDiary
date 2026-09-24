@@ -16,7 +16,7 @@ use App\Enums\Import\ImportRunState;
 use App\Models\Integration\{ImportRun, ImportValueMapping};
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;

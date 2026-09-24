@@ -11,7 +11,7 @@
 namespace Database\Seeders;
 
 use App\Enums\Gaeb\{BoqItemStatus, BoqProgressSource, GaebPhase};
-use App\Models\{BillOfQuantity, BoqItem};
+use App\Models\Gaeb\{BillOfQuantity, BoqItem};
 use App\Models\Platform\Organization;
 use App\Services\Gaeb\{BoqExportService, BoqProgressService, BoqWorkflowService, GaebImportService};
 use Illuminate\Database\Seeder;

@@ -14,8 +14,9 @@ namespace App\Services\Dispatch;
 
 use App\Enums\Diary\{DispatchStatus, Mode};
 use App\Models\Calendar\AvailabilityWindow;
-use App\Models\{DiaryEntry, DiaryEntryEvent, ScheduledShift, Tour};
+use App\Models\Diary\{DiaryEntry, DiaryEntryEvent, Tour};
 use App\Models\Platform\User;
+use App\Models\Schedule\ScheduledShift;
 use App\Services\Location\GeofenceMatcher;
 use App\Services\Routing\{Coordinate, OsrmRouter};
 use App\Services\Schedule\QualificationGate;

@@ -10,9 +10,12 @@
 
 namespace App\Services\Asset;
 
-use App\Models\{Asset, DiaryEntry, MaintenancePlan, MaterialUsage, Protocol};
+use App\Models\Asset\{Asset, MaintenancePlan};
 use App\Models\Attachments\Attachment;
+use App\Models\Diary\DiaryEntry;
+use App\Models\Material\MaterialUsage;
 use App\Models\Platform\User;
+use App\Models\Protocol\Protocol;
 use Illuminate\Support\Facades\Gate;
 
 /**

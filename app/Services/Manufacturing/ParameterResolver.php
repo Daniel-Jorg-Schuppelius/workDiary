@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Enums\Manufacturing\ParameterType;
-use App\Models\{ProcedureParameterDefinition, ProcedureTemplateVersion};
+use App\Models\Procedure\{ProcedureParameterDefinition, ProcedureTemplateVersion};
 use CommonToolkit\Helper\Data\DateHelper;
 use RuntimeException;
 

@@ -11,7 +11,7 @@
 namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\LearningAudience;
-use App\Models\Article;
+use App\Models\Article\Article;
 use App\Models\Customer\Customer;
 use App\Models\Learning\{LearningCourse, LearningEnrollment};
 use App\Models\Platform\User;

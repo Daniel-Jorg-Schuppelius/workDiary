@@ -12,8 +12,9 @@ namespace Tests\Feature\Demo;
 
 use App\Enums\Procedure\ProcedureRunStatus;
 use App\Models\Attachments\Attachment;
-use App\Models\{DiaryEntry, ProcedureBackupProof, ProcedureRun};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\Organization;
+use App\Models\Procedure\{ProcedureBackupProof, ProcedureRun};
 use App\Services\Demo\DemoSeederService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

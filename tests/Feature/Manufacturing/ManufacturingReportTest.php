@@ -11,7 +11,9 @@
 namespace Tests\Feature\Manufacturing;
 
 use App\Enums\Inventory\{StockMovementType, StockState};
-use App\Models\{Article, ArticleVariant, ManufacturingOrder, ManufacturingOrderReport, StockMovement, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\{StockMovement, Warehouse};
+use App\Models\Manufacturing\{ManufacturingOrder, ManufacturingOrderReport};
 use App\Models\Platform\Organization;
 use App\Services\Inventory\InventoryLedger;
 use App\Services\Manufacturing\ManufacturingReportService;

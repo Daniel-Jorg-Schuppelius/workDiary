@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Billing\Feed\Sources;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
-use App\Models\IncomingEInvoice;
+use App\Models\Invoicing\IncomingEInvoice;
 use App\Services\Billing\DocumentFeedFilters;
 use App\Services\Billing\Feed\{DocumentFeedSource, FeedProjection};
 use Illuminate\Database\Query\Builder;

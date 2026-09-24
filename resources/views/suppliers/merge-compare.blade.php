@@ -11,8 +11,8 @@
 @section('nav-title', __('Lieferanten zusammenführen'))
 
 @php
-    /** @var \App\Models\Supplier $source */
-    /** @var \App\Models\Supplier $target */
+    /** @var \App\Models\Supplier\Supplier $source */
+    /** @var \App\Models\Supplier\Supplier $target */
 
     // Reine Anzeigefelder (Identität) — nicht übersteuerbar.
     $identityFields = [

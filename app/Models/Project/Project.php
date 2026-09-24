@@ -14,18 +14,14 @@ use App\Casts\MoneyCast;
 use App\Enums\Diary\LocationMode;
 use App\Enums\Project\ProjectStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasCommunicationNotes, HasSqid, ResolvesEffectiveProjectSettings};
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Diary\DiaryEntry;
+use App\Models\Platform\{Team, User};
+use App\Models\Time\{TimeEntry, Timesheet};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\{Carbon, Collection};
-use App\Models\Customer\Customer\Customer;
-use App\Models\Customer\Customer\ForeignCustomer;
-use App\Models\DiaryEntry;
-use App\Models\Project\ProjectBillingRule;
-use App\Models\Project\Project\Milestone;
-use App\Models\Project\Task;
-use App\Models\TimeEntry;
-use App\Models\Timesheet;
 
 /**
  * @property int $id

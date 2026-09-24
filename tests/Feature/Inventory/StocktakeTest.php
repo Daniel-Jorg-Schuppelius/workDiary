@@ -11,7 +11,8 @@
 namespace Tests\Feature\Inventory;
 
 use App\Enums\Inventory\{StockCountStatus, StockState};
-use App\Models\{Article, ArticleVariant, StockCount, StockMovement, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\{StockCount, StockMovement, Warehouse};
 use App\Models\Platform\Organization;
 use App\Services\Inventory\{InventoryLedger, StocktakeService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

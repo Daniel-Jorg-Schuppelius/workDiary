@@ -11,9 +11,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SaveMaterialUsageRequest;
+use App\Http\Requests\Material\SaveMaterialUsageRequest;
 use App\Http\Resources\MaterialUsageResource;
-use App\Models\{Material, MaterialUsage, Timesheet};
+use App\Models\Material\{Material, MaterialUsage};
+use App\Models\Time\Timesheet;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;

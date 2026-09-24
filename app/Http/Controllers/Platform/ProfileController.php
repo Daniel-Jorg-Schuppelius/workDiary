@@ -12,7 +12,8 @@ namespace App\Http\Controllers\Platform;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Http\Controllers\Concerns\ManagesUserContactDetails;
-use App\Models\Attachments\Attachments\Attachment;
+use App\Http\Controllers\Controller;
+use App\Models\Attachments\Attachment;
 use App\Models\Platform\User;
 use App\Notifications\GenericEventNotification;
 use App\Services\Attachments\ImageMetaUploader;
@@ -23,7 +24,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\{Hash, Log, Notification};
 use Illuminate\Validation\{Rule, ValidationException};
-use App\Http\Controllers\Controller;
 
 class ProfileController extends Controller {
     use ManagesUserContactDetails;

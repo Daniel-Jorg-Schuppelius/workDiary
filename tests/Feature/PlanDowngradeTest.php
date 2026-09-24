@@ -11,8 +11,8 @@
 namespace Tests\Feature;
 
 use App\Models\Customer\Customer;
+use App\Models\Fleet\Vehicle;
 use App\Models\Platform\{Organization, PlanModuleGrace, User};
-use App\Models\Vehicle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;

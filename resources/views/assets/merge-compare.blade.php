@@ -36,8 +36,8 @@
     </x-index-page>
 @else
     @php
-        /** @var \App\Models\Asset $source */
-        /** @var \App\Models\Asset $target */
+        /** @var \App\Models\Asset\Asset $source */
+        /** @var \App\Models\Asset\Asset $target */
 
         // Reine Anzeigefelder (Identität) — nicht übersteuerbar.
         $identityRows = [

@@ -10,11 +10,14 @@
 
 namespace Tests\Feature\Reporting;
 
-use App\Models\{Attendance, DiaryEntry, ScheduledShift, ShiftType, Site, TimeEntry, WorkSchedule};
 use App\Models\Customer\Customer;
+use App\Models\Diary\DiaryEntry;
+use App\Models\Facility\Site;
 use App\Models\Location\{CustomerGeofence, LocationVisit};
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Models\Schedule\{ScheduledShift, ShiftType};
+use App\Models\Time\{Attendance, TimeEntry, WorkSchedule};
 use App\Services\Reporting\PlanIstReportBuilder;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

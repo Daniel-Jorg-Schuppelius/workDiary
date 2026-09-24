@@ -1,0 +1,143 @@
+<?php
+/*
+ * Created on   : Sun Jun 28 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : BillOfQuantity.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace App\Models\Gaeb;
+
+use App\Enums\Gaeb\{BoqItemStatus, GaebPhase};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Project\Project;
+use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use App\Models\Gaeb\BoqCatalog;
+use App\Models\Gaeb\BoqCatalogAssignment;
+use App\Models\Gaeb\BoqChangeOrder;
+use App\Models\Gaeb\BoqCostType;
+use App\Models\Gaeb\BoqExport;
+use App\Models\Gaeb\BoqItem;
+use App\Models\Gaeb\BoqSection;
+use App\Models\Diary\DiaryEntry;
+use App\Models\Gaeb\GaebImport;
+
+/**
+ * Leistungsverzeichnis-Kopf (Feature 049, MVP-082). Bündelt Abschnitte und
+ * Positionen eines GAEB-Imports und bindet sie optional an Projekt/Auftrag.
+ *
+ * @property int $id
+ * @property int $organization_id
+ * @property int|null $project_id
+ * @property int|null $diary_entry_id
+ * @property string $name
+ * @property string|null $external_id
+ * @property string|null $gaeb_version
+ * @property array<int, array{no: int, label: ?string, category: ?string}>|null $up_components
+ * @property array<string, string|null>|null $totals
+ * @property GaebPhase|null $phase
+ * @property \CommonToolkit\Enums\CurrencyCode $currency
+ * @property BoqItemStatus $status
+ */
+class BillOfQuantity extends Model {
+    use Auditable;
+    use BelongsToOrganization;
+    /** @use HasFactory<Factory<static>> */
+    use HasFactory;
+    use HasSqid;
+
+    protected $fillable = [
+        'source_format',
+        'organization_id',
+        'project_id',
+        'diary_entry_id',
+        'name',
+        'external_id',
+        'gaeb_version',
+        'up_components',
+        'totals',
+        'phase',
+        'currency',
+        'status',
+        'created_by',
+    ];
+
+    /**
+     * Die Datenbank kennt EUR als Voreinstellung; ohne diesen Default wäre die
+     * Währung an einer frisch erzeugten Instanz `null`, obwohl die Spalte sie
+     * nie leer speichert — und jeder Zugriff vor dem ersten Nachladen liefe
+     * ins Leere.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'currency' => 'EUR',
+    ];
+
+    protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
+        'phase' => GaebPhase::class,
+        'status' => BoqItemStatus::class,
+        'up_components' => 'array',
+        'totals' => 'array',
+    ];
+
+    /** @return BelongsTo<Project, $this> */
+    public function project(): BelongsTo {
+        return $this->belongsTo(Project::class);
+    }
+
+    /** @return BelongsTo<DiaryEntry, $this> */
+    public function diaryEntry(): BelongsTo {
+        return $this->belongsTo(DiaryEntry::class);
+    }
+
+    /** @return HasMany<BoqSection, $this> */
+    public function sections(): HasMany {
+        return $this->hasMany(BoqSection::class);
+    }
+
+    /** @return HasMany<BoqItem, $this> */
+    public function items(): HasMany {
+        return $this->hasMany(BoqItem::class);
+    }
+
+    /** @return HasMany<GaebImport, $this> */
+    public function imports(): HasMany {
+        return $this->hasMany(GaebImport::class);
+    }
+
+    /** @return HasMany<BoqExport, $this> */
+    public function exports(): HasMany {
+        return $this->hasMany(BoqExport::class);
+    }
+
+    /** @return HasMany<BoqChangeOrder, $this> */
+    public function changeOrders(): HasMany {
+        return $this->hasMany(BoqChangeOrder::class);
+    }
+
+    /**
+     * Kostenarten der Kalkulationsdaten (X52, MVP-647) — sie stehen im Kopf,
+     * weil ein Betrieb nach Kostenart zuschlägt, nicht je Position.
+     *
+     * @return HasMany<BoqCostType, $this>
+     */
+    public function costTypes(): HasMany {
+        return $this->hasMany(BoqCostType::class)->orderBy('position');
+    }
+
+    /** @return HasMany<BoqCatalog, $this> */
+    public function catalogs(): HasMany {
+        return $this->hasMany(BoqCatalog::class);
+    }
+
+    /** @return HasMany<BoqCatalogAssignment, $this> */
+    public function catalogAssignments(): HasMany {
+        return $this->hasMany(BoqCatalogAssignment::class);
+    }
+}

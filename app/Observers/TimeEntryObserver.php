@@ -12,7 +12,7 @@ namespace App\Observers;
 
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Models\Platform\User;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Services\Diary\OrderService;
 
 /**

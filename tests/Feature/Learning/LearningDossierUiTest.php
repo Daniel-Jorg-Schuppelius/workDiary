@@ -11,8 +11,8 @@
 namespace Tests\Feature\Learning;
 
 use App\Models\Audit\AuditLog;
-use App\Models\Platform\{User, UserQualification};
-use App\Models\Qualification;
+use App\Models\Hr\{Qualification, UserQualification};
+use App\Models\Platform\User;
 use App\Services\UI\DateRangeContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

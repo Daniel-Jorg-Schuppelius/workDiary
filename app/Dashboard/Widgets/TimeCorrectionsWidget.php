@@ -16,7 +16,7 @@ use App\Dashboard\Widget;
 use App\Enums\Dashboard\WidgetGroup;
 use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Models\Platform\User;
-use App\Models\TimeCorrectionRequest;
+use App\Models\Time\TimeCorrectionRequest;
 use Illuminate\Contracts\View\View;
 
 /** Eigene Zeitkorrektur-Anträge, die noch offen sind (Entwurf/eingereicht). */

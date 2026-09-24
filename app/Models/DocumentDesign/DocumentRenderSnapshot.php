@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Models\Document\DocumentDesign;
+namespace App\Models\DocumentDesign;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Concerns\{AppendOnly, BelongsToOrganization, HasSqid};

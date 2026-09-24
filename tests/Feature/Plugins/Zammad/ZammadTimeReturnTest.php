@@ -13,7 +13,7 @@ namespace Tests\Feature\Plugins\Zammad;
 use App\Models\Integration\{ExternalReference, IntegrationOutboxEntry};
 use App\Models\Plugins\Zammad\ZammadConnection;
 use App\Models\Project\{Project, Task};
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Plugins\Zammad\Contracts\{ZammadGateway, ZammadGatewayFactory};
 use App\Plugins\Zammad\Services\ZammadOutboxDispatcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;

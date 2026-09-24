@@ -9,7 +9,8 @@
 namespace Tests\Feature;
 
 use App\Enums\KeyHandover\KeyHandoverDirection;
-use App\Models\{Asset, KeyHandover, MeterReading};
+use App\Models\Access\KeyHandover;
+use App\Models\Asset\{Asset, MeterReading};
 use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

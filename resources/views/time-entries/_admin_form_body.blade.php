@@ -9,7 +9,7 @@
 {{-- Shared form fields for AdminTimeEntry create & edit --}}
 
 @php
-    /** @var \App\Models\TimeEntry|null $entry */
+    /** @var \App\Models\Time\TimeEntry|null $entry */
     $activityTypes = [
         \App\Enums\TimeEntry\TimeEntryActivityType::Admin->value     => \App\Enums\TimeEntry\TimeEntryActivityType::Admin->label(),
         \App\Enums\TimeEntry\TimeEntryActivityType::Meeting->value   => \App\Enums\TimeEntry\TimeEntryActivityType::Meeting->label(),

@@ -53,7 +53,7 @@
                                     :href="route('vacation-entitlements.index')"
                                     show-label>{{ __('Urlaubskonto') }}</x-icon-btn>
                     @endcan
-                    @can('create', \App\Models\Vacation::class)
+                    @can('create', \App\Models\Absence\Vacation::class)
                         <x-icon-btn icon="add" tone="primary" size="sm"
                                     data-entry-modal-trigger
                                     :href="route('vacations.create') . '?dialog=1'"
@@ -61,7 +61,7 @@
                     @endcan
                 @endif
                 @if ($tab === 'krank')
-                    @can('create', \App\Models\SickLeave::class)
+                    @can('create', \App\Models\Absence\SickLeave::class)
                         <x-icon-btn icon="add" tone="warning" size="sm"
                                     data-entry-modal-trigger
                                     :href="route('sick-leaves.create') . '?dialog=1'"

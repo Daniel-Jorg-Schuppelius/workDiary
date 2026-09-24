@@ -80,7 +80,7 @@ class MailInboxResolutionService {
      * Mail-Inbox-Eintrag ein Ticket in der Queue des Eingangspostfachs
      * (Source email) samt Erst-Nachricht mit Message-ID fürs Threading.
      */
-    public function bookAsServiceTicket(IntegrationInboxItem $item, ?Customer $customer, User $actor, ?\App\Models\ServiceQueue $queue = null): \App\Models\ServiceTicket {
+    public function bookAsServiceTicket(IntegrationInboxItem $item, ?Customer $customer, User $actor, ?\App\Models\ServiceTicket\ServiceQueue $queue = null): \App\Models\ServiceTicket\ServiceTicket {
         if ($item->plugin_id !== MailIntakeService::PLUGIN_ID) {
             throw new RuntimeException('Kein E-Mail-Inbox-Eintrag.');
         }
@@ -102,7 +102,7 @@ class MailInboxResolutionService {
         );
 
         // Erst-Nachricht mit Message-ID — spätere Antworten threaden hierauf.
-        \App\Models\ServiceTicketMessage::query()->create([
+        \App\Models\ServiceTicket\ServiceTicketMessage::query()->create([
             'organization_id' => $ticket->organization_id,
             'service_ticket_id' => $ticket->id,
             'kind' => \App\Enums\ServiceTicket\TicketMessageKind::PublicReply->value,

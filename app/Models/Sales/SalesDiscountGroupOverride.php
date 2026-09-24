@@ -11,11 +11,10 @@
 namespace App\Models\Sales;
 
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Customer\Customer;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Customer\Customer\Customer;
-use App\Models\Sales\SalesDiscountGroup;
 
 /**
  * Kunden-Override einer Verkaufs-Rabattgruppe (Feature 107, MVP-567):

@@ -12,8 +12,9 @@ namespace Tests\Feature\Asset;
 
 use App\Enums\Asset\{AssetClass, AssetStatus};
 use App\Enums\User\UserRole;
-use App\Models\{Asset, Room};
+use App\Models\Asset\Asset;
 use App\Models\Customer\Customer;
+use App\Models\Facility\Room;
 use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

@@ -16,9 +16,12 @@ use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 use App\Models\Auth\RemotePendingSession;
 use App\Models\Communication\CommunicationNote;
-use App\Models\{DiaryEntry, OpenIssue, Protocol, ServiceTicket, TimeEntry, Timesheet};
+use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Document\Document;
 use App\Models\Knowledge\KnowledgeArticle;
+use App\Models\Protocol\Protocol;
+use App\Models\ServiceTicket\ServiceTicket;
+use App\Models\Time\{TimeEntry, Timesheet};
 
 /**
  * Quellen des Tätigkeitsindex (Feature 153). Der Wert steht in

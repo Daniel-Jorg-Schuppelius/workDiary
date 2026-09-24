@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Procurement;
 
-use App\Models\{SupplierCatalogImport, SupplierCatalogItem, SupplierCatalogSource};
+use App\Models\Supplier\{SupplierCatalogImport, SupplierCatalogItem, SupplierCatalogSource};
 use App\Services\Procurement\{CatalogImportDispatcher, CatalogXlsxImportService};
 use CommonToolkit\Builders\XLSXDocumentBuilder;
 use CommonToolkit\Generators\XLSX\XLSXGenerator;
@@ -43,7 +43,7 @@ final class CatalogXlsxImportTest extends TestCase {
         $this->setUpOrganization();
         $this->importer = app(CatalogXlsxImportService::class);
 
-        $supplier = \App\Models\Supplier::factory()->create(['organization_id' => $this->organization->id]);
+        $supplier = \App\Models\Supplier\Supplier::factory()->create(['organization_id' => $this->organization->id]);
         $this->source = SupplierCatalogSource::query()->create([
             'organization_id' => $this->organization->id,
             'supplier_id' => $supplier->id,

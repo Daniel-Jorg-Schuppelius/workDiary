@@ -11,7 +11,7 @@
 namespace Tests\Feature\Invoicing;
 
 use App\Models\Customer\Customer;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -144,7 +144,7 @@ class XRechnungTest extends TestCase {
     }
 
     public function test_draft_can_be_sent_as_xrechnung_and_records_the_selected_format(): void {
-        $template = \App\Models\InvoiceMailTemplate::query()->create([
+        $template = \App\Models\Invoicing\InvoiceMailTemplate::query()->create([
             'organization_id' => null,
             'name' => 'E-Rechnung Test',
             'is_default' => true,

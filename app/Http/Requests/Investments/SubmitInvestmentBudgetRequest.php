@@ -24,7 +24,7 @@ class SubmitInvestmentBudgetRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'cost_center_id' => \App\Models\CostCenter::class,
+        'cost_center_id' => \App\Models\Finance\CostCenter::class,
     ];
 
     /** @return array<string, mixed> */

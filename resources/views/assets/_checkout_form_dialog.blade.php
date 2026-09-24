@@ -8,7 +8,7 @@
 --}}
 
 @php
-    /** @var \App\Models\Asset $asset */
+    /** @var \App\Models\Asset\Asset $asset */
 @endphp
 
 <x-modal

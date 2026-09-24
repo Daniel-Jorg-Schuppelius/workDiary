@@ -8,7 +8,7 @@
 --}}
 {{-- Variablen: $service, $isEdit --}}
 @php
-    /** @var \App\Models\BusinessService $service */
+    /** @var \App\Models\ServiceTicket\BusinessService $service */
     /** @var bool $isEdit */
     $action = $isEdit ? route('servicedesk.catalog.services.update', $service) : route('servicedesk.catalog.services.store');
 @endphp

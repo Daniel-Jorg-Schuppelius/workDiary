@@ -13,7 +13,7 @@ namespace Tests\Feature\Plugins;
 use App\Models\Customer\Customer;
 use App\Models\Platform\{PluginSetting, User};
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Plugins\Clockify\{ClockifyConfig, ClockifyImportService, ClockifyPlugin};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;

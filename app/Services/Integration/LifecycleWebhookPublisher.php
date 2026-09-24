@@ -14,8 +14,13 @@ namespace App\Services\Integration;
 
 use App\Enums\Integration\WebhookEvent;
 use App\Models\Customer\Customer;
-use App\Models\{Invoice, Protocol, PurchaseOrder, ServiceTicket, Supplier, Timesheet};
+use App\Models\Invoicing\Invoice;
+use App\Models\Procurement\PurchaseOrder;
 use App\Models\Project\Project;
+use App\Models\Protocol\Protocol;
+use App\Models\ServiceTicket\ServiceTicket;
+use App\Models\Supplier\Supplier;
+use App\Models\Time\Timesheet;
 use App\Support\Sqid;
 use Illuminate\Support\Facades\Log;
 use Throwable;

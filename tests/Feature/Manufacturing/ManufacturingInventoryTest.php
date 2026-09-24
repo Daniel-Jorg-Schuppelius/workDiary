@@ -11,7 +11,10 @@
 namespace Tests\Feature\Manufacturing;
 
 use App\Enums\Inventory\StockState;
-use App\Models\{Article, ArticleVariant, ManufacturingOrder, ProcedureMaterialRequirement, ProcedureTemplateVersion, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\Warehouse;
+use App\Models\Manufacturing\ManufacturingOrder;
+use App\Models\Procedure\{ProcedureMaterialRequirement, ProcedureTemplateVersion};
 use App\Services\Inventory\InventoryLedger;
 use App\Services\Manufacturing\{ManufacturingInventoryService, ManufacturingOrderService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -96,7 +99,7 @@ final class ManufacturingInventoryTest extends TestCase {
         $this->link->reserveMaterials($order);
         $this->link->reserveMaterials($order); // zweiter Lauf → kein Doppel-Bedarf
 
-        $requests = \App\Models\ProcurementRequest::query()
+        $requests = \App\Models\Procurement\ProcurementRequest::query()
             ->where('source_type', $order->getMorphClass())
             ->where('source_id', $order->id)
             ->get();

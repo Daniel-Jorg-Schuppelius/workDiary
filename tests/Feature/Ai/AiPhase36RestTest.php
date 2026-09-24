@@ -13,7 +13,7 @@ namespace Tests\Feature\Ai;
 use App\Enums\User\Permission;
 use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection};
 use App\Models\Customer\{Customer, CustomerQuery};
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Services\Ai\Suggestions\CoveringTextSuggestionService;
 use App\Support\MorphMap;
@@ -170,7 +170,7 @@ class AiPhase36RestTest extends TestCase {
         $query = CustomerQuery::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer()->id,
-            'subject_type' => MorphMap::alias(\App\Models\DiaryEntry::class),
+            'subject_type' => MorphMap::alias(\App\Models\Diary\DiaryEntry::class),
             'subject_id' => 1,
             'question' => 'Wann kommt der Techniker?',
             'status' => 'open',
@@ -196,7 +196,7 @@ class AiPhase36RestTest extends TestCase {
         $query = CustomerQuery::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer()->id,
-            'subject_type' => MorphMap::alias(\App\Models\DiaryEntry::class),
+            'subject_type' => MorphMap::alias(\App\Models\Diary\DiaryEntry::class),
             'subject_id' => 1,
             'question' => 'Ist das Ersatzteil da?',
             'status' => 'open',

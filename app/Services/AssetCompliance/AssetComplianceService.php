@@ -15,7 +15,7 @@ namespace App\Services\AssetCompliance;
 use App\Enums\Asset\AssetBlockReason;
 use App\Enums\AssetCompliance\{AssetComplianceStatus, AssetInspectionResult, AssetInspectionScheduleStatus};
 use App\Enums\Notification\NotificationEvent;
-use App\Models\{Asset, AssetBlock};
+use App\Models\Asset\{Asset, AssetBlock};
 use App\Models\AssetCompliance\{AssetCalibrationCertificate, AssetComplianceAssignment, AssetComplianceProfile, AssetInspectionEvent, AssetInspectionSchedule};
 use App\Models\Platform\{Organization, User};
 use App\Services\Asset\AssetBlockService;

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Sales;
 
 use App\Enums\Sales\{CommissionAssignmentSource, CommissionScope};
-use App\Models\{Invoice, InvoiceItem};
+use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Platform\User;
 use App\Models\Sales\{CommissionRule, Lead};
 use CommonToolkit\ValueObjects\Money;

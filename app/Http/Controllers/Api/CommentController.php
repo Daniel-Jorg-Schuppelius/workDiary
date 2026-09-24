@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CommentResource;
 use App\Models\Communication\Comment;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use OpenApi\Attributes as OA;

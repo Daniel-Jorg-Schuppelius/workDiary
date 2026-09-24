@@ -1,0 +1,106 @@
+<?php
+/*
+ * Created on   : Tue May 12 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : QualificationController.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace App\Http\Controllers\Hr;
+
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Models\Platform\User;
+use App\Models\Hr\Qualification;
+use App\Support\SortableQuery;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\View\View;
+use App\Http\Controllers\Controller;
+
+class QualificationController extends Controller {
+    use ResolvesCurrentOrganization;
+    public function index(Request $request): View {
+        Gate::authorize('viewAny', Qualification::class);
+
+        $query = Qualification::query()->withCount('users');
+
+        [$sort, $dir] = SortableQuery::apply($query, $request, [
+            'name' => 'name',
+            'abbreviation' => 'abbreviation',
+            'is_active' => 'is_active',
+            'users' => 'users_count',
+        ], 'name', 'asc');
+
+        $qualifications = $query->paginate(30)->withQueryString();
+
+        return view('qualifications.index', compact('qualifications', 'sort', 'dir'));
+    }
+
+    public function create(): View {
+        Gate::authorize('create', Qualification::class);
+
+        return view('qualifications._form_dialog', [
+            'qualification' => null,
+            'isEdit' => false,
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse {
+        Gate::authorize('create', Qualification::class);
+
+        /** @var User $auth */
+        $auth = Auth::user();
+        $data = $this->validated($request);
+        $data['created_by'] = $auth->id;
+        $data['organization_id'] = $this->currentOrganization()->id;
+
+        Qualification::create($data);
+
+        return redirect()->toList('qualifications.index')
+            ->with('success', __('Qualifikation wurde angelegt.'));
+    }
+
+    public function edit(Qualification $qualification): View {
+        Gate::authorize('update', $qualification);
+
+        return view('qualifications._form_dialog', [
+            'qualification' => $qualification,
+            'isEdit' => true,
+        ]);
+    }
+
+    public function update(Request $request, Qualification $qualification): RedirectResponse {
+        Gate::authorize('update', $qualification);
+
+        $qualification->update($this->validated($request, $qualification));
+
+        return redirect()->toList('qualifications.index')
+            ->with('success', __('Qualifikation wurde gespeichert.'));
+    }
+
+    public function destroy(Qualification $qualification): RedirectResponse {
+        Gate::authorize('delete', $qualification);
+
+        $qualification->delete();
+
+        return redirect()->toList('qualifications.index')
+            ->with('success', __('Qualifikation wurde gelöscht.'));
+    }
+
+    /** @return array<string, mixed> */
+    private function validated(Request $request, ?Qualification $qualification = null): array {
+        $uniqueRule = 'unique:qualifications,name';
+        if ($qualification) {
+            $uniqueRule .= ',' . $qualification->id;
+        }
+
+        return $request->validate([
+            'name' => ['required', 'string', 'max:255', $uniqueRule],
+            'abbreviation' => ['nullable', 'string', 'max:20'],
+            'description' => ['nullable', 'string', 'max:2000'],
+            'is_active' => ['boolean'],
+        ]);
+    }
+}

@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Manufacturing;
 
-use App\Models\{Article, ArticleVariant, ArticleVariantBomOverride, ProcedureMaterialRequirement, ProcedureTemplateVersion};
+use App\Models\Article\{Article, ArticleVariant, ArticleVariantBomOverride};
+use App\Models\Procedure\{ProcedureMaterialRequirement, ProcedureTemplateVersion};
 use App\Services\Manufacturing\ManufacturingOrderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

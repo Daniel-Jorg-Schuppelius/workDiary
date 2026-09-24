@@ -16,7 +16,7 @@ use App\Enums\Privacy\{AgreementStatus, ProcessorRole};
 use App\Models\Isms\{IsmsScope, IsmsSupplierAssessment};
 use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\{ProcessingAgreement, Processor};
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Services\Isms\ReadinessService;
 use App\Services\Notification\NotificationDispatcher;
 use App\Services\Privacy\DataProtectionPermissions;

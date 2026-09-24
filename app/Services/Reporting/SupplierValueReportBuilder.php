@@ -11,7 +11,7 @@
 namespace App\Services\Reporting;
 
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Support\Billing\VoucherTypes;
 use App\Support\ChartBucket;
 use App\Support\Query\DateRange;

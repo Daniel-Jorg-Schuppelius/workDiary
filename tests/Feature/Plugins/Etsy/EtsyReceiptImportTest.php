@@ -233,8 +233,8 @@ class EtsyReceiptImportTest extends TestCase {
     }
 
     public function test_sku_mapping_links_unique_variant_and_stages_the_rest(): void {
-        $article = \App\Models\Article::factory()->create(['organization_id' => $this->organization->id]);
-        $variant = \App\Models\ArticleVariant::factory()->create(['article_id' => $article->id, 'sku' => 'SKU-1']);
+        $article = \App\Models\Article\Article::factory()->create(['organization_id' => $this->organization->id]);
+        $variant = \App\Models\Article\ArticleVariant::factory()->create(['article_id' => $article->id, 'sku' => 'SKU-1']);
 
         $this->fakeReceipts([
             $this->receipt(900, null, 'A B'),

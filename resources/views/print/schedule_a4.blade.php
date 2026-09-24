@@ -13,8 +13,8 @@
     /** @var \Carbon\CarbonImmutable $from */
     /** @var \Carbon\CarbonImmutable $to */
     /** @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users */
-    /** @var \Illuminate\Support\Collection<string, \Illuminate\Support\Collection<int, \App\Models\ScheduledShift>> $byUserDate */
-    /** @var \Illuminate\Support\Collection<int, \App\Models\ShiftType> $shiftTypes */
+    /** @var \Illuminate\Support\Collection<string, \Illuminate\Support\Collection<int, \App\Models\Schedule\ScheduledShift>> $byUserDate */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Schedule\ShiftType> $shiftTypes */
     /** @var \App\Services\Calendar\HolidayService $holidays */
     /** @var bool $anonymous */
 
@@ -24,7 +24,7 @@
     }
 
     // Schicht-Kürzel: Abkürzung, sonst die ersten drei Buchstaben des Namens.
-    $abbr = static function (?\App\Models\ShiftType $t): string {
+    $abbr = static function (?\App\Models\Schedule\ShiftType $t): string {
         if (! $t) {
             return '—';
         }

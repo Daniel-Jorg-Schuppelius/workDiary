@@ -14,7 +14,7 @@ namespace App\Http\Controllers\CustomerPortal;
 
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
-use App\Models\Problem;
+use App\Models\ServiceTicket\Problem;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 

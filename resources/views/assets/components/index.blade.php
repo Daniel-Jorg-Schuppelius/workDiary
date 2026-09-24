@@ -60,7 +60,7 @@
                                 <th>{{ __('asset.components.column.status') }}</th>
                             </tr>
                         </x-slot:head>
-                        @foreach ($history->where('status', '!=', \App\Models\AssetComponent::STATUS_INSTALLED) as $part)
+                        @foreach ($history->where('status', '!=', \App\Models\Asset\AssetComponent::STATUS_INSTALLED) as $part)
                             <tr class="hover">
                                 <td>{{ $part->displayName() }}</td>
                                 <td>{{ optional($part->installed_on)->fdate() ?? '—' }}</td>

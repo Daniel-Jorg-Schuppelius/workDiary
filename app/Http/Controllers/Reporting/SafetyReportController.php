@@ -14,7 +14,7 @@ use App\Enums\Safety\{SafetyEventKind, SafetyEventSeverity, SafetyEventStatus};
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\ResolvesStandardReportFilters;
-use App\Models\SafetyEvent;
+use App\Models\Safety\SafetyEvent;
 use App\Support\ChartBucket;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;

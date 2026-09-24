@@ -11,8 +11,10 @@
 namespace Tests\Feature;
 
 use App\Models\Integration\ExternalReference;
+use App\Models\Inventory\Warehouse;
 use App\Models\Platform\User;
-use App\Models\{PurchaseOrder, Supplier, SupplierMergeDismissal, Warehouse};
+use App\Models\Procurement\PurchaseOrder;
+use App\Models\Supplier\{Supplier, SupplierMergeDismissal};
 use App\Services\Stammdaten\{SupplierDuplicateFinder, SupplierMergeService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

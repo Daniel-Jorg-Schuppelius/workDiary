@@ -12,6 +12,7 @@ namespace App\Models\Calendar;
 
 use App\Enums\Shift\AvailabilityKind;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Platform\User;
 use Carbon\Carbon;
 use Database\Factories\Calendar\AvailabilityWindowFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};

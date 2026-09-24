@@ -14,7 +14,7 @@ namespace App\Plugins\Support;
 
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\Organization;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Support\MorphMap;
 use App\Support\Query\DateRange;
 

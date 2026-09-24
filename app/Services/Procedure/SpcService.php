@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Procedure;
 
 use App\Enums\Procedure\ProcedureStepType;
-use App\Models\{ProcedureStepDef, ProcedureStepRun};
+use App\Models\Procedure\{ProcedureStepDef, ProcedureStepRun};
 
 /**
  * Statistische Prozesslenkung (SPC) für Mess-Schritte (Feature 047/048, E7).

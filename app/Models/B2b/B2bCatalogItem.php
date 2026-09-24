@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\B2b;
 
 use App\Casts\MoneyCast;
-use App\Models\Article;
+use App\Models\Article\Article;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};

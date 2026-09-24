@@ -11,8 +11,10 @@
 namespace Tests\Feature\Manufacturing;
 
 use App\Enums\Manufacturing\ManufacturingOrderStatus;
-use App\Models\{Article, ManufacturingOrder, ProcedureMaterialRequirement, ProcedureTemplateVersion};
+use App\Models\Article\Article;
+use App\Models\Manufacturing\ManufacturingOrder;
 use App\Models\Platform\Organization;
+use App\Models\Procedure\{ProcedureMaterialRequirement, ProcedureTemplateVersion};
 use App\Services\Manufacturing\{ManufacturingOrderService, MaterialDemandCalculator};
 use CommonToolkit\Enums\RoundingMode;
 use Illuminate\Foundation\Testing\RefreshDatabase;

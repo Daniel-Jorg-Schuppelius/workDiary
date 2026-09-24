@@ -14,7 +14,7 @@ namespace App\Http\Controllers\AssetCompliance;
 
 use App\Enums\Asset\AssetBlockReason;
 use App\Http\Controllers\Controller;
-use App\Models\{Asset, AssetBlock, AssetBlockException};
+use App\Models\Asset\{Asset, AssetBlock, AssetBlockException};
 use App\Models\AssetCompliance\{AssetComplianceAssignment, AssetComplianceProfile};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Asset\AssetBlockService;

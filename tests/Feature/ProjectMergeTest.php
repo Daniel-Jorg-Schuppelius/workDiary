@@ -11,10 +11,11 @@
 namespace Tests\Feature;
 
 use App\Models\Customer\Customer;
-use App\Models\{DiaryEntry, TimeEntry};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
 use App\Models\Project\{Project, ProjectMergeDismissal};
+use App\Models\Time\TimeEntry;
 use App\Plugins\Toggl\Sources\TogglEntry;
 use App\Plugins\Toggl\{TogglImportService, TogglPlugin};
 use App\Services\Stammdaten\{ProjectDuplicateFinder, ProjectMergeService};

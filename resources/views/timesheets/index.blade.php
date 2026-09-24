@@ -15,7 +15,7 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Stundenzettel verwalten und signieren lassen.')">
     <x-slot:actions>
-        @can('create', \App\Models\Timesheet::class)
+        @can('create', \App\Models\Time\Timesheet::class)
             <x-icon-btn icon="add" tone="primary" size="sm" type="button"
                         data-open-dialog="quick-timesheet-dialog"
                         show-label>{{ __('Stundenzettel anlegen') }}</x-icon-btn>
@@ -88,7 +88,7 @@
     @endif
 </x-index-page>
 
-@can('create', \App\Models\Timesheet::class)
+@can('create', \App\Models\Time\Timesheet::class)
     <x-modal id="quick-timesheet-dialog"
              :embedded="false"
              size="lg"

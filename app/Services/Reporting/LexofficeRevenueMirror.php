@@ -10,7 +10,7 @@
 
 namespace App\Services\Reporting;
 
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Support\Billing\VoucherTypes;
 use Illuminate\Support\Collection;

@@ -12,7 +12,7 @@ namespace Tests\Feature\Sla;
 
 use App\Enums\ServiceTicket\{ServiceTicketStatus, SlaViolationKind};
 use App\Models\Platform\Organization;
-use App\Models\{ServiceTicket, SlaViolation};
+use App\Models\ServiceTicket\{ServiceTicket, SlaViolation};
 use App\Services\ServiceTicket\SlaViolationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

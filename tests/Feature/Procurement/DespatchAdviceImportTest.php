@@ -11,7 +11,10 @@
 namespace Tests\Feature\Procurement;
 
 use App\Enums\Procurement\{AdviceStatus, PurchaseOrderStatus};
-use App\Models\{Article, ArticleVariant, PurchaseOrder, Supplier, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\Warehouse;
+use App\Models\Procurement\PurchaseOrder;
+use App\Models\Supplier\Supplier;
 use App\Services\Procurement\{AdviceService, DespatchAdviceImportService, PurchaseOrderService};
 use DateTimeImmutable;
 use ERechnungToolkit\Builders\DespatchAdviceBuilder;

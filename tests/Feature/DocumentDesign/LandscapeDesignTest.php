@@ -11,7 +11,7 @@
 namespace Tests\Feature\DocumentDesign;
 
 use App\Enums\DocumentDesign\{LetterheadPageRole, PageFormat, RenderDocumentKind};
-use App\Models\Document\DocumentDesign\LetterheadAsset;
+use App\Models\DocumentDesign\LetterheadAsset;
 use App\Models\Platform\{Organization, User};
 use App\Services\DocumentDesign\{DocumentDesignRenderer, LetterheadAssetService, RenderProfileService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

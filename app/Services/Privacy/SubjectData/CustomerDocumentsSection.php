@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Privacy\SubjectData;
 
 use App\Models\Customer\Customer;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Sales\Quote;
 use Illuminate\Database\Eloquent\Model;

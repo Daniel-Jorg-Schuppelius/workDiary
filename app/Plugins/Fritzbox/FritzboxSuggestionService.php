@@ -15,7 +15,7 @@ namespace App\Plugins\Fritzbox;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Platform\Organization;
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 

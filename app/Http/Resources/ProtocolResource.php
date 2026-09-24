@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Models\{Protocol, ProtocolItem, ProtocolSignature};
+use App\Models\Protocol\{Protocol, ProtocolItem, ProtocolSignature};
 use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

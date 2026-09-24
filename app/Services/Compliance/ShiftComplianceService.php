@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Compliance;
 
 use App\Models\Platform\Organization;
-use App\Models\ScheduledShift;
+use App\Models\Schedule\ScheduledShift;
 use App\Services\Compliance\Rules\{ConsecutiveDaysRule, HolidayDoubleBookRule, MaxDailyHoursRule, MaxWeeklyHoursRule, OverlapRule, QualificationMatchRule, RestPeriodRule, VacationConflictRule};
 
 /**

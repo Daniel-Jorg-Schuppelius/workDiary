@@ -11,8 +11,9 @@
 namespace App\Services\Reporting;
 
 use App\Models\Customer\Customer;
-use App\Models\{DiaryEntry, TimeEntry};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Project\Project;
+use App\Models\Time\TimeEntry;
 use Carbon\CarbonImmutable;
 
 /**

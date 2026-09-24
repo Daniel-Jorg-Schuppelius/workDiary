@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Attendance;
 
 use App\Http\Controllers\Controller;
-use App\Models\AttendanceCheckpoint;
 use App\Models\Platform\User;
+use App\Models\Time\AttendanceCheckpoint;
 use App\Services\Attendance\{AttendanceClockService, CheckpointCheckinService};
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Validation\Rule;

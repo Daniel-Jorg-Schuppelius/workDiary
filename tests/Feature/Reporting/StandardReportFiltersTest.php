@@ -17,7 +17,7 @@ use App\Models\Classification\EntryType;
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, Team, User};
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Services\Reporting\ReportFilters;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;

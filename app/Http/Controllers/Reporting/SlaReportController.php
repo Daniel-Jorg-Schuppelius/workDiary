@@ -16,7 +16,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\Platform\User;
-use App\Models\{ServiceTicket, SlaContractQuota, SlaViolation};
+use App\Models\ServiceTicket\{ServiceTicket, SlaContractQuota, SlaViolation};
 use App\Services\Reporting\{ReportFilters, ReportTargetEvaluator};
 use App\Services\ServiceTicket\{SlaQuotaService, SlaViolationService};
 use App\Support\ChartBucket;

@@ -12,7 +12,7 @@ namespace Tests\Feature\ServiceTicket;
 
 use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Models\Platform\Organization;
-use App\Models\ServiceTicket;
+use App\Models\ServiceTicket\ServiceTicket;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;

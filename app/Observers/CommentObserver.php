@@ -12,7 +12,7 @@ namespace App\Observers;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Communication\Comment;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Services\Notification\NotificationDispatcher;
 use App\Support\Setting;

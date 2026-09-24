@@ -11,14 +11,15 @@
 namespace App\Http\Controllers\Document;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
-use App\Models\Asset;
-use App\Models\Customer\Customer;
-use App\Models\DiaryEntry;
-use App\Models\Document\Document\Document;
-use App\Models\Document\Document\DocumentVersion;
-use App\Models\Project\Project;
+use App\Http\Controllers\Attachments\AttachmentController;
+use App\Http\Controllers\Controller;
+use App\Models\Asset\Asset;
 use App\Models\Classification\Tag;
+use App\Models\Customer\Customer;
+use App\Models\Diary\DiaryEntry;
+use App\Models\Document\{Document, DocumentVersion};
 use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Content\ContentSubjectResolver;
 use App\Services\Document\DocumentService;
@@ -29,7 +30,6 @@ use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use App\Http\Controllers\Controller;
 
 class DocumentController extends Controller {
     /**

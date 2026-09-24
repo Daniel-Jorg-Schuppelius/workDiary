@@ -11,10 +11,10 @@
 namespace App\Http\Requests\Classification;
 
 use App\Enums\Diary\Priority;
-use App\Models\Classification\Classification\EntryType;
+use App\Http\Requests\BaseFormRequest;
+use App\Models\Classification\EntryType;
 use App\Models\Platform\Organization;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 class SaveEntryTypeRequest extends BaseFormRequest {
     protected function prepareForValidation(): void {

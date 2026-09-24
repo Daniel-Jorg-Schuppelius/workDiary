@@ -12,7 +12,7 @@ namespace Tests\Feature\Asset;
 
 use App\Enums\Asset\{AssetStatus, DefectSeverity};
 use App\Enums\User\UserRole;
-use App\Models\{Asset, AssetDefect};
+use App\Models\Asset\{Asset, AssetDefect};
 use App\Models\Platform\User;
 use App\Services\Asset\AssetAssignmentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

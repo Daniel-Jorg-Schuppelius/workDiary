@@ -13,9 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Accounting\Posting\Adapters;
 
 use App\Enums\Finance\{AllocationKind, PostingAccountRole, PostingSourceKind, SettlementKind};
-use App\Models\{Expense, Invoice};
 use App\Models\Finance\{BankTransaction, PaymentAllocation};
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
+use App\Models\Travel\Expense;
 use App\Services\Accounting\Posting\{PostingProposal, PostingProposalLine};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;

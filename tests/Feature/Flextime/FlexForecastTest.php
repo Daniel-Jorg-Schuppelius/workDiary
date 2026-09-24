@@ -11,8 +11,9 @@
 namespace Tests\Feature\Flextime;
 
 use App\Enums\Shift\ScheduledShiftStatus;
-use App\Models\{FlexBalance, ScheduledShift, WorkSchedule};
 use App\Models\Platform\User;
+use App\Models\Schedule\ScheduledShift;
+use App\Models\Time\{FlexBalance, WorkSchedule};
 use App\Services\Flextime\{FlexForecastService, FlexTrafficLight};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

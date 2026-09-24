@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Org;
 
-use App\Models\{Asset, AssetAssignment, TimeEntry};
+use App\Models\Asset\{Asset, AssetAssignment};
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\{Project, Task};
+use App\Models\Time\TimeEntry;
 use App\Services\Org\UserOffboardingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;

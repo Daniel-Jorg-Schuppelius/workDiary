@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{OwnershipType, ScanAction, StockMovementType, StockState};
-use App\Models\{ArticleVariant, StockMovement, Warehouse};
+use App\Models\Article\ArticleVariant;
+use App\Models\Inventory\{StockMovement, Warehouse};
 use App\Support\DecimalQty;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;

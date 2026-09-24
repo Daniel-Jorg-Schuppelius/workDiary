@@ -13,7 +13,7 @@
     Reine Anzeige + Drill-down zum Auftrag (diary.show).
 --}}
 @php
-    /** @var \App\Models\DiaryEntry $entry */
+    /** @var \App\Models\Diary\DiaryEntry $entry */
     $entry = $item['entry'];
     $dispatch = $item['dispatch'];
     $sla = $item['sla'];

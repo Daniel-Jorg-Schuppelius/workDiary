@@ -10,13 +10,12 @@
 
 namespace App\Http\Controllers\Project;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Project\SaveMilestoneRequest;
-use App\Models\Project\Project\Milestone;
-use App\Models\Project\Project\Project;
+use App\Models\Project\{Milestone, Project};
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class MilestoneController extends Controller {
     public function create(Project $project): View {

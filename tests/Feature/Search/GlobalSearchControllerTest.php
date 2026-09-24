@@ -10,9 +10,10 @@
 
 namespace Tests\Feature\Search;
 
-use App\Models\{Asset, DiaryEntry};
+use App\Models\Asset\Asset;
 use App\Models\Communication\CommunicationNote;
 use App\Models\Customer\Customer;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Document\Document;
 use App\Models\Form\{FormSubmission, FormTemplate};
 use App\Models\Knowledge\KnowledgeArticle;
@@ -472,7 +473,7 @@ class GlobalSearchControllerTest extends TestCase {
 
     public function test_expense_subtitle_uses_the_expense_currency(): void {
         // Regression: der Untertitel hing fest „ €" an — eine CHF-Spese stand als Euro da.
-        \App\Models\Expense::factory()->create([
+        \App\Models\Travel\Expense::factory()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $this->user->id,
             'vendor' => 'Zuglinie Basel',

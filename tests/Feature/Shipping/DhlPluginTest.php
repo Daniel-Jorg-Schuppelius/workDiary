@@ -11,7 +11,7 @@
 namespace Tests\Feature\Shipping;
 
 use App\Enums\Shipping\ShipmentStatus;
-use App\Models\CarrierConnection;
+use App\Models\Shipping\CarrierConnection;
 use App\Plugins\Contracts\{PluginCapability, ShippingProvider};
 use App\Plugins\Dhl\DhlPlugin;
 use App\Plugins\PluginDiscovery;

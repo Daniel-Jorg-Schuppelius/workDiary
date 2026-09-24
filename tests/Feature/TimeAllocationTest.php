@@ -10,9 +10,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\{CostCenter, TimeAllocation, TimeEntry};
+use App\Models\Finance\CostCenter;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
+use App\Models\Time\{TimeAllocation, TimeEntry};
 use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -53,7 +54,7 @@ class TimeAllocationTest extends TestCase {
     public function test_dialog_renders_for_owner(): void {
         // Regression Browser-Smoke 2026-08-12: Optionslisten müssen auch mit
         // BEFÜLLTEN Dimensionen rendern (Vehicle/ActivityCategory haben label statt name).
-        \App\Models\Vehicle::factory()->create(['organization_id' => $this->organization->id, 'label' => 'Transporter']);
+        \App\Models\Fleet\Vehicle::factory()->create(['organization_id' => $this->organization->id, 'label' => 'Transporter']);
         \App\Models\Classification\ActivityCategory::create([
             'organization_id' => $this->organization->id,
             'key' => 'montage',

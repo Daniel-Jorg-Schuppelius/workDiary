@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\CustomerPortal;
 
 use App\Http\Controllers\Controller;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;

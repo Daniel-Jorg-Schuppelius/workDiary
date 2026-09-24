@@ -183,7 +183,7 @@ class ZammadTicketImporter {
      * auditiert und die Ziel-Queue als extern geführt markiert. Kein
      * stiller Mischbetrieb (DoD).
      */
-    public function switchTicketTarget(ZammadConnection $connection, string $target, ?\App\Models\ServiceQueue $queue, User $actor): ZammadConnection {
+    public function switchTicketTarget(ZammadConnection $connection, string $target, ?\App\Models\ServiceTicket\ServiceQueue $queue, User $actor): ZammadConnection {
         if (! in_array($target, ['task', 'service_ticket'], true)) {
             throw new \InvalidArgumentException("Unbekannter Zielmodus: {$target}");
         }

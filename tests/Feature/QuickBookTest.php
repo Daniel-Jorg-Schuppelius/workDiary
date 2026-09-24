@@ -11,10 +11,10 @@
 namespace Tests\Feature;
 
 use App\Enums\Project\ProjectStatus;
-use App\Models\{Attendance, TimeEntry};
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\{Project, Task};
+use App\Models\Time\{Attendance, TimeEntry};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

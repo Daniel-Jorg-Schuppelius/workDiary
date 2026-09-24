@@ -14,7 +14,7 @@ use App\Enums\Learning\{LearningBlockKind, LearningTranslationStatus};
 use App\Jobs\TranscodeVideoJob;
 use App\Models\Learning\{LearningContentTranslation, LearningUnit};
 use App\Models\Platform\{Organization, User};
-use App\Models\{ProcedureStepDef, ProcedureTemplate, ProcedureTemplateVersion};
+use App\Models\Procedure\{ProcedureStepDef, ProcedureTemplate, ProcedureTemplateVersion};
 use App\Services\Learning\{LearningContentService, LearningCourseService, LearningEnrollmentService, LearningTranslationService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

@@ -15,7 +15,7 @@
     die verwaltete, versionierte Datei (`documents/_panel`), **Anhang** die
     lose Datei am Vorgang (`attachments._panel`).
 
-    lokale Rechnungen (App\Models\Invoice) UND Lexoffice-Belege
+    lokale Rechnungen (App\Models\Invoicing\Invoice) UND Lexoffice-Belege
     (Rechnungen/Angebote/Aufträge/Lieferscheine …) in einer Tabelle, nach Typ
     gruppiert und auf den globalen Header-Zeitraum eingegrenzt.
 
@@ -34,7 +34,7 @@
 
     // Auch ohne Lexoffice-Verknüpfung als feste Sektion zeigen, sofern der
     // Nutzer überhaupt Rechnungen sehen darf (sonst nur bei vorhandenen Daten).
-    $alwaysShow = ($placeholder ?? false) && (auth()->user()?->can('viewAny', \App\Models\Invoice::class) ?? false);
+    $alwaysShow = ($placeholder ?? false) && (auth()->user()?->can('viewAny', \App\Models\Invoicing\Invoice::class) ?? false);
 
     $valueLabel = static function (?string $value, string $empty = '–'): string {
         if ($value === null || $value === '') {

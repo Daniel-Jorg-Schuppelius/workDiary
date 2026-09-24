@@ -14,7 +14,7 @@ namespace App\Plugins\Support;
 
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;

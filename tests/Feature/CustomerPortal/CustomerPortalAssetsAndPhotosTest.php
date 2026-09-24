@@ -11,10 +11,12 @@
 namespace Tests\Feature\CustomerPortal;
 
 use App\Enums\Protocol\ProtocolVisibility;
-use App\Models\{Asset, DiaryEntry, Protocol};
+use App\Models\Asset\Asset;
 use App\Models\Attachments\{Attachment, AttachmentConfirmation};
 use App\Models\Customer\{Customer, CustomerQuery};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
+use App\Models\Protocol\Protocol;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

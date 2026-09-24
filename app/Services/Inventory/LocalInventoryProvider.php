@@ -14,7 +14,8 @@ namespace App\Services\Inventory;
 
 use App\Contracts\Inventory\InventoryProvider;
 use App\Enums\Inventory\{ProviderCapability, StockState};
-use App\Models\{ArticleVariant, StockMovement, Warehouse};
+use App\Models\Article\ArticleVariant;
+use App\Models\Inventory\{StockMovement, Warehouse};
 
 /**
  * Lokaler Bestandsprovider (Feature 048, MVP-066/067): führt den Bestand selbst

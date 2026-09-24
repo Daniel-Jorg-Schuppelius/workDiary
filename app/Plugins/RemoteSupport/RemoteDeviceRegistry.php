@@ -10,7 +10,7 @@
 
 namespace App\Plugins\RemoteSupport;
 
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Auth\RemotePendingSession;
 use App\Models\Integration\{ExternalReference, ExternalReferenceAlias};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, TeamViewerClient};

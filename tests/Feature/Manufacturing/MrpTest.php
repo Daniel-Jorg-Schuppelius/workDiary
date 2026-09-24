@@ -11,7 +11,9 @@
 namespace Tests\Feature\Manufacturing;
 
 use App\Enums\Article\ArticleType;
-use App\Models\{Article, ArticleVariant, ProcedureMaterialRequirement, ProcedureTemplateVersion, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\Warehouse;
+use App\Models\Procedure\{ProcedureMaterialRequirement, ProcedureTemplateVersion};
 use App\Services\Inventory\InventoryLedger;
 use App\Services\Manufacturing\MrpService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

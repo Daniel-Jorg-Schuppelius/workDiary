@@ -17,7 +17,7 @@ use App\Models\Customer\Customer;
 use App\Models\Finance\BillingTransfer;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Services\Finance\BillingTransferService;
 use App\Services\UI\DateRangeContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;

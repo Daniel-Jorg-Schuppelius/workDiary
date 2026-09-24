@@ -14,7 +14,7 @@ use App\Enums\Finance\DatevBatchStatus;
 use App\Enums\User\Permission;
 use App\Models\Customer\Customer;
 use App\Models\Finance\DatevBookingBatch;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Services\Finance\Datev\{DatevBookingAdapter, DatevBookingConfig};
 use App\Services\Finance\{DatevBookingException, DatevBookingService, FinancialFormatsSupport};
@@ -215,7 +215,7 @@ class DatevBookingTest extends TestCase {
             $this->markTestSkipped('php-financial-formats nicht verfügbar.');
         }
 
-        \App\Models\CostCenterRule::query()->create([
+        \App\Models\Finance\CostCenterRule::query()->create([
             'organization_id' => $this->organization->id,
             'cost_center' => 'KST100',
             'priority' => 0,

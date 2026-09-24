@@ -10,8 +10,8 @@
 
 namespace Tests\Unit\Expense;
 
-use App\Models\PerDiemTrip;
 use App\Models\Platform\User;
+use App\Models\Travel\PerDiemTrip;
 use App\Services\Expense\{PerDiemCalculator, PerDiemEligibilityChecker};
 use Database\Seeders\PerDiemRateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

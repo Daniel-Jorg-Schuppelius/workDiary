@@ -15,7 +15,7 @@ namespace Tests\Unit\Services\Import\Specs;
 use App\Enums\Finance\BillingMode;
 use App\Enums\Import\ImportErrorCode;
 use App\Models\Customer\Customer;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
 use App\Services\Import\ImportOutcome;
 use App\Services\Import\Specs\InvoiceSpec;
@@ -97,7 +97,7 @@ class InvoiceSpecTest extends TestCase {
 
         [, $issue] = $spec->upsert($spec->normalize($this->row(['issued_on' => '01/02/2024'])), $this->organization);
         $this->assertNull($issue);
-        $this->assertSame('2024-02-01', \App\Models\Invoice::query()->latest('id')->first()?->issued_on?->toDateString());
+        $this->assertSame('2024-02-01', \App\Models\Invoicing\Invoice::query()->latest('id')->first()?->issued_on?->toDateString());
     }
 
     public function test_external_billing_sovereignty_blocks_row(): void {

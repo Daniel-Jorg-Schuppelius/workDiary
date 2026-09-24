@@ -13,9 +13,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\{Change, Problem, RequestItem, ServiceQueue};
 use App\Models\Platform\Organization;
-use App\Policies\{ChangePolicy, ProblemPolicy, RequestItemPolicy, ServiceQueuePolicy};
+use App\Models\Procurement\RequestItem;
+use App\Models\ServiceTicket\{Change, Problem, ServiceQueue};
+use App\Policies\Procurement\RequestItemPolicy;
+use App\Policies\ServiceTicket\{ChangePolicy, ProblemPolicy, ServiceQueuePolicy};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;

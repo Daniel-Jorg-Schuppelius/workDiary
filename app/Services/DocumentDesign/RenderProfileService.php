@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\DocumentDesign;
 
 use App\Enums\DocumentDesign\{InformationBlock, InformationBlockState, LetterheadPageRole, PageFormat, RenderDocumentFamily, RenderDocumentKind, RenderProfileStatus, TableStylePreset};
-use App\Models\Document\DocumentDesign\{DocumentRenderProfile, DocumentRenderProfileVersion, LetterheadAsset};
+use App\Models\DocumentDesign\{DocumentRenderProfile, DocumentRenderProfileVersion, LetterheadAsset};
 use App\Models\Platform\{Organization, User};
 use CommonToolkit\Helper\Data\ColorHelper;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};

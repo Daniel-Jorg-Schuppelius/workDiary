@@ -13,7 +13,7 @@ namespace Tests\Feature;
 use App\Enums\User\Permission;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Models\{TimeAllocation, TimeDimensionType, TimeDimensionValue, TimeEntry};
+use App\Models\Time\{TimeAllocation, TimeDimensionType, TimeDimensionValue, TimeEntry};
 use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

@@ -12,8 +12,8 @@
 @php
     /** @var \Carbon\CarbonImmutable $from */
     /** @var \Carbon\CarbonImmutable $to */
-    /** @var \Illuminate\Support\Collection<int, \App\Models\OnCallShift> $shifts */
-    /** @var \Illuminate\Support\Collection<int, \App\Models\EmergencyAssignment> $assignments */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Diary\OnCallShift> $shifts */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Diary\EmergencyAssignment> $assignments */
     /** @var \App\Services\Calendar\HolidayService $holidays */
     /** @var bool $anonymous */
 @endphp

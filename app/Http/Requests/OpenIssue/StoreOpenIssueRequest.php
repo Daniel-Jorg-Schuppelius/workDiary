@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\OpenIssue;
 
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueVisibility};
-use App\Http\Controllers\OpenIssueController;
+use App\Http\Controllers\Diary\OpenIssueController;
 use App\Http\Requests\BaseFormRequest;
 
 /**

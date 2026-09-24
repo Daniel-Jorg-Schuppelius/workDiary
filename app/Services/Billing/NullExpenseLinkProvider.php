@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Billing;
 
-use App\Models\Expense;
 use App\Models\Integration\ExternalReference;
+use App\Models\Travel\Expense;
 use App\Services\Billing\Contracts\ExpenseLinkProvider;
 use Illuminate\Support\Collection;
 use RuntimeException;

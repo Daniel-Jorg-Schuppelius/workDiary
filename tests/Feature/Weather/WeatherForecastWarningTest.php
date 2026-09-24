@@ -12,7 +12,7 @@ namespace Tests\Feature\Weather;
 
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Enums\Weather\WeatherWarningThreshold;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
 use App\Models\Platform\User;
 use App\Models\Weather\{WeatherSnapshot, WeatherWarning};

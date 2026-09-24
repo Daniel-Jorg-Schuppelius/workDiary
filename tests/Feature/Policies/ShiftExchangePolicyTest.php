@@ -14,8 +14,8 @@ namespace Tests\Feature\Policies;
 
 use App\Enums\User\Permission as P;
 use App\Models\Platform\{Organization, User};
-use App\Models\ShiftExchange;
-use App\Policies\ShiftExchangePolicy;
+use App\Models\Schedule\ShiftExchange;
+use App\Policies\Schedule\ShiftExchangePolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};
 use Tests\TestCase;

@@ -18,7 +18,7 @@ use App\Models\Applications\JobApplication;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Sales\Lead;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 
 /**
  * Betroffenenart einer Auskunft (Art. 15/20 DSGVO, Feature 129): bestimmt,

@@ -11,7 +11,7 @@
      Profil-Kontext. Eigenständige Formulare — bewusst AUSSERHALB des
      Stammdaten-Formulars der Seite. --}}
 @php
-    /** @var \App\Models\ProcedureTemplateVersion|null $recipeVersion */
+    /** @var \App\Models\Procedure\ProcedureTemplateVersion|null $recipeVersion */
     $recipeEditable = $draft !== null && $recipeVersion !== null && $recipeVersion->id === $draft->id;
     $kindOptions = [
         \App\Enums\Manufacturing\QuantityKind::Fixed->value => __('recipes.kind.fixed'),

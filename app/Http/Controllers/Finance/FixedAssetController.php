@@ -17,7 +17,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\{AccountingAccount, AccountingProfile, FixedAsset};
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Platform\Organization;
 use App\Services\Accounting\{DepreciationCalculator, FixedAssetService};
 use App\Support\Sqid;

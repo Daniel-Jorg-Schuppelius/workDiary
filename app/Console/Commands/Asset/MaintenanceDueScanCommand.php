@@ -10,7 +10,7 @@
 
 namespace App\Console\Commands\Asset;
 
-use App\Models\MaintenancePlan;
+use App\Models\Asset\MaintenancePlan;
 use App\Services\Asset\MaintenanceDueService;
 use App\Support\Query\DateRange;
 use Illuminate\Console\Command;

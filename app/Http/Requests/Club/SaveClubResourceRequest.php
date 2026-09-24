@@ -15,8 +15,9 @@ namespace App\Http\Requests\Club;
 use App\Enums\Club\ClubResourceKind;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\{Asset, Room};
+use App\Models\Asset\Asset;
 use App\Models\Club\ClubResource;
+use App\Models\Facility\Room;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
 

@@ -1,0 +1,73 @@
+<?php
+/*
+ * Created on   : Sun May 17 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : SaveVehicleRequest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace App\Http\Requests\Fleet;
+
+use App\Enums\Vehicle\{VehicleOwnership, VehiclePropulsion, VehicleType};
+use App\Http\Requests\Concerns\DecodesSqidInputs;
+use Illuminate\Validation\Rule;
+use App\Http\Requests\BaseFormRequest;
+
+class SaveVehicleRequest extends BaseFormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'default_user_id' => \App\Models\Platform\User::class,
+        'asset_id' => \App\Models\Asset\Asset::class,
+    ];
+
+    protected function prepareForValidation(): void {
+        if (! $this->filled('ownership')) {
+            $this->merge(['ownership' => VehicleOwnership::Owned->value]);
+        }
+    }
+
+    /** @return array<string, mixed> */
+    public function rules(): array {
+        return [
+            'license_plate' => ['required', 'string', 'max:32'],
+            'label' => ['nullable', 'string', 'max:120'],
+            'vehicle_type' => ['required', Rule::enum(VehicleType::class)],
+            'propulsion' => ['required', Rule::enum(VehiclePropulsion::class)],
+            'ownership' => ['required', Rule::enum(VehicleOwnership::class)],
+            'rental_provider' => ['nullable', 'string', 'max:120', 'required_if:ownership,rental'],
+            'rental_start' => ['nullable', 'date', 'required_if:ownership,rental'],
+            'rental_end' => ['nullable', 'date', 'after_or_equal:rental_start', 'required_if:ownership,rental'],
+            'rental_cost_per_day' => ['nullable', 'numeric', 'min:0', 'max:99999'],
+            'rental_included_km' => ['nullable', 'integer', 'min:0', 'max:9999999'],
+            'rental_extra_cost_per_km' => ['nullable', 'numeric', 'min:0', 'max:99'],
+            'default_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
+            'default_rate_per_km' => ['nullable', 'numeric', 'min:0', 'max:10'],
+            'tank_capacity_liters' => ['nullable', 'numeric', 'min:0', 'max:9999'],
+            'battery_capacity_kwh' => ['nullable', 'numeric', 'min:0', 'max:9999'],
+            'wltp_consumption' => ['nullable', 'numeric', 'min:0', 'max:999'],
+            'odometer_km' => ['nullable', 'integer', 'min:0', 'max:9999999'],
+            // Feature 137/138: Fahrtenbuch-Modus + Asset-Zuordnung (Prüffristen).
+            'logbook_mode' => ['sometimes', 'boolean'],
+            // Feature 144: Geltung der Lenk-/Ruhezeitregeln (VO (EG) 561/2006 / FPersV).
+            'subject_to_driving_time_rules' => ['sometimes', 'boolean'],
+            'asset_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('assets')],
+            'notes' => ['nullable', 'string', 'max:2000'],
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    public function validated($key = null, $default = null): array {
+        $data = parent::validated();
+        foreach (['logbook_mode', 'subject_to_driving_time_rules'] as $flag) {
+            if (array_key_exists($flag, $data)) {
+                $data[$flag] = (bool) $data[$flag];
+            }
+        }
+
+        return $data;
+    }
+}

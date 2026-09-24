@@ -12,9 +12,10 @@ namespace Tests\Feature;
 
 use App\Enums\TimeApproval\{DayClosureStatus, DayCorrectionStatus};
 use App\Enums\User\Permission as P;
-use App\Models\{Attendance, DayClosure, DayCorrectionRequest};
 use App\Models\Audit\AuditLog;
+use App\Models\Diary\{DayClosure, DayCorrectionRequest};
 use App\Models\Platform\{Organization, User};
+use App\Models\Time\Attendance;
 use App\Services\TimeApproval\{DayCloseService, MonthClosureService};
 use App\Support\{MorphMap, Sqid};
 use Carbon\CarbonImmutable;

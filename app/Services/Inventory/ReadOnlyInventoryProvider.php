@@ -14,7 +14,8 @@ namespace App\Services\Inventory;
 
 use App\Contracts\Inventory\InventoryProvider;
 use App\Enums\Inventory\{ProviderCapability, StockState};
-use App\Models\{ArticleVariant, StockMovement, Warehouse};
+use App\Models\Article\ArticleVariant;
+use App\Models\Inventory\{StockMovement, Warehouse};
 use RuntimeException;
 
 /**

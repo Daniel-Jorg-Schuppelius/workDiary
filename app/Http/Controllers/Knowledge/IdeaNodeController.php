@@ -12,21 +12,17 @@ namespace App\Http\Controllers\Knowledge;
 
 use App\Enums\Ideas\IdeaNodeColor;
 use App\Exceptions\{IdeaMapConflictException, IdeaNodeConflictException};
-use App\Models\Knowledge\ContentReference;
-use App\Models\Ideas\IdeaMap;
-use App\Models\Ideas\IdeaNode;
-use App\Models\Knowledge\KnowledgeArticle;
-use App\Models\Project\Project;
-use App\Models\Project\Task;
+use App\Http\Controllers\Controller;
+use App\Models\Ideas\{IdeaMap, IdeaNode};
+use App\Models\Knowledge\{ContentReference, KnowledgeArticle};
 use App\Models\Platform\User;
+use App\Models\Project\{Project, Task};
 use App\Services\Ideas\{IdeaMapSyncService, IdeaNodeService, NodeConversionService};
-use App\Support\SqidEncoder;
-use App\Support\ErrorText;
+use App\Support\{ErrorText, SqidEncoder};
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * Knotenbezogene Editor-API der Ideenlandkarten (Feature 054, MVP-106/108):
@@ -310,7 +306,7 @@ class IdeaNodeController extends Controller {
             $target instanceof KnowledgeArticle => route('knowledge.show', $target),
             $target instanceof Task => route('kanban.index'),
             $target instanceof \App\Models\Customer\Customer => route('customers.show', $target),
-            $target instanceof \App\Models\DiaryEntry => route('diary.show', $target),
+            $target instanceof \App\Models\Diary\DiaryEntry => route('diary.show', $target),
             default => null,
         };
 

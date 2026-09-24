@@ -12,9 +12,10 @@ namespace Tests\Feature\Finance;
 
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
-use App\Models\{IncomingEInvoice, Invoice, Supplier};
+use App\Models\Invoicing\{IncomingEInvoice, Invoice};
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\User;
+use App\Models\Supplier\Supplier;
 use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, XRechnungGenerator};
 use App\Services\Mail\{MailAttachment, MailIntakeService, ParsedMessage};
 use Illuminate\Foundation\Testing\RefreshDatabase;

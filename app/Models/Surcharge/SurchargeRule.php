@@ -13,7 +13,7 @@ namespace App\Models\Surcharge;
 use App\Enums\Surcharge\SurchargeKind;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Carbon\CarbonInterface;
-use Database\Factories\SurchargeRuleFactory;
+use Database\Factories\Surcharge\SurchargeRuleFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};

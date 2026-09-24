@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\CustomerPortal;
 
+use App\Models\Hr\Qualification;
 use App\Models\Platform\User;
-use App\Models\Qualification;
 use App\Models\Sales\BookableService;
 use App\Services\Appointments\AppointmentSlotService;
 use App\Services\Dispatch\GapFillSuggester;

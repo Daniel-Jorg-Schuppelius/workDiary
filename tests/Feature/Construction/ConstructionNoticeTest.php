@@ -15,7 +15,7 @@ use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Mail\DocumentMail;
 use App\Models\Construction\ConstructionNotice;
 use App\Models\Customer\Customer;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Document\DocumentDispatch;
 use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;

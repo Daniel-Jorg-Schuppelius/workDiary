@@ -14,7 +14,7 @@ namespace App\Services\Gaeb;
 
 use App\Enums\Gaeb\{BoqItemStatus, BoqItemType, BoqProgressSource, GaebImportStatus, GaebPhase};
 use App\Models\Applications\ApplicationOpportunity;
-use App\Models\{BillOfQuantity, BoqCatalog, BoqCatalogAssignment, BoqChangeOrder, BoqItem, BoqItemPriceSnapshot, BoqItemQuantitySplit, BoqSection, GaebImport};
+use App\Models\Gaeb\{BillOfQuantity, BoqCatalog, BoqCatalogAssignment, BoqChangeOrder, BoqItem, BoqItemPriceSnapshot, BoqItemQuantitySplit, BoqSection, GaebImport};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Entities\Gaeb\{GaebBoq, GaebCatalogAssignment, GaebItem, GaebQuantitySplit, GaebTotals};
@@ -226,7 +226,7 @@ class GaebImportService {
     private function persistCostTypes(BillOfQuantity $boq, int $organizationId, GaebBoq $parsed): void {
         $position = 0;
         foreach ($parsed->getCostTypes() as $costType) {
-            \App\Models\BoqCostType::query()->updateOrCreate(
+            \App\Models\Gaeb\BoqCostType::query()->updateOrCreate(
                 ['bill_of_quantity_id' => $boq->id, 'cost_key' => $costType->getKey()],
                 [
                     'organization_id' => $organizationId,
@@ -247,7 +247,7 @@ class GaebImportService {
     private function persistCostApproaches(int $organizationId, BoqItem $item, array $approaches): void {
         $position = 0;
         foreach ($approaches as $approach) {
-            \App\Models\BoqItemCostApproach::query()->create([
+            \App\Models\Gaeb\BoqItemCostApproach::query()->create([
                 'organization_id' => $organizationId,
                 'boq_item_id' => $item->id,
                 'cost_key' => $approach->getCostTypeKey(),

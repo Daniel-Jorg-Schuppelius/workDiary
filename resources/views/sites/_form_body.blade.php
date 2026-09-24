@@ -9,7 +9,7 @@
 {{-- Shared form fields for Site (used by _form_dialog) --}}
 @php
     /**
-     * @var \App\Models\Site|null $site
+     * @var \App\Models\Facility\Site|null $site
      * @var \Illuminate\Support\Collection<int, \App\Models\Customer\Customer> $customers
      */
 @endphp

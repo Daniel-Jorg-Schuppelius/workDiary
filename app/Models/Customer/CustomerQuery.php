@@ -12,10 +12,10 @@ namespace App\Models\Customer;
 
 use App\Enums\Customer\CustomerQueryStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Platform\User;
+use App\Models\Protocol\ProtocolSignatureToken;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
-use App\Models\Customer\Customer\Customer;
-use App\Models\ProtocolSignatureToken;
 
 /**
  * Kunden-Rückfrage (Feature 012, Kundenportal & Freigaben).

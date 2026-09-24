@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{StockCountStatus, StockCountType};
-use App\Models\{ArticleVariant, StockCount, StockCountLine, StockMovement, Warehouse};
+use App\Models\Article\ArticleVariant;
+use App\Models\Inventory\{StockCount, StockCountLine, StockMovement, Warehouse};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

@@ -11,7 +11,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Project\Task;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

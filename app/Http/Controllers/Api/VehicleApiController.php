@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Api;
 use App\Enums\Vehicle\{VehicleOwnership, VehiclePropulsion, VehicleType};
 use App\Http\Controllers\Controller;
 use App\Http\Resources\VehicleResource;
-use App\Models\Vehicle;
+use App\Models\Fleet\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Gate;

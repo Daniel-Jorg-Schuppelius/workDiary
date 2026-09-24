@@ -10,7 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\ShiftType;
+use App\Models\Schedule\ShiftType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

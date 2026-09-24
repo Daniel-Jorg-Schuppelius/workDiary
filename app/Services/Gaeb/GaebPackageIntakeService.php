@@ -14,7 +14,7 @@ namespace App\Services\Gaeb;
 
 use App\Enums\Gaeb\{GaebImportStatus, GaebPhase};
 use App\Models\Applications\ApplicationOpportunity;
-use App\Models\GaebImport;
+use App\Models\Gaeb\GaebImport;
 use App\Models\Platform\User;
 use App\Services\Document\DocumentService;
 use CommonToolkit\Exceptions\Parsers\DocumentLimitExceededException;

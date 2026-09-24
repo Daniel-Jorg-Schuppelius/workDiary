@@ -11,7 +11,7 @@
     <x-card padding="p-0">
         <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Stundenzettel') }}</span>
-            @can('create', \App\Models\Timesheet::class)
+            @can('create', \App\Models\Time\Timesheet::class)
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
                             :href="route('projects.timesheets.create', $project)"

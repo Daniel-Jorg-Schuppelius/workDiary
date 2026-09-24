@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Rental;
 
 use App\Http\Controllers\Controller;
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Rental\{RentalCase, RentalProfile, RentalRateCard};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Support\Sqid;

@@ -12,8 +12,9 @@ namespace Tests\Feature\Schedule;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\Calendar\AvailabilityWindow;
+use App\Models\Hr\Qualification;
 use App\Models\Platform\User;
-use App\Models\{Qualification, ScheduledShift, ShiftType};
+use App\Models\Schedule\{ScheduledShift, ShiftType};
 use App\Services\Schedule\StaffingSuggester;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

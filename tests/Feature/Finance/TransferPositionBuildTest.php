@@ -17,7 +17,7 @@ use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Models\Project\{Project, ProjectBillingRule};
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Services\Billing\OrganizationDefaultRateResolver;
 use App\Services\Finance\{BillingPositionBuilder, BillingTransferService};
 use App\Services\Invoicing\{BlockPrice, ServiceDefaultResolver};

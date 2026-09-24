@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Models\{Article, ArticleVariant, PurchaseOrder, PurchaseOrderLine};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Procurement\{PurchaseOrder, PurchaseOrderLine};
 use App\Support\Sqid;
 use CommonToolkit\ValueObjects\Quantity;
 use Illuminate\Http\Request;

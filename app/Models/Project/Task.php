@@ -13,14 +13,13 @@ namespace App\Models\Project;
 use App\Casts\MoneyCast;
 use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Models\Concerns\{BelongsToOrganization, HasAttachments, HasSqid, Searchable};
+use App\Models\Platform\{Team, User};
+use App\Models\Time\TimeEntry;
 use Database\Factories\Project\TaskFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
-use App\Models\Project\Project\Milestone;
-use App\Models\Project\Project\Project;
-use App\Models\TimeEntry;
 
 /**
  * @property int $id

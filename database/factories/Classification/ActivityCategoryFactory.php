@@ -11,7 +11,7 @@
 namespace Database\Factories\Classification;
 
 use App\Enums\Activity\ActivityCategoryType;
-use App\Models\Classification\Classification\ActivityCategory;
+use App\Models\Classification\ActivityCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

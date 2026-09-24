@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Search\Indexing\Sources;
 
 use App\Enums\Search\SearchSourceType;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
 use Illuminate\Database\Eloquent\{Builder, Model};
 

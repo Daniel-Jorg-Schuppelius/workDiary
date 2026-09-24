@@ -347,11 +347,11 @@ class CrisisCaseController extends Controller {
         $data = $request->validated();
 
         $map = [
-            'service_ticket' => \App\Models\ServiceTicket::class,
+            'service_ticket' => \App\Models\ServiceTicket\ServiceTicket::class,
             'isms_incident' => \App\Models\Isms\IsmsSecurityIncident::class,
             'privacy_incident' => \App\Models\Privacy\Incident::class,
-            'safety_event' => \App\Models\SafetyEvent::class,
-            'procedure_run' => \App\Models\ProcedureRun::class,
+            'safety_event' => \App\Models\Safety\SafetyEvent::class,
+            'procedure_run' => \App\Models\Procedure\ProcedureRun::class,
             'document' => \App\Models\Document\Document::class,
         ];
         $class = $map[$data['linkable_type']];

@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState};
-use App\Models\{ArticleVariant, StockMovement, Warehouse, WarehouseBin};
+use App\Models\Article\ArticleVariant;
+use App\Models\Inventory\{StockMovement, Warehouse, WarehouseBin};
 use App\Support\DecimalQty;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\QueryException;

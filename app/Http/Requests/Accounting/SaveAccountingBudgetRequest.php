@@ -14,7 +14,7 @@ namespace App\Http\Requests\Accounting;
 
 use App\Enums\User\Permission;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\CostCenter;
+use App\Models\Finance\CostCenter;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Accounting\AccountingBudgetService;
 use Illuminate\Foundation\Http\FormRequest;

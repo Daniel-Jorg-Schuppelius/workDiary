@@ -14,7 +14,7 @@ namespace App\Services\Import\Specs;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Models\Customer\Customer;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
 use App\Services\Finance\BillingModeResolver;
 use App\Services\Import\{ImportOutcome, ValidationIssue};

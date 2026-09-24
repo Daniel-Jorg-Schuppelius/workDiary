@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Procurement;
 
 use App\Enums\Procurement\CatalogItemStatus;
-use App\Models\{SupplierCatalogDiscountGroup, SupplierCatalogItem, SupplierCatalogProductGroup, SupplierCatalogSource};
+use App\Models\Supplier\{SupplierCatalogDiscountGroup, SupplierCatalogItem, SupplierCatalogProductGroup, SupplierCatalogSource};
 use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Entities\Datanorm\{DatanormArticle, DatanormCatalog, DatanormDiscount, DatanormScalePrice};
 use ERechnungToolkit\Enums\{DatanormDiscountKind, DatanormPriceIndicator, DatanormProcessingFlag};

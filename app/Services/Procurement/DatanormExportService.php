@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Procurement;
 
-use App\Models\{Article, ArticleVariant};
+use App\Models\Article\{Article, ArticleVariant};
 use App\Models\B2b\{B2bCatalogAccess, B2bCatalogItem};
 use App\Models\Platform\Organization;
 use App\Support\UnitCodeMapper;
@@ -121,7 +121,7 @@ class DatanormExportService {
             // laut Preisverlauf seit dem Stichtag gesetzt oder geändert wurde.
             $changed = null;
             if ($since !== null) {
-                $changed = \App\Models\ArticleSalePriceHistory::query()
+                $changed = \App\Models\Article\ArticleSalePriceHistory::query()
                     ->where('organization_id', $organization->id)
                     ->where('recorded_at', '>=', $since)
                     ->get(['article_id', 'article_variant_id']);

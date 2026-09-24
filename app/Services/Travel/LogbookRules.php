@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Travel;
 
-use App\Models\{TravelLog, Vehicle};
+use App\Models\Fleet\Vehicle;
+use App\Models\Travel\TravelLog;
 use CommonToolkit\Helper\Data\NumberHelper;
 
 /**

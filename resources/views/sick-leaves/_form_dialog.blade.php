@@ -8,7 +8,7 @@
 --}}
 {{-- Variablen: $sickLeave, $isEdit, $isDialog, $canAssignOthers, $assignableUsers, $previousLeaves, $prefillStart, $prefillEnd --}}
 @php
-    /** @var \App\Models\SickLeave|null $sickLeave */
+    /** @var \App\Models\Absence\SickLeave|null $sickLeave */
     $isEdit   = $isEdit   ?? false;
     $isDialog = $isDialog ?? true;
     $action   = $isEdit ? route('sick-leaves.update', $sickLeave) : route('sick-leaves.store');
@@ -68,7 +68,7 @@
             <select id="sick-follow" name="follow_up_for_id" class="select select-bordered w-full">
                 <option value="">{{ __('Bitte wählen …') }}</option>
                 @foreach ($previousLeaves as $prev)
-                    <option value="{{ $prev->sqid }}" @selected((string) old('follow_up_for_id', \App\Support\Sqid::encode(\App\Models\SickLeave::class, $sickLeave?->follow_up_for_id)) === $prev->sqid)>
+                    <option value="{{ $prev->sqid }}" @selected((string) old('follow_up_for_id', \App\Support\Sqid::encode(\App\Models\Absence\SickLeave::class, $sickLeave?->follow_up_for_id)) === $prev->sqid)>
                         {{ $prev->start_date->fdate() }} – {{ $prev->end_date->fdate() }}@if ($canAssignOthers) · {{ $prev->user?->name }} @endif
                     </option>
                 @endforeach
@@ -133,7 +133,7 @@
                     @foreach ($existing as $att)
                         <li class="flex items-center gap-2">
                             <x-icon name="description" class="h-3 w-3" />
-                            <a class="link link-hover" href="{{ \App\Http\Controllers\SickLeaveController::attachmentDownloadUrl($sickLeave, $att) }}">{{ $att->original_name }}</a>
+                            <a class="link link-hover" href="{{ \App\Http\Controllers\Absence\SickLeaveController::attachmentDownloadUrl($sickLeave, $att) }}">{{ $att->original_name }}</a>
                             <span class="text-muted">({{ $att->humanSize() }})</span>
                         </li>
                     @endforeach

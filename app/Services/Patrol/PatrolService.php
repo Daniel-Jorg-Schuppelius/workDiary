@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Patrol;
 
 use App\Enums\OpenIssue\OpenIssueSource;
-use App\Models\OpenIssue;
+use App\Models\Diary\OpenIssue;
 use App\Models\Patrol\{PatrolCheckpoint, PatrolRoute, PatrolRun};
 use App\Models\Platform\User;
 use Illuminate\Support\{Carbon, Str};
@@ -192,7 +192,7 @@ class PatrolService {
             return;
         }
 
-        $entry = new \App\Models\DiaryEntry;
+        $entry = new \App\Models\Diary\DiaryEntry;
         $entry->organization_id = (int) $run->organization_id;
         $entry->user_id = (int) ($run->started_by ?? $actor->id);
         $entry->entry_type_id = $entryType->id;

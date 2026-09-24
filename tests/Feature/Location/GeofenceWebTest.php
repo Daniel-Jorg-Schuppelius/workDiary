@@ -14,7 +14,7 @@ use App\Http\Controllers\Api\LocationController;
 use App\Models\Customer\Customer;
 use App\Models\Location\{CustomerGeofence, LocationDeviceToken, LocationPendingEntry, LocationVisit};
 use App\Models\Platform\User;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Services\Location\VisitMaterializer;
 use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;

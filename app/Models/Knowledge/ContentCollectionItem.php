@@ -11,10 +11,10 @@
 namespace App\Models\Knowledge;
 
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 use Illuminate\Support\Carbon;
-use App\Models\Knowledge\ContentCollection;
 
 /**
  * Zeiger einer Sammlung auf einen Inhalt (MVP-809). Derselbe Inhalt darf in

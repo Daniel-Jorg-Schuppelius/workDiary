@@ -10,7 +10,7 @@
 
 namespace App\Services\Procurement;
 
-use App\Models\{PurchaseOrder, PurchaseOrderLine};
+use App\Models\Procurement\{PurchaseOrder, PurchaseOrderLine};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Entities\{OrderLine, UglInvoice};

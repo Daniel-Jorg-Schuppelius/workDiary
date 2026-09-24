@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\B2bCatalog;
 
-use App\Models\{Article, DiaryEntry};
+use App\Models\Article\Article;
 use App\Models\B2b\{B2bCatalogAccess, B2bOrder};
 use App\Models\Customer\Customer;
+use App\Models\Diary\DiaryEntry;
 use App\Services\B2bCatalog\{B2bOrderGroupBooker, B2bOrderIntakeService};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;

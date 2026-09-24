@@ -12,7 +12,7 @@
 
 @php
     /** @var \Carbon\CarbonInterface $day */
-    /** @var \App\Models\Attendance|null $current */
+    /** @var \App\Models\Time\Attendance|null $current */
     /** @var \Illuminate\Support\Collection $attendances */
     /** @var \Illuminate\Support\Collection $entries */
     /** @var int $targetMinutes */

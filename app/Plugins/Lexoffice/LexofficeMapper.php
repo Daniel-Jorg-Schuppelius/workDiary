@@ -11,7 +11,8 @@
 namespace App\Plugins\Lexoffice;
 
 use App\Models\Customer\Customer;
-use App\Models\{Supplier, TimeEntry};
+use App\Models\Supplier\Supplier;
+use App\Models\Time\TimeEntry;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -299,7 +300,7 @@ class LexofficeMapper {
      * @param  list<string> $fileIds  zuvor hochgeladene Belegdateien
      * @return array<string, mixed>
      */
-    public function expenseToVoucherPayload(\App\Models\Expense $expense, string $categoryId, array $fileIds = []): array {
+    public function expenseToVoucherPayload(\App\Models\Travel\Expense $expense, string $categoryId, array $fileIds = []): array {
         $gross = $expense->amount_gross?->toFloat() ?? 0.0;
         $tax = $expense->tax_amount?->toFloat() ?? 0.0;
         $taxRate = $expense->tax_rate?->getValue()->toFloat() ?? 0.0;
@@ -334,7 +335,7 @@ class LexofficeMapper {
      *
      * @return array<string, mixed>
      */
-    public function expenseToCounterVoucherPayload(\App\Models\Expense $expense, string $categoryId, string $originalReference, string $reason): array {
+    public function expenseToCounterVoucherPayload(\App\Models\Travel\Expense $expense, string $categoryId, string $originalReference, string $reason): array {
         $payload = $this->expenseToVoucherPayload($expense, $categoryId);
         $payload['type'] = 'purchasecreditnote';
         $payload['voucherDate'] = now()->format('Y-m-d') . 'T00:00:00.000+01:00';

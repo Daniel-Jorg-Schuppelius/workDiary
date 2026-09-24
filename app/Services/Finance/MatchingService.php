@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Finance;
 
 use App\Enums\Finance\{AllocationKind, TransactionDirection};
-use App\Models\{Expense, Invoice};
 use App\Models\Finance\{BankTransaction, PaymentAllocation};
+use App\Models\Invoicing\Invoice;
+use App\Models\Travel\Expense;
 use App\Services\Finance\Banking\ReferenceExtractor;
 use App\Support\Crypto\BlindIndex;
 use CommonToolkit\Helper\Data\NumberHelper;

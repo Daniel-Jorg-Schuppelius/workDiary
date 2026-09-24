@@ -9,7 +9,7 @@
 {{-- Dialog: Firmenbogen ansehen (Feature 076) — zeigt die Druckfassung (Rasterseite)
      oder, wenn die Prüfung fehlschlug, das Original; PDFs ohne Rasterseite nur als Download. --}}
 @php
-    /** @var \App\Models\Document\DocumentDesign\LetterheadAsset $asset */
+    /** @var \App\Models\DocumentDesign\LetterheadAsset $asset */
     $isImage = in_array($asset->source_type, ['png', 'jpg'], true);
     $imageUrl = $hasNormalized
         ? route('admin.document-design.assets.preview', $asset->sqid)

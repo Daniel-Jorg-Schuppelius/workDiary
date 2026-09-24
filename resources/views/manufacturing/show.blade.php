@@ -11,7 +11,7 @@
 @section('nav-title', __('manufacturing.order.title'))
 
 @php
-    /** @var \App\Models\ManufacturingOrder $order */
+    /** @var \App\Models\Manufacturing\ManufacturingOrder $order */
     $status = $order->status->value;
     $isOpen = ! $order->status->isTerminal();
     $canConsume = $canManage && in_array($status, ['released', 'in_progress'], true);
@@ -296,7 +296,7 @@
                                 @if ($billedItem->invoice !== null)
                                     <div class="text-xs text-muted">
                                         @can('view', $billedItem->invoice)<a href="{{ route('invoices.show', $billedItem->invoice) }}" class="link">{{ $billedItem->invoice->number }}</a>@else{{ $billedItem->invoice->number }}@endcan
-                                        · {{ $billedItem->invoice->status === \App\Models\Invoice::STATUS_DRAFT ? __('invoicing.free.label.reserved') : __('values.' . $billedItem->invoice->status) }}
+                                        · {{ $billedItem->invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT ? __('invoicing.free.label.reserved') : __('values.' . $billedItem->invoice->status) }}
                                     </div>
                                 @endif
                             @endforeach

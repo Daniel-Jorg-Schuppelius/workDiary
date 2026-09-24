@@ -13,7 +13,7 @@ namespace App\Services\Security;
 use App\Models\Audit\AuditLog;
 use App\Models\Integration\{ExportRun, ExternalReference};
 use App\Models\Platform\{Organization, PluginSetting, User};
-use App\Models\TimeExport;
+use App\Models\Time\TimeExport;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;

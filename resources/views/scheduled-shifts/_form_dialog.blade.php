@@ -9,7 +9,7 @@
 {{-- Variablen: $shift (ScheduledShift), $users, $types --}}
 @php
     /**
-     * @var \App\Models\ScheduledShift $shift
+     * @var \App\Models\Schedule\ScheduledShift $shift
      * @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users
      * @var \Illuminate\Support\Collection<int, mixed> $types
      */
@@ -37,7 +37,7 @@
         <x-select-field name="shift_type_id" :label="__('Schichttyp')">
             <option value="">—</option>
             @foreach ($types as $t)
-                <option value="{{ $t->sqid }}" @selected((string) old('shift_type_id', \App\Support\Sqid::encode(\App\Models\ShiftType::class, $shift->shift_type_id)) === $t->sqid)>{{ $t->name }} ({{ $t->abbreviation }})</option>
+                <option value="{{ $t->sqid }}" @selected((string) old('shift_type_id', \App\Support\Sqid::encode(\App\Models\Schedule\ShiftType::class, $shift->shift_type_id)) === $t->sqid)>{{ $t->name }} ({{ $t->abbreviation }})</option>
             @endforeach
         </x-select-field>
     </x-form-group>

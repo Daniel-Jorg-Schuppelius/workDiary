@@ -11,7 +11,7 @@
 namespace Tests\Feature\Software;
 
 use App\Enums\Software\{SoftwareKind, SoftwareLicenseType};
-use App\Models\{Asset, Software, SoftwareInstallation};
+use App\Models\Asset\{Asset, Software, SoftwareInstallation};
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

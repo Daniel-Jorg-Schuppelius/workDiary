@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Contracts;
 
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 
 /**
  * Lieferanten-Pendant zu {@see ContactSyncer} (Vollscan 2026-08-23, B6):

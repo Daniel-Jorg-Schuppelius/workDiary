@@ -12,17 +12,17 @@ namespace App\Http\Requests\Project;
 
 use App\Enums\Diary\{LocationMode, Priority};
 use App\Enums\Recurrence\RecurrenceFrequency;
-use App\Http\Requests\Concerns\DecodesSqidInputs;
-use Illuminate\Validation\Rule;
 use App\Http\Requests\BaseFormRequest;
-use App\Http\Requests\SaveDiaryEntryRequest;
+use App\Http\Requests\Concerns\DecodesSqidInputs;
+use App\Http\Requests\Diary\SaveDiaryEntryRequest;
+use Illuminate\Validation\Rule;
 
 class SaveRecurrenceRuleRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'customer_id' => \App\Models\Customer\Customer\Customer::class,
+        'customer_id' => \App\Models\Customer\Customer::class,
         'entry_type_id' => \App\Models\Classification\EntryType::class,
         'assigned_user_id' => \App\Models\Platform\User::class,
     ];

@@ -14,8 +14,11 @@ namespace Tests\Feature\Invoicing;
 
 use App\Enums\Article\ArticleType;
 use App\Enums\Manufacturing\DeliveryFacturationStatus;
-use App\Models\{Article, ArticleVariant, Invoice, ManufacturingOrder, StockDelivery, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Customer\Customer;
+use App\Models\Inventory\{StockDelivery, Warehouse};
+use App\Models\Invoicing\Invoice;
+use App\Models\Manufacturing\ManufacturingOrder;
 use App\Models\Platform\{Organization, User};
 use App\Services\Invoicing\{DeliveryInvoicingService, InvoiceGenerator, InvoiceIssueService};
 use Illuminate\Database\QueryException;

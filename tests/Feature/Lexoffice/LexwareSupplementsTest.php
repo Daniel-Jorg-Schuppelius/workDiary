@@ -16,7 +16,7 @@ use App\Enums\Lexoffice\{LexofficeHandoverStatus, LexwareCoverage, LexwareFeatur
 use App\Enums\User\Permission;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
-use App\Models\{Invoice, InvoiceSchedule};
+use App\Models\Invoicing\{Invoice, InvoiceSchedule};
 use App\Models\Platform\{Organization, User};
 use App\Models\Plugins\Lexoffice\LexofficeInvoiceHandover;
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};

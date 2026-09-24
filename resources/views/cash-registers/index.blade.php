@@ -11,7 +11,7 @@
 
 @php
 /**
- * @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\CashRegister> $registers
+ * @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Finance\CashRegister> $registers
  * @var array<int, float> $balances
  * @var array<int, \Carbon\Carbon|null> $lastClosings
  */

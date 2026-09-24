@@ -15,10 +15,14 @@ use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, Op
 use App\Enums\Protocol\ProtocolType;
 use App\Enums\Timesheet\{TimesheetKind, TimesheetStatus};
 use App\Enums\User\UserRole;
-use App\Models\{Asset, DiaryEntry, MaterialUsage, OpenIssue, Protocol, Timesheet};
+use App\Models\Asset\Asset;
 use App\Models\Attachments\Attachment;
+use App\Models\Diary\{DiaryEntry, OpenIssue};
+use App\Models\Material\MaterialUsage;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Models\Protocol\Protocol;
+use App\Models\Time\Timesheet;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

@@ -11,8 +11,9 @@
 namespace Tests\Feature\Helpdesk;
 
 use App\Models\Approval\Approval;
-use App\Models\{Asset, Change, ChangeTemplate, Problem, ServiceTicket};
+use App\Models\Asset\Asset;
 use App\Models\Platform\{Organization, User};
+use App\Models\ServiceTicket\{Change, ChangeTemplate, Problem, ServiceTicket};
 use App\Services\ServiceTicket\ChangeService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -14,7 +14,7 @@ use App\Enums\Shift\ScheduledShiftStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
-use App\Models\{CoverageRequirement, ScheduledShift, ShiftType};
+use App\Models\Schedule\{CoverageRequirement, ScheduledShift, ShiftType};
 use App\Support\Query\DateRange;
 use Carbon\{Carbon, CarbonImmutable, CarbonPeriod};
 use CommonToolkit\Helper\Data\NumberHelper;

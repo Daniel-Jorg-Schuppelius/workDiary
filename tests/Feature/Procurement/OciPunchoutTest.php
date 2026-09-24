@@ -10,8 +10,11 @@
 
 namespace Tests\Feature\Procurement;
 
-use App\Models\{Article, ArticleSupply, PurchaseOrder, Supplier, SupplierCatalogSource, Warehouse};
+use App\Models\Article\{Article, ArticleSupply};
+use App\Models\Inventory\Warehouse;
 use App\Models\Platform\{Organization, User};
+use App\Models\Procurement\PurchaseOrder;
+use App\Models\Supplier\{Supplier, SupplierCatalogSource};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
 use Spatie\Permission\PermissionRegistrar;

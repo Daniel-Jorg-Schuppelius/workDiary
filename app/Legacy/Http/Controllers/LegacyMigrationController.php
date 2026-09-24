@@ -13,7 +13,7 @@ namespace App\Legacy\Http\Controllers;
 use App\Http\Controllers\Concerns\RequiresPlatformOperator;
 use App\Http\Controllers\Controller;
 use App\Legacy\Http\Requests\RunLegacyMigrationRequest;
-use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift};
+use App\Models\Diary\{DiaryEntry, EmergencyAssignment, OnCallShift};
 use App\Models\Platform\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;

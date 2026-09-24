@@ -14,8 +14,8 @@ namespace App\Services\Import\Specs;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Enums\Vehicle\{VehicleOwnership, VehiclePropulsion, VehicleType};
+use App\Models\Fleet\Vehicle;
 use App\Models\Platform\Organization;
-use App\Models\Vehicle;
 use App\Services\Import\{ImportOutcome, ValidationIssue};
 use Throwable;
 

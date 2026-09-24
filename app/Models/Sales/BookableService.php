@@ -13,11 +13,11 @@ declare(strict_types=1);
 namespace App\Models\Sales;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Facility\Site;
+use App\Models\Hr\Qualification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use App\Models\Qualification;
-use App\Models\Site;
 
 /**
  * Buchbare Leistungsart (Feature 087): kuratiert je Organisation — nichts

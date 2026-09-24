@@ -16,7 +16,7 @@ use App\Enums\Finance\BillingMode;
 use App\Enums\Reselling\PeriodStatus;
 use App\Models\Audit\AuditLog;
 use App\Models\Customer\{Customer, ForeignCustomer};
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Models\Reselling\{ResalePeriodLink, ResaleSubscription};
 use App\Notifications\Finance\ResalePeriodsDigestNotification;

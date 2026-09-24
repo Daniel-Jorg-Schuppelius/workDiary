@@ -11,7 +11,7 @@
 namespace App\Policies\Audit;
 
 use App\Policies\Concerns\HasAdminBypass;
-use App\Policies\Auth\PermissionPolicy;
+use App\Policies\PermissionPolicy;
 
 class AuditLogPolicy extends PermissionPolicy {
     use HasAdminBypass;

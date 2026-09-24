@@ -11,7 +11,10 @@
 namespace Tests\Feature\Manufacturing;
 
 use App\Enums\Manufacturing\ManufacturingOrderStatus;
-use App\Models\{Article, ManufacturingOrder, ManufacturingOrderMaterial, ManufacturingOrderReport, TimeEntry, Warehouse};
+use App\Models\Article\Article;
+use App\Models\Inventory\Warehouse;
+use App\Models\Manufacturing\{ManufacturingOrder, ManufacturingOrderMaterial, ManufacturingOrderReport};
+use App\Models\Time\TimeEntry;
 use App\Services\Manufacturing\{ManufacturingCostingService, ManufacturingOrderService};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

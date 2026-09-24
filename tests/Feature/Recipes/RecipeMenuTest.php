@@ -13,9 +13,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Recipes;
 
 use App\Enums\Classification\ClassificationDomain;
-use App\Models\{Article, ProcedureMaterialRequirement, ProcedureTemplate, ProcedureTemplateVersion};
+use App\Models\Article\Article;
 use App\Models\Classification\Classification;
 use App\Models\Platform\User;
+use App\Models\Procedure\{ProcedureMaterialRequirement, ProcedureTemplate, ProcedureTemplateVersion};
 use App\Models\Recipes\{RecipeMenu, RecipeMenuItem, RecipeProfile};
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Recipes\RecipeService;

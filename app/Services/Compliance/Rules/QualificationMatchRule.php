@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Compliance\Rules;
 
-use App\Models\{CoverageRequirement, ScheduledShift};
 use App\Models\Platform\User;
+use App\Models\Schedule\{CoverageRequirement, ScheduledShift};
 use App\Services\Compliance\{ComplianceRule, ComplianceViolation};
 
 /**

@@ -11,8 +11,9 @@
 namespace Tests\Feature\Sync;
 
 use App\Enums\TimeApproval\DayClosureStatus;
-use App\Models\{Attendance, DayClosure};
+use App\Models\Diary\DayClosure;
 use App\Models\Platform\User;
+use App\Models\Time\Attendance;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;

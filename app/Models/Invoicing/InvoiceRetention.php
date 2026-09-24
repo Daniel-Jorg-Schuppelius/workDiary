@@ -15,7 +15,6 @@ namespace App\Models\Invoicing;
 use App\Casts\{MoneyCast, PercentageCast};
 use App\Enums\Invoicing\{RetentionKind, RetentionStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\Invoice;
 use App\Models\Platform\User;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Model;

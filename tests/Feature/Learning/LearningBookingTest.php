@@ -11,7 +11,7 @@
 namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\{LearningAccessKind, LearningBookingStatus, LearningEnrollmentSource};
-use App\Models\Article;
+use App\Models\Article\Article;
 use App\Models\Learning\{LearningBooking, LearningCourse};
 use App\Models\Platform\User;
 use App\Services\Learning\{LearningBookingService, LearningCourseService};

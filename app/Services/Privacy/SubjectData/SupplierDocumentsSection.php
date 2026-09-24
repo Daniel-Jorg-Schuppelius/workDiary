@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy\SubjectData;
 
-use App\Models\{PurchaseOrder, Supplier};
+use App\Models\Procurement\PurchaseOrder;
+use App\Models\Supplier\Supplier;
 use Illuminate\Database\Eloquent\Model;
 
 /** Belegverknüpfungen des Lieferanten — Zähler + Zeitraum. */

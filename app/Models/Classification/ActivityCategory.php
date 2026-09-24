@@ -12,12 +12,12 @@ namespace App\Models\Classification;
 
 use App\Enums\Activity\ActivityCategoryType;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid, Searchable};
+use App\Models\Time\TimeEntry;
 use Database\Factories\Classification\ActivityCategoryFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
-use App\Models\TimeEntry;
 
 /**
  * @property int $id

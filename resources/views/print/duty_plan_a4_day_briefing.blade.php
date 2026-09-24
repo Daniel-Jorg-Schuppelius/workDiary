@@ -10,9 +10,9 @@
 
 @section('content')
 @php
-    /** @var \App\Models\DutyPlan $dutyPlan */
+    /** @var \App\Models\Schedule\DutyPlan $dutyPlan */
     /** @var \Carbon\CarbonImmutable $date */
-    /** @var \Illuminate\Support\Collection<int, \App\Models\ScheduledShift> $shifts */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Schedule\ScheduledShift> $shifts */
     /** @var ?string $holidayName */
     /** @var bool $anonymous */
 

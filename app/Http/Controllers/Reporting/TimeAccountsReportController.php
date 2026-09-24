@@ -14,7 +14,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
 use App\Models\Platform\User;
-use App\Models\{TimeAccount, TimeAccountEntry};
+use App\Models\Time\{TimeAccount, TimeAccountEntry};
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
 use CommonToolkit\Helper\Data\NumberHelper;

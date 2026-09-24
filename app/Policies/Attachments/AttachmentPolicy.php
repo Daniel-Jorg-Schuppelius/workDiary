@@ -10,9 +10,8 @@
 
 namespace App\Policies\Attachments;
 
-use App\Models\Attachments\Attachments\Attachment;
-use App\Models\Platform\Organization;
-use App\Models\Platform\User;
+use App\Models\Attachments\Attachment;
+use App\Models\Platform\{Organization, User};
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 use Illuminate\Support\Facades\Gate;
 
@@ -90,9 +89,9 @@ class AttachmentPolicy {
      */
     private static function delegateFor(mixed $parent): ?\Illuminate\Database\Eloquent\Model {
         $target = match (true) {
-            $parent instanceof \App\Models\ServiceTicketMessage => $parent->ticket,
+            $parent instanceof \App\Models\ServiceTicket\ServiceTicketMessage => $parent->ticket,
             $parent instanceof \App\Models\Learning\LearningUnit => $parent->course,
-            $parent instanceof \App\Models\ProtocolItem => $parent->protocol,
+            $parent instanceof \App\Models\Protocol\ProtocolItem => $parent->protocol,
             $parent instanceof \App\Models\Disposal\DisposalItem => $parent->job,
             $parent instanceof \App\Models\AssetFinance\AssetFinanceEndProcess => $parent->contract,
             $parent instanceof \App\Models\Supplier\SupplierCredential => $parent->supplier,
@@ -100,7 +99,7 @@ class AttachmentPolicy {
             $parent instanceof \App\Models\AssetCompliance\AssetInspectionSchedule => $parent->asset,
             $parent instanceof \App\Models\Rental\RentalHandoverReport => $parent->asset,
             $parent instanceof \App\Models\Rental\RentalReturnReport => $parent->asset,
-            $parent instanceof \App\Models\AssetDefect => $parent->asset,
+            $parent instanceof \App\Models\Asset\AssetDefect => $parent->asset,
             default => null,
         };
 
@@ -115,7 +114,7 @@ class AttachmentPolicy {
         // Kassenbelege (MVP-414) sind GoBD-append-only: der Beleg gehört zur
         // Hash-Kette des Eintrags und darf nie entfernt werden (Vollaudit
         // 2026-07, M37) — auch nicht durch den Uploader.
-        if ($attachment->attachable instanceof \App\Models\CashEntry) {
+        if ($attachment->attachable instanceof \App\Models\Finance\CashEntry) {
             return false;
         }
 

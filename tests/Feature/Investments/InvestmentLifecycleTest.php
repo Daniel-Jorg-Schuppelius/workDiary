@@ -149,7 +149,7 @@ final class InvestmentLifecycleTest extends TestCase {
             'occurred_on' => now()->toDateString(),
             'created_by' => $this->admin->id,
         ]);
-        $asset = \App\Models\Asset::factory()->create([
+        $asset = \App\Models\Asset\Asset::factory()->create([
             'organization_id' => $this->organization->id,
             'acquisition_cost' => '4000.00',
         ]);
@@ -172,11 +172,11 @@ final class InvestmentLifecycleTest extends TestCase {
      * quantity statt ordered_qty (war dadurch immer 0).
      */
     public function test_projection_commits_linked_purchase_order_lines(): void {
-        $supplier = \App\Models\Supplier::factory()->create(['organization_id' => $this->organization->id]);
-        $warehouse = \App\Models\Warehouse::factory()->create(['organization_id' => $this->organization->id]);
+        $supplier = \App\Models\Supplier\Supplier::factory()->create(['organization_id' => $this->organization->id]);
+        $warehouse = \App\Models\Inventory\Warehouse::factory()->create(['organization_id' => $this->organization->id]);
         $order = app(\App\Services\Procurement\PurchaseOrderService::class)->createDraft($this->organization, $supplier, $warehouse);
-        $article = \App\Models\Article::factory()->create(['organization_id' => $this->organization->id, 'purchasable' => true]);
-        $variant = \App\Models\ArticleVariant::factory()->create([
+        $article = \App\Models\Article\Article::factory()->create(['organization_id' => $this->organization->id, 'purchasable' => true]);
+        $variant = \App\Models\Article\ArticleVariant::factory()->create([
             'organization_id' => $this->organization->id,
             'article_id' => $article->id,
             'is_default' => true,

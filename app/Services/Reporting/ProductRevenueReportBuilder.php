@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Reporting;
 
-use App\Models\{Invoice, InvoiceItem};
+use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Plugins\Lexoffice\LexofficeVoucherLine;
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
 use App\Support\Query\DateRange;

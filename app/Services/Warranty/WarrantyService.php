@@ -14,7 +14,7 @@ namespace App\Services\Warranty;
 
 use App\Enums\Warranty\{WarrantyBasis, WarrantySide, WarrantyStatus};
 use App\Models\Platform\User;
-use App\Models\Protocol;
+use App\Models\Protocol\Protocol;
 use App\Models\Warranty\WarrantyPeriod;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;

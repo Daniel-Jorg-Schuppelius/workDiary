@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Rental;
 
 use App\Enums\Rental\RentalCondition;
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;

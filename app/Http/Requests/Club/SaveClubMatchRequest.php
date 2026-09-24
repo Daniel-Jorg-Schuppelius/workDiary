@@ -15,8 +15,8 @@ namespace App\Http\Requests\Club;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Club\{ClubGroup, ClubSeason};
+use App\Models\Facility\Room;
 use App\Models\Platform\User;
-use App\Models\Room;
 use App\Rules\ExistsInCurrentOrganization;
 
 class SaveClubMatchRequest extends BaseFormRequest {

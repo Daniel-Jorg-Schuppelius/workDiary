@@ -13,7 +13,7 @@ namespace Tests\Feature;
 use App\Enums\Diary\{Mode, Status as DiaryStatus};
 use App\Enums\Tour\TourStatus;
 use App\Enums\Travel\TravelLogVehicle;
-use App\Models\{DiaryEntry, Tour};
+use App\Models\Diary\{DiaryEntry, Tour};
 use App\Models\Platform\User;
 use App\Services\Routing\TourService;
 use App\Support\{Sqid, Tz};

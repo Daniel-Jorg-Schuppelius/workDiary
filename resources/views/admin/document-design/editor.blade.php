@@ -12,8 +12,8 @@
 
 @section('content')
 @php
-    /** @var \App\Models\Document\DocumentDesign\DocumentRenderProfile $profile */
-    /** @var \App\Models\Document\DocumentDesign\DocumentRenderProfileVersion $version */
+    /** @var \App\Models\DocumentDesign\DocumentRenderProfile $profile */
+    /** @var \App\Models\DocumentDesign\DocumentRenderProfileVersion $version */
     $editorConfig = [
         'saveUrl' => route('admin.document-design.draft.update', $profile->sqid),
         'layout' => $version->layout,

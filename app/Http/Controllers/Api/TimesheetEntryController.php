@@ -12,9 +12,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SaveTimesheetEntryRequest;
+use App\Http\Requests\Time\SaveTimesheetEntryRequest;
 use App\Http\Resources\TimeEntryResource;
-use App\Models\{TimeEntry, Timesheet};
+use App\Models\Time\{TimeEntry, Timesheet};
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\{Auth, Gate};

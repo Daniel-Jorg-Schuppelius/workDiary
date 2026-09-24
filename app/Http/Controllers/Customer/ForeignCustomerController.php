@@ -11,17 +11,16 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery};
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\SaveForeignCustomerRequest;
 use App\Models\Audit\AuditLog;
-use App\Models\Customer\Customer\Customer;
-use App\Models\Customer\Customer\ForeignCustomer;
-use App\Models\Project\Project\Project;
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Project\Project;
 use App\Support\MorphMap;
 use App\Support\{Setting, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * CRUD für Fremdkunden (Endkunden) — die Kundschaft einer Firma (Customer).

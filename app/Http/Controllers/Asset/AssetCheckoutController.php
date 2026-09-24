@@ -12,7 +12,8 @@ namespace App\Http\Controllers\Asset;
 
 use App\Exceptions\AssetValidationException;
 use App\Http\Controllers\Controller;
-use App\Models\{Asset, AssetAssignment, DiaryEntry};
+use App\Models\Asset\{Asset, AssetAssignment};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Team, User};
 use App\Services\Asset\AssetAssignmentService;
 use App\Support\{OrganizationContext, Sqid, Tz};

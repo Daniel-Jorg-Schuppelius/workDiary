@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Models\Passenger;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Fleet\Vehicle;
 use App\Models\Platform\User;
-use App\Models\Vehicle;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -115,10 +115,10 @@ class PassengerShiftSettlement extends Model {
     /**
      * Kassenbuch-Buchung der Übergabe (Issue #74).
      *
-     * @return BelongsTo<\App\Models\CashEntry, $this>
+     * @return BelongsTo<\App\Models\Finance\CashEntry, $this>
      */
     public function cashEntry(): BelongsTo {
-        return $this->belongsTo(\App\Models\CashEntry::class);
+        return $this->belongsTo(\App\Models\Finance\CashEntry::class);
     }
 
     /**

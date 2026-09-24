@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Finance\Gdpdu;
 
-use App\Models\CashDailyClosing;
+use App\Models\Finance\CashDailyClosing;
 use App\Models\Platform\Organization;
 use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;

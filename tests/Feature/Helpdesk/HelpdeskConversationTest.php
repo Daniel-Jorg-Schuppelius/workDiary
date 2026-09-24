@@ -15,7 +15,7 @@ use App\Jobs\ServiceTicketReplyMailJob;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\{Organization, User};
-use App\Models\{ServiceQueue, ServiceTicket, ServiceTicketMessage};
+use App\Models\ServiceTicket\{ServiceQueue, ServiceTicket, ServiceTicketMessage};
 use App\Services\Mail\{MailInboxResolutionService, MailIntakeService, ParsedMessage};
 use App\Services\ServiceTicket\TicketConversationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

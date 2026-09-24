@@ -11,8 +11,9 @@
 namespace App\Models\Learning;
 
 use App\Enums\Learning\{LearningAccessKind, LearningAudience, LearningCourseKind, LearningCourseStatus, LearningEnrollmentStatus, LearningInstructionSuitability, LearningTimePolicy};
-use App\Models\{Article, Qualification};
+use App\Models\Article\Article;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, HasTags};
+use App\Models\Hr\Qualification;
 use App\Models\Platform\{Organization, User};
 use App\Models\Training\TrainingCourse;
 use Database\Factories\Learning\LearningCourseFactory;
@@ -213,9 +214,9 @@ class LearningCourse extends Model {
     }
 
     /** Gerät, an dem die Einweisung erfolgt (MVP-740). */
-    /** @return BelongsTo<\App\Models\Asset, $this> */
+    /** @return BelongsTo<\App\Models\Asset\Asset, $this> */
     public function asset(): BelongsTo {
-        return $this->belongsTo(\App\Models\Asset::class, 'asset_id');
+        return $this->belongsTo(\App\Models\Asset\Asset::class, 'asset_id');
     }
 
     /** Qualifikation, die der Abschluss verleiht bzw. verlängert (013). */

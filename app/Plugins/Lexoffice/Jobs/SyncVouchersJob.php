@@ -12,7 +12,7 @@ namespace App\Plugins\Lexoffice\Jobs;
 
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\{ShouldBeUnique, ShouldQueue};

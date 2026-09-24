@@ -16,7 +16,7 @@ use App\Enums\Notification\NotificationEvent;
 use App\Enums\Rental\{RentalCaseStatus, RentalRequestStatus, RentalReservationKind};
 use App\Exceptions\RentalConflictException;
 use App\Mail\RentalRequestDecisionMail;
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Rental\{RentalCase, RentalProfile, RentalRequest, RentalReservation};

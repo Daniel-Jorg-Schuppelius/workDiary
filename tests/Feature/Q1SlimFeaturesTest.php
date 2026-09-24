@@ -11,9 +11,10 @@
 namespace Tests\Feature;
 
 use App\Enums\Vacation\{VacationStatus, VacationType};
+use App\Models\Absence\Vacation;
 use App\Models\Platform\User;
 use App\Models\Reporting\SavedReportView;
-use App\Models\{Vacation, WorkSchedule};
+use App\Models\Time\WorkSchedule;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

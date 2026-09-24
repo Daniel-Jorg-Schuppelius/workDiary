@@ -15,7 +15,7 @@ namespace App\Services\Schedule;
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Shift\{ScheduledShiftStatus, ShiftExchangeStatus};
 use App\Models\Platform\{Organization, User};
-use App\Models\{ScheduledShift, ShiftExchange};
+use App\Models\Schedule\{ScheduledShift, ShiftExchange};
 use App\Services\Compliance\{ComplianceReport, ShiftComplianceService};
 use App\Services\Notification\NotificationDispatcher;
 use Carbon\Carbon;

@@ -11,8 +11,9 @@
 namespace Tests\Feature\Reporting;
 
 use App\Enums\TimeEntry\TimeEntryKind;
+use App\Models\Hr\Qualification;
 use App\Models\Platform\User;
-use App\Models\{Qualification, TimeEntry};
+use App\Models\Time\TimeEntry;
 use App\Services\Reporting\CohortComparisonBuilder;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

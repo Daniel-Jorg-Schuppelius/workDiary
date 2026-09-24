@@ -11,7 +11,8 @@
 namespace Tests\Feature\Product;
 
 use App\Enums\User\Permission;
-use App\Models\{Asset, Product};
+use App\Models\Article\Product;
+use App\Models\Asset\Asset;
 use App\Models\Platform\{Organization, User};
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;

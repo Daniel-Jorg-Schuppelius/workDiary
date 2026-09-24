@@ -22,7 +22,7 @@
                    class="input input-bordered input-sm w-20 uppercase">
             <x-button type="submit" tone="ghost" size="sm">{{ __('Filtern') }}</x-button>
         </form>
-        @can('create', \App\Models\PerDiemRate::class)
+        @can('create', \App\Models\Travel\PerDiemRate::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger
                         :href="route('admin.per-diem-rates.create')"

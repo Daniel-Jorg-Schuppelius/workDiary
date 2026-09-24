@@ -11,8 +11,8 @@
 namespace Tests\Feature\Terminal;
 
 use App\Enums\Attendance\AttendanceSource;
-use App\Models\{Attendance, AttendanceTerminal};
 use App\Models\Platform\{User, UserBadge};
+use App\Models\Time\{Attendance, AttendanceTerminal};
 use App\Services\Reporting\WorkBalanceCalculator;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

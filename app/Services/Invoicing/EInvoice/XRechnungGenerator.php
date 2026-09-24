@@ -11,7 +11,7 @@
 namespace App\Services\Invoicing\EInvoice;
 
 use App\Enums\Invoicing\XRechnungSyntax;
-use App\Models\{Invoice, InvoiceItem};
+use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Platform\Organization;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -508,7 +508,7 @@ class XRechnungGenerator {
     }
 
     /** Positions-Kategorie (D6): expliziter Positions-Code vor Kopf-Kategorie. */
-    private function itemTaxCategory(\App\Models\InvoiceItem $item, TaxCategory $fallback): TaxCategory {
+    private function itemTaxCategory(\App\Models\Invoicing\InvoiceItem $item, TaxCategory $fallback): TaxCategory {
         $code = trim((string) ($item->tax_category ?? ''));
 
         return $code !== '' ? (TaxCategory::tryFrom($code) ?? $fallback) : $fallback;

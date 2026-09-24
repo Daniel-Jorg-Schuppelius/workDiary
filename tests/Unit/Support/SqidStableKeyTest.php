@@ -12,7 +12,8 @@ namespace Tests\Unit\Support;
 
 use App\Models\Club\ClubMember;
 use App\Models\Customer\Customer;
-use App\Models\{DiaryEntry, Invoice};
+use App\Models\Diary\DiaryEntry;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Support\SqidEncoder;
 use PHPUnit\Framework\Attributes\DataProvider;

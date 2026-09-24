@@ -14,10 +14,10 @@ namespace App\Models\Document;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Invoicing\Invoice;
+use App\Models\Sales\Quote;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Invoice;
-use App\Models\Sales\Quote;
 
 /**
  * Zustellversuch eines Ausgangsbelegs (Feature 066, MVP-168; generisch seit

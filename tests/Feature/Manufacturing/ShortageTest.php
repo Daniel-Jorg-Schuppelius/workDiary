@@ -11,8 +11,11 @@
 namespace Tests\Feature\Manufacturing;
 
 use App\Enums\Manufacturing\{ProcurementStatus, SubstituteStatus};
-use App\Models\{Article, ManufacturingOrder, ManufacturingOrderMaterial, MaterialSubstitute, ProcurementRequest};
+use App\Models\Article\Article;
+use App\Models\Manufacturing\{ManufacturingOrder, ManufacturingOrderMaterial};
+use App\Models\Material\MaterialSubstitute;
 use App\Models\Platform\Organization;
+use App\Models\Procurement\ProcurementRequest;
 use App\Services\Manufacturing\ShortageService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;

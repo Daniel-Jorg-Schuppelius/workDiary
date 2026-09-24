@@ -11,8 +11,8 @@
 namespace Tests\Feature\Notification;
 
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
+use App\Models\Diary\OpenIssue;
 use App\Models\Notification\NotificationRule;
-use App\Models\OpenIssue;
 use App\Models\Platform\User;
 use App\Notifications\GenericEventNotification;
 use App\Services\Notification\NotificationDispatcher;

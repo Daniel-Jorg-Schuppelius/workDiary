@@ -15,8 +15,10 @@ namespace Tests\Feature\Print;
 use App\Enums\Asset\AssetBlockReason;
 use App\Enums\Print\{PreflightStatus, PrintOrderStatus};
 use App\Exceptions\AssetNotUsableException;
-use App\Models\{Article, Asset, ManufacturingOrder};
+use App\Models\Article\Article;
+use App\Models\Asset\Asset;
 use App\Models\Document\Document;
+use App\Models\Manufacturing\ManufacturingOrder;
 use App\Models\Platform\User;
 use App\Models\Print\PrintOrder;
 use App\Services\Asset\AssetBlockService;
@@ -96,7 +98,7 @@ class PrintOrderLifecycleTest extends TestCase {
         $this->assertTrue(\App\Models\Classification\Classification::query()
             ->where('organization_id', $this->organization->id)
             ->where('domain', 'product_group')->where('code', 'visitenkarten')->exists());
-        $this->assertTrue(\App\Models\ProcedureTemplate::query()
+        $this->assertTrue(\App\Models\Procedure\ProcedureTemplate::query()
             ->where('organization_id', $this->organization->id)
             ->where('code', 'DR_DRUCKFREIGABE')->exists());
 

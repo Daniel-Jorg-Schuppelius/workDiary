@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Policies;
 
 use App\Enums\Expense\PerDiemTripStatus;
-use App\Models\PerDiemTrip;
 use App\Models\Platform\User;
-use App\Policies\PerDiemTripPolicy;
+use App\Models\Travel\PerDiemTrip;
+use App\Policies\Travel\PerDiemTripPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};
 use Tests\TestCase;

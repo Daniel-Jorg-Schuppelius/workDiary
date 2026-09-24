@@ -10,8 +10,8 @@
 
 namespace Database\Factories\Attachments;
 
-use App\Models\Attachments\Attachments\Attachment;
-use App\Models\DiaryEntry;
+use App\Models\Attachments\Attachment;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;

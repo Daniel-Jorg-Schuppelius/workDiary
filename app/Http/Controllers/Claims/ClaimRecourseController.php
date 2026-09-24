@@ -31,10 +31,10 @@ class ClaimRecourseController extends Controller {
         Gate::authorize('recourse', $claim);
 
         $fieldModels = [
-            'supplier_id' => \App\Models\Supplier::class,
-            'purchase_order_id' => \App\Models\PurchaseOrder::class,
-            'incoming_einvoice_id' => \App\Models\IncomingEInvoice::class,
-            'article_id' => \App\Models\Article::class,
+            'supplier_id' => \App\Models\Supplier\Supplier::class,
+            'purchase_order_id' => \App\Models\Procurement\PurchaseOrder::class,
+            'incoming_einvoice_id' => \App\Models\Invoicing\IncomingEInvoice::class,
+            'article_id' => \App\Models\Article\Article::class,
         ];
         foreach ($fieldModels as $field => $model) {
             if ($request->filled($field)) {

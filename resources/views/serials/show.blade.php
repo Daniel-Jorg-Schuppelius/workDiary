@@ -10,7 +10,7 @@
 @section('title', $serial->serial_no . ' — ' . __('inventory.serial.title'))
 @section('nav-title', __('inventory.serial.title'))
 
-@php /** @var \App\Models\StockSerial $serial */ @endphp
+@php /** @var \App\Models\Inventory\StockSerial $serial */ @endphp
 
 @section('content')
 <x-page-shell gap="4">

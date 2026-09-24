@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Gaeb;
 
 use App\Enums\Gaeb\BoqItemType;
-use App\Models\BillOfQuantity;
+use App\Models\Gaeb\BillOfQuantity;
 
 /**
  * Nachkalkulation eines LV (Feature 049, MVP-083): Soll-Wert aus Sollmengen ×

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Invoicing;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 use App\Services\UI\BrandingService;
 use Carbon\CarbonInterface;

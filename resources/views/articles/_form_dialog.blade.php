@@ -80,8 +80,8 @@
         <x-select-field name="product_id" :label="__('products.field.product')" :hint="__('products.field.product_help')">
             <option value="">{{ __('products.field.no_product') }}</option>
             @foreach ($products ?? [] as $productOption)
-                <option value="{{ \App\Support\Sqid::encode(\App\Models\Product::class, $productOption->id) }}"
-                        @selected(old('product_id', $article?->product_id ? \App\Support\Sqid::encode(\App\Models\Product::class, $article->product_id) : '') === \App\Support\Sqid::encode(\App\Models\Product::class, $productOption->id))>{{ $productOption->name }}</option>
+                <option value="{{ \App\Support\Sqid::encode(\App\Models\Article\Product::class, $productOption->id) }}"
+                        @selected(old('product_id', $article?->product_id ? \App\Support\Sqid::encode(\App\Models\Article\Product::class, $article->product_id) : '') === \App\Support\Sqid::encode(\App\Models\Article\Product::class, $productOption->id))>{{ $productOption->name }}</option>
             @endforeach
         </x-select-field>
     </x-form-group>

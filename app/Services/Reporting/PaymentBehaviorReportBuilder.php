@@ -11,7 +11,7 @@
 namespace App\Services\Reporting;
 
 use App\Models\Customer\Customer;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 

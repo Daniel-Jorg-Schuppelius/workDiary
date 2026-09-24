@@ -18,7 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\Classification\EntryType;
 use App\Models\Customer\Customer;
-use App\Models\{DiaryEntry, Tour};
+use App\Models\Diary\{DiaryEntry, Tour};
 use App\Models\Platform\User;
 use App\Models\Project\{Project, Task};
 use App\Services\Reporting\ReportFilters;

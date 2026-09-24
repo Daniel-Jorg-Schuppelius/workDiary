@@ -11,10 +11,9 @@
 namespace App\Models\Attachments;
 
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Attachments\Attachments\Attachment;
-use App\Models\Platform\User;
 
 /**
  * Kundenbestätigung eines kundensichtbaren Anhangs (Feature 012, Rang 55):

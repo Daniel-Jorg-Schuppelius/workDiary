@@ -10,7 +10,7 @@
 
 namespace App\Http\Resources;
 
-use App\Models\{EmergencyAssignment, OnCallShift};
+use App\Models\Diary\{EmergencyAssignment, OnCallShift};
 use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

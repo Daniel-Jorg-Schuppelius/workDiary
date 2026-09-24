@@ -10,7 +10,7 @@
 
 namespace App\Support;
 
-use App\Models\OpenIssue;
+use App\Models\Diary\OpenIssue;
 
 /**
  * Links für Benachrichtigungs-Payloads (MVP-018). Offene Punkte haben keine

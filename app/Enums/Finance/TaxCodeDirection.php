@@ -18,7 +18,7 @@ use App\Enums\Contracts\HasLabel;
  * Umsatzsteuer (Ausgangsseite), Vorsteuer (Eingangsseite) oder steuerfrei.
  *
  * Das Kennzeichen entscheidet **nicht** über die steuerliche Behandlung — die
- * kommt aus dem eingefrorenen `tax_context` des Belegs ({@see \App\Models\TaxRule}).
+ * kommt aus dem eingefrorenen `tax_context` des Belegs ({@see \App\Models\Finance\TaxRule}).
  * Es ordnet dieses Ergebnis nur einem Buchungskonto zu.
  */
 enum TaxCodeDirection: string implements HasLabel {

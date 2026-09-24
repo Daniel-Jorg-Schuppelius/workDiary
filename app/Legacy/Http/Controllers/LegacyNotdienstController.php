@@ -14,7 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Legacy\Http\Concerns\{ManagesLegacyDutyCrud, RequiresLegacyAdmin};
 use App\Legacy\Http\Requests\SaveLegacyDutyRequest;
 use App\Legacy\Models\LegacyNotdienst;
-use App\Models\EmergencyAssignment;
+use App\Models\Diary\EmergencyAssignment;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 

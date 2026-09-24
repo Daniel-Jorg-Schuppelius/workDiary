@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Supplier;
 
 use App\Enums\Supplier\CredentialStatus;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Models\Supplier\{SupplierCredential, SupplierCredentialType};
 use App\Support\Setting;
 use Carbon\CarbonImmutable;

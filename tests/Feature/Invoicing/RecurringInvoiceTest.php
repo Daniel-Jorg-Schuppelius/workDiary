@@ -12,7 +12,7 @@ namespace Tests\Feature\Invoicing;
 
 use App\Models\Contract\Contract;
 use App\Models\Customer\Customer;
-use App\Models\{Invoice, InvoiceSchedule};
+use App\Models\Invoicing\{Invoice, InvoiceSchedule};
 use App\Models\Platform\{Organization, User};
 use App\Services\Invoicing\RecurringInvoiceService;
 use Carbon\Carbon;

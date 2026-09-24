@@ -106,7 +106,7 @@ class IntegrationInboxTest extends TestCase {
             'customer_id' => $customer->id,
             'name' => 'Fernwartung',
         ]);
-        $entry = \App\Models\TimeEntry::factory()->create([
+        $entry = \App\Models\Time\TimeEntry::factory()->create([
             'organization_id' => $this->organization->id,
             'project_id' => $project->id,
             'user_id' => $this->admin->id,
@@ -118,7 +118,7 @@ class IntegrationInboxTest extends TestCase {
         ]);
         $this->item([
             'case_type' => IntegrationInboxItem::CASE_CONFLICT,
-            'target_type' => (new \App\Models\TimeEntry)->getMorphClass(),
+            'target_type' => (new \App\Models\Time\TimeEntry)->getMorphClass(),
             'external_type' => 'toggl.time_entry.update',
             'dedupe_key' => 'outbox-failed:toggl-entry-update:toggl:1:1',
             'referenceable_type' => $entry->getMorphClass(),
@@ -148,7 +148,7 @@ class IntegrationInboxTest extends TestCase {
             'enabled' => true,
             'settings' => ['api_token' => 'test-token'],
         ]);
-        $entry = \App\Models\TimeEntry::factory()->create([
+        $entry = \App\Models\Time\TimeEntry::factory()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $this->admin->id,
             'date' => '2026-07-31',
@@ -159,7 +159,7 @@ class IntegrationInboxTest extends TestCase {
         ]);
         $item = $this->item([
             'case_type' => IntegrationInboxItem::CASE_CONFLICT,
-            'target_type' => (new \App\Models\TimeEntry)->getMorphClass(),
+            'target_type' => (new \App\Models\Time\TimeEntry)->getMorphClass(),
             'external_type' => 'toggl.time_entry.update',
             'external_id' => '55',
             'dedupe_key' => 'outbox-failed:toggl-entry-update:toggl:123:1785666039',
@@ -215,9 +215,9 @@ class IntegrationInboxTest extends TestCase {
     public function test_conflict_item_with_deleted_time_entry_shows_fallback(): void {
         $this->item([
             'case_type' => IntegrationInboxItem::CASE_CONFLICT,
-            'target_type' => (new \App\Models\TimeEntry)->getMorphClass(),
+            'target_type' => (new \App\Models\Time\TimeEntry)->getMorphClass(),
             'dedupe_key' => 'outbox-failed:toggl-entry-update:toggl:2:2',
-            'referenceable_type' => (new \App\Models\TimeEntry)->getMorphClass(),
+            'referenceable_type' => (new \App\Models\Time\TimeEntry)->getMorphClass(),
             'referenceable_id' => 424242,
             'display_title' => 'toggl.time_entry.delete',
         ]);

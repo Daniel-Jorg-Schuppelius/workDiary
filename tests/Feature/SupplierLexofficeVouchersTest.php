@@ -13,7 +13,7 @@ namespace Tests\Feature;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\{PluginSetting, User};
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

@@ -12,7 +12,7 @@ namespace App\Services\Billing;
 
 use App\Enums\Billing\BillingAgreementMode;
 use App\Models\Billing\CustomerBillingAgreement;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Services\Finance\BillingModeLockedException;
 use App\Services\Invoicing\InvoiceGenerator;
 use App\Support\Tz;

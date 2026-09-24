@@ -10,9 +10,9 @@
 
 namespace App\Models\Knowledge;
 
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Knowledge\KnowledgeArticle;
 
 /**
  * Feedback „Hat geholfen / Hat nicht geholfen" — genau eine Wertung pro

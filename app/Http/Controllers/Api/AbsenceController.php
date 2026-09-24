@@ -14,8 +14,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
+use App\Models\Absence\{SickLeave, Vacation};
 use App\Models\Platform\User;
-use App\Models\{SickLeave, Vacation};
 use Illuminate\Http\{JsonResponse, Request};
 use OpenApi\Attributes as OA;
 

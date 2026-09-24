@@ -11,9 +11,9 @@
 namespace Tests\Feature\Privacy;
 
 use App\Enums\Attendance\AttendanceStatus;
-use App\Models\{Attendance, TimeEntry};
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\{Organization, User};
+use App\Models\Time\{Attendance, TimeEntry};
 use App\Services\Privacy\UserAnonymizationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;

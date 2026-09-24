@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Contract;
 
 use App\Enums\Contract\{ContractKind, SignatureMethod, SignatureParty};
-use App\Http\Controllers\{ArticleExportController, Controller};
+use App\Http\Controllers\Article\ArticleExportController;
+use App\Http\Controllers\Controller;
 use App\Models\Contract\{Contract, ContractSignatureEvidence, ContractSignatureLink, ContractSignatureRequest, ContractSigningRevision};
 use App\Models\Document\DocumentVersion;
 use App\Models\Platform\User;

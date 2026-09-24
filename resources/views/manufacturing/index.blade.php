@@ -16,7 +16,7 @@
 <x-index-page overflow="clip" :subtitle="__('manufacturing.order.subtitle')">
     <x-slot:actions>
         <x-icon-btn icon="account_tree" size="sm" :href="route('manufacturing-planning.index')" show-label>{{ __('manufacturing.planning.title') }}</x-icon-btn>
-        @can('create', App\Models\ManufacturingOrder::class)
+        @can('create', App\Models\Manufacturing\ManufacturingOrder::class)
             <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger
                         :href="route('manufacturing-orders.create')" show-label>{{ __('manufacturing.order.action.create') }}</x-icon-btn>
         @endcan

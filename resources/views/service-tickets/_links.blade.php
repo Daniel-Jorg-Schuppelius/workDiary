@@ -25,7 +25,7 @@
     // service_desk.problem.manage — öffnet das Problem-Modal mit
     // vorbelegtem Incident (ProblemService::openFromIncidents()).
     $canOpenProblem = $ticket->kind === \App\Enums\ServiceTicket\ServiceTicketKind::Incident
-        && \Illuminate\Support\Facades\Gate::allows('create', \App\Models\Problem::class);
+        && \Illuminate\Support\Facades\Gate::allows('create', \App\Models\ServiceTicket\Problem::class);
 @endphp
 
 <x-card :title="__('Verknüpfungen')" icon="link">
@@ -56,7 +56,7 @@
                         {{ \App\Support\Trans::or('helpdesk.link.kind.' . $link->kind, $linkKindLabels[$link->kind] ?? $link->kind) }}
                     </x-status-badge>
                     <span class="text-muted">{{ \App\Support\EntityType::label($link->linked_type) }}</span>
-                    @if ($link->linked instanceof \App\Models\ServiceTicket)
+                    @if ($link->linked instanceof \App\Models\ServiceTicket\ServiceTicket)
                         <a href="{{ route('service-tickets.show', $link->linked) }}" class="link link-hover">
                             <span class="font-mono text-xs">{{ $link->linked->ticket_no }}</span>
                             {{ $link->linked->title }}

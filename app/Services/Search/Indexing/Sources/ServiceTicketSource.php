@@ -14,7 +14,7 @@ namespace App\Services\Search\Indexing\Sources;
 
 use App\Enums\Search\SearchSourceType;
 use App\Models\Scopes\OrganizationScope;
-use App\Models\{ServiceTicket, ServiceTicketMessage};
+use App\Models\ServiceTicket\{ServiceTicket, ServiceTicketMessage};
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
 use Illuminate\Database\Eloquent\{Builder, Model};
 

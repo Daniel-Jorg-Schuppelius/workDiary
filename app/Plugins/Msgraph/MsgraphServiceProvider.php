@@ -60,7 +60,7 @@ class MsgraphServiceProvider extends PluginServiceProviderBase {
 
         // Feature-103-Delta: Outlook-Abwesenheitsnotiz bei genehmigtem Urlaub
         // (Opt-in je Org, settings.msgraph.oof_enabled).
-        \App\Models\Vacation::observe(\App\Plugins\Msgraph\Observers\MsgraphVacationObserver::class);
+        \App\Models\Absence\Vacation::observe(\App\Plugins\Msgraph\Observers\MsgraphVacationObserver::class);
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new MsgraphOutboxDispatcher());
     }
 }

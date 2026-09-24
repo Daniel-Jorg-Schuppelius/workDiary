@@ -11,11 +11,12 @@
 namespace Tests\Feature\Helpdesk;
 
 use App\Enums\Form\FormFieldType;
-use App\Models\{BusinessService, RequestItem, ServiceQueue, ServiceRequest};
 use App\Models\Customer\Customer;
 use App\Models\Form\FormTemplate;
 use App\Models\Platform\User;
+use App\Models\Procurement\RequestItem;
 use App\Models\Sales\ServiceOffering;
+use App\Models\ServiceTicket\{BusinessService, ServiceQueue, ServiceRequest};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\{WithOrganization, WithPortalVisibility};

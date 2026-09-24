@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Contracts;
 
-use App\Models\CarrierConnection;
+use App\Models\Shipping\CarrierConnection;
 use App\Services\Shipping\{ShipmentLabel, ShipmentRequest, TrackingResult};
 
 /**

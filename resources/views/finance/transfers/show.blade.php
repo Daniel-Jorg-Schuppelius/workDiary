@@ -437,7 +437,7 @@
             </x-slot:head>
             @foreach ($transfer->items as $item)
                 <tr>
-                    @if ($item->source instanceof \App\Models\TimeEntry)
+                    @if ($item->source instanceof \App\Models\Time\TimeEntry)
                         <td>{{ $item->source->date?->format('d.m.Y') ?? '—' }}</td>
                         <td>
                             {{ $item->source->project?->name ?? '—' }}
@@ -447,7 +447,7 @@
                                 <span class="block text-xs text-muted">{{ $item->source->description }}</span>
                             @endif
                         </td>
-                    @elseif ($item->source instanceof \App\Models\MaterialUsage)
+                    @elseif ($item->source instanceof \App\Models\Material\MaterialUsage)
                         <td>{{ $item->source->timesheet?->work_date?->format('d.m.Y') ?? '—' }}</td>
                         <td>
                             {{ trim((string) $item->source->description) ?: __('Material') }}

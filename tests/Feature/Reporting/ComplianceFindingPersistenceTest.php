@@ -12,8 +12,9 @@ namespace Tests\Feature\Reporting;
 
 use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
 use App\Enums\Compliance\ComplianceFindingStatus;
-use App\Models\{Attendance, ComplianceFinding};
+use App\Models\Compliance\ComplianceFinding;
 use App\Models\Platform\{Organization, User};
+use App\Models\Time\Attendance;
 use App\Services\Compliance\AttendanceComplianceChecker;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

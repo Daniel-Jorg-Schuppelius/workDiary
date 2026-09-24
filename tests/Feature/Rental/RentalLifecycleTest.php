@@ -13,7 +13,7 @@ namespace Tests\Feature\Rental;
 use App\Enums\Asset\AssetBlockReason;
 use App\Enums\Rental\{RentalCaseStatus, RentalChargeKind, RentalChargeStatus, RentalDepositStatus, RentalRateCardStatus, RentalReturnFollowUp};
 use App\Exceptions\{AssetNotUsableException, RentalConflictException};
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Rental\{RentalCase, RentalProfile, RentalRateCard, RentalReservation};
@@ -387,7 +387,7 @@ final class RentalLifecycleTest extends TestCase {
         $invoice = $billing->invoiceReleasedCharges($case, $this->admin);
         $this->assertNull($invoice);
         $this->assertSame(RentalChargeStatus::Transferred, $charge->fresh()->status);
-        $this->assertSame(0, \App\Models\Invoice::query()->count());
+        $this->assertSame(0, \App\Models\Invoicing\Invoice::query()->count());
 
         $billing->recordExternalReference($charge->fresh(), 'RE-2026-0815');
         $this->assertSame('RE-2026-0815', $charge->fresh()->external_reference);

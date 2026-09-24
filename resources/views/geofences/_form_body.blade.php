@@ -14,7 +14,7 @@
     /**
      * @var \App\Models\Location\CustomerGeofence|null $geofence
      * @var \Illuminate\Support\Collection<int, \App\Models\Customer\Customer> $customers
-     * @var \Illuminate\Support\Collection<int, \App\Models\Site> $sites
+     * @var \Illuminate\Support\Collection<int, \App\Models\Facility\Site> $sites
      * @var \Illuminate\Support\Collection<int, \App\Models\Project\Project> $projects
      */
     $defaults = (array) config('location.defaults', []);

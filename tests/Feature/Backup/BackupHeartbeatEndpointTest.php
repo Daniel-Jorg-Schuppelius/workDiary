@@ -12,6 +12,7 @@ namespace Tests\Feature\Backup;
 
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\BackupHeartbeat;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -74,7 +75,7 @@ class BackupHeartbeatEndpointTest extends TestCase {
 
         $audit = AuditLog::query()->where('event', 'backup.heartbeatReceived')->first();
         $this->assertNotNull($audit);
-        $this->assertSame(BackupHeartbeat::class, $audit->auditable_type);
+        $this->assertSame(MorphMap::stableKey(BackupHeartbeat::class), $audit->auditable_type);
         $this->assertSame($row->id, $audit->auditable_id);
     }
 

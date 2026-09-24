@@ -13,7 +13,7 @@
 @php
     /** @var \Carbon\Carbon $from */
     /** @var \Carbon\Carbon $to */
-    /** @var \Illuminate\Support\Collection<int, \App\Models\OnCallShift> $shifts */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Diary\OnCallShift> $shifts */
     /** @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users */
     /** @var \App\Services\Calendar\HolidayService $holidays */
     /** @var bool $isAdmin */

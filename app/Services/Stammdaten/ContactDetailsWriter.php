@@ -14,7 +14,7 @@ namespace App\Services\Stammdaten;
 
 use App\Models\Contacts\ContactAddress;
 use App\Models\Customer\Customer;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 
 /**
  * Schreibweg für Kontakt-Adresse/-Bankverbindung (Vollscan 2026-08-23, F8,

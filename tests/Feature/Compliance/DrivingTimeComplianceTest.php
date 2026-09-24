@@ -12,8 +12,10 @@ namespace Tests\Feature\Compliance;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Travel\TravelLogVehicle;
-use App\Models\{ComplianceFinding, TravelLog, Vehicle};
+use App\Models\Compliance\ComplianceFinding;
+use App\Models\Fleet\Vehicle;
 use App\Models\Platform\User;
+use App\Models\Travel\TravelLog;
 use App\Notifications\GenericEventNotification;
 use App\Services\Compliance\{DrivingTimeBudget, DrivingTimeComplianceChecker};
 use Carbon\CarbonImmutable;

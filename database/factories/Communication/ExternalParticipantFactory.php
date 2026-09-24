@@ -11,10 +11,9 @@
 namespace Database\Factories\Communication;
 
 use App\Enums\ExternalParticipant\{ExternalAbility, ExternalParty};
-use App\Models\DiaryEntry;
 use App\Models\Communication\ExternalParticipant;
-use App\Models\Platform\Organization;
-use App\Models\Platform\User;
+use App\Models\Diary\DiaryEntry;
+use App\Models\Platform\{Organization, User};
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\{Carbon, Str};

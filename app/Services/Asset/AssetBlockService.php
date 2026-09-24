@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Asset;
 
 use App\Enums\Asset\AssetBlockReason;
-use App\Models\{Asset, AssetBlock, AssetBlockException};
+use App\Models\Asset\{Asset, AssetBlock, AssetBlockException};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;

@@ -12,7 +12,7 @@ namespace Tests\Feature\Accounting;
 
 use App\Enums\Finance\{AccountType, EuerCategory, ProfitDetermination};
 use App\Models\Accounting\{AccountingAccount, AccountingEntry};
-use App\Models\CostCenter;
+use App\Models\Finance\CostCenter;
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService};
 use Carbon\CarbonImmutable;

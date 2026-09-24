@@ -11,8 +11,8 @@
 namespace App\Http\Controllers\MeterReading;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SaveMeterReadingRequest;
-use App\Models\{Asset, MeterReading};
+use App\Http\Requests\Asset\SaveMeterReadingRequest;
+use App\Models\Asset\{Asset, MeterReading};
 use App\Models\Platform\User;
 use App\Services\MeterReading\MeterReadingService;
 use App\Support\{ErrorText, Sqid};

@@ -11,7 +11,7 @@
 namespace App\Services\TimeExport;
 
 use App\Models\Scopes\OrganizationScope;
-use App\Models\{TimeExportLine, WageTypeMapping};
+use App\Models\Time\{TimeExportLine, WageTypeMapping};
 
 /**
  * Löst die externe Lohnartennummer einer Exportzeile auf (A21 · MVP-019).

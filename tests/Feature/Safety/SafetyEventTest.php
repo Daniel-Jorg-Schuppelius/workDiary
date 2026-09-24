@@ -12,9 +12,10 @@ namespace Tests\Feature\Safety;
 
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Enums\Safety\{SafetyEventKind, SafetyEventSeverity, SafetyEventStatus};
+use App\Models\Diary\OpenIssue;
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
-use App\Models\{OpenIssue, SafetyEvent};
 use App\Models\Platform\User;
+use App\Models\Safety\SafetyEvent;
 use App\Services\Safety\SafetyEventService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

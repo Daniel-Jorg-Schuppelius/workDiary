@@ -14,9 +14,11 @@ namespace App\Services\ServiceTicket;
 
 use App\Enums\ServiceTicket\{ServiceTicketKind, ServiceTicketSource};
 use App\Models\Approval\Approval;
-use App\Models\{DiaryEntry, RequestItem, ServiceQueue, ServiceRequest, ServiceTicket};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
+use App\Models\Procurement\RequestItem;
 use App\Models\Project\{Project, Task};
+use App\Models\ServiceTicket\{ServiceQueue, ServiceRequest, ServiceTicket};
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -242,9 +244,9 @@ class ServiceRequestService {
     }
 
     /** @param array<string, mixed> $config */
-    private function startProcedure(ServiceRequest $request, ServiceTicket $ticket, array $config, User $actor): \App\Models\ProcedureRun {
+    private function startProcedure(ServiceRequest $request, ServiceTicket $ticket, array $config, User $actor): \App\Models\Procedure\ProcedureRun {
         $templateId = (int) ($config['procedure_template_id'] ?? 0);
-        $template = \App\Models\ProcedureTemplate::query()
+        $template = \App\Models\Procedure\ProcedureTemplate::query()
             ->where('organization_id', $request->organization_id)
             ->findOrFail($templateId);
 

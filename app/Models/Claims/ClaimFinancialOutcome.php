@@ -14,7 +14,7 @@ namespace App\Models\Claims;
 
 use App\Enums\Claims\{ClaimFinancialKind, ClaimFinancialStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

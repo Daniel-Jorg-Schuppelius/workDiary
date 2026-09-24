@@ -22,9 +22,9 @@
     $hhiTone = $hhi === null ? 'neutral'
         : ($hhi > \App\Services\Reporting\SupplierAnalysisReportBuilder::HHI_HIGH ? 'error'
         : ($hhi >= \App\Services\Reporting\SupplierAnalysisReportBuilder::HHI_MODERATE ? 'warning' : 'success'));
-    $supplierUrl = fn (int $id): string => route('suppliers.show', \App\Support\Sqid::encode(\App\Models\Supplier::class, $id));
+    $supplierUrl = fn (int $id): string => route('suppliers.show', \App\Support\Sqid::encode(\App\Models\Supplier\Supplier::class, $id));
     $voucherRangeUrl = fn (int $id): string => route('suppliers.show', [
-        'supplier' => \App\Support\Sqid::encode(\App\Models\Supplier::class, $id),
+        'supplier' => \App\Support\Sqid::encode(\App\Models\Supplier\Supplier::class, $id),
         'from' => $from->toDateString(),
         'to' => $to->toDateString(),
     ]) . '#vouchers';

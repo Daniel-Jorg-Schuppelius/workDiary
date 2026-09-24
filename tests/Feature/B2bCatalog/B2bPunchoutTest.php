@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\B2bCatalog;
 
-use App\Models\Article;
+use App\Models\Article\Article;
 use App\Models\B2b\{B2bCatalogAccess, B2bCatalogItem};
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
@@ -178,7 +178,7 @@ class B2bPunchoutTest extends TestCase {
             'copper_weight' => '0.0430',
             'copper_base_price' => '150.0000',
         ]);
-        \App\Models\MetalQuotation::query()->create([
+        \App\Models\Article\MetalQuotation::query()->create([
             'organization_id' => $this->organization->id,
             'metal' => 'CU', 'price_per_kg' => '2', 'quoted_at' => now()->toDateString(),
         ]);

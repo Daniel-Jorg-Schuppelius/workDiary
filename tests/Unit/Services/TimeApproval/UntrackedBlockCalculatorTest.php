@@ -10,7 +10,7 @@
 
 namespace Tests\Unit\Services\TimeApproval;
 
-use App\Models\{Attendance, TimeEntry};
+use App\Models\Time\{Attendance, TimeEntry};
 use App\Services\TimeApproval\UntrackedBlockCalculator;
 use Carbon\CarbonImmutable;
 use Tests\TestCase;

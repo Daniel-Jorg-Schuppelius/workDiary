@@ -14,10 +14,10 @@ namespace App\Models\Weather;
 
 use App\Enums\Weather\WeatherWarningThreshold;
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Diary\DiaryEntry;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use App\Models\DiaryEntry;
 
 /**
  * Ausgelöste Wetterwarnung für einen disponierten Einsatz (Feature 062,

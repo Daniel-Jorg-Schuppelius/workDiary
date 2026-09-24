@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Dispatch;
 
 use App\Enums\Diary\{DispatchStatus, Status};
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use Illuminate\Support\Facades\DB;
 
 /**

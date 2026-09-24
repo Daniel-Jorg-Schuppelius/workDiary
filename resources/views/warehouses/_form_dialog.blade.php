@@ -14,8 +14,8 @@
     $kind = old('kind', $warehouse?->kind?->value ?? \App\Enums\Inventory\WarehouseKind::Fixed->value);
     // Bezug (MVP-706): Sqid-Werte im Formular, Dekodierung im Request (DecodesSqidInputs).
     $references = [
-        'site' => ['field' => 'site_id', 'model' => \App\Models\Site::class, 'options' => $sites ?? [], 'label' => __('inventory.field.site')],
-        'vehicle' => ['field' => 'vehicle_id', 'model' => \App\Models\Vehicle::class, 'options' => $vehicles ?? [], 'label' => __('inventory.field.vehicle')],
+        'site' => ['field' => 'site_id', 'model' => \App\Models\Facility\Site::class, 'options' => $sites ?? [], 'label' => __('inventory.field.site')],
+        'vehicle' => ['field' => 'vehicle_id', 'model' => \App\Models\Fleet\Vehicle::class, 'options' => $vehicles ?? [], 'label' => __('inventory.field.vehicle')],
         'team' => ['field' => 'team_id', 'model' => \App\Models\Platform\Team::class, 'options' => $teams ?? [], 'label' => __('inventory.field.team')],
     ];
 @endphp

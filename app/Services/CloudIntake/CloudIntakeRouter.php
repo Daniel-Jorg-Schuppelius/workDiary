@@ -11,10 +11,11 @@
 namespace App\Services\CloudIntake;
 
 use App\Enums\CloudIntake\{CloudIntakeItemStatus, CloudIntakeRouteTarget};
-use App\Models\{Asset, DiaryEntry};
+use App\Models\Asset\Asset;
 use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem, CloudDocumentRoute};
 use App\Models\Contract\Contract;
 use App\Models\Customer\Customer;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Document\Document;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\User;

@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Policies\Rental;
 
 use App\Enums\User\Permission as P;
-use App\Policies\Auth\PermissionPolicy;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * Versionierte Verleih-Preislisten (D10): Pflege ist ein eigenes Recht,

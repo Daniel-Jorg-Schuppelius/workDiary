@@ -182,11 +182,11 @@
                 <x-icon-btn icon="picture_as_pdf" size="sm" :href="route('invoices.pdf', $invoice)" show-label>{{ __('PDF') }}</x-icon-btn>
                 {{-- Lexware-Übergabe (Feature 158, MVP-833): Stand und Einzelexport, sobald eine lokale Ergänzung aktiv ist. --}}
                 @include('lexoffice::handover._badge', ['invoice' => $invoice])
-                @if (app(\App\Plugins\Lexoffice\Tariff\LexwareTariffService::class)->profile()->localFeatures !== [] && $invoice->status !== \App\Models\Invoice::STATUS_DRAFT && auth()->user()?->can(\App\Enums\User\Permission::InvoiceExport->value))
+                @if (app(\App\Plugins\Lexoffice\Tariff\LexwareTariffService::class)->profile()->localFeatures !== [] && $invoice->status !== \App\Models\Invoicing\Invoice::STATUS_DRAFT && auth()->user()?->can(\App\Enums\User\Permission::InvoiceExport->value))
                     <x-icon-btn icon="outbox" size="sm" :href="route('lexoffice.handover.export-one', $invoice)" show-label :title="__('lexware.action.export_one')">{{ __('lexware.action.export_one_short') }}</x-icon-btn>
                 @endif
                 {{-- E-Rechnung (Feature 045): XRechnung nur im Pfad „WorkDiary führt" und für gestellte/bezahlte Rechnungen. --}}
-                @php $einvoiceVisible = in_array($invoice->status, [\App\Models\Invoice::STATUS_ISSUED, \App\Models\Invoice::STATUS_PAID], true) && ! app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($invoice->customer)->isExternal(); @endphp
+                @php $einvoiceVisible = in_array($invoice->status, [\App\Models\Invoicing\Invoice::STATUS_ISSUED, \App\Models\Invoicing\Invoice::STATUS_PAID], true) && ! app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($invoice->customer)->isExternal(); @endphp
                 @if ($einvoiceVisible)
                     <x-icon-btn icon="receipt" size="sm" :href="route('invoices.einvoice', $invoice)" show-label
                                 :title="__('invoicing.einvoice.button_title')">{{ __('invoicing.einvoice.button') }}</x-icon-btn>
@@ -212,7 +212,7 @@
                     @endif
                 @endcan
                 @can('update', $invoice)
-                    @if ($invoice->status === \App\Models\Invoice::STATUS_DRAFT)
+                    @if ($invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT)
                         <x-icon-btn icon="data_object" tone="info" size="sm"
                                     data-entry-modal-trigger
                                     :href="route('invoices.einvoice-options.edit', $invoice)"
@@ -223,8 +223,8 @@
                                     show-label>{{ __('Position hinzufügen') }}</x-icon-btn>
                         {{-- Feature 160 (MVP-858): Fertigungsauslieferungen übernehmen — nur mit Lagermodul und Leserecht. --}}
                         @feature('module.lager')
-                            @if (in_array($invoice->type, [\App\Models\Invoice::TYPE_INVOICE, \App\Models\Invoice::TYPE_PARTIAL, \App\Models\Invoice::TYPE_FINAL], true))
-                                @can('viewAny', \App\Models\ManufacturingOrder::class)
+                            @if (in_array($invoice->type, [\App\Models\Invoicing\Invoice::TYPE_INVOICE, \App\Models\Invoicing\Invoice::TYPE_PARTIAL, \App\Models\Invoicing\Invoice::TYPE_FINAL], true))
+                                @can('viewAny', \App\Models\Manufacturing\ManufacturingOrder::class)
                                     <x-icon-btn icon="local_shipping" tone="info" size="sm"
                                                 data-entry-modal-trigger
                                                 :href="route('invoices.deliveries.form', $invoice)"
@@ -269,7 +269,7 @@
                     {!! app(\App\Plugins\PluginManager::class)->renderSlot('invoice-show.actions', $invoice) !!}
                 @endcan
                 @if ($invoice->isProforma())
-                    @can('create', \App\Models\Invoice::class)
+                    @can('create', \App\Models\Invoicing\Invoice::class)
                         <x-action-form :action="route('invoices.proforma-convert', $invoice)"
                               :confirm="__('Pro-forma :nr in eine echte Rechnung mit neuer Rechnungsnummer umwandeln?', ['nr' => $invoice->number])"
                               confirm-icon="swap_horiz"
@@ -287,7 +287,7 @@
                 @endif
                 {{-- Mahnsperre (Feature 127, MVP-691): nimmt die Rechnung aus
                      Einzeldialog UND Mahnlauf; Umschalten wird auditiert. --}}
-                @if (in_array($invoice->status, [\App\Models\Invoice::STATUS_ISSUED, \App\Models\Invoice::STATUS_PARTIALLY_PAID], true) && (auth()->user()?->canManageBilling() ?? false))
+                @if (in_array($invoice->status, [\App\Models\Invoicing\Invoice::STATUS_ISSUED, \App\Models\Invoicing\Invoice::STATUS_PARTIALLY_PAID], true) && (auth()->user()?->canManageBilling() ?? false))
                     @if ($invoice->isDunningBlocked())
                         <x-status-badge tone="warning" outline>{{ __('finance.dunning.badge_blocked') }}</x-status-badge>
                         <x-action-form :action="route('invoices.dunning-block', $invoice)">
@@ -329,7 +329,7 @@
                     </x-action-form>
                 @endcan
                 @can('update', $invoice)
-                    @if (($openDownPaymentCount ?? 0) > 0 && $invoice->type === \App\Models\Invoice::TYPE_INVOICE)
+                    @if (($openDownPaymentCount ?? 0) > 0 && $invoice->type === \App\Models\Invoicing\Invoice::TYPE_INVOICE)
                         <x-action-form :action="route('invoices.final', $invoice)"
                               :confirm="__('Offene Abschlagsrechnungen (:n) anrechnen und Entwurf :nr zur Schlussrechnung machen?', ['n' => $openDownPaymentCount, 'nr' => $invoice->number])"
                               confirm-icon="functions"
@@ -363,11 +363,11 @@
     {{-- KI-Leistungstexte (Feature 084): Vorschläge nur im Entwurf, nie stille Änderungen. --}}
     @php
         $aiViewData = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
-        $aiDraft = $invoice->status === \App\Models\Invoice::STATUS_DRAFT && auth()->user()?->can('update', $invoice);
+        $aiDraft = $invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT && auth()->user()?->can('update', $invoice);
         $aiSuggestEnabled = $aiDraft && $aiViewData->capabilityUsable(\App\Services\Ai\Suggestions\ItemTextSuggestionService::CAPABILITY_ITEM);
         $aiTranslateEnabled = $aiDraft && $aiViewData->capabilityUsable(\App\Services\Ai\Suggestions\ItemTextSuggestionService::CAPABILITY_TRANSLATE);
         $aiSuggestions = ($aiSuggestEnabled || $aiTranslateEnabled)
-            ? $aiViewData->openSuggestionsFor((new \App\Models\InvoiceItem)->getMorphClass(), $invoice->items)
+            ? $aiViewData->openSuggestionsFor((new \App\Models\Invoicing\InvoiceItem)->getMorphClass(), $invoice->items)
             : collect();
     @endphp
     @include('ai._learn_prompt')
@@ -391,7 +391,7 @@
                 <x-table.th sort type="number" align="right">{{ __('Einzelpreis') }}</x-table.th>
                 <x-table.th sort type="number" align="right">{{ __('Betrag') }}</x-table.th>
                 @can('update', $invoice)
-                    @if ($invoice->status === \App\Models\Invoice::STATUS_DRAFT)
+                    @if ($invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT)
                         <th class="text-right">{{ __('Aktionen') }}</th>
                     @endif
                 @endcan
@@ -450,7 +450,7 @@
                 <td class="text-right" data-sort-value="{{ ($item->unit_price?->toFloat() ?? 0.0) }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->unit_price?->toFloat() ?? 0.0), ((int) round(($item->unit_price?->toFloat() ?? 0.0) * 10000)) % 100 !== 0 ? 4 : 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
                 <td class="text-right" data-sort-value="{{ ($item->amount?->toFloat() ?? 0.0) }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
                 @can('update', $invoice)
-                    @if ($invoice->status === \App\Models\Invoice::STATUS_DRAFT)
+                    @if ($invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT)
                         <td class="text-right whitespace-nowrap">
                             @if ($aiSuggestEnabled)
                                 <x-action-form :action="route('ai.suggestions.invoice-item', [$invoice, $item])">
@@ -530,7 +530,7 @@
                 </tr>
             @endif
         @empty
-            <x-table.empty icon="receipt_long" :colspan="5" :title="__('Keine Positionen.')" :message="$invoice->status === \App\Models\Invoice::STATUS_DRAFT ? __('invoicing.free.hint.empty_draft') : null" compact />
+            <x-table.empty icon="receipt_long" :colspan="5" :title="__('Keine Positionen.')" :message="$invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT ? __('invoicing.free.hint.empty_draft') : null" compact />
         @endforelse
     </x-table>
 

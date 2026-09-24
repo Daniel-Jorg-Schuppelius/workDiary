@@ -13,7 +13,7 @@ namespace Tests\Feature\Finance;
 use App\Enums\Finance\{AccountType, EuerCategory, ProfitDetermination};
 use App\Models\Accounting\AccountingAccount;
 use App\Models\Customer\Customer;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService};
 use App\Services\Accounting\Reports\{DataQualityBuilder, EuerPreviewBuilder, TrialBalanceBuilder};

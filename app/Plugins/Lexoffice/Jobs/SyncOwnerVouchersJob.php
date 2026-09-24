@@ -11,7 +11,7 @@
 namespace App\Plugins\Lexoffice\Jobs;
 
 use App\Models\Customer\Customer;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeVoucherSync};
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\{ShouldBeUnique, ShouldQueue};

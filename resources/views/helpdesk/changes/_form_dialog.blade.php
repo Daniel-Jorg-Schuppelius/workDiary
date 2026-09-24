@@ -16,7 +16,7 @@
 @php
     $stepTemplate = ['type' => 'role', 'user' => '', 'role' => ''];
     $preselectedProblemSqid = $preselectedProblem !== null
-        ? \App\Support\Sqid::encode(\App\Models\Problem::class, (int) $preselectedProblem)
+        ? \App\Support\Sqid::encode(\App\Models\ServiceTicket\Problem::class, (int) $preselectedProblem)
         : '';
 @endphp
 

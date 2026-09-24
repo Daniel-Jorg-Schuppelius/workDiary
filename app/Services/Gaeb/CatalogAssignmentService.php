@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Gaeb;
 
-use App\Models\{BillOfQuantity, BoqCatalog, BoqCatalogAssignment, BoqItem};
 use App\Models\Catalog\{CatalogEntry, CatalogRegistry};
+use App\Models\Gaeb\{BillOfQuantity, BoqCatalog, BoqCatalogAssignment, BoqItem};
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
@@ -39,7 +39,7 @@ final class CatalogAssignmentService {
      * Setzt die Zuordnung eines Elements für einen Katalog. Ein leerer Code
      * entfernt sie.
      *
-     * @param BoqItem|\App\Models\BoqSection|\App\Models\BoqItemQuantitySplit $target
+     * @param BoqItem|\App\Models\Gaeb\BoqSection|\App\Models\Gaeb\BoqItemQuantitySplit $target
      */
     public function assign(Model $target, BoqCatalog $catalog, ?string $code, string $source = self::SOURCE_MANUAL): ?BoqCatalogAssignment {
         $code = trim((string) $code);

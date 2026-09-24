@@ -11,9 +11,9 @@
 namespace App\Models\Automation;
 
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
-use App\Models\Automation\AutomationRuleRun;
 
 /**
  * @property int $id

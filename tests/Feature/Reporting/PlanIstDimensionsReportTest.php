@@ -11,9 +11,10 @@
 namespace Tests\Feature\Reporting;
 
 use App\Enums\User\Permission as P;
-use App\Models\{Attendance, ScheduledShift, ShiftType, TimeEntry};
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
+use App\Models\Schedule\{ScheduledShift, ShiftType};
+use App\Models\Time\{Attendance, TimeEntry};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

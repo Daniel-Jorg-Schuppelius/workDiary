@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Manufacturing;
 
-use App\Models\{Article, Warehouse, WorkCenter};
+use App\Models\Article\Article;
+use App\Models\Inventory\Warehouse;
+use App\Models\Manufacturing\WorkCenter;
 use App\Services\Manufacturing\{CapacityService, ManufacturingOrderService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

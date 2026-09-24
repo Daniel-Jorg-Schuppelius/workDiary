@@ -11,7 +11,7 @@
 namespace App\Mail;
 
 use App\Enums\Invoicing\InvoiceDeliveryFormat;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Services\Invoicing\InvoicePdfRenderer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -23,7 +23,7 @@ use Illuminate\Queue\SerializesModels;
  * Versendet eine Rechnung (oder Gutschrift) als E-Mail mit PDF-Anhang.
  *
  * - Subject + HTML- und Text-Body werden vom Controller bereits aus dem
- *   {@see \App\Models\InvoiceMailTemplate} gerendert übergeben (XSS-sicher).
+ *   {@see \App\Models\Invoicing\InvoiceMailTemplate} gerendert übergeben (XSS-sicher).
  * - Empfänger (To/CC/BCC) werden im Controller via ->to()/->cc()/->bcc()
  *   gesetzt, NICHT in der Envelope hardcoded — so bleibt die Mailable
  *   Multi-Empfänger-fähig.

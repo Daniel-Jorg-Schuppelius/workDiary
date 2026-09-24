@@ -17,7 +17,7 @@ use App\Models\Customer\Customer;
 use App\Models\Domain\{DomainAccountingEntry, DomainProjection, DomainProviderConnection};
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Models\Reselling\{ResalePurchaseEntry, ResaleSubscription};
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Services\Reselling\Marketplace\{ProviderInvoice, ProviderInvoiceLine, QualityHostingInvoiceReader};
 use App\Services\Reselling\Purchase\{PurchaseDocument, PurchaseDocuments};
 use App\Services\Reselling\Register\{DomainSubscriptionSync, PeriodPlanner, PurchaseAllocator};

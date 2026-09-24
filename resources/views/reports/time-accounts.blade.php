@@ -39,7 +39,7 @@
             <x-filter-field :label="__('Konto')" for="ta-account">
                 <select id="ta-account" name="account" class="select select-sm select-bordered" data-autosubmit>
                     @foreach ($accounts as $candidate)
-                        <option value="{{ \App\Support\Sqid::encode(\App\Models\TimeAccount::class, (int) $candidate->id) }}"
+                        <option value="{{ \App\Support\Sqid::encode(\App\Models\Time\TimeAccount::class, (int) $candidate->id) }}"
                                 @selected((int) $candidate->id === (int) $account->id)>{{ $candidate->name }}</option>
                     @endforeach
                 </select>

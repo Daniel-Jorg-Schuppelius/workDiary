@@ -202,7 +202,7 @@
                             <input type="hidden" name="group_key" value="{{ $g['group_key'] }}">
                             <select name="asset" required class="select select-sm select-bordered">
                                 <option value="">{{ __('… Gerät auswählen') }}</option>
-                                @foreach (($assignTargets[\App\Models\Asset::class] ?? []) as $sqid => $label)
+                                @foreach (($assignTargets[\App\Models\Asset\Asset::class] ?? []) as $sqid => $label)
                                     <option value="{{ $sqid }}">{{ $label }}</option>
                                 @endforeach
                             </select>
@@ -456,8 +456,8 @@
                     {{-- Betroffener Zeiteintrag: ohne Datum/Zeit/Projekt ist ein
                          Konflikt nicht entscheidbar (Nutzerbefund 2026-08-04). --}}
                     @php
-                        $timeEntry = $item->referenceable instanceof \App\Models\TimeEntry ? $item->referenceable : null;
-                        $timeMorph = (new \App\Models\TimeEntry)->getMorphClass();
+                        $timeEntry = $item->referenceable instanceof \App\Models\Time\TimeEntry ? $item->referenceable : null;
+                        $timeMorph = (new \App\Models\Time\TimeEntry)->getMorphClass();
                         $snapshotSides = array_filter([
                             __('Lokal') => (array) (($item->remote_snapshot ?? [])['local'] ?? []),
                             __('Remote') => (array) (($item->remote_snapshot ?? [])['remote'] ?? []),

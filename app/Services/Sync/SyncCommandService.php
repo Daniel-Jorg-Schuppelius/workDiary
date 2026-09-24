@@ -12,13 +12,14 @@ namespace App\Services\Sync;
 
 use App\Enums\Sync\SyncCommandStatus;
 use App\Http\Controllers\Form\FormSubmissionController;
-use App\Models\{Attendance, DiaryEntry, TimeCorrectionRequest};
 use App\Models\Audit\AuditLog;
 use App\Models\Communication\Comment;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Form\{FormSubmission, FormTemplate};
 use App\Models\Integration\SyncCommand;
 use App\Models\Learning\{LearningEnrollment, LearningUnit};
 use App\Models\Platform\User;
+use App\Models\Time\{Attendance, TimeCorrectionRequest};
 use App\Services\Attendance\{AttendanceClockService, StampPlausibility};
 use App\Services\Form\FormService;
 use App\Services\Learning\LearningEnrollmentService;
@@ -346,7 +347,7 @@ class SyncCommandService {
      *     Stand, den es gesehen hat. Weicht der aktuelle ab, ist das ein
      *     Konflikt und KEINE Ablehnung — der Nutzer entscheidet.
      *  2. **Kein Vorbeigehen am Genehmigungsweg.** Die Korrektur läuft als
-     *     {@see \App\Models\TimeCorrectionRequest} durch denselben Workflow
+     *     {@see \App\Models\Time\TimeCorrectionRequest} durch denselben Workflow
      *     wie online; direkt angewendet wird sie nur, wenn die Organisation
      *     Selbstkorrektur erlaubt — sonst bleibt sie eingereicht und wartet.
      *     Nur EIGENE Stempel: „im Namen von" braucht eine Rechteprüfung im

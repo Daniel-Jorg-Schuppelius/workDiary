@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Surcharge\SurchargeRule;
-use App\Models\{TimeExportDeliveryConfig, WageTypeMapping};
+use App\Models\Time\{TimeExportDeliveryConfig, WageTypeMapping};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;

@@ -14,7 +14,7 @@ namespace Tests\Unit\Services\Import\Specs;
 
 use App\Enums\Import\ImportErrorCode;
 use App\Models\Customer\Customer;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Services\Import\ImportOutcome;
 use App\Services\Import\Specs\ContactPersonSpec;
 use Illuminate\Foundation\Testing\RefreshDatabase;

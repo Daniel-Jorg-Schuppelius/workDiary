@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Finance\Gdpdu;
 
 use App\Models\Platform\Organization;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 

@@ -9,7 +9,7 @@
 {{-- Self-view dialog for WorkSchedule: editierbar nur mit work-schedule.manage
      (Personalverwaltung/Geschäftsführung/Admin), sonst read-only. --}}
 @php
-    $_canManage = auth()->check() && \Illuminate\Support\Facades\Gate::allows('create', \App\Models\WorkSchedule::class);
+    $_canManage = auth()->check() && \Illuminate\Support\Facades\Gate::allows('create', \App\Models\Time\WorkSchedule::class);
 @endphp
 
 @if ($_canManage)

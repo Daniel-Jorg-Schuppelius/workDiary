@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Operations;
 
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskType};
-use App\Models\MaintenanceWindow;
+use App\Models\Asset\MaintenanceWindow;
 use Carbon\CarbonImmutable;
 use InvalidArgumentException;
 

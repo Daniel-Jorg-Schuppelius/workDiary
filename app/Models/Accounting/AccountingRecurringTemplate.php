@@ -16,7 +16,7 @@ use App\Casts\MoneyCast;
 use App\Enums\Finance\{RecurringInterval, RecurringTemplateKind, RecurringTemplateStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};

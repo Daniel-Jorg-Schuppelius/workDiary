@@ -12,13 +12,11 @@ declare(strict_types=1);
 
 namespace App\Services\Stammdaten;
 
-use App\Models\Article;
-use App\Models\ArticleMergeDismissal;
+use App\Models\Article\{Article, ArticleMergeDismissal};
 use App\Models\Platform\Organization;
 use App\Services\Integration\Match\{EntityMatcher, MatchProfile};
 use App\Services\Integration\Profiles\ArticleDuplicateMatchProfile;
 use Illuminate\Database\Eloquent\{Collection as EloquentCollection, Model};
-use App\Services\Stammdaten\AbstractDuplicateFinder;
 
 /**
  * Findet Dubletten-Kandidaten unter den Artikeln einer Organisation (Audit

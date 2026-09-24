@@ -15,7 +15,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\ResolvesStandardReportFilters;
 use App\Models\Platform\User;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Support\ChartBucket;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;

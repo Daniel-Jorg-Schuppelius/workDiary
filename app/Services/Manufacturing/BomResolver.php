@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Enums\Manufacturing\{BomOverrideAction, QuantityKind};
-use App\Models\{ArticleVariant, ArticleVariantBomOverride, ProcedureMaterialRequirement, ProcedureTemplateVersion};
+use App\Models\Article\{ArticleVariant, ArticleVariantBomOverride};
+use App\Models\Procedure\{ProcedureMaterialRequirement, ProcedureTemplateVersion};
 use Illuminate\Support\Collection;
 
 /**

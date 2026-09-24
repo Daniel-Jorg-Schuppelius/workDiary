@@ -13,8 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Invoicing;
 
 use App\Enums\Invoicing\{RetentionBase, RetentionKind, RetentionStatus};
-use App\Models\Invoice;
-use App\Models\Invoicing\InvoiceRetention;
+use App\Models\Invoicing\{Invoice, InvoiceRetention};
 use App\Models\Platform\User;
 use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\Money;

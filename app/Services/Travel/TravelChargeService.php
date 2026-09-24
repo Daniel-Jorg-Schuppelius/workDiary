@@ -12,8 +12,10 @@ namespace App\Services\Travel;
 
 use App\Enums\Tour\TourStatus;
 use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Diary\Tour;
 use App\Models\Project\Project;
-use App\Models\{TimeEntry, Tour, TravelLog};
+use App\Models\Time\TimeEntry;
+use App\Models\Travel\TravelLog;
 use App\Support\Setting;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\Helper\Geo\GeoHelper;

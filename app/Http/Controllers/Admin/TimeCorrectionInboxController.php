@@ -14,7 +14,7 @@ use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
-use App\Models\TimeCorrectionRequest;
+use App\Models\Time\TimeCorrectionRequest;
 use App\Services\TimeApproval\{TimeCorrectionService, TimeCorrectionWorkflowException};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};

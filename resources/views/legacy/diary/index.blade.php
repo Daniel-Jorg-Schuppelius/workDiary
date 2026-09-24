@@ -60,7 +60,7 @@
                                     show-label>{{ __('Neuer Notdienst') }}</x-icon-btn>
                     @endif
                 @else
-                    @can('create', \App\Models\Vacation::class)
+                    @can('create', \App\Models\Absence\Vacation::class)
                         <x-icon-btn icon="add" tone="outline" size="sm"
                                     data-entry-modal-trigger
                                     :href="route('vacations.create') . '?dialog=1'"

@@ -14,7 +14,7 @@ namespace App\Policies\Audit;
 
 use App\Enums\User\Permission;
 use App\Models\Platform\User;
-use App\Policies\Auth\PermissionPolicy;
+use App\Policies\PermissionPolicy;
 
 /**
  * Zugriff auf die GoBD-Z3-Datenträgerüberlassung (Feature 063, MVP-132):

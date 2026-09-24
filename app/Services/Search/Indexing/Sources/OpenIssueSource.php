@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Search\Indexing\Sources;
 
 use App\Enums\Search\SearchSourceType;
-use App\Models\OpenIssue;
+use App\Models\Diary\OpenIssue;
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
 use Illuminate\Database\Eloquent\Model;
 

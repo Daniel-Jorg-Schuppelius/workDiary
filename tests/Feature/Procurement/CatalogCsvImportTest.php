@@ -11,7 +11,7 @@
 namespace Tests\Feature\Procurement;
 
 use App\Enums\Procurement\CatalogItemStatus;
-use App\Models\{SupplierCatalogItem, SupplierCatalogSource};
+use App\Models\Supplier\{SupplierCatalogItem, SupplierCatalogSource};
 use App\Services\Procurement\CatalogCsvImportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
@@ -42,7 +42,7 @@ final class CatalogCsvImportTest extends TestCase {
         $this->setUpOrganization();
         $this->importer = app(CatalogCsvImportService::class);
 
-        $supplier = \App\Models\Supplier::factory()->create(['organization_id' => $this->organization->id]);
+        $supplier = \App\Models\Supplier\Supplier::factory()->create(['organization_id' => $this->organization->id]);
         $this->source = SupplierCatalogSource::query()->create([
             'organization_id' => $this->organization->id,
             'supplier_id' => $supplier->id,

@@ -10,7 +10,7 @@
 
 namespace App\Mail;
 
-use App\Models\Timesheet;
+use App\Models\Time\Timesheet;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\{Content, Envelope};

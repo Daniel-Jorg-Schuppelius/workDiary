@@ -12,7 +12,7 @@ namespace App\Plugins\Support;
 
 use App\Models\Classification\Tag;
 use App\Models\Platform\Organization;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 
 /**
  * Hängt Tag-Namen aus einem Fremdsystem-Import an einen Zeiteintrag.

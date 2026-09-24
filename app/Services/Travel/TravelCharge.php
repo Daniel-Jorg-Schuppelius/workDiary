@@ -10,7 +10,7 @@
 
 namespace App\Services\Travel;
 
-use App\Models\Tour;
+use App\Models\Diary\Tour;
 use Illuminate\Support\Carbon;
 
 /**

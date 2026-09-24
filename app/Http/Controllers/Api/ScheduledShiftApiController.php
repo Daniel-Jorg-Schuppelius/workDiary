@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Api;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
-use App\Models\ScheduledShift;
+use App\Models\Schedule\ScheduledShift;
 use Illuminate\Http\{JsonResponse, Request};
 use OpenApi\Attributes as OA;
 

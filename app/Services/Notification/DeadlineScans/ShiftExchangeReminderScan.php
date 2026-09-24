@@ -15,7 +15,7 @@ namespace App\Services\Notification\DeadlineScans;
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Shift\ShiftExchangeStatus;
 use App\Models\Platform\User;
-use App\Models\ShiftExchange;
+use App\Models\Schedule\ShiftExchange;
 use App\Services\Notification\NotificationDispatcher;
 
 /**

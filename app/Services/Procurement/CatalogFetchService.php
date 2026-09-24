@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Procurement;
 
-use App\Models\SupplierCatalogSource;
+use App\Models\Supplier\SupplierCatalogSource;
 use App\Plugins\Support\PluginHttpFactory;
 use App\Support\UrlSafety;
 use League\Flysystem\{Filesystem, FilesystemAdapter};

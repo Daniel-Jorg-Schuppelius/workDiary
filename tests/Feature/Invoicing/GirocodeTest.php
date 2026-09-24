@@ -11,7 +11,7 @@
 namespace Tests\Feature\Invoicing;
 
 use App\Models\Customer\Customer;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Services\Invoicing\{GirocodeService, InvoicePdfRenderer};
 use App\Settings\SettingScope;
@@ -163,7 +163,7 @@ class GirocodeTest extends TestCase {
 
     public function test_cash_payments_count_towards_the_remainder(): void {
         $invoice = $this->invoice(['number' => 'R2030-0010', 'status' => Invoice::STATUS_PARTIALLY_PAID]);
-        $register = \App\Models\CashRegister::query()->create([
+        $register = \App\Models\Finance\CashRegister::query()->create([
             'organization_id' => $this->org->id,
             'name' => 'Ladenkasse',
             'currency' => 'EUR',
@@ -175,7 +175,7 @@ class GirocodeTest extends TestCase {
         // hash-verkettet und tragen eine Registernummer.
         app(\App\Services\Finance\CashBookService::class)->record($register, [
             'booked_on' => now()->toDateString(),
-            'direction' => \App\Models\CashEntry::DIRECTION_IN,
+            'direction' => \App\Models\Finance\CashEntry::DIRECTION_IN,
             'amount' => 19.00,
             'purpose' => 'Teilzahlung bar',
             'invoice_id' => $invoice->id,

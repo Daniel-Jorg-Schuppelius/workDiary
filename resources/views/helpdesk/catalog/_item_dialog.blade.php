@@ -9,7 +9,7 @@
 {{-- Variablen: $item, $isEdit, $preselectedOffering, $offerings, $formTemplates,
      $slaContracts, $procedureTemplates, $orgUsers, $roles, $customers --}}
 @php
-    /** @var \App\Models\RequestItem $item */
+    /** @var \App\Models\Procurement\RequestItem $item */
     /** @var bool $isEdit */
     $action = $isEdit ? route('servicedesk.catalog.items.update', $item) : route('servicedesk.catalog.items.store');
 

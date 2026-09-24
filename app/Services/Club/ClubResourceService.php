@@ -16,8 +16,8 @@ use App\Enums\Club\{ClubParticipationStatus, ClubResourceKind};
 use App\Enums\Event\EventStatus;
 use App\Models\Calendar\Event;
 use App\Models\Club\{ClubMember, ClubResource, ClubResourceBooking, ClubResourceClearance, ClubResourceClosure};
+use App\Models\Facility\Room;
 use App\Models\Platform\{Organization, User};
-use App\Models\Room;
 use App\Services\Asset\AssetUsageGuard;
 use App\Services\Event\RoomBookingService;
 use Carbon\{CarbonImmutable, CarbonInterface};
@@ -440,7 +440,7 @@ class ClubResourceService {
             throw ValidationException::withMessages(['room_id' => __('club.resources.error.room_foreign')]);
         }
         $assetId = $this->nullableInt($data['asset_id'] ?? null);
-        if ($assetId !== null && ! \App\Models\Asset::query()->whereKey($assetId)->where('organization_id', $organizationId)->exists()) {
+        if ($assetId !== null && ! \App\Models\Asset\Asset::query()->whereKey($assetId)->where('organization_id', $organizationId)->exists()) {
             throw ValidationException::withMessages(['asset_id' => __('club.resources.error.asset_foreign')]);
         }
 

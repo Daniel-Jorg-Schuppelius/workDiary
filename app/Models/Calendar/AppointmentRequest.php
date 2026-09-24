@@ -11,12 +11,13 @@
 namespace App\Models\Calendar;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Customer\Customer;
+use App\Models\Diary\DiaryEntry;
+use App\Models\Platform\User;
+use App\Models\Sales\BookableService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use App\Models\Sales\BookableService;
-use App\Models\Customer\Customer;
-use App\Models\DiaryEntry;
 
 /**
  * Quellenagnostischer Terminwunsch (Feature 095, minimaler 087-Intake-Kern):

@@ -14,7 +14,7 @@ namespace App\Models\Reselling;
 
 use App\Casts\MoneyCast;
 use App\Enums\Reselling\{BillingFrequency, PeriodStatus, RenewalMode, SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
-use App\Models\Article;
+use App\Models\Article\Article;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Contract\Contract;
 use App\Models\Customer\{Customer, ForeignCustomer};

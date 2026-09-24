@@ -11,6 +11,7 @@
 namespace Tests\Feature\Privacy;
 
 use App\Enums\Privacy\{DataSubjectKind, DataSubjectRequestType};
+use App\Models\Absence\{SickLeave, Vacation};
 use App\Models\Applications\JobApplication;
 use App\Models\Audit\AuditLog;
 use App\Models\Contacts\{ContactAddress, ContactBankAccount};
@@ -19,7 +20,8 @@ use App\Models\Location\LocationPoint;
 use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\{DataSubjectRequest, PrivacyAttachment};
 use App\Models\Sales\Lead;
-use App\Models\{SickLeave, Supplier, TimeEntry, Vacation};
+use App\Models\Supplier\Supplier;
+use App\Models\Time\TimeEntry;
 use App\Services\Privacy\{DataProtectionPermissions, DataSubjectRequestService, SubjectDataExporter};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

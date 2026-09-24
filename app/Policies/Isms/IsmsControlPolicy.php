@@ -12,8 +12,8 @@ namespace App\Policies\Isms;
 
 use App\Enums\User\Permission as P;
 use App\Models\Platform\User;
-use App\Policies\Auth\PermissionPolicy;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * Zugriffsregeln ISMS-Maßnahmenkatalog/SoA (Feature 044):

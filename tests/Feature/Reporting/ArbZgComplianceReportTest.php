@@ -12,8 +12,8 @@ namespace Tests\Feature\Reporting;
 
 use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
 use App\Enums\TimeApproval\TimeCorrectionStatus;
-use App\Models\{Attendance, TimeCorrectionRequest};
 use App\Models\Platform\User;
+use App\Models\Time\{Attendance, TimeCorrectionRequest};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};

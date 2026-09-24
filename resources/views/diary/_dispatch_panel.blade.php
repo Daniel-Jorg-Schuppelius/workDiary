@@ -19,8 +19,8 @@
 @php($report = $checker->check($diary))
 @php($blocking = $checker->blockingConflicts($report))
 @php($warnings = $checker->warnings($report))
-@php($vehicles = \App\Models\Vehicle::query()->whereNull('archived_at')->orderBy('label')->get())
-@php($reservations = \App\Models\VehicleReservation::query()->where('diary_entry_id', $diary->id)->with(['vehicle', 'reservedBy'])->orderBy('reserved_from')->get())
+@php($vehicles = \App\Models\Fleet\Vehicle::query()->whereNull('archived_at')->orderBy('label')->get())
+@php($reservations = \App\Models\Fleet\VehicleReservation::query()->where('diary_entry_id', $diary->id)->with(['vehicle', 'reservedBy'])->orderBy('reserved_from')->get())
 
 <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs space-y-5">
     <div class="flex flex-wrap items-center justify-between gap-3">
@@ -94,7 +94,7 @@
 
     {{-- Qualifikations-Anforderungen (Feature 028, Rang 53) --}}
     @php($requiredQualifications = $diary->requiredQualifications()->orderBy('name')->get())
-    @php($allQualifications = \App\Models\Qualification::query()->where('is_active', true)->orderBy('name')->get())
+    @php($allQualifications = \App\Models\Hr\Qualification::query()->where('is_active', true)->orderBy('name')->get())
     <div class="border-t border-base-200 pt-4 space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-2">
             <h3 class="font-semibold text-base-content">{{ __('Qualifikationen') }}</h3>

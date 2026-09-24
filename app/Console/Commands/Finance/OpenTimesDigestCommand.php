@@ -13,7 +13,7 @@ namespace App\Console\Commands\Finance;
 use App\Console\Concerns\IteratesOrganizations;
 use App\Http\Controllers\Finance\OpenTimesController;
 use App\Models\Platform\{Organization, User};
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Notifications\Finance\OpenTimesDigestNotification;
 use App\Services\Invoicing\LateTimeEntryDetector;
 use Illuminate\Console\Command;

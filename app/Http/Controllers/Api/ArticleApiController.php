@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Api;
 use App\Enums\Article\{ArticleStatus, ArticleType};
 use App\Http\Controllers\Controller;
 use App\Http\Resources\{ArticleResource, ArticleVariantResource};
-use App\Models\Article;
+use App\Models\Article\Article;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Gate;

@@ -14,9 +14,9 @@ namespace App\Services\Learning;
 
 use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
 use App\Enums\Learning\LearningTimePolicy;
-use App\Models\Attendance;
 use App\Models\Learning\{LearningEnrollment, LearningTimeSession, LearningUnit};
 use App\Models\Platform\User;
+use App\Models\Time\Attendance;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;

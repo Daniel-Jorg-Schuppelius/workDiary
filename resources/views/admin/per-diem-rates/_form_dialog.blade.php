@@ -8,7 +8,7 @@
 --}}
 {{-- Dialog wrapper for PerDiemRate create/edit --}}
 @php
-    /** @var \App\Models\PerDiemRate $rate */
+    /** @var \App\Models\Travel\PerDiemRate $rate */
     $isEdit = $rate?->exists ?? false;
 @endphp
 <x-modal

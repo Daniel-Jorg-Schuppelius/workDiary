@@ -9,7 +9,7 @@
 namespace Tests\Feature;
 
 use App\Models\Platform\User;
-use App\Models\WorkSchedule;
+use App\Models\Time\WorkSchedule;
 use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\Support\{ProblemReportSeverity, ProblemReportStatus};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\ProblemReport;
+use App\Models\ServiceTicket\ProblemReport;
 use App\Support\Setting;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request};

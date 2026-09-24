@@ -33,6 +33,7 @@ final class ArticleManifest extends Manifest {
     public function folders(): array {
         return [
             'Article',
+            'Product',
         ];
     }
 

@@ -11,8 +11,9 @@
 namespace Tests\Feature\Manufacturing;
 
 use App\Enums\Article\ArticleType;
-use App\Models\{Article, ArticleVariant, ProcedureMaterialRequirement, ProcedureTemplateVersion};
+use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Platform\User;
+use App\Models\Procedure\{ProcedureMaterialRequirement, ProcedureTemplateVersion};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;

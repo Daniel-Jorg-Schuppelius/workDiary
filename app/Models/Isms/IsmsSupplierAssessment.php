@@ -14,7 +14,7 @@ use App\Enums\Isms\{IncidentSeverity, SupplierAssessmentStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use App\Models\Privacy\ProcessingAgreement;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use Database\Factories\Isms\IsmsSupplierAssessmentFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

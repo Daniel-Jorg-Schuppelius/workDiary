@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState};
-use App\Models\{ArticleVariant, Warehouse, WarehouseBin};
+use App\Models\Article\ArticleVariant;
+use App\Models\Inventory\{Warehouse, WarehouseBin};
 use Illuminate\Database\Eloquent\Model;
 
 /**

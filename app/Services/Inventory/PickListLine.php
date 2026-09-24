@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Inventory;
 
-use App\Models\{ArticleVariant, StockLot, Warehouse, WarehouseBin};
+use App\Models\Article\ArticleVariant;
+use App\Models\Inventory\{StockLot, Warehouse, WarehouseBin};
 
 /**
  * Eine Position der Kommissionierliste (Feature 048, MVP-706): Variante,

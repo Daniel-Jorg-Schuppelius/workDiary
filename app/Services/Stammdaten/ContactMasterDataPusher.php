@@ -11,7 +11,7 @@
 namespace App\Services\Stammdaten;
 
 use App\Models\Customer\Customer;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
 use Throwable;

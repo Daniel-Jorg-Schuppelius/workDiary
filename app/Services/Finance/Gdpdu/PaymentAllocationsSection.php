@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace App\Services\Finance\Gdpdu;
 
-use App\Models\{Expense, Invoice};
 use App\Models\Finance\PaymentAllocation;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
+use App\Models\Travel\Expense;
 use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 

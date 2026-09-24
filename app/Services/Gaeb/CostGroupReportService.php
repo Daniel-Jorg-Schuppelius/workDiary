@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Gaeb;
 
-use App\Models\{BillOfQuantity, BoqCatalog, BoqCatalogAssignment, BoqItem, BoqItemQuantitySplit};
 use App\Models\Catalog\{CatalogEntry, CatalogRegistry};
 use App\Models\Costing\CostEstimate;
+use App\Models\Gaeb\{BillOfQuantity, BoqCatalog, BoqCatalogAssignment, BoqItem, BoqItemQuantitySplit};
 use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\StringHelper;
 
@@ -486,7 +486,7 @@ final class CostGroupReportService {
         foreach (BoqCatalogAssignment::query()
             ->where('bill_of_quantity_id', $boq->id)
             ->where('catalog_key', $catalogKey)
-            ->where('assignable_type', MorphMap::alias(\App\Models\BoqSection::class))
+            ->where('assignable_type', MorphMap::alias(\App\Models\Gaeb\BoqSection::class))
             ->get() as $assignment) {
             $codes[(int) $assignment->assignable_id] = trim($assignment->code);
         }

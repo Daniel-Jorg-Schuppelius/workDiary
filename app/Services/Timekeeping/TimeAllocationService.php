@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Timekeeping;
 
-use App\Models\{TimeAllocation, TimeEntry};
+use App\Models\Time\{TimeAllocation, TimeEntry};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 

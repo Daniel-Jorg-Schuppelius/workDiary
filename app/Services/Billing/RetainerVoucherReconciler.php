@@ -13,7 +13,7 @@ namespace App\Services\Billing;
 use App\Enums\Billing\BillingAgreementMode;
 use App\Models\Billing\{CustomerBillingAgreement, CustomerBillingStatement};
 use App\Models\Integration\ExternalReference;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin, LexofficeVoucherNetAmount};

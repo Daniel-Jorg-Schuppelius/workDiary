@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{ReservationStatus, StockState};
-use App\Models\{ArticleVariant, StockLot, StockMovement, StockReservation, Warehouse, WarehouseBin};
+use App\Models\Article\ArticleVariant;
+use App\Models\Inventory\{StockLot, StockMovement, StockReservation, Warehouse, WarehouseBin};
 use App\Support\DecimalQty;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Model;

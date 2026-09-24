@@ -12,7 +12,7 @@ namespace App\Services\Timesheet;
 
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Platform\User;
-use App\Models\{TimeEntry, Timesheet};
+use App\Models\Time\{TimeEntry, Timesheet};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

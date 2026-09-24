@@ -14,8 +14,8 @@ namespace App\Policies\Passenger;
 
 use App\Enums\User\Permission as P;
 use App\Models\Platform\User;
-use App\Policies\Auth\PermissionPolicy;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * Personenbeförderung (MVP-456): gilt für die Fahrtakte UND die Stammdaten

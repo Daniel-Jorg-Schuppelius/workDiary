@@ -9,10 +9,10 @@
 {{--
     Lock/window status alert + comment thread for an existing TimeEntry edit dialog.
 
-    Required:  $entry  (\App\Models\TimeEntry|null — partial does nothing if null)
+    Required:  $entry  (\App\Models\Time\TimeEntry|null — partial does nothing if null)
 --}}
 @php
-    /** @var \App\Models\TimeEntry|null $entry */
+    /** @var \App\Models\Time\TimeEntry|null $entry */
     $entry = $entry ?? null;
     $hasEntry = $entry !== null && $entry->exists;
 

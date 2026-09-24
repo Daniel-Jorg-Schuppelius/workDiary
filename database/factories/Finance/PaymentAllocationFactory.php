@@ -12,7 +12,7 @@ namespace Database\Factories\Finance;
 
 use App\Enums\Finance\AllocationKind;
 use App\Models\Finance\{BankTransaction, PaymentAllocation};
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

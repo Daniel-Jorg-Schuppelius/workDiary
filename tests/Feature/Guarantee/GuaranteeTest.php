@@ -15,7 +15,7 @@ use App\Enums\Invoicing\{RetentionKind, RetentionStatus};
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Models\Customer\Customer;
 use App\Models\Guarantee\Guarantee;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
 use App\Models\Platform\{Organization, User};
 use App\Services\Guarantee\GuaranteeService;

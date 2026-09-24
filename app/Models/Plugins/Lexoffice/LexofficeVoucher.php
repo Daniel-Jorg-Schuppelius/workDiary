@@ -13,7 +13,7 @@ namespace App\Models\Plugins\Lexoffice;
 use App\Casts\MoneyCast;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;

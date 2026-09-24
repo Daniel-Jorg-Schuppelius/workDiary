@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support;
 
-use App\Models\CarrierConnection;
 use App\Models\Platform\Organization;
+use App\Models\Shipping\CarrierConnection;
 use App\Plugins\PluginHealth;
 use Throwable;
 

@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Invoicing;
 
 use App\Enums\Manufacturing\DeliveryFacturationStatus;
-use App\Models\{Invoice, InvoiceItem, StockDelivery};
+use App\Models\Inventory\StockDelivery;
+use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Platform\User;
 use App\Services\Manufacturing\DeliveryService;
 use Carbon\CarbonInterface;

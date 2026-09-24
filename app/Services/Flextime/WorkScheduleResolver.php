@@ -11,7 +11,7 @@
 namespace App\Services\Flextime;
 
 use App\Models\Platform\User;
-use App\Models\WorkSchedule;
+use App\Models\Time\WorkSchedule;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 

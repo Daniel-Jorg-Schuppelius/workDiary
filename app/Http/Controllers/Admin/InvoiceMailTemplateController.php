@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\InvoiceMailTemplate;
+use App\Models\Invoicing\InvoiceMailTemplate;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB};

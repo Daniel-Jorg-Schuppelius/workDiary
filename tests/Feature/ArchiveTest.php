@@ -11,7 +11,8 @@
 namespace Tests\Feature;
 
 use App\Enums\Vacation\{VacationStatus, VacationType};
-use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift, Vacation};
+use App\Models\Absence\Vacation;
+use App\Models\Diary\{DiaryEntry, EmergencyAssignment, OnCallShift};
 use App\Models\Platform\User;
 use App\Services\Archive\ArchiveService;
 use App\Services\UI\DateRangeContext;

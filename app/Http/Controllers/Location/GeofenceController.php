@@ -12,9 +12,9 @@ namespace App\Http\Controllers\Location;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
+use App\Models\Facility\Site;
 use App\Models\Location\CustomerGeofence;
 use App\Models\Project\Project;
-use App\Models\Site;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -22,7 +22,7 @@ use Illuminate\View\View;
 
 /**
  * Verwaltung der Kunden-Geofences (Standortbasierte Zeiterfassung). Modal-CRUD
- * analog {@see \App\Http\Controllers\SiteController}.
+ * analog {@see \App\Http\Controllers\Facility\SiteController}.
  */
 class GeofenceController extends Controller {
     public function index(Request $request): View {

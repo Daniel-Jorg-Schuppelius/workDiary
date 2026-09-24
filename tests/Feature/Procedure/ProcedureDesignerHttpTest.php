@@ -11,8 +11,9 @@
 namespace Tests\Feature\Procedure;
 
 use App\Enums\Procedure\{ProcedureRunStatus, ProcedureStepRunStatus, ProcedureStepType};
-use App\Models\{DiaryEntry, ProcedureRun, ProcedureStepRun, ProcedureTemplate};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
+use App\Models\Procedure\{ProcedureRun, ProcedureStepRun, ProcedureTemplate};
 use App\Services\Procedure\ProcedureTemplateService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

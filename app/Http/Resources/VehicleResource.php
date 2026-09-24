@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Models\{Asset, Vehicle};
+use App\Models\Asset\Asset;
+use App\Models\Fleet\Vehicle;
 use App\Models\Platform\User;
 use App\Support\Sqid;
 use Illuminate\Http\Request;

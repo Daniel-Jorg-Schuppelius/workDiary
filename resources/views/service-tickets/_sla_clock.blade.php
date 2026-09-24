@@ -11,15 +11,15 @@
   Uhr-Pausen (slaClockSegments). Erwartet: $ticket.
 --}}
 @php
-    /** @var \App\Models\ServiceTicket $ticket */
+    /** @var \App\Models\ServiceTicket\ServiceTicket $ticket */
     $reactionStatus = $ticket->slaReactionStatus();
     $resolutionStatus = $ticket->slaStatus();
     $minutesRemaining = $ticket->slaMinutesRemaining();
     $snapshot = (array) ($ticket->sla_snapshot ?? []);
     $openSegments = $ticket->slaClockSegments->whereNull('paused_to');
     $segmentTargetLabels = [
-        \App\Models\SlaClockSegment::TARGET_REACTION => __('Reaktionsfrist'),
-        \App\Models\SlaClockSegment::TARGET_RESOLUTION => __('Lösungsfrist'),
+        \App\Models\ServiceTicket\SlaClockSegment::TARGET_REACTION => __('Reaktionsfrist'),
+        \App\Models\ServiceTicket\SlaClockSegment::TARGET_RESOLUTION => __('Lösungsfrist'),
     ];
 @endphp
 

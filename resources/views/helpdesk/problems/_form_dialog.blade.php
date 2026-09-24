@@ -12,7 +12,7 @@
   $problem, $isEdit, $incidentOptions, $selectedIncidents (Sqids).
 --}}
 @php
-    /** @var \App\Models\Problem $problem */
+    /** @var \App\Models\ServiceTicket\Problem $problem */
     /** @var bool $isEdit */
     $action = $isEdit ? route('servicedesk.problems.update', $problem) : route('servicedesk.problems.store');
     $method = $isEdit ? 'PATCH' : 'POST';

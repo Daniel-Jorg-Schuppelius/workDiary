@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MaterialResource;
-use App\Models\Material;
+use App\Models\Material\Material;
 use App\Services\Material\MaterialProviderRegistry;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;

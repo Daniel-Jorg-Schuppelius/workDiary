@@ -32,7 +32,7 @@
                     <th class="text-right">{{ __('procurement.catalog.col.actions') }}</th>
                 </x-slot:head>
                 @foreach ($requests as $request)
-                    @php($open = $request->status === \App\Models\PriceChangeRequest::STATUS_REQUESTED)
+                    @php($open = $request->status === \App\Models\Article\PriceChangeRequest::STATUS_REQUESTED)
                     <tr @class(['opacity-60' => ! $open])>
                         <td>
                             {{ $request->article?->name ?: '—' }}

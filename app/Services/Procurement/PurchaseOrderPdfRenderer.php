@@ -14,7 +14,7 @@ namespace App\Services\Procurement;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Platform\Organization;
-use App\Models\PurchaseOrder;
+use App\Models\Procurement\PurchaseOrder;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 
 /**

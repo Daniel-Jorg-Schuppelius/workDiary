@@ -10,7 +10,7 @@
 
 namespace App\Services\Travel;
 
-use App\Models\TravelLog;
+use App\Models\Travel\TravelLog;
 
 /**
  * Resolves the reimbursement rate (EUR/km) for a given vehicle type.

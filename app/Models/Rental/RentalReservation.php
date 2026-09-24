@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Rental;
 
 use App\Enums\Rental\RentalReservationKind;
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

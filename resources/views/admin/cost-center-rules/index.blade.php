@@ -42,7 +42,7 @@
             </tr>
         </x-slot:head>
         @forelse ($rules as $rule)
-            @php /** @var \App\Models\CostCenterRule $rule */ @endphp
+            @php /** @var \App\Models\Finance\CostCenterRule $rule */ @endphp
             <tr>
                 <td>
                     @if ($rule->user_id !== null)

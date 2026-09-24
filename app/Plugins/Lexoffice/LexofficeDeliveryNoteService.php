@@ -14,7 +14,7 @@ use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Enums\Manufacturing\DeliveryFacturationStatus;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
-use App\Models\StockDelivery;
+use App\Models\Inventory\StockDelivery;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use App\Services\Manufacturing\DeliveryService;
 use RuntimeException;

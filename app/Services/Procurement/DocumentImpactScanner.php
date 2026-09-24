@@ -15,7 +15,10 @@ namespace App\Services\Procurement;
 use App\Enums\Gaeb\BoqItemStatus;
 use App\Enums\Manufacturing\ManufacturingOrderStatus;
 use App\Enums\Procurement\PurchaseOrderStatus;
-use App\Models\{Article, BoqItem, BoqItemMapping, ManufacturingOrder, PurchaseOrder};
+use App\Models\Article\Article;
+use App\Models\Gaeb\{BoqItem, BoqItemMapping};
+use App\Models\Manufacturing\ManufacturingOrder;
+use App\Models\Procurement\PurchaseOrder;
 use Illuminate\Support\Str;
 
 /**

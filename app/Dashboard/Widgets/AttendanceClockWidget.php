@@ -14,8 +14,8 @@ namespace App\Dashboard\Widgets;
 
 use App\Dashboard\Widget;
 use App\Enums\Dashboard\WidgetGroup;
-use App\Models\Attendance;
 use App\Models\Platform\User;
+use App\Models\Time\Attendance;
 use App\Services\Attendance\AttendanceClockService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;

@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\ServiceTicket;
 
 use App\Models\Approval\Approval;
-use App\Models\{Asset, Change, ChangeTemplate};
+use App\Models\Asset\Asset;
 use App\Models\Platform\User;
+use App\Models\ServiceTicket\{Change, ChangeTemplate};
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -104,7 +105,7 @@ class ChangeService {
         $change->update(['status' => 'implementing']);
 
         if ($procedureTemplateId !== null) {
-            $template = \App\Models\ProcedureTemplate::query()
+            $template = \App\Models\Procedure\ProcedureTemplate::query()
                 ->where('organization_id', $change->organization_id)
                 ->findOrFail($procedureTemplateId);
             app(\App\Services\Procedure\ProcedureExecutionService::class)->start($template, $change, $actor);

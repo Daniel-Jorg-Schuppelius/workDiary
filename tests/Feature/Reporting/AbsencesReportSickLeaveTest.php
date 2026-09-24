@@ -11,9 +11,9 @@
 namespace Tests\Feature\Reporting;
 
 use App\Enums\Sickness\SickLeaveKind;
+use App\Models\Absence\SickLeave;
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\User;
-use App\Models\SickLeave;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};

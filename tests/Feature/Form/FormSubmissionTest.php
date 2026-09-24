@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Form;
 
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Form\{FormSubmission, FormTemplate};
 use App\Models\Platform\User;
 use App\Support\{MorphMap, Sqid};

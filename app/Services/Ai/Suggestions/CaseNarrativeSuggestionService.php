@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Ai\Suggestions;
 
 use App\Models\Ai\AiTextSuggestion;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
 use App\Services\Ai\{AiInvocationService, AiMemoryService};
 use App\Services\Ai\Dto\{AiTextResult, SummarizeRequest};

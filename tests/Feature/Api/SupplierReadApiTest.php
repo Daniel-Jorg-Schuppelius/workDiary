@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Api;
 
 use App\Models\Platform\{Organization, User};
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\WithOrganization;

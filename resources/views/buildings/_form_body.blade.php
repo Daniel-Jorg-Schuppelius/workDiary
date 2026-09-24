@@ -9,8 +9,8 @@
 {{-- Shared form fields for Building (used by _form_dialog) --}}
 @php
     /**
-     * @var \App\Models\Building|null $building
-     * @var \Illuminate\Support\Collection<int, \App\Models\Site> $sites
+     * @var \App\Models\Facility\Building|null $building
+     * @var \Illuminate\Support\Collection<int, \App\Models\Facility\Site> $sites
      */
 @endphp
 
@@ -18,7 +18,7 @@
     <x-select-field name="site_id" :label="__('Standort')" required span="2">
         <option value="">{{ __('— bitte wählen —') }}</option>
         @foreach ($sites as $s)
-            <option value="{{ $s->sqid }}" @selected((string) old('site_id', \App\Support\Sqid::encode(\App\Models\Site::class, $building?->site_id ?? \App\Support\Sqid::decode(\App\Models\Site::class, request('site'))) ) === $s->sqid)>{{ $s->name }}@if ($s->customer) — {{ $s->customer->name }}@endif</option>
+            <option value="{{ $s->sqid }}" @selected((string) old('site_id', \App\Support\Sqid::encode(\App\Models\Facility\Site::class, $building?->site_id ?? \App\Support\Sqid::decode(\App\Models\Facility\Site::class, request('site'))) ) === $s->sqid)>{{ $s->name }}@if ($s->customer) — {{ $s->customer->name }}@endif</option>
         @endforeach
     </x-select-field>
     <x-input-field name="name" :label="__('Name')" required maxlength="160" autofocus :value="old('name', $building?->name)" />

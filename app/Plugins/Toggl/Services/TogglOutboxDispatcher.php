@@ -14,7 +14,7 @@ use APIToolkit\Exceptions\{PaymentRequiredException, TooManyRequestsException};
 use App\Models\Integration\{ExternalReference, IntegrationOutboxEntry};
 use App\Models\Platform\Organization;
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Plugins\Support\{MatchingTimeImportService, MirrorsCreatedEntries, RemoteTimeWriter, TimeWritebackDispatcher};
 use App\Plugins\Toggl\Exceptions\TogglApiException;
 use App\Plugins\Toggl\Sources\TogglApiClient;

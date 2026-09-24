@@ -11,7 +11,7 @@
 namespace Tests\Feature\Article;
 
 use App\Enums\Article\ArticleStatus;
-use App\Models\Article;
+use App\Models\Article\Article;
 use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

@@ -10,7 +10,7 @@
 @php
     /** @var \App\Models\Approval\Approval $approval */
     $approvable = $approval->approvable;
-    $ticket = $approvable instanceof \App\Models\ServiceRequest ? $approvable->ticket : null;
+    $ticket = $approvable instanceof \App\Models\ServiceTicket\ServiceRequest ? $approvable->ticket : null;
     $subject = $ticket?->title ?? $approvable?->title ?? $approvable?->name ?? '—';
 @endphp
 

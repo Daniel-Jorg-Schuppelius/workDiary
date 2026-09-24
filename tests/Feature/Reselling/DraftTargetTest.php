@@ -16,7 +16,7 @@ use App\Enums\Finance\BillingMode;
 use App\Enums\Reselling\PeriodStatus;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
-use App\Models\{Invoice, InvoiceItem};
+use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Models\Reselling\{ResalePeriodLink, ResaleSubscription};
 use App\Plugins\Lexoffice\LexofficePlugin;

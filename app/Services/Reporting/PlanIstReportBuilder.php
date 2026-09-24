@@ -10,10 +10,13 @@
 
 namespace App\Services\Reporting;
 
-use App\Models\{Attendance, DiaryEntry, ScheduledShift, Site, TimeEntry, WorkSchedule};
+use App\Models\Diary\DiaryEntry;
+use App\Models\Facility\Site;
 use App\Models\Location\LocationVisit;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Models\Schedule\ScheduledShift;
+use App\Models\Time\{Attendance, TimeEntry, WorkSchedule};
 use App\Support\Query\DateRange;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
@@ -27,7 +30,7 @@ use Illuminate\Support\Collection;
  *
  * Datenquellen der erweiterten Sichten (A14 · MVP-333):
  *  - Schicht: Soll = sichtbare geplante Schichten (published/confirmed, wie
- *    {@see \App\Services\CoverageService}) × Fensterdauer (resolvedStart/End,
+ *    {@see \App\Services\Schedule\CoverageService}) × Fensterdauer (resolvedStart/End,
  *    Übernacht-Schichten +1 Tag); Ist = Überlappung der Anwesenheits-
  *    intervalle der eingeteilten Person mit dem Schichtfenster (brutto —
  *    Soll-Fenster ist ebenfalls brutto). Schichten ohne Zeitfenster zählen

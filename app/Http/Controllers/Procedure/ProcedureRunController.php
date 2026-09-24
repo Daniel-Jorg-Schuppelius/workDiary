@@ -1,0 +1,413 @@
+<?php
+/*
+ * Created on   : Sun Jun 14 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : ProcedureRunController.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace App\Http\Controllers\Procedure;
+
+use App\Enums\Procedure\{ProcedureDeviationProposedAction, ProcedureDeviationSeverity, ProcedureDeviationType, ProcedureStepRunStatus};
+use App\Exceptions\{ProcedureDeviationValidationException, ProcedureRunIncompleteException, ProcedureSecondPersonException, ProcedureStepBlockedException};
+use App\Http\Controllers\Attachments\AttachmentController;
+use App\Models\Attachments\Attachment;
+use App\Models\Diary\DiaryEntry;
+use App\Models\Procedure\ProcedureRun;
+use App\Models\Procedure\ProcedureStepRun;
+use App\Models\Procedure\ProcedureTemplate;
+use App\Models\Platform\User;
+use App\Services\Procedure\{DeviationRecorder, ProcedureApplicabilityResolver, ProcedureExecutionService, SecondPersonGate, WaitStepService};
+use App\Support\EntityUrl;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
+use App\Http\Controllers\Controller;
+
+/**
+ * Ausführung und Lese-/Druckansicht von Prozedurläufen (Feature 026).
+ *
+ * Die {@see show()}-Ansicht ist die mobile, Schritt-für-Schritt ausführbare
+ * Sicht aus MVP-063: Sie rendert bedingte Schritte, Warteschritte (MVP-064),
+ * Vier-Augen-Freigaben und Medien-Nachweise. Die eigentliche Pflicht-,
+ * Reihenfolge- und Sperrlogik liegt im {@see ProcedureExecutionService};
+ * dieser Controller validiert Eingaben, lädt Medien hoch und übersetzt
+ * Domänen-Exceptions in Flash-Meldungen. {@see print()} liefert zusätzlich
+ * die versionierte Zusammenfassung als druckbare Standalone-HTML-Sicht.
+ */
+class ProcedureRunController extends Controller {
+    /**
+     * Mobile Ausführungsansicht: alle Schritte in Reihenfolge mit Status,
+     * Sperrgrund, dem aktuell ausführbaren Schritt sowie Wartezeit-Restzeit.
+     */
+    public function show(ProcedureRun $run, ProcedureExecutionService $execution): View {
+        Gate::authorize('view', $run);
+
+        $run->load([
+            'templateVersion.template',
+            'templateVersion.steps',
+            'assignee:id,name',
+            'createdBy:id,name',
+            'stepRuns.stepDef',
+            'stepRuns.executedBy:id,name',
+            'stepRuns.secondPerson:id,name',
+        ]);
+
+        /** @var User $viewer */
+        $viewer = Auth::user();
+
+        $stepRuns = $run->stepRuns
+            ->sortBy(fn(ProcedureStepRun $sr) => $sr->stepDef->sort_order ?? 0)
+            ->values();
+
+        // Bedingte Schritte (config.depends_on): nicht zutreffende Schritte
+        // werden markiert, damit die UI sie als „nicht anwendbar (N/A)"
+        // anbietet, statt den Lauf zu blockieren. Die Auswertung liegt im
+        // Execution-Kern ({@see ProcedureExecutionService::isStepApplicable},
+        // W5.3) — hier wird nur die vorgeladene Code-Karte durchgereicht.
+        $valuesByStepCode = [];
+        foreach ($stepRuns as $sr) {
+            $code = (string) ($sr->stepDef->code ?? '');
+            if ($code !== '') {
+                $valuesByStepCode[$code] = $sr;
+            }
+        }
+
+        $currentAssigned = false;
+        $steps = $stepRuns->map(function (ProcedureStepRun $sr) use ($execution, $viewer, $valuesByStepCode, &$currentAssigned): array {
+            $blockReason = $execution->blockReasonFor($sr, $viewer);
+            $applicable = $execution->isStepApplicable($sr, $valuesByStepCode);
+            $isCurrent = false;
+            if (! $currentAssigned && ! $sr->status->isFinal() && $blockReason === null && $applicable) {
+                $isCurrent = true;
+                $currentAssigned = true;
+            }
+
+            return [
+                'stepRun' => $sr,
+                'def' => $sr->stepDef,
+                'blockReason' => $blockReason,
+                'applicable' => $applicable,
+                'isCurrent' => $isCurrent,
+                'waitRemaining' => $this->waitRemainingSeconds($sr),
+            ];
+        });
+
+        $total = $stepRuns->count();
+        $done = $stepRuns->filter(fn(ProcedureStepRun $sr) => $sr->status->isFinal())->count();
+        $subject = $run->subject;
+
+        return view('procedures.runs.show', [
+            'run' => $run,
+            'steps' => $steps,
+            'subject' => $subject,
+            'backUrl' => EntityUrl::for($subject) ?? route('diary.index'),
+            'progressTotal' => $total,
+            'progressDone' => $done,
+            'canExecute' => Gate::allows('execute', $run),
+            'canAbort' => Gate::allows('abort', $run),
+            'missingRequired' => $execution->missingRequiredStepRuns($run),
+        ]);
+    }
+
+    /**
+     * Setzt einen Schritt auf einen finalen Status (erledigt / nicht
+     * zutreffend / fehlgeschlagen) inkl. optionalem Wert, Notiz und
+     * Medien-Nachweis (MVP-063 „Medien").
+     */
+    public function executeStep(Request $request, ProcedureRun $run, ProcedureStepRun $stepRun, ProcedureExecutionService $execution): RedirectResponse {
+        Gate::authorize('execute', $run);
+        $this->assertStepBelongsToRun($run, $stepRun);
+
+        $data = $request->validate([
+            'status' => ['required', 'in:done,n_a,failed'],
+            'value' => ['nullable', 'string', 'max:2000'],
+            'note' => ['nullable', 'string', 'max:2000'],
+            // Typ-Allowlist und Kontingent wie bei jedem anderen Anhang
+            // (Sicherheitsaudit 2026-09-17, files-upload-1).
+            'proof' => array_merge(['nullable'], \App\Services\Attachments\FileAttacher::rule()),
+        ]);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        $target = ProcedureStepRunStatus::from($data['status']);
+
+        $payload = [];
+        if (array_key_exists('value', $data) && $data['value'] !== null && $data['value'] !== '') {
+            $payload['value_json'] = ['value' => (string) $data['value']];
+        }
+        if (array_key_exists('note', $data)) {
+            $payload['note'] = $data['note'];
+        }
+        if ($request->hasFile('proof')) {
+            $payload['proof_attachment_id'] = $this->storeProof($request, $run, $stepRun, $actor);
+        }
+
+        try {
+            $execution->execute($stepRun, $actor, $target, $payload);
+        } catch (ProcedureStepBlockedException $e) {
+            return back()->with('error', __('procedure.blocked.' . $e->reason));
+        } catch (ProcedureSecondPersonException $e) {
+            return back()->with('error', __('procedure.validation.secondPersonMissing'));
+        }
+
+        return back()->with('success', __('procedure.flash.stepCompleted'));
+    }
+
+    /**
+     * Abweichung zu einem Schritt erfassen (Vollscan 2026-09-15, `P4-01`).
+     * Der {@see DeviationRecorder} war vollständig gebaut, hatte aber ausserhalb
+     * der Tests keinen Aufrufer: Die Lauf-Oberfläche kannte nur erledigt,
+     * entfällt und fehlgeschlagen. Damit blieb der Abweichungs-Report aus
+     * `MVP-713` produktiv ohne Schreiber.
+     */
+    public function recordDeviation(Request $request, ProcedureRun $run, ProcedureStepRun $stepRun, DeviationRecorder $deviations): RedirectResponse {
+        Gate::authorize('execute', $run);
+        $this->assertStepBelongsToRun($run, $stepRun);
+
+        $data = $request->validate([
+            'deviation_type' => ['required', 'string', Rule::enum(ProcedureDeviationType::class)],
+            'severity' => ['nullable', 'string', Rule::enum(ProcedureDeviationSeverity::class)],
+            'proposed_action' => ['nullable', 'string', Rule::enum(ProcedureDeviationProposedAction::class)],
+            'reason_text' => ['required', 'string', 'max:2000'],
+        ]);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+
+        try {
+            $deviations->record($stepRun, $actor, $data);
+        } catch (ProcedureDeviationValidationException $e) {
+            return back()->with('error', $e->reason === ProcedureDeviationValidationException::REASON_REASON_TOO_SHORT
+                ? __('procedure.validation.deviationReasonTooShort')
+                : __('procedure.validation.deviationInvalid', ['reason' => $e->reason]));
+        }
+
+        return back()->with('success', __('procedure.flash.deviationRecorded'));
+    }
+
+    /**
+     * Startet die serverseitige Wartezeit eines Warteschritts (MVP-064).
+     * Die Dauer kommt aus der Schritt-Konfiguration (`wait_seconds`),
+     * fällt aber auf einen Request-Wert zurück.
+     */
+    public function beginWait(Request $request, ProcedureRun $run, ProcedureStepRun $stepRun, WaitStepService $waits): RedirectResponse {
+        Gate::authorize('execute', $run);
+        $this->assertStepBelongsToRun($run, $stepRun);
+
+        $configured = (int) ($stepRun->stepDef->config['wait_seconds'] ?? 0);
+        $seconds = $configured > 0
+            ? $configured
+            : (int) $request->validate(['seconds' => ['required', 'integer', 'min:1', 'max:2592000']])['seconds'];
+
+        $waits->beginWait($stepRun, $seconds);
+
+        return back()->with('success', __('procedure.flash.waitStarted'));
+    }
+
+    /**
+     * Setzt einen Warteschritt fort. Vor Fristablauf nur als auditierte
+     * Abweichung mit Begründung (MVP-064), sonst regulär.
+     */
+    public function continueWait(Request $request, ProcedureRun $run, ProcedureStepRun $stepRun, WaitStepService $waits): RedirectResponse {
+        Gate::authorize('execute', $run);
+        $this->assertStepBelongsToRun($run, $stepRun);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        $elapsed = $waits->canContinue($stepRun);
+
+        if (! $elapsed) {
+            $reason = (string) $request->validate([
+                'reason' => ['required', 'string', 'min:5', 'max:2000'],
+            ])['reason'];
+            $waits->continueStep($stepRun, true, $reason, $actor->id);
+
+            return back()->with('success', __('procedure.flash.waitOverridden'));
+        }
+
+        $waits->continueStep($stepRun, false, null, $actor->id);
+
+        return back()->with('success', __('procedure.flash.stepCompleted'));
+    }
+
+    /**
+     * Zeichnet den aktuellen Benutzer als zweite Person gegen (Vier-Augen,
+     * MVP-028). Übernahme und Signatur in einem Schritt.
+     */
+    public function signSecondPerson(ProcedureRun $run, ProcedureStepRun $stepRun, SecondPersonGate $gate): RedirectResponse {
+        Gate::authorize('execute', $run);
+        $this->assertStepBelongsToRun($run, $stepRun);
+
+        /** @var User $signer */
+        $signer = Auth::user();
+
+        try {
+            $gate->take($stepRun, $signer);
+            $gate->sign($stepRun, $signer);
+        } catch (ProcedureSecondPersonException $e) {
+            return back()->with('error', __('procedure.validation.secondPersonSelfNotAllowed'));
+        }
+
+        return back()->with('success', __('procedure.flash.secondPersonSigned'));
+    }
+
+    /** Schließt den Lauf ab (alle Pflichtschritte final, keine kritische Abweichung). */
+    public function complete(ProcedureRun $run, ProcedureExecutionService $execution): RedirectResponse {
+        Gate::authorize('execute', $run);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+
+        try {
+            $execution->completeRun($run, $actor);
+        } catch (ProcedureRunIncompleteException) {
+            return back()->with('error', __('procedure.validation.runIncomplete'));
+        } catch (ProcedureDeviationValidationException) {
+            return back()->with('error', __('procedure.validation.criticalDeviationOpen'));
+        }
+
+        return back()->with('success', __('procedure.flash.runCompleted'));
+    }
+
+    /** Bricht den Lauf mit Begründung ab. */
+    public function abort(Request $request, ProcedureRun $run, ProcedureExecutionService $execution): RedirectResponse {
+        Gate::authorize('abort', $run);
+
+        $reason = $request->validate([
+            'reason' => ['nullable', 'string', 'max:2000'],
+        ])['reason'] ?? null;
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        $execution->abort($run, $actor, $reason);
+
+        $subject = $run->subject;
+        $target = EntityUrl::for($subject) ?? route('diary.index');
+
+        return redirect($target)->with('success', __('procedure.flash.runAborted'));
+    }
+
+    /**
+     * Druckbare Read-Only-Ansicht eines Laufs inkl. aller Schritte,
+     * Vier-Augen-Bestaetigungen, Abweichungen und Backup-Nachweise.
+     */
+    public function print(ProcedureRun $run): View {
+        Gate::authorize('view', $run);
+
+        $run->load([
+            'templateVersion.template',
+            'templateVersion.steps',
+            'assignee:id,name',
+            'createdBy:id,name',
+            'stepRuns.stepDef',
+            'stepRuns.executedBy:id,name',
+            'stepRuns.secondPerson:id,name',
+        ]);
+
+        $stepRuns = $run->stepRuns->sortBy(fn($sr) => $sr->stepDef->sort_order ?? 0)->values();
+
+        $deviations = \App\Models\Procedure\ProcedureDeviation::query()
+            ->whereIn('procedure_step_run_id', $stepRuns->pluck('id'))
+            ->with('createdBy:id,name', 'riskAcceptedBy:id,name')
+            ->get()
+            ->keyBy('procedure_step_run_id');
+
+        $backupProofs = \App\Models\Procedure\ProcedureBackupProof::query()
+            ->whereIn('procedure_step_run_id', $stepRuns->pluck('id'))
+            ->with('verifiedBy:id,name')
+            ->get()
+            ->keyBy('procedure_step_run_id');
+
+        $subject = $run->subject;
+        $backUrl = EntityUrl::for($subject);
+
+        return view('procedures.runs.print', [
+            'run' => $run,
+            'stepRuns' => $stepRuns,
+            'deviations' => $deviations,
+            'backupProofs' => $backupProofs,
+            'subject' => $subject,
+            'backUrl' => $backUrl,
+            'generatedAt' => now(),
+        ]);
+    }
+
+    /**
+     * Startet einen Prozedurlauf fuer eine anwendbare Vorlage auf einem
+     * Auftrag (manuelle/automatische Zuordnung, MVP-025 §8.1). Die
+     * Anwendbarkeit wird ueber den {@see ProcedureApplicabilityResolver}
+     * gegengeprueft.
+     */
+    public function start(
+        DiaryEntry $diary,
+        ProcedureTemplate $template,
+        ProcedureExecutionService $execution,
+        ProcedureApplicabilityResolver $resolver,
+    ): RedirectResponse {
+        Gate::authorize('start', ProcedureRun::class);
+        abort_unless($template->organization_id === $diary->organization_id, 404);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+
+        $applicable = $resolver->suggestFor($diary)->contains(fn($t) => $t->id === $template->id);
+        if (! $applicable) {
+            return redirect()->route('diary.show', $diary)->with('error', __('procedure.flash.notApplicable'));
+        }
+
+        try {
+            $run = $execution->start($template, $diary, $actor);
+        } catch (\RuntimeException $e) {
+            return redirect()->route('diary.show', $diary)->with('error', __('procedure.flash.startFailed'));
+        }
+
+        return redirect()->route('procedure-runs.show', $run)->with('success', __('procedure.flash.runStarted'));
+    }
+
+    /**
+     * Verknüpft Schritt und Lauf hart, damit man über die Step-Route nicht
+     * einen fremden Schritt eines anderen Laufs manipulieren kann.
+     */
+    private function assertStepBelongsToRun(ProcedureRun $run, ProcedureStepRun $stepRun): void {
+        abort_unless((int) $stepRun->procedure_run_id === (int) $run->id, 404);
+    }
+
+    /** Restliche Wartezeit eines Warteschritts in Sekunden (0 = abgelaufen/keine). */
+    private function waitRemainingSeconds(ProcedureStepRun $stepRun): int {
+        if ($stepRun->wait_until === null) {
+            return 0;
+        }
+
+        return (int) max(0, now()->diffInSeconds($stepRun->wait_until, false));
+    }
+
+    /**
+     * Speichert einen hochgeladenen Medien-Nachweis und gibt die
+     * Attachment-ID zurück (für proof_attachment_id). Muster wie
+     * {@see AttachmentController::store()}.
+     */
+    private function storeProof(Request $request, ProcedureRun $run, ProcedureStepRun $stepRun, User $actor): int {
+        /** @var \Illuminate\Http\UploadedFile $file */
+        $file = $request->file('proof');
+
+        // Über den FileAttacher statt eigener Ablage: derselbe Ordner, dieselbe
+        // Endungsableitung und das Speicherkontingent der Lizenz
+        // (Sicherheitsaudit 2026-09-17, files-upload-1).
+        $attachment = app(\App\Services\Attachments\FileAttacher::class)->store(
+            $stepRun,
+            $file,
+            (int) $actor->id,
+            [
+                'organization_id' => $run->organization_id,
+                'meta_type' => 'procedure_proof',
+            ],
+            'attachments/procedure-runs',
+        );
+
+        return (int) $attachment->id;
+    }
+}

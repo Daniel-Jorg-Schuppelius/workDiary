@@ -13,7 +13,7 @@ namespace Tests\Feature\Invoicing;
 use App\Mail\DunningMail;
 use App\Models\Customer\Customer;
 use App\Models\Document\DocumentDispatch;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Models\Sales\Quote;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Inventory;
 
-use App\Models\{ArticleVariant, StockLot, StockMovement, StockValuationLayer, Warehouse};
+use App\Models\Article\ArticleVariant;
+use App\Models\Inventory\{StockLot, StockMovement, StockValuationLayer, Warehouse};
 use Illuminate\Support\{Carbon, Collection};
 use RuntimeException;
 

@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Inventory;
 
-use App\Models\{Article, ArticleVariant, StockLot, StockSerial};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\{StockLot, StockSerial};
 
 /**
  * Baut die Etikettendaten für Variante/Charge/Seriennummer (Feature 048, E5).

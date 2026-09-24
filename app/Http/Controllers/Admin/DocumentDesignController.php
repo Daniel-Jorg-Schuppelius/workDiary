@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\DocumentDesign\{LetterheadAssetStatus, LetterheadPageRole, PageFormat, RenderDocumentKind, RenderProfileStatus, TableStylePreset};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\Document\DocumentDesign\{DocumentRenderProfile, DocumentRenderProfileVersion, LetterheadAsset};
+use App\Models\DocumentDesign\{DocumentRenderProfile, DocumentRenderProfileVersion, LetterheadAsset};
 use App\Models\Platform\{Organization, User};
 use App\Services\DocumentDesign\{LetterheadAssetService, RenderProfileService, SampleDocumentService};
 use App\Support\{ErrorText, SqidEncoder};

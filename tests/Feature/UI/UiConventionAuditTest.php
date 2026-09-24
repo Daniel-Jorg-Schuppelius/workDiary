@@ -87,8 +87,8 @@ class UiConventionAuditTest extends TestCase {
         }
 
         app()->setLocale('de');
-        $this->assertSame('Bestellung', EntityType::label(\App\Models\PurchaseOrder::class));
-        $this->assertSame('Service-Ticket', EntityType::label(\App\Models\ServiceTicket::class));
+        $this->assertSame('Bestellung', EntityType::label(\App\Models\Procurement\PurchaseOrder::class));
+        $this->assertSame('Service-Ticket', EntityType::label(\App\Models\ServiceTicket\ServiceTicket::class));
     }
 
     public function test_sustainability_activity_form_uses_date_range_component(): void {

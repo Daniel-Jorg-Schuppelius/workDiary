@@ -12,7 +12,7 @@ namespace Tests\Feature\Licensing;
 
 use App\Exceptions\LimitExceededException;
 use App\Models\Attachments\Attachment;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
 use App\Services\Licensing\{LicensePayload, LicenseResult, LicenseService, LicenseStatus, LimitGuard};
 use App\Support\MorphMap;

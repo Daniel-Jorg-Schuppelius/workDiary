@@ -13,12 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Stammdaten;
 
 use App\Models\Platform\Organization;
-use App\Models\Supplier;
-use App\Models\SupplierMergeDismissal;
+use App\Models\Supplier\{Supplier, SupplierMergeDismissal};
 use App\Services\Integration\Match\{EntityMatcher, MatchProfile};
 use App\Services\Integration\Profiles\SupplierMatchProfile;
 use Illuminate\Database\Eloquent\{Collection as EloquentCollection, Model};
-use App\Services\Stammdaten\AbstractDuplicateFinder;
 
 /**
  * Findet Dubletten-Kandidaten unter den Lieferanten einer Organisation (Audit

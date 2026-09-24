@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Ai\Suggestions;
 
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
 use App\Services\Ai\{AiInvocationService, AiMemoryService};
 use App\Services\Ai\Dto\{AiTextResult, AiTranslationResult, FormulateRequest, TranslateRequest};

@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Models\SlaClockSegment;
+use App\Models\ServiceTicket\SlaClockSegment;
 use App\Services\ServiceTicket\HelpdeskMetricsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;

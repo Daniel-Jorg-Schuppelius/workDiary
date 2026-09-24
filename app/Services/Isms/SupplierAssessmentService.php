@@ -14,7 +14,7 @@ use App\Enums\Isms\{IncidentSeverity, SupplierAssessmentStatus};
 use App\Models\Isms\{IsmsScope, IsmsSupplierAssessment};
 use App\Models\Platform\User;
 use App\Models\Privacy\ProcessingAgreement;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Services\Concerns\AssignsSequentialNo;
 use App\Services\Isms\Concerns\AssertsIsmsTransition;
 use Illuminate\Support\Facades\DB;

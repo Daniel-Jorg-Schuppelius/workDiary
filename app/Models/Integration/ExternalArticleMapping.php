@@ -10,12 +10,11 @@
 
 namespace App\Models\Integration;
 
+use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Article;
-use App\Models\ArticleVariant;
 
 /**
  * Stabile Zuordnung eines internen Artikels/einer Variante zu einem externen

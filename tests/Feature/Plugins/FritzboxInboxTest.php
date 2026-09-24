@@ -13,7 +13,7 @@ namespace Tests\Feature\Plugins;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\User;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Plugins\Fritzbox\{FritzboxGroupBooker, FritzboxImportService, FritzboxPlugin, FritzboxSuggestionService};
 use App\Plugins\Fritzbox\Sources\FritzboxCall;
 use App\Services\Integration\InboxGroupBookerRegistry;

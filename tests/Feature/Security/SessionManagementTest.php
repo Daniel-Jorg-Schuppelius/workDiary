@@ -10,10 +10,10 @@
 
 namespace Tests\Feature\Security;
 
-use App\Models\AttendanceTerminal;
 use App\Models\Auth\RemotePendingSession;
 use App\Models\Location\LocationDeviceToken;
 use App\Models\Platform\User;
+use App\Models\Time\AttendanceTerminal;
 use App\Services\Security\SessionManagementService;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;

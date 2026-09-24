@@ -14,8 +14,8 @@ namespace App\Services\Finance\Datev;
 
 use App\Enums\Finance\ChartOfAccounts;
 use App\Models\Customer\Customer;
-use App\Models\Expense;
 use App\Models\Platform\Organization;
+use App\Models\Travel\Expense;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Decimal;
 

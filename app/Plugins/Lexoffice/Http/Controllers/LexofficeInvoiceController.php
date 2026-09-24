@@ -12,7 +12,7 @@ namespace App\Plugins\Lexoffice\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Integration\ExternalReference;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
 use App\Support\ErrorText;
 use Illuminate\Http\RedirectResponse;

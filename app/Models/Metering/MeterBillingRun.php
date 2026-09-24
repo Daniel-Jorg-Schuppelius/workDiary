@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Metering;
 
 use App\Models\Concerns\BelongsToOrganization;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

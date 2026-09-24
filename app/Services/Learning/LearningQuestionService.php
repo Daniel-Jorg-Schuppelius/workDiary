@@ -17,7 +17,7 @@ use App\Enums\ServiceTicket\{ServiceTicketKind, ServiceTicketSource};
 use App\Mail\LearningTrainerQuestionMail;
 use App\Models\Learning\LearningEnrollment;
 use App\Models\Platform\User;
-use App\Models\ServiceTicket;
+use App\Models\ServiceTicket\ServiceTicket;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Notification\NotificationDispatcher;
 use App\Services\ServiceTicket\ServiceTicketService;

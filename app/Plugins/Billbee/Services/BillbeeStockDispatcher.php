@@ -14,8 +14,9 @@ namespace App\Plugins\Billbee\Services;
 
 use App\Contracts\Inventory\ExternalInventoryDispatcher;
 use App\Enums\Inventory\StockState;
-use App\Models\{ArticleVariant, InventoryOutboxEntry, Warehouse};
+use App\Models\Article\ArticleVariant;
 use App\Models\Integration\ExternalArticleMapping;
+use App\Models\Inventory\{InventoryOutboxEntry, Warehouse};
 use App\Plugins\Billbee\Api\BillbeeClientFactory;
 use App\Plugins\Billbee\BillbeePlugin;
 use App\Services\Inventory\InventoryLedger;

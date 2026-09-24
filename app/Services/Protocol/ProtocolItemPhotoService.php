@@ -13,7 +13,7 @@ namespace App\Services\Protocol;
 use App\Enums\Protocol\{ProtocolEventType, ProtocolItemPhotoPhase};
 use App\Models\Attachments\Attachment;
 use App\Models\Platform\User;
-use App\Models\{Protocol, ProtocolItem, ProtocolItemPhoto};
+use App\Models\Protocol\{Protocol, ProtocolItem, ProtocolItemPhoto};
 use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;

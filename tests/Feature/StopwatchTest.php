@@ -12,9 +12,10 @@ namespace Tests\Feature;
 
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Timesheet\TimesheetStatus;
-use App\Models\{DiaryEntry, TimeEntry, Timesheet};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Models\Time\{TimeEntry, Timesheet};
 use App\Services\Timesheet\Stopwatch;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

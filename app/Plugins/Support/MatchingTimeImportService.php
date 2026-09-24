@@ -16,7 +16,7 @@ use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\Organization;
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Support\{MorphMap, Tz};
 
 /**

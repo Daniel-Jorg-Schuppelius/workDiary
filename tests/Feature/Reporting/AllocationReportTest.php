@@ -11,9 +11,10 @@
 namespace Tests\Feature\Reporting;
 
 use App\Enums\User\Permission;
-use App\Models\{CostCenter, TimeAllocation, TimeEntry};
+use App\Models\Finance\CostCenter;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
+use App\Models\Time\{TimeAllocation, TimeEntry};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

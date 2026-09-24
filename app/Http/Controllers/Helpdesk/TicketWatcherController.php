@@ -14,7 +14,7 @@ namespace App\Http\Controllers\Helpdesk;
 
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
-use App\Models\{ServiceTicket, ServiceTicketWatcher};
+use App\Models\ServiceTicket\{ServiceTicket, ServiceTicketWatcher};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;

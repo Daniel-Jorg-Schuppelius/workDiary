@@ -11,7 +11,7 @@
 namespace Tests\Feature\Procedure;
 
 use App\Enums\Procedure\ProcedureStepRunStatus;
-use App\Models\ProcedureStepRun;
+use App\Models\Procedure\ProcedureStepRun;
 use App\Services\Procedure\WaitStepService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;

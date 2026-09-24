@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Invoicing;
 
 use App\Enums\Numbering\NumberScope;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Sales\Quote;
 use App\Services\Numbering\NumberSequenceService;

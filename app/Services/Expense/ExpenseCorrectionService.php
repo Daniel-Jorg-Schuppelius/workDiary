@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Expense;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\Expense;
 use App\Models\Platform\User;
+use App\Models\Travel\Expense;
 use App\Services\Billing\ExpenseLinkProviderResolver;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;

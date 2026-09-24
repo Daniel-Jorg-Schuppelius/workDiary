@@ -10,8 +10,8 @@
 
 namespace App\Console\Commands\TimeExport;
 
-use App\Models\ExternalWageItem;
 use App\Models\Platform\{Organization, User};
+use App\Models\Time\ExternalWageItem;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Console\Command;

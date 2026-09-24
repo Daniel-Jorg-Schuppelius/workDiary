@@ -14,9 +14,10 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Mail\InvoiceMail;
 use App\Models\Customer\Customer;
-use App\Models\{Invoice, InvoiceMailTemplate, TimeEntry};
+use App\Models\Invoicing\{Invoice, InvoiceMailTemplate};
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Models\Time\TimeEntry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Testing\TestResponse;
@@ -144,7 +145,7 @@ class InvoiceTest extends TestCase {
         $invoice = Invoice::firstOrFail();
         $this->assertSame(1, $invoice->items()->count());
 
-        /** @var \App\Models\InvoiceItem $item */
+        /** @var \App\Models\Invoicing\InvoiceItem $item */
         $item = $invoice->items()->first();
         $this->assertSame('1.000', $item->quantity);
         $this->assertSame('90.0000', $item->unit_price?->getAmount());
@@ -204,7 +205,7 @@ class InvoiceTest extends TestCase {
     }
 
     public function test_material_is_billed_as_separate_invoice_with_delivery_dates(): void {
-        $sheet = \App\Models\Timesheet::create([
+        $sheet = \App\Models\Time\Timesheet::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
             'user_id' => $this->admin->id,
@@ -212,7 +213,7 @@ class InvoiceTest extends TestCase {
             'work_date' => '2030-05-10',
             'status' => \App\Enums\Timesheet\TimesheetStatus::Draft->value,
         ]);
-        \App\Models\MaterialUsage::create([
+        \App\Models\Material\MaterialUsage::create([
             'organization_id' => $this->organization->id,
             'timesheet_id' => $sheet->id,
             'description' => 'Kabel',
@@ -233,14 +234,14 @@ class InvoiceTest extends TestCase {
         $this->assertSame(__('Lieferdatum'), $invoice->dateLabelSingle());
         $this->assertSame(1, $invoice->items()->count());
 
-        /** @var \App\Models\InvoiceItem $item */
+        /** @var \App\Models\Invoicing\InvoiceItem $item */
         $item = $invoice->items()->first();
         $this->assertSame('2030-05-10', $item->service_date?->toDateString());
         $this->assertSame('30.00', $item->amount?->getAmount());
         $this->assertSame('2030-05-10', $invoice->serviceDateSingle()?->toDateString());
 
         // Material ist als abgerechnet markiert ⇒ keine Doppelberechnung.
-        $this->assertTrue(\App\Models\MaterialUsage::firstOrFail()->billed);
+        $this->assertTrue(\App\Models\Material\MaterialUsage::firstOrFail()->billed);
 
         // Zweiter Lauf bricht ab (nichts Offenes mehr): keine leere Rechnung,
         // keine verbrauchte Nummer — Fehler auf customer_id (Sweep 2026-07-10).
@@ -280,7 +281,7 @@ class InvoiceTest extends TestCase {
         $this->assertNotNull($travel);
         $this->assertSame('20.00', $travel->amount?->getAmount());
         $this->assertStringContainsString('Anfahrt', $travel->description);
-        $this->assertTrue(\App\Models\Tour::firstOrFail()->travel_billed);
+        $this->assertTrue(\App\Models\Diary\Tour::firstOrFail()->travel_billed);
 
         // Zweite Generierung: nichts Offenes mehr (Zeit exportiert, Anfahrt
         // abgerechnet) → Abbruch statt leerer Rechnung (Whitebox 2026-07-10).
@@ -298,7 +299,7 @@ class InvoiceTest extends TestCase {
         config()->set('travel.flat_amount', 15);
 
         $this->tourToCustomer('2030-05-10'); // keine Zeiteinträge an dem Tag
-        $sheet = \App\Models\Timesheet::create([
+        $sheet = \App\Models\Time\Timesheet::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
             'user_id' => $this->admin->id,
@@ -306,7 +307,7 @@ class InvoiceTest extends TestCase {
             'work_date' => '2030-05-10',
             'status' => \App\Enums\Timesheet\TimesheetStatus::Draft->value,
         ]);
-        \App\Models\MaterialUsage::create([
+        \App\Models\Material\MaterialUsage::create([
             'organization_id' => $this->organization->id,
             'timesheet_id' => $sheet->id,
             'description' => 'Kabel',
@@ -325,11 +326,11 @@ class InvoiceTest extends TestCase {
         $travel = $invoice->items->firstWhere('tour_id', '!=', null);
         $this->assertNotNull($travel);
         $this->assertSame('15.00', $travel->amount?->getAmount());
-        $this->assertTrue(\App\Models\Tour::firstOrFail()->travel_billed);
+        $this->assertTrue(\App\Models\Diary\Tour::firstOrFail()->travel_billed);
     }
 
-    private function tourToCustomer(string $date): \App\Models\Tour {
-        $tour = \App\Models\Tour::create([
+    private function tourToCustomer(string $date): \App\Models\Diary\Tour {
+        $tour = \App\Models\Diary\Tour::create([
             'organization_id' => $this->organization->id,
             'user_id' => $this->admin->id,
             'tour_date' => $date,
@@ -337,7 +338,7 @@ class InvoiceTest extends TestCase {
             'planned_distance_km' => '0',
             'planned_duration_minutes' => 0,
         ]);
-        \App\Models\DiaryEntry::factory()->create([
+        \App\Models\Diary\DiaryEntry::factory()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $this->admin->id,
             'customer_id' => $this->customer->id,
@@ -670,7 +671,7 @@ class InvoiceTest extends TestCase {
         $this->assertStringStartsWith('G', $credit->number);
         $this->assertSame(Invoice::STATUS_DRAFT, $credit->status);
         $this->assertSame(1, $credit->items()->count());
-        /** @var \App\Models\InvoiceItem $item */
+        /** @var \App\Models\Invoicing\InvoiceItem $item */
         $item = $credit->items()->first();
         $this->assertSame('-2.000', $item->quantity);
         $this->assertSame('-180.00', $credit->subtotal?->getAmount());

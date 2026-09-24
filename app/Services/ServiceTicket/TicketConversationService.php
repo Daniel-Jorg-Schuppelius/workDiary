@@ -15,7 +15,7 @@ namespace App\Services\ServiceTicket;
 use App\Enums\ServiceTicket\{ServiceTicketStatus, TicketMessageKind};
 use App\Jobs\ServiceTicketReplyMailJob;
 use App\Models\Platform\User;
-use App\Models\{ServiceTicket, ServiceTicketMessage};
+use App\Models\ServiceTicket\{ServiceTicket, ServiceTicketMessage};
 use App\Services\Mail\MailAttachmentStore;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{DB, Storage};

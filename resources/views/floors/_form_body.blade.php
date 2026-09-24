@@ -9,8 +9,8 @@
 {{-- Shared form fields for Floor (used by _form_dialog) --}}
 @php
     /**
-     * @var \App\Models\Floor|null $floor
-     * @var \Illuminate\Support\Collection<int, \App\Models\Building> $buildings
+     * @var \App\Models\Facility\Floor|null $floor
+     * @var \Illuminate\Support\Collection<int, \App\Models\Facility\Building> $buildings
      */
 @endphp
 
@@ -18,7 +18,7 @@
     <x-select-field name="building_id" :label="__('Gebäude')" required span="2">
         <option value="">{{ __('— bitte wählen —') }}</option>
         @foreach ($buildings as $b)
-            <option value="{{ $b->sqid }}" @selected((string) old('building_id', \App\Support\Sqid::encode(\App\Models\Building::class, $floor?->building_id ?? \App\Support\Sqid::decode(\App\Models\Building::class, request('building'))) ) === $b->sqid)>{{ $b->name }}@if ($b->site) — {{ $b->site->name }}@endif</option>
+            <option value="{{ $b->sqid }}" @selected((string) old('building_id', \App\Support\Sqid::encode(\App\Models\Facility\Building::class, $floor?->building_id ?? \App\Support\Sqid::decode(\App\Models\Facility\Building::class, request('building'))) ) === $b->sqid)>{{ $b->name }}@if ($b->site) — {{ $b->site->name }}@endif</option>
         @endforeach
     </x-select-field>
     <x-input-field name="level" type="number" :label="__('Ebene')" required min="-10" max="200" :value="old('level', $floor?->level)" :hint="__('0 = Erdgeschoss, negativ = Untergeschoss.')" />

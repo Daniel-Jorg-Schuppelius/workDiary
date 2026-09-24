@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Idempotenz für Zeiterfassungs-Importe (MVP-438).
  *
- * Weder {@see \App\Models\Attendance} noch {@see \App\Models\TimeEntry} tragen
+ * Weder {@see \App\Models\Time\Attendance} noch {@see \App\Models\Time\TimeEntry} tragen
  * eine `external_id`-Spalte — die Wiederhol-Erkennung läuft daher über eine
  * {@see ExternalReference}-Bindung (Muster der Plugin-Zeitimporte). Als stabiler
  * Schlüssel dient die iCal-`UID`/CSV-`external_id`; fehlt sie, ein

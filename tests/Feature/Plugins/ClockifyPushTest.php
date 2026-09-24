@@ -15,7 +15,7 @@ use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\{PluginSetting, User};
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Plugins\Clockify\{ClockifyConfig, ClockifyExportService, ClockifyImportService, ClockifyPlugin};
 use App\Plugins\Support\MatchingTimeImportService;
 use Carbon\CarbonImmutable;

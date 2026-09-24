@@ -15,7 +15,7 @@ namespace App\Services\Finance\Sepa;
 use App\Enums\Document\DocumentType;
 use App\Enums\Finance\{PaymentRunKind, PaymentRunStatus};
 use App\Models\Finance\{BankAccount, PaymentRun, PaymentRunItem, SepaMandate};
-use App\Models\IncomingEInvoice;
+use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\User;
 use App\Services\Accounting\Posting\PostingInboxService;
 use App\Services\Document\DocumentService;

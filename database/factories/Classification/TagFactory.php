@@ -10,7 +10,7 @@
 
 namespace Database\Factories\Classification;
 
-use App\Models\Classification\Classification\Tag;
+use App\Models\Classification\Tag;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 

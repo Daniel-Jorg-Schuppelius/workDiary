@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\DocumentDesign;
 
 use App\Enums\DocumentDesign\{PageFormat, RenderDocumentKind, TableStylePreset};
-use App\Models\Document\DocumentDesign\{DocumentRenderProfileVersion, DocumentRenderSnapshot, LetterheadAsset};
+use App\Models\DocumentDesign\{DocumentRenderProfileVersion, DocumentRenderSnapshot, LetterheadAsset};
 use App\Models\Platform\{Organization, User};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\{Log, View};
@@ -397,7 +397,7 @@ class DocumentDesignRenderer {
         if ($assetIds['first'] !== null || $assetIds['following'] !== null) {
             foreach ($assetIds as $page => $assetId) {
                 $payload['assets'][$page] = ! is_numeric($assetId) ? null
-                    : \App\Models\Document\DocumentDesign\LetterheadAsset::query()
+                    : \App\Models\DocumentDesign\LetterheadAsset::query()
                         ->withoutGlobalScopes()
                         ->where('organization_id', $snapshot->organization_id)
                         ->whereKey((int) $assetId)

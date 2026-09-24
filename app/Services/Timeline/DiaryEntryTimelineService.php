@@ -16,10 +16,16 @@ use App\Enums\Protocol\ProtocolEventType;
 use App\Models\Audit\AuditLog;
 use App\Models\Communication\CommunicationNote;
 use App\Models\Customer\Customer;
-use App\Models\{DiaryEntry, Invoice, MaterialUsage, OpenIssueEvent, ProcedureRun, ProtocolEvent, Shipment, TimeEntry};
+use App\Models\Diary\{DiaryEntry, OpenIssueEvent};
 use App\Models\Document\Document;
+use App\Models\Invoicing\Invoice;
+use App\Models\Material\MaterialUsage;
 use App\Models\Platform\User;
+use App\Models\Procedure\ProcedureRun;
+use App\Models\Protocol\ProtocolEvent;
 use App\Models\Sales\Quote;
+use App\Models\Shipping\Shipment;
+use App\Models\Time\TimeEntry;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -616,7 +622,7 @@ class DiaryEntryTimelineService {
      */
     private function assetItems(DiaryEntry $entry, int $cap): array {
         $items = [];
-        $assignments = \App\Models\AssetAssignment::query()
+        $assignments = \App\Models\Asset\AssetAssignment::query()
             ->where('diary_entry_id', $entry->id)
             ->with(['asset:id,name', 'assignedToUser:id,name'])
             ->latest('checked_out_at')

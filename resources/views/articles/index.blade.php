@@ -59,7 +59,7 @@
                 </li>
             </ul>
         </div>
-        @can('create', App\Models\Article::class)
+        @can('create', App\Models\Article\Article::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger
                         :href="route('articles.create')"

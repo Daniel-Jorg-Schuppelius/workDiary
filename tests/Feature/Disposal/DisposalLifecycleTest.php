@@ -14,7 +14,7 @@ namespace Tests\Feature\Disposal;
 
 use App\Enums\Asset\AssetStatus;
 use App\Enums\Disposal\{DataMediumType, DinCategory, DisposalJobEventType, DisposalJobStatus, DisposalProofType, MediaTreatmentMethod};
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Contacts\ExternalContact;
 use App\Models\Customer\Customer;
 use App\Models\Disposal\{DisposalItem, DisposalJob};

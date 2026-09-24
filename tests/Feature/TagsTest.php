@@ -11,7 +11,7 @@
 namespace Tests\Feature;
 
 use App\Models\Classification\Tag;
-use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift};
+use App\Models\Diary\{DiaryEntry, EmergencyAssignment, OnCallShift};
 use App\Models\Platform\User;
 use App\Services\UI\DateRangeContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;

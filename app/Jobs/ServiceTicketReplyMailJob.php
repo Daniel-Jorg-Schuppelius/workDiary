@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Enums\ServiceTicket\TicketMessageKind;
-use App\Models\ServiceTicketMessage;
+use App\Models\ServiceTicket\ServiceTicketMessage;
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

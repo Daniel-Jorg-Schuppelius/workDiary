@@ -13,15 +13,14 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Search;
 
 use App\Enums\Search\SearchSourceType;
+use App\Http\Controllers\Controller;
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
-use App\Models\Timesheet;
+use App\Models\Time\{TimeEntry, Timesheet};
 use App\Services\UI\DateRangeContext;
 use App\Support\{CarbonFmt, Sqid};
 use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
-use App\Http\Controllers\Controller;
 
 /**
  * Sprung aus der Tätigkeitsrecherche (Feature 153) auf Zeiten und

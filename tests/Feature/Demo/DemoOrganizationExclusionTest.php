@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Demo;
 
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
 use App\Services\Metrics\OperationsMetricsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

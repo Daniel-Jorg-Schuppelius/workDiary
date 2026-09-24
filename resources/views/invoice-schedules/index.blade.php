@@ -11,7 +11,7 @@
 
 @php
 /**
- * @var \Illuminate\Pagination\LengthAwarePaginator<int, \App\Models\InvoiceSchedule> $schedules
+ * @var \Illuminate\Pagination\LengthAwarePaginator<int, \App\Models\Invoicing\InvoiceSchedule> $schedules
  * @var array<int, bool> $blocked
  */
 @endphp

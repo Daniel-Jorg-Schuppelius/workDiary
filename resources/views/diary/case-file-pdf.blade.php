@@ -13,7 +13,7 @@
   gerendert über die PDFWriterRegistry.
 --}}
 @php
-    /** @var \App\Models\DiaryEntry $diary */
+    /** @var \App\Models\Diary\DiaryEntry $diary */
     $fmtMinutes = fn (int $minutes): string => \App\Support\Formats::duration($minutes, 'clock');
 @endphp
 <!DOCTYPE html>

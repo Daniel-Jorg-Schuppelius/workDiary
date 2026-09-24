@@ -11,11 +11,11 @@
 namespace App\Http\Requests\Billing;
 
 use App\Enums\Billing\{BillingAgreementMode, BillingRateDayType};
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Rules\ExistsInCurrentOrganization;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 /**
  * Sonderkonditions-Profil eines Kunden (Feature 098). Satzzeilen kommen als
@@ -67,7 +67,7 @@ class SaveBillingAgreementRequest extends BaseFormRequest {
             }
 
             $customer = $this->route('customer');
-            if ($customer instanceof \App\Models\Customer\Customer\Customer) {
+            if ($customer instanceof \App\Models\Customer\Customer) {
                 $mode = app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($customer);
                 if ($mode !== \App\Enums\Finance\BillingMode::Lexoffice) {
                     $validator->errors()->add('mode', (string) __('customer-billing.retainer_requires_lexoffice'));

@@ -15,23 +15,46 @@ use App\Automation\Actions\ApproveExpenseAction;
 use App\Automation\{ConditionEvaluator, RuleEngine};
 use App\Legacy\LegacyBridge;
 use App\Listeners\AuthEventSubscriber;
-use App\Models\{Asset, Building, CoverageRequirement, DiaryEntry, DutyPlan, EmergencyAssignment, Expense, ExpenseCategory, FlexEligibility, Floor, KeyHandover, MaintenancePlan, Material, MaterialUsage, MeterReading, MonthClosure, OpenIssue, PerDiemRate, PerDiemTrip, ProcedureBackupProof, ProcedureDeviation, ProcedureRun, ProcedureTemplate, Protocol, Qualification, Room, ScheduledShift, ServiceTicket, ShiftType, Site, Software, Supplier, TimeCorrectionRequest, TimeEntry, TimeExport, Timesheet, TravelLog, WorkSchedule};
+use App\Models\Access\KeyHandover;
+use App\Models\Asset\{Asset, MaintenancePlan, MeterReading, Software};
 use App\Models\Attachments\Attachment;
 use App\Models\Calendar\{Event, EventCategory};
 use App\Models\Classification\{ActivityCategory, Classification, ClassificationRequirement, Tag};
 use App\Models\Communication\{Comment, CommunicationNote};
 use App\Models\Customer\Customer;
+use App\Models\Diary\{DiaryEntry, EmergencyAssignment, OpenIssue};
+use App\Models\Facility\{Building, Floor, Room, Site};
+use App\Models\Hr\Qualification;
+use App\Models\Material\{Material, MaterialUsage};
 use App\Models\Numbering\NumberFormat;
 use App\Models\Platform\{Organization, User, UserGroup};
+use App\Models\Procedure\{ProcedureBackupProof, ProcedureDeviation, ProcedureRun, ProcedureTemplate};
 use App\Models\Project\{Milestone, Project, Task};
+use App\Models\Protocol\Protocol;
+use App\Models\Schedule\{CoverageRequirement, DutyPlan, ScheduledShift, ShiftType};
+use App\Models\ServiceTicket\ServiceTicket;
+use App\Models\Supplier\Supplier;
+use App\Models\Time\{FlexEligibility, MonthClosure, TimeCorrectionRequest, TimeEntry, TimeExport, Timesheet, WorkSchedule};
+use App\Models\Travel\{Expense, ExpenseCategory, PerDiemRate, PerDiemTrip, TravelLog};
 use App\Observers\{AttachmentObserver, CommentObserver, CustomerObserver, DiaryEntryObserver, EmergencyAssignmentObserver, MaterialUsageObserver, OrganizationObserver, ProjectObserver, ProtocolObserver, TagObserver, TimeEntryObserver, TimesheetObserver, UserObserver};
-use App\Policies\{AssetPolicy, BuildingPolicy, CoverageRequirementPolicy, DutyPlanPolicy, ExpenseCategoryPolicy, ExpensePolicy, FlexEligibilityPolicy, FloorPolicy, KeyHandoverPolicy, MaintenancePlanPolicy, MaterialPolicy, MaterialUsagePolicy, MeterReadingPolicy, MonthClosurePolicy, OpenIssuePolicy, PerDiemRatePolicy, PerDiemTripPolicy, ProcedureBackupProofPolicy, ProcedureDeviationPolicy, ProcedureRunPolicy, ProcedureTemplatePolicy, ProtocolPolicy, QualificationPolicy, RoomPolicy, ScheduledShiftPolicy, ServiceTicketPolicy, ShiftTypePolicy, SitePolicy, SoftwarePolicy, TimeCorrectionRequestPolicy, TimeEntryPolicy, TimeExportPolicy, TimesheetPolicy, TravelLogPolicy, WorkSchedulePolicy};
+use App\Policies\Access\KeyHandoverPolicy;
+use App\Policies\Asset\{AssetPolicy, MaintenancePlanPolicy, MeterReadingPolicy, SoftwarePolicy};
 use App\Policies\Calendar\{EventCategoryPolicy, EventPolicy};
 use App\Policies\Classification\{ActivityCategoryPolicy, ClassificationPolicy, ClassificationRequirementPolicy};
 use App\Policies\Communication\CommunicationNotePolicy;
+use App\Policies\Diary\OpenIssuePolicy;
+use App\Policies\Facility\{BuildingPolicy, FloorPolicy, RoomPolicy, SitePolicy};
+use App\Policies\Hr\QualificationPolicy;
+use App\Policies\Material\{MaterialPolicy, MaterialUsagePolicy};
 use App\Policies\Numbering\NumberFormatPolicy;
 use App\Policies\Platform\{OrganizationPolicy, UserGroupPolicy};
+use App\Policies\Procedure\{ProcedureBackupProofPolicy, ProcedureDeviationPolicy, ProcedureRunPolicy, ProcedureTemplatePolicy};
 use App\Policies\Project\{MilestonePolicy, TaskPolicy};
+use App\Policies\Protocol\ProtocolPolicy;
+use App\Policies\Schedule\{CoverageRequirementPolicy, DutyPlanPolicy, ScheduledShiftPolicy, ShiftTypePolicy};
+use App\Policies\ServiceTicket\ServiceTicketPolicy;
+use App\Policies\Time\{FlexEligibilityPolicy, MonthClosurePolicy, TimeCorrectionRequestPolicy, TimeEntryPolicy, TimeExportPolicy, TimesheetPolicy, WorkSchedulePolicy};
+use App\Policies\Travel\{ExpenseCategoryPolicy, ExpensePolicy, PerDiemRatePolicy, PerDiemTripPolicy, TravelLogPolicy};
 use App\Services\Attendance\AttendanceClockService;
 use App\Services\Classification\{ClassificationManager, ClassificationResolver};
 use App\Services\I18n\JsTranslationProvider;
@@ -460,10 +483,10 @@ class AppServiceProvider extends ServiceProvider {
         Task::observe(\App\Observers\TaskObserver::class);
         // F14: Fachlogik aus den Model-Hooks in Observer (TimeEntry-saving
         // lebt im bestehenden TimeEntryObserver, s. u.).
-        \App\Models\Attendance::observe(\App\Observers\AttendanceObserver::class);
+        \App\Models\Time\Attendance::observe(\App\Observers\AttendanceObserver::class);
         // Vereinstermine (MVP-843): Serienvorkommen erben Details des Masters.
         \App\Models\Calendar\Event::observe(\App\Observers\ClubEventOccurrenceObserver::class);
-        \App\Models\InvoiceItem::observe(\App\Observers\InvoiceItemObserver::class);
+        \App\Models\Invoicing\InvoiceItem::observe(\App\Observers\InvoiceItemObserver::class);
 
         // Carbon-Anzeige-Macros (Logik in App\Support\CarbonFmt): orgTz/fdate/
         // fdatetime/ftime. Auf allen Carbon-Varianten registriert (Eloquent-Casts
@@ -497,8 +520,8 @@ class AppServiceProvider extends ServiceProvider {
         // F8/E6: contact_* führend — Projektion in die Inline-Spalten.
         \App\Models\Contacts\ContactAddress::observe(\App\Observers\ContactDetailsProjectionObserver::class);
         \App\Models\Contacts\ContactBankAccount::observe(\App\Observers\ContactDetailsProjectionObserver::class);
-        \App\Models\Article::observe(\App\Observers\ArticleSalePriceObserver::class);
-        \App\Models\ArticleVariant::observe(\App\Observers\ArticleVariantSalePriceObserver::class);
+        \App\Models\Article\Article::observe(\App\Observers\ArticleSalePriceObserver::class);
+        \App\Models\Article\ArticleVariant::observe(\App\Observers\ArticleVariantSalePriceObserver::class);
         Attachment::observe(AttachmentObserver::class);
         Customer::observe(CustomerObserver::class);
         // Aufgehobene Zahlungszuordnung → Gegenbuchung im lokalen Hauptbuch
@@ -523,7 +546,7 @@ class AppServiceProvider extends ServiceProvider {
         Protocol::observe(ProtocolObserver::class);
         // Tätigkeitsrecherche (Feature 153): Quellen und Kind-Modelle indizieren
         // nach Commit; Stammdaten-Umbenennungen ziehen per Job nach.
-        foreach ([TimeEntry::class, DiaryEntry::class, Timesheet::class, ServiceTicket::class, \App\Models\ServiceTicketMessage::class, Protocol::class, OpenIssue::class, CommunicationNote::class, \App\Models\Knowledge\KnowledgeArticle::class, \App\Models\Auth\RemotePendingSession::class, Comment::class, \App\Models\Learning\LearningCourse::class, \App\Models\Document\Document::class] as $searchable) {
+        foreach ([TimeEntry::class, DiaryEntry::class, Timesheet::class, ServiceTicket::class, \App\Models\ServiceTicket\ServiceTicketMessage::class, Protocol::class, OpenIssue::class, CommunicationNote::class, \App\Models\Knowledge\KnowledgeArticle::class, \App\Models\Auth\RemotePendingSession::class, Comment::class, \App\Models\Learning\LearningCourse::class, \App\Models\Document\Document::class] as $searchable) {
             $searchable::observe(\App\Observers\SearchIndexObserver::class);
         }
         foreach ([Project::class, \App\Models\Customer\ForeignCustomer::class, Customer::class] as $searchContext) {
@@ -578,16 +601,16 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(\App\Models\AssetCompliance\AssetComplianceProfile::class, \App\Policies\AssetCompliance\AssetComplianceProfilePolicy::class);
         // Prüftermine: update-Ability für die Einladung externer Prüfer (MVP-290).
         Gate::policy(\App\Models\AssetCompliance\AssetInspectionSchedule::class, \App\Policies\AssetCompliance\AssetInspectionSchedulePolicy::class);
-        Gate::policy(\App\Models\ServiceQueue::class, \App\Policies\ServiceQueuePolicy::class);
+        Gate::policy(\App\Models\ServiceTicket\ServiceQueue::class, \App\Policies\ServiceTicket\ServiceQueuePolicy::class);
         // Servicekatalog (Feature 065, MVP-154): view = Ticket-Sicht, manage = service_catalog.manage.
-        Gate::policy(\App\Models\RequestItem::class, \App\Policies\RequestItemPolicy::class);
+        Gate::policy(\App\Models\Procurement\RequestItem::class, \App\Policies\Procurement\RequestItemPolicy::class);
         // Problem-Management (Feature 065, MVP-156): view = Ticket-Sicht, manage = service_desk.problem.manage.
-        Gate::policy(\App\Models\Problem::class, \App\Policies\ProblemPolicy::class);
+        Gate::policy(\App\Models\ServiceTicket\Problem::class, \App\Policies\ServiceTicket\ProblemPolicy::class);
         // Change-/CAB-Management (Feature 065, MVP-157): view = Ticket-Sicht, manage = service_desk.change.manage.
-        Gate::policy(\App\Models\Change::class, \App\Policies\ChangePolicy::class);
+        Gate::policy(\App\Models\ServiceTicket\Change::class, \App\Policies\ServiceTicket\ChangePolicy::class);
         Gate::policy(\App\Models\Chat\Channel::class, \App\Policies\Chat\ChannelPolicy::class);
         Gate::policy(\App\Models\Chat\Message::class, \App\Policies\Chat\MessagePolicy::class);
-        Gate::policy(\App\Models\Whistleblowing\WhistleblowingCase::class, \App\Policies\WhistleblowingCasePolicy::class);
+        Gate::policy(\App\Models\Whistleblowing\WhistleblowingCase::class, \App\Policies\Whistleblowing\WhistleblowingCasePolicy::class);
         Gate::policy(\App\Models\Integration\WebhookEndpoint::class, \App\Policies\Integration\WebhookEndpointPolicy::class);
         Gate::policy(\App\Models\Location\CustomerGeofence::class, \App\Policies\Location\CustomerGeofencePolicy::class);
         Gate::policy(\App\Models\Isms\IsmsRisk::class, \App\Policies\Isms\IsmsRiskPolicy::class);
@@ -650,13 +673,13 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(Material::class, MaterialPolicy::class);
         Gate::policy(Asset::class, AssetPolicy::class);
         Gate::policy(Software::class, SoftwarePolicy::class);
-        Gate::policy(\App\Models\Permit::class, \App\Policies\PermitPolicy::class);
+        Gate::policy(\App\Models\Asset\Permit::class, \App\Policies\Asset\PermitPolicy::class);
         Gate::policy(Site::class, SitePolicy::class);
         Gate::policy(Building::class, BuildingPolicy::class);
         Gate::policy(Floor::class, FloorPolicy::class);
         Gate::policy(MaintenancePlan::class, MaintenancePlanPolicy::class);
         Gate::policy(ServiceTicket::class, ServiceTicketPolicy::class);
-        Gate::policy(\App\Models\SlaViolation::class, \App\Policies\SlaViolationPolicy::class);
+        Gate::policy(\App\Models\ServiceTicket\SlaViolation::class, \App\Policies\ServiceTicket\SlaViolationPolicy::class);
         Gate::policy(KeyHandover::class, KeyHandoverPolicy::class);
         Gate::policy(MeterReading::class, MeterReadingPolicy::class);
         Gate::policy(NumberFormat::class, NumberFormatPolicy::class);
@@ -675,9 +698,9 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(Room::class, RoomPolicy::class);
         Gate::policy(OpenIssue::class, OpenIssuePolicy::class);
         Gate::policy(\App\Models\Customer\CustomerQuery::class, \App\Policies\Customer\CustomerQueryPolicy::class);
-        Gate::policy(\App\Models\SafetyEvent::class, \App\Policies\SafetyEventPolicy::class);
+        Gate::policy(\App\Models\Safety\SafetyEvent::class, \App\Policies\Safety\SafetyEventPolicy::class);
         Gate::policy(\App\Models\Notification\NotificationRule::class, \App\Policies\Notification\NotificationRulePolicy::class);
-        Gate::policy(\App\Models\Surcharge\SurchargeRule::class, \App\Policies\SurchargeRulePolicy::class);
+        Gate::policy(\App\Models\Surcharge\SurchargeRule::class, \App\Policies\Surcharge\SurchargeRulePolicy::class);
         Gate::policy(CommunicationNote::class, CommunicationNotePolicy::class);
         Gate::policy(\App\Models\Document\Document::class, \App\Policies\Document\DocumentPolicy::class);
         Gate::policy(\App\Models\Knowledge\KnowledgeArticle::class, \App\Policies\Knowledge\KnowledgeArticlePolicy::class);
@@ -696,7 +719,7 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(TimeExport::class, TimeExportPolicy::class);
         Gate::policy(\App\Models\Platform\UserBookmark::class, \App\Policies\Platform\UserBookmarkPolicy::class);
         Gate::policy(\App\Models\Platform\UserFilterPreset::class, \App\Policies\Platform\UserFilterPresetPolicy::class);
-        Gate::policy(Supplier::class, \App\Policies\SupplierPolicy::class);
+        Gate::policy(Supplier::class, \App\Policies\Supplier\SupplierPolicy::class);
         Gate::policy(\App\Models\Privacy\ProcessingActivity::class, \App\Policies\Privacy\ProcessingActivityPolicy::class);
         Gate::policy(\App\Models\Privacy\DataSubjectRequest::class, \App\Policies\Privacy\DataSubjectRequestPolicy::class);
         Gate::policy(\App\Models\Privacy\Processor::class, \App\Policies\Privacy\ProcessorPolicy::class);

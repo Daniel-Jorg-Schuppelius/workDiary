@@ -60,7 +60,7 @@ class RekeyEncryptedCoverageRuleTest extends TestCase {
         foreach ([
             \App\Models\Platform\User::class => 'two_factor_secret',
             \App\Models\Contacts\ContactBankAccount::class => 'iban',
-            \App\Models\IncomingEInvoice::class => 'creditor_iban',
+            \App\Models\Invoicing\IncomingEInvoice::class => 'creditor_iban',
             \App\Models\Platform\SystemSetting::class => 'value',
         ] as $class => $field) {
             $this->assertArrayHasKey($field, $map[$class] ?? [], $class);

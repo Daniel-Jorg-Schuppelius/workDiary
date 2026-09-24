@@ -14,7 +14,7 @@ namespace App\Plugins\Support;
 
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\{Organization, User};
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 

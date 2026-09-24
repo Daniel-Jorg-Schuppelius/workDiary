@@ -88,12 +88,12 @@ class UserOffboardingService {
      * Person noch hält oder offen hat — aus dem Bestand berechnet, kein eigenes
      * Modell. Zutrittsmedien sperren den Austritt weiterhin im Controller.
      *
-     * @return array{media: \Illuminate\Database\Eloquent\Collection<int, \App\Models\AccessMedium>, assets: \Illuminate\Database\Eloquent\Collection<int, \App\Models\AssetAssignment>, tasks: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Project\Task>, open_attendances: int}
+     * @return array{media: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Access\AccessMedium>, assets: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Asset\AssetAssignment>, tasks: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Project\Task>, open_attendances: int}
      */
     public function handoverChecklist(User $member): array {
         return [
             'media' => app(\App\Services\Access\AccessMediumService::class)->openMediaFor($member),
-            'assets' => \App\Models\AssetAssignment::query()->open()
+            'assets' => \App\Models\Asset\AssetAssignment::query()->open()
                 ->where('assigned_to_user_id', $member->id)
                 ->with('asset')
                 ->get(),
@@ -102,7 +102,7 @@ class UserOffboardingService {
                 ->where('status', '!=', \App\Enums\Task\TaskStatus::Done->value)
                 ->orderBy('title')
                 ->get(),
-            'open_attendances' => \App\Models\Attendance::query()->open()->where('user_id', $member->id)->count(),
+            'open_attendances' => \App\Models\Time\Attendance::query()->open()->where('user_id', $member->id)->count(),
         ];
     }
 

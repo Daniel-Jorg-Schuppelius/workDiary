@@ -12,9 +12,9 @@ namespace App\Models\Calendar;
 
 use App\Enums\Event\{ParticipantRole, ParticipantStatus};
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, Pivot};
 use Illuminate\Support\Carbon;
-use App\Models\Calendar\Event;
 
 /**
  * Pivot-Modell für event_user — bietet Convenience-Methoden

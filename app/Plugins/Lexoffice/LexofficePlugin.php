@@ -13,7 +13,8 @@ namespace App\Plugins\Lexoffice;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\{Organization, PluginSetting};
-use App\Models\{Supplier, TimeEntry};
+use App\Models\Supplier\Supplier;
+use App\Models\Time\TimeEntry;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{ContactSyncer, PaymentSyncer, Plugin, PluginCapability, SlotRenderer, TimeExporter};
 use App\Support\Query\DateRange;
@@ -262,7 +263,7 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
             return null;
         }
 
-        if ($slot === 'invoice-show.actions' && $context instanceof \App\Models\Invoice && $context->status === \App\Models\Invoice::STATUS_DRAFT) {
+        if ($slot === 'invoice-show.actions' && $context instanceof \App\Models\Invoicing\Invoice && $context->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT) {
             $url = route('invoices.lexoffice.publish', $context);
             $csrf = csrf_token();
             $label = __('An Lexoffice');

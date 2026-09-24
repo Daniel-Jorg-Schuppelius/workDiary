@@ -14,7 +14,7 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Reselling\{PeriodStatus, SubscriptionStatus};
 use App\Enums\User\Permission;
-use App\Models\Article;
+use App\Models\Article\Article;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};

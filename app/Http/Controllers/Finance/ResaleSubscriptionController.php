@@ -19,7 +19,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\Resale\{AssignResaleHolderRequest, ImportResaleFilesRequest, TransferResaleSubscriptionRequest};
 use App\Http\Requests\Finance\SaveResaleSubscriptionRequest;
-use App\Models\Article;
+use App\Models\Article\Article;
 use App\Models\Contract\Contract;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Platform\Organization;

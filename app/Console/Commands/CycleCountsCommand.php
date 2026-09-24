@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Console\Concerns\IteratesOrganizations;
+use App\Models\Inventory\Warehouse;
 use App\Models\Platform\Organization;
-use App\Models\Warehouse;
 use App\Services\Inventory\{CycleCountPlanner, StocktakeService};
 use Illuminate\Console\Command;
 

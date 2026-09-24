@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Patrols;
 
 use App\Models\Classification\EntryType;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Location\LocationDeviceToken;
 use App\Models\Patrol\{PatrolRoute, PatrolRun};
 use App\Models\Platform\User;

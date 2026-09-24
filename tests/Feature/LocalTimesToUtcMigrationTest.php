@@ -10,8 +10,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Asset, Room, Vehicle};
+use App\Models\Asset\Asset;
 use App\Models\Customer\Customer;
+use App\Models\Facility\Room;
+use App\Models\Fleet\Vehicle;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;

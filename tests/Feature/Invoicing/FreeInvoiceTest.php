@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Invoicing;
 
 use App\Enums\Article\ArticleType;
-use App\Models\{Article, ArticleVariant, Invoice, InvoiceItem};
+use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Customer\Customer;
+use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
 use App\Services\Invoicing\{InvoiceIssueException, InvoiceIssueService};
@@ -144,9 +145,9 @@ final class FreeInvoiceTest extends TestCase {
         $this->assertSame('250.0000', $shelfItem->unit_price?->getAmount());
 
         // Keine künstlichen Quellposten oder Lagerbewegungen.
-        $this->assertSame(0, \App\Models\TimeEntry::query()->count());
-        $this->assertSame(0, \App\Models\MaterialUsage::query()->count());
-        $this->assertSame(0, \App\Models\StockMovement::query()->count());
+        $this->assertSame(0, \App\Models\Time\TimeEntry::query()->count());
+        $this->assertSame(0, \App\Models\Material\MaterialUsage::query()->count());
+        $this->assertSame(0, \App\Models\Inventory\StockMovement::query()->count());
 
         // Verkäuferdaten für die E-Rechnung (Preflight), Leitweg-ID am Beleg.
         $this->organization->update(['settings' => ['einvoice' => [

@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Inventory;
 
-use App\Models\{Article, ArticleVariant, StockMovement, StockValuation, StockValuationLayer, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\{StockMovement, StockValuation, StockValuationLayer, Warehouse};
 use App\Services\Inventory\{FifoValuationService, ValuationBackfillService};
 use App\Services\Manufacturing\DeliveryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -13,10 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Timeline;
 
 use App\Models\Communication\CommunicationNote;
-use App\Models\{DiaryEntry, ServiceTicket};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Document\Document;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Models\ServiceTicket\ServiceTicket;
 use Carbon\CarbonImmutable;
 
 /**

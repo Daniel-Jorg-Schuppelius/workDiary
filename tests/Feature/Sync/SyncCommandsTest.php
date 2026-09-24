@@ -11,12 +11,13 @@
 namespace Tests\Feature\Sync;
 
 use App\Enums\Sync\SyncCommandStatus;
-use App\Models\{Attendance, DiaryEntry};
 use App\Models\Audit\AuditLog;
 use App\Models\Communication\Comment;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Form\{FormSubmission, FormTemplate};
 use App\Models\Integration\SyncCommand;
 use App\Models\Platform\{Organization, User};
+use App\Models\Time\Attendance;
 use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;

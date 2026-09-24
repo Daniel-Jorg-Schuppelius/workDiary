@@ -14,7 +14,7 @@
 
 @php
     use App\Enums\Access\AccessMediumStatus;
-    /** @var \App\Models\AccessMedium $medium */
+    /** @var \App\Models\Access\AccessMedium $medium */
 @endphp
 
 @section('content')

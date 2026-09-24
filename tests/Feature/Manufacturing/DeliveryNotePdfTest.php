@@ -10,8 +10,9 @@
 
 namespace Tests\Feature\Manufacturing;
 
-use App\Models\{Article, ArticleVariant, StockDelivery, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Customer\Customer;
+use App\Models\Inventory\{StockDelivery, Warehouse};
 use App\Models\Platform\User;
 use App\Services\Inventory\InventoryLedger;
 use App\Services\Manufacturing\{DeliveryService, ManufacturingOrderService};

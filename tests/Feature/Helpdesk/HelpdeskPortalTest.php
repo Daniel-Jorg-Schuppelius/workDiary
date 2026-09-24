@@ -13,7 +13,7 @@ namespace Tests\Feature\Helpdesk;
 use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
-use App\Models\{ServiceQueue, ServiceTicket, ServiceTicketMessage};
+use App\Models\ServiceTicket\{ServiceQueue, ServiceTicket, ServiceTicketMessage};
 use App\Services\ServiceTicket\TicketConversationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -165,26 +165,26 @@ final class HelpdeskPortalTest extends TestCase {
      * Organisation — interne, offene und fremde Probleme erscheinen NIE.
      */
     public function test_known_error_portal_shows_only_customer_visible_known_errors(): void {
-        \App\Models\Problem::query()->create([
+        \App\Models\ServiceTicket\Problem::query()->create([
             'organization_id' => $this->organization->id,
             'title' => 'Sichtbarer Known Error',
             'workaround' => 'Portal-Workaround: Cache leeren.',
             'status' => 'known_error',
             'visibility' => 'customer',
         ]);
-        \App\Models\Problem::query()->create([
+        \App\Models\ServiceTicket\Problem::query()->create([
             'organization_id' => $this->organization->id,
             'title' => 'INTERNER Known Error',
             'status' => 'known_error',
             'visibility' => 'internal',
         ]);
-        \App\Models\Problem::query()->create([
+        \App\Models\ServiceTicket\Problem::query()->create([
             'organization_id' => $this->organization->id,
             'title' => 'Offenes Kundenproblem',
             'status' => 'open',
             'visibility' => 'customer',
         ]);
-        \App\Models\Problem::query()->create([
+        \App\Models\ServiceTicket\Problem::query()->create([
             'organization_id' => \App\Models\Platform\Organization::factory()->create()->id,
             'title' => 'FREMDER Known Error',
             'status' => 'known_error',

@@ -11,7 +11,7 @@
 namespace App\Console\Commands;
 
 use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
-use App\Models\{Attendance, TimeEntry};
+use App\Models\Time\{Attendance, TimeEntry};
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;

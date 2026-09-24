@@ -10,24 +10,22 @@
 
 namespace App\Models\Classification;
 
+use App\Models\Asset\Asset;
+use App\Models\Communication\CommunicationNote;
 use App\Models\Concerns\{BelongsToOrganization, GeneratesUniqueSlug, HasSqid};
+use App\Models\Customer\Customer;
+use App\Models\Diary\{DiaryEntry, EmergencyAssignment, OnCallShift};
+use App\Models\Document\Document;
+use App\Models\Knowledge\KnowledgeArticle;
+use App\Models\Platform\User;
+use App\Models\Protocol\Protocol;
+use App\Models\Supplier\Supplier;
+use App\Models\Time\TimeEntry;
 use CommonToolkit\Helper\Data\StringHelper;
 use Database\Factories\Classification\TagFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphToMany};
-use App\Models\Asset;
-use App\Models\Communication\CommunicationNote;
-use App\Models\Customer\Customer;
-use App\Models\DiaryEntry;
-use App\Models\Document\Document;
-use App\Models\EmergencyAssignment;
-use App\Models\Knowledge\KnowledgeArticle;
-use App\Models\OnCallShift;
-use App\Models\Protocol;
-use App\Models\Supplier;
-use App\Models\TimeEntry;
-use App\Models\Platform\User;
 
 class Tag extends Model {
     use BelongsToOrganization;

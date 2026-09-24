@@ -11,7 +11,8 @@
 namespace Tests\Feature\Inventory;
 
 use App\Enums\Inventory\SerialStatus;
-use App\Models\{Article, ArticleVariant, StockSerial, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\{StockSerial, Warehouse};
 use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

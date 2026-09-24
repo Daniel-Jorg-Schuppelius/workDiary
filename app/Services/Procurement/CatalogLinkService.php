@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Procurement;
 
 use App\Enums\Procurement\CatalogItemStatus;
-use App\Models\{Article, ArticleSupply, ArticleVariant, SupplierCatalogItem};
+use App\Models\Article\{Article, ArticleSupply, ArticleVariant};
+use App\Models\Supplier\SupplierCatalogItem;
 use App\Services\Integration\Match\Normalize;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;

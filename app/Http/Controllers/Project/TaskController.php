@@ -11,13 +11,12 @@
 namespace App\Http\Controllers\Project;
 
 use App\Enums\Task\TaskStatus;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Project\SaveTaskRequest;
-use App\Models\Project\Project\Project;
-use App\Models\Project\Project\Task;
+use App\Models\Project\{Project, Task};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class TaskController extends Controller {
     public function create(Project $project, Request $request): View {

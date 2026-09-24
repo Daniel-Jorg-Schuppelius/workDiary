@@ -11,7 +11,8 @@
 namespace App\Services\Expense;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\{Expense, Invoice};
+use App\Models\Invoicing\Invoice;
+use App\Models\Travel\Expense;
 use Illuminate\Database\Eloquent\{Builder, Collection};
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -22,7 +23,7 @@ use RuntimeException;
  * - Akzeptiert ausschließlich Spesen im Status {@see ExpenseStatus::Approved}
  *   mit `billable=true`, deren Kunde zur Rechnung passt (direkt über
  *   `customer_id` oder über den Kunden des verknüpften Projekts).
- * - Erzeugt pro Spese eine {@see \App\Models\InvoiceItem} mit gesetztem
+ * - Erzeugt pro Spese eine {@see \App\Models\Invoicing\InvoiceItem} mit gesetztem
  *   `expense_id` (Menge 1, Einzelpreis = Brutto). Position führt fort,
  *   wo die Rechnung aktuell endet.
  * - Setzt den Spesen-Status auf {@see ExpenseStatus::Invoiced} und ruft am

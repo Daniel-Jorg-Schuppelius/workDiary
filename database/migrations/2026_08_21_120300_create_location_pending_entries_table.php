@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Review-Eingang für aus Geofence-Besuchen abgeleitete Zeitvorschläge (analog
  * {@see App\Models\OpenProjectPendingEntry}). Standortdaten werden nie blind
- * gebucht: erst nach Bestätigung entsteht ein {@see App\Models\TimeEntry}.
+ * gebucht: erst nach Bestätigung entsteht ein {@see App\Models\Time\TimeEntry}.
  */
 return new class extends Migration {
     public function up(): void {

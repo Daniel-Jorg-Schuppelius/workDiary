@@ -14,7 +14,7 @@ namespace Tests\Feature\Portal;
 
 use App\Models\Attachments\Attachment;
 use App\Models\Customer\{Customer, CustomerQuery};
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -10,8 +10,9 @@
 
 namespace Tests\Feature\Schedule;
 
-use App\Models\{CoverageRequirement, DutyPlan, Qualification, ScheduledShift, ShiftType};
-use App\Services\CoverageService;
+use App\Models\Hr\Qualification;
+use App\Models\Schedule\{CoverageRequirement, DutyPlan, ScheduledShift, ShiftType};
+use App\Services\Schedule\CoverageService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

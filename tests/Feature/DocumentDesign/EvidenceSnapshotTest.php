@@ -13,9 +13,10 @@ namespace Tests\Feature\DocumentDesign;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Enums\Protocol\ProtocolType;
 use App\Enums\Timesheet\TimesheetStatus;
-use App\Models\{DiaryEntry, Timesheet};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
+use App\Models\Time\Timesheet;
 use App\Services\DocumentDesign\{DocumentDesignRenderer, RenderProfileService};
 use App\Services\Protocol\ProtocolService;
 use App\Services\Timesheet\SignatureService;
@@ -56,7 +57,7 @@ class EvidenceSnapshotTest extends TestCase {
     /** Aktiviert nach dem Einfrieren eine NEUE Profilversion (Profilwechsel). */
     private function supersedeActiveVersion(): void {
         $profiles = app(RenderProfileService::class);
-        $profile = \App\Models\Document\DocumentDesign\DocumentRenderProfile::query()->where('is_default', true)->firstOrFail();
+        $profile = \App\Models\DocumentDesign\DocumentRenderProfile::query()->where('is_default', true)->firstOrFail();
         $draft = $profiles->newDraftFrom($profile->versions()->orderByDesc('version')->firstOrFail(), $this->admin);
         $this->assertTrue($profiles->activate($draft, $this->admin)->ok());
         $this->assertNotSame($this->frozenVersionId, (int) $profile->refresh()->active_version_id);

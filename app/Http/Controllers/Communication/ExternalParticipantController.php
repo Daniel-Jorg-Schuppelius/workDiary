@@ -11,19 +11,19 @@
 namespace App\Http\Controllers\Communication;
 
 use App\Enums\ExternalParticipant\{ExternalAbility, ExternalParty};
+use App\Http\Controllers\Controller;
 use App\Mail\ExternalParticipantInvitedMail;
-use App\Models\DiaryEntry;
-use App\Models\Document\Document\Document;
-use App\Models\Contacts\ExternalContact;
 use App\Models\Communication\ExternalParticipant;
-use App\Models\Protocol;
+use App\Models\Contacts\ExternalContact;
+use App\Models\Diary\DiaryEntry;
+use App\Models\Document\Document;
 use App\Models\Platform\User;
+use App\Models\Protocol\Protocol;
 use App\Services\ExternalParticipant\ExternalParticipantService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Mail};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Interne Verwaltung externer Beteiligter (Feature 033): Einladen,

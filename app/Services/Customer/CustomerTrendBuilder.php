@@ -11,9 +11,10 @@
 namespace App\Services\Customer;
 
 use App\Models\Customer\Customer;
-use App\Models\{Invoice, TimeEntry};
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
+use App\Models\Time\TimeEntry;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\{DB, Gate};

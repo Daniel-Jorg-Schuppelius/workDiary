@@ -1,0 +1,299 @@
+<?php
+/*
+ * Created on   : Tue Jun 16 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : ArticleController.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace App\Http\Controllers\Article;
+
+use App\Enums\Article\{ArticleStatus, ArticleType, ArticleUnitKind};
+use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesCurrentOrganization};
+use App\Http\Requests\Article\SaveArticleRequest;
+use App\Models\Article\Article;
+use App\Models\Article\ArticleOptionDefinition;
+use App\Models\Article\ArticleOptionValue;
+use App\Models\Article\ArticleVariant;
+use App\Services\Article\{ArticleService, VariantResolver};
+use App\Support\ErrorText;
+use CommonToolkit\ValueObjects\Decimal;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\View\View;
+use RuntimeException;
+use App\Http\Controllers\Controller;
+
+/**
+ * Admin-UI des kanonischen Artikelstamms (Feature 048, MVP-060): Artikel-CRUD
+ * als Modal-Dialog sowie Verwaltung von Optionen, Optionswerten, Einheiten und
+ * Varianten auf der Detailseite. Modul-Gating über `articles.*` → module.lager.
+ */
+class ArticleController extends Controller {
+    use ParsesIndexQuery;
+    use ResolvesCurrentOrganization;
+
+    private const ALLOWED_SORTS = ['name', 'number', 'created_at'];
+
+    public function __construct(
+        private readonly ArticleService $articles,
+        private readonly VariantResolver $variants,
+    ) {}
+
+    public function index(Request $request): View {
+        Gate::authorize('viewAny', Article::class);
+
+        ['status' => $status, 'search' => $search, 'sort' => $sort, 'dir' => $dir]
+            = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'name');
+
+        // MVP-604: Kategorie-Filter über die gepflegten Artikel-Kategorien.
+        $category = trim((string) $request->input('category', ''));
+
+        $articles = Article::query()
+            ->withCount('variants')
+            ->when($search !== '', fn($q) => $q->search($search))
+            ->when($status !== 'all', fn($q) => $q->where('status', $status))
+            ->when($category !== '', fn($q) => $q->where('category', $category))
+            ->orderBy($sort, $dir)
+            ->paginate(25)
+            ->withQueryString();
+
+        return view('articles.index', [
+            'articles' => $articles,
+            'status' => $status,
+            'search' => $search,
+            'category' => $category,
+            'categories' => Article::query()->whereNotNull('category')->where('category', '!=', '')
+                ->distinct()->orderBy('category')->pluck('category'),
+            'sort' => $sort,
+            'dir' => $dir,
+            'types' => ArticleType::cases(),
+            'statuses' => ArticleStatus::cases(),
+            // Feature 107: Artikelnummern > 15 Zeichen passen nicht in DATANORM
+            // und fallen beim Export still raus — sichtbar machen.
+            'datanormOversized' => Article::query()
+                ->where('sellable', true)
+                ->where('status', ArticleStatus::Active)
+                ->whereRaw('LENGTH(number) > 15')
+                ->count(),
+        ]);
+    }
+
+    public function create(): View {
+        Gate::authorize('create', Article::class);
+
+        return $this->form(null);
+    }
+
+    public function store(SaveArticleRequest $request): RedirectResponse {
+        Gate::authorize('create', Article::class);
+
+        $data = $request->validated();
+        $tagIds = $data['tag_ids'] ?? [];
+        $newTagsRaw = (string) ($data['new_tags'] ?? '');
+        unset($data['tag_ids'], $data['new_tags']);
+
+        $data['created_by'] = Auth::id();
+        $article = $this->articles->createArticle($this->currentOrganization(), $data);
+        $article->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
+
+        return redirect()->route('articles.show', $article)
+            ->with('success', __('article.flash.created'));
+    }
+
+    public function show(Article $article, \App\Services\Procurement\SupplySourceComparator $comparator): View {
+        Gate::authorize('view', $article);
+
+        $article->load(['optionDefinitions.values', 'variants.optionValues', 'units', 'externalMappings', 'priceTiers', 'costBenchmarks.catalog']);
+
+        $supplies = $comparator->forArticle($article);
+
+        return view('articles.show', [
+            'article' => $article,
+            'unitKinds' => ArticleUnitKind::cases(),
+            'supplies' => $supplies,
+            'recommendedSupplyId' => $comparator->recommend($article)?->id,
+            'tags' => $article->tags()->get(),
+            'identifierIssues' => app(\App\Services\Stammdaten\IdentifierIssueDetector::class)->forArticle($article),
+        ]);
+    }
+
+    /** Markiert eine Bezugsquelle als bevorzugt (Lieferantenvergleich, Feature 050). */
+    public function setPreferredSupply(Article $article, \App\Models\Article\ArticleSupply $supply): RedirectResponse {
+        Gate::authorize('update', $article);
+        abort_unless($supply->article_id === $article->id, 404);
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($article, $supply): void {
+            $article->supplies()->update(['is_preferred' => false]);
+            $supply->forceFill(['is_preferred' => true])->save();
+        });
+
+        return back()->with('success', __('article.supplies.flash.preferred_set'));
+    }
+
+    public function edit(Article $article): View {
+        Gate::authorize('update', $article);
+
+        return $this->form($article);
+    }
+
+    public function update(SaveArticleRequest $request, Article $article): RedirectResponse {
+        Gate::authorize('update', $article);
+
+        $data = $request->validated();
+        $tagIds = $data['tag_ids'] ?? [];
+        $newTagsRaw = (string) ($data['new_tags'] ?? '');
+        unset($data['tag_ids'], $data['new_tags']);
+
+        $article->update($data);
+        $article->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
+
+        return redirect()->route('articles.show', $article)
+            ->with('success', __('article.flash.updated'));
+    }
+
+    public function destroy(Article $article): RedirectResponse {
+        Gate::authorize('delete', $article);
+
+        if (! $this->articles->canDelete($article)) {
+            return redirect()->route('articles.show', $article)
+                ->with('error', __('article.flash.delete_blocked'));
+        }
+
+        $article->delete();
+
+        return redirect()->toList('articles.index')
+            ->with('success', __('article.flash.deleted'));
+    }
+
+    public function retire(Article $article): RedirectResponse {
+        Gate::authorize('update', $article);
+
+        $this->articles->retire($article);
+
+        return redirect()->route('articles.show', $article)
+            ->with('success', __('article.flash.retired'));
+    }
+
+    // ── Verschachtelte Stammdaten ───────────────────────────────────────
+
+    /** Verkaufs-Staffelpreis anlegen/aktualisieren (Feature 107, MVP-605). */
+    public function storeTier(Request $request, Article $article): RedirectResponse {
+        Gate::authorize('update', $article);
+        $data = $request->validate([
+            'min_qty' => ['required', 'numeric', 'decimal:0,8', 'min:0.01', 'max:99999999'],
+            'unit_price' => ['required', 'numeric', 'min:0', 'max:99999999'],
+        ]);
+
+        $article->priceTiers()->updateOrCreate(
+            ['article_id' => $article->id, 'min_qty' => Decimal::of((string) $data['min_qty'], 2)->getValue()],
+            ['organization_id' => $article->organization_id, 'unit_price' => (string) $data['unit_price']]
+        );
+
+        return back()->with('success', __('article.tiers.flash.saved'));
+    }
+
+    public function destroyTier(Article $article, \App\Models\Article\ArticlePriceTier $tier): RedirectResponse {
+        Gate::authorize('update', $article);
+        abort_unless((int) $tier->article_id === (int) $article->id, 404);
+
+        $tier->delete();
+
+        return back()->with('success', __('article.tiers.flash.deleted'));
+    }
+
+    public function storeOption(Request $request, Article $article): RedirectResponse {
+        Gate::authorize('update', $article);
+        $data = $request->validate([
+            'code' => ['required', 'string', 'max:40'],
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $article->optionDefinitions()->create($data + ['active' => true]);
+
+        return back()->with('success', __('article.flash.option_added'));
+    }
+
+    public function storeOptionValue(Request $request, Article $article, ArticleOptionDefinition $option): RedirectResponse {
+        Gate::authorize('update', $article);
+        abort_unless((int) $option->article_id === (int) $article->id, 404);
+
+        $data = $request->validate([
+            'code' => ['required', 'string', 'max:40'],
+            'label' => ['required', 'string', 'max:255'],
+        ]);
+
+        $option->values()->create($data + ['active' => true]);
+
+        return back()->with('success', __('article.flash.value_added'));
+    }
+
+    public function storeUnit(Request $request, Article $article): RedirectResponse {
+        Gate::authorize('update', $article);
+        $data = $request->validate([
+            'code' => ['required', 'string', 'max:20'],
+            'label' => ['nullable', 'string', 'max:255'],
+            'kind' => ['required', \Illuminate\Validation\Rule::enum(ArticleUnitKind::class)],
+            'factor_to_base' => ['required', 'numeric', 'gt:0'],
+        ]);
+
+        $article->units()->create($data + ['active' => true]);
+
+        return back()->with('success', __('article.flash.unit_added'));
+    }
+
+    public function storeVariant(Request $request, Article $article): RedirectResponse {
+        Gate::authorize('update', $article);
+        $data = $request->validate([
+            'option_value_ids' => ['required', 'array', 'min:1'],
+            // Sqid oder rohe ID (Alt-Clients); Regex akzeptiert beides.
+            'option_value_ids.*' => ['required', 'regex:/^[A-Za-z0-9]{1,32}$/'],
+            'sale_price' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        try {
+            $variant = $this->variants->createVariant(
+                $article,
+                // 0-Sentinel: unbekannte Werte lehnt createVariant artikel-gebunden ab.
+                array_values(array_map(
+                    static fn ($v): int => \App\Support\Sqid::decodeOrNumeric(ArticleOptionValue::class, $v, 0) ?? 0,
+                    $data['option_value_ids'],
+                )),
+                ['created_by' => Auth::id(), 'sale_price' => $data['sale_price'] ?? null],
+            );
+            $this->articles->assignVariantSku($variant);
+        } catch (RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
+
+        return back()->with('success', __('article.flash.variant_added'));
+    }
+
+    public function retireVariant(Article $article, ArticleVariant $variant): RedirectResponse {
+        Gate::authorize('update', $article);
+        abort_unless((int) $variant->article_id === (int) $article->id, 404);
+
+        $variant->update(['status' => ArticleStatus::Retired->value]);
+
+        return back()->with('success', __('article.flash.variant_retired'));
+    }
+
+    private function form(?Article $article): View {
+        return view('articles._form_dialog', [
+            'article' => $article,
+            'isDialog' => true,
+            'types' => ArticleType::cases(),
+            'statuses' => ArticleStatus::cases(),
+            'allTags' => \App\Models\Classification\Tag::query()->orderBy('name')->get(),
+            // Feature 107 W9: Verkaufs-Rabattgruppe für den DATANORM-Export.
+            'salesDiscountGroups' => \App\Models\Sales\SalesDiscountGroup::query()->orderBy('code')->get(),
+            // Typ-Picker (produktmodell-konzept.md, MVP-370).
+            'products' => \App\Models\Article\Product::query()
+                ->orderBy('manufacturer')
+                ->orderBy('model')
+                ->get(['id', 'manufacturer', 'model', 'name']),
+        ]);
+    }
+}

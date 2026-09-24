@@ -11,7 +11,7 @@
 
 @php
 /**
- * @var \App\Models\InvoiceSchedule $schedule
+ * @var \App\Models\Invoicing\InvoiceSchedule $schedule
  * @var bool $isBlocked
  */
 @endphp
@@ -33,18 +33,18 @@
                                 data-entry-modal-trigger
                                 :href="route('invoice-schedules.items.create', $schedule) . '?dialog=1'"
                                 show-label>{{ __('Position hinzufügen') }}</x-icon-btn>
-                    @if ($schedule->status === \App\Models\InvoiceSchedule::STATUS_ACTIVE)
+                    @if ($schedule->status === \App\Models\Invoicing\InvoiceSchedule::STATUS_ACTIVE)
                         <x-action-form :action="route('invoice-schedules.status', $schedule)" method="PATCH">
                             <input type="hidden" name="status" value="paused">
                             <x-icon-btn icon="pause" tone="warning" size="sm" type="submit" show-label>{{ __('Aussetzen') }}</x-icon-btn>
                         </x-action-form>
-                    @elseif ($schedule->status === \App\Models\InvoiceSchedule::STATUS_PAUSED)
+                    @elseif ($schedule->status === \App\Models\Invoicing\InvoiceSchedule::STATUS_PAUSED)
                         <x-action-form :action="route('invoice-schedules.status', $schedule)" method="PATCH">
                             <input type="hidden" name="status" value="active">
                             <x-icon-btn icon="play_arrow" tone="success" size="sm" type="submit" show-label>{{ __('Fortsetzen') }}</x-icon-btn>
                         </x-action-form>
                     @endif
-                    @if ($schedule->status !== \App\Models\InvoiceSchedule::STATUS_ENDED)
+                    @if ($schedule->status !== \App\Models\Invoicing\InvoiceSchedule::STATUS_ENDED)
                         <x-action-form :action="route('invoice-schedules.status', $schedule)" method="PATCH"
                               :confirm="__('Plan endgültig beenden? Ein beendeter Plan kann nicht reaktiviert werden.')"
                               :confirm-label="__('Beenden')">
@@ -72,7 +72,7 @@
             <div>
                 <div class="text-xs text-muted">{{ __('Intervall') }}</div>
                 {{ __('alle :count :unit', ['count' => $schedule->interval_count, 'unit' => $schedule->unitLabel()]) }}
-                · {{ $schedule->billing_period_mode === \App\Models\InvoiceSchedule::MODE_CURRENT ? __('laufender Zeitraum') : __('abgelaufener Zeitraum') }}
+                · {{ $schedule->billing_period_mode === \App\Models\Invoicing\InvoiceSchedule::MODE_CURRENT ? __('laufender Zeitraum') : __('abgelaufener Zeitraum') }}
             </div>
             <div>
                 <div class="text-xs text-muted">{{ __('Nächste Läufe') }}</div>

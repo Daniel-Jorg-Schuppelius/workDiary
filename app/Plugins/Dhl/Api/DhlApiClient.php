@@ -11,7 +11,7 @@
 namespace App\Plugins\Dhl\Api;
 
 use APIToolkit\API\Authentication\BasicAuthentication;
-use App\Models\CarrierConnection;
+use App\Models\Shipping\CarrierConnection;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Illuminate\Http\Client\Response;
 use RuntimeException;

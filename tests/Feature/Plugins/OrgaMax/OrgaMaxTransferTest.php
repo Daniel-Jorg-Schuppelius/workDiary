@@ -19,7 +19,7 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
 use App\Models\Plugins\OrgaMax\OrgaMaxConnection;
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Services\Finance\BillingTransferService;
 use App\Services\Finance\Targets\OrgaMaxTarget;

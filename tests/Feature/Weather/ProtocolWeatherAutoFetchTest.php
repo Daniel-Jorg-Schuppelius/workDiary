@@ -14,7 +14,7 @@ use App\Enums\Protocol\ProtocolStatus;
 use App\Jobs\FetchProtocolWeatherJob;
 use App\Models\Customer\Customer;
 use App\Models\Project\Project;
-use App\Models\Protocol;
+use App\Models\Protocol\Protocol;
 use App\Models\Weather\WeatherSnapshot;
 use App\Services\Weather\Contracts\WeatherProvider;
 use Carbon\CarbonInterface;

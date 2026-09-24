@@ -12,8 +12,10 @@ namespace Tests\Feature;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Enums\Vacation\VacationStatus;
-use App\Models\{CoverageRequirement, DutyPlan, Qualification, ScheduledShift, ShiftType, Vacation};
+use App\Models\Absence\Vacation;
+use App\Models\Hr\Qualification;
 use App\Models\Platform\{Holiday, User};
+use App\Models\Schedule\{CoverageRequirement, DutyPlan, ScheduledShift, ShiftType};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

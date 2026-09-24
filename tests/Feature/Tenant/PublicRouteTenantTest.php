@@ -12,7 +12,7 @@ namespace Tests\Feature\Tenant;
 
 use App\Enums\Timesheet\{TimesheetKind, TimesheetStatus};
 use App\Models\Platform\{Organization, User};
-use App\Models\Timesheet;
+use App\Models\Time\Timesheet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -56,7 +56,7 @@ class PublicRouteTenantTest extends TestCase {
             'work_date' => now()->toDateString(),
             'kind' => TimesheetKind::Project,
             'status' => TimesheetStatus::Submitted,
-            'magic_token_hash' => \App\Models\Timesheet::hashMagicToken($token),
+            'magic_token_hash' => \App\Models\Time\Timesheet::hashMagicToken($token),
             'magic_expires_at' => now()->addHour(),
         ]));
 
@@ -87,7 +87,7 @@ class PublicRouteTenantTest extends TestCase {
             'work_date' => now()->toDateString(),
             'kind' => TimesheetKind::Project,
             'status' => TimesheetStatus::Submitted,
-            'magic_token_hash' => \App\Models\Timesheet::hashMagicToken($token),
+            'magic_token_hash' => \App\Models\Time\Timesheet::hashMagicToken($token),
             'magic_expires_at' => now()->subMinute(),
         ]));
 
@@ -104,7 +104,7 @@ class PublicRouteTenantTest extends TestCase {
             'work_date' => now()->toDateString(),
             'kind' => TimesheetKind::Project,
             'status' => TimesheetStatus::Submitted,
-            'magic_token_hash' => \App\Models\Timesheet::hashMagicToken(Str::random(48)),
+            'magic_token_hash' => \App\Models\Time\Timesheet::hashMagicToken(Str::random(48)),
             'magic_expires_at' => now()->addHour(),
         ]));
 

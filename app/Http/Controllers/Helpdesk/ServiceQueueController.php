@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Helpdesk;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\Team;
-use App\Models\{ServiceQueue, SlaContract};
+use App\Models\ServiceTicket\{ServiceQueue, SlaContract};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{DB, Gate};
 use Illuminate\View\View;

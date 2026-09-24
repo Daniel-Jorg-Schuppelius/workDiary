@@ -14,17 +14,16 @@ namespace App\Http\Controllers\Sales;
 
 use App\Enums\Sales\{LeadSource, LeadStatus};
 use App\Enums\User\Permission;
-use App\Models\Customer\Customer\Customer;
-use App\Models\Sales\Lead;
+use App\Http\Controllers\Controller;
+use App\Models\Customer\Customer;
 use App\Models\Platform\User;
+use App\Models\Sales\Lead;
 use App\Services\Sales\LeadService;
-use App\Support\SqidEncoder;
-use App\Support\ErrorText;
+use App\Support\{ErrorText, SqidEncoder};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * Lead-Pipeline (Feature 091, MVP-654–656): Interessenten vor dem

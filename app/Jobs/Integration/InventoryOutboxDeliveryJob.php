@@ -16,7 +16,7 @@ use App\Contracts\Inventory\ExternalInventoryDispatcher;
 use App\Contracts\PluginDispatcher;
 use App\Jobs\AbstractOutboxDeliveryJob;
 use App\Models\Integration\PendingExternalConflict;
-use App\Models\{InventoryOutboxEntry, StockMovement};
+use App\Models\Inventory\{InventoryOutboxEntry, StockMovement};
 use App\Models\Platform\Organization;
 use App\Services\Inventory\{ExternalInventoryDispatcherResolver, InventoryOutboxService};
 use App\Services\Licensing\ModuleStatusResolver;

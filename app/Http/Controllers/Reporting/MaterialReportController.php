@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
-use App\Models\MaterialUsage;
+use App\Models\Material\MaterialUsage;
 use App\Models\Project\Project;
 use App\Services\Reporting\ReportFilters;
 use App\Support\ChartBucket;

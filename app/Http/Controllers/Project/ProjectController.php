@@ -12,20 +12,17 @@ namespace App\Http\Controllers\Project;
 
 use App\Enums\Project\ProjectStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Project\SaveProjectRequest;
-use App\Models\DiaryEntry;
-use App\Models\Project\Project\Project;
-use App\Models\Project\Project\RecurrenceRule;
-use App\Models\Project\Project\Task;
-use App\Models\Platform\Team;
-use App\Models\Platform\User;
+use App\Models\Diary\DiaryEntry;
+use App\Models\Platform\{Team, User};
 use App\Models\Plugins\Lexoffice\LexofficeArticle;
+use App\Models\Project\{Project, RecurrenceRule, Task};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class ProjectController extends Controller {
     use ResolvesGlobalDateRange;
@@ -183,7 +180,7 @@ class ProjectController extends Controller {
                 $timeDir,
             ),
             'task' => $timeEntriesQuery->orderBy(
-                \App\Models\Project\Project\Task::query()->select('title')->whereColumn('tasks.id', 'time_entries.task_id'),
+                \App\Models\Project\Task::query()->select('title')->whereColumn('tasks.id', 'time_entries.task_id'),
                 $timeDir,
             ),
             'minutes', 'description', 'date' => $timeEntriesQuery->orderBy($timeSort, $timeDir),
@@ -377,7 +374,7 @@ class ProjectController extends Controller {
      * Berechnet die Zeitstrahl-Daten (Achse in Wochen, Balken in Prozent-Offsets).
      *
      * @param  Collection<int, Task>  $tasks
-     * @param  Collection<int, \App\Models\Project\Project\Milestone>  $milestones
+     * @param  Collection<int, \App\Models\Project\Milestone>  $milestones
      * @return array<string, mixed>
      */
     private function buildTimeline(Collection $tasks, Collection $milestones, Project $project): array {

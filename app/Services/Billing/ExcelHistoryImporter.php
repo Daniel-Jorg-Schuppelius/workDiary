@@ -17,7 +17,7 @@ use App\Models\Billing\CustomerBillingAgreement;
 use App\Models\Classification\ActivityCategory;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\Month;
 use CommonToolkit\Parsers\XLSXDocumentParser;

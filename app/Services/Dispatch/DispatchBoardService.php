@@ -14,7 +14,8 @@ namespace App\Services\Dispatch;
 
 use App\Enums\Diary\DispatchStatus;
 use App\Enums\ServiceTicket\SlaStatus;
-use App\Models\{DiaryEntry, ServiceTicket};
+use App\Models\Diary\DiaryEntry;
+use App\Models\ServiceTicket\ServiceTicket;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 

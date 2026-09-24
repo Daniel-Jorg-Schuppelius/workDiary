@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Ups\Api;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2ClientCredentialsGrant;
-use App\Models\CarrierConnection;
+use App\Models\Shipping\CarrierConnection;
 use App\Services\Shipping\{AbstractCarrierOAuthApiClient, CarrierTokenCache};
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Str;

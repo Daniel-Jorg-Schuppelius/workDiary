@@ -180,7 +180,7 @@ class DiaryEntryTypeFlowTest extends TestCase {
     public function test_inactive_type_stays_selectable_and_enforced_on_edit(): void {
         $customer = Customer::factory()->create(['organization_id' => $this->admin->organization_id]);
         $type = $this->createTypeViaAdminUi();
-        $entry = \App\Models\DiaryEntry::factory()->for($this->admin)->create([
+        $entry = \App\Models\Diary\DiaryEntry::factory()->for($this->admin)->create([
             'entry_type_id' => $type->id,
             'customer_id' => $customer->id,
         ]);
@@ -263,7 +263,7 @@ class DiaryEntryTypeFlowTest extends TestCase {
         ]);
         $type = $this->createTypeViaAdminUi();
 
-        $entry = \App\Models\DiaryEntry::factory()->for($this->admin)->create([
+        $entry = \App\Models\Diary\DiaryEntry::factory()->for($this->admin)->create([
             'entry_type_id' => $type->id,
             'customer_id' => $customer->id,
         ]);

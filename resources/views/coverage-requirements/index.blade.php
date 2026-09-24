@@ -17,7 +17,7 @@
         <x-icon-btn icon="arrow_back" size="sm"
                     :href="route('duty-plans.show', $dutyPlan)"
                     show-label>{{ __('Zurück') }}</x-icon-btn>
-        @can('create', \App\Models\CoverageRequirement::class)
+        @can('create', \App\Models\Schedule\CoverageRequirement::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger
                         :href="route('duty-plans.coverage.create', $dutyPlan)"
@@ -48,7 +48,7 @@
                     0 => __('So'), 1 => __('Mo'), 2 => __('Di'), 3 => __('Mi'),
                     4 => __('Do'), 5 => __('Fr'), 6 => __('Sa'),
                 ];
-                $qualNames = \App\Models\Qualification::query()->pluck('name', 'id');
+                $qualNames = \App\Models\Hr\Qualification::query()->pluck('name', 'id');
             @endphp
             @foreach ($requirements as $req)
                     <tr>

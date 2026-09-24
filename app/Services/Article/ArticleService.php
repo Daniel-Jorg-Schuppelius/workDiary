@@ -14,7 +14,7 @@ namespace App\Services\Article;
 
 use App\Enums\Article\ArticleStatus;
 use App\Enums\Numbering\NumberScope;
-use App\Models\{Article, ArticleVariant};
+use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Platform\Organization;
 use App\Services\Numbering\NumberSequenceService;
 use RuntimeException;

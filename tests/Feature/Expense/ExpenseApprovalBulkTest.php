@@ -11,8 +11,8 @@
 namespace Tests\Feature\Expense;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\{Expense, ExpenseCategory};
 use App\Models\Platform\User;
+use App\Models\Travel\{Expense, ExpenseCategory};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\Concerns\WithOrganization;

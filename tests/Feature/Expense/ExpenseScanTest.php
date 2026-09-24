@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Expense;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\Expense;
 use App\Models\Platform\User;
+use App\Models\Travel\Expense;
 use App\Services\Expense\{ExpenseScanService, ExpenseService};
 use App\Services\Invoicing\InvoicePdfImportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -19,7 +19,7 @@
                    class="input input-sm input-bordered">
         </x-filter-field>
         <x-slot:extra>
-            @can('create', \App\Models\Material::class)
+            @can('create', \App\Models\Material\Material::class)
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
                             :href="route('materials.create')"

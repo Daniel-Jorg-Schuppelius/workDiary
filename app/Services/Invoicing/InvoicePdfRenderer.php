@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Invoicing;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 use App\Services\UI\BrandingService;
 use PDFToolkit\Entities\PDFContent;
@@ -105,7 +105,7 @@ class InvoicePdfRenderer {
     }
 
     private function hasSnapshotRecord(Invoice $invoice, RenderDocumentKind $kind): bool {
-        return \App\Models\Document\DocumentDesign\DocumentRenderSnapshot::query()
+        return \App\Models\DocumentDesign\DocumentRenderSnapshot::query()
             ->withoutGlobalScopes()
             ->where('documentable_type', $invoice->getMorphClass())
             ->where('documentable_id', $invoice->getKey())

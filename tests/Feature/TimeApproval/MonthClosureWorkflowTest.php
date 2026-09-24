@@ -12,8 +12,8 @@ namespace Tests\Feature\TimeApproval;
 
 use App\Enums\TimeApproval\MonthClosureStatus;
 use App\Enums\User\Permission as P;
-use App\Models\{Attendance, MonthClosureEvent};
 use App\Models\Platform\User;
+use App\Models\Time\{Attendance, MonthClosureEvent};
 use App\Services\TimeApproval\{MonthClosureService, MonthClosureWorkflowException};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -121,7 +121,7 @@ class MonthClosureWorkflowTest extends TestCase {
     public function test_snapshot_counts_vacation_sick_and_holiday_days(): void {
         $user = $this->makeUser();
 
-        \App\Models\Vacation::query()->create([
+        \App\Models\Absence\Vacation::query()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $user->id,
             'start_date' => '2023-12-28', // ragt in den Vormonat — geclippt: 02.–03.01. = 2 Werktage
@@ -129,7 +129,7 @@ class MonthClosureWorkflowTest extends TestCase {
             'type' => \App\Enums\Vacation\VacationType::Vacation,
             'status' => \App\Enums\Vacation\VacationStatus::Approved,
         ]);
-        \App\Models\SickLeave::query()->create([
+        \App\Models\Absence\SickLeave::query()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $user->id,
             'start_date' => '2024-01-05', // Fr + Wochenende + Mo = 2 Werktage

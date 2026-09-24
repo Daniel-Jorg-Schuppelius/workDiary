@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Gaeb;
 
-use App\Models\{BillOfQuantity, BoqCatalog, BoqCatalogAssignment};
 use App\Models\Catalog\{CatalogCodeMapping, CatalogEntry, CatalogRegistry};
+use App\Models\Gaeb\{BillOfQuantity, BoqCatalog, BoqCatalogAssignment};
 
 /**
  * Ausgabenwechsel eines Kostengruppenkatalogs (Feature 109, MVP-641).

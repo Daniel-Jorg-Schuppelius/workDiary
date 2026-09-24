@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Compliance\Rules;
 
 use App\Enums\Vacation\VacationStatus;
-use App\Models\{ScheduledShift, Vacation};
+use App\Models\Absence\Vacation;
+use App\Models\Schedule\ScheduledShift;
 use App\Services\Compliance\{ComplianceRule, ComplianceViolation};
 
 /** Schicht fällt in genehmigten Urlaub des Mitarbeiters. */

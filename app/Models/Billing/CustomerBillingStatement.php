@@ -104,10 +104,10 @@ class CustomerBillingStatement extends Model {
      * An Lexoffice übergebene Monatspauschale dieses Monats (Retainer-Modus,
      * Feature 098) — Idempotenz-Anker gegen Doppelbelege.
      *
-     * @return BelongsTo<\App\Models\Invoice, $this>
+     * @return BelongsTo<\App\Models\Invoicing\Invoice, $this>
      */
     public function retainerInvoice(): BelongsTo {
-        return $this->belongsTo(\App\Models\Invoice::class, 'retainer_invoice_id');
+        return $this->belongsTo(\App\Models\Invoicing\Invoice::class, 'retainer_invoice_id');
     }
 
     /**

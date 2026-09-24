@@ -14,9 +14,10 @@ namespace App\Services\CustomerPortal;
 
 use App\Enums\CustomerPortal\PortalCapability;
 use App\Models\Customer\Customer;
-use App\Models\{DiaryEntry, TimeEntry};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Document\Document;
 use App\Models\Platform\User;
+use App\Models\Time\TimeEntry;
 use App\Support\Sqid;
 use Illuminate\Database\Eloquent\Model;
 

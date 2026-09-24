@@ -11,16 +11,13 @@
 namespace App\Http\Controllers\Project;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Http\Requests\Project\SaveProjectBillingRuleRequest;
-use App\Http\Requests\Project\SaveProjectBillingSettingsRequest;
-use App\Http\Requests\Project\SaveProjectRatesRequest;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Project\{SaveProjectBillingRuleRequest, SaveProjectBillingSettingsRequest, SaveProjectRatesRequest};
 use App\Models\Plugins\Lexoffice\LexofficeArticle;
-use App\Models\Project\Project\Project;
-use App\Models\Project\Project\ProjectBillingRule;
+use App\Models\Project\{Project, ProjectBillingRule};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use App\Http\Controllers\Controller;
 
 class ProjectBillingRuleController extends Controller {
     public function create(Project $project, Request $request): View {

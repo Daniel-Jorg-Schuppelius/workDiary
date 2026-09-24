@@ -14,9 +14,10 @@ namespace App\Services\Surcharge;
 
 use App\Enums\Attendance\AttendanceSource;
 use App\Enums\Shift\ScheduledShiftStatus;
-use App\Models\{Attendance, AttendanceTerminal, ScheduledShift};
 use App\Models\Platform\User;
+use App\Models\Schedule\ScheduledShift;
 use App\Models\Surcharge\{SurchargeRule, TimeRuleResult};
+use App\Models\Time\{Attendance, AttendanceTerminal};
 use App\Support\Query\DateRange;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;

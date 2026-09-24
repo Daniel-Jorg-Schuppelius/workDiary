@@ -12,7 +12,7 @@ namespace App\Http\Controllers\CustomerPortal;
 
 use App\Enums\Protocol\ProtocolVisibility;
 use App\Http\Controllers\Controller;
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Platform\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;

@@ -16,7 +16,7 @@ use App\Enums\Sales\CommissionStatus;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Sales\AssignCommissionRequest;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Sales\{CommissionRule, InvoiceCommission};
 use App\Services\Sales\{CommissionAccrualService, CommissionRuleResolver};

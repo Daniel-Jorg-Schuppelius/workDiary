@@ -11,8 +11,8 @@
 namespace Tests\Feature\Events;
 
 use App\Models\Calendar\Event;
+use App\Models\Facility\Room;
 use App\Models\Platform\User;
-use App\Models\Room;
 use App\Services\Event\RoomBookingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;

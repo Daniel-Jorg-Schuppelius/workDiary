@@ -12,7 +12,7 @@ namespace Tests\Feature;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\Platform\User;
-use App\Models\ScheduledShift;
+use App\Models\Schedule\ScheduledShift;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;

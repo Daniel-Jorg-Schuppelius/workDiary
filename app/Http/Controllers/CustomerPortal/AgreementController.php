@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\CustomerPortal;
 
 use App\Enums\Contract\{ContractKind, SigningRevisionStatus};
-use App\Http\Controllers\{ArticleExportController, Controller};
+use App\Http\Controllers\Article\ArticleExportController;
+use App\Http\Controllers\Controller;
 use App\Models\Contract\ContractSigningRevision;
 use App\Models\Platform\User;
 use App\Services\Contract\ContractSigningService;

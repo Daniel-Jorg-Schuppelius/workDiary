@@ -9,7 +9,7 @@
 {{-- Shared form fields for Vehicle (used by _form_dialog) --}}
 @php
     /**
-     * @var \App\Models\Vehicle|null $vehicle
+     * @var \App\Models\Fleet\Vehicle|null $vehicle
      * @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users
      */
 @endphp
@@ -73,7 +73,7 @@
     <x-select-field name="asset_id" :label="__('Zugeordnetes Asset (Prüffristen)')" :hint="__('Überfällige Pflichtprüfungen des Assets sperren die Reservierung.')">
         <option value="">—</option>
         @foreach ($assets as $asset)
-            <option value="{{ $asset->sqid }}" @selected((string) old('asset_id', \App\Support\Sqid::encode(\App\Models\Asset::class, $vehicle?->asset_id)) === $asset->sqid)>{{ $asset->name }} ({{ $asset->asset_no }})</option>
+            <option value="{{ $asset->sqid }}" @selected((string) old('asset_id', \App\Support\Sqid::encode(\App\Models\Asset\Asset::class, $vehicle?->asset_id)) === $asset->sqid)>{{ $asset->name }} ({{ $asset->asset_no }})</option>
         @endforeach
     </x-select-field>
 </x-form-group>

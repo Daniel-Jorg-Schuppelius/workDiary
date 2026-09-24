@@ -14,7 +14,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\Article\ArticleStatus;
 use App\Http\Controllers\Controller;
-use App\Models\Article;
+use App\Models\Article\Article;
 use App\Models\B2b\{B2bCatalogAccess, B2bCatalogItem, B2bOrder};
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
@@ -246,7 +246,7 @@ class B2bCatalogAdminController extends Controller {
             'user_agent' => substr((string) $request->userAgent(), 0, 255),
         ]);
 
-        return \App\Http\Controllers\ArticleExportController::buildZipResponse(
+        return \App\Http\Controllers\Article\ArticleExportController::buildZipResponse(
             $result['files'],
             'datpreis-' . \Illuminate\Support\Str::slug($access->label) . '.zip'
         );

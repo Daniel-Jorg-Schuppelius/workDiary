@@ -14,7 +14,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\Inventory\StockState;
 use App\Http\Controllers\Controller;
-use App\Models\{Article, ArticleVariant, Warehouse, WarehouseBin};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\{Warehouse, WarehouseBin};
 use App\Services\Inventory\InventoryLedger;
 use App\Support\Sqid;
 use CommonToolkit\ValueObjects\Quantity;

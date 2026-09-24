@@ -11,8 +11,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\CarrierConnection;
 use App\Models\Platform\{Organization, User};
+use App\Models\Shipping\CarrierConnection;
 use App\Services\Shipping\ShippingProviderRegistry;
 use App\Support\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};

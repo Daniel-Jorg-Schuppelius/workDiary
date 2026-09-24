@@ -11,7 +11,7 @@
 namespace Tests\Feature\Scheduling;
 
 use App\Models\Platform\User;
-use App\Models\ShiftType;
+use App\Models\Schedule\ShiftType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

@@ -8,11 +8,11 @@
 --}}
 {{-- Offene-Punkte-Panel. Erwartet: $subject (Model), $subjectKind ('diary'|'project'|'customer') --}}
 @php
-    /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\OpenIssue> $issues */
+    /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Diary\OpenIssue> $issues */
     $issues = $subject->openIssues()->with(['assignee', 'creator', 'followUpEntry'])->get();
-    $canCreate = \Illuminate\Support\Facades\Gate::allows('create', \App\Models\OpenIssue::class);
-    $canAssign = \Illuminate\Support\Facades\Gate::allows('assign', \App\Models\OpenIssue::class);
-    $canPublishToCustomer = \Illuminate\Support\Facades\Gate::allows('publishToCustomer', \App\Models\OpenIssue::class);
+    $canCreate = \Illuminate\Support\Facades\Gate::allows('create', \App\Models\Diary\OpenIssue::class);
+    $canAssign = \Illuminate\Support\Facades\Gate::allows('assign', \App\Models\Diary\OpenIssue::class);
+    $canPublishToCustomer = \Illuminate\Support\Facades\Gate::allows('publishToCustomer', \App\Models\Diary\OpenIssue::class);
 @endphp
 
 <x-card as="section" id="open-issues" :title="__('open-issue.title.index')" icon="flag" :count="$issues->count()">

@@ -12,11 +12,12 @@ namespace Tests\Feature\Plugins\CalDav;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Enums\Vacation\{VacationStatus, VacationType};
+use App\Models\Absence\Vacation;
 use App\Models\Calendar\Event;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
 use App\Models\Plugins\CalDav\CalDavConnection;
-use App\Models\{ScheduledShift, Vacation};
+use App\Models\Schedule\ScheduledShift;
 use App\Plugins\CalDav\CalDavPlugin;
 use App\Plugins\CalDav\Contracts\{CalDavGateway, CalDavGatewayFactory};
 use Illuminate\Foundation\Testing\RefreshDatabase;

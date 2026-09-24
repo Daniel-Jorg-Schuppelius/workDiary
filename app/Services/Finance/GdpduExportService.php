@@ -15,7 +15,7 @@ namespace App\Services\Finance;
 use App\Enums\Finance\{DatevBatchStatus, GobdExportStatus};
 use App\Models\Audit\GobdExport;
 use App\Models\Finance\DatevBookingBatch;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Services\Finance\Gdpdu\{
     BookingBatchItemsSection,

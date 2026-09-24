@@ -14,7 +14,7 @@ use App\Enums\Finance\{AccountType, PostingAccountRole, PostingSourceKind, Profi
 use App\Models\Accounting\{AccountingAccount, AccountingPostingRule};
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
-use App\Models\{IncomingEInvoice, Invoice};
+use App\Models\Invoicing\{IncomingEInvoice, Invoice};
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService};
 use App\Services\Accounting\Posting\{PostingInboxService, PostingSourceRegistry};

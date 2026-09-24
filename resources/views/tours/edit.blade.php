@@ -60,7 +60,7 @@
                     <x-select-field name="vehicle_id" :label="__('Fahrzeug')" class="select-sm">
                         <option value="">—</option>
                         @foreach ($vehicles as $v)
-                            <option value="{{ $v->sqid }}" @selected((string) old('vehicle_id', \App\Support\Sqid::encode(\App\Models\Vehicle::class, $tour->vehicle_id)) === $v->sqid)>{{ $v->license_plate }} {{ $v->label }}</option>
+                            <option value="{{ $v->sqid }}" @selected((string) old('vehicle_id', \App\Support\Sqid::encode(\App\Models\Fleet\Vehicle::class, $tour->vehicle_id)) === $v->sqid)>{{ $v->license_plate }} {{ $v->label }}</option>
                         @endforeach
                     </x-select-field>
                     <x-select-field name="status" :label="__('Status')" class="select-sm">

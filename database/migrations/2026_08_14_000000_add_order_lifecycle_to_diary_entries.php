@@ -67,7 +67,7 @@ return new class extends Migration {
                 $status = (int) $entry->status;
                 $signedProtocol = $status === -1
                     ? DB::table('protocols')
-                        ->where('subject_type', MorphMap::alias(\App\Models\DiaryEntry::class))
+                        ->where('subject_type', MorphMap::alias(\App\Models\Diary\DiaryEntry::class))
                         ->where('subject_id', $entry->id)
                         ->where('status', 'signed')
                         ->latest('signed_at')

@@ -14,7 +14,7 @@ use App\Enums\Invoicing\{InvoiceDeliveryFormat, XRechnungSyntax};
 use App\Mail\InvoiceMail;
 use App\Models\Customer\Customer;
 use App\Models\Document\DocumentDispatch;
-use App\Models\{Invoice, InvoiceMailTemplate};
+use App\Models\Invoicing\{Invoice, InvoiceMailTemplate};
 use App\Models\Platform\User;
 use App\Services\Invoicing\EInvoice\{EInvoiceValidationService, XRechnungGenerator};
 use ERechnungToolkit\Parsers\ERechnungParser;

@@ -15,7 +15,7 @@ namespace App\Services\Finance\Accounting\Vouchers;
 use App\Models\Customer\Customer;
 use App\Models\Finance\AccountingVoucher;
 use App\Models\Integration\ExternalReference;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Carbon;
 

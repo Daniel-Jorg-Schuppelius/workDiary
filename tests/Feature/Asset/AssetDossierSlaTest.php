@@ -11,9 +11,10 @@
 namespace Tests\Feature\Asset;
 
 use App\Enums\User\Permission;
-use App\Models\{Asset, SlaContract};
+use App\Models\Asset\Asset;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
+use App\Models\ServiceTicket\SlaContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;

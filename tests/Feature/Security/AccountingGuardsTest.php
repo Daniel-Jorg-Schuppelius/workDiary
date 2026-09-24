@@ -144,7 +144,7 @@ class AccountingGuardsTest extends TestCase {
             'customer_id' => $kunde->id,
         ]);
 
-        \App\Models\TimeEntry::factory()->create([
+        \App\Models\Time\TimeEntry::factory()->create([
             'organization_id' => $this->organization->id,
             'project_id' => $projekt->id,
             'date' => $von->addDays(4)->toDateString(),
@@ -184,7 +184,7 @@ class AccountingGuardsTest extends TestCase {
         $mitarbeiter = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $juni = CarbonImmutable::create(2026, 6, 15);
 
-        \App\Models\MonthClosure::query()->create([
+        \App\Models\Time\MonthClosure::query()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $mitarbeiter->id,
             'period_year' => 2026,
@@ -192,7 +192,7 @@ class AccountingGuardsTest extends TestCase {
             'status' => \App\Enums\TimeApproval\MonthClosureStatus::Approved,
         ]);
 
-        $eintrag = \App\Models\TimeEntry::factory()->create([
+        $eintrag = \App\Models\Time\TimeEntry::factory()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $mitarbeiter->id,
             'date' => $juni->toDateString(),
@@ -212,7 +212,7 @@ class AccountingGuardsTest extends TestCase {
         // Gegenprobe: ohne Freigabe greift nur das übliche Korrekturfenster.
         $mitarbeiter = User::factory()->user()->create(['organization_id' => $this->organization->id]);
 
-        $eintrag = \App\Models\TimeEntry::factory()->create([
+        $eintrag = \App\Models\Time\TimeEntry::factory()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $mitarbeiter->id,
             'date' => CarbonImmutable::now()->toDateString(),

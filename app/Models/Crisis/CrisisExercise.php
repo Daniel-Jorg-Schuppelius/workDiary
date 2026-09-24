@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Crisis;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\ProcedureTemplate;
+use App\Models\Procedure\ProcedureTemplate;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

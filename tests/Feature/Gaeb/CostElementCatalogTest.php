@@ -173,7 +173,7 @@ final class CostElementCatalogTest extends TestCase {
             ->import($this->x50(), $this->organization->id, $this->admin);
         $element = $catalog->elements()->where('code', '330')->firstOrFail();
 
-        $article = \App\Models\Article::factory()->create([
+        $article = \App\Models\Article\Article::factory()->create([
             'organization_id' => $this->organization->id,
             'name' => 'Außenwand zweischalig',
         ]);
@@ -200,7 +200,7 @@ final class CostElementCatalogTest extends TestCase {
         $catalog = app(CostElementCatalogService::class)
             ->import($this->x50(), $this->organization->id, $this->admin);
         $element = $catalog->elements()->where('code', '330')->firstOrFail();
-        $article = \App\Models\Article::factory()->create(['organization_id' => $this->organization->id]);
+        $article = \App\Models\Article\Article::factory()->create(['organization_id' => $this->organization->id]);
         $element->update(['article_id' => $article->id]);
 
         $this->actingAs($this->admin)

@@ -12,10 +12,12 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Audit;
 
-use App\Models\{Article, Expense, ExpenseCategory, Material};
+use App\Models\Article\Article;
 use App\Models\Audit\AuditLog;
 use App\Models\Customer\Customer;
+use App\Models\Material\Material;
 use App\Models\Platform\User;
+use App\Models\Travel\{Expense, ExpenseCategory};
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\JsonHelper;

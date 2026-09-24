@@ -11,7 +11,7 @@
 namespace Tests\Unit\Architecture;
 
 use App\Models\Customer\Customer;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Support\Architecture\ModelScanner;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Relations\Relation;

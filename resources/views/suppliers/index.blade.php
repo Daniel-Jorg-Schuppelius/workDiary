@@ -31,7 +31,7 @@
                         :href="route('suppliers.duplicates.index')"
                         show-label>{{ __('Lieferanten-Abgleich') }}</x-icon-btn>
         @endif
-        @can('create', App\Models\Supplier::class)
+        @can('create', App\Models\Supplier\Supplier::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger
                         :href="route('suppliers.create')"

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Versandauftrag (Feature 059, MVP-128): hängt an einer Auslieferung
- * ({@see \App\Models\StockDelivery}) und trägt Carrier, Trackingnummer,
+ * ({@see \App\Models\Inventory\StockDelivery}) und trägt Carrier, Trackingnummer,
  * Carrier-Sendungs-ID (für Storno), Status und den Sendungsverlauf. Das
  * Label-PDF liegt als polymorpher `Attachment` am Versandauftrag. Die
  * versendeten Seriennummern hängen transitiv über `stock_serials.stock_delivery_id`.

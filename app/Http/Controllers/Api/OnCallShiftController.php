@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\OnCallShiftResource;
-use App\Models\OnCallShift;
+use App\Models\Diary\OnCallShift;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use OpenApi\Attributes as OA;

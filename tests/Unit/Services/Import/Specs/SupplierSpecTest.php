@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services\Import\Specs;
 
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Services\Import\ImportOutcome;
 use App\Services\Import\Specs\SupplierSpec;
 use Illuminate\Foundation\Testing\RefreshDatabase;

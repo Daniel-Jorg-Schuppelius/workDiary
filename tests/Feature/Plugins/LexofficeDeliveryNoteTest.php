@@ -11,9 +11,10 @@
 namespace Tests\Feature\Plugins;
 
 use App\Enums\Manufacturing\DeliveryFacturationStatus;
-use App\Models\{Article, ArticleVariant, StockDelivery, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
+use App\Models\Inventory\{StockDelivery, Warehouse};
 use App\Plugins\Lexoffice\{LexofficeDeliveryNoteService, LexofficePlugin};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

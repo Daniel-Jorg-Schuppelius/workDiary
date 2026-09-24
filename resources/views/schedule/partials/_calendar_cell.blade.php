@@ -140,7 +140,7 @@
 
     {{-- Offene Schichten (Soll-Lücken) --}}
     @foreach ($slots as $slot)
-        @php($slotTypeSqid = \App\Support\Sqid::encode(\App\Models\ShiftType::class, (int) $slot['shift_type_id']))
+        @php($slotTypeSqid = \App\Support\Sqid::encode(\App\Models\Schedule\ShiftType::class, (int) $slot['shift_type_id']))
         @for ($i = 0; $i < $slot['missing']; $i++)
             <div class="flex w-full items-stretch gap-0.5">
                 <button type="button"

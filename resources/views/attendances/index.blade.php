@@ -15,7 +15,7 @@
 @section('content')
     @php
         /** @var \Illuminate\Pagination\LengthAwarePaginator $attendances */
-        /** @var \App\Models\Attendance|null $current */
+        /** @var \App\Models\Time\Attendance|null $current */
         /** @var \Carbon\CarbonInterface $from */
         /** @var \Carbon\CarbonInterface $to */
     @endphp

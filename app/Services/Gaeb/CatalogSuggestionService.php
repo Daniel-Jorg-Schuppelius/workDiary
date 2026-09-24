@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Gaeb;
 
-use App\Models\{BillOfQuantity, BoqCatalog, BoqCatalogAssignment, BoqItem};
 use App\Models\Catalog\CatalogAssignmentRule;
+use App\Models\Gaeb\{BillOfQuantity, BoqCatalog, BoqCatalogAssignment, BoqItem};
 
 /**
  * Vorschlagsregeln anwenden (Feature 109, MVP-640).

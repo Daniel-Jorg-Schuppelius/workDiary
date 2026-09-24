@@ -39,7 +39,7 @@
         <x-select-field name="cost_center_id" :label="__('Kostenstelle')" :hint="$costCenters->isEmpty() ? __('Noch keine Kostenstellen — Anlage in der Akte möglich.') : null">
             <option value="">{{ __('— keine —') }}</option>
             @foreach ($costCenters as $center)
-                <option value="{{ $center->sqid }}" @selected(old('cost_center_id', $case->cost_center_id !== null ? \App\Support\Sqid::encode(\App\Models\CostCenter::class, $case->cost_center_id) : '') === $center->sqid)>{{ $center->code }} — {{ $center->label }}</option>
+                <option value="{{ $center->sqid }}" @selected(old('cost_center_id', $case->cost_center_id !== null ? \App\Support\Sqid::encode(\App\Models\Finance\CostCenter::class, $case->cost_center_id) : '') === $center->sqid)>{{ $center->code }} — {{ $center->label }}</option>
             @endforeach
         </x-select-field>
         <x-input-field name="cost_center_label" :label="__('Kostenstelle (Freitext-Fallback)')" maxlength="200" :value="old('cost_center_label', $case->cost_center_label ?? '')" />

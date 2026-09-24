@@ -14,7 +14,7 @@ namespace App\Services\Ideas;
 
 use App\Models\Communication\CommunicationNote;
 use App\Models\Customer\Customer;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Ideas\IdeaNode;
 use App\Models\Knowledge\{ContentReference, KnowledgeArticle};
 use App\Models\Platform\User;

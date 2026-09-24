@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Inventory;
 
-use App\Models\{StockValuation, Warehouse};
+use App\Models\Inventory\{StockValuation, Warehouse};
 
 /**
  * Zyklische Inventurplanung per ABC-Analyse (Feature 048, E6). Klassifiziert die

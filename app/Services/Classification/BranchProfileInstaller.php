@@ -10,10 +10,13 @@
 
 namespace App\Services\Classification;
 
+use App\Models\Asset\{MaintenancePlanTemplate, Software};
 use App\Models\Audit\AuditLog;
 use App\Models\Classification\{Classification, ClassificationRequirement, EntryType, Tag};
-use App\Models\{CleaningProfile, MaintenancePlanTemplate, ProcedureTemplate, RoomRequirementTemplate, SlaContract, Software};
+use App\Models\Facility\{CleaningProfile, RoomRequirementTemplate};
 use App\Models\Platform\{Organization, User};
+use App\Models\Procedure\ProcedureTemplate;
+use App\Models\ServiceTicket\SlaContract;
 use App\Services\Procedure\ProcedureTemplateService;
 use App\Support\MorphMap;
 use CommonToolkit\Helper\FileSystem\File;
@@ -578,7 +581,7 @@ class BranchProfileInstaller {
                 continue;
             }
 
-            $exists = \App\Models\Qualification::query()
+            $exists = \App\Models\Hr\Qualification::query()
                 ->where('organization_id', $organization->id)
                 ->where('name', $name)
                 ->exists();
@@ -588,7 +591,7 @@ class BranchProfileInstaller {
                 continue;
             }
 
-            \App\Models\Qualification::query()->create([
+            \App\Models\Hr\Qualification::query()->create([
                 'organization_id' => $organization->id,
                 'name' => $name,
                 'abbreviation' => $row['abbreviation'] ?? null,

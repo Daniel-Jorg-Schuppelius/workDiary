@@ -11,7 +11,7 @@
 namespace App\Plugins\Lexoffice;
 
 use App\Models\Customer\Customer;
-use App\Models\{Invoice, InvoiceItem};
+use App\Models\Invoicing\{Invoice, InvoiceItem};
 
 /**
  * Übersetzt eine lokale workDiary-Invoice in den JSON-Payload, den

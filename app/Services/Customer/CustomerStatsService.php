@@ -10,8 +10,8 @@
 
 namespace App\Services\Customer;
 
-use App\Models\Customer\Customer\Customer;
-use App\Models\TimeEntry;
+use App\Models\Customer\Customer;
+use App\Models\Time\TimeEntry;
 use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;

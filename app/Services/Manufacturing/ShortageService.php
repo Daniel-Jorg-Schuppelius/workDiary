@@ -13,7 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Enums\Manufacturing\{ProcurementStatus, SubstituteStatus};
-use App\Models\{Article, ArticleVariant, ManufacturingOrderMaterial, MaterialSubstitute, ProcurementRequest, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\Warehouse;
+use App\Models\Manufacturing\ManufacturingOrderMaterial;
+use App\Models\Material\MaterialSubstitute;
+use App\Models\Procurement\ProcurementRequest;
 use App\Support\DecimalQty;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;

@@ -13,11 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Stammdaten;
 
 use App\Enums\Asset\AssetOwnership;
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
-use App\Services\Stammdaten\AbstractEntityMergeService;
 
 /**
  * Führt zwei (doppelt angelegte) Assets zusammen: hängt alle abhängigen

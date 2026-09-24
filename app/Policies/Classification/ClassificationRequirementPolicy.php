@@ -12,7 +12,7 @@ namespace App\Policies\Classification;
 
 use App\Enums\User\Permission as P;
 use App\Policies\Concerns\HasAdminBypass;
-use App\Policies\Auth\PermissionPolicy;
+use App\Policies\PermissionPolicy;
 
 class ClassificationRequirementPolicy extends PermissionPolicy {
     use HasAdminBypass;

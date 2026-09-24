@@ -16,7 +16,7 @@ use App\Enums\TimeEntry\TimeEntryActivityType;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Services\Import\ImportOutcome;
 use App\Services\Import\Specs\ProjectTimeSpec;
 use Illuminate\Foundation\Testing\RefreshDatabase;

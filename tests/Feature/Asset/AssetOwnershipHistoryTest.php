@@ -12,7 +12,7 @@ namespace Tests\Feature\Asset;
 
 use App\Enums\Asset\AssetOwnership;
 use App\Enums\User\Permission;
-use App\Models\{Asset, AssetOwnershipChange};
+use App\Models\Asset\{Asset, AssetOwnershipChange};
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Services\Asset\AssetLifecycleService;

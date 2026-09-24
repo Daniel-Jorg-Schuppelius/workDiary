@@ -10,7 +10,7 @@
 
 namespace App\Services\Protocol;
 
-use App\Models\Protocol;
+use App\Models\Protocol\Protocol;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 
 /**

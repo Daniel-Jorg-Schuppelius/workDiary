@@ -11,7 +11,7 @@
 namespace Tests\Feature\Reporting;
 
 use App\Models\Customer\Customer;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Services\Reporting\PaymentBehaviorReportBuilder;

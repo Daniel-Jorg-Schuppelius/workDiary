@@ -16,7 +16,7 @@ use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Plugins\Support\{AbstractTimeEntryPushService, MatchingTimeImportService, RemoteTimeFingerprint};
 use App\Plugins\Toggl\Exceptions\TogglApiException;
 use App\Plugins\Toggl\Sources\TogglApiClient;

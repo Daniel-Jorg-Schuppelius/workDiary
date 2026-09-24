@@ -15,7 +15,7 @@ namespace App\Services\Import\Specs;
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Services\Import\{ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\Concerns\ResolvesImportReferences;
 use CommonToolkit\Helper\Data\{EmailHelper, StringHelper};

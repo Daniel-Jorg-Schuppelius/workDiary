@@ -16,7 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\Customer\Customer;
 use App\Models\Project\{Project, Task};
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Support\Query\DateRange;
 use App\Support\XlsxExport;
 use Carbon\Carbon;

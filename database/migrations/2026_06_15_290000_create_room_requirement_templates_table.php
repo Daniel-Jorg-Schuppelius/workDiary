@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Schema;
  * Branchenprofile können raum-/objektbezogene Anforderungen als organisationsweite
  * Vorlagen vorbelegen, ohne dass beim Import bereits Räume existieren müssen.
  * Beim Anlegen/Pflegen von Räumen lassen sich diese Vorlagen als
- * {@see \App\Models\RoomRequirement} übernehmen (1:n über room_requirements).
+ * {@see \App\Models\Facility\RoomRequirement} übernehmen (1:n über room_requirements).
  *
  * Idempotenz über (organization_id, code).
  */

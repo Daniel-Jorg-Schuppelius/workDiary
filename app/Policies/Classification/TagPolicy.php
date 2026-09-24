@@ -11,7 +11,7 @@
 namespace App\Policies\Classification;
 
 use App\Policies\Concerns\HasAdminBypass;
-use App\Policies\Auth\PermissionPolicy;
+use App\Policies\PermissionPolicy;
 
 class TagPolicy extends PermissionPolicy {
     use HasAdminBypass;

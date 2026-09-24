@@ -16,7 +16,7 @@
 {{-- Erwartet: $list (PickList), $sourceSlug, $sourceSqid, $source (Model) --}}
 <x-index-page overflow="clip" :subtitle="__('inventory.pick_list.subtitle')" :badge="$list->sourceLabel()" badge-tone="ghost">
     <x-slot:actions>
-        @if ($source instanceof \App\Models\ManufacturingOrder)
+        @if ($source instanceof \App\Models\Manufacturing\ManufacturingOrder)
             <x-icon-btn icon="arrow_back" size="sm" :href="route('manufacturing-orders.show', $source)" show-label>{{ __('inventory.pick_list.source') }}</x-icon-btn>
         @endif
         <x-icon-btn icon="picture_as_pdf" tone="primary" size="sm" target="_blank"

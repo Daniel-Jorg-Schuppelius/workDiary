@@ -13,7 +13,7 @@ namespace Tests\Feature\Sla;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Models\{ServiceQueue, SlaContract};
+use App\Models\ServiceTicket\{ServiceQueue, SlaContract};
 use App\Services\ServiceTicket\{ServiceTicketService, SlaTimer};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

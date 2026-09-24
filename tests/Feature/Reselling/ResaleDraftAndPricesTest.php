@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Reselling;
 
 use App\Enums\Reselling\PeriodStatus;
-use App\Models\Article;
+use App\Models\Article\Article;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Integration\ExternalReference;
 use App\Models\Plugins\Lexoffice\LexofficeArticle;
@@ -107,8 +107,8 @@ class ResaleDraftAndPricesTest extends TestCase {
             ->assertRedirect(route('finance.resale.periods.index'))
             ->assertSessionHas('success');
 
-        $invoice = \App\Models\Invoice::query()->where('customer_id', $customer->id)->firstOrFail();
-        $this->assertSame(\App\Models\Invoice::STATUS_DRAFT, $invoice->status);
+        $invoice = \App\Models\Invoicing\Invoice::query()->where('customer_id', $customer->id)->firstOrFail();
+        $this->assertSame(\App\Models\Invoicing\Invoice::STATUS_DRAFT, $invoice->status);
         $this->assertSame('resale', $invoice->category);
         $this->assertCount(2, $invoice->items, 'eine Position je Periode');
         $this->assertSame('24.000', $invoice->items->first()?->quantity, '2 Lizenzen × 12 Monate');
@@ -118,7 +118,7 @@ class ResaleDraftAndPricesTest extends TestCase {
         foreach ($subscription->periods()->get() as $period) {
             $this->assertSame(PeriodStatus::Billed, $period->status);
             $this->assertTrue($period->isProposedOnly(), 'Bezug auf die lokale Rechnungsposition ist ein Vorschlag');
-            $this->assertSame(MorphMap::alias(\App\Models\InvoiceItem::class), $period->links()->first()?->linkable_type);
+            $this->assertSame(MorphMap::alias(\App\Models\Invoicing\InvoiceItem::class), $period->links()->first()?->linkable_type);
             $this->assertSame($invoice->number, $period->draft_reference, 'Stempel = Rechnungsnummer des Entwurfs');
             $this->assertNotNull($period->draft_created_at);
             $this->assertStringContainsString($invoice->number, (string) $period->note);
@@ -132,7 +132,7 @@ class ResaleDraftAndPricesTest extends TestCase {
         $this->actingAs($admin)->postJson(route('finance.resale.periods.draft.store'), ['customer_id' => $customer->sqid])
             ->assertStatus(422)
             ->assertJsonPath('errors.customer_id.0', __('resale.draft.error.nothing_open'));
-        $this->assertSame(1, \App\Models\Invoice::query()->where('customer_id', $customer->id)->count());
+        $this->assertSame(1, \App\Models\Invoicing\Invoice::query()->where('customer_id', $customer->id)->count());
 
         // Rechnung ausgestellt, Periode bestätigt: der entschiedene Bezug trägt die Nummer → Stempel weg.
         $first = $subscription->periods()->firstOrFail();
@@ -278,7 +278,7 @@ class ResaleDraftAndPricesTest extends TestCase {
         } catch (\RuntimeException $e) {
             $this->assertSame((string) __('resale.draft.error.nothing_open'), $e->getMessage());
         }
-        $this->assertSame(0, \App\Models\Invoice::query()->count(), 'kein leerer Entwurf');
+        $this->assertSame(0, \App\Models\Invoicing\Invoice::query()->count(), 'kein leerer Entwurf');
         $this->assertNull($unpricedPeriod->fresh()?->draft_reference, 'Periode ohne Position bleibt ungestempelt');
         $this->assertSame('Preis klären', $unpricedPeriod->fresh()?->note, 'Bemerkung unangetastet');
         $this->assertSame(PeriodStatus::Open, $unpricedPeriod->fresh()?->status);
@@ -299,7 +299,7 @@ class ResaleDraftAndPricesTest extends TestCase {
         $this->assertSame(2, $result['lines'], 'zwei Perioden des bepreisten Abos');
         $this->assertSame(2, $result['periods']);
         $this->assertSame(988.8, $result['net'], '2 × 2 × 247,20');
-        $invoice = \App\Models\Invoice::query()->where('customer_id', $customer->id)->firstOrFail();
+        $invoice = \App\Models\Invoicing\Invoice::query()->where('customer_id', $customer->id)->firstOrFail();
         $this->assertSame($invoice->number, $result['draft_id']);
         $this->assertSame(2, $priced->periods()->whereNotNull('draft_reference')->count());
         $this->assertSame(0, $unpriced->periods()->whereNotNull('draft_reference')->count(), 'preislose Perioden bleiben ungestempelt');
@@ -321,7 +321,7 @@ class ResaleDraftAndPricesTest extends TestCase {
         } catch (\RuntimeException $e) {
             $this->assertSame((string) __('resale.draft.error.nothing_open'), $e->getMessage());
         }
-        $this->assertSame(1, \App\Models\Invoice::query()->count());
+        $this->assertSame(1, \App\Models\Invoicing\Invoice::query()->count());
         $this->assertSame('Kunde will Sammelrechnung · ' . __('resale.draft.local_note', ['number' => $invoice->number]), $pricedPeriod->fresh()?->note, 'Stempel nicht doppelt');
     }
 }

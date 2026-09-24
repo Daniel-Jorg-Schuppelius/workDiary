@@ -15,10 +15,13 @@ use App\Enums\OpenIssue\OpenIssueEventType;
 use App\Enums\Protocol\ProtocolEventType;
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Models\Communication\CommunicationNote;
-use App\Models\{DiaryEntry, MaterialUsage, OpenIssue, OpenIssueEvent, Protocol, ProtocolEvent, TimeEntry, Timesheet};
+use App\Models\Diary\{DiaryEntry, OpenIssue, OpenIssueEvent};
 use App\Models\Document\Document;
+use App\Models\Material\MaterialUsage;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Models\Protocol\{Protocol, ProtocolEvent};
+use App\Models\Time\{TimeEntry, Timesheet};
 use App\Services\Timeline\DiaryEntryTimelineService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -303,7 +306,7 @@ class DiaryEntryTimelineTest extends TestCase {
         $user = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($user)->create();
 
-        $run = \App\Models\ProcedureRun::factory()->create([
+        $run = \App\Models\Procedure\ProcedureRun::factory()->create([
             'organization_id' => $user->organization_id,
             'subject_type' => MorphMap::alias(DiaryEntry::class),
             'subject_id' => $entry->id,
@@ -353,7 +356,7 @@ class DiaryEntryTimelineTest extends TestCase {
             'created_at' => now(),
         ]);
 
-        \App\Models\Invoice::query()->create([
+        \App\Models\Invoicing\Invoice::query()->create([
             'organization_id' => $admin->organization_id,
             'customer_id' => $customer->id,
             'number' => 'RE-2026-042',

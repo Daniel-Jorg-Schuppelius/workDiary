@@ -34,7 +34,7 @@
         <x-select-field name="invoice_id" :label="__('Barzahlung zu Rechnung (optional)')" :hint="__('Volle Deckung setzt die Rechnung auf bezahlt.')">
             <option value="">{{ __('— keine —') }}</option>
             @foreach ($openInvoices as $invoice)
-                @php($isqid = \App\Support\Sqid::encode(\App\Models\Invoice::class, (int) $invoice->id))
+                @php($isqid = \App\Support\Sqid::encode(\App\Models\Invoicing\Invoice::class, (int) $invoice->id))
                 <option value="{{ $isqid }}" @selected(old('invoice_id') === $isqid)>{{ $invoice->number }} ({{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($invoice->total?->toFloat() ?? 0.0, 2, withThousandsSeparator: true) }})</option>
             @endforeach
         </x-select-field>

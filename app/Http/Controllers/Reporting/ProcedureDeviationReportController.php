@@ -14,7 +14,7 @@ use App\Enums\Procedure\{ProcedureDeviationSeverity, ProcedureDeviationType};
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
-use App\Models\{ProcedureDeviation, ProcedureTemplate};
+use App\Models\Procedure\{ProcedureDeviation, ProcedureTemplate};
 use App\Services\Reporting\ProcedureDeviationReportBuilder;
 use App\Support\{CarbonFmt, Sqid};
 use Carbon\CarbonImmutable;

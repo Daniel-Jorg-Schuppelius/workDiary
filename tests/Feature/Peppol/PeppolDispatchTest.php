@@ -12,7 +12,7 @@ namespace Tests\Feature\Peppol;
 
 use App\Models\Customer\Customer;
 use App\Models\Document\DocumentDispatch;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{PluginSetting, User};
 use App\Models\Plugins\Peppol\PeppolParticipantLookup;
 use App\Plugins\PeppolAccessPoint\PeppolAccessPointPlugin;

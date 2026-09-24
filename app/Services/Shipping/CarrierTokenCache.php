@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Shipping;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2Token;
-use App\Models\CarrierConnection;
+use App\Models\Shipping\CarrierConnection;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\{Cache, Crypt};

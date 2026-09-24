@@ -11,7 +11,7 @@
 namespace Tests\Feature\Tenant;
 
 use App\Models\Customer\Customer;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\{Project, Task};
 use Illuminate\Foundation\Testing\RefreshDatabase;

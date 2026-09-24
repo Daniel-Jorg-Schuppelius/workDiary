@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\{AttendanceTerminal, FlexBalance};
 use App\Models\Platform\{Organization, User};
+use App\Models\Time\{AttendanceTerminal, FlexBalance};
 use App\Services\Absence\VacationBalanceService;
 use App\Services\Attendance\TerminalStampService;
 use Illuminate\Http\{JsonResponse, Request};
@@ -158,14 +158,14 @@ class TerminalIngestController extends Controller {
         }
 
         // MVP-526: Zusatz-Zeitkonten mit Terminal-Freigabe (jüngster Stand).
-        $accounts = \App\Models\TimeAccount::query()
+        $accounts = \App\Models\Time\TimeAccount::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $user->organization_id)
             ->where('is_active', true)
             ->where('show_on_terminal', true)
             ->get();
         foreach ($accounts as $account) {
-            $latest = \App\Models\TimeAccountBalance::query()
+            $latest = \App\Models\Time\TimeAccountBalance::query()
                 ->withoutGlobalScopes()
                 ->where('time_account_id', $account->getKey())
                 ->where('user_id', $user->getKey())

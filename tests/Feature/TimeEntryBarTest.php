@@ -12,9 +12,10 @@ namespace Tests\Feature;
 
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Task\TaskStatus;
-use App\Models\{DiaryEntry, TimeEntry};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\{Project, Task};
+use App\Models\Time\TimeEntry;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

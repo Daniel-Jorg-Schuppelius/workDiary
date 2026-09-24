@@ -13,13 +13,15 @@ declare(strict_types=1);
 namespace App\Services\Search;
 
 use App\Enums\User\Permission;
-use App\Models\{Asset, DiaryEntry, Expense, PerDiemTrip};
+use App\Models\Asset\Asset;
 use App\Models\Attachments\Attachment;
 use App\Models\Customer\Customer;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Document\Document;
 use App\Models\Form\FormSubmission;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Models\Travel\{Expense, PerDiemTrip};
 use App\Services\Asset\AssetFormOptions;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Support\{CarbonFmt, OrganizationContext};

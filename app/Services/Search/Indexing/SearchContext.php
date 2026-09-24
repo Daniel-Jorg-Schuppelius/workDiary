@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Search\Indexing;
 
-use App\Models\{Asset, DiaryEntry};
+use App\Models\Asset\Asset;
 use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use Illuminate\Database\Eloquent\Model;

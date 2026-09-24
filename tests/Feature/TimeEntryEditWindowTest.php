@@ -14,7 +14,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Models\{TimeEntry, Timesheet};
+use App\Models\Time\{TimeEntry, Timesheet};
 use App\Services\Timekeeping\TimeEntryEditPolicy;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

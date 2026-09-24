@@ -10,8 +10,8 @@
 
 namespace App\Services\Expense;
 
-use App\Models\Expense;
 use App\Models\Platform\User;
+use App\Models\Travel\Expense;
 use Illuminate\Support\Collection;
 
 /**

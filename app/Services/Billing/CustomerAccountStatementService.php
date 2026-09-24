@@ -13,7 +13,7 @@ namespace App\Services\Billing;
 use App\Enums\Billing\AccountPaymentSource;
 use App\Models\Billing\{CustomerAccountPayment, CustomerBillingAgreement, CustomerBillingStatement};
 use App\Models\Platform\User;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Support\Query\DateRange;
 use App\Support\Tz;
 use Carbon\CarbonInterface;

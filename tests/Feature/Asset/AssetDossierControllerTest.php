@@ -14,8 +14,10 @@ use App\Enums\Asset\{AssetStatus, DefectSeverity, DefectStatus, MaintenanceInter
 use App\Enums\Facility\RoomRequirementKind;
 use App\Enums\Protocol\ProtocolType;
 use App\Enums\User\UserRole;
-use App\Models\{Asset, AssetAssignment, AssetDefect, MaintenancePlan, Protocol, Room, RoomRequirement};
+use App\Models\Asset\{Asset, AssetAssignment, AssetDefect, MaintenancePlan};
+use App\Models\Facility\{Room, RoomRequirement};
 use App\Models\Platform\{Organization, User};
+use App\Models\Protocol\Protocol;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

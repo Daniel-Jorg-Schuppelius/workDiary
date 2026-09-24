@@ -13,9 +13,13 @@ namespace Tests\Unit\Architecture;
 use App\Models\Audit\OrganizationAuditLog;
 use App\Models\Classification\Classification;
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Diary\OpenIssueEvent;
 use App\Models\Integration\ImportRunError;
-use App\Models\{MonthClosureEvent, OpenIssueEvent, PerDiemRate, ProcedureBackupProof, ProcedureRunEvent, ProcedureStepDef, ProcedureStepRun, ProcedureTemplateVersion, ProtocolEvent, ProtocolItem, ProtocolItemPhoto, ProtocolSignature, ProtocolSignatureToken, TimeCorrectionItem, TimeExportEvent, TimeExportLine};
 use App\Models\Platform\{BackupHeartbeat, GeocodeCache, HelpTopic, HelpView, LicenseFlagOverride, Organization, PluginError, PluginState, User, UserBookmark, UserDashboardWidget, UserFilterPreset, UserGroup};
+use App\Models\Procedure\{ProcedureBackupProof, ProcedureRunEvent, ProcedureStepDef, ProcedureStepRun, ProcedureTemplateVersion};
+use App\Models\Protocol\{ProtocolEvent, ProtocolItem, ProtocolItemPhoto, ProtocolSignature, ProtocolSignatureToken};
+use App\Models\Time\{MonthClosureEvent, TimeCorrectionItem, TimeExportEvent, TimeExportLine};
+use App\Models\Travel\PerDiemRate;
 use Illuminate\Database\Eloquent\Model;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -56,7 +60,7 @@ class TenantTraitCoverageTest extends TestCase {
         \App\Models\Sustainability\SustainabilityEmissionFactor::class,
         \App\Models\Sustainability\SustainabilityFrameMapping::class,
         // Phase 23 (P1): globaler Steuerkatalog (org NULL) + Org-Overrides.
-        \App\Models\TaxRule::class,
+        \App\Models\Finance\TaxRule::class,
         // Feature 075 (P1): Prüfprofil-Katalog (org NULL = globale Vorlage,
         // Org-Zeilen überschreiben per Code) + Normen-Referenzmatrix —
         // Auflösung filtert explizit (scopeForOrganization/effectiveProfiles);
@@ -100,10 +104,10 @@ class TenantTraitCoverageTest extends TestCase {
         ImportRunError::class,
         // Rollplan-Slot (MVP-522): Kind der mandantengebundenen ShiftRotation —
         // Mandantengrenze transitiv über shift_rotation_id (cascade).
-        \App\Models\ShiftRotationEntry::class,
+        \App\Models\Schedule\ShiftRotationEntry::class,
         // Zeitkonto-Regel (MVP-526): Kind des mandantengebundenen TimeAccount —
         // Mandantengrenze transitiv über time_account_id (cascade).
-        \App\Models\TimeAccountRule::class,
+        \App\Models\Time\TimeAccountRule::class,
         // SSO-Kontoverknüpfung (Feature 057, MVP-120/121): Kind der mandanten-
         // gebundenen SsoConnection — Mandantengrenze transitiv über
         // sso_connection_id (alle Zugriffe filtern darüber); zusätzlich prüft
@@ -128,7 +132,7 @@ class TenantTraitCoverageTest extends TestCase {
         // Qualifikations-Zuordnung je User (Pivot user_qualifications, Feature
         // 013): transitiv mandantenfähig über user_id → users.organization_id,
         // analog UserBookmark — kein eigenes organization_id-Feld nötig.
-        \App\Models\Platform\UserQualification::class,
+        \App\Models\Hr\UserQualification::class,
         // Katalogstamm (Feature 109, MVP-637): DIN-276-Kostengruppen und
         // StLB-Leistungsbereiche werden AUSGELIEFERT (organization_id NULL) und
         // können je Org ergänzt werden. Ein Org-Global-Scope würde genau die
@@ -207,7 +211,7 @@ class TenantTraitCoverageTest extends TestCase {
         // Eurostat-Mindestlohn-Referenz: länderweite, mandantenübergreifende
         // Vergleichsdaten (kein Org-Bezug). Der org-spezifische Mindestlohn
         // liegt separat in MinimumWage (tenant-scoped).
-        \App\Models\MinimumWageReference::class,
+        \App\Models\Time\MinimumWageReference::class,
         // Chat: Child-Entitäten von Message/Poll — Mandantengrenze wird transitiv
         // über das tenant-gebundene Parent (Channel/Message, beide mit
         // BelongsToOrganization) durchgesetzt; eigene organization_id wäre redundant.
@@ -325,43 +329,43 @@ class TenantTraitCoverageTest extends TestCase {
         // (ArticleOptionValue über Definition → Article; der VariantResolver
         // validiert Optionswerte zusätzlich gegen article_id). Siehe
         // Allow-List im Audit-Doc.
-        \App\Models\ArticleOptionDefinition::class,
-        \App\Models\ArticleOptionValue::class,
-        \App\Models\ArticleUnit::class,
+        \App\Models\Article\ArticleOptionDefinition::class,
+        \App\Models\Article\ArticleOptionValue::class,
+        \App\Models\Article\ArticleUnit::class,
         // Varianten-Stücklisten-Abweichung (MVP-061): Kind-Tabelle des
         // tenant-gebundenen ArticleVariant — Mandantengrenze transitiv über
         // article_variants.organization_id; Auflösung ausschließlich im
         // BomResolver gegen die übergebene Variante.
-        \App\Models\ArticleVariantBomOverride::class,
+        \App\Models\Article\ArticleVariantBomOverride::class,
         // Zähl-Zeile einer Inventur (MVP-068/E6): Kind-Tabelle des
         // tenant-gebundenen StockCount — Mandantengrenze transitiv über
         // stock_counts.organization_id (analog TimeExportLine); Zugriff
         // ausschließlich über $count->lines() bzw. den StocktakeService.
-        \App\Models\StockCountLine::class,
+        \App\Models\Inventory\StockCountLine::class,
         // Lieferanten-Katalogpreise und Staffelpreise (E4/Beschaffung):
         // Kind-Tabellen des tenant-gebundenen SupplierCatalogItem —
         // Mandantengrenze transitiv über supplier_catalog_items.organization_id;
         // gelesen/geschrieben nur in Kombination mit dem Katalog-Item.
-        \App\Models\SupplierCatalogItemPrice::class,
-        \App\Models\SupplierCatalogItemPriceTier::class,
+        \App\Models\Supplier\SupplierCatalogItemPrice::class,
+        \App\Models\Supplier\SupplierCatalogItemPriceTier::class,
         // Fertigung (MVP-061/062): Material-Snapshot und Rückmeldungen sind
         // Kind-Tabellen des tenant-gebundenen ManufacturingOrder —
         // Mandantengrenze transitiv über manufacturing_orders.organization_id;
         // Zugriff ausschließlich über den Auftrag bzw. dessen Services.
-        \App\Models\ManufacturingOrderMaterial::class,
-        \App\Models\ManufacturingOrderReport::class,
+        \App\Models\Manufacturing\ManufacturingOrderMaterial::class,
+        \App\Models\Manufacturing\ManufacturingOrderReport::class,
         // Stücklisten-Positionen und Parameter-Definitionen je Vorlagen-Version
         // (MVP-061): Kind-Tabellen der ProcedureTemplateVersion —
         // Mandantengrenze transitiv über Version → Vorlage →
         // procedure_templates.organization_id (analog ProcedureStepDef);
         // Queries filtern immer auf die Eltern-Version.
-        \App\Models\ProcedureMaterialRequirement::class,
-        \App\Models\ProcedureParameterDefinition::class,
+        \App\Models\Procedure\ProcedureMaterialRequirement::class,
+        \App\Models\Procedure\ProcedureParameterDefinition::class,
         // Preis-Snapshot einer LV-Position (Feature 049/GAEB): append-only
         // Kind-Tabelle des tenant-gebundenen BoqItem — Mandantengrenze
         // transitiv über boq_items.organization_id; wird nur beim
         // Import/Reimport über das Item geschrieben.
-        \App\Models\BoqItemPriceSnapshot::class,
+        \App\Models\Gaeb\BoqItemPriceSnapshot::class,
         // Installationsweite Betriebs-/Systemdaten (Feature 067 + 041,
         // MVP-053–058/173–181): KEIN Mandantenbezug — Settings-Registry-
         // Overrides, Scheduler-Registry (Overrides/Läufe/Zustand),
@@ -381,7 +385,7 @@ class TenantTraitCoverageTest extends TestCase {
         // filtern explizit auf die aktuelle Organisation (Cross-Org → 404,
         // getestet in OperationsTaskCenterTest/MaintenanceWindowTest).
         \App\Models\Project\OperationsTask::class,
-        \App\Models\MaintenanceWindow::class,
+        \App\Models\Asset\MaintenanceWindow::class,
         // Quelltext-Integritätsprüfungen (Feature 095) und Sicherheitsereignisse
         // (Feature 096): installationsweite Nachweise ohne Mandantenbezug — die
         // Baseline und die Angriffserkennung gelten je Installation, Zugriff nur

@@ -11,7 +11,8 @@
 namespace Tests\Feature\Inventory;
 
 use App\Enums\Inventory\ReservationStatus;
-use App\Models\{Article, ArticleVariant, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\Warehouse;
 use App\Models\Platform\User;
 use App\Services\Inventory\{InventoryLedger, ReservationService, StockLevelService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -11,8 +11,8 @@
 namespace Tests\Feature\Plugins;
 
 use App\Enums\Attendance\AttendanceSource;
-use App\Models\Attendance;
 use App\Models\Platform\User;
+use App\Models\Time\Attendance;
 use App\Plugins\Fritzbox\FritzboxImportService;
 use App\Plugins\Fritzbox\Sources\FritzboxCall;
 use Carbon\CarbonImmutable;

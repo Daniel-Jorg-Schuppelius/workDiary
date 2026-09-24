@@ -12,7 +12,7 @@ namespace Tests\Feature\Helpdesk;
 
 use App\Enums\ServiceTicket\{ServiceTicketPriority, TicketSeverity};
 use App\Models\Platform\{Organization, User};
-use App\Models\{ServiceTicket, ServiceTicketLink, ServiceTicketMessage};
+use App\Models\ServiceTicket\{ServiceTicket, ServiceTicketLink, ServiceTicketMessage};
 use App\Services\ServiceTicket\TicketIncidentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

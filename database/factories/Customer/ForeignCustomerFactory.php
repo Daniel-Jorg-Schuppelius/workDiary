@@ -10,8 +10,7 @@
 
 namespace Database\Factories\Customer;
 
-use App\Models\Customer\Customer\Customer;
-use App\Models\Customer\Customer\ForeignCustomer;
+use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

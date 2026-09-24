@@ -13,12 +13,12 @@
      ein Preis in fremder Währung wird nie still übernommen. --}}
 @props(['articles', 'selected' => null, 'selectedVariant' => null, 'currency' => null, 'span' => 2])
 @php
-    $map = $articles->mapWithKeys(fn(\App\Models\Article $a): array => [$a->sqid => [
+    $map = $articles->mapWithKeys(fn(\App\Models\Article\Article $a): array => [$a->sqid => [
         'description' => $a->name,
         'unit' => $a->base_unit,
         'unit_price' => $a->default_sale_price?->getAmount(),
         'currency' => $a->currency?->value ?? $a->currency,
-        'variants' => $a->relationLoaded('variants') ? $a->variants->map(fn(\App\Models\ArticleVariant $v): array => [
+        'variants' => $a->relationLoaded('variants') ? $a->variants->map(fn(\App\Models\Article\ArticleVariant $v): array => [
             'id' => $v->sqid,
             'label' => trim(($v->sku ? $v->sku . ' · ' : '') . ($v->name ?? '')) ?: $v->sqid,
             'name' => $v->name,
@@ -26,9 +26,9 @@
             'currency' => $v->currency?->value ?? $a->currency?->value ?? $a->currency,
         ])->values()->all() : [],
     ]])->all();
-    $selectedSqid = (string) old('article_id', \App\Support\Sqid::encode(\App\Models\Article::class, $selected));
-    $selectedVariantSqid = (string) old('article_variant_id', \App\Support\Sqid::encode(\App\Models\ArticleVariant::class, $selectedVariant));
-    $groups = $articles->groupBy(fn(\App\Models\Article $a): string => $a->type?->label() ?? '');
+    $selectedSqid = (string) old('article_id', \App\Support\Sqid::encode(\App\Models\Article\Article::class, $selected));
+    $selectedVariantSqid = (string) old('article_variant_id', \App\Support\Sqid::encode(\App\Models\Article\ArticleVariant::class, $selectedVariant));
+    $groups = $articles->groupBy(fn(\App\Models\Article\Article $a): string => $a->type?->label() ?? '');
 @endphp
 <div class="contents" x-data="articleItemPicker" x-on:change="onChange($event)"
      data-articles="{{ json_encode($map, JSON_THROW_ON_ERROR) }}" data-currency="{{ $currency ?? '' }}">

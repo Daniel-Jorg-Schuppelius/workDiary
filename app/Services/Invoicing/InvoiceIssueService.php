@@ -10,7 +10,7 @@
 
 namespace App\Services\Invoicing;
 
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Services\Integration\LifecycleWebhookPublisher;
 use App\Services\Invoicing\EInvoice\EInvoiceValidationService;
 

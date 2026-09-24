@@ -11,7 +11,7 @@
 @section('nav-title', __('procurement.title'))
 
 @php
-    /** @var \App\Models\PurchaseOrder $order */
+    /** @var \App\Models\Procurement\PurchaseOrder $order */
     /** @var array $result */
     $invoice = $result['invoice'];
     $money = fn ($v) => $v === null ? '—' : ($v instanceof \CommonToolkit\ValueObjects\Money ? $v->format() : \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $v, 2, withThousandsSeparator: true) . ' €');

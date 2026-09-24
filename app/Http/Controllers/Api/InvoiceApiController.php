@@ -16,7 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\InvoiceResource;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Services\Invoicing\InvoicePdfRenderer;
 use App\Support\Sqid;
 use Illuminate\Http\Request;

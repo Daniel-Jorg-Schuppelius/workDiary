@@ -12,7 +12,7 @@
   Vier-Augen-Bestätigern, Abweichungen und Backup-Nachweisen.
 --}}
 @php
-    /** @var \App\Models\ProcedureRun $run */
+    /** @var \App\Models\Procedure\ProcedureRun $run */
     $version = $run->templateVersion;
     $tpl = $version?->template;
 @endphp
@@ -68,7 +68,7 @@
         <tr><th>{{ __('procedure.field.name') }}</th><td>{{ $tpl?->name ?? '—' }} <span class="muted">({{ $tpl?->code ?? '—' }})</span></td></tr>
         <tr><th>{{ __('procedure.field.currentVersion') }}</th><td>v{{ $version?->version ?? '—' }} @if($version?->risk_level)— {{ $version->risk_level->label() }}@endif</td></tr>
         <tr><th>{{ __('procedure.print.subject') }}</th><td>
-            @if ($subject instanceof \App\Models\DiaryEntry)
+            @if ($subject instanceof \App\Models\Diary\DiaryEntry)
                 {{ __('procedure.print.diaryEntry') }} #{{ $subject->id }} — {{ \CommonToolkit\Helper\Data\StringHelper::truncate((string) $subject->content, 80) }}
             @else
                 {{ \App\Support\EntityType::label($run->subject_type) }} #{{ $run->subject_id }}

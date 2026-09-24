@@ -15,7 +15,8 @@ namespace App\Mail;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Construction\ConstructionNotice;
 use App\Models\Document\DocumentDispatch;
-use App\Models\{PurchaseOrder, StockDelivery};
+use App\Models\Inventory\StockDelivery;
+use App\Models\Procurement\PurchaseOrder;
 use App\Models\Sales\Quote;
 use App\Services\Document\DocumentMailService;
 use Illuminate\Bus\Queueable;
@@ -29,7 +30,7 @@ use Illuminate\Queue\SerializesModels;
  * Lieferschein oder VOB/B-Schreiben (MVP-728) als E-Mail mit PDF-Anhang.
  *
  * - Subject + Bodies kommen fertig gerendert aus dem
- *   {@see \App\Models\InvoiceMailTemplate} (XSS-sicher, kein Blade in DB).
+ *   {@see \App\Models\Invoicing\InvoiceMailTemplate} (XSS-sicher, kein Blade in DB).
  * - Empfänger setzt der {@see DocumentMailService} via ->to()/->cc()/->bcc().
  * - PDF entsteht in attachments() on-the-fly über exakt den Renderer des
  *   Downloads (kein großer Anhang in der Queue-Payload).

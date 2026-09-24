@@ -12,9 +12,10 @@ namespace Tests\Feature\Weather;
 
 use App\Enums\Protocol\ProtocolStatus;
 use App\Enums\User\Permission;
-use App\Models\{Asset, Protocol};
+use App\Models\Asset\Asset;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
+use App\Models\Protocol\Protocol;
 use App\Models\Weather\WeatherSnapshot;
 use App\Services\Weather\Contracts\WeatherProvider;
 use App\Services\Weather\WeatherService;

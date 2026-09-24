@@ -33,7 +33,7 @@
     {{-- Tabelle — Standard-Karte; Leerzustand kommt aus x-table --}}
     <x-card :title="__('Zeiteinträge')" icon="schedule" :count="$timeEntries->total()">
         <x-slot:actions>
-            @can('create', \App\Models\TimeEntry::class)
+            @can('create', \App\Models\Time\TimeEntry::class)
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
                             :href="route('projects.time-entries.create', $project)"

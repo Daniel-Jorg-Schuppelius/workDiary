@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Gaeb;
 
 use App\Enums\Gaeb\GaebPhase;
-use App\Models\{BillOfQuantity, BoqCatalogAssignment, BoqItem, BoqSection};
+use App\Models\Gaeb\{BillOfQuantity, BoqCatalogAssignment, BoqItem, BoqSection};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Entities\Gaeb\{GaebBoq, GaebCatalog, GaebCatalogAssignment, GaebChangeOrder, GaebCostApproach, GaebCostType, GaebItem, GaebQuantitySplit, GaebSection, GaebSubDescription, GaebTextComplement, GaebTotals, GaebUpComponent};

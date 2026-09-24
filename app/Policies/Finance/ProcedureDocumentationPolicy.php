@@ -14,7 +14,7 @@ namespace App\Policies\Finance;
 
 use App\Enums\User\Permission;
 use App\Models\Platform\User;
-use App\Policies\Auth\PermissionPolicy;
+use App\Policies\PermissionPolicy;
 
 /**
  * Verfahrensdokumentation (Feature 134): bewusst KEIN neues Recht — dasselbe

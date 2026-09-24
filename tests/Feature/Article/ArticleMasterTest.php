@@ -11,7 +11,7 @@
 namespace Tests\Feature\Article;
 
 use App\Enums\Article\{ArticleStatus, ArticleType};
-use App\Models\{Article, ArticleOptionDefinition, ArticleOptionValue, ArticleUnit};
+use App\Models\Article\{Article, ArticleOptionDefinition, ArticleOptionValue, ArticleUnit};
 use App\Models\Integration\ExternalArticleMapping;
 use App\Models\Platform\Organization;
 use App\Services\Article\{ArticleService, UnitConverter, VariantResolver};

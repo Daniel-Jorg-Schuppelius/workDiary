@@ -13,7 +13,7 @@ namespace Tests\Feature\Plugins\SevDesk;
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
 use App\Models\Finance\AccountingVoucher;
 use App\Models\Platform\PluginSetting;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Plugins\SevDesk\SevDeskPlugin;
 use App\Services\Finance\Accounting\Vouchers\VoucherPullerRegistry;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -13,8 +13,11 @@ declare(strict_types=1);
 namespace App\Models\Claims;
 
 use App\Enums\Claims\ClaimRecourseStatus;
-use App\Models\{Article, IncomingEInvoice, PurchaseOrder, Supplier};
+use App\Models\Article\Article;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Invoicing\IncomingEInvoice;
+use App\Models\Procurement\PurchaseOrder;
+use App\Models\Supplier\Supplier;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

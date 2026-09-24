@@ -13,18 +13,18 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Calendar;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Controller;
 use App\Models\Calendar\AppointmentRequest;
-use App\Models\Sales\BookableService;
-use App\Models\Site;
+use App\Models\Facility\Site;
 use App\Models\Platform\User;
+use App\Models\Sales\BookableService;
 use App\Services\Appointments\AppointmentRequestService;
-use App\Support\SqidEncoder;
 use App\Support\{ErrorText, Tz};
+use App\Support\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * Dispositions-Inbox der Terminanfragen (Feature 087, MVP-667) + Pflege der
@@ -69,7 +69,7 @@ class AppointmentInboxController extends Controller {
 
         return view('appointments._service_dialog', [
             'sites' => Site::query()->orderBy('name')->get(['id', 'name']),
-            'qualifications' => \App\Models\Qualification::query()->orderBy('name')->get(['id', 'name']),
+            'qualifications' => \App\Models\Hr\Qualification::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -120,8 +120,8 @@ class AppointmentInboxController extends Controller {
 
         $qualificationId = null;
         if (filled($data['qualification'] ?? null)) {
-            $qualificationId = $sqids->decode(\App\Models\Qualification::class, (string) $data['qualification']);
-            abort_if($qualificationId === null || ! \App\Models\Qualification::query()->whereKey($qualificationId)->exists(), 422);
+            $qualificationId = $sqids->decode(\App\Models\Hr\Qualification::class, (string) $data['qualification']);
+            abort_if($qualificationId === null || ! \App\Models\Hr\Qualification::query()->whereKey($qualificationId)->exists(), 422);
         }
 
         $siteId = null;

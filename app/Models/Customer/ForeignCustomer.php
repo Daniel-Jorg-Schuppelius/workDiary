@@ -11,14 +11,15 @@
 namespace App\Models\Customer;
 
 use App\Enums\Project\ProjectStatus;
+use App\Models\Asset\Asset;
 use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSqid, Searchable};
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\User;
+use App\Models\Project\Project;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 use Illuminate\Support\Carbon;
-use App\Models\Asset;
-use App\Models\Customer\Customer\Customer;
-use App\Models\Project\Project;
 
 /**
  * Fremdkunde (Endkunde): gehört zu einem {@see Customer} (Firma) und bildet

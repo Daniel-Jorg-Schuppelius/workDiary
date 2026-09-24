@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Inventory;
 
-use App\Models\ArticleVariant;
+use App\Models\Article\ArticleVariant;
 
 /**
  * Sicherer Artikel-Abgleich für externe Integrationen (Feature 048/078):

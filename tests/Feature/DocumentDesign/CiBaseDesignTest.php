@@ -11,7 +11,7 @@
 namespace Tests\Feature\DocumentDesign;
 
 use App\Enums\DocumentDesign\{RenderDocumentFamily, RenderDocumentKind};
-use App\Models\Document\DocumentDesign\DocumentRenderProfile;
+use App\Models\DocumentDesign\DocumentRenderProfile;
 use App\Models\Platform\{Organization, User};
 use App\Services\DocumentDesign\{DocumentDesignRenderer, RenderProfileService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -274,14 +274,14 @@ class CiBaseDesignTest extends TestCase {
         $this->assertTrue($service->activate($invoiceProfile->versions()->firstOrFail(), $admin)->ok());
 
         $customer = \App\Models\Customer\Customer::factory()->create(['organization_id' => $org->id]);
-        $invoice = \App\Models\Invoice::create([
+        $invoice = \App\Models\Invoicing\Invoice::create([
             'organization_id' => $org->id,
             'customer_id' => $customer->id,
             'number' => 'G-' . uniqid(),
-            'status' => \App\Models\Invoice::STATUS_DRAFT,
+            'status' => \App\Models\Invoicing\Invoice::STATUS_DRAFT,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
-            'type' => \App\Models\Invoice::TYPE_CREDIT_NOTE,
+            'type' => \App\Models\Invoicing\Invoice::TYPE_CREDIT_NOTE,
         ]);
         $invoice->freezeParties();
         $invoice->save();

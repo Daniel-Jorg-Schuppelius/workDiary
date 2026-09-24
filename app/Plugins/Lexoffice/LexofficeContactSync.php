@@ -15,7 +15,7 @@ use App\Models\Contacts\ContactAddress;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem};
 use App\Models\Platform\Organization;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Plugins\Support\PluginHttpFactory;
 use CommonToolkit\ValueObjects\VatNumber;
 use Illuminate\Database\Eloquent\{Builder, Model};

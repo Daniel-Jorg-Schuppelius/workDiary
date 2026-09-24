@@ -11,10 +11,12 @@
 namespace App\Services\TimeExport;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Attendance, OnCallShift, SickLeave, TimeEntry, TimeExport, TimeExportLine, Vacation};
+use App\Models\Absence\{SickLeave, Vacation};
+use App\Models\Diary\OnCallShift;
 use App\Models\Platform\User;
 use App\Models\Scopes\OrganizationScope;
 use App\Models\Surcharge\SurchargeRule;
+use App\Models\Time\{Attendance, TimeEntry, TimeExport, TimeExportLine};
 use App\Services\Calendar\HolidayService;
 use App\Services\Flextime\FlexCalculator;
 use App\Services\Surcharge\TimeRuleEngine;
@@ -237,7 +239,7 @@ class TimeExportLineAggregator {
      * Import und werden wie alle Zeilen über WageTypeMapping abgebildet.
      */
     private function aggregateExternalWageItems(TimeExport $export, int $uid, CarbonImmutable $start, CarbonImmutable $end, ?string $costCenter): int {
-        $items = \App\Models\ExternalWageItem::query()
+        $items = \App\Models\Time\ExternalWageItem::query()
             ->where('user_id', $uid)
             ->whereBetween('item_date', DateRange::days($start, $end))
             ->get(['id', 'wage_type_code', 'quantity', 'unit']);

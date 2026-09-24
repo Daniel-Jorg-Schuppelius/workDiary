@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Print;
 
-use App\Models\Article;
+use App\Models\Article\Article;
 use App\Models\Claims\{ClaimCase, ClaimCaseLink};
 use App\Models\Platform\User;
 use App\Models\Print\PrintOrder;

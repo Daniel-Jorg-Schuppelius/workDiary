@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reporting;
 
-use App\Models\{Article, Invoice, InvoiceItem};
+use App\Models\Article\Article;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalArticleMapping, ExternalReference};
+use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Platform\{Organization, User};
 use App\Models\Plugins\Lexoffice\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};

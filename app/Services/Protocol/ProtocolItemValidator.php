@@ -11,7 +11,7 @@
 namespace App\Services\Protocol;
 
 use App\Enums\Protocol\{ProtocolItemResult, ProtocolItemType};
-use App\Models\{Protocol, ProtocolItem};
+use App\Models\Protocol\{Protocol, ProtocolItem};
 use CommonToolkit\Helper\Data\DateHelper;
 
 /**
@@ -90,7 +90,7 @@ class ProtocolItemValidator {
         if ($min === []) {
             return [];
         }
-        $counts = \App\Models\ProtocolItemPhoto::query()
+        $counts = \App\Models\Protocol\ProtocolItemPhoto::query()
             ->where('protocol_item_id', $item->id)
             ->selectRaw('phase, COUNT(*) as c')
             ->groupBy('phase')

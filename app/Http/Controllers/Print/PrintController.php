@@ -13,13 +13,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Print;
 
 use App\Enums\Vacation\VacationStatus;
-use App\Models\DutyPlan;
-use App\Models\EmergencyAssignment;
-use App\Models\OnCallShift;
-use App\Models\ScheduledShift;
-use App\Models\ShiftType;
+use App\Http\Controllers\Controller;
+use App\Models\Absence\Vacation;
+use App\Models\Diary\{EmergencyAssignment, OnCallShift};
 use App\Models\Platform\User;
-use App\Models\Vacation;
+use App\Models\Schedule\{DutyPlan, ScheduledShift, ShiftType};
 use App\Services\Calendar\HolidayService;
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonPeriod};
@@ -28,7 +26,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Generates printable HTML views (A4/A3) for duty plans, on-call schedules

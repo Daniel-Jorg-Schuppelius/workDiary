@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Inventory;
 
-use App\Models\{Article, ArticleVariant, StockLot, StockValuationLayer, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\{StockLot, StockValuationLayer, Warehouse};
 use App\Services\Inventory\{LotService, LotSplitService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;

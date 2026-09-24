@@ -151,7 +151,7 @@ class ContactPushService {
      * Einzelnen Lieferanten übertragen (B6): gleiche Leitplanken wie
      * {@see push()} — Führungsrichtung, Referenz-Nachweis mit synced_at.
      */
-    public function pushSupplier(\App\Models\Supplier $supplier, string $pluginId): string {
+    public function pushSupplier(\App\Models\Supplier\Supplier $supplier, string $pluginId): string {
         if (! $this->pushAllowed()) {
             throw new RuntimeException((string) __('accounting.error.accounting_leads'));
         }

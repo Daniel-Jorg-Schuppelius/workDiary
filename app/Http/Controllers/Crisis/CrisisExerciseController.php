@@ -16,7 +16,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Crisis\{CrisisCase, CrisisExercise};
 use App\Models\Platform\User;
-use App\Models\ProcedureTemplate;
+use App\Models\Procedure\ProcedureTemplate;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};

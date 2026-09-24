@@ -16,7 +16,7 @@ use App\Enums\Finance\{AccountingSovereignty, BillingMode, DatevBatchStatus};
 use App\Enums\Migration\AccountingMigrationStatus;
 use App\Models\Accounting\{AccountingFiscalYear, AccountingProfile, AccountingSovereigntyPeriod};
 use App\Models\Finance\{BankTransaction, DatevBookingBatch};
-use App\Models\{IncomingEInvoice, Invoice};
+use App\Models\Invoicing\{IncomingEInvoice, Invoice};
 use App\Models\Migration\AccountingMigrationRun;
 use App\Models\Platform\Organization;
 use App\Services\Accounting\Preflight\{AccountingPreflightCheck, AccountingPreflightReport};

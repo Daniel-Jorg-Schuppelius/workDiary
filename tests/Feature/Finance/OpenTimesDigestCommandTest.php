@@ -11,9 +11,10 @@
 namespace Tests\Feature\Finance;
 
 use App\Models\Customer\Customer;
-use App\Models\{Invoice, TimeEntry};
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Models\Time\TimeEntry;
 use App\Notifications\Finance\OpenTimesDigestNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;

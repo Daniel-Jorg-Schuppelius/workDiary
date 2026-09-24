@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Enums\Inventory\{StockMovementType, StockState};
-use App\Models\{ArticleVariant, ManufacturingOrder, ManufacturingOrderMaterial, Warehouse};
+use App\Models\Article\ArticleVariant;
+use App\Models\Inventory\Warehouse;
+use App\Models\Manufacturing\{ManufacturingOrder, ManufacturingOrderMaterial};
 use App\Models\Platform\Organization;
 use App\Services\Inventory\{InventoryLedger, InventoryValuationManager, ReservationService, SerialService, StockPosting};
 use App\Support\DecimalQty;
@@ -96,7 +98,7 @@ class ManufacturingInventoryService {
             return;
         }
 
-        $exists = \App\Models\ProcurementRequest::query()
+        $exists = \App\Models\Procurement\ProcurementRequest::query()
             ->where('organization_id', $order->organization_id)
             ->where('article_variant_id', $variant->id)
             ->where('source_type', $order->getMorphClass())

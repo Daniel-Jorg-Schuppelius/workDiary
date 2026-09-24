@@ -11,7 +11,7 @@
 @section('nav-title', __('inventory.stock'))
 
 @php
-    /** @var \App\Models\Warehouse|null $selected */
+    /** @var \App\Models\Inventory\Warehouse|null $selected */
     $movements = [
         'receipt' => __('inventory.movement.receipt'),
         'issue' => __('inventory.movement.issue'),

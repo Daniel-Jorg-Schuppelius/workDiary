@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Mail;
 
 use App\Models\Customer\Customer;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
 use App\Models\Project\Project;
 use App\Services\Integration\Match\MatchStrategy;

@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Policies;
 
-use App\Models\PerDiemRate;
 use App\Models\Platform\User;
-use App\Policies\PerDiemRatePolicy;
+use App\Models\Travel\PerDiemRate;
+use App\Policies\Travel\PerDiemRatePolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};

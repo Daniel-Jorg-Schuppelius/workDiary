@@ -12,7 +12,7 @@ namespace Database\Factories\Communication;
 
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType, CommunicationVisibility};
 use App\Models\Communication\CommunicationNote;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;

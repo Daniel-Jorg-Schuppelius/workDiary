@@ -10,7 +10,7 @@
 
 namespace Tests\Unit\Expense;
 
-use App\Models\PerDiemRate;
+use App\Models\Travel\PerDiemRate;
 use App\Services\Expense\PerDiemRateLookup;
 use Carbon\CarbonImmutable;
 use Database\Seeders\{PerDiemForeignRateSeeder, PerDiemRateSeeder};

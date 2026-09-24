@@ -11,8 +11,7 @@
 namespace App\Services\Billing;
 
 use App\Models\Billing\CustomerBillingRate;
-use App\Models\TimeEntry;
-use App\Services\Billing\{AgreementRateResolver, OrganizationDefaultRateResolver};
+use App\Models\Time\TimeEntry;
 
 /**
  * Calculates billable revenue and internal cost for a TimeEntry following the

@@ -14,9 +14,10 @@ namespace App\Services\Asset;
 
 use App\Enums\Asset\MaintenanceDueAction;
 use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketSource};
+use App\Models\Asset\MaintenancePlan;
 use App\Models\Integration\ExternalReference;
-use App\Models\{MaintenancePlan, ServiceTicket};
 use App\Models\Platform\Organization;
+use App\Models\ServiceTicket\ServiceTicket;
 use App\Services\ServiceTicket\ServiceTicketService;
 
 /**

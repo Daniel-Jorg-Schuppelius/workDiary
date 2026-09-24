@@ -17,7 +17,7 @@ use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Applications\ApplicationOpportunity;
-use App\Models\GaebImport;
+use App\Models\Gaeb\GaebImport;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Services\Gaeb\{BoqImportConflictException, GaebImportService, GaebPackageIntakeService};

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\RemoteSupport;
 
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Platform\Organization;
 use App\Services\Integration\InboxGroupBooker;
 use Illuminate\Support\Collection;

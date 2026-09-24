@@ -13,7 +13,7 @@ namespace App\Services\Billing;
 use App\Enums\Billing\BillingRateDayType;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Billing\{CustomerBillingAgreement, CustomerBillingRate};
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Services\Calendar\HolidayService;
 use Carbon\CarbonInterface;
 

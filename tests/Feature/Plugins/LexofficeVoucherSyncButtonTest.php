@@ -13,7 +13,7 @@ namespace Tests\Feature\Plugins;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;

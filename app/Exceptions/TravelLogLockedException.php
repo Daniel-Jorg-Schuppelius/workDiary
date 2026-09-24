@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Models\TravelLog;
+use App\Models\Travel\TravelLog;
 use RuntimeException;
 
 /**

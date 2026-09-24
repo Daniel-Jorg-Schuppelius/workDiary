@@ -13,9 +13,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Passenger;
 
 use App\Enums\Passenger\{RideOperationMode, RideStatus};
+use App\Models\Fleet\Vehicle;
+use App\Models\Hr\Qualification;
 use App\Models\Passenger\{PassengerConcession, PassengerFareTariff, PassengerRide, PassengerVehicleProfile};
 use App\Models\Platform\User;
-use App\Models\{Qualification, Vehicle};
 use App\Services\Passenger\PassengerRideService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;

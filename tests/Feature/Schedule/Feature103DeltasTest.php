@@ -10,9 +10,10 @@
 
 namespace Tests\Feature\Schedule;
 
-use App\Models\{ExternalWageItem, OnCallShift, ShiftRotation, ShiftType};
-use App\Services\CoverageService;
-use App\Services\Schedule\ShiftRotationRoller;
+use App\Models\Diary\OnCallShift;
+use App\Models\Schedule\{ShiftRotation, ShiftType};
+use App\Models\Time\ExternalWageItem;
+use App\Services\Schedule\{CoverageService, ShiftRotationRoller};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

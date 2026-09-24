@@ -12,7 +12,7 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AccountType, AccountingEntryStatus, AccountingPeriodStatus, FixedAssetStatus, PostingAccountRole, PostingSourceKind, ProfitDetermination};
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingFiscalYear, AccountingPeriod, AccountingPostingRule, FixedAsset};
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, FixedAssetService, PeriodClosingService};
 use App\Services\Accounting\Posting\Adapters\DepreciationAdapter;

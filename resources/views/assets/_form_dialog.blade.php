@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 @php
-    /** @var \App\Models\Asset $asset */
+    /** @var \App\Models\Asset\Asset $asset */
     $isEdit = $asset->exists;
     $action = $isEdit ? route('assets.update', $asset) : route('assets.store');
     $method = $isEdit ? 'PUT' : 'POST';

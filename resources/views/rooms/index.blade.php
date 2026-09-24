@@ -32,7 +32,7 @@
                class="btn btn-sm {{ $view === 'grid' ? 'btn-primary' : 'btn-ghost' }}">
                 <x-icon name="grid_view" /> {{ __('Tages-Belegung') }}
             </a>
-            @can('create', App\Models\Room::class)
+            @can('create', App\Models\Facility\Room::class)
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
                             :href="route('rooms.create').'?dialog=1'"

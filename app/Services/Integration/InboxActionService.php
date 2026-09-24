@@ -16,7 +16,7 @@ use App\Models\Audit\AuditLog;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\Organization;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Services\Stammdaten\ContactDetailsWriter;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;

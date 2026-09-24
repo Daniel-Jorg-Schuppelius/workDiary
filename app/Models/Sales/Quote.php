@@ -14,14 +14,14 @@ namespace App\Models\Sales;
 
 use App\Casts\MoneyCast;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
-use App\Models\Customer\Customer\Customer;
-use App\Models\Sales\QuoteItem;
 
 /**
  * Angebot (Feature 066, MVP-170): versioniert, mit Optionen, Bindefrist

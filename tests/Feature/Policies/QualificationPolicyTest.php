@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Policies;
 
+use App\Models\Hr\Qualification;
 use App\Models\Platform\{Organization, User};
-use App\Models\Qualification;
-use App\Policies\QualificationPolicy;
+use App\Policies\Hr\QualificationPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};
 use Tests\TestCase;

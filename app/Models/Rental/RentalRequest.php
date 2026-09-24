@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Rental;
 
 use App\Enums\Rental\RentalRequestStatus;
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;

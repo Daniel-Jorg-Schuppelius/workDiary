@@ -11,7 +11,7 @@
 namespace App\Services\Protocol;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
-use App\Models\Protocol;
+use App\Models\Protocol\Protocol;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 use CommonToolkit\Helper\Data\{CryptoHelper, DataUrlHelper};
 use Illuminate\Support\Carbon;

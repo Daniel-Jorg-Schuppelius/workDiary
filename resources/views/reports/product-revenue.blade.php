@@ -101,7 +101,7 @@
                 <td class="font-mono text-xs">{{ $row['number'] ?? '—' }}</td>
                 <td class="font-medium">
                     @if ($row['articleId'] !== null)
-                        <a href="{{ route('articles.show', \App\Support\Sqid::encode(\App\Models\Article::class, $row['articleId'])) }}" class="link link-hover">{{ $row['name'] }}</a>
+                        <a href="{{ route('articles.show', \App\Support\Sqid::encode(\App\Models\Article\Article::class, $row['articleId'])) }}" class="link link-hover">{{ $row['name'] }}</a>
                     @else
                         {{ $row['name'] }}
                     @endif

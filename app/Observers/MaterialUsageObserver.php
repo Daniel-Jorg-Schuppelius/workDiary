@@ -10,7 +10,7 @@
 
 namespace App\Observers;
 
-use App\Models\MaterialUsage;
+use App\Models\Material\MaterialUsage;
 
 class MaterialUsageObserver {
     public function saved(MaterialUsage $usage): void {

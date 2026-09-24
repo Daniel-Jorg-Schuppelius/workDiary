@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Msgraph\Services;
 
+use App\Models\Absence\Vacation;
 use App\Models\Platform\Organization;
 use App\Models\Plugins\Msgraph\MsgraphConnection;
-use App\Models\Vacation;
 use App\Plugins\Msgraph\Api\MsgraphCalendarClient;
 use Illuminate\Support\Facades\Log;
 use Throwable;

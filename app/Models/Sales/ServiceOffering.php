@@ -13,10 +13,10 @@ declare(strict_types=1);
 namespace App\Models\Sales;
 
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Procurement\RequestItem;
+use App\Models\ServiceTicket\BusinessService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
-use App\Models\BusinessService;
-use App\Models\RequestItem;
 
 /**
  * Serviceangebot (Feature 065, MVP-154) — mittlere Katalog-Ebene.

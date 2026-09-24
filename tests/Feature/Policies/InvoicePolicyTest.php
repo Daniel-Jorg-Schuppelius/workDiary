@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Policies;
 
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
-use App\Policies\InvoicePolicy;
+use App\Policies\Invoicing\InvoicePolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};
 use Tests\TestCase;

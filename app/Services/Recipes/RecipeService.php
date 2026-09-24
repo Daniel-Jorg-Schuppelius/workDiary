@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Recipes;
 
 use App\Enums\Classification\ClassificationDomain;
-use App\Models\{Article, ArticleUnit, ProcedureTemplate, ProcedureTemplateVersion};
+use App\Models\Article\{Article, ArticleUnit};
 use App\Models\Platform\Organization;
+use App\Models\Procedure\{ProcedureTemplate, ProcedureTemplateVersion};
 use App\Models\Recipes\{RecipeMenu, RecipeProfile};
 use App\Services\Manufacturing\{BomResolver, MaterialDemandCalculator};
 use CommonToolkit\ValueObjects\Money;
@@ -71,7 +72,7 @@ class RecipeService {
      * Materialbedarf für eine Ziel-Portionszahl (dezimalgenau, einheitensicher).
      *
      * @param  numeric-string  $portions
-     * @return list<array{requirement: \App\Models\ProcedureMaterialRequirement, demand: numeric-string}>
+     * @return list<array{requirement: \App\Models\Procedure\ProcedureMaterialRequirement, demand: numeric-string}>
      */
     public function demandForPortions(ProcedureTemplateVersion $version, string $portions): array {
         return $this->calculator->calculate($this->bom->resolve($version, null), $portions);

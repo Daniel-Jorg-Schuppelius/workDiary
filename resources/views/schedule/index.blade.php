@@ -19,9 +19,9 @@
     /** @var \Carbon\CarbonImmutable $from */
     /** @var \Carbon\CarbonImmutable $to */
     /** @var string $todayDate */
-    /** @var \Illuminate\Support\Collection<int, \App\Models\ScheduledShift> $shifts */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Schedule\ScheduledShift> $shifts */
     /** @var \Illuminate\Support\Collection<string, \Illuminate\Support\Collection> $shiftsByDate */
-    /** @var \Illuminate\Support\Collection<int, \App\Models\ShiftType> $shiftTypes */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Schedule\ShiftType> $shiftTypes */
     /** @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users */
     /** @var \App\Services\Calendar\HolidayService $holidays */
     /** @var int $userFilter */

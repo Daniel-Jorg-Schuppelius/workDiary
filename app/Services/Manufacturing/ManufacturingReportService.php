@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Manufacturing;
 
-use App\Models\{ManufacturingOrder, ManufacturingOrderReport};
+use App\Models\Manufacturing\{ManufacturingOrder, ManufacturingOrderReport};
 use App\Support\DecimalQty;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

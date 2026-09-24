@@ -16,7 +16,7 @@ use App\Enums\Diary\{LocationMode, Mode};
 use App\Enums\Project\ProjectStatus;
 use App\Models\Audit\AuditLog;
 use App\Models\Customer\Customer;
-use App\Models\{DiaryEntry, OpenIssue};
+use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
 use App\Support\MorphMap;

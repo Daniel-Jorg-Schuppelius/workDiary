@@ -15,9 +15,10 @@ namespace App\Http\Controllers\Investments;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Investments\{AddInvestmentActualRequest, AddInvestmentDeviationRequest, AddInvestmentLinkRequest, AddInvestmentOptionRequest, DecideInvestmentDeviationRequest, RejectInvestmentBudgetRequest, SaveInvestmentCaseRequest, StoreCostCenterRequest, StoreInvestmentReviewRequest, SubmitInvestmentBudgetRequest, SupplementInvestmentBudgetRequest, UpdateInvestmentStatusRequest};
-use App\Models\{CostCenter, Supplier};
+use App\Models\Finance\CostCenter;
 use App\Models\Investments\{InvestmentBudgetRequest, InvestmentCase, InvestmentDeviation, InvestmentOption};
 use App\Models\Platform\User;
+use App\Models\Supplier\Supplier;
 use App\Services\Investments\InvestmentService;
 use App\Support\{ErrorText, SortableQuery};
 use Illuminate\Contracts\View\View;
@@ -242,9 +243,9 @@ class InvestmentController extends Controller {
 
         $map = [
             'project' => \App\Models\Project\Project::class,
-            'purchase_order' => \App\Models\PurchaseOrder::class,
-            'asset' => \App\Models\Asset::class,
-            'incoming_einvoice' => \App\Models\IncomingEInvoice::class,
+            'purchase_order' => \App\Models\Procurement\PurchaseOrder::class,
+            'asset' => \App\Models\Asset\Asset::class,
+            'incoming_einvoice' => \App\Models\Invoicing\IncomingEInvoice::class,
             'document' => \App\Models\Document\Document::class,
         ];
         $class = $map[$data['linkable_type']];

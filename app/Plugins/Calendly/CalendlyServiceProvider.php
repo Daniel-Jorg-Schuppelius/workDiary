@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Calendly;
 
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Plugins\Calendly\Console\CalendlyBackfillCommand;
 use App\Plugins\Calendly\Observers\CalendlyDiaryEntryObserver;
 use App\Plugins\Support\PluginServiceProviderBase;

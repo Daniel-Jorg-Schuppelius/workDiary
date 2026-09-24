@@ -10,7 +10,7 @@
 
 namespace App\Services\TimeExport;
 
-use App\Models\TimeExportDeliveryConfig;
+use App\Models\Time\TimeExportDeliveryConfig;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 

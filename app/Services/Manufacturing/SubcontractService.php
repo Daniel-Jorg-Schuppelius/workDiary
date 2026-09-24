@@ -13,8 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Enums\Manufacturing\ProcurementMode;
-use App\Models\{ManufacturingOrder, ManufacturingOrderMaterial, PurchaseOrder, Supplier, Warehouse};
+use App\Models\Inventory\Warehouse;
+use App\Models\Manufacturing\{ManufacturingOrder, ManufacturingOrderMaterial};
 use App\Models\Platform\Organization;
+use App\Models\Procurement\PurchaseOrder;
+use App\Models\Supplier\Supplier;
 use App\Services\Procurement\PurchaseOrderService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;

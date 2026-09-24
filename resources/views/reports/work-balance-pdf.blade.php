@@ -48,7 +48,7 @@
             <tr>
                 @foreach ($period->byActivity as $type => $minutes)
                     <td>
-                        <div class="label">{{ \App\Models\TimeEntry::activityLabel($type) }}</div>
+                        <div class="label">{{ \App\Models\Time\TimeEntry::activityLabel($type) }}</div>
                         <div class="value">{{ $fmt((int) $minutes) }} h</div>
                     </td>
                 @endforeach

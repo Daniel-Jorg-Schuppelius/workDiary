@@ -14,7 +14,7 @@ namespace App\Http\Controllers\AssetCompliance;
 
 use App\Enums\AssetCompliance\{AssetComplianceBlockMode, AssetInspectionKind};
 use App\Http\Controllers\Controller;
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\AssetCompliance\{AssetComplianceNormReference, AssetComplianceProfile};
 use App\Models\Platform\User;
 use App\Rules\ExistsInCurrentOrganization;

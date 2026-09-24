@@ -20,7 +20,7 @@
         || auth()->user()?->can(\App\Enums\User\Permission::DocumentDesignAssign->value)
         || auth()->user()?->can(\App\Enums\User\Permission::DocumentDesignManage->value);
     $designProfiles = $canAssignDesign
-        ? \App\Models\Document\DocumentDesign\DocumentRenderProfile::query()
+        ? \App\Models\DocumentDesign\DocumentRenderProfile::query()
             ->where('organization_id', $customer->organization_id)
             ->where('status', '!=', \App\Enums\DocumentDesign\RenderProfileStatus::Archived)
             ->orderBy('name')
@@ -160,7 +160,7 @@
                             <td class="text-sm">
                                 @if ($statement->retainerInvoice)
                                     <span class="tabular-nums">{{ $statement->retainerInvoice->number }}</span>
-                                    <x-status-badge :tone="$statement->retainerInvoice->status === \App\Models\Invoice::STATUS_PAID ? 'success' : 'ghost'">
+                                    <x-status-badge :tone="$statement->retainerInvoice->status === \App\Models\Invoicing\Invoice::STATUS_PAID ? 'success' : 'ghost'">
                                         {{ __('values.' . $statement->retainerInvoice->status) }}
                                     </x-status-badge>
                                 @elseif ($statement->lexofficeVoucher)

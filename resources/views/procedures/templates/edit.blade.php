@@ -17,8 +17,8 @@
 @section('nav-title', __('procedure.title.designer'))
 
 @php
-    /** @var \App\Models\ProcedureTemplate $template */
-    /** @var \App\Models\ProcedureTemplateVersion|null $draft */
+    /** @var \App\Models\Procedure\ProcedureTemplate $template */
+    /** @var \App\Models\Procedure\ProcedureTemplateVersion|null $draft */
     $applicability = $draft?->applicability ?? [];
     $entryTypesVal = old('applicability_entry_types', implode(', ', (array) ($applicability['diary_entry_type'] ?? [])));
     $tagsVal = old('applicability_tags', implode(', ', (array) ($applicability['tags_any'] ?? [])));

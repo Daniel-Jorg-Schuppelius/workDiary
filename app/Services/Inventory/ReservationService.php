@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{OwnershipType, ReservationStatus};
-use App\Models\{ArticleVariant, StockReservation, Warehouse, WarehouseBin};
+use App\Models\Article\ArticleVariant;
+use App\Models\Inventory\{StockReservation, Warehouse, WarehouseBin};
 use App\Support\DecimalQty;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;

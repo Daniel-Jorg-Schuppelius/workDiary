@@ -13,7 +13,7 @@ namespace App\Plugins\RemoteSupport\Http\Controllers;
 use App\Enums\Asset\{AssetClass, AssetOwnership};
 use App\Enums\Project\ProjectStatus;
 use App\Http\Controllers\Controller;
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Auth\RemotePendingSession;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Platform\Organization;

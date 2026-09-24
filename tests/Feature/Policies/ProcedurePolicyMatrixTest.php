@@ -14,8 +14,8 @@ namespace Tests\Feature\Policies;
 
 use App\Enums\User\Permission as P;
 use App\Models\Platform\{Organization, User};
-use App\Models\{ProcedureRun, ProcedureTemplate};
-use App\Policies\{ProcedureRunPolicy, ProcedureTemplatePolicy};
+use App\Models\Procedure\{ProcedureRun, ProcedureTemplate};
+use App\Policies\Procedure\{ProcedureRunPolicy, ProcedureTemplatePolicy};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};
 use Tests\TestCase;

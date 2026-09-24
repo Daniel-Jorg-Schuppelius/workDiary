@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Services\Invoicing\{DunningException, DunningService};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;

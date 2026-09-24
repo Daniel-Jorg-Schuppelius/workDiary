@@ -11,7 +11,7 @@
 namespace App\Services\Event;
 
 use App\Models\Calendar\Event;
-use App\Models\Room;
+use App\Models\Facility\Room;
 use App\Support\Tz;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\{Carbon, Collection};

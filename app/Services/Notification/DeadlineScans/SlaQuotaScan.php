@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Notification\DeadlineScans;
 
 use App\Enums\Notification\NotificationEvent;
-use App\Models\{SlaContract, SlaContractQuota};
+use App\Models\ServiceTicket\{SlaContract, SlaContractQuota};
 use App\Services\Notification\NotificationDispatcher;
 use App\Services\ServiceTicket\SlaQuotaService;
 use Illuminate\Database\Eloquent\Collection;

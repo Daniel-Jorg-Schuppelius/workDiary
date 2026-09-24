@@ -10,7 +10,7 @@
 
 namespace App\Policies\Classification;
 
-use App\Models\Classification\Classification\EntryType;
+use App\Models\Classification\EntryType;
 use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
 

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\AssetFinance;
 
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
-use App\Models\IncomingEInvoice;
+use App\Models\Invoicing\IncomingEInvoice;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

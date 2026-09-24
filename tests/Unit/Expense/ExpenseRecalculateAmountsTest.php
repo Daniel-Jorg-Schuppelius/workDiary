@@ -10,7 +10,7 @@
 
 namespace Tests\Unit\Expense;
 
-use App\Models\Expense;
+use App\Models\Travel\Expense;
 use PHPUnit\Framework\TestCase;
 
 class ExpenseRecalculateAmountsTest extends TestCase {

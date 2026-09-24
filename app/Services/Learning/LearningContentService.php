@@ -15,7 +15,7 @@ namespace App\Services\Learning;
 use App\Enums\Learning\LearningBlockKind;
 use App\Models\Learning\LearningUnit;
 use App\Models\Platform\Organization;
-use App\Models\ProcedureTemplate;
+use App\Models\Procedure\ProcedureTemplate;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;

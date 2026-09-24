@@ -12,8 +12,9 @@ namespace Tests\Feature\Export;
 
 use App\Enums\Attendance\AttendanceStatus;
 use App\Enums\User\Permission as P;
-use App\Models\{Attendance, CostCenter, CostCenterRule, MonthClosure, TimeExport};
+use App\Models\Finance\{CostCenter, CostCenterRule};
 use App\Models\Platform\{Team, User};
+use App\Models\Time\{Attendance, MonthClosure, TimeExport};
 use App\Services\TimeApproval\MonthClosureService;
 use App\Services\TimeExport\{CostCenterResolver, TimeExportService};
 use Carbon\CarbonImmutable;

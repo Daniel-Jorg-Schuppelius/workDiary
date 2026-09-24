@@ -35,7 +35,7 @@ class RawMorphClassLiteralRuleTest extends TestCase {
         // kein Modell, kein Morph-Ziel (AuditLogController lädt 'auditable'
         // deshalb nie eager).
         'app/Http/Controllers/Reporting/Concerns/WritesReportCsv.php' => 'self::class ist ein Controller, kein Modell.',
-        'app/Http/Controllers/ArticleExportController.php' => 'self::class ist ein Controller, kein Modell.',
+        'app/Http/Controllers/Article/ArticleExportController.php' => 'self::class ist ein Controller, kein Modell.',
         // Prüft selbst per Substring auf das alte Muster.
         'tests/Unit/Architecture/AuditTranslationCoverageTest.php' => 'Gate-Quelltext, keine Schreibstelle.',
         'tests/Unit/Architecture/RawMorphClassLiteralRuleTest.php' => 'Dieses Gate.',

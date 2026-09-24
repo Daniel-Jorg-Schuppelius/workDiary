@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Asset;
 use App\Enums\Asset\DefectSeverity;
 use App\Exceptions\AssetValidationException;
 use App\Http\Controllers\Controller;
-use App\Models\{Asset, AssetDefect};
+use App\Models\Asset\{Asset, AssetDefect};
 use App\Models\Platform\User;
 use App\Services\Asset\AssetAssignmentService;
 use App\Services\Attachments\FileAttacher;

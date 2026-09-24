@@ -38,12 +38,12 @@
 
     <h2 class="mt-8 mb-2 text-lg font-semibold">{{ __('Meine Bestellungen') }}</h2>
     @php($statusLabels = [
-        \App\Models\ServiceRequest::STATUS_DRAFT => __('Entwurf'),
-        \App\Models\ServiceRequest::STATUS_PENDING => __('Wartet auf Genehmigung'),
-        \App\Models\ServiceRequest::STATUS_APPROVED => __('Genehmigt'),
-        \App\Models\ServiceRequest::STATUS_REJECTED => __('Abgelehnt'),
-        \App\Models\ServiceRequest::STATUS_FULFILLING => __('In Erfüllung'),
-        \App\Models\ServiceRequest::STATUS_DONE => __('Erledigt'),
+        \App\Models\ServiceTicket\ServiceRequest::STATUS_DRAFT => __('Entwurf'),
+        \App\Models\ServiceTicket\ServiceRequest::STATUS_PENDING => __('Wartet auf Genehmigung'),
+        \App\Models\ServiceTicket\ServiceRequest::STATUS_APPROVED => __('Genehmigt'),
+        \App\Models\ServiceTicket\ServiceRequest::STATUS_REJECTED => __('Abgelehnt'),
+        \App\Models\ServiceTicket\ServiceRequest::STATUS_FULFILLING => __('In Erfüllung'),
+        \App\Models\ServiceTicket\ServiceRequest::STATUS_DONE => __('Erledigt'),
     ])
     <x-table>
         <x-slot:head>

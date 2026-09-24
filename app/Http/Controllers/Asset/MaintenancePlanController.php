@@ -12,8 +12,8 @@ namespace App\Http\Controllers\Asset;
 
 use App\Enums\Asset\MaintenanceIntervalKind;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SaveMaintenancePlanRequest;
-use App\Models\{Asset, MaintenancePlan};
+use App\Http\Requests\Asset\SaveMaintenancePlanRequest;
+use App\Models\Asset\{Asset, MaintenancePlan};
 use App\Models\Platform\User;
 use App\Services\Asset\MaintenancePlanService;
 use Illuminate\Http\{RedirectResponse, Request};

@@ -10,11 +10,11 @@
 
 @section('content')
 @php
-    /** @var \App\Models\DutyPlan $dutyPlan */
+    /** @var \App\Models\Schedule\DutyPlan $dutyPlan */
     /** @var list<string> $dates */
     /** @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users */
-    /** @var array<int, array<string, list<\App\Models\ScheduledShift>>> $matrix */
-    /** @var \Illuminate\Support\Collection<int, \App\Models\ShiftType> $shiftTypes */
+    /** @var array<int, array<string, list<\App\Models\Schedule\ScheduledShift>>> $matrix */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Schedule\ShiftType> $shiftTypes */
     /** @var \App\Services\Calendar\HolidayService $holidays */
     /** @var bool $anonymous */
 

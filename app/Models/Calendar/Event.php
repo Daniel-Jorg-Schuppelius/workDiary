@@ -12,16 +12,14 @@ namespace App\Models\Calendar;
 
 use App\Enums\Event\{EventStatus, EventType, EventVisibility};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, Searchable};
+use App\Models\Customer\Customer;
+use App\Models\Facility\Room;
+use App\Models\Platform\User;
 use Database\Factories\Calendar\EventFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany, HasOne};
 use Illuminate\Support\Carbon;
-use App\Models\Customer\Customer;
-use App\Models\Calendar\EventCategory;
-use App\Models\Calendar\EventParticipant;
-use App\Models\Calendar\EventReminder;
-use App\Models\Room;
 
 /**
  * @property int $id

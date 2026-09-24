@@ -25,7 +25,7 @@
     <x-select-field name="vehicle_id" :label="__('Fuhrpark-Fahrzeug (optional)')" :hint="__('Im Fahrtenbuch-Modus des Fahrzeugs sind km-Stände Pflicht; die Fahrt wird nach Tagesende festgeschrieben.')">
         <option value="">—</option>
         @foreach ($fleetVehicles as $fv)
-            <option value="{{ $fv->sqid }}" @selected((string) old('vehicle_id', \App\Support\Sqid::encode(\App\Models\Vehicle::class, $src?->vehicle_id)) === $fv->sqid)>
+            <option value="{{ $fv->sqid }}" @selected((string) old('vehicle_id', \App\Support\Sqid::encode(\App\Models\Fleet\Vehicle::class, $src?->vehicle_id)) === $fv->sqid)>
                 {{ $fv->displayName() }}{{ $fv->logbook_mode ? ' · ' . __('Fahrtenbuch-Modus') : '' }}
             </option>
         @endforeach

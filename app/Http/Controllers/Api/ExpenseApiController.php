@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Expense;
 use App\Models\Platform\User;
+use App\Models\Travel\Expense;
 use Illuminate\Http\{JsonResponse, Request};
 use OpenApi\Attributes as OA;
 

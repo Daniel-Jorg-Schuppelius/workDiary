@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Etsy\Services;
 
-use App\Models\ArticleVariant;
+use App\Models\Article\ArticleVariant;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalArticleMapping;
 use App\Models\Platform\Organization;

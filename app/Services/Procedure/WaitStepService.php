@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Procedure;
 
 use App\Enums\Procedure\ProcedureStepRunStatus;
-use App\Models\ProcedureStepRun;
+use App\Models\Procedure\ProcedureStepRun;
 use Illuminate\Support\Carbon;
 use RuntimeException;
 

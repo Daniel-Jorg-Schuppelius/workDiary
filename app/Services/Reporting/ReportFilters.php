@@ -65,9 +65,9 @@ final readonly class ReportFilters {
      * Zeiteinträge filtern. time_entries kennt keinen Kunden direkt —
      * Kunde wird über die (org-gescopte) Projektliste eingeschränkt.
      *
-     * @param  Builder<\App\Models\TimeEntry>  $query
+     * @param  Builder<\App\Models\Time\TimeEntry>  $query
      * @param  array{user?: string, project?: string}  $columns  Spalten-Overrides
-     * @return Builder<\App\Models\TimeEntry>
+     * @return Builder<\App\Models\Time\TimeEntry>
      */
     public function applyToTimeEntryQuery(Builder $query, array $columns = []): Builder {
         $userColumn = $columns['user'] ?? 'user_id';
@@ -89,9 +89,9 @@ final readonly class ReportFilters {
      * Seite ihn über das Standardset erhoben hat — die Bedeutung ist pro
      * Report ein anderes Enum, daher ist die Spalte überschreibbar.
      *
-     * @param  Builder<\App\Models\DiaryEntry>  $query
+     * @param  Builder<\App\Models\Diary\DiaryEntry>  $query
      * @param  array{user?: string, customer?: string, project?: string, entryType?: string, status?: string|null}  $columns
-     * @return Builder<\App\Models\DiaryEntry>
+     * @return Builder<\App\Models\Diary\DiaryEntry>
      */
     public function applyToDiaryEntryQuery(Builder $query, array $columns = []): Builder {
         if ($this->customerId !== null) {

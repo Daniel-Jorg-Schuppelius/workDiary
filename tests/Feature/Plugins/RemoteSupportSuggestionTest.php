@@ -12,10 +12,11 @@ namespace Tests\Feature\Plugins;
 
 use App\Enums\Asset\AssetClass;
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Asset, TimeEntry};
+use App\Models\Asset\Asset;
 use App\Models\Auth\RemotePendingSession;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Platform\User;
+use App\Models\Time\TimeEntry;
 use App\Plugins\RemoteSupport\Providers\TeamViewerClient;
 use App\Plugins\RemoteSupport\{RemoteDeviceRegistry, RemotePendingAssignmentService, RemoteSessionImporter, RemoteSupportSuggestionService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

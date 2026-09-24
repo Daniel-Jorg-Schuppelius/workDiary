@@ -10,7 +10,7 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Material;
+use App\Models\Material\Material;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 

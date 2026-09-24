@@ -10,8 +10,9 @@
 
 namespace Tests\Feature\Metering;
 
-use App\Models\{Asset, Invoice, MeterReading};
+use App\Models\Asset\{Asset, MeterReading};
 use App\Models\Customer\Customer;
+use App\Models\Invoicing\Invoice;
 use App\Models\Metering\{MeterBillingAgreement, MeterBillingRun};
 use App\Models\Platform\{Organization, User};
 use App\Services\Metering\MeterBillingService;

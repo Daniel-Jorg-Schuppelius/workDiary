@@ -11,8 +11,8 @@
 namespace Tests\Feature\Absence;
 
 use App\Enums\Vacation\VacationStatus;
+use App\Models\Absence\Vacation;
 use App\Models\Platform\User;
-use App\Models\Vacation;
 use App\Services\Attendance\EmergencyAttendanceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

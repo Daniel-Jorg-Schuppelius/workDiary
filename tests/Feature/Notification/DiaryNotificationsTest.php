@@ -13,7 +13,7 @@ namespace Tests\Feature\Notification;
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Models\Attachments\Attachment;
 use App\Models\Communication\Comment;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Notification\NotificationRule;
 use App\Models\Platform\User;
 use App\Notifications\GenericEventNotification;

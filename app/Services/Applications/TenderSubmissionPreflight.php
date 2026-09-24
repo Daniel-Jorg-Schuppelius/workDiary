@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Applications;
 
 use App\Models\Applications\ApplicationOpportunity;
-use App\Models\BoqItem;
+use App\Models\Gaeb\BoqItem;
 use App\Support\{CarbonFmt, Tz};
 use Carbon\CarbonImmutable;
 

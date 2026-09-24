@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Compliance\Rules;
 
 use App\Enums\Shift\ScheduledShiftStatus;
-use App\Models\ScheduledShift;
+use App\Models\Schedule\ScheduledShift;
 use App\Services\Compliance\{ComplianceRule, ComplianceViolation, ResolvesShiftTiming};
 use App\Support\Query\DateRange;
 

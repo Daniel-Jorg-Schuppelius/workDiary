@@ -113,6 +113,18 @@ Modul-Gate, Rechtegruppen, Navigationsschlüssel, `requires()` und Plugins.
 - Betrieb: `modules:cache` nach dem Deploy (steht in deploy.sh), `modules:clear`
   beim Entwickeln nach neuen Manifesten.
 
+## Domänenordner: keine Klasse direkt im Schichtordner (MVP-862)
+
+Modelle, Services, Controller, Policies, Requests und Factories liegen in
+Domänenordnern, die das Manifest des Moduls in `folders()` nennt
+(`app/Models/Time/TimeEntry.php`, `app/Policies/Time/TimeEntryPolicy.php`,
+`database/factories/Time/TimeEntryFactory.php`). Einzige Wurzeldateien sind
+die Basisklassen `Controller`, `BaseFormRequest` und `PermissionPolicy`.
+Gate `DomainFolderRuleTest`; Plugin-Modelle unter `app/Models/Plugins/<Name>`.
+Wer eine Klasse verschiebt: `use`-Zeilen und Nachbarn im alten Namespace
+nachziehen, `morph-map:generate` laufen lassen (Legacy-Schlüssel bleiben,
+Werte wandern), Views bleiben wo sie sind.
+
 ## Verweise
 
 Die gesamte Entwicklungs-/Architekturdoku liegt im Schwester-Repo

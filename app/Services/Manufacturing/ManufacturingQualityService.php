@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Manufacturing;
 
-use App\Models\{ManufacturingOrder, ManufacturingOrderReport};
+use App\Models\Manufacturing\{ManufacturingOrder, ManufacturingOrderReport};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Collection;
 

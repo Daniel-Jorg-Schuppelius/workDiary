@@ -8,7 +8,7 @@
 --}}
 {{-- Dialog: Produkt anlegen/bearbeiten (MVP-370, produktmodell-konzept.md) --}}
 @php
-    /** @var \App\Models\Product $product */
+    /** @var \App\Models\Article\Product $product */
     $isEdit = $product->exists;
 @endphp
 <x-modal

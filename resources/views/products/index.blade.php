@@ -54,7 +54,7 @@
                 </tr>
             </x-slot:head>
             @foreach ($products as $product)
-                @php /** @var \App\Models\Product $product */ @endphp
+                @php /** @var \App\Models\Article\Product $product */ @endphp
                 <tr>
                     <td>{{ $product->manufacturer }}</td>
                     <td class="font-mono text-sm">{{ $product->model }}</td>

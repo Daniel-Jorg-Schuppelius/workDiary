@@ -14,7 +14,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Models\Timesheet;
+use App\Models\Time\Timesheet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\WithOrganization;

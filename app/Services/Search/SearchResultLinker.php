@@ -14,10 +14,13 @@ namespace App\Services\Search;
 
 use App\Enums\Search\SearchSourceType;
 use App\Models\Communication\CommunicationNote;
-use App\Models\{DiaryEntry, OpenIssue, Protocol, ServiceTicket, TimeEntry, Timesheet};
+use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Document\Document;
 use App\Models\Knowledge\KnowledgeArticle;
+use App\Models\Protocol\Protocol;
 use App\Models\Search\SearchDocument;
+use App\Models\ServiceTicket\ServiceTicket;
+use App\Models\Time\{TimeEntry, Timesheet};
 use App\Support\{EntityUrl, Sqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;

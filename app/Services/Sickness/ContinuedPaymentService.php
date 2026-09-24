@@ -10,8 +10,8 @@
 
 namespace App\Services\Sickness;
 
+use App\Models\Absence\SickLeave;
 use App\Models\Platform\User;
-use App\Models\SickLeave;
 use App\Support\Sickness\ContinuedPaymentStatus;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Database\Eloquent\Collection;

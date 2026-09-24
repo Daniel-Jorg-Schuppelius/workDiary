@@ -20,7 +20,7 @@ use App\Policies\Concerns\HasAdminBypass;
 /**
  * Druckauftrag (MVP-459): gleiche Rechtefamilie wie der Fertigungsauftrag
  * (1:1-Spezialisierung, dieselbe fachliche Rolle) — bewusst identische
- * Permissions wie {@see \App\Policies\ManufacturingOrderPolicy}, aber mit
+ * Permissions wie {@see \App\Policies\Manufacturing\ManufacturingOrderPolicy}, aber mit
  * eigenem Modelltyp.
  */
 class PrintOrderPolicy {

@@ -14,8 +14,8 @@ namespace App\Services\Schedule;
 
 use App\Enums\Shift\{AvailabilityKind, ScheduledShiftStatus, ShiftPreference};
 use App\Models\Calendar\AvailabilityWindow;
-use App\Models\{DesiredShift, ScheduledShift, ShiftType};
 use App\Models\Platform\{Organization, User};
+use App\Models\Schedule\{DesiredShift, ScheduledShift, ShiftType};
 use App\Services\Compliance\{ComplianceViolation, ShiftComplianceService};
 use App\Support\Query\DateRange;
 use Carbon\Carbon;

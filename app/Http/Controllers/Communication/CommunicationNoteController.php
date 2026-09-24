@@ -12,13 +12,13 @@ namespace App\Http\Controllers\Communication;
 
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType, CommunicationVisibility, ParticipantParty};
 use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesCurrentOrganization};
+use App\Http\Controllers\Controller;
+use App\Models\Classification\Tag;
 use App\Models\Communication\CommunicationNote;
 use App\Models\Customer\Customer;
-use App\Models\DiaryEntry;
-use App\Models\Platform\Organization;
+use App\Models\Diary\DiaryEntry;
+use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
-use App\Models\Classification\Tag;
-use App\Models\Platform\User;
 use App\Services\Communication\CommunicationNoteService;
 use App\Services\Ideas\NodeConversionService;
 use App\Support\{EntityUrl, Sqid, Tz};
@@ -28,7 +28,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class CommunicationNoteController extends Controller {
     use ParsesIndexQuery;
@@ -53,8 +52,8 @@ class CommunicationNoteController extends Controller {
         'project' => Project::class,
         // Vollaudit 2026-07 (M12): Spec §5 kennt fünf Bezüge — Karte am
         // Abnahmeprotokoll und am Objekt/Asset.
-        'protocol' => \App\Models\Protocol::class,
-        'asset' => \App\Models\Asset::class,
+        'protocol' => \App\Models\Protocol\Protocol::class,
+        'asset' => \App\Models\Asset\Asset::class,
         // Feature 091: Qualifizierungs-Notizen an der Lead-Akte.
         'lead' => \App\Models\Sales\Lead::class,
         // Feature 149 (MVP-789): private Lernnotizen an der Einschreibung.

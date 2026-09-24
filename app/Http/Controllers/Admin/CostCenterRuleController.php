@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{CostCenter, CostCenterRule};
+use App\Models\Finance\{CostCenter, CostCenterRule};
 use App\Models\Platform\{Team, User};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Support\SqidEncoder;

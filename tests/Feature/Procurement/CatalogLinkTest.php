@@ -11,8 +11,9 @@
 namespace Tests\Feature\Procurement;
 
 use App\Enums\Procurement\CatalogItemStatus;
-use App\Models\{Article, Supplier, SupplierCatalogItem, SupplierCatalogSource};
+use App\Models\Article\Article;
 use App\Models\Platform\User;
+use App\Models\Supplier\{Supplier, SupplierCatalogItem, SupplierCatalogSource};
 use App\Services\Procurement\CatalogLinkService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -117,7 +118,7 @@ final class CatalogLinkTest extends TestCase {
     public function test_propose_matches_by_supply_sku(): void {
         $item = $this->item(null);
         $article = $this->article();
-        \App\Models\ArticleSupply::query()->create([
+        \App\Models\Article\ArticleSupply::query()->create([
             'organization_id' => $this->organization->id,
             'article_id' => $article->id, 'supplier_id' => $this->supplier->id,
             'supplier_sku' => 'A-1', 'purchase_price' => '1.4000', 'currency' => 'EUR',

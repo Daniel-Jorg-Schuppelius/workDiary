@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Finance\Datev;
 
-use App\Models\{Expense, IncomingEInvoice, Invoice};
+use App\Models\Invoicing\{IncomingEInvoice, Invoice};
+use App\Models\Travel\Expense;
 use App\Services\TimeExport\CostCenterResolver;
 use CommonToolkit\Helper\Data\NumberHelper;
 use DateTimeImmutable;

@@ -11,8 +11,8 @@
 namespace Tests\Feature\Expense;
 
 use App\Enums\Expense\PaymentMethod;
-use App\Models\Expense;
 use App\Models\Platform\User;
+use App\Models\Travel\Expense;
 use App\Services\Expense\ExpenseService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

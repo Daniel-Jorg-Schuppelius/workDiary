@@ -11,8 +11,10 @@
 namespace Tests\Feature;
 
 use App\Enums\Vacation\{VacationStatus, VacationType};
-use App\Models\{DutyPlan, EmergencyAssignment, OnCallShift, ScheduledShift, ShiftType, Vacation};
+use App\Models\Absence\Vacation;
+use App\Models\Diary\{EmergencyAssignment, OnCallShift};
 use App\Models\Platform\{Organization, User};
+use App\Models\Schedule\{DutyPlan, ScheduledShift, ShiftType};
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

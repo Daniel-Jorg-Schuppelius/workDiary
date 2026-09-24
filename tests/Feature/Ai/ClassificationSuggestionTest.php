@@ -88,7 +88,7 @@ class ClassificationSuggestionTest extends TestCase {
             'created_by' => $this->user->id,
         ]);
         $notfall = Tag::query()->where('name', 'Notfall')->firstOrFail();
-        $entry = \App\Models\DiaryEntry::factory()->for($this->user)->create([
+        $entry = \App\Models\Diary\DiaryEntry::factory()->for($this->user)->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
         ]);

@@ -129,10 +129,10 @@ class IncomingInvoiceController extends Controller {
      * fachlicher Freigabe; ein zweiter Aufruf ändert nichts (kein doppelter
      * Nachweis). Keine automatische Stammdaten- oder Belegänderung.
      */
-    public function transfer(\App\Models\IncomingEInvoice $incoming): RedirectResponse {
+    public function transfer(\App\Models\Invoicing\IncomingEInvoice $incoming): RedirectResponse {
         abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
 
-        if (! in_array($incoming->status, [\App\Models\IncomingEInvoice::STATUS_APPROVED, \App\Models\IncomingEInvoice::STATUS_PAYMENT_RELEASED], true)) {
+        if (! in_array($incoming->status, [\App\Models\Invoicing\IncomingEInvoice::STATUS_APPROVED, \App\Models\Invoicing\IncomingEInvoice::STATUS_PAYMENT_RELEASED], true)) {
             return back()->with('error', __('Nur fachlich freigegebene Eingänge werden an die Buchhaltung übergeben.'));
         }
 
@@ -155,7 +155,7 @@ class IncomingInvoiceController extends Controller {
      * Zahlungsfreigabe (nur NACH fachlicher Freigabe). Keine automatische
      * Stammdatenänderung — reine Statusführung mit Audit.
      */
-    public function decide(Request $request, \App\Models\IncomingEInvoice $incoming): RedirectResponse {
+    public function decide(Request $request, \App\Models\Invoicing\IncomingEInvoice $incoming): RedirectResponse {
         abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
 
         $data = $request->validate([
@@ -165,9 +165,9 @@ class IncomingInvoiceController extends Controller {
 
         $target = $data['decision'];
         $allowed = match ($incoming->status) {
-            \App\Models\IncomingEInvoice::STATUS_RECEIVED,
-            \App\Models\IncomingEInvoice::STATUS_QUESTION => ['approved', 'rejected', 'question'],
-            \App\Models\IncomingEInvoice::STATUS_APPROVED => ['payment_released', 'rejected'],
+            \App\Models\Invoicing\IncomingEInvoice::STATUS_RECEIVED,
+            \App\Models\Invoicing\IncomingEInvoice::STATUS_QUESTION => ['approved', 'rejected', 'question'],
+            \App\Models\Invoicing\IncomingEInvoice::STATUS_APPROVED => ['payment_released', 'rejected'],
             default => [],
         };
         if (! in_array($target, $allowed, true)) {
@@ -189,7 +189,7 @@ class IncomingInvoiceController extends Controller {
         // Pflichtnachweise fehlen. Sperren wäre hier zu spät — die Leistung
         // ist erbracht —, aber schweigen wäre falsch: Genau die Altfälle,
         // deren Bestellung vor der Sperre entstand, laufen hier durch.
-        $warning = $target === \App\Models\IncomingEInvoice::STATUS_PAYMENT_RELEASED
+        $warning = $target === \App\Models\Invoicing\IncomingEInvoice::STATUS_PAYMENT_RELEASED
             ? $this->credentialWarning($incoming)
             : null;
 
@@ -199,7 +199,7 @@ class IncomingInvoiceController extends Controller {
     public function show(Document $document): View {
         Gate::authorize('view', $document);
         abort_unless($document->document_type === DocumentType::Invoice, 404);
-        $incoming = \App\Models\IncomingEInvoice::query()->where('document_id', $document->id)->first();
+        $incoming = \App\Models\Invoicing\IncomingEInvoice::query()->where('document_id', $document->id)->first();
 
         $version = $document->currentVersion;
         $parsed = null;
@@ -225,17 +225,17 @@ class IncomingInvoiceController extends Controller {
      * Treffer gibt es nichts zu warnen — eine erfundene Zuordnung wäre
      * schlimmer als keine.
      */
-    private function credentialWarning(\App\Models\IncomingEInvoice $incoming): ?string {
+    private function credentialWarning(\App\Models\Invoicing\IncomingEInvoice $incoming): ?string {
         $name = trim((string) ($incoming->seller_name ?? ''));
         if ($name === '') {
             return null;
         }
 
-        $supplier = \App\Models\Supplier::query()
+        $supplier = \App\Models\Supplier\Supplier::query()
             ->where('organization_id', $incoming->organization_id)
             ->where('name', $name)
             ->first();
-        if (! $supplier instanceof \App\Models\Supplier) {
+        if (! $supplier instanceof \App\Models\Supplier\Supplier) {
             return null;
         }
 

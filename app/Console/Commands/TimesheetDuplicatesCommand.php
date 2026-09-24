@@ -10,7 +10,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Timesheet;
+use App\Models\Time\Timesheet;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 

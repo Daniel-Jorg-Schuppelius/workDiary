@@ -14,7 +14,7 @@ namespace Tests\Feature\Import;
 
 use App\Enums\Document\DocumentType;
 use App\Enums\Import\{ImportEntity, ImportRunState};
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
 use App\Models\Integration\ImportRun;

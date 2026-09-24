@@ -65,10 +65,10 @@ class CostElement extends Model {
      * Die Verknüpfung **ersetzt keinen Preis**: Der Kennwert bleibt ein
      * Anhaltspunkt aus fremder Quelle, der eigene Preis bleibt der eigene.
      *
-     * @return BelongsTo<\App\Models\Article, $this>
+     * @return BelongsTo<\App\Models\Article\Article, $this>
      */
     public function article(): BelongsTo {
-        return $this->belongsTo(\App\Models\Article::class, 'article_id');
+        return $this->belongsTo(\App\Models\Article\Article::class, 'article_id');
     }
 
     /**

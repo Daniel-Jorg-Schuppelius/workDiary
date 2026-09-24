@@ -15,7 +15,7 @@ use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use App\Support\Billing\VoucherTypes;
 use Illuminate\Support\Carbon;

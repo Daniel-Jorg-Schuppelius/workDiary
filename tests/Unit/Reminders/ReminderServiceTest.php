@@ -11,8 +11,8 @@
 namespace Tests\Unit\Reminders;
 
 use App\Enums\Expense\{ExpenseStatus, PerDiemTripStatus};
-use App\Models\{Expense, ExpenseCategory, PerDiemTrip};
 use App\Models\Platform\User;
+use App\Models\Travel\{Expense, ExpenseCategory, PerDiemTrip};
 use App\Services\Reminders\ReminderService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

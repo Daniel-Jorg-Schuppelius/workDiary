@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Mail;
 
-use App\Models\ProblemReport;
+use App\Models\ServiceTicket\ProblemReport;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;

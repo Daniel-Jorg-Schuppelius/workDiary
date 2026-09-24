@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 @php
-    /** @var \App\Models\Software $software */
+    /** @var \App\Models\Asset\Software $software */
     $action = $software->exists
         ? route('software.update', $software)
         : route('software.store');

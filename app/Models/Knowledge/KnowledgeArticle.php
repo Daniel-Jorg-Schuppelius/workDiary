@@ -11,17 +11,16 @@
 namespace App\Models\Knowledge;
 
 use App\Enums\Knowledge\{ArticleStatus, ArticleVisibility};
+use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasSqid, HasTags, Searchable};
+use App\Models\Platform\User;
+use App\Models\ServiceTicket\Problem;
 use Database\Factories\Knowledge\KnowledgeArticleFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 use Illuminate\Support\{Carbon, Str};
-use App\Models\Asset;
-use App\Models\Knowledge\KnowledgeArticleFeedback;
-use App\Models\Knowledge\ContentReference;
-use App\Models\Problem;
 
 /**
  * Wissensartikel (Feature 011): bekanntes Problem + Lösungsschritte aus

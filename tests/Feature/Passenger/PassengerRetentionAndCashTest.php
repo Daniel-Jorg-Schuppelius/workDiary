@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Passenger;
 
 use App\Enums\Passenger\{RideOperationMode, RideStatus};
-use App\Models\{CashEntry, CashRegister};
+use App\Models\Finance\{CashEntry, CashRegister};
 use App\Models\Passenger\{PassengerRide, PassengerShiftSettlement};
 use App\Models\Platform\User;
 use App\Models\Privacy\RetentionProposal;

@@ -14,7 +14,7 @@ namespace App\Services\Schedule;
 
 use App\Enums\Shift\AvailabilityKind;
 use App\Models\Calendar\AvailabilityWindow;
-use App\Models\{DesiredShift, ScheduledShift};
+use App\Models\Schedule\{DesiredShift, ScheduledShift};
 use Illuminate\Support\Collection;
 
 /**

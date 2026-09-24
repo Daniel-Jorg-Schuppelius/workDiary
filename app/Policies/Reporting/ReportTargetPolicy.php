@@ -12,7 +12,7 @@ namespace App\Policies\Reporting;
 
 use App\Enums\User\Permission;
 use App\Policies\Concerns\HasAdminBypass;
-use App\Policies\Auth\PermissionPolicy;
+use App\Policies\PermissionPolicy;
 
 /**
  * Zielwert-Pflege ist Geschäftsführungs-/Admin-Sache (report.target.manage).

@@ -34,11 +34,11 @@ class ClaimRmaController extends Controller {
         Gate::authorize('warehouse', $claim);
 
         $fieldModels = [
-            'warehouse_id' => \App\Models\Warehouse::class,
-            'article_id' => \App\Models\Article::class,
-            'article_variant_id' => \App\Models\ArticleVariant::class,
-            'stock_serial_id' => \App\Models\StockSerial::class,
-            'stock_lot_id' => \App\Models\StockLot::class,
+            'warehouse_id' => \App\Models\Inventory\Warehouse::class,
+            'article_id' => \App\Models\Article\Article::class,
+            'article_variant_id' => \App\Models\Article\ArticleVariant::class,
+            'stock_serial_id' => \App\Models\Inventory\StockSerial::class,
+            'stock_lot_id' => \App\Models\Inventory\StockLot::class,
         ];
         foreach ($fieldModels as $field => $model) {
             if ($request->filled($field)) {
@@ -65,7 +65,7 @@ class ClaimRmaController extends Controller {
         Gate::authorize('warehouse', $rma->claimCase);
 
         if ($request->filled('warehouse_id')) {
-            $request->merge(['warehouse_id' => Sqid::decodeOrNumeric(\App\Models\Warehouse::class, $request->input('warehouse_id'))]);
+            $request->merge(['warehouse_id' => Sqid::decodeOrNumeric(\App\Models\Inventory\Warehouse::class, $request->input('warehouse_id'))]);
         }
         $data = $request->validate([
             'warehouse_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('warehouses')],

@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Finance\Sepa;
 
-use App\Models\{IncomingEInvoice, Supplier};
+use App\Models\Invoicing\IncomingEInvoice;
+use App\Models\Supplier\Supplier;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\{BankHelper, NumberHelper};
 use Illuminate\Support\Collection;

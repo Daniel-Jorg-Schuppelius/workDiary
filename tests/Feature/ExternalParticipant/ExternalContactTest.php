@@ -12,7 +12,7 @@ namespace Tests\Feature\ExternalParticipant;
 
 use App\Models\Communication\ExternalParticipant;
 use App\Models\Contacts\ExternalContact;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;

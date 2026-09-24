@@ -83,11 +83,11 @@
         }
 
         return match ($row->source_type) {
-            'invoice' => [route('invoices.show', Sqid::encode(\App\Models\Invoice::class, (int) $row->link_id)), false],
+            'invoice' => [route('invoices.show', Sqid::encode(\App\Models\Invoicing\Invoice::class, (int) $row->link_id)), false],
             'quote' => [route('quotes.show', Sqid::encode(\App\Models\Sales\Quote::class, (int) $row->link_id)), false],
             'voucher' => [route('lexoffice.vouchers.preview', Sqid::encode(\App\Models\Plugins\Lexoffice\LexofficeVoucher::class, (int) $row->link_id)), true],
             'incoming_einvoice' => [route('finance.incoming-invoices.show', Sqid::encode(\App\Models\Document\Document::class, (int) $row->link_id)), false],
-            'expense' => [route('expenses.receipt', Sqid::encode(\App\Models\Expense::class, (int) $row->link_id)), true],
+            'expense' => [route('expenses.receipt', Sqid::encode(\App\Models\Travel\Expense::class, (int) $row->link_id)), true],
             default => null,
         };
     };
@@ -339,7 +339,7 @@
                         @if ($isOverdue && $row->source_type === 'invoice' && $canDunLocal && (int) $row->dunning_level < 3)
                             <x-icon-btn icon="campaign" tone="warning" size="sm"
                                         data-entry-modal-trigger
-                                        :href="route('invoices.dun.form', Sqid::encode(\App\Models\Invoice::class, (int) $row->source_id))"
+                                        :href="route('invoices.dun.form', Sqid::encode(\App\Models\Invoicing\Invoice::class, (int) $row->source_id))"
                                         :label="__('billing.feed.action.dun')" />
                         @elseif ($isOverdue && $row->source_type === 'voucher' && $canDun)
                             <x-action-form :action="route('lexoffice.vouchers.dunning', Sqid::encode(\App\Models\Plugins\Lexoffice\LexofficeVoucher::class, (int) $row->source_id))"

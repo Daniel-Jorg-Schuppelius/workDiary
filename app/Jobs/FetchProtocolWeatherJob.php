@@ -14,7 +14,7 @@ namespace App\Jobs;
 
 use App\Jobs\Concerns\RetriesTransientFailures;
 use App\Models\Platform\Organization;
-use App\Models\Protocol;
+use App\Models\Protocol\Protocol;
 use App\Services\Weather\WeatherService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

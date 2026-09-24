@@ -14,7 +14,7 @@ namespace App\Services\Shipping;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2Token;
 use APIToolkit\Contracts\Interfaces\API\OAuth2TokenStoreInterface;
-use App\Models\CarrierConnection;
+use App\Models\Shipping\CarrierConnection;
 
 /**
  * Bindet den verschlüsselten {@see CarrierTokenCache} an das php-api-toolkit

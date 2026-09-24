@@ -16,7 +16,7 @@ use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Integration\{ExternalReference, ExternalReferenceAlias};
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Plugins\Support\AttachesImportedTags;
 use App\Plugins\Toggl\Sources\{FolderWorkspaceSource, TogglEntry, TogglWorkspaceReader, WorkspaceSourceInterface};
 use App\Support\Tz;

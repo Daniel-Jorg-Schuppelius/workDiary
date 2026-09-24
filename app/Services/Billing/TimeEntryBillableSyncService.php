@@ -11,8 +11,9 @@
 namespace App\Services\Billing;
 
 use App\Models\Customer\Customer;
-use App\Models\{InvoiceItem, TimeEntry};
+use App\Models\Invoicing\InvoiceItem;
 use App\Models\Project\Project;
+use App\Models\Time\TimeEntry;
 use App\Plugins\Support\TimeWritebackObserver;
 use Illuminate\Support\Facades\DB;
 

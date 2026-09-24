@@ -11,8 +11,9 @@
 namespace Tests\Feature\AssetFinance;
 
 use App\Enums\AssetFinance\{AssetFinanceDeadlineKind, AssetFinanceEndKind, AssetFinanceKind, AssetFinanceStatus, AssetFinanceUsageLimitKind};
-use App\Models\{Asset, IncomingEInvoice};
+use App\Models\Asset\Asset;
 use App\Models\AssetFinance\AssetFinanceContract;
+use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\User;
 use App\Services\AssetFinance\AssetFinanceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -153,7 +154,7 @@ final class AssetFinanceLifecycleTest extends TestCase {
             'overrun_fee_per_unit' => '2.0000',
         ]);
 
-        \App\Models\MeterReading::query()->create([
+        \App\Models\Asset\MeterReading::query()->create([
             'organization_id' => $this->organization->id,
             'asset_id' => $this->asset->id,
             'read_at' => now(),

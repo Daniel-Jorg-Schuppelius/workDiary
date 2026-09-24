@@ -15,7 +15,7 @@ namespace App\Dashboard\Widgets;
 use App\Dashboard\Widget;
 use App\Enums\Dashboard\WidgetGroup;
 use App\Enums\Diary\Status;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use Illuminate\Contracts\View\View;
 

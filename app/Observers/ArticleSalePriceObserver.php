@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
-use App\Models\{Article, ArticleSalePriceHistory};
+use App\Models\Article\{Article, ArticleSalePriceHistory};
 use Illuminate\Support\Carbon;
 
 /**

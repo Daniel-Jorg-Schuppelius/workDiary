@@ -10,8 +10,9 @@
 
 namespace App\Models\Plugins\JtlWawi;
 
-use App\Models\{ArticleVariant, Warehouse};
+use App\Models\Article\ArticleVariant;
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Inventory\Warehouse;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

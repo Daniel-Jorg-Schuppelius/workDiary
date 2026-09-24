@@ -99,7 +99,7 @@
                     @if ($s->attachments->isNotEmpty())
                         @foreach ($s->attachments as $att)
                             <a class="tooltip" data-tip="{{ $att->original_name }}"
-                               href="{{ \App\Http\Controllers\SickLeaveController::attachmentDownloadUrl($s, $att) }}">
+                               href="{{ \App\Http\Controllers\Absence\SickLeaveController::attachmentDownloadUrl($s, $att) }}">
                                 <x-icon name="description" class="h-4 w-4 text-info" />
                             </a>
                         @endforeach

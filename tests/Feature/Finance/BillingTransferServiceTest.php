@@ -15,9 +15,10 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Customer\Customer;
 use App\Models\Finance\BillingTransferEvent;
-use App\Models\{MaterialUsage, TimeEntry, Timesheet};
+use App\Models\Material\MaterialUsage;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Models\Time\{TimeEntry, Timesheet};
 use App\Services\Finance\{BillingTransferException, BillingTransferService};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -168,7 +169,7 @@ class BillingTransferServiceTest extends TestCase {
     }
 
     public function test_material_snapshot_captures_unit_tax_and_cost_position(): void {
-        $material = \App\Models\Material::create([
+        $material = \App\Models\Material\Material::create([
             'organization_id' => $this->organization->id,
             'sku' => 'KAB-001',
             'name' => 'Netzwerkkabel',

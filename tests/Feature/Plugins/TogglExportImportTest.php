@@ -15,7 +15,7 @@ use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Integration\{ExternalReference, ExternalReferenceAlias};
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Plugins\Toggl\TogglExportImporter;
 use App\Services\Stammdaten\{CustomerMergeService, ProjectMergeService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

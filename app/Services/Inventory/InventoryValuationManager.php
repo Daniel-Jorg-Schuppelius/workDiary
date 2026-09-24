@@ -14,7 +14,7 @@ namespace App\Services\Inventory;
 
 use App\Contracts\Inventory\InventoryValuationStrategy;
 use App\Enums\Inventory\ValuationMethod;
-use App\Models\ArticleVariant;
+use App\Models\Article\ArticleVariant;
 use App\Models\Platform\Organization;
 
 /**

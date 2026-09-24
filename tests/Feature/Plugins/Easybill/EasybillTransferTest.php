@@ -18,7 +18,7 @@ use App\Models\Finance\BillingTransfer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\{Organization, PluginSetting, User};
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Plugins\Easybill\EasybillPlugin;
 use App\Services\Finance\BillingTransferService;
 use App\Services\Finance\Targets\EasybillTarget;

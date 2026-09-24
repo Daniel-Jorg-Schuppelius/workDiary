@@ -11,7 +11,7 @@
 namespace Database\Factories\Project;
 
 use App\Enums\Project\ProjectStatus;
-use App\Models\Project\Project\Project;
+use App\Models\Project\Project;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

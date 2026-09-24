@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Protocol;
 
 use App\Enums\Protocol\{ProtocolType, ProtocolVisibility};
-use App\Http\Controllers\ProtocolController;
+use App\Http\Controllers\Protocol\ProtocolController;
 use App\Http\Requests\BaseFormRequest;
 
 /**

@@ -86,7 +86,7 @@ class SchedulerRegistrar {
         // Wartungsfenster-Kopplung (MVP-055): Jobs mit
         // runs_in_maintenance=false pausieren im aktiven System-Fenster.
         if (! $definition->runsInMaintenance) {
-            $event->skip(static fn(): bool => \App\Models\MaintenanceWindow::systemActiveNow());
+            $event->skip(static fn(): bool => \App\Models\Asset\MaintenanceWindow::systemActiveNow());
         }
 
         if ($definition->withoutOverlapping) {

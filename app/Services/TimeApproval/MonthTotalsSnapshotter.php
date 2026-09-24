@@ -11,8 +11,8 @@
 namespace App\Services\TimeApproval;
 
 use App\Enums\Attendance\AttendanceStatus;
-use App\Models\Attendance;
 use App\Models\Platform\User;
+use App\Models\Time\Attendance;
 use App\Services\Flextime\FlexCalculator;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
@@ -67,7 +67,7 @@ class MonthTotalsSnapshotter {
         // Vollaudit 2026-07 (N5): sick/holiday/vacation aus den Tagesdaten des
         // FlexCalculator bzw. den Krankmeldungen zählen — auf den Monat geclippt,
         // gezählt in Werktagen (Mo–Fr ohne Feiertage, Semantik wie MVP-413).
-        $sickRanges = \App\Models\SickLeave::query()
+        $sickRanges = \App\Models\Absence\SickLeave::query()
             ->where('user_id', $user->id)
             ->whereNull('cancelled_at')
             ->whereDate('start_date', '<=', $end->toDateString())

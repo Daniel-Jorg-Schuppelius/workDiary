@@ -11,7 +11,7 @@
 namespace App\Services\Invoicing;
 
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use Illuminate\Support\Collection;
 
 /**

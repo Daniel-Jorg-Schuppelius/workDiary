@@ -12,7 +12,11 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
-use App\Models\{Expense, InvoiceItem, MaterialUsage, TimeEntry, Tour};
+use App\Models\Diary\Tour;
+use App\Models\Invoicing\InvoiceItem;
+use App\Models\Material\MaterialUsage;
+use App\Models\Time\TimeEntry;
+use App\Models\Travel\Expense;
 
 /**
  * Quellposten einer Rechnungsposition wieder freigeben (Vollscan 2026-08-23,

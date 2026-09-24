@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Gaeb;
 
 use App\Enums\Gaeb\GaebPhase;
-use App\Models\{BillOfQuantity, BoqExport};
+use App\Models\Gaeb\{BillOfQuantity, BoqExport};
 use App\Services\Invoicing\EInvoice\XRechnungGenerator;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use ERechnungToolkit\Entities\Gaeb\GaebParty;

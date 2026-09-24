@@ -12,7 +12,7 @@ namespace Tests\Feature\Helpdesk;
 
 use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Models\Platform\{Organization, User};
-use App\Models\{ServiceTicket, ServiceTicketLink, ServiceTicketWatcher, SlaClockSegment};
+use App\Models\ServiceTicket\{ServiceTicket, ServiceTicketLink, ServiceTicketWatcher, SlaClockSegment};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -157,7 +157,7 @@ final class HelpdeskTicketWidgetsTest extends TestCase {
         // Zeitlinie = Konversation: Beginn + Ende als system_event.
         $this->assertSame(
             2,
-            \App\Models\ServiceTicketMessage::query()
+            \App\Models\ServiceTicket\ServiceTicketMessage::query()
                 ->where('service_ticket_id', $ticket->id)
                 ->where('kind', 'system_event')
                 ->count(),

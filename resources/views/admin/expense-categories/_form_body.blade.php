@@ -10,7 +10,7 @@
 
 {{-- Shared body for ExpenseCategory create/edit --}}
 @php
-    /** @var \App\Models\ExpenseCategory $category */
+    /** @var \App\Models\Travel\ExpenseCategory $category */
     $isEdit = $category?->exists ?? false;
 @endphp
 

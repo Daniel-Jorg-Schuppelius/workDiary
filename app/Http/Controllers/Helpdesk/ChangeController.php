@@ -13,9 +13,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Helpdesk;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SaveChangeRequest;
-use App\Models\{Asset, Change, ChangeTemplate, Problem, ProcedureTemplate, ServiceTicket};
+use App\Http\Requests\ServiceTicket\SaveChangeRequest;
+use App\Models\Asset\Asset;
 use App\Models\Platform\User;
+use App\Models\Procedure\ProcedureTemplate;
+use App\Models\ServiceTicket\{Change, ChangeTemplate, Problem, ServiceTicket};
 use App\Services\ServiceTicket\ChangeService;
 use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};

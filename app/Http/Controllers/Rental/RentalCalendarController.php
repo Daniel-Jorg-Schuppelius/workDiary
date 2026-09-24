@@ -14,7 +14,7 @@ namespace App\Http\Controllers\Rental;
 
 use App\Enums\Rental\RentalReservationKind;
 use App\Http\Controllers\Controller;
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Rental\{RentalCase, RentalProfile, RentalReservation};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Rental\RentalAvailabilityService;

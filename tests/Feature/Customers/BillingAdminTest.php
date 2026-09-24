@@ -112,7 +112,7 @@ class BillingAdminTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
         ]);
-        $entry = \App\Models\TimeEntry::create([
+        $entry = \App\Models\Time\TimeEntry::create([
             'organization_id' => $this->organization->id,
             'user_id' => $this->admin->id,
             'project_id' => $project->id,
@@ -178,7 +178,7 @@ class BillingAdminTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
         ]);
-        \App\Models\TimeEntry::create([
+        \App\Models\Time\TimeEntry::create([
             'organization_id' => $this->organization->id,
             'user_id' => $this->admin->id,
             'project_id' => $project->id,

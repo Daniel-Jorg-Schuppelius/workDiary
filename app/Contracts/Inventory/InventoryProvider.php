@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Contracts\Inventory;
 
 use App\Enums\Inventory\{ProviderCapability, StockState};
-use App\Models\{ArticleVariant, StockMovement, Warehouse};
+use App\Models\Article\ArticleVariant;
+use App\Models\Inventory\{StockMovement, Warehouse};
 use App\Services\Inventory\StockPosting;
 
 /**

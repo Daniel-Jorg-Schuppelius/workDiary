@@ -11,7 +11,7 @@
 namespace App\Services\Flextime;
 
 use App\Models\Platform\User;
-use App\Models\{TimeEntry, WorkSchedule};
+use App\Models\Time\{TimeEntry, WorkSchedule};
 use App\Support\Tz;
 use CommonToolkit\ValueObjects\Duration;
 use InvalidArgumentException;
@@ -19,7 +19,7 @@ use InvalidArgumentException;
 /**
  * Kernzeit-/Rahmenzeit-/Pflichtpausen-Prüfung je Zeiteintrag (Vollreview W2.1):
  * genutzt als nicht blockierende Warnung im Speicherpfad
- * ({@see \App\Http\Controllers\TimeEntryController}) und als Finding-Quelle im
+ * ({@see \App\Http\Controllers\Time\TimeEntryController}) und als Finding-Quelle im
  * Compliance-Scan ({@see \App\Services\Compliance\CoreTimeScanService}).
  */
 class CoreTimeValidator {

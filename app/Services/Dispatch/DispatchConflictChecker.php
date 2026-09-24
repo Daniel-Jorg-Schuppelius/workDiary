@@ -14,8 +14,9 @@ namespace App\Services\Dispatch;
 
 use App\Enums\Diary\{Mode, Status};
 use App\Enums\Shift\ScheduledShiftStatus;
-use App\Models\{DiaryEntry, ScheduledShift};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
+use App\Models\Schedule\ScheduledShift;
 use App\Services\Compliance\{ComplianceReport, ComplianceViolation, ShiftComplianceService};
 use Carbon\CarbonImmutable;
 

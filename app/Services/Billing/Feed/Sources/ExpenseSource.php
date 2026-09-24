@@ -14,7 +14,7 @@ namespace App\Services\Billing\Feed\Sources;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\Expense;
+use App\Models\Travel\Expense;
 use App\Services\Billing\DocumentFeedFilters;
 use App\Services\Billing\Feed\{DocumentFeedSource, DocumentFeedSourceRegistry, FeedProjection};
 use App\Support\MorphMap;

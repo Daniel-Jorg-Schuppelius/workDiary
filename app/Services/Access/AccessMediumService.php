@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Access;
 
 use App\Enums\Access\AccessMediumStatus;
-use App\Models\{AccessMedium, AccessMediumHandover};
+use App\Models\Access\{AccessMedium, AccessMediumHandover};
 use App\Models\Platform\User;
 use App\Models\Project\Task;
 use Illuminate\Support\Carbon;

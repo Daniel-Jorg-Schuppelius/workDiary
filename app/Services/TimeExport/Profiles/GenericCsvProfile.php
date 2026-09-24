@@ -10,7 +10,7 @@
 
 namespace App\Services\TimeExport\Profiles;
 
-use App\Models\{TimeExport, TimeExportLine};
+use App\Models\Time\{TimeExport, TimeExportLine};
 use CommonToolkit\Enums\Common\CSV\QuotingStyle;
 use CommonToolkit\Helper\Data\CSV\StringHelper as CsvStringHelper;
 use CommonToolkit\Helper\Data\NumberHelper;

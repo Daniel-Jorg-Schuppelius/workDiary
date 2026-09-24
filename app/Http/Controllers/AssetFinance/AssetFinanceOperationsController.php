@@ -15,7 +15,7 @@ namespace App\Http\Controllers\AssetFinance;
 use App\Enums\AssetFinance\{AssetFinanceDeadlineKind, AssetFinanceEndKind, AssetFinanceUsageLimitKind};
 use App\Http\Controllers\Controller;
 use App\Models\AssetFinance\{AssetFinanceContract, AssetFinanceDeadline, AssetFinanceEndProcess, AssetFinanceOption, AssetFinanceRateSchedule, AssetFinanceUsageLimit};
-use App\Models\IncomingEInvoice;
+use App\Models\Invoicing\IncomingEInvoice;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\AssetFinance\AssetFinanceService;
 use App\Support\{ErrorText, Sqid};

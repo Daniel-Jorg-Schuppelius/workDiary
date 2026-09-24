@@ -16,9 +16,11 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
-use App\Models\{Expense, MaterialUsage, TimeEntry, Timesheet};
+use App\Models\Material\MaterialUsage;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Models\Time\{TimeEntry, Timesheet};
+use App\Models\Travel\Expense;
 use App\Services\Reporting\{EconomicsReportBuilder, ReportFilters, ReportTargetEvaluator};
 use App\Support\{CarbonFmt, Sqid};
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -521,7 +523,7 @@ class EconomicsReportController extends Controller {
      * @return array<string, mixed>
      */
     private function travelDrilldown(Project $project, string $from, string $to): array {
-        $base = \App\Models\TravelLog::query()
+        $base = \App\Models\Travel\TravelLog::query()
             ->where('project_id', $project->id)
             ->whereBetween('date', [$from, $to])
             ->where('reimbursable', true);

@@ -14,11 +14,13 @@ namespace App\Http\Controllers\AssetFinance;
 
 use App\Enums\AssetFinance\{AssetFinanceKind, AssetFinanceStatus, AssetFinanceTermKind};
 use App\Http\Controllers\Controller;
-use App\Models\{Asset, CostCenter, Supplier};
+use App\Models\Asset\Asset;
 use App\Models\AssetFinance\AssetFinanceContract;
+use App\Models\Finance\CostCenter;
 use App\Models\Investments\{InvestmentCase, InvestmentLink};
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Models\Supplier\Supplier;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\AssetFinance\AssetFinanceService;
 use App\Support\{ErrorText, Sqid};
@@ -221,7 +223,7 @@ class AssetFinanceContractController extends Controller {
             'supplier_id' => Supplier::class,
             'cost_center_id' => CostCenter::class,
             'project_id' => Project::class,
-            'purchase_order_id' => \App\Models\PurchaseOrder::class,
+            'purchase_order_id' => \App\Models\Procurement\PurchaseOrder::class,
             'responsible_user_id' => User::class,
             'investment_case_id' => InvestmentCase::class,
         ];

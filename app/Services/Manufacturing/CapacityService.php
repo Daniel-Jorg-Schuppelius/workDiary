@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Manufacturing;
 
-use App\Models\{ManufacturingOrder, WorkCenter};
+use App\Models\Manufacturing\{ManufacturingOrder, WorkCenter};
 use Illuminate\Support\Carbon;
 
 /**

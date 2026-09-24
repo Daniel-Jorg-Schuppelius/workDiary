@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Compliance;
 
-use App\Models\ScheduledShift;
+use App\Models\Schedule\ScheduledShift;
 use Carbon\CarbonImmutable;
 
 /**

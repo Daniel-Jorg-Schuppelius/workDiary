@@ -11,7 +11,7 @@
 namespace App\Services\UI;
 
 use App\Http\Controllers\Attachments\AttachmentController;
-use App\Models\Attachments\Attachments\Attachment;
+use App\Models\Attachments\Attachment;
 use App\Models\Platform\Organization;
 use CommonToolkit\Helper\Data\{ColorHelper, DataUrlHelper};
 use Illuminate\Support\Facades\{Auth, Storage};

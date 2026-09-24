@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Communication;
 
 use App\Enums\ExternalParticipant\ExternalAbility;
 use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
+use App\Http\Controllers\Controller;
 use App\Models\Communication\ExternalParticipant;
 use App\Models\Platform\Organization;
 use App\Services\Attachments\FileAttacher;
@@ -21,7 +22,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
-use App\Http\Controllers\Controller;
 
 /**
  * Öffentlicher, login-freier Zugriff externer Beteiligter (Feature 033).
@@ -143,17 +143,17 @@ class PublicExternalParticipantController extends Controller {
      */
     private function buildContext(Model $subject): array {
         return match (true) {
-            $subject instanceof \App\Models\DiaryEntry => [
+            $subject instanceof \App\Models\Diary\DiaryEntry => [
                 'title' => ((string) $subject->title) !== '' ? (string) $subject->title : __('external.subject.order') . ' #' . $subject->id,
                 'meta' => $subject->start_at !== null ? CarbonFmt::fdatetime($subject->start_at) : '',
                 'summary' => \CommonToolkit\Helper\Data\StringHelper::truncate((string) $subject->content, 280),
             ],
-            $subject instanceof \App\Models\Protocol => [
+            $subject instanceof \App\Models\Protocol\Protocol => [
                 'title' => (string) $subject->title,
                 'meta' => CarbonFmt::fdatetime($subject->occurred_at),
                 'summary' => \CommonToolkit\Helper\Data\StringHelper::truncate((string) $subject->description, 280),
             ],
-            $subject instanceof \App\Models\Document\Document\Document => [
+            $subject instanceof \App\Models\Document\Document => [
                 'title' => (string) $subject->title,
                 'meta' => $subject->created_at !== null ? CarbonFmt::fdatetime($subject->created_at) : '',
                 'summary' => null,

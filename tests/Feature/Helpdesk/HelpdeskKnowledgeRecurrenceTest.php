@@ -12,7 +12,7 @@ namespace Tests\Feature\Helpdesk;
 
 use App\Models\Knowledge\{ContentReference, KnowledgeArticle};
 use App\Models\Platform\{Organization, User};
-use App\Models\{Problem, ServiceQueue, ServiceTicket};
+use App\Models\ServiceTicket\{Problem, ServiceQueue, ServiceTicket};
 use App\Services\ServiceTicket\HelpdeskMetricsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

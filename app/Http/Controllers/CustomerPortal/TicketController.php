@@ -17,7 +17,7 @@ use App\Http\Controllers\Attachments\AttachmentController;
 use App\Http\Controllers\Controller;
 use App\Models\Attachments\Attachment;
 use App\Models\Platform\User;
-use App\Models\{ServiceQueue, ServiceTicket, ServiceTicketMessage, TicketSatisfaction};
+use App\Models\ServiceTicket\{ServiceQueue, ServiceTicket, ServiceTicketMessage, TicketSatisfaction};
 use App\Services\Attachments\FileAttacher;
 use App\Services\ServiceTicket\{ServiceTicketService, TicketConversationService};
 use App\Services\Timeline\ServiceTicketTimelineService;

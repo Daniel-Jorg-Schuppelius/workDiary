@@ -10,7 +10,8 @@
 
 namespace App\Services\Finance;
 
-use App\Models\{CashDailyClosing, CashEntry, CashRegister, Invoice};
+use App\Models\Finance\{CashDailyClosing, CashEntry, CashRegister};
+use App\Models\Invoicing\Invoice;
 use Carbon\{Carbon, CarbonInterface};
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;

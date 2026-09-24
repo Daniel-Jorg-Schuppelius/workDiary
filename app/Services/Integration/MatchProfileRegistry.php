@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace App\Services\Integration;
 
-use App\Models\{Article, Supplier};
+use App\Models\Article\Article;
 use App\Models\Customer\Customer;
 use App\Models\Project\Project;
+use App\Models\Supplier\Supplier;
 use App\Services\Integration\Match\MatchProfile;
 use App\Services\Integration\Profiles\{ArticleMatchProfile, CustomerMatchProfile, EventMatchProfile, ProjectMatchProfile, SupplierMatchProfile};
 use App\Support\MorphMap;
@@ -51,7 +52,7 @@ class MatchProfileRegistry {
             Supplier::class => (string) __('Lieferant'),
             Article::class => (string) __('Artikel'),
             \App\Models\Project\Project::class => (string) __('Projekt'),
-            \App\Models\Asset::class => (string) __('Gerät'),
+            \App\Models\Asset\Asset::class => (string) __('Gerät'),
             \App\Models\Calendar\Event::class => (string) __('Termin'),
             default => MorphMap::basename($targetType),
         };

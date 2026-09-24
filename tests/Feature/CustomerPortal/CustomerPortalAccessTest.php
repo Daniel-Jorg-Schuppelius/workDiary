@@ -11,7 +11,8 @@
 namespace Tests\Feature\CustomerPortal;
 
 use App\Models\Customer\Customer;
-use App\Models\{DiaryEntry, Invoice, OpenIssue};
+use App\Models\Diary\{DiaryEntry, OpenIssue};
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Auth, Hash};

@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Procurement;
 
-use App\Models\Article;
+use App\Models\Article\Article;
 use App\Models\Platform\User;
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use ERechnungToolkit\Parsers\DatanormParser;

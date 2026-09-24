@@ -14,8 +14,9 @@ namespace Tests\Unit\Services\Import\Specs;
 
 use App\Enums\Attendance\AttendanceSource;
 use App\Enums\Import\ImportErrorCode;
-use App\Models\{Attendance, DayClosure};
+use App\Models\Diary\DayClosure;
 use App\Models\Platform\User;
+use App\Models\Time\Attendance;
 use App\Services\Import\ImportOutcome;
 use App\Services\Import\Specs\AttendanceSpec;
 use Illuminate\Foundation\Testing\RefreshDatabase;

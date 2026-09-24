@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Api;
 
 use App\Models\Customer\Customer;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Services\Invoicing\InvoicePdfRenderer;
 use Illuminate\Foundation\Testing\RefreshDatabase;

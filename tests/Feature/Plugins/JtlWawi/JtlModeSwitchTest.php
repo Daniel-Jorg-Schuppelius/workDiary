@@ -10,8 +10,9 @@
 
 namespace Tests\Feature\Plugins\JtlWawi;
 
-use App\Models\{Article, ArticleVariant, StockMovement, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Integration\ExternalArticleMapping;
+use App\Models\Inventory\{StockMovement, Warehouse};
 use App\Models\Platform\User;
 use App\Models\Plugins\JtlWawi\{JtlConnection, JtlWarehouseMapping};
 use Illuminate\Foundation\Testing\RefreshDatabase;

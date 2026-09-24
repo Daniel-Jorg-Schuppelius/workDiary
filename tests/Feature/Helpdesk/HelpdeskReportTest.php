@@ -12,7 +12,7 @@ namespace Tests\Feature\Helpdesk;
 
 use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Models\Platform\{Organization, User};
-use App\Models\{ServiceQueue, ServiceTicket, SlaClockSegment, TicketSatisfaction};
+use App\Models\ServiceTicket\{ServiceQueue, ServiceTicket, SlaClockSegment, TicketSatisfaction};
 use App\Services\ServiceTicket\HelpdeskMetricsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

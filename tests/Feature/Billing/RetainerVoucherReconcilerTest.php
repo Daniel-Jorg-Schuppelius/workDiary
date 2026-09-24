@@ -15,7 +15,7 @@ use App\Enums\Finance\BillingMode;
 use App\Models\Billing\{CustomerBillingAgreement, CustomerBillingRate};
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
 use App\Services\Billing\{CustomerAccountStatementService, RetainerVoucherReconciler};

@@ -13,12 +13,13 @@ declare(strict_types=1);
 namespace App\Services\AccountingMigration;
 
 use App\Enums\Migration\{MigrationDataArea, MigrationProvider};
-use App\Models\{Article, Supplier};
+use App\Models\Article\Article;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Migration\{AccountingMigrationItem, AccountingMigrationRun};
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Models\Plugins\OrgaMax\OrgaMaxInvoice;
+use App\Models\Supplier\Supplier;
 use Illuminate\Database\Eloquent\Model;
 
 /**

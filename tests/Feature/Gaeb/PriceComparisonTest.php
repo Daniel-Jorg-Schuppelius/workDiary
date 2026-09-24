@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Gaeb;
 
-use App\Models\{BillOfQuantity, BoqItem, BoqItemPriceSnapshot, GaebImport};
+use App\Models\Gaeb\{BillOfQuantity, BoqItem, BoqItemPriceSnapshot, GaebImport};
 use App\Services\Gaeb\PriceComparisonService;
 use CommonToolkit\Enums\CurrencyCode;
 use ERechnungToolkit\Enums\GaebPhase;

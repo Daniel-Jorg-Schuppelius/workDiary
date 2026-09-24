@@ -12,7 +12,7 @@ namespace Tests\Feature\Asset;
 
 use App\Enums\Asset\{AssetClass, AssetOwnership, AssetStatus};
 use App\Exceptions\AssetValidationException;
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Audit\AuditLog;
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};

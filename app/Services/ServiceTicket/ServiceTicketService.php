@@ -13,8 +13,9 @@ namespace App\Services\ServiceTicket;
 use App\Enums\Numbering\NumberScope;
 use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketSource, ServiceTicketStatus};
 use App\Exceptions\ServiceTicketException;
-use App\Models\{DiaryEntry, ServiceQueue, ServiceTicket, SlaClockSegment, SlaContract};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
+use App\Models\ServiceTicket\{ServiceQueue, ServiceTicket, SlaClockSegment, SlaContract};
 use App\Services\Integration\LifecycleWebhookPublisher;
 use App\Services\Numbering\NumberSequenceService;
 use CommonToolkit\Helper\Data\StringHelper;
@@ -57,7 +58,7 @@ class ServiceTicketService {
         // Queue (Feature 065): explizit oder Default-Queue der Org.
         $queueId = isset($payload['queue_id'])
             ? (int) $payload['queue_id']
-            : \App\Models\ServiceQueue::query()
+            : \App\Models\ServiceTicket\ServiceQueue::query()
                 ->where('organization_id', $organization->id)
                 ->where('is_default', true)
                 ->value('id');

@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Rental;
 use App\Enums\Rental\{RentalCondition, RentalReturnFollowUp};
 use App\Exceptions\AssetNotUsableException;
 use App\Http\Controllers\Controller;
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Rental\{RentalCase, RentalConditionItem};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Attachments\FileAttacher;

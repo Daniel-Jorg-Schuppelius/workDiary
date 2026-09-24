@@ -13,8 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Procurement;
 
 use App\Enums\Manufacturing\ProcurementStatus;
-use App\Models\{Article, ArticleSupply, ArticleVariant, ProcurementRequest, PurchaseOrder, Supplier, Warehouse};
+use App\Models\Article\{Article, ArticleSupply, ArticleVariant};
+use App\Models\Inventory\Warehouse;
 use App\Models\Platform\Organization;
+use App\Models\Procurement\{ProcurementRequest, PurchaseOrder};
+use App\Models\Supplier\Supplier;
 use App\Services\Inventory\StockLevelService;
 
 /**

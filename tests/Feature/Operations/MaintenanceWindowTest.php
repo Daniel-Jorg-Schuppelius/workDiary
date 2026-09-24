@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Operations;
 
-use App\Models\MaintenanceWindow;
+use App\Models\Asset\MaintenanceWindow;
 use App\Models\Platform\User;
 use App\Services\Operations\MaintenanceWindowService;
 use Carbon\CarbonImmutable;

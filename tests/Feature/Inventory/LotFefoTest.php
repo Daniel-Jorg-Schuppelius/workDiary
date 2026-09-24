@@ -11,7 +11,8 @@
 namespace Tests\Feature\Inventory;
 
 use App\Enums\Inventory\ValuationMethod;
-use App\Models\{Article, ArticleVariant, StockLot, StockValuationLayer, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\{StockLot, StockValuationLayer, Warehouse};
 use App\Services\Inventory\{FefoValuationService, InventoryValuationManager, LotService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

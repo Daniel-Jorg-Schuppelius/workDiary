@@ -15,7 +15,7 @@ namespace App\Models\Sales;
 use App\Casts\{MoneyCast, PercentageCast};
 use App\Enums\Sales\{CommissionAssignmentSource, CommissionStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\{Money, Percentage};

@@ -15,7 +15,7 @@ namespace App\Services\Notification\DeadlineScans;
 use App\Enums\Diary\Status;
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Weather\WeatherWarningThreshold;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Notification\NotificationRule;
 use App\Models\Platform\{Organization, User};
 use App\Models\Weather\WeatherWarning;

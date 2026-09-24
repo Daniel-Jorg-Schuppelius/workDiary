@@ -13,10 +13,11 @@ namespace Tests\Feature\TimeApproval;
 use App\Enums\Approval\ApprovalDecision;
 use App\Enums\TimeApproval\{OvertimeRequestStatus, TimeCorrectionStatus};
 use App\Enums\Vacation\{VacationStatus, VacationType};
+use App\Models\Absence\Vacation;
 use App\Models\Approval\ApprovalStep;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Models\{TimeEntry, Vacation};
+use App\Models\Time\TimeEntry;
 use App\Services\TimeApproval\{OvertimeRequestService, TimeCorrectionService};
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
@@ -145,7 +146,7 @@ class ApprovalFlowTest extends TestCase {
         $this->assertSame(OvertimeRequestStatus::Rejected, $request->fresh()->status);
 
         $step = ApprovalStep::query()
-            ->where('approvable_type', MorphMap::alias(\App\Models\OvertimeRequest::class))
+            ->where('approvable_type', MorphMap::alias(\App\Models\Time\OvertimeRequest::class))
             ->where('approvable_id', $request->id)
             ->sole();
         $this->assertSame(ApprovalDecision::Rejected, $step->decision);

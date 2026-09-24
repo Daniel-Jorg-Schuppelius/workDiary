@@ -27,7 +27,7 @@ class SaveInvestmentCaseRequest extends BaseFormRequest {
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'responsible_user_id' => \App\Models\Platform\User::class,
-        'cost_center_id' => \App\Models\CostCenter::class,
+        'cost_center_id' => \App\Models\Finance\CostCenter::class,
     ];
 
     /** @return array<string, mixed> */

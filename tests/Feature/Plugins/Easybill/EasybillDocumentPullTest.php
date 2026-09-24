@@ -19,7 +19,7 @@ use App\Models\Finance\BillingTransfer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\{PluginSetting, User};
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Plugins\Easybill\EasybillPlugin;
 use App\Plugins\Easybill\Services\EasybillDocumentPullService;
 use App\Services\Finance\BillingTransferService;

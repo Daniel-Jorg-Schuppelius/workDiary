@@ -15,7 +15,7 @@ use App\Models\Document\Document;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\User;
-use App\Models\{ServiceQueue, ServiceTicket};
+use App\Models\ServiceTicket\{ServiceQueue, ServiceTicket};
 use App\Services\Mail\{MailAttachment, MailIntakeService, ParsedMessage};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

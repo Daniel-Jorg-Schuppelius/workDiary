@@ -11,7 +11,8 @@
 namespace Tests\Feature\Procurement;
 
 use App\Enums\Procurement\CatalogItemStatus;
-use App\Models\{Article, Supplier, SupplierCatalogItem, SupplierCatalogSource};
+use App\Models\Article\Article;
+use App\Models\Supplier\{Supplier, SupplierCatalogItem, SupplierCatalogSource};
 use App\Services\Procurement\CatalogCsvImportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

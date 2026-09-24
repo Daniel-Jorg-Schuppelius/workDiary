@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Gaeb;
 
 use App\Enums\Gaeb\{BoqItemType, GaebPhase};
-use App\Models\{BillOfQuantity, BoqCostType, BoqItem};
+use App\Models\Gaeb\{BillOfQuantity, BoqCostType, BoqItem};
 
 /**
  * Auswertung der GAEB-Kalkulationsdaten (X52, Feature 109, MVP-647):

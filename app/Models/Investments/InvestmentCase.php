@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Investments;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\CostCenter;
+use App\Models\Finance\CostCenter;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

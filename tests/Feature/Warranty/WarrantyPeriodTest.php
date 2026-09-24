@@ -16,7 +16,7 @@ use App\Models\Customer\Customer;
 use App\Models\Notification\NotificationRule;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Models\Warranty\WarrantyPeriod;
 use App\Services\Warranty\WarrantyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -96,7 +96,7 @@ class WarrantyPeriodTest extends TestCase {
     }
 
     public function test_acceptance_date_is_the_start(): void {
-        $protocol = \App\Models\Protocol::factory()->create([
+        $protocol = \App\Models\Protocol\Protocol::factory()->create([
             'organization_id' => $this->org->id,
             'type' => \App\Enums\Protocol\ProtocolType::Acceptance->value,
             'occurred_at' => '2026-03-10 09:00:00',

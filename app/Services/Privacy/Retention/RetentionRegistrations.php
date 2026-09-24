@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Privacy\Retention;
 
 use App\Models\Communication\CommunicationNote;
-use App\Models\TimeExport;
+use App\Models\Time\TimeExport;
 use App\Support\MorphMap;
 use App\Support\Query\DateRange;
 
@@ -114,13 +114,13 @@ class RetentionRegistrations {
         // Fehlerberichte mit Seitenkontext-PII (Vollaudit 2026-07, N15).
         $registry->register(new RetentionPolicy(
             area: 'problem_reports',
-            modelClass: \App\Models\ProblemReport::class,
-            overdueQuery: fn($organization, $cutoff) => \App\Models\ProblemReport::query()
+            modelClass: \App\Models\ServiceTicket\ProblemReport::class,
+            overdueQuery: fn($organization, $cutoff) => \App\Models\ServiceTicket\ProblemReport::query()
                 ->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
                 ->where('status', \App\Enums\Support\ProblemReportStatus::Closed->value)
                 ->where('updated_at', '<', $cutoff),
-            purge: function (\App\Models\ProblemReport $subject): void {
+            purge: function (\App\Models\ServiceTicket\ProblemReport $subject): void {
                 foreach ($subject->attachments()->get() as $attachment) {
                     \Illuminate\Support\Facades\Storage::disk($attachment->disk)->delete((string) $attachment->path);
                     $attachment->delete();
@@ -133,12 +133,12 @@ class RetentionRegistrations {
         // löschen — Vorschlag über den Review-Scan, keine Direktlöschung.
         $registry->register(new RetentionPolicy(
             area: 'driver_license_checks',
-            modelClass: \App\Models\DriverLicenseCheck::class,
-            overdueQuery: fn($organization, $cutoff) => \App\Models\DriverLicenseCheck::query()
+            modelClass: \App\Models\Fleet\DriverLicenseCheck::class,
+            overdueQuery: fn($organization, $cutoff) => \App\Models\Fleet\DriverLicenseCheck::query()
                 ->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
                 ->where('checked_at', '<', $cutoff),
-            purge: function (\App\Models\DriverLicenseCheck $subject): void {
+            purge: function (\App\Models\Fleet\DriverLicenseCheck $subject): void {
                 $subject->delete();
             },
         ));

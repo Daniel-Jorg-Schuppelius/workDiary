@@ -121,9 +121,9 @@ class ApplicationOpportunity extends Model {
         return $this->belongsTo(Quote::class);
     }
 
-    /** @return BelongsTo<\App\Models\BillOfQuantity, $this> */
+    /** @return BelongsTo<\App\Models\Gaeb\BillOfQuantity, $this> */
     public function billOfQuantity(): BelongsTo {
-        return $this->belongsTo(\App\Models\BillOfQuantity::class, 'bill_of_quantity_id');
+        return $this->belongsTo(\App\Models\Gaeb\BillOfQuantity::class, 'bill_of_quantity_id');
     }
 
     /**

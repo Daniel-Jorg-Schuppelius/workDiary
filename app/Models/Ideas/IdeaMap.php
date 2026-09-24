@@ -11,20 +11,17 @@
 namespace App\Models\Ideas;
 
 use App\Enums\Ideas\IdeaMapVisibility;
+use App\Models\Communication\Comment;
 use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, HasSqid, HasTags};
+use App\Models\Customer\Customer;
+use App\Models\Diary\DiaryEntry;
+use App\Models\Platform\{Team, User};
+use App\Models\Project\Project;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne, MorphMany};
 use Illuminate\Support\Carbon;
-use App\Models\Communication\Comment;
-use App\Models\Customer\Customer;
-use App\Models\DiaryEntry;
-use App\Models\Ideas\IdeaMapShare;
-use App\Models\Ideas\IdeaNode;
-use App\Models\Ideas\IdeaNodeLink;
-use App\Models\Ideas\IdeaNodeSummary;
-use App\Models\Project\Project;
 
 /**
  * Ideenlandkarte (Feature 054, MVP-104/105). Datenschutz-Grundsatz: `private`

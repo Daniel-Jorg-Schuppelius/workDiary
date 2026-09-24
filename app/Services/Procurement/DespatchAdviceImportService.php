@@ -10,7 +10,7 @@
 
 namespace App\Services\Procurement;
 
-use App\Models\{PurchaseOrder, PurchaseOrderAdvice, PurchaseOrderLine};
+use App\Models\Procurement\{PurchaseOrder, PurchaseOrderAdvice, PurchaseOrderLine};
 use CommonToolkit\Helper\Data\NumberHelper;
 use ERechnungToolkit\Entities\DespatchLine;
 use ERechnungToolkit\Parsers\DespatchAdviceParser;

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Billing\Feed\Sources;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Services\Billing\DocumentFeedFilters;
 use App\Services\Billing\Feed\{DocumentFeedSource, DocumentFeedSourceRegistry, FeedProjection};
 use App\Support\Query\DateRange;

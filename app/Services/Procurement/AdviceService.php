@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Procurement;
 
 use App\Enums\Procurement\AdviceStatus;
-use App\Models\{PurchaseOrder, PurchaseOrderAdvice, PurchaseOrderLine};
+use App\Models\Procurement\{PurchaseOrder, PurchaseOrderAdvice, PurchaseOrderLine};
 use App\Support\DecimalQty;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;

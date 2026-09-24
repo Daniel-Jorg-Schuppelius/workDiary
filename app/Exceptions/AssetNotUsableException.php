@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Models\AssetBlock;
+use App\Models\Asset\AssetBlock;
 use RuntimeException;
 
 /**

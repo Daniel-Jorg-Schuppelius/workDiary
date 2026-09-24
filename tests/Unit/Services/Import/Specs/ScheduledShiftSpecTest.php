@@ -111,7 +111,7 @@ class ScheduledShiftSpecTest extends TestCase {
 
         [$outcome2] = $spec->upsert($row2, $this->organization);
         $this->assertSame(ImportOutcome::Updated, $outcome2);
-        $this->assertSame(1, \App\Models\ScheduledShift::query()
+        $this->assertSame(1, \App\Models\Schedule\ScheduledShift::query()
             ->where('organization_id', $this->organization->id)
             ->count());
     }

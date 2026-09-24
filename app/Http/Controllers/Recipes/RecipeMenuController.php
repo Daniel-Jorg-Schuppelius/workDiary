@@ -14,7 +14,7 @@ namespace App\Http\Controllers\Recipes;
 
 use App\Http\Controllers\Controller;
 use App\Models\Platform\{Organization, User};
-use App\Models\ProcedureTemplate;
+use App\Models\Procedure\ProcedureTemplate;
 use App\Models\Recipes\{RecipeMenu, RecipeMenuItem, RecipeProfile};
 use App\Services\Recipes\RecipeService;
 use Illuminate\Http\{RedirectResponse, Request};

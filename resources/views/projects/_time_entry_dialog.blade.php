@@ -130,7 +130,7 @@
                                 $label .= ' · ' . $d->modeLabel();
                             }
                         @endphp
-                        <option value="{{ $d->sqid }}" @selected((string) old('diary_entry_id', \App\Support\Sqid::encode(\App\Models\DiaryEntry::class, $entry?->diary_entry_id)) === $d->sqid)>{{ $label }}</option>
+                        <option value="{{ $d->sqid }}" @selected((string) old('diary_entry_id', \App\Support\Sqid::encode(\App\Models\Diary\DiaryEntry::class, $entry?->diary_entry_id)) === $d->sqid)>{{ $label }}</option>
                     @endforeach
                 </x-select-field>
             @endif

@@ -14,14 +14,14 @@ namespace App\Http\Controllers\Project;
 
 use App\Enums\Diary\Status;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
-use App\Models\DiaryEntry;
+use App\Http\Controllers\Controller;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Services\UI\DateRangeContext;
 use App\Support\Query\DateRange;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class KanbanController extends Controller {
     use ResolvesGlobalDateRange;

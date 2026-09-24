@@ -16,7 +16,7 @@ use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\Integration\ImportValueMapping;
 use App\Models\Platform\{Organization, User};
-use App\Models\{ScheduledShift, ShiftType};
+use App\Models\Schedule\{ScheduledShift, ShiftType};
 use App\Services\Import\{HasMappableValues, ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\Concerns\{ParsesLocalDateTime, ResolvesImportUsers};
 use CommonToolkit\Helper\Data\EmailHelper;
@@ -26,7 +26,7 @@ use Throwable;
 /**
  * CSV-Spezifikation für den Schichtplan-Import.
  *
- * Löst den fragilen, session-basierten {@see \App\Http\Controllers\ScheduleImportController}
+ * Löst den fragilen, session-basierten {@see \App\Http\Controllers\Schedule\ScheduleImportController}
  * ab: feste Header-Aliase statt hartkodierter Spaltenindizes, robuste
  * Datums-/Zeit-Parsung (mehrere Formate statt `Carbon::parse`), transaktionale
  * Verarbeitung und persistierter Fehlerbericht über die MVP-049-Engine.

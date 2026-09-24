@@ -10,7 +10,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Material;
+use App\Models\Material\Material;
 use App\Models\Platform\Organization;
 use Illuminate\Database\Seeder;
 

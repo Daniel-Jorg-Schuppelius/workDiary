@@ -11,7 +11,7 @@
 
 @php
 /**
- * @var array<int, array{user: \App\Models\Platform\User, latest: \App\Models\DriverLicenseCheck|null, overdue: bool}> $rows
+ * @var array<int, array{user: \App\Models\Platform\User, latest: \App\Models\Fleet\DriverLicenseCheck|null, overdue: bool}> $rows
  */
 @endphp
 

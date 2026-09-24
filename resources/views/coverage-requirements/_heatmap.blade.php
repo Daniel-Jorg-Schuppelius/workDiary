@@ -8,17 +8,17 @@
 --}}
 {{-- Coverage-Heatmap-Partial.
     Variablen:
-      $dutyPlan      App\Models\DutyPlan
+      $dutyPlan      App\Models\Schedule\DutyPlan
       $compact       bool (kompakte Pillen, default false)
       $forPrint      bool (s/w-freundlich, default false)
 --}}
 @php
-    /** @var \App\Models\DutyPlan $dutyPlan */
+    /** @var \App\Models\Schedule\DutyPlan $dutyPlan */
     $compact  = $compact  ?? false;
     $forPrint = $forPrint ?? false;
 
-    /** @var \App\Services\CoverageService $coverageService */
-    $coverageService = app(\App\Services\CoverageService::class);
+    /** @var \App\Services\Schedule\CoverageService $coverageService */
+    $coverageService = app(\App\Services\Schedule\CoverageService::class);
     $req     = $coverageService->requirementsFor($dutyPlan);
     $actual  = $coverageService->actualStaffing($dutyPlan);
     $types   = $coverageService->relevantShiftTypes($dutyPlan);
@@ -34,7 +34,7 @@
         }
     }
     $qualActual = $minimaQualIds === [] ? [] : $coverageService->actualQualifiedStaffing($dutyPlan, array_values($minimaQualIds));
-    $qualNames  = $minimaQualIds === [] ? collect() : \App\Models\Qualification::query()
+    $qualNames  = $minimaQualIds === [] ? collect() : \App\Models\Hr\Qualification::query()
         ->whereIn('id', $minimaQualIds)->pluck('name', 'id');
 
     $statusClass = function (string $s) use ($forPrint): string {

@@ -8,8 +8,8 @@
 --}}
 
 @php
-    /** @var \App\Models\Asset $asset */
-    /** @var \App\Models\SoftwareInstallation|null $installation */
+    /** @var \App\Models\Asset\Asset $asset */
+    /** @var \App\Models\Asset\SoftwareInstallation|null $installation */
     $isEdit = $installation?->exists ?? false;
 
     if ($isOperatingSystem) {

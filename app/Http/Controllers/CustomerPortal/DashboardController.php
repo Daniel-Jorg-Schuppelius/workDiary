@@ -12,10 +12,12 @@ namespace App\Http\Controllers\CustomerPortal;
 
 use App\Enums\CustomerPortal\PortalCapability;
 use App\Http\Controllers\Controller;
-use App\Models\{DiaryEntry, Invoice, OpenIssue, TimeEntry};
+use App\Models\Diary\{DiaryEntry, OpenIssue};
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Reselling\ResaleSubscription;
+use App\Models\Time\TimeEntry;
 use App\Services\CustomerPortal\PortalVisibility;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Builder;

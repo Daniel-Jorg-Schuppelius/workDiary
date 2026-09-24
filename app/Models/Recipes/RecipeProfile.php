@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Recipes;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\ProcedureTemplateVersion;
+use App\Models\Procedure\ProcedureTemplateVersion;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

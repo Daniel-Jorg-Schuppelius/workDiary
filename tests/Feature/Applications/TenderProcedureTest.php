@@ -182,7 +182,7 @@ final class TenderProcedureTest extends TestCase {
      * Leistungsverzeichnis hängt.
      */
     public function test_awarded_x86_import_wins_the_tender(): void {
-        $boq = \App\Models\BillOfQuantity::query()->create([
+        $boq = \App\Models\Gaeb\BillOfQuantity::query()->create([
             'organization_id' => $this->organization->id,
             'name' => 'Rohbau',
             'status' => 'draft',

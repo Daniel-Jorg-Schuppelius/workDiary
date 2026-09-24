@@ -13,17 +13,16 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Sales;
 
 use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
-use App\Models\Customer\Customer\Customer;
-use App\Models\Sales\Quote;
-use App\Models\Sales\QuoteItem;
+use App\Http\Controllers\Controller;
+use App\Models\Customer\Customer;
 use App\Models\Platform\User;
+use App\Models\Sales\{Quote, QuoteItem};
 use App\Services\Invoicing\QuoteService;
 use App\Support\ErrorText;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
-use App\Http\Controllers\Controller;
 
 /**
  * Angebots-UI (Feature 066, MVP-170, Restpaket): Lifecycle-Oberfläche über
@@ -41,7 +40,7 @@ class QuoteController extends Controller {
 
         return view('quotes._form_dialog', [
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'projects' => \App\Models\Project\Project\Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
+            'projects' => \App\Models\Project\Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
         ]);
     }
 
@@ -50,7 +49,7 @@ class QuoteController extends Controller {
 
         $request->merge([
             'customer_id' => \App\Support\Sqid::decodeOrNumeric(Customer::class, $request->input('customer_id')),
-            'project_id' => \App\Support\Sqid::decodeOrNumeric(\App\Models\Project\Project\Project::class, $request->input('project_id')),
+            'project_id' => \App\Support\Sqid::decodeOrNumeric(\App\Models\Project\Project::class, $request->input('project_id')),
         ]);
         $data = $request->validate([
             'customer_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],
@@ -79,7 +78,7 @@ class QuoteController extends Controller {
             'quote' => $quote,
             'previousVersion' => $quote->previous_version_id !== null ? Quote::query()->find($quote->previous_version_id) : null,
             'newerVersions' => Quote::query()->where('previous_version_id', $quote->id)->orderBy('version')->get(),
-            'invoices' => \App\Models\Invoice::query()->where('quote_id', $quote->id)->orderBy('id')->get(['id', 'number', 'status']),
+            'invoices' => \App\Models\Invoicing\Invoice::query()->where('quote_id', $quote->id)->orderBy('id')->get(['id', 'number', 'status']),
         ]);
     }
 
@@ -128,7 +127,7 @@ class QuoteController extends Controller {
         return view('quotes._item_form_dialog', [
             'quote' => $quote,
             'item' => $item,
-            'articles' => \App\Models\Article::query()->where('sellable', true)->orderBy('name')->limit(500)->get(['id', 'number', 'name', 'base_unit', 'default_sale_price', 'currency']),
+            'articles' => \App\Models\Article\Article::query()->where('sellable', true)->orderBy('name')->limit(500)->get(['id', 'number', 'name', 'base_unit', 'default_sale_price', 'currency']),
         ]);
     }
 
@@ -326,7 +325,7 @@ class QuoteController extends Controller {
     private function validateItem(Request $request): array {
         // Artikel-Picker sendet Sqids (Feature 140); leer/ungültig → null.
         $rawArticle = $request->input('article_id');
-        $request->merge(['article_id' => is_string($rawArticle) ? \App\Support\Sqid::decode(\App\Models\Article::class, $rawArticle) : null]);
+        $request->merge(['article_id' => is_string($rawArticle) ? \App\Support\Sqid::decode(\App\Models\Article\Article::class, $rawArticle) : null]);
 
         return $request->validate([
             'article_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('articles')],

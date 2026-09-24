@@ -12,7 +12,8 @@ namespace App\Plugins\Lexoffice;
 
 use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Models\Customer\Customer;
-use App\Models\{Supplier, TimeEntry};
+use App\Models\Supplier\Supplier;
+use App\Models\Time\TimeEntry;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\JsonHelper;
@@ -262,7 +263,7 @@ class LexofficeService {
      * @param  list<string> $filePaths  lokale Pfade der Belegdateien
      * @return array{external_id: string, payload: array<string, mixed>}
      */
-    public function createExpenseVoucher(\App\Models\Expense $expense, string $categoryId, array $filePaths = []): array {
+    public function createExpenseVoucher(\App\Models\Travel\Expense $expense, string $categoryId, array $filePaths = []): array {
         $fileIds = [];
         foreach ($filePaths as $filePath) {
             $file = new LexofficeFile(['filePath' => $filePath]);
@@ -293,7 +294,7 @@ class LexofficeService {
      *
      * @return array{external_id: string, payload: array<string, mixed>}
      */
-    public function createExpenseCounterVoucher(\App\Models\Expense $expense, string $categoryId, string $originalReference, string $reason): array {
+    public function createExpenseCounterVoucher(\App\Models\Travel\Expense $expense, string $categoryId, string $originalReference, string $reason): array {
         $payload = $this->mapper->expenseToCounterVoucherPayload($expense, $categoryId, $originalReference, $reason);
 
         $resource = (new VouchersEndpoint($this->client()))->create(Voucher::fromJson(JsonHelper::encode($payload)));

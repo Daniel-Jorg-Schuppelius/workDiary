@@ -11,9 +11,8 @@
 namespace Database\Factories\Project;
 
 use App\Enums\Task\{TaskPriority, TaskStatus};
-use App\Models\Project\Project\Project;
-use App\Models\Project\Project\Task;
 use App\Models\Platform\User;
+use App\Models\Project\{Project, Task};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

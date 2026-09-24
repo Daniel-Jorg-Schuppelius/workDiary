@@ -34,7 +34,7 @@ class ClaimFinancialController extends Controller {
         Gate::authorize('update', $claim);
 
         if ($request->filled('invoice_id')) {
-            $request->merge(['invoice_id' => Sqid::decodeOrNumeric(\App\Models\Invoice::class, $request->input('invoice_id'))]);
+            $request->merge(['invoice_id' => Sqid::decodeOrNumeric(\App\Models\Invoicing\Invoice::class, $request->input('invoice_id'))]);
         }
         $data = $request->validate([
             'kind' => ['required', Rule::enum(ClaimFinancialKind::class)],

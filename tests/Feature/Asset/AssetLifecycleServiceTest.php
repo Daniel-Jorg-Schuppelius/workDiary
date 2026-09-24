@@ -11,7 +11,7 @@
 namespace Tests\Feature\Asset;
 
 use App\Enums\Asset\AssetStatus;
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Services\Asset\AssetLifecycleService;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;

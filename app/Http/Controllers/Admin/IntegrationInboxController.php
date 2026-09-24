@@ -17,7 +17,7 @@ use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Services\Integration\{InboxActionService, InboxGroupBookerRegistry, MatchProfileRegistry};
 use App\Support\{ErrorText, MorphMap};
 use Illuminate\Database\Eloquent\Model;
@@ -98,7 +98,7 @@ class IntegrationInboxController extends Controller {
         [$assignTargets, $assignTargetsTruncated, $assignProjects] = $this->buildAssignTargets($user, $registry, $targetSearch);
         // Asset-Optionen für den Fernwartungs-Form-Typ „asset" (Geräte-Bindung).
         if ($groups->contains(fn(array $g): bool => ($g['form'] ?? null) === 'asset')) {
-            $assetRows = \App\Models\Asset::query()
+            $assetRows = \App\Models\Asset\Asset::query()
                 ->withoutGlobalScopes()
                 ->where('organization_id', $user->organization_id)
                 ->when($targetSearch !== '', fn($q) => $q->whereLikeEscaped('name', $targetSearch))
@@ -106,11 +106,11 @@ class IntegrationInboxController extends Controller {
                 ->limit(self::ASSIGN_TARGET_LIMIT + 1)
                 ->get(['id', 'name']);
             if ($assetRows->count() > self::ASSIGN_TARGET_LIMIT) {
-                $assignTargetsTruncated[\App\Models\Asset::class] = true;
+                $assignTargetsTruncated[\App\Models\Asset\Asset::class] = true;
                 $assetRows = $assetRows->take(self::ASSIGN_TARGET_LIMIT);
             }
-            $assignTargets[\App\Models\Asset::class] = $assetRows
-                ->mapWithKeys(fn(\App\Models\Asset $a): array => [$a->getRouteKey() => (string) $a->name])
+            $assignTargets[\App\Models\Asset\Asset::class] = $assetRows
+                ->mapWithKeys(fn(\App\Models\Asset\Asset $a): array => [$a->getRouteKey() => (string) $a->name])
                 ->all();
         }
 

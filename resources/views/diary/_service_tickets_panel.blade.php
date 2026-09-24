@@ -12,7 +12,7 @@
     Erwartet: $diary (DiaryEntry).
 --}}
 @php
-    /** @var \App\Models\DiaryEntry $diary */
+    /** @var \App\Models\Diary\DiaryEntry $diary */
     $serviceTickets = $diary->serviceTickets;
 @endphp
 @if ($serviceTickets->isNotEmpty())

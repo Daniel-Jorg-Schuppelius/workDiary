@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy\SubjectData;
 
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use Illuminate\Database\Eloquent\Model;
 
 /** Lieferanten-Stammdaten (relevant bei Einzelunternehmern/natürlichen Personen). */

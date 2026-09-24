@@ -12,16 +12,15 @@ namespace App\Http\Controllers\Knowledge;
 
 use App\Enums\Knowledge\ArticleStatus;
 use App\Enums\User\Permission as P;
-use App\Models\Asset;
-use App\Models\Knowledge\ContentCollection;
-use App\Models\Knowledge\ContentCollectionItem;
-use App\Models\Knowledge\ContentReference;
-use App\Models\Customer\Customer;
-use App\Models\DiaryEntry;
-use App\Models\Knowledge\KnowledgeArticle;
-use App\Models\Protocol;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\Document\DocumentController;
+use App\Models\Asset\Asset;
 use App\Models\Classification\Tag;
+use App\Models\Customer\Customer;
+use App\Models\Diary\DiaryEntry;
+use App\Models\Knowledge\{ContentCollection, ContentCollectionItem, ContentReference, KnowledgeArticle};
 use App\Models\Platform\User;
+use App\Models\Protocol\Protocol;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Collections\ContentCollectionService;
 use App\Services\Knowledge\KnowledgeArticleService;
@@ -30,8 +29,6 @@ use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\Document\DocumentController;
 
 class KnowledgeArticleController extends Controller {
     /**
@@ -434,7 +431,7 @@ class KnowledgeArticleController extends Controller {
         foreach ($article->links as $link) {
             // Probleme verknüpft der Helpdesk (Known Error); sie standen bis MVP-811 fälschlich als „Auftrag“ da.
             $kind = array_search($link->target_type, self::LINKABLE_MAP, true)
-                ?: ($link->target_type === (new \App\Models\Problem)->getMorphClass() ? 'problem' : 'diary');
+                ?: ($link->target_type === (new \App\Models\ServiceTicket\Problem)->getMorphClass() ? 'problem' : 'diary');
             $labels[$link->id] = (string) __('knowledge.link_kind.' . $kind);
         }
 

@@ -10,7 +10,7 @@
 
 namespace App\Services\Material;
 
-use App\Models\Material;
+use App\Models\Material\Material;
 use App\Services\Material\Provider\{LexofficeMaterialProvider, LocalMaterialProvider};
 use Illuminate\Support\Collection;
 

@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Compliance;
 
 use App\Enums\Attendance\AttendanceStatus;
-use App\Models\{Attendance, TravelLog, Vehicle};
+use App\Models\Fleet\Vehicle;
 use App\Models\Platform\{Organization, User};
+use App\Models\Time\Attendance;
+use App\Models\Travel\TravelLog;
 use App\Services\Calendar\HolidayService;
 use App\Support\Query\DateRange;
 use App\Support\Tz;

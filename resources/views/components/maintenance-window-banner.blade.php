@@ -13,8 +13,8 @@
     $orgId = app()->bound('currentOrganization') && app('currentOrganization') instanceof \App\Models\Platform\Organization
         ? (int) app('currentOrganization')->id
         : null;
-    $effective = \App\Models\MaintenanceWindow::effectiveFor($orgId);
-    $upcoming = $effective === null ? \App\Models\MaintenanceWindow::upcomingFor($orgId) : null;
+    $effective = \App\Models\Asset\MaintenanceWindow::effectiveFor($orgId);
+    $upcoming = $effective === null ? \App\Models\Asset\MaintenanceWindow::upcomingFor($orgId) : null;
 @endphp
 @if ($effective !== null && $effective->read_only)
     <div role="alert" class="alert alert-warning rounded-none py-2 text-sm">

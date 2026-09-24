@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\{Attendance, TimeExport};
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\{Organization, User};
 use App\Models\Scopes\OrganizationScope;
 use App\Models\Surcharge\{SurchargeRule, TimeRuleResult};
+use App\Models\Time\{Attendance, TimeExport};
 use App\Services\Surcharge\TimeRuleEngine;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;

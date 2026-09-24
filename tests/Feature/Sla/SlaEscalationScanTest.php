@@ -14,7 +14,7 @@ use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
 use App\Models\Platform\User;
-use App\Models\ServiceTicket;
+use App\Models\ServiceTicket\ServiceTicket;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\Concerns\WithOrganization;

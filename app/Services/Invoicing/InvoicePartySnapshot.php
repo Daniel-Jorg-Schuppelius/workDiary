@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Services\Invoicing\EInvoice\XRechnungGenerator;
 
 /**

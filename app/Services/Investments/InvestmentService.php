@@ -239,18 +239,18 @@ class InvestmentService {
 
         foreach ($case->links()->get() as $link) {
             $target = $link->linkable;
-            if ($target instanceof \App\Models\PurchaseOrder) {
+            if ($target instanceof \App\Models\Procurement\PurchaseOrder) {
                 // Mittelbindung: bestellte Positionssumme (Netto) + Fracht.
                 // unit_price/ordered_qty sind Wertobjekte (Money/Quantity); die Menge heißt ordered_qty.
                 $committed += (float) $target->lines()->get()->sum(
-                    fn(\App\Models\PurchaseOrderLine $line): float => $line->unit_price
+                    fn(\App\Models\Procurement\PurchaseOrderLine $line): float => $line->unit_price
                         ?->times($line->ordered_qty?->getNumericValue() ?? '0')
                         ->toFloat() ?? 0.0
                 );
                 $committed += $target->freight_cost?->toFloat() ?? 0.0;
-            } elseif ($target instanceof \App\Models\IncomingEInvoice) {
+            } elseif ($target instanceof \App\Models\Invoicing\IncomingEInvoice) {
                 $actual += (float) data_get($target->summary, 'gross', 0);
-            } elseif ($target instanceof \App\Models\Asset) {
+            } elseif ($target instanceof \App\Models\Asset\Asset) {
                 $actual += (float) ($target->getAttribute('acquisition_cost') ?? 0);
             }
         }

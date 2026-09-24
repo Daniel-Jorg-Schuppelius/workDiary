@@ -161,7 +161,7 @@ class IncomingEInvoiceService {
      * als Document (DMS) + Prüfbereich-Datensatz. Kanäle unterscheiden sich
      * nur in der `source`-Herkunft — nie in der Verarbeitung.
      *
-     * @return array{status: 'created'|'duplicate'|'unreadable', incoming: \App\Models\IncomingEInvoice|null, document: \App\Models\Document\Document|null}
+     * @return array{status: 'created'|'duplicate'|'unreadable', incoming: \App\Models\Invoicing\IncomingEInvoice|null, document: \App\Models\Document\Document|null}
      */
     /**
      * Malware-Prüfung der eingehenden Datei über den im Betrieb konfigurierten
@@ -191,7 +191,7 @@ class IncomingEInvoiceService {
     }
 
     /**
-     * @return array{status: string, incoming: ?\App\Models\IncomingEInvoice, document: ?\App\Models\Document\Document}
+     * @return array{status: string, incoming: ?\App\Models\Invoicing\IncomingEInvoice, document: ?\App\Models\Document\Document}
      */
     public function storeIncoming(
         \App\Models\Platform\User $actor,
@@ -207,7 +207,7 @@ class IncomingEInvoiceService {
 
         // Inhaltsbasierter Dedup (MVP-165): identische Datei je Org genau einmal —
         // auch kanalübergreifend (Upload nach Mail bleibt Dublette).
-        $duplicate = \App\Models\IncomingEInvoice::query()
+        $duplicate = \App\Models\Invoicing\IncomingEInvoice::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
             ->where('sha256', $sha256)
@@ -271,14 +271,14 @@ class IncomingEInvoiceService {
             $documents->addVersionFromContents($document, $actor, $contents, $originalName ?? ('e-rechnung-' . $sha256 . ($mime !== null && str_contains($mime, 'pdf') ? '.pdf' : '.xml')), $mime);
         }
 
-        $incoming = \App\Models\IncomingEInvoice::query()->create([
+        $incoming = \App\Models\Invoicing\IncomingEInvoice::query()->create([
             'organization_id' => $organizationId,
             'document_id' => $document->id,
             'sha256' => $sha256,
             'source' => $source,
             'received_at' => now(),
             'summary' => $summary,
-            ...\App\Models\IncomingEInvoice::columnsFromSummary($summary),
+            ...\App\Models\Invoicing\IncomingEInvoice::columnsFromSummary($summary),
         ]);
 
         $document->audit('document.einvoice_received', [
@@ -305,12 +305,12 @@ class IncomingEInvoiceService {
         $sellerName = trim((string) ($summary['seller'] ?? ''));
 
         if ($sellerVat !== '') {
-            foreach (\App\Models\Supplier::query()->withoutGlobalScopes()->where('organization_id', $organizationId)->where('vat_id', $sellerVat)->limit(3)->get() as $supplier) {
+            foreach (\App\Models\Supplier\Supplier::query()->withoutGlobalScopes()->where('organization_id', $organizationId)->where('vat_id', $sellerVat)->limit(3)->get() as $supplier) {
                 $suppliers[$supplier->id] = ['id' => (int) $supplier->id, 'label' => (string) ($supplier->displayLabel()), 'reasons' => [(string) __('USt-IdNr. stimmt überein')]];
             }
         }
         if ($sellerName !== '') {
-            $query = \App\Models\Supplier::query()->withoutGlobalScopes()->where('organization_id', $organizationId)
+            $query = \App\Models\Supplier\Supplier::query()->withoutGlobalScopes()->where('organization_id', $organizationId)
                 ->where(function ($q) use ($sellerName): void {
                     $q->whereLikeEscaped('name', $sellerName)->orWhereLikeEscaped('company', $sellerName);
                 })->limit(3);
@@ -326,7 +326,7 @@ class IncomingEInvoiceService {
         $purchaseOrders = [];
         $orderRef = trim((string) ($summary['order_reference'] ?? ''));
         if ($orderRef !== '') {
-            foreach (\App\Models\PurchaseOrder::query()->withoutGlobalScopes()->where('organization_id', $organizationId)->where('number', $orderRef)->limit(3)->get() as $po) {
+            foreach (\App\Models\Procurement\PurchaseOrder::query()->withoutGlobalScopes()->where('organization_id', $organizationId)->where('number', $orderRef)->limit(3)->get() as $po) {
                 $purchaseOrders[] = ['id' => (int) $po->id, 'label' => (string) $po->number, 'reasons' => [(string) __('Bestellreferenz stimmt überein')]];
             }
         }
@@ -359,7 +359,7 @@ class IncomingEInvoiceService {
 
         $number = trim((string) ($summary['number'] ?? ''));
         if ($number !== '') {
-            $sameNumber = \App\Models\IncomingEInvoice::query()
+            $sameNumber = \App\Models\Invoicing\IncomingEInvoice::query()
                 ->withoutGlobalScopes()
                 ->where('organization_id', $organizationId)
                 ->where('summary->number', $number)

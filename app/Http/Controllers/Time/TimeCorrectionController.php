@@ -1,0 +1,277 @@
+<?php
+/*
+ * Created on   : Tue May 26 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : TimeCorrectionController.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace App\Http\Controllers\Time;
+
+use App\Enums\TimeApproval\TimeCorrectionStatus;
+use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Models\Time\Attendance;
+use App\Models\Time\TimeCorrectionRequest;
+use App\Models\Time\TimeEntry;
+use App\Models\Platform\User;
+use App\Services\TimeApproval\{TimeCorrectionService, TimeCorrectionWorkflowException};
+use App\Support\{CarbonFmt, Formats, MorphMap, Sqid};
+use App\Support\Query\DateRange;
+use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Helper\Data\{JsonHelper, StringHelper};
+use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
+use App\Http\Controllers\Controller;
+
+/**
+ * Mitarbeiter-Ansicht für Zeit-Korrekturanträge (MVP-017).
+ *
+ * Listet eigene Anträge, erlaubt das Anlegen neuer Entwürfe sowie das
+ * Einreichen und Zurückziehen. Admin-Entscheidungen liegen im
+ * {@see Admin\TimeCorrectionInboxController}.
+ */
+class TimeCorrectionController extends Controller {
+    use ResolvesGlobalDateRange;
+
+    private const ALLOWED_SORTS = ['scope_date', 'status'];
+
+    public function __construct(private readonly TimeCorrectionService $service) {}
+
+    public function index(Request $request): View {
+        /** @var User $user */
+        $user = Auth::user();
+        Gate::authorize('viewAny', TimeCorrectionRequest::class);
+
+        $statusFilter = (string) $request->input('status', '');
+
+        // Whitelist-Auflösung zentral (C21; Vollaudit 2026-07, N26) — bei
+        // ungültigem Key fallen Key UND Richtung auf die Defaults zurück.
+        [$sort, $dir] = \App\Support\SortableQuery::resolve($request, self::ALLOWED_SORTS, 'scope_date');
+
+        $query = TimeCorrectionRequest::query()
+            ->where('organization_id', $user->organization_id)
+            ->where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)->orWhere('requested_by_user_id', $user->id);
+            })
+            ->with(['user', 'items'])
+            ->orderBy($sort, $dir)
+            ->orderByDesc('id');
+
+        if ($statusFilter !== '' && $statusFilter !== 'all') {
+            $query->where('status', $statusFilter);
+        }
+
+        $requests = $query->paginate(25)->withQueryString();
+
+        return view('time-approval.correction.index', [
+            'requests' => $requests,
+            'filters' => ['status' => $statusFilter],
+            'statuses' => TimeCorrectionStatus::cases(),
+            'sort' => $sort,
+            'dir' => $dir,
+        ]);
+    }
+
+    public function create(Request $request): View {
+        Gate::authorize('create', TimeCorrectionRequest::class);
+        /** @var User $user */
+        $user = Auth::user();
+
+        $scopeDate = $this->resolveDateParam($request, 'date', static fn (): CarbonImmutable => CarbonImmutable::now()->subDay());
+
+        // Personalverwaltung/Teamleitung dürfen im Namen von Mitarbeitenden nachtragen.
+        $canCreateForOthers = $user->can(Permission::CorrectionCreateForOthers->value);
+        $members = $canCreateForOthers
+            ? User::query()
+            ->where('organization_id', $user->organization_id)
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            : collect();
+
+        return view('time-approval.correction._form_dialog', [
+            'isDialog' => true,
+            'scopeDate' => $scopeDate,
+            'canCreateForOthers' => $canCreateForOthers,
+            'members' => $members,
+            'targetTypes' => [
+                MorphMap::alias(TimeEntry::class) => __('Zeitbuchung'),
+                MorphMap::alias(Attendance::class) => __('Anwesenheit'),
+            ],
+            'actions' => [
+                'create' => __('Anlegen'),
+                'update' => __('Ändern'),
+                'delete' => __('Löschen'),
+            ],
+        ]);
+    }
+
+    /**
+     * Auswahl für „Ziel“ im Antragsdialog: Zeitbuchungen und Anwesenheiten des
+     * Bezugstags — statt einer internen Ziel-ID (UI-Fuzz 2026-09-21).
+     */
+    public function targets(Request $request): JsonResponse {
+        Gate::authorize('create', TimeCorrectionRequest::class);
+        /** @var User $user */
+        $user = Auth::user();
+        $date = CarbonImmutable::parse($this->resolveDateParam($request, 'date', static fn (): CarbonImmutable => CarbonImmutable::now()->subDay())->toDateString());
+
+        $owner = $user;
+        $ownerId = $request->filled('user') ? Sqid::decodeOrNumeric(User::class, (string) $request->input('user')) : null;
+        if ($ownerId !== null && (int) $ownerId !== (int) $user->id) {
+            Gate::authorize(Permission::CorrectionCreateForOthers->value);
+            $owner = User::query()->where('organization_id', $user->organization_id)->findOrFail((int) $ownerId);
+        }
+
+        $span = static fn (?CarbonInterface $from, ?CarbonInterface $to): string => ($from !== null ? CarbonFmt::ftime($from) : '…')
+            . '–' . ($to !== null ? CarbonFmt::ftime($to) : '…');
+
+        return response()->json([
+            MorphMap::alias(TimeEntry::class) => TimeEntry::query()->where('user_id', $owner->id)->whereBetween('date', DateRange::days($date, $date))->with('project:id,name')->orderBy('started_at')->get()
+                ->map(static fn (TimeEntry $e): array => [
+                    'id' => $e->sqid,
+                    'label' => implode(' · ', array_filter([
+                        $e->started_at !== null ? $span($e->started_at, $e->ended_at) : Formats::duration((int) $e->minutes, 'clock'),
+                        $e->project?->name,
+                        StringHelper::truncate((string) $e->description, 60),
+                    ])),
+                ])->values(),
+            MorphMap::alias(Attendance::class) => Attendance::query()->where('user_id', $owner->id)->whereBetween('date', DateRange::days($date, $date))->orderBy('started_at')->get()
+                ->map(static fn (Attendance $a): array => ['id' => $a->sqid, 'label' => $span($a->started_at, $a->ended_at)])->values(),
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse {
+        Gate::authorize('create', TimeCorrectionRequest::class);
+        /** @var User $user */
+        $user = Auth::user();
+
+        // Sqid-Input dekodieren (numerischer Fallback für Alt-Clients).
+        if ($request->filled('user_id')) {
+            $request->merge(['user_id' => Sqid::decodeOrNumeric(User::class, $request->input('user_id'))]);
+        }
+        $request->merge(['items' => array_map(static function (mixed $row): mixed {
+            // Auf der Leitung sind Alias und Klassenname erlaubt (Alt-Clients).
+            $class = is_array($row) ? TimeCorrectionService::targetClass((string) ($row['target_type'] ?? '')) : null;
+            if ($class === null || ($row['target_id'] ?? '') === '') {
+                return $row;
+            }
+            $row['target_id'] = Sqid::decodeOrNumeric($class, (string) $row['target_id']);
+
+            return $row;
+        }, (array) $request->input('items', []))]);
+
+        $data = $request->validate([
+            'user_id' => ['nullable', 'integer'],
+            'scope_date' => ['required', 'date'],
+            'reason' => ['required', 'string', 'min:20', 'max:4000'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.target_type' => ['required', 'string', Rule::in([
+                ...TimeCorrectionService::ALLOWED_TARGETS,
+                ...array_map(MorphMap::alias(...), TimeCorrectionService::ALLOWED_TARGETS),
+            ])],
+            'items.*.target_id' => ['nullable', 'integer'],
+            'items.*.action' => ['required', 'string', 'in:create,update,delete'],
+            'items.*.before' => ['nullable', 'string'],
+            'items.*.after' => ['nullable', 'string'],
+        ]);
+
+        // „Im Namen von": Eigentümer = Mitarbeiter, Antragsteller = aktueller Nutzer.
+        // Nur mit Permission und nur innerhalb derselben Organisation.
+        $owner = $user;
+        if (! empty($data['user_id']) && (int) $data['user_id'] !== (int) $user->id) {
+            Gate::authorize(Permission::CorrectionCreateForOthers->value);
+            $owner = User::query()
+                ->where('organization_id', $user->organization_id)
+                ->findOrFail((int) $data['user_id']);
+        }
+
+        $items = [];
+        foreach ($data['items'] as $row) {
+            $items[] = [
+                'target_type' => $row['target_type'],
+                'target_id' => isset($row['target_id']) ? (int) $row['target_id'] : null,
+                'action' => $row['action'],
+                'before' => self::decodeJson($row['before'] ?? null),
+                'after' => self::decodeJson($row['after'] ?? null),
+            ];
+        }
+
+        try {
+            $req = $this->service->createDraft(
+                $owner,
+                CarbonImmutable::parse($data['scope_date']),
+                $data['reason'],
+                $items,
+                $user,
+            );
+        } catch (TimeCorrectionWorkflowException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
+
+        return redirect()
+            ->route('corrections.show', $req)
+            ->with('status', __('Korrekturantrag als Entwurf gespeichert.'));
+    }
+
+    public function show(TimeCorrectionRequest $correction): View {
+        Gate::authorize('view', $correction);
+
+        return view('time-approval.correction.show', [
+            'request' => $correction->load(['items', 'user', 'requestedBy', 'decidedBy']),
+        ]);
+    }
+
+    public function submit(TimeCorrectionRequest $correction): RedirectResponse {
+        Gate::authorize('submit', $correction);
+        /** @var User $user */
+        $user = Auth::user();
+
+        try {
+            $correction = $this->service->submit($correction, $user);
+
+            // Selbstkorrektur-Modus: Eigenkorrekturen direkt anwenden (Manual).
+            if ($this->service->selfApplicable($correction)) {
+                $this->service->selfApply($correction);
+
+                return back()->with('status', __('Vergessene Stempelung wurde nachgetragen (manuell, selbst nachgetragen).'));
+            }
+        } catch (TimeCorrectionWorkflowException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('status', __('Antrag eingereicht.'));
+    }
+
+    public function withdraw(TimeCorrectionRequest $correction): RedirectResponse {
+        Gate::authorize('withdraw', $correction);
+        /** @var User $user */
+        $user = Auth::user();
+
+        try {
+            $this->service->withdraw($correction, $user);
+        } catch (TimeCorrectionWorkflowException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('status', __('Antrag zurückgezogen.'));
+    }
+
+    /** @return array<string, mixed>|null */
+    private static function decodeJson(?string $raw): ?array {
+        if ($raw === null || trim($raw) === '') {
+            return null;
+        }
+        try {
+            $decoded = JsonHelper::decode($raw);
+
+            return is_array($decoded) ? $decoded : null;
+        } catch (\InvalidArgumentException) {
+            return null;
+        }
+    }
+}

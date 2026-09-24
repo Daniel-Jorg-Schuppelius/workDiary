@@ -12,7 +12,7 @@
 @php
 /**
  * @var int $year
- * @var \Illuminate\Support\Collection<int, \App\Models\VacationEntitlement> $entitlements
+ * @var \Illuminate\Support\Collection<int, \App\Models\Absence\VacationEntitlement> $entitlements
  * @var array<int, \App\Services\Absence\VacationBalance> $balances
  * @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Platform\User> $usersWithoutEntitlement
  * @var float $defaultDays

@@ -12,8 +12,11 @@ declare(strict_types=1);
 
 namespace App\Services\Procurement;
 
-use App\Models\{Article, ArticleSupply, PurchaseOrder, Supplier, Warehouse};
+use App\Models\Article\{Article, ArticleSupply};
+use App\Models\Inventory\Warehouse;
 use App\Models\Platform\Organization;
+use App\Models\Procurement\PurchaseOrder;
+use App\Models\Supplier\Supplier;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\DB;
 

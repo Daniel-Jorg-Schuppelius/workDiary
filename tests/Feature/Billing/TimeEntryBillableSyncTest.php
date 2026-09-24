@@ -13,7 +13,7 @@ namespace Tests\Feature\Billing;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Services\Billing\TimeEntryBillableSyncService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -142,11 +142,11 @@ class TimeEntryBillableSyncTest extends TestCase {
     public function test_sync_skips_invoice_linked_entries(): void {
         $entry = $this->openEntry();
 
-        $invoice = \App\Models\Invoice::create([
+        $invoice = \App\Models\Invoicing\Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'R-1001',
-            'status' => \App\Models\Invoice::STATUS_ISSUED,
+            'status' => \App\Models\Invoicing\Invoice::STATUS_ISSUED,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->admin->id,

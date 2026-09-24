@@ -15,7 +15,7 @@ namespace App\Services\Inventory;
 use App\Contracts\OutboxTransitionService;
 use App\Enums\Inventory\OutboxStatus;
 use App\Jobs\Integration\InventoryOutboxDeliveryJob;
-use App\Models\{InventoryOutboxEntry, StockMovement};
+use App\Models\Inventory\{InventoryOutboxEntry, StockMovement};
 use App\Services\Concerns\ManagesOutboxTransitions;
 
 /**

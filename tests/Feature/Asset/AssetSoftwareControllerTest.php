@@ -11,7 +11,7 @@
 namespace Tests\Feature\Asset;
 
 use App\Enums\User\UserRole;
-use App\Models\{Asset, Software, SoftwareInstallation};
+use App\Models\Asset\{Asset, Software, SoftwareInstallation};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;

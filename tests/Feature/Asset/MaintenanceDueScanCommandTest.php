@@ -11,8 +11,9 @@
 namespace Tests\Feature\Asset;
 
 use App\Enums\Asset\{MaintenanceDueAction, MaintenanceIntervalKind};
-use App\Models\{Asset, MaintenancePlan, SlaContract};
+use App\Models\Asset\{Asset, MaintenancePlan};
 use App\Models\Platform\Organization;
+use App\Models\ServiceTicket\SlaContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;

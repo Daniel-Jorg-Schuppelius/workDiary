@@ -18,7 +18,7 @@ use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDa
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Http\Requests\Finance\{ResaleAutoDraftSettingsRequest, ResaleReportDraftRequest, ResaleReportProductRequest};
-use App\Models\Article;
+use App\Models\Article\Article;
 use App\Models\Customer\Customer;
 use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};

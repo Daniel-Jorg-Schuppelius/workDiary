@@ -16,7 +16,9 @@ use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Mail\DocumentMail;
 use App\Models\Construction\ConstructionNotice;
 use App\Models\Document\DocumentDispatch;
-use App\Models\{InvoiceMailTemplate, PurchaseOrder, StockDelivery};
+use App\Models\Inventory\StockDelivery;
+use App\Models\Invoicing\InvoiceMailTemplate;
+use App\Models\Procurement\PurchaseOrder;
 use App\Models\Sales\Quote;
 use App\Services\Construction\ConstructionNoticePdfRenderer;
 use App\Services\Invoicing\{OrderConfirmationPdfRenderer, QuotePdfRenderer};
@@ -34,7 +36,7 @@ use InvalidArgumentException;
  * in document_dispatches protokollieren, Audit `{kind}.mailed` am Beleg.
  *
  * Die Rechnung behält bewusst ihren eigenen Versandpfad
- * ({@see \App\Http\Controllers\InvoiceController::send()}): E-Rechnungs-
+ * ({@see \App\Http\Controllers\Invoicing\InvoiceController::send()}): E-Rechnungs-
  * Formate, Ausstellungs-Preflight und markSent() gehören zur
  * Rechnungs-Domäne — beide Pfade schreiben aber dasselbe Dispatch-Log.
  */

@@ -12,10 +12,10 @@ namespace App\Http\Controllers\Calendar;
 
 use App\Enums\Event\{EventStatus, EventType, EventVisibility, ParticipantRole, ParticipantStatus};
 use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesGlobalDateRange};
+use App\Http\Controllers\Controller;
+use App\Models\Calendar\{Event, EventCategory};
 use App\Models\Customer\Customer;
-use App\Models\Calendar\Event;
-use App\Models\Calendar\EventCategory;
-use App\Models\Room;
+use App\Models\Facility\Room;
 use App\Models\Platform\User;
 use App\Services\Event\EventService;
 use App\Support\ErrorText;
@@ -26,7 +26,6 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 class EventController extends Controller {
     use ParsesIndexQuery;

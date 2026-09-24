@@ -14,7 +14,7 @@ namespace App\Jobs;
 
 use App\Enums\TimeExport\TimeExportStatus;
 use App\Mail\TimeExportDeliveryMail;
-use App\Models\{TimeExport, TimeExportDeliveryConfig, TimeExportEvent};
+use App\Models\Time\{TimeExport, TimeExportDeliveryConfig, TimeExportEvent};
 use App\Services\TimeExport\{TimeExportService, TimeExportSftpUploader};
 use Carbon\CarbonImmutable;
 use Illuminate\Bus\Queueable;

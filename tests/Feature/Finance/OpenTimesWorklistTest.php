@@ -13,7 +13,7 @@ namespace Tests\Feature\Finance;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;
@@ -186,11 +186,11 @@ class OpenTimesWorklistTest extends TestCase {
 
     public function test_late_entry_gets_kpi_and_badge(): void {
         // Rechnung mit Leistungsdatum NACH dem offenen Eintrag → Nachzügler.
-        $invoice = \App\Models\Invoice::create([
+        $invoice = \App\Models\Invoicing\Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'R-0001',
-            'status' => \App\Models\Invoice::STATUS_ISSUED,
+            'status' => \App\Models\Invoicing\Invoice::STATUS_ISSUED,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->accountant->id,
@@ -215,7 +215,7 @@ class OpenTimesWorklistTest extends TestCase {
 
     public function test_invoiced_diary_with_open_times_is_flagged(): void {
         $worker = User::factory()->user()->create(['organization_id' => $this->organization->id]);
-        $diary = \App\Models\DiaryEntry::factory()->create([
+        $diary = \App\Models\Diary\DiaryEntry::factory()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $worker->id,
             'customer_id' => $this->customer->id,

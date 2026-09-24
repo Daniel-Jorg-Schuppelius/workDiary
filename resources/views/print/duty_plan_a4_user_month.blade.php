@@ -14,8 +14,8 @@
     /** @var \Carbon\CarbonImmutable $month */
     /** @var \Carbon\CarbonImmutable $end */
     /** @var list<string> $dates */
-    /** @var \Illuminate\Support\Collection<string, \Illuminate\Support\Collection<int, \App\Models\ScheduledShift>> $shifts */
-    /** @var \Illuminate\Support\Collection<int, \App\Models\Vacation> $vacations */
+    /** @var \Illuminate\Support\Collection<string, \Illuminate\Support\Collection<int, \App\Models\Schedule\ScheduledShift>> $shifts */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Absence\Vacation> $vacations */
     /** @var \App\Services\Calendar\HolidayService $holidays */
     /** @var bool $anonymous */
 

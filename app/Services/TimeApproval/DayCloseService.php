@@ -12,8 +12,9 @@ namespace App\Services\TimeApproval;
 
 use App\Enums\TimeApproval\{DayClosureStatus, DayCorrectionStatus};
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
-use App\Models\{Attendance, DayClosure, DayCorrectionRequest, TimeEntry};
+use App\Models\Diary\{DayClosure, DayCorrectionRequest};
 use App\Models\Platform\User;
+use App\Models\Time\{Attendance, TimeEntry};
 use App\Services\Concerns\ResolvesActorId;
 use App\Services\Flextime\FlexCalculator;
 use App\Services\Timekeeping\BreakRuleEvaluator;
@@ -366,7 +367,7 @@ class DayCloseService {
 
     /**
      * Stempel-Sperre für eine Anwesenheit (konsumiert von
-     * {@see \App\Policies\AttendancePolicy}): gesperrt, sobald der Tag
+     * {@see \App\Policies\Time\AttendancePolicy}): gesperrt, sobald der Tag
      * nicht mehr offen ist, nach Korrektur-Freigabe (attendance_locked)
      * oder wenn der Monat freigegeben/gesperrt ist.
      */

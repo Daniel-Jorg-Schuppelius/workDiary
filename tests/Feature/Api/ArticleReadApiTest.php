@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Api;
 
 use App\Enums\Article\ArticleStatus;
-use App\Models\{Article, ArticleVariant};
+use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;

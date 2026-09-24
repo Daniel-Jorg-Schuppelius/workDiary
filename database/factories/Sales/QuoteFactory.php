@@ -10,7 +10,7 @@
 
 namespace Database\Factories\Sales;
 
-use App\Models\Customer\Customer\Customer;
+use App\Models\Customer\Customer;
 use App\Models\Sales\Quote;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

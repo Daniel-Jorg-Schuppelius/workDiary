@@ -14,9 +14,9 @@ namespace App\Services\Import\Specs;
 
 use App\Enums\Attendance\AttendanceSource;
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
-use App\Models\Attendance;
 use App\Models\Integration\ImportValueMapping;
 use App\Models\Platform\{Organization, User};
+use App\Models\Time\Attendance;
 use App\Services\Import\{HasMappableValues, ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\Concerns\{BindsTimeImportReference, ParsesLocalDateTime, ResolvesImportUsers};
 use App\Services\TimeApproval\DayCloseService;

@@ -11,8 +11,9 @@
 namespace Tests\Feature\Protocol;
 
 use App\Enums\Protocol\{ProtocolSignatureRole, ProtocolType};
-use App\Models\{DiaryEntry, Protocol, ProtocolSignatureToken};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
+use App\Models\Protocol\{Protocol, ProtocolSignatureToken};
 use App\Services\Protocol\{ProtocolPdfRenderer, ProtocolService, ProtocolSignatureTokenService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;

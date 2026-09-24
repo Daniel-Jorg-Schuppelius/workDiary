@@ -13,9 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Operations\Expiry;
 
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskStatus, OperationsTaskType};
-use App\Models\{AttendanceTerminal, ChatWebhook};
+use App\Models\Chat\ChatWebhook;
 use App\Models\Plugins\Todoist\TodoistConnection;
 use App\Models\Project\OperationsTask;
+use App\Models\Time\AttendanceTerminal;
 use App\Services\Licensing\{LicenseService, LicenseStatus};
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use App\Support\MorphMap;
@@ -115,7 +116,7 @@ class ExpiryScanner {
         $models = [
             'email' => \App\Models\Mail\EmailConnection::class,
             'cti' => \App\Models\Cti\CtiConnection::class,
-            'carrier' => \App\Models\CarrierConnection::class,
+            'carrier' => \App\Models\Shipping\CarrierConnection::class,
             'caldav' => \App\Models\Plugins\CalDav\CalDavConnection::class,
             'webdav' => \App\Models\Plugins\Webdav\WebdavConnection::class,
         ];

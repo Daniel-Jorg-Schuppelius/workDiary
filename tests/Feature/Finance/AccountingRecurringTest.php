@@ -12,7 +12,7 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AccountType, AccountingEntryStatus, ProfitDetermination, RecurringInterval, RecurringRunStatus, RecurringTemplateKind, RecurringTemplateStatus};
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingRecurringRun, AccountingRecurringTemplate};
-use App\Models\IncomingEInvoice;
+use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, RecurringAccountingService};
 use App\Support\MorphMap;

@@ -11,7 +11,8 @@
 namespace Tests\Feature\Inventory;
 
 use App\Enums\Inventory\{InventoryMode, OwnershipType, ProviderCapability, StockState};
-use App\Models\{Article, ArticleVariant, StockMovement, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\{StockMovement, Warehouse};
 use App\Models\Platform\Organization;
 use App\Services\Inventory\{InventoryLedger, InventoryProviderResolver, LocalInventoryProvider};
 use Illuminate\Foundation\Testing\RefreshDatabase;

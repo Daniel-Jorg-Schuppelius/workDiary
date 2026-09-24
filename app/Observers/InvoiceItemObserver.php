@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
-use App\Models\InvoiceItem;
+use App\Models\Invoicing\InvoiceItem;
 use App\Services\Invoicing\InvoiceItemReleaseService;
 
 /**

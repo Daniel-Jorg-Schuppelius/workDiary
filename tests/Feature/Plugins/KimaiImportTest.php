@@ -14,7 +14,7 @@ use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\{PluginSetting, User};
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Plugins\Kimai\{KimaiConfig, KimaiImportService, KimaiPlugin};
 use App\Plugins\Kimai\Sources\KimaiCsvParser;
 use App\Plugins\Support\RemoteTimeFingerprint;

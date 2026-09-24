@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Procurement;
 
-use App\Models\{Supplier, SupplierCatalogImport, SupplierCatalogItem, SupplierCatalogSource};
+use App\Models\Supplier\{Supplier, SupplierCatalogImport, SupplierCatalogItem, SupplierCatalogSource};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\Concerns\WithOrganization;

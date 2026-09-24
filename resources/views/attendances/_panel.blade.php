@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Attendance-Panel — erwartet: $current (App\Models\Attendance|null) --}}
+{{-- Attendance-Panel — erwartet: $current (App\Models\Time\Attendance|null) --}}
 <x-card padding="px-4 py-3" data-attendance-panel>
     <div class="flex flex-wrap items-center justify-between gap-2">
         <h2 class="text-xs uppercase tracking-[0.18em] text-muted">{{ __('Stempeluhr') }}</h2>

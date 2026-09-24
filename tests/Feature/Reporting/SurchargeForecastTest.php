@@ -13,7 +13,7 @@ namespace Tests\Feature\Reporting;
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Enums\User\Permission;
 use App\Models\Platform\User;
-use App\Models\{ScheduledShift, ShiftType};
+use App\Models\Schedule\{ScheduledShift, ShiftType};
 use App\Models\Surcharge\SurchargeRule;
 use App\Services\Surcharge\SurchargeForecastService;
 use Carbon\CarbonImmutable;

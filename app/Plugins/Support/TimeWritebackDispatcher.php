@@ -14,7 +14,7 @@ namespace App\Plugins\Support;
 
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry};
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Support\MorphMap;
 
 /**

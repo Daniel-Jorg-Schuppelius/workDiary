@@ -11,8 +11,11 @@
 namespace Tests\Feature\Manufacturing;
 
 use App\Enums\Manufacturing\ProcurementMode;
-use App\Models\{Article, ManufacturingOrder, Supplier, Warehouse, WorkCenter};
+use App\Models\Article\Article;
+use App\Models\Inventory\Warehouse;
+use App\Models\Manufacturing\{ManufacturingOrder, WorkCenter};
 use App\Models\Platform\User;
+use App\Models\Supplier\Supplier;
 use App\Services\Manufacturing\ManufacturingOrderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Exceptions;

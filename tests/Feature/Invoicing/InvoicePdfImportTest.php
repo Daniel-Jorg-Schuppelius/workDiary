@@ -15,7 +15,7 @@ namespace Tests\Feature\Invoicing;
 use App\Enums\Invoicing\InvoiceDeliveryFormat;
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Services\Invoicing\EInvoice\XRechnungGenerator;
 use Dompdf\Dompdf;

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Contracts\Inventory;
 
 use App\Contracts\PluginDispatcher;
-use App\Models\InventoryOutboxEntry;
+use App\Models\Inventory\InventoryOutboxEntry;
 
 /**
  * Stellt einen Outbox-Eintrag an das externe Bestandssystem zu (Feature 048,

@@ -8,7 +8,7 @@
 --}}
 {{-- Dialog wrapper for AdminTimeEntry create/edit --}}
 @php
-    /** @var \App\Models\TimeEntry|null $entry */
+    /** @var \App\Models\Time\TimeEntry|null $entry */
     $isEdit = (bool) $entry;
     $action = $isEdit
         ? route('admin-time-entries.update', $entry)

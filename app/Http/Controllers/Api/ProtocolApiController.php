@@ -17,7 +17,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProtocolResource;
 use App\Models\Platform\User;
-use App\Models\Protocol;
+use App\Models\Protocol\Protocol;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Gate;

@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Billing\Contracts;
 
-use App\Models\Expense;
 use App\Models\Integration\ExternalReference;
+use App\Models\Travel\Expense;
 use App\Services\Billing\ExpenseVoucherRef;
 use Illuminate\Support\Collection;
 use RuntimeException;

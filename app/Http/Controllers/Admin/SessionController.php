@@ -12,10 +12,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\AttendanceTerminal;
 use App\Models\Audit\AuditLog;
 use App\Models\Location\LocationDeviceToken;
 use App\Models\Platform\User;
+use App\Models\Time\AttendanceTerminal;
 use App\Services\Auth\UserSessionInvalidator;
 use App\Services\Security\SessionManagementService;
 use App\Support\{MorphMap, Sqid};

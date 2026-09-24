@@ -62,7 +62,7 @@
             <select id="g-form-issuer-supplier" name="issuer_supplier_id" class="select select-bordered w-full">
                 <option value="">—</option>
                 @foreach ($suppliers as $s)
-                    <option value="{{ $s->sqid }}" @selected(old('issuer_supplier_id', $guarantee?->issuer_supplier_id !== null ? \App\Support\Sqid::encode(\App\Models\Supplier::class, (int) $guarantee->issuer_supplier_id) : null) === $s->sqid)>{{ $s->displayLabel() }}</option>
+                    <option value="{{ $s->sqid }}" @selected(old('issuer_supplier_id', $guarantee?->issuer_supplier_id !== null ? \App\Support\Sqid::encode(\App\Models\Supplier\Supplier::class, (int) $guarantee->issuer_supplier_id) : null) === $s->sqid)>{{ $s->displayLabel() }}</option>
                 @endforeach
             </select>
         </div>
@@ -83,7 +83,7 @@
             <select id="g-form-supplier" name="supplier_id" class="select select-bordered w-full">
                 <option value="">—</option>
                 @foreach ($suppliers as $s)
-                    <option value="{{ $s->sqid }}" @selected(old('supplier_id', $guarantee?->supplier_id !== null ? \App\Support\Sqid::encode(\App\Models\Supplier::class, (int) $guarantee->supplier_id) : null) === $s->sqid)>{{ $s->displayLabel() }}</option>
+                    <option value="{{ $s->sqid }}" @selected(old('supplier_id', $guarantee?->supplier_id !== null ? \App\Support\Sqid::encode(\App\Models\Supplier\Supplier::class, (int) $guarantee->supplier_id) : null) === $s->sqid)>{{ $s->displayLabel() }}</option>
                 @endforeach
             </select>
         </div>

@@ -13,7 +13,7 @@ namespace App\Plugins\Toggl\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Integration\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem};
 use App\Models\Platform\Organization;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Toggl\Services\TogglUserMappingService;
 use App\Plugins\Toggl\Sources\{ApiWorkspaceSource, TogglApiClient, TogglCsvParser, TogglWorkspaceReader};

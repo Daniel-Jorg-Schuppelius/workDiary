@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Notification\DeadlineScans;
 
 use App\Enums\Notification\NotificationEvent;
-use App\Models\Platform\{User, UserQualification};
+use App\Models\Hr\UserQualification;
+use App\Models\Platform\User;
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Support\Carbon;
 

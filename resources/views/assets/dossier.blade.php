@@ -11,7 +11,7 @@
   (Muster: diary/case-file.blade.php).
 --}}
 @php
-    /** @var \App\Models\Asset $asset */
+    /** @var \App\Models\Asset\Asset $asset */
     /** @var array<string, mixed> $lifecycle */
     $classLabels = [
         'device' => __('Gerät'), 'machine' => __('Maschine'), 'tool' => __('Werkzeug'),

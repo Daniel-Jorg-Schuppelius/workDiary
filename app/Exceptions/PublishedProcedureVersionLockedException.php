@@ -10,7 +10,7 @@
 
 namespace App\Exceptions;
 
-use App\Models\ProcedureTemplateVersion;
+use App\Models\Procedure\ProcedureTemplateVersion;
 use RuntimeException;
 
 class PublishedProcedureVersionLockedException extends RuntimeException {

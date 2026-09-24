@@ -17,7 +17,7 @@ use App\Enums\Reselling\{BillingFrequency, RenewalMode, SubscriptionKind, Subscr
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Http\Requests\Finance\Concerns\ResolvesResaleHolder;
-use App\Models\Article;
+use App\Models\Article\Article;
 use App\Models\Contract\Contract;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Plugins\Lexoffice\LexofficeArticle;

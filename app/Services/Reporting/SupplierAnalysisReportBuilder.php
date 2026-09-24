@@ -12,7 +12,8 @@ namespace App\Services\Reporting;
 
 use App\Enums\Procurement\PurchaseOrderStatus;
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
-use App\Models\{PurchaseOrder, Supplier};
+use App\Models\Procurement\PurchaseOrder;
+use App\Models\Supplier\Supplier;
 use App\Support\Billing\VoucherTypes;
 use App\Support\ChartBucket;
 use App\Support\Query\DateRange;

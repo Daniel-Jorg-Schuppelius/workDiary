@@ -10,13 +10,13 @@
 
 namespace App\Http\Controllers\Classification;
 
-use App\Models\Classification\Classification\Tag;
+use App\Http\Controllers\Controller;
+use App\Models\Classification\Tag;
 use App\Support\{Setting, SortableQuery};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class TagController extends Controller {
     public function index(Request $request): View {

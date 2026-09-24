@@ -12,8 +12,9 @@ namespace App\Http\Controllers\KeyHandover;
 
 use App\Enums\KeyHandover\KeyHandoverDirection;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SaveKeyHandoverRequest;
-use App\Models\{Asset, KeyHandover};
+use App\Http\Requests\Access\SaveKeyHandoverRequest;
+use App\Models\Access\KeyHandover;
+use App\Models\Asset\Asset;
 use App\Models\Platform\User;
 use App\Services\KeyHandover\KeyHandoverService;
 use App\Support\Sqid;

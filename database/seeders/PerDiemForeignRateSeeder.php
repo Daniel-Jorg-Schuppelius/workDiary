@@ -10,7 +10,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\PerDiemRate;
+use App\Models\Travel\PerDiemRate;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
 use RuntimeException;

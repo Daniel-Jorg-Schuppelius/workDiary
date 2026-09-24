@@ -8,7 +8,7 @@
 --}}
 {{-- Dialog: Kostenstellen-Regel anlegen/bearbeiten (Rang 35) --}}
 @php
-    /** @var \App\Models\CostCenterRule $rule */
+    /** @var \App\Models\Finance\CostCenterRule $rule */
     $isEdit = $rule->exists;
     $sourceValue = old('source', $rule->user_id !== null ? 'user' : ($rule->team_id !== null ? 'team' : 'default'));
 @endphp

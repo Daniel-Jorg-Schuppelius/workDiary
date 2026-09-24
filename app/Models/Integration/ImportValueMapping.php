@@ -10,12 +10,11 @@
 
 namespace App\Models\Integration;
 
+use App\Models\Classification\{Classification, Tag};
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Classification\Classification\Classification;
-use App\Models\Classification\Tag;
-use App\Models\Platform\User;
 
 /**
  * Persistentes Wert-Mapping des CSV-/XLSX-Imports (Rang 58, A13):

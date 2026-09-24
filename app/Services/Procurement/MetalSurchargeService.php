@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Procurement;
 
-use App\Models\{MetalQuotation, SupplierCatalogItem};
+use App\Models\Article\MetalQuotation;
+use App\Models\Supplier\SupplierCatalogItem;
 use CommonToolkit\ValueObjects\Money;
 
 /**
@@ -72,7 +73,7 @@ class MetalSurchargeService {
      * Null ohne Kupferdaten, ohne Notierung oder wenn die Notierung die
      * Basis nicht übersteigt (dann entfällt die Position).
      */
-    public function salesSurcharge(\App\Models\Article $article): ?Money {
+    public function salesSurcharge(\App\Models\Article\Article $article): ?Money {
         if ($article->copper_weight === null || (float) $article->copper_weight <= 0 || $article->copper_base_price === null) {
             return null;
         }
@@ -102,7 +103,7 @@ class MetalSurchargeService {
      * @return array{description: string, quantity: string, unit: ?string, unit_price: string}|null
      */
     public function salesSurchargeItem(?int $articleId, string $quantity, ?string $unit, bool $lumpSum = false): ?array {
-        $article = $articleId !== null ? \App\Models\Article::query()->find($articleId) : null;
+        $article = $articleId !== null ? \App\Models\Article\Article::query()->find($articleId) : null;
         if ($article === null) {
             return null;
         }

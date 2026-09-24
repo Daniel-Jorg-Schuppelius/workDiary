@@ -14,7 +14,7 @@ namespace App\Policies\Platform;
 
 use App\Enums\User\Permission as P;
 use App\Policies\Concerns\HasAdminBypass;
-use App\Policies\Auth\PermissionPolicy;
+use App\Policies\PermissionPolicy;
 
 /**
  * Schreibfehler-Wörterbuch: verändert automatisch den Rechnungs-Output und

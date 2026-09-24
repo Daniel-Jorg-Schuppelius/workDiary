@@ -24,7 +24,7 @@
         <x-empty-state framed :title="__('inventory.empty.warehouses')"
                        :message="__('prerequisites.warehouses.missing')">
             <x-slot:action>
-                @can('create', \App\Models\Warehouse::class)
+                @can('create', \App\Models\Inventory\Warehouse::class)
                     <x-button :href="route('warehouses.index')" tone="primary" size="sm" icon="arrow_forward">
                         {{ __('prerequisites.warehouses.cta') }}
                     </x-button>

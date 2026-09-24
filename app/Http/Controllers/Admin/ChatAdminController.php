@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\Notification\ChatWebhookDeliveryJob;
-use App\Models\ChatWebhook;
+use App\Models\Chat\ChatWebhook;
 use App\Models\Platform\{Organization, User};
 use App\Services\Notification\ChatMessageFormatter;
 use App\Support\SqidEncoder;

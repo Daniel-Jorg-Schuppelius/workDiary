@@ -15,7 +15,7 @@ use App\Enums\Integration\IntegrationOutboxStatus;
 use App\Jobs\Integration\IntegrationOutboxDeliveryJob;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationOutboxEntry};
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{PluginSetting, User};
 use App\Plugins\BuchhaltungsButler\BuchhaltungsButlerPlugin;
 use App\Plugins\BuchhaltungsButler\Services\BhbOutboxDispatcher;

@@ -12,10 +12,10 @@ namespace Tests\Feature\Club;
 
 use App\Enums\Club\{ClubAttendanceStatus, ClubEventVisibility, ClubParticipationSource};
 use App\Enums\User\UserRole;
-use App\Models\{Attendance, TimeEntry};
 use App\Models\Calendar\Event;
 use App\Models\Club\{ClubAttendanceConfirmation, ClubAttendanceRecord, ClubAttendanceRevision, ClubAttendanceSheet, ClubGroup, ClubMember};
 use App\Models\Platform\User;
+use App\Models\Time\{Attendance, TimeEntry};
 use App\Services\Club\{ClubAttendanceService, ClubEventService, ClubGroupService};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

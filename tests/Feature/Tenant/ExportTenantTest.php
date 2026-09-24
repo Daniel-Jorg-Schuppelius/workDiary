@@ -11,8 +11,9 @@
 namespace Tests\Feature\Tenant;
 
 use App\Models\Customer\Customer;
-use App\Models\{DiaryEntry, Expense, TravelLog};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
+use App\Models\Travel\{Expense, TravelLog};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;

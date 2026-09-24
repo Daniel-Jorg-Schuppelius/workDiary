@@ -11,20 +11,20 @@
 namespace App\Http\Requests\Project;
 
 use App\Enums\Task\{TaskPriority, TaskStatus};
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\Project\Project\Project;
 use App\Models\Platform\User;
+use App\Models\Project\Project;
 use Closure;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 class SaveTaskRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'milestone_id' => \App\Models\Project\Project\Milestone::class,
-        'parent_task_id' => \App\Models\Project\Project\Task::class,
+        'milestone_id' => \App\Models\Project\Milestone::class,
+        'parent_task_id' => \App\Models\Project\Task::class,
         'assignee_ids' => \App\Models\Platform\User::class,
     ];
 

@@ -12,8 +12,9 @@ namespace Tests\Feature\Procedure;
 
 use App\Enums\Procedure\{ProcedureBackupScope, ProcedureBackupStorageTarget, ProcedureBackupVerifyMethod, ProcedureRunEventType, ProcedureStepRunStatus, ProcedureStepType};
 use App\Exceptions\{ProcedureBackupValidationException, ProcedureStepBlockedException};
-use App\Models\{DiaryEntry, ProcedureBackupProof, ProcedureStepRun, ProcedureTemplate};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
+use App\Models\Procedure\{ProcedureBackupProof, ProcedureStepRun, ProcedureTemplate};
 use App\Services\Procedure\{BackupProofService, ProcedureExecutionService, ProcedureTemplateService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

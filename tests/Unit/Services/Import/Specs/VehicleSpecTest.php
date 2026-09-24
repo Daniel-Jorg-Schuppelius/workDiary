@@ -14,7 +14,7 @@ namespace Tests\Unit\Services\Import\Specs;
 
 use App\Enums\Import\ImportErrorCode;
 use App\Enums\Vehicle\{VehicleOwnership, VehiclePropulsion, VehicleType};
-use App\Models\Vehicle;
+use App\Models\Fleet\Vehicle;
 use App\Services\Import\ImportOutcome;
 use App\Services\Import\Specs\VehicleSpec;
 use Illuminate\Foundation\Testing\RefreshDatabase;

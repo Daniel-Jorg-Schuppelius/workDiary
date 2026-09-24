@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Models\{AssetBlock, Vehicle};
+use App\Models\Asset\AssetBlock;
+use App\Models\Fleet\Vehicle;
 
 /**
  * Feature 138 (MVP-703): Reservierung eines Fahrzeugs, dessen Asset wegen

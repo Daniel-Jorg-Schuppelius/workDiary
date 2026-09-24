@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Finance\Targets\Concerns;
 
 use App\Models\Finance\BillingTransfer;
-use App\Models\{MaterialUsage, TimeEntry};
+use App\Models\Material\MaterialUsage;
+use App\Models\Time\TimeEntry;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection;
 use RuntimeException;

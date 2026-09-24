@@ -12,8 +12,8 @@ namespace Tests\Feature\DocumentDesign;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Customer\Customer;
-use App\Models\Document\DocumentDesign\DocumentRenderProfile;
-use App\Models\Invoice;
+use App\Models\DocumentDesign\DocumentRenderProfile;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Services\DocumentDesign\{DocumentDesignRenderer, RenderProfileService};
 use App\Services\Invoicing\InvoicePdfRenderer;

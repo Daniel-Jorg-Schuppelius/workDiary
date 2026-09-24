@@ -16,7 +16,7 @@ use App\Mail\LearningTrainerQuestionMail;
 use App\Models\Learning\LearningEnrollment;
 use App\Models\Notification\NotificationRule;
 use App\Models\Platform\{LicenseFlagOverride, User};
-use App\Models\ServiceTicket;
+use App\Models\ServiceTicket\ServiceTicket;
 use App\Services\Learning\{LearningCourseService, LearningEnrollmentService, LearningQuestionService};
 use App\Services\Licensing\FeatureFlagResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;

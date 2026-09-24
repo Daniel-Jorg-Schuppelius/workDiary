@@ -11,8 +11,9 @@
 namespace App\Services\Invoicing;
 
 use App\Models\Customer\Customer;
-use App\Models\{Invoice, InvoiceItem, TimeEntry};
+use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Project\Project;
+use App\Models\Time\TimeEntry;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;

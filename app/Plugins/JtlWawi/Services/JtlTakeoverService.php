@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Plugins\JtlWawi\Services;
 
 use App\Enums\Inventory\StockState;
-use App\Models\{ArticleVariant, Warehouse};
+use App\Models\Article\ArticleVariant;
 use App\Models\Integration\ExternalArticleMapping;
+use App\Models\Inventory\Warehouse;
 use App\Models\Platform\Organization;
 use App\Models\Plugins\JtlWawi\JtlWarehouseMapping;
 use App\Plugins\JtlWawi\JtlWawiPlugin;

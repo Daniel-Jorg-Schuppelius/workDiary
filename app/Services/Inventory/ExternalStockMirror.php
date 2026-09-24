@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{InventoryMode, StockMovementType, StockState};
+use App\Models\Inventory\StockMovement;
 use App\Models\Platform\Organization;
-use App\Models\StockMovement;
 
 /**
  * Spiegelt lokal gebuchte Bewegungen in die externe Bestands-Outbox (Feature 048,

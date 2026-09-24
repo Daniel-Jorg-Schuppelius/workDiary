@@ -8,11 +8,11 @@
 --}}
 {{-- Variables: $dutyPlan, $requirement (CoverageRequirement|null), $isEdit --}}
 @php
-    $shiftTypes = \App\Models\ShiftType::query()
+    $shiftTypes = \App\Models\Schedule\ShiftType::query()
         ->where('is_active', true)
         ->orderBy('name')
         ->get();
-    $qualifications = \App\Models\Qualification::query()
+    $qualifications = \App\Models\Hr\Qualification::query()
         ->orderBy('name')
         ->get();
     $weekdays = [
@@ -39,7 +39,7 @@
         <select name="shift_type_id" required class="select select-bordered w-full">
             <option value="">— {{ __('bitte wählen') }} —</option>
             @foreach ($shiftTypes as $st)
-                <option value="{{ $st->sqid }}" @selected((string) old('shift_type_id', \App\Support\Sqid::encode(\App\Models\ShiftType::class, $requirement?->shift_type_id)) === $st->sqid)>
+                <option value="{{ $st->sqid }}" @selected((string) old('shift_type_id', \App\Support\Sqid::encode(\App\Models\Schedule\ShiftType::class, $requirement?->shift_type_id)) === $st->sqid)>
                     {{ $st->name }} ({{ $st->abbreviation }})
                 </option>
             @endforeach

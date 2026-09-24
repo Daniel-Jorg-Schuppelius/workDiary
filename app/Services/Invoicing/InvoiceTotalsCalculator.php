@@ -10,7 +10,7 @@
 
 namespace App\Services\Invoicing;
 
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\{Money, Percentage};

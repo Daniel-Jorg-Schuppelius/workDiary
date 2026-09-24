@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Enums\Manufacturing\QuantityKind;
-use App\Models\ProcedureMaterialRequirement;
+use App\Models\Procedure\ProcedureMaterialRequirement;
 use CommonToolkit\Enums\RoundingMode;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Collection;

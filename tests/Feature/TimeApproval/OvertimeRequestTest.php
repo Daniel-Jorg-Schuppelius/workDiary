@@ -12,8 +12,9 @@ namespace Tests\Feature\TimeApproval;
 
 use App\Enums\Compliance\ComplianceFindingStatus;
 use App\Enums\TimeApproval\OvertimeRequestStatus;
-use App\Models\{ComplianceFinding, OvertimeRequest};
+use App\Models\Compliance\ComplianceFinding;
 use App\Models\Platform\User;
+use App\Models\Time\OvertimeRequest;
 use App\Services\Compliance\AttendancePlausibilityScanService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

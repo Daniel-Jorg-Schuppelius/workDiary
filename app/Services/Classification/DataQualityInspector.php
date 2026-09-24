@@ -11,7 +11,7 @@
 namespace App\Services\Classification;
 
 use App\Enums\Classification\{ClassificationDomain, ClassificationRequirementPhase};
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use Illuminate\Support\Str;
 
 /**

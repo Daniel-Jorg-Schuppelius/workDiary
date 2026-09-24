@@ -14,7 +14,7 @@ namespace App\Services\Export\Specs;
 
 use App\Enums\Export\ExportEntity;
 use App\Models\Platform\Organization;
-use App\Models\ScheduledShift;
+use App\Models\Schedule\ScheduledShift;
 use Illuminate\Database\Eloquent\Model;
 
 /**

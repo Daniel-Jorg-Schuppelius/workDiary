@@ -20,7 +20,7 @@ use RuntimeException;
 
 /**
  * Verwaltet die Bearbeiterliste eines Falls (Abschnitt 7.4). Massgeblich fuer die
- * Autorisierung ({@see \App\Policies\WhistleblowingCasePolicy}). Prueft die
+ * Autorisierung ({@see \App\Policies\Whistleblowing\WhistleblowingCasePolicy}). Prueft die
  * Mandantengrenze und einfache Interessenkonflikte.
  */
 class WhistleblowingAssignmentService {

@@ -11,8 +11,9 @@
 namespace Tests\Feature\Finance;
 
 use App\Models\Customer\Customer;
-use App\Models\{Expense, ExpenseCategory, Invoice};
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
+use App\Models\Travel\{Expense, ExpenseCategory};
 use App\Services\Finance\Datev\{DatevBookingConfig, DatevMasterDataExporter};
 use App\Services\Finance\{DatevBookingException, DatevBookingService, FinancialFormatsSupport};
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -11,7 +11,7 @@
 namespace App\Observers;
 
 use App\Jobs\FetchProtocolWeatherJob;
-use App\Models\Protocol;
+use App\Models\Protocol\Protocol;
 
 /**
  * Reiht bei Anlage eines Protokolls den asynchronen Wetter-Abruf ein

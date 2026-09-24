@@ -11,7 +11,7 @@
 @section('nav-title', __('procurement.title'))
 
 @php
-    /** @var \App\Models\PurchaseOrder $order */
+    /** @var \App\Models\Procurement\PurchaseOrder $order */
     $status = $order->status->value;
     $isOpen = ! $order->status->isTerminal();
 @endphp

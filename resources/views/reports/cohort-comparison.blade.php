@@ -22,7 +22,7 @@
         $tone = $improved === true ? 'text-success' : ($improved === false ? 'text-error' : '');
         return '<span class="' . $tone . '">' . $str . '</span>';
     };
-    $qualSqid = $qualificationId !== null ? \App\Support\Sqid::encode(\App\Models\Qualification::class, $qualificationId) : null;
+    $qualSqid = $qualificationId !== null ? \App\Support\Sqid::encode(\App\Models\Hr\Qualification::class, $qualificationId) : null;
 @endphp
 
 <x-page-shell>

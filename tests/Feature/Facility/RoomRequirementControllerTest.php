@@ -12,8 +12,8 @@ namespace Tests\Feature\Facility;
 
 use App\Enums\Facility\RoomRequirementKind;
 use App\Enums\User\UserRole;
+use App\Models\Facility\{Room, RoomRequirement};
 use App\Models\Platform\{Organization, User};
-use App\Models\{Room, RoomRequirement};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

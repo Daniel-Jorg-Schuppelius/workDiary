@@ -54,7 +54,7 @@ class BillingAgreementController extends Controller {
      * @return \Illuminate\Support\Collection<int, int>
      */
     private function usedCategoryIds(Customer $customer): \Illuminate\Support\Collection {
-        return \App\Models\TimeEntry::query()
+        return \App\Models\Time\TimeEntry::query()
             ->whereHas('project', fn ($q) => $q->where('customer_id', $customer->id))
             ->whereNotNull('activity_category_id')
             ->distinct()

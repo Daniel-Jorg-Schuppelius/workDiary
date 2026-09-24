@@ -111,7 +111,7 @@
                             <td class="text-end" data-sort-value="{{ $r->net_area_m2 !== null ? (float) $r->net_area_m2 : -1 }}">{{ $r->net_area_m2 !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $r->net_area_m2, 1, withThousandsSeparator: true) : '—' }}</td>
                             <td class="text-end tabular-nums">{{ $r->assets_count ?? 0 }}</td>
                             <td class="text-right">
-                                @can('create', \App\Models\Asset::class)
+                                @can('create', \App\Models\Asset\Asset::class)
                                     <x-icon-btn icon="add" size="sm"
                                                 data-entry-modal-trigger
                                                 :href="route('assets.create', ['room' => $r->sqid])"

@@ -14,7 +14,7 @@ namespace App\Models\Accounting;
 
 use App\Casts\MoneyCast;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
-use App\Models\CostCenter;
+use App\Models\Finance\CostCenter;
 use App\Models\Platform\User;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Database\Eloquent\Model;

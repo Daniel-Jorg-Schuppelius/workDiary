@@ -11,7 +11,7 @@
 namespace Tests\Support;
 
 use App\Enums\Shipping\ShipmentStatus;
-use App\Models\CarrierConnection;
+use App\Models\Shipping\CarrierConnection;
 use App\Plugins\Contracts\ShippingProvider;
 use App\Services\Shipping\{ShipmentLabel, ShipmentRequest, TrackingResult};
 

@@ -14,9 +14,9 @@ namespace App\Http\Controllers\Passenger;
 
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
+use App\Models\Fleet\Vehicle;
 use App\Models\Passenger\PassengerShiftSettlement;
 use App\Models\Platform\{Organization, User};
-use App\Models\Vehicle;
 use App\Services\Passenger\PassengerRideService;
 use App\Support\{ErrorText, Sqid};
 use App\Support\Query\DateRange;
@@ -62,7 +62,7 @@ class PassengerSettlementController extends Controller {
             'settlements' => $settlements,
             'openCount' => PassengerShiftSettlement::query()->where('status', PassengerShiftSettlement::STATUS_OPEN)->count(),
             'cashRegisters' => $cashEnabled
-                ? \App\Models\CashRegister::query()->where('active', true)->orderBy('name')->get(['id', 'name'])
+                ? \App\Models\Finance\CashRegister::query()->where('active', true)->orderBy('name')->get(['id', 'name'])
                 : collect(),
             'canPostCash' => $cashEnabled,
         ]);
@@ -181,17 +181,17 @@ class PassengerSettlementController extends Controller {
             throw ValidationException::withMessages(['status' => (string) __('passenger.error.cash_nothing_to_post')]);
         }
 
-        $request->merge(['cash_register_id' => Sqid::decodeOrNumeric(\App\Models\CashRegister::class, $request->input('cash_register_id'))]);
+        $request->merge(['cash_register_id' => Sqid::decodeOrNumeric(\App\Models\Finance\CashRegister::class, $request->input('cash_register_id'))]);
         $validated = $request->validate([
             'cash_register_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('cash_registers')],
         ]);
-        $register = \App\Models\CashRegister::query()->findOrFail((int) $validated['cash_register_id']);
+        $register = \App\Models\Finance\CashRegister::query()->findOrFail((int) $validated['cash_register_id']);
         $actor = $request->user() ?? abort(401);
 
         try {
             $entry = app(\App\Services\Finance\CashBookService::class)->record($register, [
                 'booked_on' => $settlement->shift_date->toDateString(),
-                'direction' => \App\Models\CashEntry::DIRECTION_IN,
+                'direction' => \App\Models\Finance\CashEntry::DIRECTION_IN,
                 'amount' => (string) $settlement->cash_total,
                 'purpose' => (string) __('passenger.cash.purpose', [
                     'driver' => (string) ($settlement->driver->name ?? '—'),

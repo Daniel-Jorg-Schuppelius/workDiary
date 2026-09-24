@@ -41,7 +41,7 @@ return new class extends Migration {
         });
 
         $this->backfill('customers', \App\Models\Customer\Customer::class);
-        $this->backfill('suppliers', \App\Models\Supplier::class);
+        $this->backfill('suppliers', \App\Models\Supplier\Supplier::class);
     }
 
     /**

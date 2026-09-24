@@ -11,7 +11,7 @@
 namespace Database\Factories\Finance;
 
 use App\Models\Finance\{DatevBookingBatch, DatevBookingSource};
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

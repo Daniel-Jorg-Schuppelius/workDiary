@@ -11,7 +11,7 @@
 namespace Tests\Feature\DocumentDesign;
 
 use App\Enums\DocumentDesign\{RenderDocumentKind, RenderProfileStatus};
-use App\Models\Document\DocumentDesign\{DocumentRenderProfile, DocumentRenderProfileVersion};
+use App\Models\DocumentDesign\{DocumentRenderProfile, DocumentRenderProfileVersion};
 use App\Models\Platform\{Organization, User};
 use App\Services\DocumentDesign\{RenderPreflightService, RenderProfileService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

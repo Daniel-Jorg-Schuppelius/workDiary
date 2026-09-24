@@ -19,7 +19,7 @@ use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Privacy\{DataSubjectRequest, PrivacyAttachment};
 use App\Models\Sales\Lead;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 use App\Services\Privacy\SubjectData\{ApplicationRecordsSection,
     AuditTrailSection,

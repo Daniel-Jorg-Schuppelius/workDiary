@@ -11,9 +11,10 @@
 namespace Tests\Feature\Compliance;
 
 use App\Enums\Project\ProjectStatus;
-use App\Models\{ComplianceFinding, TimeEntry, WorkSchedule};
+use App\Models\Compliance\ComplianceFinding;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
+use App\Models\Time\{TimeEntry, WorkSchedule};
 use App\Services\Flextime\CoreTimeValidator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

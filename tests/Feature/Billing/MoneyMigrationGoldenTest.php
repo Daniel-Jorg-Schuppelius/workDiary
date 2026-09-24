@@ -15,7 +15,7 @@ use App\Models\Billing\{CustomerBillingAgreement, CustomerBillingRate};
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Services\Billing\CustomerAccountStatementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

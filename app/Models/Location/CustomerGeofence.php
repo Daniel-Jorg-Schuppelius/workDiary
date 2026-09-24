@@ -12,8 +12,8 @@ namespace App\Models\Location;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
+use App\Models\Facility\Site;
 use App\Models\Project\Project;
-use App\Models\Site;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;

@@ -10,7 +10,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\InvoiceMailTemplate;
+use App\Models\Invoicing\InvoiceMailTemplate;
 use Illuminate\Database\Seeder;
 
 /**

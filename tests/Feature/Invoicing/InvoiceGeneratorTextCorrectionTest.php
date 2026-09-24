@@ -15,7 +15,7 @@ use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Customer\Customer;
 use App\Models\Platform\{TextCorrection, User};
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Services\Invoicing\InvoiceGenerator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

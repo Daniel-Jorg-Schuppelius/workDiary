@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Procurement;
 
-use App\Models\SupplierCatalogSource;
+use App\Models\Supplier\SupplierCatalogSource;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;
 use ERechnungToolkit\Entities\Bmecat\{BmecatArticle, BmecatCatalog, BmecatPrice};

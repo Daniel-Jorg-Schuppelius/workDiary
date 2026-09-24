@@ -10,7 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Article, ArticleMergeDismissal, ArticleVariant};
+use App\Models\Article\{Article, ArticleMergeDismissal, ArticleVariant};
 use App\Models\Platform\User;
 use App\Services\Stammdaten\{ArticleDuplicateFinder, ArticleMergeService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

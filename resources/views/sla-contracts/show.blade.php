@@ -11,7 +11,7 @@
 --}}
 
 @php
-    /** @var \App\Models\SlaContract $contract */
+    /** @var \App\Models\ServiceTicket\SlaContract $contract */
     $prio = fn (string $key): string => \App\Enums\ServiceTicket\ServiceTicketPriority::tryFrom($key)?->label() ?? $key;
     $weekdays = ['', __('Mo'), __('Di'), __('Mi'), __('Do'), __('Fr'), __('Sa'), __('So')];
 @endphp

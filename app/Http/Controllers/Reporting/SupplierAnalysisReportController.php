@@ -15,7 +15,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\Platform\User;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Reporting\SupplierAnalysisReportBuilder;
 use App\Support\{CarbonFmt, Sqid};

@@ -44,7 +44,7 @@
                     @endphp
                     <tr>
                         <td>
-                            <span class="badge badge-sm {{ $alert->type === \App\Models\PricingChangeAlert::TYPE_AVAILABILITY ? 'badge-warning' : 'badge-error badge-outline' }}">
+                            <span class="badge badge-sm {{ $alert->type === \App\Models\Article\PricingChangeAlert::TYPE_AVAILABILITY ? 'badge-warning' : 'badge-error badge-outline' }}">
                                 {{ __('procurement.alert.type.' . $alert->type) }}
                             </span>
                         </td>
@@ -71,7 +71,7 @@
                             {{ $alert->sale_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($alert->sale_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) : '—' }}
                         </td>
                         <td class="text-right tabular-nums">
-                            @if ($alert->type === \App\Models\PricingChangeAlert::TYPE_AVAILABILITY)
+                            @if ($alert->type === \App\Models\Article\PricingChangeAlert::TYPE_AVAILABILITY)
                                 <span class="text-warning text-sm">
                                     {{ $impacts['availability']['old'] ?? '—' }} → {{ $impacts['availability']['new'] ?? '—' }}
                                 </span>

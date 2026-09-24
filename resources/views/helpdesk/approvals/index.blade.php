@@ -32,7 +32,7 @@
                 @forelse ($approvals as $approval)
                     @php
                         $approvable = $approval->approvable;
-                        $ticket = $approvable instanceof \App\Models\ServiceRequest ? $approvable->ticket : null;
+                        $ticket = $approvable instanceof \App\Models\ServiceTicket\ServiceRequest ? $approvable->ticket : null;
                         $rule = (array) $approval->approver_rule;
                     @endphp
                     <tr class="hover">

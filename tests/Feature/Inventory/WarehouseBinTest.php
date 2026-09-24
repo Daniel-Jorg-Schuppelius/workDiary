@@ -11,7 +11,9 @@
 namespace Tests\Feature\Inventory;
 
 use App\Enums\Inventory\{StockState, WarehouseKind};
-use App\Models\{Article, ArticleVariant, Vehicle, Warehouse, WarehouseBin};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Fleet\Vehicle;
+use App\Models\Inventory\{Warehouse, WarehouseBin};
 use App\Models\Platform\{Organization, User};
 use App\Services\Inventory\InventoryLedger;
 use Illuminate\Foundation\Testing\RefreshDatabase;

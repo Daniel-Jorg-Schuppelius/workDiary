@@ -13,15 +13,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Concerns\{MergesDuplicates, ResolvesCurrentOrganization};
-use App\Models\Customer\Customer\Customer;
-use App\Models\Customer\Customer\CustomerMergeDismissal;
+use App\Http\Controllers\Controller;
+use App\Models\Customer\{Customer, CustomerMergeDismissal};
 use App\Models\Platform\Organization;
-use App\Services\Stammdaten\CustomerDuplicateFinder;
-use App\Services\Stammdaten\CustomerMergeService;
+use App\Services\Stammdaten\{CustomerDuplicateFinder, CustomerMergeService};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Kunden-Abgleich: stellt Dubletten-Kandidaten gegenüber und führt sie nach

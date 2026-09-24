@@ -19,7 +19,7 @@
                         data-tax-rate="{{ $cat->default_tax_rate?->getNumericValue() }}"
                         data-billable-default="{{ $cat->default_billable ? '1' : '0' }}"
                         data-slug="{{ $cat->slug }}"
-                        @selected((string) old('expense_category_id', \App\Support\Sqid::encode(\App\Models\ExpenseCategory::class, $expense?->expense_category_id)) === $cat->sqid)>
+                        @selected((string) old('expense_category_id', \App\Support\Sqid::encode(\App\Models\Travel\ExpenseCategory::class, $expense?->expense_category_id)) === $cat->sqid)>
                     {{ $cat->label }}
                 </option>
             @endforeach

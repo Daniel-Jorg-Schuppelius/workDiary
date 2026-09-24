@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Mail;
 
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Services\Invoicing\{DunningPdfRenderer, InvoicePdfRenderer};
 use App\Support\DocumentNumber;
 use Illuminate\Bus\Queueable;

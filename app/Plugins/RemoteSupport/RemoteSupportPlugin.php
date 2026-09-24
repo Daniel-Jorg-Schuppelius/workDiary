@@ -10,7 +10,7 @@
 
 namespace App\Plugins\RemoteSupport;
 
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, SlotRenderer, TimeImporter};
@@ -143,7 +143,7 @@ class RemoteSupportPlugin extends AbstractPlugin implements SlotRenderer, TimeIm
             'teamviewerIds' => $devices->remoteIds($context, TeamViewerClient::ID),
             'pendingCount' => (int) $pendingCount,
             // Ziele für „Fernwartungsdaten übertragen" (Duplikat-Bereinigung).
-            'mergeTargets' => \App\Models\Asset::query()
+            'mergeTargets' => \App\Models\Asset\Asset::query()
                 ->whereIn('category_code', RemoteDeviceRegistry::REMOTE_CATEGORY_CODES)
                 ->whereKeyNot($context->getKey())
                 ->orderBy('name')

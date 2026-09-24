@@ -11,7 +11,7 @@
 namespace App\Services\Demo;
 
 use App\Models\Customer\Customer;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
 use Illuminate\Support\Collection;
@@ -376,7 +376,7 @@ class DemoShowcaseSeeder {
                 ->where('organization_id', $organization->id)
                 ->orderBy('id')
                 ->first();
-            $asset = \App\Models\Asset::query()
+            $asset = \App\Models\Asset\Asset::query()
                 ->where('organization_id', $organization->id)
                 ->orderBy('id')
                 ->first();
@@ -518,7 +518,7 @@ class DemoShowcaseSeeder {
         }
 
         try {
-            $asset = \App\Models\Asset::query()
+            $asset = \App\Models\Asset\Asset::query()
                 ->where('organization_id', $organization->id)
                 ->orderBy('id')
                 ->first();
@@ -574,7 +574,7 @@ class DemoShowcaseSeeder {
         }
 
         try {
-            $asset = \App\Models\Asset::query()
+            $asset = \App\Models\Asset\Asset::query()
                 ->where('organization_id', $organization->id)
                 ->orderBy('id')
                 ->first();
@@ -668,13 +668,13 @@ class DemoShowcaseSeeder {
         if (! $this->moduleActive('module.helpdesk')) {
             return 0;
         }
-        if (\App\Models\ServiceQueue::query()->where('organization_id', $organization->id)->exists()) {
+        if (\App\Models\ServiceTicket\ServiceQueue::query()->where('organization_id', $organization->id)->exists()) {
             return 0;
         }
         /** @var User $agent */
         $agent = $users->first();
 
-        $queue = \App\Models\ServiceQueue::query()->create([
+        $queue = \App\Models\ServiceTicket\ServiceQueue::query()->create([
             'organization_id' => $organization->id,
             'name' => 'IT-Support',
             'purpose' => 'Zentrale Anlaufstelle für Störungen und Anfragen.',
@@ -713,7 +713,7 @@ class DemoShowcaseSeeder {
             ->openFromIncidents([$incident->fresh() ?? $incident], 'Wiederkehrende VPN-Abbrüche nach Firmware-Update', $agent);
         app(\App\Services\ServiceTicket\ProblemService::class)->transition($problem, 'analyzing', $agent);
 
-        $template = \App\Models\ChangeTemplate::query()->create([
+        $template = \App\Models\ServiceTicket\ChangeTemplate::query()->create([
             'organization_id' => $organization->id,
             'name' => 'Firmware-Rollout Netzwerkgeräte',
             'implementation_plan' => 'Staging → Pilotgruppe → Flächenrollout.',
@@ -728,7 +728,7 @@ class DemoShowcaseSeeder {
             'problem_id' => $problem->id,
         ], $agent, [], $template);
 
-        return \App\Models\ServiceTicket::query()->where('organization_id', $organization->id)->count();
+        return \App\Models\ServiceTicket\ServiceTicket::query()->where('organization_id', $organization->id)->count();
     }
 
     /**
@@ -881,7 +881,7 @@ class DemoShowcaseSeeder {
 
         // 1) Urlaubsanspruch mit Übertrag aus dem Vorjahr (Verfall 31.03.).
         try {
-            \App\Models\VacationEntitlement::query()->firstOrCreate([
+            \App\Models\Absence\VacationEntitlement::query()->firstOrCreate([
                 'organization_id' => $organization->id,
                 'user_id' => $actor->id,
                 'year' => (int) \Illuminate\Support\Carbon::now()->year,
@@ -899,7 +899,7 @@ class DemoShowcaseSeeder {
         // 2) Barkasse mit zwei Buchungen und Tagesabschluss (MVP-414).
         if ($this->moduleActive('module.kasse')) {
             try {
-                $register = \App\Models\CashRegister::query()->firstOrCreate([
+                $register = \App\Models\Finance\CashRegister::query()->firstOrCreate([
                     'organization_id' => $organization->id,
                     'name' => (string) __('Demo-Barkasse'),
                 ], [
@@ -913,7 +913,7 @@ class DemoShowcaseSeeder {
                     $bookedOn = \Illuminate\Support\Carbon::now()->subDay();
                     $cash->record($register, [
                         'booked_on' => $bookedOn->toDateString(),
-                        'direction' => \App\Models\CashEntry::DIRECTION_IN,
+                        'direction' => \App\Models\Finance\CashEntry::DIRECTION_IN,
                         'amount' => 250.00,
                         'purpose' => (string) __('Barverkauf Kleinmaterial (Demo)'),
                         'tax_rate' => 19,
@@ -921,7 +921,7 @@ class DemoShowcaseSeeder {
                     ]);
                     $cash->record($register, [
                         'booked_on' => $bookedOn->toDateString(),
-                        'direction' => \App\Models\CashEntry::DIRECTION_OUT,
+                        'direction' => \App\Models\Finance\CashEntry::DIRECTION_OUT,
                         'amount' => 40.00,
                         'purpose' => (string) __('Büromaterial (Demo)'),
                         'tax_rate' => 19,
@@ -938,16 +938,16 @@ class DemoShowcaseSeeder {
         // 3) Aktiver Abrechnungsplan (MVP-415) — monatliche Wartungspauschale.
         if ($this->moduleActive('module.vertrieb')) {
             try {
-                $schedule = \App\Models\InvoiceSchedule::query()->firstOrCreate([
+                $schedule = \App\Models\Invoicing\InvoiceSchedule::query()->firstOrCreate([
                     'organization_id' => $organization->id,
                     'customer_id' => $customer->id,
                     'title' => (string) __('Wartungspauschale monatlich (Demo)'),
                 ], [
-                    'interval_unit' => \App\Models\InvoiceSchedule::UNIT_MONTH,
+                    'interval_unit' => \App\Models\Invoicing\InvoiceSchedule::UNIT_MONTH,
                     'interval_count' => 1,
                     'billing_period_mode' => 'previous',
                     'next_run_on' => \Illuminate\Support\Carbon::now()->addMonth()->startOfMonth()->toDateString(),
-                    'status' => \App\Models\InvoiceSchedule::STATUS_ACTIVE,
+                    'status' => \App\Models\Invoicing\InvoiceSchedule::STATUS_ACTIVE,
                     'created_by' => $actor->id,
                 ]);
                 if ($schedule->wasRecentlyCreated) {
@@ -1004,7 +1004,7 @@ class DemoShowcaseSeeder {
             try {
                 /** @var User $driver */
                 $driver = $users->skip(1)->first() ?? $actor;
-                \App\Models\DriverLicenseCheck::query()->firstOrCreate([
+                \App\Models\Fleet\DriverLicenseCheck::query()->firstOrCreate([
                     'organization_id' => $organization->id,
                     'user_id' => $driver->id,
                 ], [

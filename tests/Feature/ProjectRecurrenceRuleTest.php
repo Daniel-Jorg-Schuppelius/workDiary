@@ -13,7 +13,7 @@ namespace Tests\Feature;
 use App\Enums\Diary\LocationMode;
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Recurrence\RecurrenceFrequency;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Project\{Project, RecurrenceRule};
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -12,7 +12,6 @@ namespace Tests\Feature\Tenant;
 
 use App\Enums\Auth\SsoProtocol;
 use App\Http\Controllers\Api\LocationController;
-use App\Models\Attendance;
 use App\Models\Auth\{ScimToken, SsoConnection, SsoIdentity};
 use App\Models\Communication\CommunicationNote;
 use App\Models\Cti\CtiConnection;
@@ -22,6 +21,7 @@ use App\Models\Platform\{Organization, PluginSetting, User, UserBadge};
 use App\Models\Plugins\Todoist\{TodoistConnection, TodoistWebhookDelivery};
 use App\Models\Plugins\Zammad\ZammadConnection;
 use App\Models\Project\Task;
+use App\Models\Time\Attendance;
 use App\Plugins\Github\GithubPlugin;
 use App\Plugins\Gitlab\GitlabPlugin;
 use App\Plugins\Todoist\Jobs\TodoistWebhookSyncJob;
@@ -420,7 +420,7 @@ final class WebhookTenantTest extends TestCase {
     // ────────────────────────────────────────────────────────────────────
 
     public function test_terminal_token_never_stamps_badge_of_another_org(): void {
-        [, $tokenA] = \App\Models\AttendanceTerminal::issue($this->organization->id, 'Halle A');
+        [, $tokenA] = \App\Models\Time\AttendanceTerminal::issue($this->organization->id, 'Halle A');
 
         // Badge + Nutzer existieren NUR in Org B.
         $userB = User::factory()->create(['organization_id' => $this->orgB->id]);

@@ -12,7 +12,7 @@ namespace Tests\Feature\Plugins;
 
 use App\Models\Contacts\ContactAddress;
 use App\Models\Customer\Customer;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Plugins\Lexoffice\LexofficeMapper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

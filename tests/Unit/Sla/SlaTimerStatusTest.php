@@ -11,7 +11,7 @@
 namespace Tests\Unit\Sla;
 
 use App\Enums\ServiceTicket\{ServiceTicketStatus, SlaStatus};
-use App\Models\ServiceTicket;
+use App\Models\ServiceTicket\ServiceTicket;
 use App\Services\ServiceTicket\SlaTimer;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;

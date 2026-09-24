@@ -10,8 +10,8 @@
 
 namespace Tests\Feature\Shipping;
 
-use App\Models\CarrierConnection;
 use App\Models\Platform\User;
+use App\Models\Shipping\CarrierConnection;
 use App\Services\Shipping\ShippingProviderRegistry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

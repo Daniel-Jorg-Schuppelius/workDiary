@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Concerns;
 
 use App\Models\Classification\Tag;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Support\{LookupCache, Sqid, TagInput};
 use Illuminate\Support\Facades\Auth;
 

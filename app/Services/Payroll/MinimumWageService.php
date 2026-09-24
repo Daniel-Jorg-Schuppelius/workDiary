@@ -10,7 +10,7 @@
 
 namespace App\Services\Payroll;
 
-use App\Models\MinimumWage;
+use App\Models\Time\MinimumWage;
 use Carbon\{CarbonImmutable, CarbonInterface};
 
 /**

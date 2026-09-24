@@ -10,8 +10,8 @@
 @php
     $isEdit = $resource !== null;
     $selectedParent = old('parent_id', $resource?->parent_id ? \App\Support\Sqid::encode(\App\Models\Club\ClubResource::class, $resource->parent_id) : '');
-    $selectedRoom = old('room_id', $resource?->room_id ? \App\Support\Sqid::encode(\App\Models\Room::class, $resource->room_id) : '');
-    $selectedAsset = old('asset_id', $resource?->asset_id ? \App\Support\Sqid::encode(\App\Models\Asset::class, $resource->asset_id) : '');
+    $selectedRoom = old('room_id', $resource?->room_id ? \App\Support\Sqid::encode(\App\Models\Facility\Room::class, $resource->room_id) : '');
+    $selectedAsset = old('asset_id', $resource?->asset_id ? \App\Support\Sqid::encode(\App\Models\Asset\Asset::class, $resource->asset_id) : '');
 @endphp
 <x-modal
     :title="$isEdit ? __('club.action.edit') : __('club.resources.action.create')"

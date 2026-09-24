@@ -11,7 +11,7 @@
 namespace App\Services\Timesheet;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
-use App\Models\Timesheet;
+use App\Models\Time\Timesheet;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 use CommonToolkit\Helper\Data\DataUrlHelper;
 use Illuminate\Support\Facades\Storage;

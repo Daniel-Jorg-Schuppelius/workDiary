@@ -10,10 +10,12 @@
 
 namespace Tests\Feature\Classification;
 
+use App\Models\Asset\Software;
 use App\Models\Audit\AuditLog;
 use App\Models\Classification\{Classification, ClassificationRequirement, Tag};
+use App\Models\Facility\RoomRequirementTemplate;
 use App\Models\Platform\{Organization, User};
-use App\Models\{ProcedureStepDef, ProcedureTemplate, RoomRequirementTemplate, Software};
+use App\Models\Procedure\{ProcedureStepDef, ProcedureTemplate};
 use App\Services\Classification\BranchProfileInstaller;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -683,11 +685,11 @@ class BranchProfileInstallerTest extends TestCase {
         // Kunde trägt die Klassifikation (HasClassifications-Pivot), Auftrag den Tag.
         $customer = \App\Models\Customer\Customer::factory()->create(['organization_id' => $this->org->id, 'created_by' => $this->actor->id]);
         $customer->classifications()->attach($used->id);
-        $entry = \App\Models\DiaryEntry::factory()->create(['organization_id' => $this->org->id, 'user_id' => $this->actor->id]);
+        $entry = \App\Models\Diary\DiaryEntry::factory()->create(['organization_id' => $this->org->id, 'user_id' => $this->actor->id]);
         $usedTag = Tag::query()->withoutGlobalScopes()->where('organization_id', $this->org->id)->where('name', '#wartung')->firstOrFail();
         $entry->tags()->attach($usedTag->id);
 
-        $proceduresBefore = \App\Models\ProcedureTemplate::query()->where('organization_id', $this->org->id)->count();
+        $proceduresBefore = \App\Models\Procedure\ProcedureTemplate::query()->where('organization_id', $this->org->id)->count();
         $requirementsBefore = ClassificationRequirement::query()->where('organization_id', $this->org->id)->count();
 
         $result = $this->installer->uninstall($this->org, 'handwerk', $this->actor);
@@ -710,7 +712,7 @@ class BranchProfileInstallerTest extends TestCase {
         $this->assertNotNull($usedTag->fresh());
         $this->assertNull(Tag::query()->withoutGlobalScopes()->where('organization_id', $this->org->id)->where('name', '#notdienst')->first());
         // Vorlagen bleiben; Pflichtregeln des Profils sind weg, die des IT-Profils nicht.
-        $this->assertSame($proceduresBefore, \App\Models\ProcedureTemplate::query()->where('organization_id', $this->org->id)->count());
+        $this->assertSame($proceduresBefore, \App\Models\Procedure\ProcedureTemplate::query()->where('organization_id', $this->org->id)->count());
         $this->assertLessThan($requirementsBefore, ClassificationRequirement::query()->where('organization_id', $this->org->id)->count());
         $this->assertGreaterThan(0, ClassificationRequirement::query()->where('organization_id', $this->org->id)->count());
 

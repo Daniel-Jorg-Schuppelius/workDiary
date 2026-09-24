@@ -14,7 +14,7 @@ use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\Organization;
 use App\Models\Project\{Project, Task};
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\OpenProject\Sources\{OpenProjectApiClient, OpenProjectEntry};
 use App\Plugins\Support\{PersistsTimeImportInbox, ReconcilesRemoteDeletions, RemoteSyncWindow, RemoteTimeFingerprint, TimeWritebackObserver};

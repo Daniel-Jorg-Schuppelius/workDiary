@@ -12,7 +12,7 @@ namespace Tests\Feature;
 
 use App\Enums\WorkSchedule\ScheduleType;
 use App\Models\Platform\User;
-use App\Models\WorkSchedule;
+use App\Models\Time\WorkSchedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

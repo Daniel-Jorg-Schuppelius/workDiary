@@ -19,7 +19,7 @@ use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection, AiTextSuggestion};
 use App\Models\Audit\AuditLog;
 use App\Models\Communication\{Comment, CommunicationNote};
 use App\Models\Customer\{Customer, CustomerQuery};
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Sales\{Quote, QuoteItem};

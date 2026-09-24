@@ -12,8 +12,10 @@ namespace Tests\Feature\Protocol;
 
 use App\Enums\Asset\AssetOwnership;
 use App\Enums\Protocol\{ProtocolItemPhotoPhase, ProtocolItemType, ProtocolStatus, ProtocolType};
-use App\Models\{Asset, DiaryEntry, Protocol, ProtocolItemPhoto};
+use App\Models\Asset\Asset;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
+use App\Models\Protocol\{Protocol, ProtocolItemPhoto};
 use App\Services\Protocol\ProtocolService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

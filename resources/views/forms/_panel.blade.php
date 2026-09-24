@@ -33,10 +33,10 @@
     $panelSubmissions = $panelSubmissionsQuery->get();
     // Zuordnungsfilter (Feature 032 MVP; Vollaudit 2026-07, M11): am Bezug nur
     // Vorlagen anbieten, deren Ziel (Auftragstyp/Kunde) zum Subject passt.
-    $panelEntryTypeId = $subject instanceof \App\Models\DiaryEntry ? ($subject->entry_type_id !== null ? (int) $subject->entry_type_id : null) : null;
+    $panelEntryTypeId = $subject instanceof \App\Models\Diary\DiaryEntry ? ($subject->entry_type_id !== null ? (int) $subject->entry_type_id : null) : null;
     $panelCustomerId = match (true) {
         $subject instanceof \App\Models\Customer\Customer => (int) $subject->getKey(),
-        $subject instanceof \App\Models\DiaryEntry => $subject->customer_id !== null ? (int) $subject->customer_id : null,
+        $subject instanceof \App\Models\Diary\DiaryEntry => $subject->customer_id !== null ? (int) $subject->customer_id : null,
         $subject instanceof \App\Models\Project\Project => $subject->customer_id !== null ? (int) $subject->customer_id : null,
         default => null,
     };

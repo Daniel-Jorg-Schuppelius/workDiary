@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Procurement;
 
 use App\Enums\Procurement\CatalogItemStatus;
-use App\Models\{SupplierCatalogItem, SupplierCatalogItemPrice, SupplierCatalogSource};
+use App\Models\Supplier\{SupplierCatalogItem, SupplierCatalogItemPrice, SupplierCatalogSource};
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\Carbon;

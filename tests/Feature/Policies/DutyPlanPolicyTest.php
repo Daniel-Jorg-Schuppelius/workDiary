@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Policies;
 
 use App\Enums\Shift\DutyPlanStatus;
-use App\Models\DutyPlan;
 use App\Models\Platform\{Organization, User};
-use App\Policies\DutyPlanPolicy;
+use App\Models\Schedule\DutyPlan;
+use App\Policies\Schedule\DutyPlanPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};

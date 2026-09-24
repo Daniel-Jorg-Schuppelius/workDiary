@@ -17,7 +17,7 @@ use App\Models\Audit\AuditLog;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
-use App\Models\{TimeEntry, Timesheet};
+use App\Models\Time\{TimeEntry, Timesheet};
 use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission as SpatiePermission;

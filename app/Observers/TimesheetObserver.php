@@ -12,7 +12,7 @@ namespace App\Observers;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Timesheet\TimesheetStatus;
-use App\Models\Timesheet;
+use App\Models\Time\Timesheet;
 use App\Services\Integration\LifecycleWebhookPublisher;
 use App\Services\Notification\NotificationDispatcher;
 use App\Support\CarbonFmt;

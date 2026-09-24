@@ -10,12 +10,13 @@
 
 namespace App\Plugins\RemoteSupport;
 
-use App\Models\{Asset, TimeEntry};
+use App\Models\Asset\Asset;
 use App\Models\Auth\RemotePendingSession;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Integration\{ExternalReference, ExternalReferenceAlias};
 use App\Models\Platform\Organization;
 use App\Models\Project\Project;
+use App\Models\Time\TimeEntry;
 use Illuminate\Support\Collection;
 
 /**

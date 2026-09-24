@@ -11,9 +11,9 @@
 namespace App\Services\Diagnostics;
 
 use App\Enums\Licensing\ModuleStatus;
-use App\Models\AttendanceTerminal;
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\{BackupHeartbeat, Organization};
+use App\Models\Time\AttendanceTerminal;
 use App\Services\Licensing\{LicenseService, LicenseStatus, ModuleStatusResolver};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\JsonHelper;
@@ -46,7 +46,7 @@ class DiagnosticsService {
         'carddav' => \App\Models\Plugins\CardDav\CardDavConnection::class,
         'google_calendar' => \App\Models\Plugins\GoogleCalendar\GoogleCalendarConnection::class,
         'cti' => \App\Models\Cti\CtiConnection::class,
-        'carrier' => \App\Models\CarrierConnection::class,
+        'carrier' => \App\Models\Shipping\CarrierConnection::class,
         'cloud_documents' => \App\Models\CloudIntake\CloudDocumentConnection::class,
         'domain_provider' => \App\Models\Domain\DomainProviderConnection::class,
         'ai_provider' => \App\Models\Ai\AiProviderConnection::class,

@@ -37,7 +37,7 @@ final class GobdLockRegistry {
      */
     public const MODELS = [
         // Freeze nach Ausstellung/Finalisierung/Übergabe
-        'Invoice' => ['file' => 'app/Models/Invoice.php', 'table' => 'invoices', 'mechanism' => self::MECHANISM_FREEZE],
+        'Invoice' => ['file' => 'app/Models/Invoicing/Invoice.php', 'table' => 'invoices', 'mechanism' => self::MECHANISM_FREEZE],
         'DatevBookingBatch' => ['file' => 'app/Models/Finance/DatevBookingBatch.php', 'table' => 'datev_booking_batches', 'mechanism' => self::MECHANISM_FREEZE],
         // MVP-672: Festbuchung ist unveränderlich; nur der Storno-Vermerk darf noch entstehen.
         'AccountingEntry' => ['file' => 'app/Models/Accounting/AccountingEntry.php', 'table' => 'accounting_entries', 'mechanism' => self::MECHANISM_FREEZE],
@@ -46,10 +46,10 @@ final class GobdLockRegistry {
         'AccountingOpenItemSettlement' => ['file' => 'app/Models/Accounting/AccountingOpenItemSettlement.php', 'table' => 'accounting_open_item_settlements', 'mechanism' => self::MECHANISM_FREEZE],
         'BillingTransfer' => ['file' => 'app/Models/Finance/BillingTransfer.php', 'table' => 'billing_transfers', 'mechanism' => self::MECHANISM_FREEZE],
         // MVP-702 (Feature 137): Fahrtenbuch-Fahrt nach Festschreibung unveränderlich — Korrektur nur als Stornofahrt.
-        'TravelLog' => ['file' => 'app/Models/TravelLog.php', 'table' => 'travel_logs', 'mechanism' => self::MECHANISM_FREEZE],
+        'TravelLog' => ['file' => 'app/Models/Travel/TravelLog.php', 'table' => 'travel_logs', 'mechanism' => self::MECHANISM_FREEZE],
         // Append-only Nachweise (AppendOnly-Trait)
-        'StockMovement' => ['file' => 'app/Models/StockMovement.php', 'table' => 'stock_movements', 'mechanism' => self::MECHANISM_APPEND_ONLY],
-        'DiaryEntryEvent' => ['file' => 'app/Models/DiaryEntryEvent.php', 'table' => 'diary_entry_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
+        'StockMovement' => ['file' => 'app/Models/Inventory/StockMovement.php', 'table' => 'stock_movements', 'mechanism' => self::MECHANISM_APPEND_ONLY],
+        'DiaryEntryEvent' => ['file' => 'app/Models/Diary/DiaryEntryEvent.php', 'table' => 'diary_entry_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
         // Hash-verkettet und in config/audit.php als Kette geführt, aber bis
         // 2026-08-31 nicht im Gate (Sicherheitsscan S-59) — Bulk-/Quiet-Writes
         // wären unbemerkt geblieben.
@@ -58,9 +58,9 @@ final class GobdLockRegistry {
         'AuditRedaction' => ['file' => 'app/Models/Audit/AuditRedaction.php', 'table' => 'audit_redactions', 'mechanism' => self::MECHANISM_APPEND_ONLY],
         // Restpunkte aus S-59, nachgezogen 2026-08-31.
         'ApprovalStep' => ['file' => 'app/Models/Approval/ApprovalStep.php', 'table' => 'approval_steps', 'mechanism' => self::MECHANISM_APPEND_ONLY],
-        'InvoiceItem' => ['file' => 'app/Models/InvoiceItem.php', 'table' => 'invoice_items', 'mechanism' => self::MECHANISM_FREEZE],
-        'TimeExport' => ['file' => 'app/Models/TimeExport.php', 'table' => 'time_exports', 'mechanism' => self::MECHANISM_FREEZE],
-        'TimeExportLine' => ['file' => 'app/Models/TimeExportLine.php', 'table' => 'time_export_lines', 'mechanism' => self::MECHANISM_FREEZE],
+        'InvoiceItem' => ['file' => 'app/Models/Invoicing/InvoiceItem.php', 'table' => 'invoice_items', 'mechanism' => self::MECHANISM_FREEZE],
+        'TimeExport' => ['file' => 'app/Models/Time/TimeExport.php', 'table' => 'time_exports', 'mechanism' => self::MECHANISM_FREEZE],
+        'TimeExportLine' => ['file' => 'app/Models/Time/TimeExportLine.php', 'table' => 'time_export_lines', 'mechanism' => self::MECHANISM_FREEZE],
         'PrivacyIncidentEvent' => ['file' => 'app/Models/Privacy/IncidentEvent.php', 'table' => 'privacy_incident_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
         'PrivacyRequestEvent' => ['file' => 'app/Models/Privacy/RequestEvent.php', 'table' => 'privacy_request_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
         'WhistleblowingCaseEvent' => ['file' => 'app/Models/Whistleblowing/CaseEvent.php', 'table' => 'whistleblowing_case_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
@@ -70,16 +70,16 @@ final class GobdLockRegistry {
         'AssetInspectionEvent' => ['file' => 'app/Models/AssetCompliance/AssetInspectionEvent.php', 'table' => 'asset_inspection_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
         'AssetCalibrationCertificate' => ['file' => 'app/Models/AssetCompliance/AssetCalibrationCertificate.php', 'table' => 'asset_calibration_certificates', 'mechanism' => self::MECHANISM_APPEND_ONLY],
         // Vollaudit 2026-07, H14: verankert die Buchungssperre
-        'CashDailyClosing' => ['file' => 'app/Models/CashDailyClosing.php', 'table' => 'cash_daily_closings', 'mechanism' => self::MECHANISM_FREEZE],
+        'CashDailyClosing' => ['file' => 'app/Models/Finance/CashDailyClosing.php', 'table' => 'cash_daily_closings', 'mechanism' => self::MECHANISM_FREEZE],
         // Vollaudit 2026-07 (M56): ISMS-Freeze-Guards (046 — finalisiert/genehmigt = eingefroren)
         'IsmsAuditPackage' => ['file' => 'app/Models/Isms/IsmsAuditPackage.php', 'table' => 'isms_audit_packages', 'mechanism' => self::MECHANISM_FREEZE],
         'IsmsRiskAssessment' => ['file' => 'app/Models/Isms/IsmsRiskAssessment.php', 'table' => 'isms_risk_assessments', 'mechanism' => self::MECHANISM_FREEZE],
         // Vollaudit 2026-07 (M52): GoBD-nahe Nachweis-Events, jetzt mit AppendOnly-Trait
-        'MonthClosureEvent' => ['file' => 'app/Models/MonthClosureEvent.php', 'table' => 'month_closure_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
-        'TimeExportEvent' => ['file' => 'app/Models/TimeExportEvent.php', 'table' => 'time_export_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
+        'MonthClosureEvent' => ['file' => 'app/Models/Time/MonthClosureEvent.php', 'table' => 'month_closure_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
+        'TimeExportEvent' => ['file' => 'app/Models/Time/TimeExportEvent.php', 'table' => 'time_export_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
 
         // HashChained-Ereignisketten (append-only, Hash-Kette)
-        'CashEntry' => ['file' => 'app/Models/CashEntry.php', 'table' => 'cash_entries', 'mechanism' => self::MECHANISM_CHAIN], // MVP-414 Kassenbuch
+        'CashEntry' => ['file' => 'app/Models/Finance/CashEntry.php', 'table' => 'cash_entries', 'mechanism' => self::MECHANISM_CHAIN], // MVP-414 Kassenbuch
         'AuditLog' => ['file' => 'app/Models/Audit/AuditLog.php', 'table' => 'audit_logs', 'mechanism' => self::MECHANISM_CHAIN],
         'OrganizationAuditLog' => ['file' => 'app/Models/Audit/OrganizationAuditLog.php', 'table' => 'organization_audit_logs', 'mechanism' => self::MECHANISM_CHAIN],
         'BillingTransferEvent' => ['file' => 'app/Models/Finance/BillingTransferEvent.php', 'table' => 'billing_transfer_events', 'mechanism' => self::MECHANISM_CHAIN],

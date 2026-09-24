@@ -210,16 +210,16 @@ class AccountingOpeningAndDatevTest extends TestCase {
         $this->org->update(['settings' => array_merge((array) $this->org->settings, [
             'datev' => ['advisor_number' => 12345, 'client_number' => 67890],
         ])]);
-        \App\Models\CostCenterRule::query()->create(['organization_id' => $this->org->id, 'cost_center' => 'KST7', 'priority' => 0]);
+        \App\Models\Finance\CostCenterRule::query()->create(['organization_id' => $this->org->id, 'cost_center' => 'KST7', 'priority' => 0]);
         $receivable = app(ChartOfAccountsService::class)->create($this->org, [
             'number' => '1400', 'name' => 'Forderungen', 'type' => AccountType::Asset, 'is_open_item' => true, 'datev_account' => '1400',
         ]);
         $customer = \App\Models\Customer\Customer::factory()->create(['organization_id' => $this->org->id]);
-        $invoice = \App\Models\Invoice::query()->create([
+        $invoice = \App\Models\Invoicing\Invoice::query()->create([
             'organization_id' => $this->org->id,
             'customer_id' => $customer->id,
             'number' => 'RE-J1',
-            'status' => \App\Models\Invoice::STATUS_ISSUED,
+            'status' => \App\Models\Invoicing\Invoice::STATUS_ISSUED,
             'issued_on' => $this->startsOn->addDays(3)->toDateString(),
             'due_on' => $this->startsOn->addDays(17)->toDateString(),
             'currency' => 'EUR',
@@ -235,7 +235,7 @@ class AccountingOpeningAndDatevTest extends TestCase {
             'booked_on' => $this->startsOn->addDays(3),
             'memo' => 'Rechnung RE-J1',
             'document_reference' => 'RE-J1',
-            'source_type' => MorphMap::alias(\App\Models\Invoice::class),
+            'source_type' => MorphMap::alias(\App\Models\Invoicing\Invoice::class),
             'source_id' => (int) $invoice->id,
             'source_key' => 'datev-test:kost',
             'snapshot' => ['due_date' => $this->startsOn->addDays(17)->toDateString()],

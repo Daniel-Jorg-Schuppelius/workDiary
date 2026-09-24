@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Invoicing;
 
-use App\Models\{Article, Invoice};
+use App\Models\Article\Article;
 use App\Models\Customer\Customer;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Services\Invoicing\QuoteService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -164,7 +165,7 @@ class ArticleItemLinkTest extends TestCase {
 
     private function copperArticle(): Article {
         // (2,00 − 1,50) × 0,043 kg = 0,0215 €/Einheit — dieselbe Rechnung wie im OCI-Warenkorb.
-        \App\Models\MetalQuotation::query()->create([
+        \App\Models\Article\MetalQuotation::query()->create([
             'organization_id' => $this->organization->id,
             'metal' => 'CU', 'price_per_kg' => '2', 'quoted_at' => now()->toDateString(),
         ]);

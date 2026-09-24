@@ -11,7 +11,7 @@
 namespace App\Services\Absence;
 
 use App\Enums\Vacation\VacationStatus;
-use App\Models\{Vacation, VacationEntitlement};
+use App\Models\Absence\{Vacation, VacationEntitlement};
 use App\Services\Calendar\HolidayService;
 use Carbon\{Carbon, CarbonInterface};
 use Illuminate\Database\Eloquent\Collection;

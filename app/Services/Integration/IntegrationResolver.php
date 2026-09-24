@@ -16,7 +16,7 @@ use App\Enums\Integration\{ConflictFieldPolicy, ImportMatchPolicy};
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem};
 use App\Models\Platform\Organization;
-use App\Models\Supplier;
+use App\Models\Supplier\Supplier;
 use App\Services\Integration\Match\{EntityMatcher, MatchProfile};
 use App\Services\Stammdaten\ContactDetailsWriter;
 use CommonToolkit\Enums\HashAlgorithm;

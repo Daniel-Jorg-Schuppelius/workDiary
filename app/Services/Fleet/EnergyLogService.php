@@ -10,7 +10,7 @@
 
 namespace App\Services\Fleet;
 
-use App\Models\EnergyLog;
+use App\Models\Asset\EnergyLog;
 use Illuminate\Support\Facades\DB;
 
 /**

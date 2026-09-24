@@ -13,7 +13,7 @@ namespace Tests\Feature\Finance;
 use App\Enums\Finance\PaymentRunStatus;
 use App\Models\Document\Document;
 use App\Models\Finance\{BankAccount, PaymentRun};
-use App\Models\IncomingEInvoice;
+use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\{Organization, User};
 use App\Services\Finance\FinancialFormatsSupport;
 use App\Services\Finance\Sepa\{PaymentProposalService, PaymentRunService};
@@ -162,7 +162,7 @@ class PaymentRunTest extends TestCase {
     /**
      * Toolkit-Audit 2026-09: Der Zahlbetrag wurde in float gerundet statt der
      * Skontobetrag — im Halbcent-Fall passten Überweisung und Skonto nicht
-     * zu {@see \App\Models\Invoice::skontoAmount()}.
+     * zu {@see \App\Models\Invoicing\Invoice::skontoAmount()}.
      */
     public function test_discount_amount_is_rounded_before_it_is_deducted(): void {
         $invoice = $this->invoice(['amount_gross' => '1.00', 'discount_percent' => '0.50', 'discount_days' => 10]);
@@ -192,7 +192,7 @@ class PaymentRunTest extends TestCase {
 
     /** E3 (Vollscan 2026-08-23): Rechnungs-IBAN ≠ Stammsatz ⇒ Blocker statt stiller Übernahme. */
     public function test_deviating_invoice_iban_blocks_until_confirmed(): void {
-        $supplier = \App\Models\Supplier::factory()->create([
+        $supplier = \App\Models\Supplier\Supplier::factory()->create([
             'organization_id' => $this->org->id,
             'name' => 'Lieferant GmbH',
         ]);
@@ -220,7 +220,7 @@ class PaymentRunTest extends TestCase {
 
     /** E3: Übereinstimmende oder fehlende Stammsatz-IBAN blockt nicht. */
     public function test_matching_master_iban_does_not_block(): void {
-        $supplier = \App\Models\Supplier::factory()->create([
+        $supplier = \App\Models\Supplier\Supplier::factory()->create([
             'organization_id' => $this->org->id,
             'name' => 'Lieferant GmbH',
         ]);

@@ -11,7 +11,7 @@
 namespace Tests\Feature\Security;
 
 use App\Models\Platform\{Organization, User};
-use App\Models\WorkSchedule;
+use App\Models\Time\WorkSchedule;
 use App\Services\Import\ImportOutcome;
 use App\Services\Import\Specs\UserSpec;
 use App\Services\Org\UserOffboardingService;

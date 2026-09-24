@@ -11,8 +11,9 @@
 namespace Tests\Feature;
 
 use App\Enums\Asset\AssetOwnership;
-use App\Models\{Asset, DiaryEntry};
+use App\Models\Asset\Asset;
 use App\Models\Attachments\Attachment;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -59,9 +60,9 @@ class AttachmentsTest extends TestCase {
     public function test_all_type_map_targets_are_reachable_for_upload(): void {
         $admin = User::factory()->admin()->create();
         $parents = [
-            'supplier' => \App\Models\Supplier::factory()->create(['organization_id' => $admin->organization_id]),
+            'supplier' => \App\Models\Supplier\Supplier::factory()->create(['organization_id' => $admin->organization_id]),
             'knowledge' => \App\Models\Knowledge\KnowledgeArticle::factory()->create(['organization_id' => $admin->organization_id]),
-            'service-ticket' => \App\Models\ServiceTicket::factory()->create(['organization_id' => $admin->organization_id]),
+            'service-ticket' => \App\Models\ServiceTicket\ServiceTicket::factory()->create(['organization_id' => $admin->organization_id]),
         ];
 
         foreach ($parents as $type => $parent) {

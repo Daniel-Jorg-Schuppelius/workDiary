@@ -11,7 +11,8 @@
 namespace Tests\Unit\Inventory;
 
 use App\Enums\Inventory\{ProviderCapability, StockMovementType, StockState};
-use App\Models\{ArticleVariant, Warehouse};
+use App\Models\Article\ArticleVariant;
+use App\Models\Inventory\Warehouse;
 use App\Models\Platform\Organization;
 use App\Plugins\JtlWawi\Api\JtlGatewayFactory;
 use App\Plugins\JtlWawi\Services\{JtlMappingResolver, JtlStockReader, JtlWawiInventoryProvider, JtlWawiOutboxDispatcher};

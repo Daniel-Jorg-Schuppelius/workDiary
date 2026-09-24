@@ -56,7 +56,7 @@
     <x-select-field name="on_call_shift_id" :label="__('Zugehörige Bereitschaft (optional)')" class="w-full">
         <option value="">{{ __('— keine —') }}</option>
         @foreach ($shiftOptions as $s)
-            <option value="{{ $s->sqid }}" @selected((string) old('on_call_shift_id', \App\Support\Sqid::encode(\App\Models\OnCallShift::class, $selectedShift)) === $s->sqid)>
+            <option value="{{ $s->sqid }}" @selected((string) old('on_call_shift_id', \App\Support\Sqid::encode(\App\Models\Diary\OnCallShift::class, $selectedShift)) === $s->sqid)>
                 {{ $s->user?->name }} · {{ $s->start_at?->fdatetime() }} – {{ $s->end_at?->fdatetime() }}
             </option>
         @endforeach

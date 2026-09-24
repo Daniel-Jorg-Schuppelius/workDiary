@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Notification;
 
-use App\Models\ChatWebhook;
+use App\Models\Chat\ChatWebhook;
 
 /**
  * Formatiert eine Benachrichtigung ({title, message?, url?}) in das jeweilige

@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Helpdesk;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
-use App\Models\{Problem, ServiceTicket};
+use App\Models\ServiceTicket\{Problem, ServiceTicket};
 use App\Services\ServiceTicket\ProblemService;
 use App\Support\{ErrorText, Sqid, Tz};
 use Illuminate\Http\{RedirectResponse, Request};

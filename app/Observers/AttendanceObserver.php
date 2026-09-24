@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Observers;
 
 use App\Enums\Attendance\AttendanceStatus;
-use App\Models\Attendance;
+use App\Models\Time\Attendance;
 use App\Services\Timekeeping\BreakRuleEvaluator;
 
 /**

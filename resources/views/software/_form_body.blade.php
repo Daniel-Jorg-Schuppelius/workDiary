@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 @php
-    /** @var \App\Models\Software $software */
+    /** @var \App\Models\Asset\Software $software */
     /** @var array<string, string> $kindOptions */
     /** @var array<string, string> $licenseTypeOptions */
     $skipStatusControls = $skipStatusControls ?? false;

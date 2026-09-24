@@ -11,13 +11,12 @@
 namespace App\Models\Project;
 
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Platform\User;
 use Database\Factories\Project\MilestoneFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
-use App\Models\Project\Project;
-use App\Models\Project\Task;
 
 /**
  * @property int $id

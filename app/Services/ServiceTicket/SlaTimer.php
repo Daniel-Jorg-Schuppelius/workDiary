@@ -11,7 +11,7 @@
 namespace App\Services\ServiceTicket;
 
 use App\Enums\ServiceTicket\{ServiceTicketPriority, SlaStatus};
-use App\Models\{ServiceTicket, SlaContract};
+use App\Models\ServiceTicket\{ServiceTicket, SlaContract};
 use App\Services\Calendar\HolidayService;
 use Illuminate\Support\Carbon;
 

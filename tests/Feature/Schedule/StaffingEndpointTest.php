@@ -11,8 +11,8 @@
 namespace Tests\Feature\Schedule;
 
 use App\Enums\Shift\DutyPlanStatus;
-use App\Models\{CoverageRequirement, DutyPlan, ShiftType};
 use App\Models\Platform\User;
+use App\Models\Schedule\{CoverageRequirement, DutyPlan, ShiftType};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithGlobalDateRange;
 use Tests\TestCase;

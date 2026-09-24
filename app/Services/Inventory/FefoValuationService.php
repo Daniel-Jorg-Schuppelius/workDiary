@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Enums\Inventory\ValuationMethod;
-use App\Models\{ArticleVariant, StockValuationLayer, Warehouse};
+use App\Models\Article\ArticleVariant;
+use App\Models\Inventory\{StockValuationLayer, Warehouse};
 use Illuminate\Database\Eloquent\Builder;
 
 /**

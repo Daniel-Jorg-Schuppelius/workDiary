@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\BuchhaltungsButler\Observers;
 
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Plugins\BuchhaltungsButler\{BhbConfig, BuchhaltungsButlerPlugin};
 use App\Plugins\BuchhaltungsButler\Services\BhbOutboxDispatcher;
 use App\Services\Finance\BillingModeResolver;

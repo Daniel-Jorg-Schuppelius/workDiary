@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Procurement;
 
-use App\Models\{Article, PricingMarginRule, SupplierCatalogItem};
+use App\Models\Article\{Article, PricingMarginRule};
+use App\Models\Supplier\SupplierCatalogItem;
 use CommonToolkit\Enums\{CurrencyCode, RoundingMode};
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\{Decimal, Money};

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Gaeb;
 
 use App\Enums\Gaeb\{BoqItemType, GaebPhase};
-use App\Models\{BillOfQuantity, BoqCostType, BoqItem, BoqItemCostApproach};
+use App\Models\Gaeb\{BillOfQuantity, BoqCostType, BoqItem, BoqItemCostApproach};
 use App\Models\Platform\User;
 use App\Services\Gaeb\{BoqCalculationDataService, BoqExportService, GaebImportService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -22,7 +22,7 @@
     $holder = (string) old('holder', $holderDefault);
     $customerSqid = (string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $editing ? $subscription->customer_id : ($prefill['customer_id'] ?? null)));
     $foreignSqid = (string) old('foreign_customer_id', \App\Support\Sqid::encode(\App\Models\Customer\ForeignCustomer::class, $editing ? $subscription->foreign_customer_id : ($prefill['foreign_customer_id'] ?? null)));
-    $articleSqid = (string) old('article_id', \App\Support\Sqid::encode(\App\Models\Article::class, $editing ? $subscription->article_id : ($prefill['article_id'] ?? null)));
+    $articleSqid = (string) old('article_id', \App\Support\Sqid::encode(\App\Models\Article\Article::class, $editing ? $subscription->article_id : ($prefill['article_id'] ?? null)));
     $lexArticleSqid = (string) old('lexoffice_article_id', \App\Support\Sqid::encode(\App\Models\Plugins\Lexoffice\LexofficeArticle::class, $editing ? $subscription->lexoffice_article_id : ($prefill['lexoffice_article_id'] ?? null)));
     $contractSqid = (string) old('contract_id', \App\Support\Sqid::encode(\App\Models\Contract\Contract::class, $editing ? $subscription->contract_id : null));
     $contracts = $contracts ?? collect();

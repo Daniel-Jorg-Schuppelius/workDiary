@@ -14,8 +14,8 @@ namespace App\Http\Requests\Club;
 
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
+use App\Models\Facility\Room;
 use App\Models\Platform\User;
-use App\Models\Room;
 use App\Rules\ExistsInCurrentOrganization;
 
 class AcceptMatchProposalRequest extends BaseFormRequest {

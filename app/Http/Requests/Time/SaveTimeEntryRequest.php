@@ -1,0 +1,147 @@
+<?php
+/*
+ * Created on   : Tue May 12 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : SaveTimeEntryRequest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace App\Http\Requests\Time;
+
+use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
+use Illuminate\Validation\Rule;
+use App\Http\Requests\BaseFormRequest;
+
+class SaveTimeEntryRequest extends BaseFormRequest {
+    use DecodesSqidInputs;
+    use ParsesOrgLocalDateTimes;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'task_id' => \App\Models\Project\Task::class,
+        'diary_entry_id' => \App\Models\Diary\DiaryEntry::class,
+        'rework_reason_classification_id' => \App\Models\Classification\Classification::class,
+        'goodwill_reason_classification_id' => \App\Models\Classification\Classification::class,
+        'tag_ids' => \App\Models\Classification\Tag::class,
+    ];
+
+    /** @return array<string, mixed> */
+    public function rules(): array {
+        // Range-Modus: Von/Bis sind vorhanden → date/minutes optional, weil
+        // der Model-Hook sie aus started_at/ended_at − break_minutes ableitet.
+        $isRange = $this->filled('started_at') && $this->filled('ended_at');
+
+        return [
+            // Kein Anlegen in einem freigegebenen Monat (Sicherheitsscan
+            // 2026-08-23, S-32) — dafür gibt es den Zeitkorrektur-Antrag.
+            'date' => [$isRange ? 'nullable' : 'required', 'date', new \App\Rules\NotInLockedMonth($this->targetUser())],
+            'minutes' => [$isRange ? 'nullable' : 'required', 'integer', 'min:1', 'max:1440'],
+            'started_at' => ['nullable', 'date'],
+            // Zeitraum höchstens 24 h wie im Dauer-Modus (max:1440) — sonst ließen sich Einträge über Tage buchen.
+            'ended_at' => array_filter(['nullable', 'date', 'after:started_at', $this->rangeLimit()]),
+            'break_minutes' => ['nullable', 'integer', 'min:0', 'max:600'],
+            'task_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('tasks')],
+            'diary_entry_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('diary_entries')],
+            'description' => ['nullable', 'string', 'max:500'],
+            // Anfahrtspauschale (Feature 098): leer = Automatik aus der Kondition.
+            'billing_travel_minutes' => ['nullable', 'integer', 'min:0', 'max:480'],
+            // Rang 59: Nacharbeit-/Kulanz-Kennzeichnung (Klassifikations-Domänen).
+            // Org-Constraint: eigene Org ODER Plattform-Default (organization_id NULL).
+            'rework_reason_classification_id' => ['nullable', 'integer', Rule::exists('classifications', 'id')->where(fn($q) => $this->scopeClassification($q, 'rework_reason'))],
+            'goodwill_reason_classification_id' => ['nullable', 'integer', Rule::exists('classifications', 'id')->where(fn($q) => $this->scopeClassification($q, 'goodwill_reason'))],
+            'tag_ids' => ['nullable', 'array'],
+            'tag_ids.*' => ['integer', new \App\Rules\ExistsInCurrentOrganization('tags')],
+            'new_tags' => ['nullable', 'string', 'max:500'],
+        ];
+    }
+
+    /**
+     * Domänen- + Org-Filter für Klassifikations-Referenzen: eigene Org
+     * oder Plattform-Default (organization_id NULL); ohne Org-Bindung
+     * (CLI) nur Domänen-Filter.
+     *
+     * @param \Illuminate\Database\Query\Builder $q
+     */
+    private function scopeClassification($q, string $domain): void {
+        $q->where('domain', $domain);
+        $orgId = app()->bound('currentOrganization') ? (app('currentOrganization')->id ?? null) : null;
+        if ($orgId !== null) {
+            $q->where(fn($qq) => $qq->where('organization_id', $orgId)->orWhereNull('organization_id'));
+        }
+    }
+
+    protected function prepareForValidation(): void {
+        foreach (['task_id', 'diary_entry_id', 'started_at', 'ended_at', 'rework_reason_classification_id', 'goodwill_reason_classification_id'] as $key) {
+            if ($this->input($key) === '' || $this->input($key) === '0') {
+                $this->merge([$key => null]);
+            }
+        }
+        if ($this->input('break_minutes') === '') {
+            $this->merge(['break_minutes' => null]);
+        }
+
+        // Die datetime-local-Eingaben (Wanduhrzeit ohne Zeitzone) werden in der
+        // aktiven Anzeige-Zeitzone interpretiert und zur Speicherung nach UTC
+        // umgerechnet. Vollaudit 2026-07 (N2): über das gemeinsame Bauteil —
+        // ungültige Eingaben meldet die 'date'-Regel statt eines 500ers.
+        $this->mergeOrgLocalToUtc(['started_at', 'ended_at']);
+    }
+
+    /** @return array<string, string> */
+    public function attributes(): array {
+        return [
+            'date' => __('Datum'),
+            'minutes' => __('Dauer'),
+            'started_at' => __('Von'),
+            'ended_at' => __('Bis'),
+            'break_minutes' => __('Pause'),
+            'description' => __('Beschreibung'),
+            'new_tags' => __('Tags'),
+        ];
+    }
+
+    /** @return array<string, string> */
+    public function messages(): array {
+        return [
+            'ended_at.after' => __('„Bis" muss nach „Von" liegen.'),
+            'ended_at.before_or_equal' => __('Ein Zeiteintrag darf höchstens 24 Stunden umfassen.'),
+        ];
+    }
+
+    private function rangeLimit(): ?string {
+        $start = $this->input('started_at');
+        if (! is_string($start) || $start === '' || ! $this->filled('ended_at')) {
+            return null;
+        }
+        try {
+            return 'before_or_equal:' . \Carbon\CarbonImmutable::parse($start)->addDay()->format('Y-m-d H:i:s');
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * Für wen wird gebucht?
+     *
+     * Vorgesetzte erfassen Zeiten auch für andere; die Monatssperre gilt dann
+     * für den **Mitarbeiter**, nicht für den Erfasser.
+     */
+    private function targetUser(): ?\App\Models\Platform\User {
+        $userId = $this->input('user_id');
+
+        if (filled($userId)) {
+            $user = \App\Models\Platform\User::query()->find(is_numeric($userId) ? (int) $userId : null);
+
+            if ($user instanceof \App\Models\Platform\User) {
+                return $user;
+            }
+        }
+
+        $auth = \Illuminate\Support\Facades\Auth::user();
+
+        return $auth instanceof \App\Models\Platform\User ? $auth : null;
+    }
+
+}

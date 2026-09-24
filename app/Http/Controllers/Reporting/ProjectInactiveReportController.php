@@ -17,7 +17,7 @@ use App\Http\Controllers\Reporting\Concerns\{ResolvesStandardReportFilters, Writ
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Support\Query\DateRange;
 use App\Support\{Sqid, XlsxExport};
 use Carbon\CarbonImmutable;

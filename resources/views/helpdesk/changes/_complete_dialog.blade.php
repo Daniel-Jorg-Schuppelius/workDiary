@@ -11,7 +11,7 @@
   Linie). Erwartet: $change, $outcomeLabels.
 --}}
 @php
-    /** @var \App\Models\Change $change */
+    /** @var \App\Models\ServiceTicket\Change $change */
     $pirRequired = $change->change_type === 'emergency' && trim((string) $change->pir_notes) === '';
 @endphp
 

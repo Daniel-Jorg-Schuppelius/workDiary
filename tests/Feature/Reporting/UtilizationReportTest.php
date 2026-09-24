@@ -16,7 +16,7 @@ use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Reporting\ReportTarget;
-use App\Models\{TimeEntry, WorkSchedule};
+use App\Models\Time\{TimeEntry, WorkSchedule};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;

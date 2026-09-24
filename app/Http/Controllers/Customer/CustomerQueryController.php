@@ -12,13 +12,13 @@ namespace App\Http\Controllers\Customer;
 
 use App\Enums\Customer\CustomerQueryStatus;
 use App\Enums\User\Permission;
-use App\Models\Customer\Customer\CustomerQuery;
+use App\Http\Controllers\Controller;
+use App\Models\Customer\CustomerQuery;
 use App\Models\Platform\User;
 use App\Services\Customer\CustomerQueryService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Interne Verwaltung der Kunden-Rückfragen (Feature 012).

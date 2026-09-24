@@ -183,7 +183,7 @@
                        placeholder="{{ __('Anmerkung (bei Ablehnung Pflicht)') }}">
                 <x-icon-btn icon="gavel" tone="primary" size="sm" type="submit" show-label>{{ __('Entscheiden') }}</x-icon-btn>
             </form>
-            @if ($incoming->transferred_at === null && in_array($incoming->status, [\App\Models\IncomingEInvoice::STATUS_APPROVED, \App\Models\IncomingEInvoice::STATUS_PAYMENT_RELEASED], true))
+            @if ($incoming->transferred_at === null && in_array($incoming->status, [\App\Models\Invoicing\IncomingEInvoice::STATUS_APPROVED, \App\Models\Invoicing\IncomingEInvoice::STATUS_PAYMENT_RELEASED], true))
                 <x-action-form :action="route('finance.incoming-invoices.transfer', $incoming)" class="mt-2"
                       :confirm="__('Eingang an die führende Buchhaltung übergeben? Die Übergabe wird als Nachweis vermerkt.')"
                       confirm-icon="outbox"

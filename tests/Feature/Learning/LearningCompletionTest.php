@@ -10,9 +10,9 @@
 
 namespace Tests\Feature\Learning;
 
+use App\Models\Hr\{Qualification, UserQualification};
 use App\Models\Learning\{LearningCertificate, LearningCourse, LearningEnrollment};
-use App\Models\Platform\{User, UserQualification};
-use App\Models\Qualification;
+use App\Models\Platform\User;
 use App\Models\Safety\{SafetyInstruction, SafetyInstructionParticipant};
 use App\Models\Training\{TrainingAssignment, TrainingCourse};
 use App\Services\Learning\{LearningCompletionService, LearningCourseService, LearningEnrollmentService};
@@ -258,7 +258,7 @@ class LearningCompletionTest extends TestCase {
     // ── Geräteeinweisung (MVP-740) ──────────────────────────────────────
 
     public function test_einweisung_traegt_das_geraet_im_nachweis(): void {
-        $asset = \App\Models\Asset::factory()->create(['organization_id' => $this->organization->id]);
+        $asset = \App\Models\Asset\Asset::factory()->create(['organization_id' => $this->organization->id]);
 
         [$enrollment, , $user] = $this->scenario([
             'creates_instruction_proof' => true,
@@ -273,8 +273,8 @@ class LearningCompletionTest extends TestCase {
     }
 
     public function test_zwei_geraete_ergeben_zwei_unterweisungen(): void {
-        $first = \App\Models\Asset::factory()->create(['organization_id' => $this->organization->id]);
-        $second = \App\Models\Asset::factory()->create(['organization_id' => $this->organization->id]);
+        $first = \App\Models\Asset\Asset::factory()->create(['organization_id' => $this->organization->id]);
+        $second = \App\Models\Asset\Asset::factory()->create(['organization_id' => $this->organization->id]);
 
         [$enrollmentA, , $userA] = $this->scenario(['creates_instruction_proof' => true, 'asset_id' => $first->id]);
         $this->complete($enrollmentA);
@@ -291,7 +291,7 @@ class LearningCompletionTest extends TestCase {
 
     // ── Subunternehmer-Nachweis (Konzept 11 Nr. 6, Feature 117) ─────────
 
-    /** @return array{0: \App\Models\Learning\LearningEnrollment, 1: \App\Models\Supplier} */
+    /** @return array{0: \App\Models\Learning\LearningEnrollment, 1: \App\Models\Supplier\Supplier} */
     private function externalSubcontractorEnrollment(\App\Enums\ExternalParticipant\ExternalParty $party): array {
         $courses = app(LearningCourseService::class);
         $course = $courses->createCourse($this->organization, null, [
@@ -302,11 +302,11 @@ class LearningCompletionTest extends TestCase {
         $courses->addUnit($course, ['title' => 'Grundlagen']);
         $courses->release($course->refresh(), null);
 
-        $supplier = \App\Models\Supplier::factory()->create(['organization_id' => $this->organization->id]);
+        $supplier = \App\Models\Supplier\Supplier::factory()->create(['organization_id' => $this->organization->id]);
 
         $participant = \App\Models\Communication\ExternalParticipant::factory()->create([
             'organization_id' => $this->organization->id,
-            'subject_type' => (new \App\Models\Supplier())->getMorphClass(),
+            'subject_type' => (new \App\Models\Supplier\Supplier())->getMorphClass(),
             'subject_id' => $supplier->id,
             'party' => $party->value,
             'name' => 'Kolja Fremd',

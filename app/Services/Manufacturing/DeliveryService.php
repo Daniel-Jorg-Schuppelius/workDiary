@@ -14,8 +14,10 @@ namespace App\Services\Manufacturing;
 
 use App\Enums\Finance\BillingMode;
 use App\Enums\Manufacturing\DeliveryFacturationStatus;
-use App\Models\{Article, ArticleVariant, ManufacturingOrder, StockDelivery, StockSerial, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Customer\Customer;
+use App\Models\Inventory\{StockDelivery, StockSerial, Warehouse};
+use App\Models\Manufacturing\ManufacturingOrder;
 use App\Models\Platform\Organization;
 use App\Services\Finance\BillingModeResolver;
 use App\Services\Inventory\{ExternalStockMirror, InventoryLedger, InventoryValuationManager, SerialService};

@@ -11,7 +11,7 @@
 namespace Tests\Unit;
 
 use App\Enums\WorkSchedule\ScheduleType;
-use App\Models\WorkSchedule;
+use App\Models\Time\WorkSchedule;
 use Tests\TestCase;
 
 /**

@@ -13,7 +13,7 @@ namespace App\Services\Asset;
 use App\Enums\Asset\AssetStatus;
 use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 
 class AssetStatusVisibilityService {
     public function __construct(private readonly AssetBlockService $blocks) {}

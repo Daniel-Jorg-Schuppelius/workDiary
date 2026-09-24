@@ -13,9 +13,11 @@ namespace Tests\Feature\Supplier;
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Enums\Supplier\CredentialStatus;
 use App\Models\Document\Document;
-use App\Models\{IncomingEInvoice, PurchaseOrder, Supplier};
+use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Notification\NotificationRule;
 use App\Models\Platform\{Organization, User};
+use App\Models\Procurement\PurchaseOrder;
+use App\Models\Supplier\Supplier;
 use App\Models\Supplier\{SupplierCredential, SupplierCredentialType};
 use App\Services\Supplier\SupplierCredentialService;
 use App\Settings\SettingScope;
@@ -132,7 +134,7 @@ class SupplierCredentialTest extends TestCase {
 
     public function test_purchase_order_submission_is_blocked_when_enabled(): void {
         Setting::set('procurement.credential_blocking', true, SettingScope::Organization, $this->org);
-        $warehouse = \App\Models\Warehouse::create([
+        $warehouse = \App\Models\Inventory\Warehouse::create([
             'organization_id' => $this->org->id,
             'code' => 'HL',
             'name' => 'Hauptlager',

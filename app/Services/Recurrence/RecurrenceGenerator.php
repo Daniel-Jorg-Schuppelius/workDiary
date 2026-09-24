@@ -12,7 +12,7 @@ namespace App\Services\Recurrence;
 
 use App\Enums\Diary\{Mode, Status as DiaryStatus};
 use App\Enums\Recurrence\RecurrenceFrequency;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Project\RecurrenceRule;
 use Carbon\CarbonImmutable;
 use Carbon\Constants\UnitValue;

@@ -18,7 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
 use App\Http\Requests\Accounting\SaveAccountingBudgetRequest;
 use App\Models\Accounting\AccountingAccount;
-use App\Models\CostCenter;
+use App\Models\Finance\CostCenter;
 use App\Models\Platform\Organization;
 use App\Services\Accounting\{AccountingBudgetService, FiscalCalendar};
 use App\Support\{Sqid, Tz};

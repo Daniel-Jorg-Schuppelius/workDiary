@@ -13,11 +13,13 @@ declare(strict_types=1);
 namespace App\Models\Sales;
 
 use App\Enums\Sales\{LeadSource, LeadStatus};
+use App\Models\Communication\CommunicationNote;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany};
 use Illuminate\Support\Carbon;
-use App\Models\Customer\Customer\Customer;
 
 /**
  * Lead-Akte (Feature 091): ein Interessent VOR dem Kundenstatus.

@@ -10,9 +10,9 @@
      Nachkalkulation nur mit Recht auf Fertigungsaufträge — Kosten sind
      Fertigungs-, keine Stammdaten. --}}
 @php
-    /** @var \App\Models\Article $article */
+    /** @var \App\Models\Article\Article $article */
     $costingVisible = \Illuminate\Support\Facades\Route::has('articles.costing')
-        && (auth()->user()?->can('viewAny', \App\Models\ManufacturingOrder::class) ?? false);
+        && (auth()->user()?->can('viewAny', \App\Models\Manufacturing\ManufacturingOrder::class) ?? false);
 @endphp
 <x-tab-nav class="w-fit" :items="[
     ['label' => __('article.tabs.master'), 'route' => 'articles.show', 'params' => $article, 'routeIs' => 'articles.show', 'icon' => 'inventory_2'],

@@ -14,7 +14,8 @@ namespace App\Services\Inventory;
 
 use App\Contracts\Inventory\InventoryValuationStrategy;
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState, ValuationMethod};
-use App\Models\{ArticleVariant, StockLot, StockMovement, StockValuationLayer, Warehouse};
+use App\Models\Article\ArticleVariant;
+use App\Models\Inventory\{StockLot, StockMovement, StockValuationLayer, Warehouse};
 use App\Support\DecimalQty;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};

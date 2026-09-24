@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Enums\Manufacturing\ManufacturingOrderStatus;
-use App\Models\{Article, ArticleVariant, ManufacturingOrder, ManufacturingOrderMaterial};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Manufacturing\{ManufacturingOrder, ManufacturingOrderMaterial};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 

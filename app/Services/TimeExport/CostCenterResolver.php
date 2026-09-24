@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\TimeExport;
 
-use App\Models\{CostCenter, CostCenterRule, Expense};
+use App\Models\Finance\{CostCenter, CostCenterRule};
 use App\Models\Scopes\OrganizationScope;
+use App\Models\Travel\Expense;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;

@@ -13,10 +13,12 @@ namespace Tests\Feature\Reporting;
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Protocol\ProtocolType;
-use App\Models\{Asset, DiaryEntry, OpenIssue, Protocol};
+use App\Models\Asset\Asset;
 use App\Models\Audit\AuditLog;
+use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Models\Protocol\Protocol;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
@@ -120,7 +122,7 @@ class AssetAnalysisReportTest extends TestCase {
         // Zwei Fernwartungs-Sitzungen (je ein TimeEntry mit session-ExternalReference).
         foreach ([30, 45] as $minutes) {
             $start = now()->subDays(2)->setTime(9, 0);
-            $entry = \App\Models\TimeEntry::create([
+            $entry = \App\Models\Time\TimeEntry::create([
                 'organization_id' => $this->organization->id,
                 'project_id' => $this->project->id,
                 'user_id' => $this->user->id,
@@ -178,7 +180,7 @@ class AssetAnalysisReportTest extends TestCase {
         // MVP-371 (produktmodell-konzept.md): typisierte Assets gruppieren übers
         // Produkt (auch bei abweichender Schreibweise der Freitexte), untypisierte
         // fallen auf den manufacturer|model-String zurück.
-        $product = \App\Models\Product::factory()->create([
+        $product = \App\Models\Article\Product::factory()->create([
             'organization_id' => $this->organization->id,
             'manufacturer' => 'Kärcher',
             'model' => 'KAE-200',

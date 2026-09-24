@@ -10,8 +10,8 @@
 
 namespace App\Policies\Project;
 
-use App\Models\Project\Project\Milestone;
 use App\Models\Platform\User;
+use App\Models\Project\Milestone;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class MilestonePolicy {

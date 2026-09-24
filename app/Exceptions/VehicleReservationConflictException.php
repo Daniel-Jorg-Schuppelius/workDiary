@@ -10,7 +10,7 @@
 
 namespace App\Exceptions;
 
-use App\Models\VehicleReservation;
+use App\Models\Fleet\VehicleReservation;
 use RuntimeException;
 
 /**

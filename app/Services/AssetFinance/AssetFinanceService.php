@@ -16,7 +16,7 @@ use App\Enums\AssetFinance\{AssetFinanceEndKind, AssetFinanceStatus};
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Numbering\NumberScope;
 use App\Models\AssetFinance\{AssetFinanceContract, AssetFinanceContractAsset, AssetFinanceDeadline, AssetFinanceEndProcess, AssetFinanceOption, AssetFinanceRateSchedule, AssetFinanceUsageLimit};
-use App\Models\IncomingEInvoice;
+use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\AssertsStatusTransition;
 use App\Services\Notification\NotificationDispatcher;
@@ -151,7 +151,7 @@ class AssetFinanceService {
     public function recordUsage(AssetFinanceUsageLimit $limit, User $actor, ?float $value = null): AssetFinanceUsageLimit {
         if ($value === null) {
             $assetIds = $limit->contract?->contractAssets()->pluck('asset_id') ?? collect();
-            $latest = \App\Models\MeterReading::query()
+            $latest = \App\Models\Asset\MeterReading::query()
                 ->whereIn('asset_id', $assetIds)
                 ->orderByDesc('read_at')
                 ->first();

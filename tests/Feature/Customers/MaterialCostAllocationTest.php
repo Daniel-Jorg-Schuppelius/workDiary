@@ -11,7 +11,7 @@
 namespace Tests\Feature\Customers;
 
 use App\Models\Customer\Customer;
-use App\Models\MaterialCostAllocation;
+use App\Models\Material\MaterialCostAllocation;
 use App\Models\Platform\User;
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Models\Project\Project;

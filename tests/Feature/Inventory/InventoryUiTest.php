@@ -11,7 +11,8 @@
 namespace Tests\Feature\Inventory;
 
 use App\Enums\Inventory\StockCountType;
-use App\Models\{Article, ArticleVariant, StockCount, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\{StockCount, Warehouse};
 use App\Models\Platform\User;
 use App\Models\Print\LabelTemplate;
 use App\Services\Inventory\{InventoryLedger, StocktakeService, ValuationService};

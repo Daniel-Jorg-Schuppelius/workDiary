@@ -11,7 +11,7 @@
 namespace Tests\Feature\Fleet;
 
 use App\Exceptions\DriverLicenseCheckOverdueException;
-use App\Models\{DriverLicenseCheck, Vehicle};
+use App\Models\Fleet\{DriverLicenseCheck, Vehicle};
 use App\Models\Platform\User;
 use App\Services\Dispatch\VehicleReservationService;
 use App\Services\Fleet\DriverLicenseCheckService;

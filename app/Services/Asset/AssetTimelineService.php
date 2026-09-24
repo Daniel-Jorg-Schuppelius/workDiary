@@ -10,7 +10,7 @@
 
 namespace App\Services\Asset;
 
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use Illuminate\Support\Carbon;
 
 class AssetTimelineService {

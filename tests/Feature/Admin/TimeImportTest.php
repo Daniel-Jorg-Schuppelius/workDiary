@@ -14,9 +14,10 @@ namespace Tests\Feature\Admin;
 
 use App\Enums\Attendance\AttendanceSource;
 use App\Enums\Import\{ImportErrorCode, ImportRunState};
-use App\Models\{Attendance, DayClosure};
+use App\Models\Diary\DayClosure;
 use App\Models\Integration\ImportRun;
 use App\Models\Platform\User;
+use App\Models\Time\Attendance;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;

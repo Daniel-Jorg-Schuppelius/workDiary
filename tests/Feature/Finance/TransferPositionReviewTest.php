@@ -21,7 +21,7 @@ use App\Models\Customer\Customer;
 use App\Models\Finance\BillingTransfer;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
 use App\Services\Ai\Suggestions\ItemTextSuggestionService;
 use App\Services\Billing\OrganizationDefaultRateResolver;
 use App\Services\Finance\BillingTransferService;

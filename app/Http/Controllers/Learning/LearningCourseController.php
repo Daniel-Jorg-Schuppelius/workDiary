@@ -310,7 +310,7 @@ class LearningCourseController extends Controller {
             'sections' => $course->sections()->get(),
             'allowedHosts' => $this->content->allowedHosts($this->currentOrganization()),
             // Prozedurblock (MVP-806): nur aktive Vorlagen der eigenen Organisation.
-            'procedureTemplates' => \App\Models\ProcedureTemplate::query()->where('active', true)->orderBy('name')->get(['id', 'name', 'code']),
+            'procedureTemplates' => \App\Models\Procedure\ProcedureTemplate::query()->where('active', true)->orderBy('name')->get(['id', 'name', 'code']),
             'subtitles' => $subtitles,
             'canTranscribe' => app(VideoTranscodingService::class)->isTranscriptionAvailable(),
             // LTI-Einheit (Feature 149): die aktiven Tools der Organisation zur Auswahl.
@@ -410,7 +410,7 @@ class LearningCourseController extends Controller {
         }
 
         if ($kind === LearningBlockKind::Procedure) {
-            $data['procedure_template_id'] = Sqid::decode(\App\Models\ProcedureTemplate::class, (string) ($data['procedure_template_id'] ?? ''));
+            $data['procedure_template_id'] = Sqid::decode(\App\Models\Procedure\ProcedureTemplate::class, (string) ($data['procedure_template_id'] ?? ''));
         }
 
         // Galerie: ein Alternativtext je Bild, in derselben Reihenfolge. Vor
@@ -1228,7 +1228,7 @@ class LearningCourseController extends Controller {
         }
 
         if ($request->filled('asset_id')) {
-            $request->merge(['asset_id' => Sqid::decodeOrNumeric(\App\Models\Asset::class, $request->input('asset_id'))]);
+            $request->merge(['asset_id' => Sqid::decodeOrNumeric(\App\Models\Asset\Asset::class, $request->input('asset_id'))]);
         }
         if ($request->filled('exam_for_course_id')) {
             $request->merge(['exam_for_course_id' => Sqid::decodeOrNumeric(LearningCourse::class, $request->input('exam_for_course_id'))]);
@@ -1522,10 +1522,10 @@ class LearningCourseController extends Controller {
     /**
      * Geräte für die Einweisung (MVP-740).
      *
-     * @return \Illuminate\Support\Collection<int, \App\Models\Asset>
+     * @return \Illuminate\Support\Collection<int, \App\Models\Asset\Asset>
      */
     private function assetOptions() {
-        return \App\Models\Asset::query()
+        return \App\Models\Asset\Asset::query()
             ->orderBy('name')
             ->get(['id', 'name']);
     }

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Jobs\Notification;
 
-use App\Models\ChatWebhook;
+use App\Models\Chat\ChatWebhook;
 use App\Services\Notification\ChatMessageFormatter;
 use App\Support\UrlSafety;
 use Illuminate\Bus\Queueable;

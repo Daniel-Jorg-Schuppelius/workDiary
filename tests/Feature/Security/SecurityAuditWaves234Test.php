@@ -11,7 +11,7 @@
 namespace Tests\Feature\Security;
 
 use App\Models\Attachments\Attachment;
-use App\Models\DiaryEntry;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Project\OperationsTask;
 use App\Support\Crypto\EnvelopeCrypto;
@@ -180,7 +180,7 @@ class SecurityAuditWaves234Test extends TestCase {
     }
 
     private function ftpOptions(): \League\Flysystem\Ftp\FtpConnectionOptions {
-        $source = new \App\Models\SupplierCatalogSource;
+        $source = new \App\Models\Supplier\SupplierCatalogSource;
         $source->forceFill([
             'remote_host' => 'ftp.lieferant.example',
             'remote_username' => 'katalog',

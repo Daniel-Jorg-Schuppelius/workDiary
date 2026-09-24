@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Inventory;
 
-use App\Models\{ArticleVariant, StockLevelSetting, Warehouse};
+use App\Models\Article\ArticleVariant;
+use App\Models\Inventory\{StockLevelSetting, Warehouse};
 use Illuminate\Support\Collection;
 
 /**

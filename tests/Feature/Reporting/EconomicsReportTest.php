@@ -17,7 +17,8 @@ use App\Models\Audit\AuditLog;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Models\TimeEntry;
+use App\Models\Time\TimeEntry;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
@@ -109,7 +110,7 @@ class EconomicsReportTest extends TestCase {
 
         $log = AuditLog::query()->where('event', 'report.exported')->latest('id')->first();
         $this->assertNotNull($log);
-        $this->assertSame(EconomicsReportController::class, $log->auditable_type);
+        $this->assertSame(MorphMap::stableKey(EconomicsReportController::class), $log->auditable_type);
         $this->assertSame('economics', $log->changes['report_code'] ?? null);
         $this->assertSame('csv', $log->changes['format'] ?? null);
     }

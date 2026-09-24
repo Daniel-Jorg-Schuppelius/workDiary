@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Article, ArticleVariant};
+use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Integration\IntegrationInboxItem;
 use App\Plugins\Lexoffice\LexofficeArticleSync;
 use Illuminate\Foundation\Testing\RefreshDatabase;

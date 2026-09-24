@@ -11,7 +11,7 @@
 namespace Tests\Unit\Invoicing;
 
 use App\Models\Customer\Customer;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Services\Invoicing\EInvoice\XRechnungGenerator;
 use Illuminate\Foundation\Testing\RefreshDatabase;

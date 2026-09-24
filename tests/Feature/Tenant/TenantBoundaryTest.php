@@ -15,9 +15,10 @@ use App\Models\Communication\CommunicationNote;
 use App\Models\Document\Document;
 use App\Models\Form\{FormSubmission, FormTemplate};
 use App\Models\Knowledge\KnowledgeArticle;
-use App\Models\{PerDiemTrip, TimeEntry, Timesheet};
 use App\Models\Platform\{FeatureUsageCounter, Organization, User};
 use App\Models\Project\{Milestone, Project, Task};
+use App\Models\Time\{TimeEntry, Timesheet};
+use App\Models\Travel\PerDiemTrip;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -153,13 +154,13 @@ class TenantBoundaryTest extends TestCase {
             $statement = \App\Models\Finance\BankStatement::factory()->create();
             $transaction = \App\Models\Finance\BankTransaction::factory()->create(['bank_statement_id' => $statement->id]);
             $customer = \App\Models\Customer\Customer::factory()->create();
-            $invoice = \App\Models\Invoice::create([
+            $invoice = \App\Models\Invoicing\Invoice::create([
                 'organization_id' => $this->orgB->id,
                 'customer_id' => $customer->id,
                 'number' => 'RB-1',
-                'status' => \App\Models\Invoice::STATUS_ISSUED,
-                'type' => \App\Models\Invoice::TYPE_INVOICE,
-                'category' => \App\Models\Invoice::CATEGORY_SERVICE,
+                'status' => \App\Models\Invoicing\Invoice::STATUS_ISSUED,
+                'type' => \App\Models\Invoicing\Invoice::TYPE_INVOICE,
+                'category' => \App\Models\Invoicing\Invoice::CATEGORY_SERVICE,
                 'currency' => 'EUR',
                 'tax_rate' => '19.00',
                 'subtotal' => '100.00',
@@ -169,7 +170,7 @@ class TenantBoundaryTest extends TestCase {
 
             return \App\Models\Finance\PaymentAllocation::factory()->create([
                 'bank_transaction_id' => $transaction->id,
-                'allocatable_type' => MorphMap::alias(\App\Models\Invoice::class),
+                'allocatable_type' => MorphMap::alias(\App\Models\Invoicing\Invoice::class),
                 'allocatable_id' => $invoice->id,
             ]);
         });
@@ -615,7 +616,7 @@ class TenantBoundaryTest extends TestCase {
     }
 
     public function test_day_closure_is_not_visible_cross_organization(): void {
-        $closureB = $this->withOrg($this->orgB, fn() => \App\Models\DayClosure::factory()->create([
+        $closureB = $this->withOrg($this->orgB, fn() => \App\Models\Diary\DayClosure::factory()->create([
             'organization_id' => $this->orgB->id,
             'user_id' => $this->userB->id,
         ]));
@@ -623,18 +624,18 @@ class TenantBoundaryTest extends TestCase {
         $this->assertSame((int) $this->orgB->id, (int) $closureB->organization_id);
 
         app()->instance('currentOrganization', $this->orgA);
-        $this->assertNull(\App\Models\DayClosure::find($closureB->id));
-        $this->assertSame(0, \App\Models\DayClosure::query()->count());
+        $this->assertNull(\App\Models\Diary\DayClosure::find($closureB->id));
+        $this->assertSame(0, \App\Models\Diary\DayClosure::query()->count());
     }
 
     public function test_day_correction_request_is_not_visible_cross_organization(): void {
         $requestB = $this->withOrg($this->orgB, function () {
-            $closure = \App\Models\DayClosure::factory()->closed()->create([
+            $closure = \App\Models\Diary\DayClosure::factory()->closed()->create([
                 'organization_id' => $this->orgB->id,
                 'user_id' => $this->userB->id,
             ]);
 
-            return \App\Models\DayCorrectionRequest::factory()->create([
+            return \App\Models\Diary\DayCorrectionRequest::factory()->create([
                 'organization_id' => $this->orgB->id,
                 'day_closure_id' => $closure->id,
                 'requested_by_user_id' => $this->userB->id,
@@ -644,15 +645,15 @@ class TenantBoundaryTest extends TestCase {
         $this->assertSame((int) $this->orgB->id, (int) $requestB->organization_id);
 
         app()->instance('currentOrganization', $this->orgA);
-        $this->assertNull(\App\Models\DayCorrectionRequest::find($requestB->id));
-        $this->assertSame(0, \App\Models\DayCorrectionRequest::query()->count());
+        $this->assertNull(\App\Models\Diary\DayCorrectionRequest::find($requestB->id));
+        $this->assertSame(0, \App\Models\Diary\DayCorrectionRequest::query()->count());
     }
 
     public function test_sla_violation_is_not_visible_cross_organization(): void {
         $violationB = $this->withOrg($this->orgB, function () {
-            $ticket = \App\Models\ServiceTicket::factory()->create(['organization_id' => $this->orgB->id]);
+            $ticket = \App\Models\ServiceTicket\ServiceTicket::factory()->create(['organization_id' => $this->orgB->id]);
 
-            return \App\Models\SlaViolation::factory()->create([
+            return \App\Models\ServiceTicket\SlaViolation::factory()->create([
                 'organization_id' => $this->orgB->id,
                 'service_ticket_id' => $ticket->id,
             ]);
@@ -661,8 +662,8 @@ class TenantBoundaryTest extends TestCase {
         $this->assertSame((int) $this->orgB->id, (int) $violationB->organization_id);
 
         app()->instance('currentOrganization', $this->orgA);
-        $this->assertNull(\App\Models\SlaViolation::find($violationB->id));
-        $this->assertSame(0, \App\Models\SlaViolation::query()->count());
+        $this->assertNull(\App\Models\ServiceTicket\SlaViolation::find($violationB->id));
+        $this->assertSame(0, \App\Models\ServiceTicket\SlaViolation::query()->count());
     }
 
     public function test_datev_booking_batch_is_not_visible_cross_organization(): void {
@@ -679,8 +680,8 @@ class TenantBoundaryTest extends TestCase {
     }
 
     public function test_asset_assignment_is_not_visible_cross_organization(): void {
-        $assetB = $this->withOrg($this->orgB, fn() => \App\Models\Asset::factory()->create(['organization_id' => $this->orgB->id]));
-        $assignmentB = $this->withOrg($this->orgB, fn() => \App\Models\AssetAssignment::factory()->create([
+        $assetB = $this->withOrg($this->orgB, fn() => \App\Models\Asset\Asset::factory()->create(['organization_id' => $this->orgB->id]));
+        $assignmentB = $this->withOrg($this->orgB, fn() => \App\Models\Asset\AssetAssignment::factory()->create([
             'organization_id' => $this->orgB->id,
             'asset_id' => $assetB->id,
             'assigned_to_user_id' => $this->userB->id,
@@ -690,13 +691,13 @@ class TenantBoundaryTest extends TestCase {
         $this->assertSame((int) $this->orgB->id, (int) $assignmentB->organization_id);
 
         app()->instance('currentOrganization', $this->orgA);
-        $this->assertNull(\App\Models\AssetAssignment::find($assignmentB->id));
-        $this->assertSame(0, \App\Models\AssetAssignment::query()->count());
+        $this->assertNull(\App\Models\Asset\AssetAssignment::find($assignmentB->id));
+        $this->assertSame(0, \App\Models\Asset\AssetAssignment::query()->count());
     }
 
     public function test_asset_defect_is_not_visible_cross_organization(): void {
-        $assetB = $this->withOrg($this->orgB, fn() => \App\Models\Asset::factory()->create(['organization_id' => $this->orgB->id]));
-        $defectB = $this->withOrg($this->orgB, fn() => \App\Models\AssetDefect::factory()->create([
+        $assetB = $this->withOrg($this->orgB, fn() => \App\Models\Asset\Asset::factory()->create(['organization_id' => $this->orgB->id]));
+        $defectB = $this->withOrg($this->orgB, fn() => \App\Models\Asset\AssetDefect::factory()->create([
             'organization_id' => $this->orgB->id,
             'asset_id' => $assetB->id,
             'reported_by_user_id' => $this->userB->id,
@@ -705,12 +706,12 @@ class TenantBoundaryTest extends TestCase {
         $this->assertSame((int) $this->orgB->id, (int) $defectB->organization_id);
 
         app()->instance('currentOrganization', $this->orgA);
-        $this->assertNull(\App\Models\AssetDefect::find($defectB->id));
-        $this->assertSame(0, \App\Models\AssetDefect::query()->count());
+        $this->assertNull(\App\Models\Asset\AssetDefect::find($defectB->id));
+        $this->assertSame(0, \App\Models\Asset\AssetDefect::query()->count());
     }
 
     public function test_safety_event_is_not_visible_cross_organization(): void {
-        $eventB = $this->withOrg($this->orgB, fn() => \App\Models\SafetyEvent::factory()->create([
+        $eventB = $this->withOrg($this->orgB, fn() => \App\Models\Safety\SafetyEvent::factory()->create([
             'organization_id' => $this->orgB->id,
             'reported_by_user_id' => $this->userB->id,
         ]));
@@ -718,8 +719,8 @@ class TenantBoundaryTest extends TestCase {
         $this->assertSame((int) $this->orgB->id, (int) $eventB->organization_id);
 
         app()->instance('currentOrganization', $this->orgA);
-        $this->assertNull(\App\Models\SafetyEvent::find($eventB->id));
-        $this->assertSame(0, \App\Models\SafetyEvent::query()->count());
+        $this->assertNull(\App\Models\Safety\SafetyEvent::find($eventB->id));
+        $this->assertSame(0, \App\Models\Safety\SafetyEvent::query()->count());
     }
 
     public function test_cross_organization_update_is_blocked_by_scope(): void {
@@ -788,9 +789,9 @@ class TenantBoundaryTest extends TestCase {
 
     public function test_vehicle_reservation_is_not_visible_cross_organization(): void {
         $reservationB = $this->withOrg($this->orgB, function () {
-            $vehicle = \App\Models\Vehicle::factory()->create(['organization_id' => $this->orgB->id]);
+            $vehicle = \App\Models\Fleet\Vehicle::factory()->create(['organization_id' => $this->orgB->id]);
 
-            return \App\Models\VehicleReservation::factory()->create([
+            return \App\Models\Fleet\VehicleReservation::factory()->create([
                 'organization_id' => $this->orgB->id,
                 'vehicle_id' => $vehicle->id,
                 'reserved_by_user_id' => $this->userB->id,
@@ -800,8 +801,8 @@ class TenantBoundaryTest extends TestCase {
         $this->assertSame((int) $this->orgB->id, (int) $reservationB->organization_id);
 
         app()->instance('currentOrganization', $this->orgA);
-        $this->assertNull(\App\Models\VehicleReservation::find($reservationB->id));
-        $this->assertSame(0, \App\Models\VehicleReservation::query()->count());
+        $this->assertNull(\App\Models\Fleet\VehicleReservation::find($reservationB->id));
+        $this->assertSame(0, \App\Models\Fleet\VehicleReservation::query()->count());
     }
 
     public function test_availability_window_is_not_visible_cross_organization(): void {
@@ -818,7 +819,7 @@ class TenantBoundaryTest extends TestCase {
     }
 
     public function test_desired_shift_is_not_visible_cross_organization(): void {
-        $desiredB = $this->withOrg($this->orgB, fn() => \App\Models\DesiredShift::factory()->create([
+        $desiredB = $this->withOrg($this->orgB, fn() => \App\Models\Schedule\DesiredShift::factory()->create([
             'organization_id' => $this->orgB->id,
             'user_id' => $this->userB->id,
         ]));
@@ -826,18 +827,18 @@ class TenantBoundaryTest extends TestCase {
         $this->assertSame((int) $this->orgB->id, (int) $desiredB->organization_id);
 
         app()->instance('currentOrganization', $this->orgA);
-        $this->assertNull(\App\Models\DesiredShift::find($desiredB->id));
-        $this->assertSame(0, \App\Models\DesiredShift::query()->count());
+        $this->assertNull(\App\Models\Schedule\DesiredShift::find($desiredB->id));
+        $this->assertSame(0, \App\Models\Schedule\DesiredShift::query()->count());
     }
 
     public function test_shift_exchange_is_not_visible_cross_organization(): void {
         $exchangeB = $this->withOrg($this->orgB, function () {
-            $shift = \App\Models\ScheduledShift::factory()->create([
+            $shift = \App\Models\Schedule\ScheduledShift::factory()->create([
                 'organization_id' => $this->orgB->id,
                 'user_id' => $this->userB->id,
             ]);
 
-            return \App\Models\ShiftExchange::factory()->create([
+            return \App\Models\Schedule\ShiftExchange::factory()->create([
                 'organization_id' => $this->orgB->id,
                 'scheduled_shift_id' => $shift->id,
                 'requested_by_user_id' => $this->userB->id,
@@ -847,8 +848,8 @@ class TenantBoundaryTest extends TestCase {
         $this->assertSame((int) $this->orgB->id, (int) $exchangeB->organization_id);
 
         app()->instance('currentOrganization', $this->orgA);
-        $this->assertNull(\App\Models\ShiftExchange::find($exchangeB->id));
-        $this->assertSame(0, \App\Models\ShiftExchange::query()->count());
+        $this->assertNull(\App\Models\Schedule\ShiftExchange::find($exchangeB->id));
+        $this->assertSame(0, \App\Models\Schedule\ShiftExchange::query()->count());
     }
 
     /**

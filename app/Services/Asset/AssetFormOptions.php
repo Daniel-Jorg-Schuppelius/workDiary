@@ -11,8 +11,8 @@
 namespace App\Services\Asset;
 
 use App\Enums\Asset\{AssetClass, AssetStatus, MaintenanceIntervalKind};
-use App\Models\{Building, Floor, Room, Site};
 use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Facility\{Building, Floor, Room, Site};
 use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;

@@ -14,7 +14,7 @@ namespace App\Services\ServiceTicket;
 
 use App\Enums\ServiceTicket\{ServiceTicketPriority, TicketSeverity};
 use App\Models\Platform\{Organization, User};
-use App\Models\{ServiceTicket, ServiceTicketLink};
+use App\Models\ServiceTicket\{ServiceTicket, ServiceTicketLink};
 use App\Support\Setting;
 use Illuminate\Database\Eloquent\Model;
 

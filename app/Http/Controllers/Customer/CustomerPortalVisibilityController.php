@@ -11,12 +11,12 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Enums\User\Permission;
-use App\Models\Customer\Customer\Customer;
+use App\Http\Controllers\Controller;
+use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Services\CustomerPortal\PortalVisibility;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
-use App\Http\Controllers\Controller;
 
 /**
  * Konfiguration der sichtbaren Portalbereiche und der Zeit-Detailstufe je

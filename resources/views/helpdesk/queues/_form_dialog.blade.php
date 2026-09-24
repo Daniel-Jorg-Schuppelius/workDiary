@@ -8,7 +8,7 @@
 --}}
 {{-- Variablen: $queue, $isEdit, $teams, $slaContracts --}}
 @php
-    /** @var \App\Models\ServiceQueue $queue */
+    /** @var \App\Models\ServiceTicket\ServiceQueue $queue */
     /** @var bool $isEdit */
     $isEdit ??= $queue->exists;
     $action = $isEdit ? route('helpdesk.queues.update', $queue) : route('helpdesk.queues.store');
@@ -41,7 +41,7 @@
         <x-select-field name="default_sla_contract_id" :label="__('Standard-SLA')">
             <option value="">{{ __('— Kein SLA —') }}</option>
             @foreach ($slaContracts as $contract)
-                <option value="{{ $contract->sqid }}" @selected((string) old('default_sla_contract_id', \App\Support\Sqid::encode(\App\Models\SlaContract::class, $queue->default_sla_contract_id)) === $contract->sqid)>{{ $contract->label }}</option>
+                <option value="{{ $contract->sqid }}" @selected((string) old('default_sla_contract_id', \App\Support\Sqid::encode(\App\Models\ServiceTicket\SlaContract::class, $queue->default_sla_contract_id)) === $contract->sqid)>{{ $contract->label }}</option>
             @endforeach
         </x-select-field>
 

@@ -14,7 +14,8 @@ namespace App\Models\Finance;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
-use App\Models\{IncomingEInvoice, Supplier};
+use App\Models\Invoicing\IncomingEInvoice;
+use App\Models\Supplier\Supplier;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

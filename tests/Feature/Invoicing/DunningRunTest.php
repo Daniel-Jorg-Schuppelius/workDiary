@@ -14,7 +14,7 @@ use App\Mail\DunningMail;
 use App\Models\Audit\AuditLog;
 use App\Models\Customer\Customer;
 use App\Models\Document\DocumentDispatch;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Services\Invoicing\DunningService;
 use Carbon\CarbonImmutable;

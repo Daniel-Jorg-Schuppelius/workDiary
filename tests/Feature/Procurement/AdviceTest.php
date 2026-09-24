@@ -11,7 +11,9 @@
 namespace Tests\Feature\Procurement;
 
 use App\Enums\Procurement\{AdviceStatus, PurchaseOrderStatus};
-use App\Models\{Article, ArticleVariant, Supplier, Warehouse};
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Inventory\Warehouse;
+use App\Models\Supplier\Supplier;
 use App\Services\Procurement\{AdviceService, PurchaseOrderService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;

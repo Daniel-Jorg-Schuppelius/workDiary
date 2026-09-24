@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Gaeb;
 
-use App\Models\{BillOfQuantity, BoqItemPriceSnapshot, GaebImport};
+use App\Models\Gaeb\{BillOfQuantity, BoqItemPriceSnapshot, GaebImport};
 use CommonToolkit\Enums\RoundingMode;
 use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Enums\GaebPhase;

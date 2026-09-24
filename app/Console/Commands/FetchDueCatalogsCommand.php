@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\{SupplierCatalogImport, SupplierCatalogSource};
+use App\Models\Supplier\{SupplierCatalogImport, SupplierCatalogSource};
 use App\Services\Procurement\{CatalogFetchService, CatalogImportDispatcher};
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;

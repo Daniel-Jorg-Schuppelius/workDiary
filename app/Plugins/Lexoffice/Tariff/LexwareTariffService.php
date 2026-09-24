@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Lexoffice\Tariff;
 
 use App\Enums\Lexoffice\{LexofficeHandoverStatus, LexwareFeature, LexwarePlan};
-use App\Models\InvoiceSchedule;
+use App\Models\Invoicing\InvoiceSchedule;
 use App\Models\Platform\{Organization, User};
 use App\Models\Plugins\Lexoffice\LexofficeInvoiceHandover;
 use App\Settings\SettingScope;

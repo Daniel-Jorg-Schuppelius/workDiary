@@ -16,7 +16,7 @@ use App\Enums\Sales\{CommissionScope, LeadSource};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Sales\SaveCommissionRuleRequest;
-use App\Models\Article;
+use App\Models\Article\Article;
 use App\Models\Platform\User;
 use App\Models\Sales\CommissionRule;
 use Illuminate\Http\RedirectResponse;

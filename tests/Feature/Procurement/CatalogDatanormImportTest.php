@@ -11,7 +11,7 @@
 namespace Tests\Feature\Procurement;
 
 use App\Models\Platform\User;
-use App\Models\{Supplier, SupplierCatalogItem, SupplierCatalogSource};
+use App\Models\Supplier\{Supplier, SupplierCatalogItem, SupplierCatalogSource};
 use App\Services\Procurement\DatanormImportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -142,7 +142,7 @@ final class CatalogDatanormImportTest extends TestCase {
         $item->refresh();
         $this->assertSame('80.0000', $item->purchase_price?->getAmount());
         $this->assertSame('100.0000', $item->list_price?->getAmount());
-        $this->assertSame(1, \App\Models\SupplierCatalogDiscountGroup::query()->where('supplier_catalog_source_id', $this->source->id)->count());
+        $this->assertSame(1, \App\Models\Supplier\SupplierCatalogDiscountGroup::query()->where('supplier_catalog_source_id', $this->source->id)->count());
 
         // Folgekatalog mit bekannter Gruppe rechnet direkt beim Import.
         app(DatanormImportService::class)->import($this->source, implode("\r\n", [
@@ -162,7 +162,7 @@ final class CatalogDatanormImportTest extends TestCase {
             'E;4;;',
         ]) . "\r\n");
 
-        $groups = \App\Models\SupplierCatalogProductGroup::query()->where('supplier_catalog_source_id', $this->source->id)->get();
+        $groups = \App\Models\Supplier\SupplierCatalogProductGroup::query()->where('supplier_catalog_source_id', $this->source->id)->get();
         $this->assertCount(2, $groups);
         $this->assertSame('Heizkoerper', $groups->firstWhere('group', '')?->label);
         $this->assertSame('Flachheizkoerper', $groups->firstWhere('group', 'Flat')?->label);
@@ -307,7 +307,7 @@ final class CatalogDatanormImportTest extends TestCase {
     public function test_unresolved_list_price_suppresses_margin_alert(): void {
         // Artikel mit VK 10 € — ein „EK" von 100 € (Listen-Obergrenze) wäre
         // sonst eine sichere Margen-Warnung.
-        $article = \App\Models\Article::factory()->create([
+        $article = \App\Models\Article\Article::factory()->create([
             'organization_id' => $this->organization->id,
             'number' => 'INT-1', 'name' => 'Verknüpfter Artikel',
             'status' => 'active', 'sellable' => true, 'default_sale_price' => '10',
@@ -327,7 +327,7 @@ final class CatalogDatanormImportTest extends TestCase {
             'P;400001;1;1;10000;U999;;;;;;;;',
             'E;3;;',
         ]) . "\r\n");
-        $this->assertSame(0, \App\Models\PricingChangeAlert::query()->count());
+        $this->assertSame(0, \App\Models\Article\PricingChangeAlert::query()->count());
 
         // Sobald die Rabattgruppe bekannt ist, wird regulär bewertet.
         app(DatanormImportService::class)->import($this->source, implode("\r\n", [
@@ -335,7 +335,7 @@ final class CatalogDatanormImportTest extends TestCase {
             'R;U999;1;1000;Testgruppe (10%);',
             'E;3;;',
         ]) . "\r\n");
-        $this->assertGreaterThan(0, \App\Models\PricingChangeAlert::query()->count());
+        $this->assertGreaterThan(0, \App\Models\Article\PricingChangeAlert::query()->count());
     }
 
     public function test_electrical_trade_metadata_is_persisted(): void {
@@ -380,21 +380,21 @@ final class CatalogDatanormImportTest extends TestCase {
         $this->assertSame('1.8950', $service->effectivePurchasePrice($item)?->getAmount());
 
         // DEL-Notiz 2,00 €/kg: (2,00 − 1,50) × 0,043 = 0,0215 €/m Zuschlag.
-        \App\Models\MetalQuotation::query()->create([
+        \App\Models\Article\MetalQuotation::query()->create([
             'organization_id' => $this->organization->id,
             'metal' => 'CU', 'price_per_kg' => '2', 'quoted_at' => now()->toDateString(),
         ]);
         $this->assertSame('1.9165', $service->effectivePurchasePrice($item)?->getAmount());
 
         // Verknüpfung schreibt den effektiven EK in die Bezugsquelle.
-        $article = \App\Models\Article::factory()->create([
+        $article = \App\Models\Article\Article::factory()->create([
             'organization_id' => $this->organization->id,
             'number' => 'INT-NYM', 'name' => 'Kabel intern', 'status' => 'active', 'sellable' => true,
         ]);
         app(\App\Services\Procurement\CatalogLinkService::class)->link($item, $article, null);
         $this->assertSame(
             '1.9165',
-            \App\Models\ArticleSupply::query()->where('article_id', $article->id)->firstOrFail()->purchase_price?->getAmount()
+            \App\Models\Article\ArticleSupply::query()->where('article_id', $article->id)->firstOrFail()->purchase_price?->getAmount()
         );
     }
 
@@ -409,7 +409,7 @@ final class CatalogDatanormImportTest extends TestCase {
         $summary = app(\App\Services\Procurement\CatalogArticleAdopter::class)->adoptSource($this->source);
         $this->assertSame(1, $summary['articles']);
 
-        $article = \App\Models\Article::query()->where('name', 'Kabel NYM-J 5x2,5')->firstOrFail();
+        $article = \App\Models\Article\Article::query()->where('name', 'Kabel NYM-J 5x2,5')->firstOrFail();
         // Metadaten sind keine Varianten-Optionen …
         $this->assertSame(0, $article->variants()->count());
         $this->assertSame(0, $article->optionDefinitions()->count());
@@ -445,7 +445,7 @@ final class CatalogDatanormImportTest extends TestCase {
 
         // Übernahme: MwSt-Kennzeichen 3 (ermäßigt) landet am Artikel.
         app(\App\Services\Procurement\CatalogArticleAdopter::class)->adoptSource($this->source);
-        $article = \App\Models\Article::query()->where('name', 'Kabel NYM-J 3x1,5')->firstOrFail();
+        $article = \App\Models\Article\Article::query()->where('name', 'Kabel NYM-J 3x1,5')->firstOrFail();
         $this->assertSame('ermäßigt', $article->tax_class);
     }
 

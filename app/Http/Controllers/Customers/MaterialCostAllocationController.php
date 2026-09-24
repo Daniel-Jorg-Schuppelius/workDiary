@@ -14,9 +14,12 @@ namespace App\Http\Controllers\Customers;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\{IssueStockForCustomerRequest, SaveMaterialCostAllocationRequest};
-use App\Models\{ArticleVariant, MaterialCostAllocation, Warehouse};
+use App\Http\Requests\Inventory\IssueStockForCustomerRequest;
+use App\Http\Requests\Material\SaveMaterialCostAllocationRequest;
+use App\Models\Article\ArticleVariant;
 use App\Models\Customer\Customer;
+use App\Models\Inventory\Warehouse;
+use App\Models\Material\MaterialCostAllocation;
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Services\Inventory\CustomerStockAllocationService;
 use App\Services\Licensing\FeatureFlagResolver;

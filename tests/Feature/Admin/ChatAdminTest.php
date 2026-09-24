@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\ChatWebhook;
+use App\Models\Chat\ChatWebhook;
 use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

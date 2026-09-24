@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Invoicing\EInvoice;
 
 use App\Enums\Invoicing\XRechnungSyntax;
-use App\Models\Invoice;
+use App\Models\Invoicing\Invoice;
 use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Validators\{CiiSchemaValidator, KositValidator, UblSchemaValidator};
 

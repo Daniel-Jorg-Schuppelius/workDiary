@@ -9,8 +9,8 @@
 namespace Tests\Feature\Attendance;
 
 use App\Enums\Notification\NotificationEvent;
-use App\Models\Attendance;
 use App\Models\Platform\User;
+use App\Models\Time\Attendance;
 use App\Notifications\GenericEventNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

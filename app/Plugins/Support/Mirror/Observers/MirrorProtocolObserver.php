@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Support\Mirror\Observers;
 
 use App\Enums\Protocol\ProtocolStatus;
-use App\Models\Protocol;
+use App\Models\Protocol\Protocol;
 use App\Plugins\Support\Mirror\{MirrorOutboxDispatcher, MirrorTargetRegistry};
 use App\Services\Integration\IntegrationOutboxService;
 

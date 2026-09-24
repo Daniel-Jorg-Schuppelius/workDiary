@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Article;
 
-use App\Models\{Article, ArticleOptionValue, ArticleVariant};
+use App\Models\Article\{Article, ArticleOptionValue, ArticleVariant};
 use Illuminate\Support\Collection;
 use RuntimeException;
 

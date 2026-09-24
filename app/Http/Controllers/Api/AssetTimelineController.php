@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Asset;
+use App\Models\Asset\Asset;
 use App\Services\Asset\AssetTimelineService;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Gate;

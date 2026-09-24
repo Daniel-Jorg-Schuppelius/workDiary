@@ -11,7 +11,8 @@
 namespace App\Observers;
 
 use App\Enums\Diary\Status as DiaryStatus;
-use App\Models\{DiaryEntry, Invoice};
+use App\Models\Diary\DiaryEntry;
+use App\Models\Invoicing\Invoice;
 use App\Models\Project\Project;
 use Illuminate\Database\Eloquent\Builder;
 

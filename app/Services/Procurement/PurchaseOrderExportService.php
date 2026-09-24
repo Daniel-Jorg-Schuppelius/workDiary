@@ -10,7 +10,8 @@
 
 namespace App\Services\Procurement;
 
-use App\Models\{PurchaseOrder, PurchaseOrderLine, Supplier};
+use App\Models\Procurement\{PurchaseOrder, PurchaseOrderLine};
+use App\Models\Supplier\Supplier;
 use App\Services\Gaeb\GaebOrderExportService;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;

@@ -10,7 +10,7 @@
 @section('title', __('inventory.count_ui.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('inventory.count_ui.title'))
 
-@php /** @var \App\Models\StockCount $count */ @endphp
+@php /** @var \App\Models\Inventory\StockCount $count */ @endphp
 
 @section('content')
 <x-page-shell gap="4">

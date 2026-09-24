@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Compliance;
 
+use App\Models\Fleet\Vehicle;
 use App\Models\Platform\{Organization, User};
-use App\Models\{TravelLog, Vehicle};
+use App\Models\Travel\TravelLog;
 use App\Support\Query\DateRange;
 use App\Support\Tz;
 use Carbon\{CarbonImmutable, CarbonInterface};

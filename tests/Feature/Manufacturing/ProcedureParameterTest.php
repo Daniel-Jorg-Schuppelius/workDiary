@@ -11,7 +11,9 @@
 namespace Tests\Feature\Manufacturing;
 
 use App\Enums\Manufacturing\ManufacturingOrderStatus;
-use App\Models\{Article, ManufacturingOrder, ProcedureParameterDefinition, ProcedureTemplateVersion};
+use App\Models\Article\Article;
+use App\Models\Manufacturing\ManufacturingOrder;
+use App\Models\Procedure\{ProcedureParameterDefinition, ProcedureTemplateVersion};
 use App\Services\Manufacturing\ManufacturingOrderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;

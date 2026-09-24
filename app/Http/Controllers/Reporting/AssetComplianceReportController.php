@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\Asset\AssetBlockReason;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Models\AssetBlock;
+use App\Models\Asset\AssetBlock;
 use App\Models\AssetCompliance\{AssetComplianceAssignment, AssetComplianceProfile, AssetComplianceReportSnapshot, AssetInspectionEvent};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};

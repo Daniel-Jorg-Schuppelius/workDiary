@@ -11,16 +11,14 @@
 namespace App\Http\Requests\Project;
 
 use App\Enums\Project\ProjectStatus;
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\Customer\Customer\Customer;
-use App\Models\Customer\Customer\ForeignCustomer;
-use App\Models\Project\Project\Project;
-use App\Models\Platform\Team;
-use App\Models\Platform\User;
+use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Platform\{Team, User};
+use App\Models\Project\Project;
 use Closure;
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 class SaveProjectRequest extends BaseFormRequest {
     use DecodesSqidInputs;

@@ -11,7 +11,7 @@
 namespace Tests\Feature\Procedure;
 
 use App\Enums\Procedure\{ProcedureStepRunStatus, ProcedureStepType};
-use App\Models\{ProcedureRun, ProcedureStepDef, ProcedureStepRun, ProcedureTemplateVersion};
+use App\Models\Procedure\{ProcedureRun, ProcedureStepDef, ProcedureStepRun, ProcedureTemplateVersion};
 use App\Services\Procedure\SpcService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

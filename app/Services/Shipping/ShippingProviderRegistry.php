@@ -16,7 +16,7 @@ use App\Plugins\Contracts\ShippingProvider;
  * Laufzeit-Registry der Versand-Provider (Feature 059, MVP-128). Jedes
  * Carrier-Plugin registriert seinen {@see ShippingProvider} im boot() gegen den
  * Carrier-Schlüssel (z. B. `dhl`); der {@see ShipmentService} löst darüber den
- * passenden Adapter zur {@see \App\Models\CarrierConnection} auf. Als Singleton
+ * passenden Adapter zur {@see \App\Models\Shipping\CarrierConnection} auf. Als Singleton
  * gebunden, damit die Registrierungen prozessweit sichtbar sind.
  */
 class ShippingProviderRegistry {

@@ -28,7 +28,7 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Genehmigte Monate als Lohnabrechnungs-Export bereitstellen.')">
     <x-slot:actions>
-        @can('create', App\Models\TimeExport::class)
+        @can('create', App\Models\Time\TimeExport::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         :href="route('exports.create')"
                         show-label>{{ __('Export erstellen') }}</x-icon-btn>
