@@ -19,7 +19,7 @@ use App\Models\Customer\Customer;
 use App\Models\Inventory\{StockDelivery, StockSerial, Warehouse};
 use App\Models\Manufacturing\ManufacturingOrder;
 use App\Models\Platform\Organization;
-use App\Services\Finance\BillingModeResolver;
+use App\Services\Billing\BillingModeResolver;
 use App\Services\Inventory\{ExternalStockMirror, InventoryLedger, InventoryValuationManager, SerialService};
 use App\Support\DecimalQty;
 use Illuminate\Support\Carbon;

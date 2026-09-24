@@ -11,13 +11,13 @@
 namespace App\Models\Schedule;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, Searchable};
+use App\Models\Hr\Qualification;
 use App\Models\Platform\User;
 use Carbon\Carbon;
 use Database\Factories\Schedule\ShiftTypeFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany};
-use App\Models\Hr\Qualification;
 
 /**
  * @property int $id

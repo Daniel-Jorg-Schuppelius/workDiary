@@ -19,6 +19,7 @@ use App\Models\Club\{ClubMember, ClubResource, ClubResourceBooking, ClubResource
 use App\Models\Facility\Room;
 use App\Models\Platform\{Organization, User};
 use App\Services\Asset\AssetUsageGuard;
+use App\Services\Event\Contracts\RoomBlockingSource;
 use App\Services\Event\RoomBookingService;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -32,7 +33,7 @@ use Illuminate\Validation\ValidationException;
  * in einer Transaktion und prüft Kapazität, Raumkalender (event_room),
  * Sperrzeiten, Asset-Sperren und Einweisungsfreigaben, bevor sie entsteht.
  */
-class ClubResourceService {
+class ClubResourceService implements RoomBlockingSource {
     public const ASSET_CONTEXT = 'club-booking';
 
     public function __construct(

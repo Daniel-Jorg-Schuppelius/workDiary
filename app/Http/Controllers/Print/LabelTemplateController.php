@@ -12,11 +12,11 @@ namespace App\Http\Controllers\Print;
 
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Models\Print\LabelTemplate;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Etiketten-Layout-Designer (Feature 047/048, E5): benannte Etikettenvorlagen

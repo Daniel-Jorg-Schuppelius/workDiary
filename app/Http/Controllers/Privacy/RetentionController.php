@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Privacy;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Models\Privacy\{ComplianceFinding, RetentionProposal};
-use App\Services\Privacy\Retention\{RetentionRegistry, RetentionScanService};
+use App\Services\Retention\{RetentionRegistry, RetentionScanService};
 use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};

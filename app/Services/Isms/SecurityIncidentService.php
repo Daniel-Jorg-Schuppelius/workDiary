@@ -14,8 +14,7 @@ use App\Enums\Isms\{IncidentSeverity, SecurityIncidentStatus};
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Isms\{IsmsControl, IsmsRisk, IsmsSecurityIncident};
 use App\Models\Platform\User;
-use App\Services\Concerns\AssignsSequentialNo;
-use App\Services\Isms\Concerns\AssertsIsmsTransition;
+use App\Services\Concerns\{AssertsValidatedTransition, AssignsSequentialNo};
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -44,7 +43,7 @@ use Illuminate\Validation\ValidationException;
  */
 class SecurityIncidentService {
     use \App\Services\Isms\Concerns\SyncsScopedRelations;
-    use AssertsIsmsTransition;
+    use AssertsValidatedTransition;
 
     use AssignsSequentialNo;
 
@@ -160,7 +159,7 @@ class SecurityIncidentService {
         }
 
         // Gemeinsamer ISMS-Guard (Vollaudit 2026-07, M44).
-        $this->assertIsmsTransition($incident->status, $target);
+        $this->assertValidatedTransition($incident->status, $target);
 
         if ($target === SecurityIncidentStatus::Closed) {
             if (trim((string) $incident->root_cause) === '' || trim((string) $incident->lessons_learned) === '') {

@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Inventory;
 
 use App\Enums\Inventory\ScanAction;
 use App\Enums\User\Permission as P;
+use App\Http\Controllers\Controller;
 use App\Models\Inventory\Warehouse;
 use App\Services\Inventory\{BarcodeResolver, ScanActionService};
 use App\Support\{ErrorText, Sqid};
@@ -19,7 +20,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * Mobile Scan-/Buchungs-UI (Feature 048, E5): einen Code scannen, auflösen und

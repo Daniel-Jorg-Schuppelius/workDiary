@@ -99,7 +99,7 @@ class RentalCaseService {
      * und legt harte Belegungsfenster inklusive Profil-Puffern an.
      */
     public function reserve(RentalCase $case, User $actor): RentalCase {
-        $this->assertTransition($case, RentalCaseStatus::Reserved);
+        $this->assertStatusTransition($case->status, RentalCaseStatus::Reserved);
 
         return DB::transaction(function () use ($case, $actor): RentalCase {
             foreach ($case->caseAssets()->with('asset.rentalProfile')->get() as $caseAsset) {
@@ -328,7 +328,7 @@ class RentalCaseService {
     }
 
     public function cancel(RentalCase $case, User $actor, ?string $reason = null): RentalCase {
-        $this->assertTransition($case, RentalCaseStatus::Cancelled);
+        $this->assertStatusTransition($case->status, RentalCaseStatus::Cancelled);
 
         return DB::transaction(function () use ($case, $actor, $reason): RentalCase {
             $case->reservations()->active()->get()->each(
@@ -343,7 +343,7 @@ class RentalCaseService {
     }
 
     public function close(RentalCase $case, User $actor): RentalCase {
-        $this->assertTransition($case, RentalCaseStatus::Closed);
+        $this->assertStatusTransition($case->status, RentalCaseStatus::Closed);
 
         $case->forceFill([
             'status' => RentalCaseStatus::Closed->value,
@@ -449,7 +449,7 @@ class RentalCaseService {
             return;
         }
 
-        $claim = app(\App\Services\Claims\ClaimCaseService::class)->open(
+        $claim = app(\App\Services\Claims\Contracts\ClaimIntake::class)->open(
             Organization::query()->findOrFail($case->organization_id),
             $actor,
             [
@@ -518,7 +518,4 @@ class RentalCaseService {
         }
     }
 
-    private function assertTransition(RentalCase $case, RentalCaseStatus $target): void {
-        $this->assertStatusTransition($case->status, $target);
-    }
 }

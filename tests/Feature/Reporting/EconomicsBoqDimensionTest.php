@@ -23,6 +23,7 @@ use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Time\{TimeEntry, Timesheet};
 use App\Models\Travel\Expense;
+use App\Services\Gaeb\Reporting\BoqEconomicsDimension;
 use App\Services\Reporting\EconomicsReportBuilder;
 use App\Support\{MorphMap, Sqid};
 use Carbon\CarbonImmutable;
@@ -43,6 +44,8 @@ class EconomicsBoqDimensionTest extends TestCase {
 
     private EconomicsReportBuilder $builder;
 
+    private BoqEconomicsDimension $dimension;
+
     private User $user;
 
     private Customer $customer;
@@ -57,6 +60,7 @@ class EconomicsBoqDimensionTest extends TestCase {
         parent::setUp();
         $this->setUpOrganization();
         $this->builder = app(EconomicsReportBuilder::class);
+        $this->dimension = app(BoqEconomicsDimension::class);
 
         $this->from = CarbonImmutable::parse('2026-06-01')->startOfDay();
         $this->to = CarbonImmutable::parse('2026-06-30')->endOfDay();
@@ -244,7 +248,7 @@ class EconomicsBoqDimensionTest extends TestCase {
     public function test_by_boq_position_attributes_revenue_and_costs_per_reference_no(): void {
         $fixture = $this->seedBoqFixture();
 
-        $result = $this->builder->byBoqPosition($this->from, $this->to, (int) $this->project->id);
+        $result = $this->dimension->build($this->from, $this->to, (int) $this->project->id);
 
         $this->assertTrue($result['hasBoq']);
         $positions = collect($result['positions']);
@@ -299,7 +303,7 @@ class EconomicsBoqDimensionTest extends TestCase {
             'position' => 1,
         ]);
 
-        $result = $this->builder->byBoqPosition($this->from, $this->to, (int) $this->project->id);
+        $result = $this->dimension->build($this->from, $this->to, (int) $this->project->id);
 
         $this->assertTrue($result['hasCalculation']);
         // Aufgemessen sind 60 m² → 600 €, nicht die vollen 1.000 €.
@@ -318,7 +322,7 @@ class EconomicsBoqDimensionTest extends TestCase {
     public function test_without_calculation_data_the_column_stays_out(): void {
         $this->seedBoqFixture();
 
-        $result = $this->builder->byBoqPosition($this->from, $this->to, (int) $this->project->id);
+        $result = $this->dimension->build($this->from, $this->to, (int) $this->project->id);
 
         $this->assertFalse($result['hasCalculation']);
         $this->assertFalse($result['calculationImported']);
@@ -328,7 +332,7 @@ class EconomicsBoqDimensionTest extends TestCase {
     public function test_unassigned_row_carries_unlinked_sources_and_reconciles_with_project_costs(): void {
         $this->seedBoqFixture();
 
-        $result = $this->builder->byBoqPosition($this->from, $this->to, (int) $this->project->id);
+        $result = $this->dimension->build($this->from, $this->to, (int) $this->project->id);
 
         $u = $result['unassigned'];
         $this->assertSame(30, $u['timeMinutes']);
@@ -347,7 +351,7 @@ class EconomicsBoqDimensionTest extends TestCase {
     }
 
     public function test_has_boq_false_for_project_without_bill_of_quantities(): void {
-        $result = $this->builder->byBoqPosition($this->from, $this->to, (int) $this->project->id);
+        $result = $this->dimension->build($this->from, $this->to, (int) $this->project->id);
 
         $this->assertFalse($result['hasBoq']);
         $this->assertSame([], $result['positions']);

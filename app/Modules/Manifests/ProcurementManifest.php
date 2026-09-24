@@ -82,4 +82,20 @@ final class ProcurementManifest extends Manifest {
             'inventory',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Document\Contracts\MailableDocumentProvider::class => [
+                \App\Services\Procurement\Mail\PurchaseOrderMailDocument::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\Procurement\Contracts\PurchaseOrderGaebExporter::class => \App\Services\Procurement\Contracts\NullPurchaseOrderGaebExporter::class,
+        ];
+    }
 }

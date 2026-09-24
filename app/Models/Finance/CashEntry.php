@@ -12,12 +12,11 @@ namespace App\Models\Finance;
 
 use App\Casts\{MoneyCast, PercentageCast};
 use App\Models\Concerns\{BelongsToOrganization, HasAttachments, HasSqid, HashChainable, HashChained};
+use App\Models\Invoicing\Invoice;
 use Carbon\Carbon;
 use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Finance\CashRegister;
-use App\Models\Invoicing\Invoice;
 
 /**
  * Kassenbuch-Eintrag (MVP-414): append-only mit revisionssicherer

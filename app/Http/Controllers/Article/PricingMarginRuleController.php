@@ -13,18 +13,17 @@ namespace App\Http\Controllers\Article;
 use App\Enums\Procurement\PriceRounding;
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Article\SavePricingMarginRuleRequest;
+use App\Models\Article\{PriceChangeRequest, PricingMarginRule};
 use App\Models\Platform\User;
-use App\Models\Article\PriceChangeRequest;
-use App\Models\Article\PricingMarginRule;
 use App\Models\Supplier\Supplier;
-use App\Services\Procurement\PriceApprovalService;
+use App\Services\Article\PriceApprovalService;
 use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * Margenregeln für Verkaufspreisvorschläge (Feature 050, MVP-095). Modul-Gating

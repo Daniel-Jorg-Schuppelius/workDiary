@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers\Knowledge;
+namespace App\Http\Controllers\Ideas;
 
 use App\Enums\Ideas\IdeaNodeColor;
 use App\Exceptions\{IdeaMapConflictException, IdeaNodeConflictException};

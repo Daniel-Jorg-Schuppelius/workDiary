@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers\Print;
+namespace App\Http\Controllers\Inventory;
 
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Controller;

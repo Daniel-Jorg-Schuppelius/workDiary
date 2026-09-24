@@ -92,7 +92,9 @@
     </x-form-group>
 
     <x-form-group :legend="__('Adresse')" icon="home" tone="ghost" cols="2">
-        <x-textarea-field span="2" name="address" :label="__('Adresse (Freitext, optional)')" rows="2" maxlength="1000">{{ old('address', $foreignCustomer?->address) }}</x-textarea-field>
+        <x-textarea-field span="2" name="address" :label="__('Adresse (Freitext, optional)')" rows="2" maxlength="1000"
+                          :hint="__('Wird nur genutzt, wenn die strukturierten Felder darunter leer sind.')">{{ old('address', $foreignCustomer?->address) }}</x-textarea-field>
+        <x-contact-address-fields :subject="$foreignCustomer" />
         <x-input-field name="country"
                        :label="__('Land (ISO 2)')"
                        type="text"

@@ -237,6 +237,64 @@ final class ModuleRegistry {
         return $maps;
     }
 
+    /**
+     * Implementierungen eines Erweiterungspunkts über alle Manifeste (MVP-863),
+     * Reihenfolge: Modulcode, dann Deklarationsreihenfolge im Manifest.
+     *
+     * @template T of object
+     * @param  class-string<T>  $interface
+     * @return list<class-string<T>>
+     */
+    public function extensions(string $interface): array {
+        $out = [];
+        foreach ($this->all() as $manifest) {
+            foreach ($manifest->extensions()[$interface] ?? [] as $class) {
+                $out[] = $class;
+            }
+        }
+
+        /** @var list<class-string<T>> $out */
+        return $out;
+    }
+
+    /** @return array<class-string, class-string> Contract → Null-Implementierung (definierende Module) */
+    public function contracts(): array {
+        $out = [];
+        foreach ($this->all() as $manifest) {
+            foreach ($manifest->contracts() as $contract => $null) {
+                $out[$contract] = $null;
+            }
+        }
+
+        return $out;
+    }
+
+    /** @return array<class-string, class-string> Contract → Implementierung (bindende Module) */
+    public function bindings(): array {
+        $out = [];
+        foreach ($this->all() as $manifest) {
+            foreach ($manifest->bindings() as $contract => $implementation) {
+                $out[$contract] = $implementation;
+            }
+        }
+
+        return $out;
+    }
+
+    /** @return array<class-string, list<class-string>> Event → Listener über alle Manifeste */
+    public function listeners(): array {
+        $out = [];
+        foreach ($this->all() as $manifest) {
+            foreach ($manifest->listeners() as $event => $listeners) {
+                foreach ($listeners as $listener) {
+                    $out[$event][] = $listener;
+                }
+            }
+        }
+
+        return $out;
+    }
+
     /** Schreibt die Manifestliste in die Cache-Datei. */
     public function cache(): void {
         $classes = array_map(static fn (Manifest $m): string => $m::class, array_values($this->discover()));

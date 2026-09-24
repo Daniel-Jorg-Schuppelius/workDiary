@@ -12,17 +12,16 @@ namespace App\Http\Controllers\Time;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Enums\Vacation\VacationStatus;
+use App\Http\Controllers\Controller;
+use App\Models\Absence\{SickLeave, Vacation};
 use App\Models\Platform\{Organization, User};
 use App\Models\Schedule\ScheduledShift;
-use App\Models\Absence\SickLeave;
-use App\Models\Absence\Vacation;
 use App\Services\Attendance\EmergencyAttendanceService;
 use App\Services\Calendar\HolidayService;
 use App\Services\Flextime\WorkScheduleResolver;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Aktuelle Personal-Belegung (MVP-524) — Alltagssicht für Empfang/Zentrale:

@@ -14,9 +14,10 @@ namespace App\Services\Survey;
 
 use App\Models\Customer\Customer;
 use App\Models\Survey\{Survey, SurveyAnswer, SurveyInvitation, SurveyResponse};
+use App\Services\Fields\{FieldSchema, FieldValidator};
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Support\{Carbon, Str};
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{DB, Validator};
 use RuntimeException;
 
 /**
@@ -35,6 +36,8 @@ use RuntimeException;
  *    Einladung ist `anonymous` eingefroren.
  */
 class SurveyService {
+    public function __construct(private readonly FieldValidator $fieldValidator) {}
+
     /**
      * @return array{invitation: SurveyInvitation, token: string}
      */
@@ -117,13 +120,14 @@ class SurveyService {
                 continue;
             }
 
-            $isText = in_array($question->type, ['text', 'choice'], true);
-            $int = $isText ? null : (int) $value;
-            if (($question->type === 'nps' && ($int < 0 || $int > 10))
-                || ($question->type === 'scale' && ($int < 1 || $int > 5))
-                || ($question->type === 'choice' && ! in_array((string) $value, $question->options ?? [], true))) {
+            // Form und Bereich je Fragetyp aus dem Feldschema-Baustein (MVP-867).
+            $definition = $question->fieldDefinition();
+            $schema = new FieldSchema([$definition]);
+            if (Validator::make([$definition->key => $value], $this->fieldValidator->rules($schema, ''))->fails()) {
                 throw new RuntimeException((string) __('Ungültige Antwort auf „:label".', ['label' => $question->label]));
             }
+            $isText = $question->questionType()->bounds() === null;
+            $int = $isText ? null : (int) $value;
 
             $rows[] = [
                 'survey_question_id' => $question->id,

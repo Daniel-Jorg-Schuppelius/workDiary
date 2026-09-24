@@ -10,12 +10,12 @@
 
 namespace App\Http\Controllers\Platform;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Platform\SaveUserFilterPresetRequest;
 use App\Models\Platform\UserFilterPreset;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class UserFilterPresetController extends Controller {
     public function index(Request $request): View {

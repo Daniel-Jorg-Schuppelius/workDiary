@@ -11,13 +11,14 @@
 namespace App\Http\Controllers\Project;
 
 use App\Enums\Project\ProjectStatus;
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{ResolvesGlobalDateRange, SavesCustomFields};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Project\SaveProjectRequest;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Team, User};
 use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Models\Project\{Project, RecurrenceRule, Task};
+use App\Support\SortableQuery;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Collection;
@@ -26,6 +27,8 @@ use Illuminate\View\View;
 
 class ProjectController extends Controller {
     use ResolvesGlobalDateRange;
+
+    use SavesCustomFields;
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Project::class);
@@ -108,6 +111,7 @@ class ProjectController extends Controller {
             'userCounts' => $userCounts,
             'statusFilter' => $statusFilter,
             'search' => $search,
+            'customColumns' => app(\App\Services\Fields\CustomFieldService::class)->listColumnsFor(new \Illuminate\Database\Eloquent\Collection($rows->pluck('project')->all()), Project::class, (int) Auth::user()?->organization_id),
         ]);
     }
 
@@ -166,8 +170,7 @@ class ProjectController extends Controller {
 
         // Zeiteinträge (Tab 3) — paginiert, serverseitig über ALLE Seiten
         // sortierbar; Query-String (u. a. ?tab=time) bleibt beim Blättern erhalten.
-        $timeSort = (string) request()->query('sort', 'date');
-        $timeDir = strtolower((string) request()->query('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+        [$timeSort, $timeDir] = SortableQuery::resolve(request(), ['date', 'user', 'task', 'minutes', 'description'], 'date');
 
         $timeEntriesQuery = $project->timeEntries()
             // timesheet:status für die Sperr-Anzeige der Massen-Neuzuordnung (MVP-508).
@@ -183,12 +186,7 @@ class ProjectController extends Controller {
                 \App\Models\Project\Task::query()->select('title')->whereColumn('tasks.id', 'time_entries.task_id'),
                 $timeDir,
             ),
-            'minutes', 'description', 'date' => $timeEntriesQuery->orderBy($timeSort, $timeDir),
-            default => (function () use (&$timeSort, &$timeDir, $timeEntriesQuery): void {
-                $timeSort = 'date';
-                $timeDir = 'desc';
-                $timeEntriesQuery->orderByDesc('date');
-            })(),
+            default => $timeEntriesQuery->orderBy($timeSort, $timeDir),
         };
         $timeEntries = $timeEntriesQuery
             ->orderByDesc('id')
@@ -287,12 +285,14 @@ class ProjectController extends Controller {
         Gate::authorize('create', Project::class);
 
         $data = $request->validated();
+        $custom = $this->validatedCustomFields($request, Project::class);
         $teamIds = $data['team_ids'] ?? [];
         $memberIds = $data['member_ids'] ?? [];
-        unset($data['team_ids'], $data['member_ids']);
+        unset($data['team_ids'], $data['member_ids'], $data['custom']);
 
         $project = Project::create($data + ['created_by' => Auth::id()]);
         $this->syncTeamsAndMembers($project, $teamIds, $memberIds);
+        $project->syncCustomFields($custom);
 
         return redirect()->route('projects.show', $project)
             ->with('success', __('Projekt angelegt.'));
@@ -315,12 +315,14 @@ class ProjectController extends Controller {
         Gate::authorize('update', $project);
 
         $data = $request->validated();
+        $custom = $this->validatedCustomFields($request, Project::class);
         $teamIds = $data['team_ids'] ?? null;
         $memberIds = $data['member_ids'] ?? null;
-        unset($data['team_ids'], $data['member_ids']);
+        unset($data['team_ids'], $data['member_ids'], $data['custom']);
 
         $project->update($data);
         $this->syncTeamsAndMembers($project, $teamIds, $memberIds);
+        $project->syncCustomFields($custom);
 
         // Abrechenbar-Schalter auf offene Zeiten durchziehen — billable ist am
         // Eintrag ein Snapshot und bliebe sonst auf dem alten Wert stehen.

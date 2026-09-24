@@ -11,15 +11,13 @@
 namespace App\Http\Controllers\Schedule;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Http\Requests\Schedule\StoreCoverageRequirementRequest;
-use App\Http\Requests\Schedule\UpdateCoverageRequirementRequest;
-use App\Models\Schedule\CoverageRequirement;
-use App\Models\Schedule\DutyPlan;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Schedule\{StoreCoverageRequirementRequest, UpdateCoverageRequirementRequest};
 use App\Models\Platform\User;
+use App\Models\Schedule\{CoverageRequirement, DutyPlan};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class CoverageRequirementController extends Controller {
     use ResolvesCurrentOrganization;

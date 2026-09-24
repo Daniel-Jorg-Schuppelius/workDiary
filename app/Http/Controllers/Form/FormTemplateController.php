@@ -11,19 +11,19 @@
 namespace App\Http\Controllers\Form;
 
 use App\Enums\Form\FormTemplateStatus;
+use App\Http\Controllers\Controller;
 use App\Models\Form\FormTemplate;
 use App\Models\Platform\User;
 use App\Services\Form\FormService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Vorlagen-Verwaltung (Feature 032): Listenseite + Modal-CRUD.
  * Felddefinition kommt als dynamische Zeilen fields[i][label|type|required|
  * options|help|unit] aus dem Dialog; Strukturvalidierung übernimmt
- * FormFieldDefinition im Service (ValidationException → 422/Errors).
+ * FieldSchema im Service (ValidationException → 422/Errors).
  */
 class FormTemplateController extends Controller {
     public function __construct(
@@ -135,7 +135,7 @@ class FormTemplateController extends Controller {
 
     /**
      * Basis-Validierung des Dialogs; die Tiefen-Validierung der
-     * Felddefinition (keys/types/options) macht FormFieldDefinition.
+     * Felddefinition (keys/types/options) macht FieldSchema::fromRows.
      *
      * @return array<string, mixed>
      */
@@ -156,8 +156,11 @@ class FormTemplateController extends Controller {
             'fields.*.options' => ['nullable', 'string', 'max:2000'],
             'fields.*.help' => ['nullable', 'string', 'max:500'],
             'fields.*.unit' => ['nullable', 'string', 'max:20'],
+            'fields.*.min' => ['nullable', 'numeric'],
+            'fields.*.max' => ['nullable', 'numeric'],
+            'fields.*.step' => ['nullable', 'numeric'],
             // Bedingungslogik (Rang 33): {field, op, value}; Auflösung/Zyklen-
-            // prüfung übernimmt FormFieldDefinition::normalize.
+            // prüfung übernimmt FieldSchema::fromRows.
             'fields.*.visible_if' => ['nullable', 'array'],
             'fields.*.visible_if.field' => ['nullable', 'string', 'max:160'],
             'fields.*.visible_if.op' => ['nullable', 'string', 'max:16'],

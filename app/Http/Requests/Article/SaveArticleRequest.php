@@ -11,10 +11,10 @@
 namespace App\Http\Requests\Article;
 
 use App\Enums\Article\{ArticleStatus, ArticleType};
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Article\Article;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 /**
  * Validierung für Anlage/Bearbeitung eines Artikels (Feature 048, MVP-060).

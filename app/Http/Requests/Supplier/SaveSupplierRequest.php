@@ -10,10 +10,10 @@
 
 namespace App\Http\Requests\Supplier;
 
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\{DecodesSqidInputs, PartyFormFields};
 use App\Models\Supplier\Supplier;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 class SaveSupplierRequest extends BaseFormRequest {
     use DecodesSqidInputs;

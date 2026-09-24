@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Invoicing;
 
 use App\Enums\Invoicing\{RetentionBase, RetentionKind};
-use App\Models\Invoicing\Invoice;
-use App\Models\Invoicing\InvoiceRetention;
+use App\Http\Controllers\Controller;
+use App\Models\Invoicing\{Invoice, InvoiceRetention};
 use App\Models\Platform\User;
 use App\Services\Invoicing\RetentionService;
 use App\Support\ErrorText;
@@ -23,7 +23,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * Sicherheitseinbehalte am Beleg (Feature 113, MVP-602).

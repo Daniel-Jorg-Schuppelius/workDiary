@@ -16,7 +16,8 @@ use App\Mail\DunningMail;
 use App\Models\Document\DocumentDispatch;
 use App\Models\Finance\CashEntry;
 use App\Models\Invoicing\Invoice;
-use App\Services\Finance\{BillingModeResolver, ReconciliationService};
+use App\Services\Billing\BillingModeResolver;
+use App\Services\Invoicing\Contracts\PaymentStatusProvider;
 use App\Support\Setting;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\ValueObjects\Money;
@@ -40,7 +41,7 @@ final class DunningService {
 
     public function __construct(
         private readonly RetentionService $retentions,
-        private readonly ReconciliationService $reconciliation,
+        private readonly PaymentStatusProvider $reconciliation,
         private readonly BillingModeResolver $billingMode,
     ) {}
 
@@ -80,7 +81,7 @@ final class DunningService {
         $paid = round($this->reconciliation->allocatedSum($invoice) + $cash, 2);
         $open = round($this->retentions->payableAmountOf($invoice) - $paid, 2);
 
-        return Money::ofFloat(max(0.0, $open), $invoice->currencyCode());
+        return Money::ofFloat(max(0.0, $open), $invoice->documentCurrency());
     }
 
     /**

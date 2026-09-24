@@ -10,11 +10,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Notification\DeadlineScans;
+namespace App\Services\Retention\DeadlineScans;
 
 use App\Enums\Invoicing\RetentionStatus;
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Invoicing\InvoiceRetention;
+use App\Services\Notification\DeadlineScans\{AbstractDeadlineScan, DeadlineScanOptions};
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Support\Carbon;
 

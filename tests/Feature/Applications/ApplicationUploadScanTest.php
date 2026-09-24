@@ -14,7 +14,7 @@ use App\Enums\User\UserRole;
 use App\Enums\Whistleblowing\AttachmentScanStatus;
 use App\Models\Applications\{JobApplication, JobApplicationUpload};
 use App\Services\Applications\ApplicationUploadScanService;
-use App\Services\Whistleblowing\Scanning\ScanDriver;
+use App\Services\Security\Scanning\ScanDriver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\PermissionRegistrar;

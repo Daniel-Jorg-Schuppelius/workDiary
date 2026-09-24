@@ -10,12 +10,11 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Customer;
+namespace App\Http\Controllers\Contract;
 
 use App\Enums\Contract\SignatureLinkPurpose;
 use App\Http\Controllers\Article\ArticleExportController;
 use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
-use App\Http\Controllers\Contract\ContractSigningController;
 use App\Http\Controllers\Controller;
 use App\Models\Contract\{ContractSignatureLink, ContractSigningRevision};
 use App\Models\Platform\Organization;

@@ -60,7 +60,8 @@ use App\Services\Classification\{ClassificationManager, ClassificationResolver};
 use App\Services\I18n\JsTranslationProvider;
 use App\Services\Install\{EnvWriter, InstallationManager};
 use App\Services\Reminders\ReminderService;
-use App\Services\Routing\{NominatimGeocoder, OsrmRouter};
+use App\Services\Routing\OsrmRouter;
+use App\Services\Support\Geo\NominatimGeocoder;
 use App\Services\Timesheet\Stopwatch;
 use App\Services\UI\{BrandingService, DateRangeContext};
 use App\Session\AnonymousStackSessionHandler;
@@ -114,9 +115,9 @@ class AppServiceProvider extends ServiceProvider {
         // aus config/retention.php; die Policies liefern die überfälligen
         // Datensätze für den Review-Scan (Vorschläge statt Direktlöschung).
         // Alle Policy-Registrierungen: RetentionRegistrations (B4).
-        $this->app->singleton(\App\Services\Privacy\Retention\RetentionRegistry::class, function (): \App\Services\Privacy\Retention\RetentionRegistry {
-            $registry = new \App\Services\Privacy\Retention\RetentionRegistry;
-            \App\Services\Privacy\Retention\RetentionRegistrations::register($registry);
+        $this->app->singleton(\App\Services\Retention\RetentionRegistry::class, function (): \App\Services\Retention\RetentionRegistry {
+            $registry = new \App\Services\Retention\RetentionRegistry;
+            \App\Services\Retention\RetentionRegistrations::register($registry);
 
             return $registry;
         });
@@ -127,10 +128,10 @@ class AppServiceProvider extends ServiceProvider {
         // Fake, ohne den Service anfassen zu muessen.
         $this->app->bind(\App\Services\Cti\Dial\CtiDialer::class, \App\Services\Cti\Dial\HttpCtiDialer::class);
 
-        $this->app->bind(\App\Services\Whistleblowing\Scanning\ScanDriver::class, function (): \App\Services\Whistleblowing\Scanning\ScanDriver {
+        $this->app->bind(\App\Services\Security\Scanning\ScanDriver::class, function (): \App\Services\Security\Scanning\ScanDriver {
             return match ((string) config('whistleblowing.scanner', 'none')) {
-                'clamav' => new \App\Services\Whistleblowing\Scanning\ClamAvScanDriver,
-                default => new \App\Services\Whistleblowing\Scanning\NullScanDriver,
+                'clamav' => new \App\Services\Security\Scanning\ClamAvScanDriver,
+                default => new \App\Services\Security\Scanning\NullScanDriver,
             };
         });
 
@@ -332,6 +333,21 @@ class AppServiceProvider extends ServiceProvider {
     }
 
     public function boot(): void {
+        // Modulgrenzen (MVP-863): Null-Bindungen der definierenden Module zuerst,
+        // dann die Bindungen der implementierenden Module. Erst hier, nicht in
+        // register()/booting(): die Manifest-Discovery protokolliert über das
+        // Toolkit, dessen Laravel-Brücke erst mit den Providern bootet — in der
+        // Testsuite hielte ein früherer Aufruf den Logger der vorigen App fest.
+        $registry = $this->app->make(\App\Modules\ModuleRegistry::class);
+        foreach ($registry->contracts() as $contract => $null) {
+            $this->app->bind($contract, $null);
+        }
+        foreach ($registry->bindings() as $contract => $implementation) {
+            $this->app->bind($contract, $implementation);
+        }
+        // Listener der Manifeste registriert die Event-Discovery über den Typ
+        // von handle(); `Manifest::listeners()` ist der geprüfte Vertrag dazu
+        // (ManifestChecker::checkWiring), keine zweite Registrierung.
         // Polymorphe Typwerte nur über die Map (MVP-860): Aliase zuerst, dann
         // die alten Klassennamen, damit Bestandszeilen weiter auflösen. Ohne
         // Datei (frischer Checkout vor `morph-map:generate`) bleibt der
@@ -485,7 +501,7 @@ class AppServiceProvider extends ServiceProvider {
         // lebt im bestehenden TimeEntryObserver, s. u.).
         \App\Models\Time\Attendance::observe(\App\Observers\AttendanceObserver::class);
         // Vereinstermine (MVP-843): Serienvorkommen erben Details des Masters.
-        \App\Models\Calendar\Event::observe(\App\Observers\ClubEventOccurrenceObserver::class);
+        \App\Models\Calendar\Event::observe(\App\Observers\EventOccurrenceObserver::class);
         \App\Models\Invoicing\InvoiceItem::observe(\App\Observers\InvoiceItemObserver::class);
 
         // Carbon-Anzeige-Macros (Logik in App\Support\CarbonFmt): orgTz/fdate/

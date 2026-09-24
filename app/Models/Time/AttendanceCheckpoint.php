@@ -12,12 +12,12 @@ namespace App\Models\Time;
 
 use App\Enums\Attendance\CheckpointKind;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Facility\Site;
+use App\Models\Fleet\Vehicle;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
-use App\Models\Facility\Site;
-use App\Models\Fleet\Vehicle;
 
 /**
  * Check-in-Punkt: QR-Code oder NFC-Aufkleber an Standort oder Fahrzeug (MVP-800).

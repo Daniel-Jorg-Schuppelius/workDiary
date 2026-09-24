@@ -8,9 +8,10 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers\Article;
+namespace App\Http\Controllers\Manufacturing;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Controller;
 use App\Models\Article\Article;
 use App\Models\Manufacturing\ManufacturingOrder;
 use App\Services\Manufacturing\ManufacturingCostingService;
@@ -20,7 +21,6 @@ use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Reiter „Nachkalkulation" der Artikel-Detailseite (Feature 047, MVP-715 —

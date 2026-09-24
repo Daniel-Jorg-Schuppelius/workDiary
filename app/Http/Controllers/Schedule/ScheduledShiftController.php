@@ -10,14 +10,13 @@
 
 namespace App\Http\Controllers\Schedule;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Schedule\UpdateScheduledShiftRequest;
 use App\Models\Platform\User;
-use App\Models\Schedule\ScheduledShift;
-use App\Models\Schedule\ShiftType;
+use App\Models\Schedule\{ScheduledShift, ShiftType};
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class ScheduledShiftController extends Controller {
     public function show(ScheduledShift $shift): View {

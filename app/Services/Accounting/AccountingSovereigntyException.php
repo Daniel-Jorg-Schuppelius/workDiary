@@ -19,7 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Für diesen Zeitraum darf lokal nicht festgeschrieben werden (Feature 125,
- * MVP-671). Das Gegenstück zur {@see \App\Services\Finance\BillingModeLockedException}
+ * MVP-671). Das Gegenstück zur {@see \App\Services\Billing\BillingModeLockedException}
  * auf der Buchungsachse.
  */
 class AccountingSovereigntyException extends \RuntimeException {

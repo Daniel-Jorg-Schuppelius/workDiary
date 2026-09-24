@@ -13,6 +13,7 @@ namespace App\Services\Isms;
 use App\Enums\Isms\{AdvisoryFormat, Exploitability, VulnerabilitySource, VulnerabilityStatus};
 use App\Models\Isms\{IsmsAdvisory, IsmsSoftwareProduct, IsmsVulnerability};
 use App\Models\Platform\{Organization, User};
+use App\Services\Release\SbomGenerator;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Facades\{DB, Storage};
 use Illuminate\Validation\ValidationException;

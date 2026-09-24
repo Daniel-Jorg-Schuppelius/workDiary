@@ -13,14 +13,13 @@ namespace App\Models\Time;
 use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
+use App\Models\Travel\TravelLog;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Database\Factories\Time\AttendanceFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
-use App\Models\Time\TimeEntry;
-use App\Models\Travel\TravelLog;
 
 /**
  * Authoritative record of an employee's on-the-clock interval.

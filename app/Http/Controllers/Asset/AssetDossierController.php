@@ -12,19 +12,19 @@ namespace App\Http\Controllers\Asset;
 
 use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Enums\User\Permission;
+use App\Http\Controllers\Controller;
 use App\Models\Asset\Asset;
+use App\Models\Attachments\Attachment;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Material\MaterialUsage;
+use App\Models\Platform\User;
 use App\Models\Protocol\Protocol;
 use App\Models\ServiceTicket\ServiceTicket;
-use App\Models\Attachments\Attachment;
-use App\Models\Platform\User;
 use App\Services\Asset\{AssetLifecycleService, AssetTimelineService};
-use App\Services\ServiceTicket\SlaTimer;
+use App\Services\Asset\Contracts\ServiceLevelResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Objektakte / Lebenszyklus-Dossier (Feature 027): Read-Only-Gesamtsicht eines
@@ -136,7 +136,7 @@ class AssetDossierController extends Controller {
             // sonst Kunden-/Default-Auflösung; Anzeige nur mit slaContract.view.
             'canViewSla' => $user->can(Permission::SlaContractView->value),
             'slaContract' => $asset->slaContract
-                ?? app(SlaTimer::class)->resolveContract((int) $asset->organization_id, $asset->customer_id),
+                ?? app(ServiceLevelResolver::class)->resolveContract((int) $asset->organization_id, $asset->customer_id),
             'slaTickets' => ServiceTicket::query()
                 ->where('asset_id', $asset->id)
                 ->whereNotIn('status', [ServiceTicketStatus::Closed->value, ServiceTicketStatus::Rejected->value])

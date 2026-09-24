@@ -14,7 +14,6 @@ use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Supplier\SupplierCatalogSource;
 
 /**
  * Import-Lauf-Protokoll einer Katalogquelle (Feature 050, MVP-091).

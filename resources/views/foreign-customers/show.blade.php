@@ -57,7 +57,10 @@
                 @if ($foreignCustomer->contact_name)<div><span class="text-muted">{{ __('Ansprechpartner') }}:</span> {{ $foreignCustomer->contact_name }}</div>@endif
                 @if ($foreignCustomer->email)<div><span class="text-muted">{{ __('E-Mail') }}:</span> {{ $foreignCustomer->email }}</div>@endif
                 @if ($foreignCustomer->phone)<div><span class="text-muted">{{ __('Telefon') }}:</span> {{ $foreignCustomer->phone }}</div>@endif
-                @if ($foreignCustomer->address)<div class="sm:col-span-2"><span class="text-muted">{{ __('Adresse') }}:</span> {{ $foreignCustomer->address }}</div>@endif
+                @php
+                    $postalAddress = implode(', ', $foreignCustomer->postalAddressLines()) ?: $foreignCustomer->address;
+                @endphp
+                @if ($postalAddress)<div class="sm:col-span-2"><span class="text-muted">{{ __('Adresse') }}:</span> {{ $postalAddress }}</div>@endif
                 @if ($foreignCustomer->comment)<div class="sm:col-span-2"><span class="text-muted">{{ __('Notiz') }}:</span> {{ $foreignCustomer->comment }}</div>@endif
             </div>
         </x-card>

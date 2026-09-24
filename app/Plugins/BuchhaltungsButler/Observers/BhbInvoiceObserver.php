@@ -15,7 +15,7 @@ namespace App\Plugins\BuchhaltungsButler\Observers;
 use App\Models\Invoicing\Invoice;
 use App\Plugins\BuchhaltungsButler\{BhbConfig, BuchhaltungsButlerPlugin};
 use App\Plugins\BuchhaltungsButler\Services\BhbOutboxDispatcher;
-use App\Services\Finance\BillingModeResolver;
+use App\Services\Billing\BillingModeResolver;
 use App\Services\Integration\IntegrationOutboxService;
 
 /**

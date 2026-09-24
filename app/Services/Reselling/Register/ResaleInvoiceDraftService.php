@@ -16,7 +16,7 @@ use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink};
-use App\Services\Finance\BillingModeResolver;
+use App\Services\Billing\BillingModeResolver;
 use App\Services\Reselling\Draft\{DraftResult, InvoiceDraftTarget, InvoiceDraftTargets, LocalInvoiceDraftTarget};
 use App\Support\Query\DateRange;
 use App\Support\Tz;

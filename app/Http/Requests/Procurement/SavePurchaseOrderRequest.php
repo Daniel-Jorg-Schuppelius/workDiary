@@ -10,8 +10,8 @@
 
 namespace App\Http\Requests\Procurement;
 
-use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Http\Requests\BaseFormRequest;
+use App\Http\Requests\Concerns\DecodesSqidInputs;
 
 /**
  * Validierung für die Anlage einer Bestellung (Feature 048, E4). Lieferant und

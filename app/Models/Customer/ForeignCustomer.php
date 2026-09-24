@@ -12,7 +12,8 @@ namespace App\Models\Customer;
 
 use App\Enums\Project\ProjectStatus;
 use App\Models\Asset\Asset;
-use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSqid, Searchable};
+use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, HasContactAndBankDetails, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSqid, Searchable};
+use App\Models\Contracts\ContactDetailsHolder;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
@@ -51,10 +52,11 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $archived_at
  * @property int|null $created_by
  */
-class ForeignCustomer extends Model {
+class ForeignCustomer extends Model implements ContactDetailsHolder {
     use Archivable;
     use Auditable;
     use BelongsToOrganization;
+    use HasContactAndBankDetails;
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;

@@ -23,7 +23,7 @@ final class DocumentManifest extends Manifest {
     }
 
     public function kind(): ModuleKind {
-        return ModuleKind::Feature;
+        return ModuleKind::Core;
     }
 
     public function label(): string {
@@ -77,6 +77,31 @@ final class DocumentManifest extends Manifest {
                 'documents.index',
             ],
             'groups' => [],
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Document\DeadlineScans\DocumentExpiryScan::class,
+            ],
+            \App\Services\Import\EntitySpec::class => [
+                \App\Services\Document\Import\DocumentSpec::class,
+            ],
+            \App\Services\Search\Indexing\Sources\SearchSource::class => [
+                \App\Services\Document\Search\DocumentSource::class,
+            ],
+            \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
+                \App\Services\Document\Retention\DocumentRetentionPolicies::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function bindings(): array {
+        return [
+            \App\Plugins\Support\Mirror\Contracts\DocumentVersionImporter::class => \App\Services\Document\DocumentService::class,
         ];
     }
 }

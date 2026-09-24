@@ -15,7 +15,6 @@ use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
-use App\Models\Procurement\PurchaseOrderAdviceLine;
 
 /**
  * Lieferavis (ASN) zu einer Bestellung (Feature 048, E4).

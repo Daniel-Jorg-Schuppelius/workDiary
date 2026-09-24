@@ -16,7 +16,6 @@ use App\Models\Project\Project;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
-use App\Services\Stammdaten\AbstractEntityMergeService;
 
 /**
  * Führt zwei lokale Projekt-Datensätze zusammen (Dubletten-Bereinigung, z. B.

@@ -33,22 +33,22 @@
     @endif
 
     @php
+        $schema = \App\Services\Fields\FieldSchema::fromArray($template->fields);
         // Bedingungslogik (Rang 33): clientseitige Sichtbarkeit spiegelt
-        // FormFieldDefinition::isVisible. Nur Felder MIT Bedingung werden
-        // reaktiv umschaltet; die Quelle-Werte trackt der Wrapper generisch.
-        $conditions = collect($template->fields ?? [])
-            ->filter(fn($f) => filled($f['visible_if']['field'] ?? null))
-            ->mapWithKeys(fn($f) => [(string) $f['key'] => $f['visible_if']])
+        // FieldSchema::isVisible. Nur Felder MIT Bedingung werden reaktiv
+        // umgeschaltet; die Quell-Werte trackt der Wrapper generisch.
+        $conditions = collect($schema->all())
+            ->filter(fn ($f) => $f->hasCondition())
+            ->mapWithKeys(fn ($f) => [$f->key => $f->visibleIf])
             ->all();
-        $initialVals = collect($template->fields ?? [])
+        $initialVals = collect($schema->all())
             ->mapWithKeys(function ($f) {
-                $k = (string) $f['key'];
-                $v = old("values.{$k}");
+                $v = old("values.{$f->key}");
                 if ($v === null) {
-                    $v = ($f['type'] ?? '') === \App\Enums\Form\FormFieldType::Checkbox->value ? '0' : '';
+                    $v = $f->type === \App\Enums\Fields\FieldType::Boolean ? '0' : '';
                 }
 
-                return [$k => (string) $v];
+                return [$f->key => is_array($v) ? implode(',', $v) : (string) $v];
             })->all();
     @endphp
     <x-form-group :legend="$template->name" icon="edit_note" tone="primary" cols="2">
@@ -57,100 +57,12 @@
              data-conditions="{{ json_encode($conditions) }}"
              data-initial="{{ json_encode($initialVals) }}"
              @input.capture="track($event)" @change.capture="track($event)">
-        @foreach ($template->fields ?? [] as $field)
-            @php
-                $key = (string) $field['key'];
-                $name = "values[{$key}]";
-                $errKey = "values.{$key}";
-                $required = (bool) ($field['required'] ?? false);
-                $old = old("values.{$key}");
-                $hasCondition = filled($field['visible_if']['field'] ?? null);
-            @endphp
-            @if ($hasCondition)
-                <div class="contents" x-show="visible('{{ $key }}')" x-cloak>
+        @foreach ($schema as $field)
+            @if ($field->hasCondition())
+                <div class="contents" x-show="visible('{{ $field->key }}')" x-cloak>
             @endif
-            @switch($field['type'])
-                @case(\App\Enums\Form\FormFieldType::Textarea->value)
-                    <label class="form-control sm:col-span-2">
-                        <span class="label-text">{{ $field['label'] }} @if($required)*@endif</span>
-                        <textarea name="{{ $name }}" rows="3" maxlength="10000" @required($required)
-                                  class="textarea textarea-bordered w-full @error($errKey) textarea-error @enderror">{{ $old }}</textarea>
-                    </label>
-                    @break
-                @case(\App\Enums\Form\FormFieldType::Number->value)
-                    <label class="form-control">
-                        <span class="label-text">
-                            {{ $field['label'] }}@if(filled($field['unit'] ?? null)) ({{ $field['unit'] }})@endif @if($required)*@endif
-                        </span>
-                        <input type="number" step="any" name="{{ $name }}" @required($required)
-                               class="input input-bordered w-full @error($errKey) input-error @enderror" value="{{ $old }}">
-                    </label>
-                    @break
-                @case(\App\Enums\Form\FormFieldType::Date->value)
-                    <label class="form-control">
-                        <span class="label-text">{{ $field['label'] }} @if($required)*@endif</span>
-                        <input type="date" name="{{ $name }}" @required($required)
-                               class="input input-bordered w-full @error($errKey) input-error @enderror" value="{{ $old }}">
-                    </label>
-                    @break
-                @case(\App\Enums\Form\FormFieldType::Select->value)
-                    <label class="form-control">
-                        <span class="label-text">{{ $field['label'] }} @if($required)*@endif</span>
-                        <select name="{{ $name }}" @required($required)
-                                class="select select-bordered w-full @error($errKey) select-error @enderror">
-                            <option value="">—</option>
-                            @foreach ((array) ($field['options'] ?? []) as $option)
-                                <option value="{{ $option }}" @selected($old === $option)>{{ $option }}</option>
-                            @endforeach
-                        </select>
-                    </label>
-                    @break
-                @case(\App\Enums\Form\FormFieldType::Checkbox->value)
-                    <label class="flex items-center gap-2">
-                        <input type="hidden" name="{{ $name }}" value="0">
-                        <input type="checkbox" name="{{ $name }}" value="1" class="checkbox"
-                               @checked((bool) $old) @required($required)>
-                        <span>{{ $field['label'] }} @if($required)*@endif</span>
-                    </label>
-                    @break
-                @case(\App\Enums\Form\FormFieldType::Photo->value)
-                @case(\App\Enums\Form\FormFieldType::File->value)
-                    {{-- Foto/Datei (Rang 32): eigener Upload-Kanal files[<key>]. --}}
-                    <label class="form-control sm:col-span-2">
-                        <span class="label-text">{{ $field['label'] }} @if($required)*@endif</span>
-                        <input type="file" name="files[{{ $key }}]" @required($required)
-                               accept="{{ $field['type'] === \App\Enums\Form\FormFieldType::Photo->value ? 'image/*' : '.jpg,.jpeg,.png,.gif,.webp,.pdf,.txt,.csv,.log,.zip,.docx,.xlsx' }}"
-                               class="file-input file-input-bordered file-input-sm w-full @error($errKey) file-input-error @enderror">
-                    </label>
-                    @break
-                @case(\App\Enums\Form\FormFieldType::Signature->value)
-                    {{-- Unterschrift (Rang 32): Signatur-Pad → Base64-PNG in signatures[<key>]. --}}
-                    @once @push('scripts') @vite('resources/js/signature.js') @endpush @endonce
-                    {{-- Logik in Alpine.data("signaturePad") (components.js) — CSP-Build-konform;
-                         $refs.sigInput aktiviert den Capture-Modus (Wert je Strich, kein Submit-Hook). --}}
-                    <div class="form-control sm:col-span-2" x-data="signaturePad">
-                        <span class="label-text">{{ $field['label'] }} @if($required)*@endif</span>
-                        <div class="rounded-box border border-base-300 bg-white p-2">
-                            <canvas x-ref="canvas" class="block h-32 w-full touch-none"></canvas>
-                        </div>
-                        <input type="hidden" name="signatures[{{ $key }}]" x-ref="sigInput">
-                        <button type="button" class="btn btn-ghost btn-xs mt-1 self-start" @click="clear()">{{ __('form.action.clear_signature') }}</button>
-                    </div>
-                    @break
-                @default
-                    <label class="form-control">
-                        <span class="label-text">{{ $field['label'] }} @if($required)*@endif</span>
-                        <input type="text" name="{{ $name }}" maxlength="500" @required($required)
-                               class="input input-bordered w-full @error($errKey) input-error @enderror" value="{{ $old }}">
-                    </label>
-            @endswitch
-            @if (filled($field['help'] ?? null))
-                <p class="-mt-1 text-xs text-muted sm:col-span-2">{{ $field['help'] }}</p>
-            @endif
-            @error($errKey)
-                <p class="-mt-1 text-error text-sm sm:col-span-2">{{ $message }}</p>
-            @enderror
-            @if ($hasCondition)
+            <x-field-input :field="$field" />
+            @if ($field->hasCondition())
                 </div>
             @endif
         @endforeach

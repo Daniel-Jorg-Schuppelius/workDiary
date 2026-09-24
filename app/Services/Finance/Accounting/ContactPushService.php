@@ -35,7 +35,7 @@ use Throwable;
  *    werden nie an einem Fremdkontakt mitgeschickt. Genau dieser Müll ist im
  *    Lexoffice-Betrieb aufgetreten und hat später Fehl-Matches erzeugt.
  */
-class ContactPushService {
+class ContactPushService implements \App\Services\Stammdaten\Contracts\ContactPushTarget {
     public const AUTHORITY_KEY = 'finance.master_data_authority';
 
     public const AUTHORITY_WORKDIARY = 'workdiary';

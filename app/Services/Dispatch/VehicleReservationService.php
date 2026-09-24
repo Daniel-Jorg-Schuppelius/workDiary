@@ -13,12 +13,13 @@ declare(strict_types=1);
 namespace App\Services\Dispatch;
 
 use App\Enums\Asset\AssetBlockReason;
-use App\Exceptions\{AssetNotUsableException, DriverLicenseCheckOverdueException, VehicleInspectionOverdueException, VehicleReservationConflictException};
+use App\Exceptions\{AssetNotUsableException, VehicleInspectionOverdueException, VehicleReservationConflictException};
 use App\Models\Diary\DiaryEntry;
 use App\Models\Fleet\{Vehicle, VehicleReservation};
+use App\Modules\ModuleRegistry;
 use App\Services\Asset\AssetUsageGuard;
-use App\Services\AssetCompliance\AssetComplianceService;
-use App\Services\Fleet\DriverLicenseCheckService;
+use App\Services\Asset\Contracts\AssetComplianceStatusProvider;
+use App\Services\Dispatch\Contracts\VehicleReservationGuard;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -39,7 +40,7 @@ final class VehicleReservationService {
      * gebunden.
      *
      * @throws VehicleReservationConflictException
-     * @throws DriverLicenseCheckOverdueException MVP-417: überfällige Führerscheinkontrolle
+     * @throws \App\Exceptions\DriverLicenseCheckOverdueException MVP-417: überfällige Führerscheinkontrolle (Fuhrpark-Guard, {@see VehicleReservationGuard})
      *                                            des Reservierenden sperrt (nutzerbezogener
      *                                            Guard — bewusst KEIN asset_block, der das
      *                                            Fahrzeug für alle sperren würde).
@@ -58,8 +59,8 @@ final class VehicleReservationService {
         $fromTs = Carbon::parse($from instanceof \DateTimeInterface ? $from->format('Y-m-d H:i:s') : $from);
         $toTs = Carbon::parse($to instanceof \DateTimeInterface ? $to->format('Y-m-d H:i:s') : $to);
 
-        if (app(DriverLicenseCheckService::class)->isOverdue($reservedByUserId)) {
-            throw new DriverLicenseCheckOverdueException();
+        foreach (app(ModuleRegistry::class)->extensions(VehicleReservationGuard::class) as $guardClass) {
+            app($guardClass)->assertReservable($vehicle, $reservedByUserId);
         }
 
         $this->assertInspectionsValid($vehicle);
@@ -97,7 +98,7 @@ final class VehicleReservationService {
             return;
         }
 
-        app(AssetComplianceService::class)->syncOverdueBlocks($asset);
+        app(AssetComplianceStatusProvider::class)->syncOverdueBlocks($asset);
 
         try {
             app(AssetUsageGuard::class)->ensureUsable($asset, self::USAGE_CONTEXT);

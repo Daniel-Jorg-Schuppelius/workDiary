@@ -11,15 +11,12 @@
 namespace App\Models\Procedure;
 
 use App\Enums\Procedure\ProcedureRunStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasJournal, HasSqid};
 use App\Models\Platform\User;
 use Database\Factories\Procedure\ProcedureRunFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
-use App\Models\Procedure\ProcedureRunEvent;
-use App\Models\Procedure\ProcedureStepRun;
-use App\Models\Procedure\ProcedureTemplateVersion;
 
 /**
  * Instanz einer {@see ProcedureTemplateVersion} fuer ein Subjekt
@@ -43,6 +40,10 @@ use App\Models\Procedure\ProcedureTemplateVersion;
 class ProcedureRun extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use HasJournal;
+
+    /** @var class-string<ProcedureRunEvent> Journal des Trägers (MVP-864) */
+    protected static string $journalClass = ProcedureRunEvent::class;
 
     /** @use HasFactory<ProcedureRunFactory> */
     use HasFactory;
@@ -94,8 +95,4 @@ class ProcedureRun extends Model {
         return $this->hasMany(ProcedureStepRun::class)->orderBy('id');
     }
 
-    /** @return HasMany<ProcedureRunEvent, $this> */
-    public function events(): HasMany {
-        return $this->hasMany(ProcedureRunEvent::class)->orderBy('id');
-    }
 }

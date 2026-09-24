@@ -12,16 +12,16 @@ namespace App\Http\Controllers\Safety;
 
 use App\Enums\Safety\{SafetyEventKind, SafetyEventSeverity, SafetyEventStatus};
 use App\Enums\User\Permission;
+use App\Http\Controllers\Controller;
 use App\Models\Diary\DiaryEntry;
-use App\Models\Safety\SafetyEvent;
 use App\Models\Platform\User;
+use App\Models\Safety\SafetyEvent;
 use App\Services\Safety\SafetyEventService;
 use App\Support\{Sqid, Tz};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Sicherheitsereignis-Register (Feature 013): Liste, Detail, Melde-/Bearbeiten-

@@ -44,6 +44,9 @@ return [
         'field_options' => 'Opzioni',
         'field_help' => 'Testo di aiuto',
         'field_unit' => 'Unità',
+        'field_range' => 'Intervallo di valori',
+        'field_min' => 'Min',
+        'field_max' => 'Max',
     ],
 
     'action' => [
@@ -108,17 +111,7 @@ return [
     'validation' => [
 
         'no_upload_field' => 'Nel modulo non esiste un campo file/foto con questa chiave.',
-        'invalid_row' => 'La definizione del campo nella riga :row non è valida.',
-        'label_required' => 'Il campo :row necessita di un’etichetta (max. 160 caratteri).',
-        'unknown_type' => 'Il campo :row ha un tipo sconosciuto.',
-        'invalid_key' => 'La chiave del campo «:key» non è valida (minuscole, cifre, trattini bassi).',
-        'duplicate_key' => 'La chiave del campo «:key» è usata più volte.',
-        'select_needs_options' => 'Il campo di selezione «:label» necessita di almeno un’opzione.',
-        'fields_required' => 'Il modello necessita di almeno un campo.',
-        'too_many_fields' => 'Al massimo :max campi per modello.',
         'template_not_active' => 'Questo modello non è attivo e non può essere compilato.',
-        'condition_unknown_field' => 'La condizione del campo «:label» fa riferimento a un campo sconosciuto «:field».',
-        'condition_cycle' => 'Le condizioni formano un ciclo (il campo «:field» dipende indirettamente da sé stesso).',
     ],
 
     'flash' => [

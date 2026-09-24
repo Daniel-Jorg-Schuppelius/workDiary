@@ -11,10 +11,10 @@
 namespace App\Http\Requests\Travel;
 
 use App\Enums\Travel\{TravelLogVehicle, TripKind};
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use Carbon\CarbonImmutable;
 use Illuminate\Validation\{Rule, Validator};
-use App\Http\Requests\BaseFormRequest;
 
 class SaveTravelLogRequest extends BaseFormRequest {
     use DecodesSqidInputs;

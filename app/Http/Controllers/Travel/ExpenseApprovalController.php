@@ -11,14 +11,14 @@
 namespace App\Http\Controllers\Travel;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\Travel\Expense;
+use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
+use App\Models\Travel\Expense;
 use App\Services\Expense\ExpenseService;
 use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class ExpenseApprovalController extends Controller {
     public function __construct(

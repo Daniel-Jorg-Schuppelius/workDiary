@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Survey;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Controller;
 use App\Mail\SurveyInvitationMail;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
@@ -23,7 +24,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Mail};
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * Umfragen und Kundenfeedback (Feature 090, MVP-660–662).

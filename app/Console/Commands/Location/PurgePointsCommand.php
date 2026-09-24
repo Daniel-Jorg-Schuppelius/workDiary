@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Location;
 
 use App\Models\Location\LocationPoint;
-use App\Services\Privacy\LegalHoldService;
+use App\Services\Retention\LegalHoldService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 

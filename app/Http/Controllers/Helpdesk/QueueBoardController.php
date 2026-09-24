@@ -13,10 +13,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Helpdesk;
 
 use App\Enums\ServiceTicket\{ServiceTicketKind, ServiceTicketPriority};
+use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Models\ServiceTicket\{ServiceQueue, ServiceTicket};
-use App\Services\ServiceTicket\{ServiceTicketService, TicketStatusMachine};
+use App\Services\ServiceTicket\ServiceTicketService;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -78,7 +79,7 @@ class QueueBoardController extends Controller {
         $board = $board->take(self::MAX_TICKETS);
 
         return view('helpdesk.board.index', [
-            'columns' => app(TicketStatusMachine::class)->statusOrder(),
+            'columns' => ServiceTicketStatus::boardOrder(),
             'byStatus' => $board->groupBy(fn (ServiceTicket $ticket): string => $ticket->status->value),
             'isLimited' => $isLimited,
             'maxTickets' => self::MAX_TICKETS,

@@ -59,18 +59,12 @@ class ProtocolSignatureTokenService {
             'created_by_user_id' => $actor->id,
         ]);
 
-        ProtocolEvent::query()->create([
-            'protocol_id' => $protocol->id,
-            'event' => ProtocolEventType::SignatureRequested,
-            'actor_user_id' => $actor->id,
-            'payload' => [
-                'token_id' => $model->id,
-                'role' => $role->value,
-                'expires_at' => $expiresAt->toIso8601String(),
-                'signer_email' => $model->signer_email,
-            ],
-            'created_at' => Carbon::now(),
-        ]);
+        ProtocolEvent::log(null, ProtocolEventType::SignatureRequested, [
+            'token_id' => $model->id,
+            'role' => $role->value,
+            'expires_at' => $expiresAt->toIso8601String(),
+            'signer_email' => $model->signer_email,
+        ], $actor->id, extra: ['protocol_id' => $protocol->id]);
 
         return ['token' => $token, 'model' => $model];
     }
@@ -89,17 +83,11 @@ class ProtocolSignatureTokenService {
         return DB::transaction(function () use ($token, $actor): ProtocolSignatureToken {
             $token->forceFill(['expires_at' => Carbon::now()])->save();
 
-            ProtocolEvent::query()->create([
-                'protocol_id' => $token->protocol_id,
-                'event' => ProtocolEventType::SignatureLinkRevoked,
-                'actor_user_id' => $actor->id,
-                'payload' => [
-                    'token_id' => $token->id,
-                    'role' => $token->role->value,
-                    'signer_email' => $token->signer_email,
-                ],
-                'created_at' => Carbon::now(),
-            ]);
+            ProtocolEvent::log(null, ProtocolEventType::SignatureLinkRevoked, [
+                'token_id' => $token->id,
+                'role' => $token->role->value,
+                'signer_email' => $token->signer_email,
+            ], $actor->id, extra: ['protocol_id' => $token->protocol_id]);
 
             return $token;
         });
@@ -116,13 +104,7 @@ class ProtocolSignatureTokenService {
 
         if ($record->opened_at === null) {
             $record->update(['opened_at' => Carbon::now()]);
-            ProtocolEvent::query()->create([
-                'protocol_id' => $record->protocol_id,
-                'event' => ProtocolEventType::SignatureLinkOpened,
-                'actor_user_id' => $record->created_by_user_id,
-                'payload' => ['token_id' => $record->id],
-                'created_at' => Carbon::now(),
-            ]);
+            ProtocolEvent::log(null, ProtocolEventType::SignatureLinkOpened, ['token_id' => $record->id], $record->created_by_user_id, extra: ['protocol_id' => $record->protocol_id]);
         }
 
         return $record;
@@ -221,21 +203,15 @@ class ProtocolSignatureTokenService {
                 ]);
             }
 
-            ProtocolEvent::query()->create([
-                'protocol_id' => $protocol->id,
-                'event' => ProtocolEventType::SignatureRejected,
-                'actor_user_id' => $actor->id,
-                'payload' => [
-                    'token_id' => $record->id,
-                    'role' => $record->role->value,
-                    'signer_name' => $data['signer_name'] ?? $record->signer_name,
-                    'reason' => $reason,
-                    'issue_count' => count($issues),
-                    'ip' => $data['ip'] ?? null,
-                    'user_agent' => $data['user_agent'] ?? null,
-                ],
-                'created_at' => Carbon::now(),
-            ]);
+            ProtocolEvent::log(null, ProtocolEventType::SignatureRejected, [
+                'token_id' => $record->id,
+                'role' => $record->role->value,
+                'signer_name' => $data['signer_name'] ?? $record->signer_name,
+                'reason' => $reason,
+                'issue_count' => count($issues),
+                'ip' => $data['ip'] ?? null,
+                'user_agent' => $data['user_agent'] ?? null,
+            ], $actor->id, extra: ['protocol_id' => $protocol->id]);
 
             return $record->refresh();
         });

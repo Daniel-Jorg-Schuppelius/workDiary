@@ -20,13 +20,15 @@ use Illuminate\Support\Facades\Auth;
  * vendor_number) ergänzt der jeweilige Request über array_merge.
  */
 trait PartyFormFields {
+    use ContactSatelliteFields;
+
     /**
      * Geteilte Regeln (ohne das entitätsspezifische `number`-Unique).
      *
      * @return array<string, mixed>
      */
     protected function partyBaseRules(): array {
-        return [
+        return $this->addressRules(withCountry: true) + [
             'name' => ['required', 'string', 'max:200'],
             'company' => ['nullable', 'string', 'max:200'],
             'vat_id' => ['nullable', 'string', 'max:64'],
@@ -37,10 +39,6 @@ trait PartyFormFields {
             'fax' => ['nullable', 'string', 'max:64'],
             'homepage' => ['nullable', 'url', 'max:255'],
             'address' => ['nullable', 'string', 'max:1000'],
-            'address_street' => ['nullable', 'string', 'max:255'],
-            'address_zip' => ['nullable', 'string', 'max:32'],
-            'address_city' => ['nullable', 'string', 'max:128'],
-            'country' => ['nullable', 'string', \Illuminate\Validation\Rule::enum(\CommonToolkit\Enums\CountryCode::class)],
             'currency' => ['required', \Illuminate\Validation\Rule::enum(\CommonToolkit\Enums\CurrencyCode::class)],
             'timezone' => ['nullable', 'string', 'max:64', 'timezone'],
             'color' => ['nullable', 'string', 'max:16'],

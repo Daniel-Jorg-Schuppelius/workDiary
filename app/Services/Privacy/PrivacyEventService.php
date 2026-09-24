@@ -22,13 +22,9 @@ use App\Models\Privacy\{DataSubjectRequest, RequestEvent};
 class PrivacyEventService {
     /** @param array<string, mixed> $metadata */
     public function record(DataSubjectRequest $request, string $event, ?User $actor = null, array $metadata = []): RequestEvent {
-        return RequestEvent::create([
-            'organization_id' => $request->organization_id,
-            'request_id' => $request->id,
-            'actor_type' => $actor instanceof User ? 'staff' : 'system',
-            'actor_user_id' => $actor?->id,
-            'event' => $event,
-            'metadata' => $metadata === [] ? null : $metadata,
-        ]);
+        /** @var RequestEvent $entry */
+        $entry = $request->record($event, $metadata, $actor, extra: ['actor_type' => $actor instanceof User ? 'staff' : 'system']);
+
+        return $entry;
     }
 }

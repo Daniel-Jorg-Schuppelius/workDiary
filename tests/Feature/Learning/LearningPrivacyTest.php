@@ -16,7 +16,7 @@ use App\Models\Platform\User;
 use App\Models\Privacy\{DataSubjectRequest, RetentionProposal};
 use App\Services\Learning\{LearningCourseService, LearningEnrollmentService};
 use App\Services\Privacy\{DataSubjectRequestService, SubjectDataExporter};
-use App\Services\Privacy\Retention\{RetentionRegistry, RetentionScanService};
+use App\Services\Retention\{RetentionRegistry, RetentionScanService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;

@@ -11,16 +11,15 @@
 namespace App\Models\Fleet;
 
 use App\Enums\Vehicle\{VehicleOwnership, VehiclePropulsion, VehicleType};
+use App\Models\Asset\{Asset, EnergyLog};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
+use App\Models\Travel\TravelLog;
 use Database\Factories\Fleet\VehicleFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
-use App\Models\Asset\Asset;
-use App\Models\Asset\EnergyLog;
-use App\Models\Travel\TravelLog;
 
 /**
  * @property int $id

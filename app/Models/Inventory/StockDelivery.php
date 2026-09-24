@@ -12,16 +12,16 @@ namespace App\Models\Inventory;
 
 use App\Casts\{MoneyCast, QuantityCast};
 use App\Enums\Manufacturing\DeliveryFacturationStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\Customer\Customer;
-use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne};
 use App\Models\Article\ArticleVariant;
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Contracts\AuditsChanges;
+use App\Models\Customer\Customer;
 use App\Models\Invoicing\InvoiceItem;
 use App\Models\Manufacturing\ManufacturingOrder;
 use App\Models\Shipping\Shipment;
-use App\Models\Inventory\Warehouse;
+use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne};
 
 /**
  * Auslieferung eines Fertigerzeugnisses (Feature 047, MVP-074). Lager- und
@@ -34,7 +34,7 @@ use App\Models\Inventory\Warehouse;
  * @property DeliveryFacturationStatus $facturation_status
  * @property \CommonToolkit\ValueObjects\Money|null $unit_price_snapshot
  */
-class StockDelivery extends Model {
+class StockDelivery extends Model implements AuditsChanges {
     use Auditable;
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */

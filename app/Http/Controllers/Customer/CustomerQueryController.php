@@ -44,11 +44,11 @@ class CustomerQueryController extends Controller {
             ->paginate(25)
             ->withQueryString();
 
-        $aiViewData = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
+        $aiViewData = app(\App\Services\Ai\Contracts\SuggestionView::class);
         // Rückfrage verstehen (Feature 148, MVP-732): Übersetzung + Kurzfassung
         // als Lesehilfe unter der Rückfrage — ändert nichts am Vorgang.
         $understandUsable = $aiViewData->capabilityUsable(
-            \App\Services\Ai\Suggestions\PortalQuerySuggestionService::CAPABILITY
+            \App\Services\Ai\Contracts\PortalQuerySuggester::CAPABILITY
         );
 
         return view('customer-queries.index', [
@@ -56,14 +56,14 @@ class CustomerQueryController extends Controller {
             'status' => $status,
             // Portal-Antwort-Übersetzung (Feature 084, Phase-36-Rest).
             'translateUsable' => $aiViewData->capabilityUsable(
-                \App\Services\Ai\Suggestions\CoveringTextSuggestionService::CAPABILITY_ANSWER_TRANSLATE
+                \App\Services\Ai\Contracts\CoveringTextSuggester::CAPABILITY_ANSWER_TRANSLATE
             ),
             'understandUsable' => $understandUsable,
             'understandSuggestions' => $understandUsable
                 ? $aiViewData->openSuggestionsFor(
                     (new CustomerQuery)->getMorphClass(),
                     $queries->getCollection(),
-                    \App\Services\Ai\Suggestions\PortalQuerySuggestionService::CAPABILITY,
+                    \App\Services\Ai\Contracts\PortalQuerySuggester::CAPABILITY,
                 )
                 : collect(),
         ]);
@@ -82,15 +82,15 @@ class CustomerQueryController extends Controller {
         // kommt als Vorschau-Entwurf zurück ins Formular (Original +
         // Übersetzung), der Nutzer prüft und sendet erneut. Nie Auto-Versand.
         if (! empty($data['translate_to'])) {
-            $usable = app(\App\Services\Ai\Suggestions\SuggestionViewData::class)
-                ->capabilityUsable(\App\Services\Ai\Suggestions\CoveringTextSuggestionService::CAPABILITY_ANSWER_TRANSLATE);
+            $usable = app(\App\Services\Ai\Contracts\SuggestionView::class)
+                ->capabilityUsable(\App\Services\Ai\Contracts\CoveringTextSuggester::CAPABILITY_ANSWER_TRANSLATE);
             if (! $usable) {
                 return back()->with('error', __('ai.covering.translate_unavailable'));
             }
 
             try {
                 $organization = \App\Models\Platform\Organization::query()->withoutGlobalScopes()->findOrFail($customerQuery->organization_id);
-                $translated = app(\App\Services\Ai\Suggestions\CoveringTextSuggestionService::class)->translatePortalAnswer(
+                $translated = app(\App\Services\Ai\Contracts\CoveringTextSuggester::class)->translatePortalAnswer(
                     $organization,
                     $customerQuery->customer_id !== null ? (int) $customerQuery->customer_id : null,
                     $data['answer'],

@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Notification\DeadlineScans;
 
+use App\Modules\ModuleRegistry;
+
 /**
  * Registry aller Fristen-Scans (Vollscan 2026-08, B11): eine Klasse je
  * Fachmodul, der Command iteriert nur noch.
@@ -24,51 +26,19 @@ namespace App\Services\Notification\DeadlineScans;
  * last_warned_period) bleibt scan-intern. Festgeschrieben bleibt sie trotzdem
  * — für stabile Logs und vergleichbare Läufe.
  */
+/**
+ * Terminscans aller Module (MVP-863): jedes Modul meldet seine Scans über
+ * `Manifest::extensions()[DeadlineScan::class]`; Reihenfolge = Modulcode,
+ * dann Deklaration im Manifest (stabile Log-Reihenfolge).
+ */
 final class DeadlineScanRegistry {
-    /** @var list<class-string<DeadlineScan>> */
-    private const SCANS = [
-        OpenIssueDeadlineScan::class,
-        CommunicationFollowupScan::class,
-        DocumentExpiryScan::class,
-        IsmsDeadlineScans::class,
-        SlaTicketScan::class,
-        HelpdeskFollowupScans::class,
-        SlaQuotaScan::class,
-        AssetDeadlineScans::class,
-        TenderDeadlineScan::class,
-        QualificationExpiryScan::class,
-        ShiftExchangeReminderScan::class,
-        RentalReturnScan::class,
-        AssetFinanceDeadlineScan::class,
-        ContractObligationScan::class,
-        AssetInspectionScan::class,
-        DriverLicenseCheckScan::class,
-        DomainExpiryScan::class,
-        InvestmentDecisionScan::class,
-        QuoteFollowUpScan::class,
-        RetentionReleaseScan::class,
-        GuaranteeDeadlineScan::class,
-        WarrantyPeriodScan::class,
-        SupplierCredentialScan::class,
-        // Neue Scans hängen hinten an (stabile Log-Reihenfolge) — Arbeitsschutz (Feature 132).
-        SafetyDeadlineScans::class,
-        // Wetterwarnungen für disponierte Einsätze (Feature 062, MVP-716).
-        WeatherWarningScan::class,
-        // Pflichtschulungen (Feature 145, MVP-727).
-        TrainingDeadlineScan::class,
-        // Lernplattform: Einschreibungsfristen (Feature 149, MVP-780).
-        LearningDueScan::class,
-        // Vereinsgruppen: Alterskriterien → Wechselvorschläge (Feature 159, MVP-842).
-        ClubGroupCriteriaScan::class,
-        // Vereinstermine: Erinnerung an Angemeldete (Feature 159, MVP-845).
-        ClubEventReminderScan::class,
-    ];
+    public function __construct(private readonly ModuleRegistry $modules) {}
 
     /** @return list<DeadlineScan> */
     public function scans(): array {
         return array_map(
             static fn(string $class): DeadlineScan => app($class),
-            self::SCANS,
+            $this->modules->extensions(DeadlineScan::class),
         );
     }
 }

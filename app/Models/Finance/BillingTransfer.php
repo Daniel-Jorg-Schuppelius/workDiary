@@ -11,10 +11,14 @@
 namespace App\Models\Finance;
 
 use App\Enums\Finance\{TransferChannel, TransferStatus, TransferTarget};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasJournal, HasSqid};
+use App\Models\Contracts\HasDocumentLines;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
+use App\Services\Billing\DocumentTotalsCalculator;
+use App\Services\Billing\Dto\DocumentTotalsContext;
+use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -57,9 +61,13 @@ use Illuminate\Support\Carbon;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, BillingTransferEvent> $events
  * @property-read Customer $customer
  */
-class BillingTransfer extends Model {
+class BillingTransfer extends Model implements HasDocumentLines {
     use Auditable;
     use BelongsToOrganization;
+    use HasJournal;
+
+    /** @var class-string<BillingTransferEvent> Journal des Trägers (MVP-864) */
+    protected static string $journalClass = BillingTransferEvent::class;
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
@@ -168,9 +176,22 @@ class BillingTransfer extends Model {
         return $this->hasMany(BillingTransferPosition::class)->orderBy('position');
     }
 
-    /** @return HasMany<BillingTransferEvent, $this> */
-    public function events(): HasMany {
-        return $this->hasMany(BillingTransferEvent::class);
+    /**
+     * Belegpositionen sind die Rechnungssicht; `items()` bleibt der Quellnachweis.
+     *
+     * @return HasMany<BillingTransferPosition, $this>
+     */
+    public function lines(): HasMany {
+        return $this->positions();
+    }
+
+    /** Übergaben führen keine Währungsspalte — Ziele (Lexoffice, DATEV) rechnen in Euro. */
+    public function documentCurrency(): CurrencyCode {
+        return CurrencyCode::Euro;
+    }
+
+    public function documentTotals(): array {
+        return app(DocumentTotalsCalculator::class)->totals($this->positions, new DocumentTotalsContext(currency: $this->documentCurrency()));
     }
 
     /** @return BelongsTo<ExternalReference, $this> */

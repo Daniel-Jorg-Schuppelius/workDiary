@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Procurement;
+namespace App\Services\Article;
 
 use App\Models\Article\MetalQuotation;
 use App\Models\Supplier\SupplierCatalogItem;
@@ -147,7 +147,7 @@ class MetalSurchargeService {
 
     /**
      * Bewertet einen einzelnen Zuschlag (Struktur aus dem DATANORM-Import,
-     * {@see DatanormImportService::extraAttributes()}).
+     * {@see \App\Services\Procurement\DatanormImportService::extraAttributes()}).
      *
      * @param  array<string, mixed>  $surcharge
      */

@@ -12,9 +12,9 @@ namespace App\Models\Auth;
 
 use App\Casts\IpAddressCast;
 use App\Enums\Security\SecurityEventType;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Journal\JournalEntry;
 use App\Models\Platform\User;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Persistiertes Sicherheitsereignis (Feature 096, MVP-445) — plattformweit,
@@ -29,7 +29,12 @@ use App\Models\Platform\User;
  * @property array<string, mixed>|null $meta
  * @property \Illuminate\Support\Carbon $occurred_at
  */
-class SecurityEvent extends Model {
+class SecurityEvent extends JournalEntry {
+    protected static ?string $labelPrefix = 'audit-events';
+
+    /** @var array<string, string|null> */
+    protected static array $journalColumns = ['actor_user_id' => 'user_id', 'payload' => 'meta', 'occurred_at' => 'occurred_at'];
+
     protected $fillable = [
         'event',
         'ip',
@@ -50,5 +55,10 @@ class SecurityEvent extends Model {
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo {
         return $this->belongsTo(User::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function subject(): BelongsTo {
+        return $this->user();
     }
 }

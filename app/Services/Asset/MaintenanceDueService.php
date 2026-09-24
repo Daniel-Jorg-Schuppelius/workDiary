@@ -13,12 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Asset;
 
 use App\Enums\Asset\MaintenanceDueAction;
-use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketSource};
+use App\Events\Asset\MaintenanceDue;
 use App\Models\Asset\MaintenancePlan;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
-use App\Models\ServiceTicket\ServiceTicket;
-use App\Services\ServiceTicket\ServiceTicketService;
 
 /**
  * Erzeugt bei Fälligkeit eines Wartungsplans den konfigurierten Vorgang
@@ -31,17 +29,20 @@ use App\Services\ServiceTicket\ServiceTicketService;
  * Das Vorrücken von `next_due_on` bleibt bewusst der tatsächlichen Durchführung
  * überlassen ({@see MaintenancePlanService::markCompleted}).
  */
+/**
+ * Fällige Wartungspläne mit Aktion „Ticket": prüft die Fälligkeit und meldet
+ * sie als {@see MaintenanceDue}; das Ticket legt der Helpdesk an (MVP-863).
+ * Idempotenz je Fälligkeit über eine ExternalReference am Ticket.
+ */
 class MaintenanceDueService {
     public const PLUGIN_ID = 'maintenance';
 
     public const EXTERNAL_TYPE = 'due';
 
-    public function __construct(private readonly ServiceTicketService $tickets) {}
-
-    /** Verarbeitet einen fälligen Plan; gibt das erzeugte Ticket zurück (null = nichts erzeugt). */
-    public function handleDue(MaintenancePlan $plan): ?ServiceTicket {
+    /** @return bool Fälligkeit gemeldet (noch nicht behandelt) */
+    public function handleDue(MaintenancePlan $plan): bool {
         if ($plan->due_action !== MaintenanceDueAction::Ticket || $plan->next_due_on === null) {
-            return null;
+            return false;
         }
 
         $externalId = $plan->id . ':' . $plan->next_due_on->toDateString();
@@ -51,35 +52,16 @@ class MaintenanceDueService {
             ->forExternalId($externalId)
             ->exists();
         if ($alreadyHandled) {
-            return null; // diese Fälligkeit wurde bereits erzeugt
+            return false; // diese Fälligkeit wurde bereits erzeugt
         }
 
         $organization = Organization::query()->find($plan->organization_id);
         if (! $organization instanceof Organization) {
-            return null;
+            return false;
         }
 
-        $ticket = $this->tickets->create($organization, null, [
-            'title' => $plan->label,
-            'priority' => ServiceTicketPriority::Normal->value,
-            'source' => ServiceTicketSource::MaintenancePlan->value,
-            'source_reference' => $plan->code,
-            'asset_id' => $plan->asset_id,
-            'sla_contract_id' => $plan->sla_contract_id,
-            'reported_at' => $plan->next_due_on->toDateString(),
-        ]);
+        MaintenanceDue::dispatch($plan, $organization, $externalId);
 
-        ExternalReference::query()->create([
-            'organization_id' => $plan->organization_id,
-            'plugin_id' => self::PLUGIN_ID,
-            'external_type' => self::EXTERNAL_TYPE,
-            'external_id' => $externalId,
-            'referenceable_type' => $ticket->getMorphClass(),
-            'referenceable_id' => $ticket->getKey(),
-            'payload' => ['maintenance_plan_id' => $plan->id, 'due_on' => $plan->next_due_on->toDateString()],
-            'synced_at' => now(),
-        ]);
-
-        return $ticket;
+        return true;
     }
 }

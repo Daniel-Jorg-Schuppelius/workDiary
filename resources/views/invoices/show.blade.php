@@ -186,7 +186,7 @@
                     <x-icon-btn icon="outbox" size="sm" :href="route('lexoffice.handover.export-one', $invoice)" show-label :title="__('lexware.action.export_one')">{{ __('lexware.action.export_one_short') }}</x-icon-btn>
                 @endif
                 {{-- E-Rechnung (Feature 045): XRechnung nur im Pfad „WorkDiary führt" und für gestellte/bezahlte Rechnungen. --}}
-                @php $einvoiceVisible = in_array($invoice->status, [\App\Models\Invoicing\Invoice::STATUS_ISSUED, \App\Models\Invoicing\Invoice::STATUS_PAID], true) && ! app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($invoice->customer)->isExternal(); @endphp
+                @php $einvoiceVisible = in_array($invoice->status, [\App\Models\Invoicing\Invoice::STATUS_ISSUED, \App\Models\Invoicing\Invoice::STATUS_PAID], true) && ! app(\App\Services\Billing\BillingModeResolver::class)->effectiveFor($invoice->customer)->isExternal(); @endphp
                 @if ($einvoiceVisible)
                     <x-icon-btn icon="receipt" size="sm" :href="route('invoices.einvoice', $invoice)" show-label
                                 :title="__('invoicing.einvoice.button_title')">{{ __('invoicing.einvoice.button') }}</x-icon-btn>
@@ -249,7 +249,7 @@
                                     show-label>{{ __('invoicing.retention.action') }}</x-icon-btn>
                     @endif
                 @endcan
-                @if (! $invoice->isProforma() && ! app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($invoice->customer)->isExternal())
+                @if (! $invoice->isProforma() && ! app(\App\Services\Billing\BillingModeResolver::class)->effectiveFor($invoice->customer)->isExternal())
                     <x-icon-btn icon="rule" size="sm" :href="route('invoices.einvoice-validation', $invoice)" show-label
                                 :title="__('Preflight, XSD und KoSIT vor der Ausstellung prüfen')">{{ __('E-Rechnungs-Prüfung') }}</x-icon-btn>
                 @endif
@@ -362,10 +362,10 @@
 
     {{-- KI-Leistungstexte (Feature 084): Vorschläge nur im Entwurf, nie stille Änderungen. --}}
     @php
-        $aiViewData = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
+        $aiViewData = app(\App\Services\Ai\Contracts\SuggestionView::class);
         $aiDraft = $invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT && auth()->user()?->can('update', $invoice);
-        $aiSuggestEnabled = $aiDraft && $aiViewData->capabilityUsable(\App\Services\Ai\Suggestions\ItemTextSuggestionService::CAPABILITY_ITEM);
-        $aiTranslateEnabled = $aiDraft && $aiViewData->capabilityUsable(\App\Services\Ai\Suggestions\ItemTextSuggestionService::CAPABILITY_TRANSLATE);
+        $aiSuggestEnabled = $aiDraft && $aiViewData->capabilityUsable(\App\Services\Ai\Contracts\ItemTextSuggester::CAPABILITY_ITEM);
+        $aiTranslateEnabled = $aiDraft && $aiViewData->capabilityUsable(\App\Services\Ai\Contracts\ItemTextSuggester::CAPABILITY_TRANSLATE);
         $aiSuggestions = ($aiSuggestEnabled || $aiTranslateEnabled)
             ? $aiViewData->openSuggestionsFor((new \App\Models\Invoicing\InvoiceItem)->getMorphClass(), $invoice->items)
             : collect();

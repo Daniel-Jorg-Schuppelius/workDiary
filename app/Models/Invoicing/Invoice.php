@@ -14,19 +14,21 @@ use App\Casts\{MoneyCast, PercentageCast};
 use App\Enums\Invoicing\InvoiceDeliveryFormat;
 use App\Models\Classification\Tag;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Contracts\HasDocumentLines;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Document\{Document, DocumentDispatch};
+use App\Models\Material\Material;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Sales\Lead;
+use App\Services\Billing\DocumentTotalsCalculator;
+use App\Services\Billing\Dto\DocumentTotalsContext;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\{Collection, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 use Illuminate\Support\Carbon;
-use App\Models\Invoicing\InvoiceItem;
-use App\Models\Material\Material;
 
 /**
  * @property int $id
@@ -76,7 +78,7 @@ use App\Models\Material\Material;
  * @property-read Invoice|null $parent
  * @property-read Collection<int, Invoice> $creditNotes
  */
-class Invoice extends Model {
+class Invoice extends Model implements HasDocumentLines {
     use Auditable;
     use BelongsToOrganization;
 
@@ -269,6 +271,11 @@ class Invoice extends Model {
         return $this->hasMany(InvoiceItem::class)->orderBy('position');
     }
 
+    /** @return HasMany<InvoiceItem, $this> */
+    public function lines(): HasMany {
+        return $this->items();
+    }
+
     /** @return BelongsTo<Invoice, $this> */
     public function parent(): BelongsTo {
         return $this->belongsTo(Invoice::class, 'parent_invoice_id');
@@ -309,7 +316,7 @@ class Invoice extends Model {
      * gültig); die Positionssumme davor liefert {@see lineSubtotal()}.
      */
     public function recalculate(): void {
-        $totals = app(\App\Services\Invoicing\InvoiceTotalsCalculator::class)->compute($this);
+        $totals = $this->documentTotals();
 
         $breakdown = [];
         foreach ($totals['by_rate'] as $group) {
@@ -327,26 +334,39 @@ class Invoice extends Model {
     }
 
     /** Belegwährung, mit Euro als Rückfall für Altbestand ohne gesetzte Währung. */
-    public function currencyCode(): CurrencyCode {
+    public function documentCurrency(): CurrencyCode {
         return $this->currency ?? CurrencyCode::Euro;
+    }
+
+    public function documentTotals(): array {
+        return app(DocumentTotalsCalculator::class)->totals($this->items, $this->totalsContext());
+    }
+
+    private function totalsContext(): DocumentTotalsContext {
+        return new DocumentTotalsContext(
+            currency: $this->documentCurrency(),
+            fallbackTaxRate: $this->tax_rate,
+            reverseCharge: (bool) $this->is_reverse_charge,
+            discountPercent: $this->discount_percent,
+            discountAmount: $this->discount_amount,
+        );
     }
 
     /** Positionssumme vor Belegrabatt (MVP-416). */
     public function lineSubtotal(): Money {
-        $subtotal = $this->subtotal ?? Money::zero($this->currencyCode());
+        $subtotal = $this->subtotal ?? Money::zero($this->documentCurrency());
 
         return $subtotal->plus($this->documentDiscountTotal());
     }
 
     /** Belegrabatt in Belegwährung (Prozent XOR Betrag), 0 ohne Rabatt. */
     public function documentDiscountTotal(): Money {
-        $currency = $this->currencyCode();
         $lineNetSum = Money::sum(
-            $this->items->map(fn(InvoiceItem $i): Money => $i->amount ?? Money::zero($currency))->all(),
-            $currency
+            $this->items->map(fn (InvoiceItem $i): Money => $i->netAmount())->all(),
+            $this->documentCurrency()
         );
 
-        return app(\App\Services\Invoicing\InvoiceTotalsCalculator::class)->documentDiscount($this, $lineNetSum);
+        return app(DocumentTotalsCalculator::class)->documentDiscount($this->totalsContext(), $lineNetSum);
     }
 
     /** Skonto-Kondition vollständig hinterlegt? */
@@ -357,11 +377,11 @@ class Invoice extends Model {
 
     /** Skontobetrag auf den Bruttobetrag. */
     public function skontoAmount(): Money {
-        $total = $this->total ?? Money::zero($this->currencyCode());
+        $total = $this->total ?? Money::zero($this->documentCurrency());
 
         return $this->hasSkonto() && $this->skonto_percent !== null
             ? $this->skonto_percent->amountOf($total)
-            : Money::zero($this->currencyCode());
+            : Money::zero($this->documentCurrency());
     }
 
     /** Skonto-Frist ab Rechnungsdatum; null ohne Kondition oder vor Ausstellung. */

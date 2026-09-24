@@ -102,7 +102,7 @@ class AiConnectionController extends Controller {
         // Vollaudit 2026-07 (M35): ausgelieferte Default-Gedächtnisregeln
         // (Kundennamen-Verbot, Nominalstil) beim Einrichten der KI säen —
         // idempotent, editierbar wie manuelle Einträge.
-        app(\App\Services\Ai\AiMemoryService::class)->seedDefaults(
+        app(\App\Services\Ai\Contracts\AiMemory::class)->seedDefaults(
             $this->currentOrganization(),
             Auth::id() !== null ? (int) Auth::id() : null,
         );

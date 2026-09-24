@@ -12,12 +12,12 @@ declare(strict_types=1);
 
 namespace App\Models\Asset;
 
+use App\Models\Article\Article;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Inventory\StockSerial;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use App\Models\Article\Article;
-use App\Models\Inventory\StockSerial;
 
 /**
  * Verbautes Teil eines Assets (Feature 118, MVP-607).

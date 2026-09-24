@@ -15,6 +15,7 @@ namespace App\Models\Construction;
 use App\Enums\Construction\ConstructionNoticeStatus;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Contracts\AuditsChanges;
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Document\DocumentDispatch;
@@ -50,7 +51,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $acknowledged_at
  * @property bool $claims_time_extension
  */
-class ConstructionNotice extends Model {
+class ConstructionNotice extends Model implements AuditsChanges {
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;

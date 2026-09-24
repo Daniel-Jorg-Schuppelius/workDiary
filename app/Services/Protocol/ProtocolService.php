@@ -16,7 +16,7 @@ use App\Enums\Protocol\{ProtocolEventType, ProtocolItemResult, ProtocolItemType,
 use App\Exceptions\{ClassificationRequirementException, InvalidProtocolTransitionException, ProtocolValidationException};
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
-use App\Models\Protocol\{Protocol, ProtocolEvent, ProtocolItem, ProtocolSignature};
+use App\Models\Protocol\{Protocol, ProtocolItem, ProtocolSignature};
 use App\Services\Classification\ClassificationRequirementValidator;
 use App\Services\Diary\OrderService;
 use App\Services\Integration\LifecycleWebhookPublisher;
@@ -80,7 +80,7 @@ class ProtocolService {
                 'visibility' => $visibility->value,
             ]);
 
-            return $protocol->fresh(['events']) ?? $protocol;
+            return $protocol->fresh(['journal']) ?? $protocol;
         });
     }
 
@@ -106,7 +106,7 @@ class ProtocolService {
     }
 
     public function requestReview(Protocol $protocol, User $actor): Protocol {
-        $this->assertTransition($protocol, 'requestReview');
+        $this->assertActionAllowed($protocol, 'requestReview');
         $this->assertProtocolValid($protocol);
         $protocol->update(['status' => ProtocolStatus::InReview->value]);
         $this->record($protocol, ProtocolEventType::RequestedReview, $actor);
@@ -115,7 +115,7 @@ class ProtocolService {
     }
 
     public function returnToDraft(Protocol $protocol, User $actor, ?string $reason = null): Protocol {
-        $this->assertTransition($protocol, 'returnToDraft');
+        $this->assertActionAllowed($protocol, 'returnToDraft');
         $protocol->update(['status' => ProtocolStatus::Draft->value]);
         $this->record($protocol, ProtocolEventType::ReturnedToDraft, $actor, [
             'reason' => $reason,
@@ -131,7 +131,7 @@ class ProtocolService {
      * @param  array<string, mixed>|null  $signatureData
      */
     public function sign(Protocol $protocol, User $actor, ?array $signatureData = null): Protocol {
-        $this->assertTransition($protocol, $protocol->status === ProtocolStatus::Draft ? 'signDirect' : 'sign');
+        $this->assertActionAllowed($protocol, $protocol->status === ProtocolStatus::Draft ? 'signDirect' : 'sign');
         $this->assertProtocolValid($protocol, ClassificationRequirementPhase::BeforeSign);
 
         $signed = DB::transaction(function () use ($protocol, $actor, $signatureData): Protocol {
@@ -185,7 +185,7 @@ class ProtocolService {
     }
 
     public function archive(Protocol $protocol, User $actor): Protocol {
-        $this->assertTransition($protocol, 'archive');
+        $this->assertActionAllowed($protocol, 'archive');
         $protocol->update([
             'status' => ProtocolStatus::Archived->value,
             'archived_at' => Carbon::now(),
@@ -204,7 +204,7 @@ class ProtocolService {
         if (trim($reason) === '') {
             throw new InvalidArgumentException('Begründung ist beim Ersetzen Pflicht.');
         }
-        $this->assertTransition($protocol, 'supersede');
+        $this->assertActionAllowed($protocol, 'supersede');
 
         return DB::transaction(function () use ($protocol, $actor, $reason): Protocol {
             $copy = Protocol::query()->create([
@@ -552,7 +552,7 @@ class ProtocolService {
         return $protocol;
     }
 
-    private function assertTransition(Protocol $protocol, string $action): void {
+    private function assertActionAllowed(Protocol $protocol, string $action): void {
         if (! in_array($action, $protocol->status->allowedActions(), true)) {
             throw InvalidProtocolTransitionException::from($protocol->status, $action);
         }
@@ -572,13 +572,7 @@ class ProtocolService {
      * @param  array<string, mixed>  $payload
      */
     private function record(Protocol $protocol, string $event, User $actor, array $payload = []): void {
-        ProtocolEvent::query()->create([
-            'protocol_id' => $protocol->id,
-            'event' => $event,
-            'actor_user_id' => $actor->id,
-            'payload' => $payload !== [] ? $payload : null,
-            'created_at' => Carbon::now(),
-        ]);
+        $protocol->record($event, $payload, $actor);
     }
 
     private function parseType(string $value): ProtocolType {

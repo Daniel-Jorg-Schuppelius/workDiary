@@ -10,12 +10,12 @@
 
 namespace App\Http\Controllers\Platform;
 
+use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Services\Navigation\StartPageResolver;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class HomeController extends Controller {
     public function __invoke(Request $request, StartPageResolver $startPages): View|RedirectResponse {

@@ -21,7 +21,7 @@ use App\Models\Platform\User;
 use App\Models\Sales\Quote;
 use App\Models\Travel\Expense;
 use App\Services\Billing\{DocumentFeedFilters, DocumentFeedQuery};
-use App\Support\Sqid;
+use App\Support\{SortableQuery, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Route};
 use Illuminate\View\View;
@@ -91,9 +91,7 @@ class DocumentFeedController extends Controller {
 
         $feed = new DocumentFeedQuery($filters);
 
-        $sort = $request->string('sort')->toString();
-        $sort = array_key_exists($sort, DocumentFeedQuery::SORTS) ? $sort : 'date';
-        $dir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
+        [$sort, $dir] = SortableQuery::resolve($request, DocumentFeedQuery::SORTS, 'date');
 
         return view('billing.feed', [
             'rows' => $feed->paginate(30, $sort, $dir),

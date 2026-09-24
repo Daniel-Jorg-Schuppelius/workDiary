@@ -12,12 +12,11 @@ namespace App\Models\Time;
 
 use App\Enums\TimeApproval\MonthClosureStatus;
 use App\Models\Attachments\Attachment;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasJournal};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\{Builder, Model};
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use App\Models\Time\MonthClosureEvent;
 
 /**
  * Monatsfreigabe pro Mitarbeitender × Kalendermonat (MVP-016).
@@ -45,6 +44,10 @@ use App\Models\Time\MonthClosureEvent;
 class MonthClosure extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use HasJournal;
+
+    /** @var class-string<MonthClosureEvent> Journal des Trägers (MVP-864) */
+    protected static string $journalClass = MonthClosureEvent::class;
 
     // Prüfpaket-ZIP (Rang 40) hängt als Attachment (meta_type=audit_bundle).
     use HasAttachments;
@@ -104,11 +107,6 @@ class MonthClosure extends Model {
     /** @return BelongsTo<User, $this> */
     public function lockedBy(): BelongsTo {
         return $this->belongsTo(User::class, 'locked_by_user_id');
-    }
-
-    /** @return HasMany<MonthClosureEvent, $this> */
-    public function events(): HasMany {
-        return $this->hasMany(MonthClosureEvent::class)->orderBy('created_at');
     }
 
     /**

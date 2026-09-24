@@ -17,9 +17,10 @@ use App\Models\Calendar\AvailabilityWindow;
 use App\Models\Diary\{DiaryEntry, DiaryEntryEvent, Tour};
 use App\Models\Platform\User;
 use App\Models\Schedule\ScheduledShift;
-use App\Services\Location\GeofenceMatcher;
+use App\Services\Calendar\Contracts\FreeSlotSource;
 use App\Services\Routing\{Coordinate, OsrmRouter};
 use App\Services\Schedule\QualificationGate;
+use App\Services\Support\Geo\GeofenceMatcher;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
 
@@ -36,7 +37,7 @@ use Carbon\CarbonImmutable;
  * unangetastet). Übernahme ist eine bewusste Disponenten-Aktion, die im
  * Auftragsverlauf (DiaryEntryEvent) nachvollziehbar bleibt.
  */
-class GapFillSuggester {
+class GapFillSuggester implements FreeSlotSource {
     private const DEFAULT_DAY_START = '08:00';
 
     private const DEFAULT_DAY_END = '17:00';
@@ -235,33 +236,21 @@ class GapFillSuggester {
 
         app(DispatchStatusResolver::class)->transition($entry, DispatchStatus::Planned);
 
-        DiaryEntryEvent::query()->create([
-            'organization_id' => $entry->organization_id,
-            'diary_entry_id' => $entry->id,
-            'event' => 'dispatch.gap_fill_applied',
+        $entry->record('dispatch.gap_fill_applied', ['assignee_id' => $assignee->id, 'date' => $date->toDateString(), 'start' => $startTime, 'duration_minutes' => $durationMinutes], $dispatcher, extra: [
             'from_status' => $entry->status->slug(),
             'to_status' => $entry->status->slug(),
-            'actor_user_id' => $dispatcher->id,
             'actor_kind' => 'user',
             'note' => (string) __('Leerzeit-Vorschlag übernommen: :date :time (:user)', ['date' => $date->toDateString(), 'time' => $startTime, 'user' => $assignee->name]),
-            'payload' => ['assignee_id' => $assignee->id, 'date' => $date->toDateString(), 'start' => $startTime, 'duration_minutes' => $durationMinutes],
-            'occurred_at' => now(),
         ]);
     }
 
     /** Ablehnung: protokolliert + unterdrückt den Vorschlag für User+Tag. */
     public function dismiss(DiaryEntry $entry, User $dispatcher, User $assignee, CarbonImmutable $date, ?string $reason = null): void {
-        DiaryEntryEvent::query()->create([
-            'organization_id' => $entry->organization_id,
-            'diary_entry_id' => $entry->id,
-            'event' => 'dispatch.gap_fill_dismissed',
+        $entry->record('dispatch.gap_fill_dismissed', ['assignee_id' => $assignee->id, 'date' => $date->toDateString()], $dispatcher, extra: [
             'from_status' => $entry->status->slug(),
             'to_status' => $entry->status->slug(),
-            'actor_user_id' => $dispatcher->id,
             'actor_kind' => 'user',
             'note' => $reason,
-            'payload' => ['assignee_id' => $assignee->id, 'date' => $date->toDateString()],
-            'occurred_at' => now(),
         ]);
     }
 

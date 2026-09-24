@@ -11,9 +11,9 @@
 namespace App\Models\Reporting;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Platform\User;
 
 /**
  * Benannte, teilbare Report-Ansicht (MVP-529): Route + Filter-Parameter

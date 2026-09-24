@@ -27,6 +27,10 @@ use Illuminate\Support\Facades\Auth;
  * ohne automatische Käuferzuordnung verlangen die Kundenwahl im Formular.
  */
 class B2bOrderGroupBooker implements InboxGroupBooker {
+    public function pluginId(): string {
+        return self::PLUGIN_ID;
+    }
+
     public const PLUGIN_ID = 'b2b-katalog';
 
     public function __construct(

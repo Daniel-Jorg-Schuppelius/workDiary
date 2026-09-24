@@ -216,7 +216,7 @@ class PrivacyIncidentTest extends TestCase {
         $this->assertSame(IncidentStatus::Closed, $fresh->status);
         $this->assertSame('Unbefugter Zugriff auf Kundendaten', $fresh->summary_ciphertext); // entschlüsselt
         $this->assertNotNull($fresh->authority_notified_at);
-        $this->assertSame(5, $fresh->events()->count()); // opened, assessed, decided, reported, closed
+        $this->assertSame(5, $fresh->journal()->count()); // opened, assessed, decided, reported, closed
         $this->artisan('audit:verify')->assertExitCode(0);
     }
 

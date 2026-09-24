@@ -126,14 +126,6 @@ class IcsFeedService {
     }
 
     /**
-     * Stabile CalDAV-/ICS-UID eines Events (Feature 058) — identisch zu den
-     * Feed-UIDs, damit Feed-Abo und CalDAV-Publish denselben Termin meinen.
-     */
-    public static function eventUid(Event $event): string {
-        return 'event-' . $event->getKey() . '@workdiary';
-    }
-
-    /**
      * Einzel-Event-ICS-Dokument (VCALENDAR mit genau einem VEVENT) für das
      * idempotente CalDAV-Publish (Feature 058, MVP-126). Nutzt dieselbe TZ-/
      * UID-/Sichtbarkeits-Abbildung wie die Lese-Feeds.
@@ -265,7 +257,7 @@ class IcsFeedService {
             ->implode(', ');
 
         $ics = IcsEvent::create($event->title)
-            ->uniqueIdentifier(self::eventUid($event))
+            ->uniqueIdentifier($event->icsUid())
             ->startsAt($start->toDateTimeImmutable())
             ->endsAt($end->toDateTimeImmutable())
             // DTSTAMP an den Termin binden, nicht an den Erzeugungszeitpunkt:

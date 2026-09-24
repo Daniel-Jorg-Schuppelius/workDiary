@@ -65,7 +65,7 @@ class LearningEnrollmentTest extends TestCase {
 
         $this->assertSame(LearningEnrollmentStatus::Assigned, $enrollment->status);
         $this->assertSame($course->currentVersion()?->id, $enrollment->learning_course_version_id);
-        $this->assertSame(1, $enrollment->events()->count());
+        $this->assertSame(1, $enrollment->journal()->count());
     }
 
     public function test_entwurf_nimmt_keine_einschreibung_an(): void {

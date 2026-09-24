@@ -59,4 +59,17 @@ final class CustomerManifest extends Manifest {
             PermissionGroup::CustomerPortal,
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Import\EntitySpec::class => [
+                \App\Services\Customer\Import\ContactPersonSpec::class,
+                \App\Services\Customer\Import\CustomerSpec::class,
+            ],
+            \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
+                \App\Services\Customer\Retention\CustomerRetentionPolicies::class,
+            ],
+        ];
+    }
 }

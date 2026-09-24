@@ -14,31 +14,17 @@ namespace App\Services\Gaeb;
 
 use App\Enums\Gaeb\{BoqItemStatus, BoqItemType};
 use App\Models\Gaeb\{BillOfQuantity, BoqItem};
+use App\Services\Billing\DocumentTotalsCalculator;
 use Illuminate\Support\Collection;
 
 /**
  * LV-Workflow (Feature 049, MVP-084): Statusübergänge für LV-Kopf und
  * Positionen (Ausschreibung → Angebot → Auftrag → Ausführung → Abschluss),
  * Nachträge als eigene Vorgänge sowie die Restleistungssicht. Übergänge sind
- * gerichtet; ungültige Sprünge werfen {@see BoqWorkflowException}.
+ * gerichtet (Tabelle in {@see BoqItemStatus::allowedTransitions()});
+ * ungültige Sprünge werfen {@see BoqWorkflowException}.
  */
 class BoqWorkflowService {
-    /** Erlaubte Statusübergänge (von → nach). */
-    private const TRANSITIONS = [
-        'draft' => ['quoted', 'ordered', 'cancelled'],
-        'imported' => ['quoted', 'ordered', 'cancelled'],
-        'quoted' => ['ordered', 'cancelled'],
-        'ordered' => ['in_progress', 'cancelled'],
-        'in_progress' => ['completed', 'cancelled'],
-        'completed' => ['replaced'],
-        'replaced' => [],
-        'cancelled' => [],
-    ];
-
-    public function canTransition(BoqItemStatus $from, BoqItemStatus $to): bool {
-        return in_array($to->value, self::TRANSITIONS[$from->value], true);
-    }
-
     public function transitionBill(BillOfQuantity $boq, BoqItemStatus $to): BillOfQuantity {
         $this->guard($boq->status, $to);
         $boq->forceFill(['status' => $to])->save();
@@ -64,7 +50,7 @@ class BoqWorkflowService {
         $unitPrice = $data['unit_price'] ?? null;
         $quantity = $data['quantity'] ?? null;
         $total = ($unitPrice !== null && $quantity !== null)
-            ? (string) ((float) $unitPrice * (float) $quantity)
+            ? DocumentTotalsCalculator::lineNet($quantity, $unitPrice, null, null, $boq->documentCurrency())->getAmount()
             : null;
 
         return BoqItem::query()->create([
@@ -107,7 +93,7 @@ class BoqWorkflowService {
         if ($from === $to) {
             return;
         }
-        if (!$this->canTransition($from, $to)) {
+        if (! $from->canTransitionTo($to)) {
             throw new BoqWorkflowException(sprintf('Übergang %s → %s ist nicht erlaubt.', $from->value, $to->value));
         }
     }

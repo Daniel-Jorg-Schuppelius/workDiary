@@ -13,16 +13,15 @@ namespace App\Models\Travel;
 use App\Enums\Travel\{TravelLogVehicle, TripKind};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
+use App\Models\Fleet\Vehicle;
 use App\Models\Platform\User;
 use App\Models\Project\{Project, Task};
+use App\Models\Time\{Attendance, TimeEntry};
 use Database\Factories\Travel\TravelLogFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
-use App\Models\Time\Attendance;
-use App\Models\Time\TimeEntry;
-use App\Models\Fleet\Vehicle;
 
 /**
  * @property int $id

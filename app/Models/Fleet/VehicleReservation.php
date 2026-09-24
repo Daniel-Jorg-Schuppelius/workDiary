@@ -11,13 +11,13 @@
 namespace App\Models\Fleet;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use Database\Factories\Fleet\VehicleReservationFactory;
 use Illuminate\Database\Eloquent\{Builder, Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use App\Models\Diary\DiaryEntry;
 
 /**
  * Reservierung eines Fahrzeugs für ein Zeitfenster (Feature 028).

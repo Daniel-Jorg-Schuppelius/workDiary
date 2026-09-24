@@ -13,9 +13,9 @@ namespace App\Http\Controllers\Gaeb;
 use App\Enums\Gaeb\{BoqItemStatus, BoqItemType, BoqProgressSource, GaebPhase};
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Models\Article\Article;
-use App\Models\Gaeb\BillOfQuantity;
-use App\Models\Gaeb\BoqItem;
+use App\Models\Gaeb\{BillOfQuantity, BoqItem};
 use App\Models\Material\Material;
 use App\Models\Project\Project;
 use App\Services\Gaeb\{BoqCostingService, BoqExportService, BoqImportConflictException, BoqProgressService, BoqWorkflowException, BoqWorkflowService, GaebImportService};
@@ -26,7 +26,6 @@ use ERechnungToolkit\Enums\GaebFormat;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * GAEB-Leistungsverzeichnisse (Feature 049, MVP-081..085): LV-Übersicht,

@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Models\Club;
 
 use App\Enums\Club\{ClubGroupMembershipStatus, ClubMembershipKind};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasContactAndBankDetails, HasSqid};
+use App\Models\Contracts\ContactDetailsHolder;
 use App\Models\Platform\User;
 use Carbon\CarbonInterface;
 use Database\Factories\Club\ClubMemberFactory;
@@ -38,9 +39,6 @@ use Illuminate\Support\Carbon;
  * @property string $last_name
  * @property string|null $email
  * @property string|null $phone
- * @property string|null $street
- * @property string|null $postal_code
- * @property string|null $city
  * @property Carbon|null $birth_date
  * @property ClubMembershipKind $kind
  * @property Carbon $joined_on
@@ -49,10 +47,11 @@ use Illuminate\Support\Carbon;
  * @property string|null $notes
  * @property int|null $created_by_user_id
  */
-class ClubMember extends Model {
+class ClubMember extends Model implements ContactDetailsHolder {
     use Auditable;
 
     use BelongsToOrganization;
+    use HasContactAndBankDetails;
     /** @use HasFactory<ClubMemberFactory> */
     use HasFactory;
     use HasSqid;
@@ -66,9 +65,6 @@ class ClubMember extends Model {
         'last_name',
         'email',
         'phone',
-        'street',
-        'postal_code',
-        'city',
         'birth_date',
         'kind',
         'joined_on',

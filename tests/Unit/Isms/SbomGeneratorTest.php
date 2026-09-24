@@ -10,7 +10,7 @@
 
 namespace Tests\Unit\Isms;
 
-use App\Services\Isms\SbomGenerator;
+use App\Services\Release\SbomGenerator;
 use Tests\TestCase;
 
 /**

@@ -10,14 +10,13 @@
 
 namespace App\Http\Controllers\Time;
 
-use App\Models\Time\TimeAllocation;
-use App\Models\Time\TimeEntry;
+use App\Http\Controllers\Controller;
+use App\Models\Time\{TimeAllocation, TimeEntry};
 use App\Services\Timekeeping\TimeAllocationService;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Zeitaufteilung (Feature 103, MVP-514): Dialog + Speichern der Anteile

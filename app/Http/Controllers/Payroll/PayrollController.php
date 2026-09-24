@@ -11,9 +11,9 @@
 namespace App\Http\Controllers\Payroll;
 
 use App\Enums\User\Permission;
-use App\Models\Time\MinimumWage;
-use App\Models\Time\MinimumWageReference;
+use App\Http\Controllers\Controller;
 use App\Models\Platform\{Organization, User};
+use App\Models\Time\{MinimumWage, MinimumWageReference};
 use App\Services\Payroll\{EurostatMinimumWageImporter, MinimumWageService};
 use App\Support\{ErrorText, Sqid};
 use CommonToolkit\Enums\CountryCode;
@@ -22,7 +22,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Throwable;
-use App\Http\Controllers\Controller;
 
 /**
  * Zentraler Lohn-/Sozialversicherungsbereich: Org-Stammdaten (Betriebsnummer,

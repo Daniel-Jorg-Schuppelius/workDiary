@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Asset;
 
+use App\Http\Controllers\Controller;
 use App\Models\Article\Article;
-use App\Models\Asset\Asset;
-use App\Models\Asset\AssetComponent;
+use App\Models\Asset\{Asset, AssetComponent};
 use App\Models\Inventory\StockSerial;
 use App\Services\Asset\AssetComponentService;
 use App\Support\{ErrorText, Sqid};
@@ -22,7 +22,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * Anlagen-Stückliste (Feature 118, MVP-607).

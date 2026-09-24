@@ -10,7 +10,8 @@
 
 namespace App\Models\Finance;
 
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, IsDocumentLine};
+use App\Models\Contracts\DocumentLine;
 use App\Models\Project\Project;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -46,13 +47,15 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $service_from
  * @property Carbon|null $service_to
  */
-class BillingTransferPosition extends Model {
+class BillingTransferPosition extends Model implements DocumentLine {
+    use Auditable;
     use BelongsToOrganization;
 
     // Audit 2026-08 (W3.3): Formulare/URLs tragen Sqids, nie rohe IDs.
     /** @use HasFactory<\Database\Factories\Finance\BillingTransferPositionFactory> */
     use HasFactory;
     use HasSqid;
+    use IsDocumentLine;
 
     public const KIND_TIME = 'time';
 
@@ -99,6 +102,16 @@ class BillingTransferPosition extends Model {
     /** @return BelongsTo<BillingTransfer, $this> */
     public function transfer(): BelongsTo {
         return $this->belongsTo(BillingTransfer::class, 'billing_transfer_id');
+    }
+
+    /** @return BelongsTo<BillingTransfer, $this> */
+    public function lineDocument(): BelongsTo {
+        return $this->transfer();
+    }
+
+    /** @return array<string, string|null> */
+    protected static function lineColumns(): array {
+        return ['unit' => 'unit_name', 'tax_rate' => 'vat_rate', 'discount_percent' => null, 'discount_amount' => null, 'net_amount' => 'amount'];
     }
 
     /** @return BelongsTo<Project, $this> */

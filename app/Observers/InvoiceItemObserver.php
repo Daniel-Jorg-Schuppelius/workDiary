@@ -24,16 +24,9 @@ class InvoiceItemObserver {
     public function __construct(private readonly InvoiceItemReleaseService $release) {}
 
     public function saving(InvoiceItem $i): void {
-        // MVP-416: Zeilennetto inkl. Positionsrabatt (Prozent XOR Betrag).
-        $i->amount = \App\Services\Invoicing\InvoiceTotalsCalculator::lineNet(
-            (float) $i->quantity,
-            $i->unit_price,
-            $i->discount_percent,
-            $i->discount_amount,
-            $i->invoice->currency ?? \CommonToolkit\Enums\CurrencyCode::Euro,
-            // Zeilenbetrag in Spaltenpräzision (2 NK) — der Einzelpreis
-            // rechnet mit seinen 4 NK, gespeichert wird auf Cent gerundet.
-        )->withScale(2);
+        // MVP-416: Zeilennetto inkl. Positionsrabatt (Prozent XOR Betrag);
+        // der Einzelpreis rechnet mit 4 NK, gespeichert wird auf Cent gerundet.
+        $i->amount = $i->calculatedNetAmount()->withScale(2);
     }
 
     public function deleting(InvoiceItem $item): void {

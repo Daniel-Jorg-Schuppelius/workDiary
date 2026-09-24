@@ -40,6 +40,7 @@
                 <option value="{{ $user->sqid }}" @selected(old('responsible_user', $lead?->responsible_user_id === $user->id ? $user->sqid : '') === $user->sqid)>{{ $user->name }}</option>
             @endforeach
         </x-select-field>
+        <x-contact-address-fields :subject="$lead" />
         <x-textarea-field name="interest" :label="__('Interesse / Bedarf')" rows="3" span="2">{{ old('interest', $lead?->interest) }}</x-textarea-field>
     </x-form-group>
 </x-modal>

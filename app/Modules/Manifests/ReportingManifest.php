@@ -23,7 +23,7 @@ final class ReportingManifest extends Manifest {
     }
 
     public function kind(): ModuleKind {
-        return ModuleKind::Platform;
+        return ModuleKind::Core;
     }
 
     public function label(): string {

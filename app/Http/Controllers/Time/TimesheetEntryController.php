@@ -12,15 +12,14 @@ namespace App\Http\Controllers\Time;
 
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Controllers\Concerns\ProvidesTimeEntryTagPicker;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Time\SaveTimesheetEntryRequest;
 use App\Models\Project\Project;
-use App\Models\Time\TimeEntry;
-use App\Models\Time\Timesheet;
+use App\Models\Time\{TimeEntry, Timesheet};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class TimesheetEntryController extends Controller {
     use ProvidesTimeEntryTagPicker;

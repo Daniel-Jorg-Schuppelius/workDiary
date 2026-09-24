@@ -16,8 +16,9 @@ use App\Enums\Finance\TransferStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Finance\{BillingTransfer, BillingTransferPosition};
+use App\Services\Ai\Contracts\ItemTextSuggester;
 use App\Services\Ai\Exceptions\{AiException, AiProviderCallException, AiUnavailableException};
-use App\Services\Ai\Suggestions\ItemTextSuggestionService;
+use App\Services\Billing\DocumentTotalsCalculator;
 use App\Services\Invoicing\TextCorrectionDiff;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -29,7 +30,7 @@ use Illuminate\Support\Facades\{Auth, Gate};
  * Rechnungsbetrag. Nach dem Übertragen ist nichts mehr änderbar.
  */
 class TransferPositionController extends Controller {
-    public function __construct(private readonly ItemTextSuggestionService $suggestions) {}
+    public function __construct(private readonly ItemTextSuggester $suggestions) {}
 
     public function update(Request $request, BillingTransfer $transfer, BillingTransferPosition $position): RedirectResponse {
         $this->authorizePosition($transfer, $position);
@@ -55,7 +56,7 @@ class TransferPositionController extends Controller {
             $unitPrice = isset($data['unit_price']) ? round((float) $data['unit_price'], 4) : $position->unitPriceFloat();
             $attributes['quantity'] = $quantity;
             $attributes['unit_price'] = $unitPrice;
-            $attributes['amount'] = round($quantity * $unitPrice, 2);
+            $attributes['amount'] = DocumentTotalsCalculator::lineNet($quantity, $unitPrice)->withScale(2)->toFloat();
         }
 
         $position->update($attributes);
@@ -68,17 +69,11 @@ class TransferPositionController extends Controller {
         }
 
         // Nachvollziehbarkeit über die bestehende Ereignis-Hash-Kette.
-        $transfer->events()->create([
-            'organization_id' => $transfer->organization_id,
-            'event' => 'position_edited',
-            'actor_user_id' => Auth::id(),
-            'payload' => [
-                'position_id' => (int) $position->id,
-                'position' => (int) $position->position,
-                'price_changed' => $mayPrice,
-            ],
-            'created_at' => now(),
-        ]);
+        $transfer->record('position_edited', [
+            'position_id' => (int) $position->id,
+            'position' => (int) $position->position,
+            'price_changed' => $mayPrice,
+        ], Auth::id());
 
         return back()->with('success', __('finance.flash.position_updated'));
     }
@@ -97,13 +92,7 @@ class TransferPositionController extends Controller {
         $position->delete();
         $this->renumber($transfer);
 
-        $transfer->events()->create([
-            'organization_id' => $transfer->organization_id,
-            'event' => 'position_removed',
-            'actor_user_id' => Auth::id(),
-            'payload' => ['position' => $number],
-            'created_at' => now(),
-        ]);
+        $transfer->record('position_removed', ['position' => $number], Auth::id());
 
         return back()->with('success', __('finance.flash.position_removed'));
     }
@@ -182,13 +171,7 @@ class TransferPositionController extends Controller {
         $transfer->positions()->whereIn('id', $positions->skip(1)->pluck('id'))->delete();
         $this->renumber($transfer);
 
-        $transfer->events()->create([
-            'organization_id' => $transfer->organization_id,
-            'event' => 'positions_merged',
-            'actor_user_id' => Auth::id(),
-            'payload' => ['count' => $positions->count(), 'into' => (int) $target->id],
-            'created_at' => now(),
-        ]);
+        $transfer->record('positions_merged', ['count' => $positions->count(), 'into' => (int) $target->id], Auth::id());
 
         return back()->with('success', __('finance.flash.positions_merged'));
     }

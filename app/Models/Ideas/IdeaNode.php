@@ -12,11 +12,10 @@ namespace App\Models\Ideas;
 
 use App\Enums\Ideas\IdeaNodeColor;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Knowledge\ContentReference;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
-use App\Models\Ideas\IdeaMap;
-use App\Models\Knowledge\ContentReference;
 
 /**
  * Knoten einer Ideenlandkarte (Feature 054, MVP-105): hierarchischer Zweig

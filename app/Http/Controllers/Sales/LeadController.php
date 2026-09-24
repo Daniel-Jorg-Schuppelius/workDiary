@@ -14,7 +14,9 @@ namespace App\Http\Controllers\Sales;
 
 use App\Enums\Sales\{LeadSource, LeadStatus};
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\WritesContactDetails;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Concerns\ContactSatelliteFields;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Sales\Lead;
@@ -35,6 +37,9 @@ use RuntimeException;
  * gibt. Modul-Gate: module.vertrieb (config/plans.php).
  */
 class LeadController extends Controller {
+    use ContactSatelliteFields;
+    use WritesContactDetails;
+
     public function __construct(private readonly LeadService $service) {}
 
     public function index(Request $request): View {
@@ -96,8 +101,10 @@ class LeadController extends Controller {
         $data['organization_id'] = $this->orgId();
         $data['created_by'] = Auth::id();
         $data['last_contact_at'] = now();
+        $contact = $this->pullContactDetails($data);
 
         $lead = Lead::query()->create($data);
+        $this->writeContactDetails($lead, $contact);
         $lead->audit('lead.created', ['source' => $lead->source->value]);
 
         return redirect()->route('leads.show', $lead)->with('success', __('Lead angelegt.'));
@@ -115,7 +122,10 @@ class LeadController extends Controller {
         $this->guard($lead);
         abort_if($lead->anonymized_at !== null, 422);
 
-        $lead->update($this->validated($request));
+        $data = $this->validated($request);
+        $contact = $this->pullContactDetails($data);
+        $lead->update($data);
+        $this->writeContactDetails($lead, $contact);
 
         return redirect()->route('leads.show', $lead)->with('success', __('Lead aktualisiert.'));
     }
@@ -172,7 +182,7 @@ class LeadController extends Controller {
 
     /** @return array<string, mixed> */
     private function validated(Request $request): array {
-        $data = $request->validate([
+        $data = $request->validate($this->addressRules() + [
             'company' => ['nullable', 'string', 'max:160'],
             'contact_name' => ['nullable', 'string', 'max:160'],
             'email' => ['nullable', 'email', 'max:190'],

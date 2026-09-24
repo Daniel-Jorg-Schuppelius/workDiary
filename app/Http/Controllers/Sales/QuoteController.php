@@ -143,7 +143,7 @@ class QuoteController extends Controller {
 
         // Kupferzuschlag zum Tagespreis als eigene Position (MVP-804, Feature 107).
         $surcharge = $request->boolean('add_copper_surcharge')
-            ? app(\App\Services\Procurement\MetalSurchargeService::class)->salesSurchargeItem($data['article_id'] ?? null, (string) $data['quantity'], $data['unit'] ?? null, lumpSum: true)
+            ? app(\App\Services\Article\MetalSurchargeService::class)->salesSurchargeItem($data['article_id'] ?? null, (string) $data['quantity'], $data['unit'] ?? null, lumpSum: true)
             : null;
         if ($surcharge !== null) {
             $quote->items()->create($surcharge + [

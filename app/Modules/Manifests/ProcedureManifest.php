@@ -60,4 +60,16 @@ final class ProcedureManifest extends Manifest {
             PermissionGroup::Procedures,
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Procedure\Demo\ProcedureDemoBlock::class,
+            ],
+            \App\Services\Classification\Contracts\ProfileInstallStep::class => [
+                \App\Services\Procedure\Install\ProcedureTemplateInstallStep::class,
+            ],
+        ];
+    }
 }

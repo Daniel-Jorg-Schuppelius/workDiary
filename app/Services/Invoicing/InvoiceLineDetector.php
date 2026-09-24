@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
+use App\Services\Billing\DocumentTotalsCalculator;
 use CommonToolkit\Enums\CountryCode;
 use CommonToolkit\Helper\Data\NumberHelper;
 
@@ -78,13 +79,13 @@ class InvoiceLineDetector {
             // Nach dem Guard oben gilt: fehlt der Betrag, ist der Preis da —
             // und umgekehrt; beide Ableitungen sind daher vollständig.
             $unitPrice ??= (float) $amount / $quantity;
-            $amount ??= $quantity * $unitPrice;
+            $amount ??= DocumentTotalsCalculator::lineNet($quantity, $unitPrice)->withScale(2)->toFloat();
             if ($unitPrice < 0.0 || $amount < 0.0) {
                 continue;
             }
             // Zeilen-Gegenprobe: Menge × Preis muss den Betrag treffen (1 ct
             // Toleranz je Zeile) — sonst ist das Raster nicht vertrauenswürdig.
-            if (abs($quantity * $unitPrice - $amount) > 0.011) {
+            if (abs(DocumentTotalsCalculator::lineNet($quantity, $unitPrice)->toFloat() - $amount) > 0.011) {
                 return null;
             }
 

@@ -144,7 +144,7 @@ class UserOrgScopingRuleTest extends TestCase {
         // sind BEWUSST org-übergreifend (zwei Orgs dürfen keine Kollision haben).
         'app/Services/Applications/RecruitingService.php' => 'E-Mail-Eindeutigkeit vor Konto-Anlage aus Bewerbung (global, Login-Identität).',
         'app/Services/Scim/ScimUserService.php' => 'SCIM-userName-/E-Mail-Uniqueness (global, RFC 7644 uniqueness).',
-        'app/Services/Import/Specs/UserSpec.php' => 'Import-Dedup per E-Mail (global, Login-Identität); Anlage setzt organization_id.',
+        'app/Services/Users/Import/UserSpec.php' => 'Import-Dedup per E-Mail (global, Login-Identität); Anlage setzt organization_id.',
         'app/Services/Install/OrganizationProvisioner.php' => 'Installer: bestehendes Konto per E-Mail suchen (läuft vor/ohne Org-Kontext).',
         'app/Services/Auth/Sso/SsoLoginService.php' => 'JIT-Provisioning (MVP-502): E-Mail-Kollisionsprüfung BEWUSST global (users.email unique, Login-Identität) — Kollision ⇒ Ablehnung statt Konto-Anlage/Verknüpfung (nOAuth-Schutz).',
         // MVP-510: (1) E-Mail-Eindeutigkeit vor Portalkonto-Anlage (global, Login-Identität,

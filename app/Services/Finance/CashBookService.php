@@ -24,7 +24,7 @@ use InvalidArgumentException;
  * Kassenbuch dokumentiert Bargeschäfte, es erzeugt keine Kassenbelege
  * mit TSE-Signatur.
  */
-class CashBookService {
+class CashBookService implements \App\Services\Passenger\Contracts\CashBookPosting {
     /**
      * Bareinnahme/-ausgabe erfassen.
      *

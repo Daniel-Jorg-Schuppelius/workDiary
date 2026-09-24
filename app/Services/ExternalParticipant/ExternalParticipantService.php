@@ -220,14 +220,13 @@ class ExternalParticipantService {
      * @param  array<string, mixed>  $payload
      */
     public function log(ExternalParticipant $participant, string $event, array $payload = []): ExternalParticipantEvent {
-        return ExternalParticipantEvent::query()->create([
-            'external_participant_id' => $participant->id,
-            'event' => $event,
-            'payload' => $payload !== [] ? $payload : null,
+        /** @var ExternalParticipantEvent $entry */
+        $entry = $participant->record($event, $payload, null, extra: [
             'ip' => Request::ip(),
             'user_agent' => substr((string) Request::userAgent(), 0, 255),
-            'created_at' => Carbon::now(),
         ]);
+
+        return $entry;
     }
 
     private function sanitizeFilename(string $name): string {

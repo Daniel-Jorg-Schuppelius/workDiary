@@ -17,7 +17,7 @@ use App\Enums\Reselling\RenewalMode;
 use App\Models\Contract\{Contract, ContractObligation};
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
-use App\Services\Contract\ContractService;
+use App\Services\Reselling\Contracts\ContractObligationSink;
 use App\Support\DocumentLocale;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
@@ -41,7 +41,7 @@ final class ResaleContractObligationSync {
 
     public const WARN_DAYS_BEFORE = 14;
 
-    public function __construct(private readonly PeriodPlanner $planner, private readonly ContractService $contracts) {}
+    public function __construct(private readonly PeriodPlanner $planner, private readonly ContractObligationSink $contracts) {}
 
     /**
      * @return array{created: int, updated: int, closed: int}

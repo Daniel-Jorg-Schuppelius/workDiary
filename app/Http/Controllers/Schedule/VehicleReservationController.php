@@ -8,20 +8,19 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers\Fleet;
+namespace App\Http\Controllers\Schedule;
 
 use App\Exceptions\{AssetNotUsableException, DriverLicenseCheckOverdueException, VehicleReservationConflictException};
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Fleet\StoreVehicleReservationRequest;
 use App\Models\Diary\DiaryEntry;
-use App\Models\Fleet\Vehicle;
-use App\Models\Fleet\VehicleReservation;
+use App\Models\Fleet\{Vehicle, VehicleReservation};
 use App\Models\Platform\User;
 use App\Services\Dispatch\VehicleReservationService;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Fahrzeug-Reservierungen der Disposition (Feature 028). Reservierungen

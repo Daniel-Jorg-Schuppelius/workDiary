@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Isms;
 
-use App\Services\Isms\SbomGenerator;
+use App\Services\Release\SbomGenerator;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 

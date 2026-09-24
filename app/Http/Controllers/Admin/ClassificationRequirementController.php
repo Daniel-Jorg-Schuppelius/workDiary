@@ -14,6 +14,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Classification\ClassificationRequirement;
 use App\Services\Classification\{RequirementIndexFilter, RequirementInput, RequirementPresets};
+use App\Support\SortableQuery;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -40,7 +41,7 @@ class ClassificationRequirementController extends Controller {
         $maxCountFilter = $this->indexFilter->normalizeMaxCountFilter($request->string('max_count')->toString());
         $phaseFilter = $this->indexFilter->normalizePhaseFilter($request->string('phase')->toString());
         $severityFilter = $this->indexFilter->normalizeSeverityFilter($request->string('severity')->toString());
-        $sortField = $this->indexFilter->normalizeSortField($request->string('sort')->toString());
+        $sortField = SortableQuery::resolve($request, $this->indexFilter->sortOptions(), 'entry_type_code')[0];
 
         $requirementsQuery = ClassificationRequirement::query()
             ->where('organization_id', $organization->id);

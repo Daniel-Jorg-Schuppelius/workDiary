@@ -10,12 +10,11 @@
 
 namespace App\Http\Requests\Material;
 
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\Material\Material;
-use App\Models\Material\MaterialUsage;
+use App\Models\Material\{Material, MaterialUsage};
 use App\Models\Time\Timesheet;
 use Illuminate\Validation\Validator;
-use App\Http\Requests\BaseFormRequest;
 
 class SaveMaterialUsageRequest extends BaseFormRequest {
     use DecodesSqidInputs;

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Gaeb;
 
 use App\Models\Invoicing\Invoice;
+use App\Services\Invoicing\Contracts\InvoiceGaebExporter;
 use App\Services\Invoicing\EInvoice\XRechnungGenerator;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
@@ -34,7 +35,7 @@ use ERechnungToolkit\Generators\GaebDaXmlGenerator;
  * werden Grundbetrag und Umsatzsteuer gestellt — die beiden, die jede Rechnung
  * hat.
  */
-final class GaebInvoiceExportService {
+final class GaebInvoiceExportService implements InvoiceGaebExporter {
     public function __construct(
         private readonly XRechnungGenerator $einvoice,
         private readonly GaebDaXmlGenerator $generator = new GaebDaXmlGenerator,

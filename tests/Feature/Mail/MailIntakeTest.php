@@ -17,7 +17,9 @@ use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Invoicing\Invoice;
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\{Organization, User};
-use App\Services\Mail\{MailAttachment, MailInboxResolutionService, MailIntakeService, MailboxGateway, ParsedMessage};
+use App\Services\Communication\Mail\MailToCommunicationNote;
+use App\Services\Document\Mail\MailAttachmentsToDms;
+use App\Services\Mail\{MailAttachment, MailIntakeService, MailboxGateway, ParsedMessage};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -201,7 +203,7 @@ final class MailIntakeTest extends TestCase {
         $this->intake()->intake($this->organization, $connection, $this->message('<res@x>', 'kunde@acme.test', 'Wartungsanfrage'));
         $item = IntegrationInboxItem::query()->where('plugin_id', MailIntakeService::PLUGIN_ID)->firstOrFail();
 
-        $note = app(MailInboxResolutionService::class)->bookAsCommunicationNote($item, $customer, $this->user);
+        $note = app(MailToCommunicationNote::class)->bookAsCommunicationNote($item, $customer, $this->user);
 
         $this->assertSame('email', $note->type->value);
         $this->assertSame('inbound', $note->direction->value);
@@ -277,7 +279,7 @@ final class MailIntakeTest extends TestCase {
         ], '<book-att@x>'));
         $item = IntegrationInboxItem::query()->where('plugin_id', MailIntakeService::PLUGIN_ID)->firstOrFail();
 
-        $note = app(MailInboxResolutionService::class)->bookAsCommunicationNote($item, $customer, $this->user);
+        $note = app(MailToCommunicationNote::class)->bookAsCommunicationNote($item, $customer, $this->user);
 
         $this->assertCount(1, $note->attachments()->get());
         $attachment = $note->attachments()->firstOrFail();
@@ -293,7 +295,7 @@ final class MailIntakeTest extends TestCase {
             new MailAttachment('rechnung.pdf', 'application/pdf', '%PDF-1.4 hallo'),
         ], '<dms-att@x>', subject: 'Rechnung RE-2025-900'));
         $item = IntegrationInboxItem::query()->where('plugin_id', MailIntakeService::PLUGIN_ID)->firstOrFail();
-        $service = app(MailInboxResolutionService::class);
+        $service = app(MailAttachmentsToDms::class);
 
         $first = $service->importAttachmentsToDms($item, $this->user, $customer);
         $second = $service->importAttachmentsToDms($item->fresh(), $this->user, $customer);
@@ -309,7 +311,7 @@ final class MailIntakeTest extends TestCase {
         $this->assertStringContainsString('<dms-att@x>', (string) $document->description);
         $this->assertNotNull($document->current_version_id);
         $this->assertSame(1, ExternalReference::query()
-            ->where('external_type', MailInboxResolutionService::DMS_EXTERNAL_TYPE)
+            ->where('external_type', MailAttachmentsToDms::DMS_EXTERNAL_TYPE)
             ->count());
     }
 

@@ -33,8 +33,8 @@ use Illuminate\Validation\ValidationException;
  * werden.
  */
 class SafetyEventService {
+    use \App\Services\Concerns\AssertsValidatedTransition;
     use \App\Services\Concerns\AssignsSequentialNo;
-    use \App\Services\Isms\Concerns\AssertsIsmsTransition;
 
     public function __construct(
         private readonly NotificationDispatcher $dispatcher,
@@ -105,7 +105,7 @@ class SafetyEventService {
             return $event;
         }
 
-        $this->assertIsmsTransition($event->status, $target, 'safety.error.invalid_transition');
+        $this->assertValidatedTransition($event->status, $target, 'safety.error.invalid_transition');
 
         $changes = ['status' => $target->value];
 

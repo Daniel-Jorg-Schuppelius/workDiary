@@ -10,11 +10,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Import\Specs;
+namespace App\Services\Supplier\Import;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Models\Platform\Organization;
 use App\Services\Import\{ImportOutcome, InboxFirstSpec, ValidationIssue};
+use App\Services\Import\Specs\AbstractEntitySpec;
 use App\Services\Import\Specs\Concerns\DedupsAndStages;
 use App\Services\Integration\Profiles\SupplierMatchProfile;
 use CommonToolkit\Helper\Data\EmailHelper;

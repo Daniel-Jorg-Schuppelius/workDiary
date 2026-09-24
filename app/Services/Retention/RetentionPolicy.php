@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Privacy\Retention;
+namespace App\Services\Retention;
 
 use Closure;
 use Illuminate\Database\Eloquent\Model;

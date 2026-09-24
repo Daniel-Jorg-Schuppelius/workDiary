@@ -14,7 +14,6 @@ use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Supplier\SupplierCatalogSource;
 
 /**
  * Rabattgruppe einer Katalogquelle (Feature 107, DATANORM R-Satz): macht aus

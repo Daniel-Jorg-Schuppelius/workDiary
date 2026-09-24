@@ -8,16 +8,16 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers\Diary;
+namespace App\Http\Controllers\Schedule;
 
 use App\Enums\Diary\{Mode, Status as DiaryStatus};
 use App\Enums\Tour\TourStatus;
 use App\Http\Controllers\Concerns\{ResolvesGlobalDateRange, ResolvesRequestedUser};
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Diary\SaveTourRequest;
 use App\Models\Customer\Customer;
-use App\Models\Diary\DiaryEntry;
+use App\Models\Diary\{DiaryEntry, Tour};
 use App\Models\Facility\Site;
-use App\Models\Diary\Tour;
 use App\Models\Fleet\Vehicle;
 use App\Models\Platform\User;
 use App\Services\Routing\TourService;
@@ -32,7 +32,6 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use App\Http\Controllers\Controller;
 
 class TourController extends Controller {
     use ResolvesGlobalDateRange, ResolvesRequestedUser;

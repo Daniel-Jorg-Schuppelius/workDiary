@@ -43,4 +43,13 @@ final class WeatherManifest extends Manifest {
             'weather_warnings',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Weather\DeadlineScans\WeatherWarningScan::class,
+            ],
+        ];
+    }
 }

@@ -12,19 +12,14 @@ namespace App\Models\Article;
 
 use App\Casts\MoneyCast;
 use App\Enums\Article\{ArticleStatus, ArticleType};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasClassifications, HasSqid, HasTags, Searchable};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasClassifications, HasCustomFields, HasSqid, HasTags, Searchable};
+use App\Models\Contracts\CustomFieldSubject;
 use App\Models\Integration\ExternalArticleMapping;
+use App\Models\Procedure\ProcedureTemplateVersion;
 use App\Models\Sales\SalesDiscountGroup;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
-use App\Models\Article\ArticleOptionDefinition;
-use App\Models\Article\ArticlePriceTier;
-use App\Models\Article\ArticleSupply;
-use App\Models\Article\ArticleUnit;
-use App\Models\Article\ArticleVariant;
-use App\Models\Procedure\ProcedureTemplateVersion;
-use App\Models\Article\Product;
 
 /**
  * Kanonischer Artikelstamm (Feature 048, MVP-060). Der Hauptartikel beschreibt
@@ -45,11 +40,12 @@ use App\Models\Article\Product;
  * @property \CommonToolkit\ValueObjects\Money|null $default_purchase_price
  * @property \CommonToolkit\ValueObjects\Money|null $default_sale_price
  */
-class Article extends Model {
+class Article extends Model implements CustomFieldSubject {
     use Auditable;
     use BelongsToOrganization;
     // Allergen-Klassifikationen der Zutaten (MVP-455, Domäne `allergen`).
     use HasClassifications;
+    use HasCustomFields;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
     use HasSqid;

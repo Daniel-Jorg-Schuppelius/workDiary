@@ -15,6 +15,7 @@
 namespace App\Http\Controllers\Time;
 
 use App\Enums\TimeExport\TimeExportStatus;
+use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Models\Time\TimeExport;
 use App\Services\TimeExport\{TimeExportException, TimeExportService};
@@ -23,7 +24,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use App\Http\Controllers\Controller;
 
 /**
  * UI für MVP-019 (ApprovedTimeExporter).
@@ -149,7 +149,7 @@ class TimeExportController extends Controller {
 
     public function show(TimeExport $export): View {
         Gate::authorize('view', $export);
-        $export->load(['lines.user', 'lines.surchargeRule', 'events.actor', 'creator', 'deliveredBy', 'scopeUser', 'supersededBy']);
+        $export->load(['lines.user', 'lines.surchargeRule', 'journal.actor', 'creator', 'deliveredBy', 'scopeUser', 'supersededBy']);
 
         return view('exports.show', [
             'export' => $export,

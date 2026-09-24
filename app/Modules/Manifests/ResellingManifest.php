@@ -74,4 +74,11 @@ final class ResellingManifest extends Manifest {
             'groups' => [],
         ];
     }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\Reselling\Contracts\ContractObligationSink::class => \App\Services\Reselling\Contracts\NullContractObligationSink::class,
+        ];
+    }
 }

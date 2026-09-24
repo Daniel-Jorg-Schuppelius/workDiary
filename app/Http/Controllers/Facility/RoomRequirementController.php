@@ -11,13 +11,12 @@
 namespace App\Http\Controllers\Facility;
 
 use App\Enums\Facility\RoomRequirementKind;
+use App\Http\Controllers\Controller;
+use App\Models\Facility\{Room, RoomRequirement};
 use App\Models\Platform\User;
-use App\Models\Facility\Room;
-use App\Models\Facility\RoomRequirement;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rules\Enum;
-use App\Http\Controllers\Controller;
 
 /**
  * Raumbezogene fachliche Anforderungen je Gewerk (Feature 027).

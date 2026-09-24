@@ -95,4 +95,30 @@ final class ScheduleManifest extends Manifest {
             'groups' => [],
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Schedule\DeadlineScans\ShiftExchangeReminderScan::class,
+            ],
+            \App\Services\Import\EntitySpec::class => [
+                \App\Services\Schedule\Import\ScheduledShiftSpec::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function bindings(): array {
+        return [
+            \App\Services\Calendar\Contracts\FreeSlotSource::class => \App\Services\Dispatch\GapFillSuggester::class,
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\Routing\Contracts\TravelLogRecorder::class => \App\Services\Routing\Contracts\NullTravelLogRecorder::class,
+        ];
+    }
 }

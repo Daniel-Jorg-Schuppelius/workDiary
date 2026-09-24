@@ -68,7 +68,7 @@ class SaveBillingAgreementRequest extends BaseFormRequest {
 
             $customer = $this->route('customer');
             if ($customer instanceof \App\Models\Customer\Customer) {
-                $mode = app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($customer);
+                $mode = app(\App\Services\Billing\BillingModeResolver::class)->effectiveFor($customer);
                 if ($mode !== \App\Enums\Finance\BillingMode::Lexoffice) {
                     $validator->errors()->add('mode', (string) __('customer-billing.retainer_requires_lexoffice'));
                 }

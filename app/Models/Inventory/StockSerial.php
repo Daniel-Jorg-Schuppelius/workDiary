@@ -11,15 +11,13 @@
 namespace App\Models\Inventory;
 
 use App\Enums\Inventory\{SerialSource, SerialStatus};
+use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
+use App\Models\Manufacturing\ManufacturingOrder;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Article\Article;
-use App\Models\Article\ArticleVariant;
-use App\Models\Manufacturing\ManufacturingOrder;
-use App\Models\Inventory\Warehouse;
 
 /**
  * Einzelseriennummer mit lückenlosem Lebenslauf (Feature 047/048, E2).

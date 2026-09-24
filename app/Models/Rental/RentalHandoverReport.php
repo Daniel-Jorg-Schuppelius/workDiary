@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Rental;
 
+use App\Casts\FieldDocumentCast;
 use App\Enums\Rental\RentalCondition;
 use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
@@ -29,7 +30,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany};
  * @property int $asset_id
  * @property \Illuminate\Support\Carbon $reported_at
  * @property RentalCondition $condition
- * @property array<int, string>|null $checklist
+ * @property \App\Services\Fields\FieldDocument|null $checklist
  * @property numeric-string|null $meter_value
  * @property numeric-string|null $operating_hours
  */
@@ -50,7 +51,7 @@ class RentalHandoverReport extends Model {
     protected $casts = [
         'condition' => RentalCondition::class,
         'reported_at' => 'datetime',
-        'checklist' => 'array',
+        'checklist' => FieldDocumentCast::class,
         'meter_value' => 'decimal:4',
         'operating_hours' => 'decimal:2',
         'signed_at' => 'datetime',

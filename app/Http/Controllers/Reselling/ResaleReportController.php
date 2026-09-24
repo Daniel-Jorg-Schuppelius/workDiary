@@ -10,14 +10,14 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Finance;
+namespace App\Http\Controllers\Reselling;
 
 use App\Enums\Article\ArticleStatus;
 use App\Enums\Reselling\{PeriodStatus, ResaleArticleRole};
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
-use App\Http\Requests\Finance\{ResaleAutoDraftSettingsRequest, ResaleReportDraftRequest, ResaleReportProductRequest};
+use App\Http\Requests\Reselling\{ResaleAutoDraftSettingsRequest, ResaleReportDraftRequest, ResaleReportProductRequest};
 use App\Models\Article\Article;
 use App\Models\Customer\Customer;
 use App\Models\Plugins\Lexoffice\LexofficeArticle;

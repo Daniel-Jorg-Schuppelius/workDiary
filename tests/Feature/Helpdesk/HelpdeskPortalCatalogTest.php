@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Helpdesk;
 
-use App\Enums\Form\FormFieldType;
+use App\Enums\Fields\FieldType;
 use App\Models\Customer\Customer;
 use App\Models\Form\FormTemplate;
 use App\Models\Platform\User;
@@ -92,8 +92,8 @@ final class HelpdeskPortalCatalogTest extends TestCase {
             'organization_id' => $this->organization->id,
             'created_by_user_id' => $this->agent->id,
             'fields' => [
-                ['key' => 'cpu', 'label' => 'Gewünschte CPU', 'type' => FormFieldType::Text->value, 'required' => true, 'options' => [], 'help' => null, 'unit' => null],
-                ['key' => 'os', 'label' => 'Betriebssystem', 'type' => FormFieldType::Select->value, 'required' => false, 'options' => ['Linux', 'Windows'], 'help' => null, 'unit' => null],
+                ['key' => 'cpu', 'label' => 'Gewünschte CPU', 'type' => FieldType::Text->value, 'required' => true, 'options' => [], 'help' => null, 'unit' => null],
+                ['key' => 'os', 'label' => 'Betriebssystem', 'type' => FieldType::Choice->value, 'required' => false, 'options' => ['Linux', 'Windows'], 'help' => null, 'unit' => null],
             ],
         ]);
     }
@@ -168,14 +168,14 @@ final class HelpdeskPortalCatalogTest extends TestCase {
         $ticket = $request->ticket()->firstOrFail();
 
         // Snapshots eingefroren.
-        $this->assertSame(['cpu' => 'i7', 'os' => 'Linux'], $request->form_snapshot['answers']);
+        $this->assertSame(['cpu' => 'i7', 'os' => 'Linux'], $request->form_snapshot['answers'] ?? null);
         $this->assertSame('Notebook bestellen', $request->catalog_snapshot['name']);
         $this->assertSame(1, $request->catalog_snapshot['version']);
         $this->assertSame(ServiceRequest::STATUS_PENDING, $request->status);
 
         // Katalogänderung schreibt NIE um.
         $item->update(['name' => 'Umbenannt', 'version' => 7]);
-        $this->assertSame('Notebook bestellen', $request->fresh()->catalog_snapshot['name']);
+        $this->assertSame('Notebook bestellen', $request->fresh()?->catalog_snapshot['name']);
 
         // Portal-Kontext des Tickets.
         $this->assertSame('customer_portal', $ticket->source->value);

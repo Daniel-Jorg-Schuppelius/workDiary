@@ -10,9 +10,9 @@
 
 namespace App\Http\Requests\Platform;
 
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Platform\User;
-use App\Http\Requests\BaseFormRequest;
 
 class SaveTeamRequest extends BaseFormRequest {
     use DecodesSqidInputs;

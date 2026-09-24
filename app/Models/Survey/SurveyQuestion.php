@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Models\Survey;
 
+use App\Enums\Survey\SurveyQuestionType;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Services\Fields\FieldDefinition;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -53,5 +55,25 @@ class SurveyQuestion extends Model {
     /** @return BelongsTo<Survey, $this> */
     public function survey(): BelongsTo {
         return $this->belongsTo(Survey::class);
+    }
+
+    public function questionType(): SurveyQuestionType {
+        return SurveyQuestionType::from($this->type);
+    }
+
+    /** Feld der Frage im Feldschema-Baustein (MVP-867); Eingabename `q<id>`. */
+    public function fieldDefinition(): FieldDefinition {
+        $type = $this->questionType();
+        [$min, $max] = $type->bounds() ?? [null, null];
+
+        return new FieldDefinition(
+            key: 'q' . (int) $this->id,
+            type: $type->fieldType(),
+            label: $this->label,
+            required: (bool) $this->required,
+            options: array_map('strval', $this->options ?? []),
+            min: $min,
+            max: $max,
+        );
     }
 }

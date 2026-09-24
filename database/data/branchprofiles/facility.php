@@ -345,4 +345,15 @@ return [
         ['key' => 'tom_assigned'],
         ['key' => 'tom_proof_current'],
     ],
+
+    // Eigene Felder je Träger (MVP-868): ergänzt nur fehlende Schlüssel.
+    'custom_fields' => [
+        'assets' => [
+            ['label' => 'Gebäudeteil', 'type' => 'text'],
+            ['label' => 'Wartungsvertrag', 'type' => 'boolean'],
+        ],
+        'projects' => [
+            ['label' => 'Objektnummer', 'type' => 'text'],
+        ],
+    ],
 ];

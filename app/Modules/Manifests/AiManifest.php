@@ -75,4 +75,30 @@ final class AiManifest extends Manifest {
             'groups' => [],
         ];
     }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\Ai\Contracts\AiInvoker::class => \App\Services\Ai\Contracts\NullAiInvoker::class,
+            \App\Services\Ai\Contracts\SuggestionView::class => \App\Services\Ai\Contracts\NullSuggestionView::class,
+            \App\Services\Ai\Contracts\ItemTextSuggester::class => \App\Services\Ai\Contracts\NullItemTextSuggester::class,
+            \App\Services\Ai\Contracts\SearchAnswerSuggester::class => \App\Services\Ai\Contracts\NullSearchAnswerSuggester::class,
+            \App\Services\Ai\Contracts\CoveringTextSuggester::class => \App\Services\Ai\Contracts\NullCoveringTextSuggester::class,
+            \App\Services\Ai\Contracts\PortalQuerySuggester::class => \App\Services\Ai\Contracts\NullPortalQuerySuggester::class,
+            \App\Services\Ai\Contracts\AiMemory::class => \App\Services\Ai\Contracts\NullAiMemory::class,
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function bindings(): array {
+        return [
+            \App\Services\Ai\Contracts\AiInvoker::class => \App\Services\Ai\AiInvocationService::class,
+            \App\Services\Ai\Contracts\SuggestionView::class => \App\Services\Ai\Suggestions\SuggestionViewData::class,
+            \App\Services\Ai\Contracts\ItemTextSuggester::class => \App\Services\Ai\Suggestions\ItemTextSuggestionService::class,
+            \App\Services\Ai\Contracts\SearchAnswerSuggester::class => \App\Services\Ai\Suggestions\SearchAnswerSuggestionService::class,
+            \App\Services\Ai\Contracts\CoveringTextSuggester::class => \App\Services\Ai\Suggestions\CoveringTextSuggestionService::class,
+            \App\Services\Ai\Contracts\PortalQuerySuggester::class => \App\Services\Ai\Suggestions\PortalQuerySuggestionService::class,
+            \App\Services\Ai\Contracts\AiMemory::class => \App\Services\Ai\AiMemoryService::class,
+        ];
+    }
 }

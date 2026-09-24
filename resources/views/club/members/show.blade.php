@@ -65,7 +65,7 @@
                     </x-detail-grid.row>
                     <x-detail-grid.row :label="__('club.field.email')" :value="$member->email ?? '–'" />
                     <x-detail-grid.row :label="__('club.field.phone')" :value="$member->phone ?? '–'" />
-                    <x-detail-grid.row :label="__('club.field.address')" :value="trim(($member->street ?? '') . ', ' . trim(($member->postal_code ?? '') . ' ' . ($member->city ?? '')), ', ') ?: '–'" />
+                    <x-detail-grid.row :label="__('club.field.address')" :value="implode(', ', $member->postalAddressLines()) ?: '–'" />
                     <x-detail-grid.row :label="__('club.field.kind')">
                         <x-status-badge :tone="$member->kind->tone()" size="sm">{{ $member->kind->label() }}</x-status-badge>
                     </x-detail-grid.row>
@@ -243,7 +243,7 @@
                                 <x-status-badge tone="info" size="xs" :label="__('club.label.linked')" />
                             @endif
                         </div>
-                        <div class="mt-1 text-base-content/70">{{ implode(' · ', array_filter([$guardian->email, $guardian->phone])) ?: '–' }}</div>
+                        <div class="mt-1 text-base-content/70">{{ implode(' · ', array_filter([$guardian->email, $guardian->phone, implode(', ', $guardian->postalAddressLines())])) ?: '–' }}</div>
                         <div class="mt-1 flex flex-wrap gap-1">
                             @foreach ($guardian->permissionEnums() as $permission)
                                 <span class="badge badge-ghost badge-xs">{{ $permission->label() }}</span>

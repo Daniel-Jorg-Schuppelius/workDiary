@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Reporting;
+namespace App\Http\Controllers\Investments;
 
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;

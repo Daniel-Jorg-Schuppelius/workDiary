@@ -11,15 +11,15 @@
 namespace App\Http\Controllers\Diary;
 
 use App\Exceptions\{ClassificationRequirementException, InvalidOrderTransitionException};
+use App\Http\Controllers\Controller;
 use App\Models\Diary\DiaryEntry;
-use App\Models\Protocol\Protocol;
 use App\Models\Platform\User;
+use App\Models\Protocol\Protocol;
 use App\Services\Diary\OrderService;
 use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use InvalidArgumentException;
-use App\Http\Controllers\Controller;
 
 class DiaryLifecycleController extends Controller {
     public function __invoke(Request $request, DiaryEntry $diary, string $action, OrderService $orders): RedirectResponse {

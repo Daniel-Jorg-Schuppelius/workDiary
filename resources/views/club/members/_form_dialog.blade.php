@@ -32,9 +32,7 @@
         <x-input-field name="last_name" :label="__('club.field.last_name')" required maxlength="120" :value="old('last_name', $member?->last_name)" />
         <x-input-field name="email" type="email" :label="__('club.field.email')" maxlength="190" :value="old('email', $member?->email)" />
         <x-input-field name="phone" type="tel" :label="__('club.field.phone')" maxlength="60" :value="old('phone', $member?->phone)" />
-        <x-input-field name="street" :label="__('club.field.street')" maxlength="190" span="2" :value="old('street', $member?->street)" />
-        <x-input-field name="postal_code" :label="__('club.field.postal_code')" maxlength="20" :value="old('postal_code', $member?->postal_code)" />
-        <x-input-field name="city" :label="__('club.field.city')" maxlength="120" :value="old('city', $member?->city)" />
+        <x-contact-address-fields :subject="$member" />
     </x-form-group>
 
     @unless ($isEdit)

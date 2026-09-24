@@ -12,13 +12,11 @@ namespace App\Models\Procedure;
 
 use App\Casts\QuantityCast;
 use App\Enums\Manufacturing\QuantityKind;
+use App\Models\Article\{Article, ArticleVariant};
 use CommonToolkit\Enums\RoundingMode;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Article\Article;
-use App\Models\Article\ArticleVariant;
-use App\Models\Procedure\ProcedureTemplateVersion;
 
 /**
  * Stücklisten-/Rezepturposition einer Arbeitsplan-Version (Feature 047, MVP-061).

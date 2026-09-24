@@ -11,7 +11,7 @@
 namespace Tests\Feature\Licensing;
 
 use App\Enums\Inventory\OutboxStatus;
-use App\Jobs\Integration\InventoryOutboxDeliveryJob;
+use App\Jobs\Inventory\InventoryOutboxDeliveryJob;
 use App\Models\Platform\{LicenseFlagOverride, Organization};
 use App\Services\Inventory\{ExternalInventoryDispatcherResolver, InventoryOutboxService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

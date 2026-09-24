@@ -12,10 +12,10 @@ namespace App\Http\Controllers\Diary;
 
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueVisibility};
 use App\Exceptions\InvalidOpenIssueTransitionException;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\OpenIssue\{AssignOpenIssueRequest, StoreOpenIssueRequest, TransitionOpenIssueRequest, UpdateOpenIssueRequest};
 use App\Models\Customer\Customer;
-use App\Models\Diary\DiaryEntry;
-use App\Models\Diary\OpenIssue;
+use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Services\OpenIssue\OpenIssueService;
@@ -26,7 +26,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use InvalidArgumentException;
-use App\Http\Controllers\Controller;
 
 class OpenIssueController extends Controller {
     /**

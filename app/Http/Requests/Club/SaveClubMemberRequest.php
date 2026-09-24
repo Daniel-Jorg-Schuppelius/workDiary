@@ -14,7 +14,7 @@ namespace App\Http\Requests\Club;
 
 use App\Enums\Club\ClubMembershipKind;
 use App\Http\Requests\BaseFormRequest;
-use App\Http\Requests\Concerns\DecodesSqidInputs;
+use App\Http\Requests\Concerns\{ContactSatelliteFields, DecodesSqidInputs};
 use App\Models\Club\ClubMember;
 use App\Models\Platform\{Organization, User};
 use App\Rules\ExistsInCurrentOrganization;
@@ -25,6 +25,7 @@ use Illuminate\Validation\Rule;
  * Anlegen — danach laufen sie über den Mitgliedschaftsverlauf.
  */
 class SaveClubMemberRequest extends BaseFormRequest {
+    use ContactSatelliteFields;
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
@@ -39,7 +40,7 @@ class SaveClubMemberRequest extends BaseFormRequest {
         $organizationId = $member !== null ? $member->organization_id : $this->currentOrganizationId();
         $isCreate = $member === null;
 
-        return [
+        return $this->addressRules() + [
             'member_no' => [
                 'nullable',
                 'integer',
@@ -53,9 +54,6 @@ class SaveClubMemberRequest extends BaseFormRequest {
             'last_name' => ['required', 'string', 'max:120'],
             'email' => ['nullable', 'email', 'max:190'],
             'phone' => ['nullable', 'string', 'max:60'],
-            'street' => ['nullable', 'string', 'max:190'],
-            'postal_code' => ['nullable', 'string', 'max:20'],
-            'city' => ['nullable', 'string', 'max:120'],
             'birth_date' => ['nullable', 'date', 'before_or_equal:today'],
             'kind' => $isCreate ? ['required', 'string', Rule::enum(ClubMembershipKind::class)] : ['prohibited'],
             'joined_on' => $isCreate ? ['required', 'date'] : ['prohibited'],

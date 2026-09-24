@@ -11,10 +11,10 @@
 namespace App\Http\Requests\Guarantee;
 
 use App\Enums\Guarantee\{GuaranteeDirection, GuaranteeKind};
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 /**
  * Bürgschaft anlegen/ändern (Feature 114, MVP-603).

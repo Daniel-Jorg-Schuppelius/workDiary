@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\ServiceTicket;
+namespace App\Services\Approval;
 
 use App\Models\Approval\Approval;
 use App\Models\Platform\User;

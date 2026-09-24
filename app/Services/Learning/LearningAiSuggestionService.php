@@ -16,7 +16,7 @@ use App\Models\Ai\AiCapabilitySetting;
 use App\Models\Knowledge\KnowledgeArticle;
 use App\Models\Learning\{LearningCourse, LearningUnit};
 use App\Models\Platform\Organization;
-use App\Services\Ai\AiInvocationService;
+use App\Services\Ai\Contracts\AiInvoker;
 use App\Services\Ai\Dto\{AiInvocationResult, AiTextResult, ExplainRequest, FormulateRequest};
 use Illuminate\Support\Str;
 
@@ -44,7 +44,7 @@ class LearningAiSuggestionService {
     private const CONTEXT_LIMIT = 12000;
 
     public function __construct(
-        private readonly AiInvocationService $invocation,
+        private readonly AiInvoker $invocation,
     ) {}
 
     /**

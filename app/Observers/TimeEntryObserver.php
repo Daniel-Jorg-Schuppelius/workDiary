@@ -11,9 +11,8 @@
 namespace App\Observers;
 
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
-use App\Models\Platform\User;
+use App\Events\Time\TimeEntryCreated;
 use App\Models\Time\TimeEntry;
-use App\Services\Diary\OrderService;
 
 /**
  * TimeEntry-Lebenszyklus: Auftrags-Start aus dem ersten Zeiteintrag und
@@ -107,11 +106,7 @@ class TimeEntryObserver {
             return;
         }
 
-        $actor = $entry->user;
-        $diaryEntry = $entry->diaryEntry;
-        if ($actor instanceof User && $diaryEntry !== null) {
-            app(OrderService::class)->startFromTimeEntry($diaryEntry, $actor);
-        }
+        TimeEntryCreated::dispatch($entry);
     }
 
     public function saved(TimeEntry $entry): void {

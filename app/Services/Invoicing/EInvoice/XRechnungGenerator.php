@@ -13,6 +13,7 @@ namespace App\Services\Invoicing\EInvoice;
 use App\Enums\Invoicing\XRechnungSyntax;
 use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Platform\Organization;
+use App\Services\Billing\DocumentTotalsCalculator;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Money;
@@ -133,14 +134,14 @@ class XRechnungGenerator {
         // Rechenstelle wie Invoice::recalculate() und der XML-Aufbau
         // (Toleranz 0,5 ct).
         if ($invoice->items->isNotEmpty()) {
-            $totals = app(\App\Services\Invoicing\InvoiceTotalsCalculator::class)->compute($invoice);
-            $documentCurrency = $invoice->currency ?? CurrencyCode::Euro;
+            $totals = $invoice->documentTotals();
+            $documentCurrency = $invoice->documentCurrency();
             $builderLineSum = Money::sum($invoice->items->map(
-                fn (InvoiceItem $i): Money => \App\Services\Invoicing\InvoiceTotalsCalculator::lineNet(
-                    (float) $i->quantity,
-                    $i->unit_price,
-                    $i->discount_percent,
-                    $i->discount_amount,
+                fn (InvoiceItem $i): Money => DocumentTotalsCalculator::lineNet(
+                    $i->lineQuantity(),
+                    $i->unitPrice(),
+                    $i->discountPercent(),
+                    $i->discountAmount(),
                     $documentCurrency,
                 ),
             )->all(), $documentCurrency);
@@ -387,7 +388,7 @@ class XRechnungGenerator {
         // MVP-416: Belegrabatt als Document-Allowance (BG-20) — je Steuersatz
         // anteilig (derselbe Kalkulator wie Invoice::recalculate/Preflight);
         // addAllowanceCharge() rechnet TaxTotal/MonetaryTotal selbst neu.
-        $totals = app(\App\Services\Invoicing\InvoiceTotalsCalculator::class)->compute($invoice);
+        $totals = $invoice->documentTotals();
         if ($totals['document_discount']->isPositive()) {
             $categoriesByRate = [];
             foreach ($invoice->items as $item) {

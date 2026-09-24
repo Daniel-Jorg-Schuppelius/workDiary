@@ -12,8 +12,7 @@ namespace App\Http\Requests\Schedule;
 
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Platform\User;
-use App\Models\Schedule\ScheduledShift;
-use App\Models\Schedule\ShiftExchange;
+use App\Models\Schedule\{ScheduledShift, ShiftExchange};
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\{Auth, Gate};
 

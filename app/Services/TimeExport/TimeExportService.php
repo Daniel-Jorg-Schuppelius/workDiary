@@ -613,13 +613,7 @@ class TimeExportService {
 
     /** @param  array<string, mixed>|null  $payload */
     private function logEvent(TimeExport $export, string $event, ?int $actorId, ?string $note = null, ?array $payload = null): void {
-        TimeExportEvent::query()->create([
-            'time_export_id' => $export->id,
-            'event' => $event,
-            'actor_user_id' => $actorId,
-            'note' => $note,
-            'payload' => $payload,
-        ]);
+        $export->record($event, $payload ?? [], $actorId, extra: ['note' => $note]);
     }
 
 }

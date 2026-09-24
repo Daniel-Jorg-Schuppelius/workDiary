@@ -18,7 +18,6 @@ use Database\Factories\Schedule\ScheduledShiftFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Schedule\ShiftType;
 
 /**
  * @property int $id

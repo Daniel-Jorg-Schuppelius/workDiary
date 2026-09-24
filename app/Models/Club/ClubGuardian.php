@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Models\Club;
 
 use App\Enums\Club\ClubGuardianPermission;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasContactAndBankDetails, HasSqid};
+use App\Models\Contracts\ContactDetailsHolder;
 use App\Models\Platform\User;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
@@ -40,10 +41,11 @@ use Illuminate\Support\Carbon;
  * @property int|null $revoked_by_user_id
  * @property string|null $note
  */
-class ClubGuardian extends Model {
+class ClubGuardian extends Model implements ContactDetailsHolder {
     use Auditable;
 
     use BelongsToOrganization;
+    use HasContactAndBankDetails;
     use HasSqid;
 
     protected $fillable = [

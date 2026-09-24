@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Protocol;
 
 use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Protocol\PublicSignatureRequest;
 use App\Models\Platform\Organization;
 use App\Models\Time\Timesheet;
@@ -18,7 +19,6 @@ use App\Services\Timesheet\SignatureService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
-use App\Http\Controllers\Controller;
 
 class PublicSignatureController extends Controller {
     use ChecksTenantPublicSurfaces;

@@ -10,8 +10,8 @@
 
 namespace App\Http\Requests\Asset;
 
-use App\Http\Requests\Concerns\ParsesOrgLocalDateTimes;
 use App\Http\Requests\BaseFormRequest;
+use App\Http\Requests\Concerns\ParsesOrgLocalDateTimes;
 
 class SaveMeterReadingRequest extends BaseFormRequest {
     use ParsesOrgLocalDateTimes;

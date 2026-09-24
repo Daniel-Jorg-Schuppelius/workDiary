@@ -16,9 +16,11 @@ use App\Models\Customer\Customer;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\Organization;
+use App\Models\ServiceTicket\ServiceQueue;
+use App\Modules\ModuleRegistry;
 use App\Services\Integration\Match\{EntityMatcher, MatchStrategy};
 use App\Services\Integration\Profiles\CustomerMatchProfile;
-use CommonToolkit\Helper\Data\EmailHelper;
+use App\Services\Mail\Contracts\MailIntakeHandler;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -44,74 +46,20 @@ class MailIntakeService {
      * @return 'created'|'skipped'|'ticket_message'|'einvoice'|'b2b_order'|'callreport'
      */
     public function intake(Organization $organization, EmailConnection $connection, ParsedMessage $message): string {
-        // openTRANS-Bestellungen (Feature 099, MVP-458): XML-Anhänge zuerst als
-        // B2B-Bestellung versuchen — VOR der E-Rechnungs-Pipeline, sonst frisst
-        // die den XML-Anhang. Nur bei aktivem Modul; kein openTRANS → normaler Weg.
-        if ($message->attachments !== []
-            && app(\App\Services\Licensing\ModuleStatusResolver::class)->isActiveFor($organization, 'module.b2b_katalog')) {
-            $result = $this->intakeB2bOrders($organization, $message);
+        foreach ($this->handlers() as $handler) {
+            $result = $handler->handle($organization, $connection, $message);
             if ($result !== null) {
                 return $result;
             }
         }
 
-        // E-Rechnungs-Postfach (Feature 066, MVP-165): Anhänge laufen durch dieselbe
-        // Eingangsverarbeitung wie der Upload; nicht lesbare Nachrichten fallen in die normale Inbox durch.
-        if ($connection->einvoice_intake && $message->attachments !== []) {
-            $result = $this->intakeEInvoices($organization, $connection, $message);
-            if ($result !== null) {
-                return $result;
-            }
-        }
-
-        // Telefonbericht-Postfach (FritzBox-Plugin): CSV-Anhänge der monatlichen
-        // Push-Mail laufen in den Anruflisten-Import — VOR Ticket/Inbox, sonst
-        // frisst die generische Inbox die Mail. Kein Anrufbericht → normaler Weg.
-        if ($connection->callreport_intake && $message->attachments !== []) {
-            $result = $this->intakeCallReports($organization, $message);
-            if ($result !== null) {
-                return $result;
-            }
-        }
-
-        // Ticket-Pipeline (Feature 065, P2): bei Queue-Postfach greift zuerst das
-        // Mail-Threading (In-Reply-To/References oder Ticket-Nr. im Betreff → bestehendes Ticket).
-        $queue = \App\Models\ServiceTicket\ServiceQueue::query()
+        // Queue-Postfach ohne Ticket-Treffer: Inbox-Eintrag trägt die Queue
+        // für die spätere Ticket-Anlage.
+        $queue = ServiceQueue::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $connection->organization_id)
             ->where('email_connection_id', $connection->id)
             ->first();
-        if ($queue !== null) {
-            $ticket = $this->matchThreadedTicket($organization, $message);
-            if ($ticket !== null) {
-                // Dedupe auch hier über die Message-ID.
-                $seen = \App\Models\ServiceTicket\ServiceTicketMessage::query()
-                    ->withoutGlobalScopes()
-                    ->where('organization_id', $organization->id)
-                    ->where('message_id', $message->messageId)
-                    ->exists();
-                if ($seen) {
-                    return 'skipped';
-                }
-                $conversation = app(\App\Services\ServiceTicket\TicketConversationService::class);
-                $ticketMessage = $conversation->inbound(
-                    $ticket,
-                    $message->body,
-                    'mail',
-                    $message->messageId,
-                    $message->inReplyTo,
-                    $message->subject,
-                );
-
-                // Anhänge der Kundenmail (MVP-152): dieselbe Whitelist-/Größen-Policy wie beim Inbox-Intake, idempotent kopiert.
-                if ($message->attachments !== []) {
-                    $stored = $this->attachments->persistFromMessage($organization, $message);
-                    $conversation->attachStoredMailAttachments($ticketMessage, $stored);
-                }
-
-                return 'ticket_message';
-            }
-        }
 
         $item = IntegrationInboxItem::query()->withoutGlobalScopes()->firstOrNew([
             'organization_id' => $connection->organization_id,
@@ -168,237 +116,12 @@ class MailIntakeService {
         return 'created';
     }
 
-    /**
-     * openTRANS-Bestellungen übernehmen (Feature 099, MVP-458, Mail-Kanal):
-     * jede XML-Anlage wird als openTRANS-2.1-ORDER versucht; kein Treffer →
-     * `null` (andere Pipelines/normaler Inbox-Weg). Dubletten (ORDER-ID +
-     * Käufer) erzeugen keinen zweiten Vorschlag.
-     *
-     * @return 'b2b_order'|'skipped'|null
-     */
-    private function intakeB2bOrders(Organization $organization, ParsedMessage $message): ?string {
-        $service = app(\App\Services\B2bCatalog\B2bOrderIntakeService::class);
-        $created = 0;
-        $duplicates = 0;
-        foreach ($message->attachments as $attachment) {
-            $isXml = str_contains($attachment->mime, 'xml')
-                || str_ends_with(strtolower($attachment->filename), '.xml');
-            if (! $isXml) {
-                continue;
-            }
-            try {
-                $result = $service->intake($organization, $attachment->content, \App\Models\B2b\B2bOrder::SOURCE_MAIL);
-            } catch (\RuntimeException) {
-                continue; // kein openTRANS-ORDER → andere Pipelines versuchen
-            }
-            $result['status'] === 'created' ? $created++ : $duplicates++;
-        }
+    /** @return list<MailIntakeHandler> nach Priorität */
+    private function handlers(): array {
+        $handlers = array_map(static fn (string $class): MailIntakeHandler => app($class), app(ModuleRegistry::class)->extensions(MailIntakeHandler::class));
+        usort($handlers, static fn (MailIntakeHandler $a, MailIntakeHandler $b): int => $a->priority() <=> $b->priority());
 
-        if ($created > 0) {
-            return 'b2b_order';
-        }
-        if ($duplicates > 0) {
-            return 'skipped'; // bereits erfasst — kein zweiter Vorschlag
-        }
-
-        return null;
-    }
-
-    /**
-     * E-Rechnungs-Anhänge übernehmen (MVP-165, Mail-Kanal): jede XML-/PDF-
-     * Anlage wird als E-Rechnung versucht; Dubletten (SHA-256) werden
-     * übersprungen. `null` = kein verwertbarer Anhang → normaler Inbox-Weg.
-     *
-     * @return 'einvoice'|'skipped'|null
-     */
-    private function intakeEInvoices(Organization $organization, EmailConnection $connection, ParsedMessage $message): ?string {
-        $actor = \App\Models\Platform\User::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $connection->organization_id)
-            ->where('id', (int) $connection->created_by)
-            ->first();
-        if ($actor === null) {
-            return null; // ohne zuordenbaren Bearbeiter kein automatischer DMS-Eintrag
-        }
-
-        $service = app(\App\Services\Invoicing\EInvoice\IncomingEInvoiceService::class);
-        $created = 0;
-        $duplicates = 0;
-        foreach ($message->attachments as $attachment) {
-            $isCandidate = str_contains($attachment->mime, 'xml')
-                || str_contains($attachment->mime, 'pdf')
-                || str_ends_with(strtolower($attachment->filename), '.xml')
-                || str_ends_with(strtolower($attachment->filename), '.pdf');
-            if (! $isCandidate) {
-                continue;
-            }
-
-            $result = $service->storeIncoming(
-                $actor,
-                $attachment->content,
-                $attachment->mime,
-                null,
-                'mail',
-                null,
-                $attachment->filename,
-            );
-            if ($result['status'] === 'created') {
-                $created++;
-            } elseif ($result['status'] === 'duplicate') {
-                $duplicates++;
-            }
-        }
-
-        if ($created > 0) {
-            return 'einvoice';
-        }
-        if ($duplicates > 0) {
-            return 'skipped'; // bereits erfasst — kein zweites Document, kein Inbox-Item
-        }
-
-        return null;
-    }
-
-    /**
-     * FRITZ!Box-Telefonberichte übernehmen (FritzBox-Plugin, Push-Mail): jeder
-     * CSV-taugliche Anhang wird inhaltsbasiert geprüft — der MIME-Typ der
-     * Push-Mails ist unzuverlässig (text/plain, octet-stream) — und in den
-     * Anruflisten-Import gereicht. `null` = kein Anrufbericht bzw. Plugin für
-     * die Organisation aus → normaler Inbox-Weg (nichts verschlucken). Erneut
-     * zugestellte Berichte deduplizieren über die Call-Keys des Imports.
-     *
-     * @return 'callreport'|'skipped'|null
-     */
-    private function intakeCallReports(Organization $organization, ParsedMessage $message): ?string {
-        $config = \App\Plugins\Fritzbox\FritzboxConfig::resolve($organization->id);
-        if (! $config['enabled']) {
-            return null;
-        }
-
-        $service = app(\App\Plugins\Fritzbox\FritzboxImportService::class);
-        $processed = 0;
-        $duplicates = 0;
-        foreach ($message->attachments as $attachment) {
-            $isCandidate = str_contains($attachment->mime, 'csv')
-                || str_contains($attachment->mime, 'text/plain')
-                || str_contains($attachment->mime, 'octet-stream')
-                || str_ends_with(strtolower($attachment->filename), '.csv');
-            if (! $isCandidate || ! \App\Plugins\Fritzbox\Sources\FritzboxCsvParser::looksLikeCallReport($attachment->content)) {
-                continue;
-            }
-
-            try {
-                $result = $service->importFromCsv($organization, $attachment->content, $config);
-            } catch (\RuntimeException) {
-                continue; // doch keine lesbare Anrufliste / kein buchbarer Benutzer → andere Pipelines
-            }
-
-            $result['created'] + $result['linked'] + $result['pending'] > 0 ? $processed++ : $duplicates++;
-        }
-
-        if ($processed > 0) {
-            return 'callreport';
-        }
-        if ($duplicates > 0) {
-            return 'skipped'; // bereits erfasst — kein Inbox-Item
-        }
-
-        return null;
-    }
-
-    /**
-     * Threading (Feature 065, P2): In-Reply-To/References gegen bekannte
-     * Ticket-Nachrichten, dann Ticket-Nummer im Betreff ([TICKET-NO]).
-     * Nur org-eigene Treffer — fremde Message-IDs (Spoofing) laufen ins Leere.
-     */
-    private function matchThreadedTicket(Organization $organization, ParsedMessage $message): ?\App\Models\ServiceTicket\ServiceTicket {
-        $referencedIds = array_values(array_filter([$message->inReplyTo, ...$message->references]));
-        if ($referencedIds !== []) {
-            $known = \App\Models\ServiceTicket\ServiceTicketMessage::query()
-                ->withoutGlobalScopes()
-                ->where('organization_id', $organization->id)
-                ->whereIn('message_id', $referencedIds)
-                ->orderByDesc('id')
-                ->first();
-            if ($known !== null) {
-                return $known->ticket()->withoutGlobalScopes()->first();
-            }
-        }
-
-        if (preg_match('/\[([A-Z0-9\-\/]{4,30})\]/i', $message->subject, $matches) === 1) {
-            $ticket = \App\Models\ServiceTicket\ServiceTicket::query()
-                ->withoutGlobalScopes()
-                ->where('organization_id', $organization->id)
-                ->where('ticket_no', $matches[1])
-                ->first();
-
-            // Ticketnummern sind fortlaufend und stehen in jeder Kundenmail:
-            // ohne Absenderprüfung konnte jeder Fremde eine öffentliche
-            // „Kundenantwort" samt kundensichtbarem Anhang in ein beliebiges
-            // Ticket schreiben (Sicherheitsaudit 2026-09-17, ingress-1).
-            // Passt der Absender nicht zum Vorgang, läuft die Mail in die
-            // normale Inbox statt in den Verlauf.
-            if ($ticket !== null && $this->senderBelongsToTicket($ticket, $message)) {
-                return $ticket;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Gehört die Absenderadresse zu diesem Vorgang? Anerkannt sind die Adresse
-     * des Kunden, seiner Ansprechpartner und Portalzugänge, die meldende Person
-     * sowie jede Adresse, die im Verlauf schon angeschrieben wurde.
-     */
-    private function senderBelongsToTicket(\App\Models\ServiceTicket\ServiceTicket $ticket, ParsedMessage $message): bool {
-        $sender = EmailHelper::normalize((string) $message->fromEmail);
-        if ($sender === '') {
-            return false;
-        }
-
-        $known = [];
-
-        $customer = $ticket->customer_id !== null
-            ? \App\Models\Customer\Customer::query()->withoutGlobalScopes()->whereKey($ticket->customer_id)->first()
-            : null;
-        if ($customer !== null) {
-            $known[] = (string) $customer->email;
-            foreach ($customer->contact_persons ?? [] as $person) {
-                $known[] = (string) ($person['email'] ?? '');
-            }
-
-            foreach (\App\Models\Platform\User::query()->withoutGlobalScopes()
-                ->where('organization_id', $ticket->organization_id)
-                ->where('customer_id', $customer->getKey())
-                ->pluck('email') as $portalEmail) {
-                $known[] = (string) $portalEmail;
-            }
-        }
-
-        if ($ticket->reported_by_user_id !== null) {
-            $known[] = (string) \App\Models\Platform\User::query()->withoutGlobalScopes()
-                ->whereKey($ticket->reported_by_user_id)->value('email');
-        }
-
-        // Empfänger früherer Nachrichten des Vorgangs: wer bereits angeschrieben
-        // wurde, darf antworten (auch ohne Stammdatensatz).
-        foreach (\App\Models\ServiceTicket\ServiceTicketMessage::query()->withoutGlobalScopes()
-            ->where('service_ticket_id', $ticket->getKey())
-            ->get(['to', 'cc']) as $previous) {
-            foreach ([...(array) ($previous->to ?? []), ...(array) ($previous->cc ?? [])] as $recipient) {
-                $known[] = (string) $recipient;
-            }
-        }
-
-        foreach ($known as $candidate) {
-            $candidate = EmailHelper::normalize($candidate);
-            if ($candidate !== '' && hash_equals($candidate, $sender)) {
-                return true;
-            }
-        }
-
-        return false;
+        return $handlers;
     }
 
     /**

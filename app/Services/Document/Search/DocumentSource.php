@@ -10,13 +10,14 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Search\Indexing\Sources;
+namespace App\Services\Document\Search;
 
 use App\Enums\Search\SearchSourceType;
 use App\Models\Document\Document;
 use App\Models\Platform\User;
-use App\Services\Content\ContentSubjectResolver;
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
+use App\Services\Search\Indexing\Sources\AbstractSearchSource;
+use App\Services\Support\Content\ContentSubjectResolver;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\{Builder, Model};
 

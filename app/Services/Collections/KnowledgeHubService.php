@@ -14,7 +14,7 @@ namespace App\Services\Collections;
 
 use App\Models\Classification\Tag;
 use App\Models\Platform\User;
-use App\Services\Content\{ContentSubject, ContentSubjectResolver};
+use App\Services\Support\Content\{ContentSubject, ContentSubjectResolver};
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\{Builder, Model};
 

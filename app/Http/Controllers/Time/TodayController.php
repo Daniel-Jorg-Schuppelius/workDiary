@@ -12,10 +12,10 @@ namespace App\Http\Controllers\Time;
 
 use App\Enums\Project\ProjectStatus;
 use App\Http\Controllers\Concerns\{ProvidesTimeEntryTagPicker, ResolvesGlobalDateRange};
-use App\Models\Time\Attendance;
-use App\Models\Time\TimeEntry;
+use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Models\Time\{Attendance, TimeEntry};
 use App\Services\Attendance\AttendanceClockService;
 use App\Services\Flextime\FlexCalculator;
 use App\Services\TimeApproval\{DayCloseService, UntrackedBlockCalculator};
@@ -24,7 +24,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * „Heute" — die tägliche Selbstbedienungs-Tagesseite (eigener Tag). Seit der

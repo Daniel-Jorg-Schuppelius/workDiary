@@ -12,15 +12,15 @@ namespace App\Http\Controllers\Asset;
 
 use App\Enums\Permit\PermitStatus;
 use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesCurrentOrganization};
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Asset\SavePermitRequest;
-use App\Models\Calendar\Event;
 use App\Models\Asset\Permit;
+use App\Models\Calendar\Event;
 use App\Models\Platform\User;
 use App\Services\Attachments\FileAttacher;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class PermitController extends Controller {
     use ParsesIndexQuery;

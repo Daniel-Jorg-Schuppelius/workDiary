@@ -13,13 +13,12 @@ namespace App\Models\Procurement;
 use App\Casts\MoneyCast;
 use App\Enums\Procurement\PurchaseOrderStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Contracts\AuditsChanges;
+use App\Models\Inventory\Warehouse;
+use App\Models\Supplier\Supplier;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
-use App\Models\Procurement\PurchaseOrderAdvice;
-use App\Models\Procurement\PurchaseOrderLine;
-use App\Models\Supplier\Supplier;
-use App\Models\Inventory\Warehouse;
 
 /**
  * Bestellung (Feature 048, E4).
@@ -33,7 +32,7 @@ use App\Models\Inventory\Warehouse;
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property \CommonToolkit\ValueObjects\Money|null $freight_cost
  */
-class PurchaseOrder extends Model {
+class PurchaseOrder extends Model implements AuditsChanges {
     use Auditable;
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */

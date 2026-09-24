@@ -12,14 +12,14 @@ namespace App\Models\Asset;
 
 use App\Enums\Asset\{MaintenanceDueAction, MaintenanceIntervalKind};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Facility\Room;
+use App\Models\ServiceTicket\SlaContract;
 use App\Support\MorphMap;
 use Database\Factories\Asset\MaintenancePlanFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 use Illuminate\Support\Carbon;
-use App\Models\Facility\Room;
-use App\Models\ServiceTicket\SlaContract;
 
 /**
  * @property int $id

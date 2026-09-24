@@ -14,7 +14,6 @@ use App\Models\Concerns\HasSqid;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
-use App\Models\Article\ArticleOptionValue;
 
 /**
  * Optionsdefinition eines Artikels (Feature 048, MVP-060), z. B. „Farbe".

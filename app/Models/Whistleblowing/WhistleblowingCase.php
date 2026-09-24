@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Whistleblowing;
 
 use App\Enums\Whistleblowing\{CaseCategory, CasePriority, CaseStatus, ReporterMode};
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, HasJournal};
 use App\Models\Platform\User;
 use App\Models\Whistleblowing\Casts\CaseEncrypted;
 use App\Models\Whistleblowing\Concerns\ProvidesCaseDek;
@@ -37,6 +37,10 @@ use Illuminate\Support\Str;
  */
 class WhistleblowingCase extends Model implements ProvidesCaseDek {
     use BelongsToOrganization;
+    use HasJournal;
+
+    /** @var class-string<CaseEvent> Journal des Trägers (MVP-864) */
+    protected static string $journalClass = CaseEvent::class;
 
     protected $table = 'whistleblowing_cases';
 

@@ -15,7 +15,6 @@ namespace App\Models\Time;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Time\TimeDimensionValue;
 
 /**
  * MVP-514 P2 (Feature 103): frei definierbarer Dimensionstyp eines

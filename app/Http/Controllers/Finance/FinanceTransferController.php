@@ -18,8 +18,9 @@ use App\Models\Finance\BillingTransfer;
 use App\Models\Material\MaterialUsage;
 use App\Models\Platform\User;
 use App\Models\Time\TimeEntry;
-use App\Services\Ai\Suggestions\{ItemTextSuggestionService, SuggestionViewData};
-use App\Services\Finance\{BillingModeResolver, BillingPositionBuilder, BillingTransferException, BillingTransferService};
+use App\Services\Ai\Contracts\{ItemTextSuggester, SuggestionView};
+use App\Services\Billing\BillingModeResolver;
+use App\Services\Finance\{BillingPositionBuilder, BillingTransferException, BillingTransferService};
 use App\Services\Finance\Targets\{FacturationTargetRegistry, FileTarget};
 use App\Support\{ErrorText, Sqid};
 use App\Support\Query\DateRange;
@@ -182,7 +183,7 @@ class FinanceTransferController extends Controller {
 
         $transfer->load(['customer:id,name,currency,hourly_rate', 'creator:id,name', 'externalReference',
             'corrects:id,status,transferred_at', 'corrections:id,corrects_transfer_id,status,created_at',
-            'events' => fn($q) => $q->orderBy('id')]);
+            'journal' => fn($q) => $q->orderBy('id')]);
         $transfer->items->loadMorph('source', [
             TimeEntry::class => ['project:id,name', 'user:id,name'],
             MaterialUsage::class => ['timesheet:id,work_date,project_id', 'timesheet.project:id,name'],
@@ -217,8 +218,8 @@ class FinanceTransferController extends Controller {
                 && Gate::allows(\App\Enums\User\Permission::FinanceConfig->value),
             'canEditPositionPrices' => Gate::allows(\App\Enums\User\Permission::FinanceConfig->value),
             'aiUsable' => TransferPositionController::isOpenForEditing($transfer)
-                && app(SuggestionViewData::class)->capabilityUsable(ItemTextSuggestionService::CAPABILITY_ITEM),
-            'aiSuggestions' => app(SuggestionViewData::class)
+                && app(SuggestionView::class)->capabilityUsable(ItemTextSuggester::CAPABILITY_ITEM),
+            'aiSuggestions' => app(SuggestionView::class)
                 ->openSuggestionsFor((new \App\Models\Finance\BillingTransferPosition)->getMorphClass(), $positions),
         ]);
     }
@@ -294,13 +295,7 @@ class FinanceTransferController extends Controller {
             'closing_text' => filled($data['closing_text'] ?? null) ? trim((string) $data['closing_text']) : null,
         ]);
 
-        $transfer->events()->create([
-            'organization_id' => $transfer->organization_id,
-            'event' => 'texts_edited',
-            'actor_user_id' => Auth::id(),
-            'payload' => ['intro' => filled($transfer->intro_text), 'closing' => filled($transfer->closing_text)],
-            'created_at' => now(),
-        ]);
+        $transfer->record('texts_edited', ['intro' => filled($transfer->intro_text), 'closing' => filled($transfer->closing_text)], Auth::id());
 
         return back()->with('success', __('finance.flash.texts_updated'));
     }

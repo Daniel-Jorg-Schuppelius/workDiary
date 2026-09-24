@@ -44,4 +44,11 @@ final class SearchManifest extends Manifest {
             'search_terms',
         ];
     }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\Search\Contracts\CollectionScope::class => \App\Services\Search\Contracts\NullCollectionScope::class,
+        ];
+    }
 }

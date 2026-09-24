@@ -11,8 +11,8 @@
 namespace App\Http\Requests\Numbering;
 
 use App\Enums\Numbering\NumberScope;
-use Illuminate\Validation\Rule;
 use App\Http\Requests\BaseFormRequest;
+use Illuminate\Validation\Rule;
 
 class SaveNumberFormatRequest extends BaseFormRequest {
     /** @return array<string, array<int, mixed>> */

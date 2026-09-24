@@ -11,8 +11,8 @@
 namespace Database\Factories\Access;
 
 use App\Enums\KeyHandover\KeyHandoverDirection;
-use App\Models\Asset\Asset;
 use App\Models\Access\KeyHandover;
+use App\Models\Asset\Asset;
 use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

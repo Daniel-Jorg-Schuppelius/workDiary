@@ -10,13 +10,13 @@
 
 namespace App\Http\Controllers\Time;
 
+use App\Http\Controllers\Controller;
 use App\Mail\TimesheetSignatureRequestedMail;
 use App\Models\Project\Project;
 use App\Models\Time\Timesheet;
 use App\Services\Timesheet\{PdfRenderer, SignatureService};
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Gate, Mail};
-use App\Http\Controllers\Controller;
 
 class TimesheetSignatureController extends Controller {
     public function __construct(protected SignatureService $signatures) {}

@@ -11,9 +11,8 @@
 namespace App\Models\Diary;
 
 use App\Enums\OpenIssue\OpenIssueEventType;
-use App\Models\Concerns\AppendOnly;
+use App\Models\Journal\JournalEntry;
 use App\Models\Platform\User;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -24,9 +23,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property array<string, mixed>|null $payload
  * @property \Illuminate\Support\Carbon $created_at
  */
-class OpenIssueEvent extends Model {
+class OpenIssueEvent extends JournalEntry {
     // Append-only jetzt technisch erzwungen statt nur dokumentiert (Vollaudit 2026-07, M52).
-    use AppendOnly;
 
     public $timestamps = false;
 
@@ -52,5 +50,10 @@ class OpenIssueEvent extends Model {
     /** @return BelongsTo<User, $this> */
     public function actor(): BelongsTo {
         return $this->belongsTo(User::class, 'actor_user_id');
+    }
+
+    /** @return BelongsTo<OpenIssue, $this> */
+    public function subject(): BelongsTo {
+        return $this->openIssue();
     }
 }

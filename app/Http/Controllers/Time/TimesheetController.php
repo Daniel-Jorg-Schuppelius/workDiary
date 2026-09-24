@@ -11,13 +11,13 @@
 namespace App\Http\Controllers\Time;
 
 use App\Enums\Timesheet\TimesheetStatus;
+use App\Http\Controllers\Controller;
 use App\Http\Controllers\Project\ProjectController;
 use App\Http\Requests\Time\SaveTimesheetRequest;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Models\Time\TimeEntry;
-use App\Models\Time\Timesheet;
+use App\Models\Time\{TimeEntry, Timesheet};
 use App\Services\Material\MaterialProviderRegistry;
 use App\Services\Timesheet\{Stopwatch, TimesheetResolver};
 use App\Services\UI\DateRangeContext;
@@ -26,7 +26,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class TimesheetController extends Controller {
     public function __construct(

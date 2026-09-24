@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Import\Specs;
+namespace App\Services\Document\Import;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
@@ -18,7 +18,9 @@ use App\Models\Document\Document;
 use App\Models\Platform\{Organization, User};
 use App\Services\Attachments\FileAttacher;
 use App\Services\Document\DocumentService;
+use App\Services\Import\Contracts\{ProvidesZipImport, ZipImporter};
 use App\Services\Import\{ImportOutcome, ValidationIssue};
+use App\Services\Import\Specs\AbstractEntitySpec;
 use App\Services\Import\Specs\Concerns\{ResolvesImportReferences, ValidatesImportDates};
 use CommonToolkit\Helper\Data\StringHelper;
 use CommonToolkit\Helper\FileSystem\File;
@@ -31,12 +33,12 @@ use Throwable;
  * (Kundennummer|Projektnummer|asset_no), Titel, Dokumenttyp, Gültigkeit.
  * Kopfzeile/Normalisierung/Validierung laufen über die Spec-Pipeline; der
  * Datei-Inhalt kommt aus dem Archiv und wird über {@see persist()} durch den
- * {@see \App\Services\Import\DocumentZipImportService} übergeben — ein
+ * {@see \App\Services\Document\Import\DocumentZipImportService} übergeben — ein
  * reiner CSV-Upsert ohne Inhalt ist deshalb bewusst ein Zeilenfehler.
  * Idempotenz: (Ziel, Titel) — gleiche Datei erneut = übersprungen, andere
  * Datei = neue Version.
  */
-class DocumentSpec extends AbstractEntitySpec {
+class DocumentSpec extends AbstractEntitySpec implements ProvidesZipImport {
     use ResolvesImportReferences;
     use ValidatesImportDates;
 
@@ -292,5 +294,10 @@ class DocumentSpec extends AbstractEntitySpec {
         $mime = File::mimeTypeFromContent($content);
 
         return is_string($mime) && $mime !== '' ? $mime : 'application/octet-stream';
+    }
+
+    /** ZIP-Paket (manifest.csv + Dateien) — lazy, der Importer braucht dieses Spec. */
+    public function zipImporter(): ZipImporter {
+        return app(DocumentZipImportService::class);
     }
 }

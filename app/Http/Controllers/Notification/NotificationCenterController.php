@@ -10,11 +10,11 @@
 
 namespace App\Http\Controllers\Notification;
 
+use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Support\Setting;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
-use App\Http\Controllers\Controller;
 
 /**
  * Notification-Center (MVP-018): Liste der eigenen Database-Notifications,

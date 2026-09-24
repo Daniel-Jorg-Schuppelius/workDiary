@@ -15,7 +15,6 @@ use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType, Comm
 use App\Enums\Demo\DemoIndustry;
 use App\Enums\Diary\{LocationMode, Mode, Priority, Status as DiaryStatus};
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
-use App\Enums\Procedure\{ProcedureBackupScope, ProcedureBackupStorageTarget, ProcedureBackupVerifyMethod, ProcedureProofType, ProcedureStepRunStatus};
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Protocol\{ProtocolItemResult, ProtocolItemType, ProtocolStatus, ProtocolType, ProtocolVisibility};
 use App\Enums\Timesheet\{TimesheetKind, TimesheetStatus};
@@ -28,13 +27,13 @@ use App\Models\Customer\Customer;
 use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Material\{Material, MaterialUsage};
 use App\Models\Platform\{Organization, User};
-use App\Models\Procedure\{ProcedureRun, ProcedureTemplate};
 use App\Models\Project\Project;
 use App\Models\Protocol\{Protocol, ProtocolItem};
 use App\Models\Time\{TimeEntry, Timesheet};
+use App\Modules\ModuleRegistry;
 use App\Services\Classification\BranchProfileInstaller;
+use App\Services\Demo\Contracts\{DemoBlock, DemoSeedContext};
 use App\Services\Licensing\{FeatureFlagResolver, LicenseService, ModuleCatalog, ModuleScopeService};
-use App\Services\Procedure\{BackupProofService, ProcedureExecutionService, ProcedureTemplateService, SecondPersonGate};
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Faker\{Factory as FakerFactory, Generator as Faker};
@@ -74,6 +73,11 @@ class DemoSeederService {
 
     private function showcaseSeeder(): DemoShowcaseSeeder {
         return $this->showcase ?? app(DemoShowcaseSeeder::class);
+    }
+
+    /** @return list<DemoBlock> */
+    private function blocks(): array {
+        return array_map(static fn(string $class): DemoBlock => app($class), app(ModuleRegistry::class)->extensions(DemoBlock::class));
     }
 
     /**
@@ -337,66 +341,24 @@ class DemoSeederService {
 
             // Vorführ-Ausbau (Feature 040 Nachtrag): Beispiel-Anhänge + Prozedurlauf.
             $counts['attachments'] = $this->seedAttachments($organization, $mainDiary, $users);
-            $counts['procedure_runs'] = $this->seedProcedureRun($organization, $mainDiary, $users, $blueprint);
 
-            // Agile Vorführ-Boards (Feature 064, P7): Scrum + Kanban.
+            // Vorführungen ohne Fachdienst; alle übrigen liefern die Demo-Blöcke
+            // der Fachmodule (Welle 4.1).
             $showcase = $this->showcaseSeeder()->withActiveModules($activeModules);
-            $counts['agile_boards'] = $showcase->seedAgileBoards($projects, $users);
-
-            // IT-Demoszenario Helpdesk (Feature 065, P10): Anfrage → Incident → Problem → Change.
-            $counts['helpdesk_tickets'] = $showcase->seedHelpdesk($organization, $mainCustomer, $users);
-
-            // Kleinunternehmer-Faktura §19 (Feature 066, MVP-169).
-            $counts['invoices'] = $showcase->seedSmallBusinessInvoicing($organization, $mainCustomer, $users->first());
-            $counts['free_invoices'] = $showcase->seedFreeInvoice($organization, $mainCustomer, $users->first());
-
-            // Bewerbungs-/Ausschreibungs-Demo (Feature 068, MVP-194/198).
-            $counts['applications'] = $showcase->seedApplications($organization, $mainCustomer, $users->first());
-
-            // Investitions-Demo (Feature 069, MVP-209).
-            $counts['investments'] = $showcase->seedInvestments($organization, $users->first());
-
-            // Krisen-Demo (Feature 070, MVP-222): geplante Übung, bewusst keine echte Krisenakte.
             $counts['crisis_exercises'] = $showcase->seedCrisisExercise($organization, $users->first());
-
-            // Nachhaltigkeits-Demo (Feature 071, MVP-235).
-            $counts['sustainability'] = $showcase->seedSustainability($organization, $users->first());
-
-            // Phase-38-Basics (Vollaudit 2026-07, N23): Urlaubsübertrag, Kasse,
-            // Abrechnungsplan, Rabatt/Skonto-Rechnung, Führerscheinkontrolle.
             $counts['phase38_basics'] = $showcase->seedPhase38Basics($organization, $mainCustomer, $users);
-
-            // Reklamations-Demo (Feature 072, MVP-256).
-            $counts['claims'] = $showcase->seedClaims($organization, $users->first());
-
-            // Verleih-Demo (Feature 073, MVP-269).
-            $counts['rental'] = $showcase->seedRental($organization, $users->first());
-            $counts['disposal'] = $showcase->seedDisposal($organization, $users->first());
-
-            // Leasing-Demo (Feature 074, MVP-280).
-            $counts['asset_finance'] = $showcase->seedAssetFinance($organization, $users->first());
-
-            // Prüfmittel-Demo (Feature 075, MVP-292).
-            $counts['asset_compliance'] = $showcase->seedAssetCompliance($organization, $users->first());
-
-            // Cloud-Dokumenteingang (Feature 080 P9; Audit 2026-08, W4.4).
             $counts['cloud_intake'] = $showcase->seedCloudIntake($organization, $users->first());
-            // Lokale Buchhaltung (Feature 125, MVP-678): Durchstich vom Konto
-            // bis zum offenen Posten.
-            $counts['local_accounting'] = $showcase->seedLocalAccounting($organization, $users->first());
 
-            // Lernplattform-Demo (Feature 149, MVP-748): freigegebener Kurs
-            // mit Inhalt, Prüfung und laufender Einschreibung.
-            $counts['learning'] = $showcase->seedLearning($organization, $users->first());
-
-            // Vereinsverwaltung (Feature 159, MVP-848): nur die Musterbranche
-            // Sportverein bekommt den fiktiven Mehrspartenverein — in anderen
-            // Branchen wäre er auch im Vollumfang fremd.
-            if ($industry === DemoIndustry::Verein && ($activeModules === null || in_array('module.club', $activeModules, true))) {
-                $club = app(ClubDemoSeeder::class)->seed($organization, $profileActor, $users);
-                $counts['club_members'] = $club['members'];
-                $counts['club_events'] = $club['events'];
-                $counts['club_claims'] = $club['claims'];
+            // Demo-Blöcke der Fachmodule (MVP-863): Prozedurlauf, Verein, … —
+            // jedes Modul entscheidet über supports(), ob es zu Branche und
+            // Showcase-Umfang passt.
+            $context = new DemoSeedContext($organization, $profileActor, $users, $blueprint, $industry, $activeModules, $mainDiary, $mainCustomer, $projects);
+            foreach ($this->blocks() as $block) {
+                if ($block->supports($context)) {
+                    foreach ($block->seed($context) as $key => $count) {
+                        $counts[$key] = $count;
+                    }
+                }
             }
         });
 
@@ -427,8 +389,11 @@ class DemoSeederService {
      */
     private function doReset(Organization $organization, ?User $actor, ?DemoIndustry $industry, bool $fullShowcase): array {
         DB::transaction(function () use ($organization): void {
-            // Vereinsdaten zuerst — Beitragskonten hängen an Kunden, Vereinstermine an Nutzern.
-            app(ClubDemoSeeder::class)->purge($organization);
+            // Blöcke der Fachmodule zuerst — Beitragskonten hängen an Kunden,
+            // Vereinstermine an Nutzern, Prozedurläufe an Aufträgen.
+            foreach ($this->blocks() as $block) {
+                $block->purge($organization);
+            }
 
             $diaryIds = DiaryEntry::query()->where('organization_id', $organization->id)->pluck('id');
 
@@ -442,9 +407,6 @@ class DemoSeederService {
                 Storage::disk($attachment->disk)->delete($attachment->path);
                 $attachment->delete();
             }
-
-            // Prozedurläufe (Step-Runs/Events/Backup-Proofs via FK-Cascade).
-            ProcedureRun::query()->where('organization_id', $organization->id)->delete();
 
             // Protokolle der Demo-Aufträge (inkl. Items über DB-Cascade/explizit).
             $protocolIds = Protocol::query()
@@ -1033,87 +995,6 @@ class DemoSeederService {
         $created++;
 
         return $created;
-    }
-
-    /**
-     * Spielt einen vollständigen Prozedurlauf auf dem Hauptauftrag durch —
-     * inkl. registriertem UND verifiziertem Backup-Proof sowie
-     * Vier-Augen-Freigabe (SecondPersonGate) durch einen zweiten Demo-User.
-     * Nutzt die Prozedurvorlagen des installierten Branchenprofils; ohne
-     * veröffentlichte Vorlage wird still übersprungen (0).
-     *
-     * @param Collection<int, User> $users
-     * @param array<string, mixed> $blueprint
-     */
-    private function seedProcedureRun(Organization $organization, DiaryEntry $entry, Collection $users, array $blueprint): int {
-        $templates = app(ProcedureTemplateService::class);
-        $executor = app(ProcedureExecutionService::class);
-        $gate = app(SecondPersonGate::class);
-        $backups = app(BackupProofService::class);
-
-        // Bevorzugt die im Blueprint benannte Vorlage der Branche (MVP-710),
-        // sonst die erste mit veröffentlichter Version.
-        $preferredCode = (string) ($blueprint['procedure_code'] ?? '');
-        $candidates = ProcedureTemplate::query()
-            ->where('organization_id', $organization->id)
-            ->orderByRaw('CASE WHEN code = ? THEN 0 ELSE 1 END', [$preferredCode])
-            ->orderBy('id')
-            ->get();
-        $template = null;
-        foreach ($candidates as $candidate) {
-            if ($templates->currentVersionFor($candidate) !== null) {
-                $template = $candidate;
-                break;
-            }
-        }
-        if (! $template instanceof ProcedureTemplate) {
-            return 0;
-        }
-
-        /** @var User $executorUser Ausführender Techniker (zweiter Demo-User). */
-        $executorUser = $users->skip(1)->first() ?? $users->first();
-        /** @var User $approver Vier-Augen-Zweitperson/Verifizierer (Demo-Admin). */
-        $approver = $users->first();
-
-        $run = $executor->start($template, $entry, $approver, $executorUser);
-
-        foreach ($run->stepRuns()->with('stepDef')->orderBy('id')->get() as $stepRun) {
-            $def = $stepRun->stepDef;
-
-            if ($def?->requires_proof_type === ProcedureProofType::Backup) {
-                $proof = $backups->register($stepRun, $executorUser, [
-                    'backup_scope' => ProcedureBackupScope::Config->value,
-                    'source_label' => 'Demo-Konfigurationsbackup',
-                    'taken_at' => now()->toDateTimeString(),
-                    'size_bytes' => 1024 * 256,
-                    'storage_target' => ProcedureBackupStorageTarget::External->value,
-                    'external_ref' => '/srv/backup/demo-config.tar.gz',
-                    'verify_method' => ProcedureBackupVerifyMethod::ManagerConfirmation->value,
-                ]);
-                $backups->verify($proof, $approver, null, 'Demo: Backup geprüft.');
-            }
-
-            $fresh = $stepRun->fresh();
-            if ($fresh !== null && $gate->requiresSecondPerson($fresh)) {
-                $gate->request($fresh, $executorUser);
-                $gate->take($fresh->fresh() ?? $fresh, $approver);
-                $gate->sign($fresh->fresh() ?? $fresh, $approver);
-            }
-
-            $fresh = $stepRun->fresh();
-            if ($fresh !== null) {
-                $executor->execute($fresh, $executorUser, ProcedureStepRunStatus::Done, [
-                    'note' => 'Demo-Durchlauf',
-                ]);
-            }
-        }
-
-        $completed = $run->fresh();
-        if ($completed instanceof ProcedureRun) {
-            $executor->completeRun($completed, $executorUser);
-        }
-
-        return 1;
     }
 
 }

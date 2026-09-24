@@ -10,11 +10,10 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Privacy\Retention;
+namespace App\Services\Retention;
 
 use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\RetentionProposal;
-use App\Services\Privacy\LegalHoldService;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 

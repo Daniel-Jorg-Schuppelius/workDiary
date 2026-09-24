@@ -11,8 +11,8 @@
 namespace App\Policies\Fleet;
 
 use App\Enums\User\Permission;
-use App\Models\Platform\User;
 use App\Models\Fleet\Vehicle;
+use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
 
 /**

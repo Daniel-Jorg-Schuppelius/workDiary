@@ -16,26 +16,27 @@ use App\Enums\Travel\TravelLogVehicle;
 use App\Models\Diary\{DiaryEntry, Tour};
 use App\Models\Platform\User;
 use App\Models\Travel\TravelLog;
-use App\Services\Travel\TravelLogService;
+use App\Services\Concerns\AssertsStatusTransition;
+use App\Services\Routing\Contracts\TravelLogRecorder;
 use App\Support\Tz;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use RuntimeException;
 
 /**
  * High-level orchestration around the {@see Tour} aggregate: creation,
  * assignment of {@see DiaryEntry} stops (typed via EntryType), optimisation
  * via {@see TourOptimizer} (with optional OSRM-backed routing) and the final
- * hand-off to {@see TravelLogService} which materialises the tour as actual
+ * hand-off to {@see TravelLogRecorder} which materialises the tour as actual
  * travel logs.
  */
 class TourService {
+    use AssertsStatusTransition;
     public function __construct(
         private readonly TourOptimizer $optimizer,
         private readonly OsrmRouter $router,
-        private readonly TravelLogService $travelLogs,
+        private readonly TravelLogRecorder $travelLogs,
     ) {}
 
     /**
@@ -277,13 +278,13 @@ class TourService {
     }
 
     public function plan(Tour $tour): Tour {
-        $this->transitionTo($tour, TourStatus::Planned, [TourStatus::Draft]);
+        $this->changeStatus($tour, TourStatus::Planned);
 
         return $tour->refresh();
     }
 
     public function start(Tour $tour): Tour {
-        $this->transitionTo($tour, TourStatus::InProgress, [TourStatus::Draft, TourStatus::Planned]);
+        $this->changeStatus($tour, TourStatus::InProgress);
         DiaryEntry::query()
             ->where('tour_id', $tour->id)
             ->where('status', DiaryStatus::Open->value)
@@ -293,7 +294,7 @@ class TourService {
     }
 
     public function complete(Tour $tour): Tour {
-        $this->transitionTo($tour, TourStatus::Completed, [TourStatus::InProgress, TourStatus::Planned]);
+        $this->changeStatus($tour, TourStatus::Completed);
         DiaryEntry::query()
             ->where('tour_id', $tour->id)
             ->whereIn('status', [DiaryStatus::Open->value, DiaryStatus::InProgress->value])
@@ -303,7 +304,7 @@ class TourService {
     }
 
     public function cancel(Tour $tour): Tour {
-        $this->transitionTo($tour, TourStatus::Cancelled, [TourStatus::Draft, TourStatus::Planned, TourStatus::InProgress]);
+        $this->changeStatus($tour, TourStatus::Cancelled);
 
         return $tour->refresh();
     }
@@ -318,7 +319,7 @@ class TourService {
     public function materializeToTravelLogs(Tour $tour): array {
         /** @var list<DiaryEntry> $stops */
         $stops = $tour->orderedStops()->get()->all();
-        if ($stops === []) {
+        if ($stops === [] || ! $this->travelLogs->available()) {
             return [];
         }
 
@@ -395,17 +396,8 @@ class TourService {
         return $logs;
     }
 
-    /**
-     * @param  list<TourStatus>  $allowedFrom
-     */
-    private function transitionTo(Tour $tour, TourStatus $target, array $allowedFrom): void {
-        if (! in_array($tour->status, $allowedFrom, true)) {
-            throw new RuntimeException(sprintf(
-                'Cannot transition tour from "%s" to "%s".',
-                $tour->status->value,
-                $target->value
-            ));
-        }
+    private function changeStatus(Tour $tour, TourStatus $target): void {
+        $this->assertStatusTransition($tour->status, $target);
         $tour->status = $target;
         $tour->save();
     }

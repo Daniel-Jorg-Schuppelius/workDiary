@@ -10,12 +10,13 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Import\Specs;
+namespace App\Services\Sales\Import;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Models\Platform\Organization;
 use App\Models\Sales\{Quote, QuoteItem};
 use App\Services\Import\{ImportOutcome, ValidationIssue};
+use App\Services\Import\Specs\AbstractEntitySpec;
 use App\Services\Import\Specs\Concerns\{ResolvesImportReferences, ValidatesImportDates};
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Facades\DB;

@@ -44,6 +44,9 @@ return [
         'field_options' => 'Optionen',
         'field_help' => 'Hilfetext',
         'field_unit' => 'Einheit',
+        'field_range' => 'Wertebereich',
+        'field_min' => 'Min',
+        'field_max' => 'Max',
     ],
 
     'action' => [
@@ -108,17 +111,7 @@ return [
     'validation' => [
 
         'no_upload_field' => 'Für diesen Feld-Schlüssel gibt es kein Datei-/Fotofeld im Formular.',
-        'invalid_row' => 'Felddefinition in Zeile :row ist ungültig.',
-        'label_required' => 'Feld :row braucht eine Bezeichnung (max. 160 Zeichen).',
-        'unknown_type' => 'Feld :row hat einen unbekannten Feldtyp.',
-        'invalid_key' => 'Feld-Schlüssel „:key" ist ungültig (Kleinbuchstaben, Ziffern, Unterstriche).',
-        'duplicate_key' => 'Feld-Schlüssel „:key" ist doppelt vergeben.',
-        'select_needs_options' => 'Auswahlfeld „:label" braucht mindestens eine Option.',
-        'fields_required' => 'Die Vorlage braucht mindestens ein Feld.',
-        'too_many_fields' => 'Maximal :max Felder je Vorlage.',
         'template_not_active' => 'Diese Vorlage ist nicht aktiv und kann nicht ausgefüllt werden.',
-        'condition_unknown_field' => 'Bedingung von Feld „:label" verweist auf ein unbekanntes Feld „:field".',
-        'condition_cycle' => 'Bedingungen bilden einen Zyklus (Feld „:field" hängt indirekt von sich selbst ab).',
     ],
 
     'flash' => [

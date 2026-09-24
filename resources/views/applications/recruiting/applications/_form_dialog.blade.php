@@ -27,6 +27,7 @@
         <x-input-field name="candidate_name" :label="__('Name')" required maxlength="200" span="2" :value="old('candidate_name')" />
         <x-input-field name="email" type="email" :label="__('E-Mail')" maxlength="200" :value="old('email')" :hint="__('Dient der Dublettenprüfung (nur als Hash).')" />
         <x-input-field name="phone" :label="__('Telefon')" maxlength="50" :value="old('phone')" />
+        <x-contact-address-fields />
         <x-select-field name="source" :label="__('Quelle')" required>
             @foreach (\App\Models\Applications\JobPosting::CHANNELS as $channel)
                 <option value="{{ $channel }}" @selected(old('source', 'other') === $channel)>{{ __("values.$channel") }}</option>

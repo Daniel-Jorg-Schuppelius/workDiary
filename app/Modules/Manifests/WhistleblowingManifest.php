@@ -79,4 +79,13 @@ final class WhistleblowingManifest extends Manifest {
             'groups' => [],
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function listeners(): array {
+        return [
+            \App\Events\Platform\OrganizationCreated::class => [
+                \App\Listeners\Whistleblowing\SeedWhistleblowingRole::class,
+            ],
+        ];
+    }
 }

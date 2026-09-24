@@ -11,13 +11,13 @@
 namespace App\Models\Manufacturing;
 
 use App\Casts\MoneyCast;
+use App\Models\Article\Article;
 use App\Models\Concerns\HasSqid;
+use App\Models\Inventory\StockReservation;
 use CommonToolkit\Enums\RoundingMode;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Article\Article;
-use App\Models\Inventory\StockReservation;
 
 /**
  * Aufgelöster Materialbedarf eines Fertigungsauftrags (Feature 047, MVP-062/065):

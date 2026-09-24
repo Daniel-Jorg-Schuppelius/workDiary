@@ -94,45 +94,45 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
 
         Route::middleware('portal.capability:tickets')->group(function (): void {
             // Portal-Tickets (Feature 065, MVP-160): nur eigene, nur public.
-            Route::get('/tickets', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'index'])->name('tickets.index');
-            Route::post('/tickets', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'store'])->name('tickets.store');
-            Route::get('/tickets/{ticket}', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'show'])->name('tickets.show');
+            Route::get('/tickets', [\App\Http\Controllers\Helpdesk\Portal\TicketController::class, 'index'])->name('tickets.index');
+            Route::post('/tickets', [\App\Http\Controllers\Helpdesk\Portal\TicketController::class, 'store'])->name('tickets.store');
+            Route::get('/tickets/{ticket}', [\App\Http\Controllers\Helpdesk\Portal\TicketController::class, 'show'])->name('tickets.show');
             // Anhang-Download (W5.1): gleiche Scope-Grenze wie die Ticket-Ansicht,
             // Pfade nur aus der DB — Sicherheitsmuster wie customer.documents.download.
-            Route::get('/tickets/{ticket}/attachments/{attachment}/download', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'downloadAttachment'])->name('tickets.attachments.download');
-            Route::post('/tickets/{ticket}/reply', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'reply'])->name('tickets.reply');
-            Route::post('/tickets/{ticket}/accept', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'accept'])->name('tickets.accept');
-            Route::post('/tickets/{ticket}/reopen', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'reopen'])->name('tickets.reopen');
-            Route::post('/tickets/{ticket}/rate', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'rate'])->name('tickets.rate');
+            Route::get('/tickets/{ticket}/attachments/{attachment}/download', [\App\Http\Controllers\Helpdesk\Portal\TicketController::class, 'downloadAttachment'])->name('tickets.attachments.download');
+            Route::post('/tickets/{ticket}/reply', [\App\Http\Controllers\Helpdesk\Portal\TicketController::class, 'reply'])->name('tickets.reply');
+            Route::post('/tickets/{ticket}/accept', [\App\Http\Controllers\Helpdesk\Portal\TicketController::class, 'accept'])->name('tickets.accept');
+            Route::post('/tickets/{ticket}/reopen', [\App\Http\Controllers\Helpdesk\Portal\TicketController::class, 'reopen'])->name('tickets.reopen');
+            Route::post('/tickets/{ticket}/rate', [\App\Http\Controllers\Helpdesk\Portal\TicketController::class, 'rate'])->name('tickets.rate');
             // Portal-Bestellstrecke Servicekatalog (Feature 065, MVP-154): nur
             // portal-sichtbare Einträge, Bestellung friert Snapshots ein.
-            Route::get('/catalog', [\App\Http\Controllers\CustomerPortal\CatalogController::class, 'index'])->name('catalog.index');
-            Route::get('/catalog/{item}', [\App\Http\Controllers\CustomerPortal\CatalogController::class, 'show'])->name('catalog.show');
-            Route::post('/catalog/{item}/order', [\App\Http\Controllers\CustomerPortal\CatalogController::class, 'order'])->name('catalog.order');
+            Route::get('/catalog', [\App\Http\Controllers\Helpdesk\Portal\CatalogController::class, 'index'])->name('catalog.index');
+            Route::get('/catalog/{item}', [\App\Http\Controllers\Helpdesk\Portal\CatalogController::class, 'show'])->name('catalog.show');
+            Route::post('/catalog/{item}/order', [\App\Http\Controllers\Helpdesk\Portal\CatalogController::class, 'order'])->name('catalog.order');
         });
 
         Route::middleware('portal.capability:claims')->group(function (): void {
             // Reklamationsstatus + Nachreichungen (Feature 072, MVP-256).
-            Route::get('/claims', [\App\Http\Controllers\CustomerPortal\ClaimPortalController::class, 'index'])->name('claims.index');
-            Route::get('/claims/{claim}', [\App\Http\Controllers\CustomerPortal\ClaimPortalController::class, 'show'])->name('claims.show');
-            Route::post('/claims/{claim}/nachreichung', [\App\Http\Controllers\CustomerPortal\ClaimPortalController::class, 'addNote'])->name('claims.note');
+            Route::get('/claims', [\App\Http\Controllers\Claims\Portal\ClaimPortalController::class, 'index'])->name('claims.index');
+            Route::get('/claims/{claim}', [\App\Http\Controllers\Claims\Portal\ClaimPortalController::class, 'show'])->name('claims.show');
+            Route::post('/claims/{claim}/nachreichung', [\App\Http\Controllers\Claims\Portal\ClaimPortalController::class, 'addNote'])->name('claims.note');
         });
 
         Route::middleware('portal.capability:rentals')->group(function (): void {
             // Verleihvorgänge + Übergabebestätigung (Feature 073, MVP-263/269).
-            Route::get('/rentals', [\App\Http\Controllers\CustomerPortal\RentalPortalController::class, 'index'])->name('rentals.index');
-            Route::get('/rentals/{rental}', [\App\Http\Controllers\CustomerPortal\RentalPortalController::class, 'show'])->name('rentals.show');
-            Route::post('/rentals/{rental}/uebergabe/{report}/bestaetigen', [\App\Http\Controllers\CustomerPortal\RentalPortalController::class, 'confirm'])->name('rentals.confirm');
+            Route::get('/rentals', [\App\Http\Controllers\Rental\Portal\RentalPortalController::class, 'index'])->name('rentals.index');
+            Route::get('/rentals/{rental}', [\App\Http\Controllers\Rental\Portal\RentalPortalController::class, 'show'])->name('rentals.show');
+            Route::post('/rentals/{rental}/uebergabe/{report}/bestaetigen', [\App\Http\Controllers\Rental\Portal\RentalPortalController::class, 'confirm'])->name('rentals.confirm');
         });
 
         // Verleih-Anfrage (Feature 073, MVP-714): eigene Capability (Default-
         // Deny), zweiphasig — der Kunde fragt an, die Leitung entscheidet.
         // Eigener Pfad, damit /rentals/{rental} (Sqid-Binding) nicht greift.
         Route::middleware('portal.capability:rental_requests')->group(function (): void {
-            Route::get('/rental-requests', [\App\Http\Controllers\CustomerPortal\RentalRequestController::class, 'index'])->name('rentals.requests.index');
-            Route::post('/rental-requests', [\App\Http\Controllers\CustomerPortal\RentalRequestController::class, 'store'])
+            Route::get('/rental-requests', [\App\Http\Controllers\Rental\Portal\RentalRequestController::class, 'index'])->name('rentals.requests.index');
+            Route::post('/rental-requests', [\App\Http\Controllers\Rental\Portal\RentalRequestController::class, 'store'])
                 ->middleware('throttle:12,1')->name('rentals.requests.store');
-            Route::post('/rental-requests/{rentalRequest}/withdraw', [\App\Http\Controllers\CustomerPortal\RentalRequestController::class, 'withdraw'])->name('rentals.requests.withdraw');
+            Route::post('/rental-requests/{rentalRequest}/withdraw', [\App\Http\Controllers\Rental\Portal\RentalRequestController::class, 'withdraw'])->name('rentals.requests.withdraw');
         });
 
         Route::middleware('portal.capability:assets')->group(function (): void {
@@ -158,15 +158,15 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
         // seiner Endkunden — ohne Preise, Einkauf und Rechnungsbezüge; Modul-Gate
         // module.reselling hängt an der Capability.
         Route::middleware('portal.capability:subscriptions')->group(function (): void {
-            Route::get('/subscriptions', [\App\Http\Controllers\CustomerPortal\SubscriptionController::class, 'index'])->name('subscriptions.index');
-            Route::get('/subscriptions/{subscription}', [\App\Http\Controllers\CustomerPortal\SubscriptionController::class, 'show'])->name('subscriptions.show');
+            Route::get('/subscriptions', [\App\Http\Controllers\Reselling\Portal\SubscriptionController::class, 'index'])->name('subscriptions.index');
+            Route::get('/subscriptions/{subscription}', [\App\Http\Controllers\Reselling\Portal\SubscriptionController::class, 'show'])->name('subscriptions.show');
         });
 
         // Kundenvereinbarungen (Feature 157, MVP-822): eigene AVV-/NDA-Fassungen
         // mit Stand; Dateien und Abschlussnachweis nur für freigegebene,
         // vollständig unterzeichnete Fassungen. Modul-Gate module.contracts
         // hängt an der Capability.
-        Route::middleware('portal.capability:agreements')->controller(\App\Http\Controllers\CustomerPortal\AgreementController::class)->group(function (): void {
+        Route::middleware('portal.capability:agreements')->controller(\App\Http\Controllers\Contract\Portal\AgreementController::class)->group(function (): void {
             Route::get('/vereinbarungen', 'index')->name('agreements.index');
             Route::get('/vereinbarungen/{revision}/nachweis', 'certificate')->name('agreements.certificate');
             Route::get('/vereinbarungen/{revision}/paket', 'package')->name('agreements.package');
@@ -210,12 +210,12 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
     // Kundenschulungen (Feature 149, MVP-742): Default-Deny — sichtbar sind
     // nur freigegebene Kurse mit ausdrücklicher Zielgruppe `customer`.
     Route::middleware(['auth:customer', 'two-factor.setup:customer'])->group(function (): void {
-        Route::get('/schulungen', [\App\Http\Controllers\CustomerPortal\PortalLearningController::class, 'index'])->name('learning.index');
-        Route::post('/schulungen/{course}/einschreiben', [\App\Http\Controllers\CustomerPortal\PortalLearningController::class, 'enroll'])->name('learning.enroll');
-        Route::post('/schulungen/{course}/buchen', [\App\Http\Controllers\CustomerPortal\PortalLearningController::class, 'requestBooking'])->name('learning.book');
-        Route::get('/schulungen/{course}/vorschau', [\App\Http\Controllers\CustomerPortal\PortalLearningController::class, 'preview'])->name('learning.preview');
-        Route::get('/schulungen/{enrollment}', [\App\Http\Controllers\CustomerPortal\PortalLearningController::class, 'show'])->name('learning.show');
-        Route::post('/schulungen/{enrollment}/einheiten/{unit}/erledigt', [\App\Http\Controllers\CustomerPortal\PortalLearningController::class, 'completeUnit'])->name('learning.units.complete');
+        Route::get('/schulungen', [\App\Http\Controllers\Learning\Portal\PortalLearningController::class, 'index'])->name('learning.index');
+        Route::post('/schulungen/{course}/einschreiben', [\App\Http\Controllers\Learning\Portal\PortalLearningController::class, 'enroll'])->name('learning.enroll');
+        Route::post('/schulungen/{course}/buchen', [\App\Http\Controllers\Learning\Portal\PortalLearningController::class, 'requestBooking'])->name('learning.book');
+        Route::get('/schulungen/{course}/vorschau', [\App\Http\Controllers\Learning\Portal\PortalLearningController::class, 'preview'])->name('learning.preview');
+        Route::get('/schulungen/{enrollment}', [\App\Http\Controllers\Learning\Portal\PortalLearningController::class, 'show'])->name('learning.show');
+        Route::post('/schulungen/{enrollment}/einheiten/{unit}/erledigt', [\App\Http\Controllers\Learning\Portal\PortalLearningController::class, 'completeUnit'])->name('learning.units.complete');
     });
 
 });

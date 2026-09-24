@@ -10,13 +10,13 @@
 
 namespace App\Http\Requests\Material;
 
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Customer\Customer;
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Models\Project\Project;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Contracts\Validation\Validator;
-use App\Http\Requests\BaseFormRequest;
 
 /**
  * Materialkosten-Zuordnung an einem Kunden: entweder anteilig aus einem

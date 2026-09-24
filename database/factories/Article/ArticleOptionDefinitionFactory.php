@@ -10,8 +10,7 @@
 
 namespace Database\Factories\Article;
 
-use App\Models\Article\Article;
-use App\Models\Article\ArticleOptionDefinition;
+use App\Models\Article\{Article, ArticleOptionDefinition};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

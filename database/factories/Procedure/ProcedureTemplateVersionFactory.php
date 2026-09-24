@@ -12,8 +12,7 @@ namespace Database\Factories\Procedure;
 
 use App\Enums\Procedure\ProcedureRiskLevel;
 use App\Models\Platform\User;
-use App\Models\Procedure\ProcedureTemplate;
-use App\Models\Procedure\ProcedureTemplateVersion;
+use App\Models\Procedure\{ProcedureTemplate, ProcedureTemplateVersion};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

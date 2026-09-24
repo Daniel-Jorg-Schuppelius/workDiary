@@ -11,8 +11,8 @@
 namespace App\Policies\Travel;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\Travel\Expense;
 use App\Models\Platform\User;
+use App\Models\Travel\Expense;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class ExpensePolicy {

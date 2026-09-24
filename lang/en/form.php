@@ -44,6 +44,9 @@ return [
         'field_options' => 'Options',
         'field_help' => 'Help text',
         'field_unit' => 'Unit',
+        'field_range' => 'Value range',
+        'field_min' => 'Min',
+        'field_max' => 'Max',
     ],
 
     'action' => [
@@ -108,17 +111,7 @@ return [
     'validation' => [
 
         'no_upload_field' => 'There is no file/photo field with this key in the form.',
-        'invalid_row' => 'Field definition in row :row is invalid.',
-        'label_required' => 'Field :row needs a label (max. 160 characters).',
-        'unknown_type' => 'Field :row has an unknown field type.',
-        'invalid_key' => 'Field key ":key" is invalid (lowercase letters, digits, underscores).',
-        'duplicate_key' => 'Field key ":key" is used more than once.',
-        'select_needs_options' => 'Select field ":label" needs at least one option.',
-        'fields_required' => 'The template needs at least one field.',
-        'too_many_fields' => 'A maximum of :max fields per template.',
         'template_not_active' => 'This template is not active and cannot be filled out.',
-        'condition_unknown_field' => 'Condition of field “:label” references an unknown field “:field”.',
-        'condition_cycle' => 'Conditions form a cycle (field “:field” indirectly depends on itself).',
     ],
 
     'flash' => [

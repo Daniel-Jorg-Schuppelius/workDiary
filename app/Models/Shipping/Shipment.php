@@ -12,10 +12,10 @@ namespace App\Models\Shipping;
 
 use App\Enums\Shipping\ShipmentStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Inventory\StockDelivery;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Inventory\StockDelivery;
 
 /**
  * Versandauftrag einer Organisation (Feature 059, MVP-128): erzeugt aus einer

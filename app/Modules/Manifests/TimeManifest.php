@@ -96,4 +96,24 @@ final class TimeManifest extends Manifest {
             'gitlab',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Import\EntitySpec::class => [
+                \App\Services\Attendance\Import\AttendanceSpec::class,
+                \App\Services\Timekeeping\Import\ProjectTimeSpec::class,
+            ],
+            \App\Services\Search\Indexing\Sources\SearchSource::class => [
+                \App\Services\Timekeeping\Search\TimeEntrySource::class,
+                \App\Services\Timesheet\Search\TimesheetSource::class,
+            ],
+            \App\Services\Sync\Contracts\SyncCommandHandler::class => [
+                \App\Services\Attendance\Sync\AttendanceSyncHandler::class,
+            ],
+            \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
+                \App\Services\TimeExport\Retention\TimeRetentionPolicies::class,
+            ],
+        ];
+    }
 }

@@ -14,11 +14,11 @@ namespace App\Services\Release;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Security\IntegrityCheckStatus;
+use App\Events\Release\IntegrityCrisisRaised;
 use App\Models\Audit\AuditLog;
 use App\Models\Crisis\CrisisCase;
 use App\Models\Platform\{IntegrityCheck, Organization, User};
 use App\Notifications\GenericEventNotification;
-use App\Services\Crisis\CrisisAlertService;
 use App\Support\MorphMap;
 use Illuminate\Support\Facades\{Artisan, Log, Notification};
 use Illuminate\Support\Facades\Storage;
@@ -232,7 +232,7 @@ class IntegrityLockdownService {
                 'created_by' => $actor->id,
             ]);
             $case->audit('crisis.reported', ['trigger' => 'integrity.lockdown', 'check_id' => $check->id]);
-            app(CrisisAlertService::class)->alert($case, $actor);
+            IntegrityCrisisRaised::dispatch($case, $actor);
         } catch (\Throwable $e) {
             Log::error('integrity.lockdown_crisis_failed', ['error' => $e->getMessage()]);
         }

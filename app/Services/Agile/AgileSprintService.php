@@ -269,15 +269,6 @@ class AgileSprintService {
 
     /** @param array<string, mixed> $payload */
     private function recordEvent(AgileSprint $sprint, string $event, ?User $actor, ?AgileWorkItem $item = null, array $payload = []): void {
-        AgileEvent::record([
-            'organization_id' => $sprint->organization_id,
-            'board_id' => $sprint->board_id,
-            'work_item_id' => $item?->id,
-            'sprint_id' => $sprint->id,
-            'event' => $event,
-            'actor_user_id' => $actor?->id,
-            'payload' => $payload,
-            'created_at' => now(),
-        ]);
+        AgileEvent::log(null, $event, $payload, $actor, extra: ['organization_id' => $sprint->organization_id, 'board_id' => $sprint->board_id, 'work_item_id' => $item?->id, 'sprint_id' => $sprint->id]);
     }
 }

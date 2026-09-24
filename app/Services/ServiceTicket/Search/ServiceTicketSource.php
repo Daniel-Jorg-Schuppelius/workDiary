@@ -10,12 +10,13 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Search\Indexing\Sources;
+namespace App\Services\ServiceTicket\Search;
 
 use App\Enums\Search\SearchSourceType;
 use App\Models\Scopes\OrganizationScope;
 use App\Models\ServiceTicket\{ServiceTicket, ServiceTicketMessage};
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
+use App\Services\Search\Indexing\Sources\AbstractSearchSource;
 use Illuminate\Database\Eloquent\{Builder, Model};
 
 /** Tickets samt Lösung, Workaround und Konversation (Mail-HTML als Text). */

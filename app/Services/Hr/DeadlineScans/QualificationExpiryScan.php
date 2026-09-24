@@ -10,11 +10,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Notification\DeadlineScans;
+namespace App\Services\Hr\DeadlineScans;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Hr\UserQualification;
 use App\Models\Platform\User;
+use App\Services\Notification\DeadlineScans\{AbstractDeadlineScan, DeadlineScanOptions};
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Support\Carbon;
 

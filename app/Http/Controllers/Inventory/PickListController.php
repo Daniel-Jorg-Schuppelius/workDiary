@@ -11,15 +11,15 @@
 namespace App\Http\Controllers\Inventory;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Models\Manufacturing\ManufacturingOrder;
+use App\Http\Controllers\Controller;
 use App\Models\Inventory\Warehouse;
+use App\Models\Manufacturing\ManufacturingOrder;
 use App\Services\Inventory\{PickListBuilder, PickListPdfRenderer};
 use App\Support\Sqid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Kommissionierliste je fachlicher Quelle (Feature 048, MVP-706): HTML-Liste

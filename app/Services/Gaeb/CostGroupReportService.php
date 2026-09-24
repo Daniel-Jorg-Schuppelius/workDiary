@@ -15,6 +15,7 @@ namespace App\Services\Gaeb;
 use App\Models\Catalog\{CatalogEntry, CatalogRegistry};
 use App\Models\Costing\CostEstimate;
 use App\Models\Gaeb\{BillOfQuantity, BoqCatalog, BoqCatalogAssignment, BoqItem, BoqItemQuantitySplit};
+use App\Services\Billing\DocumentTotalsCalculator;
 use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\StringHelper;
 
@@ -502,7 +503,7 @@ final class CostGroupReportService {
             return 0.0;
         }
 
-        return round($quantity * $price, 2);
+        return DocumentTotalsCalculator::lineNet($quantity, $price)->withScale(2)->toFloat();
     }
 
     /** „311" auf Ebene 2 ist „310", auf Ebene 1 „300". */

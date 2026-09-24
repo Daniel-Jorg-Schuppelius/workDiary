@@ -14,7 +14,7 @@ namespace App\Services\Finance\ProcedureDocumentation\Sections;
 
 use App\Models\Platform\Organization;
 use App\Services\Finance\ProcedureDocumentation\{FormatsSectionValues, ProcedureSection, SectionContext};
-use App\Services\Privacy\Retention\RetentionRegistry;
+use App\Services\Retention\RetentionRegistry;
 
 /**
  * Aufbewahrungsbereiche (config/retention.php inkl. der Bereiche aus MVP-694)

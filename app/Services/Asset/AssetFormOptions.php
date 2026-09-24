@@ -43,17 +43,12 @@ class AssetFormOptions {
      * @return array<string, string>
      */
     public function statusOptions(): array {
-        return [
-            AssetStatus::Active->value => __('Aktiv'),
-            AssetStatus::InMaintenance->value => __('In Wartung'),
-            AssetStatus::InRepair->value => __('In Reparatur'),
-            AssetStatus::Blocked->value => __('Gesperrt'),
-            AssetStatus::Reserved->value => __('Reserviert'),
-            AssetStatus::LoanOut->value => __('Ausgeliehen'),
-            AssetStatus::Replaced->value => __('Ersetzt'),
-            AssetStatus::Decommissioned->value => __('Außer Betrieb'),
-            AssetStatus::Lost->value => __('Verloren'),
-        ];
+        $out = [];
+        foreach (AssetStatus::cases() as $status) {
+            $out[$status->value] = $status->label();
+        }
+
+        return $out;
     }
 
     /**

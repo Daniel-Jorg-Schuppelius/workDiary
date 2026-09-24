@@ -10,12 +10,13 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Search\Indexing\Sources;
+namespace App\Services\Knowledge\Search;
 
 use App\Enums\Knowledge\ArticleStatus;
 use App\Enums\Search\SearchSourceType;
 use App\Models\Knowledge\KnowledgeArticle;
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
+use App\Services\Search\Indexing\Sources\AbstractSearchSource;
 use Illuminate\Database\Eloquent\{Builder, Model};
 
 /** Wissensartikel mit Problem und Lösung; Entwürfe tragen `restricted`. */

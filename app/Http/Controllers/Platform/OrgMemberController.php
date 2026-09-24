@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Platform;
 use App\Enums\User\{Permission, UserRole};
 use App\Http\Controllers\Concerns\{AuditsAccessChanges, ManagesUserContactDetails};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Services\Auth\UserSessionInvalidator;
 use App\Services\Licensing\LimitGuard;
@@ -24,7 +25,6 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 use Spatie\Permission\Models\Role;
-use App\Http\Controllers\Controller;
 
 /**
  * Verwaltet Mitglieder der eigenen Organisation.
@@ -59,7 +59,7 @@ class OrgMemberController extends Controller {
         $canManageMembers = $this->canManageMembers($auth);
         $canManagePayroll = $this->canManagePayroll($auth);
         // Legal Hold (MVP-801): sichtbar machen, warum Löschen gesperrt ist.
-        $heldUserIds = app(\App\Services\Privacy\LegalHoldService::class)->heldUserIds();
+        $heldUserIds = app(\App\Services\Retention\LegalHoldService::class)->heldUserIds();
 
         return view('org.members.index', compact('members', 'roles', 'sort', 'dir', 'canManageMembers', 'canManagePayroll', 'heldUserIds'));
     }
@@ -393,13 +393,9 @@ class OrgMemberController extends Controller {
 
         $data = $request->validate(['left_at' => ['required', 'date']]);
 
-        $openMedia = app(\App\Services\Access\AccessMediumService::class)->openMediaFor($member);
-        if ($openMedia->isNotEmpty()) {
-            return back()->with('error', __(':name hält noch :count Zutrittsmedien (:list) — erst zurücknehmen, dann entfernen.', [
-                'name' => $member->name,
-                'count' => $openMedia->count(),
-                'list' => $openMedia->map(fn ($m) => ($m->label ?: __('Medium')) . ' …' . $m->number_suffix)->implode(', '),
-            ]));
+        $blockers = app(\App\Services\Org\UserOffboardingService::class)->blockers($member);
+        if ($blockers !== []) {
+            return back()->with('error', implode(' ', $blockers));
         }
 
         app(\App\Services\Org\UserOffboardingService::class)
@@ -424,7 +420,7 @@ class OrgMemberController extends Controller {
         }
 
         // Legal Hold (MVP-801): gesperrte Personen werden nicht gelöscht.
-        if (app(\App\Services\Privacy\LegalHoldService::class)->activeHoldFor($member) !== null) {
+        if (app(\App\Services\Retention\LegalHoldService::class)->activeHoldFor($member) !== null) {
             return back()->with('error', __(':name steht unter Legal Hold — Löschen ist bis zur Aufhebung ausgeschlossen.', ['name' => $member->name]));
         }
 
@@ -435,17 +431,11 @@ class OrgMemberController extends Controller {
             return back()->with('error', __(':name hat aufbewahrungspflichtige Nachweise (Zeiten/Lohn) — bitte den Austritt nutzen statt zu löschen.', ['name' => $member->name]));
         }
 
-        // Offboarding-Check (Feature 092): Wer geht, gibt erst ab. Offene
-        // Zutrittsmedien blockieren das Entfernen - ein gelöschtes Mitglied
-        // mit Transponder in der Tasche ist genau das Loch, das die
-        // Medienverwaltung schließen soll.
-        $openMedia = app(\App\Services\Access\AccessMediumService::class)->openMediaFor($member);
-        if ($openMedia->isNotEmpty()) {
-            return back()->with('error', __(':name hält noch :count Zutrittsmedien (:list) — erst zurücknehmen, dann entfernen.', [
-                'name' => $member->name,
-                'count' => $openMedia->count(),
-                'list' => $openMedia->map(fn ($m) => ($m->label ?: __('Medium')) . ' …' . $m->number_suffix)->implode(', '),
-            ]));
+        // Offboarding-Check (Feature 092): Wer geht, gibt erst ab — die
+        // Schritte der Module (z. B. offene Zutrittsmedien) blockieren.
+        $blockers = app(\App\Services\Org\UserOffboardingService::class)->blockers($member);
+        if ($blockers !== []) {
+            return back()->with('error', implode(' ', $blockers));
         }
 
         $member->delete();

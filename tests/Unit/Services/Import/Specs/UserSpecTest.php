@@ -15,7 +15,7 @@ namespace Tests\Unit\Services\Import\Specs;
 use App\Models\Platform\User;
 use App\Services\Export\Specs\UserExportSpec;
 use App\Services\Import\ImportOutcome;
-use App\Services\Import\Specs\UserSpec;
+use App\Services\Users\Import\UserSpec;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

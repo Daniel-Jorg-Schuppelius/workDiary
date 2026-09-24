@@ -14,8 +14,6 @@ use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Ideas\IdeaMap;
-use App\Models\Ideas\IdeaNode;
 
 /**
  * Boundary/Zusammenfassung über einen zusammenhängenden Kinderbereich eines

@@ -21,7 +21,8 @@ use App\Models\Platform\{Organization, User};
 use App\Models\Print\PrintOrder;
 use App\Models\Shipping\Shipment;
 use App\Services\Asset\AssetUsageGuard;
-use App\Services\AssetCompliance\AssetComplianceService;
+use App\Services\Asset\Contracts\AssetComplianceStatusProvider;
+use App\Services\Concerns\AssertsValidatedTransition;
 use App\Services\Print\Preflight\{BasicPreflightProvider, PreflightProvider, PreflightReport};
 use Illuminate\Support\Facades\{DB, Storage};
 use Illuminate\Validation\ValidationException;
@@ -44,6 +45,7 @@ use Illuminate\Validation\ValidationException;
  *    kaufmännischen Nachweis (Auftrag, Snapshot, Hash bleiben).
  */
 class PrintOrderService {
+    use AssertsValidatedTransition;
     /** Branchenprofil-Code (Seed unter database/data/branchprofiles). */
     public const PROFILE_CODE = 'druck-kopiershop';
 
@@ -52,7 +54,7 @@ class PrintOrderService {
 
     public function __construct(
         private readonly AssetUsageGuard $assetGuard,
-        private readonly AssetComplianceService $compliance,
+        private readonly AssetComplianceStatusProvider $compliance,
     ) {}
 
     /** Profil installiert? (Muster RecipeService — Kontext-Gate der UI.) */
@@ -200,7 +202,7 @@ class PrintOrderService {
      * @param  array<string, mixed>  $parameters
      */
     public function approve(PrintOrder $order, array $parameters, User $actor): PrintOrder {
-        $this->assertTransition($order, PrintOrderStatus::Approved);
+        $this->assertValidatedTransition($order->status, PrintOrderStatus::Approved, 'print.error.invalid_transition_detail');
         if (! $order->hasProductionFile() || $order->file_hash === null) {
             throw ValidationException::withMessages(['document' => (string) __('print.error.file_required')]);
         }
@@ -258,7 +260,7 @@ class PrintOrderService {
      * Maschine darf weder gesperrt noch prüf-/kalibrierüberfällig sein.
      */
     public function startProduction(PrintOrder $order, ?Asset $machine, User $actor): PrintOrder {
-        $this->assertTransition($order, PrintOrderStatus::InProduction);
+        $this->assertValidatedTransition($order->status, PrintOrderStatus::InProduction, 'print.error.invalid_transition_detail');
         if (! $order->approvalMatchesFile()) {
             throw ValidationException::withMessages(['approval' => (string) __('print.error.approval_stale')]);
         }
@@ -294,7 +296,7 @@ class PrintOrderService {
             throw ValidationException::withMessages(['result' => (string) __('print.error.qc_result_invalid')]);
         }
         if ($order->status === PrintOrderStatus::InProduction) {
-            $this->assertTransition($order, PrintOrderStatus::QualityCheck);
+            $this->assertValidatedTransition($order->status, PrintOrderStatus::QualityCheck, 'print.error.invalid_transition_detail');
             $order->forceFill(['status' => PrintOrderStatus::QualityCheck])->save();
         }
         if ($order->status !== PrintOrderStatus::QualityCheck) {
@@ -307,7 +309,7 @@ class PrintOrderService {
             default => PrintOrderStatus::QualityCheck, // Sperre: bleibt in QK
         };
         if ($target !== PrintOrderStatus::QualityCheck) {
-            $this->assertTransition($order, $target);
+            $this->assertValidatedTransition($order->status, $target, 'print.error.invalid_transition_detail');
         }
 
         $order->forceFill([
@@ -344,7 +346,7 @@ class PrintOrderService {
      * @param  array<string, mixed>  $attributes
      */
     public function issue(PrintOrder $order, array $attributes, User $actor): PrintOrder {
-        $this->assertTransition($order, PrintOrderStatus::Issued);
+        $this->assertValidatedTransition($order->status, PrintOrderStatus::Issued, 'print.error.invalid_transition_detail');
 
         $shipment = null;
         if ($order->output_kind === PrintOutputKind::Shipping) {
@@ -373,7 +375,7 @@ class PrintOrderService {
 
     /** Storno mit Begründung (kein stiller Abbruch). */
     public function cancel(PrintOrder $order, string $reason, User $actor): PrintOrder {
-        $this->assertTransition($order, PrintOrderStatus::Cancelled);
+        $this->assertValidatedTransition($order->status, PrintOrderStatus::Cancelled, 'print.error.invalid_transition_detail');
         if (trim($reason) === '') {
             throw ValidationException::withMessages(['reason' => (string) __('print.error.cancel_reason_required')]);
         }
@@ -466,14 +468,4 @@ class PrintOrderService {
         return hash_final($context);
     }
 
-    private function assertTransition(PrintOrder $order, PrintOrderStatus $target): void {
-        if (! $order->status->canTransitionTo($target)) {
-            throw ValidationException::withMessages([
-                'status' => (string) __('print.error.invalid_transition_detail', [
-                    'from' => $order->status->value,
-                    'to' => $target->value,
-                ]),
-            ]);
-        }
-    }
 }

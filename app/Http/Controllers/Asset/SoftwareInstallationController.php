@@ -12,16 +12,14 @@ namespace App\Http\Controllers\Asset;
 
 use App\Enums\Software\SoftwareKind;
 use App\Exceptions\SoftwareInstallationException;
-use App\Models\Asset\Asset;
-use App\Models\Asset\Software;
-use App\Models\Asset\SoftwareInstallation;
+use App\Http\Controllers\Controller;
+use App\Models\Asset\{Asset, Software, SoftwareInstallation};
 use App\Models\Platform\User;
 use App\Services\Software\SoftwareInstallationService;
 use App\Support\SqidEncoder;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class SoftwareInstallationController extends Controller {
     public function __construct(

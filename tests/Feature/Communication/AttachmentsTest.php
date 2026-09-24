@@ -1,0 +1,198 @@
+<?php
+/*
+ * Created on   : Sun May 03 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : AttachmentsTest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace Tests\Feature\Communication;
+
+use App\Enums\Asset\AssetOwnership;
+use App\Models\Asset\Asset;
+use App\Models\Attachments\Attachment;
+use App\Models\Diary\DiaryEntry;
+use App\Models\Platform\User;
+use App\Support\MorphMap;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\{Storage, URL};
+use Tests\TestCase;
+
+class AttachmentsTest extends TestCase {
+    use RefreshDatabase;
+
+    protected function setUp(): void {
+        parent::setUp();
+        Storage::fake('local');
+    }
+
+    public function test_user_can_upload_attachment_to_asset(): void {
+        // Anhängen an ein Asset erfordert jetzt das Bearbeiten-Recht (asset.update);
+        // Admin besteht via HasAdminBypass.
+        $owner = User::factory()->admin()->create();
+        $asset = Asset::factory()->create([
+            'organization_id' => $owner->organization_id,
+            'customer_id' => null,
+            'owned_by' => AssetOwnership::Organization->value,
+        ]);
+        $file = UploadedFile::fake()->create('manual.pdf', 80, 'application/pdf');
+
+        $this->actingAs($owner)
+            ->post(route('attachments.store', ['type' => 'asset', 'id' => $asset->sqid]), ['file' => $file])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('attachments', [
+            'attachable_type' => MorphMap::alias(Asset::class),
+            'attachable_id' => $asset->id,
+            'user_id' => $owner->id,
+            'original_name' => 'manual.pdf',
+        ]);
+    }
+
+    /**
+     * Vollaudit 2026-07 (M1): Die Routen-Constraint blockte supplier/knowledge/
+     * service-ticket mit 404, obwohl Controller und Views die Typen unterstützen.
+     * Die whereIn-Liste leitet sich jetzt aus AttachmentController::TYPE_MAP ab.
+     */
+    public function test_all_type_map_targets_are_reachable_for_upload(): void {
+        $admin = User::factory()->admin()->create();
+        $parents = [
+            'supplier' => \App\Models\Supplier\Supplier::factory()->create(['organization_id' => $admin->organization_id]),
+            'knowledge' => \App\Models\Knowledge\KnowledgeArticle::factory()->create(['organization_id' => $admin->organization_id]),
+            'service-ticket' => \App\Models\ServiceTicket\ServiceTicket::factory()->create(['organization_id' => $admin->organization_id]),
+        ];
+
+        foreach ($parents as $type => $parent) {
+            $file = UploadedFile::fake()->create('beleg-' . $type . '.pdf', 40, 'application/pdf');
+            $this->actingAs($admin)
+                ->post(route('attachments.store', ['type' => $type, 'id' => $parent->sqid]), ['file' => $file])
+                ->assertRedirect();
+
+            $this->assertDatabaseHas('attachments', [
+                'attachable_type' => $parent->getMorphClass(),
+                'attachable_id' => $parent->id,
+                'original_name' => 'beleg-' . $type . '.pdf',
+            ]);
+        }
+    }
+
+    public function test_user_can_upload_attachment_to_diary_entry(): void {
+        $owner = User::factory()->user()->create();
+        $entry = DiaryEntry::factory()->for($owner)->create();
+        $file = UploadedFile::fake()->create('report.pdf', 100, 'application/pdf');
+
+        $this->actingAs($owner)
+            ->post(route('attachments.store', ['type' => 'diary', 'id' => $entry->sqid]), ['file' => $file])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('attachments', [
+            'attachable_type' => MorphMap::alias(DiaryEntry::class),
+            'attachable_id' => $entry->id,
+            'user_id' => $owner->id,
+            'original_name' => 'report.pdf',
+        ]);
+        $stored = Attachment::firstOrFail();
+        $this->assertTrue(Storage::disk('local')->exists($stored->path));
+    }
+
+    public function test_executable_extensions_are_rejected(): void {
+        $owner = User::factory()->user()->create();
+        $entry = DiaryEntry::factory()->for($owner)->create();
+        $file = UploadedFile::fake()->create('evil.php', 10, 'application/x-php');
+
+        $this->actingAs($owner)
+            ->post(route('attachments.store', ['type' => 'diary', 'id' => $entry->sqid]), ['file' => $file])
+            ->assertSessionHasErrors('file');
+
+        $this->assertSame(0, Attachment::count());
+    }
+
+    public function test_oversize_file_is_rejected(): void {
+        $owner = User::factory()->user()->create();
+        $entry = DiaryEntry::factory()->for($owner)->create();
+        // 26 MB > 25 MB limit
+        $file = UploadedFile::fake()->create('big.bin', 26 * 1024, 'application/octet-stream');
+
+        $this->actingAs($owner)
+            ->post(route('attachments.store', ['type' => 'diary', 'id' => $entry->sqid]), ['file' => $file])
+            ->assertSessionHasErrors('file');
+    }
+
+    public function test_org_setting_lowers_upload_limit(): void {
+        $owner = User::factory()->user()->create();
+        $owner->organization->update(['settings' => ['uploads' => ['attachment_kb' => 1024]]]);
+        $entry = DiaryEntry::factory()->for($owner)->create();
+        // 2 MB > 1 MB Org-Limit (uploads.attachment_kb), aber < 25 MB Default
+        $file = UploadedFile::fake()->create('big.pdf', 2 * 1024, 'application/pdf');
+
+        $this->actingAs($owner)
+            ->post(route('attachments.store', ['type' => 'diary', 'id' => $entry->sqid]), ['file' => $file])
+            ->assertSessionHasErrors('file');
+    }
+
+    public function test_signed_download_succeeds_and_unsigned_fails(): void {
+        $owner = User::factory()->user()->create();
+        $entry = DiaryEntry::factory()->for($owner)->create();
+        $this->actingAs($owner)
+            ->post(
+                route('attachments.store', ['type' => 'diary', 'id' => $entry->sqid]),
+                ['file' => UploadedFile::fake()->create('a.txt', 1, 'text/plain')]
+            );
+
+        $attachment = Attachment::firstOrFail();
+
+        $this->actingAs($owner)
+            ->get(route('attachments.download', $attachment))
+            ->assertForbidden();
+
+        $url = URL::temporarySignedRoute('attachments.download', now()->addMinutes(5), ['attachment' => $attachment]);
+        $this->actingAs($owner)->get($url)->assertOk();
+    }
+
+    public function test_only_uploader_or_admin_can_delete(): void {
+        $uploader = User::factory()->user()->create();
+        // $other muss in DERSELBEN Organisation wie $uploader sein – sonst
+        // filtert der OrganizationScope das Attachment vor der Policy aus
+        // und wir testen Tenant-Trennung, nicht Ownership.
+        $other = User::factory()->user()->create(['organization_id' => $uploader->organization_id]);
+        $admin = User::factory()->admin()->create(['organization_id' => $uploader->organization_id]);
+        $entry = DiaryEntry::factory()->for($uploader)->create();
+        $attachment = Attachment::factory()->for($uploader, 'uploader')->create([
+            'attachable_type' => MorphMap::alias(DiaryEntry::class),
+            'attachable_id' => $entry->id,
+        ]);
+
+        $this->actingAs($other)
+            ->delete(route('attachments.destroy', $attachment))
+            ->assertForbidden();
+
+        $this->actingAs($uploader)
+            ->delete(route('attachments.destroy', $attachment))
+            ->assertRedirect();
+        $this->assertNull(Attachment::find($attachment->id));
+
+        // Admin (in der gleichen Org)
+        $attachment2 = Attachment::factory()->for($uploader, 'uploader')->create([
+            'attachable_type' => MorphMap::alias(DiaryEntry::class),
+            'attachable_id' => $entry->id,
+        ]);
+        $this->actingAs($admin)
+            ->delete(route('attachments.destroy', $attachment2))
+            ->assertRedirect();
+        $this->assertNull(Attachment::find($attachment2->id));
+    }
+
+    public function test_attachments_panel_shown_on_diary_show(): void {
+        $owner = User::factory()->user()->create();
+        $entry = DiaryEntry::factory()->for($owner)->create();
+
+        $this->actingAs($owner)
+            ->get(route('diary.show', $entry))
+            ->assertOk()
+            ->assertSee(__('Anhänge'))
+            ->assertSee(__('Hochladen'));
+    }
+}

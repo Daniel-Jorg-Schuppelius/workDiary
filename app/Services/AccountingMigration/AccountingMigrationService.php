@@ -349,13 +349,9 @@ class AccountingMigrationService {
      * @param  array<string, mixed>  $payload
      */
     public function recordEvent(AccountingMigrationRun $run, string $event, array $payload = [], ?User $actor = null): AccountingMigrationEvent {
-        return AccountingMigrationEvent::create([
-            'organization_id' => $run->organization_id,
-            'accounting_migration_run_id' => $run->id,
-            'event' => $event,
-            'actor_user_id' => $actor?->id,
-            'payload' => $payload,
-            'created_at' => now(),
-        ]);
+        /** @var AccountingMigrationEvent $entry */
+        $entry = $run->record($event, $payload, $actor);
+
+        return $entry;
     }
 }

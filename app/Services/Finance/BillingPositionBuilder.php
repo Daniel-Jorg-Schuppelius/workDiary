@@ -18,6 +18,7 @@ use App\Models\Finance\{BillingTransfer, BillingTransferPosition};
 use App\Models\Material\MaterialUsage;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
+use App\Services\Billing\DocumentTotalsCalculator;
 use App\Services\Invoicing\{BillableTimeAggregator, BlockPrice, BlockPriceResolver, ServiceDefaultResolver, TextCorrectionService};
 use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\StringHelper;
@@ -144,7 +145,7 @@ class BillingPositionBuilder {
                 'unit_name' => $service?->unitName ?: $this->timeUnit($transfer),
                 'unit_price' => round($price->rate, 4),
                 'vat_rate' => $service?->vatRate,
-                'amount' => round($hours * $price->rate, 2),
+                'amount' => DocumentTotalsCalculator::lineNet($hours, $price->rate)->withScale(2)->toFloat(),
                 'article_id' => $service?->articleId,
                 'service_source' => $service?->source,
                 'price_source' => $price->source,
@@ -202,7 +203,9 @@ class BillingPositionBuilder {
                 'unit_name' => trim((string) ($usage->unit ?? '')) ?: (string) __('invoicing.unit_piece'),
                 'unit_price' => round($unitPrice, 4),
                 'vat_rate' => $usage->tax_rate !== null ? round((float) $usage->tax_rate->getNumericValue(), 2) : null,
-                'amount' => round((float) (($item !== null ? $item->amount : null) ?? ($quantity * $unitPrice)), 2),
+                'amount' => $item !== null && $item->amount !== null
+                    ? round((float) $item->amount, 2)
+                    : DocumentTotalsCalculator::lineNet($quantity, $unitPrice)->withScale(2)->toFloat(),
                 'article_id' => null,
                 'service_source' => null,
                 'price_source' => $unitPrice > 0.0 ? BlockPrice::SOURCE_ENTRY : BlockPrice::SOURCE_NONE,

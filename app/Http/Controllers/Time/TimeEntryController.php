@@ -12,8 +12,8 @@ namespace App\Http\Controllers\Time;
 
 use App\Enums\Classification\ClassificationDomain;
 use App\Http\Controllers\Concerns\{BuildsTimeEntryOptions, ProvidesTimeEntryTagPicker};
-use App\Http\Requests\Time\ReassignTimeEntriesRequest;
-use App\Http\Requests\Time\SaveTimeEntryRequest;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Time\{ReassignTimeEntriesRequest, SaveTimeEntryRequest};
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
@@ -26,7 +26,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class TimeEntryController extends Controller {
     use BuildsTimeEntryOptions;

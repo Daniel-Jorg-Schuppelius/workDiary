@@ -16,7 +16,7 @@ use App\Models\Customer\Customer;
 use App\Models\Diary\{DiaryEntry, Tour};
 use App\Models\Platform\User;
 use App\Models\Travel\TravelLog;
-use App\Services\Travel\TravelChargeService;
+use App\Services\Billing\Travel\TravelChargeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -151,7 +151,7 @@ class TravelChargeServiceTest extends TestCase {
         return $tour;
     }
 
-    /** @return \Illuminate\Support\Collection<int, \App\Services\Travel\TravelCharge> */
+    /** @return \Illuminate\Support\Collection<int, \App\Services\Billing\Travel\TravelCharge> */
     private function charges() {
         return app(TravelChargeService::class)->chargesForRange(
             $this->customer,

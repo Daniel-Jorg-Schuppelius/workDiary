@@ -11,6 +11,7 @@
 namespace App\Models\Access;
 
 use App\Enums\KeyHandover\KeyHandoverDirection;
+use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, Searchable};
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
@@ -19,7 +20,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use App\Models\Asset\Asset;
 
 /**
  * @property int $id

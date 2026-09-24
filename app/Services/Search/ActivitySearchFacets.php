@@ -18,7 +18,7 @@ use App\Models\Concerns\HasTags;
 use App\Models\Knowledge\ContentCollection;
 use App\Models\Platform\User;
 use App\Models\Search\SearchDocument;
-use App\Services\Collections\{CollectableTypes, ContentCollectionService};
+use App\Services\Search\Contracts\CollectionScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
 
@@ -34,8 +34,7 @@ use Illuminate\Support\Facades\Gate;
  */
 final class ActivitySearchFacets {
     public function __construct(
-        private readonly CollectableTypes $collectables,
-        private readonly ContentCollectionService $collections,
+        private readonly CollectionScope $collections,
     ) {}
 
     /** @param  Builder<SearchDocument>  $query */
@@ -146,7 +145,7 @@ final class ActivitySearchFacets {
     private function collectableTypes(): array {
         return array_values(array_filter(
             SearchSourceType::cases(),
-            fn (SearchSourceType $type): bool => $this->collectables->keyFor(new ($type->modelClass())()) !== null,
+            fn (SearchSourceType $type): bool => $this->collections->keyFor(new ($type->modelClass())()) !== null,
         ));
     }
 }

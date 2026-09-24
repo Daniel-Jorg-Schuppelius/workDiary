@@ -99,4 +99,33 @@ final class FleetManifest extends Manifest {
             'groups' => [],
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Navigation\Contracts\NavigationCondition::class => [
+                \App\Services\Passenger\Navigation\PassengerProfileCondition::class,
+            ],
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Fleet\DeadlineScans\DriverLicenseCheckScan::class,
+            ],
+            \App\Services\Import\EntitySpec::class => [
+                \App\Services\Fleet\Import\VehicleSpec::class,
+            ],
+            \App\Services\Dispatch\Contracts\VehicleReservationGuard::class => [
+                \App\Services\Fleet\Dispatch\DriverLicenseReservationGuard::class,
+            ],
+            \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
+                \App\Services\Fleet\Retention\FleetRetentionPolicies::class,
+                \App\Services\Passenger\Retention\PassengerRetentionPolicies::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\Passenger\Contracts\CashBookPosting::class => \App\Services\Passenger\Contracts\NullCashBookPosting::class,
+        ];
+    }
 }

@@ -103,9 +103,9 @@ class SecondPersonGateTest extends TestCase {
         $done = $this->executor->execute($stepRun->fresh(), $user, ProcedureStepRunStatus::Done);
         $this->assertSame(ProcedureStepRunStatus::Done, $done->status);
 
-        $this->assertSame(1, $run->events()->where('event_type', ProcedureRunEventType::SecondPersonRequested->value)->count());
-        $this->assertSame(1, $run->events()->where('event_type', ProcedureRunEventType::SecondPersonAssigned->value)->count());
-        $this->assertSame(1, $run->events()->where('event_type', ProcedureRunEventType::SecondPersonSigned->value)->count());
+        $this->assertSame(1, $run->journal()->where('event_type', ProcedureRunEventType::SecondPersonRequested->value)->count());
+        $this->assertSame(1, $run->journal()->where('event_type', ProcedureRunEventType::SecondPersonAssigned->value)->count());
+        $this->assertSame(1, $run->journal()->where('event_type', ProcedureRunEventType::SecondPersonSigned->value)->count());
     }
 
     public function test_sign_by_non_taker_is_rejected(): void {
@@ -142,7 +142,7 @@ class SecondPersonGateTest extends TestCase {
 
         $this->assertNull($reset->second_person_signed_at);
         $this->assertSame(ProcedureStepRunStatus::Pending, $reset->status);
-        $this->assertSame(1, $run->events()->where('event_type', ProcedureRunEventType::SecondPersonRevoked->value)->count());
+        $this->assertSame(1, $run->journal()->where('event_type', ProcedureRunEventType::SecondPersonRevoked->value)->count());
     }
 
     public function test_freigabe_step_type_implies_second_person_requirement(): void {

@@ -15,6 +15,7 @@ namespace App\Services\Import;
 use App\Enums\Import\{ImportEntity, ImportErrorCode, ImportRunState};
 use App\Models\Integration\{ImportRun, ImportRunError};
 use App\Models\Platform\{Organization, User};
+use App\Services\Import\Contracts\{ProvidesZipImport, ZipImporter};
 use App\Services\Import\Source\{CsvImportSource, ImportSource, ImportSourceFactory};
 use CommonToolkit\Helper\Data\CSV\StringHelper;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
@@ -48,7 +49,6 @@ class CsvPreflightAnalyzer {
     public function __construct(
         private readonly EntitySpecRegistry $registry,
         private readonly ImportSourceFactory $sources,
-        private readonly DocumentZipImportService $documentZip,
     ) {}
 
     /**
@@ -92,7 +92,7 @@ class CsvPreflightAnalyzer {
             // MVP-707: Dokumente kommen als ZIP (manifest.csv + Dateien) — die
             // Vorprüfung liest das Manifest aus dem Archiv, kein CSV-Pfad.
             if ($entity->acceptsZip()) {
-                $this->documentZip->preflight($run, ToolkitFile::read($absolutePath), $organization);
+                $this->zipImporter($entity)->preflight($run, ToolkitFile::read($absolutePath), $organization);
 
                 return $run;
             }
@@ -328,5 +328,14 @@ class CsvPreflightAnalyzer {
         Storage::disk(self::DISK)->delete($stored);
 
         return $csvPath;
+    }
+
+    private function zipImporter(ImportEntity $entity): ZipImporter {
+        $spec = $this->registry->for($entity);
+        if (! $spec instanceof ProvidesZipImport) {
+            throw new RuntimeException('Entität ohne ZIP-Import: ' . $entity->value);
+        }
+
+        return $spec->zipImporter();
     }
 }

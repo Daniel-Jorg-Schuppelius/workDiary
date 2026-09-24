@@ -1,0 +1,53 @@
+{
+    "kind": "cost_estimate",
+    "document": {
+        "currency": "EUR"
+    },
+    "lines": [
+        {
+            "code": "300",
+            "label": "Bauwerk – Baukonstruktionen",
+            "quantity": null,
+            "unit": "psch",
+            "unit_price": null,
+            "amount": "125000.00"
+        },
+        {
+            "code": "310",
+            "label": "Baugrube",
+            "quantity": "250.0000",
+            "unit": "m3",
+            "unit_price": "1234.5678",
+            "amount": null
+        },
+        {
+            "code": "330",
+            "label": "Außenwände",
+            "quantity": "1.0000",
+            "unit": "psch",
+            "unit_price": "15000.0000",
+            "amount": "15000.00"
+        }
+    ],
+    "expected": {
+        "line_nets": [
+            "125000.00",
+            "308641.95",
+            "15000.00"
+        ],
+        "line_net_sum": "448641.95",
+        "document_discount": "0.00",
+        "by_rate": {
+            "0.00": {
+                "rate": 0,
+                "net": "448641.95",
+                "allowance": "0.00",
+                "taxable": "448641.95",
+                "tax": "0.00"
+            }
+        },
+        "subtotal": "448641.95",
+        "tax_amount": "0.00",
+        "total": "448641.95"
+    }
+}

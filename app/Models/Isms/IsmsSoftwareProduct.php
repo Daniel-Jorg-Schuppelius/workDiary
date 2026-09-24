@@ -26,7 +26,7 @@ use Illuminate\Support\Carbon;
  * Verantwortlicher, Support-Status und End-of-Life-Datum. Die konkreten
  * Einsatzorte hängen als {@see IsmsSoftwareInstallation} daran. Die
  * produktbezogene WorkDiary-SBOM (Ebene 2) ist bewusst getrennt
- * (Services\Isms\SbomGenerator).
+ * (Services\Release\SbomGenerator).
  *
  * @property int $id
  * @property int $organization_id

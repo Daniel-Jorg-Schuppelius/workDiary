@@ -12,14 +12,13 @@ namespace App\Http\Controllers\Manufacturing;
 
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
-use App\Models\Manufacturing\ManufacturingOrder;
-use App\Models\Manufacturing\WorkCenter;
+use App\Http\Controllers\Controller;
+use App\Models\Manufacturing\{ManufacturingOrder, WorkCenter};
 use App\Services\Manufacturing\CapacityService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Kapazitätsboard (Feature 047/048, E7): Arbeitsplätze anlegen und ihre Tageslast

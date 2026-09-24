@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\AssetCompliance;
 
+use App\Casts\FieldDocumentCast;
 use App\Enums\AssetCompliance\AssetInspectionResult;
 use App\Models\Asset\Asset;
 use App\Models\Concerns\{AppendOnly, Auditable, BelongsToOrganization, HasAttachments, HasSqid};
@@ -55,7 +56,7 @@ class AssetInspectionEvent extends Model {
         'result' => AssetInspectionResult::class,
         'performed_at' => 'datetime',
         'valid_until' => 'date',
-        'checklist' => 'array',
+        'checklist' => FieldDocumentCast::class,
         'signed_at' => 'datetime',
         'cost' => 'decimal:2',
     ];

@@ -16,7 +16,7 @@ use App\Http\Controllers\Isms\Concerns\StreamsRegisterExport;
 use App\Models\Isms\{IsmsControl, IsmsRisk, IsmsRiskAssessment};
 use App\Models\Platform\User;
 use App\Services\Isms\{RegisterExportService, RiskService};
-use App\Support\Sqid;
+use App\Support\{SortableQuery, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
@@ -48,7 +48,7 @@ class RiskController extends Controller {
             'status' => (string) $request->query('status', 'all'),
             'category' => (string) $request->query('category', 'all'),
             'treatment' => (string) $request->query('treatment', 'all'),
-            'sort' => (string) $request->query('sort', 'score'),
+            'sort' => SortableQuery::resolve($request, ['score', 'newest', 'review'], 'score')[0],
         ];
 
         $query = IsmsRisk::query()->with([
@@ -68,14 +68,11 @@ class RiskController extends Controller {
             $query->where('treatment', $filters['treatment']);
         }
 
-        if ($filters['sort'] === 'newest') {
-            $query->orderByDesc('created_at');
-        } elseif ($filters['sort'] === 'review') {
-            $query->orderByRaw('review_due_on is null')->orderBy('review_due_on');
-        } else {
-            $filters['sort'] = 'score';
-            $query->orderByDesc('score')->orderBy('risk_no');
-        }
+        match ($filters['sort']) {
+            'newest' => $query->orderByDesc('created_at'),
+            'review' => $query->orderByRaw('review_due_on is null')->orderBy('review_due_on'),
+            default => $query->orderByDesc('score')->orderBy('risk_no'),
+        };
 
         $hasActiveFilters = $filters['status'] !== 'all'
             || $filters['category'] !== 'all'

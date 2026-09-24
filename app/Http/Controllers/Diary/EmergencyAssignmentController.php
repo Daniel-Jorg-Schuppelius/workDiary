@@ -11,15 +11,14 @@
 namespace App\Http\Controllers\Diary;
 
 use App\Http\Controllers\Concerns\ManagesShiftLike;
-use App\Models\Diary\EmergencyAssignment;
-use App\Models\Diary\OnCallShift;
+use App\Http\Controllers\Controller;
+use App\Models\Diary\{EmergencyAssignment, OnCallShift};
 use App\Models\Platform\User;
 use App\Support\Tz;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class EmergencyAssignmentController extends Controller {
     use ManagesShiftLike;

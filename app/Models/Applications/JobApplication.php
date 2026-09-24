@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Models\Applications;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasContactAndBankDetails, HasSqid};
+use App\Models\Contracts\ContactDetailsHolder;
 use App\Models\Platform\User;
 use App\Support\Crypto\BlindIndex;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -48,9 +49,10 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne, MorphMan
  * @property string|null $public_intake_ref
  */
 #[Hidden(['candidate_name', 'email', 'phone', 'notes', 'email_hash'])]
-class JobApplication extends Model {
+class JobApplication extends Model implements ContactDetailsHolder {
     use Auditable;
     use BelongsToOrganization;
+    use HasContactAndBankDetails;
     use HasSqid;
 
     public const STATUSES = ['received', 'screened', 'interview_planned', 'interviewed', 'task_open', 'offer', 'accepted', 'rejected', 'withdrawn', 'talent_pool', 'deleted'];

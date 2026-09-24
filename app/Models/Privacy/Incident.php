@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Privacy;
 
 use App\Enums\Privacy\{IncidentStatus, IncidentType};
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{BelongsToOrganization, HasJournal, HasSqid};
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Privacy\Casts\RecordEncrypted;
@@ -35,7 +35,11 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
  */
 class Incident extends Model implements ProvidesRecordDek {
     use BelongsToOrganization;
+    use HasJournal;
     use HasSqid;
+
+    /** @var class-string<IncidentEvent> Journal des Trägers (MVP-864) */
+    protected static string $journalClass = IncidentEvent::class;
 
     protected $table = 'privacy_incidents';
 
@@ -130,11 +134,6 @@ class Incident extends Model implements ProvidesRecordDek {
     /** @return BelongsTo<Customer, $this> */
     public function controllerCustomer(): BelongsTo {
         return $this->belongsTo(Customer::class, 'controller_customer_id');
-    }
-
-    /** @return HasMany<IncidentEvent, $this> */
-    public function events(): HasMany {
-        return $this->hasMany(IncidentEvent::class, 'incident_id')->orderBy('id');
     }
 
     /** @return HasMany<Measure, $this> */

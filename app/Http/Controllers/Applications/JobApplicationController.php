@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Applications;
 
 use App\Enums\Document\DocumentType;
+use App\Http\Controllers\Concerns\WritesContactDetails;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Concerns\ContactSatelliteFields;
 use App\Models\Applications\{EmployeeDraft, JobApplication, JobRequisition};
 use App\Models\Platform\User;
 use App\Services\Applications\RecruitingService;
@@ -30,6 +32,9 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Anonymisierung, Talentpool) und Onboarding-Übergabe.
  */
 class JobApplicationController extends Controller {
+    use ContactSatelliteFields;
+    use WritesContactDetails;
+
     public function __construct(private readonly RecruitingService $recruiting) {}
 
     public function index(Request $request): View {
@@ -73,7 +78,7 @@ class JobApplicationController extends Controller {
             'job_requisition_id' => \App\Support\Sqid::decodeOrNumeric(JobRequisition::class, $request->input('job_requisition_id')),
             'responsible_user_id' => \App\Support\Sqid::decodeOrNumeric(User::class, $request->input('responsible_user_id')),
         ]);
-        $data = $request->validate([
+        $data = $request->validate($this->addressRules() + [
             'job_requisition_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('job_requisitions')],
             'candidate_name' => ['required', 'string', 'max:200'],
             'email' => ['nullable', 'email:rfc', 'max:200'],
@@ -83,7 +88,9 @@ class JobApplicationController extends Controller {
             'responsible_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('users')],
         ]);
 
+        $contact = $this->pullContactDetails($data);
         ['application' => $application, 'duplicates' => $duplicates] = $this->recruiting->intake($data, $this->actor());
+        $this->writeContactDetails($application, $contact);
 
         $notice = __('Bewerbung erfasst.');
         if ($duplicates > 0) {

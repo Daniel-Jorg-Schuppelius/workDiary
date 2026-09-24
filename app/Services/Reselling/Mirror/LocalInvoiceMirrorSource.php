@@ -18,7 +18,7 @@ use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriodLink, ResaleSubscription};
-use App\Services\Finance\BillingModeResolver;
+use App\Services\Billing\BillingModeResolver;
 use App\Services\Reselling\Marketplace\ProductNameMatcher;
 use App\Services\Reselling\Register\LicenseArticleClassifier;
 use App\Support\Query\DateRange;
@@ -337,7 +337,7 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
      * @param  array{articles: array<int, true>, labels: list<string>, excluded: array<int, true>}  $products
      */
     private function toLine(InvoiceItem $item, Invoice $invoice, array $products): MirrorLine {
-        $currency = $invoice->currencyCode();
+        $currency = $invoice->documentCurrency();
         $articleName = $item->article?->name;
         $isCreditNote = $invoice->isCreditNote();
         $total = $item->amount ?? Money::of('0', $currency);

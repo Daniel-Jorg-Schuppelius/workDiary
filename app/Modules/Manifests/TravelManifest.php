@@ -77,4 +77,11 @@ final class TravelManifest extends Manifest {
             'groups' => [],
         ];
     }
+
+    /** @return array<class-string, class-string> */
+    public function bindings(): array {
+        return [
+            \App\Services\Routing\Contracts\TravelLogRecorder::class => \App\Services\Travel\TravelLogService::class,
+        ];
+    }
 }

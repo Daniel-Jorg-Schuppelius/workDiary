@@ -10,11 +10,12 @@
 
 namespace App\Enums\Tour;
 
-use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Concerns\{HasOptions, HasTransitions};
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
-enum TourStatus: string implements HasLabel {
+enum TourStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
+    use HasTransitions;
 
     case Draft = 'draft';
     case Planned = 'planned';
@@ -24,5 +25,15 @@ enum TourStatus: string implements HasLabel {
 
     public function label(): string {
         return (string) __('enums.tour.status.' . $this->value);
+    }
+
+    /** @return list<self> */
+    public function allowedTransitions(): array {
+        return match ($this) {
+            self::Draft => [self::Planned, self::InProgress, self::Cancelled],
+            self::Planned => [self::InProgress, self::Completed, self::Cancelled],
+            self::InProgress => [self::Completed, self::Cancelled],
+            self::Completed, self::Cancelled => [],
+        };
     }
 }

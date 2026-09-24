@@ -44,6 +44,10 @@ use Tests\TestCase;
  * dahin zweideutige Eintrag „Dokumente & Formulare" (Ziel wechselte je nach
  * Recht) in zwei klare Einträge zerfällt. `/safety-events` bleibt erreichbar,
  * steht aber in der Sektion Arbeitsschutz statt unter „Wissen & Doku".
+ *
+ * Neu aufgenommen 2026-09-24 (`MVP-868`, eigene Felder je Organisation):
+ * einziges Delta ist `/admin/custom-fields` im Header-Systemmenü der
+ * Org-Admin-Personas.
  */
 class NavigationGoldenTest extends TestCase {
     use RefreshDatabase;

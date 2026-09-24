@@ -196,6 +196,7 @@ return [
         'org.onboarding.skipStep' => 'Salta un passaggio di onboarding',
         'org.onboarding.dismissWidget' => 'Nascondi il widget di onboarding',
         'organization.numberFormat.manage' => 'Gestisci le sequenze numeriche',
+        'organization.customFields.manage' => 'Gestire i campi personalizzati dell’organizzazione',
         'platform.diagnostics.view' => 'Visualizza la pagina di diagnostica',
         'platform.diagnostics.runCheck' => 'Attiva i test di diagnostica (mail/backup)',
         'platform.scheduler.manage' => 'Gestire i job pianificati (pausa, ripianificazione, test)',

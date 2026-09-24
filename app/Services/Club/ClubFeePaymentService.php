@@ -18,8 +18,8 @@ use App\Models\Club\{ClubFeeAccount, ClubFeeClaim, ClubFeeDunning, ClubFeePaymen
 use App\Models\Document\DocumentDispatch;
 use App\Models\Finance\{BankAccount, BankTransaction, PaymentAllocation, PaymentRun, PaymentRunItem, SepaMandate};
 use App\Models\Platform\{Organization, User};
+use App\Services\Billing\Sepa\PaymentRunService;
 use App\Services\Concerns\AssertsStatusTransition;
-use App\Services\Finance\Sepa\PaymentRunService;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\Money;

@@ -55,20 +55,20 @@
                         @endif
                     </td>
                     <td>
-                        <x-status-badge size="xs" :tone="match($window->status) { 'active', 'extended' => 'error', 'announced' => 'warning', 'planned' => 'info', 'completed' => 'success', default => 'neutral' }">
-                            {{ __('maintenance.window.status.' . $window->status) }}
+                        <x-status-badge size="xs" :tone="match($window->status->value) { 'active', 'extended' => 'error', 'announced' => 'warning', 'planned' => 'info', 'completed' => 'success', default => 'neutral' }">
+                            {{ $window->status->label() }}
                         </x-status-badge>
                     </td>
                     <td class="text-right">
                         <div class="inline-flex flex-wrap items-center justify-end gap-1">
-                            @if ($window->status === 'planned')
+                            @if ($window->status === \App\Enums\Asset\MaintenanceWindowStatus::Planned)
                                 <form method="POST" action="{{ route('admin.maintenance-windows.transition', [$window, 'announce']) }}">@csrf<x-icon-btn icon="campaign" type="submit" :label="__('maintenance.window.action.announce')" /></form>
                             @endif
-                            @if (in_array($window->status, ['planned', 'announced'], true))
+                            @if (in_array($window->status->value, ['planned', 'announced'], true))
                                 <form method="POST" action="{{ route('admin.maintenance-windows.transition', [$window, 'start']) }}">@csrf<x-icon-btn icon="play_circle" type="submit" :label="__('maintenance.window.action.start')" /></form>
                                 <form method="POST" action="{{ route('admin.maintenance-windows.transition', [$window, 'cancel']) }}">@csrf<x-icon-btn icon="cancel" type="submit" :label="__('maintenance.window.action.cancel')" /></form>
                             @endif
-                            @if (in_array($window->status, ['active', 'extended'], true))
+                            @if (in_array($window->status->value, ['active', 'extended'], true))
                                 <form method="POST" action="{{ route('admin.maintenance-windows.transition', [$window, 'complete']) }}">@csrf<x-icon-btn icon="check_circle" type="submit" :label="__('maintenance.window.action.complete')" /></form>
                                 <details class="dropdown dropdown-end">
                                     <summary class="btn btn-ghost btn-xs btn-circle" title="{{ __('maintenance.window.action.extend') }}"><x-icon name="more_time" /></summary>

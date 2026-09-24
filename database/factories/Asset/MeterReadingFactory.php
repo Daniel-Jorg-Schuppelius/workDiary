@@ -10,8 +10,7 @@
 
 namespace Database\Factories\Asset;
 
-use App\Models\Asset\Asset;
-use App\Models\Asset\MeterReading;
+use App\Models\Asset\{Asset, MeterReading};
 use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

@@ -12,8 +12,9 @@ namespace App\Http\Controllers\Time;
 
 use App\Enums\Attendance\AttendanceStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
-use App\Models\Time\Attendance;
+use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
+use App\Models\Time\Attendance;
 use App\Services\Attendance\AttendanceClockService;
 use App\Services\TimeApproval\DayCloseService;
 use App\Support\{Setting, SortableQuery, Tz};
@@ -23,7 +24,6 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 class AttendanceController extends Controller {
     use ResolvesGlobalDateRange;

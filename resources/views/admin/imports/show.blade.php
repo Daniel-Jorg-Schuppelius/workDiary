@@ -86,7 +86,7 @@
     {{-- KI-Spaltenzuordnung (Feature 148, MVP-732): Vorschlag für Kopfzellen,
          die der HeaderMapper nicht kennt — reiner Hinweis, ändert nichts. --}}
     @php
-        $aiView = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
+        $aiView = app(\App\Services\Ai\Contracts\SuggestionView::class);
         $aiMappingUsable = $aiView->capabilityUsable(\App\Services\Ai\Suggestions\ImportMappingSuggestionService::CAPABILITY)
             && ! $run->entity->acceptsZip();
         $aiMapping = $aiMappingUsable

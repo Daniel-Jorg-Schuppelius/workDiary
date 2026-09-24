@@ -332,21 +332,9 @@
 
     {{-- g) Verlauf (append-only Nachweiskette) --}}
     <x-card :title="__('Verlauf')" padding="p-0">
-        <ul class="divide-y divide-base-200">
-            @forelse ($job->events as $event)
-                <li class="flex flex-wrap items-baseline gap-x-2 px-4 py-2 text-sm">
-                    <span class="font-mono text-xs text-muted">{{ $event->created_at->fdatetime() }}</span>
-                    <span class="font-medium">{{ $event->event->label() }}</span>
-                    <span class="text-muted">{{ $event->actor->name ?? '—' }}</span>
-                    @php($eventNote = $event->payload['note'] ?? $event->payload['reason'] ?? null)
-                    @if ($eventNote !== null)
-                        <span class="w-full text-xs text-muted sm:w-auto">„{{ $eventNote }}"</span>
-                    @endif
-                </li>
-            @empty
-                <li class="px-4 py-3 text-sm text-muted">{{ __('Keine Einträge vorhanden') }}</li>
-            @endforelse
-        </ul>
+        <div class="px-4 py-3">
+            <x-journal :entries="$job->journal" :empty-text="__('Keine Einträge vorhanden')" />
+        </div>
     </x-card>
 </x-page-shell>
 

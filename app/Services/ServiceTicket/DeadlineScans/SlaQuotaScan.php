@@ -10,10 +10,11 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Notification\DeadlineScans;
+namespace App\Services\ServiceTicket\DeadlineScans;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Models\ServiceTicket\{SlaContract, SlaContractQuota};
+use App\Services\Notification\DeadlineScans\{AbstractDeadlineScan, DeadlineScanOptions};
 use App\Services\Notification\NotificationDispatcher;
 use App\Services\ServiceTicket\SlaQuotaService;
 use Illuminate\Database\Eloquent\Collection;

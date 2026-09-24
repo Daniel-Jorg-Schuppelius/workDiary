@@ -10,9 +10,10 @@
 
 namespace App\Http\Controllers\Knowledge;
 
-use App\Models\Knowledge\ContentCollection;
-use App\Models\Customer\Customer;
+use App\Http\Controllers\Controller;
 use App\Models\Classification\Tag;
+use App\Models\Customer\Customer;
+use App\Models\Knowledge\ContentCollection;
 use App\Models\Platform\User;
 use App\Services\Collections\{CollectableTypes, ContentCollectionService, KnowledgeHubService};
 use App\Support\Sqid;
@@ -21,7 +22,6 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Einstieg „Wissen“ (MVP-813, Feature 155): Sammlungsbaum links, Inhalte als

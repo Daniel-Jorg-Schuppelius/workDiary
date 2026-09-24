@@ -17,7 +17,6 @@ use App\Enums\Security\IntegrityCheckStatus;
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\{IntegrityCheck, User};
 use App\Notifications\GenericEventNotification;
-use App\Services\Isms\SbomGenerator;
 use App\Support\MorphMap;
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\CryptoHelper;

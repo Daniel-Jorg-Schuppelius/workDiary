@@ -13,17 +13,17 @@ namespace App\Http\Controllers\Time;
 use App\Enums\Diary\Mode;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Controllers\Concerns\{BuildsTimeEntryOptions, ProvidesTimeEntryTagPicker};
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Time\QuickTimeEntryRequest;
 use App\Models\Diary\DiaryEntry;
-use App\Models\Time\TimeEntry;
 use App\Models\Platform\User;
 use App\Models\Project\{Project, Task};
+use App\Models\Time\TimeEntry;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, RedirectResponse};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Support\Str;
-use App\Http\Controllers\Controller;
 
 /**
  * Eingabeleiste auf „Heute" (Toggl-artig): manuelle Buchung (Dauer oder

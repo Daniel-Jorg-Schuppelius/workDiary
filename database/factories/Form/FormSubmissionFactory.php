@@ -10,11 +10,9 @@
 
 namespace Database\Factories\Form;
 
-use App\Models\Form\FormSubmission;
-use App\Models\Form\FormTemplate;
+use App\Models\Form\{FormSubmission, FormTemplate};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Database\Factories\Form\FormTemplateFactory;
 
 /**
  * @extends Factory<FormSubmission>

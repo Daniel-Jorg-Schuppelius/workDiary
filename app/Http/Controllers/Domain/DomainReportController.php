@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers\Reporting;
+namespace App\Http\Controllers\Domain;
 
 use App\Http\Controllers\Controller;
 use App\Services\Domain\DomainReportService;

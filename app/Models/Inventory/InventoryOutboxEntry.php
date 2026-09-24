@@ -16,7 +16,6 @@ use Illuminate\Database\Eloquent\{Builder, MassPrunable};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Inventory\StockMovement;
 
 /**
  * Outbox-Eintrag zur externen Bestandsführung (Feature 048, MVP-072).

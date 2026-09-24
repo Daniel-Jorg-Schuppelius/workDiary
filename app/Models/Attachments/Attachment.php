@@ -11,13 +11,12 @@
 namespace App\Models\Attachments;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Platform\User;
 use Database\Factories\Attachments\AttachmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 use Illuminate\Support\Carbon;
-use App\Models\Attachments\AttachmentConfirmation;
-use App\Models\Platform\User;
 
 /**
  * @property int $id

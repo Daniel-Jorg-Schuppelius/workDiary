@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Schedule;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Controller;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Services\Dispatch\GapFillSuggester;
@@ -20,7 +21,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
-use App\Http\Controllers\Controller;
 
 /**
  * Leerzeit-/Lückenfüller-Vorschläge (Epic 14.2, MVP-245): Vorschlagsliste

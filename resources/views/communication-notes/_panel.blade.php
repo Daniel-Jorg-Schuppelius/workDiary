@@ -29,7 +29,7 @@
     $canPublish = \Illuminate\Support\Facades\Gate::allows('publishToCustomer', \App\Models\Communication\CommunicationNote::class);
     $canManageConfidential = \Illuminate\Support\Facades\Gate::allows('manageConfidential', \App\Models\Communication\CommunicationNote::class);
     // Notiz strukturieren (Feature 148, MVP-732): Chips je Feld, nie Auto-Apply.
-    $aiView = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
+    $aiView = app(\App\Services\Ai\Contracts\SuggestionView::class);
     $aiStructureUsable = $aiView->capabilityUsable(\App\Services\Ai\Suggestions\CommunicationNoteSuggestionService::CAPABILITY);
     $aiStructure = $aiStructureUsable
         ? $aiView->openSuggestionsFor((new \App\Models\Communication\CommunicationNote)->getMorphClass(), $notes, \App\Services\Ai\Suggestions\CommunicationNoteSuggestionService::CAPABILITY)

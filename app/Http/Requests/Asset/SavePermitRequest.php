@@ -11,10 +11,10 @@
 namespace App\Http\Requests\Asset;
 
 use App\Enums\Permit\PermitStatus;
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rules\Enum;
-use App\Http\Requests\BaseFormRequest;
 
 class SavePermitRequest extends BaseFormRequest {
     use DecodesSqidInputs;

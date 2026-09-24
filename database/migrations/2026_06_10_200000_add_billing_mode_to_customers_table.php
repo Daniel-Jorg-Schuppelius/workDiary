@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Fakturierungsweg-Override je Kunde (Feature 045, „Führendes System").
  * NULL = Org-Default aus organizations.settings['billing_mode'] erben
- * (Fallback: workdiary). Aufgelöst über App\Services\Finance\BillingModeResolver.
+ * (Fallback: workdiary). Aufgelöst über App\Services\Billing\BillingModeResolver.
  */
 return new class extends Migration {
     public function up(): void {

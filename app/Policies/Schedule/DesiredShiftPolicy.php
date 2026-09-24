@@ -11,8 +11,8 @@
 namespace App\Policies\Schedule;
 
 use App\Enums\User\Permission;
-use App\Models\Schedule\DesiredShift;
 use App\Models\Platform\User;
+use App\Models\Schedule\DesiredShift;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 /**

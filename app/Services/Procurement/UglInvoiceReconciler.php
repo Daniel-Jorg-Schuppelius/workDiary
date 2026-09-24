@@ -11,6 +11,7 @@
 namespace App\Services\Procurement;
 
 use App\Models\Procurement\{PurchaseOrder, PurchaseOrderLine};
+use App\Services\Billing\DocumentTotalsCalculator;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Entities\{OrderLine, UglInvoice};
@@ -131,7 +132,7 @@ class UglInvoiceReconciler {
     }
 
     private function orderLineNet(PurchaseOrderLine $line, CurrencyCode $currency): Money {
-        return ($line->unit_price ?? Money::zero($currency))->times($line->ordered_qty?->getValue()->toFloat() ?? 0.0);
+        return DocumentTotalsCalculator::lineNet($line->ordered_qty?->getValue()->toFloat() ?? 0.0, $line->unit_price ?? Money::zero($currency));
     }
 
     private function orderLineName(PurchaseOrderLine $line): string {

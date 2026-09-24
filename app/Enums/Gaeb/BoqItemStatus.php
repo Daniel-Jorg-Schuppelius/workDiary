@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Enums\Gaeb;
 
-use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Concerns\{HasOptions, HasTransitions};
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
  * Lebenszyklus einer LV-Position (Feature 049, MVP-082).
@@ -21,8 +21,9 @@ use App\Enums\Contracts\HasLabel;
  * Eine Position mit Ausführungs-/Abrechnungsbezug (ab InProgress) darf bei
  * einem Reimport nicht still überschrieben werden — siehe BillOfQuantityImporter.
  */
-enum BoqItemStatus: string implements HasLabel {
+enum BoqItemStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
+    use HasTransitions;
 
     case Draft = 'draft';
     case Imported = 'imported';
@@ -45,6 +46,18 @@ enum BoqItemStatus: string implements HasLabel {
         return match ($this) {
             self::Ordered, self::InProgress, self::Completed => true,
             default => false,
+        };
+    }
+
+    /** @return list<self> */
+    public function allowedTransitions(): array {
+        return match ($this) {
+            self::Draft, self::Imported => [self::Quoted, self::Ordered, self::Cancelled],
+            self::Quoted => [self::Ordered, self::Cancelled],
+            self::Ordered => [self::InProgress, self::Cancelled],
+            self::InProgress => [self::Completed, self::Cancelled],
+            self::Completed => [self::Replaced],
+            self::Replaced, self::Cancelled => [],
         };
     }
 }

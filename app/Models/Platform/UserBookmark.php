@@ -14,7 +14,6 @@ use App\Models\Concerns\{HasSqid, Searchable};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Platform\User;
 
 /**
  * @property int $id

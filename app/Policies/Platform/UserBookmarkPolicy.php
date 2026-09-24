@@ -10,8 +10,7 @@
 
 namespace App\Policies\Platform;
 
-use App\Models\Platform\User;
-use App\Models\Platform\UserBookmark;
+use App\Models\Platform\{User, UserBookmark};
 use App\Policies\Concerns\ChecksOwnership;
 
 class UserBookmarkPolicy {

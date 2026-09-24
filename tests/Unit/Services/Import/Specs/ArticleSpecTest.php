@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace Tests\Unit\Services\Import\Specs;
 
 use App\Models\Article\Article;
+use App\Services\Article\Import\ArticleSpec;
 use App\Services\Import\ImportOutcome;
-use App\Services\Import\Specs\ArticleSpec;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

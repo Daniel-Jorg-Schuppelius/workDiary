@@ -48,7 +48,7 @@
     {{-- Diagnose erklären (Feature 148, MVP-732): PII-freie Kennwerte des
          Health-Blocks; Lesehilfe, ändert nichts an der Installation. --}}
     @php
-        $aiView = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
+        $aiView = app(\App\Services\Ai\Contracts\SuggestionView::class);
         $aiDiagnoseUsable = $aiView->capabilityUsable(\App\Services\Ai\Suggestions\SupportDiagnosisSuggestionService::CAPABILITY);
         $aiDiagnose = $aiDiagnoseUsable && app()->bound('currentOrganization')
             ? $aiView->openSuggestionsFor(

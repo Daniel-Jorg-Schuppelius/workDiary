@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\CustomerPortal;
+namespace App\Http\Controllers\Learning\Portal;
 
 use App\Enums\Learning\{LearningAudience, LearningCourseStatus, LearningProgressStatus};
 use App\Http\Controllers\Controller;

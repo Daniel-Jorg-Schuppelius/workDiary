@@ -10,11 +10,11 @@
 
 namespace App\Models\Inventory;
 
+use App\Models\Article\ArticleVariant;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Article\ArticleVariant;
 
 /**
  * Charge/Los einer Variante (Feature 047/048, E2).

@@ -8,27 +8,23 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers\Knowledge;
+namespace App\Http\Controllers\Ideas;
 
 use App\Enums\Ideas\IdeaShareRole;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Knowledge\SaveIdeaMapRequest;
 use App\Models\Audit\AuditLog;
-use App\Models\Ideas\IdeaMap;
-use App\Models\Ideas\IdeaMapShare;
-use App\Models\Ideas\IdeaNode;
-use App\Models\Platform\Team;
-use App\Models\Platform\User;
+use App\Models\Ideas\{IdeaMap, IdeaMapShare, IdeaNode};
+use App\Models\Platform\{Team, User};
 use App\Services\Ideas\{IdeaMapImportService, IdeaMapService};
-use App\Support\SqidEncoder;
 use App\Support\{ErrorText, Tz};
-use App\Support\MorphMap;
+use App\Support\{MorphMap, SqidEncoder};
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Cache, Gate};
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * Ideenlandkarten (Feature 054, MVP-104/105). Datenschutz-Grundsatz: Die

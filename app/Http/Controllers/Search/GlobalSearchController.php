@@ -10,11 +10,11 @@
 
 namespace App\Http\Controllers\Search;
 
+use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Services\Search\GlobalSearchService;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Controller;
 
 /**
  * Liefert die Treffer für die globale Suche (Command-Palette / Spotlight).

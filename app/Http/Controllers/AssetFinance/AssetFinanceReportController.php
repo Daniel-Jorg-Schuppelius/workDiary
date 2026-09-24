@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Reporting;
+namespace App\Http\Controllers\AssetFinance;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;

@@ -11,13 +11,11 @@
 namespace App\Models\Time;
 
 use App\Enums\TimeExport\TimeExportStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasJournal};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
-use App\Models\Time\TimeExportEvent;
-use App\Models\Time\TimeExportLine;
 
 /**
  * Zeit-Export (MVP-019).
@@ -50,6 +48,10 @@ use App\Models\Time\TimeExportLine;
  * @property Carbon $updated_at
  */
 class TimeExport extends Model {
+    use HasJournal;
+
+    /** @var class-string<TimeExportEvent> Journal des Trägers (MVP-864) */
+    protected static string $journalClass = TimeExportEvent::class;
     /**
      * Felder, die auch nach der Auslieferung noch geändert werden dürfen.
      *
@@ -140,11 +142,6 @@ class TimeExport extends Model {
     /** @return HasMany<TimeExportLine, $this> */
     public function lines(): HasMany {
         return $this->hasMany(TimeExportLine::class);
-    }
-
-    /** @return HasMany<TimeExportEvent, $this> */
-    public function events(): HasMany {
-        return $this->hasMany(TimeExportEvent::class)->orderBy('created_at');
     }
 
     /** @return BelongsTo<User, $this> */

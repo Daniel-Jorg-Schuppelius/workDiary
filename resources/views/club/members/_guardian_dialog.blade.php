@@ -30,6 +30,7 @@
         <x-input-field name="name" :label="__('club.field.name')" required maxlength="160" span="2" :value="old('name', $guardian?->name)" />
         <x-input-field name="email" type="email" :label="__('club.field.email')" maxlength="190" :value="old('email', $guardian?->email)" />
         <x-input-field name="phone" type="tel" :label="__('club.field.phone')" maxlength="60" :value="old('phone', $guardian?->phone)" />
+        <x-contact-address-fields :subject="$guardian" />
         <x-select-field name="user_id" :label="__('club.field.user')" span="2">
             <option value="">{{ __('club.label.no_account') }}</option>
             @foreach ($users as $user)

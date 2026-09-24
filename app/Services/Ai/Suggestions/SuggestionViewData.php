@@ -15,6 +15,7 @@ namespace App\Services\Ai\Suggestions;
 use App\Enums\User\Permission;
 use App\Models\Ai\{AiCapabilitySetting, AiTextSuggestion};
 use App\Services\Ai\{AiCapabilityRegistry, AiRoutingResolver};
+use App\Services\Ai\Contracts\SuggestionView;
 use App\Services\Licensing\ModuleStatusResolver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -26,7 +27,7 @@ use Illuminate\Support\Facades\Auth;
  * freigeschaltet + Nutzer hat ai.use) und liefert die offenen
  * Vorschläge je Position — ohne die Beleg-Controller anzufassen.
  */
-class SuggestionViewData {
+class SuggestionViewData implements SuggestionView {
     public function __construct(
         private readonly AiCapabilityRegistry $registry,
         private readonly ModuleStatusResolver $modules,

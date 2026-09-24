@@ -216,7 +216,7 @@ class RetainerLexofficeTest extends TestCase {
 
         // Retainer setzt billing_mode=lexoffice voraus — daher greift bereits
         // der Hoheits-Guard (extern geführt), noch vor dem Konto-Guard.
-        $this->expectException(\App\Services\Finance\BillingModeLockedException::class);
+        $this->expectException(\App\Services\Billing\BillingModeLockedException::class);
         app(InvoiceGenerator::class)->fromTimeEntries($this->customer, null, []);
     }
 }

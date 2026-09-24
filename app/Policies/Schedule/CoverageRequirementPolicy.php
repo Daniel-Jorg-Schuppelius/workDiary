@@ -10,8 +10,8 @@
 
 namespace App\Policies\Schedule;
 
-use App\Models\Schedule\CoverageRequirement;
 use App\Models\Platform\User;
+use App\Models\Schedule\CoverageRequirement;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class CoverageRequirementPolicy {

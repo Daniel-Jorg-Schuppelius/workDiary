@@ -11,12 +11,12 @@
 namespace App\Models\Time;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Facility\Site;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
-use App\Models\Facility\Site;
 
 /**
  * Hardware-Stempelterminal einer Organisation (Feature 061, MVP-130). Der

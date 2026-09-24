@@ -11,12 +11,12 @@
 namespace App\Http\Controllers\Time;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Models\Time\FlexEligibility;
+use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
+use App\Models\Time\FlexEligibility;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * CRUD für die periodische Gleitzeit-Berechtigung eines Mitarbeiters.

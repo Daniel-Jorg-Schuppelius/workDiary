@@ -19,6 +19,10 @@ use App\Plugins\Support\MatchingTimeGroupBooker;
  * Zuordnungs-Inbox (gemeinsame Mechanik: {@see MatchingTimeGroupBooker}).
  */
 class TogglGroupBooker extends MatchingTimeGroupBooker {
+    public function pluginId(): string {
+        return 'toggl';
+    }
+
     public function __construct(TogglImportService $service) {
         parent::__construct($service);
     }

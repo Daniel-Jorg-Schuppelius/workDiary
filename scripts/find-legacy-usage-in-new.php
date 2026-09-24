@@ -48,7 +48,7 @@ $allowedSymbols = [
 // Bridge-Delegationen, die den konkreten Legacy-Typ deklarieren müssen).
 $allowedSymbolsPerFile = [
     // User::legacyUser() deklariert den Rückgabetyp der Bridge-Delegation.
-    '#^app/Models/User\.php$#' => ['#^App\\\\Legacy\\\\Models\\\\LegacyUser$#'],
+    '#^app/Models/Platform/User\.php$#' => ['#^App\\\\Legacy\\\\Models\\\\LegacyUser$#'],
 ];
 
 $pattern = '/App\\\\Legacy\\\\[A-Za-z0-9_\\\\]+/';

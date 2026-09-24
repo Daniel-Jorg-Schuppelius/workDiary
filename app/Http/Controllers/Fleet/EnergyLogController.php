@@ -8,10 +8,11 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers\Asset;
+namespace App\Http\Controllers\Fleet;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Concerns\{ResolvesGlobalDateRange, ResolvesRequestedUser};
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Asset\SaveEnergyLogRequest;
 use App\Models\Asset\EnergyLog;
 use App\Models\Fleet\Vehicle;
@@ -22,7 +23,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class EnergyLogController extends Controller {
     use ResolvesCurrentOrganization;

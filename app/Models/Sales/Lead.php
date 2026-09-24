@@ -14,7 +14,8 @@ namespace App\Models\Sales;
 
 use App\Enums\Sales\{LeadSource, LeadStatus};
 use App\Models\Communication\CommunicationNote;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasContactAndBankDetails, HasSqid};
+use App\Models\Contracts\ContactDetailsHolder;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -46,9 +47,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $anonymized_at
  * @property int|null $created_by
  */
-class Lead extends Model {
+class Lead extends Model implements ContactDetailsHolder {
     use Auditable;
     use BelongsToOrganization;
+    use HasContactAndBankDetails;
     use HasSqid;
 
     protected $fillable = [

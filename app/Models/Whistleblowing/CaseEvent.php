@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Models\Whistleblowing;
 
-use App\Models\Concerns\{HashChainable, HashChained};
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Journal\HashChainedJournalEntry;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Spezialisiertes, append-only Ereignisprotokoll fuer Hinweisgeberfaelle
@@ -30,8 +30,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @phpstan-consistent-constructor
  */
-class CaseEvent extends Model implements HashChainable {
-    use HashChained;
+class CaseEvent extends HashChainedJournalEntry {
+    /** @var array<string, string|null> */
+    protected static array $journalColumns = ['payload' => 'metadata'];
 
     protected $table = 'whistleblowing_case_events';
 
@@ -71,7 +72,8 @@ class CaseEvent extends Model implements HashChainable {
         ];
     }
 
-    private function nullableInt(mixed $value): ?int {
-        return $value === null ? null : (int) $value;
+    /** @return BelongsTo<WhistleblowingCase, $this> */
+    public function subject(): BelongsTo {
+        return $this->belongsTo(WhistleblowingCase::class, 'case_id');
     }
 }

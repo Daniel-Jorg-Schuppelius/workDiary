@@ -11,10 +11,10 @@
 namespace App\Http\Requests\Warranty;
 
 use App\Enums\Warranty\{WarrantyBasis, WarrantySide};
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 /**
  * Gewährleistungsfrist anlegen (Feature 115, MVP-604). Bezüge kommen als

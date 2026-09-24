@@ -12,32 +12,22 @@ declare(strict_types=1);
 
 namespace App\Services\ServiceTicket;
 
+use App\Enums\ServiceTicket\ProblemStatus;
 use App\Models\Knowledge\ContentReference;
 use App\Models\Platform\User;
 use App\Models\ServiceTicket\{Problem, ServiceTicket};
+use App\Services\Concerns\AssertsStatusTransition;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Problem-Management (Feature 065, MVP-156): Übergangsmatrix (Muster
- * TicketStatusMachine), Eröffnung aus Incidents, Known-Error →
+ * ServiceTicketStatus), Eröffnung aus Incidents, Known-Error →
  * Wissensartikel (idempotent über den Verweis (ContentReference)), Wirksamkeits-
  * prüfung mit Frist. Incidents schließen Probleme NIE automatisch —
  * es gibt bewusst keinerlei Kopplungs-Code.
  */
 class ProblemService {
-    /**
-     * Einzige Wahrheit der Übergangsmatrix — die Problem-UI (MVP-156)
-     * leitet ihre Statusoptionen hieraus ab, statt sie zu duplizieren.
-     *
-     * @var array<string, list<string>>
-     */
-    public const TRANSITIONS = [
-        'open' => ['analyzing', 'closed'],
-        'analyzing' => ['known_error', 'resolved', 'open'],
-        'known_error' => ['resolved'],
-        'resolved' => ['closed'],
-        'closed' => [],
-    ];
+    use AssertsStatusTransition;
 
     /**
      * Problem aus einem oder mehreren Incidents eröffnen (Pivot-Verknüpfung).
@@ -71,16 +61,14 @@ class ProblemService {
         });
     }
 
-    public function transition(Problem $problem, string $to, ?User $actor = null, ?\DateTimeInterface $effectivenessDue = null): Problem {
-        if (! in_array($to, Problem::STATUSES, true)) {
-            throw new \InvalidArgumentException("Unbekannter Problem-Status: {$to}");
-        }
-        if ($problem->status !== $to && ! in_array($to, self::TRANSITIONS[$problem->status], true)) {
-            throw new \RuntimeException((string) __('Übergang :from → :to ist nicht zulässig.', ['from' => $problem->status, 'to' => $to]));
+    public function transition(Problem $problem, ProblemStatus|string $to, ?User $actor = null, ?\DateTimeInterface $effectivenessDue = null): Problem {
+        $to = $to instanceof ProblemStatus ? $to : (ProblemStatus::tryFrom($to) ?? throw new \InvalidArgumentException("Unbekannter Problem-Status: {$to}"));
+        if ($problem->status !== $to) {
+            $this->assertStatusTransition($problem->status, $to);
         }
 
         $payload = ['status' => $to];
-        if ($to === 'resolved') {
+        if ($to === ProblemStatus::Resolved) {
             // Wirksamkeitsprüfung: Frist Pflicht beim Lösen (Scanner-Hook).
             if ($effectivenessDue === null) {
                 throw new \InvalidArgumentException((string) __('Lösen braucht eine Frist für die Wirksamkeitsprüfung.'));
@@ -89,7 +77,7 @@ class ProblemService {
         }
 
         $problem->update($payload);
-        $problem->audit('problem.status_changed', ['to' => $to, 'actor' => $actor?->id]);
+        $problem->audit('problem.status_changed', ['to' => $to->value, 'actor' => $actor?->id]);
 
         return $problem->refresh();
     }
@@ -105,8 +93,8 @@ class ProblemService {
     }
 
     /**
-     * Known Error → Wissensartikel über den bestehenden
-     * KnowledgeArticleService; idempotent über den Verweis (ContentReference)
+     * Known Error → Wissensartikel über den Contract KnownErrorPublisher
+     * (Wissensmodul); idempotent über den Verweis (ContentReference)
      * (linkable=Problem): ein zweiter Aufruf liefert den bestehenden Artikel.
      */
     public function publishKnownError(Problem $problem, User $actor): \App\Models\Knowledge\KnowledgeArticle {
@@ -116,14 +104,7 @@ class ProblemService {
         }
 
         return DB::transaction(function () use ($problem, $actor): \App\Models\Knowledge\KnowledgeArticle {
-            $article = app(\App\Services\Knowledge\KnowledgeArticleService::class)->create($actor, [
-                'title' => (string) __('Known Error: :title', ['title' => $problem->title]),
-                'problem' => (string) ($problem->description ?? $problem->title),
-                'solution' => trim((string) ($problem->workaround ?? '') . "\n\n" . (string) ($problem->permanent_fix ?? '')),
-            ]);
-            // Früher Kategorie `known_error`, seit MVP-814 die Sammlung „Known Errors“.
-            app(\App\Services\Collections\ContentCollectionService::class)
-                ->placeInNamedCollection((int) $article->organization_id, 'Known Errors', $article, $actor);
+            $article = app(\App\Services\ServiceTicket\Contracts\KnownErrorPublisher::class)->publish($problem, $actor);
 
             $article->links()->create([
                 'organization_id' => $article->organization_id,

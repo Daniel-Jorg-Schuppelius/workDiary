@@ -18,7 +18,7 @@ use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
 use App\Services\Import\ImportOutcome;
-use App\Services\Import\Specs\InvoiceSpec;
+use App\Services\Invoicing\Import\InvoiceSpec;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

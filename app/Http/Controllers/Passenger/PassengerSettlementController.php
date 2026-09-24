@@ -162,7 +162,7 @@ class PassengerSettlementController extends Controller {
     /**
      * Barumsatz einer abgeschlossenen Abrechnung ins Kassenbuch übernehmen
      * (Issue #74): genau eine Einnahme-Buchung je Abrechnung, rückverlinkt
-     * über `cash_entry_id`. Der CashBookService bleibt die einzige
+     * über `cash_entry_id`. Das Kassenbuch (Contract `CashBookPosting`) bleibt die einzige
      * Schreibstelle (GoBD-Hash-Kette, Tagesabschluss-Sperre).
      */
     public function postCashEntry(Request $request, PassengerShiftSettlement $settlement): RedirectResponse {
@@ -189,7 +189,7 @@ class PassengerSettlementController extends Controller {
         $actor = $request->user() ?? abort(401);
 
         try {
-            $entry = app(\App\Services\Finance\CashBookService::class)->record($register, [
+            $entry = app(\App\Services\Passenger\Contracts\CashBookPosting::class)->record($register, [
                 'booked_on' => $settlement->shift_date->toDateString(),
                 'direction' => \App\Models\Finance\CashEntry::DIRECTION_IN,
                 'amount' => (string) $settlement->cash_total,

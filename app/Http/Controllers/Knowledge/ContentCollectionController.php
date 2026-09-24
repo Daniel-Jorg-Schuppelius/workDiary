@@ -11,8 +11,8 @@
 namespace App\Http\Controllers\Knowledge;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Models\Knowledge\ContentCollection;
-use App\Models\Knowledge\ContentCollectionItem;
+use App\Http\Controllers\Controller;
+use App\Models\Knowledge\{ContentCollection, ContentCollectionItem};
 use App\Models\Platform\User;
 use App\Services\Collections\{CollectableTypes, ContentCollectionService};
 use App\Support\Sqid;
@@ -21,7 +21,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Sammlungen (MVP-809, Feature 155): Baum und Inhalte an einer Stelle,

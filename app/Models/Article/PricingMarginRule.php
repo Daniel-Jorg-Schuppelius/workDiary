@@ -13,10 +13,10 @@ namespace App\Models\Article;
 use App\Casts\{MoneyCast, PercentageCast};
 use App\Enums\Procurement\PriceRounding;
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Supplier\Supplier;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Supplier\Supplier;
 
 /**
  * Margenregel für Verkaufspreisvorschläge (Feature 050, MVP-095).

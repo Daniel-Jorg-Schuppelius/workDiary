@@ -18,7 +18,7 @@ use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
 use App\Models\ServiceTicket\SlaContract;
 use App\Services\Numbering\NumberSequenceService;
-use App\Services\ServiceTicket\{ServiceTicketService, SlaTimer, TicketStatusMachine};
+use App\Services\ServiceTicket\{ServiceTicketService, SlaTimer};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
@@ -35,7 +35,7 @@ class ServiceTicketServiceTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
 
-        $this->service = new ServiceTicketService(new TicketStatusMachine, new SlaTimer, new NumberSequenceService);
+        $this->service = new ServiceTicketService(new SlaTimer, new NumberSequenceService);
         $this->org = Organization::factory()->create();
         $this->actor = User::factory()->geschaeftsfuehrung()->create([
             'organization_id' => $this->org->id,

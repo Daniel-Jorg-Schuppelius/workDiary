@@ -44,7 +44,7 @@ class ProcedureExecutionServiceTest extends TestCase {
         foreach ($run->stepRuns as $stepRun) {
             $this->assertSame(ProcedureStepRunStatus::Pending, $stepRun->status);
         }
-        $this->assertSame(1, $run->events()->where('event_type', ProcedureRunEventType::RunStarted->value)->count());
+        $this->assertSame(1, $run->journal()->where('event_type', ProcedureRunEventType::RunStarted->value)->count());
     }
 
     public function test_can_execute_blocks_when_previous_blocking_step_pending(): void {
@@ -82,7 +82,7 @@ class ProcedureExecutionServiceTest extends TestCase {
         $this->assertSame(ProcedureRunStatus::InProgress, $run->status);
         $this->assertSame(
             1,
-            $run->events()->where('event_type', ProcedureRunEventType::StepCompleted->value)->count(),
+            $run->journal()->where('event_type', ProcedureRunEventType::StepCompleted->value)->count(),
         );
     }
 
@@ -139,7 +139,7 @@ class ProcedureExecutionServiceTest extends TestCase {
 
         $this->assertSame(
             1,
-            $run->events()->where('event_type', ProcedureRunEventType::RunCompletionRejected->value)->count(),
+            $run->journal()->where('event_type', ProcedureRunEventType::RunCompletionRejected->value)->count(),
         );
     }
 
@@ -159,7 +159,7 @@ class ProcedureExecutionServiceTest extends TestCase {
         $this->assertNotNull($completed->completed_at);
         $this->assertSame(
             1,
-            $completed->events()->where('event_type', ProcedureRunEventType::RunCompleted->value)->count(),
+            $completed->journal()->where('event_type', ProcedureRunEventType::RunCompleted->value)->count(),
         );
     }
 
@@ -176,7 +176,7 @@ class ProcedureExecutionServiceTest extends TestCase {
         $this->assertNotNull($aborted->aborted_at);
         $this->assertSame(
             1,
-            $aborted->events()->where('event_type', ProcedureRunEventType::RunAborted->value)->count(),
+            $aborted->journal()->where('event_type', ProcedureRunEventType::RunAborted->value)->count(),
         );
     }
 

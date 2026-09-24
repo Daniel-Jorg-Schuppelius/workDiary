@@ -15,7 +15,6 @@ use App\Enums\Gaeb\GaebPhase;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Gaeb\GaebImport;
 
 /**
  * Preis-Snapshot einer LV-Position je GAEB-Phase/Import (Feature 049, MVP-082).

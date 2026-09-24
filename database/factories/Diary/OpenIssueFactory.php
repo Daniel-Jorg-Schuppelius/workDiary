@@ -11,8 +11,7 @@
 namespace Database\Factories\Diary;
 
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
-use App\Models\Diary\DiaryEntry;
-use App\Models\Diary\OpenIssue;
+use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;

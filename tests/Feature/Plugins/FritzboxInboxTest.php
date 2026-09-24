@@ -78,7 +78,7 @@ class FritzboxInboxTest extends TestCase {
     }
 
     public function test_registry_resolves_fritzbox_booker(): void {
-        $this->assertInstanceOf(FritzboxGroupBooker::class, (new InboxGroupBookerRegistry)->for(FritzboxPlugin::ID));
+        $this->assertInstanceOf(FritzboxGroupBooker::class, app(InboxGroupBookerRegistry::class)->for(FritzboxPlugin::ID));
     }
 
     public function test_groups_expose_phone_number_form(): void {

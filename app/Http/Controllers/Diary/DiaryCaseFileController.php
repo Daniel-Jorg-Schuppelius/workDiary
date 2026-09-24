@@ -10,18 +10,18 @@
 
 namespace App\Http\Controllers\Diary;
 
+use App\Http\Controllers\Controller;
 use App\Models\Communication\CommunicationNote;
 use App\Models\Diary\DiaryEntry;
+use App\Models\Document\Document;
 use App\Models\Material\MaterialUsage;
+use App\Models\Platform\User;
 use App\Models\Protocol\Protocol;
 use App\Models\Time\TimeEntry;
-use App\Models\Document\Document;
-use App\Models\Platform\User;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Timeline\DiaryEntryTimelineService;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Fallakte (MVP-013, ../WorkDiary-Architecture/fallakte.md): zusammenhängende Read-Only-Gesamtsicht

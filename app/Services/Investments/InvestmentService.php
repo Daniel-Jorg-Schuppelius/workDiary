@@ -14,7 +14,7 @@ namespace App\Services\Investments;
 
 use App\Models\Investments\{InvestmentBudgetRequest, InvestmentCase, InvestmentDeviation};
 use App\Models\Platform\User;
-use App\Services\ServiceTicket\ApprovalService;
+use App\Services\Approval\ApprovalService;
 use Illuminate\Support\Facades\DB;
 
 /**

@@ -59,6 +59,7 @@
                     <x-table.th sort type="number" align="right">{{ __('Erledigt') }}</x-table.th>
                     <x-table.th sort type="number" align="right">{{ __('Mitarb.') }}</x-table.th>
                     <x-table.th sort type="date">{{ __('Letzte Aktivität') }}</x-table.th>
+                    <x-custom-field-heads :columns="$customColumns" />
                     <th class="text-right"></th>
                 </tr>
             </x-slot:head>
@@ -127,6 +128,7 @@
                                     {{ __('keine Aktivität') }}
                                 @endif
                             </td>
+                            <x-custom-field-cells :columns="$customColumns" :model="$project" />
                             <td class="text-right">
                                 <x-icon-btn icon="open_in_new"
                                             :href="route('projects.show', $project)"

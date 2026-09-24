@@ -12,7 +12,7 @@ namespace Tests\Feature\Inventory;
 
 use App\Contracts\Inventory\ExternalInventoryDispatcher;
 use App\Enums\Inventory\OutboxStatus;
-use App\Jobs\Integration\InventoryOutboxDeliveryJob;
+use App\Jobs\Inventory\InventoryOutboxDeliveryJob;
 use App\Models\Integration\PendingExternalConflict;
 use App\Models\Inventory\{InventoryOutboxEntry, StockMovement};
 use App\Services\Inventory\{ExternalInventoryDispatcherResolver, InventoryOutboxService};

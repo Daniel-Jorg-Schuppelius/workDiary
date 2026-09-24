@@ -25,6 +25,9 @@ use Illuminate\Support\Collection;
  * Ziel-Auflösung liegen beim Booker.
  */
 interface InboxGroupBooker {
+    /** Plugin-Kennung der Inbox-Gruppen, die dieser Bucher verarbeitet. */
+    public function pluginId(): string;
+
     /**
      * Offene Gruppen der Organisation als View-Modelle. Jede Gruppe trägt einen
      * `form`-Diskriminator (z. B. 'customer_project' | 'project') für die UI.

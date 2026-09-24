@@ -16,7 +16,8 @@ use App\Enums\Search\SearchSourceType;
 use App\Models\Communication\Comment;
 use App\Models\Diary\DiaryEntry;
 use App\Models\ServiceTicket\ServiceTicketMessage;
-use App\Services\Search\Indexing\Sources\{CommunicationNoteSource, DiaryEntrySource, DocumentSource, KnowledgeArticleSource, LearningCourseSource, OpenIssueSource, ProtocolSource, RemoteSessionSource, SearchSource, ServiceTicketSource, TimeEntrySource, TimesheetSource};
+use App\Modules\ModuleRegistry;
+use App\Services\Search\Indexing\Sources\SearchSource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
@@ -29,20 +30,11 @@ final class SearchSourceRegistry {
     /** @var array<string, SearchSource> */
     private array $sources = [];
 
-    public function __construct() {
-        foreach ([
-            new TimeEntrySource,
-            new DiaryEntrySource,
-            new TimesheetSource,
-            new ServiceTicketSource,
-            new ProtocolSource,
-            new OpenIssueSource,
-            new CommunicationNoteSource,
-            new KnowledgeArticleSource,
-            new RemoteSessionSource,
-            new LearningCourseSource,
-            new DocumentSource,
-        ] as $source) {
+    public function __construct(ModuleRegistry $modules) {
+        // Quellen melden die Module über `Manifest::extensions()[SearchSource::class]` (MVP-863).
+        foreach ($modules->extensions(SearchSource::class) as $class) {
+            /** @var SearchSource $source */
+            $source = app($class);
             $this->sources[$source->type()->value] = $source;
         }
     }

@@ -10,17 +10,17 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Platform;
+namespace App\Http\Controllers\Calendar;
 
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Services\Event\OrganizationCalendarFeedService;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Abo-Link für den gemeinsamen Kalender der Organisation.

@@ -1,0 +1,26 @@
+{
+    "kind": "invoice",
+    "document": {
+        "currency": "CHF",
+        "tax_rate": "8.10",
+        "is_reverse_charge": false,
+        "discount_percent": null,
+        "discount_amount": null,
+        "skonto_percent": null,
+        "skonto_days": null
+    },
+    "lines": [],
+    "expected": {
+        "line_nets": [],
+        "line_net_sum": "0.00",
+        "document_discount": "0.00",
+        "by_rate": [],
+        "subtotal": "0.00",
+        "tax_amount": "0.00",
+        "total": "0.00",
+        "tax_breakdown": [],
+        "line_subtotal": "0.00",
+        "document_discount_total": "0.00",
+        "skonto_amount": "0.00"
+    }
+}

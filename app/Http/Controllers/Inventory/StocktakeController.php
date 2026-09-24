@@ -12,15 +12,14 @@ namespace App\Http\Controllers\Inventory;
 
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
-use App\Models\Inventory\StockCount;
-use App\Models\Inventory\Warehouse;
+use App\Http\Controllers\Controller;
+use App\Models\Inventory\{StockCount, Warehouse};
 use App\Services\Inventory\{CycleCountPlanner, StocktakeService};
 use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * Stichtagsbezogene Inventur-UI (Feature 048, MVP-069): Inventur eröffnen,

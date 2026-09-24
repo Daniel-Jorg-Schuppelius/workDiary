@@ -11,28 +11,24 @@
 namespace App\Models\Diary;
 
 use App\Enums\Diary\{LocationMode, Mode, Priority, Status};
+use App\Models\Asset\Asset;
 use App\Models\Classification\EntryType;
 use App\Models\Communication\Comment;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasCommunicationNotes, HasSqid, HasTags, Searchable};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasCommunicationNotes, HasCustomFields, HasJournal, HasSqid, HasTags, Searchable};
+use App\Models\Contracts\CustomFieldSubject;
 use App\Models\Customer\Customer;
+use App\Models\Hr\Qualification;
 use App\Models\Platform\{Team, User};
 use App\Models\Project\{Project, RecurrenceRule};
+use App\Models\Protocol\Protocol;
+use App\Models\ServiceTicket\ServiceTicket;
+use App\Models\Time\TimeEntry;
 use App\Support\Query\DateRange;
 use Database\Factories\Diary\DiaryEntryFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 use Illuminate\Support\Carbon;
-use App\Models\Asset\Asset;
-use App\Models\Diary\DiaryEntryEvent;
-use App\Models\Diary\EmergencyAssignment;
-use App\Models\Diary\OnCallShift;
-use App\Models\Diary\OpenIssue;
-use App\Models\Protocol\Protocol;
-use App\Models\Hr\Qualification;
-use App\Models\ServiceTicket\ServiceTicket;
-use App\Models\Time\TimeEntry;
-use App\Models\Diary\Tour;
 
 /**
  * @property int $id
@@ -89,15 +85,20 @@ use App\Models\Diary\Tour;
  * @property Carbon|null $invoiced_at
  * @property Carbon|null $cancelled_at
  */
-class DiaryEntry extends Model {
+class DiaryEntry extends Model implements CustomFieldSubject {
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
     use HasCommunicationNotes;
+    use HasJournal;
+
+    /** @var class-string<DiaryEntryEvent> Journal des Trägers (MVP-864) */
+    protected static string $journalClass = DiaryEntryEvent::class;
+
+    use HasCustomFields;
 
     /** @use HasFactory<DiaryEntryFactory> */
     use HasFactory;
-
     use HasSqid;
     use HasTags;
     use Searchable;
@@ -235,11 +236,6 @@ class DiaryEntry extends Model {
     /** @return HasMany<TimeEntry, $this> */
     public function timeEntries(): HasMany {
         return $this->hasMany(TimeEntry::class);
-    }
-
-    /** @return HasMany<DiaryEntryEvent, $this> */
-    public function lifecycleEvents(): HasMany {
-        return $this->hasMany(DiaryEntryEvent::class)->orderBy('occurred_at');
     }
 
     /**

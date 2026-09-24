@@ -13,13 +13,13 @@ namespace App\Http\Controllers\Diary;
 use App\Enums\Classification\ClassificationRequirementPhase;
 use App\Exceptions\ClassificationRequirementException;
 use App\Http\Controllers\Concerns\{FiltersDiaryEntries, ResolvesGlobalDateRange};
+use App\Http\Controllers\Concerns\SavesCustomFields;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Diary\SaveDiaryEntryRequest;
 use App\Legacy\LegacyBridge;
 use App\Models\Classification\{EntryType, Tag};
 use App\Models\Customer\Customer;
-use App\Models\Diary\DiaryEntry;
-use App\Models\Diary\OpenIssue;
-use App\Models\Diary\Tour;
+use App\Models\Diary\{DiaryEntry, OpenIssue, Tour};
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Services\Archive\ArchiveService;
@@ -35,10 +35,11 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class DiaryController extends Controller {
     use FiltersDiaryEntries, ResolvesGlobalDateRange;
+
+    use SavesCustomFields;
 
     public function __construct(
         private readonly SqidEncoder $sqids,
@@ -85,6 +86,7 @@ class DiaryController extends Controller {
             'filters' => $filters,
             'allTags' => $this->allTags(),
             'entryTypes' => EntryType::query()->active()->ordered()->get(),
+            'customColumns' => app(\App\Services\Fields\CustomFieldService::class)->listColumnsFor($entries->getCollection(), DiaryEntry::class, (int) Auth::user()?->organization_id),
         ]);
     }
 
@@ -199,6 +201,8 @@ class DiaryController extends Controller {
 
     public function store(SaveDiaryEntryRequest $request): RedirectResponse {
         $data = $request->validated();
+        $custom = $this->validatedCustomFields($request, DiaryEntry::class);
+        unset($data['custom']);
         $data['status'] = \App\Enums\Diary\Status::Planned->value;
         $tagIds = $this->extractTagIds($request);
         $newTagNames = $this->extractNewTagNames($request);
@@ -244,6 +248,7 @@ class DiaryController extends Controller {
         /** @var DiaryEntry $entry */
         $entry = $owner->diaryEntries()->create($data);
         $entry->syncTagsFromInput($tagIds, $newTagNames);
+        $entry->syncCustomFields($custom);
 
         if ($issue !== null) {
             app(OpenIssueService::class)->linkFollowUp($issue, $entry, $auth);
@@ -261,7 +266,7 @@ class DiaryController extends Controller {
             'tags:id,name,color,slug',
             'comments.user:id,name',
             'attachments.uploader:id,name',
-            'lifecycleEvents.actor:id,name',
+            'journal.actor:id,name',
             'protocols',
             'entryType:id,slug,label',
         ]);
@@ -351,12 +356,14 @@ class DiaryController extends Controller {
         Gate::authorize('update', $diary);
 
         $data = $request->validated();
-        unset($data['user_id'], $data['status']); // Eigentümer und Lebenszyklus werden separat gesteuert
+        $custom = $this->validatedCustomFields($request, DiaryEntry::class);
+        unset($data['user_id'], $data['status'], $data['custom']); // Eigentümer und Lebenszyklus werden separat gesteuert
         $tagIds = $this->extractTagIds($request);
         $newTagNames = $this->extractNewTagNames($request);
 
         $diary->update($data);
         $diary->syncTagsFromInput($tagIds, $newTagNames);
+        $diary->syncCustomFields($custom);
 
         return redirect()->route('diary.show', $diary)->with('success', __('Eintrag aktualisiert.'));
     }

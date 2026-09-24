@@ -19,6 +19,10 @@ use App\Plugins\Support\MatchingTimeGroupBooker;
  * Zuordnungs-Inbox (gemeinsame Mechanik: {@see MatchingTimeGroupBooker}).
  */
 class ClockifyGroupBooker extends MatchingTimeGroupBooker {
+    public function pluginId(): string {
+        return 'clockify';
+    }
+
     public function __construct(ClockifyImportService $service) {
         parent::__construct($service);
     }

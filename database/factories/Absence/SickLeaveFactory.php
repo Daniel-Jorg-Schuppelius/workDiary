@@ -11,8 +11,8 @@
 namespace Database\Factories\Absence;
 
 use App\Enums\Sickness\SickLeaveKind;
-use App\Models\Platform\User;
 use App\Models\Absence\SickLeave;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

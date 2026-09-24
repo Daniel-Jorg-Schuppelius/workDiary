@@ -10,10 +10,11 @@
 
 namespace App\Http\Controllers\Absence;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Absence\SaveSickLeaveRequest;
+use App\Models\Absence\SickLeave;
 use App\Models\Attachments\Attachment;
 use App\Models\Platform\User;
-use App\Models\Absence\SickLeave;
 use App\Support\LookupCache;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Database\Eloquent\Collection;
@@ -22,7 +23,6 @@ use Illuminate\Support\Facades\{Auth, Gate, Storage, URL};
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use App\Http\Controllers\Controller;
 
 class SickLeaveController extends Controller {
     // ── Create / Store ──────────────────────────────────────────────────────

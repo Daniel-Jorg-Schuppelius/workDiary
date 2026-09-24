@@ -26,13 +26,6 @@ use App\Models\Platform\{Organization, User};
 class AccountingEventRecorder {
     /** @param array<string, mixed> $payload */
     public function record(Organization $organization, string $event, array $payload = [], ?AccountingEntry $entry = null, ?User $actor = null): AccountingEvent {
-        return AccountingEvent::query()->create([
-            'organization_id' => $organization->id,
-            'accounting_entry_id' => $entry?->id,
-            'event' => $event,
-            'actor_user_id' => $actor?->id,
-            'payload' => $payload === [] ? null : $payload,
-            'created_at' => now(),
-        ]);
+        return AccountingEvent::log($entry, $event, $payload, $actor, extra: ['organization_id' => $organization->id]);
     }
 }

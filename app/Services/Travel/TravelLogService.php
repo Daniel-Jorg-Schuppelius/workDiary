@@ -17,6 +17,7 @@ use App\Models\Fleet\Vehicle;
 use App\Models\Platform\User;
 use App\Models\Time\TimeEntry;
 use App\Models\Travel\TravelLog;
+use App\Services\Routing\Contracts\TravelLogRecorder;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,11 @@ use Illuminate\Support\Facades\DB;
  * im Logbook-Modus — Regelprüfung ({@see LogbookRules}), Festschreibung
  * (Tagesende bzw. explizit) und Stornofahrt statt Änderung.
  */
-class TravelLogService {
+class TravelLogService implements TravelLogRecorder {
+    public function available(): bool {
+        return true;
+    }
+
     public function __construct(
         private readonly MileageRateResolver $rates,
         private readonly LogbookRules $logbook,

@@ -119,7 +119,7 @@ final class DisposalLifecycleTest extends TestCase {
         $this->assertStringStartsWith('ENT-' . now()->format('Y') . '-', $job->number);
         $this->assertSame(DisposalJobStatus::Draft, $job->status);
 
-        $events = $job->events()->get();
+        $events = $job->journal()->get();
         $this->assertCount(1, $events);
         $this->assertSame(DisposalJobEventType::Created, $events->first()->event);
     }
@@ -245,7 +245,7 @@ final class DisposalLifecycleTest extends TestCase {
         // Verknüpftes Asset wird ausgemustert.
         $this->assertSame(AssetStatus::Decommissioned, $asset->refresh()->status);
 
-        $events = $job->events()->pluck('event')->map(fn (DisposalJobEventType $event): string => $event->value)->all();
+        $events = $job->journal()->pluck('event')->map(fn (DisposalJobEventType $event): string => $event->value)->all();
         $this->assertContains('completed', $events);
         $this->assertContains('record_rendered', $events);
     }

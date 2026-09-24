@@ -18,7 +18,7 @@ use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
 use App\Models\Sales\Quote;
 use App\Services\Import\ImportOutcome;
-use App\Services\Import\Specs\QuoteSpec;
+use App\Services\Sales\Import\QuoteSpec;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

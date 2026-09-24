@@ -10,11 +10,9 @@
 
 namespace App\Services\UI;
 
-use App\Models\Platform\Organization;
-use App\Models\Platform\User;
+use App\Models\Platform\{Organization, User};
 use App\Support\ThemeDefinition;
 use Illuminate\Support\Facades\Auth;
-use App\Services\UI\BrandingService;
 
 /**
  * Zentrale Quelle für das aktive Theme und die verfügbaren Themes.

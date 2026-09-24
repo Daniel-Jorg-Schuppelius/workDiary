@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Accounting;
 
 use App\Enums\Finance\AccountingEntryStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasJournal, HasSqid};
 use App\Models\Platform\User;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
@@ -37,7 +37,11 @@ use RuntimeException;
 class AccountingEntry extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use HasJournal;
     use HasSqid;
+
+    /** @var class-string<AccountingEvent> Journal des Trägers (MVP-864) */
+    protected static string $journalClass = AccountingEvent::class;
 
     /** Felder, die nach der Festschreibung noch geschrieben werden dürfen. */
     private const POST_FREEZE_WRITABLE = ['status', 'reversed_by_entry_id', 'reversal_reason', 'updated_at'];

@@ -11,8 +11,8 @@
 namespace Database\Factories\Schedule;
 
 use App\Enums\Shift\ShiftPreference;
-use App\Models\Schedule\DesiredShift;
 use App\Models\Platform\User;
+use App\Models\Schedule\DesiredShift;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

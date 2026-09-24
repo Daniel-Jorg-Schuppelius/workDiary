@@ -11,13 +11,13 @@
 namespace App\Http\Controllers\Hr;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Models\Platform\User;
+use App\Http\Controllers\Controller;
 use App\Models\Hr\Qualification;
+use App\Models\Platform\User;
 use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class QualificationController extends Controller {
     use ResolvesCurrentOrganization;

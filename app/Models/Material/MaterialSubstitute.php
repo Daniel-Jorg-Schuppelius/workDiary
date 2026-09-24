@@ -11,12 +11,12 @@
 namespace App\Models\Material;
 
 use App\Enums\Manufacturing\SubstituteStatus;
+use App\Models\Article\Article;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Manufacturing\ManufacturingOrder;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Article\Article;
-use App\Models\Manufacturing\ManufacturingOrder;
 
 /**
  * Ersatzmaterial-Abweichung (Feature 048, Fehlmaterialprozess).

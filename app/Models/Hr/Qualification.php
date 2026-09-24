@@ -12,12 +12,12 @@ namespace App\Models\Hr;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
+use App\Models\Schedule\ShiftType;
 use Database\Factories\Hr\QualificationFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
 use Illuminate\Support\Carbon;
-use App\Models\Schedule\ShiftType;
 
 /**
  * @property int $id

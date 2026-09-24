@@ -10,11 +10,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Notification\DeadlineScans;
+namespace App\Services\Contract\DeadlineScans;
 
 use App\Models\Contract\ContractObligation;
 use App\Models\Platform\Organization;
 use App\Services\Contract\ContractService;
+use App\Services\Notification\DeadlineScans\{AbstractDeadlineScan, DeadlineScanOptions};
 use App\Services\Notification\NotificationDispatcher;
 
 /**

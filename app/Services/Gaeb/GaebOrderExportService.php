@@ -14,6 +14,7 @@ namespace App\Services\Gaeb;
 
 use App\Models\Procurement\{PurchaseOrder, PurchaseOrderLine};
 use App\Services\Invoicing\EInvoice\XRechnungGenerator;
+use App\Services\Procurement\Contracts\PurchaseOrderGaebExporter;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Entities\Gaeb\{GaebBoq, GaebOrder, GaebOrderItem, GaebParty};
@@ -28,7 +29,7 @@ use ERechnungToolkit\Generators\GaebDaXmlGenerator;
  * Anders als ein Leistungsverzeichnis identifiziert sie über die
  * **Artikelnummer** des Lieferanten, und der Liefertermin hängt an der Zeile.
  */
-final class GaebOrderExportService {
+final class GaebOrderExportService implements PurchaseOrderGaebExporter {
     public function __construct(
         private readonly XRechnungGenerator $einvoice,
         private readonly GaebDaXmlGenerator $generator = new GaebDaXmlGenerator,

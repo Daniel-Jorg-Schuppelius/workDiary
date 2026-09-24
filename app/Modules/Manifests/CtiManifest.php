@@ -48,4 +48,16 @@ final class CtiManifest extends Manifest {
             'fritzbox',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
+                \App\Services\Cti\Retention\CtiRetentionPolicies::class,
+            ],
+            \App\Services\Mail\Contracts\MailIntakeHandler::class => [
+                \App\Plugins\Fritzbox\FritzboxCallReportMailHandler::class,
+            ],
+        ];
+    }
 }

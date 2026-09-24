@@ -98,7 +98,7 @@ class IncidentController extends Controller {
 
         return view('privacy.incidents.show', [
             'incident' => $incident->load(['assignedUser', 'measures', 'controllerCustomer']),
-            'events' => $incident->events()->get(),
+            'events' => $incident->journal()->get(),
             'authorityPortals' => $this->authorityDirectory->reportingPortals(),
             'authorityDirectoryUrl' => $this->authorityDirectory->authorityDirectoryUrl(),
             'authorityRecommendation' => $this->authorityDirectory->recommendation($incident),

@@ -16,7 +16,6 @@ use App\Models\Platform\Organization;
 use App\Models\Plugins\Msgraph\MsgraphConnection;
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Support\Calendar\RemoteCalendarPublishService;
-use App\Services\Event\IcsFeedService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
 use Tests\Concerns\WithOrganization;
@@ -58,7 +57,7 @@ final class MsgraphPublishTest extends TestCase {
     public function test_publish_creates_event_with_stable_uid_then_unchanged(): void {
         $this->connection();
         $event = $this->event();
-        $uid = IcsFeedService::eventUid($event);
+        $uid = $event->icsUid();
 
         $fake = FakePluginHttp::fake([
             'https://graph.microsoft.com/v1.0/me/events' => FakePluginHttp::response(['id' => 'AAMk-1'], 201),

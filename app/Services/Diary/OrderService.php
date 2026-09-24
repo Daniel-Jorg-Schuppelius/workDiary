@@ -14,7 +14,7 @@ use App\Enums\Classification\ClassificationRequirementPhase;
 use App\Enums\Diary\Status;
 use App\Enums\Protocol\ProtocolStatus;
 use App\Exceptions\InvalidOrderTransitionException;
-use App\Models\Diary\{DiaryEntry, DiaryEntryEvent};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Protocol\Protocol;
 use App\Services\Classification\ClassificationRequirementValidator;
@@ -151,17 +151,11 @@ class OrderService {
 
             $locked->forceFill($attributes + ['status' => $target->value])->save();
 
-            DiaryEntryEvent::query()->create([
-                'diary_entry_id' => $locked->id,
-                'organization_id' => $locked->organization_id,
-                'event' => 'order.' . $action,
+            $locked->record('order.' . $action, $payload, $actor, extra: [
                 'from_status' => $from->slug(),
                 'to_status' => $target->slug(),
-                'actor_user_id' => $actor->id,
                 'actor_kind' => 'user',
                 'note' => $note,
-                'payload' => $payload ?: null,
-                'occurred_at' => CarbonImmutable::now(),
             ]);
 
             return $locked->refresh();

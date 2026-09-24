@@ -11,14 +11,13 @@
 namespace App\Http\Controllers\Schedule;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Http\Requests\Schedule\StoreShiftTypeRequest;
-use App\Http\Requests\Schedule\UpdateShiftTypeRequest;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Schedule\{StoreShiftTypeRequest, UpdateShiftTypeRequest};
 use App\Models\Platform\User;
 use App\Models\Schedule\ShiftType;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class ShiftTypeController extends Controller {
     use ResolvesCurrentOrganization;

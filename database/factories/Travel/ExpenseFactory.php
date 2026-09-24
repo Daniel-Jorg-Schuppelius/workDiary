@@ -11,9 +11,8 @@
 namespace Database\Factories\Travel;
 
 use App\Enums\Expense\{ExpenseStatus, PaymentMethod};
-use App\Models\Travel\Expense;
-use App\Models\Travel\ExpenseCategory;
 use App\Models\Platform\User;
+use App\Models\Travel\{Expense, ExpenseCategory};
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 

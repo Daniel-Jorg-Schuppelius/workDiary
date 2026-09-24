@@ -20,7 +20,9 @@ use App\Models\Document\Document;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Modules\ModuleRegistry;
 use App\Plugins\Support\Intake\IntakeItem;
+use App\Services\CloudIntake\Contracts\CloudIntakeHandler;
 use App\Services\Document\DocumentService;
 use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
 use App\Support\MorphMap;
@@ -64,70 +66,22 @@ class CloudIntakeRouter {
         return match ($route->target) {
             CloudIntakeRouteTarget::IncomingInvoice => $this->routeInvoice($item, $quarantinePath, $actor),
             CloudIntakeRouteTarget::Document => $this->routeDocument($connection, $route, $variables, $item, $quarantinePath, $actor),
-            CloudIntakeRouteTarget::B2bOrder => $this->routeB2bOrder($connection, $quarantinePath),
-            CloudIntakeRouteTarget::GaebPackage => $this->routeGaebPackage($connection, $item, $quarantinePath, $actor),
+            // Fachmodule (Vergabepaket, openTRANS-Bestellung) über den Erweiterungspunkt (MVP-863).
+            CloudIntakeRouteTarget::B2bOrder, CloudIntakeRouteTarget::GaebPackage => $this->handlerFor($route->target)?->intake($connection, $item, $quarantinePath, $actor)
+                ?? ['status' => CloudIntakeItemStatus::Rejected, 'imported' => null, 'reason' => 'module_missing'],
         };
     }
 
-    /**
-     * Vergabeunterlagen (Feature 108, MVP-627): ZIP zerlegen, GAEB-Dateien als
-     * Vorschlag ablegen, Rest ins DMS.
-     *
-     * Der Ordnerweg hat **keinen Vergabevorgang** — er kennt nur den Ordner.
-     * Deshalb entstehen hier ausschließlich GAEB-Vorschläge; die Zuordnung zur
-     * Akte macht, wer den Vorschlag annimmt. Restdokumente ohne Akte blind ins
-     * DMS zu legen, machte sie unauffindbar.
-     *
-     * @return array{status: CloudIntakeItemStatus, imported: Model|null, reason: string|null}
-     */
-    private function routeGaebPackage(CloudDocumentConnection $connection, IntakeItem $item, string $quarantinePath, User $actor): array {
-        $organizationId = (int) $connection->organization_id;
-
-        try {
-            $result = app(\App\Services\Gaeb\GaebPackageIntakeService::class)->intake(
-                File::read($quarantinePath),
-                $item->name,
-                $organizationId,
-                $actor,
-            );
-        } catch (\RuntimeException $e) {
-            return ['status' => CloudIntakeItemStatus::Rejected, 'imported' => null, 'reason' => $e->getMessage()];
+    private function handlerFor(CloudIntakeRouteTarget $target): ?CloudIntakeHandler {
+        foreach (app(ModuleRegistry::class)->extensions(CloudIntakeHandler::class) as $class) {
+            /** @var CloudIntakeHandler $handler */
+            $handler = app($class);
+            if ($handler->target() === $target) {
+                return $handler;
+            }
         }
 
-        if ($result['gaeb'] === []) {
-            // Kein GAEB im Paket ist kein Fehler - nur nichts für diesen Weg.
-            return ['status' => CloudIntakeItemStatus::Rejected, 'imported' => null, 'reason' => 'gaeb_package_without_gaeb'];
-        }
-
-        return ['status' => CloudIntakeItemStatus::Inbox, 'imported' => $result['gaeb'][0], 'reason' => null];
-    }
-
-    /**
-     * openTRANS-Bestellungen (Feature 099, MVP-458): Datei als
-     * openTRANS-2.1-ORDER parsen und Inbox-First spiegeln — kein Blind-Import.
-     *
-     * @return array{status: CloudIntakeItemStatus, imported: Model|null, reason: string|null}
-     */
-    private function routeB2bOrder(CloudDocumentConnection $connection, string $quarantinePath): array {
-        $organization = $connection->organization;
-        if ($organization === null
-            || ! app(\App\Services\Licensing\ModuleStatusResolver::class)->isActiveFor($organization, 'module.b2b_katalog')) {
-            return ['status' => CloudIntakeItemStatus::Rejected, 'imported' => null, 'reason' => 'b2b_order_module_inactive'];
-        }
-
-        try {
-            $result = app(\App\Services\B2bCatalog\B2bOrderIntakeService::class)->intake(
-                $organization,
-                File::read($quarantinePath),
-                \App\Models\B2b\B2bOrder::SOURCE_CLOUD,
-            );
-        } catch (\RuntimeException) {
-            return ['status' => CloudIntakeItemStatus::Rejected, 'imported' => null, 'reason' => 'b2b_order_unreadable'];
-        }
-
-        return $result['status'] === 'duplicate'
-            ? ['status' => CloudIntakeItemStatus::Duplicate, 'imported' => $result['order'], 'reason' => 'b2b_order_duplicate']
-            : ['status' => CloudIntakeItemStatus::Imported, 'imported' => $result['order'], 'reason' => null];
+        return null;
     }
 
     /** @return array{status: CloudIntakeItemStatus, imported: Model|null, reason: string|null} */

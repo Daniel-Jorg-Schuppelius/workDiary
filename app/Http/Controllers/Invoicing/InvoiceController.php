@@ -11,16 +11,13 @@
 namespace App\Http\Controllers\Invoicing;
 
 use App\Enums\Invoicing\InvoiceDeliveryFormat;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Invoicing\SaveInvoiceItemRequest;
 use App\Mail\InvoiceMail;
 use App\Models\Customer\Customer;
-use App\Models\Travel\Expense;
-use App\Models\Invoicing\Invoice;
-use App\Models\Invoicing\InvoiceItem;
-use App\Models\Invoicing\InvoiceMailTemplate;
 use App\Models\Integration\ExternalReference;
+use App\Models\Invoicing\{Invoice, InvoiceItem, InvoiceMailTemplate};
 use App\Models\Project\Project;
-use App\Services\Expense\ExpenseInvoicingService;
 use App\Services\Invoicing\InvoiceGenerator;
 use App\Services\Invoicing\{InvoiceIssueException, InvoiceIssueService};
 use App\Services\UI\DateRangeContext;
@@ -29,7 +26,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Gate, Mail};
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
-use App\Http\Controllers\Controller;
 
 class InvoiceController extends Controller {
     public function create(Request $request): View {
@@ -81,7 +77,7 @@ class InvoiceController extends Controller {
                 'from' => $data['from'] ?? null,
                 'to' => $data['to'] ?? null,
             ], $foreignCustomer);
-        } catch (\App\Services\Finance\BillingModeLockedException $e) {
+        } catch (\App\Services\Billing\BillingModeLockedException $e) {
             return view('invoices._preview', ['preview' => null, 'blocked' => $e->getMessage()]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return view('invoices._preview', ['preview' => null, 'blocked' => collect($e->errors())->flatten()->first()]);
@@ -146,7 +142,7 @@ class InvoiceController extends Controller {
 
         // Hoheits-Sperre (Feature 045): führt ein externes Programm (Lexoffice/DATEV)
         // die Fakturierung des Kunden, ist die lokale Rechnungserstellung gesperrt.
-        $billingMode = app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($customer);
+        $billingMode = app(\App\Services\Billing\BillingModeResolver::class)->effectiveFor($customer);
         if ($billingMode->isExternal()) {
             throw \Illuminate\Validation\ValidationException::withMessages([
                 'customer_id' => (string) __('finance.error.local_invoicing_locked', ['program' => $billingMode->label()]),
@@ -317,8 +313,8 @@ class InvoiceController extends Controller {
         // Dialog mit vorbefülltem Zusatztext — nie Auto-Versand.
         [$aiUsable, $aiText, $aiError] = $this->coveringTextFor(
             $request,
-            \App\Services\Ai\Suggestions\CoveringTextSuggestionService::CAPABILITY_DUNNING_TEXT,
-            fn (): string => app(\App\Services\Ai\Suggestions\CoveringTextSuggestionService::class)->suggestDunningText($invoice, $nextLevel),
+            \App\Services\Ai\Contracts\CoveringTextSuggester::CAPABILITY_DUNNING_TEXT,
+            fn (): string => app(\App\Services\Ai\Contracts\CoveringTextSuggester::class)->suggestDunningText($invoice, $nextLevel),
         );
 
         return view('invoices._dun_dialog', [
@@ -343,7 +339,7 @@ class InvoiceController extends Controller {
      * @return array{0: bool, 1: ?string, 2: ?string}
      */
     private function coveringTextFor(\Illuminate\Http\Request $request, string $capability, callable $suggest): array {
-        $usable = app(\App\Services\Ai\Suggestions\SuggestionViewData::class)->capabilityUsable($capability);
+        $usable = app(\App\Services\Ai\Contracts\SuggestionView::class)->capabilityUsable($capability);
         $text = null;
         $error = null;
 
@@ -537,7 +533,7 @@ class InvoiceController extends Controller {
         // Pro-forma ist keine steuerliche Rechnung — nie als XRechnung (MVP-171).
         abort_if($invoice->isProforma(), 404);
 
-        $billingMode = app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($invoice->customer);
+        $billingMode = app(\App\Services\Billing\BillingModeResolver::class)->effectiveFor($invoice->customer);
         abort_if($billingMode->isExternal(), 404);
 
         $result = $generator->preflight($invoice);
@@ -577,11 +573,11 @@ class InvoiceController extends Controller {
      * als eigene Art, und die Datei sagt über `InvoiceType` selbst, dass sie
      * keine Zahlung fordert. Eine XRechnung könnte das nicht.
      */
-    public function gaebDownload(Invoice $invoice, \App\Services\Gaeb\GaebInvoiceExportService $export, Request $request): SymfonyResponse {
+    public function gaebDownload(Invoice $invoice, \App\Services\Invoicing\Contracts\InvoiceGaebExporter $export, Request $request): SymfonyResponse {
         Gate::authorize('view', $invoice);
         $invoice->load(['items', 'customer', 'organization']);
 
-        $billingMode = app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($invoice->customer);
+        $billingMode = app(\App\Services\Billing\BillingModeResolver::class)->effectiveFor($invoice->customer);
         abort_if($billingMode->isExternal(), 404);
 
         // X89B ist die Anlage zu einer Rechnung, keine Rechnung selbst.
@@ -627,7 +623,7 @@ class InvoiceController extends Controller {
         // Pro-forma ist keine steuerliche Rechnung — nie als ZUGFeRD (MVP-171).
         abort_if($invoice->isProforma(), 404);
 
-        $billingMode = app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($invoice->customer);
+        $billingMode = app(\App\Services\Billing\BillingModeResolver::class)->effectiveFor($invoice->customer);
         abort_if($billingMode->isExternal(), 404);
 
         abort_unless($generator->zugferdAvailable(), 503, (string) __('invoicing.einvoice.zugferd.unavailable'));
@@ -704,7 +700,7 @@ class InvoiceController extends Controller {
 
         // Kupferzuschlag zum Tagespreis als eigene Position (MVP-804, Feature 107).
         $surcharge = $request->boolean('add_copper_surcharge')
-            ? app(\App\Services\Procurement\MetalSurchargeService::class)->salesSurchargeItem($item->article_id, (string) $item->quantity, $item->unit)
+            ? app(\App\Services\Article\MetalSurchargeService::class)->salesSurchargeItem($item->article_id, (string) $item->quantity, $item->unit)
             : null;
         if ($surcharge !== null) {
             $invoice->items()->create($surcharge + [
@@ -879,32 +875,6 @@ class InvoiceController extends Controller {
         return redirect()->route('invoices.show', $invoice)->with('status', __('Konditionen gespeichert.'));
     }
 
-    public function expensesForm(Invoice $invoice, ExpenseInvoicingService $service): View {
-        Gate::authorize('update', $invoice);
-        $expenses = $service->availableForInvoice($invoice)->get();
-
-        return view('invoices._attach_expenses_dialog', [
-            'invoice' => $invoice,
-            'expenses' => $expenses,
-        ]);
-    }
-
-    public function attachExpenses(Request $request, Invoice $invoice, ExpenseInvoicingService $service): RedirectResponse {
-        Gate::authorize('update', $invoice);
-
-        $data = $request->validate([
-            'expense_ids' => ['required', 'array', 'min:1'],
-            'expense_ids.*' => ['integer', new \App\Rules\ExistsInCurrentOrganization('expenses')],
-        ]);
-
-        /** @var \Illuminate\Database\Eloquent\Collection<int, Expense> $expenses */
-        $expenses = Expense::query()->whereIn('id', $data['expense_ids'])->get();
-        $service->addToInvoice($invoice, $expenses);
-
-        return redirect()->route('invoices.show', $invoice)
-            ->with('status', __(':count Spese(n) hinzugefügt.', ['count' => $expenses->count()]));
-    }
-
     /**
      * Direktes Storno (nur draft/issued). Bezahlte Rechnungen müssen über
      * eine Korrekturrechnung storniert werden — siehe {@see creditNote()}.
@@ -961,8 +931,8 @@ class InvoiceController extends Controller {
         // Dialog mit vorbefülltem custom_text — nie Auto-Versand.
         [$aiUsable, $aiText, $aiError] = $this->coveringTextFor(
             $request,
-            \App\Services\Ai\Suggestions\CoveringTextSuggestionService::CAPABILITY_MAIL_TEXT,
-            fn (): string => app(\App\Services\Ai\Suggestions\CoveringTextSuggestionService::class)->suggestMailText($invoice),
+            \App\Services\Ai\Contracts\CoveringTextSuggester::CAPABILITY_MAIL_TEXT,
+            fn (): string => app(\App\Services\Ai\Contracts\CoveringTextSuggester::class)->suggestMailText($invoice),
         );
 
         $templates = InvoiceMailTemplate::query()

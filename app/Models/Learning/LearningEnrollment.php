@@ -12,7 +12,7 @@ namespace App\Models\Learning;
 
 use App\Enums\Learning\{LearningEnrollmentSource, LearningEnrollmentStatus};
 use App\Models\Communication\ExternalParticipant;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasCommunicationNotes, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasCommunicationNotes, HasJournal, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -50,6 +50,10 @@ use Illuminate\Support\Carbon;
  */
 class LearningEnrollment extends Model {
     use Auditable;
+    use HasJournal;
+
+    /** @var class-string<LearningEnrollmentEvent> Journal des Trägers (MVP-864) */
+    protected static string $journalClass = LearningEnrollmentEvent::class;
 
     use BelongsToOrganization;
     use HasCommunicationNotes;
@@ -106,11 +110,6 @@ class LearningEnrollment extends Model {
     /** @return BelongsTo<ExternalParticipant, $this> */
     public function externalParticipant(): BelongsTo {
         return $this->belongsTo(ExternalParticipant::class);
-    }
-
-    /** @return HasMany<LearningEnrollmentEvent, $this> */
-    public function events(): HasMany {
-        return $this->hasMany(LearningEnrollmentEvent::class);
     }
 
     /** @return HasMany<LearningUnitProgress, $this> */

@@ -106,9 +106,9 @@
         </div>
     </div>
 
-    @if ($diary->lifecycleEvents->isNotEmpty())
+    @if ($diary->journal->isNotEmpty())
         <ol class="mt-4 grid gap-2 border-t border-base-300 pt-3 text-sm md:grid-cols-2">
-            @foreach ($diary->lifecycleEvents->take(-4) as $event)
+            @foreach ($diary->journal->take(-4) as $event)
                 <li class="flex items-start gap-2">
                     <x-icon name="history" size="1rem" class="mt-0.5 shrink-0 text-muted" />
                     <span>

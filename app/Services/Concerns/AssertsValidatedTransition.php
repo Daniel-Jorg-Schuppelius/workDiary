@@ -3,14 +3,14 @@
  * Created on   : Sat Jul 18 2026
  * Author       : Daniel Jörg Schuppelius
  * Author Uri   : https://schuppelius.org
- * Filename     : AssertsIsmsTransition.php
+ * Filename     : AssertsValidatedTransition.php
  * License      : AGPL-3.0-or-later
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
 declare(strict_types=1);
 
-namespace App\Services\Isms\Concerns;
+namespace App\Services\Concerns;
 
 use App\Enums\Contracts\HasStatusTransitions;
 use Illuminate\Validation\ValidationException;
@@ -22,9 +22,9 @@ use Illuminate\Validation\ValidationException;
  * Familie (AssetFinance/Contract/Claims) bleibt bewusst getrennt
  * ({@see \App\Services\Concerns\AssertsStatusTransition}).
  */
-trait AssertsIsmsTransition {
+trait AssertsValidatedTransition {
     /** @throws ValidationException wenn der Übergang nicht erlaubt ist. */
-    private function assertIsmsTransition(HasStatusTransitions $current, HasStatusTransitions $target, string $messageKey = 'isms.error.invalid_transition'): void {
+    private function assertValidatedTransition(HasStatusTransitions $current, HasStatusTransitions $target, string $messageKey = 'isms.error.invalid_transition'): void {
         if (in_array($target, $current->allowedTransitions(), true)) {
             return;
         }

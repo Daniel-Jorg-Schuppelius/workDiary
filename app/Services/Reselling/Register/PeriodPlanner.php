@@ -14,6 +14,7 @@ namespace App\Services\Reselling\Register;
 
 use App\Enums\Reselling\{BillingFrequency, PeriodStatus};
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
+use App\Services\Billing\DocumentTotalsCalculator;
 use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Facades\DB;
@@ -294,7 +295,7 @@ final class PeriodPlanner {
         if ($unitPrice === null) {
             return null;
         }
-        $amount = $unitPrice->times($quantity);
+        $amount = DocumentTotalsCalculator::lineNet($quantity, $unitPrice);
         if (isset($slot['months'], $slot['interval_months']) && $slot['months'] !== $slot['interval_months']) {
             $amount = $amount->times($slot['months'])->dividedBy($slot['interval_months']);
         }

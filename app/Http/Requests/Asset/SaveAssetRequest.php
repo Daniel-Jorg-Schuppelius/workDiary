@@ -11,10 +11,10 @@
 namespace App\Http\Requests\Asset;
 
 use App\Enums\Asset\{AssetClass, AssetStatus};
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidOrNumericInputs;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
-use App\Http\Requests\BaseFormRequest;
 
 class SaveAssetRequest extends BaseFormRequest {
     use DecodesSqidOrNumericInputs;

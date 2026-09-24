@@ -26,7 +26,6 @@ class ServiceTicketService {
     use \App\Services\Concerns\ParsesMixedDate;
 
     public function __construct(
-        private readonly TicketStatusMachine $statusMachine,
         private readonly SlaTimer $slaTimer,
         private readonly NumberSequenceService $numberSequence,
         private readonly SlaViolationService $slaViolations = new SlaViolationService,
@@ -128,7 +127,9 @@ class ServiceTicketService {
         if ($from === $to) {
             return $ticket;
         }
-        $this->statusMachine->ensureTransition($from, $to);
+        if (! $from->canTransitionTo($to)) {
+            throw ServiceTicketException::invalidStatusTransition($from->value, $to->value);
+        }
 
         if ($to === ServiceTicketStatus::InProgress && $ticket->assigned_to_user_id === null) {
             throw ServiceTicketException::missingAssignee();

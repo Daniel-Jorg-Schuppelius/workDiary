@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Protocol;
 
 use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
+use App\Http\Controllers\Controller;
 use App\Services\Customer\CustomerQueryService;
 use App\Services\Protocol\ProtocolSignatureTokenService;
 use App\Support\ErrorText;
@@ -18,7 +19,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
-use App\Http\Controllers\Controller;
 
 class PublicProtocolSignatureController extends Controller {
     use ChecksTenantPublicSurfaces;

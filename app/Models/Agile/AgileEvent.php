@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Models\Agile;
 
-use App\Models\Concerns\{AppendOnly, BelongsToOrganization};
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Journal\JournalEntry;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Append-only Prozessereignis (Feature 064): fester Katalog, fachliche
@@ -29,9 +30,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $actor_user_id
  * @property array<string, mixed>|null $payload
  */
-class AgileEvent extends Model {
-    use AppendOnly;
-
+class AgileEvent extends JournalEntry {
     use BelongsToOrganization;
 
     public const UPDATED_AT = null;
@@ -84,21 +83,23 @@ class AgileEvent extends Model {
     }
 
     /**
-     * Einzige Schreibstelle (P5): validiert Katalog + Pflicht-Payload.
+     * Ereigniskatalog und Pflicht-Payload (Feature 064) — geprüft beim Schreiben über den Journal-Baustein.
      *
-     * @param array<string, mixed> $attributes
+     * @param  array<string, mixed>  $payload
      */
-    public static function record(array $attributes): self {
-        $event = (string) ($attributes['event'] ?? '');
+    protected static function validateEntry(string $event, array $payload): void {
         if (! in_array($event, self::CATALOG, true)) {
             throw new \InvalidArgumentException("Unbekanntes Agile-Ereignis: {$event}");
         }
         foreach (self::REQUIRED_PAYLOAD[$event] ?? [] as $key) {
-            if (! array_key_exists($key, (array) ($attributes['payload'] ?? []))) {
+            if (! array_key_exists($key, $payload)) {
                 throw new \InvalidArgumentException("Pflicht-Payload '{$key}' fehlt für {$event}.");
             }
         }
+    }
 
-        return self::query()->create($attributes);
+    /** @return BelongsTo<AgileBoard, $this> */
+    public function subject(): BelongsTo {
+        return $this->belongsTo(AgileBoard::class, 'board_id');
     }
 }

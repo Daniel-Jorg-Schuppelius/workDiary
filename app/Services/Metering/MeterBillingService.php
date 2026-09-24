@@ -16,7 +16,7 @@ use App\Models\Asset\MeterReading;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Metering\{MeterBillingAgreement, MeterBillingRun};
-use App\Services\Finance\BillingModeResolver;
+use App\Services\Billing\{BillingModeResolver, DocumentTotalsCalculator};
 use App\Services\Invoicing\{InvoiceGenerator, TaxResolver};
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -217,7 +217,7 @@ class MeterBillingService {
 
         $tiers = $this->normalizedTiers($agreement);
         if ($tiers === []) {
-            return $billableUnits * (float) $agreement->unit_price;
+            return DocumentTotalsCalculator::lineNet($billableUnits, (string) $agreement->unit_price)->toFloat();
         }
 
         $total = 0.0;

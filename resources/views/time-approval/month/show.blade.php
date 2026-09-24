@@ -93,32 +93,7 @@
 
         <x-card class="flex flex-col gap-2">
             <h2 class="card-title text-base">{{ __('Verlauf') }}</h2>
-            @if ($closure->events->isEmpty())
-                <p class="text-sm opacity-70">{{ __('Noch keine Ereignisse.') }}</p>
-            @else
-                <ul class="timeline timeline-vertical timeline-compact">
-                    @foreach ($closure->events as $event)
-                        <li>
-                            <div class="timeline-start text-xs tabular-nums">{{ $event->created_at?->fdatetime() }}</div>
-                            <div class="timeline-middle">
-                                <x-icon name="history" class="text-base" />
-                            </div>
-                            <div class="timeline-end timeline-box">
-                                <div class="font-medium text-sm">{{ $event->event }}</div>
-                                @if ($event->actor)
-                                    <div class="text-xs opacity-70">{{ $event->actor->name }}</div>
-                                @endif
-                                @if ($event->note)
-                                    <div class="text-xs mt-1">{{ $event->note }}</div>
-                                @endif
-                            </div>
-                            @if (! $loop->last)
-                                <hr />
-                            @endif
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
+            <x-journal :entries="$closure->journal" />
         </x-card>
     </x-index-page>
 @endsection

@@ -10,8 +10,8 @@
 
 namespace App\Policies\Diary;
 
-use App\Models\Platform\User;
 use App\Models\Diary\Tour;
+use App\Models\Platform\User;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class TourPolicy {

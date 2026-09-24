@@ -11,9 +11,9 @@
 namespace App\Http\Requests\Access;
 
 use App\Enums\KeyHandover\KeyHandoverDirection;
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\ParsesOrgLocalDateTimes;
 use Illuminate\Validation\Rules\Enum;
-use App\Http\Requests\BaseFormRequest;
 
 class SaveKeyHandoverRequest extends BaseFormRequest {
     use ParsesOrgLocalDateTimes;

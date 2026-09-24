@@ -196,5 +196,7 @@
         {{-- Wetter-Auto-Abruf-Override (Feature 062, Rang 12) — Partial,
              s. Kommentar dort (Blade-Backtracking-Schwelle). --}}
         @include('projects._weather_field', ['project' => $project])
+
+        <x-custom-fields-group :model="\App\Models\Project\Project::class" :subject="$project ?? null" />
     </div>
 </x-modal>

@@ -11,9 +11,9 @@
 namespace App\Models\Learning;
 
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Journal\JournalEntry;
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -28,7 +28,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $actor_user_id
  * @property string|null $reason
  */
-class LearningEnrollmentEvent extends Model {
+class LearningEnrollmentEvent extends JournalEntry {
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
@@ -42,6 +42,13 @@ class LearningEnrollmentEvent extends Model {
         'to_status',
         'actor_user_id',
         'reason',
+        'event',
+        'payload',
+    ];
+
+    /** @var array<string, string> */
+    protected $casts = [
+        'payload' => 'array',
     ];
 
     /** @return BelongsTo<LearningEnrollment, $this> */
@@ -52,5 +59,10 @@ class LearningEnrollmentEvent extends Model {
     /** @return BelongsTo<User, $this> */
     public function actor(): BelongsTo {
         return $this->belongsTo(User::class, 'actor_user_id');
+    }
+
+    /** @return BelongsTo<LearningEnrollment, $this> */
+    public function subject(): BelongsTo {
+        return $this->enrollment();
     }
 }

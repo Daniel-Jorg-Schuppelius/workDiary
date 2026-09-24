@@ -13,8 +13,7 @@ namespace App\Services\Isms;
 use App\Enums\Isms\{AssessmentKind, AssessmentStatus, RiskStatus};
 use App\Models\Isms\{IsmsControl, IsmsRisk, IsmsRiskAssessment};
 use App\Models\Platform\User;
-use App\Services\Concerns\AssignsSequentialNo;
-use App\Services\Isms\Concerns\AssertsIsmsTransition;
+use App\Services\Concerns\{AssertsValidatedTransition, AssignsSequentialNo};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -55,7 +54,7 @@ use Illuminate\Validation\ValidationException;
  */
 class RiskService {
     use \App\Services\Isms\Concerns\SyncsScopedRelations;
-    use AssertsIsmsTransition;
+    use AssertsValidatedTransition;
 
     use AssignsSequentialNo;
 
@@ -161,7 +160,7 @@ class RiskService {
         }
 
         // Gemeinsamer ISMS-Guard (Vollaudit 2026-07, M44).
-        $this->assertIsmsTransition($risk->status, $target);
+        $this->assertValidatedTransition($risk->status, $target);
 
         if ($target === RiskStatus::Accepted) {
             $latestNet = $risk->latestApprovedNetAssessment();

@@ -11,13 +11,13 @@
 namespace App\Http\Controllers\Schedule;
 
 use App\Enums\Shift\{DutyPlanPeriodType, DutyPlanStatus};
+use App\Http\Controllers\Controller;
 use App\Models\Schedule\DutyPlan;
 use App\Support\{Setting, SortableQuery};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class DutyPlanController extends Controller {
     public function index(Request $request): View {

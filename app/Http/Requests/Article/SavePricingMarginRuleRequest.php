@@ -10,10 +10,10 @@
 
 namespace App\Http\Requests\Article;
 
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 /**
  * Validierung einer Margenregel (Feature 050, MVP-095). Lieferant ist optional

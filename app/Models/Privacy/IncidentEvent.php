@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Models\Privacy;
 
-use App\Models\Concerns\{HashChainable, HashChained};
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Journal\HashChainedJournalEntry;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Append-only Ereignisprotokoll fuer Datenschutzvorfaelle (Hash-Kette, in
@@ -24,8 +24,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @phpstan-consistent-constructor
  */
-class IncidentEvent extends Model implements HashChainable {
-    use HashChained;
+class IncidentEvent extends HashChainedJournalEntry {
+    /** @var array<string, string|null> */
+    protected static array $journalColumns = ['payload' => 'metadata'];
 
     protected $table = 'privacy_incident_events';
 
@@ -60,7 +61,8 @@ class IncidentEvent extends Model implements HashChainable {
         ];
     }
 
-    private function nullableInt(mixed $value): ?int {
-        return $value === null ? null : (int) $value;
+    /** @return BelongsTo<Incident, $this> */
+    public function subject(): BelongsTo {
+        return $this->belongsTo(Incident::class, 'incident_id');
     }
 }

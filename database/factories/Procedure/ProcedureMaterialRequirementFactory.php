@@ -12,8 +12,7 @@ namespace Database\Factories\Procedure;
 
 use App\Enums\Manufacturing\QuantityKind;
 use App\Models\Article\Article;
-use App\Models\Procedure\ProcedureMaterialRequirement;
-use App\Models\Procedure\ProcedureTemplateVersion;
+use App\Models\Procedure\{ProcedureMaterialRequirement, ProcedureTemplateVersion};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

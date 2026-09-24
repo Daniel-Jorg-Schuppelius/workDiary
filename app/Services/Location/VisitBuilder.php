@@ -13,6 +13,7 @@ namespace App\Services\Location;
 use App\Models\Location\{CustomerGeofence, LocationPoint, LocationVisit};
 use App\Models\Platform\User;
 use App\Models\Scopes\OrganizationScope;
+use App\Services\Support\Geo\GeofenceMatcher;
 use Illuminate\Support\{Carbon, Collection};
 use Illuminate\Support\Facades\DB;
 

@@ -285,6 +285,8 @@ return [
         'crisis_situation_reports' => \App\Models\Crisis\CrisisSituationReport::class,
         'crisis_team_assignments' => \App\Models\Crisis\CrisisTeamAssignment::class,
         'cti_connections' => \App\Models\Cti\CtiConnection::class,
+        'custom_field_definitions' => \App\Models\Fields\CustomFieldDefinition::class,
+        'custom_field_values' => \App\Models\Fields\CustomFieldValue::class,
         'customer_account_payments' => \App\Models\Billing\CustomerAccountPayment::class,
         'customer_billing_agreements' => \App\Models\Billing\CustomerBillingAgreement::class,
         'customer_billing_rates' => \App\Models\Billing\CustomerBillingRate::class,

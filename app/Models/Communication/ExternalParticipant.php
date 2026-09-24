@@ -11,12 +11,12 @@
 namespace App\Models\Communication;
 
 use App\Enums\ExternalParticipant\{ExternalAbility, ExternalParty};
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{BelongsToOrganization, HasJournal, HasSqid};
 use App\Models\Contacts\ExternalContact;
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 use Illuminate\Support\Carbon;
 
 /**
@@ -55,6 +55,10 @@ use Illuminate\Support\Carbon;
  */
 class ExternalParticipant extends Model {
     use BelongsToOrganization;
+    use HasJournal;
+
+    /** @var class-string<ExternalParticipantEvent> Journal des Trägers (MVP-864) */
+    protected static string $journalClass = ExternalParticipantEvent::class;
 
     /** @use HasFactory<\Database\Factories\Communication\ExternalParticipantFactory> */
     use HasFactory;
@@ -106,11 +110,6 @@ class ExternalParticipant extends Model {
     /** @return BelongsTo<ExternalContact, $this> Wiederverwendbares Kontaktprofil (Rang 30), sofern gewählt. */
     public function externalContact(): BelongsTo {
         return $this->belongsTo(ExternalContact::class);
-    }
-
-    /** @return HasMany<ExternalParticipantEvent, $this> */
-    public function events(): HasMany {
-        return $this->hasMany(ExternalParticipantEvent::class)->latest('id');
     }
 
     /** Nicht widerrufen und nicht abgelaufen? */

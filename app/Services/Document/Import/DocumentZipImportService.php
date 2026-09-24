@@ -10,12 +10,13 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Import;
+namespace App\Services\Document\Import;
 
 use App\Enums\Import\{ImportErrorCode, ImportRunState};
 use App\Models\Integration\{ImportRun, ImportRunError};
 use App\Models\Platform\{Organization, User};
-use App\Services\Import\Specs\DocumentSpec;
+use App\Services\Import\Contracts\ZipImporter;
+use App\Services\Import\{CsvPreflightAnalyzer, HeaderMapper, ImportOutcome, ValidationIssue};
 use CommonToolkit\Helper\Data\CSV\StringHelper as CsvStringHelper;
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use CommonToolkit\Parsers\CSVDocumentParser;
@@ -31,12 +32,7 @@ use Throwable;
  * einem manipulierten Archiv). Fehlende Ziele/Dateien/verbotene Typen sind
  * Zeilenfehler, nie ein Abbruch. Ergebnisse je Zeile als {@see ImportOutcome}.
  */
-final class DocumentZipImportService {
-    public const MANIFEST = 'manifest.csv';
-
-    /** Upload-Limit des Archivs in KB (Laravel `max:`). */
-    public const MAX_ZIP_KB = 51_200;
-
+final class DocumentZipImportService implements ZipImporter {
     public const MAX_ENTRIES = 1_000;
 
     /** Entpackte Gesamtgröße — readEntries hält alle Inhalte im Speicher. */

@@ -15,7 +15,7 @@ namespace App\Services\Learning;
 use App\Enums\Learning\LearningTranslationStatus;
 use App\Models\Learning\{LearningContentTranslation, LearningCourse, LearningUnit};
 use App\Models\Platform\User;
-use App\Services\Ai\AiInvocationService;
+use App\Services\Ai\Contracts\AiInvoker;
 use App\Services\Ai\Dto\{AiTranslationResult, TranslateRequest};
 use App\Services\Ai\Exceptions\AiException;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
@@ -55,7 +55,7 @@ class LearningTranslationService {
     public const TRANSLATED_BLOCK_KEYS = ['text' => 1, 'items' => 1, 'sections' => 1, 'rows' => 1, 'options' => 1, 'explanation' => 1];
 
     public function __construct(
-        private readonly AiInvocationService $invocation,
+        private readonly AiInvoker $invocation,
     ) {}
 
     /**

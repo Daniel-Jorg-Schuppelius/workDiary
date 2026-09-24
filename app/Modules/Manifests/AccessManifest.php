@@ -45,4 +45,13 @@ final class AccessManifest extends Manifest {
             'key_handovers',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Org\Contracts\OffboardingStep::class => [
+                \App\Services\Access\Offboarding\AccessMediaOffboardingStep::class,
+            ],
+        ];
+    }
 }

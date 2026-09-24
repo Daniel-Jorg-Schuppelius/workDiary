@@ -10,10 +10,11 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Notification\DeadlineScans;
+namespace App\Services\Supplier\DeadlineScans;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Supplier\SupplierCredential;
+use App\Services\Notification\DeadlineScans\{AbstractDeadlineScan, DeadlineScanOptions};
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Support\Carbon;
 

@@ -249,4 +249,9 @@ class Event extends Model {
     protected function searchableColumns(): array {
         return ['title', 'topic'];
     }
+
+    /** Stabile UID für ICS-Feed, CalDAV und REST-Kalender — alle meinen denselben Termin. */
+    public function icsUid(): string {
+        return 'event-' . $this->getKey() . '@workdiary';
+    }
 }

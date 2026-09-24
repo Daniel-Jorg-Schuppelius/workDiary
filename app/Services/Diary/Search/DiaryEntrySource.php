@@ -10,11 +10,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Search\Indexing\Sources;
+namespace App\Services\Diary\Search;
 
 use App\Enums\Search\SearchSourceType;
 use App\Models\Diary\DiaryEntry;
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
+use App\Services\Search\Indexing\Sources\AbstractSearchSource;
 use Illuminate\Database\Eloquent\{Builder, Model};
 
 /** Aufträge samt Rückmeldung, Notizen und Kommentaren. */
@@ -49,6 +50,7 @@ final class DiaryEntrySource extends AbstractSearchSource {
                 $model->content,
                 $model->response,
                 $model->notes,
+                ...$model->customFieldTexts(),
                 ...self::strings($model->comments, 'body'),
                 ...self::strings($model->tags, 'name'),
                 $model->entryType?->label,

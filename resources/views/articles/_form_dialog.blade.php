@@ -117,4 +117,6 @@
         <label class="label"><span class="label-text">{{ __('Tags') }}</span></label>
         <x-tag-picker :tags="$allTags" :selected="$selectedTagIds" />
     </div>
+
+    <x-custom-fields-group :model="\App\Models\Article\Article::class" :subject="$article ?? null" />
 </x-modal>

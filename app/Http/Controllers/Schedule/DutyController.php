@@ -12,13 +12,11 @@ namespace App\Http\Controllers\Schedule;
 
 use App\Enums\Vacation\VacationStatus;
 use App\Http\Controllers\Concerns\{FiltersDiaryEntries, ResolvesGlobalDateRange};
+use App\Http\Controllers\Controller;
+use App\Models\Absence\{SickLeave, Vacation};
 use App\Models\Classification\{EntryType, Tag};
 use App\Models\Contracts\HasTimeWindow;
-use App\Models\Diary\DiaryEntry;
-use App\Models\Diary\EmergencyAssignment;
-use App\Models\Diary\OnCallShift;
-use App\Models\Absence\SickLeave;
-use App\Models\Absence\Vacation;
+use App\Models\Diary\{DiaryEntry, EmergencyAssignment, OnCallShift};
 use App\Models\Platform\User;
 use App\Services\Absence\VacationBalanceService;
 use App\Services\Calendar\HolidayService;
@@ -28,7 +26,6 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class DutyController extends Controller {
     use FiltersDiaryEntries, ResolvesGlobalDateRange;

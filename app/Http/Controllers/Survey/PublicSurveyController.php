@@ -13,13 +13,14 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Survey;
 
 use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
-use App\Models\Survey\SurveyInvitation;
+use App\Http\Controllers\Controller;
+use App\Models\Survey\{SurveyInvitation, SurveyQuestion};
+use App\Services\Fields\{FieldDefinition, FieldSchema, FieldValidator, FieldValues};
 use App\Services\Survey\SurveyService;
 use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * Öffentliche Umfrage-Teilnahme (Feature 090): token-basiert ohne Login;
@@ -46,20 +47,12 @@ class PublicSurveyController extends Controller {
         // (Vollscan 2026-08-23, E1) — Array-Input und Bereichsverletzungen
         // enden als Validierungsfehler statt als 500/Datenverfälschung.
         $questions = $survey->questions()->withoutGlobalScopes()->get();
-        $rules = [];
-        foreach ($questions as $question) {
-            $rules['q' . $question->id] = match ($question->type) {
-                'nps' => [$question->required ? 'required' : 'nullable', 'integer', 'between:0,10'],
-                'scale' => [$question->required ? 'required' : 'nullable', 'integer', 'between:1,5'],
-                'choice' => [$question->required ? 'required' : 'nullable', 'string', \Illuminate\Validation\Rule::in($question->options ?? [])],
-                default => [$question->required ? 'required' : 'nullable', 'string', 'max:4000'],
-            };
-        }
-        $validated = $request->validate($rules);
-
+        $schema = new FieldSchema(array_values($questions->map(static fn (SurveyQuestion $question): FieldDefinition => $question->fieldDefinition())->all()));
+        $validated = $request->validate(app(FieldValidator::class)->rules($schema, ''), [], $schema->attributeNames(''));
+        $values = FieldValues::normalize($schema, $validated);
         $answers = [];
         foreach ($questions as $question) {
-            $answers[$question->id] = $validated['q' . $question->id] ?? null;
+            $answers[$question->id] = $values->get('q' . $question->id);
         }
 
         try {

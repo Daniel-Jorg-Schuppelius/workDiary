@@ -26,7 +26,7 @@ use ERechnungToolkit\Enums\UnitCode;
  * (Feature 107, MVP-603).
  */
 class OciCartFormatter {
-    public function __construct(private readonly \App\Services\Procurement\MetalSurchargeService $metals) {}
+    public function __construct(private readonly \App\Services\Article\MetalSurchargeService $metals) {}
 
     /**
      * @param  array<int, array{item: B2bCatalogItem, quantity: float}>  $lines

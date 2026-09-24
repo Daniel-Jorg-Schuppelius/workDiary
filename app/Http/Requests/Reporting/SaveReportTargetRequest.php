@@ -11,12 +11,12 @@
 namespace App\Http\Requests\Reporting;
 
 use App\Enums\Reporting\{ReportTargetMetric, ReportTargetPeriod, ReportTargetScope};
+use App\Http\Requests\BaseFormRequest;
 use App\Models\Customer\Customer;
-use App\Models\Project\Project;
 use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Support\SqidEncoder;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 class SaveReportTargetRequest extends BaseFormRequest {
     protected function prepareForValidation(): void {

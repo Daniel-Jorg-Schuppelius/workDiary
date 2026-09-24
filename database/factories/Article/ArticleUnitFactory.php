@@ -11,8 +11,7 @@
 namespace Database\Factories\Article;
 
 use App\Enums\Article\ArticleUnitKind;
-use App\Models\Article\Article;
-use App\Models\Article\ArticleUnit;
+use App\Models\Article\{Article, ArticleUnit};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

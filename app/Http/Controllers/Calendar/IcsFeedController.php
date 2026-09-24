@@ -11,12 +11,11 @@
 namespace App\Http\Controllers\Calendar;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Models\Platform\Organization;
-use App\Models\Platform\User;
+use App\Http\Controllers\Controller;
+use App\Models\Platform\{Organization, User};
 use App\Services\Event\{IcsFeedService, OrganizationCalendarFeedService};
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Controller;
 
 class IcsFeedController extends Controller {
     use ResolvesCurrentOrganization;

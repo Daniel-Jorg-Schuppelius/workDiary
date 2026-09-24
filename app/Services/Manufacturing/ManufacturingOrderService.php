@@ -20,6 +20,8 @@ use App\Models\Manufacturing\ManufacturingOrder;
 use App\Models\Platform\Organization;
 use App\Models\Procedure\{ProcedureMaterialRequirement, ProcedureRun, ProcedureTemplateVersion};
 use App\Services\Numbering\NumberSequenceService;
+use App\Services\Print\Contracts\ProductionOrderFactory;
+use App\Services\Procedure\Bom\{BomResolver, MaterialDemandCalculator};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -29,7 +31,7 @@ use RuntimeException;
  * Auftrag die Arbeitsplan-Version, die Variante und die aus der Stückliste
  * reproduzierbar berechnete Sollmengen-Liste als unveränderliche Snapshots ein.
  */
-class ManufacturingOrderService {
+class ManufacturingOrderService implements ProductionOrderFactory {
     public function __construct(
         private readonly MaterialDemandCalculator $calculator = new MaterialDemandCalculator(),
         private readonly NumberSequenceService $numbers = new NumberSequenceService(),

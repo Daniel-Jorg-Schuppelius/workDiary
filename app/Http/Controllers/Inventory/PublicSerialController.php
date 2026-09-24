@@ -10,11 +10,11 @@
 
 namespace App\Http\Controllers\Inventory;
 
+use App\Http\Controllers\Controller;
 use App\Models\Platform\Organization;
 use App\Services\Inventory\{SerialPassportService, SerialService};
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Öffentlicher Geräte-Pass (Feature 047/048, E2). Erlaubt eine Echtheits-/

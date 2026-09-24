@@ -14,6 +14,7 @@ namespace App\Services\Procurement;
 
 use App\Models\Article\{Article, PricingChangeAlert};
 use App\Models\Supplier\SupplierCatalogItem;
+use App\Services\Article\PriceSuggestionService;
 
 /**
  * Erzeugt Kalkulationswarnungen bei Einkaufspreisänderungen (Feature 050,

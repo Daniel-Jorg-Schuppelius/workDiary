@@ -36,38 +36,7 @@
             @csrf
             @foreach ($questions as $question)
                 <div>
-                    <label class="mb-1 block text-sm font-medium">
-                        {{ $question->label }}
-                        @if ($question->required)<span class="text-error">*</span>@endif
-                    </label>
-                    @if ($question->type === 'nps')
-                        <div class="flex flex-wrap gap-1">
-                            @for ($i = 0; $i <= 10; $i++)
-                                <label class="cursor-pointer">
-                                    <input type="radio" name="q{{ $question->id }}" value="{{ $i }}" class="peer sr-only" @checked(old('q' . $question->id) == (string) $i)>
-                                    <span class="btn btn-sm btn-outline peer-checked:btn-primary">{{ $i }}</span>
-                                </label>
-                            @endfor
-                        </div>
-                    @elseif ($question->type === 'scale')
-                        <div class="flex gap-1">
-                            @for ($i = 1; $i <= 5; $i++)
-                                <label class="cursor-pointer">
-                                    <input type="radio" name="q{{ $question->id }}" value="{{ $i }}" class="peer sr-only" @checked(old('q' . $question->id) == (string) $i)>
-                                    <span class="btn btn-sm btn-outline peer-checked:btn-primary">{{ $i }}</span>
-                                </label>
-                            @endfor
-                        </div>
-                    @elseif ($question->type === 'choice')
-                        <select name="q{{ $question->id }}" class="select select-bordered select-sm w-full">
-                            <option value="">{{ __('— bitte wählen —') }}</option>
-                            @foreach ($question->options ?? [] as $option)
-                                <option value="{{ $option }}" @selected(old('q' . $question->id) === $option)>{{ $option }}</option>
-                            @endforeach
-                        </select>
-                    @else
-                        <textarea name="q{{ $question->id }}" rows="3" class="textarea textarea-bordered w-full text-sm">{{ old('q' . $question->id) }}</textarea>
-                    @endif
+                    <x-field-input :field="$question->fieldDefinition()" prefix="" :wide="false" />
                 </div>
             @endforeach
             <button type="submit" class="btn btn-primary w-full">{{ __('Antworten absenden') }}</button>

@@ -15,7 +15,10 @@ use App\Models\Customer\Customer;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\{Organization, User};
-use App\Services\Mail\{MailInboxResolutionService, MailIntakeService};
+use App\Services\Communication\Mail\MailToCommunicationNote;
+use App\Services\Document\Mail\MailAttachmentsToDms;
+use App\Services\Mail\MailIntakeService;
+use App\Services\ServiceTicket\Mail\MailToServiceTicket;
 use App\Support\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Artisan, Auth};
@@ -139,7 +142,7 @@ class MailAdminController extends Controller {
     }
 
     /** Löst einen zugeordneten Mail-Inbox-Eintrag als Kommunikationsnotiz auf. */
-    public function book(Request $request, MailInboxResolutionService $resolver): RedirectResponse {
+    public function book(Request $request, MailToCommunicationNote $resolver): RedirectResponse {
         $admin = $this->admin();
         $organization = $this->organization($admin);
 
@@ -168,7 +171,7 @@ class MailAdminController extends Controller {
      * Mail-Inbox-Eintrag ein Ticket (Feature 065, Source E-Mail) und schließt
      * den Fall. Kunde optional — leer nutzt den erkannten Absender-Kandidaten.
      */
-    public function bookTicket(Request $request, MailInboxResolutionService $resolver): RedirectResponse {
+    public function bookTicket(Request $request, MailToServiceTicket $resolver): RedirectResponse {
         $admin = $this->admin();
         $organization = $this->organization($admin);
 
@@ -200,7 +203,7 @@ class MailAdminController extends Controller {
      * persistierten Anhänge als Dokumente (idempotent je Message-ID+Index),
      * verortet am erkannten bzw. gewählten Kunden.
      */
-    public function importDms(Request $request, MailInboxResolutionService $resolver): RedirectResponse {
+    public function importDms(Request $request, MailAttachmentsToDms $resolver): RedirectResponse {
         $admin = $this->admin();
         $organization = $this->organization($admin);
 

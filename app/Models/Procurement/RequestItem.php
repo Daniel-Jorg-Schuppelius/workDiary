@@ -15,9 +15,9 @@ namespace App\Models\Procurement;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Form\FormTemplate;
 use App\Models\Sales\ServiceOffering;
+use App\Models\ServiceTicket\SlaContract;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\ServiceTicket\SlaContract;
 
 /**
  * Bestellbare Katalog-Einheit (Feature 065, MVP-154): Formular über das

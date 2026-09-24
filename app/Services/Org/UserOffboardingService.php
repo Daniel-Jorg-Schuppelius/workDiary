@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Org;
 
 use App\Models\Platform\User;
+use App\Modules\ModuleRegistry;
+use App\Services\Org\Contracts\OffboardingStep;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -86,13 +88,13 @@ class UserOffboardingService {
     /**
      * Übergabeliste für den Austritts-Dialog (MVP-798, Befund P1-21): was die
      * Person noch hält oder offen hat — aus dem Bestand berechnet, kein eigenes
-     * Modell. Zutrittsmedien sperren den Austritt weiterhin im Controller.
+     * Modell. Sperrgründe (z. B. Zutrittsmedien) liefern die Offboarding-Schritte.
      *
-     * @return array{media: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Access\AccessMedium>, assets: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Asset\AssetAssignment>, tasks: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Project\Task>, open_attendances: int}
+     * @return array{blockers: list<string>, assets: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Asset\AssetAssignment>, tasks: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Project\Task>, open_attendances: int}
      */
     public function handoverChecklist(User $member): array {
         return [
-            'media' => app(\App\Services\Access\AccessMediumService::class)->openMediaFor($member),
+            'blockers' => $this->blockers($member),
             'assets' => \App\Models\Asset\AssetAssignment::query()->open()
                 ->where('assigned_to_user_id', $member->id)
                 ->with('asset')
@@ -148,9 +150,9 @@ class UserOffboardingService {
             ->where('tokenable_id', $member->id)
             ->delete();
 
-        // Personalakte (Feature 141): Aufbewahrungsende je Dokument aus
-        // left_at + Kategorie-Frist setzen (Retention-Scan personnel_files).
-        app(\App\Services\Hr\PersonnelFileService::class)->applyRetentionOnExit($member);
+        foreach ($this->steps() as $step) {
+            $step->onExit($member);
+        }
 
         $member->audit('user.offboarded', [
             'left_at' => (string) $member->left_at?->toDateString(),
@@ -182,5 +184,15 @@ class UserOffboardingService {
         }
 
         return false;
+    }
+
+    /** @return list<string> Sperrgründe aller Offboarding-Schritte (Austritt und Entfernen) */
+    public function blockers(User $member): array {
+        return array_merge([], ...array_map(static fn (OffboardingStep $step): array => $step->blockers($member), $this->steps()));
+    }
+
+    /** @return list<OffboardingStep> */
+    private function steps(): array {
+        return array_map(static fn (string $class): OffboardingStep => app($class), app(ModuleRegistry::class)->extensions(OffboardingStep::class));
     }
 }

@@ -14,11 +14,11 @@ namespace App\Http\Controllers\Article;
 
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Models\Article\MetalQuotation;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Metallnotierungen (Feature 107, MVP-564): org-weite Tagespreise je Rohstoff

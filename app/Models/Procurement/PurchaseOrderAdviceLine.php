@@ -14,7 +14,6 @@ use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Procurement\PurchaseOrderLine;
 
 /**
  * Avis-Position (Feature 048, E4): angekündigte Menge zu einer Bestellzeile.

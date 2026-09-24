@@ -10,7 +10,8 @@
 
 namespace Database\Factories\Form;
 
-use App\Enums\Form\{FormFieldType, FormTemplateStatus};
+use App\Enums\Fields\FieldType;
+use App\Enums\Form\FormTemplateStatus;
 use App\Models\Form\FormTemplate;
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -46,12 +47,12 @@ class FormTemplateFactory extends Factory {
      */
     public static function sampleFields(): array {
         return [
-            ['key' => 'bemerkung', 'label' => 'Bemerkung', 'type' => FormFieldType::Text->value, 'required' => true, 'options' => [], 'help' => null, 'unit' => null],
-            ['key' => 'beschreibung', 'label' => 'Beschreibung', 'type' => FormFieldType::Textarea->value, 'required' => false, 'options' => [], 'help' => 'Freitext', 'unit' => null],
-            ['key' => 'messwert', 'label' => 'Messwert', 'type' => FormFieldType::Number->value, 'required' => false, 'options' => [], 'help' => null, 'unit' => 'kWh'],
-            ['key' => 'datum', 'label' => 'Datum', 'type' => FormFieldType::Date->value, 'required' => false, 'options' => [], 'help' => null, 'unit' => null],
-            ['key' => 'zustand', 'label' => 'Zustand', 'type' => FormFieldType::Select->value, 'required' => true, 'options' => ['gut', 'mittel', 'schlecht'], 'help' => null, 'unit' => null],
-            ['key' => 'geprueft', 'label' => 'Geprüft', 'type' => FormFieldType::Checkbox->value, 'required' => false, 'options' => [], 'help' => null, 'unit' => null],
+            ['key' => 'bemerkung', 'label' => 'Bemerkung', 'type' => FieldType::Text->value, 'required' => true, 'options' => [], 'help' => null, 'unit' => null],
+            ['key' => 'beschreibung', 'label' => 'Beschreibung', 'type' => FieldType::Textarea->value, 'required' => false, 'options' => [], 'help' => 'Freitext', 'unit' => null],
+            ['key' => 'messwert', 'label' => 'Messwert', 'type' => FieldType::Number->value, 'required' => false, 'options' => [], 'help' => null, 'unit' => 'kWh'],
+            ['key' => 'datum', 'label' => 'Datum', 'type' => FieldType::Date->value, 'required' => false, 'options' => [], 'help' => null, 'unit' => null],
+            ['key' => 'zustand', 'label' => 'Zustand', 'type' => FieldType::Choice->value, 'required' => true, 'options' => ['gut', 'mittel', 'schlecht'], 'help' => null, 'unit' => null],
+            ['key' => 'geprueft', 'label' => 'Geprüft', 'type' => FieldType::Boolean->value, 'required' => false, 'options' => [], 'help' => null, 'unit' => null],
         ];
     }
 }

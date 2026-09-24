@@ -1,0 +1,196 @@
+<?php
+/*
+ * Created on   : Sun May 17 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : EnergyLogTest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace Tests\Feature\Metering;
+
+use App\Models\Asset\EnergyLog;
+use App\Models\Fleet\Vehicle;
+use App\Models\Platform\User;
+use App\Services\Fleet\EnergyLogService;
+use Carbon\CarbonImmutable;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
+use Tests\Concerns\WithOrganization;
+use Tests\TestCase;
+
+class EnergyLogTest extends TestCase {
+    use RefreshDatabase;
+    use WithOrganization;
+
+    private User $user;
+
+    private User $admin;
+
+    private Vehicle $vehicle;
+
+    protected function setUp(): void {
+        parent::setUp();
+        $this->setUpOrganization();
+        $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $this->vehicle = Vehicle::factory()->create(['organization_id' => $this->organization->id]);
+    }
+
+    public function test_index_renders(): void {
+        $this->getAsUser('energy-logs.index')->assertOk()->assertSee(__('Tank- & Ladelog'));
+    }
+
+    public function test_store_creates_fuel_entry(): void {
+        $start = CarbonImmutable::today()->setTime(10, 0);
+
+        $this->postAsUser('energy-logs.store', [
+            'vehicle_id' => $this->vehicle->id,
+            'energy_type' => EnergyLog::TYPE_FUEL,
+            'fuel_kind' => EnergyLog::FUEL_DIESEL,
+            'quantity' => '42.5',
+            'cost_total' => '70.00',
+            'odometer_km' => 50000,
+            'started_at' => $start->format('Y-m-d\TH:i'),
+        ])->assertRedirect(route('energy-logs.index'));
+
+        $log = EnergyLog::query()->firstOrFail();
+        $this->assertSame(EnergyLog::UNIT_LITER, $log->unit);
+        $this->assertSame($this->user->id, $log->user_id);
+        $this->assertEqualsWithDelta(70.0, (float) $log->cost_total, 0.01);
+    }
+
+    public function test_electric_entry_forces_kwh_unit_and_clears_fuel_kind(): void {
+        $start = CarbonImmutable::today()->setTime(11, 0);
+
+        $this->postAsUser('energy-logs.store', [
+            'vehicle_id' => $this->vehicle->id,
+            'energy_type' => EnergyLog::TYPE_ELECTRIC,
+            'fuel_kind' => EnergyLog::FUEL_DIESEL, // should be discarded by model hook
+            'quantity' => '32',
+            'cost_total' => '12.50',
+            'started_at' => $start->format('Y-m-d\TH:i'),
+            'soc_before' => 20,
+            'soc_after' => 80,
+            'charger_type' => EnergyLog::CHARGER_DC_FAST,
+        ])->assertRedirect();
+
+        $log = EnergyLog::query()->firstOrFail();
+        $this->assertSame(EnergyLog::UNIT_KWH, $log->unit);
+        $this->assertNull($log->fuel_kind);
+        $this->assertSame(EnergyLog::CHARGER_DC_FAST, $log->charger_type);
+    }
+
+    public function test_distance_since_last_computed_from_previous_odometer(): void {
+        $service = app(EnergyLogService::class);
+        $start = CarbonImmutable::today()->setTime(9, 0);
+
+        $service->create([
+            'organization_id' => $this->organization->id,
+            'vehicle_id' => $this->vehicle->id,
+            'user_id' => $this->user->id,
+            'energy_type' => EnergyLog::TYPE_FUEL,
+            'fuel_kind' => EnergyLog::FUEL_DIESEL,
+            'quantity' => '40',
+            'odometer_km' => 80000,
+            'started_at' => $start,
+        ]);
+
+        $second = $service->create([
+            'organization_id' => $this->organization->id,
+            'vehicle_id' => $this->vehicle->id,
+            'user_id' => $this->user->id,
+            'energy_type' => EnergyLog::TYPE_FUEL,
+            'fuel_kind' => EnergyLog::FUEL_DIESEL,
+            'quantity' => '38',
+            'odometer_km' => 80512,
+            'started_at' => $start->addDays(7),
+        ]);
+
+        $this->assertSame(512, $second->fresh()->distance_since_last);
+    }
+
+    public function test_user_cannot_edit_others_entry(): void {
+        $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $log = EnergyLog::factory()->create([
+            'organization_id' => $this->organization->id,
+            'vehicle_id' => $this->vehicle->id,
+            'user_id' => $other->id,
+        ]);
+
+        $this->getAsUser('energy-logs.edit', $log)->assertForbidden();
+    }
+
+    public function test_non_admin_cannot_view_other_users_logs(): void {
+        $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $this->getAsUser('energy-logs.index', ['user' => $other->sqid])->assertForbidden();
+    }
+
+    public function test_admin_can_view_all_users_logs(): void {
+        $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        EnergyLog::factory()->create([
+            'organization_id' => $this->organization->id,
+            'vehicle_id' => $this->vehicle->id,
+            'user_id' => $other->id,
+            'started_at' => CarbonImmutable::today(),
+            'ended_at' => CarbonImmutable::today()->addMinutes(5),
+        ]);
+
+        $this->getAsAdmin('energy-logs.index', ['user' => 'all'])->assertOk();
+    }
+
+    public function test_admin_can_view_other_users_logs_with_numeric_user_fallback(): void {
+        $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        EnergyLog::factory()->create([
+            'organization_id' => $this->organization->id,
+            'vehicle_id' => $this->vehicle->id,
+            'user_id' => $other->id,
+            'started_at' => CarbonImmutable::today(),
+            'ended_at' => CarbonImmutable::today()->addMinutes(5),
+        ]);
+
+        $this->getAsAdmin('energy-logs.index', ['user' => (string) $other->id])
+            ->assertOk()
+            ->assertSee($other->name);
+    }
+
+    public function test_vehicle_filter_accepts_numeric_fallback(): void {
+        $otherVehicle = Vehicle::factory()->create(['organization_id' => $this->organization->id]);
+
+        EnergyLog::factory()->create([
+            'organization_id' => $this->organization->id,
+            'vehicle_id' => $this->vehicle->id,
+            'user_id' => $this->admin->id,
+            'started_at' => CarbonImmutable::today(),
+            'ended_at' => CarbonImmutable::today()->addMinutes(5),
+        ]);
+        EnergyLog::factory()->create([
+            'organization_id' => $this->organization->id,
+            'vehicle_id' => $otherVehicle->id,
+            'user_id' => $this->admin->id,
+            'started_at' => CarbonImmutable::today(),
+            'ended_at' => CarbonImmutable::today()->addMinutes(5),
+        ]);
+
+        $this->getAsAdmin('energy-logs.index', ['vehicle' => (string) $otherVehicle->id])
+            ->assertOk()
+            ->assertViewHas('logs', static function ($logs) use ($otherVehicle): bool {
+                $items = $logs->items();
+                return count($items) === 1
+                    && (int) $items[0]->vehicle_id === (int) $otherVehicle->id;
+            });
+    }
+
+    private function getAsUser(string $routeName, mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->user)->get(route($routeName, $parameters));
+    }
+
+    private function postAsUser(string $routeName, array $payload = [], mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->user)->post(route($routeName, $parameters), $payload);
+    }
+
+    private function getAsAdmin(string $routeName, mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->admin)->get(route($routeName, $parameters));
+    }
+}

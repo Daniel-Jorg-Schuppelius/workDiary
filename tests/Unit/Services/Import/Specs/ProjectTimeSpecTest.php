@@ -18,7 +18,7 @@ use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
 use App\Services\Import\ImportOutcome;
-use App\Services\Import\Specs\ProjectTimeSpec;
+use App\Services\Timekeeping\Import\ProjectTimeSpec;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

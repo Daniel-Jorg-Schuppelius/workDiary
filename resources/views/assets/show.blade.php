@@ -101,6 +101,8 @@
             $canEditAsset = auth()->user()?->can('update', $asset) ?? false;
         @endphp
 
+        <x-custom-fields-card :subject="$asset" />
+
         {{-- ── Verortung + Betriebssystem (nebeneinander) ──────────────────── --}}
         <div class="grid gap-4 md:grid-cols-2">
             <x-card :title="__('Verortung')" icon="location_on">

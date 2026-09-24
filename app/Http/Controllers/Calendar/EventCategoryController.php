@@ -11,12 +11,12 @@
 namespace App\Http\Controllers\Calendar;
 
 use App\Http\Controllers\Concerns\ParsesIndexQuery;
+use App\Http\Controllers\Controller;
 use App\Models\Calendar\EventCategory;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class EventCategoryController extends Controller {
     use ParsesIndexQuery;

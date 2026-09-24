@@ -17,6 +17,7 @@ use App\Models\Calendar\AppointmentRequest;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Sales\Lead;
+use App\Services\Stammdaten\ContactDetailsWriter;
 use Illuminate\Support\{Carbon, Collection};
 use RuntimeException;
 
@@ -161,6 +162,13 @@ class LeadService {
             'phone' => $lead->phone,
         ]);
 
+        if ($existing === null) {
+            $address = $lead->postalAddress();
+            if ($address['has_any']) {
+                app(ContactDetailsWriter::class)->writeAddress($customer, $address);
+            }
+        }
+
         $lead->forceFill([
             'status' => LeadStatus::Converted,
             'customer_id' => $customer->id,
@@ -181,6 +189,7 @@ class LeadService {
      * Auch die Notizen der Akte werden geleert — sie sind Teil der PII.
      */
     public function anonymize(Lead $lead): void {
+        $lead->addresses()->delete();
         $lead->communicationNotes()->update(['subject' => (string) __('Anonymisiert'), 'body' => null]);
         $lead->forceFill([
             'company' => null,

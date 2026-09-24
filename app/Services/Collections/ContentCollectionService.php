@@ -14,7 +14,7 @@ namespace App\Services\Collections;
 
 use App\Models\Knowledge\{ContentCollection, ContentCollectionItem};
 use App\Models\Platform\{Organization, User};
-use App\Services\Content\ContentSubjectResolver;
+use App\Services\Support\Content\ContentSubjectResolver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -175,7 +175,7 @@ class ContentCollectionService {
      * Inhalte der Sammlung, soweit die Person sie sehen darf. Verborgene
      * Einträge fallen still weg — auch ihre Anzahl wird nicht verraten.
      *
-     * @return list<array{entry: ContentCollectionItem, model: Model, type: string, title: string, url: string, icon: string, label: string, subject: \App\Services\Content\ContentSubject}>
+     * @return list<array{entry: ContentCollectionItem, model: Model, type: string, title: string, url: string, icon: string, label: string, subject: \App\Services\Support\Content\ContentSubject}>
      */
     public function visibleItems(ContentCollection $collection, User $viewer): array {
         $entries = $collection->items()->with('adder:id,name')->orderBy('position')->get();

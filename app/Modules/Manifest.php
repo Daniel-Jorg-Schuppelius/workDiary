@@ -116,6 +116,16 @@ abstract class Manifest {
     }
 
     /**
+     * Contracts, die dieses Modul definiert (MVP-863): Interface → Null-Implementierung.
+     * Die Null-Bindung gilt, solange kein Modul den Contract über {@see bindings()} bindet.
+     *
+     * @return array<class-string, class-string>
+     */
+    public function contracts(): array {
+        return [];
+    }
+
+    /**
      * Contracts, die dieses Modul bindet (MVP-863): Interface → Implementierung.
      *
      * @return array<class-string, class-string>

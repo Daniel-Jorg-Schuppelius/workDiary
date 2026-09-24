@@ -1,0 +1,208 @@
+<?php
+/*
+ * Created on   : Sun May 03 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : TagsTest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace Tests\Feature\Org;
+
+use App\Models\Classification\Tag;
+use App\Models\Diary\{DiaryEntry, EmergencyAssignment, OnCallShift};
+use App\Models\Platform\User;
+use App\Services\UI\DateRangeContext;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class TagsTest extends TestCase {
+    use RefreshDatabase;
+
+    protected function setUp(): void {
+        parent::setUp();
+        // Tagebuch-Listing nutzt den globalen Range; auf das ganze Jahr
+        // stellen, damit die Factory-Eintr\u00e4ge (\u00b11 Monat) sichtbar sind.
+        app(DateRangeContext::class)->set(DateRangeContext::PRESET_THIS_YEAR);
+    }
+
+    public function test_tag_can_be_attached_to_diary_shift_assignment(): void {
+        $user = User::factory()->user()->create();
+        $tag = Tag::create(['name' => 'Wartung', 'organization_id' => $user->organization_id]);
+
+        $entry = DiaryEntry::factory()->for($user)->create();
+        $shift = OnCallShift::factory()->for($user)->create();
+        $assignment = EmergencyAssignment::factory()->for($user)->create();
+
+        $entry->tags()->attach($tag);
+        $shift->tags()->attach($tag);
+        $assignment->tags()->attach($tag);
+
+        $this->assertSame(1, $tag->diaryEntries()->count());
+        $this->assertSame(1, $tag->shifts()->count());
+        $this->assertSame(1, $tag->assignments()->count());
+    }
+
+    public function test_find_or_create_by_name_is_case_insensitive(): void {
+        $a = Tag::findOrCreateByName('Backup');
+        $b = Tag::findOrCreateByName('backup');
+
+        $this->assertSame($a->id, $b->id);
+        $this->assertSame(1, Tag::count());
+    }
+
+    /** UI-Fuzz 2026-09-21: ein überlanges Freitext-Schlagwort sprengte tags.name varchar(255) (HTTP 500). */
+    public function test_overlong_free_text_tag_is_shortened(): void {
+        $tag = Tag::findOrCreateByName(str_repeat('Schlagwort', 40));
+
+        $this->assertSame(191, mb_strlen((string) $tag->refresh()->name));
+    }
+
+    public function test_unique_slug_avoids_collisions(): void {
+        Tag::create(['name' => 'Alpha', 'slug' => 'alpha']);
+        $slug = Tag::uniqueSlug('Alpha');
+
+        $this->assertSame('alpha-2', $slug);
+    }
+
+    public function test_diary_store_persists_existing_and_new_tags(): void {
+        $user = User::factory()->user()->create();
+        $existing = Tag::create(['name' => 'Telefon', 'organization_id' => $user->organization_id]);
+
+        $this->actingAs($user)
+            ->post(route('diary.store'), [
+                'content' => 'Mit Tags gespeichert',
+                'status' => 2,
+                // Mode::Fixed (Default) verlangt start_at/end_at.
+                'start_at' => '2030-01-15 09:00:00',
+                'end_at' => '2030-01-15 10:00:00',
+                'tag_ids' => [$existing->id],
+                'new_tags' => 'Eskalation, Server',
+            ])
+            ->assertRedirect();
+
+        $entry = DiaryEntry::latest('id')->first();
+        $this->assertNotNull($entry, 'DiaryEntry sollte beim Tag-Store angelegt worden sein');
+        $names = $entry->tags()->pluck('name')->sort()->values()->all();
+
+        $this->assertSame(['Eskalation', 'Server', 'Telefon'], $names);
+        $this->assertSame(3, Tag::count());
+    }
+
+    public function test_diary_store_accepts_sqid_tag_ids(): void {
+        // Das Formular (tag-picker) sendet opake Sqids als tag_ids — diese
+        // müssen serverseitig zur korrekten Tag-Verknüpfung dekodiert werden.
+        $user = User::factory()->user()->create();
+        $existing = Tag::create(['name' => 'Telefon', 'organization_id' => $user->organization_id]);
+
+        $this->actingAs($user)
+            ->post(route('diary.store'), [
+                'content' => 'Mit Sqid-Tags gespeichert',
+                'status' => 2,
+                'start_at' => '2030-01-15 09:00:00',
+                'end_at' => '2030-01-15 10:00:00',
+                'tag_ids' => [$existing->sqid],
+            ])
+            ->assertRedirect();
+
+        $entry = DiaryEntry::latest('id')->first();
+        $this->assertNotNull($entry);
+        $this->assertSame([$existing->id], $entry->tags()->pluck('tags.id')->all());
+    }
+
+    public function test_diary_index_filters_by_tag(): void {
+        $user = User::factory()->user()->create();
+        $tag = Tag::create(['name' => 'Filterbar', 'organization_id' => $user->organization_id]);
+
+        $matching = DiaryEntry::factory()->for($user)->create(['content' => 'Treffer Tag']);
+        $other = DiaryEntry::factory()->for($user)->create(['content' => 'Ohne Tag']);
+        $matching->tags()->attach($tag);
+
+        $this->actingAs($user)
+            ->get(route('diary.index', ['tag' => $tag->sqid]))
+            ->assertOk()
+            ->assertSee('Treffer Tag')
+            ->assertDontSee('Ohne Tag');
+    }
+
+    public function test_admin_can_create_and_delete_tag_via_routes(): void {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->post(route('tags.store'), ['name' => 'Notfall'])
+            ->assertRedirect();
+
+        $tag = Tag::firstWhere('name', 'Notfall');
+        $this->assertNotNull($tag);
+
+        $this->actingAs($admin)
+            ->delete(route('tags.destroy', $tag))
+            ->assertRedirect();
+
+        $this->assertNull(Tag::find($tag->id));
+    }
+
+    public function test_non_admin_cannot_update_or_delete_tag(): void {
+        $user = User::factory()->user()->create();
+        $tag = Tag::create(['name' => 'Schutz', 'organization_id' => $user->organization_id]);
+
+        $this->actingAs($user)
+            ->put(route('tags.update', $tag), ['name' => 'Neu'])
+            ->assertForbidden();
+
+        $this->actingAs($user)
+            ->delete(route('tags.destroy', $tag))
+            ->assertForbidden();
+    }
+
+    public function test_tags_index_renders_for_authenticated_user(): void {
+        $user = User::factory()->user()->create();
+        Tag::create(['name' => 'Sichtbar', 'organization_id' => $user->organization_id]);
+
+        $this->actingAs($user)
+            ->get(route('tags.index'))
+            ->assertOk()
+            ->assertSee('Sichtbar');
+    }
+
+    public function test_sync_tags_from_input_drops_foreign_org_tag_ids(): void {
+        // Tenant-Hygiene (Vollaudit 2026-07, M40): numerische tag_ids einer
+        // fremden Organisation dürfen keine Pivot-Zeilen erzeugen — der
+        // OrganizationScope filtert sie zentral in syncTagsFromInput().
+        $user = User::factory()->user()->create();
+        $own = Tag::create(['name' => 'Eigen', 'organization_id' => $user->organization_id]);
+
+        $foreignOrg = \App\Models\Platform\Organization::factory()->create();
+        $foreign = Tag::query()->create(['name' => 'Fremd', 'organization_id' => $foreignOrg->id]);
+
+        $this->actingAs($user)
+            ->post(route('diary.store'), [
+                'content' => 'Mit fremder Tag-ID gespeichert',
+                'status' => 2,
+                'start_at' => '2030-01-15 09:00:00',
+                'end_at' => '2030-01-15 10:00:00',
+                'tag_ids' => [$own->id, $foreign->id],
+            ])
+            ->assertRedirect();
+
+        $entry = DiaryEntry::latest('id')->first();
+        $this->assertNotNull($entry);
+        $this->assertSame([$own->id], $entry->tags()->withoutGlobalScopes()->pluck('tags.id')->all());
+    }
+
+    public function test_tag_input_names_uses_canonical_split_and_cap(): void {
+        // Kanonische new_tags-Zerlegung (Vollaudit 2026-07, M40): Komma,
+        // Semikolon UND Zeilenumbruch trennen; Duplikate raus, Deckel 20.
+        $this->assertSame(
+            ['Alpha', 'Beta', 'Gamma'],
+            \App\Support\TagInput::names("Alpha, Beta;Gamma\nAlpha"),
+        );
+
+        $many = implode(',', array_map(fn(int $i) => 'T' . $i, range(1, 25)));
+        $this->assertCount(20, \App\Support\TagInput::names($many));
+
+        $this->assertSame([], \App\Support\TagInput::names('  '));
+        $this->assertSame([], \App\Support\TagInput::names(null));
+    }
+}

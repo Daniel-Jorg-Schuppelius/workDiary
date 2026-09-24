@@ -322,7 +322,7 @@
         $tagPickerNew = collect(preg_split('/[,;\n]+/', (string) old('new_tags', '')) ?: [])
             ->map(fn ($v) => trim((string) $v))->filter()->values()->all();
         // KI-Tagvorschläge (Feature 143, MVP-711): nur mit nutzbarer Capability.
-        $tagSuggestUrl = app(\App\Services\Ai\Suggestions\SuggestionViewData::class)->capabilityUsable(\App\Services\Ai\Suggestions\ClassificationSuggestionService::CAPABILITY)
+        $tagSuggestUrl = app(\App\Services\Ai\Contracts\SuggestionView::class)->capabilityUsable(\App\Services\Ai\Suggestions\ClassificationSuggestionService::CAPABILITY)
             ? route('ai.suggest.tags')
             : null;
         $tagPickerConfig = ['all' => $tagPickerAll, 'selectedIds' => $tagPickerSelected, 'recentIds' => $tagPickerRecent, 'initialNew' => $tagPickerNew, 'quickLimit' => 8, 'allowCreate' => true, 'suggestUrl' => $tagSuggestUrl, 'textSelector' => '[name="content"]', 'customerSelector' => '[name="customer_id"]'];
@@ -412,3 +412,5 @@
 </x-form-group>
 
 </div>
+
+<x-custom-fields-group :model="\App\Models\Diary\DiaryEntry::class" :subject="$entry ?? null" />

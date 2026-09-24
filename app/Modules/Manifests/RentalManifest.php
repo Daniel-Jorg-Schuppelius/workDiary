@@ -94,4 +94,16 @@ final class RentalManifest extends Manifest {
             'groups' => [],
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Rental\Demo\RentalDemoBlock::class,
+            ],
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Rental\DeadlineScans\RentalReturnScan::class,
+            ],
+        ];
+    }
 }

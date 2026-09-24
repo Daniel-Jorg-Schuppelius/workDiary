@@ -123,11 +123,11 @@
 
     {{-- KI-Leistungstexte (Feature 084, MVP-405): Vorschläge nur im Entwurf. --}}
     @php
-        $aiViewData = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
+        $aiViewData = app(\App\Services\Ai\Contracts\SuggestionView::class);
         $aiDraft = $quote->status === 'draft' && auth()->user()?->can('update', $quote);
-        $aiSuggestEnabled = $aiDraft && $aiViewData->capabilityUsable(\App\Services\Ai\Suggestions\ItemTextSuggestionService::CAPABILITY_QUOTE_ITEM);
+        $aiSuggestEnabled = $aiDraft && $aiViewData->capabilityUsable(\App\Services\Ai\Contracts\ItemTextSuggester::CAPABILITY_QUOTE_ITEM);
         $aiSuggestions = $aiSuggestEnabled
-            ? $aiViewData->openSuggestionsFor((new \App\Models\Sales\QuoteItem)->getMorphClass(), $quote->items, \App\Services\Ai\Suggestions\ItemTextSuggestionService::CAPABILITY_QUOTE_ITEM)
+            ? $aiViewData->openSuggestionsFor((new \App\Models\Sales\QuoteItem)->getMorphClass(), $quote->items, \App\Services\Ai\Contracts\ItemTextSuggester::CAPABILITY_QUOTE_ITEM)
             : collect();
         $aiColspan = 7 + ($quote->decided_at !== null ? 1 : 0);
         // Belegsprache-Übersetzung (Feature 148, MVP-732): nur wenn die

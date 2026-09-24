@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Models\Accounting;
 
-use App\Models\Concerns\{HashChainable, HashChained};
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Journal\HashChainedJournalEntry;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Revisionssicherer Nachweis des Buchungskerns (Feature 125, MVP-672):
@@ -26,8 +26,8 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @phpstan-consistent-constructor
  */
-class AccountingEvent extends Model implements HashChainable {
-    use HashChained;
+class AccountingEvent extends HashChainedJournalEntry {
+    protected static ?string $labelPrefix = 'audit-events';
 
     public const UPDATED_AT = null;
 
@@ -63,7 +63,8 @@ class AccountingEvent extends Model implements HashChainable {
         ];
     }
 
-    private function nullableInt(mixed $value): ?int {
-        return $value === null ? null : (int) $value;
+    /** @return BelongsTo<AccountingEntry, $this> */
+    public function subject(): BelongsTo {
+        return $this->belongsTo(AccountingEntry::class, 'accounting_entry_id');
     }
 }

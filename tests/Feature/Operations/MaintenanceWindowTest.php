@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Operations;
 
+use App\Enums\Asset\MaintenanceWindowStatus;
 use App\Models\Asset\MaintenanceWindow;
 use App\Models\Platform\User;
 use App\Services\Operations\MaintenanceWindowService;
@@ -41,7 +42,7 @@ class MaintenanceWindowTest extends TestCase {
             'scope' => MaintenanceWindow::SCOPE_SYSTEM,
             'starts_at' => now()->subMinutes(5),
             'ends_at' => now()->addHour(),
-            'status' => MaintenanceWindow::STATUS_ACTIVE,
+            'status' => MaintenanceWindowStatus::Active,
             'read_only' => false,
         ], $overrides));
     }
@@ -82,21 +83,21 @@ class MaintenanceWindowTest extends TestCase {
 
     public function test_lifecycle_transitions_and_guards(): void {
         $service = app(MaintenanceWindowService::class);
-        $window = $this->window(['status' => MaintenanceWindow::STATUS_PLANNED, 'starts_at' => now()->addHour(), 'ends_at' => now()->addHours(2)]);
+        $window = $this->window(['status' => MaintenanceWindowStatus::Planned, 'starts_at' => now()->addHour(), 'ends_at' => now()->addHours(2)]);
 
         $service->announce($window);
-        $this->assertSame(MaintenanceWindow::STATUS_ANNOUNCED, $this->freshWindow($window)->status);
+        $this->assertSame(MaintenanceWindowStatus::Announced, $this->freshWindow($window)->status);
         // Ankündigung erzeugt Betreiber-Aufgabe.
         $this->assertDatabaseHas('operations_tasks', ['dedupe_key' => 'maintenance_window:' . $window->id, 'status' => 'open']);
 
         $service->start($this->freshWindow($window));
-        $this->assertSame(MaintenanceWindow::STATUS_ACTIVE, $this->freshWindow($window)->status);
+        $this->assertSame(MaintenanceWindowStatus::Active, $this->freshWindow($window)->status);
 
         $service->extend($this->freshWindow($window), CarbonImmutable::now()->addHours(3));
-        $this->assertSame(MaintenanceWindow::STATUS_EXTENDED, $this->freshWindow($window)->status);
+        $this->assertSame(MaintenanceWindowStatus::Extended, $this->freshWindow($window)->status);
 
         $service->complete($this->freshWindow($window));
-        $this->assertSame(MaintenanceWindow::STATUS_COMPLETED, $this->freshWindow($window)->status);
+        $this->assertSame(MaintenanceWindowStatus::Completed, $this->freshWindow($window)->status);
         $this->assertDatabaseHas('operations_tasks', ['dedupe_key' => 'maintenance_window:' . $window->id, 'status' => 'resolved']);
 
         // Terminaler Status: weitere Übergänge verboten.
@@ -106,17 +107,17 @@ class MaintenanceWindowTest extends TestCase {
 
     public function test_scan_tick_moves_windows_through_lifecycle(): void {
         $window = $this->window([
-            'status' => MaintenanceWindow::STATUS_ANNOUNCED,
+            'status' => MaintenanceWindowStatus::Announced,
             'starts_at' => now()->subMinutes(10),
             'ends_at' => now()->addMinutes(30),
         ]);
 
         Artisan::call('operations:scan');
-        $this->assertSame(MaintenanceWindow::STATUS_ACTIVE, $this->freshWindow($window)->status);
+        $this->assertSame(MaintenanceWindowStatus::Active, $this->freshWindow($window)->status);
 
         $this->freshWindow($window)->update(['ends_at' => now()->subMinute()]);
         Artisan::call('operations:scan');
-        $this->assertSame(MaintenanceWindow::STATUS_COMPLETED, $this->freshWindow($window)->status);
+        $this->assertSame(MaintenanceWindowStatus::Completed, $this->freshWindow($window)->status);
     }
 
     public function test_upcoming_window_shows_banner_and_scheduler_skip_flag_works(): void {
@@ -125,7 +126,7 @@ class MaintenanceWindowTest extends TestCase {
             'announce_from' => now()->subHour(),
             'starts_at' => now()->addHours(2),
             'ends_at' => now()->addHours(3),
-            'status' => MaintenanceWindow::STATUS_ANNOUNCED,
+            'status' => MaintenanceWindowStatus::Announced,
             'message' => 'Server-Umzug',
         ]);
 

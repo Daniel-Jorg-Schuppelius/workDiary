@@ -12,14 +12,14 @@ namespace App\Http\Controllers\Absence;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Models\Platform\{Organization, User};
+use App\Http\Controllers\Controller;
 use App\Models\Absence\VacationEntitlement;
+use App\Models\Platform\{Organization, User};
 use App\Services\Absence\VacationBalanceService;
 use App\Support\{LookupCache, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /** Urlaubskonto (MVP-413): Jahresansprüche + Übertrag pflegen. */
 class VacationEntitlementController extends Controller {

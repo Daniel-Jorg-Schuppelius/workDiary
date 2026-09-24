@@ -12,12 +12,11 @@ namespace App\Http\Controllers\Knowledge;
 
 use App\Enums\CloudIntake\CloudIntakeConnectionStatus;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Models\CloudIntake\CloudDocumentConnection;
 use App\Models\Communication\CommunicationNote;
-use App\Models\Knowledge\ContentCollection;
-use App\Models\Knowledge\KnowledgeArticle;
-use App\Models\Platform\Organization;
-use App\Models\Platform\User;
+use App\Models\Knowledge\{ContentCollection, KnowledgeArticle};
+use App\Models\Platform\{Organization, User};
 use App\Models\Plugins\Msgraph\MsgraphOneNoteConnection;
 use App\Plugins\Contracts\DocumentIntakeSource;
 use App\Plugins\Msgraph\Api\MsgraphOneNoteClient;
@@ -31,7 +30,6 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Throwable;
-use App\Http\Controllers\Controller;
 
 /**
  * Einbahn-Übernahme aus Obsidian und OneNote (MVP-815, Feature 155): Dialoge

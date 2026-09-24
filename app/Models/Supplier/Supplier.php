@@ -12,14 +12,15 @@ namespace App\Models\Supplier;
 
 use App\Enums\Numbering\NumberScope;
 use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasContactAndBankDetails, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSequentialNumber, HasSqid, HasTags, Searchable};
-use App\Models\Contacts\{ContactAddress, ContactBankAccount};
+use App\Models\Contacts\ContactAddress;
+use App\Models\Contracts\ContactDetailsHolder;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
+use App\Models\Procurement\PurchaseOrder;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 use Illuminate\Support\Carbon;
-use App\Models\Procurement\PurchaseOrder;
 
 /**
  * Lieferant: Geschäftspartner, von dem wir Waren/Leistungen beziehen.
@@ -60,7 +61,7 @@ use App\Models\Procurement\PurchaseOrder;
  * @property Carbon|null $archived_at
  * @property int|null $created_by
  */
-class Supplier extends Model {
+class Supplier extends Model implements ContactDetailsHolder {
     use Archivable;
     use Auditable;
     use BelongsToOrganization;
@@ -204,24 +205,8 @@ class Supplier extends Model {
         return $this->morphMany(ExternalReference::class, 'referenceable');
     }
 
-    /** @return MorphMany<ContactAddress, $this> */
-    public function addresses(): MorphMany {
-        return $this->morphMany(ContactAddress::class, 'addressable');
-    }
-
-    /** @return MorphMany<ContactBankAccount, $this> */
-    public function bankAccounts(): MorphMany {
-        return $this->morphMany(ContactBankAccount::class, 'accountable');
-    }
-
-    public function primaryAddress(): ?ContactAddress {
-        return $this->addresses()->where('is_primary', true)->first()
-            ?? $this->addresses()->first();
-    }
-
-    public function primaryBankAccount(): ?ContactBankAccount {
-        return $this->bankAccounts()->where('is_primary', true)->first()
-            ?? $this->bankAccounts()->first();
+    public function contactAddressKind(): string {
+        return ContactAddress::KIND_BILLING;
     }
 
     /** @return list<string> */

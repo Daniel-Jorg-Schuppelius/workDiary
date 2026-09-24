@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Finance;
+namespace App\Services\Billing;
 
 use RuntimeException;
 

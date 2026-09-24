@@ -18,7 +18,7 @@ use App\Models\Invoicing\Invoice;
 use App\Plugins\Contracts\PeppolTransportProvider;
 use App\Plugins\PeppolAccessPoint\PeppolAccessPointConfig;
 use App\Plugins\PluginManager;
-use App\Services\Finance\BillingModeResolver;
+use App\Services\Billing\BillingModeResolver;
 use App\Services\Invoicing\EInvoice\XRechnungGenerator;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use ERechnungToolkit\Contracts\{AccessPointClientInterface, ValidatorInterface};

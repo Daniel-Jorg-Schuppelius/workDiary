@@ -17,7 +17,7 @@ return [
     | Zentrale Bezugs-/Freischaltadresse für optionale, kostenpflichtige Module
     | (z. B. php-financial-formats: DATEV-Export, Bankimport). Wird über den
     | :contact-Platzhalter in die „nicht aktiviert"-Hinweise eingesetzt
-    | (s. App\Services\Finance\FinancialFormatsSupport::unavailableMessage()).
+    | (s. App\Services\Billing\FinancialFormatsSupport::unavailableMessage()).
     | EINE Stelle für die Adresse — Übersetzungen bleiben unverändert.
     */
     'module_contact' => env('SUPPORT_MODULE_CONTACT', 'info@workdiary.org'),

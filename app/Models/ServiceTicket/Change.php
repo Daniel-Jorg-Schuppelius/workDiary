@@ -13,14 +13,11 @@ declare(strict_types=1);
 namespace App\Models\ServiceTicket;
 
 use App\Models\Approval\Approval;
+use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, MorphMany};
-use App\Models\Asset\Asset;
-use App\Models\ServiceTicket\ChangeTemplate;
-use App\Models\ServiceTicket\Problem;
-use App\Models\ServiceTicket\ServiceTicket;
 
 /**
  * Change (Feature 065, MVP-157): standard/normal/emergency mit Fenster,

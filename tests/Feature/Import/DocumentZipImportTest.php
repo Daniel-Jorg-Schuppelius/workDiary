@@ -20,7 +20,7 @@ use App\Models\Document\Document;
 use App\Models\Integration\ImportRun;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Services\Import\DocumentZipImportService;
+use App\Services\Document\Import\DocumentZipImportService;
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

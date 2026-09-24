@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Manufacturing;
+namespace App\Services\Procedure\Bom;
 
 use App\Enums\Manufacturing\{BomOverrideAction, QuantityKind};
 use App\Models\Article\{ArticleVariant, ArticleVariantBomOverride};

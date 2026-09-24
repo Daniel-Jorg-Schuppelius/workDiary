@@ -10,11 +10,11 @@
 
 namespace App\Http\Requests\Time;
 
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Illuminate\Validation\Validator;
-use App\Http\Requests\BaseFormRequest;
 
 /**
  * Manuelle Buchung aus der Eingabeleiste auf „Heute": ein bekannter Kalendertag

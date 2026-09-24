@@ -41,6 +41,7 @@ class JobApplicationMasterDataSection extends AbstractSubjectSection {
             'candidate_name' => $this->field(__('Name'), $a->candidate_name),
             'email' => $this->field(__('E-Mail'), $a->email),
             'phone' => $this->field(__('Telefon'), $a->phone),
+            'address' => $this->field(__('Adresse'), implode(', ', $a->postalAddressLines()) ?: null),
             'source' => $this->field(__('Quelle'), $a->source),
             'status' => $this->field(__('Status'), $a->status),
             'received_at' => $this->field(__('Eingegangen am'), $a->received_at),

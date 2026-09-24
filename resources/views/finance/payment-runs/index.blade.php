@@ -30,7 +30,7 @@
                  die Datei entsteht nicht. Das ist ehrlicher als die Seite ganz
                  auszublenden. --}}
             <div class="rounded-box border border-warning/40 bg-warning/5 px-4 py-3 text-sm">
-                {{ \App\Services\Finance\FinancialFormatsSupport::unavailableMessage('sepa.error.unavailable') }}
+                {{ \App\Services\Billing\FinancialFormatsSupport::unavailableMessage('sepa.error.unavailable') }}
             </div>
         @endunless
 

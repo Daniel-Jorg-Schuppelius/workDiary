@@ -12,13 +12,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Invoicing;
 
+use App\Http\Controllers\Controller;
 use App\Models\Invoicing\Invoice;
 use App\Services\Peppol\PeppolInvoiceDispatcher;
 use App\Support\ErrorText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * Rechnungsversand über Peppol (Feature 066, MVP-734).

@@ -22,7 +22,7 @@ use App\Models\Platform\Organization;
 use App\Models\Print\PrintOrder;
 use App\Models\Shipping\Shipment;
 use App\Services\Document\DocumentService;
-use App\Services\Manufacturing\ManufacturingOrderService;
+use App\Services\Print\Contracts\ProductionOrderFactory;
 use App\Services\Print\PrintOrderService;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -48,7 +48,7 @@ class PrintOrderController extends Controller {
 
     public function __construct(
         private readonly PrintOrderService $orders,
-        private readonly ManufacturingOrderService $manufacturing,
+        private readonly ProductionOrderFactory $manufacturing,
         private readonly DocumentService $documents,
     ) {}
 
@@ -337,7 +337,7 @@ class PrintOrderController extends Controller {
         $manufacturing = $order->manufacturingOrder;
         $quantity = $validated['affected_quantity'] ?? null;
 
-        $claim = app(\App\Services\Claims\ClaimCaseService::class)->open($this->printOrganization(), $actor, [
+        $claim = app(\App\Services\Claims\Contracts\ClaimIntake::class)->open($this->printOrganization(), $actor, [
             'title' => (string) __('print.claim.title', ['number' => $manufacturing->number ?? $order->sqid]),
             'description' => trim((string) ($validated['description'] ?? '')) ?: null,
             'customer_id' => $manufacturing?->customer_id,

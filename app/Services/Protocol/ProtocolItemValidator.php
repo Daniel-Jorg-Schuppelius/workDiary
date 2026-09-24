@@ -12,7 +12,9 @@ namespace App\Services\Protocol;
 
 use App\Enums\Protocol\{ProtocolItemResult, ProtocolItemType};
 use App\Models\Protocol\{Protocol, ProtocolItem};
-use CommonToolkit\Helper\Data\DateHelper;
+use App\Services\Fields\{FieldSchema, FieldValidator};
+use App\Services\Protocol\Fields\ProtocolItemFields;
+use Illuminate\Support\Facades\Validator;
 
 /**
  * Validiert ein {@see ProtocolItem} gemäß seinem `item_type` (MVP-021 §4).
@@ -26,46 +28,38 @@ use CommonToolkit\Helper\Data\DateHelper;
  * Liefert eine Liste von Fehlermeldungen; leer = gültig.
  */
 class ProtocolItemValidator {
+    public function __construct(
+        private readonly ProtocolItemFields $fields,
+        private readonly FieldValidator $fieldValidator,
+    ) {}
+
     /**
      * @return list<string>
      */
     public function validate(ProtocolItem $item): array {
-        $errors = [];
-        $value = $item->value_json ?? [];
-
         if (! $item->item_type->hasValue()) {
-            return $errors; // group: keine Validierung
+            return []; // group: keine Validierung
         }
-
-        if ($item->required && $this->isEmpty($item)) {
-            $errors[] = (string) __('protocol.validation.required', ['label' => $item->label]);
-            return $errors;
-        }
-
         if ($this->isEmpty($item)) {
-            return $errors; // nicht ausgefuellt, nicht pflicht
+            return $item->required
+                ? [(string) __('protocol.validation.required', ['label' => $item->label])]
+                : []; // nicht ausgefüllt, nicht Pflicht
         }
-
-        $errors = array_merge($errors, match ($item->item_type) {
-            ProtocolItemType::Text => $this->validateText($item, $value),
-            ProtocolItemType::Boolean => $this->validateBoolean($value),
-            ProtocolItemType::Choice => $this->validateChoice($value),
-            ProtocolItemType::Multichoice => $this->validateMultichoice($value),
-            ProtocolItemType::Number, ProtocolItemType::Range => $this->validateNumber($value),
-            ProtocolItemType::Date, ProtocolItemType::DateTime => $this->validateDate($value),
-            ProtocolItemType::Photo, ProtocolItemType::File => $this->validateAttachments($value),
-            ProtocolItemType::Defect => $this->validateDefect($value),
-            ProtocolItemType::MeasurementTimestamped => $this->validateMeasurement($value),
-            ProtocolItemType::Signature => $this->validateSignature($value),
-            ProtocolItemType::ProcedureStep, ProtocolItemType::SignoffInternal,
-            ProtocolItemType::Group => [],
-        });
-
+        // Regeln je Grundtyp aus dem Feldschema-Baustein, Fachtypen (Mangel,
+        // Messreihe, Anhänge, Signatur) aus den Protokoll-Erweiterungen —
+        // geprüft wird der aus `value_json` gelesene Wert, nie eine neue Form.
+        $schema = new FieldSchema([$this->fields->definition($item)]);
+        $errors = Validator::make(
+            ['values' => [ProtocolItemFields::key($item) => $this->fields->value($item)]],
+            $this->fieldValidator->rules($schema),
+            [],
+            $schema->attributeNames(),
+        )->errors()->all();
         if ($item->item_type === ProtocolItemType::Photo) {
             $errors = array_merge($errors, $this->missingPhotoPhases($item));
         }
 
-        return $errors;
+        return array_values($errors);
     }
 
     /**
@@ -182,172 +176,6 @@ class ProtocolItemValidator {
             ProtocolItemType::Signature => empty($value['signature_id'] ?? null),
             default => false,
         };
-    }
-
-    // --------- Typ-spezifische Schema-Pruefungen ---------
-
-    /**
-     * @param array<string, mixed> $value
-     * @return list<string>
-     */
-    private function validateText(ProtocolItem $item, array $value): array {
-        $errors = [];
-        $text = (string) ($value['text'] ?? '');
-        $min = $item->value_json['min_length'] ?? null;
-        $max = $item->value_json['max_length'] ?? null;
-        if ($min !== null && mb_strlen($text) < (int) $min) {
-            $errors[] = (string) __('protocol.validation.text.minLength', ['min' => $min]);
-        }
-        if ($max !== null && mb_strlen($text) > (int) $max) {
-            $errors[] = (string) __('protocol.validation.text.maxLength', ['max' => $max]);
-        }
-        return $errors;
-    }
-
-    /**
-     * @param array<string, mixed> $value
-     * @return list<string>
-     */
-    private function validateBoolean(array $value): array {
-        return is_bool($value['value'] ?? null) ? [] : [(string) __('protocol.validation.boolean.invalid')];
-    }
-
-    /**
-     * @param array<string, mixed> $value
-     * @return list<string>
-     */
-    private function validateChoice(array $value): array {
-        $selected = $value['selected'] ?? null;
-        $options = $value['options'] ?? [];
-        if (! is_string($selected) && ! is_int($selected)) {
-            return [(string) __('protocol.validation.choice.invalid')];
-        }
-        if (! empty($options)) {
-            $keys = array_column((array) $options, 'key');
-            if (! in_array($selected, $keys, true)) {
-                return [(string) __('protocol.validation.choice.notInOptions')];
-            }
-        }
-        return [];
-    }
-
-    /**
-     * @param array<string, mixed> $value
-     * @return list<string>
-     */
-    private function validateMultichoice(array $value): array {
-        $selected = $value['selected'] ?? null;
-        if (! is_array($selected) || $selected === []) {
-            return [(string) __('protocol.validation.multichoice.invalid')];
-        }
-        $options = $value['options'] ?? [];
-        if (! empty($options)) {
-            $keys = array_column((array) $options, 'key');
-            foreach ($selected as $sel) {
-                if (! in_array($sel, $keys, true)) {
-                    return [(string) __('protocol.validation.multichoice.notInOptions')];
-                }
-            }
-        }
-        return [];
-    }
-
-    /**
-     * @param array<string, mixed> $value
-     * @return list<string>
-     */
-    private function validateNumber(array $value): array {
-        $errors = [];
-        $val = $value['value'] ?? null;
-        if (! is_int($val) && ! is_float($val)) {
-            return [(string) __('protocol.validation.number.invalid')];
-        }
-        foreach (['min', 'max'] as $bound) {
-            if (isset($value[$bound]) && (
-                ($bound === 'min' && $val < $value[$bound])
-                || ($bound === 'max' && $val > $value[$bound])
-            )) {
-                $errors[] = (string) __('protocol.validation.number.' . $bound, [
-                    'bound' => $value[$bound],
-                ]);
-            }
-        }
-        return $errors;
-    }
-
-    /**
-     * @param array<string, mixed> $value
-     * @return list<string>
-     */
-    private function validateDate(array $value): array {
-        // isDateTime statt strtotime: lehnt Relativausdrücke (tomorrow) ab,
-        // akzeptiert ISO-Timestamps mit Offset (DateTime-Items).
-        $raw = (string) ($value['value'] ?? '');
-        return DateHelper::isDateTime($raw) ? [] : [(string) __('protocol.validation.date.invalid')];
-    }
-
-    /**
-     * @param array<string, mixed> $value
-     * @return list<string>
-     */
-    private function validateAttachments(array $value): array {
-        $ids = $value['attachment_ids'] ?? [];
-        if (! is_array($ids) || $ids === []) {
-            return [(string) __('protocol.validation.attachments.required')];
-        }
-        $min = (int) ($value['min_count'] ?? 0);
-        $max = $value['max_count'] ?? null;
-        $errors = [];
-        if (count($ids) < $min) {
-            $errors[] = (string) __('protocol.validation.attachments.min', ['min' => $min]);
-        }
-        if ($max !== null && count($ids) > (int) $max) {
-            $errors[] = (string) __('protocol.validation.attachments.max', ['max' => $max]);
-        }
-        return $errors;
-    }
-
-    /**
-     * @param array<string, mixed> $value
-     * @return list<string>
-     */
-    private function validateDefect(array $value): array {
-        $errors = [];
-        $allowed = ['low', 'medium', 'high', 'critical'];
-        if (! in_array($value['severity'] ?? null, $allowed, true)) {
-            $errors[] = (string) __('protocol.validation.defect.severity');
-        }
-        if (trim((string) ($value['description'] ?? '')) === '') {
-            $errors[] = (string) __('protocol.validation.defect.description');
-        }
-        return $errors;
-    }
-
-    /**
-     * @param array<string, mixed> $value
-     * @return list<string>
-     */
-    private function validateMeasurement(array $value): array {
-        $samples = $value['samples'] ?? null;
-        if (! is_array($samples) || $samples === []) {
-            return [(string) __('protocol.validation.measurement.empty')];
-        }
-        foreach ($samples as $s) {
-            if (! is_array($s) || ! array_key_exists('value', $s) || ! array_key_exists('at', $s)) {
-                return [(string) __('protocol.validation.measurement.invalidSample')];
-            }
-        }
-        return [];
-    }
-
-    /**
-     * @param array<string, mixed> $value
-     * @return list<string>
-     */
-    private function validateSignature(array $value): array {
-        return isset($value['signature_id']) && is_int($value['signature_id'])
-            ? []
-            : [(string) __('protocol.validation.signature.missing')];
     }
 
     /**

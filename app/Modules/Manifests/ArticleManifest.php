@@ -58,4 +58,13 @@ final class ArticleManifest extends Manifest {
             'products',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Import\EntitySpec::class => [
+                \App\Services\Article\Import\ArticleSpec::class,
+            ],
+        ];
+    }
 }

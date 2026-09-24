@@ -1,0 +1,70 @@
+{
+    "kind": "invoice_schedule",
+    "document": [],
+    "lines": [
+        {
+            "quantity": "1.000",
+            "unit_price": "250.0000",
+            "discount_percent": null,
+            "discount_amount": null,
+            "tax_rate": "19.00"
+        },
+        {
+            "quantity": "12.000",
+            "unit_price": "9.9900",
+            "discount_percent": "10.00",
+            "discount_amount": null,
+            "tax_rate": "19.00"
+        },
+        {
+            "quantity": "2.500",
+            "unit_price": "40.1234",
+            "discount_percent": null,
+            "discount_amount": "3.50",
+            "tax_rate": "7.00"
+        },
+        {
+            "quantity": "1.000",
+            "unit_price": "99.0000",
+            "discount_percent": null,
+            "discount_amount": null,
+            "tax_rate": "0.00"
+        }
+    ],
+    "expected": {
+        "line_nets": [
+            "250.00",
+            "107.89",
+            "96.81",
+            "99.00"
+        ],
+        "line_net_sum": "553.70",
+        "document_discount": "0.00",
+        "by_rate": {
+            "0.00": {
+                "rate": 0,
+                "net": "99.00",
+                "allowance": "0.00",
+                "taxable": "99.00",
+                "tax": "0.00"
+            },
+            "7.00": {
+                "rate": 7,
+                "net": "96.81",
+                "allowance": "0.00",
+                "taxable": "96.81",
+                "tax": "6.78"
+            },
+            "19.00": {
+                "rate": 19,
+                "net": "357.89",
+                "allowance": "0.00",
+                "taxable": "357.89",
+                "tax": "68.00"
+            }
+        },
+        "subtotal": "553.70",
+        "tax_amount": "74.78",
+        "total": "628.48"
+    }
+}

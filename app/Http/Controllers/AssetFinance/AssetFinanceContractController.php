@@ -74,7 +74,7 @@ class AssetFinanceContractController extends Controller {
         // Vollaudit 2026-07 (M32): Prüfstatus der Vertrags-Assets — die
         // Prüfpflichtenverwaltung (Feature 075) bleibt führend, die Leasingakte
         // spiegelt nur den abgeleiteten Status.
-        $complianceService = app(\App\Services\AssetCompliance\AssetComplianceService::class);
+        $complianceService = app(\App\Services\Asset\Contracts\AssetComplianceStatusProvider::class);
         $complianceByAsset = [];
         foreach ($contract->contractAssets as $contractAsset) {
             if ($contractAsset->asset !== null) {

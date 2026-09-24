@@ -10,8 +10,8 @@
 
 namespace App\Policies\Facility;
 
-use App\Models\Platform\User;
 use App\Models\Facility\Site;
+use App\Models\Platform\User;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class SitePolicy {

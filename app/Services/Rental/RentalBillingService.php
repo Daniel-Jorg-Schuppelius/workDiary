@@ -16,7 +16,7 @@ use App\Enums\Rental\{RentalChargeKind, RentalChargeStatus, RentalDepositStatus}
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Rental\{RentalCase, RentalCharge, RentalDeposit};
-use App\Services\Finance\BillingModeResolver;
+use App\Services\Billing\{BillingModeResolver, DocumentTotalsCalculator};
 use App\Services\Invoicing\{InvoiceGenerator, TaxResolver};
 use Illuminate\Support\Facades\DB;
 
@@ -107,7 +107,7 @@ class RentalBillingService {
             'rental_case_id' => $case->id,
             'kind' => $kind->value,
             'status' => RentalChargeStatus::Draft->value,
-            'amount' => round($quantity * $unitPrice, 2),
+            'amount' => DocumentTotalsCalculator::lineNet($quantity, $unitPrice)->withScale(2)->toFloat(),
             'created_by' => $actor->id,
         ]));
 

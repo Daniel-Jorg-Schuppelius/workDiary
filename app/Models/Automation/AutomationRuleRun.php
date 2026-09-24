@@ -13,7 +13,6 @@ namespace App\Models\Automation;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Automation\AutomationRule;
 
 /**
  * @property int $id

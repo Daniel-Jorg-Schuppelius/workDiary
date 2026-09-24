@@ -12,12 +12,12 @@ namespace App\Models\Classification;
 
 use App\Enums\Classification\ClassificationDomain;
 use App\Models\Concerns\{Auditable, HasSqid};
+use App\Models\Platform\Organization;
 use Database\Factories\Classification\ClassificationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use App\Models\Platform\Organization;
 
 /**
  * Klassifikations-Wert (Plattform-Default oder Org-Override).

@@ -12,9 +12,8 @@ namespace Database\Factories\Procedure;
 
 use App\Enums\Procedure\ProcedureRunStatus;
 use App\Models\Diary\DiaryEntry;
-use App\Models\Procedure\ProcedureRun;
-use App\Models\Procedure\ProcedureTemplateVersion;
 use App\Models\Platform\{Organization, User};
+use App\Models\Procedure\{ProcedureRun, ProcedureTemplateVersion};
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

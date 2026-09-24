@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers\Customer;
 
-use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery};
+use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery, WritesContactDetails};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\SaveForeignCustomerRequest;
 use App\Models\Audit\AuditLog;
@@ -31,6 +31,7 @@ use Illuminate\View\View;
 class ForeignCustomerController extends Controller {
     use ArchivesModels;
     use ParsesIndexQuery;
+    use WritesContactDetails;
 
     private const ALLOWED_SORTS = ['name', 'company', 'created_at'];
 
@@ -99,8 +100,10 @@ class ForeignCustomerController extends Controller {
 
         $data = $request->validated();
         $this->assertCustomerInOrganization((int) $data['customer_id']);
+        $contact = $this->pullForeignContact($data);
 
         $foreignCustomer = ForeignCustomer::create($data + ['created_by' => Auth::id()]);
+        $this->writeContactDetails($foreignCustomer, $contact);
 
         return redirect()->route('foreign-customers.show', $foreignCustomer)
             ->with('success', __('Fremdkunde angelegt.'));
@@ -122,11 +125,29 @@ class ForeignCustomerController extends Controller {
 
         $data = $request->validated();
         $this->assertCustomerInOrganization((int) $data['customer_id']);
+        $contact = $this->pullForeignContact($data);
 
         $foreignCustomer->update($data);
+        $this->writeContactDetails($foreignCustomer, $contact);
 
         return redirect()->route('foreign-customers.show', $foreignCustomer)
             ->with('success', __('Fremdkunde aktualisiert.'));
+    }
+
+    /**
+     * Anschrift in den Satelliten; das Land bleibt zusätzlich in der
+     * Bestandsspalte `country` (keine Anschriftspalte, Gate lässt sie zu).
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function pullForeignContact(array &$data): array {
+        $contact = $this->pullContactDetails($data);
+        if (array_key_exists('country', $contact)) {
+            $data['country'] = $contact['country'];
+        }
+
+        return $contact;
     }
 
     public function destroy(ForeignCustomer $foreignCustomer): RedirectResponse {
@@ -176,10 +197,16 @@ class ForeignCustomerController extends Controller {
                 'mobile' => $foreignCustomer->mobile,
                 'homepage' => $foreignCustomer->homepage,
                 'address' => $foreignCustomer->address,
-                'country' => $foreignCustomer->country,
                 'color' => $foreignCustomer->color,
                 'comment' => $foreignCustomer->comment,
                 'created_by' => Auth::id(),
+            ]);
+            $address = $foreignCustomer->postalAddress();
+            $this->writeContactDetails($customer, [
+                'address_street' => $address['street'],
+                'address_zip' => $address['zip'],
+                'address_city' => $address['city'],
+                'country' => $address['country'],
             ]);
 
             // Projekte einzeln speichern, damit die Project-saved-Hooks

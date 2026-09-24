@@ -12,25 +12,19 @@ namespace App\Observers;
 
 use App\Enums\Diary\Status;
 use App\Enums\Notification\NotificationEvent;
-use App\Models\Diary\{DiaryEntry, DiaryEntryEvent};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Services\Notification\NotificationDispatcher;
 use App\Support\Setting;
-use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Auth;
 
 class DiaryEntryObserver {
     public function created(DiaryEntry $entry): void {
         $actor = Auth::user();
-        DiaryEntryEvent::query()->create([
-            'diary_entry_id' => $entry->id,
-            'organization_id' => $entry->organization_id,
-            'event' => 'order.created',
+        $entry->record('order.created', [], $actor instanceof User ? $actor : null, extra: [
             'from_status' => null,
             'to_status' => $entry->status->slug(),
-            'actor_user_id' => $actor instanceof User ? $actor->id : null,
             'actor_kind' => $actor instanceof User ? 'user' : 'system',
-            'occurred_at' => CarbonImmutable::now(),
         ]);
 
         if ($entry->status === Status::Problem) {

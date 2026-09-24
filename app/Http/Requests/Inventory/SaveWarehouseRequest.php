@@ -11,14 +11,14 @@
 namespace App\Http\Requests\Inventory;
 
 use App\Enums\Inventory\WarehouseKind;
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\Platform\Team;
 use App\Models\Facility\Site;
 use App\Models\Fleet\Vehicle;
 use App\Models\Inventory\Warehouse;
+use App\Models\Platform\Team;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 class SaveWarehouseRequest extends BaseFormRequest {
     use DecodesSqidInputs;

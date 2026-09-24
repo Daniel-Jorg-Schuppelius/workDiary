@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Privacy;
 
 use App\Enums\Privacy\DataSubjectRequestStatus;
-use App\Models\Privacy\{DataSubjectRequest, Incident, IncidentEvent};
+use App\Models\Privacy\{DataSubjectRequest, Incident};
 use Illuminate\Support\Carbon;
 
 /**
@@ -39,7 +39,7 @@ class PrivacyDeadlineService {
             ->whereIn('status', array_map(static fn ($s) => $s->value, $openStatuses))
             ->whereNotNull('deadline_at')
             ->where('deadline_at', '<=', $threshold)
-            ->whereDoesntHave('events', static fn ($q) => $q->where('event', 'deadline_reminder'))
+            ->whereDoesntHave('journal', static fn ($q) => $q->where('event', 'deadline_reminder'))
             ->get();
 
         foreach ($due as $request) {
@@ -66,17 +66,11 @@ class PrivacyDeadlineService {
             ->where('authority_deadline_at', '<=', Carbon::now())
             ->whereNull('authority_notified_at')
             ->where('status', '!=', 'closed')
-            ->whereDoesntHave('events', static fn ($q) => $q->where('event', 'deadline_reminder'))
+            ->whereDoesntHave('journal', static fn ($q) => $q->where('event', 'deadline_reminder'))
             ->get();
 
         foreach ($due as $incident) {
-            IncidentEvent::create([
-                'organization_id' => $incident->organization_id,
-                'incident_id' => $incident->id,
-                'actor_type' => 'system',
-                'event' => 'deadline_reminder',
-                'metadata' => ['authority_deadline_at' => $incident->authority_deadline_at?->toIso8601String()],
-            ]);
+            $incident->record('deadline_reminder', ['authority_deadline_at' => $incident->authority_deadline_at?->toIso8601String()], extra: ['actor_type' => 'system']);
         }
 
         return $due->count();

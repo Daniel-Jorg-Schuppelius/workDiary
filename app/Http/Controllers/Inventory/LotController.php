@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Inventory;
 
 use App\Enums\User\Permission as P;
+use App\Http\Controllers\Controller;
 use App\Models\Inventory\StockLot;
 use App\Services\Inventory\{LotService, LotSplitService};
 use App\Support\{ErrorText, SqidEncoder};
@@ -18,7 +19,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * Chargenverwaltung (Feature 047/048, E2/E7): Chargenliste mit Restbestand sowie

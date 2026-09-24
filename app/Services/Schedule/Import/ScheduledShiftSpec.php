@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Import\Specs;
+namespace App\Services\Schedule\Import;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Enums\Shift\ScheduledShiftStatus;
@@ -18,6 +18,7 @@ use App\Models\Integration\ImportValueMapping;
 use App\Models\Platform\{Organization, User};
 use App\Models\Schedule\{ScheduledShift, ShiftType};
 use App\Services\Import\{HasMappableValues, ImportOutcome, ValidationIssue};
+use App\Services\Import\Specs\AbstractEntitySpec;
 use App\Services\Import\Specs\Concerns\{ParsesLocalDateTime, ResolvesImportUsers};
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Support\Facades\Auth;

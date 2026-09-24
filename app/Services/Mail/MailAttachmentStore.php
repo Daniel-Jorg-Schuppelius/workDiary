@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Mail;
 
+use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\Organization;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -25,7 +26,7 @@ use Illuminate\Support\Str;
  *
  * **Nie Auto-Import:** Persistiert wird nur für die spätere menschliche
  * Auflösung — die eigentliche Übernahme (an die Kommunikationsnotiz oder ins
- * DMS) erfolgt erst dort ({@see MailInboxResolutionService}).
+ * * DMS) erfolgt erst dort (MailToCommunicationNote, MailToServiceTicket, MailAttachmentsToDms).
  */
 class MailAttachmentStore {
     public const DISK = 'local';
@@ -82,5 +83,20 @@ class MailAttachmentStore {
         Storage::disk(self::DISK)->put($path, $attachment->content);
 
         return $meta + ['stored' => true, 'disk' => self::DISK, 'stored_path' => $path];
+    }
+
+    /**
+     * Beim Intake abgelegte Anhänge eines Inbox-Eintrags (Snapshot-Metadaten
+     * mit `stored = true`).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function storedAttachments(IntegrationInboxItem $item): array {
+        $all = (array) (($item->remote_snapshot ?? [])['attachments'] ?? []);
+
+        return array_values(array_filter(
+            $all,
+            static fn ($a): bool => is_array($a) && ($a['stored'] ?? false) === true,
+        ));
     }
 }

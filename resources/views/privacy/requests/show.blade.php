@@ -172,15 +172,7 @@
 
         <x-card>
             <h2 class="font-['Space_Grotesk'] text-base font-semibold mb-3">{{ __('Verlauf') }}</h2>
-            <ul class="timeline timeline-vertical">
-                @foreach ($events as $e)
-                    <li>
-                        <div class="timeline-start text-xs text-muted">{{ $e->created_at?->orgTz()->format('d.m.Y H:i') }}</div>
-                        <div class="timeline-middle">●</div>
-                        <div class="timeline-end timeline-box text-sm">{{ $e->event }}</div>
-                    </li>
-                @endforeach
-            </ul>
+            <x-journal :entries="$events" />
         </x-card>
     </x-index-page>
 @endsection

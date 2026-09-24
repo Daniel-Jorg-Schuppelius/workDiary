@@ -10,10 +10,10 @@
 
 namespace App\Http\Requests\Metering;
 
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 /**
  * Zählerstands-Vereinbarung (Feature 116, MVP-605). Kunde/Asset/Projekt

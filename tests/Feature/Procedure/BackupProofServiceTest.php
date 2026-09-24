@@ -48,7 +48,7 @@ class BackupProofServiceTest extends TestCase {
         $this->assertFalse($proof->verified);
         $this->assertSame(
             1,
-            $run->events()->where('event_type', ProcedureRunEventType::BackupRegistered->value)->count(),
+            $run->journal()->where('event_type', ProcedureRunEventType::BackupRegistered->value)->count(),
         );
     }
 
@@ -118,7 +118,7 @@ class BackupProofServiceTest extends TestCase {
         $this->assertSame(ProcedureStepRunStatus::Done, $done->status);
         $this->assertSame(
             1,
-            $run->events()->where('event_type', ProcedureRunEventType::BackupVerified->value)->count(),
+            $run->journal()->where('event_type', ProcedureRunEventType::BackupVerified->value)->count(),
         );
     }
 

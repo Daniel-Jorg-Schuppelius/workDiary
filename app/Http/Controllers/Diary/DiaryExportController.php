@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Diary;
 
+use App\Http\Controllers\Controller;
 use App\Models\Diary\DiaryEntry;
 use App\Services\UI\DateRangeContext;
 use App\Support\{CsvExport, Tz};
@@ -19,15 +20,17 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use App\Http\Controllers\Controller;
 
 class DiaryExportController extends Controller {
     public function csv(Request $request): StreamedResponse {
         $query = $this->buildQuery($request);
 
         $filename = 'tagebuch_' . now()->format('Ymd_His') . '.csv';
+        // Eigene Felder der Organisation als Zusatzspalten (MVP-868).
+        $customFields = app(\App\Services\Fields\CustomFieldService::class);
+        $customColumns = $customFields->exportColumns(DiaryEntry::class, (int) ($request->user()?->getAttribute('organization_id') ?? 0));
 
-        $rows = (function () use ($query): \Generator {
+        $rows = (function () use ($query, $customFields): \Generator {
             /** @var DiaryEntry $entry */
             foreach ($query->lazy(500) as $entry) {
                 // Mehrzeiler flachziehen; Formel-Guard übernimmt CsvExport zentral.
@@ -42,6 +45,7 @@ class DiaryExportController extends Controller {
                     StringHelper::normalizeWhitespace($entry->tags->pluck('name')->implode(', ')),
                     $entry->is_archived ? '1' : '0',
                     Tz::toLocal($entry->created_at)?->format('Y-m-d H:i') ?? '',
+                    ...$customFields->exportRow($entry),
                 ];
             }
         })();
@@ -57,6 +61,7 @@ class DiaryExportController extends Controller {
             __('Tags'),
             __('Archiviert'),
             __('Erstellt'),
+            ...array_column($customColumns, 'label'),
         ], $rows);
     }
 

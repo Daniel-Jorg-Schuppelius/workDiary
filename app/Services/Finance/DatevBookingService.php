@@ -15,6 +15,7 @@ use App\Models\Finance\{DatevBookingBatch, DatevBookingEvent, DatevBookingSource
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Models\Travel\Expense;
+use App\Services\Billing\{BillingModeResolver, FinancialFormatsSupport};
 use App\Services\Concerns\ResolvesActorId;
 use App\Services\Export\ExportRunner;
 use App\Services\Finance\Datev\{DatevBookingAdapter, DatevBookingConfig, DatevBookingFieldResolver};
@@ -105,7 +106,7 @@ class DatevBookingService {
             ->where('organization_id', $organization->id)
             ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PAID])
             // MVP-707: Altrechnungen wurden im Vorsystem gebucht — nie erneut übergeben.
-            ->where('number_source', '!=', \App\Services\Import\Specs\InvoiceSpec::NUMBER_SOURCE)
+            ->where('number_source', '!=', \App\Services\Invoicing\Import\InvoiceSpec::NUMBER_SOURCE)
             ->whereNotNull('issued_on')
             ->with('customer');
 
@@ -799,13 +800,9 @@ class DatevBookingService {
 
     /** @param  array<string, mixed>  $payload */
     private function recordEvent(DatevBookingBatch $batch, string $event, ?int $actorId, array $payload): DatevBookingEvent {
-        return DatevBookingEvent::create([
-            'organization_id' => $batch->organization_id,
-            'datev_booking_batch_id' => $batch->id,
-            'event' => $event,
-            'actor_user_id' => $actorId,
-            'payload' => $payload,
-            'created_at' => now(),
-        ]);
+        /** @var DatevBookingEvent $entry */
+        $entry = $batch->record($event, $payload, $actorId);
+
+        return $entry;
     }
 }

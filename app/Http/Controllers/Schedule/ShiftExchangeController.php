@@ -12,15 +12,14 @@ namespace App\Http\Controllers\Schedule;
 
 use App\Enums\Shift\ShiftExchangeStatus;
 use App\Enums\User\Permission;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Schedule\StoreShiftExchangeRequest;
 use App\Models\Platform\User;
-use App\Models\Schedule\ScheduledShift;
-use App\Models\Schedule\ShiftExchange;
+use App\Models\Schedule\{ScheduledShift, ShiftExchange};
 use App\Services\Schedule\{ShiftExchangeException, ShiftExchangeService};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Schichttausch mit Freigabe (Feature 007).

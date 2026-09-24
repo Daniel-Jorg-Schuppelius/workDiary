@@ -8,9 +8,10 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers\Platform;
+namespace App\Http\Controllers\Calendar;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Controller;
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\Holiday;
 use App\Services\Calendar\HolidayService;
@@ -19,7 +20,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class HolidayController extends Controller {
     use ResolvesGlobalDateRange;

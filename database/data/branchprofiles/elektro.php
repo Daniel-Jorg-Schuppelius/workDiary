@@ -362,4 +362,16 @@ return [
         ['code' => 'schaltberechtigung', 'title' => 'Schaltberechtigung Mittelspannung (Auffrischung)', 'legal_basis' => 'DIN VDE 0105-100', 'provider_kind' => 'external', 'validity_months' => 36, 'duration_minutes' => 480, 'lead_days' => 60, 'roles' => ['aussendienst']],
         ['code' => 'unterweisung-arbschg', 'title' => 'Jährliche Unterweisung Arbeitssicherheit', 'legal_basis' => '§ 12 ArbSchG / DGUV V1 § 4', 'validity_months' => 12, 'duration_minutes' => 60, 'roles' => ['aussendienst', 'teamleitung']],
     ],
+
+    // Eigene Felder je Träger (MVP-868): ergänzt nur fehlende Schlüssel.
+    'custom_fields' => [
+        'customers' => [
+            ['label' => 'Zählernummer', 'type' => 'text', 'help' => 'Zählpunkt/Zähler des Netzbetreibers'],
+            ['label' => 'Netzbetreiber', 'type' => 'text'],
+        ],
+        'assets' => [
+            ['label' => 'Prüfintervall DGUV V3', 'type' => 'number', 'unit' => 'Monate', 'min' => 1, 'max' => 48],
+            ['label' => 'Schutzklasse', 'type' => 'choice', 'options' => 'I, II, III'],
+        ],
+    ],
 ];

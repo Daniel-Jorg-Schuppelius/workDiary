@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Inventory;
 
 use App\Enums\User\Permission as P;
+use App\Http\Controllers\Controller;
 use App\Models\Integration\PendingExternalConflict;
 use App\Models\Platform\User;
 use App\Services\Inventory\InventoryConflictResolver;
@@ -19,7 +20,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * Konflikt-Inbox für kompensationspflichtige Inventory-Outbox-Einträge

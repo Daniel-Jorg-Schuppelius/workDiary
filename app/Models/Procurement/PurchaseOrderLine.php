@@ -11,12 +11,11 @@
 namespace App\Models\Procurement;
 
 use App\Casts\{MoneyCast, QuantityCast};
+use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Article\Article;
-use App\Models\Article\ArticleVariant;
 
 /**
  * Bestellzeile (Feature 048, E4).

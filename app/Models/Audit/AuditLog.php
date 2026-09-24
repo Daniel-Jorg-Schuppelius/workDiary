@@ -12,10 +12,10 @@ namespace App\Models\Audit;
 
 use App\Casts\IpAddressCast;
 use App\Models\Concerns\{BelongsToOrganization, HashChainable, HashChained};
+use App\Models\Platform\User;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
-use App\Models\Platform\User;
 
 /**
  * Revisionssicheres Änderungsprotokoll (GoBD): SHA-256-Hash-Kette + append-only

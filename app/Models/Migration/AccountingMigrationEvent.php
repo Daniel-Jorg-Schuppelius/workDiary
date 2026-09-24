@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Models\Migration;
 
-use App\Models\Concerns\{HashChainable, HashChained};
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Journal\HashChainedJournalEntry;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Append-only Ereignisprotokoll eines Buchhaltungswechsels (MVP-653):
@@ -32,9 +32,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @phpstan-consistent-constructor
  */
-class AccountingMigrationEvent extends Model implements HashChainable {
-    use HashChained;
-
+class AccountingMigrationEvent extends HashChainedJournalEntry {
     protected $table = 'accounting_migration_events';
 
     public $timestamps = false;
@@ -71,7 +69,8 @@ class AccountingMigrationEvent extends Model implements HashChainable {
         ];
     }
 
-    private function nullableInt(mixed $value): ?int {
-        return $value === null ? null : (int) $value;
+    /** @return BelongsTo<AccountingMigrationRun, $this> */
+    public function subject(): BelongsTo {
+        return $this->belongsTo(AccountingMigrationRun::class, 'accounting_migration_run_id');
     }
 }

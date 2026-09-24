@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Services\Finance;
+namespace App\Services\Billing;
 
 use App\Enums\Finance\BillingMode;
 use App\Models\Customer\Customer;

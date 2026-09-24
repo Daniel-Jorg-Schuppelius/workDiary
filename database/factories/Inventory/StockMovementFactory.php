@@ -12,8 +12,7 @@ namespace Database\Factories\Inventory;
 
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState};
 use App\Models\Article\ArticleVariant;
-use App\Models\Inventory\StockMovement;
-use App\Models\Inventory\Warehouse;
+use App\Models\Inventory\{StockMovement, Warehouse};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

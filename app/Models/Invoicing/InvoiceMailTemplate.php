@@ -16,8 +16,6 @@ use App\Models\Customer\Customer;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Support\Carbon;
-use App\Models\Procurement\PurchaseOrder;
-use App\Models\Sales\Quote;
 
 /**
  * Vom Admin editierbares Mail-Template für den Belegversand (Feature 128,

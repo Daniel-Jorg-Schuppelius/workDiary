@@ -16,8 +16,9 @@ use App\Models\Customer\Customer;
 use App\Models\Finance\DatevBookingBatch;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
+use App\Services\Billing\FinancialFormatsSupport;
 use App\Services\Finance\Datev\{DatevBookingAdapter, DatevBookingConfig};
-use App\Services\Finance\{DatevBookingException, DatevBookingService, FinancialFormatsSupport};
+use App\Services\Finance\{DatevBookingException, DatevBookingService};
 use DateTimeImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Gate, Storage};
@@ -150,9 +151,9 @@ class DatevBookingTest extends TestCase {
         $batch = $this->service()->createDraft($this->organization, $this->period(), $sources, $this->config(), $this->admin);
         $this->service()->finalize($batch, $this->config(), $this->admin);
 
-        $events = $batch->events()->orderBy('id')->pluck('event')->all();
+        $events = $batch->journal()->orderBy('id')->pluck('event')->all();
         $this->assertSame(['created', 'finalized'], $events);
-        $this->assertNotNull($batch->events()->where('event', 'finalized')->first()->hash);
+        $this->assertNotNull($batch->journal()->where('event', 'finalized')->first()->hash);
     }
 
     public function test_finalize_records_format_version_and_roundtrip(): void {
@@ -165,7 +166,7 @@ class DatevBookingTest extends TestCase {
         $batch = $this->service()->createDraft($this->organization, $this->period(), $sources, $this->config(), $this->admin);
         $this->service()->finalize($batch, $this->config(), $this->admin);
 
-        $payload = $batch->events()->where('event', 'finalized')->first()->payload;
+        $payload = $batch->journal()->where('event', 'finalized')->first()->payload;
         $this->assertSame(700, (int) data_get($payload, 'format_version'));
         $this->assertTrue((bool) data_get($payload, 'roundtrip_ok'));
         $this->assertNotNull(data_get($payload, 'format_type'));

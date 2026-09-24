@@ -11,11 +11,9 @@
 namespace App\Models\Communication;
 
 use App\Casts\IpAddressCast;
-use App\Models\Concerns\AppendOnly;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Journal\JournalEntry;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use App\Models\Communication\ExternalParticipant;
 
 /**
  * Append-only Nachweis aller externen Aktionen (Feature 033): Zugriff,
@@ -35,9 +33,11 @@ use App\Models\Communication\ExternalParticipant;
  * @property string|null $user_agent
  * @property Carbon|null $created_at
  */
-class ExternalParticipantEvent extends Model {
+class ExternalParticipantEvent extends JournalEntry {
+    /** @var array<string, string|null> */
+    protected static array $journalColumns = ['actor_user_id' => null];
+
     // Append-only jetzt technisch erzwungen statt nur dokumentiert (Vollaudit 2026-07, M52).
-    use AppendOnly;
 
     /** Append-only-Lebenszyklus: nur created_at (kein updated_at). */
     public const UPDATED_AT = null;
@@ -60,5 +60,10 @@ class ExternalParticipantEvent extends Model {
     /** @return BelongsTo<ExternalParticipant, $this> */
     public function participant(): BelongsTo {
         return $this->belongsTo(ExternalParticipant::class, 'external_participant_id');
+    }
+
+    /** @return BelongsTo<ExternalParticipant, $this> */
+    public function subject(): BelongsTo {
+        return $this->participant();
     }
 }

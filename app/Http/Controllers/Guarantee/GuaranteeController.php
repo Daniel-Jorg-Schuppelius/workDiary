@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Guarantee;
 
 use App\Enums\Guarantee\{GuaranteeDirection, GuaranteeStatus};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Guarantee\SaveGuaranteeRequest;
 use App\Models\Customer\Customer;
 use App\Models\Guarantee\Guarantee;
@@ -27,7 +28,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * Bürgschaftsregister (Feature 114, MVP-603).

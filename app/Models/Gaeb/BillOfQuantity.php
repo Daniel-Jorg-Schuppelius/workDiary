@@ -12,19 +12,15 @@ namespace App\Models\Gaeb;
 
 use App\Enums\Gaeb\{BoqItemStatus, GaebPhase};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Contracts\HasDocumentLines;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Project\Project;
+use App\Services\Billing\DocumentTotalsCalculator;
+use App\Services\Billing\Dto\DocumentTotalsContext;
+use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
-use App\Models\Gaeb\BoqCatalog;
-use App\Models\Gaeb\BoqCatalogAssignment;
-use App\Models\Gaeb\BoqChangeOrder;
-use App\Models\Gaeb\BoqCostType;
-use App\Models\Gaeb\BoqExport;
-use App\Models\Gaeb\BoqItem;
-use App\Models\Gaeb\BoqSection;
-use App\Models\Diary\DiaryEntry;
-use App\Models\Gaeb\GaebImport;
 
 /**
  * Leistungsverzeichnis-Kopf (Feature 049, MVP-082). Bündelt Abschnitte und
@@ -43,7 +39,7 @@ use App\Models\Gaeb\GaebImport;
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property BoqItemStatus $status
  */
-class BillOfQuantity extends Model {
+class BillOfQuantity extends Model implements HasDocumentLines {
     use Auditable;
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */
@@ -104,6 +100,26 @@ class BillOfQuantity extends Model {
     /** @return HasMany<BoqItem, $this> */
     public function items(): HasMany {
         return $this->hasMany(BoqItem::class);
+    }
+
+    /** @return HasMany<BoqItem, $this> */
+    public function lines(): HasMany {
+        return $this->items()->orderBy('position');
+    }
+
+    public function documentCurrency(): CurrencyCode {
+        return $this->currency ?? CurrencyCode::Euro;
+    }
+
+    /**
+     * Rechnerische LV-Summe über abrechenbare Positionsarten. Der GAEB-
+     * Summenblock (`totals`) bleibt Austauschdatum des Bieters und wird davon
+     * nicht überschrieben (Klasse F, siehe Gate).
+     */
+    public function documentTotals(): array {
+        $lines = $this->items->filter(fn (BoqItem $item): bool => $item->type->isBillable())->values();
+
+        return app(DocumentTotalsCalculator::class)->totals($lines, new DocumentTotalsContext(currency: $this->documentCurrency()));
     }
 
     /** @return HasMany<GaebImport, $this> */

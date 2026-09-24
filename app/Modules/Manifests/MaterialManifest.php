@@ -45,4 +45,13 @@ final class MaterialManifest extends Manifest {
             'materials',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Import\EntitySpec::class => [
+                \App\Services\Material\Import\MaterialSpec::class,
+            ],
+        ];
+    }
 }

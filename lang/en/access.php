@@ -211,6 +211,7 @@ return [
         'org.onboarding.skipStep' => 'Skip onboarding step',
         'org.onboarding.dismissWidget' => 'Dismiss onboarding widget',
         'organization.numberFormat.manage' => 'Manage number ranges',
+        'organization.customFields.manage' => 'Manage the organisation\'s custom fields',
         'platform.diagnostics.view' => 'View diagnostics page',
         'platform.diagnostics.runCheck' => 'Trigger diagnostics tests (mail/backup)',
         'platform.scheduler.manage' => 'Manage scheduler jobs (pause, reschedule, test run)',

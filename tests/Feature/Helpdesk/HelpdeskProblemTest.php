@@ -44,7 +44,7 @@ final class HelpdeskProblemTest extends TestCase {
 
         $problem = $service->openFromIncidents([$incidentA, $incidentB], 'Wiederkehrender Mailausfall', $this->agent);
         $this->assertSame(2, $problem->tickets()->count());
-        $this->assertSame('open', $problem->status);
+        $this->assertSame('open', $problem->status->value);
 
         // Unzulässiger Sprung open → known_error.
         try {
@@ -67,7 +67,7 @@ final class HelpdeskProblemTest extends TestCase {
 
         $problem = $service->recordEffectiveness($problem, $this->agent, 'Fix greift, keine neuen Incidents.');
         $problem = $service->transition($problem, 'closed', $this->agent);
-        $this->assertSame('closed', $problem->status);
+        $this->assertSame('closed', $problem->status->value);
     }
 
     public function test_incident_closure_never_closes_problem(): void {
@@ -80,7 +80,7 @@ final class HelpdeskProblemTest extends TestCase {
 
         app(ServiceTicketService::class)->transition($incident, $this->agent, ServiceTicketStatus::Closed);
 
-        $this->assertSame('open', $problem->fresh()->status, 'Incident-Schließung koppelt NIE auf das Problem.');
+        $this->assertSame('open', $problem->fresh()->status->value, 'Incident-Schließung koppelt NIE auf das Problem.');
     }
 
     public function test_known_error_publishes_knowledge_article_idempotently(): void {

@@ -16,7 +16,7 @@ use App\Models\Asset\Asset;
 use App\Models\Audit\AuditLog;
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
-use App\Services\Asset\{AssetNumberGenerator, AssetService, AssetStatusMachine};
+use App\Services\Asset\{AssetNumberGenerator, AssetService};
 use App\Services\Numbering\NumberSequenceService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -34,7 +34,7 @@ class AssetServiceTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
 
-        $this->service = new AssetService(new AssetNumberGenerator(new NumberSequenceService), new AssetStatusMachine);
+        $this->service = new AssetService(new AssetNumberGenerator(new NumberSequenceService));
         $this->org = Organization::factory()->create();
         $this->actor = User::factory()->geschaeftsfuehrung()->create([
             'organization_id' => $this->org->id,

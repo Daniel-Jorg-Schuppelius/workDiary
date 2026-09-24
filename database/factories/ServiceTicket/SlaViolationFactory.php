@@ -12,8 +12,7 @@ namespace Database\Factories\ServiceTicket;
 
 use App\Enums\ServiceTicket\SlaViolationKind;
 use App\Models\Platform\Organization;
-use App\Models\ServiceTicket\ServiceTicket;
-use App\Models\ServiceTicket\SlaViolation;
+use App\Models\ServiceTicket\{ServiceTicket, SlaViolation};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<SlaViolation> */

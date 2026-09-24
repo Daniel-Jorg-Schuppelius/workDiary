@@ -15,6 +15,7 @@ namespace App\Services\Ai;
 use App\Models\Ai\AiProviderConnection;
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\Organization;
+use App\Services\Ai\Contracts\AiInvoker;
 use App\Services\Ai\Contracts\{AiRequestInterface, LlmProviderInterface, TranslatesTextInterface};
 use App\Services\Ai\Dto\{AiCapability, AiClassificationResult, AiExtractionResult, AiFindResult, AiInvocationResult, AiTextResult, AiTranslationResult, ClassifyRequest, ExplainRequest, ExtractRequest, FindRequest, FormulateRequest, SummarizeRequest, TranslateRequest};
 use App\Services\Ai\Exceptions\{AiException, AiUnavailableException};
@@ -32,7 +33,7 @@ use Throwable;
  * Aufrufe schreiben Verbrauch und ein Audit-Ereignis OHNE
  * Prompt-/Antwort-Klartext.
  */
-class AiInvocationService {
+class AiInvocationService implements AiInvoker {
     public function __construct(
         private readonly AiCapabilityRegistry $registry,
         private readonly AiRoutingResolver $resolver,

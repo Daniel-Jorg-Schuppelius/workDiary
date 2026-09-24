@@ -10,8 +10,8 @@
 
 namespace App\Http\Requests\Travel;
 
-use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
 use App\Http\Requests\BaseFormRequest;
+use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
 
 class SavePerDiemTripRequest extends BaseFormRequest {
     use DecodesSqidInputs, ParsesOrgLocalDateTimes;

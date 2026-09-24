@@ -10,11 +10,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Import\Specs;
+namespace App\Services\Users\Import;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Models\Platform\{Organization, User};
 use App\Services\Import\{ImportOutcome, ValidationIssue};
+use App\Services\Import\Specs\AbstractEntitySpec;
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Support\Str;
 use Throwable;

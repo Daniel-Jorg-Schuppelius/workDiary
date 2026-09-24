@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\CustomerPortal;
+namespace App\Http\Controllers\Reselling\Portal;
 
 use App\Enums\Reselling\PeriodStatus;
 use App\Http\Controllers\Controller;

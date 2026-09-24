@@ -186,7 +186,7 @@ class PeriodClosingController extends Controller {
         // EXTF-V700 (von DATEV importierbar), sobald das financial-formats-
         // Paket vorliegt; sonst die einfache Journal-CSV als Zweitformat
         // (Vollscan 2026-08-23, C2).
-        if (\App\Services\Finance\FinancialFormatsSupport::isAvailable()) {
+        if (\App\Services\Billing\FinancialFormatsSupport::isAvailable()) {
             try {
                 $result = $this->datev->buildExtf($organization, $from, $to);
             } catch (\RuntimeException $e) {

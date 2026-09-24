@@ -79,7 +79,7 @@
     @php
         // KI-Welle 1 (Feature 143, MVP-711): Vorschläge nur in bearbeitbaren
         // Protokollen und nur, wenn die Capability für diese Org nutzbar ist.
-        $aiViewData = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
+        $aiViewData = app(\App\Services\Ai\Contracts\SuggestionView::class);
         $aiEditable = (bool) (auth()->user()?->can('update', $protocol)) && $protocol->status->isEditable();
         $aiTextUsable = $aiEditable && $aiViewData->capabilityUsable(\App\Services\Ai\Suggestions\ProtocolTextSuggestionService::CAPABILITY_TEXT);
         $aiClassifyUsable = $aiEditable && $aiViewData->capabilityUsable(\App\Services\Ai\Suggestions\ProtocolTextSuggestionService::CAPABILITY_CLASSIFY);
@@ -88,7 +88,9 @@
         $aiTextSuggestions = $aiTextUsable ? $aiViewData->openSuggestionsFor($aiMorph, $aiItems, \App\Services\Ai\Suggestions\ProtocolTextSuggestionService::CAPABILITY_TEXT) : collect();
         $aiClassifySuggestions = $aiClassifyUsable ? $aiViewData->openSuggestionsFor($aiMorph, $aiItems, \App\Services\Ai\Suggestions\ProtocolTextSuggestionService::CAPABILITY_CLASSIFY) : collect();
         $aiActions = $aiTextUsable || $aiClassifyUsable;
-        $aiColumns = $aiActions ? 5 : 4;
+        $aiColumns = $aiActions ? 6 : 5;
+        // Erfasster Wert je Punkt über den Feldschema-Adapter (wie im PDF, MVP-867).
+        $itemFields = app(\App\Services\Protocol\Fields\ProtocolItemFields::class);
     @endphp
     <x-card :title="__('Positionen')" icon="checklist" :count="$protocol->items->count()">
         @if ($protocol->items->isEmpty())
@@ -99,6 +101,7 @@
                     <tr>
                         <th>{{ __('Position') }}</th>
                         <th>{{ __('Ergebnis') }}</th>
+                        <th>{{ __('Wert') }}</th>
                         <th>{{ __('Notiz') }}</th>
                         <th>{{ __('Gemessen') }}</th>
                         @if ($aiActions)
@@ -110,6 +113,7 @@
                     <tr>
                         <td class="font-medium">{{ $item->label }}</td>
                         <td>{{ $item->result?->label() ?? '—' }}</td>
+                        <td class="text-sm"><x-field-display :field="$itemFields->definition($item)" :values="$itemFields->values($item)" /></td>
                         <td class="text-sm text-base-content/70">{{ $item->note ?? '—' }}</td>
                         <td class="text-sm tabular-nums">{{ $item->measured_at?->fdatetime() ?? '—' }}</td>
                         @if ($aiActions)
@@ -145,6 +149,7 @@
                         <tr>
                             <td class="pl-8 text-sm">{{ $child->label }}</td>
                             <td>{{ $child->result?->label() ?? '—' }}</td>
+                            <td class="text-sm"><x-field-display :field="$itemFields->definition($child)" :values="$itemFields->values($child)" /></td>
                             <td class="text-sm text-base-content/70">{{ $child->note ?? '—' }}</td>
                             <td class="text-sm tabular-nums">{{ $child->measured_at?->fdatetime() ?? '—' }}</td>
                             @if ($aiActions)
@@ -234,24 +239,8 @@
     {{-- Vollaudit 2026-07 (M12): Kommunikationsnotizen am Protokoll (Spec §5). --}}
     @include('communication-notes._panel', ['notable' => $protocol, 'notableKind' => 'protocol'])
 
-    <x-card :title="__('Verlauf')" icon="history" :count="$protocol->events->count()">
-        @if ($protocol->events->isEmpty())
-            <x-empty-state icon="history" :title="__('Keine Ereignisse.')" compact />
-        @else
-            <ul class="divide-y divide-base-300 text-sm">
-                @foreach ($protocol->events as $event)
-                    <li class="flex items-center justify-between gap-2 py-2">
-                        <div class="min-w-0">
-                            <span class="font-medium">{{ \App\Support\Trans::or('protocol.event.' . $event->event, $event->event) }}</span>
-                            @if ($event->actor)
-                                <span class="text-muted">· {{ $event->actor->name }}</span>
-                            @endif
-                        </div>
-                        <span class="tabular-nums text-base-content/70">{{ $event->created_at?->fdatetime() }}</span>
-                    </li>
-                @endforeach
-            </ul>
-        @endif
+    <x-card :title="__('Verlauf')" icon="history" :count="$protocol->journal->count()">
+        <x-journal :entries="$protocol->journal" :empty-text="__('Keine Ereignisse.')" />
     </x-card>
 </x-page-shell>
 @endsection

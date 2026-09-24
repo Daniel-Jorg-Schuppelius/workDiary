@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Procurement;
+namespace App\Services\Article;
 
 use App\Models\Article\{Article, PriceChangeRequest};
 use App\Models\Platform\User;

@@ -43,7 +43,7 @@ class EventCalendarSource implements CalendarSource {
         foreach ($events as $event) {
             $cancelled = $event->cancelled_at !== null;
             $items[] = new CalendarPublishItem(
-                uid: IcsFeedService::eventUid($event),
+                uid: $event->icsUid(),
                 objectName: 'event-' . $event->getKey() . '.ics',
                 ics: $cancelled ? '' : $this->ics->documentForEvent($event),
                 referenceableType: $event->getMorphClass(),

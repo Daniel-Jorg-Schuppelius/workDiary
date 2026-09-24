@@ -13,12 +13,12 @@ namespace App\Http\Controllers\Inventory;
 use App\Enums\Inventory\SerialStatus;
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
+use App\Http\Controllers\Controller;
 use App\Models\Inventory\StockSerial;
 use App\Services\Inventory\SerialService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Seriennummern-Verwaltung (Feature 047/048, E2): Bestandsübersicht, Geräte-Pass

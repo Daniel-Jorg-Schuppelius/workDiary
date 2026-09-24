@@ -12,14 +12,14 @@ declare(strict_types=1);
 
 namespace App\Services\Stammdaten;
 
-use App\Models\Contacts\ContactAddress;
-use App\Models\Customer\Customer;
-use App\Models\Supplier\Supplier;
+use App\Models\Contracts\ContactDetailsHolder;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Schreibweg für Kontakt-Adresse/-Bankverbindung (Vollscan 2026-08-23, F8,
  * Entscheid E6): `contact_addresses`/`contact_bank_accounts` sind die EINE
- * Quelle; die Inline-Spalten (customers/suppliers address_… & bank_…) füllt
+ * Quelle für jede Partei mit {@see ContactDetailsHolder} (MVP-869); die
+ * Inline-Spalten (nur customers/suppliers address_… & bank_…) füllt
  * ausschließlich {@see \App\Observers\ContactDetailsProjectionObserver} als
  * Lese-Projektion nach. Verschlüsselte Felder nie als '' speichern
  * (DecryptException — Memory „Leere encrypted-Strings").
@@ -78,7 +78,7 @@ class ContactDetailsWriter {
      *
      * @param  array<string, mixed>  $fields
      */
-    public function writeInline(Customer|Supplier $contact, array $fields): void {
+    public function writeInline(Model&ContactDetailsHolder $contact, array $fields): void {
         $address = $this->mapPresent($fields, self::ADDRESS_MAP);
         if ($address !== []) {
             $primary = $contact->primaryAddress();
@@ -120,12 +120,12 @@ class ContactDetailsWriter {
     }
 
     /**
-     * Primäre Rechnungsadresse upserten. Alles leer + keine Adresse ⇒ no-op;
+     * Primäradresse upserten. Alles leer + keine Adresse ⇒ no-op;
      * alles leer + Adresse vorhanden ⇒ Felder werden geleert (null).
      *
      * @param  array{street?: ?string, supplement?: ?string, zip?: ?string, city?: ?string, country?: ?string}  $fields
      */
-    public function writeAddress(Customer|Supplier $contact, array $fields): void {
+    public function writeAddress(Model&ContactDetailsHolder $contact, array $fields): void {
         $values = [
             'street' => $this->nullIfBlank($fields['street'] ?? null),
             'supplement' => $this->nullIfBlank($fields['supplement'] ?? null),
@@ -141,8 +141,8 @@ class ContactDetailsWriter {
 
         if ($primary === null) {
             $contact->addresses()->create($values + [
-                'organization_id' => $contact->organization_id,
-                'kind' => ContactAddress::KIND_BILLING,
+                'organization_id' => $contact->getAttribute('organization_id'),
+                'kind' => $contact->contactAddressKind(),
                 'is_primary' => true,
             ]);
 
@@ -157,7 +157,7 @@ class ContactDetailsWriter {
      *
      * @param  array{account_holder?: ?string, iban?: ?string, bic?: ?string, bank_name?: ?string}  $fields
      */
-    public function writeBankAccount(Customer|Supplier $contact, array $fields): void {
+    public function writeBankAccount(Model&ContactDetailsHolder $contact, array $fields): void {
         $values = [
             'account_holder' => $this->nullIfBlank($fields['account_holder'] ?? null),
             'iban' => $this->nullIfBlank($fields['iban'] ?? null),
@@ -172,7 +172,7 @@ class ContactDetailsWriter {
 
         if ($primary === null) {
             $contact->bankAccounts()->create($values + [
-                'organization_id' => $contact->organization_id,
+                'organization_id' => $contact->getAttribute('organization_id'),
                 'is_primary' => true,
             ]);
 

@@ -11,7 +11,7 @@
 namespace Tests\Feature\Whistleblowing;
 
 use App\Enums\Whistleblowing\AttachmentScanStatus;
-use App\Services\Whistleblowing\Scanning\ClamAvScanDriver;
+use App\Services\Security\Scanning\ClamAvScanDriver;
 use Tests\TestCase;
 
 /**

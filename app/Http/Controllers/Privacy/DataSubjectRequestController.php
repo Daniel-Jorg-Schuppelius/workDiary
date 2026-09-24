@@ -90,7 +90,7 @@ class DataSubjectRequestController extends Controller {
 
         return view('privacy.requests.show', [
             'request' => $dsr->load('assignedUser'),
-            'events' => $dsr->events()->get(),
+            'events' => $dsr->journal()->get(),
             'members' => User::query()
                 ->where('organization_id', $dsr->organization_id)
                 ->orderBy('name')

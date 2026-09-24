@@ -38,6 +38,9 @@ final class PlatformManifest extends Manifest {
             'Users',
             'Install',
             'Release',
+            'Retention',
+            'Journal',
+            'Fields',
             'Updates',
             'Diagnostics',
             'Metrics',
@@ -57,6 +60,8 @@ final class PlatformManifest extends Manifest {
             'component_updates',
             'geocode_cache',
             'help_topics',
+            'custom_field_definitions',
+            'custom_field_values',
             'help_views',
             'integrity_checks',
             'model_has_permissions',
@@ -100,6 +105,30 @@ final class PlatformManifest extends Manifest {
             PermissionGroup::Members,
             PermissionGroup::Teams,
             PermissionGroup::Platform,
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Retention\DeadlineScans\RetentionReleaseScan::class,
+            ],
+            \App\Services\Import\EntitySpec::class => [
+                \App\Services\Users\Import\UserSpec::class,
+            ],
+            \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
+            ],
+            \App\Services\Classification\Contracts\ProfileInstallStep::class => [
+                \App\Services\Fields\Install\CustomFieldInstallStep::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\Stammdaten\Contracts\ContactPushTarget::class => \App\Services\Stammdaten\Contracts\NullContactPushTarget::class,
         ];
     }
 }

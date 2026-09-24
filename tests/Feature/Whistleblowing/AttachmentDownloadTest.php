@@ -146,7 +146,7 @@ class AttachmentDownloadTest extends TestCase {
 
         // Der Standard-Scanner gibt bewusst kein Urteil ab (Quarantaene bleibt);
         // fuer die Bereinigung braucht es einen, der freigibt.
-        $this->app->bind(\App\Services\Whistleblowing\Scanning\ScanDriver::class, fn () => new class implements \App\Services\Whistleblowing\Scanning\ScanDriver {
+        $this->app->bind(\App\Services\Security\Scanning\ScanDriver::class, fn () => new class implements \App\Services\Security\Scanning\ScanDriver {
             public function scan(string $absolutePath, ?string $mime): ?\App\Enums\Whistleblowing\AttachmentScanStatus {
                 return \App\Enums\Whistleblowing\AttachmentScanStatus::Clean;
             }

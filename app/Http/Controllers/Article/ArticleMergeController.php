@@ -13,14 +13,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Article;
 
 use App\Http\Controllers\Concerns\{MergesDuplicates, ResolvesCurrentOrganization};
-use App\Models\Article\Article;
-use App\Models\Article\ArticleMergeDismissal;
+use App\Http\Controllers\Controller;
+use App\Models\Article\{Article, ArticleMergeDismissal};
 use App\Models\Platform\Organization;
 use App\Services\Stammdaten\{ArticleDuplicateFinder, ArticleMergeService};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Artikel-Abgleich (Audit 2026-08, W2.9): stellt Dubletten-Kandidaten

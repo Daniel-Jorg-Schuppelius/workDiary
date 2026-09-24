@@ -49,6 +49,7 @@
             <x-detail-grid>
                 <x-detail-grid.row :label="__('E-Mail')">{{ $application->email ?? '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Telefon')">{{ $application->phone ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Adresse')">{{ implode(', ', $application->postalAddressLines()) ?: '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Verantwortlich')">{{ $application->responsible->name ?? '—' }}</x-detail-grid.row>
             </x-detail-grid>
             @if ($application->notes)
@@ -239,10 +240,10 @@
                         <x-detail-grid.row :label="__('Qualifikationen')">{{ implode(', ', $draft->qualifications) }}</x-detail-grid.row>
                     @endif
                 </x-detail-grid>
-                @if (($draft->checklist ?? []) !== [])
+                @if ($draft->checklist !== null && ! $draft->checklist->isEmpty())
                     <ul class="mt-2 space-y-1 text-sm">
-                        @foreach ($draft->checklist as $item)
-                            <li>{{ ($item['done'] ?? false) ? '☑' : '☐' }} {{ $item['label'] ?? '' }}</li>
+                        @foreach ($draft->checklist->items() as $item)
+                            <li>{{ $item['value'] === true ? '☑' : '☐' }} {{ $item['field']->label }}</li>
                         @endforeach
                     </ul>
                 @endif

@@ -14,10 +14,10 @@ namespace App\Http\Controllers\Cti;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Services\Cti\Dial\{CtiDialException, CtiDialService};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
-use App\Http\Controllers\Controller;
 
 /**
  * Click-to-Dial (Feature 056/MVP-118; Audit 2026-08, W4.5): startet einen

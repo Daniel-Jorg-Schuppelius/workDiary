@@ -10,8 +10,8 @@
 
 namespace App\Http\Requests\Manufacturing;
 
-use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Http\Requests\BaseFormRequest;
+use App\Http\Requests\Concerns\DecodesSqidInputs;
 
 /**
  * Validierung für die Anlage eines Fertigungsauftrags (Feature 047, MVP-062).

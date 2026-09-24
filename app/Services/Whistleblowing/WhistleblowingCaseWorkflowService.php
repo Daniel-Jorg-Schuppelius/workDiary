@@ -27,23 +27,6 @@ use InvalidArgumentException;
  * Notiz abgelegt – NICHT in den Event-Metadaten (die bleiben content-frei).
  */
 class WhistleblowingCaseWorkflowService {
-    /** @var array<string, list<string>> erlaubte Folge-Status je Ausgangsstatus */
-    private const TRANSITIONS = [
-        'submitted' => ['acknowledged', 'triage'],
-        'acknowledged' => ['triage'],
-        'triage' => ['investigating', 'referred', 'closed_out_of_scope', 'closed_duplicate', 'closed_unsubstantiated'],
-        'investigating' => ['waiting_reporter', 'referred', 'closed_substantiated', 'closed_unsubstantiated'],
-        'waiting_reporter' => ['investigating'],
-        'referred' => ['closed_substantiated', 'closed_unsubstantiated', 'closed_out_of_scope'],
-        'closed_substantiated' => ['retention_review', 'investigating'],
-        'closed_unsubstantiated' => ['retention_review', 'investigating'],
-        'closed_out_of_scope' => ['retention_review', 'investigating'],
-        'closed_duplicate' => ['retention_review', 'investigating'],
-        'retention_review' => ['legal_hold', 'deleted'],
-        'legal_hold' => ['retention_review'],
-        'deleted' => [],
-    ];
-
     public function __construct(
         private readonly WhistleblowingEventService $events,
         private readonly WhistleblowingMessageService $messages,
@@ -109,12 +92,8 @@ class WhistleblowingCaseWorkflowService {
         });
     }
 
-    public function canTransition(CaseStatus $from, CaseStatus $to): bool {
-        return in_array($to->value, self::TRANSITIONS[$from->value], true);
-    }
-
     private function assertAllowed(CaseStatus $from, CaseStatus $to): void {
-        if (! $this->canTransition($from, $to)) {
+        if (! $from->canTransitionTo($to)) {
             throw InvalidCaseTransition::between($from, $to);
         }
     }

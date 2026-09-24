@@ -15,8 +15,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Finance\DatevBookingBatch;
 use App\Models\Platform\{Organization, User};
 use App\Models\Travel\ExpenseCategory;
+use App\Services\Billing\FinancialFormatsSupport;
 use App\Services\Finance\Datev\DatevBookingConfig;
-use App\Services\Finance\{DatevBookingException, DatevBookingService, FinancialFormatsSupport};
+use App\Services\Finance\{DatevBookingException, DatevBookingService};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
@@ -121,7 +122,7 @@ class DatevBookingController extends Controller {
     public function show(DatevBookingBatch $batch): View {
         Gate::authorize('view', $batch);
 
-        $batch->load(['creator:id,name', 'sources', 'events' => fn($q) => $q->orderBy('id')]);
+        $batch->load(['creator:id,name', 'sources', 'journal' => fn($q) => $q->orderBy('id')]);
 
         $org = $this->organization();
         $config = DatevBookingConfig::forOrganization($org);

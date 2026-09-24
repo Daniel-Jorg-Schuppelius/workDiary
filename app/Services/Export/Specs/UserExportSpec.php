@@ -17,7 +17,7 @@ use App\Models\Platform\{Organization, User};
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Export-Spezifikation für Benutzer — Round-Trip zur {@see \App\Services\Import\Specs\UserSpec}.
+ * Export-Spezifikation für Benutzer — Round-Trip zur {@see \App\Services\Users\Import\UserSpec}.
  *
  * Es werden ausschließlich unkritische Stammdaten exportiert (kein Passwort,
  * keine Rollen), passend zum Import-Verhalten.

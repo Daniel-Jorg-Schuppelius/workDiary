@@ -12,10 +12,11 @@ namespace App\Services\ServiceTicket;
 
 use App\Enums\ServiceTicket\{ServiceTicketPriority, SlaStatus};
 use App\Models\ServiceTicket\{ServiceTicket, SlaContract};
+use App\Services\Asset\Contracts\ServiceLevelResolver;
 use App\Services\Calendar\HolidayService;
 use Illuminate\Support\Carbon;
 
-class SlaTimer {
+class SlaTimer implements ServiceLevelResolver {
     /**
      * Anteil der Restzeit (relativ zur Gesamtfrist), unter dem ein Ticket als
      * „gefährdet" (atRisk) gilt. Spiegelt die Eskalationsschwelle sla.atRisk.

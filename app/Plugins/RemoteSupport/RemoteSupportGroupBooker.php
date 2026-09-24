@@ -29,6 +29,10 @@ use Illuminate\Support\Collection;
  * RemoteSupport-Oberfläche (Deep-Link).
  */
 class RemoteSupportGroupBooker implements InboxGroupBooker {
+    public function pluginId(): string {
+        return 'remote-support';
+    }
+
     public function __construct(private readonly RemotePendingAssignmentService $service) {}
 
     public function groups(Organization $organization): Collection {

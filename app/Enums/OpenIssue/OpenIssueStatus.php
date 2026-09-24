@@ -10,11 +10,12 @@
 
 namespace App\Enums\OpenIssue;
 
-use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Concerns\{HasOptions, HasTransitions};
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
-enum OpenIssueStatus: string implements HasLabel {
+enum OpenIssueStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
+    use HasTransitions;
 
     case Open = 'open';
     case InProgress = 'inProgress';
@@ -72,6 +73,18 @@ enum OpenIssueStatus: string implements HasLabel {
             self::Blocked => ['unblock'],
             self::Done, self::WontDo => ['reopen'],
             self::Reopened => ['start'],
+        };
+    }
+
+    /** Statusfolge laut offene-punkte.md §3; die Aktionsnamen der Routen stehen in allowedActions(). */
+    /** @return list<self> */
+    public function allowedTransitions(): array {
+        return match ($this) {
+            self::Open => [self::InProgress, self::Done, self::WontDo],
+            self::InProgress => [self::Blocked, self::Done, self::WontDo],
+            self::Blocked => [self::InProgress],
+            self::Done, self::WontDo => [self::Reopened],
+            self::Reopened => [self::Open, self::InProgress],
         };
     }
 }

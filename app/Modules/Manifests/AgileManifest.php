@@ -74,4 +74,22 @@ final class AgileManifest extends Manifest {
             'groups' => [],
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function listeners(): array {
+        return [
+            \App\Events\Project\TaskSaved::class => [
+                \App\Listeners\Agile\SyncBoardColumnFromTask::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Agile\Demo\AgileDemoBlock::class,
+            ],
+        ];
+    }
 }

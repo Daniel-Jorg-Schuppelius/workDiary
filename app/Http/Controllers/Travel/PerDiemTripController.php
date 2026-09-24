@@ -12,14 +12,12 @@ namespace App\Http\Controllers\Travel;
 
 use App\Enums\Expense\PerDiemTripStatus;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
-use App\Http\Requests\Travel\SavePerDiemDayRequest;
-use App\Http\Requests\Travel\SavePerDiemTripRequest;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Travel\{SavePerDiemDayRequest, SavePerDiemTripRequest};
 use App\Models\Customer\Customer;
-use App\Models\Travel\PerDiemDay;
-use App\Models\Travel\PerDiemTrip;
-use App\Models\Travel\TravelLog;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Models\Travel\{PerDiemDay, PerDiemTrip, TravelLog};
 use App\Services\Expense\{PerDiemEligibilityChecker, PerDiemTripService};
 use App\Support\SortableQuery;
 use Carbon\CarbonImmutable;
@@ -28,7 +26,6 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
-use App\Http\Controllers\Controller;
 
 class PerDiemTripController extends Controller {
     use ResolvesCurrentOrganization;

@@ -12,13 +12,10 @@ namespace App\Http\Controllers\Inventory;
 
 use App\Enums\Inventory\OwnershipType;
 use App\Enums\User\Permission as P;
+use App\Http\Controllers\Controller;
 use App\Models\Article\ArticleVariant;
-use App\Models\Inventory\StockLevelSetting;
-use App\Models\Inventory\StockMovement;
-use App\Models\Inventory\StockReservation;
-use App\Models\Inventory\Warehouse;
-use App\Models\Inventory\WarehouseBin;
 use App\Models\Customer\Customer;
+use App\Models\Inventory\{StockLevelSetting, StockMovement, StockReservation, Warehouse, WarehouseBin};
 use App\Services\Inventory\{CustomerStockAllocationService, InventoryLedger, ReservationService, StockLevelService, ValuationService};
 use App\Support\{ErrorText, Sqid};
 use App\Support\MorphMap;
@@ -26,7 +23,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * Bestandsübersicht und manuelle Lagerbuchungen (Feature 048, MVP-067) über den

@@ -13,11 +13,11 @@ declare(strict_types=1);
 namespace App\Http\Requests\Sales;
 
 use App\Enums\Sales\{CommissionScope, LeadSource};
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Platform\User;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 /**
  * Provisionsregel anlegen/bearbeiten (Feature 146, MVP-729). Der

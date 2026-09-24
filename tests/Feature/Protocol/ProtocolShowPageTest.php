@@ -86,4 +86,24 @@ class ProtocolShowPageTest extends TestCase {
             ->assertOk()
             ->assertSee('Prüfer Schmidt');
     }
+
+    public function test_detail_table_shows_the_captured_value(): void {
+        $user = User::factory()->user()->create();
+        $protocol = Protocol::factory()->create([
+            'organization_id' => $user->organization_id,
+            'created_by_user_id' => $user->id,
+        ]);
+        $protocol->items()->create([
+            'sort_order' => 1,
+            'item_type' => 'number',
+            'label' => 'Vorlauftemperatur',
+            'value_json' => ['value' => 71.5, 'unit' => '°C'],
+        ]);
+
+        $this->actingAs($user)->get(route('protocols.show', $protocol))
+            ->assertOk()
+            ->assertSee(__('Wert'))
+            ->assertSee('Vorlauftemperatur')
+            ->assertSee('71,5 °C');
+    }
 }

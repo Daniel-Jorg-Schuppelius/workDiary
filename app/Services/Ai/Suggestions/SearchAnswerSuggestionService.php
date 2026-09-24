@@ -15,6 +15,7 @@ namespace App\Services\Ai\Suggestions;
 use App\Models\Ai\AiTextSuggestion;
 use App\Models\Platform\{Organization, User};
 use App\Services\Ai\{AiInvocationService, AiMemoryService};
+use App\Services\Ai\Contracts\SearchAnswerSuggester;
 use App\Services\Ai\Dto\{AiTextResult, SummarizeRequest};
 use App\Services\Ai\Exceptions\AiException;
 use App\Services\Ai\Suggestions\Concerns\DecidesSuggestions;
@@ -33,10 +34,8 @@ use CommonToolkit\Helper\Data\StringHelper;
  * Capability ist `high` (lokal-exklusiv). Die Antwort ist eine Einsicht am
  * Nutzer — sie schreibt nirgendwohin und kann nur verworfen werden.
  */
-class SearchAnswerSuggestionService {
+class SearchAnswerSuggestionService implements SearchAnswerSuggester {
     use DecidesSuggestions;
-
-    public const CAPABILITY = 'search.answer_summarize';
 
     /** @var list<string> */
     private const RULES = [

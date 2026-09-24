@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\Finance\Resale;
+namespace App\Http\Requests\Reselling;
 
 use App\Enums\Reselling\PeriodStatus;
 use App\Http\Requests\BaseFormRequest;

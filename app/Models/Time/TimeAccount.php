@@ -15,9 +15,6 @@ use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
-use App\Models\Time\TimeAccountBalance;
-use App\Models\Time\TimeAccountEntry;
-use App\Models\Time\TimeAccountRule;
 
 /**
  * Konfigurierbares Zusatz-Zeitkonto (MVP-526): Schichtkonten, Freizeit-/

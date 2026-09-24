@@ -68,7 +68,7 @@ class ClubMemberTest extends TestCase {
 
     public function test_two_children_with_the_same_contact_address_stay_separate_members(): void {
         $admin = $this->orgAdmin();
-        $shared = ['email' => 'familie@example.test', 'street' => 'Hauptstraße 1', 'postal_code' => '12345', 'city' => 'Musterstadt'];
+        $shared = ['email' => 'familie@example.test', 'address_street' => 'Hauptstraße 1', 'address_zip' => '12345', 'address_city' => 'Musterstadt'];
 
         $this->members()->create($this->organization, $admin, ['first_name' => 'Mia', 'last_name' => 'Muster', 'birth_date' => '2018-03-04'] + $shared);
         $this->members()->create($this->organization, $admin, ['first_name' => 'Ben', 'last_name' => 'Muster', 'birth_date' => '2020-07-09'] + $shared);

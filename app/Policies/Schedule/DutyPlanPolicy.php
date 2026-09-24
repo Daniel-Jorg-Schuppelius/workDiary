@@ -10,8 +10,8 @@
 
 namespace App\Policies\Schedule;
 
-use App\Models\Schedule\DutyPlan;
 use App\Models\Platform\User;
+use App\Models\Schedule\DutyPlan;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class DutyPlanPolicy {

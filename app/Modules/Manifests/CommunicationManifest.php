@@ -55,4 +55,16 @@ final class CommunicationManifest extends Manifest {
             PermissionGroup::Communication,
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Communication\DeadlineScans\CommunicationFollowupScan::class,
+            ],
+            \App\Services\Search\Indexing\Sources\SearchSource::class => [
+                \App\Services\Communication\Search\CommunicationNoteSource::class,
+            ],
+        ];
+    }
 }

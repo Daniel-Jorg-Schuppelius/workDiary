@@ -10,12 +10,13 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Import\Specs;
+namespace App\Services\Material\Import;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Models\Material\Material;
 use App\Models\Platform\Organization;
 use App\Services\Import\{ImportOutcome, ValidationIssue};
+use App\Services\Import\Specs\AbstractEntitySpec;
 use CommonToolkit\Helper\Data\StringHelper;
 use Throwable;
 

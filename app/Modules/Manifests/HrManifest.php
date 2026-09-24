@@ -47,4 +47,25 @@ final class HrManifest extends Manifest {
             'user_qualifications',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Org\Contracts\OffboardingStep::class => [
+                \App\Services\Hr\Offboarding\PersonnelFileOffboardingStep::class,
+            ],
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Hr\DeadlineScans\QualificationExpiryScan::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function listeners(): array {
+        return [
+            \App\Events\Platform\OrganizationCreated::class => [
+                \App\Listeners\Hr\SeedPersonnelFileRole::class,
+            ],
+        ];
+    }
 }

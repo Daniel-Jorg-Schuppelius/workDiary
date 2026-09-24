@@ -8,28 +8,24 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers\Supplier;
+namespace App\Http\Controllers\Procurement;
 
 use App\Enums\Procurement\{CatalogItemStatus, CatalogSourceFormat};
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Supplier\SaveSupplierCatalogSourceRequest;
-use App\Models\Article\Article;
-use App\Models\Article\ArticleVariant;
-use App\Models\Article\PricingChangeAlert;
-use App\Models\Supplier\Supplier;
-use App\Models\Supplier\SupplierCatalogImport;
-use App\Models\Supplier\SupplierCatalogItem;
-use App\Models\Supplier\SupplierCatalogSource;
+use App\Models\Article\{Article, ArticleVariant, PricingChangeAlert};
 use App\Models\Inventory\Warehouse;
-use App\Services\Procurement\{CatalogArticleAdopter, CatalogFetchService, CatalogImportDispatcher, CatalogLinkService, PriceSuggestionService, ShopinfoParser};
+use App\Models\Supplier\{Supplier, SupplierCatalogImport, SupplierCatalogItem, SupplierCatalogSource};
+use App\Services\Article\PriceSuggestionService;
+use App\Services\Procurement\{CatalogArticleAdopter, CatalogFetchService, CatalogImportDispatcher, CatalogLinkService, ShopinfoParser};
 use App\Support\{ErrorText, SqidEncoder};
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * Lieferantenkataloge (Feature 050, MVP-091/092): Katalogquellen verwalten und
@@ -433,7 +429,7 @@ class SupplierCatalogController extends Controller {
             $requester = Auth::user();
 
             try {
-                app(\App\Services\Procurement\PriceApprovalService::class)->request($catalogItem, $requester);
+                app(\App\Services\Article\PriceApprovalService::class)->request($catalogItem, $requester);
             } catch (\RuntimeException $e) {
                 return back()->with('error', ErrorText::for($e));
             }

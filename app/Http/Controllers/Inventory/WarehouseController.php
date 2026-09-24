@@ -11,15 +11,15 @@
 namespace App\Http\Controllers\Inventory;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Inventory\SaveWarehouseRequest;
-use App\Models\Platform\Team;
 use App\Models\Facility\Site;
 use App\Models\Fleet\Vehicle;
 use App\Models\Inventory\Warehouse;
+use App\Models\Platform\Team;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Verwaltung lokaler Lagerorte (Feature 048, MVP-067) als Modal-Dialoge;

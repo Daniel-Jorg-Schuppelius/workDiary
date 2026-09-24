@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Warranty;
 
 use App\Enums\Warranty\{WarrantyBasis, WarrantySide, WarrantyStatus};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Warranty\SaveWarrantyPeriodRequest;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
@@ -27,7 +28,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * Gewährleistungsfristen (Feature 115, MVP-604).

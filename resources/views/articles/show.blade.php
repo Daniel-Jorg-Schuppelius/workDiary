@@ -50,6 +50,8 @@
 
     @include('articles._tabs', ['article' => $article])
 
+    <x-custom-fields-card :subject="$article" />
+
     {{-- Optionen & Werte --}}
     <x-card>
         <h2 class="font-semibold mb-3">{{ __('article.options') }}</h2>

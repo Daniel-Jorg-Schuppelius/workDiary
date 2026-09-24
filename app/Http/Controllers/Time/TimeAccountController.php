@@ -10,15 +10,13 @@
 
 namespace App\Http\Controllers\Time;
 
+use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
-use App\Models\Time\TimeAccount;
-use App\Models\Time\TimeAccountBalance;
-use App\Models\Time\TimeAccountEntry;
+use App\Models\Time\{TimeAccount, TimeAccountBalance, TimeAccountEntry};
 use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Mitarbeiter-Sicht auf die eigenen Zeitkonten (MVP-526): Stand mit

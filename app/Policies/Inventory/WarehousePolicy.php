@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Policies\Inventory;
 
 use App\Enums\User\Permission as P;
-use App\Models\Platform\User;
 use App\Models\Inventory\Warehouse;
+use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
 
 /**

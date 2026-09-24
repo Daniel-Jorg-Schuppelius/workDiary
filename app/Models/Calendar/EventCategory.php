@@ -16,7 +16,6 @@ use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
-use App\Models\Calendar\Event;
 
 /**
  * @property int $id

@@ -15,8 +15,6 @@ use Illuminate\Database\Eloquent\{Builder, MassPrunable, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use App\Models\Platform\Organization;
-use App\Models\Platform\User;
 
 /**
  * Eintrag der Plugin-Fehler-Inbox.

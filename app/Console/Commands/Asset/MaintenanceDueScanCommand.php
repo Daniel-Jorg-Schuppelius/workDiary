@@ -45,7 +45,7 @@ class MaintenanceDueScanCommand extends Command {
                     $due++;
 
                     // Konfigurierten Vorgang erzeugen (idempotent je Fälligkeit).
-                    if ($dueService->handleDue($plan) !== null) {
+                    if ($dueService->handleDue($plan)) {
                         $created++;
                     }
                 }

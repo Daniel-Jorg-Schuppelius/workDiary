@@ -88,4 +88,6 @@
     </div>
 </x-form-group>
 
+<x-custom-fields-group :model="\App\Models\Asset\Asset::class" :subject="$asset ?? null" />
+
 <x-validation-errors />

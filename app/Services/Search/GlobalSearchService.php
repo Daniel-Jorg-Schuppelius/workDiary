@@ -22,7 +22,6 @@ use App\Models\Form\FormSubmission;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Travel\{Expense, PerDiemTrip};
-use App\Services\Asset\AssetFormOptions;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Support\{CarbonFmt, OrganizationContext};
 use App\Support\MorphMap;
@@ -56,7 +55,6 @@ class GlobalSearchService {
 
     public function __construct(
         private readonly FeatureFlagResolver $featureFlags,
-        private readonly AssetFormOptions $assetOptions,
         private readonly ActivitySearchService $activities,
     ) {}
 
@@ -178,7 +176,6 @@ class GlobalSearchService {
                 ->when($customer !== null, fn($q) => $q->where('customer_id', $customer))
                 ->with('customer:id,name');
             $range($assetQuery, 'created_at');
-            $statusLabels = $this->assetOptions->statusOptions();
             $groups[] = $this->makeGroup(
                 'assets',
                 (string) __('Objekte & Assets'),
@@ -188,7 +185,7 @@ class GlobalSearchService {
                         'id' => $a->id,
                         'title' => (string) $a->name,
                         'subtitle' => trim('#' . $a->asset_no
-                            . ' · ' . ($statusLabels[$a->status->value] ?? $a->status->value)
+                            . ' · ' . $a->status->label()
                             . ($a->inventory_no ? ' · ' . $a->inventory_no : ($a->serial_no ? ' · ' . $a->serial_no : ''))
                             . ($a->customer ? ' · ' . $a->customer->name : '')),
                         'url' => route('assets.show', $a),

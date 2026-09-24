@@ -11,8 +11,7 @@
 namespace Database\Factories\Asset;
 
 use App\Enums\Asset\{DefectSeverity, DefectStatus};
-use App\Models\Asset\Asset;
-use App\Models\Asset\AssetDefect;
+use App\Models\Asset\{Asset, AssetDefect};
 use App\Models\Platform\{Organization, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 

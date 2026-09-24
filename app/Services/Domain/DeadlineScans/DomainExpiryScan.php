@@ -10,10 +10,11 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Notification\DeadlineScans;
+namespace App\Services\Domain\DeadlineScans;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Domain\DomainProjection;
+use App\Services\Notification\DeadlineScans\{AbstractDeadlineScan, DeadlineScanOptions};
 use App\Services\Notification\NotificationDispatcher;
 
 /**

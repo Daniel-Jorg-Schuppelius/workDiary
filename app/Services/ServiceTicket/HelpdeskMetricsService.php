@@ -189,7 +189,7 @@ class HelpdeskMetricsService {
     public function problemBacklog(): array {
         return Problem::query()
             ->get(['status'])
-            ->countBy(fn(Problem $problem): string => $problem->status)
+            ->countBy(fn(Problem $problem): string => $problem->status->value)
             ->sortKeys()
             ->all();
     }

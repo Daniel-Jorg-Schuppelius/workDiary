@@ -17627,6 +17627,8 @@ CREATE TABLE IF NOT EXISTS "learning_enrollment_events"(
   "reason" varchar,
   "created_at" datetime,
   "updated_at" datetime,
+  "event" varchar not null default 'status_changed',
+  "payload" text,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("learning_enrollment_id") references "learning_enrollments"("id") on delete cascade,
   foreign key("actor_user_id") references "users"("id") on delete set null
@@ -19743,9 +19745,6 @@ CREATE TABLE IF NOT EXISTS "club_members"(
   "last_name" varchar not null,
   "email" varchar,
   "phone" varchar,
-  "street" varchar,
-  "postal_code" varchar,
-  "city" varchar,
   "birth_date" date,
   "kind" varchar not null default 'active',
   "joined_on" date not null,
@@ -21286,6 +21285,40 @@ CREATE INDEX "stock_deliveries_variant_wh_idx" on "stock_deliveries"(
 CREATE UNIQUE INDEX "stock_deliveries_invoice_item_id_unique" on "stock_deliveries"(
   "invoice_item_id"
 );
+CREATE TABLE IF NOT EXISTS "custom_field_definitions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "subject_alias" varchar not null,
+  "schema" text not null,
+  "version" integer not null default '1',
+  "is_active" tinyint(1) not null default '1',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "cfd_org_subject_unique" on "custom_field_definitions"(
+  "organization_id",
+  "subject_alias"
+);
+CREATE TABLE IF NOT EXISTS "custom_field_values"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "subject_type" varchar not null,
+  "subject_id" integer not null,
+  "values" text not null,
+  "schema_version" integer not null default '1',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "cfv_subject_unique" on "custom_field_values"(
+  "subject_type",
+  "subject_id"
+);
+CREATE INDEX "cfv_org_subject_idx" on "custom_field_values"(
+  "organization_id",
+  "subject_type"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -22131,3 +22164,7 @@ INSERT INTO migrations VALUES(841,'2027_02_23_101300_create_club_horse_tables',1
 INSERT INTO migrations VALUES(842,'2027_02_23_101400_create_club_competition_tables',1);
 INSERT INTO migrations VALUES(843,'2027_02_23_101500_add_free_invoice_source_columns',1);
 INSERT INTO migrations VALUES(844,'2027_02_24_100000_rewrite_morph_types_to_aliases',2);
+INSERT INTO migrations VALUES(845,'2027_02_24_110000_add_journal_columns_to_learning_enrollment_events',3);
+INSERT INTO migrations VALUES(846,'2027_02_24_120000_canonicalize_field_schemas_and_checklists',4);
+INSERT INTO migrations VALUES(847,'2027_02_24_130000_create_custom_field_tables',5);
+INSERT INTO migrations VALUES(848,'2027_02_24_140000_move_club_member_address_to_contact_addresses',6);

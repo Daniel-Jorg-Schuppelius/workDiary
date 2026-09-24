@@ -96,4 +96,19 @@ final class SalesManifest extends Manifest {
             'groups' => [],
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Sales\DeadlineScans\QuoteFollowUpScan::class,
+            ],
+            \App\Services\Import\EntitySpec::class => [
+                \App\Services\Sales\Import\QuoteSpec::class,
+            ],
+            \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
+                \App\Services\Sales\Retention\SalesRetentionPolicies::class,
+            ],
+        ];
+    }
 }

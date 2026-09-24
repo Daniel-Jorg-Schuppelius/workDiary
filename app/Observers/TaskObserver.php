@@ -12,17 +12,12 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
+use App\Events\Project\TaskSaved;
 use App\Models\Project\Task;
-use App\Services\Agile\AgileBoardService;
 
-/**
- * Task→Board-Sync (Feature 064, P3; B4 aus dem Provider gezogen): Logik in
- * {@see AgileBoardService::syncColumnFromTask()}.
- */
+/** Aufgabe gespeichert → Domain-Event; den Board-Sync übernimmt der Agile-Listener (MVP-863). */
 class TaskObserver {
-    public function __construct(private readonly AgileBoardService $agileBoard) {}
-
     public function saved(Task $task): void {
-        $this->agileBoard->syncColumnFromTask($task);
+        TaskSaved::dispatch($task);
     }
 }

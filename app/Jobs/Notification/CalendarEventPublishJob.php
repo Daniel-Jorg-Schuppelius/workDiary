@@ -51,7 +51,7 @@ class CalendarEventPublishJob implements ShouldQueue {
 
     /**
      * Stabile Kalender-UID pro Subjekt: dueSoon/overdue desselben Subjekts meinen
-     * denselben Eintrag (Update statt Duplikat). Muster analog IcsFeedService::eventUid().
+     * denselben Eintrag (Update statt Duplikat). Muster analog Event::icsUid().
      */
     public static function uidFor(string $subjectType, int $subjectId): string {
         return 'notify-' . Str::slug(str_replace('\\', '-', $subjectType)) . '-' . $subjectId . '@workdiary';

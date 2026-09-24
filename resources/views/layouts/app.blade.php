@@ -509,7 +509,7 @@
                                         @php
                                             // Gruppierung der System-Einträge in aufklappbare Ordner.
                                             $adminGroups = [
-                                                ['label' => __('Organisation'), 'icon' => 'corporate_fare', 'routes' => ['admin.organizations.index', 'admin.organizations.edit', 'admin.branding.edit', 'admin.search-synonyms.index', 'admin.themes.index', 'admin.access.index', 'admin.scope.index', 'admin.workspaces.index']],
+                                                ['label' => __('Organisation'), 'icon' => 'corporate_fare', 'routes' => ['admin.organizations.index', 'admin.organizations.edit', 'admin.branding.edit', 'admin.custom-fields.index', 'admin.search-synonyms.index', 'admin.themes.index', 'admin.access.index', 'admin.scope.index', 'admin.workspaces.index']],
                                                 ['label' => __('Stammdaten'), 'icon' => 'inventory_2', 'routes' => ['admin.entry-types.index', 'admin.classifications.index', 'admin.classification-requirements.index', 'admin.branch-profiles.index', 'admin.expense-categories.index', 'admin.per-diem-rates.index']],
                                                 ['label' => __('Zeitwirtschaft'), 'icon' => 'hourglass_top', 'routes' => ['admin.time-accounts.index', 'admin.time-dimensions.index', 'admin.shift-rotations.index']],
                                                 ['label' => __('Regeln & Prozesse'), 'icon' => 'account_tree', 'routes' => ['admin.automations.index', 'admin.notification-rules.index', 'admin.webhooks.index', 'form-templates.index', 'procedures.index', 'admin.report-targets.index', 'whistleblowing.portal.edit']],
@@ -1441,7 +1441,7 @@
                  passt. Ab sm: eine Zeile wie bisher mit voller Versionsangabe. --}}
             <div class="mx-auto flex h-full w-full {{ $_wrapperMaxW }} flex-col items-center justify-center gap-0 px-4 text-center text-[0.65rem] leading-tight text-base-content/70 sm:flex-row sm:text-xs xl:px-8 2xl:px-12">
                 <div class="max-w-full"><x-footer-copyright /></div>
-                @php($buildHash = \Illuminate\Support\Facades\Cache::remember('build.hash', 3600, fn () => app(\App\Services\Isms\SbomGenerator::class)->resolveGitHash()))
+                @php($buildHash = \Illuminate\Support\Facades\Cache::remember('build.hash', 3600, fn () => app(\App\Services\Release\SbomGenerator::class)->resolveGitHash()))
                 <span class="whitespace-nowrap text-[0.6rem] text-muted sm:ml-1 sm:text-xs" title="{{ __('Version') }}"><span class="hidden sm:inline">&middot;&nbsp;</span>v{{ config('app.version', '0.1.0-dev') }}@if ($buildHash)<span class="hidden sm:inline">&nbsp;·&nbsp;{{ $buildHash }}</span>@endif</span>
             </div>
         </footer>

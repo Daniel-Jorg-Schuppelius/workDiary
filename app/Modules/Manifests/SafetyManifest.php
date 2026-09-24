@@ -55,4 +55,13 @@ final class SafetyManifest extends Manifest {
             PermissionGroup::Safety,
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Safety\DeadlineScans\SafetyDeadlineScans::class,
+            ],
+        ];
+    }
 }

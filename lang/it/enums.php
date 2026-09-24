@@ -802,16 +802,23 @@ return [
             'active' => 'Attivo',
             'archived' => 'Archiviato',
         ],
-        'field_type' => [
+    ],
+    'fields' => [
+        'type' => [
             'text' => 'Testo',
             'textarea' => 'Testo su più righe',
             'number' => 'Numero',
+            'boolean' => 'Casella',
+            'choice' => 'Scelta',
+            'multichoice' => 'Scelta multipla',
             'date' => 'Data',
-            'select' => 'Selezione',
-            'checkbox' => 'Casella di controllo',
+            'datetime' => 'Data e ora',
+            'scale' => 'Scala',
             'photo' => 'Foto',
             'file' => 'File',
             'signature' => 'Firma',
+            'section' => 'Sezione',
+            'measurement' => 'Misura',
         ],
     ],
     // Digitale Personalakte (Feature 141, MVP-708) — bewusst ohne Gesundheitskategorie.

@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Privacy\Retention;
+namespace App\Services\Retention;
 
 use App\Models\Platform\Organization;
 use Carbon\CarbonImmutable;

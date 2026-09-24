@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\Finance;
+namespace App\Http\Requests\Reselling;
 
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;

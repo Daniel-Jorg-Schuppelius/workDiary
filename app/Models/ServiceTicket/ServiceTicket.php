@@ -11,8 +11,10 @@
 namespace App\Models\ServiceTicket;
 
 use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketSource, ServiceTicketStatus, SlaStatus};
+use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, Searchable};
 use App\Models\Customer\Customer;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Services\ServiceTicket\SlaTimer;
@@ -21,13 +23,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use App\Models\Asset\Asset;
-use App\Models\Diary\DiaryEntry;
-use App\Models\ServiceTicket\ServiceTicketLink;
-use App\Models\ServiceTicket\ServiceTicketMessage;
-use App\Models\ServiceTicket\ServiceTicketWatcher;
-use App\Models\ServiceTicket\SlaClockSegment;
-use App\Models\ServiceTicket\SlaContract;
 
 /**
  * @property int $id

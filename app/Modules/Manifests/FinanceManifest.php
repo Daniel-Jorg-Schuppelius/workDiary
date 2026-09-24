@@ -155,4 +155,28 @@ final class FinanceManifest extends Manifest {
             'buchhaltungsbutler',
         ];
     }
+
+    /** @return array<class-string, class-string> */
+    public function bindings(): array {
+        return [
+            \App\Services\Invoicing\Contracts\PaymentStatusProvider::class => \App\Services\Finance\ReconciliationService::class,
+            \App\Services\Passenger\Contracts\CashBookPosting::class => \App\Services\Finance\CashBookService::class,
+            \App\Services\Stammdaten\Contracts\ContactPushTarget::class => \App\Services\Finance\Accounting\ContactPushService::class,
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Finance\Demo\FinanceDemoBlock::class,
+            ],
+            \App\Plugins\Support\Contracts\PluginCapabilitySource::class => [
+                \App\Services\Finance\Targets\FacturationCapabilitySource::class,
+            ],
+            \App\Services\Navigation\Contracts\NavigationCondition::class => [
+                \App\Services\Accounting\Navigation\LocalLedgerCondition::class,
+            ],
+        ];
+    }
 }

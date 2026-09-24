@@ -16,6 +16,7 @@ use App\Enums\Club\{ClubGroupMembershipStatus, ClubMembershipKind};
 use App\Models\Club\{ClubGuardian, ClubMember, ClubMembershipPeriod};
 use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\AssignsSequentialNo;
+use App\Services\Stammdaten\ContactDetailsWriter;
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Support\Facades\DB;
@@ -50,9 +51,6 @@ class ClubMemberService {
                 'last_name' => trim((string) $attributes['last_name']),
                 'email' => $this->email($attributes['email'] ?? null),
                 'phone' => $this->nullableString($attributes['phone'] ?? null),
-                'street' => $this->nullableString($attributes['street'] ?? null),
-                'postal_code' => $this->nullableString($attributes['postal_code'] ?? null),
-                'city' => $this->nullableString($attributes['city'] ?? null),
                 'birth_date' => $this->date($attributes['birth_date'] ?? null)?->toDateString(),
                 'kind' => $kind->value,
                 'joined_on' => $joinedOn->toDateString(),
@@ -60,6 +58,7 @@ class ClubMemberService {
                 'notes' => $this->nullableString($attributes['notes'] ?? null),
                 'created_by_user_id' => $actor?->id,
             ]);
+            $this->writeAddress($member, $attributes);
 
             ClubMembershipPeriod::query()->create([
                 'organization_id' => $organization->id,
@@ -93,7 +92,7 @@ class ClubMemberService {
                     $data[$required] = trim((string) $attributes[$required]);
                 }
             }
-            foreach (['phone', 'street', 'postal_code', 'city', 'notes'] as $optional) {
+            foreach (['phone', 'notes'] as $optional) {
                 if (array_key_exists($optional, $attributes)) {
                     $data[$optional] = $this->nullableString($attributes[$optional]);
                 }
@@ -109,6 +108,7 @@ class ClubMemberService {
             }
 
             $member->fill($data)->save();
+            $this->writeAddress($member, $attributes);
 
             return $member->refresh();
         });
@@ -272,6 +272,7 @@ class ClubMemberService {
             'valid_to' => $this->date($attributes['valid_to'] ?? null)?->toDateString(),
             'note' => $this->nullableString($attributes['note'] ?? null),
         ]);
+        $this->writeAddress($guardian, $attributes);
         $guardian->audit('club.guardian.granted', ['permissions' => $guardian->permissions, 'actor_id' => $actor->id]);
 
         return $guardian;
@@ -295,6 +296,7 @@ class ClubMemberService {
             'valid_to' => array_key_exists('valid_to', $attributes) ? $this->date($attributes['valid_to'])?->toDateString() : $guardian->valid_to,
             'note' => array_key_exists('note', $attributes) ? $this->nullableString($attributes['note']) : $guardian->note,
         ]);
+        $this->writeAddress($guardian, $attributes);
 
         return $guardian->refresh();
     }
@@ -412,6 +414,19 @@ class ClubMemberService {
         $string = $this->nullableString($value);
 
         return $string === null ? null : mb_strtolower($string);
+    }
+
+    /**
+     * Anschrift (`address_*`) in den Satelliten; nur übergebene Schlüssel
+     * ändern sich, damit Importzeilen ohne Adresse nichts leeren.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    private function writeAddress(ClubMember|ClubGuardian $party, array $attributes): void {
+        $address = ContactDetailsWriter::pullInline($attributes);
+        if ($address !== []) {
+            app(ContactDetailsWriter::class)->writeInline($party, $address);
+        }
     }
 
     private function nullableString(mixed $value): ?string {

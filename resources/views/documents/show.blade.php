@@ -27,7 +27,7 @@
                  der Trägername. Gehört in den Standard-Slot, nicht in :subtitle — den
                  setzt die Toolbar zusätzlich als title-Attribut, wo Markup das Attribut
                  aufbräche. --}}
-            @unless (app(\App\Services\Content\ContentSubjectResolver::class)->resolve($document)->isEmpty())
+            @unless (app(\App\Services\Support\Content\ContentSubjectResolver::class)->resolve($document)->isEmpty())
                 <x-subject-link :for="$document" class="text-xs" />
             @endunless
             <x-slot:actions>
@@ -44,7 +44,7 @@
     @php
         // Dokumenttyp/Fristen erkennen (Feature 148, MVP-732): OCR-/Textanalyse
         // über das php-pdf-toolkit; Chips werden einzeln übernommen.
-        $aiView = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
+        $aiView = app(\App\Services\Ai\Contracts\SuggestionView::class);
         $aiDmsUsable = $aiView->capabilityUsable(\App\Services\Ai\Suggestions\DocumentMetadataSuggestionService::CAPABILITY)
             && \Illuminate\Support\Facades\Gate::allows('update', $document)
             && $document->currentVersion !== null;

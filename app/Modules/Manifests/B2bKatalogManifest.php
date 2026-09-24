@@ -78,4 +78,19 @@ final class B2bKatalogManifest extends Manifest {
             'inventory',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Integration\InboxGroupBooker::class => [
+                \App\Services\B2bCatalog\B2bOrderGroupBooker::class,
+            ],
+            \App\Services\CloudIntake\Contracts\CloudIntakeHandler::class => [
+                \App\Services\B2bCatalog\CloudIntake\B2bOrderIntakeHandler::class,
+            ],
+            \App\Services\Mail\Contracts\MailIntakeHandler::class => [
+                \App\Services\B2bCatalog\Mail\B2bOrderMailIntakeHandler::class,
+            ],
+        ];
+    }
 }

@@ -13,7 +13,8 @@ namespace App\Models\Project;
 use App\Casts\MoneyCast;
 use App\Enums\Diary\LocationMode;
 use App\Enums\Project\ProjectStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasCommunicationNotes, HasSqid, ResolvesEffectiveProjectSettings};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasCommunicationNotes, HasCustomFields, HasSqid, ResolvesEffectiveProjectSettings};
+use App\Models\Contracts\CustomFieldSubject;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Team, User};
@@ -60,12 +61,13 @@ use Illuminate\Support\{Carbon, Collection};
  * Vererbung im Concern {@see ResolvesEffectiveProjectSettings}
  * (Refactoring Welle 2, B6b).
  */
-class Project extends Model {
+class Project extends Model implements CustomFieldSubject {
     use Auditable;
     use BelongsToOrganization;
     use GeneratesUniqueSlug;
     use HasCommunicationNotes;
 
+    use HasCustomFields;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
     use HasSqid;

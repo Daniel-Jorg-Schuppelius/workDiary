@@ -16,8 +16,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
-use App\Models\Facility\Floor;
-use App\Models\Facility\Site;
 
 /**
  * @property int $id

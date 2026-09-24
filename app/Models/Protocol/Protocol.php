@@ -11,7 +11,8 @@
 namespace App\Models\Protocol;
 
 use App\Enums\Protocol\{ProtocolStatus, ProtocolType, ProtocolVisibility};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasCommunicationNotes, HasSqid, HasTags};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasCommunicationNotes, HasJournal, HasSqid, HasTags};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Weather\WeatherSnapshot;
@@ -20,11 +21,6 @@ use Database\Factories\Protocol\ProtocolFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
-use App\Models\Diary\DiaryEntry;
-use App\Models\Protocol\ProtocolEvent;
-use App\Models\Protocol\ProtocolItem;
-use App\Models\Protocol\ProtocolSignature;
-use App\Models\Protocol\ProtocolSignatureToken;
 
 /**
  * @property int $id
@@ -50,6 +46,10 @@ class Protocol extends Model {
     use BelongsToOrganization;
     use HasAttachments;
     use HasCommunicationNotes;
+    use HasJournal;
+
+    /** @var class-string<ProtocolEvent> Journal des Trägers (MVP-864) */
+    protected static string $journalClass = ProtocolEvent::class;
 
     /** @use HasFactory<ProtocolFactory> */
     use HasFactory;
@@ -148,8 +148,4 @@ class Protocol extends Model {
         return $this->hasMany(ProtocolSignatureToken::class);
     }
 
-    /** @return HasMany<ProtocolEvent, $this> */
-    public function events(): HasMany {
-        return $this->hasMany(ProtocolEvent::class)->orderBy('created_at');
-    }
 }

@@ -16,7 +16,7 @@
     <x-index-page :subtitle="__('finance.datev.subtitle')"
                   :badge="$importAvailable ? null : __('finance.datev.error.unavailable_badge')"
                   badge-tone="warning"
-                  :badge-title="$importAvailable ? null : \App\Services\Finance\FinancialFormatsSupport::unavailableMessage('finance.datev.error.unavailable')">
+                  :badge-title="$importAvailable ? null : \App\Services\Billing\FinancialFormatsSupport::unavailableMessage('finance.datev.error.unavailable')">
         <x-slot:actions>
             @if ($canConfigure)
                 <x-icon-btn icon="settings" tone="ghost" size="sm"

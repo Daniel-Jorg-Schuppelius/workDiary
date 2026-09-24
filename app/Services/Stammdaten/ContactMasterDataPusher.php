@@ -14,6 +14,7 @@ use App\Models\Customer\Customer;
 use App\Models\Supplier\Supplier;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
+use App\Services\Stammdaten\Contracts\ContactPushTarget;
 use Throwable;
 
 /**
@@ -36,7 +37,7 @@ class ContactMasterDataPusher {
 
     public function __construct(
         private readonly PluginManager $plugins,
-        private readonly \App\Services\Finance\Accounting\ContactPushService $pushService,
+        private readonly ContactPushTarget $pushService,
     ) {}
 
     /**

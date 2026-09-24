@@ -12,10 +12,10 @@ namespace App\Models\Gaeb;
 
 use App\Enums\Gaeb\BoqProgressSource;
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Diary\DiaryEntry;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Diary\DiaryEntry;
 
 /**
  * Aufmaß-/Mengenfortschritt einer LV-Position (Feature 049, MVP-083). Additive

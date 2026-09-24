@@ -14,11 +14,14 @@ namespace App\Models\Sales;
 
 use App\Casts\MoneyCast;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Contracts\{AuditsChanges, HasDocumentLines};
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
+use App\Services\Billing\DocumentTotalsCalculator;
+use App\Services\Billing\Dto\DocumentTotalsContext;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;
-use CommonToolkit\ValueObjects\Money;
+use CommonToolkit\ValueObjects\{Money, Percentage};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -46,7 +49,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int|null $previous_version_id
  * @property int|null $created_by
  */
-class Quote extends Model {
+class Quote extends Model implements AuditsChanges, HasDocumentLines {
     use Auditable;
     use BelongsToOrganization;
     /** @use HasFactory<\Database\Factories\Sales\QuoteFactory> */
@@ -86,6 +89,11 @@ class Quote extends Model {
         return $this->hasMany(QuoteItem::class)->orderBy('position');
     }
 
+    /** @return HasMany<QuoteItem, $this> */
+    public function lines(): HasMany {
+        return $this->items();
+    }
+
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
@@ -116,56 +124,48 @@ class Quote extends Model {
     }
 
     public function recalculate(): void {
-        // Angebote führen keine eigene Währungsspalte — Belegwährung ist der Euro.
-        $currency = CurrencyCode::Euro;
-        $sub = Money::zero($currency);
-        $tax = Money::zero($currency);
-        foreach ($this->taxBreakdownByRate() as $row) {
-            $sub = $sub->plus($row['net']);
-            $tax = $tax->plus($row['tax']);
-        }
-        $this->subtotal = $sub;
-        $this->tax_amount = $tax;
-        $this->total = $sub->plus($tax);
+        $totals = $this->documentTotals();
+        $this->subtotal = $totals['subtotal'];
+        $this->tax_amount = $totals['tax_amount'];
+        $this->total = $totals['total'];
+    }
+
+    /** Angebote führen keine eigene Währungsspalte — Belegwährung ist der Euro. */
+    public function documentCurrency(): CurrencyCode {
+        return CurrencyCode::Euro;
     }
 
     /**
-     * Steuer je Satzgruppe auf die SUMME der Zeilennettos — dieselbe
-     * Rundungsregel wie InvoiceTotalsCalculator (Vollscan 2026-08-23, B3):
-     * zeilenweise Rundung (3 × 0,33 € à 19 % = 0,18) wich um Cent von der
-     * daraus erzeugten Rechnung (0,19) ab. Einzige Berechnungsstelle für
-     * recalculate() und den Angebots-PDF-Aufriss.
+     * Vor der Entscheidung (accepted=null) zählen Pflichtpositionen, Optionen
+     * nicht; nach der Entscheidung zählt NUR Angenommenes. Positionen ohne
+     * eigenen Satz erhalten den Satz aus dem TaxResolver (§ 19 UStG → 0,
+     * Org-Override, Länderkatalog) statt hart 19 % — sonst zeigt eine
+     * Kleinunternehmer-Org falsche Bruttopreise.
+     */
+    public function documentTotals(): array {
+        $counted = $this->items->filter(fn (QuoteItem $item): bool => $item->accepted ?? ! $item->optional)->values();
+        $fallback = $counted->contains(fn (QuoteItem $item): bool => $item->taxRate() === null)
+            ? Percentage::of(NumberHelper::toUSFormat($this->defaultTaxRate(), 2))
+            : null;
+
+        return app(DocumentTotalsCalculator::class)->totals(
+            $counted,
+            new DocumentTotalsContext(currency: $this->documentCurrency(), fallbackTaxRate: $fallback),
+        );
+    }
+
+    /**
+     * Steueraufriss für den Angebots-PDF: Steuer je Satzgruppe auf die SUMME
+     * der Zeilennettos — dieselbe Rundungsregel wie die Rechnung (Vollscan
+     * 2026-08-23, B3): zeilenweise Rundung (3 × 0,33 € à 19 % = 0,18) wich um
+     * Cent von der daraus erzeugten Rechnung (0,19) ab.
      *
      * @return list<array{rate: float, net: Money, tax: Money}>
      */
     public function taxBreakdownByRate(): array {
-        $currency = CurrencyCode::Euro;
-        $fallbackRate = null;
-        /** @var array<string, Money> $netByRate */
-        $netByRate = [];
-        foreach ($this->items as $item) {
-            // Vor der Entscheidung (accepted=null) zählen Pflichtpositionen,
-            // Optionen nicht; nach der Entscheidung zählt NUR Angenommenes.
-            $counts = $item->accepted ?? ! $item->optional;
-            if (! $counts) {
-                continue;
-            }
-            // Positionen ohne eigenen Satz: Satz aus dem TaxResolver
-            // (§ 19 UStG → 0, Org-Override, Länderkatalog) statt hart 19 % —
-            // sonst zeigt eine Kleinunternehmer-Org falsche Bruttopreise.
-            $rate = $item->tax_rate !== null
-                ? (float) $item->tax_rate->getNumericValue()
-                : ($fallbackRate ??= $this->defaultTaxRate());
-            $key = NumberHelper::toUSFormat($rate, 2);
-            // MVP-416: Zeilennetto inkl. Positionsrabatt.
-            $net = $item->netAmount();
-            $netByRate[$key] = isset($netByRate[$key]) ? $netByRate[$key]->plus($net) : $net;
-        }
-        ksort($netByRate, SORT_NATURAL);
-
         $rows = [];
-        foreach ($netByRate as $key => $net) {
-            $rows[] = ['rate' => (float) $key, 'net' => $net, 'tax' => $net->percentage((float) $key)];
+        foreach ($this->documentTotals()['by_rate'] as $group) {
+            $rows[] = ['rate' => $group['rate'], 'net' => $group['taxable'], 'tax' => $group['tax']];
         }
 
         return $rows;

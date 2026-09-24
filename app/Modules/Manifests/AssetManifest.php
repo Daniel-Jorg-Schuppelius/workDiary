@@ -76,4 +76,25 @@ final class AssetManifest extends Manifest {
             'anydesk',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Asset\DeadlineScans\AssetDeadlineScans::class,
+            ],
+            \App\Services\Import\EntitySpec::class => [
+                \App\Services\Asset\Import\AssetSpec::class,
+                \App\Plugins\RemoteSupport\Import\RemoteSessionSpec::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\Asset\Contracts\AssetComplianceStatusProvider::class => \App\Services\Asset\Contracts\NullAssetComplianceStatusProvider::class,
+            \App\Services\Asset\Contracts\ServiceLevelResolver::class => \App\Services\Asset\Contracts\NullServiceLevelResolver::class,
+        ];
+    }
 }

@@ -10,9 +10,9 @@
 
 namespace App\Http\Requests\Material;
 
+use App\Http\Requests\BaseFormRequest;
 use App\Models\Material\Material;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 class SaveMaterialRequest extends BaseFormRequest {
     /** @return array<string, mixed> */

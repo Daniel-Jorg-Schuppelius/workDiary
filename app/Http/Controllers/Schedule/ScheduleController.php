@@ -13,12 +13,11 @@ namespace App\Http\Controllers\Schedule;
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
-use App\Http\Requests\Schedule\StoreScheduledShiftRequest;
-use App\Http\Requests\Schedule\UpdateScheduledShiftRequest;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Schedule\{StoreScheduledShiftRequest, UpdateScheduledShiftRequest};
 use App\Http\Resources\ScheduledShiftResource;
 use App\Models\Platform\{Organization, User};
-use App\Models\Schedule\ScheduledShift;
-use App\Models\Schedule\ShiftType;
+use App\Models\Schedule\{ScheduledShift, ShiftType};
 use App\Services\Calendar\HolidayService;
 use App\Services\Compliance\ShiftComplianceService;
 use App\Services\Schedule\{OpenSlotService, QualificationGate, StaffingSuggester};
@@ -28,7 +27,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class ScheduleController extends Controller {
     use ResolvesGlobalDateRange;

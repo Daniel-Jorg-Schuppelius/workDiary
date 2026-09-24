@@ -16,7 +16,7 @@ use App\Enums\Finance\BillingMode;
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeDraftInvoiceService};
-use App\Services\Finance\BillingModeResolver;
+use App\Services\Billing\BillingModeResolver;
 use App\Services\Invoicing\TaxResolver;
 use App\Services\Reselling\Draft\{DraftResult, InvoiceDraftTarget};
 use App\Support\Tz;

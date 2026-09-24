@@ -11,8 +11,8 @@
 namespace Database\Factories\Time;
 
 use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
-use App\Models\Time\Attendance;
 use App\Models\Platform\User;
+use App\Models\Time\Attendance;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 

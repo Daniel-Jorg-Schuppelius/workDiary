@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Finance\Sepa;
+namespace App\Services\Billing\Sepa;
 
 use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Supplier\Supplier;

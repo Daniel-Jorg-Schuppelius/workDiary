@@ -11,8 +11,7 @@
 namespace Database\Factories\Inventory;
 
 use App\Enums\Inventory\{SerialSource, SerialStatus};
-use App\Models\Article\Article;
-use App\Models\Article\ArticleVariant;
+use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Inventory\StockSerial;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

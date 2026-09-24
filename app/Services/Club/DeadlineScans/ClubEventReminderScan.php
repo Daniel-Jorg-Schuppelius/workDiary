@@ -10,12 +10,13 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Notification\DeadlineScans;
+namespace App\Services\Club\DeadlineScans;
 
 use App\Enums\Club\ClubParticipationStatus;
 use App\Models\Calendar\Event;
 use App\Models\Club\{ClubEventParticipation, ClubMember};
 use App\Services\Club\ClubMemberNotifier;
+use App\Services\Notification\DeadlineScans\{AbstractDeadlineScan, DeadlineScanOptions};
 use App\Services\Notification\NotificationDispatcher;
 use Carbon\CarbonImmutable;
 

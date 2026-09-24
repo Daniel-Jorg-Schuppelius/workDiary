@@ -10,9 +10,9 @@
 
 namespace App\Http\Requests\Knowledge;
 
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Rules\ExistsInCurrentOrganization;
-use App\Http\Requests\BaseFormRequest;
 
 /**
  * Validierung für Anlegen/Umbenennen einer Ideenlandkarte (Feature 054,

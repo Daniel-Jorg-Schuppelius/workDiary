@@ -480,20 +480,7 @@
     {{-- Ereignisprotokoll (Hash-Kette) --}}
     <x-card>
         <h3 class="mb-2 text-sm font-semibold">{{ __('finance.title.events') }}</h3>
-        <ul class="space-y-1 text-sm">
-            @foreach ($transfer->events as $event)
-                <li class="flex flex-wrap items-center gap-2">
-                    <span class="font-mono text-xs text-muted">{{ $event->created_at?->orgTz()->format('d.m.Y H:i:s') }}</span>
-                    <x-status-badge tone="ghost" outline>{{ \App\Support\Trans::or('finance.event.' . $event->event, $event->event) }}</x-status-badge>
-                    @if (data_get($event->payload, 'failure_reason'))
-                        <span class="text-error">{{ data_get($event->payload, 'failure_reason') }}</span>
-                    @endif
-                    @if ($event->event === 'cancelled' && data_get($event->payload, 'reason'))
-                        <span class="text-base-content/70">{{ data_get($event->payload, 'reason') }}</span>
-                    @endif
-                </li>
-            @endforeach
-        </ul>
+        <x-journal :entries="$transfer->journal" />
     </x-card>
 </x-page-shell>
 @endsection

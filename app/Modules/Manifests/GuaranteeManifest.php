@@ -44,4 +44,14 @@ final class GuaranteeManifest extends Manifest {
             'warranty_periods',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Guarantee\DeadlineScans\GuaranteeDeadlineScan::class,
+                \App\Services\Warranty\DeadlineScans\WarrantyPeriodScan::class,
+            ],
+        ];
+    }
 }

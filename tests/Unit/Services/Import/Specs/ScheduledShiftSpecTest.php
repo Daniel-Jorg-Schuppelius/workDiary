@@ -15,7 +15,7 @@ namespace Tests\Unit\Services\Import\Specs;
 use App\Enums\Import\ImportErrorCode;
 use App\Models\Platform\User;
 use App\Services\Import\ImportOutcome;
-use App\Services\Import\Specs\ScheduledShiftSpec;
+use App\Services\Schedule\Import\ScheduledShiftSpec;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

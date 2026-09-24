@@ -10,13 +10,13 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\CustomerPortal;
+namespace App\Http\Controllers\Helpdesk\Portal;
 
-use App\Enums\Form\FormFieldType;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Models\Procurement\RequestItem;
 use App\Models\ServiceTicket\ServiceRequest;
+use App\Services\Fields\{FieldSchema, FieldValidator, FieldValues};
 use App\Services\ServiceTicket\ServiceRequestService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
@@ -79,47 +79,18 @@ class CatalogController extends Controller {
      * @return array<string, mixed>
      */
     private function validatedAnswers(Request $request, RequestItem $item): array {
-        $fields = $this->renderableFields($item);
-        if ($fields === []) {
+        $schema = $this->renderableFields($item);
+        if ($schema->isEmpty()) {
             return [];
         }
+        $validated = $request->validate(app(FieldValidator::class)->rules($schema), [], $schema->attributeNames());
 
-        $rules = [];
-        foreach ($fields as $field) {
-            $key = (string) $field['key'];
-            $required = (bool) ($field['required'] ?? false);
-            $rules["values.{$key}"] = match ((string) ($field['type'] ?? '')) {
-                FormFieldType::Number->value => [$required ? 'required' : 'nullable', 'numeric'],
-                FormFieldType::Date->value => [$required ? 'required' : 'nullable', 'date'],
-                FormFieldType::Select->value => [$required ? 'required' : 'nullable', 'string', \Illuminate\Validation\Rule::in((array) ($field['options'] ?? []))],
-                FormFieldType::Checkbox->value => [$required ? 'accepted' : 'nullable', 'boolean'],
-                default => [$required ? 'required' : 'nullable', 'string', 'max:10000'],
-            };
-        }
-
-        $validated = $request->validate($rules);
-
-        $answers = [];
-        foreach ($fields as $field) {
-            $key = (string) $field['key'];
-            $answers[$key] = $validated['values'][$key] ?? null;
-        }
-
-        return $answers;
+        return FieldValues::normalize($schema, (array) ($validated['values'] ?? []))->toArray();
     }
 
-    /**
-     * Im Portal renderbare Felder: Upload-/Signatur-Typen werden ausgelassen.
-     *
-     * @return list<array<string, mixed>>
-     */
-    private function renderableFields(RequestItem $item): array {
-        $skip = [FormFieldType::Photo->value, FormFieldType::File->value, FormFieldType::Signature->value];
-
-        return array_values(array_filter(
-            (array) ($item->formTemplate->fields ?? []),
-            fn(array $field): bool => ! in_array((string) $field['type'], $skip, true),
-        ));
+    /** Im Portal renderbare Felder: Upload-/Signatur-Typen werden ausgelassen (kein Dateikanal). */
+    private function renderableFields(RequestItem $item): FieldSchema {
+        return FieldSchema::fromArray($item->formTemplate->fields ?? [])->withoutAttachments();
     }
 
     private function portalUser(): User {

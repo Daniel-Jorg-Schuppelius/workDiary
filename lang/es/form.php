@@ -44,6 +44,9 @@ return [
         'field_options' => 'Opciones',
         'field_help' => 'Texto de ayuda',
         'field_unit' => 'Unidad',
+        'field_range' => 'Rango de valores',
+        'field_min' => 'Mín',
+        'field_max' => 'Máx',
     ],
 
     'action' => [
@@ -108,17 +111,7 @@ return [
     'validation' => [
 
         'no_upload_field' => 'No hay ningún campo de archivo/foto con esta clave en el formulario.',
-        'invalid_row' => 'La definición del campo en la fila :row no es válida.',
-        'label_required' => 'El campo :row necesita una etiqueta (máx. 160 caracteres).',
-        'unknown_type' => 'El campo :row tiene un tipo desconocido.',
-        'invalid_key' => 'La clave de campo «:key» no es válida (minúsculas, dígitos, guiones bajos).',
-        'duplicate_key' => 'La clave de campo «:key» está duplicada.',
-        'select_needs_options' => 'El campo de selección «:label» necesita al menos una opción.',
-        'fields_required' => 'La plantilla necesita al menos un campo.',
-        'too_many_fields' => 'Como máximo :max campos por plantilla.',
         'template_not_active' => 'Esta plantilla no está activa y no se puede rellenar.',
-        'condition_unknown_field' => 'La condición del campo «:label» hace referencia a un campo desconocido «:field».',
-        'condition_cycle' => 'Las condiciones forman un ciclo (el campo «:field» depende indirectamente de sí mismo).',
     ],
 
     'flash' => [

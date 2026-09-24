@@ -13,8 +13,6 @@ namespace App\Models\Platform;
 use App\Models\Concerns\HasSqid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Platform\Organization;
-use App\Models\Platform\User;
 
 /**
  * Override-Eintrag für lizenzierte Feature-Flags (MVP-047 Option A).

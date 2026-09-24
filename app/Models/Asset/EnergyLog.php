@@ -11,13 +11,13 @@
 namespace App\Models\Asset;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Fleet\Vehicle;
 use App\Models\Platform\User;
 use Database\Factories\Asset\EnergyLogFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use App\Models\Fleet\Vehicle;
 
 /**
  * @property int $id

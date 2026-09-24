@@ -27,6 +27,10 @@ use Illuminate\Validation\ValidationException;
  * nächsten Import wieder auf.
  */
 class FritzboxGroupBooker implements InboxGroupBooker {
+    public function pluginId(): string {
+        return 'fritzbox';
+    }
+
     public function __construct(
         private readonly FritzboxImportService $service,
         private readonly FritzboxSuggestionService $suggester,

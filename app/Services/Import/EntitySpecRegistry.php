@@ -13,56 +13,22 @@ declare(strict_types=1);
 namespace App\Services\Import;
 
 use App\Enums\Import\ImportEntity;
-use App\Plugins\RemoteSupport\Import\RemoteSessionSpec;
-use App\Services\Import\Specs\{ArticleSpec, AssetSpec, AttendanceSpec, ClubMemberSpec, ContactPersonSpec, CustomerSpec, DocumentSpec, InvoiceSpec, MaterialSpec, ProjectSpec, ProjectTimeSpec, QuoteSpec, ScheduledShiftSpec, SupplierSpec, UserSpec, VehicleSpec};
+use App\Modules\ModuleRegistry;
 use InvalidArgumentException;
 
 /**
- * Lookup-Registry für entitätsspezifische CSV-Import-Spezifikationen.
+ * Lookup-Registry für entitätsspezifische CSV-Import-Spezifikationen — die
+ * Specs melden die Module über `Manifest::extensions()[EntitySpec::class]` (MVP-863).
  */
 class EntitySpecRegistry {
-    public function __construct(
-        private readonly CustomerSpec $customers,
-        private readonly SupplierSpec $suppliers,
-        private readonly ArticleSpec $articles,
-        private readonly ProjectSpec $projects,
-        private readonly UserSpec $users,
-        private readonly MaterialSpec $materials,
-        private readonly VehicleSpec $vehicles,
-        private readonly ScheduledShiftSpec $scheduledShifts,
-        private readonly RemoteSessionSpec $remoteSessions,
-        private readonly AttendanceSpec $attendances,
-        private readonly ProjectTimeSpec $projectTimes,
-        // MVP-707 (Vollscan H20): Altsystem-Übernahme.
-        private readonly InvoiceSpec $invoices,
-        private readonly QuoteSpec $quotes,
-        private readonly AssetSpec $assets,
-        private readonly ContactPersonSpec $contactPersons,
-        private readonly DocumentSpec $documents,
-        // Vereinsverwaltung (Feature 159, MVP-842).
-        private readonly ClubMemberSpec $clubMembers,
-    ) {}
+    /** @var array<string, EntitySpec>|null Entitätswert → Spec, lazy aus den Manifesten */
+    private ?array $specs = null;
+
+    public function __construct(private readonly ModuleRegistry $modules) {}
 
     public function for(ImportEntity $entity): EntitySpec {
-        return match ($entity) {
-            ImportEntity::Customers => $this->customers,
-            ImportEntity::Suppliers => $this->suppliers,
-            ImportEntity::Articles => $this->articles,
-            ImportEntity::Projects => $this->projects,
-            ImportEntity::Users => $this->users,
-            ImportEntity::Materials => $this->materials,
-            ImportEntity::Vehicles => $this->vehicles,
-            ImportEntity::ScheduledShifts => $this->scheduledShifts,
-            ImportEntity::RemoteSessions => $this->remoteSessions,
-            ImportEntity::Attendances => $this->attendances,
-            ImportEntity::ProjectTimes => $this->projectTimes,
-            ImportEntity::Invoices => $this->invoices,
-            ImportEntity::Quotes => $this->quotes,
-            ImportEntity::Assets => $this->assets,
-            ImportEntity::ContactPersons => $this->contactPersons,
-            ImportEntity::Documents => $this->documents,
-            ImportEntity::ClubMembers => $this->clubMembers,
-        };
+        return $this->specs()[$entity->value]
+            ?? throw new InvalidArgumentException("Kein Import-Spec registriert für: {$entity->value}");
     }
 
     public function byValue(string $entityValue): EntitySpec {
@@ -70,5 +36,18 @@ class EntitySpecRegistry {
             ?? throw new InvalidArgumentException("Unbekannte Import-Entität: {$entityValue}");
 
         return $this->for($entity);
+    }
+
+    /** @return array<string, EntitySpec> */
+    private function specs(): array {
+        if ($this->specs === null) {
+            $this->specs = [];
+            foreach ($this->modules->extensions(EntitySpec::class) as $class) {
+                $spec = app($class);
+                $this->specs[$spec->entity()->value] = $spec;
+            }
+        }
+
+        return $this->specs;
     }
 }

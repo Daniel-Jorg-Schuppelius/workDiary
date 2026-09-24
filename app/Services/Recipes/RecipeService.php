@@ -17,7 +17,7 @@ use App\Models\Article\{Article, ArticleUnit};
 use App\Models\Platform\Organization;
 use App\Models\Procedure\{ProcedureTemplate, ProcedureTemplateVersion};
 use App\Models\Recipes\{RecipeMenu, RecipeProfile};
-use App\Services\Manufacturing\{BomResolver, MaterialDemandCalculator};
+use App\Services\Procedure\Bom\{BomResolver, MaterialDemandCalculator};
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Validation\ValidationException;
 

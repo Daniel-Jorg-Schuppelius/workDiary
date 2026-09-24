@@ -14,8 +14,10 @@ use App\Casts\{MoneyCast, PercentageCast};
 use App\Enums\Expense\{ExpenseStatus, PaymentMethod};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use App\Models\Customer\Customer;
+use App\Models\Invoicing\InvoiceItem;
 use App\Models\Platform\User;
 use App\Models\Project\{Project, Task};
+use App\Models\Time\Attendance;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\{Decimal, Money, Percentage};
 use Database\Factories\Travel\ExpenseFactory;
@@ -23,9 +25,6 @@ use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use App\Models\Travel\ExpenseCategory;
-use App\Models\Invoicing\InvoiceItem;
-use App\Models\Time\Attendance;
 
 /**
  * @property int $id

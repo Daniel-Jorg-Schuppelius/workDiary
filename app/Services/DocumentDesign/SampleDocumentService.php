@@ -14,6 +14,7 @@ namespace App\Services\DocumentDesign;
 
 use App\Enums\DocumentDesign\{InformationBlock, PageFormat, RenderDocumentFamily, RenderDocumentKind};
 use App\Models\Platform\Organization;
+use App\Services\Billing\DocumentTotalsCalculator;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Duration;
 use PDFToolkit\Entities\PDFContent;
@@ -180,7 +181,7 @@ class SampleDocumentService {
             $qty = $i % 7 + 1;
             $price = round(11.9 + $i * 3.37, 2);
             $discount = $i % 5 === 0 ? 10 : 0;
-            $sum = round($qty * $price * (1 - $discount / 100), 2);
+            $sum = DocumentTotalsCalculator::lineNet($qty, $price, $discount)->withScale(2)->toFloat();
             $net += $sum;
             $longEvery = $scenario === self::SCENARIO_LONG_TEXT ? 2 : 9;
             $rows .= sprintf(

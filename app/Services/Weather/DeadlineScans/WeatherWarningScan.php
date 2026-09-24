@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Notification\DeadlineScans;
+namespace App\Services\Weather\DeadlineScans;
 
 use App\Enums\Diary\Status;
 use App\Enums\Notification\NotificationEvent;
@@ -19,6 +19,7 @@ use App\Models\Diary\DiaryEntry;
 use App\Models\Notification\NotificationRule;
 use App\Models\Platform\{Organization, User};
 use App\Models\Weather\WeatherWarning;
+use App\Services\Notification\DeadlineScans\{AbstractDeadlineScan, DeadlineScanOptions};
 use App\Services\Notification\NotificationDispatcher;
 use App\Services\Weather\WeatherService;
 use App\Support\{OrganizationContext, Setting};

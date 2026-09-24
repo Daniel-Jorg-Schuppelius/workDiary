@@ -12,6 +12,7 @@ namespace App\Models\Diary;
 
 use App\Enums\Tour\TourStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Fleet\Vehicle;
 use App\Models\Platform\User;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Database\Factories\Diary\TourFactory;
@@ -19,7 +20,6 @@ use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
-use App\Models\Fleet\Vehicle;
 
 /**
  * @property int $id

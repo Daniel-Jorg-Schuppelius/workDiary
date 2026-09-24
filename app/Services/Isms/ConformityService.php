@@ -14,7 +14,7 @@ use App\Enums\Isms\NormConformityStatus;
 use App\Models\Document\Document;
 use App\Models\Isms\{IsmsCertificate, IsmsNormStatus, IsmsRequirement, IsmsScope};
 use App\Models\Platform\User;
-use App\Services\Isms\Concerns\AssertsIsmsTransition;
+use App\Services\Concerns\AssertsValidatedTransition;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -35,7 +35,7 @@ use Illuminate\Validation\ValidationException;
  *   auditiert via Auditable).
  */
 class ConformityService {
-    use AssertsIsmsTransition;
+    use AssertsValidatedTransition;
 
     /**
      * 046-Pflichtfelder des Zertifikats (Norm + Ausgabe ergeben sich aus
@@ -143,7 +143,7 @@ class ConformityService {
         }
 
         // Gemeinsamer ISMS-Guard (Vollaudit 2026-07, M44).
-        $this->assertIsmsTransition($status->status, $target);
+        $this->assertValidatedTransition($status->status, $target);
 
         if ($target === NormConformityStatus::Certified) {
             $certificate = $status->activeCertificate();

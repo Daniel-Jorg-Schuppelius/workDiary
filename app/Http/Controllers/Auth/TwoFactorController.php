@@ -11,13 +11,13 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Enums\Auth\TwoFactorType;
+use App\Http\Controllers\Controller;
 use App\Models\Auth\TwoFactorCredential;
 use App\Models\Platform\User;
 use App\Services\Auth\{EmailOtpService, TwoFactorService, WebAuthnService};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Hash};
-use App\Http\Controllers\Controller;
 
 /**
  * Selbstverwaltung der Zwei-Faktor-Authentifizierung mit mehreren Methoden:

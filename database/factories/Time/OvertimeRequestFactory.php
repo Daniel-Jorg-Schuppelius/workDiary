@@ -11,8 +11,8 @@
 namespace Database\Factories\Time;
 
 use App\Enums\TimeApproval\OvertimeRequestStatus;
-use App\Models\Time\OvertimeRequest;
 use App\Models\Platform\User;
+use App\Models\Time\OvertimeRequest;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<OvertimeRequest> */

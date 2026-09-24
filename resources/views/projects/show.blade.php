@@ -53,6 +53,8 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
+    <x-custom-fields-card :subject="$project" />
+
     {{-- Tabs --}}
     <div x-data="tabs({{ Js::from(request('tab', 'overview')) }})" data-tab-url-sync
          data-tab-allowed="overview,tasks,time,timesheets,diary,recurrence,billing"

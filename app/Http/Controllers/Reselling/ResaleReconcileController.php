@@ -10,11 +10,11 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Finance;
+namespace App\Http\Controllers\Reselling;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Finance\Resale\{AssignResaleLineRequest, RehomeResaleSubscriptionRequest};
+use App\Http\Requests\Reselling\{AssignResaleLineRequest, RehomeResaleSubscriptionRequest};
 use App\Models\Customer\Customer;
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use App\Services\Reselling\Mirror\InvoiceMirror;

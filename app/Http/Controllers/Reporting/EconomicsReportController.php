@@ -21,6 +21,8 @@ use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Time\{TimeEntry, Timesheet};
 use App\Models\Travel\Expense;
+use App\Modules\ModuleRegistry;
+use App\Services\Reporting\Contracts\ProjectEconomicsDimension;
 use App\Services\Reporting\{EconomicsReportBuilder, ReportFilters, ReportTargetEvaluator};
 use App\Support\{CarbonFmt, Sqid};
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -83,7 +85,9 @@ class EconomicsReportController extends Controller {
 
         // MVP-332: LV-Dimension nur bei konkretem Projektfilter (die
         // Positionssicht ist projektgebunden; hasBoq=false → leerer Zustand).
-        $boqDimension = $projectId !== null ? $this->builder->byBoqPosition($from, $to, $projectId) : null;
+        // Dimension `boq` (Baumodul, {@see ProjectEconomicsDimension}): Vertrag der Struktur ist die View reports/economics.
+        /** @var array{hasBoq: bool, positions: list<array<string, mixed>>, unassigned: array<string, int|float>, hasCalculation: bool, calculationImported: bool}|null $boqDimension */
+        $boqDimension = $projectId !== null ? $this->dimension('boq')?->build($from, $to, $projectId) : null;
 
         $exportContext = $filters->toAuditArray();
 
@@ -563,5 +567,18 @@ class EconomicsReportController extends Controller {
                 ->orderBy('date')->orderBy('id')
                 ->paginate(50)->withQueryString(),
         ];
+    }
+
+    /** Projektdimension eines Fachmoduls ({@see ProjectEconomicsDimension}), null = Modul nicht installiert. */
+    private function dimension(string $key): ?ProjectEconomicsDimension {
+        foreach (app(ModuleRegistry::class)->extensions(ProjectEconomicsDimension::class) as $class) {
+            /** @var ProjectEconomicsDimension $dimension */
+            $dimension = app($class);
+            if ($dimension->key() === $key) {
+                return $dimension;
+            }
+        }
+
+        return null;
     }
 }

@@ -10,12 +10,13 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Notification\DeadlineScans;
+namespace App\Services\Club\DeadlineScans;
 
 use App\Enums\Club\ClubGroupMembershipStatus;
 use App\Models\Club\ClubGroupMembership;
 use App\Models\Platform\Organization;
 use App\Services\Club\{ClubFeeService, ClubGroupService, ClubMemberService};
+use App\Services\Notification\DeadlineScans\{AbstractDeadlineScan, DeadlineScanOptions};
 use App\Services\Notification\NotificationDispatcher;
 use Carbon\CarbonImmutable;
 

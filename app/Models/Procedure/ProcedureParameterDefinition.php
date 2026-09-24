@@ -14,7 +14,6 @@ use App\Enums\Manufacturing\ParameterType;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Procedure\ProcedureTemplateVersion;
 
 /**
  * Typisierter, versionierter Auftragsparameter einer Arbeitsplan-Version

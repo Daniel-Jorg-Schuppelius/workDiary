@@ -61,7 +61,7 @@
                             <a class="link link-hover font-medium" href="{{ route('servicedesk.problems.show', $problem) }}">{{ $problem->title }}</a>
                         </td>
                         <td>
-                            <x-status-badge size="sm" outline>{{ $statusLabels[$problem->status] ?? $problem->status }}</x-status-badge>
+                            <x-status-badge size="sm" outline>{{ $problem->status->label() }}</x-status-badge>
                         </td>
                         <td class="text-right tabular-nums">{{ $problem->tickets_count }}</td>
                         <td class="text-sm text-muted">{{ $problem->owner?->name ?? '—' }}</td>

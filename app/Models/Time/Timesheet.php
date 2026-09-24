@@ -14,6 +14,7 @@ use App\Enums\Timesheet\{TimesheetKind, TimesheetStatus};
 use App\Models\Attachments\Attachment;
 use App\Models\Classification\Tag;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Material\MaterialUsage;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use Carbon\CarbonInterface;
@@ -22,7 +23,6 @@ use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
-use App\Models\Material\MaterialUsage;
 
 /**
  * @property int $id

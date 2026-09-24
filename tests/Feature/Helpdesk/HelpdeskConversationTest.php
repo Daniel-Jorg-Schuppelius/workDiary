@@ -16,7 +16,8 @@ use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\{Organization, User};
 use App\Models\ServiceTicket\{ServiceQueue, ServiceTicket, ServiceTicketMessage};
-use App\Services\Mail\{MailInboxResolutionService, MailIntakeService, ParsedMessage};
+use App\Services\Mail\{MailIntakeService, ParsedMessage};
+use App\Services\ServiceTicket\Mail\MailToServiceTicket;
 use App\Services\ServiceTicket\TicketConversationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -276,7 +277,7 @@ final class HelpdeskConversationTest extends TestCase {
         $item = IntegrationInboxItem::query()->firstOrFail();
         $this->assertTrue((bool) ($item->remote_snapshot['auto_submitted'] ?? false));
 
-        $ticket = app(MailInboxResolutionService::class)->bookAsServiceTicket($item, null, $this->agent);
+        $ticket = app(MailToServiceTicket::class)->bookAsServiceTicket($item, null, $this->agent);
 
         $this->assertSame('Drucker defekt', $ticket->title);
         $this->assertSame((int) $queue->id, (int) $ticket->queue_id);

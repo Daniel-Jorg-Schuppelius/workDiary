@@ -92,4 +92,22 @@ final class PrivacyManifest extends Manifest {
             'groups' => [],
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function listeners(): array {
+        return [
+            \App\Events\Platform\OrganizationCreated::class => [
+                \App\Listeners\Privacy\SeedDataProtectionRole::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
+                \App\Services\Privacy\Retention\PrivacyRetentionPolicies::class,
+            ],
+        ];
+    }
 }

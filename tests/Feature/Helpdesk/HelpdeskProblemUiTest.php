@@ -131,7 +131,7 @@ final class HelpdeskProblemUiTest extends TestCase {
 
         $problem = Problem::query()->where('title', 'Freies Problem')->firstOrFail();
         $this->assertSame(0, $problem->tickets()->count());
-        $this->assertSame('open', $problem->status);
+        $this->assertSame('open', $problem->status->value);
     }
 
     public function test_store_rejects_foreign_incident(): void {
@@ -178,7 +178,7 @@ final class HelpdeskProblemUiTest extends TestCase {
         $this->actingAs($this->manager)
             ->post(route('servicedesk.problems.transition', $problem), ['status' => 'resolved'])
             ->assertSessionHasErrors('effectiveness_check_due_at');
-        $this->assertSame('analyzing', $problem->fresh()->status);
+        $this->assertSame('analyzing', $problem->fresh()->status->value);
 
         // Unzulässiger Sprung: die Service-Matrix ist die einzige Wahrheit.
         $this->actingAs($this->manager)
@@ -194,7 +194,7 @@ final class HelpdeskProblemUiTest extends TestCase {
             ->assertRedirect(route('servicedesk.problems.show', $problem));
 
         $problem->refresh();
-        $this->assertSame('resolved', $problem->status);
+        $this->assertSame('resolved', $problem->status->value);
         $this->assertNotNull($problem->effectiveness_check_due_at);
     }
 

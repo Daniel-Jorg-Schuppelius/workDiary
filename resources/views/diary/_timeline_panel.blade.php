@@ -13,7 +13,7 @@
 @php
     // Kurznarrativ des Verlaufs (Feature 148, MVP-732): verdichtet die
     // rechtegeprüfte Timeline; Übernahme = interner Kommentar am Auftrag.
-    $aiView = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
+    $aiView = app(\App\Services\Ai\Contracts\SuggestionView::class);
     $aiNarrativeUsable = $aiView->capabilityUsable(\App\Services\Ai\Suggestions\CaseNarrativeSuggestionService::CAPABILITY);
     $aiNarrative = $aiNarrativeUsable
         ? $aiView->openSuggestionsFor((new \App\Models\Diary\DiaryEntry)->getMorphClass(), collect([$diary]), \App\Services\Ai\Suggestions\CaseNarrativeSuggestionService::CAPABILITY)->get($diary->id)

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Isms;
 
-use App\Services\Isms\SbomGenerator;
+use App\Services\Release\SbomGenerator;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\FileSystem\{File, Folder};
 use Illuminate\Console\Command;

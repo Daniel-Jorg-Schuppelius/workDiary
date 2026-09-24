@@ -10,11 +10,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Notification\DeadlineScans;
+namespace App\Services\Safety\DeadlineScans;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Platform\User;
 use App\Models\Safety\{HazardAssessment, MedicalCheckup, SafetyInstruction, SafetyInstructionParticipant};
+use App\Services\Notification\DeadlineScans\{AbstractDeadlineScan, DeadlineScanOptions};
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Carbon;

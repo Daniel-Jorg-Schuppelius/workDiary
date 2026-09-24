@@ -1,0 +1,93 @@
+{
+    "kind": "boq",
+    "document": {
+        "currency": "EUR"
+    },
+    "lines": [
+        {
+            "type": "standard",
+            "quantity": "10.0000",
+            "unit": "m2",
+            "unit_price": "45.5000",
+            "discount_percent": null,
+            "vat_rate": "19.00",
+            "total_price": "455.0000"
+        },
+        {
+            "type": "standard",
+            "quantity": "3.5000",
+            "unit": "m3",
+            "unit_price": "120.1234",
+            "discount_percent": null,
+            "vat_rate": "19.00",
+            "total_price": null
+        },
+        {
+            "type": "standard",
+            "quantity": "2.0000",
+            "unit": "Stk",
+            "unit_price": "100.0000",
+            "discount_percent": "2.500000",
+            "vat_rate": "19.00",
+            "total_price": null
+        },
+        {
+            "type": "optional",
+            "quantity": "1.0000",
+            "unit": "psch",
+            "unit_price": "999.0000",
+            "discount_percent": null,
+            "vat_rate": "19.00",
+            "total_price": "999.0000"
+        },
+        {
+            "type": "note",
+            "quantity": null,
+            "unit": null,
+            "unit_price": null,
+            "discount_percent": null,
+            "vat_rate": null,
+            "total_price": null
+        },
+        {
+            "type": "standard",
+            "quantity": "1.0000",
+            "unit": "psch",
+            "unit_price": "50.0000",
+            "discount_percent": null,
+            "vat_rate": "7.00",
+            "total_price": null
+        }
+    ],
+    "expected": {
+        "line_nets": [
+            "455.0000",
+            "420.43",
+            "195.00",
+            "999.0000",
+            "0.00",
+            "50.00"
+        ],
+        "line_net_sum": "1120.43",
+        "document_discount": "0.00",
+        "by_rate": {
+            "7.00": {
+                "rate": 7,
+                "net": "50.00",
+                "allowance": "0.00",
+                "taxable": "50.00",
+                "tax": "3.50"
+            },
+            "19.00": {
+                "rate": 19,
+                "net": "1070.43",
+                "allowance": "0.00",
+                "taxable": "1070.43",
+                "tax": "203.38"
+            }
+        },
+        "subtotal": "1120.43",
+        "tax_amount": "206.88",
+        "total": "1327.31"
+    }
+}

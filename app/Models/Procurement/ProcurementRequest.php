@@ -11,11 +11,11 @@
 namespace App\Models\Procurement;
 
 use App\Enums\Manufacturing\ProcurementStatus;
+use App\Models\Article\Article;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Article\Article;
 
 /**
  * Beschaffungsbedarf / offener Punkt (Feature 048, Fehlmaterialprozess).

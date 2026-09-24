@@ -19,7 +19,7 @@ use App\Models\Platform\{Organization, User};
 use App\Models\Sales\{Quote, QuoteItem};
 use App\Models\Time\TimeEntry;
 use App\Services\Ai\{AiInvocationService, AiMemoryService};
-use App\Services\Ai\Contracts\AiRequestInterface;
+use App\Services\Ai\Contracts\{AiRequestInterface, ItemTextSuggester};
 use App\Services\Ai\Dto\{AiInvocationResult, AiTextResult, AiTranslationResult, FormulateRequest, SummarizeRequest, TranslateRequest};
 use App\Services\Ai\Exceptions\AiException;
 use App\Services\Ai\Suggestions\Concerns\DecidesSuggestions;
@@ -36,16 +36,8 @@ use Illuminate\Support\Carbon;
  * Position. Gedächtnis-Kontext (Kundenglossar, Stilprofil,
  * Beispielpaare) fließt in jeden Aufruf ein (MVP-404).
  */
-class ItemTextSuggestionService {
+class ItemTextSuggestionService implements ItemTextSuggester {
     use DecidesSuggestions;
-
-    public const CAPABILITY_ITEM = 'invoicing.item_text';
-
-    public const CAPABILITY_BLOCK = 'invoicing.block_text';
-
-    public const CAPABILITY_TRANSLATE = 'invoicing.item_translate';
-
-    public const CAPABILITY_QUOTE_ITEM = 'quotes.item_text';
 
     public function __construct(
         private readonly AiInvocationService $invocation,

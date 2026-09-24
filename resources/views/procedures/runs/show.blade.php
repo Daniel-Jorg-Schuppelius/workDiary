@@ -162,10 +162,9 @@
                                     <form method="POST" action="{{ route('procedure-runs.steps.execute', [$run, $sr]) }}"
                                           enctype="multipart/form-data" class="mt-3 space-y-2">
                                         @csrf
-                                        @if (in_array($def?->step_type?->value, ['text', 'number', 'choice', 'messreihe'], true))
-                                            <input aria-label="{{ __('procedure.run.value') }}" type="{{ $def?->step_type?->value === 'number' ? 'number' : 'text' }}" name="value" step="any"
-                                                   class="input input-bordered input-sm w-full"
-                                                   placeholder="{{ __('procedure.run.value') }}">
+                                        @php $stepField = $def !== null ? app(\App\Services\Procedure\Fields\ProcedureStepFields::class)->definition($def) : null; @endphp
+                                        @if ($stepField !== null)
+                                            <x-field-input :field="$stepField" prefix="" :wide="false" />
                                         @endif
                                         @if (in_array($def?->step_type?->value, ['photo', 'file', 'signature'], true) || $def?->requires_proof_type)
                                             <input type="file" name="proof" class="file-input file-input-bordered file-input-sm w-full">

@@ -10,12 +10,12 @@
 
 namespace App\Http\Controllers\Calendar;
 
+use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Verwaltet den persönlichen Kalender-Feed-Token. Anlegen/Rotieren

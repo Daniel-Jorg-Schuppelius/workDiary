@@ -10,16 +10,14 @@
 
 namespace App\Http\Controllers\Platform;
 
-use App\Models\Platform\Organization;
-use App\Models\Platform\User;
+use App\Http\Controllers\Controller;
+use App\Models\Platform\{Organization, User};
 use App\Services\Org\OrganizationLifecycleService;
 use App\Support\{Setting, SortableQuery};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\Platform\OrganizationSwitchController;
 
 class OrganizationController extends Controller {
     public function index(Request $request): View {
@@ -374,7 +372,7 @@ class OrganizationController extends Controller {
         }
 
         // Legal Hold (MVP-801): Ein Vermerk darf nicht mit dem ganzen Mandanten verschwinden.
-        if (app(\App\Services\Privacy\LegalHoldService::class)->organizationHasActiveHolds($organization)) {
+        if (app(\App\Services\Retention\LegalHoldService::class)->organizationHasActiveHolds($organization)) {
             return redirect()->toList('admin.organizations.index')
                 ->with('error', __('Die Organisation hat aktive Legal Holds — endgültiges Löschen ist erst nach deren Aufhebung möglich.'));
         }

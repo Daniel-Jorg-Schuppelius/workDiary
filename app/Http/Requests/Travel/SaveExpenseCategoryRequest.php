@@ -10,10 +10,10 @@
 
 namespace App\Http\Requests\Travel;
 
-use App\Models\Travel\ExpenseCategory;
-use App\Models\Platform\Organization;
-use Illuminate\Validation\Rule;
 use App\Http\Requests\BaseFormRequest;
+use App\Models\Platform\Organization;
+use App\Models\Travel\ExpenseCategory;
+use Illuminate\Validation\Rule;
 
 class SaveExpenseCategoryRequest extends BaseFormRequest {
     protected function prepareForValidation(): void {

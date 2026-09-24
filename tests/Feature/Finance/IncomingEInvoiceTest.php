@@ -17,7 +17,7 @@ use App\Models\Document\Document;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, XRechnungGenerator};
-use App\Services\Whistleblowing\Scanning\ScanDriver;
+use App\Services\Security\Scanning\ScanDriver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Tests\Concerns\WithOrganization;

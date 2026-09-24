@@ -6115,9 +6115,6 @@ CREATE TABLE `club_members` (
   `last_name` varchar(120) NOT NULL,
   `email` varchar(190) DEFAULT NULL,
   `phone` varchar(60) DEFAULT NULL,
-  `street` varchar(190) DEFAULT NULL,
-  `postal_code` varchar(20) DEFAULT NULL,
-  `city` varchar(120) DEFAULT NULL,
   `birth_date` date DEFAULT NULL,
   `kind` varchar(16) NOT NULL DEFAULT 'active',
   `joined_on` date NOT NULL,
@@ -7622,6 +7619,41 @@ CREATE TABLE `cti_connections` (
   KEY `cticonn_org_idx` (`organization_id`),
   CONSTRAINT `cticonn_creator_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `cticonn_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `custom_field_definitions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `custom_field_definitions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `subject_alias` varchar(64) NOT NULL,
+  `schema` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`schema`)),
+  `version` int(10) unsigned NOT NULL DEFAULT 1,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `cfd_org_subject_unique` (`organization_id`,`subject_alias`),
+  CONSTRAINT `custom_field_definitions_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `custom_field_values`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `custom_field_values` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `subject_type` varchar(64) NOT NULL,
+  `subject_id` bigint(20) unsigned NOT NULL,
+  `values` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`values`)),
+  `schema_version` int(10) unsigned NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `cfv_subject_unique` (`subject_type`,`subject_id`),
+  KEY `cfv_org_subject_idx` (`organization_id`,`subject_type`),
+  CONSTRAINT `custom_field_values_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `customer_account_payments`;
@@ -12748,10 +12780,12 @@ CREATE TABLE `learning_enrollment_events` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `organization_id` bigint(20) unsigned NOT NULL,
   `learning_enrollment_id` bigint(20) unsigned NOT NULL,
+  `event` varchar(64) NOT NULL DEFAULT 'status_changed',
   `from_status` varchar(12) DEFAULT NULL,
   `to_status` varchar(12) NOT NULL,
   `actor_user_id` bigint(20) unsigned DEFAULT NULL,
   `reason` varchar(255) DEFAULT NULL,
+  `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`payload`)),
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -23815,3 +23849,7 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (841,'2027_02_23_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (842,'2027_02_23_101400_create_club_competition_tables',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (843,'2027_02_23_101500_add_free_invoice_source_columns',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (844,'2027_02_24_100000_rewrite_morph_types_to_aliases',2);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (845,'2027_02_24_110000_add_journal_columns_to_learning_enrollment_events',3);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (846,'2027_02_24_120000_canonicalize_field_schemas_and_checklists',4);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (847,'2027_02_24_130000_create_custom_field_tables',5);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (848,'2027_02_24_140000_move_club_member_address_to_contact_addresses',6);

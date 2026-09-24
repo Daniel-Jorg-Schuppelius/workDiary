@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\CustomerPortal;
+namespace App\Http\Controllers\Claims\Portal;
 
 use App\Http\Controllers\Controller;
 use App\Models\Claims\ClaimCase;

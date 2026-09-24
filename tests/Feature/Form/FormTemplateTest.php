@@ -18,7 +18,7 @@ use Tests\TestCase;
 
 /**
  * Vorlagen-Verwaltung (Feature 032): Modal-CRUD, Strukturvalidierung der
- * Felddefinition (FormFieldDefinition), Lebenszyklus, Permissions, Cross-Org.
+ * Felddefinition (FieldSchema), Lebenszyklus, Permissions, Cross-Org.
  */
 class FormTemplateTest extends TestCase {
     use RefreshDatabase;

@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Access;
 
 use App\Enums\Access\{AccessMediumStatus, AccessMediumType};
 use App\Enums\User\Permission;
+use App\Http\Controllers\Controller;
 use App\Models\Access\AccessMedium;
 use App\Models\Facility\Site;
 use App\Models\Platform\User;
@@ -23,7 +24,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * Zutritts- und Transponderverwaltung, Stufe 1 (Feature 092, MVP-657–659).

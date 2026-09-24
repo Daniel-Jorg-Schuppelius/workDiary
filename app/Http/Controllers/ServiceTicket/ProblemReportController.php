@@ -14,6 +14,7 @@ namespace App\Http\Controllers\ServiceTicket;
 
 use App\Enums\Support\ProblemReportSeverity;
 use App\Enums\User\Permission;
+use App\Http\Controllers\Controller;
 use App\Models\ServiceTicket\ProblemReport;
 use App\Services\Support\ProblemReportService;
 use App\Support\{Setting, UrlSafety};
@@ -21,7 +22,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * „Problem melden" für angemeldete Nutzer (Feature 041, MVP-053):

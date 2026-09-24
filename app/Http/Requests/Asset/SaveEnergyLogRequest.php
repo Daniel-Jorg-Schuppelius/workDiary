@@ -10,10 +10,10 @@
 
 namespace App\Http\Requests\Asset;
 
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
 use App\Models\Asset\EnergyLog;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 class SaveEnergyLogRequest extends BaseFormRequest {
     use DecodesSqidInputs, ParsesOrgLocalDateTimes;

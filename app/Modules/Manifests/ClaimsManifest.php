@@ -87,4 +87,31 @@ final class ClaimsManifest extends Manifest {
             'groups' => [],
         ];
     }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\Claims\Contracts\RmaStockHandler::class => \App\Services\Claims\Contracts\NullRmaStockHandler::class,
+            \App\Services\Claims\Contracts\ClaimIntake::class => \App\Services\Claims\Contracts\NullClaimIntake::class,
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function bindings(): array {
+        return [
+            \App\Services\Claims\Contracts\ClaimIntake::class => \App\Services\Claims\ClaimCaseService::class,
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Claims\Demo\ClaimsDemoBlock::class,
+            ],
+            \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
+                \App\Services\Claims\Retention\ClaimsRetentionPolicies::class,
+            ],
+        ];
+    }
 }

@@ -12,19 +12,15 @@ namespace App\Http\Controllers\Facility;
 
 use App\Enums\Facility\{RoomRequirementKind, RoomUsageType};
 use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesGlobalDateRange};
-use App\Models\Facility\Building;
-use App\Models\Facility\CleaningProfile;
-use App\Models\Facility\Floor;
-use App\Models\Facility\Room;
-use App\Models\Facility\Site;
+use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
+use App\Models\Facility\{Building, CleaningProfile, Floor, Room, Site};
 use App\Services\Event\RoomBookingService;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class RoomController extends Controller {
     use ParsesIndexQuery;

@@ -10,10 +10,10 @@
 
 namespace App\Http\Requests\Fleet;
 
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
 use App\Models\Diary\DiaryEntry;
 use App\Models\Fleet\Vehicle;
-use App\Http\Requests\BaseFormRequest;
 
 class StoreVehicleReservationRequest extends BaseFormRequest {
     use DecodesSqidInputs, ParsesOrgLocalDateTimes;

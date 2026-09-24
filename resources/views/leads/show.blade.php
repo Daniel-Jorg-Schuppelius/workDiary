@@ -42,6 +42,7 @@
                     <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Ansprechpartner') }}</dt><dd>{{ $lead->contact_name ?? '—' }}</dd></div>
                     <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('E-Mail') }}</dt><dd>{{ $lead->email ?? '—' }}</dd></div>
                     <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Telefon') }}</dt><dd>{{ $lead->phone ?? '—' }}</dd></div>
+                    <div class="flex justify-between gap-4 sm:col-span-2"><dt class="text-muted">{{ __('Adresse') }}</dt><dd class="text-right">{{ implode(', ', $lead->postalAddressLines()) ?: '—' }}</dd></div>
                     <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Quelle') }}</dt><dd>{{ $lead->source->label() }}</dd></div>
                     <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Verantwortlich') }}</dt><dd>{{ $lead->responsible?->name ?? '—' }}</dd></div>
                     <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Letzter Kontakt') }}</dt><dd>{{ $lead->last_contact_at?->orgTz()->format('d.m.Y H:i') ?? '—' }}</dd></div>

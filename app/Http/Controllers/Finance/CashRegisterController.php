@@ -13,8 +13,8 @@ namespace App\Http\Controllers\Finance;
 use App\Enums\Finance\PostingSourceKind;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Models\Finance\CashEntry;
-use App\Models\Finance\CashRegister;
+use App\Http\Controllers\Controller;
+use App\Models\Finance\{CashEntry, CashRegister};
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Services\Accounting\AccountingSovereigntyResolver;
@@ -26,7 +26,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use InvalidArgumentException;
-use App\Http\Controllers\Controller;
 
 /** Kassenbuch (MVP-414): Kassen, append-only Einträge, Storno, Tagesabschluss. */
 class CashRegisterController extends Controller {

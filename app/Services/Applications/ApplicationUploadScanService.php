@@ -12,7 +12,7 @@ namespace App\Services\Applications;
 
 use App\Enums\Whistleblowing\AttachmentScanStatus;
 use App\Models\Applications\JobApplicationUpload;
-use App\Services\Whistleblowing\Scanning\ScanDriver;
+use App\Services\Security\Scanning\ScanDriver;
 use Illuminate\Support\Facades\Storage;
 
 /**

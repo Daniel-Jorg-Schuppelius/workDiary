@@ -17,8 +17,6 @@ use Database\Factories\Schedule\CoverageRequirementFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Schedule\DutyPlan;
-use App\Models\Schedule\ShiftType;
 
 /**
  * Soll-Besetzung pro Schichttyp, granuliert auf Wochentag oder Datum.

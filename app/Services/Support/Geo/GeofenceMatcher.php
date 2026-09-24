@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Services\Location;
+namespace App\Services\Support\Geo;
 
 use App\Models\Location\CustomerGeofence;
 

@@ -12,14 +12,11 @@ namespace App\Models\Supplier;
 
 use App\Casts\MoneyCast;
 use App\Enums\Procurement\CatalogItemStatus;
+use App\Models\Article\Article;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
-use App\Models\Article\Article;
-use App\Models\Supplier\SupplierCatalogItemPrice;
-use App\Models\Supplier\SupplierCatalogItemPriceTier;
-use App\Models\Supplier\SupplierCatalogSource;
 
 /**
  * Externer Katalogartikel eines Lieferanten (Feature 050, MVP-092). Snapshot

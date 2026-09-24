@@ -10,11 +10,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Search\Indexing\Sources;
+namespace App\Services\Diary\Search;
 
 use App\Enums\Search\SearchSourceType;
 use App\Models\Diary\OpenIssue;
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
+use App\Services\Search\Indexing\Sources\AbstractSearchSource;
 use Illuminate\Database\Eloquent\Model;
 
 /** Offene Punkte inkl. Abschlussbegründung; Kontext über das Subjekt. */

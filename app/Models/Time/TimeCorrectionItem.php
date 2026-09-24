@@ -12,7 +12,6 @@ namespace App\Models\Time;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Time\TimeCorrectionRequest;
 
 /**
  * Eine einzelne Änderung innerhalb eines Korrekturantrags (MVP-017).

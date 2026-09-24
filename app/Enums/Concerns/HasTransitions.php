@@ -18,7 +18,7 @@ namespace App\Enums\Concerns;
  * kommt aus diesem Concern. Fehlersemantik (throw/abort) bleibt bewusst an
  * der Aufrufstelle bzw. in den Service-Traits
  * ({@see \App\Services\Concerns\AssertsStatusTransition},
- * {@see \App\Services\Isms\Concerns\AssertsIsmsTransition}).
+ * {@see \App\Services\Concerns\AssertsValidatedTransition}).
  */
 trait HasTransitions {
     /**

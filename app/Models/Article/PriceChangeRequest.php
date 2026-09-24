@@ -13,10 +13,10 @@ namespace App\Models\Article;
 use App\Casts\{MoneyCast, PercentageCast};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
+use App\Models\Supplier\SupplierCatalogItem;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Supplier\SupplierCatalogItem;
 
 /**
  * Antrag auf Übernahme eines Verkaufspreisvorschlags (Feature 050, MVP-095,

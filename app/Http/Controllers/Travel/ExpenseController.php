@@ -12,12 +12,12 @@ namespace App\Http\Controllers\Travel;
 
 use App\Enums\Expense\{ExpenseStatus, PaymentMethod};
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Travel\SaveExpenseRequest;
 use App\Models\Customer\Customer;
-use App\Models\Travel\Expense;
-use App\Models\Travel\ExpenseCategory;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Models\Travel\{Expense, ExpenseCategory};
 use App\Services\Billing\ExpenseLinkProviderResolver;
 use App\Services\Expense\ExpenseService;
 use App\Support\{CsvExport, SortableQuery};
@@ -29,7 +29,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use App\Http\Controllers\Controller;
 
 class ExpenseController extends Controller {
     use ResolvesCurrentOrganization;

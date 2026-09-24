@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Helpdesk;
 
+use App\Enums\ServiceTicket\ProblemStatus;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
@@ -25,7 +26,7 @@ use Illuminate\View\View;
 
 /**
  * Problem-UI (Feature 065, MVP-156): Ursachenobjekte hinter Incidents —
- * Modal-CRUD, Statuswechsel strikt über {@see ProblemService::TRANSITIONS}
+ * Modal-CRUD, Statuswechsel strikt über {@see ProblemStatus::allowedTransitions()}
  * (einzige Wahrheit, der Service erzwingt die Matrix inkl. Pflichtfrist
  * beim Lösen), Wirksamkeitsprüfung und idempotente Known-Error-
  * Veröffentlichung in die Wissensbasis.
@@ -44,7 +45,7 @@ class ProblemController extends Controller {
         $query = Problem::query()
             ->with('owner:id,name')
             ->withCount('tickets');
-        if (in_array($status, Problem::STATUSES, true)) {
+        if (ProblemStatus::tryFrom($status) !== null) {
             $query->where('status', $status);
         }
         if ($q !== '') {
@@ -54,7 +55,7 @@ class ProblemController extends Controller {
         return view('helpdesk.problems.index', [
             'problems' => $query->orderByDesc('id')->paginate(25)->withQueryString(),
             'filters' => ['status' => $status, 'q' => $q],
-            'statusLabels' => $this->statusLabels(),
+            'statusLabels' => ProblemStatus::options(),
             'canManage' => Gate::allows('create', Problem::class),
         ]);
     }
@@ -67,9 +68,7 @@ class ProblemController extends Controller {
         return view('helpdesk.problems.show', [
             'problem' => $problem,
             'article' => $this->knownErrorArticle($problem),
-            // Statusoptionen aus der Service-Matrix ableiten — NICHT duplizieren.
-            'transitions' => ProblemService::TRANSITIONS[$problem->status] ?? [],
-            'statusLabels' => $this->statusLabels(),
+            'transitions' => $problem->status->allowedTransitions(),
             'canManage' => Gate::allows('update', $problem),
         ]);
     }
@@ -156,7 +155,7 @@ class ProblemController extends Controller {
         Gate::authorize('update', $problem);
 
         $data = $request->validate([
-            'status' => ['required', 'string', 'in:' . implode(',', Problem::STATUSES)],
+            'status' => ['required', 'string', \Illuminate\Validation\Rule::enum(ProblemStatus::class)],
             'effectiveness_check_due_at' => ['nullable', 'date', 'required_if:status,resolved', new \App\Rules\TimestampRange()],
         ]);
 
@@ -203,17 +202,6 @@ class ProblemController extends Controller {
 
         return redirect()->route('servicedesk.problems.show', $problem)
             ->with('success', __('Known-Error-Artikel veröffentlicht.'));
-    }
-
-    /** @return array<string, string> Labels je Problem-Status (Strings, kein Enum). */
-    private function statusLabels(): array {
-        return [
-            'open' => (string) __('Offen'),
-            'analyzing' => (string) __('In Analyse'),
-            'known_error' => (string) __('Known Error'),
-            'resolved' => (string) __('Gelöst'),
-            'closed' => (string) __('Geschlossen'),
-        ];
     }
 
     /**

@@ -13,10 +13,10 @@ declare(strict_types=1);
 namespace App\Http\Requests\ServiceTicket;
 
 use App\Enums\User\UserRole;
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 /**
  * Change anlegen (Feature 065, MVP-157): Sqid-Referenzen werden je

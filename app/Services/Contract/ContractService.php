@@ -21,6 +21,7 @@ use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\AssertsStatusTransition;
 use App\Services\Notification\NotificationDispatcher;
 use App\Services\Numbering\NumberSequenceService;
+use App\Services\Reselling\Contracts\ContractObligationSink;
 use App\Support\DocumentLocale;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
@@ -34,7 +35,7 @@ use Illuminate\Support\Facades\DB;
  * Eskalationsscan sowie die additive Verknüpfung zum Leasing-/Finanzierungs-
  * modell (Feature 074). Keine externe Index-API — Indexierung ist deskriptiv.
  */
-class ContractService {
+class ContractService implements ContractObligationSink {
     use AssertsStatusTransition;
 
     public function __construct(
@@ -53,7 +54,7 @@ class ContractService {
     }
 
     public function activate(Contract $contract, User $actor): Contract {
-        $this->assertTransition($contract, ContractStatus::Active);
+        $this->assertStatusTransition($contract->status, ContractStatus::Active);
         // Kundenvereinbarungen (Feature 157): Aktivierung erst mit vollständig
         // unterzeichneter Fassung — serverseitig, nicht nur im Button.
         if ($contract->kind->requiresSigning() && $contract->signedRevision() === null) {
@@ -70,7 +71,7 @@ class ContractService {
     }
 
     public function terminate(Contract $contract, User $actor, ?string $reason = null): Contract {
-        $this->assertTransition($contract, ContractStatus::Terminated);
+        $this->assertStatusTransition($contract->status, ContractStatus::Terminated);
 
         $contract->forceFill(['status' => ContractStatus::Terminated->value])->save();
         $contract->audit('contract.terminated', ['reason' => $reason, 'by' => $actor->id]);
@@ -79,7 +80,7 @@ class ContractService {
     }
 
     public function end(Contract $contract, User $actor): Contract {
-        $this->assertTransition($contract, ContractStatus::Ended);
+        $this->assertStatusTransition($contract->status, ContractStatus::Ended);
 
         $contract->forceFill([
             'status' => ContractStatus::Ended->value,
@@ -92,7 +93,7 @@ class ContractService {
     }
 
     public function cancel(Contract $contract, User $actor): Contract {
-        $this->assertTransition($contract, ContractStatus::Cancelled);
+        $this->assertStatusTransition($contract->status, ContractStatus::Cancelled);
 
         $contract->forceFill(['status' => ContractStatus::Cancelled->value])->save();
         $contract->audit('contract.cancelled', ['by' => $actor->id]);
@@ -314,8 +315,4 @@ class ContractService {
         return $assetFinance;
     }
 
-    /** Gemeinsamer Guard (Vollaudit 2026-07, M44) — Semantik unverändert. */
-    private function assertTransition(Contract $contract, ContractStatus $target): void {
-        $this->assertStatusTransition($contract->status, $target);
-    }
 }

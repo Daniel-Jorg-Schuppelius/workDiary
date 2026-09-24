@@ -11,12 +11,12 @@
 namespace App\Http\Controllers\UI;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Models\Platform\Organization;
 use App\Services\UI\BrandingService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Admin-Oberfläche für die White-Label-/Branding-Einstellungen der aktuellen

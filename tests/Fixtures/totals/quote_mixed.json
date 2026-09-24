@@ -1,0 +1,85 @@
+{
+    "kind": "quote",
+    "document": [],
+    "lines": [
+        {
+            "quantity": "1.00",
+            "unit_price": "1000.00",
+            "discount_percent": null,
+            "discount_amount": null,
+            "tax_rate": "19.00",
+            "optional": false,
+            "accepted": null
+        },
+        {
+            "quantity": "2.00",
+            "unit_price": "150.00",
+            "discount_percent": "5.00",
+            "discount_amount": null,
+            "tax_rate": "19.00",
+            "optional": true,
+            "accepted": null
+        },
+        {
+            "quantity": "3.00",
+            "unit_price": "99.99",
+            "discount_percent": null,
+            "discount_amount": null,
+            "tax_rate": "7.00",
+            "optional": true,
+            "accepted": true
+        },
+        {
+            "quantity": "1.00",
+            "unit_price": "500.00",
+            "discount_percent": null,
+            "discount_amount": "20.00",
+            "tax_rate": "19.00",
+            "optional": false,
+            "accepted": false
+        },
+        {
+            "quantity": "1.50",
+            "unit_price": "33.33",
+            "discount_percent": null,
+            "discount_amount": null,
+            "tax_rate": "19.00",
+            "optional": false,
+            "accepted": null
+        },
+        {
+            "quantity": "3.00",
+            "unit_price": "0.33",
+            "discount_percent": null,
+            "discount_amount": null,
+            "tax_rate": "19.00",
+            "optional": false,
+            "accepted": true
+        }
+    ],
+    "expected": {
+        "line_nets": [
+            "1000.00",
+            "285.00",
+            "299.97",
+            "480.00",
+            "50.00",
+            "0.99"
+        ],
+        "tax_breakdown": [
+            {
+                "rate": 7,
+                "net": "299.97",
+                "tax": "21.00"
+            },
+            {
+                "rate": 19,
+                "net": "1050.99",
+                "tax": "199.69"
+            }
+        ],
+        "subtotal": "1350.96",
+        "tax_amount": "220.69",
+        "total": "1571.65"
+    }
+}

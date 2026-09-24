@@ -87,6 +87,7 @@
                     <th>{{ __('Ort') }}</th>
                     <th class="text-right">{{ __('Stundensatz') }}</th>
                     <th class="text-right">{{ __('Projekte') }}</th>
+                    <x-custom-field-heads :columns="$customColumns" />
                     <th></th>
                 </tr>
             </x-slot:head>
@@ -119,6 +120,7 @@
                         @endif
                     </td>
                     <td class="text-right tabular-nums">{{ $customer->projects_count }}</td>
+                    <x-custom-field-cells :columns="$customColumns" :model="$customer" />
                     <td class="text-right">
                         @can('update', $customer)
                             <x-icon-btn icon="edit"

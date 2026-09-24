@@ -396,13 +396,7 @@ class MonthClosureService {
 
     /** @param  array<string, mixed>|null  $payload */
     private function logEvent(MonthClosure $closure, string $event, ?int $actorId, ?string $note = null, ?array $payload = null): void {
-        MonthClosureEvent::query()->create([
-            'month_closure_id' => $closure->id,
-            'event' => $event,
-            'actor_user_id' => $actorId ?? 0,
-            'note' => $note,
-            'payload' => $payload,
-        ]);
+        $closure->record($event, $payload ?? [], $actorId ?? 0, extra: ['note' => $note]);
     }
 
     private function actorId(): ?int {

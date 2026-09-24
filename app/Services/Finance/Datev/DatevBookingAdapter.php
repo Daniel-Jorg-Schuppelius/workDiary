@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Finance\Datev;
 
 use App\Models\Finance\DatevBookingBatch;
-use App\Services\Finance\FinancialFormatsSupport;
+use App\Services\Billing\FinancialFormatsSupport;
 use CommonToolkit\Entities\CSV\DataLine;
 use CommonToolkit\FinancialFormats\Builders\DATEV\V700\BookingDocumentBuilder;
 use CommonToolkit\FinancialFormats\Entities\DATEV\Header\BookingBatchHeaderLine;

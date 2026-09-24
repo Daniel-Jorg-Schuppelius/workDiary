@@ -11,10 +11,10 @@
 namespace App\Models\Auth;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Platform\Team;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use App\Models\Platform\Team;
 
 /**
  * Eine über SCIM 2.0 provisionierte Gruppe (Feature 057, MVP-121 → Rang 16).

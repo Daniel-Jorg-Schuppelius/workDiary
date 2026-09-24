@@ -11,27 +11,20 @@
 namespace App\Models\Asset;
 
 use App\Enums\Asset\{AssetClass, AssetHealth, AssetOwnership, AssetStatus};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasCommunicationNotes, HasSqid, HasTags, Searchable};
+use App\Models\Article\Product;
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasCommunicationNotes, HasCustomFields, HasSqid, HasTags, Searchable};
+use App\Models\Contracts\CustomFieldSubject;
 use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Diary\{DiaryEntry, OpenIssue};
+use App\Models\Facility\Room;
+use App\Models\Material\MaterialUsage;
+use App\Models\Protocol\Protocol;
+use App\Models\ServiceTicket\SlaContract;
 use Database\Factories\Asset\AssetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne, MorphMany};
 use Illuminate\Support\Carbon;
-use App\Models\Asset\AssetAssignment;
-use App\Models\Asset\AssetBlock;
-use App\Models\Asset\AssetComponent;
-use App\Models\Asset\AssetDefect;
-use App\Models\Asset\AssetOwnershipChange;
-use App\Models\Diary\DiaryEntry;
-use App\Models\Diary\OpenIssue;
-use App\Models\Asset\MaintenancePlan;
-use App\Models\Material\MaterialUsage;
-use App\Models\Article\Product;
-use App\Models\Protocol\Protocol;
-use App\Models\Facility\Room;
-use App\Models\ServiceTicket\SlaContract;
-use App\Models\Asset\SoftwareInstallation;
 
 /**
  * @property int $id
@@ -65,10 +58,11 @@ use App\Models\Asset\SoftwareInstallation;
  * @property array<string, mixed>|null $custom
  * @property-read Product|null $product
  */
-class Asset extends Model {
+class Asset extends Model implements CustomFieldSubject {
     /** @use HasFactory<AssetFactory> */
     use Auditable, BelongsToOrganization, HasAttachments, HasFactory, HasSqid, HasTags;
     use HasCommunicationNotes;
+    use HasCustomFields;
     use Searchable;
 
     protected $fillable = [

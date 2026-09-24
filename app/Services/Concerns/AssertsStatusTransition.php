@@ -19,7 +19,7 @@ use RuntimeException;
  * Statusübergangs-Guard mit RuntimeException-Semantik (Vollaudit 2026-07,
  * M44): wörtlich identische Kopien aus AssetFinanceService/ContractService
  * (+ Claims-Variante) extrahiert. Bewusst getrennt von der ISMS-Familie
- * ({@see \App\Services\Isms\Concerns\AssertsIsmsTransition}), die
+ * ({@see \App\Services\Concerns\AssertsValidatedTransition}), die
  * ValidationException für Formular-Feedback wirft.
  */
 trait AssertsStatusTransition {

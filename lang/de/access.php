@@ -211,6 +211,7 @@ return [
         'org.onboarding.skipStep' => 'Onboarding-Schritt überspringen',
         'org.onboarding.dismissWidget' => 'Onboarding-Widget ausblenden',
         'organization.numberFormat.manage' => 'Nummernkreise verwalten',
+        'organization.customFields.manage' => 'Eigene Felder der Organisation verwalten',
         'platform.diagnostics.view' => 'Diagnose-Seite einsehen',
         'platform.diagnostics.runCheck' => 'Diagnose-Tests auslösen (Mail/Backup)',
         'platform.scheduler.manage' => 'Scheduler-Jobs steuern (pausieren, umplanen, Testlauf)',

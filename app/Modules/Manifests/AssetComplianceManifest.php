@@ -87,4 +87,23 @@ final class AssetComplianceManifest extends Manifest {
             'groups' => [],
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\AssetCompliance\Demo\AssetComplianceDemoBlock::class,
+            ],
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\AssetCompliance\DeadlineScans\AssetInspectionScan::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function bindings(): array {
+        return [
+            \App\Services\Asset\Contracts\AssetComplianceStatusProvider::class => \App\Services\AssetCompliance\AssetComplianceService::class,
+        ];
+    }
 }

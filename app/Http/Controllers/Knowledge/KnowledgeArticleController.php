@@ -24,7 +24,7 @@ use App\Models\Protocol\Protocol;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Collections\ContentCollectionService;
 use App\Services\Knowledge\KnowledgeArticleService;
-use App\Support\Sqid;
+use App\Support\{SortableQuery, Sqid};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -66,7 +66,7 @@ class KnowledgeArticleController extends Controller {
             // Wechsel in diese Typansicht den Filter nicht verliert.
             'tag' => (string) $request->query('tag', ''),
             'status' => (string) $request->query('status', 'all'),
-            'sort' => (string) $request->query('sort', 'newest'),
+            'sort' => SortableQuery::resolve($request, ['newest', 'helpful'], 'newest')[0],
         ];
 
         // Einmal formuliert, zweimal gebraucht: für die Liste und für die
@@ -118,11 +118,9 @@ class KnowledgeArticleController extends Controller {
         }
 
         if ($filters['sort'] === 'helpful') {
-            $query->orderByDesc('helpful_count')->orderByDesc('created_at');
-        } else {
-            $filters['sort'] = 'newest';
-            $query->orderByDesc('created_at');
+            $query->orderByDesc('helpful_count');
         }
+        $query->orderByDesc('created_at');
 
         $articles = $query->paginate(25)->withQueryString();
 

@@ -14,7 +14,6 @@ use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
-use App\Models\Gaeb\BoqCatalogAssignment;
 
 /**
  * Katalog, auf den sich die Zuordnungen eines LV beziehen (Feature 109,

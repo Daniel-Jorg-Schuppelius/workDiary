@@ -149,7 +149,7 @@ class ClubGroupService {
     public function approve(ClubGroupMembership $membership, User $actor, bool $override = false, ?string $note = null): ClubGroupMembership {
         return DB::transaction(function () use ($membership, $actor, $override, $note): ClubGroupMembership {
             $group = $this->lockGroup($membership->club_group_id);
-            $this->assertTransition($membership, ClubGroupMembershipStatus::Active);
+            $this->assertStatusTransition($membership->status, ClubGroupMembershipStatus::Active);
 
             $day = $membership->valid_from->greaterThan(CarbonImmutable::today()) ? CarbonImmutable::instance($membership->valid_from) : CarbonImmutable::today();
             /** @var ClubMember $member */
@@ -174,7 +174,7 @@ class ClubGroupService {
     }
 
     public function reject(ClubGroupMembership $membership, User $actor, ?string $note = null): ClubGroupMembership {
-        $this->assertTransition($membership, ClubGroupMembershipStatus::Rejected);
+        $this->assertStatusTransition($membership->status, ClubGroupMembershipStatus::Rejected);
 
         $membership->update([
             'status' => ClubGroupMembershipStatus::Rejected->value,
@@ -190,7 +190,7 @@ class ClubGroupService {
     /** Beenden zum Datum (letzter gültiger Tag); offene Vorschläge dieses Paars werden verworfen. */
     public function end(ClubGroupMembership $membership, CarbonInterface $on, User $actor, ?string $note = null): ClubGroupMembership {
         return DB::transaction(function () use ($membership, $on, $actor, $note): ClubGroupMembership {
-            $this->assertTransition($membership, ClubGroupMembershipStatus::Ended);
+            $this->assertStatusTransition($membership->status, ClubGroupMembershipStatus::Ended);
             $day = CarbonImmutable::instance($on)->startOfDay();
             if ($day->lessThan($membership->valid_from)) {
                 $day = CarbonImmutable::instance($membership->valid_from);
@@ -436,10 +436,6 @@ class ClubGroupService {
         if (! $group->hasCapacityOn($day)) {
             throw ValidationException::withMessages(['club_member_id' => __('club.error.group_full')]);
         }
-    }
-
-    private function assertTransition(ClubGroupMembership $membership, ClubGroupMembershipStatus $target): void {
-        $this->assertStatusTransition($membership->status, $target);
     }
 
     /**

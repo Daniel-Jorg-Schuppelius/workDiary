@@ -81,4 +81,29 @@ final class ManufacturingManifest extends Manifest {
             'inventory',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Document\Contracts\MailableDocumentProvider::class => [
+                \App\Services\Manufacturing\Mail\DeliveryNoteMailDocument::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function bindings(): array {
+        return [
+            \App\Services\Print\Contracts\ProductionOrderFactory::class => \App\Services\Manufacturing\ManufacturingOrderService::class,
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function listeners(): array {
+        return [
+            \App\Events\Invoicing\DeliveryInvoiced::class => [
+                \App\Listeners\Manufacturing\MarkDeliveryInvoiced::class,
+            ],
+        ];
+    }
 }

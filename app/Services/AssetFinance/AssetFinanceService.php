@@ -68,7 +68,7 @@ class AssetFinanceService {
      * Ratenplan-Zeilen für die Laufzeit.
      */
     public function activate(AssetFinanceContract $contract, User $actor): AssetFinanceContract {
-        $this->assertTransition($contract, AssetFinanceStatus::Active);
+        $this->assertStatusTransition($contract->status, AssetFinanceStatus::Active);
 
         return DB::transaction(function () use ($contract, $actor): AssetFinanceContract {
             $contract->forceFill([
@@ -212,7 +212,7 @@ class AssetFinanceService {
             $contract = $endProcess->contract()->firstOrFail();
             $target = $endProcess->kind->resultingStatus();
 
-            $this->assertTransition($contract, $target);
+            $this->assertStatusTransition($contract->status, $target);
 
             $endProcess->forceFill([
                 'status' => 'completed',
@@ -237,7 +237,7 @@ class AssetFinanceService {
     }
 
     public function terminate(AssetFinanceContract $contract, User $actor, ?string $reason = null): AssetFinanceContract {
-        $this->assertTransition($contract, AssetFinanceStatus::Terminated);
+        $this->assertStatusTransition($contract->status, AssetFinanceStatus::Terminated);
 
         $contract->forceFill(['status' => AssetFinanceStatus::Terminated->value])->save();
         $contract->audit('assetFinance.terminated', ['reason' => $reason, 'by' => $actor->id]);
@@ -246,7 +246,7 @@ class AssetFinanceService {
     }
 
     public function close(AssetFinanceContract $contract, User $actor): AssetFinanceContract {
-        $this->assertTransition($contract, AssetFinanceStatus::Closed);
+        $this->assertStatusTransition($contract->status, AssetFinanceStatus::Closed);
 
         $contract->forceFill([
             'status' => AssetFinanceStatus::Closed->value,
@@ -364,8 +364,4 @@ class AssetFinanceService {
         ];
     }
 
-    /** Gemeinsamer Guard (Vollaudit 2026-07, M44) — Semantik unverändert. */
-    private function assertTransition(AssetFinanceContract $contract, AssetFinanceStatus $target): void {
-        $this->assertStatusTransition($contract->status, $target);
-    }
 }

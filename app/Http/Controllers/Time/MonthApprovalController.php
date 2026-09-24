@@ -11,14 +11,14 @@
 namespace App\Http\Controllers\Time;
 
 use App\Enums\TimeApproval\MonthClosureStatus;
-use App\Models\Time\MonthClosure;
+use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
+use App\Models\Time\MonthClosure;
 use App\Services\TimeApproval\{MonthClosureService, MonthClosureWorkflowException, MonthTotalsSnapshotter};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Selbstbedienungs-Ansicht für Monatsfreigaben (MVP-016).
@@ -70,7 +70,7 @@ class MonthApprovalController extends Controller {
             : null;
 
         return view('time-approval.month.show', [
-            'closure' => $closure->load(['events.actor']),
+            'closure' => $closure->load(['journal.actor']),
             'preview' => $preview,
         ]);
     }

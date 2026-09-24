@@ -12,7 +12,8 @@ namespace App\Services\Procurement;
 
 use App\Models\Procurement\{PurchaseOrder, PurchaseOrderLine};
 use App\Models\Supplier\Supplier;
-use App\Services\Gaeb\GaebOrderExportService;
+use App\Services\Billing\DocumentTotalsCalculator;
+use App\Services\Procurement\Contracts\PurchaseOrderGaebExporter;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use DateTimeImmutable;
@@ -85,7 +86,7 @@ class PurchaseOrderExportService {
      * @return array{content: string, filename: string, losses: list<string>}
      */
     public function toGaeb(PurchaseOrder $order, GaebPhase $phase = GaebPhase::Order): array {
-        return app(GaebOrderExportService::class)->export($order, $phase);
+        return app(PurchaseOrderGaebExporter::class)->export($order, $phase);
     }
 
     public function toUgl(PurchaseOrder $order): string {
@@ -212,7 +213,7 @@ class PurchaseOrderExportService {
             id: $id,
             quantity: $quantity,
             unitCode: $this->unitCode((string) $line->unit),
-            netAmount: $unitPrice->times($quantity),
+            netAmount: DocumentTotalsCalculator::lineNet($quantity, $unitPrice),
             itemName: $name,
             unitPrice: $unitPrice,
             itemDescription: $description,

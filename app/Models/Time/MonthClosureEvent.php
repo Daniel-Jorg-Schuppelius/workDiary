@@ -10,9 +10,8 @@
 
 namespace App\Models\Time;
 
-use App\Models\Concerns\AppendOnly;
+use App\Models\Journal\JournalEntry;
 use App\Models\Platform\User;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
@@ -27,9 +26,8 @@ use Illuminate\Support\Carbon;
  * @property array<string, mixed>|null $payload
  * @property Carbon $created_at
  */
-class MonthClosureEvent extends Model {
+class MonthClosureEvent extends JournalEntry {
     // Append-only jetzt technisch erzwungen statt nur dokumentiert (Vollaudit 2026-07, M52).
-    use AppendOnly;
 
     public const UPDATED_AT = null;
 
@@ -55,5 +53,10 @@ class MonthClosureEvent extends Model {
     /** @return BelongsTo<User, $this> */
     public function actor(): BelongsTo {
         return $this->belongsTo(User::class, 'actor_user_id');
+    }
+
+    /** @return BelongsTo<MonthClosure, $this> */
+    public function subject(): BelongsTo {
+        return $this->monthClosure();
     }
 }

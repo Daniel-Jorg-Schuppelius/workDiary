@@ -122,4 +122,35 @@ final class ClubManifest extends Manifest {
             PermissionGroup::Club,
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Club\DeadlineScans\ClubEventReminderScan::class,
+                \App\Services\Club\DeadlineScans\ClubGroupCriteriaScan::class,
+            ],
+            \App\Services\Import\EntitySpec::class => [
+                \App\Services\Club\Import\ClubMemberSpec::class,
+            ],
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Club\Demo\ClubDemoSeeder::class,
+            ],
+            \App\Services\Finance\Contracts\AllocationTargetHandler::class => [
+                \App\Services\Club\Finance\ClubFeeAllocationHandler::class,
+            ],
+            \App\Services\Event\Contracts\RoomBlockingSource::class => [
+                \App\Services\Club\ClubResourceService::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function listeners(): array {
+        return [
+            \App\Events\Calendar\EventOccurrenceCreated::class => [
+                \App\Listeners\Club\InheritClubEventFromMaster::class,
+            ],
+        ];
+    }
 }

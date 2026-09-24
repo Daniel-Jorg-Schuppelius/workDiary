@@ -10,11 +10,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Notification\DeadlineScans;
+namespace App\Services\AssetCompliance\DeadlineScans;
 
 use App\Models\AssetCompliance\AssetComplianceAssignment;
 use App\Models\Platform\Organization;
 use App\Services\AssetCompliance\AssetComplianceService;
+use App\Services\Notification\DeadlineScans\{AbstractDeadlineScan, DeadlineScanOptions};
 use App\Services\Notification\NotificationDispatcher;
 
 /**

@@ -15,8 +15,7 @@ namespace App\Services\Safety;
 use App\Enums\Safety\HazardAssessmentStatus;
 use App\Models\Platform\{Organization, User};
 use App\Models\Safety\{HazardAssessment, HazardAssessmentItem};
-use App\Services\Concerns\AssignsSequentialNo;
-use App\Services\Isms\Concerns\AssertsIsmsTransition;
+use App\Services\Concerns\{AssertsValidatedTransition, AssignsSequentialNo};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -29,7 +28,7 @@ use Illuminate\Validation\ValidationException;
  * legt die Folgeversion an und archiviert das Original.
  */
 class HazardAssessmentService {
-    use AssertsIsmsTransition;
+    use AssertsValidatedTransition;
     use AssignsSequentialNo;
 
     /**
@@ -77,7 +76,7 @@ class HazardAssessmentService {
             return $assessment;
         }
 
-        $this->assertIsmsTransition($assessment->status, $target, 'safety.error.invalid_transition');
+        $this->assertValidatedTransition($assessment->status, $target, 'safety.error.invalid_transition');
 
         $changes = ['status' => $target->value];
 

@@ -22,7 +22,7 @@ return new class extends Migration {
             $table->string('status', 16)->default('draft');
             // Felddefinitionen (Feature 032): Array von
             // {key, label, type, required, options[], help, unit} —
-            // Struktur wird beim Speichern über FormFieldDefinition validiert.
+            // Struktur wird beim Speichern über FieldSchema::fromRows validiert.
             $table->json('fields');
             $table->foreignId('created_by_user_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();

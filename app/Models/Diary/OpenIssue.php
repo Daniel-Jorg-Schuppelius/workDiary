@@ -11,13 +11,12 @@
 namespace App\Models\Diary;
 
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasJournal, HasSqid};
 use App\Models\Platform\User;
 use Database\Factories\Diary\OpenIssueFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
-use App\Models\Diary\OpenIssueEvent;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 
 /**
  * @property int $id
@@ -42,6 +41,10 @@ use App\Models\Diary\OpenIssueEvent;
  */
 class OpenIssue extends Model {
     use Auditable;
+    use HasJournal;
+
+    /** @var class-string<OpenIssueEvent> Journal des Trägers (MVP-864) */
+    protected static string $journalClass = OpenIssueEvent::class;
 
     use BelongsToOrganization;
     use HasAttachments;
@@ -110,8 +113,4 @@ class OpenIssue extends Model {
         return $this->belongsTo(DiaryEntry::class, 'follow_up_diary_entry_id');
     }
 
-    /** @return HasMany<OpenIssueEvent, $this> */
-    public function events(): HasMany {
-        return $this->hasMany(OpenIssueEvent::class)->orderBy('created_at');
-    }
 }

@@ -22,7 +22,6 @@ use App\Models\Platform\Organization;
 use App\Services\Accounting\Filing\{VatFilingPeriodService, VatReturnService};
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
-use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\{Decimal, Money};
 use Illuminate\Database\Eloquent\Model;
@@ -383,21 +382,8 @@ class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
         $customerType = (new Customer())->getMorphClass();
 
         foreach ($schedules as $schedule) {
-            $gross = Money::zero(CurrencyCode::Euro);
-            foreach ($schedule->items as $line) {
-                $unit = $line->unit_price;
-                if (! $unit instanceof Money) {
-                    continue;
-                }
-                $net = $unit->times(NumberHelper::normalizeDecimalString((string) $line->quantity))->withScale(2);
-                if ($line->discount_percent !== null) {
-                    $net = $line->discount_percent->subtractFrom($net);
-                }
-                if ($line->discount_amount instanceof Money) {
-                    $net = $net->minus($line->discount_amount);
-                }
-                $gross = $gross->plus($line->tax_rate !== null ? $line->tax_rate->addTo($net) : $net);
-            }
+            // Bruttosumme eines Laufs wie im Rechnungslauf (MVP-865).
+            $gross = $schedule->documentTotals()['total'];
             if (! $gross->isPositive()) {
                 continue;
             }

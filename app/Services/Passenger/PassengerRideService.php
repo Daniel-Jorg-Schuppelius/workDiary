@@ -18,6 +18,7 @@ use App\Models\Diary\DiaryEntry;
 use App\Models\Fleet\Vehicle;
 use App\Models\Passenger\{PassengerConcession, PassengerFareTariff, PassengerRide, PassengerVehicleProfile};
 use App\Models\Platform\{Organization, User};
+use App\Services\Concerns\AssertsValidatedTransition;
 use App\Services\Invoicing\TaxResolver;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -39,6 +40,7 @@ use Illuminate\Validation\ValidationException;
  *  - Jede Fahrt hängt an einem {@see DiaryEntry} als Fall-/Timeline-Anker.
  */
 class PassengerRideService {
+    use AssertsValidatedTransition;
     /** Name der Pflicht-Qualifikation (Seed im Branchenprofil). */
     public const DRIVER_QUALIFICATION = 'Fahrerlaubnis zur Fahrgastbeförderung (P-Schein)';
 
@@ -136,7 +138,7 @@ class PassengerRideService {
      * Konzession werden geprüft und als unveränderlicher Snapshot verankert.
      */
     public function assign(PassengerRide $ride, User $driver, Vehicle $vehicle, User $actor): PassengerRide {
-        $this->assertTransition($ride, RideStatus::Assigned);
+        $this->assertValidatedTransition($ride->status, RideStatus::Assigned, 'passenger.error.invalid_transition_detail');
 
         $issues = $this->dispatchIssues($ride, $driver, $vehicle);
         if ($issues !== []) {
@@ -240,7 +242,7 @@ class PassengerRideService {
      * @param  array{price_kind: string, tariff?: PassengerFareTariff|null, planned_net?: string|null, estimated_km?: string|null, estimated_minutes?: int|null}  $pricing
      */
     public function start(PassengerRide $ride, array $pricing, User $actor): PassengerRide {
-        $this->assertTransition($ride, RideStatus::EnRoutePickup);
+        $this->assertValidatedTransition($ride->status, RideStatus::EnRoutePickup, 'passenger.error.invalid_transition_detail');
         if ($ride->driver_user_id === null || $ride->vehicle_id === null || $ride->assignment_snapshot === null) {
             throw ValidationException::withMessages(['assignment' => (string) __('passenger.error.not_assigned')]);
         }
@@ -289,7 +291,7 @@ class PassengerRideService {
 
     /** Statuswechsel entlang der erlaubten Pfade (wartend/besetzt). */
     public function transition(PassengerRide $ride, RideStatus $target, User $actor): PassengerRide {
-        $this->assertTransition($ride, $target);
+        $this->assertValidatedTransition($ride->status, $target, 'passenger.error.invalid_transition_detail');
 
         $timestamps = match ($target) {
             RideStatus::Waiting => ['waiting_started_at' => now()],
@@ -374,7 +376,7 @@ class PassengerRideService {
      * @param  array<string, mixed>  $closing
      */
     public function complete(PassengerRide $ride, array $closing, User $actor): PassengerRide {
-        $this->assertTransition($ride, RideStatus::Completed);
+        $this->assertValidatedTransition($ride->status, RideStatus::Completed, 'passenger.error.invalid_transition_detail');
 
         $meterNet = trim((string) ($closing['meter_net'] ?? ''));
         $taxRate = trim((string) ($closing['tax_rate'] ?? ''));
@@ -437,7 +439,7 @@ class PassengerRideService {
         if (! in_array($target, [RideStatus::Cancelled, RideStatus::NoShow, RideStatus::Aborted], true)) {
             throw ValidationException::withMessages(['status' => (string) __('passenger.error.invalid_transition')]);
         }
-        $this->assertTransition($ride, $target);
+        $this->assertValidatedTransition($ride->status, $target, 'passenger.error.invalid_transition_detail');
 
         $ride->forceFill([
             'status' => $target,
@@ -471,14 +473,4 @@ class PassengerRideService {
         return $ride;
     }
 
-    private function assertTransition(PassengerRide $ride, RideStatus $target): void {
-        if (! $ride->status->canTransitionTo($target)) {
-            throw ValidationException::withMessages([
-                'status' => (string) __('passenger.error.invalid_transition_detail', [
-                    'from' => $ride->status->value,
-                    'to' => $target->value,
-                ]),
-            ]);
-        }
-    }
 }

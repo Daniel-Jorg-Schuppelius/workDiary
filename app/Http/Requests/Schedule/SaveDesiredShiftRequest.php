@@ -12,9 +12,8 @@ namespace App\Http\Requests\Schedule;
 
 use App\Enums\Shift\ShiftPreference;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\Schedule\DesiredShift;
-use App\Models\Schedule\ShiftType;
 use App\Models\Platform\User;
+use App\Models\Schedule\{DesiredShift, ShiftType};
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;

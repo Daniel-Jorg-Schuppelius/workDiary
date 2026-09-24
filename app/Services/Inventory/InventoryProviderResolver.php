@@ -21,7 +21,7 @@ use RuntimeException;
 /**
  * Löst die Bestandsführerschaft und den aktiven Provider je Organisation auf
  * (Feature 048, MVP-066 / Feature 078, MVP-319) – analog
- * {@see \App\Services\Finance\BillingModeResolver}. Kaskade:
+ * {@see \App\Services\Billing\BillingModeResolver}. Kaskade:
  * organizations.settings['inventory_mode'] → Fallback `local`.
  *
  * Externe Provider registrieren sich als Factory je Plugin-ID (Singleton-

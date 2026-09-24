@@ -103,4 +103,19 @@ final class ApplicationsManifest extends Manifest {
             'groups' => [],
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Applications\Demo\ApplicationsDemoBlock::class,
+            ],
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Applications\DeadlineScans\TenderDeadlineScan::class,
+            ],
+            \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
+                \App\Services\Applications\Retention\ApplicationsRetentionPolicies::class,
+            ],
+        ];
+    }
 }

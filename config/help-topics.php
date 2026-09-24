@@ -604,6 +604,7 @@ return [
         // Administration – Betrieb, Stammdaten-Pflege & Integrationen
         'admin.automations.*' => 'admin.automations',
         'admin.branding.*' => 'admin.branding',
+        'admin.custom-fields.*' => 'admin.custom-fields',
         'admin.data.*' => 'admin.data-transfer',
         'admin.legacy-migration.*' => 'admin.legacy-migration',
         'admin.demo.*' => 'admin.demo-data',

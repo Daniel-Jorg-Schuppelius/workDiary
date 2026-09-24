@@ -160,7 +160,7 @@ class AccountingOpeningAndDatevTest extends TestCase {
      * das Roundtrip-Parsing des Adapters bestehen.
      */
     public function test_datev_export_produces_an_importable_extf_batch(): void {
-        if (! \App\Services\Finance\FinancialFormatsSupport::isAvailable()) {
+        if (! \App\Services\Billing\FinancialFormatsSupport::isAvailable()) {
             $this->markTestSkipped('php-financial-formats nicht installiert.');
         }
 
@@ -203,7 +203,7 @@ class AccountingOpeningAndDatevTest extends TestCase {
      * offenen Posten, Skonto aus dem Quellbeleg, KOST1 aus der Org-Default-Regel.
      */
     public function test_extf_carries_due_date_discount_and_cost_center_from_the_journal(): void {
-        if (! \App\Services\Finance\FinancialFormatsSupport::isAvailable()) {
+        if (! \App\Services\Billing\FinancialFormatsSupport::isAvailable()) {
             $this->markTestSkipped('php-financial-formats nicht installiert.');
         }
 

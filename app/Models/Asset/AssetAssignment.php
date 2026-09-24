@@ -11,13 +11,13 @@
 namespace App\Models\Asset;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Team, User};
 use Database\Factories\Asset\AssetAssignmentFactory;
 use Illuminate\Database\Eloquent\{Builder, Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use App\Models\Diary\DiaryEntry;
 
 /**
  * Ausgabe-/Rückgabe-Vorgang eines Assets (Feature 009).

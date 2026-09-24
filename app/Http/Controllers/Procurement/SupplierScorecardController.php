@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Reporting;
+namespace App\Http\Controllers\Procurement;
 
 use App\Enums\Procurement\PurchaseOrderStatus;
 use App\Enums\User\Permission;

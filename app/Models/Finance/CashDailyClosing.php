@@ -16,7 +16,6 @@ use App\Models\Platform\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Finance\CashRegister;
 
 /**
  * Tagesabschluss einer Kasse (MVP-414): Kassensturz mit Soll/Ist/Differenz.

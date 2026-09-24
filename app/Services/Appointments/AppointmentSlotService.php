@@ -14,21 +14,21 @@ namespace App\Services\Appointments;
 
 use App\Models\Platform\User;
 use App\Models\Sales\BookableService;
-use App\Services\Dispatch\GapFillSuggester;
+use App\Services\Calendar\Contracts\FreeSlotSource;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
 
 /**
  * Slot-Ermittlung für die Portal-Terminbuchung (Feature 087, MVP-666).
  *
- * Die Fenster kommen aus der Dispositions-Leerzeit (GapFillSuggester), nach
+ * Die Fenster liefert die Disposition über {@see FreeSlotSource} (ohne Planungsmodul: keine), nach
  * außen aber nur als **anonyme Zeitfenster**: keine Mitarbeiternamen, keine
  * Auslastung, keine Anzahl freier Kräfte — ein Slot ist buchbar oder nicht.
  * Deshalb werden die Fenster über alle Mitarbeiter DEDUPLIZIERT, bevor sie
  * das Haus verlassen.
  */
 class AppointmentSlotService {
-    public function __construct(private readonly GapFillSuggester $gaps) {}
+    public function __construct(private readonly FreeSlotSource $gaps) {}
 
     /**
      * Anonyme Zeitfenster eines Tages für eine Leistungsart.

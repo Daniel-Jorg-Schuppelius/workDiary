@@ -82,4 +82,24 @@ final class KnowledgeManifest extends Manifest {
             'groups' => [],
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Navigation\Contracts\NavigationCondition::class => [
+                \App\Services\Collections\Navigation\KnowledgeHubCondition::class,
+            ],
+            \App\Services\Search\Indexing\Sources\SearchSource::class => [
+                \App\Services\Knowledge\Search\KnowledgeArticleSource::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function bindings(): array {
+        return [
+            \App\Services\Search\Contracts\CollectionScope::class => \App\Services\Collections\Search\CollectionSearchScope::class,
+            \App\Services\ServiceTicket\Contracts\KnownErrorPublisher::class => \App\Services\Knowledge\Helpdesk\KnownErrorArticlePublisher::class,
+        ];
+    }
 }

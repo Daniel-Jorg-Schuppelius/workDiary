@@ -10,11 +10,11 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Finance\Sepa;
+namespace App\Services\Billing\Sepa;
 
 use App\Enums\Finance\{MandateKind, PaymentRunKind};
 use App\Models\Finance\{PaymentRun, PaymentRunItem};
-use App\Services\Finance\FinancialFormatsSupport;
+use App\Services\Billing\FinancialFormatsSupport;
 use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use RuntimeException;

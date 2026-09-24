@@ -11,13 +11,13 @@
 namespace App\Http\Controllers\Diary;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Controller;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Hr\Qualification;
 use App\Models\Platform\User;
 use App\Support\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
-use App\Http\Controllers\Controller;
 
 /**
  * Qualifikations-Anforderungen je Auftrag pflegen (Feature 028, Rang 53):

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Agile;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasJournal, HasSqid};
 use App\Models\Project\Project;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -34,7 +34,11 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 class AgileBoard extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use HasJournal;
     use HasSqid;
+
+    /** @var class-string<AgileEvent> Journal des Trägers (MVP-864) */
+    protected static string $journalClass = AgileEvent::class;
 
     public const METHOD_KANBAN = 'kanban';
 

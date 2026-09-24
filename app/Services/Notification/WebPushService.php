@@ -10,8 +10,7 @@
 
 namespace App\Services\Notification;
 
-use App\Models\Platform\PushSubscription;
-use App\Models\Platform\User;
+use App\Models\Platform\{PushSubscription, User};
 use App\Support\UrlSafety;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Facades\Log;

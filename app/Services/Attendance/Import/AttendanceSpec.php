@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Import\Specs;
+namespace App\Services\Attendance\Import;
 
 use App\Enums\Attendance\AttendanceSource;
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
@@ -18,6 +18,7 @@ use App\Models\Integration\ImportValueMapping;
 use App\Models\Platform\{Organization, User};
 use App\Models\Time\Attendance;
 use App\Services\Import\{HasMappableValues, ImportOutcome, ValidationIssue};
+use App\Services\Import\Specs\AbstractEntitySpec;
 use App\Services\Import\Specs\Concerns\{BindsTimeImportReference, ParsesLocalDateTime, ResolvesImportUsers};
 use App\Services\TimeApproval\DayCloseService;
 use App\Support\Tz;

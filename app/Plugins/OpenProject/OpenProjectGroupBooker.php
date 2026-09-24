@@ -25,6 +25,10 @@ use Illuminate\Support\Collection;
  * an den {@see OpenProjectImportService}.
  */
 class OpenProjectGroupBooker implements InboxGroupBooker {
+    public function pluginId(): string {
+        return 'openproject';
+    }
+
     use ResolvesInboxTargets;
 
     public function __construct(private readonly OpenProjectImportService $service) {}

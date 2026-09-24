@@ -18,7 +18,6 @@ use Database\Factories\Schedule\DesiredShiftFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Schedule\ShiftType;
 
 /**
  * Wunsch/Abneigung eines Mitarbeiters für eine konkrete Schicht (Feature 007).

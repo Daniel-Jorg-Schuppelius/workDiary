@@ -11,8 +11,8 @@
 namespace Tests\Feature\Club;
 
 use App\Models\Club\ClubMember;
+use App\Services\Club\Import\ClubMemberSpec;
 use App\Services\Import\ImportOutcome;
-use App\Services\Import\Specs\ClubMemberSpec;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

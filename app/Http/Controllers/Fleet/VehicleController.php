@@ -13,17 +13,17 @@ namespace App\Http\Controllers\Fleet;
 use App\Enums\AssetCompliance\AssetComplianceStatus;
 use App\Enums\Vehicle\{VehicleOwnership, VehiclePropulsion, VehicleType};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Fleet\SaveVehicleRequest;
 use App\Models\Asset\Asset;
 use App\Models\Fleet\Vehicle;
 use App\Models\Platform\User;
-use App\Services\AssetCompliance\AssetComplianceService;
+use App\Services\Asset\Contracts\AssetComplianceStatusProvider;
 use App\Services\Fleet\VehicleService;
 use App\Support\{Setting, SortableQuery};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class VehicleController extends Controller {
     use ResolvesCurrentOrganization;
@@ -39,7 +39,7 @@ class VehicleController extends Controller {
 
     public function __construct(
         private readonly VehicleService $service,
-        private readonly AssetComplianceService $compliance,
+        private readonly AssetComplianceStatusProvider $compliance,
     ) {}
 
     public function index(Request $request): View {

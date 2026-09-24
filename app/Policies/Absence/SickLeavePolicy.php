@@ -10,9 +10,9 @@
 
 namespace App\Policies\Absence;
 
+use App\Models\Absence\SickLeave;
 use App\Models\Attachments\Attachment;
 use App\Models\Platform\User;
-use App\Models\Absence\SickLeave;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 use App\Support\MorphMap;
 

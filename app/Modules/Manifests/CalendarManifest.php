@@ -62,4 +62,11 @@ final class CalendarManifest extends Manifest {
             'calendly',
         ];
     }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\Calendar\Contracts\FreeSlotSource::class => \App\Services\Calendar\Contracts\NullFreeSlotSource::class,
+        ];
+    }
 }

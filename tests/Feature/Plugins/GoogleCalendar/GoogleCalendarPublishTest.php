@@ -17,7 +17,6 @@ use App\Models\Plugins\GoogleCalendar\GoogleCalendarConnection;
 use App\Plugins\GoogleCalendar\Api\GoogleCalendarClient;
 use App\Plugins\GoogleCalendar\GoogleCalendarPlugin;
 use App\Plugins\Support\Calendar\RemoteCalendarPublishService;
-use App\Services\Event\IcsFeedService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
 use Tests\Concerns\WithOrganization;
@@ -59,7 +58,7 @@ final class GoogleCalendarPublishTest extends TestCase {
     public function test_publish_inserts_event_with_deterministic_id_then_unchanged(): void {
         $this->connection();
         $event = $this->event();
-        $uid = IcsFeedService::eventUid($event);
+        $uid = $event->icsUid();
         $expectedId = GoogleCalendarClient::eventId($uid);
 
         $fake = FakePluginHttp::fake([
@@ -97,7 +96,7 @@ final class GoogleCalendarPublishTest extends TestCase {
     public function test_changed_event_is_updated_not_duplicated(): void {
         $this->connection();
         $event = $this->event();
-        $expectedId = GoogleCalendarClient::eventId(IcsFeedService::eventUid($event));
+        $expectedId = GoogleCalendarClient::eventId($event->icsUid());
 
         FakePluginHttp::fake([
             'https://www.googleapis.com/calendar/v3/calendars/primary/events' => FakePluginHttp::response(['id' => $expectedId]),
@@ -124,7 +123,7 @@ final class GoogleCalendarPublishTest extends TestCase {
         // bereits → 409 beim Insert ⇒ Update statt Duplikat.
         $this->connection();
         $event = $this->event();
-        $expectedId = GoogleCalendarClient::eventId(IcsFeedService::eventUid($event));
+        $expectedId = GoogleCalendarClient::eventId($event->icsUid());
 
         $fake = FakePluginHttp::fake([
             'https://www.googleapis.com/calendar/v3/calendars/primary/events/*' => FakePluginHttp::response(['id' => $expectedId]),
@@ -143,7 +142,7 @@ final class GoogleCalendarPublishTest extends TestCase {
     public function test_cancelled_event_is_deleted_and_reference_removed(): void {
         $this->connection();
         $event = $this->event();
-        $expectedId = GoogleCalendarClient::eventId(IcsFeedService::eventUid($event));
+        $expectedId = GoogleCalendarClient::eventId($event->icsUid());
 
         FakePluginHttp::fake([
             'https://www.googleapis.com/calendar/v3/calendars/primary/events' => FakePluginHttp::response(['id' => $expectedId]),

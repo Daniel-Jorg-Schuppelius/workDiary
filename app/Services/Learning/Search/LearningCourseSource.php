@@ -10,12 +10,13 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Search\Indexing\Sources;
+namespace App\Services\Learning\Search;
 
 use App\Enums\Learning\LearningCourseStatus;
 use App\Enums\Search\SearchSourceType;
 use App\Models\Learning\LearningCourse;
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
+use App\Services\Search\Indexing\Sources\AbstractSearchSource;
 use Illuminate\Database\Eloquent\{Builder, Model};
 
 /**

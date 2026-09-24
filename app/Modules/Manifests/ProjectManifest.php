@@ -64,4 +64,13 @@ final class ProjectManifest extends Manifest {
             'openproject',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Import\EntitySpec::class => [
+                \App\Services\Project\Import\ProjectSpec::class,
+            ],
+        ];
+    }
 }

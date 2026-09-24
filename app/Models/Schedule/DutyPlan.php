@@ -18,7 +18,6 @@ use Database\Factories\Schedule\DutyPlanFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
-use App\Models\Schedule\ScheduledShift;
 
 /**
  * @property Carbon $from_date

@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Content;
+namespace App\Services\Support\Content;
 
 use App\Models\Asset\Asset;
 use App\Models\Communication\CommunicationNote;

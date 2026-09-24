@@ -10,13 +10,15 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Demo;
+namespace App\Services\Club\Demo;
 
 use App\Enums\Club\{ClubAvailabilityStatus, ClubEventKind, ClubEventRoleKind, ClubEventVisibility, ClubFeePaymentMethod, ClubFeeTariffKind, ClubGuardianPermission, ClubHorseKind, ClubLineupSlot, ClubParticipationSource, ClubResultFormat};
+use App\Enums\Demo\DemoIndustry;
 use App\Models\Calendar\Event;
 use App\Models\Club\{ClubFeeAccount, ClubFeeClaim, ClubGrade, ClubGradingSystem, ClubGroup, ClubHorse, ClubMember, ClubResource, ClubSportProfile};
 use App\Models\Platform\{Organization, User};
 use App\Services\Club\{ClubAttendanceService, ClubCompetitionService, ClubEventService, ClubExamService, ClubFeePaymentService, ClubFeeRunService, ClubFeeService, ClubGradingService, ClubGroupService, ClubHorseService, ClubMatchService, ClubMemberService, ClubResourceService, ClubStarterPackService, ClubTeamService};
+use App\Services\Demo\Contracts\{DemoBlock, DemoSeedContext};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +31,7 @@ use Illuminate\Support\Facades\DB;
  * und Sportstätten. Alle Personen, Vereine und Nachweise sind erfunden;
  * Termine liegen relativ zum Seed-Tag, Namen und Mengen sind fest.
  */
-class ClubDemoSeeder {
+class ClubDemoSeeder implements DemoBlock {
     private const TIMEZONE = 'Europe/Berlin';
 
     /** Startpaket → [ISO-Wochentag, Startstunde Wanduhr]; Gruppen einer Sportart folgen im 90-Minuten-Takt. */
@@ -156,11 +158,22 @@ class ClubDemoSeeder {
         private readonly ClubResourceService $resources,
     ) {}
 
+    /** Nur die Musterbranche Sportverein bekommt den fiktiven Mehrspartenverein — anderswo wäre er fremd (MVP-848). */
+    public function supports(DemoSeedContext $context): bool {
+        return $context->industry === DemoIndustry::Verein && $context->moduleActive('module.club');
+    }
+
+    public function seed(DemoSeedContext $context): array {
+        $club = $this->seedClub($context->organization, $context->actor, $context->users);
+
+        return ['club_members' => $club['members'], 'club_events' => $club['events'], 'club_claims' => $club['claims']];
+    }
+
     /**
      * @param  Collection<int, User>  $users  Demo-Nutzer in Seed-Reihenfolge (Admin, Operator A, Operator B, Disponent, …)
      * @return array{packs: int, members: int, events: int, sheets: int, matches: int, claims: int, payments: int}
      */
-    public function seed(Organization $organization, User $actor, Collection $users): array {
+    public function seedClub(Organization $organization, User $actor, Collection $users): array {
         $today = CarbonImmutable::today(self::TIMEZONE);
         $this->groups = [];
         $this->members = [];
@@ -248,7 +261,7 @@ class ClubDemoSeeder {
                 'email' => $person[4] ?? null,
                 'birth_date' => $today->subYears($age)->subDays(100)->toDateString(),
                 'joined_on' => $joined->addMonths($index % 18)->toDateString(),
-                'city' => 'Musterstadt',
+                'address_city' => 'Musterstadt',
                 'user_id' => $first === 'Thomas' && $last === 'Brandt' ? $playerCoach->id : null,
             ]);
             $this->members[$first . ' ' . $last] = $member;

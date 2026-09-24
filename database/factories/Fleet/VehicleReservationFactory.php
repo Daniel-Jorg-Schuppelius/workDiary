@@ -10,9 +10,8 @@
 
 namespace Database\Factories\Fleet;
 
+use App\Models\Fleet\{Vehicle, VehicleReservation};
 use App\Models\Platform\User;
-use App\Models\Fleet\Vehicle;
-use App\Models\Fleet\VehicleReservation;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 

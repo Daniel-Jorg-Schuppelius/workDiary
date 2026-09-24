@@ -17,7 +17,7 @@
 @props(['for' => null, 'subject' => null])
 
 @php
-    $subjectResolver = app(\App\Services\Content\ContentSubjectResolver::class);
+    $subjectResolver = app(\App\Services\Support\Content\ContentSubjectResolver::class);
     $resolved = $subject ?? ($for !== null ? $subjectResolver->resolve($for) : null);
     $chain = $resolved?->chain() ?? [];
 @endphp

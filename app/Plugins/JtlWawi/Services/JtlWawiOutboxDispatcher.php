@@ -32,7 +32,7 @@ use RuntimeException;
  * `GET /v2/stocks/changes` im Rückschau-Fenster nach dem Marker durchsucht —
  * Treffer ⇒ bereits verbucht ⇒ bestätigen ohne zweite Buchung. Bleibt der
  * Ausgang nach allen Versuchen unklar, übernimmt der
- * {@see \App\Jobs\Integration\InventoryOutboxDeliveryJob} die Eskalation zu
+ * {@see \App\Jobs\Inventory\InventoryOutboxDeliveryJob} die Eskalation zu
  * `compensation_required` + Konflikt — nie blinde Wiederholung ohne
  * Vorprüfung, nie stiller Verlust.
  */

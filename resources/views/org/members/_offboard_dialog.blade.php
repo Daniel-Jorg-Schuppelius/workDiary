@@ -21,14 +21,11 @@
     </x-form-group>
 
     <x-form-group :legend="__('Übergabeliste')" icon="checklist" tone="primary">
-        @if ($checklist['media']->isNotEmpty())
-            <div role="alert" class="alert alert-error text-sm">
-                <span>{{ __('Noch ausgegebene Zutrittsmedien — der Austritt ist erst nach der Rücknahme möglich:') }}
-                    {{ $checklist['media']->map(fn ($medium) => ($medium->label ?: __('Medium')) . ' …' . $medium->number_suffix)->implode(', ') }}</span>
-            </div>
-        @endif
+        @foreach ($checklist['blockers'] as $blocker)
+            <div role="alert" class="alert alert-error text-sm"><span>{{ $blocker }}</span></div>
+        @endforeach
 
-        @if ($checklist['assets']->isEmpty() && $checklist['tasks']->isEmpty() && $checklist['open_attendances'] === 0 && $checklist['media']->isEmpty())
+        @if ($checklist['assets']->isEmpty() && $checklist['tasks']->isEmpty() && $checklist['open_attendances'] === 0 && $checklist['blockers'] === [])
             <p class="text-sm text-muted">{{ __('Nichts offen — es gibt nichts zu übergeben.') }}</p>
         @else
             <ul class="space-y-2 text-sm">

@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace App\Models\ServiceTicket;
 
+use App\Enums\ServiceTicket\ProblemStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, Searchable};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
-use App\Models\ServiceTicket\ServiceTicket;
 
 /**
  * Problem (Feature 065, MVP-156): Ursachenobjekt hinter Incidents —
@@ -26,7 +26,7 @@ use App\Models\ServiceTicket\ServiceTicket;
  * @property int $id
  * @property int $organization_id
  * @property string $title
- * @property string $status
+ * @property ProblemStatus $status
  * @property string $visibility
  * @property \Illuminate\Support\Carbon|null $effectiveness_check_due_at
  * @property \Illuminate\Support\Carbon|null $effectiveness_checked_at
@@ -36,8 +36,6 @@ class Problem extends Model {
     use BelongsToOrganization;
     use HasSqid;
     use Searchable;
-
-    public const STATUSES = ['open', 'analyzing', 'known_error', 'resolved', 'closed'];
 
     protected $fillable = [
         'organization_id', 'title', 'description', 'owner_id', 'status',
@@ -49,6 +47,7 @@ class Problem extends Model {
     protected $casts = [
         'effectiveness_check_due_at' => 'datetime',
         'effectiveness_checked_at' => 'datetime',
+        'status' => ProblemStatus::class,
     ];
 
     /** @var array<string, mixed> */

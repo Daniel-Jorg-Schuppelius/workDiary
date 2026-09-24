@@ -13,9 +13,10 @@ namespace App\Http\Controllers\Time;
 use App\Enums\Compliance\ComplianceFindingStatus;
 use App\Enums\TimeApproval\OvertimeRequestStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Controller;
 use App\Models\Compliance\ComplianceFinding;
-use App\Models\Time\OvertimeRequest;
 use App\Models\Platform\User;
+use App\Models\Time\OvertimeRequest;
 use App\Services\Compliance\AttendancePlausibilityScanService;
 use App\Services\TimeApproval\OvertimeRequestService;
 use App\Support\MorphMap;
@@ -23,7 +24,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Mitarbeiter-Ansicht für Überstunden-Anträge (MVP-519).

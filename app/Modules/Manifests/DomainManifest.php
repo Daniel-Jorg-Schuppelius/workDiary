@@ -97,4 +97,13 @@ final class DomainManifest extends Manifest {
             'domainreselling',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Domain\DeadlineScans\DomainExpiryScan::class,
+            ],
+        ];
+    }
 }

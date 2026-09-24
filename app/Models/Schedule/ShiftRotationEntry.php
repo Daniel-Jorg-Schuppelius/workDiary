@@ -12,7 +12,6 @@ namespace App\Models\Schedule;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Schedule\ShiftType;
 
 /**
  * Slot eines Rollplans (MVP-522): Woche × ISO-Wochentag → Schichttyp.

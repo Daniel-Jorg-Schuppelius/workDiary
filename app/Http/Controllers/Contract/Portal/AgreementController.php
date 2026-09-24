@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\CustomerPortal;
+namespace App\Http\Controllers\Contract\Portal;
 
 use App\Enums\Contract\{ContractKind, SigningRevisionStatus};
 use App\Http\Controllers\Article\ArticleExportController;

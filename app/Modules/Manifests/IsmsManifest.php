@@ -101,4 +101,13 @@ final class IsmsManifest extends Manifest {
             'groups' => [],
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Isms\DeadlineScans\IsmsDeadlineScans::class,
+            ],
+        ];
+    }
 }

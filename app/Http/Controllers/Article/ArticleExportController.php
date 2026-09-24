@@ -13,14 +13,14 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Article;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Models\Article\Article;
-use App\Services\Procurement\DatanormExportService;
+use App\Services\Article\DatanormExportService;
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use ERechnungToolkit\Enums\{DatanormPriceIndicator, DatanormVersion};
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\HeaderUtils;
-use App\Http\Controllers\Controller;
 
 /**
  * DATANORM-Export des Artikelstamms (Feature 107, W5): liefert ein ZIP mit

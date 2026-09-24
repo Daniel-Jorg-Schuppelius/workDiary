@@ -10,12 +10,13 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Notification\DeadlineScans;
+namespace App\Services\Schedule\DeadlineScans;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Shift\ShiftExchangeStatus;
 use App\Models\Platform\User;
 use App\Models\Schedule\ShiftExchange;
+use App\Services\Notification\DeadlineScans\{AbstractDeadlineScan, DeadlineScanOptions};
 use App\Services\Notification\NotificationDispatcher;
 
 /**

@@ -10,6 +10,7 @@
 
 namespace App\Models\ServiceTicket;
 
+use App\Models\Asset\MaintenancePlan;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
 use App\Models\Project\Project;
@@ -17,8 +18,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
-use App\Models\Asset\MaintenancePlan;
-use App\Models\ServiceTicket\SlaContractQuota;
 
 /**
  * @property int $id

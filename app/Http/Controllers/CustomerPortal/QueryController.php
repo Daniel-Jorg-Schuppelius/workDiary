@@ -13,6 +13,7 @@ namespace App\Http\Controllers\CustomerPortal;
 use App\Enums\Customer\CustomerQueryStatus;
 use App\Http\Controllers\Attachments\AttachmentController;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Helpdesk\Portal\TicketController;
 use App\Models\Attachments\Attachment;
 use App\Models\Customer\CustomerQuery;
 use App\Models\Platform\User;

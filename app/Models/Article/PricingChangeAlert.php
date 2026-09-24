@@ -12,11 +12,10 @@ namespace App\Models\Article;
 
 use App\Casts\{MoneyCast, PercentageCast};
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Supplier\{Supplier, SupplierCatalogItem};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Supplier\Supplier;
-use App\Models\Supplier\SupplierCatalogItem;
 
 /**
  * Abgleichwarnung eines Katalogartikels (Feature 050, MVP-094): Marge bei

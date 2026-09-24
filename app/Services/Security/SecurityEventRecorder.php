@@ -33,13 +33,9 @@ class SecurityEventRecorder {
             $meta[$key] = mb_substr((string) $value, 0, 200);
         }
 
-        SecurityEvent::query()->create([
-            'event' => $type,
+        SecurityEvent::log(null, $type, $meta, isset($context['user_id']) ? (int) $context['user_id'] : null, extra: [
             'ip' => (string) ($context['ip'] ?? Request::ip() ?? '') ?: null,
-            'user_id' => isset($context['user_id']) ? (int) $context['user_id'] : null,
             'organization_id' => isset($context['organization_id']) ? (int) $context['organization_id'] : null,
-            'meta' => $meta !== [] ? $meta : null,
-            'occurred_at' => now(),
         ]);
     }
 }

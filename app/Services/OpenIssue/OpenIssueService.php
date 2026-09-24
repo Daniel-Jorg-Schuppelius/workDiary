@@ -12,7 +12,7 @@ namespace App\Services\OpenIssue;
 
 use App\Enums\OpenIssue\{OpenIssueEventType, OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
 use App\Exceptions\InvalidOpenIssueTransitionException;
-use App\Models\Diary\{DiaryEntry, OpenIssue, OpenIssueEvent};
+use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -28,20 +28,6 @@ use InvalidArgumentException;
  * Pflichtfelder und der Audit-Trail konsistent erzwungen werden.
  */
 class OpenIssueService {
-    /**
-     * Erlaubte Statusübergänge gemäß ../WorkDiary-Architecture/offene-punkte.md §3.
-     *
-     * @var array<string, list<string>>
-     */
-    private const TRANSITIONS = [
-        'open' => ['inProgress', 'done', 'wontDo'],
-        'inProgress' => ['blocked', 'done', 'wontDo'],
-        'blocked' => ['inProgress'],
-        'done' => ['reopened'],
-        'wontDo' => ['reopened'],
-        'reopened' => ['open', 'inProgress'],
-    ];
-
     /**
      * Legt einen neuen Offenen Punkt an.
      *
@@ -97,7 +83,7 @@ class OpenIssueService {
                 ]);
             }
 
-            return $issue->fresh(['events']) ?? $issue;
+            return $issue->fresh(['journal']) ?? $issue;
         });
 
         // Benachrichtigung (MVP-018) erst nach Commit — der Dispatcher darf
@@ -297,8 +283,7 @@ class OpenIssueService {
         array $payload = []
     ): void {
         $current = $issue->status;
-        $allowed = self::TRANSITIONS[$current->value];
-        if (! in_array($target->value, $allowed, true)) {
+        if (! $current->canTransitionTo($target)) {
             throw InvalidOpenIssueTransitionException::from($current, $target);
         }
 
@@ -310,13 +295,7 @@ class OpenIssueService {
      * @param  array<string, mixed>  $payload
      */
     private function record(OpenIssue $issue, OpenIssueEventType $event, User $actor, array $payload = []): void {
-        OpenIssueEvent::query()->create([
-            'open_issue_id' => $issue->id,
-            'event' => $event->value,
-            'actor_user_id' => $actor->id,
-            'payload' => $payload !== [] ? $payload : null,
-            'created_at' => Carbon::now(),
-        ]);
+        $issue->record($event, $payload, $actor);
     }
 
     private function parseSeverity(string $value): OpenIssueSeverity {

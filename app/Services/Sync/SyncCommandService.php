@@ -11,26 +11,15 @@
 namespace App\Services\Sync;
 
 use App\Enums\Sync\SyncCommandStatus;
-use App\Http\Controllers\Form\FormSubmissionController;
 use App\Models\Audit\AuditLog;
-use App\Models\Communication\Comment;
-use App\Models\Diary\DiaryEntry;
-use App\Models\Form\{FormSubmission, FormTemplate};
 use App\Models\Integration\SyncCommand;
-use App\Models\Learning\{LearningEnrollment, LearningUnit};
 use App\Models\Platform\User;
-use App\Models\Time\{Attendance, TimeCorrectionRequest};
-use App\Services\Attendance\{AttendanceClockService, StampPlausibility};
-use App\Services\Form\FormService;
-use App\Services\Learning\LearningEnrollmentService;
-use App\Services\TimeApproval\TimeCorrectionService;
+use App\Modules\ModuleRegistry;
+use App\Services\Sync\Contracts\SyncCommandHandler;
 use App\Support\MorphMap;
-use App\Support\{Setting, Sqid};
-use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\UniqueConstraintViolationException;
-use Illuminate\Support\Facades\{DB, Gate, Validator};
-use Illuminate\Validation\{Rule, ValidationException};
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
 /**
@@ -50,27 +39,15 @@ use RuntimeException;
  */
 class SyncCommandService {
     /** Unterstützte Befehlstypen (MVP-Scope: append-artige Daten, §3.1). */
-    public const TYPES = [
-        'attendance.clock-in',
-        'attendance.clock-out',
-        'comment.diary',
-        'form.submission',
-        // Erster ÄNDERNDER Befehl (Feature 035 Phase 3; Audit 2026-08, W4.1):
-        // vergessene/falsche Stempelzeit offline nachtragen. Läuft NICHT am
-        // Genehmigungsweg vorbei — er erzeugt einen TimeCorrectionRequest und
-        // wendet ihn nur an, wenn die Organisation Selbstkorrektur erlaubt.
-        'attendance.correct',
-        // Lerneinheit offline abhaken (Feature 149, MVP-748). NUR Einheiten
-        // ohne Online-Pflicht: Prüfungen und Aufgaben bleiben online, weil
-        // eine offline erzeugte Prüfungsakte nicht manipulationssicher wäre.
-        'learning.unit-complete',
-    ];
+    /** @var array<string, SyncCommandHandler>|null Befehlstyp → Handler, lazy aus den Manifesten */
+    private ?array $handlers = null;
 
-    public function __construct(
-        private readonly AttendanceClockService $clock,
-        private readonly FormService $forms,
-        private readonly TimeCorrectionService $corrections,
-    ) {}
+    public function __construct(private readonly ModuleRegistry $modules) {}
+
+    /** @return list<string> Bekannte Befehlstypen (für die Request-Validierung) */
+    public function types(): array {
+        return array_keys($this->handlers());
+    }
 
     /**
      * @param  array{client_uuid: string, type: string, payload?: array<string, mixed>, captured_at?: string|null}  $command
@@ -130,334 +107,32 @@ class SyncCommandService {
     }
 
     /**
-     * Lerneinheit offline abhaken (Feature 149, MVP-748).
-     *
-     * **Die Online-Pflicht wird hier durchgesetzt**, nicht nur im Browser:
-     * Prüfungen und Aufgaben dürfen nicht offline abgeschlossen werden. Eine
-     * offline erzeugte Prüfungsakte wäre nicht manipulationssicher, und der
-     * Nachweis hinge an ihr.
-     *
-     * Die Einschreibung muss der Person selbst gehören — die Outbox eines
-     * Geräts darf niemanden sonst betreffen.
-     *
-     * @param  array<string, mixed>  $payload
-     */
-    private function learningUnitComplete(User $user, array $payload): string {
-        $enrollmentId = Sqid::decodeOrNumeric(LearningEnrollment::class, $payload['enrollment'] ?? null);
-        $unitId = Sqid::decodeOrNumeric(LearningUnit::class, $payload['unit'] ?? null);
-
-        $enrollment = $enrollmentId !== null ? LearningEnrollment::query()->find($enrollmentId) : null;
-        $unit = $unitId !== null ? LearningUnit::query()->find($unitId) : null;
-
-        if ($enrollment === null || $unit === null) {
-            throw new RuntimeException((string) __('learning.errors.sync_unknown_target'));
-        }
-
-        if ($enrollment->user_id !== $user->id) {
-            throw new RuntimeException((string) __('learning.errors.sync_foreign_enrollment'));
-        }
-
-        if ($unit->kind->requiresOnline()) {
-            throw new RuntimeException((string) __('learning.errors.sync_requires_online'));
-        }
-
-        // Kurspaket, Termin, Prüfung und Abgabe melden ihr Ergebnis selbst — ein
-        // selbst gebauter Sync-Befehl darf sie genauso wenig abhaken wie der Knopf.
-        if ($unit->reportsOwnResult()) {
-            throw new RuntimeException((string) __('learning.errors.sync_reports_own_result'));
-        }
-
-        $progress = app(LearningEnrollmentService::class)->completeUnit($enrollment, $unit);
-
-        return 'learning_unit_progress:' . $progress->id;
-    }
-
-    /**
-     * Führt den fachlichen Teil aus und liefert die Ergebnis-Referenz
-     * (`<tabelle>:<id>`). Wirft ValidationException/RuntimeException zur
-     * Ablehnung.
+     * Führt den fachlichen Teil über den Handler des Moduls aus und liefert die
+     * Ergebnis-Referenz (`<tabelle>:<id>`). Wirft ValidationException/
+     * RuntimeException zur Ablehnung.
      *
      * @param  array<string, mixed>  $payload
      */
     private function execute(User $user, string $type, array $payload): string {
-        return match ($type) {
-            'attendance.clock-in' => $this->clockIn($user, $payload),
-            'attendance.clock-out' => $this->clockOut($user, $payload),
-            'comment.diary' => $this->commentDiary($user, $payload),
-            'form.submission' => $this->formSubmission($user, $payload),
-            'attendance.correct' => $this->attendanceCorrect($user, $payload),
-            'learning.unit-complete' => $this->learningUnitComplete($user, $payload),
-            default => throw new RuntimeException('Unbekannter Sync-Befehlstyp: ' . $type),
-        };
+        $handler = $this->handlers()[$type] ?? throw new RuntimeException('Unbekannter Sync-Befehlstyp: ' . $type);
+
+        return $handler->handle($user, $type, $payload);
     }
 
-    /** @param  array<string, mixed>  $payload */
-    private function clockIn(User $user, array $payload): string {
-        if (! Gate::forUser($user)->allows('create', Attendance::class)) {
-            throw new RuntimeException((string) __('Keine Berechtigung für Anwesenheits-Stempel.'));
+    /** @return array<string, SyncCommandHandler> */
+    private function handlers(): array {
+        if ($this->handlers === null) {
+            $this->handlers = [];
+            foreach ($this->modules->extensions(SyncCommandHandler::class) as $class) {
+                /** @var SyncCommandHandler $handler */
+                $handler = app($class);
+                foreach ($handler->types() as $type) {
+                    $this->handlers[$type] = $handler;
+                }
+            }
         }
 
-        $data = $this->validatePayload($payload, [
-            'started_at' => ['required', 'date'],
-            'lat' => ['nullable', 'numeric', 'between:-90,90'],
-            'lng' => ['nullable', 'numeric', 'between:-180,180'],
-            'note' => ['nullable', 'string', 'max:' . (int) Setting::get('validation.attendance.note_max', 1000)],
-        ]);
-
-        $startedAt = $this->assertPlausibleStamp($user, (string) $data['started_at'], 'started_at');
-        $this->assertNoOverlap($user, $startedAt);
-
-        $attendance = $this->clock->clockIn($user, [
-            'started_at' => $data['started_at'],
-            'lat' => $data['lat'] ?? null,
-            'lng' => $data['lng'] ?? null,
-            'device' => 'offline-pwa',
-            'note' => $data['note'] ?? null,
-        ]);
-
-        return 'attendances:' . $attendance->id;
-    }
-
-    /** @param  array<string, mixed>  $payload */
-    private function clockOut(User $user, array $payload): string {
-        if (! Gate::forUser($user)->allows('create', Attendance::class)) {
-            throw new RuntimeException((string) __('Keine Berechtigung für Anwesenheits-Stempel.'));
-        }
-
-        $data = $this->validatePayload($payload, [
-            'ended_at' => ['required', 'date'],
-            'break_minutes' => ['nullable', 'integer', 'min:0', 'max:600'],
-            'lat' => ['nullable', 'numeric', 'between:-90,90'],
-            'lng' => ['nullable', 'numeric', 'between:-180,180'],
-            'note' => ['nullable', 'string', 'max:' . (int) Setting::get('validation.attendance.note_max', 1000)],
-        ]);
-
-        $this->assertPlausibleStamp($user, (string) $data['ended_at'], 'ended_at');
-
-        $context = [
-            'ended_at' => $data['ended_at'],
-            'lat' => $data['lat'] ?? null,
-            'lng' => $data['lng'] ?? null,
-            'device' => 'offline-pwa',
-            'note' => $data['note'] ?? null,
-        ];
-        if (isset($data['break_minutes'])) {
-            $context['break_minutes'] = (int) $data['break_minutes'];
-        }
-
-        $attendance = $this->clock->clockOut($user, $context);
-
-        if ($attendance === null) {
-            throw new RuntimeException((string) __('Kein offener Anwesenheits-Stempel zum Beenden.'));
-        }
-
-        return 'attendances:' . $attendance->id;
-    }
-
-    /** @param  array<string, mixed>  $payload */
-    private function commentDiary(User $user, array $payload): string {
-        if (! Gate::forUser($user)->allows('create', Comment::class)) {
-            throw new RuntimeException((string) __('Keine Berechtigung für Kommentare.'));
-        }
-
-        $data = $this->validatePayload($payload, [
-            'diary' => ['required', 'string'],
-            'body' => ['required', 'string', 'max:' . (int) Setting::get('validation.comment.body_max', 5000)],
-        ]);
-
-        // Sqid immer gegen die Zielmodellklasse dekodieren; der
-        // OrganizationScope zieht die Mandantengrenze der Auflösung.
-        $diary = DiaryEntry::query()
-            ->whereKey(Sqid::decode(DiaryEntry::class, $data['diary']))
-            ->first();
-
-        if ($diary === null) {
-            throw new RuntimeException((string) __('Auftrag nicht gefunden.'));
-        }
-
-        $comment = $diary->comments()->create([
-            'user_id' => $user->id,
-            'body' => $data['body'],
-        ]);
-
-        return 'comments:' . $comment->id;
-    }
-
-    /**
-     * Formular offline ausfüllen (Phase 3, MVP-367): Werte plus — seit dem
-     * Audit 2026-08 (W4.1) — angekündigte Foto-/Datei-Felder (`pending_files`).
-     * Die Abgabe entsteht sofort und trägt einen Nachreich-Marker; die Inhalte
-     * lädt der Client danach über `api.internal.sync.attachments` hoch. Ohne
-     * diese Ankündigung würde ein Pflicht-Fotofeld die ganze Abgabe abweisen —
-     * genau der Fall, der die Foto-Queue nötig machte.
-     *
-     * Unterschriften bleiben dem Online-Weg vorbehalten (Konzept §5).
-     *
-     * @param  array<string, mixed>  $payload
-     */
-    private function formSubmission(User $user, array $payload): string {
-        if (! Gate::forUser($user)->allows('create', FormSubmission::class)) {
-            throw new RuntimeException((string) __('Keine Berechtigung für Formulare.'));
-        }
-
-        $data = $this->validatePayload($payload, [
-            'template' => ['required', 'string'],
-            'subject_kind' => ['nullable', 'string', Rule::in(array_keys(FormSubmissionController::SUBJECT_MAP))],
-            'subject_id' => ['nullable', 'string', 'required_with:subject_kind'],
-            'values' => ['nullable', 'array'],
-            // Offline erfasste Foto-/Datei-Felder: der Inhalt kommt separat
-            // über `api.internal.sync.attachments` nach (Audit 2026-08, W4.1).
-            'pending_files' => ['nullable', 'array'],
-            'pending_files.*' => ['string', 'max:64'],
-        ]);
-
-        $templateId = Sqid::decodeOrNumeric(FormTemplate::class, $data['template']);
-        /** @var FormTemplate|null $template */
-        $template = ($templateId !== null && $templateId > 0)
-            ? FormTemplate::query()->active()->find($templateId)
-            : null;
-
-        if ($template === null) {
-            throw new RuntimeException((string) __('Formularvorlage nicht gefunden.'));
-        }
-
-        $subject = null;
-        if (filled($data['subject_kind'] ?? null)) {
-            $subject = $this->resolveFormSubject((string) $data['subject_kind'], (string) ($data['subject_id'] ?? ''));
-        }
-
-        $submission = $this->forms->submit(
-            $template,
-            $subject,
-            (array) ($data['values'] ?? []),
-            $user,
-            deferredKeys: array_values(array_filter((array) ($data['pending_files'] ?? []), 'is_string')),
-        );
-
-        return 'form_submissions:' . $submission->id;
-    }
-
-    /**
-     * Stempelzeit offline korrigieren (Feature 035 Phase 3; Audit 2026-08,
-     * W4.1) — der erste ÄNDERNDE Befehl.
-     *
-     * Zwei Leitplanken, die ihn vom bloßen „Update" unterscheiden:
-     *
-     *  1. **Optimistische Sperre über `base_version`.** Das Gerät nennt den
-     *     Stand, den es gesehen hat. Weicht der aktuelle ab, ist das ein
-     *     Konflikt und KEINE Ablehnung — der Nutzer entscheidet.
-     *  2. **Kein Vorbeigehen am Genehmigungsweg.** Die Korrektur läuft als
-     *     {@see \App\Models\Time\TimeCorrectionRequest} durch denselben Workflow
-     *     wie online; direkt angewendet wird sie nur, wenn die Organisation
-     *     Selbstkorrektur erlaubt — sonst bleibt sie eingereicht und wartet.
-     *     Nur EIGENE Stempel: „im Namen von" braucht eine Rechteprüfung im
-     *     Dialog und ist offline nicht sinnvoll abbildbar.
-     *
-     * @param  array<string, mixed>  $payload
-     */
-    private function attendanceCorrect(User $user, array $payload): string {
-        if (! Gate::forUser($user)->allows('create', TimeCorrectionRequest::class)) {
-            throw new RuntimeException((string) __('Keine Berechtigung für Zeitkorrekturen.'));
-        }
-
-        $data = $this->validatePayload($payload, [
-            'attendance' => ['required', 'string'],
-            'base_version' => ['required', 'string', 'max:64'],
-            'started_at' => ['nullable', 'date'],
-            'ended_at' => ['nullable', 'date', 'after:started_at'],
-            'break_minutes' => ['nullable', 'integer', 'min:0', 'max:600'],
-            'reason' => ['required', 'string', 'min:20', 'max:4000'],
-        ]);
-
-        /** @var Attendance|null $attendance */
-        $attendance = Attendance::query()
-            ->whereKey(Sqid::decodeOrNumeric(Attendance::class, (string) $data['attendance']))
-            ->where('user_id', $user->id)
-            ->first();
-
-        if ($attendance === null) {
-            throw new RuntimeException((string) __('Stempelung nicht gefunden.'));
-        }
-
-        $current = $attendance->correctionVersion();
-        if ($current !== (string) $data['base_version']) {
-            throw new SyncConflictException(
-                (string) __('Die Stempelung wurde zwischenzeitlich geändert.'),
-                [
-                    'started_at' => $attendance->started_at?->toIso8601String(),
-                    'ended_at' => $attendance->ended_at?->toIso8601String(),
-                    'break_minutes' => (int) ($attendance->break_minutes_manual ?? 0),
-                ],
-                $current,
-            );
-        }
-
-        $before = [
-            'started_at' => $attendance->started_at?->toDateTimeString(),
-            'ended_at' => $attendance->ended_at?->toDateTimeString(),
-            'break_minutes_manual' => (int) ($attendance->break_minutes_manual ?? 0),
-        ];
-        $after = $before;
-        if (array_key_exists('started_at', $data) && $data['started_at'] !== null) {
-            $after['started_at'] = CarbonImmutable::parse((string) $data['started_at'])->toDateTimeString();
-        }
-        if (array_key_exists('ended_at', $data) && $data['ended_at'] !== null) {
-            $after['ended_at'] = CarbonImmutable::parse((string) $data['ended_at'])->toDateTimeString();
-        }
-        if (array_key_exists('break_minutes', $data) && $data['break_minutes'] !== null) {
-            $after['break_minutes_manual'] = (int) $data['break_minutes'];
-        }
-
-        if ($after === $before) {
-            throw new RuntimeException((string) __('Die Korrektur enthält keine Änderung.'));
-        }
-
-        $request = $this->corrections->createDraft(
-            $user,
-            CarbonImmutable::parse($attendance->date?->toDateString() ?? $attendance->started_at?->toDateString() ?? 'today'),
-            (string) $data['reason'],
-            [[
-                'target_type' => MorphMap::alias(Attendance::class),
-                'target_id' => (int) $attendance->id,
-                'action' => 'update',
-                'before' => $before,
-                'after' => $after,
-            ]],
-            $user,
-        );
-
-        $request = $this->corrections->submit($request, $user);
-        if ($this->corrections->selfApplicable($request)) {
-            $this->corrections->selfApply($request);
-        }
-
-        return 'time_correction_requests:' . $request->id;
-    }
-
-    /** Subjekt-Auflösung über die Whitelist des Online-Wegs (org-gescopt). */
-    private function resolveFormSubject(string $kind, string $rawId): Model {
-        $class = FormSubmissionController::SUBJECT_MAP[$kind] ?? null;
-        $id = $class !== null ? Sqid::decodeOrNumeric($class, $rawId) : null;
-
-        /** @var Model|null $subject */
-        $subject = ($class !== null && $id !== null && $id > 0)
-            ? $class::query()->find($id)
-            : null;
-
-        if ($subject === null) {
-            throw new RuntimeException((string) __('Bezugsobjekt nicht gefunden.'));
-        }
-
-        return $subject;
-    }
-
-    /**
-     * @param  array<string, mixed>  $payload
-     * @param  array<string, array<int, mixed>>  $rules
-     * @return array<string, mixed>
-     */
-    private function validatePayload(array $payload, array $rules): array {
-        return Validator::make($payload, $rules)->validate();
+        return $this->handlers;
     }
 
     /**
@@ -546,45 +221,6 @@ class SyncCommandService {
             'ref' => $ref,
             'errors' => $errors,
         ];
-    }
-
-    /**
-     * Ist der vom Gerät gelieferte Zeitstempel glaubwürdig — und der Tag offen?
-     *
-     * Drei Schranken, die der Online-Weg schon durch die Serverzeit hat:
-     * keine Zukunft (bis auf Uhrenversatz), nicht älter als das
-     * Offline-Fenster, und der Zieltag darf nicht abgeschlossen oder der
-     * Monat freigegeben sein. Für Änderungen an gesperrten Tagen gibt es den
-     * Weg über `attendance.correct` — eine Zeitkorrektur mit Begründung und
-     * Genehmigung.
-     */
-    private function assertPlausibleStamp(User $user, string $raw, string $field): CarbonImmutable {
-        // Gemeinsam mit dem Terminal-Eingang (Sicherheitsaudit 2026-09-13):
-        // dort fehlte die Pruefung, deshalb liegt sie jetzt an einer Stelle.
-        return app(StampPlausibility::class)->assert($user, $raw, $field);
-    }
-
-    /**
-     * Keine zweite Stempelung über eine bestehende legen.
-     *
-     * Beim Online-Stempeln kann das nicht passieren (es gibt genau eine
-     * offene). Rückdatiert schon: zwei Kommen-Stempel auf denselben Tag
-     * verdoppeln Arbeitszeit, Zuschläge und Gleitzeitkonto.
-     */
-    private function assertNoOverlap(User $user, CarbonImmutable $startedAt): void {
-        $exists = Attendance::query()
-            ->where('user_id', $user->id)
-            ->where('started_at', '<=', $startedAt)
-            ->where(function ($query) use ($startedAt): void {
-                $query->whereNull('ended_at')->orWhere('ended_at', '>', $startedAt);
-            })
-            ->exists();
-
-        if ($exists) {
-            throw ValidationException::withMessages([
-                'started_at' => (string) __('sync.error.stamp_overlaps'),
-            ]);
-        }
     }
 
 }

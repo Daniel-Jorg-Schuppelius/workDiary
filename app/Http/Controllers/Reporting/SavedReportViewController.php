@@ -11,12 +11,12 @@
 namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Models\Reporting\SavedReportView;
+use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
+use App\Models\Reporting\SavedReportView;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Route as RouteFacade};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Gespeicherte Report-Ansichten (MVP-529, Q1 „Auswertungs-Modelle"):

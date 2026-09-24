@@ -17,7 +17,7 @@ use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
-use App\Services\Finance\BillingModeLockedException;
+use App\Services\Billing\BillingModeLockedException;
 use App\Services\Invoicing\InvoiceGenerator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

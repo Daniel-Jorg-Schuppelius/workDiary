@@ -18,7 +18,7 @@ use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Export-Spezifikation für Materialien — Round-Trip zur {@see \App\Services\Import\Specs\MaterialSpec}.
+ * Export-Spezifikation für Materialien — Round-Trip zur {@see \App\Services\Material\Import\MaterialSpec}.
  *
  * Filter:
  * - `status`: active|inactive (Standard: alle)

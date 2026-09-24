@@ -19,8 +19,8 @@ use App\Models\Claims\{ClaimAssessment, ClaimCase, ClaimDecision};
 use App\Models\Notification\NotificationDispatchLog;
 use App\Models\Platform\{Organization, User};
 use App\Notifications\GenericEventNotification;
+use App\Services\Claims\Contracts\{ClaimIntake, RmaStockHandler};
 use App\Services\Concerns\AssertsStatusTransition;
-use App\Services\Inventory\SerialService;
 use App\Services\Numbering\NumberSequenceService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -32,12 +32,12 @@ use Illuminate\Support\Facades\DB;
  * Statusübergänge und Fristeneskalation (MVP-255). Keine automatische
  * Anspruchsentscheidung — jede Entscheidung ist eine Nutzeraktion.
  */
-class ClaimCaseService {
+class ClaimCaseService implements ClaimIntake {
     use AssertsStatusTransition;
 
     public function __construct(
         private readonly NumberSequenceService $numbers,
-        private readonly SerialService $serials,
+        private readonly RmaStockHandler $serials,
     ) {}
 
     /** @param array<string, mixed> $attributes */

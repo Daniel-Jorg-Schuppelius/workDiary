@@ -11,8 +11,8 @@
 namespace App\Http\Controllers\Time;
 
 use App\Enums\TimeApproval\DayClosureStatus;
-use App\Models\Diary\DayClosure;
-use App\Models\Diary\DayCorrectionRequest;
+use App\Http\Controllers\Controller;
+use App\Models\Diary\{DayClosure, DayCorrectionRequest};
 use App\Models\Platform\User;
 use App\Services\Attendance\AttendanceClockService;
 use App\Services\TimeApproval\{DayCloseService, DayCloseWorkflowException};
@@ -21,7 +21,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Tagesabschluss-Seite (MVP-015, ../WorkDiary-Architecture/tagesabschluss.md).

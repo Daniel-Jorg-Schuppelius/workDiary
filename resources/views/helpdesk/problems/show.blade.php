@@ -34,7 +34,7 @@
 
     <x-card>
         <div class="flex flex-wrap items-center gap-3">
-            <x-status-badge size="md" outline>{{ $statusLabels[$problem->status] ?? $problem->status }}</x-status-badge>
+            <x-status-badge size="md" outline>{{ $problem->status->label() }}</x-status-badge>
             <x-status-badge tone="ghost" size="md">{{ $problem->visibility === 'customer' ? __('Kundenportal') : __('Intern') }}</x-status-badge>
             <span class="ml-auto text-sm text-muted">
                 {{ __('Verantwortlich') }}: {{ $problem->owner?->name ?? '—' }}

@@ -11,7 +11,7 @@
 namespace App\Models\Finance;
 
 use App\Enums\Finance\DatevBatchStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasJournal, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
@@ -55,6 +55,10 @@ use Illuminate\Support\Carbon;
 class DatevBookingBatch extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use HasJournal;
+
+    /** @var class-string<DatevBookingEvent> Journal des Trägers (MVP-864) */
+    protected static string $journalClass = DatevBookingEvent::class;
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
@@ -114,11 +118,6 @@ class DatevBookingBatch extends Model {
     /** @return HasMany<DatevBookingSource, $this> */
     public function sources(): HasMany {
         return $this->hasMany(DatevBookingSource::class);
-    }
-
-    /** @return HasMany<DatevBookingEvent, $this> */
-    public function events(): HasMany {
-        return $this->hasMany(DatevBookingEvent::class);
     }
 
     /** @return BelongsTo<User, $this> */

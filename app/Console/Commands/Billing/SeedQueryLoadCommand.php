@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Console\Commands\Support;
+namespace App\Console\Commands\Billing;
 
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;

@@ -15,6 +15,7 @@ namespace App\Services\Applications;
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Applications\{EmployeeDraft, JobApplication, JobPosting};
 use App\Models\Platform\{Organization, User};
+use App\Services\Fields\FieldDocument;
 use App\Services\Notification\NotificationDispatcher;
 use App\Support\Crypto\BlindIndex;
 use Illuminate\Support\Facades\{DB, Hash, Log, Storage};
@@ -192,6 +193,7 @@ class RecruitingService {
         DB::transaction(function () use ($application, $actor): void {
             $application->interviews()->update(['notes' => null]);
             $application->reviews()->update(['comment' => null]);
+            $application->addresses()->delete();
             $application->update([
                 'candidate_name' => null,
                 'email' => null,
@@ -234,6 +236,7 @@ class RecruitingService {
             'candidate_name' => $application->candidate_name,
             'email' => $application->email,
             'phone' => $application->phone,
+            'address' => $application->postalAddress(),
             'source' => $application->source,
             'status' => $application->status,
             'received_at' => optional($application->received_at)->toIso8601String(),
@@ -281,7 +284,7 @@ class RecruitingService {
             'name' => (string) ($application->candidate_name ?? __('Unbenannt')),
             'email' => $application->email,
             'qualifications' => $qualifications,
-            'checklist' => array_map(fn(string $label): array => ['label' => $label, 'done' => false], $defaultChecklist),
+            'checklist' => FieldDocument::checklist($defaultChecklist),
             'status' => 'draft',
             'created_by' => $actor->id,
         ]);

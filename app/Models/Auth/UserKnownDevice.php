@@ -10,9 +10,9 @@
 
 namespace App\Models\Auth;
 
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Platform\User;
 
 /**
  * Bekanntes Anmelde-Gerät eines Nutzers (Feature 096, MVP-446).

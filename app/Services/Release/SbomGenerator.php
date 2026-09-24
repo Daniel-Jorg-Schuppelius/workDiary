@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Services\Isms;
+namespace App\Services\Release;
 
 use App\Plugins\PluginManager;
 use App\Services\Licensing\ModuleCatalog;

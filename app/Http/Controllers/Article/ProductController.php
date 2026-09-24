@@ -12,13 +12,13 @@ namespace App\Http\Controllers\Article;
 
 use App\Enums\Classification\ClassificationDomain;
 use App\Enums\Product\ProductStatus;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Product\SaveProductRequest;
-use App\Models\Classification\Classification;
 use App\Models\Article\Product;
+use App\Models\Classification\Classification;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Produktstamm (Typ-Ebene Hersteller-Modell, MVP-370): Liste mit Suche und

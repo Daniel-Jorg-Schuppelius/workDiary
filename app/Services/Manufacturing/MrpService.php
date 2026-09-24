@@ -16,6 +16,7 @@ use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Inventory\Warehouse;
 use App\Models\Procedure\ProcedureTemplateVersion;
 use App\Services\Inventory\InventoryLedger;
+use App\Services\Procedure\Bom\{BomResolver, MaterialDemandCalculator};
 use CommonToolkit\Helper\Data\NumberHelper;
 
 /**

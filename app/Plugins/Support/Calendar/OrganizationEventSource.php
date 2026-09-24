@@ -14,7 +14,6 @@ namespace App\Plugins\Support\Calendar;
 
 use App\Models\Calendar\Event;
 use App\Models\Platform\Organization;
-use App\Services\Event\IcsFeedService;
 use DateTimeZone;
 
 /**
@@ -23,7 +22,7 @@ use DateTimeZone;
  * Absage-Semantik wie die CalDAV-Quelle
  * ({@see \App\Plugins\CalDav\Services\EventCalendarSource}: -30/+180 Tage,
  * `cancelled_at` ⇒ extern entfernen); die UID stammt aus
- * {@see IcsFeedService::eventUid()} — Feed, CalDAV und REST-Provider meinen
+ * {@see Event::icsUid()} — Feed, CalDAV und REST-Provider meinen
  * denselben Termin. Zeiten in der lokalen App-Zeitzone (wie die ICS-Abbildung).
  */
 class OrganizationEventSource {
@@ -49,7 +48,7 @@ class OrganizationEventSource {
                 ->implode(', ');
 
             $items[] = new RemoteCalendarEvent(
-                uid: IcsFeedService::eventUid($event),
+                uid: $event->icsUid(),
                 title: (string) $event->title,
                 description: $event->description !== null && $event->description !== '' ? (string) $event->description : null,
                 location: $location,

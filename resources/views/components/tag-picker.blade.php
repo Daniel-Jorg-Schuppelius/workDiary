@@ -49,7 +49,7 @@
     $tagPickerNew = collect(preg_split('/[,;\n]+/', (string) old($newName, '')) ?: [])
         ->map(fn ($v) => trim((string) $v))->filter()->values()->all();
     $tagSuggestUrl = $suggestFrom !== null
-        && app(\App\Services\Ai\Suggestions\SuggestionViewData::class)->capabilityUsable(\App\Services\Ai\Suggestions\ClassificationSuggestionService::CAPABILITY)
+        && app(\App\Services\Ai\Contracts\SuggestionView::class)->capabilityUsable(\App\Services\Ai\Suggestions\ClassificationSuggestionService::CAPABILITY)
         ? route('ai.suggest.tags')
         : null;
     $tagPickerConfig = ['all' => $tagPickerAll, 'selectedIds' => $tagPickerSelected, 'recentIds' => $tagPickerRecent, 'initialNew' => $tagPickerNew, 'quickLimit' => 8, 'allowCreate' => (bool) $allowCreate, 'suggestUrl' => $tagSuggestUrl, 'textSelector' => $suggestFrom, 'customerSelector' => $customerFrom];

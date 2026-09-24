@@ -14,8 +14,8 @@ namespace Tests\Unit\Services\Import\Specs;
 
 use App\Enums\Import\ImportErrorCode;
 use App\Models\Customer\Customer;
+use App\Services\Customer\Import\CustomerSpec;
 use App\Services\Import\ImportOutcome;
-use App\Services\Import\Specs\CustomerSpec;
 use App\Services\Stammdaten\CustomerMergeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

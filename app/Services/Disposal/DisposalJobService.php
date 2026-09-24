@@ -17,10 +17,10 @@ use App\Enums\Disposal\{DisposalJobEventType, DisposalJobStatus};
 use App\Enums\Document\DocumentType;
 use App\Enums\Numbering\NumberScope;
 use App\Models\Attachments\Attachment;
-use App\Models\Disposal\{DataMediaTreatment, DisposalHandover, DisposalItem, DisposalJob, DisposalJobEvent};
+use App\Models\Disposal\{DataMediaTreatment, DisposalHandover, DisposalItem, DisposalJob};
 use App\Models\Document\Document;
 use App\Models\Platform\{Organization, User};
-use App\Services\Asset\{AssetService, AssetStatusMachine};
+use App\Services\Asset\AssetService;
 use App\Services\Concerns\AssertsStatusTransition;
 use App\Services\Document\DocumentService;
 use App\Services\Numbering\NumberSequenceService;
@@ -48,7 +48,6 @@ class DisposalJobService {
         private readonly NumberSequenceService $numbers,
         private readonly DocumentService $documents,
         private readonly AssetService $assets,
-        private readonly AssetStatusMachine $assetStatusMachine,
         private readonly DisposalRecordPdfRenderer $recordRenderer,
     ) {}
 
@@ -372,7 +371,7 @@ class DisposalJobService {
                 if ($asset === null || $asset->status === AssetStatus::Decommissioned) {
                     continue;
                 }
-                if (!$this->assetStatusMachine->canTransition($asset->status, AssetStatus::Decommissioned)) {
+                if (! $asset->status->canTransitionTo(AssetStatus::Decommissioned)) {
                     continue; // Endzustände respektieren, Abschluss nicht blockieren
                 }
                 $this->assets->decommission($asset, $actor, now()->toDateString());
@@ -476,12 +475,6 @@ class DisposalJobService {
 
     /** @param array<string, mixed> $payload */
     private function logEvent(DisposalJob $job, DisposalJobEventType $event, User $actor, array $payload = []): void {
-        DisposalJobEvent::query()->create([
-            'disposal_job_id' => $job->id,
-            'event' => $event->value,
-            'actor_user_id' => $actor->id,
-            'payload' => $payload !== [] ? $payload : null,
-            'created_at' => now(),
-        ]);
+        $job->record($event, $payload, $actor);
     }
 }

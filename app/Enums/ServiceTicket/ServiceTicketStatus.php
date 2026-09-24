@@ -10,11 +10,12 @@
 
 namespace App\Enums\ServiceTicket;
 
-use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Concerns\{HasOptions, HasTransitions};
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
-enum ServiceTicketStatus: string implements HasLabel {
+enum ServiceTicketStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
+    use HasTransitions;
 
     case Reported = 'reported';
     case Triaged = 'triaged';
@@ -63,5 +64,40 @@ enum ServiceTicketStatus: string implements HasLabel {
 
     public function isResolved(): bool {
         return in_array($this, [self::Done, self::Accepted, self::Closed, self::Rejected], true);
+    }
+
+    /**
+     * Warten nur aus triaged/in_progress und zurück nur nach in_progress
+     * (Feature 065); done→in_progress ist die Wiederöffnung, accepted/closed
+     * öffnen ebenfalls nur nach in_progress (Pflichtgrund im Service).
+     *
+     * @return list<self>
+     */
+    public function allowedTransitions(): array {
+        return match ($this) {
+            self::Reported => [self::Triaged, self::Scheduled, self::InProgress, self::Rejected],
+            self::Triaged => [self::Scheduled, self::InProgress, self::Rejected, self::WaitingCustomer, self::WaitingExternal, self::Paused],
+            self::Scheduled => [self::InProgress, self::Triaged, self::Rejected],
+            self::InProgress => [self::Done, self::Scheduled, self::Rejected, self::WaitingCustomer, self::WaitingExternal, self::Paused],
+            self::WaitingCustomer, self::WaitingExternal, self::Paused => [self::InProgress],
+            self::Done => [self::Accepted, self::InProgress, self::Closed],
+            self::Accepted => [self::Closed, self::InProgress],
+            self::Closed => [self::InProgress],
+            self::Rejected => [self::Reported],
+        };
+    }
+
+    /**
+     * Spaltenfolge des Queue-Boards (Feature 065, MVP-160) entlang des
+     * Lebenszyklus, nicht der Deklarationsreihenfolge.
+     *
+     * @return list<self>
+     */
+    public static function boardOrder(): array {
+        return [
+            self::Reported, self::Triaged, self::Scheduled, self::InProgress,
+            self::WaitingCustomer, self::WaitingExternal, self::Paused,
+            self::Done, self::Accepted, self::Closed, self::Rejected,
+        ];
     }
 }

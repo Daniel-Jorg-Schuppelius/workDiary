@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Finance\Banking;
 
 use App\Enums\Finance\{BankStatementFormat, TransactionDirection};
-use App\Services\Finance\{BankImportException, FinancialFormatsSupport};
+use App\Services\Billing\FinancialFormatsSupport;
+use App\Services\Finance\BankImportException;
 use CommonToolkit\FinancialFormats\Entities\ISO20022\Camt\Type53\{Document as Camt053Document, Transaction as Camt053Transaction};
 use CommonToolkit\FinancialFormats\Entities\ISO20022\Pain\Type1\Document as Pain001Document;
 use CommonToolkit\FinancialFormats\Entities\ISO20022\Pain\Type8\Document as Pain008Document;

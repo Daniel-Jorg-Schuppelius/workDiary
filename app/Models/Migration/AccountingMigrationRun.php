@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Migration;
 
 use App\Enums\Migration\{AccountingMigrationStatus, MigrationDataArea, MigrationProvider};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasJournal, HasSqid};
 use App\Models\Platform\User;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -31,6 +31,10 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 class AccountingMigrationRun extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use HasJournal;
+
+    /** @var class-string<AccountingMigrationEvent> Journal des Trägers (MVP-864) */
+    protected static string $journalClass = AccountingMigrationEvent::class;
     /** @use HasFactory<\Database\Factories\Migration\AccountingMigrationRunFactory> */
     use HasFactory;
     use HasSqid;

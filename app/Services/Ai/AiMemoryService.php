@@ -15,6 +15,7 @@ namespace App\Services\Ai;
 use App\Enums\Ai\AiMemoryEntryType;
 use App\Models\Ai\AiMemoryEntry;
 use App\Models\Platform\{Organization, User};
+use App\Services\Ai\Contracts\AiMemory;
 use App\Services\Ai\Dto\{ExamplePair, GlossaryEntry};
 use Illuminate\Support\{Carbon, Collection};
 use Illuminate\Support\Facades\DB;
@@ -28,7 +29,7 @@ use Illuminate\Support\Facades\DB;
  * es gibt keinen stillen Schreibpfad. Kein Fine-Tuning: die Wirkung
  * entsteht allein durch Prompt-Einspeisung.
  */
-class AiMemoryService {
+class AiMemoryService implements AiMemory {
     /**
      * Budget-getrimmte, vorrangsortierte Einträge für einen Aufruf.
      * Capability-Defaults gelten nur für die angefragte Capability;

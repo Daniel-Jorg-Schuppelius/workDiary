@@ -10,8 +10,7 @@
 
 namespace Database\Factories\Inventory;
 
-use App\Models\Inventory\Warehouse;
-use App\Models\Inventory\WarehouseBin;
+use App\Models\Inventory\{Warehouse, WarehouseBin};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

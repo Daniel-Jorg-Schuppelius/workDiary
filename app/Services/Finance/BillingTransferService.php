@@ -276,7 +276,9 @@ class BillingTransferService {
         ?string $filePath = null,
         ?User $actor = null,
     ): BillingTransfer {
-        $this->assertTransition($transfer, TransferStatus::Transferred);
+        if (! $transfer->status->canTransitionTo(TransferStatus::Transferred)) {
+            throw BillingTransferException::illegalTransition($transfer, TransferStatus::Transferred);
+        }
 
         $actorId = $this->resolveActorId($actor);
 
@@ -307,7 +309,9 @@ class BillingTransferService {
 
     /** confirmed → failed (Quellen bleiben unberührt — Retry via confirm()). */
     public function markFailed(BillingTransfer $transfer, string $reason, ?User $actor = null): BillingTransfer {
-        $this->assertTransition($transfer, TransferStatus::Failed);
+        if (! $transfer->status->canTransitionTo(TransferStatus::Failed)) {
+            throw BillingTransferException::illegalTransition($transfer, TransferStatus::Failed);
+        }
 
         $actorId = $this->resolveActorId($actor);
 
@@ -349,7 +353,9 @@ class BillingTransferService {
      * Korrekturen laufen dann über Storno-/Differenzübergaben (Teil B).
      */
     public function void(BillingTransfer $transfer, ?User $actor = null): BillingTransfer {
-        $this->assertTransition($transfer, TransferStatus::Voided);
+        if (! $transfer->status->canTransitionTo(TransferStatus::Voided)) {
+            throw BillingTransferException::illegalTransition($transfer, TransferStatus::Voided);
+        }
 
         if ($transfer->wasTransferred()) {
             // Defensive: Statusmaschine verhindert das bereits, aber die
@@ -392,7 +398,9 @@ class BillingTransferService {
      * das bestätigt der Nutzer im Dialog.
      */
     public function cancel(BillingTransfer $transfer, ?string $reason = null, ?User $actor = null): BillingTransfer {
-        $this->assertTransition($transfer, TransferStatus::Cancelled);
+        if (! $transfer->status->canTransitionTo(TransferStatus::Cancelled)) {
+            throw BillingTransferException::illegalTransition($transfer, TransferStatus::Cancelled);
+        }
 
         $actorId = $this->resolveActorId($actor);
 
@@ -667,7 +675,9 @@ class BillingTransferService {
 
     /** Validierter Statuswechsel + Persistenz + Hash-Ketten-Event. */
     private function transition(BillingTransfer $transfer, TransferStatus $to, ?User $actor): BillingTransfer {
-        $this->assertTransition($transfer, $to);
+        if (! $transfer->status->canTransitionTo($to)) {
+            throw BillingTransferException::illegalTransition($transfer, $to);
+        }
 
         $actorId = $this->resolveActorId($actor);
         $from = $transfer->status;
@@ -684,28 +694,11 @@ class BillingTransferService {
         });
     }
 
-    private function assertTransition(BillingTransfer $transfer, TransferStatus $to): void {
-        if (! $transfer->status->canTransitionTo($to)) {
-            throw new BillingTransferException(
-                'illegalTransition',
-                (string) __('finance.error.illegal_transition', [
-                    'from' => $transfer->status->label(),
-                    'to' => $to->label(),
-                ]),
-                ['from' => $transfer->status->value, 'to' => $to->value, 'transfer_id' => $transfer->id],
-            );
-        }
-    }
-
     /** @param  array<string, mixed>  $payload */
     private function recordEvent(BillingTransfer $transfer, string $event, ?int $actorId, array $payload): BillingTransferEvent {
-        return BillingTransferEvent::create([
-            'organization_id' => $transfer->organization_id,
-            'billing_transfer_id' => $transfer->id,
-            'event' => $event,
-            'actor_user_id' => $actorId,
-            'payload' => $payload,
-            'created_at' => now(),
-        ]);
+        /** @var BillingTransferEvent $entry */
+        $entry = $transfer->record($event, $payload, $actorId);
+
+        return $entry;
     }
 }

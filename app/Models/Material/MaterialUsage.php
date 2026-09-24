@@ -11,14 +11,15 @@
 namespace App\Models\Material;
 
 use App\Casts\{MoneyCast, PercentageCast, QuantityCast};
+use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Time\Timesheet;
+use App\Services\Billing\DocumentTotalsCalculator;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Asset\Asset;
-use App\Models\Time\Timesheet;
 
 /**
  * @property int $id
@@ -71,7 +72,7 @@ class MaterialUsage extends Model {
         static::saving(function (MaterialUsage $usage): void {
             $qty = ($usage->quantity?->getValue()->toFloat() ?? 0.0);
             $price = $usage->unit_price ?? Money::zero(CurrencyCode::Euro);
-            $usage->line_total_net = $price->times($qty)->withScale(2);
+            $usage->line_total_net = DocumentTotalsCalculator::lineNet($qty, $price)->withScale(2);
         });
     }
 

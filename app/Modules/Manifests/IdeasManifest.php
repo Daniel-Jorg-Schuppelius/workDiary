@@ -87,4 +87,13 @@ final class IdeasManifest extends Manifest {
             'knowledge',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
+                \App\Services\Ideas\Retention\IdeasRetentionPolicies::class,
+            ],
+        ];
+    }
 }

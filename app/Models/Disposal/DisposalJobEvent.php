@@ -13,9 +13,8 @@ declare(strict_types=1);
 namespace App\Models\Disposal;
 
 use App\Enums\Disposal\DisposalJobEventType;
-use App\Models\Concerns\AppendOnly;
+use App\Models\Journal\JournalEntry;
 use App\Models\Platform\User;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -30,9 +29,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property array<string, mixed>|null $payload
  * @property \Illuminate\Support\Carbon $created_at
  */
-class DisposalJobEvent extends Model {
-    use AppendOnly;
-
+class DisposalJobEvent extends JournalEntry {
     public $timestamps = false;
 
     protected $fillable = ['disposal_job_id', 'event', 'actor_user_id', 'payload', 'created_at'];
@@ -52,5 +49,10 @@ class DisposalJobEvent extends Model {
     /** @return BelongsTo<User, $this> */
     public function actor(): BelongsTo {
         return $this->belongsTo(User::class, 'actor_user_id');
+    }
+
+    /** @return BelongsTo<DisposalJob, $this> */
+    public function subject(): BelongsTo {
+        return $this->job();
     }
 }

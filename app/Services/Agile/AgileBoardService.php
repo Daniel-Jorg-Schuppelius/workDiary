@@ -216,14 +216,7 @@ class AgileBoardService {
         $from = $item->column_id;
         \App\Models\Agile\AgileWorkItem::query()->whereKey($item->id)
             ->update(['column_id' => $target->id, 'lock_version' => DB::raw('lock_version + 1')]);
-        \App\Models\Agile\AgileEvent::record([
-            'organization_id' => $item->organization_id,
-            'board_id' => $item->board_id,
-            'work_item_id' => $item->id,
-            'event' => 'column.moved',
-            'payload' => ['from' => $from, 'to' => $target->id, 'origin' => 'task_sync'],
-            'created_at' => now(),
-        ]);
+        \App\Models\Agile\AgileEvent::log(null, 'column.moved', ['from' => $from, 'to' => $target->id, 'origin' => 'task_sync'], null, extra: ['organization_id' => $item->organization_id, 'board_id' => $item->board_id, 'work_item_id' => $item->id]);
     }
 
     /** Blockieren mit Pflichtgrund (Karte bleibt in der Spalte). */
@@ -350,15 +343,7 @@ class AgileBoardService {
 
     /** @param array<string, mixed> $payload */
     private function recordEvent(AgileBoard $board, string $event, ?User $actor, ?\App\Models\Agile\AgileWorkItem $item = null, array $payload = []): void {
-        \App\Models\Agile\AgileEvent::record([
-            'organization_id' => $board->organization_id,
-            'board_id' => $board->id,
-            'work_item_id' => $item?->id,
-            'event' => $event,
-            'actor_user_id' => $actor?->id,
-            'payload' => $payload,
-            'created_at' => now(),
-        ]);
+        $board->record($event, $payload, $actor, extra: ['work_item_id' => $item?->id]);
     }
 
     private function hasActiveSprint(AgileBoard $board): bool {

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Weather;
 
 use App\Plugins\Support\PluginApiClient;
-use App\Services\Location\GeofenceMatcher;
+use App\Services\Support\Geo\GeofenceMatcher;
 use App\Services\Weather\Contracts\WeatherProvider;
 use App\Support\Setting;
 use Carbon\CarbonInterface;

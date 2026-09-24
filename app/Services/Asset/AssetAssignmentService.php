@@ -31,16 +31,7 @@ use Illuminate\Support\Facades\DB;
  * blocked (gesperrt) gespiegelt. Es werden keine neuen Enum-Werte erfunden.
  */
 class AssetAssignmentService {
-    /** Defekt-Statusmaschine: zulässige Folgestatus je Ausgangsstatus. */
-    private const DEFECT_TRANSITIONS = [
-        'open' => ['inRepair', 'resolved', 'writtenOff'],
-        'inRepair' => ['resolved', 'writtenOff', 'open'],
-        'resolved' => ['open'],
-        'writtenOff' => [],
-    ];
-
     public function __construct(
-        private readonly AssetStatusMachine $statusMachine,
         private readonly AssetUsageGuard $usageGuard,
     ) {}
 
@@ -209,7 +200,7 @@ class AssetAssignmentService {
 
     private function transitionDefect(AssetDefect $defect, User $actor, DefectStatus $to, ?string $resolutionNote): AssetDefect {
         $from = $defect->status;
-        if ($from !== $to && ! in_array($to->value, self::DEFECT_TRANSITIONS[$from->value], true)) {
+        if ($from !== $to && ! $from->canTransitionTo($to)) {
             throw AssetValidationException::invalidDefectTransition($from->value, $to->value);
         }
 
@@ -292,7 +283,7 @@ class AssetAssignmentService {
         if ($asset->status === $target) {
             return;
         }
-        if (! $this->statusMachine->canTransition($asset->status, $target)) {
+        if (! $asset->status->canTransitionTo($target)) {
             return;
         }
         $asset->status = $target;

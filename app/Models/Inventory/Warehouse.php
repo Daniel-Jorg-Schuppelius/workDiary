@@ -12,13 +12,12 @@ namespace App\Models\Inventory;
 
 use App\Enums\Inventory\WarehouseKind;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Facility\Site;
+use App\Models\Fleet\Vehicle;
 use App\Models\Platform\Team;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
-use App\Models\Facility\Site;
-use App\Models\Fleet\Vehicle;
-use App\Models\Inventory\WarehouseBin;
 
 /**
  * Lokaler Lagerort (Feature 048, MVP-067). Seit MVP-706 mit Art (fest,

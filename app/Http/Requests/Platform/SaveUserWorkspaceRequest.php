@@ -12,8 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Platform;
 
-use App\Models\Platform\User;
-use App\Models\Platform\UserWorkspace;
+use App\Models\Platform\{User, UserWorkspace};
 use App\Services\Navigation\NavigationRegistry;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;

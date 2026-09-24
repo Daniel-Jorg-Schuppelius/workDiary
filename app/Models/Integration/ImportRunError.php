@@ -14,7 +14,6 @@ use App\Enums\Import\ImportErrorCode;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use App\Models\Integration\ImportRun;
 
 /**
  * MVP-049 — Einzelner Zeilenfehler eines Import-Laufs.

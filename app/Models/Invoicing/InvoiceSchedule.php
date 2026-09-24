@@ -12,12 +12,18 @@ namespace App\Models\Invoicing;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Contract\Contract;
+use App\Models\Contracts\HasDocumentLines;
 use App\Models\Customer\Customer;
+use App\Services\Billing\DocumentTotalsCalculator;
+use App\Services\Billing\Dto\DocumentTotalsContext;
+use App\Services\Invoicing\TaxResolver;
 use Carbon\{Carbon, CarbonInterface};
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\ValueObjects\Percentage;
 use Illuminate\Database\Eloquent\{Builder, Model};
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
-use App\Models\Invoicing\InvoiceScheduleItem;
-use App\Models\Invoicing\InvoiceScheduleRun;
 
 /**
  * Abrechnungsplan für wiederkehrende Rechnungen (MVP-415). Der Scheduler
@@ -38,9 +44,11 @@ use App\Models\Invoicing\InvoiceScheduleRun;
  * @property string $status
  * @property int|null $created_by
  */
-class InvoiceSchedule extends Model {
+class InvoiceSchedule extends Model implements HasDocumentLines {
     use Auditable;
     use BelongsToOrganization;
+    /** @use HasFactory<\Database\Factories\Invoicing\InvoiceScheduleFactory> */
+    use HasFactory;
     use HasSqid;
 
     public const STATUS_ACTIVE = 'active';
@@ -100,6 +108,37 @@ class InvoiceSchedule extends Model {
     /** @return HasMany<InvoiceScheduleItem, $this> */
     public function items(): HasMany {
         return $this->hasMany(InvoiceScheduleItem::class)->orderBy('position');
+    }
+
+    /** @return HasMany<InvoiceScheduleItem, $this> */
+    public function lines(): HasMany {
+        return $this->items();
+    }
+
+    /** Rechnungspläne führen keine Währungsspalte — Euro wie das Angebot. */
+    public function documentCurrency(): CurrencyCode {
+        return CurrencyCode::Euro;
+    }
+
+    /**
+     * Summen eines Laufs, wie ihn der Rechnungslauf erzeugt: Positionen ohne
+     * eigenen Satz erhalten den Satz aus dem TaxResolver des Kunden.
+     */
+    public function documentTotals(): array {
+        $fallback = null;
+        if ($this->items->contains(fn (InvoiceScheduleItem $item): bool => $item->taxRate() === null)) {
+            $organization = $this->organization()->first();
+            $customer = $this->customer()->first();
+            if ($organization !== null && $customer !== null) {
+                $rate = app(TaxResolver::class)->resolve($organization, $customer)['rate'];
+                $fallback = Percentage::of(NumberHelper::toUSFormat((float) $rate, 2));
+            }
+        }
+
+        return app(DocumentTotalsCalculator::class)->totals(
+            $this->items,
+            new DocumentTotalsContext(currency: $this->documentCurrency(), fallbackTaxRate: $fallback),
+        );
     }
 
     /** @return HasMany<InvoiceScheduleRun, $this> */

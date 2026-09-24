@@ -58,7 +58,7 @@
             @php($acceptsZip = $entity->acceptsZip())
             <label class="form-control">
                 @if($acceptsZip)
-                    <span class="label-text">{{ __('import.upload.zip', ['mb' => (int) round(\App\Services\Import\DocumentZipImportService::MAX_ZIP_KB / 1024), 'entries' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(\App\Services\Import\DocumentZipImportService::MAX_ENTRIES, 0, withThousandsSeparator: true)]) }}</span>
+                    <span class="label-text">{{ __('import.upload.zip', ['mb' => (int) round(\App\Services\Document\Import\DocumentZipImportService::MAX_ZIP_KB / 1024), 'entries' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(\App\Services\Document\Import\DocumentZipImportService::MAX_ENTRIES, 0, withThousandsSeparator: true)]) }}</span>
                 @else
                     <span class="label-text">{{ __('CSV-, Excel- oder iCal-Datei (.csv, .xlsx, .ics, max. :mb MB, :rows Zeilen)', ['mb' => 5, 'rows' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(50000, 0, withThousandsSeparator: true)]) }}</span>
                 @endif

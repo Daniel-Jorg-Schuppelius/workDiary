@@ -15,7 +15,7 @@ namespace App\Enums\Contracts;
 /**
  * Typanker für Status-Enums mit Statusmaschine (Vollaudit 2026-07, M44/N30):
  * die Service-Guards ({@see \App\Services\Concerns\AssertsStatusTransition},
- * {@see \App\Services\Isms\Concerns\AssertsIsmsTransition}) arbeiten gegen
+ * {@see \App\Services\Concerns\AssertsValidatedTransition}) arbeiten gegen
  * dieses Interface statt gegen 17 unverbundene Enum-Klassen.
  */
 interface HasStatusTransitions extends HasLabel {

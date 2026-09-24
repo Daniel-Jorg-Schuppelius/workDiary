@@ -10,13 +10,14 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Import\Specs;
+namespace App\Services\Fleet\Import;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Enums\Vehicle\{VehicleOwnership, VehiclePropulsion, VehicleType};
 use App\Models\Fleet\Vehicle;
 use App\Models\Platform\Organization;
 use App\Services\Import\{ImportOutcome, ValidationIssue};
+use App\Services\Import\Specs\AbstractEntitySpec;
 use Throwable;
 
 /**

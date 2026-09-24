@@ -43,4 +43,20 @@ final class PrintManifest extends Manifest {
             'print_orders',
         ];
     }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\Print\Contracts\ProductionOrderFactory::class => \App\Services\Print\Contracts\NullProductionOrderFactory::class,
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Navigation\Contracts\NavigationCondition::class => [
+                \App\Services\Print\Navigation\PrintProfileCondition::class,
+            ],
+        ];
+    }
 }

@@ -11,9 +11,9 @@
 namespace App\Http\Requests\Travel;
 
 use App\Enums\Expense\PaymentMethod;
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 class SaveExpenseRequest extends BaseFormRequest {
     use DecodesSqidInputs;

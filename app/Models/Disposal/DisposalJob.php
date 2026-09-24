@@ -14,7 +14,7 @@ namespace App\Models\Disposal;
 
 use App\Enums\Disposal\DisposalJobStatus;
 use App\Models\Attachments\Attachment;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasJournal, HasSqid};
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Document\Document;
@@ -58,6 +58,10 @@ class DisposalJob extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
+    use HasJournal;
+
+    /** @var class-string<DisposalJobEvent> Journal des Trägers (MVP-864) */
+    protected static string $journalClass = DisposalJobEvent::class;
 
     /** @use HasFactory<DisposalJobFactory> */
     use HasFactory;
@@ -136,11 +140,6 @@ class DisposalJob extends Model {
     /** @return HasMany<DisposalHandover, $this> */
     public function handovers(): HasMany {
         return $this->hasMany(DisposalHandover::class)->orderBy('handed_over_on')->orderBy('id');
-    }
-
-    /** @return HasMany<DisposalJobEvent, $this> */
-    public function events(): HasMany {
-        return $this->hasMany(DisposalJobEvent::class)->orderBy('created_at')->orderBy('id');
     }
 
     public function isSigned(): bool {

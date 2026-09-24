@@ -52,6 +52,8 @@ enum Permission: string implements HasLabel {
     case OrgOnboardingSkipStep = 'org.onboarding.skipStep';
     case OrgOnboardingDismissWidget = 'org.onboarding.dismissWidget';
     case NumberFormatManage = 'organization.numberFormat.manage';
+    // Eigene Felder je Träger (MVP-868).
+    case OrganizationCustomFieldsManage = 'organization.customFields.manage';
         // ── Plattform-Diagnose (MVP-044) ────────────────────────────
     case PlatformDiagnosticsView = 'platform.diagnostics.view';
     case PlatformDiagnosticsRunCheck = 'platform.diagnostics.runCheck';

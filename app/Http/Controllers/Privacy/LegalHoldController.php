@@ -18,7 +18,7 @@ use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Privacy\{ComplianceFinding, LegalHold};
 use App\Rules\ExistsInCurrentOrganization;
-use App\Services\Privacy\LegalHoldService;
+use App\Services\Retention\LegalHoldService;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};

@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Jobs\Integration;
+namespace App\Jobs\Inventory;
 
 use App\Contracts\Inventory\ExternalInventoryDispatcher;
 use App\Contracts\PluginDispatcher;

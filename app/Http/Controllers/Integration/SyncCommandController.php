@@ -10,11 +10,11 @@
 
 namespace App\Http\Controllers\Integration;
 
+use App\Http\Controllers\Controller;
 use App\Services\Sync\SyncCommandService;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
-use App\Http\Controllers\Controller;
 
 /**
  * Idempotenter Batch-Endpunkt der Offline-Sync-Outbox (Feature 035, Phase 1;
@@ -28,7 +28,7 @@ class SyncCommandController extends Controller {
         $data = $request->validate([
             'commands' => ['required', 'array', 'min:1', 'max:50'],
             'commands.*.client_uuid' => ['required', 'uuid'],
-            'commands.*.type' => ['required', 'string', Rule::in(SyncCommandService::TYPES)],
+            'commands.*.type' => ['required', 'string', Rule::in($service->types())],
             'commands.*.payload' => ['nullable', 'array'],
             'commands.*.captured_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
         ]);

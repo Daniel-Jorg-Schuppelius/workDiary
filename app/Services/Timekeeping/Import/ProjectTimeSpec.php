@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Import\Specs;
+namespace App\Services\Timekeeping\Import;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
@@ -19,6 +19,7 @@ use App\Models\Platform\{Organization, User};
 use App\Models\Project\{Project, Task};
 use App\Models\Time\TimeEntry;
 use App\Services\Import\{HasMappableValues, ImportOutcome, InboxFirstSpec, ValidationIssue};
+use App\Services\Import\Specs\AbstractEntitySpec;
 use App\Services\Import\Specs\Concerns\{BindsTimeImportReference, ParsesLocalDateTime, ResolvesImportUsers};
 use App\Services\TimeApproval\MonthClosureService;
 use App\Support\Tz;

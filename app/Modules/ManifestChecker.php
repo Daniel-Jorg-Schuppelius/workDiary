@@ -65,7 +65,81 @@ final class ManifestChecker {
             ...$this->checkFolders(),
             ...$this->checkPermissionGroups(),
             ...$this->checkUniqueKeys(),
+            ...$this->checkWiring(),
         ];
+    }
+
+    /**
+     * Erweiterungspunkte, Contracts, Bindungen und Listener (MVP-863): jede
+     * genannte Klasse existiert und erfüllt ihr Interface; ein Contract wird
+     * höchstens einmal gebunden und ist von genau einem Modul definiert.
+     *
+     * @return list<string>
+     */
+    private function checkWiring(): array {
+        $out = [];
+        $defined = [];
+        $bound = [];
+        foreach ($this->registry->all() as $code => $manifest) {
+            foreach ($manifest->extensions() as $interface => $classes) {
+                if (! interface_exists($interface)) {
+                    $out[] = "Manifest {$code}: Erweiterungspunkt {$interface} ist kein Interface.";
+
+                    continue;
+                }
+                foreach ($classes as $class) {
+                    if (! class_exists($class) || ! is_subclass_of($class, $interface)) {
+                        $out[] = "Manifest {$code}: {$class} implementiert den Erweiterungspunkt {$interface} nicht.";
+                    }
+                }
+            }
+            foreach ($manifest->contracts() as $contract => $null) {
+                $defined[$contract][] = $code;
+                if (! interface_exists($contract)) {
+                    $out[] = "Manifest {$code}: Contract {$contract} ist kein Interface.";
+                } elseif (! class_exists($null) || ! is_subclass_of($null, $contract)) {
+                    $out[] = "Manifest {$code}: Null-Implementierung {$null} erfüllt {$contract} nicht.";
+                }
+            }
+            foreach ($manifest->bindings() as $contract => $implementation) {
+                $bound[$contract][] = $code;
+                if (! interface_exists($contract) || ! class_exists($implementation) || ! is_subclass_of($implementation, $contract)) {
+                    $out[] = "Manifest {$code}: Bindung {$implementation} erfüllt {$contract} nicht.";
+                }
+            }
+            foreach ($manifest->listeners() as $event => $listeners) {
+                if (! class_exists($event)) {
+                    $out[] = "Manifest {$code}: Event {$event} existiert nicht.";
+                }
+                foreach ($listeners as $listener) {
+                    if (! class_exists($listener) || ! method_exists($listener, 'handle')) {
+                        $out[] = "Manifest {$code}: Listener {$listener} existiert nicht oder hat kein handle().";
+
+                        continue;
+                    }
+                    // Die Event-Discovery registriert über den Typ des ersten handle()-Parameters —
+                    // der muss das deklarierte Event nennen, sonst läuft der Listener nie.
+                    if (class_exists($event) && ! $this->handles($listener, $event)) {
+                        $out[] = "Manifest {$code}: Listener {$listener} nimmt {$event} nicht in handle() entgegen.";
+                    }
+                }
+            }
+        }
+        foreach ($defined as $contract => $codes) {
+            if (count($codes) > 1) {
+                $out[] = "Contract {$contract} ist mehrfach definiert: " . implode(', ', $codes) . '.';
+            }
+        }
+        foreach ($bound as $contract => $codes) {
+            if (count($codes) > 1) {
+                $out[] = "Contract {$contract} ist mehrfach gebunden: " . implode(', ', $codes) . '.';
+            }
+            if (! isset($defined[$contract])) {
+                $out[] = "Contract {$contract} wird von " . implode(', ', $codes) . " gebunden, aber kein Manifest definiert ihn (contracts()).";
+            }
+        }
+
+        return $out;
     }
 
     /** @return list<string> */
@@ -282,5 +356,23 @@ final class ManifestChecker {
         }
 
         return $out;
+    }
+
+    /** @param class-string $listener @param class-string $event */
+    private function handles(string $listener, string $event): bool {
+        $parameter = (new \ReflectionMethod($listener, 'handle'))->getParameters()[0] ?? null;
+        $type = $parameter?->getType();
+        $names = match (true) {
+            $type instanceof \ReflectionNamedType => [$type->getName()],
+            $type instanceof \ReflectionUnionType => array_map(static fn (\ReflectionNamedType $t): string => $t->getName(), array_filter($type->getTypes(), static fn ($t): bool => $t instanceof \ReflectionNamedType)),
+            default => [],
+        };
+        foreach ($names as $name) {
+            if ($name === $event || is_subclass_of($event, $name)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

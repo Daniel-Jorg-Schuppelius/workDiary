@@ -19,7 +19,7 @@
     <x-index-page :subtitle="$batch->period_from?->toDateString() . ' – ' . $batch->period_to?->toDateString()"
                   :badge="$importAvailable ? null : __('finance.datev.error.unavailable_badge')"
                   badge-tone="warning"
-                  :badge-title="$importAvailable ? null : \App\Services\Finance\FinancialFormatsSupport::unavailableMessage('finance.datev.error.unavailable')">
+                  :badge-title="$importAvailable ? null : \App\Services\Billing\FinancialFormatsSupport::unavailableMessage('finance.datev.error.unavailable')">
         <x-slot:actions>
             @if ($batch->file_path)
                 <x-icon-btn icon="download" tone="ghost" size="sm"

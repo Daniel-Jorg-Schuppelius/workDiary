@@ -11,7 +11,6 @@
 namespace App\Services\Release;
 
 use App\Plugins\PluginManager;
-use App\Services\Isms\SbomGenerator;
 use App\Services\Licensing\{FeatureFlagResolver, ModuleCatalog};
 use App\Services\Licensing\{LicenseSeal, LicenseService};
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};

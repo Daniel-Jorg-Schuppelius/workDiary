@@ -103,11 +103,11 @@ class PrivacyExportService {
             'decision_note' => $request->decision_note_ciphertext,
             'decided_at' => $request->decided_at?->toIso8601String(),
             'closed_at' => $request->closed_at?->toIso8601String(),
-            'events' => $request->events()->get()->map(static fn ($e): array => [
-                'event' => $e->event,
-                'actor_type' => $e->actor_type,
-                'metadata' => $e->metadata,
-                'at' => $e->created_at?->toIso8601String(),
+            'events' => $request->journal()->get()->map(static fn (\App\Models\Journal\JournalEntry $e): array => [
+                'event' => $e->eventKey(),
+                'actor_type' => $e->getAttribute('actor_type'),
+                'metadata' => $e->payloadData() ?: null,
+                'at' => $e->occurredAt()?->toIso8601String(),
             ])->all(),
         ];
     }

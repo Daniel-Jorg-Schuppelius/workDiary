@@ -175,7 +175,7 @@ class IncomingEInvoiceService {
      * jeder Installation ohne Scanner stilllegen.
      */
     private function isInfected(string $contents, ?string $mime, ?string $path, ?\Illuminate\Http\UploadedFile $file): bool {
-        $driver = app(\App\Services\Whistleblowing\Scanning\ScanDriver::class);
+        $driver = app(\App\Services\Security\Scanning\ScanDriver::class);
 
         $absolute = $file?->getRealPath() ?: $path;
         try {

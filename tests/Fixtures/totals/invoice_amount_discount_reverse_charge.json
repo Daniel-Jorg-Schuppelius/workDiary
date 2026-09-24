@@ -1,0 +1,86 @@
+{
+    "kind": "invoice",
+    "document": {
+        "currency": "EUR",
+        "tax_rate": "19.00",
+        "is_reverse_charge": true,
+        "discount_percent": null,
+        "discount_amount": "25.00",
+        "skonto_percent": null,
+        "skonto_days": null
+    },
+    "lines": [
+        {
+            "quantity": "1.000",
+            "unit_price": "300.0000",
+            "discount_percent": null,
+            "discount_amount": null,
+            "tax_rate": "19.00"
+        },
+        {
+            "quantity": "2.000",
+            "unit_price": "75.2500",
+            "discount_percent": null,
+            "discount_amount": null,
+            "tax_rate": "19.00"
+        },
+        {
+            "quantity": "5.000",
+            "unit_price": "9.9900",
+            "discount_percent": "15.00",
+            "discount_amount": null,
+            "tax_rate": "19.00"
+        },
+        {
+            "quantity": "1.000",
+            "unit_price": "120.0000",
+            "discount_percent": null,
+            "discount_amount": null,
+            "tax_rate": "7.00"
+        }
+    ],
+    "expected": {
+        "line_nets": [
+            "300.00",
+            "150.50",
+            "42.46",
+            "120.00"
+        ],
+        "line_net_sum": "612.96",
+        "document_discount": "25.00",
+        "by_rate": {
+            "7.00": {
+                "rate": 7,
+                "net": "120.00",
+                "allowance": "4.89",
+                "taxable": "115.11",
+                "tax": "0.00"
+            },
+            "19.00": {
+                "rate": 19,
+                "net": "492.96",
+                "allowance": "20.11",
+                "taxable": "472.85",
+                "tax": "0.00"
+            }
+        },
+        "subtotal": "587.96",
+        "tax_amount": "0.00",
+        "total": "587.96",
+        "tax_breakdown": [
+            {
+                "rate": 7,
+                "net": "115.11",
+                "tax": "0.00"
+            },
+            {
+                "rate": 19,
+                "net": "472.85",
+                "tax": "0.00"
+            }
+        ],
+        "line_subtotal": "612.96",
+        "document_discount_total": "25.00",
+        "skonto_amount": "0.00"
+    }
+}

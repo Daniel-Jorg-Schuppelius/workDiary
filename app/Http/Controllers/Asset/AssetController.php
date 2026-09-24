@@ -12,17 +12,17 @@ namespace App\Http\Controllers\Asset;
 
 use App\Enums\Asset\{AssetOwnership, AssetStatus};
 use App\Exceptions\AssetValidationException;
-use App\Http\Controllers\Concerns\ParsesIndexQuery;
+use App\Http\Controllers\Concerns\{ParsesIndexQuery, SavesCustomFields};
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Asset\SaveAssetRequest;
-use App\Models\Asset\Asset;
 use App\Models\Article\Product;
+use App\Models\Asset\Asset;
 use App\Models\Classification\Tag;
 use App\Models\Platform\User;
 use App\Services\Asset\{AssetDetailAssembler, AssetFormOptions, AssetService};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Detail-Aggregation und Options-/Formulardaten liegen in
@@ -31,6 +31,8 @@ use App\Http\Controllers\Controller;
  */
 class AssetController extends Controller {
     use ParsesIndexQuery;
+
+    use SavesCustomFields;
 
     private const ALLOWED_SORTS = ['asset_no', 'asset_class', 'name', 'serial_no', 'location_text', 'status'];
 
@@ -142,6 +144,7 @@ class AssetController extends Controller {
 
         return view('assets.index', [
             'assets' => $assets,
+            'customColumns' => app(\App\Services\Fields\CustomFieldService::class)->listColumnsFor($assets->getCollection(), Asset::class, (int) Auth::user()?->organization_id),
             'classOptions' => $classOptions,
             'statusOptions' => $statusOptions,
             'kpis' => $kpis,
@@ -193,6 +196,8 @@ class AssetController extends Controller {
         }
 
         $payload = $this->applyProductPrefill($request->validated());
+        $custom = $this->validatedCustomFields($request, Asset::class);
+        unset($payload['custom']);
         [$tagIds, $newTags] = $this->extractTagInput($payload);
         $payload['owned_by'] = ($payload['customer_id'] ?? null) === null
             ? AssetOwnership::Organization->value
@@ -207,6 +212,7 @@ class AssetController extends Controller {
         }
 
         $asset->syncTagsFromInput($tagIds, $newTags);
+        $asset->syncCustomFields($custom);
 
         return redirect()->toList('assets.index')->with('success', __('Asset angelegt.'));
     }
@@ -248,6 +254,8 @@ class AssetController extends Controller {
         }
 
         $payload = $this->applyProductPrefill($request->validated());
+        $custom = $this->validatedCustomFields($request, Asset::class);
+        unset($payload['custom']);
         [$tagIds, $newTags] = $this->extractTagInput($payload);
         $payload['owned_by'] = ($payload['customer_id'] ?? null) === null
             ? AssetOwnership::Organization->value
@@ -262,6 +270,7 @@ class AssetController extends Controller {
         }
 
         $asset->syncTagsFromInput($tagIds, $newTags);
+        $asset->syncCustomFields($custom);
 
         return redirect()
             ->route('assets.show', $asset)

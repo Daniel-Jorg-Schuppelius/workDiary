@@ -10,10 +10,9 @@
 
 namespace App\Observers;
 
+use App\Events\Platform\OrganizationCreated;
 use App\Models\Platform\Organization;
 use App\Services\Licensing\PlanModuleService;
-use App\Services\Privacy\DataProtectionPermissions;
-use App\Services\Whistleblowing\WhistleblowingPermissions;
 use Database\Seeders\{ActivityCategorySeeder, EntryTypeSeeder, ExpenseCategorySeeder, PermissionsSeeder};
 
 /**
@@ -24,18 +23,15 @@ use Database\Seeders\{ActivityCategorySeeder, EntryTypeSeeder, ExpenseCategorySe
 class OrganizationObserver {
     public function created(Organization $organization): void {
         PermissionsSeeder::seedOrganization($organization);
-        // Eigene, vom Plattform-Admin getrennte Meldestelle-Rolle (Abschnitt 5/25).
-        WhistleblowingPermissions::seedOrganization($organization);
-        // Eigene Datenschutz-Rolle (ebenfalls vom Admin getrennt).
-        DataProtectionPermissions::seedOrganization($organization);
-        // Personalakten-Kreis (Feature 141): hrFile.* nie automatisch an Admins.
-        \App\Services\Hr\PersonnelFilePermissions::seedOrganization($organization);
         // Erstausstattung Eintragstypen (profil-gekoppelt) — der Deploy-Seeder
         // fasst bestehende Orgs bewusst nicht mehr an.
         EntryTypeSeeder::seedOrganization($organization);
         // Tätigkeits-/Spesenkategorien ebenso bootstrap-only (Vollscan 2026-08-23, J3).
         ActivityCategorySeeder::seedOrganization((int) $organization->id);
         ExpenseCategorySeeder::seedOrganization((int) $organization->id);
+        // Rollen der Fachmodule (Meldestelle, Datenschutz, Personalakte) legen
+        // deren Listener an (MVP-863) — synchron, damit sie sofort vergeben werden können.
+        OrganizationCreated::dispatch($organization);
     }
 
     /**

@@ -10,8 +10,7 @@
 
 namespace Database\Factories\Asset;
 
-use App\Models\Asset\Asset;
-use App\Models\Asset\AssetAssignment;
+use App\Models\Asset\{Asset, AssetAssignment};
 use App\Models\Platform\{Organization, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 

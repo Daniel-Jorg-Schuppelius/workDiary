@@ -96,4 +96,19 @@ final class IntegrationManifest extends Manifest {
             'zammad_connections',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
+            ],
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Plugins\Support\Mirror\Contracts\DocumentVersionImporter::class => \App\Plugins\Support\Mirror\Contracts\NullDocumentVersionImporter::class,
+        ];
+    }
 }

@@ -291,7 +291,7 @@ class PrivacyController extends Controller {
      * @return array<int, array<string, mixed>>
      */
     private function categoriesWithDynamicRetention(): array {
-        $registry = app(\App\Services\Privacy\Retention\RetentionRegistry::class);
+        $registry = app(\App\Services\Retention\RetentionRegistry::class);
         $organization = \Illuminate\Support\Facades\Auth::user()?->organization;
 
         $categories = (array) config('privacy.categories', []);

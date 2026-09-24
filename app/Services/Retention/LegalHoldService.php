@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Privacy;
+namespace App\Services\Retention;
 
 use App\Exceptions\Privacy\LegalHoldException;
 use App\Models\Customer\Customer;

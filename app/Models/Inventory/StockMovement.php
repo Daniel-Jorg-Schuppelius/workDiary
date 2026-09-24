@@ -12,13 +12,11 @@ namespace App\Models\Inventory;
 
 use App\Casts\{MoneyCast, QuantityCast};
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState};
+use App\Models\Article\ArticleVariant;
 use App\Models\Concerns\{AppendOnly, BelongsToOrganization};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
-use App\Models\Article\ArticleVariant;
-use App\Models\Inventory\Warehouse;
-use App\Models\Inventory\WarehouseBin;
 
 /**
  * Eine Zeile im append-only Lagerjournal (Feature 048, MVP-067). Bestätigte

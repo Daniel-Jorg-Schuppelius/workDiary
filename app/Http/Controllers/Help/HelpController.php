@@ -10,13 +10,12 @@
 
 namespace App\Http\Controllers\Help;
 
-use App\Models\Platform\HelpView;
-use App\Models\Platform\User;
+use App\Http\Controllers\Controller;
+use App\Models\Platform\{HelpView, User};
 use App\Services\Help\HelpTopicResolver;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, Request};
 use Symfony\Component\HttpFoundation\Response;
-use App\Http\Controllers\Controller;
 
 class HelpController extends Controller {
     public function show(Request $request, HelpTopicResolver $resolver, string $topic): JsonResponse {

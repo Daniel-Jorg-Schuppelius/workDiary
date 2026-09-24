@@ -29,7 +29,7 @@ class FinancialFormatsGuardRuleTest extends TestCase {
         $violations = [];
         foreach ($this->phpFiles('app') as $file) {
             $relative = $this->relativePath($file);
-            if ($relative === 'app/Services/Finance/FinancialFormatsSupport.php') {
+            if ($relative === 'app/Services/Billing/FinancialFormatsSupport.php') {
                 continue; // der Guard selbst
             }
             $source = (string) file_get_contents($file);

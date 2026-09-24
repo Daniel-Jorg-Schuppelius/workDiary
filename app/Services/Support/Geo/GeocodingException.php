@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Services\Routing;
+namespace App\Services\Support\Geo;
 
 use RuntimeException;
 

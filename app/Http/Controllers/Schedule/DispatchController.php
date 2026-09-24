@@ -12,12 +12,12 @@ namespace App\Http\Controllers\Schedule;
 
 use App\Enums\Diary\DispatchStatus;
 use App\Enums\User\Permission;
+use App\Http\Controllers\Controller;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Services\Dispatch\{DispatchConflictChecker, DispatchStatusResolver};
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
-use App\Http\Controllers\Controller;
 
 /**
  * Disposition eines Auftrags (Feature 028): Konfliktvorschau und

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Agile;
 
 use App\Enums\Agile\AgileItemType;
-use App\Models\Agile\{AgileBoard, AgileEvent, AgileWorkItem};
+use App\Models\Agile\{AgileBoard, AgileWorkItem};
 use App\Models\Platform\User;
 use App\Models\Project\Task;
 use Illuminate\Support\Facades\DB;
@@ -249,14 +249,6 @@ class AgileWorkItemService {
 
     /** @param array<string, mixed> $payload */
     private function recordEvent(AgileBoard $board, string $event, ?User $actor, ?AgileWorkItem $item = null, array $payload = []): void {
-        AgileEvent::record([
-            'organization_id' => $board->organization_id,
-            'board_id' => $board->id,
-            'work_item_id' => $item?->id,
-            'event' => $event,
-            'actor_user_id' => $actor?->id,
-            'payload' => $payload,
-            'created_at' => now(),
-        ]);
+        $board->record($event, $payload, $actor, extra: ['work_item_id' => $item?->id]);
     }
 }

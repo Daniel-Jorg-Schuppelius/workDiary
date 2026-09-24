@@ -12,17 +12,16 @@ namespace App\Http\Controllers\Invoicing;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Models\Contract\Contract;
 use App\Models\Customer\Customer;
-use App\Models\Invoicing\InvoiceSchedule;
-use App\Models\Invoicing\InvoiceScheduleItem;
+use App\Models\Invoicing\{InvoiceSchedule, InvoiceScheduleItem};
 use App\Models\Platform\User;
-use App\Services\Finance\BillingModeResolver;
+use App\Services\Billing\BillingModeResolver;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /** Abrechnungspläne für wiederkehrende Rechnungen (MVP-415). */
 class InvoiceScheduleController extends Controller {

@@ -45,4 +45,13 @@ final class TrainingManifest extends Manifest {
             'training_requirements',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Training\DeadlineScans\TrainingDeadlineScan::class,
+            ],
+        ];
+    }
 }

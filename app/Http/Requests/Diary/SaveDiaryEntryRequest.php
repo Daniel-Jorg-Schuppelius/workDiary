@@ -11,10 +11,10 @@
 namespace App\Http\Requests\Diary;
 
 use App\Enums\Diary\{LocationMode, Mode, Priority};
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
 use App\Models\Classification\EntryType;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 class SaveDiaryEntryRequest extends BaseFormRequest {
     use DecodesSqidInputs, ParsesOrgLocalDateTimes;

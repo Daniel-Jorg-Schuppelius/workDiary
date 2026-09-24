@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Supplier;
 
 use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery, ResolvesGlobalDateRange};
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Supplier\SaveSupplierRequest;
 use App\Models\Audit\AuditLog;
 use App\Models\Classification\Tag;
@@ -27,7 +28,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use App\Http\Controllers\Controller;
 
 class SupplierController extends Controller {
     use \App\Http\Controllers\Concerns\WritesContactDetails;

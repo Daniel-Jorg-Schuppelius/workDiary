@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Time;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Time\SaveWorkScheduleRequest;
 use App\Models\Platform\User;
 use App\Models\Time\WorkSchedule;
@@ -18,7 +19,6 @@ use App\Services\Flextime\WorkScheduleResolver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class WorkScheduleController extends Controller {
     use ResolvesCurrentOrganization;

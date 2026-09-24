@@ -14,36 +14,39 @@ use App\Http\Controllers\Admin\{AutomationRuleController, BackupHeartbeatControl
 use App\Http\Controllers\Archive\ArchiveController;
 use App\Http\Controllers\Article\ProductController;
 use App\Http\Controllers\Asset\{AssetCheckoutController, AssetDefectController, MaintenancePlanController};
-use App\Http\Controllers\Asset\{AssetController, EnergyLogController, SoftwareController, SoftwareInstallationController};
+use App\Http\Controllers\Asset\{AssetController, SoftwareController, SoftwareInstallationController};
 use App\Http\Controllers\Attachments\AttachmentController;
-use App\Http\Controllers\Audit\{AuditLogController, PublicAuditPackageController};
+use App\Http\Controllers\Audit\AuditLogController;
 use App\Http\Controllers\Auth\{AccountPasswordController, ApiTokenController, TwoFactorController};
 use App\Http\Controllers\Auth\{LoginController, PasswordResetController, TenantRegistrationController, TwoFactorChallengeController};
 use App\Http\Controllers\Calendar\{AvailabilityController, CalendarFeedController, EventCategoryController, EventController, EventParticipantController, IcsFeedController};
+use App\Http\Controllers\Calendar\HolidayController;
 use App\Http\Controllers\Classification\{ActivityCategoryController, TagController};
 use App\Http\Controllers\Communication\{CommentController, CommunicationNoteController, ExternalParticipantController, PublicExternalParticipantController};
 use App\Http\Controllers\Customer\{CustomerController, CustomerMergeController, CustomerQueryController, ForeignCustomerController};
 use App\Http\Controllers\Dashboard\DashboardController;
-use App\Http\Controllers\Diary\{DiaryCaseFileController, DiaryController, DiaryExportController, DiaryLifecycleController, EmergencyAssignmentController, OnCallShiftController, OpenIssueController, QuickBookController, TourController};
+use App\Http\Controllers\Diary\{DiaryCaseFileController, DiaryController, DiaryExportController, DiaryLifecycleController, EmergencyAssignmentController, OnCallShiftController, OpenIssueController, QuickBookController};
 use App\Http\Controllers\Facility\RoomController;
 use App\Http\Controllers\Finance\CashRegisterController;
-use App\Http\Controllers\Fleet\{VehicleController, VehicleReservationController};
+use App\Http\Controllers\Fleet\{EnergyLogController, VehicleController};
 use App\Http\Controllers\Help\HelpController;
 use App\Http\Controllers\Hr\QualificationController;
 use App\Http\Controllers\Integration\SyncCommandController;
 use App\Http\Controllers\Invoicing\{InvoiceController, InvoiceScheduleController};
+use App\Http\Controllers\Isms\PublicAuditPackageController;
 use App\Http\Controllers\KeyHandover\KeyHandoverController;
 use App\Http\Controllers\Licensing\LicenseController;
 use App\Http\Controllers\Material\MaterialController;
 use App\Http\Controllers\MeterReading\MeterReadingController;
 use App\Http\Controllers\Payroll\PayrollController;
-use App\Http\Controllers\Platform\{GeocodeController, HolidayController, HomeController, LocaleController, OnboardingController, OrgMemberController, OrganizationController, OrganizationSwitchController, ProfileController, PushSubscriptionController, TeamController, UserBookmarkController};
+use App\Http\Controllers\Platform\{GeocodeController, HomeController, LocaleController, OnboardingController, OrgMemberController, OrganizationController, OrganizationSwitchController, ProfileController, PushSubscriptionController, TeamController, UserBookmarkController};
 use App\Http\Controllers\Print\PrintController;
 use App\Http\Controllers\Project\{KanbanController, MilestoneController, ProjectBillingRuleController, ProjectController, ProjectMergeController, ProjectRecurrenceRuleController, TaskController};
 use App\Http\Controllers\Protocol\{ProtocolController, PublicProtocolSignatureController, PublicSignatureController};
 use App\Http\Controllers\Reporting\{AbsencesReportController, AssetAnalysisReportController, AttendanceReportController, AuditActivityReportController, BillingReportController, CoverageReportController, CustomerAnalysisReportController, CustomerProjectReportController, EconomicsReportController, EntryTypeAnalysisReportController, EntryTypeDrilldownReportController, ExpenseReportController, ExternalPayoutReportController, FleetReportController, MaterialReportController, MonthByUserTeamReportController, MyMonthReportController, MyYearReportController, OnCallReportController, OperationsReportController, ProjectDetailsReportController, ProjectInactiveReportController, QualificationReportController, SicknessReportController, WeekByUserReportController, WorkBalanceReportController};
 use App\Http\Controllers\Safety\SafetyEventController;
 use App\Http\Controllers\Schedule\{CoverageRequirementController, DispatchBoardController, DispatchController, DutyController, DutyPlanController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftExchangeController, ShiftTypeController};
+use App\Http\Controllers\Schedule\{TourController, VehicleReservationController};
 use App\Http\Controllers\Search\GlobalSearchController;
 use App\Http\Controllers\ServiceTicket\{ProblemReportController, ServiceTicketController};
 use App\Http\Controllers\Supplier\{SupplierController, SupplierMergeController};
@@ -185,7 +188,7 @@ Route::post('sign/protocol/{token}/query', [PublicProtocolSignatureController::c
 // Kundenvereinbarungen (Feature 157, MVP-822): Signaturlink (Einmal-Token) und
 // getrennter, befristeter Abruflink. Die Danke-Seite steht vor `{token}`,
 // damit sie nicht als Token gelesen wird.
-Route::controller(\App\Http\Controllers\Customer\PublicAgreementSignatureController::class)->group(function (): void {
+Route::controller(\App\Http\Controllers\Contract\PublicAgreementSignatureController::class)->group(function (): void {
     Route::get('sign/agreement/danke', 'thanks')->name('agreements.public-thanks');
     Route::get('sign/agreement/{token}', 'show')->middleware('throttle:30,1')->name('agreements.public-sign');
     Route::post('sign/agreement/{token}/unterschreiben', 'sign')->middleware('throttle:6,1')->name('agreements.public-sign.submit');
@@ -1149,7 +1152,7 @@ Route::middleware('auth')->group(function () {
         // Agiles Projektmanagement (Feature 064) — eigenes Präfix agile.*
         // (module.agile_projects; projects.* ist auf module.vertrieb gemappt).
         // Org-weite Management-Übersicht (P10) — Projektfilter via Policy.
-        Route::get('agile/berichte', [\App\Http\Controllers\Reporting\AgileManagementReportController::class, 'index'])->name('agile.reports.overview');
+        Route::get('agile/berichte', [\App\Http\Controllers\Agile\AgileManagementReportController::class, 'index'])->name('agile.reports.overview');
         Route::prefix('agile/projects/{project}')->name('agile.')->group(function (): void {
             Route::get('board', [\App\Http\Controllers\Agile\AgileBoardController::class, 'board'])->name('board');
             Route::post('aktivieren', [\App\Http\Controllers\Agile\AgileBoardController::class, 'activate'])->name('activate');
@@ -1170,12 +1173,12 @@ Route::middleware('auth')->group(function () {
             Route::post('items/{item}/blockieren', [\App\Http\Controllers\Agile\AgileBoardController::class, 'blockItem'])->name('items.block');
             Route::post('items/{item}/entblocken', [\App\Http\Controllers\Agile\AgileBoardController::class, 'unblockItem'])->name('items.unblock');
             // Berichtszentrum (P8/MVP-146).
-            Route::get('berichte/sprint', [\App\Http\Controllers\Reporting\AgileSprintReportController::class, 'index'])->name('reports.sprint');
-            Route::get('berichte/fluss', [\App\Http\Controllers\Reporting\AgileFlowReportController::class, 'index'])->name('reports.flow');
+            Route::get('berichte/sprint', [\App\Http\Controllers\Agile\AgileSprintReportController::class, 'index'])->name('reports.sprint');
+            Route::get('berichte/fluss', [\App\Http\Controllers\Agile\AgileFlowReportController::class, 'index'])->name('reports.flow');
             // Drilldown/Exporte (P11/MVP-149) — Drilldown nur signiert.
-            Route::get('berichte/drilldown', [\App\Http\Controllers\Reporting\AgileReportExportController::class, 'drilldown'])->name('reports.drilldown');
-            Route::get('berichte/export/{metric}.csv', [\App\Http\Controllers\Reporting\AgileReportExportController::class, 'csv'])->name('reports.export.csv');
-            Route::get('berichte/export/cockpit.pdf', [\App\Http\Controllers\Reporting\AgileReportExportController::class, 'pdf'])->name('reports.export.pdf');
+            Route::get('berichte/drilldown', [\App\Http\Controllers\Agile\AgileReportExportController::class, 'drilldown'])->name('reports.drilldown');
+            Route::get('berichte/export/{metric}.csv', [\App\Http\Controllers\Agile\AgileReportExportController::class, 'csv'])->name('reports.export.csv');
+            Route::get('berichte/export/cockpit.pdf', [\App\Http\Controllers\Agile\AgileReportExportController::class, 'pdf'])->name('reports.export.pdf');
             // Sprints (P4/MVP-142).
             Route::get('sprints', [\App\Http\Controllers\Agile\AgileSprintController::class, 'index'])->name('sprints');
             Route::post('sprints', [\App\Http\Controllers\Agile\AgileSprintController::class, 'store'])->name('sprints.store');
@@ -1249,9 +1252,9 @@ Route::middleware('auth')->group(function () {
         // VOR der Ressource: sonst frisst `events/{event}` die feste Adresse
         // und das Model-Binding antwortet mit 404 (wie bei `events/calendar`).
         // Verwaltung des Abo-Links, Recht `organization.update` wie beim Geräte-Pass.
-        Route::get('events/kalender-abo', [\App\Http\Controllers\Platform\OrganizationCalendarFeedController::class, 'show'])->name('events.feed.show');
-        Route::post('events/kalender-abo/token', [\App\Http\Controllers\Platform\OrganizationCalendarFeedController::class, 'rotate'])->name('events.feed.rotate');
-        Route::delete('events/kalender-abo/token', [\App\Http\Controllers\Platform\OrganizationCalendarFeedController::class, 'revoke'])->name('events.feed.revoke');
+        Route::get('events/kalender-abo', [\App\Http\Controllers\Calendar\OrganizationCalendarFeedController::class, 'show'])->name('events.feed.show');
+        Route::post('events/kalender-abo/token', [\App\Http\Controllers\Calendar\OrganizationCalendarFeedController::class, 'rotate'])->name('events.feed.rotate');
+        Route::delete('events/kalender-abo/token', [\App\Http\Controllers\Calendar\OrganizationCalendarFeedController::class, 'revoke'])->name('events.feed.revoke');
 
         Route::resource('events', EventController::class);
 
@@ -1396,11 +1399,11 @@ Route::middleware('auth')->group(function () {
         Route::delete('customers/{customer}/billing/statements/{statement}/voucher', [\App\Http\Controllers\Customers\RetainerBillingController::class, 'unlinkVoucher'])->name('customers.billing.retainer.voucher.unlink');
 
         // ── Materialkosten-Zuordnung & Gewinn (Umsatz − Material) ────────────────
-        Route::get('customers/{customer}/material-costs/create', [\App\Http\Controllers\Customers\MaterialCostAllocationController::class, 'create'])->name('customers.material-costs.create');
-        Route::post('customers/{customer}/material-costs', [\App\Http\Controllers\Customers\MaterialCostAllocationController::class, 'store'])->name('customers.material-costs.store');
-        Route::get('customers/{customer}/material-costs/stock/create', [\App\Http\Controllers\Customers\MaterialCostAllocationController::class, 'createStock'])->name('customers.material-costs.stock.create');
-        Route::post('customers/{customer}/material-costs/stock', [\App\Http\Controllers\Customers\MaterialCostAllocationController::class, 'storeStock'])->name('customers.material-costs.stock.store');
-        Route::delete('customers/{customer}/material-costs/{allocation}', [\App\Http\Controllers\Customers\MaterialCostAllocationController::class, 'destroy'])->name('customers.material-costs.destroy');
+        Route::get('customers/{customer}/material-costs/create', [\App\Http\Controllers\Inventory\MaterialCostAllocationController::class, 'create'])->name('customers.material-costs.create');
+        Route::post('customers/{customer}/material-costs', [\App\Http\Controllers\Inventory\MaterialCostAllocationController::class, 'store'])->name('customers.material-costs.store');
+        Route::get('customers/{customer}/material-costs/stock/create', [\App\Http\Controllers\Inventory\MaterialCostAllocationController::class, 'createStock'])->name('customers.material-costs.stock.create');
+        Route::post('customers/{customer}/material-costs/stock', [\App\Http\Controllers\Inventory\MaterialCostAllocationController::class, 'storeStock'])->name('customers.material-costs.stock.store');
+        Route::delete('customers/{customer}/material-costs/{allocation}', [\App\Http\Controllers\Inventory\MaterialCostAllocationController::class, 'destroy'])->name('customers.material-costs.destroy');
 
         // ── Fremdkunden (Endkunden einer Firma) ──────────────────────────────────
         Route::resource('foreign-customers', ForeignCustomerController::class)->parameters(['foreign-customers' => 'foreignCustomer']);
@@ -1443,7 +1446,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('articles', \App\Http\Controllers\Article\ArticleController::class);
         Route::post('articles/{article}/retire', [\App\Http\Controllers\Article\ArticleController::class, 'retire'])->name('articles.retire');
         // Nachkalkulation je Artikel (Feature 047, MVP-715): Reiter der Detailseite, CSV via ?export=csv.
-        Route::get('articles/{article}/nachkalkulation', [\App\Http\Controllers\Article\ArticleCostingController::class, 'index'])->name('articles.costing');
+        Route::get('articles/{article}/nachkalkulation', [\App\Http\Controllers\Manufacturing\ArticleCostingController::class, 'index'])->name('articles.costing');
         Route::post('articles/{article}/supplies/{supply}/prefer', [\App\Http\Controllers\Article\ArticleController::class, 'setPreferredSupply'])->name('articles.supplies.prefer'); // Feature 050 Lieferantenvergleich
         Route::post('articles/{article}/tiers', [\App\Http\Controllers\Article\ArticleController::class, 'storeTier'])->name('articles.tiers.store'); // Feature 107, MVP-605
         Route::delete('articles/{article}/tiers/{tier}', [\App\Http\Controllers\Article\ArticleController::class, 'destroyTier'])->name('articles.tiers.destroy');
@@ -1486,9 +1489,9 @@ Route::middleware('auth')->group(function () {
         Route::post('inventory/lots/merge', [\App\Http\Controllers\Inventory\LotController::class, 'mergeLot'])->name('inventory.lots.merge');
 
         // ── Etikettendruck (Feature 048, E5)
-        Route::get('inventory/labels/variant/{variant}', [\App\Http\Controllers\Print\LabelController::class, 'variant'])->name('inventory.labels.variant');
-        Route::get('inventory/labels/serial/{stockSerial}', [\App\Http\Controllers\Print\LabelController::class, 'serial'])->name('inventory.labels.serial');
-        Route::get('inventory/labels/lot/{stockLot}', [\App\Http\Controllers\Print\LabelController::class, 'lot'])->name('inventory.labels.lot');
+        Route::get('inventory/labels/variant/{variant}', [\App\Http\Controllers\Inventory\LabelController::class, 'variant'])->name('inventory.labels.variant');
+        Route::get('inventory/labels/serial/{stockSerial}', [\App\Http\Controllers\Inventory\LabelController::class, 'serial'])->name('inventory.labels.serial');
+        Route::get('inventory/labels/lot/{stockLot}', [\App\Http\Controllers\Inventory\LabelController::class, 'lot'])->name('inventory.labels.lot');
 
         // Konflikt-Inbox externer Bestandsspiegelung (Feature 048, MVP-072)
         Route::get('inventory/conflicts', [\App\Http\Controllers\Inventory\InventoryConflictController::class, 'index'])->name('inventory.conflicts.index');
@@ -1525,7 +1528,7 @@ Route::middleware('auth')->group(function () {
         // Feature 128 (MVP-692): Lieferschein per E-Mail an den Kunden.
         Route::get('manufacturing-orders/{order}/deliveries/{delivery}/mail', [\App\Http\Controllers\Document\DocumentMailController::class, 'deliveryNoteForm'])->name('manufacturing-orders.deliveries.mail.form');
         Route::post('manufacturing-orders/{order}/deliveries/{delivery}/mail', [\App\Http\Controllers\Document\DocumentMailController::class, 'deliveryNoteSend'])->name('manufacturing-orders.deliveries.mail');
-        Route::post('manufacturing-orders/{order}/deliveries/{delivery}/shipment', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'createShipment'])->name('manufacturing-orders.deliveries.shipment'); // 059/MVP-128 Rang 20 Versandauftrag
+        Route::post('manufacturing-orders/{order}/deliveries/{delivery}/shipment', [\App\Http\Controllers\Shipping\DeliveryShipmentController::class, 'store'])->name('manufacturing-orders.deliveries.shipment'); // 059/MVP-128 Rang 20 Versandauftrag
         Route::post('manufacturing-orders/{order}/order-confirmation/lexoffice', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'pushOrderConfirmation'])->name('manufacturing-orders.order-confirmation.lexoffice'); // 045 Auftragsbestätigung an Lexoffice
         Route::post('manufacturing-orders/{order}/quotation/lexoffice', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'pushQuotation'])->name('manufacturing-orders.quotation.lexoffice'); // 045 Angebot an Lexoffice
         Route::post('manufacturing-orders/{order}/cancel', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'cancel'])->name('manufacturing-orders.cancel');
@@ -1581,39 +1584,39 @@ Route::middleware('auth')->group(function () {
         // ── Lieferantenperformance-Scorecards (Bauturbo Welle D) ─ Gate supplier-scorecards.* → module.lager
         // Termintreue/Reklamationsquote/Preisentwicklung/ISMS-Qualität je Lieferant,
         // aggregiert aus Einkauf/Lager/Claims/ISMS; signierte Beleg-Drilldowns.
-        Route::get('supplier-scorecards', [\App\Http\Controllers\Reporting\SupplierScorecardController::class, 'index'])->name('supplier-scorecards.index');
-        Route::get('supplier-scorecards/{supplier}/drilldown', [\App\Http\Controllers\Reporting\SupplierScorecardController::class, 'drilldown'])->name('supplier-scorecards.drilldown');
-        Route::get('supplier-scorecards/{supplier}', [\App\Http\Controllers\Reporting\SupplierScorecardController::class, 'show'])->name('supplier-scorecards.show');
+        Route::get('supplier-scorecards', [\App\Http\Controllers\Procurement\SupplierScorecardController::class, 'index'])->name('supplier-scorecards.index');
+        Route::get('supplier-scorecards/{supplier}/drilldown', [\App\Http\Controllers\Procurement\SupplierScorecardController::class, 'drilldown'])->name('supplier-scorecards.drilldown');
+        Route::get('supplier-scorecards/{supplier}', [\App\Http\Controllers\Procurement\SupplierScorecardController::class, 'show'])->name('supplier-scorecards.show');
 
         // ── Lieferantenkataloge (Feature 050, MVP-091/092) ─ Gate supplier-catalogs.* → module.lager
         // Feature 107 MVP-564: Metallnotierungen (vor den {supplierCatalog}-Routen).
         Route::get('supplier-catalogs/metal-quotations', [\App\Http\Controllers\Article\MetalQuotationController::class, 'index'])->name('supplier-catalogs.metal-quotations.index');
         Route::post('supplier-catalogs/metal-quotations', [\App\Http\Controllers\Article\MetalQuotationController::class, 'store'])->name('supplier-catalogs.metal-quotations.store');
         Route::delete('supplier-catalogs/metal-quotations/{metalQuotation}', [\App\Http\Controllers\Article\MetalQuotationController::class, 'destroy'])->name('supplier-catalogs.metal-quotations.destroy');
-        Route::get('supplier-catalogs', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'index'])->name('supplier-catalogs.index');
-        Route::get('supplier-catalogs/create', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'create'])->name('supplier-catalogs.create');
-        Route::get('supplier-catalogs/alerts', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'alerts'])->name('supplier-catalogs.alerts'); // MVP-094 (vor show!)
-        Route::post('supplier-catalogs/alerts/{alert}/acknowledge', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'acknowledgeAlert'])->name('supplier-catalogs.alerts.acknowledge');
-        Route::post('supplier-catalogs', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'store'])->name('supplier-catalogs.store');
-        Route::get('supplier-catalogs/{supplierCatalog}/edit', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'edit'])->name('supplier-catalogs.edit');
-        Route::put('supplier-catalogs/{supplierCatalog}', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'update'])->name('supplier-catalogs.update');
-        Route::delete('supplier-catalogs/{supplierCatalog}', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'destroy'])->name('supplier-catalogs.destroy');
-        Route::post('supplier-catalogs/{supplierCatalog}/toggle', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'toggleActive'])->name('supplier-catalogs.toggle');
-        Route::get('supplier-catalogs/{supplierCatalog}', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'show'])->name('supplier-catalogs.show');
-        Route::post('supplier-catalogs/{supplierCatalog}/import', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'import'])->name('supplier-catalogs.import');
-        Route::post('supplier-catalogs/{supplierCatalog}/shopinfo', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'discoverShopinfo'])->name('supplier-catalogs.shopinfo'); // MVP-092 Discovery
-        Route::post('supplier-catalogs/{supplierCatalog}/fetch', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'fetchRemote'])->name('supplier-catalogs.fetch'); // Remote-Abruf (HTTP/FTP)
+        Route::get('supplier-catalogs', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'index'])->name('supplier-catalogs.index');
+        Route::get('supplier-catalogs/create', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'create'])->name('supplier-catalogs.create');
+        Route::get('supplier-catalogs/alerts', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'alerts'])->name('supplier-catalogs.alerts'); // MVP-094 (vor show!)
+        Route::post('supplier-catalogs/alerts/{alert}/acknowledge', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'acknowledgeAlert'])->name('supplier-catalogs.alerts.acknowledge');
+        Route::post('supplier-catalogs', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'store'])->name('supplier-catalogs.store');
+        Route::get('supplier-catalogs/{supplierCatalog}/edit', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'edit'])->name('supplier-catalogs.edit');
+        Route::put('supplier-catalogs/{supplierCatalog}', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'update'])->name('supplier-catalogs.update');
+        Route::delete('supplier-catalogs/{supplierCatalog}', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'destroy'])->name('supplier-catalogs.destroy');
+        Route::post('supplier-catalogs/{supplierCatalog}/toggle', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'toggleActive'])->name('supplier-catalogs.toggle');
+        Route::get('supplier-catalogs/{supplierCatalog}', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'show'])->name('supplier-catalogs.show');
+        Route::post('supplier-catalogs/{supplierCatalog}/import', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'import'])->name('supplier-catalogs.import');
+        Route::post('supplier-catalogs/{supplierCatalog}/shopinfo', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'discoverShopinfo'])->name('supplier-catalogs.shopinfo'); // MVP-092 Discovery
+        Route::post('supplier-catalogs/{supplierCatalog}/fetch', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'fetchRemote'])->name('supplier-catalogs.fetch'); // Remote-Abruf (HTTP/FTP)
         // Verknüpfung Katalogartikel ↔ interner Artikelstamm (MVP-093)
-        Route::get('supplier-catalogs/items/{catalogItem}/link', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'linkForm'])->name('supplier-catalogs.items.link-form');
-        Route::post('supplier-catalogs/items/{catalogItem}/link', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'link'])->name('supplier-catalogs.items.link');
-        Route::post('supplier-catalogs/items/{catalogItem}/unlink', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'unlink'])->name('supplier-catalogs.items.unlink');
-        Route::post('supplier-catalogs/items/{catalogItem}/propose', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'propose'])->name('supplier-catalogs.items.propose');
-        Route::post('supplier-catalogs/items/{catalogItem}/apply-price', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'applyPrice'])->name('supplier-catalogs.items.apply-price'); // MVP-095 Verkaufspreis-Freigabe
+        Route::get('supplier-catalogs/items/{catalogItem}/link', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'linkForm'])->name('supplier-catalogs.items.link-form');
+        Route::post('supplier-catalogs/items/{catalogItem}/link', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'link'])->name('supplier-catalogs.items.link');
+        Route::post('supplier-catalogs/items/{catalogItem}/unlink', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'unlink'])->name('supplier-catalogs.items.unlink');
+        Route::post('supplier-catalogs/items/{catalogItem}/propose', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'propose'])->name('supplier-catalogs.items.propose');
+        Route::post('supplier-catalogs/items/{catalogItem}/apply-price', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'applyPrice'])->name('supplier-catalogs.items.apply-price'); // MVP-095 Verkaufspreis-Freigabe
         // Übernahme in den Artikelstamm: Artikel + Varianten aus Tarif-Gruppen (MVP-541)
-        Route::get('supplier-catalogs/{supplierCatalog}/adopt', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'adoptForm'])->name('supplier-catalogs.adopt-form');
-        Route::post('supplier-catalogs/{supplierCatalog}/adopt', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'adopt'])->name('supplier-catalogs.adopt');
-        Route::post('supplier-catalogs/items/{catalogItem}/adopt', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'adoptItem'])->name('supplier-catalogs.items.adopt');
-        Route::get('supplier-catalogs/{supplierCatalog}/punchout', [\App\Http\Controllers\Supplier\SupplierCatalogController::class, 'punchout'])->name('supplier-catalogs.punchout'); // MVP-096 aktiver Punchout-Absprung
+        Route::get('supplier-catalogs/{supplierCatalog}/adopt', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'adoptForm'])->name('supplier-catalogs.adopt-form');
+        Route::post('supplier-catalogs/{supplierCatalog}/adopt', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'adopt'])->name('supplier-catalogs.adopt');
+        Route::post('supplier-catalogs/items/{catalogItem}/adopt', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'adoptItem'])->name('supplier-catalogs.items.adopt');
+        Route::get('supplier-catalogs/{supplierCatalog}/punchout', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'punchout'])->name('supplier-catalogs.punchout'); // MVP-096 aktiver Punchout-Absprung
 
         // ── Margenregeln (Feature 050, MVP-095) ─ Gate pricing-margin-rules.* → module.lager
         Route::get('pricing-margin-rules', [\App\Http\Controllers\Article\PricingMarginRuleController::class, 'index'])->name('pricing-margin-rules.index');
@@ -2010,8 +2013,8 @@ Route::middleware('auth')->group(function () {
         Route::get('invoices/{invoice}/originaldatei-vorschau', [\App\Http\Controllers\Invoicing\InvoicePdfImportController::class, 'sourcePreview'])->name('invoices.pdf-import.preview');
         Route::get('invoices/{invoice}/import-pruefung', [\App\Http\Controllers\Invoicing\InvoicePdfImportController::class, 'review'])->name('invoices.import-review');
         Route::post('invoices/{invoice}/import-pruefung', [\App\Http\Controllers\Invoicing\InvoicePdfImportController::class, 'confirmReview'])->name('invoices.import-review.confirm');
-        Route::get('invoices/{invoice}/expenses', [InvoiceController::class, 'expensesForm'])->name('invoices.expenses.form');
-        Route::post('invoices/{invoice}/expenses', [InvoiceController::class, 'attachExpenses'])->name('invoices.expenses.attach');
+        Route::get('invoices/{invoice}/expenses', [\App\Http\Controllers\Travel\InvoiceExpenseController::class, 'form'])->name('invoices.expenses.form');
+        Route::post('invoices/{invoice}/expenses', [\App\Http\Controllers\Travel\InvoiceExpenseController::class, 'attach'])->name('invoices.expenses.attach');
         // MVP-416: Rabatt-/Skonto-Konditionen am Entwurf
         Route::get('invoices/{invoice}/conditions', [InvoiceController::class, 'conditionsForm'])->name('invoices.conditions.form');
         Route::patch('invoices/{invoice}/conditions', [InvoiceController::class, 'updateConditions'])->name('invoices.conditions.update');
@@ -2280,7 +2283,7 @@ Route::middleware('auth')->group(function () {
             Route::post('registrieren', [\App\Http\Controllers\Domain\DomainRegistrationController::class, 'store'])->name('register');
             Route::get('accounting', [\App\Http\Controllers\Domain\DomainAccountingController::class, 'index'])
                 ->middleware('can:domain.accounting.view')->name('accounting');
-            Route::get('berichte', [\App\Http\Controllers\Reporting\DomainReportController::class, 'index'])
+            Route::get('berichte', [\App\Http\Controllers\Domain\DomainReportController::class, 'index'])
                 ->middleware('can:domain.viewAny')->name('reports');
             Route::post('befehle/{command}/freigeben', [\App\Http\Controllers\Domain\DomainDangerousActionController::class, 'approve'])->name('commands.approve');
             Route::post('befehle/{command}/ablehnen', [\App\Http\Controllers\Domain\DomainDangerousActionController::class, 'reject'])->name('commands.reject');
@@ -2378,8 +2381,8 @@ Route::middleware('auth')->group(function () {
             Route::get('neu', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'create'])->name('create');
             Route::post('/', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'store'])->name('store');
             Route::get('fristen', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'deadlines'])->name('deadlines.index');
-            Route::get('bericht', [\App\Http\Controllers\Reporting\AssetFinanceReportController::class, 'index'])->name('reports.index');
-            Route::post('bericht/snapshot', [\App\Http\Controllers\Reporting\AssetFinanceReportController::class, 'snapshot'])->name('reports.snapshot');
+            Route::get('bericht', [\App\Http\Controllers\AssetFinance\AssetFinanceReportController::class, 'index'])->name('reports.index');
+            Route::post('bericht/snapshot', [\App\Http\Controllers\AssetFinance\AssetFinanceReportController::class, 'snapshot'])->name('reports.snapshot');
             Route::get('{contract}', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'show'])->name('show');
             Route::put('{contract}', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'update'])->name('update');
             Route::post('{contract}/aktivieren', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'activate'])->name('activate');
@@ -2395,7 +2398,7 @@ Route::middleware('auth')->group(function () {
             Route::post('optionen/{option}/ausueben', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'exerciseOption'])->name('options.exercise');
             Route::post('{contract}/ende', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'storeEndProcess'])->name('ends.store');
             Route::post('ende/{endProcess}/abschliessen', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'completeEndProcess'])->name('ends.complete');
-            Route::post('{contract}/kosten-snapshot', [\App\Http\Controllers\Reporting\AssetFinanceReportController::class, 'costSnapshot'])->name('costs.snapshot');
+            Route::post('{contract}/kosten-snapshot', [\App\Http\Controllers\AssetFinance\AssetFinanceReportController::class, 'costSnapshot'])->name('costs.snapshot');
         });
 
         // ── Allgemeine Vertragsverwaltung (Welle D CLM, module.contracts) ──
@@ -2515,7 +2518,7 @@ Route::middleware('auth')->group(function () {
             Route::get('neu', [\App\Http\Controllers\Investments\InvestmentController::class, 'create'])->name('create');
             Route::post('/', [\App\Http\Controllers\Investments\InvestmentController::class, 'store'])->name('store');
             Route::post('kostenstellen', [\App\Http\Controllers\Investments\InvestmentController::class, 'storeCostCenter'])->name('cost-centers.store');
-            Route::get('bericht', [\App\Http\Controllers\Reporting\InvestmentsReportController::class, 'index'])->name('report');
+            Route::get('bericht', [\App\Http\Controllers\Investments\InvestmentsReportController::class, 'index'])->name('report');
             Route::get('{case}', [\App\Http\Controllers\Investments\InvestmentController::class, 'show'])->name('show');
             Route::get('{case}/bearbeiten', [\App\Http\Controllers\Investments\InvestmentController::class, 'edit'])->name('edit');
             Route::put('{case}', [\App\Http\Controllers\Investments\InvestmentController::class, 'update'])->name('update');
@@ -2638,70 +2641,70 @@ Route::middleware('auth')->group(function () {
         // Preisen und geplanten Abrechnungsperioden. ──
         Route::prefix('finanzen/abos')->name('finance.resale.')->group(function (): void {
             // „neu" vor dem Sqid-Parameter, sonst fängt {subscription} den Dialog ab.
-            Route::get('neu', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'create'])->name('create')->middleware('can:reselling.manage');
+            Route::get('neu', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'create'])->name('create')->middleware('can:reselling.manage');
             Route::middleware('can:reselling.manage')->group(function (): void {
-                Route::get('import', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'importCreate'])->name('import.create');
-                Route::get('import/vorlage.csv', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'importTemplate'])->name('import.template');
-                Route::post('import', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'importStore'])->name('import.store');
-                Route::get('inbox', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'inbox'])->name('inbox');
-                Route::get('inbox/zuordnen', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'assignCreate'])->name('inbox.assign');
-                Route::post('inbox/zuordnen', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'assignStore'])->name('inbox.store');
+                Route::get('import', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'importCreate'])->name('import.create');
+                Route::get('import/vorlage.csv', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'importTemplate'])->name('import.template');
+                Route::post('import', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'importStore'])->name('import.store');
+                Route::get('inbox', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'inbox'])->name('inbox');
+                Route::get('inbox/zuordnen', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'assignCreate'])->name('inbox.assign');
+                Route::post('inbox/zuordnen', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'assignStore'])->name('inbox.store');
                 // Perioden und Rechnungsbezüge (MVP-761)
-                Route::post('perioden/vorschlaege', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'propose'])->name('periods.propose');
-                Route::post('perioden/{period}/bestaetigen', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'confirm'])->name('periods.confirm');
-                Route::get('perioden/{period}/verzichten', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'waiveCreate'])->name('periods.waive.create');
-                Route::post('perioden/{period}/verzichten', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'waive'])->name('periods.waive');
-                Route::post('perioden/{period}/oeffnen', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'reopen'])->name('periods.reopen');
-                Route::get('perioden/{period}/bezug', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'linkCreate'])->name('periods.link.create');
-                Route::post('perioden/{period}/bezug', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'linkStore'])->name('periods.link.store');
-                Route::delete('bezuege/{link}', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'linkDestroy'])->name('links.destroy');
-                Route::post('{subscription}/bezug', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'quickLink'])->name('links.quick');
+                Route::post('perioden/vorschlaege', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'propose'])->name('periods.propose');
+                Route::post('perioden/{period}/bestaetigen', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'confirm'])->name('periods.confirm');
+                Route::get('perioden/{period}/verzichten', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'waiveCreate'])->name('periods.waive.create');
+                Route::post('perioden/{period}/verzichten', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'waive'])->name('periods.waive');
+                Route::post('perioden/{period}/oeffnen', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'reopen'])->name('periods.reopen');
+                Route::get('perioden/{period}/bezug', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'linkCreate'])->name('periods.link.create');
+                Route::post('perioden/{period}/bezug', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'linkStore'])->name('periods.link.store');
+                Route::delete('bezuege/{link}', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'linkDestroy'])->name('links.destroy');
+                Route::post('{subscription}/bezug', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'quickLink'])->name('links.quick');
             });
-            Route::get('perioden', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'index'])->name('periods.index')->middleware('can:reselling.view');
+            Route::get('perioden', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'index'])->name('periods.index')->middleware('can:reselling.view');
             // Abgleich je Rechnungsempfänger: Perioden aller Abos gegen die Lizenzpositionen seiner Rechnungen.
-            Route::get('abgleich', [\App\Http\Controllers\Finance\ResaleReconcileController::class, 'index'])->name('reconcile.index')->middleware('can:reselling.view');
-            Route::get('abgleich/{customer}', [\App\Http\Controllers\Finance\ResaleReconcileController::class, 'show'])->name('reconcile.show')->middleware('can:reselling.view');
-            Route::post('abgleich/{customer}/bezug', [\App\Http\Controllers\Finance\ResaleReconcileController::class, 'assign'])->name('reconcile.assign')->middleware('can:reselling.manage');
-            Route::post('abgleich/{customer}/halter', [\App\Http\Controllers\Finance\ResaleReconcileController::class, 'rehome'])->name('reconcile.rehome')->middleware('can:reselling.manage');
-            Route::get('bericht', [\App\Http\Controllers\Finance\ResaleReportController::class, 'index'])->name('report.index')->middleware('can:reselling.view');
-            Route::get('bericht/rechnungsvorschlag.csv', [\App\Http\Controllers\Finance\ResaleReportController::class, 'export'])->name('report.export')->middleware('can:reselling.view');
+            Route::get('abgleich', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'index'])->name('reconcile.index')->middleware('can:reselling.view');
+            Route::get('abgleich/{customer}', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'show'])->name('reconcile.show')->middleware('can:reselling.view');
+            Route::post('abgleich/{customer}/bezug', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'assign'])->name('reconcile.assign')->middleware('can:reselling.manage');
+            Route::post('abgleich/{customer}/halter', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'rehome'])->name('reconcile.rehome')->middleware('can:reselling.manage');
+            Route::get('bericht', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'index'])->name('report.index')->middleware('can:reselling.view');
+            Route::get('bericht/rechnungsvorschlag.csv', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'export'])->name('report.export')->middleware('can:reselling.view');
             // Review 2026-09-10 (MVP-765-Rest): XLSX-Rechnungsvorschlag, Margen-Export (CSV/XLSX/PDF), Verlängerungen, Abos ohne Rechnung.
             Route::middleware('can:reselling.view')->group(function (): void {
-                Route::get('bericht/rechnungsvorschlag.xlsx', [\App\Http\Controllers\Finance\ResaleReportController::class, 'exportXlsx'])->name('report.export.xlsx');
-                Route::get('bericht/marge.{format}', [\App\Http\Controllers\Finance\ResaleReportController::class, 'marginExport'])->where('format', 'csv|xlsx|pdf')->name('report.margin.export');
-                Route::get('bericht/verlaengerungen', [\App\Http\Controllers\Finance\ResaleReportController::class, 'renewals'])->name('report.renewals');
-                Route::get('bericht/verlaengerungen.{format}', [\App\Http\Controllers\Finance\ResaleReportController::class, 'renewalsExport'])->where('format', 'csv|xlsx')->name('report.renewals.export');
-                Route::get('bericht/ohne-rechnung', [\App\Http\Controllers\Finance\ResaleReportController::class, 'unbilled'])->name('report.unbilled');
-                Route::get('bericht/ohne-rechnung.{format}', [\App\Http\Controllers\Finance\ResaleReportController::class, 'unbilledExport'])->where('format', 'csv|xlsx')->name('report.unbilled.export');
+                Route::get('bericht/rechnungsvorschlag.xlsx', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'exportXlsx'])->name('report.export.xlsx');
+                Route::get('bericht/marge.{format}', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'marginExport'])->where('format', 'csv|xlsx|pdf')->name('report.margin.export');
+                Route::get('bericht/verlaengerungen', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'renewals'])->name('report.renewals');
+                Route::get('bericht/verlaengerungen.{format}', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'renewalsExport'])->where('format', 'csv|xlsx')->name('report.renewals.export');
+                Route::get('bericht/ohne-rechnung', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'unbilled'])->name('report.unbilled');
+                Route::get('bericht/ohne-rechnung.{format}', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'unbilledExport'])->where('format', 'csv|xlsx')->name('report.unbilled.export');
             });
-            Route::get('preise', [\App\Http\Controllers\Finance\ResaleReportController::class, 'prices'])->name('prices')->middleware('can:reselling.view');
-            Route::get('produkte', [\App\Http\Controllers\Finance\ResaleReportController::class, 'products'])->name('products')->middleware('can:reselling.view');
-            Route::post('produkte', [\App\Http\Controllers\Finance\ResaleReportController::class, 'productsStore'])->name('products.store')->middleware('can:reselling.manage');
+            Route::get('preise', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'prices'])->name('prices')->middleware('can:reselling.view');
+            Route::get('produkte', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'products'])->name('products')->middleware('can:reselling.view');
+            Route::post('produkte', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'productsStore'])->name('products.store')->middleware('can:reselling.manage');
             // Serienrechnung bei lokaler Rechnungshoheit: Org-Schalter + Vorlauf (Lauf = resale:draft-local).
-            Route::post('produkte/serienrechnung', [\App\Http\Controllers\Finance\ResaleReportController::class, 'autoDraftSettingsStore'])->name('auto-draft.store')->middleware('can:reselling.manage');
-            Route::get('einkauf', [\App\Http\Controllers\Finance\ResalePurchaseController::class, 'index'])->name('purchases.index')->middleware('can:reselling.view');
+            Route::post('produkte/serienrechnung', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'autoDraftSettingsStore'])->name('auto-draft.store')->middleware('can:reselling.manage');
+            Route::get('einkauf', [\App\Http\Controllers\Reselling\ResalePurchaseController::class, 'index'])->name('purchases.index')->middleware('can:reselling.view');
             Route::middleware('can:reselling.manage')->group(function (): void {
-                Route::get('einkauf/neu', [\App\Http\Controllers\Finance\ResalePurchaseController::class, 'create'])->name('purchases.create');
-                Route::post('einkauf', [\App\Http\Controllers\Finance\ResalePurchaseController::class, 'store'])->name('purchases.store');
-                Route::get('einkauf/import', [\App\Http\Controllers\Finance\ResalePurchaseController::class, 'importCreate'])->name('purchases.import.create');
-                Route::post('einkauf/import', [\App\Http\Controllers\Finance\ResalePurchaseController::class, 'importStore'])->name('purchases.import.store');
-                Route::delete('einkauf/{entry}', [\App\Http\Controllers\Finance\ResalePurchaseController::class, 'destroy'])->name('purchases.destroy');
+                Route::get('einkauf/neu', [\App\Http\Controllers\Reselling\ResalePurchaseController::class, 'create'])->name('purchases.create');
+                Route::post('einkauf', [\App\Http\Controllers\Reselling\ResalePurchaseController::class, 'store'])->name('purchases.store');
+                Route::get('einkauf/import', [\App\Http\Controllers\Reselling\ResalePurchaseController::class, 'importCreate'])->name('purchases.import.create');
+                Route::post('einkauf/import', [\App\Http\Controllers\Reselling\ResalePurchaseController::class, 'importStore'])->name('purchases.import.store');
+                Route::delete('einkauf/{entry}', [\App\Http\Controllers\Reselling\ResalePurchaseController::class, 'destroy'])->name('purchases.destroy');
             });
             // Rechnungsentwurf aus Perioden (Lexoffice/lokal): eigenes Recht der Buchhaltung (Review 2026-09-10, A9).
-            Route::get('perioden/entwurf', [\App\Http\Controllers\Finance\ResaleReportController::class, 'draftCreate'])->name('periods.draft.create')->middleware('can:reselling.invoice');
-            Route::post('perioden/entwurf', [\App\Http\Controllers\Finance\ResaleReportController::class, 'draftStore'])->name('periods.draft.store')->middleware('can:reselling.invoice');
+            Route::get('perioden/entwurf', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'draftCreate'])->name('periods.draft.create')->middleware('can:reselling.invoice');
+            Route::post('perioden/entwurf', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'draftStore'])->name('periods.draft.store')->middleware('can:reselling.invoice');
             Route::middleware('can:reselling.view')->group(function (): void {
-                Route::get('/', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'index'])->name('index');
-                Route::get('{subscription}', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'show'])->name('show');
+                Route::get('/', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'index'])->name('index');
+                Route::get('{subscription}', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'show'])->name('show');
             });
             Route::middleware('can:reselling.manage')->group(function (): void {
-                Route::post('/', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'store'])->name('store');
-                Route::get('{subscription}/bearbeiten', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'edit'])->name('edit');
+                Route::post('/', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'store'])->name('store');
+                Route::get('{subscription}/bearbeiten', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'edit'])->name('edit');
                 // Lizenzabtretung: Teil der Lizenzen an einen anderen Halter (zwei Firmen, ein Vertrag).
-                Route::get('{subscription}/abtretung', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'transferCreate'])->name('transfer.create');
-                Route::post('{subscription}/abtretung', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'transferStore'])->name('transfer.store');
-                Route::put('{subscription}', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'update'])->name('update');
-                Route::delete('{subscription}', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'destroy'])->name('destroy');
+                Route::get('{subscription}/abtretung', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'transferCreate'])->name('transfer.create');
+                Route::post('{subscription}/abtretung', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'transferStore'])->name('transfer.store');
+                Route::put('{subscription}', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'update'])->name('update');
+                Route::delete('{subscription}', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'destroy'])->name('destroy');
             });
         });
 
@@ -3755,7 +3758,7 @@ Route::middleware('auth')->group(function () {
         Route::post('communication-notes/{note}/publish', [CommunicationNoteController::class, 'publish'])->name('communication-notes.publish');
         Route::post('communication-notes/{note}/confidential', [CommunicationNoteController::class, 'confidential'])->name('communication-notes.confidential');
         Route::post('communication-notes/{note}/followup-complete', [CommunicationNoteController::class, 'completeFollowup'])->name('communication-notes.followup-complete');
-        Route::post('communication-notes/{note}/convert-knowledge', [CommunicationNoteController::class, 'convertToKnowledge'])->name('communication-notes.convert-knowledge');
+        Route::post('communication-notes/{note}/convert-knowledge', \App\Http\Controllers\Ideas\NoteConversionController::class)->name('communication-notes.convert-knowledge');
         Route::delete('communication-notes/{note}', [CommunicationNoteController::class, 'destroy'])->name('communication-notes.destroy');
 
         // ── Dokumentenmanagement (MVP-031) ─────────────────────────────────
@@ -3813,37 +3816,37 @@ Route::middleware('auth')->group(function () {
         Route::delete('references/{reference}', [\App\Http\Controllers\Knowledge\ContentReferenceController::class, 'destroy'])->name('references.destroy');
 
         // ── Ideenlandkarten (Feature 054, MVP-104/105) ─ Gate ideas.* → module.ideas
-        Route::get('ideas', [\App\Http\Controllers\Knowledge\IdeaMapController::class, 'index'])->name('ideas.index');
-        Route::get('ideas/create', [\App\Http\Controllers\Knowledge\IdeaMapController::class, 'create'])->name('ideas.create');
-        Route::post('ideas', [\App\Http\Controllers\Knowledge\IdeaMapController::class, 'store'])->name('ideas.store');
-        Route::post('ideas/import', [\App\Http\Controllers\Knowledge\IdeaMapController::class, 'import'])->name('ideas.import'); // MVP-138 FreeMind/OPML
-        Route::get('ideas/{map}', [\App\Http\Controllers\Knowledge\IdeaMapController::class, 'show'])->name('ideas.show');
-        Route::get('ideas/{map}/edit', [\App\Http\Controllers\Knowledge\IdeaMapController::class, 'edit'])->name('ideas.edit');
-        Route::put('ideas/{map}', [\App\Http\Controllers\Knowledge\IdeaMapController::class, 'update'])->name('ideas.update');
-        Route::post('ideas/{map}/archive', [\App\Http\Controllers\Knowledge\IdeaMapController::class, 'archive'])->name('ideas.archive');
-        Route::post('ideas/{map}/unarchive', [\App\Http\Controllers\Knowledge\IdeaMapController::class, 'unarchive'])->name('ideas.unarchive');
-        Route::post('ideas/{map}/transfer-ownership', [\App\Http\Controllers\Knowledge\IdeaMapController::class, 'transferOwnership'])->name('ideas.transfer-ownership'); // manageLifecycle (Austritt)
-        Route::post('ideas/{map}/shares', [\App\Http\Controllers\Knowledge\IdeaMapController::class, 'storeShare'])->name('ideas.shares.store'); // MVP-107 Freigaben
-        Route::delete('ideas/{map}/shares/{share}', [\App\Http\Controllers\Knowledge\IdeaMapController::class, 'destroyShare'])->name('ideas.shares.destroy');
+        Route::get('ideas', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'index'])->name('ideas.index');
+        Route::get('ideas/create', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'create'])->name('ideas.create');
+        Route::post('ideas', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'store'])->name('ideas.store');
+        Route::post('ideas/import', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'import'])->name('ideas.import'); // MVP-138 FreeMind/OPML
+        Route::get('ideas/{map}', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'show'])->name('ideas.show');
+        Route::get('ideas/{map}/edit', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'edit'])->name('ideas.edit');
+        Route::put('ideas/{map}', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'update'])->name('ideas.update');
+        Route::post('ideas/{map}/archive', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'archive'])->name('ideas.archive');
+        Route::post('ideas/{map}/unarchive', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'unarchive'])->name('ideas.unarchive');
+        Route::post('ideas/{map}/transfer-ownership', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'transferOwnership'])->name('ideas.transfer-ownership'); // manageLifecycle (Austritt)
+        Route::post('ideas/{map}/shares', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'storeShare'])->name('ideas.shares.store'); // MVP-107 Freigaben
+        Route::delete('ideas/{map}/shares/{share}', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'destroyShare'])->name('ideas.shares.destroy');
         // Knotenbezogene Editor-API (MVP-106/108): kleine JSON-Operationen, nie „ganze Karte speichern".
-        Route::get('ideas/{map}/tree', [\App\Http\Controllers\Knowledge\IdeaNodeController::class, 'tree'])->name('ideas.maps.tree');
-        Route::post('ideas/{map}/sync', [\App\Http\Controllers\Knowledge\IdeaNodeController::class, 'sync'])->name('ideas.maps.sync'); // MVP-136 Whole-Map-Sync (Canvas)
-        Route::get('ideas/{map}/export.json', [\App\Http\Controllers\Knowledge\IdeaMapController::class, 'exportJson'])->name('ideas.export.json'); // MVP-110
-        Route::get('ideas/{map}/export.pdf', [\App\Http\Controllers\Knowledge\IdeaMapController::class, 'exportPdf'])->name('ideas.export.pdf'); // MVP-110
-        Route::get('ideas/{map}/export.opml', [\App\Http\Controllers\Knowledge\IdeaMapController::class, 'exportOpml'])->name('ideas.export.opml'); // MVP-138
-        Route::get('ideas/{map}/export.md', [\App\Http\Controllers\Knowledge\IdeaMapController::class, 'exportMarkdown'])->name('ideas.export.md'); // MVP-138
-        Route::post('ideas/{map}/presence', [\App\Http\Controllers\Knowledge\IdeaMapController::class, 'presence'])->name('ideas.maps.presence'); // MVP-108 Bearbeitungspräsenz
-        Route::get('ideas/{map}/history', [\App\Http\Controllers\Knowledge\IdeaMapController::class, 'history'])->name('ideas.maps.history'); // MVP-108 Änderungsverlauf
-        Route::post('ideas/{map}/nodes', [\App\Http\Controllers\Knowledge\IdeaNodeController::class, 'store'])->name('ideas.nodes.store');
-        Route::patch('ideas/{map}/nodes/{node}', [\App\Http\Controllers\Knowledge\IdeaNodeController::class, 'update'])->name('ideas.nodes.update');
-        Route::post('ideas/{map}/nodes/{node}/move', [\App\Http\Controllers\Knowledge\IdeaNodeController::class, 'move'])->name('ideas.nodes.move');
-        Route::post('ideas/{map}/nodes/{node}/reorder', [\App\Http\Controllers\Knowledge\IdeaNodeController::class, 'reorder'])->name('ideas.nodes.reorder');
-        Route::post('ideas/{map}/nodes/{nodeSqid}/restore', [\App\Http\Controllers\Knowledge\IdeaNodeController::class, 'restore'])->name('ideas.nodes.restore');
-        Route::post('ideas/{map}/nodes/{node}/convert', [\App\Http\Controllers\Knowledge\IdeaNodeController::class, 'convert'])->name('ideas.nodes.convert'); // MVP-109 Überführung
-        Route::post('ideas/{map}/nodes/{node}/link', [\App\Http\Controllers\Knowledge\IdeaNodeController::class, 'link'])->name('ideas.nodes.link');
-        Route::delete('ideas/{map}/nodes/{node}', [\App\Http\Controllers\Knowledge\IdeaNodeController::class, 'destroy'])->name('ideas.nodes.destroy');
-        Route::post('ideas/{mapSqid}/restore', [\App\Http\Controllers\Knowledge\IdeaMapController::class, 'restore'])->name('ideas.restore'); // manuelles Sqid-Decoding (SoftDeleted bindet nicht implizit)
-        Route::delete('ideas/{map}', [\App\Http\Controllers\Knowledge\IdeaMapController::class, 'destroy'])->name('ideas.destroy');
+        Route::get('ideas/{map}/tree', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'tree'])->name('ideas.maps.tree');
+        Route::post('ideas/{map}/sync', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'sync'])->name('ideas.maps.sync'); // MVP-136 Whole-Map-Sync (Canvas)
+        Route::get('ideas/{map}/export.json', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'exportJson'])->name('ideas.export.json'); // MVP-110
+        Route::get('ideas/{map}/export.pdf', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'exportPdf'])->name('ideas.export.pdf'); // MVP-110
+        Route::get('ideas/{map}/export.opml', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'exportOpml'])->name('ideas.export.opml'); // MVP-138
+        Route::get('ideas/{map}/export.md', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'exportMarkdown'])->name('ideas.export.md'); // MVP-138
+        Route::post('ideas/{map}/presence', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'presence'])->name('ideas.maps.presence'); // MVP-108 Bearbeitungspräsenz
+        Route::get('ideas/{map}/history', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'history'])->name('ideas.maps.history'); // MVP-108 Änderungsverlauf
+        Route::post('ideas/{map}/nodes', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'store'])->name('ideas.nodes.store');
+        Route::patch('ideas/{map}/nodes/{node}', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'update'])->name('ideas.nodes.update');
+        Route::post('ideas/{map}/nodes/{node}/move', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'move'])->name('ideas.nodes.move');
+        Route::post('ideas/{map}/nodes/{node}/reorder', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'reorder'])->name('ideas.nodes.reorder');
+        Route::post('ideas/{map}/nodes/{nodeSqid}/restore', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'restore'])->name('ideas.nodes.restore');
+        Route::post('ideas/{map}/nodes/{node}/convert', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'convert'])->name('ideas.nodes.convert'); // MVP-109 Überführung
+        Route::post('ideas/{map}/nodes/{node}/link', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'link'])->name('ideas.nodes.link');
+        Route::delete('ideas/{map}/nodes/{node}', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'destroy'])->name('ideas.nodes.destroy');
+        Route::post('ideas/{mapSqid}/restore', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'restore'])->name('ideas.restore'); // manuelles Sqid-Decoding (SoftDeleted bindet nicht implizit)
+        Route::delete('ideas/{map}', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'destroy'])->name('ideas.destroy');
 
         // ── Vorlagen- & Formularsystem (Feature 032) ───────────────────────
         Route::get('form-templates', [\App\Http\Controllers\Form\FormTemplateController::class, 'index'])->name('form-templates.index');
@@ -4122,11 +4125,11 @@ Route::middleware('auth')->group(function () {
         Route::post('sla-contracts', [\App\Http\Controllers\ServiceTicket\SlaContractController::class, 'store'])->name('sla-contracts.store');
         Route::patch('sla-contracts/{slaContract}', [\App\Http\Controllers\ServiceTicket\SlaContractController::class, 'update'])->name('sla-contracts.update');
         // Helpdesk-Bericht (Feature 065, P9).
-        Route::get('helpdesk/berichte', [\App\Http\Controllers\Reporting\HelpdeskReportController::class, 'index'])->name('helpdesk.reports.index');
+        Route::get('helpdesk/berichte', [\App\Http\Controllers\Helpdesk\HelpdeskReportController::class, 'index'])->name('helpdesk.reports.index');
         // Drilldown/Exporte (Feature 065, MVP-159) — Drilldown nur signiert.
-        Route::get('helpdesk/berichte/drilldown', [\App\Http\Controllers\Reporting\HelpdeskReportExportController::class, 'drilldown'])->name('helpdesk.reports.drilldown');
-        Route::get('helpdesk/berichte/export/{metric}.csv', [\App\Http\Controllers\Reporting\HelpdeskReportExportController::class, 'csv'])->name('helpdesk.reports.csv');
-        Route::get('helpdesk/berichte/export/bericht.pdf', [\App\Http\Controllers\Reporting\HelpdeskReportExportController::class, 'pdf'])->name('helpdesk.reports.pdf');
+        Route::get('helpdesk/berichte/drilldown', [\App\Http\Controllers\Helpdesk\HelpdeskReportExportController::class, 'drilldown'])->name('helpdesk.reports.drilldown');
+        Route::get('helpdesk/berichte/export/{metric}.csv', [\App\Http\Controllers\Helpdesk\HelpdeskReportExportController::class, 'csv'])->name('helpdesk.reports.csv');
+        Route::get('helpdesk/berichte/export/bericht.pdf', [\App\Http\Controllers\Helpdesk\HelpdeskReportExportController::class, 'pdf'])->name('helpdesk.reports.pdf');
         // Routing-Regeln (Feature 065, P3).
         Route::get('helpdesk/routing', [\App\Http\Controllers\Helpdesk\TicketRoutingController::class, 'index'])->name('helpdesk.routing.index');
         Route::post('helpdesk/routing', [\App\Http\Controllers\Helpdesk\TicketRoutingController::class, 'store'])->name('helpdesk.routing.store');
@@ -4260,7 +4263,7 @@ Route::middleware('auth')->group(function () {
             ->name('api.internal.sync.commands');
         // Foto-Queue (Audit 2026-08, W4.1): Bild-/Dateiinhalte kommen einzeln
         // als Multipart nach, zugeordnet über die client_uuid des Befehls.
-        Route::post('api/internal/sync/attachments', \App\Http\Controllers\Integration\SyncAttachmentController::class)
+        Route::post('api/internal/sync/attachments', \App\Http\Controllers\Form\SyncAttachmentController::class)
             ->middleware('throttle:60,1')
             ->name('api.internal.sync.attachments');
         // Phase 3 (MVP-367): Geräte-lokale Liste der Outbox-/abgelehnten
@@ -4495,25 +4498,25 @@ Route::middleware('auth')->group(function () {
         // gemeinsamer Zeitraum, gemeinsame Datenquelle.
         Route::prefix('reports/buchhaltung')->name('reports.accounting.')->group(function (): void {
             // Zusammenfassende Meldung (MVP-687).
-            Route::get('zusammenfassende-meldung', [\App\Http\Controllers\Reporting\AccountingReportController::class, 'recapitulative'])->name('recapitulative');
-            Route::get('/', [\App\Http\Controllers\Reporting\AccountingReportController::class, 'index'])->name('index');
-            Route::get('susa', [\App\Http\Controllers\Reporting\AccountingReportController::class, 'trialBalance'])->name('trial-balance');
-            Route::get('kontenblatt', [\App\Http\Controllers\Reporting\AccountingReportController::class, 'accountLedger'])->name('account-ledger');
-            Route::get('umsatzsteuer', [\App\Http\Controllers\Reporting\AccountingReportController::class, 'vat'])->name('vat');
-            Route::get('euer', [\App\Http\Controllers\Reporting\AccountingReportController::class, 'euer'])->name('euer');
-            Route::get('ergebnis', [\App\Http\Controllers\Reporting\AccountingReportController::class, 'profitAndLoss'])->name('profit-and-loss');
+            Route::get('zusammenfassende-meldung', [\App\Http\Controllers\Finance\AccountingReportController::class, 'recapitulative'])->name('recapitulative');
+            Route::get('/', [\App\Http\Controllers\Finance\AccountingReportController::class, 'index'])->name('index');
+            Route::get('susa', [\App\Http\Controllers\Finance\AccountingReportController::class, 'trialBalance'])->name('trial-balance');
+            Route::get('kontenblatt', [\App\Http\Controllers\Finance\AccountingReportController::class, 'accountLedger'])->name('account-ledger');
+            Route::get('umsatzsteuer', [\App\Http\Controllers\Finance\AccountingReportController::class, 'vat'])->name('vat');
+            Route::get('euer', [\App\Http\Controllers\Finance\AccountingReportController::class, 'euer'])->name('euer');
+            Route::get('ergebnis', [\App\Http\Controllers\Finance\AccountingReportController::class, 'profitAndLoss'])->name('profit-and-loss');
             // BWA und Budgetpflege (Feature 142, MVP-709).
-            Route::get('bwa', [\App\Http\Controllers\Reporting\AccountingReportController::class, 'bwa'])->name('bwa');
+            Route::get('bwa', [\App\Http\Controllers\Finance\AccountingReportController::class, 'bwa'])->name('bwa');
             Route::prefix('budget')->name('budget.')->group(function (): void {
-                Route::get('/', [\App\Http\Controllers\Reporting\AccountingBudgetController::class, 'index'])->name('index');
-                Route::post('vorjahr-uebernehmen', [\App\Http\Controllers\Reporting\AccountingBudgetController::class, 'copyPreviousYear'])->name('copy-previous-year');
-                Route::get('{account}/bearbeiten', [\App\Http\Controllers\Reporting\AccountingBudgetController::class, 'form'])->name('edit');
-                Route::put('{account}', [\App\Http\Controllers\Reporting\AccountingBudgetController::class, 'update'])->name('update');
+                Route::get('/', [\App\Http\Controllers\Finance\AccountingBudgetController::class, 'index'])->name('index');
+                Route::post('vorjahr-uebernehmen', [\App\Http\Controllers\Finance\AccountingBudgetController::class, 'copyPreviousYear'])->name('copy-previous-year');
+                Route::get('{account}/bearbeiten', [\App\Http\Controllers\Finance\AccountingBudgetController::class, 'form'])->name('edit');
+                Route::put('{account}', [\App\Http\Controllers\Finance\AccountingBudgetController::class, 'update'])->name('update');
             });
-            Route::get('liquiditaet', [\App\Http\Controllers\Reporting\AccountingReportController::class, 'liquidity'])->name('liquidity');
+            Route::get('liquiditaet', [\App\Http\Controllers\Finance\AccountingReportController::class, 'liquidity'])->name('liquidity');
             // 13-Wochen-Liquiditätsvorschau (Feature 136, MVP-701).
-            Route::get('liquiditaet/vorschau', [\App\Http\Controllers\Reporting\AccountingReportController::class, 'liquidityForecast'])->name('liquidity-forecast');
-            Route::get('qualitaet', [\App\Http\Controllers\Reporting\AccountingReportController::class, 'quality'])->name('quality');
+            Route::get('liquiditaet/vorschau', [\App\Http\Controllers\Finance\AccountingReportController::class, 'liquidityForecast'])->name('liquidity-forecast');
+            Route::get('qualitaet', [\App\Http\Controllers\Finance\AccountingReportController::class, 'quality'])->name('quality');
         });
         Route::get('reports/expenses', [ExpenseReportController::class, 'index'])->name('reports.expenses');
         Route::get('reports/qualifications', [QualificationReportController::class, 'index'])->name('reports.qualifications');
@@ -4525,13 +4528,13 @@ Route::middleware('auth')->group(function () {
         Route::get('reports/presence-emergency', [\App\Http\Controllers\Reporting\PresenceEmergencyReportController::class, 'index'])
             ->name('reports.presence-emergency');
         Route::get('reports/audit-activity', [AuditActivityReportController::class, 'index'])->name('reports.audit-activity');
-        Route::get('reports/sla', [\App\Http\Controllers\Reporting\SlaReportController::class, 'index'])->name('reports.sla');
+        Route::get('reports/sla', [\App\Http\Controllers\Helpdesk\SlaReportController::class, 'index'])->name('reports.sla');
         Route::get('reports/safety', [\App\Http\Controllers\Reporting\SafetyReportController::class, 'index'])->name('reports.safety');
         // Schulungs-Auswertung (Feature 145): Erfüllungsgrad je Team/Rolle/Kurs.
         Route::get('reports/schulungen', [\App\Http\Controllers\Reporting\TrainingReportController::class, 'index'])->name('reports.training');
         // Kursanalyse (Feature 149, MVP-747): Quoten und Auffälligkeiten,
         // keine Personenprofile.
-        Route::get('reports/lernen', [\App\Http\Controllers\Reporting\LearningReportController::class, 'index'])->name('reports.learning');
+        Route::get('reports/lernen', [\App\Http\Controllers\Learning\LearningReportController::class, 'index'])->name('reports.learning');
         // Prozedur-Abweichungen (Feature 026, MVP-713): Recht procedure.deviation.view im Controller.
         Route::get('reports/prozeduren/abweichungen', [\App\Http\Controllers\Reporting\ProcedureDeviationReportController::class, 'index'])
             ->name('reports.procedure-deviations');
@@ -4552,7 +4555,7 @@ Route::middleware('auth')->group(function () {
         // Lenk-/Ruhezeit-Nachweis je Fahrer und Zeitraum, CSV/PDF (Feature 144, MVP-719).
         Route::get('reports/lenkzeit-nachweis', \App\Http\Controllers\Reporting\DrivingTimeEvidenceExportController::class)
             ->name('reports.driving-time-evidence');
-        Route::post('reports/sla/violations/{violation}/acknowledge', [\App\Http\Controllers\Reporting\SlaReportController::class, 'acknowledge'])
+        Route::post('reports/sla/violations/{violation}/acknowledge', [\App\Http\Controllers\Helpdesk\SlaReportController::class, 'acknowledge'])
             ->name('reports.sla.acknowledge');
 
         // ── Material-Stamm (Admin) ──────────────────────────────────────────────
@@ -4605,6 +4608,12 @@ Route::middleware('auth')->group(function () {
         // Kontakt, PDF-Konfig). Logo-Uploads laufen über AttachmentController.
         Route::get('admin/branding', [BrandingController::class, 'edit'])->name('admin.branding.edit');
         Route::put('admin/branding', [BrandingController::class, 'update'])->name('admin.branding.update');
+
+        // Eigene Felder je Träger (MVP-868): Schema der Organisation, kein Löschen (Werte hängen daran).
+        Route::get('admin/custom-fields', [\App\Http\Controllers\Fields\CustomFieldController::class, 'index'])->name('admin.custom-fields.index');
+        Route::get('admin/custom-fields/{alias}', [\App\Http\Controllers\Fields\CustomFieldController::class, 'edit'])->name('admin.custom-fields.edit');
+        Route::put('admin/custom-fields/{alias}', [\App\Http\Controllers\Fields\CustomFieldController::class, 'update'])->name('admin.custom-fields.update');
+        Route::patch('admin/custom-fields/{alias}/toggle', [\App\Http\Controllers\Fields\CustomFieldController::class, 'toggle'])->name('admin.custom-fields.toggle');
 
         // Theme-Editor (eigene Themes erstellen). Erstellen/Bearbeiten ist über
         // EnforcePlanModules (config/plans.php: admin.themes.* = module.theming)

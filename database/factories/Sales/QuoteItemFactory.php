@@ -10,8 +10,7 @@
 
 namespace Database\Factories\Sales;
 
-use App\Models\Sales\Quote;
-use App\Models\Sales\QuoteItem;
+use App\Models\Sales\{Quote, QuoteItem};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

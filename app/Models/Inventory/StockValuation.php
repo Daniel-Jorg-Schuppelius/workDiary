@@ -11,12 +11,11 @@
 namespace App\Models\Inventory;
 
 use App\Casts\MoneyCast;
+use App\Models\Article\ArticleVariant;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Article\ArticleVariant;
-use App\Models\Inventory\Warehouse;
 
 /**
  * Laufende Bewertung je Variante/Lagerort (Feature 048, MVP-070): gleitender

@@ -12,11 +12,15 @@ declare(strict_types=1);
 
 namespace App\Enums\Whistleblowing;
 
+use App\Enums\Concerns\HasTransitions;
+use App\Enums\Contracts\HasStatusTransitions;
+
 /**
  * Lebenszyklus eines Hinweisgeberfalls (Abschnitt 8 des Konzepts). Wechsel
  * erfolgen ausschliesslich ueber den WhistleblowingCaseWorkflowService.
  */
-enum CaseStatus: string {
+enum CaseStatus: string implements HasStatusTransitions {
+    use HasTransitions;
     case Submitted = 'submitted';
     case Acknowledged = 'acknowledged';
     case Triage = 'triage';
@@ -52,5 +56,25 @@ enum CaseStatus: string {
             self::ClosedOutOfScope,
             self::ClosedDuplicate,
         ], true);
+    }
+
+    public function label(): string {
+        return (string) __('whistleblowing.status.' . $this->value);
+    }
+
+    /** @return list<self> */
+    public function allowedTransitions(): array {
+        return match ($this) {
+            self::Submitted => [self::Acknowledged, self::Triage],
+            self::Acknowledged => [self::Triage],
+            self::Triage => [self::Investigating, self::Referred, self::ClosedOutOfScope, self::ClosedDuplicate, self::ClosedUnsubstantiated],
+            self::Investigating => [self::WaitingReporter, self::Referred, self::ClosedSubstantiated, self::ClosedUnsubstantiated],
+            self::WaitingReporter => [self::Investigating],
+            self::Referred => [self::ClosedSubstantiated, self::ClosedUnsubstantiated, self::ClosedOutOfScope],
+            self::ClosedSubstantiated, self::ClosedUnsubstantiated, self::ClosedOutOfScope, self::ClosedDuplicate => [self::RetentionReview, self::Investigating],
+            self::RetentionReview => [self::LegalHold, self::Deleted],
+            self::LegalHold => [self::RetentionReview],
+            self::Deleted => [],
+        };
     }
 }

@@ -12,13 +12,13 @@ namespace App\Http\Controllers\Asset;
 
 use App\Enums\Software\{SoftwareKind, SoftwareLicenseType};
 use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesCurrentOrganization};
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Asset\SaveSoftwareRequest;
-use App\Models\Platform\User;
 use App\Models\Asset\Software;
+use App\Models\Platform\User;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class SoftwareController extends Controller {
     use ParsesIndexQuery;

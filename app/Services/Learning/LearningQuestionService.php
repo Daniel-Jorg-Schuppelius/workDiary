@@ -13,14 +13,13 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use App\Enums\Notification\NotificationEvent;
-use App\Enums\ServiceTicket\{ServiceTicketKind, ServiceTicketSource};
 use App\Mail\LearningTrainerQuestionMail;
 use App\Models\Learning\LearningEnrollment;
 use App\Models\Platform\User;
 use App\Models\ServiceTicket\ServiceTicket;
+use App\Services\Learning\Contracts\QuestionTicketOpener;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Notification\NotificationDispatcher;
-use App\Services\ServiceTicket\ServiceTicketService;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -36,6 +35,7 @@ class LearningQuestionService {
     public function __construct(
         private readonly FeatureFlagResolver $features,
         private readonly NotificationDispatcher $dispatcher,
+        private readonly QuestionTicketOpener $tickets,
     ) {}
 
     /**
@@ -60,17 +60,13 @@ class LearningQuestionService {
 
         $ticket = null;
         if ($this->features->isEnabled('module.helpdesk')) {
-            $ticket = app(ServiceTicketService::class)->create($organization, $learner, [
-                'kind' => ServiceTicketKind::Question->value,
+            $ticket = $this->tickets->open($organization, $learner, [
                 'title' => (string) __('learning.ask.ticket_title', ['course' => $course->title, 'name' => $learner->name]),
                 'description' => $question,
-                'source' => ServiceTicketSource::Manual->value,
                 'source_reference' => 'learning:' . $enrollment->sqid,
-            ]);
-            // Zuständig ist die verantwortliche Person des Kurses, sonst der
-            // erste Trainer — so landet die Frage nicht in einer leeren Queue.
-            $ticket->forceFill(['assigned_to_user_id' => $recipients->first()->id])->save();
-        } else {
+            ], $recipients->first());
+        }
+        if ($ticket === null) {
             $owner = $course->owner;
             if ($owner !== null && $owner->email !== '') {
                 Mail::to($owner->email)->queue(new LearningTrainerQuestionMail($learner, $course->title, $question));

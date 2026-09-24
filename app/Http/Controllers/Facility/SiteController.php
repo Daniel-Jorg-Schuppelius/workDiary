@@ -11,15 +11,13 @@
 namespace App\Http\Controllers\Facility;
 
 use App\Http\Controllers\Concerns\ParsesIndexQuery;
+use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
-use App\Models\Facility\Floor;
-use App\Models\Facility\Room;
-use App\Models\Facility\Site;
+use App\Models\Facility\{Floor, Room, Site};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class SiteController extends Controller {
     use ParsesIndexQuery;

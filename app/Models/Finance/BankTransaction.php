@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Finance;
 
 use App\Enums\Finance\{MatchStatus, TransactionDirection};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasJournal, HasSqid};
 use Database\Factories\Finance\BankTransactionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -55,6 +55,10 @@ use Illuminate\Support\Carbon;
 class BankTransaction extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use HasJournal;
+
+    /** @var class-string<PaymentReconciliationEvent> Journal des Trägers (MVP-864) */
+    protected static string $journalClass = PaymentReconciliationEvent::class;
 
     /** @use HasFactory<BankTransactionFactory> */
     use HasFactory;

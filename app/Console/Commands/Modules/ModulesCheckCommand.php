@@ -12,11 +12,13 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Modules;
 
-use App\Modules\{ManifestChecker, ModuleRegistry};
+use App\Modules\{ManifestChecker, ModuleRegisterDocument, ModuleRegistry};
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Console\Command;
 
 /**
  * Prüft die Modul-Manifeste auf Vollständigkeit (Tabellen, Lizenzcodes, Routen, Ordner, Rechtegruppen). (MVP-861)
+ * Liegt das Architektur-Repo daneben, muss das Modulregister dem Generatorstand entsprechen (MVP-873).
  */
 class ModulesCheckCommand extends Command {
     protected $signature = 'modules:check';
@@ -25,6 +27,14 @@ class ModulesCheckCommand extends Command {
 
     public function handle(ModuleRegistry $registry): int {
         $violations = (new ManifestChecker($registry, base_path()))->check();
+        $register = base_path(ModuleRegisterDocument::RELATIVE_PATH);
+        if (File::exists($register)) {
+            /** @var array<string, string> $helpRoutes */
+            $helpRoutes = (array) config('help-topics.routes', []);
+            if (File::read($register) !== (new ModuleRegisterDocument($registry))->render($helpRoutes)) {
+                $violations[] = 'modul-register.md ist veraltet — php artisan modules:doc (MVP-873).';
+            }
+        }
         if ($violations === []) {
             $this->info(sprintf('Manifeste vollständig: %d Module, %d Tabellen zugeordnet.', count($registry->all()), array_sum(array_map(static fn ($m): int => count($m->tables()), $registry->all()))));
 

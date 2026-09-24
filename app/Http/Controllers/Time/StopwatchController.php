@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Time;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Time\StartStopwatchRequest;
 use App\Models\Project\Project;
 use App\Models\Time\Timesheet;
@@ -18,7 +19,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class StopwatchController extends Controller {
     public function __construct(

@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Sales;
 
-use App\Models\Sales\Quote;
+use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
+use App\Models\Sales\Quote;
 use App\Services\Invoicing\QuoteFollowUpService;
 use App\Support\{ErrorText, Setting};
 use Carbon\CarbonImmutable;
@@ -21,7 +22,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * Nachfass-Arbeitsliste für Angebote (Feature 112, MVP-601).

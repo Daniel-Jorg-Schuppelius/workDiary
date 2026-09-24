@@ -11,12 +11,12 @@
 namespace App\Models\Integration;
 
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
-use App\Models\Platform\Organization;
 
 /**
  * @property int $id

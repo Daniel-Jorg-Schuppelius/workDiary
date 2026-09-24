@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Fleet;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Controller;
 use App\Models\Fleet\DriverLicenseCheck;
 use App\Models\Platform\User;
 use App\Services\Fleet\DriverLicenseCheckService;
@@ -19,7 +20,6 @@ use Carbon\Carbon;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /** Führerscheinkontrolle (MVP-417): Fälligkeitsübersicht + dokumentierte Sichtprüfung. */
 class DriverLicenseCheckController extends Controller {

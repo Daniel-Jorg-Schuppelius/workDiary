@@ -19,6 +19,10 @@ use App\Plugins\Support\MatchingTimeGroupBooker;
  * Zuordnungs-Inbox (gemeinsame Mechanik: {@see MatchingTimeGroupBooker}).
  */
 class KimaiGroupBooker extends MatchingTimeGroupBooker {
+    public function pluginId(): string {
+        return 'kimai';
+    }
+
     public function __construct(KimaiImportService $service) {
         parent::__construct($service);
     }

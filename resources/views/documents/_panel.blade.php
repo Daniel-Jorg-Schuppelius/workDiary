@@ -32,7 +32,7 @@
     /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Document\Document> $panelDocuments */
     $panelDocuments = $panelQuery
         ->with(['currentVersion'])
-        ->when($panelChained, fn ($q) => $q->with(app(\App\Services\Content\ContentSubjectResolver::class)->eagerLoad(\App\Models\Document\Document::class)))
+        ->when($panelChained, fn ($q) => $q->with(app(\App\Services\Support\Content\ContentSubjectResolver::class)->eagerLoad(\App\Models\Document\Document::class)))
         ->latest('updated_at')
         ->limit(\App\Models\Document\Document::PANEL_LIMIT)
         ->get();

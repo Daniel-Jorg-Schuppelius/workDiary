@@ -10,9 +10,8 @@
 
 namespace App\Models\Protocol;
 
-use App\Models\Concerns\AppendOnly;
+use App\Models\Journal\JournalEntry;
 use App\Models\Platform\User;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -23,9 +22,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property array<string, mixed>|null $payload
  * @property \Illuminate\Support\Carbon $created_at
  */
-class ProtocolEvent extends Model {
+class ProtocolEvent extends JournalEntry {
+    protected static ?string $labelPrefix = 'protocol.event';
+
     // Append-only jetzt technisch erzwungen statt nur dokumentiert (Vollaudit 2026-07, M52).
-    use AppendOnly;
 
     public $timestamps = false;
 
@@ -50,5 +50,10 @@ class ProtocolEvent extends Model {
     /** @return BelongsTo<User, $this> */
     public function actor(): BelongsTo {
         return $this->belongsTo(User::class, 'actor_user_id');
+    }
+
+    /** @return BelongsTo<Protocol, $this> */
+    public function subject(): BelongsTo {
+        return $this->protocol();
     }
 }

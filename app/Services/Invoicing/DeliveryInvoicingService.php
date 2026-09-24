@@ -13,10 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Invoicing;
 
 use App\Enums\Manufacturing\DeliveryFacturationStatus;
+use App\Events\Invoicing\DeliveryInvoiced;
 use App\Models\Inventory\StockDelivery;
 use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Platform\User;
-use App\Services\Manufacturing\DeliveryService;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\QueryException;
@@ -34,8 +34,6 @@ use Illuminate\Validation\ValidationException;
  */
 class DeliveryInvoicingService {
     public const TARGET_LOCAL = 'workdiary';
-
-    public function __construct(private readonly DeliveryService $deliveries) {}
 
     /**
      * Abrechenbare und blockierte Auslieferungen des Rechnungskunden im Zeitraum
@@ -150,7 +148,7 @@ class DeliveryInvoicingService {
             return 0;
         }
         foreach (StockDelivery::query()->whereIn('invoice_item_id', $itemIds)->get() as $delivery) {
-            $this->deliveries->markFacturationResult($delivery, DeliveryFacturationStatus::Invoiced);
+            DeliveryInvoiced::dispatch($delivery, $invoice);
             $count++;
         }
 

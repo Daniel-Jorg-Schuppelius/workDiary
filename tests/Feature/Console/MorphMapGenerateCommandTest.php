@@ -29,7 +29,9 @@ class MorphMapGenerateCommandTest extends TestCase {
             ->assertExitCode(0);
 
         $this->assertSame($before, (string) file_get_contents($path));
-        $this->assertSame(count(MorphMap::aliases()), count(MorphMap::legacy()));
+        // Legacy-Namen gibt es nur für beim Einfrieren vorhandene Klassen;
+        // neue Modelle tragen nur einen Alias (stableKey fällt darauf zurück).
+        $this->assertSame([], array_values(array_diff(MorphMap::legacy(), MorphMap::aliases())));
     }
 
     public function test_init_is_refused_once_legacy_names_are_frozen(): void {

@@ -19,7 +19,8 @@ use App\Jobs\ProcessCsvImportJob;
 use App\Models\Audit\AuditLog;
 use App\Models\Integration\{ImportRun, ImportRunError};
 use App\Models\Platform\User;
-use App\Services\Import\{CsvPreflightAnalyzer, DocumentZipImportService};
+use App\Services\Import\Contracts\ZipImporter;
+use App\Services\Import\CsvPreflightAnalyzer;
 use App\Support\MorphMap;
 use App\Support\Toolkit\CsvFacade;
 use Illuminate\Contracts\View\View;
@@ -117,7 +118,7 @@ class ImportController extends Controller {
         $csv = CsvFacade::buildCsv($columns, [array_combine($columns, $example)]);
 
         // MVP-707: die Dokument-Vorlage ist das manifest.csv des ZIP-Archivs.
-        $filename = $entityEnum->acceptsZip() ? DocumentZipImportService::MANIFEST : 'import-vorlage-' . $entityEnum->value . '.csv';
+        $filename = $entityEnum->acceptsZip() ? ZipImporter::MANIFEST : 'import-vorlage-' . $entityEnum->value . '.csv';
 
         return response($csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
@@ -174,7 +175,7 @@ class ImportController extends Controller {
             // gleiches Größenlimit, ein Wizard-Pfad. MVP-707: Dokumente als ZIP
             // (manifest.csv + Dateien) mit eigenem Archiv-Limit.
             'file' => $entity->acceptsZip()
-                ? ['required', 'file', 'mimes:zip', 'max:' . DocumentZipImportService::MAX_ZIP_KB]
+                ? ['required', 'file', 'mimes:zip', 'max:' . ZipImporter::MAX_ZIP_KB]
                 : ['required', 'file', 'mimes:csv,txt,xlsx,ics', 'max:' . (CsvPreflightAnalyzer::MAX_BYTES / 1024)],
             'match_policy' => ['nullable', 'in:auto_create,inbox_first'],
             // MVP-438: optionale iCal-Kategorie-Allowlist (nur Events dieser

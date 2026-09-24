@@ -12,11 +12,11 @@ namespace App\Http\Controllers\Inventory;
 
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Services\Inventory\SerialPassportService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Verwaltung des öffentlichen Geräte-Passes (Feature 047/048, E2).

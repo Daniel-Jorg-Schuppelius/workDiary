@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Supplier;
 
+use App\Http\Controllers\Controller;
 use App\Models\Supplier\Supplier;
 use App\Models\Supplier\{SupplierCredential, SupplierCredentialType};
 use App\Services\Supplier\SupplierCredentialService;
@@ -19,7 +20,6 @@ use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Pflichtnachweise am Lieferanten (Feature 117, MVP-606).

@@ -10,12 +10,12 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Finance;
+namespace App\Http\Controllers\Reselling;
 
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Finance\Resale\{LinkResalePeriodRequest, QuickLinkResalePeriodRequest, WaiveResalePeriodRequest};
+use App\Http\Requests\Reselling\{LinkResalePeriodRequest, QuickLinkResalePeriodRequest, WaiveResalePeriodRequest};
 use App\Models\Customer\Customer;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};

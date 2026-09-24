@@ -15,8 +15,6 @@ use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
-use App\Models\Inventory\StockCountLine;
-use App\Models\Inventory\Warehouse;
 
 /**
  * Stichtagsbezogene Inventur (Feature 048, MVP-069).

@@ -12,8 +12,7 @@ namespace Database\Factories\Calendar;
 
 use App\Enums\Event\{EventStatus, EventType, EventVisibility};
 use App\Models\Calendar\Event;
-use App\Models\Platform\Organization;
-use App\Models\Platform\User;
+use App\Models\Platform\{Organization, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

@@ -141,6 +141,8 @@
             <x-textarea-field name="invoice_text" :label="__('Rechnungstext')" rows="2" maxlength="5000" :value="old('invoice_text', $customer?->invoice_text)" />
         </x-form-group>
 
+        <x-custom-fields-group :model="\App\Models\Customer\Customer::class" :subject="$customer" />
+
         @php
             $contactPersons = old('contact_persons', $customer?->contact_persons ?? []);
             // Mindestens eine leere Zeile als Eingabehilfe

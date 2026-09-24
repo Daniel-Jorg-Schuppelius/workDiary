@@ -10,6 +10,8 @@
 
 namespace App\Models\Finance;
 
+use App\Models\Concerns\{Auditable, HasSqid, IsDocumentLine};
+use App\Models\Contracts\DocumentLine;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
@@ -38,9 +40,13 @@ use Illuminate\Support\Carbon;
  * @property string|null $cost_position
  * @property Carbon|null $created_at
  */
-class BillingTransferItem extends Model {
+class BillingTransferItem extends Model implements DocumentLine {
+    use Auditable;
     /** @use HasFactory<\Database\Factories\Finance\BillingTransferItemFactory> */
     use HasFactory;
+    use HasSqid;
+    use IsDocumentLine;
+
     public const UPDATED_AT = null;
 
     protected $fillable = [
@@ -67,6 +73,16 @@ class BillingTransferItem extends Model {
     /** @return BelongsTo<BillingTransfer, $this> */
     public function transfer(): BelongsTo {
         return $this->belongsTo(BillingTransfer::class, 'billing_transfer_id');
+    }
+
+    /** @return BelongsTo<BillingTransfer, $this> */
+    public function lineDocument(): BelongsTo {
+        return $this->transfer();
+    }
+
+    /** @return array<string, string|null> */
+    protected static function lineColumns(): array {
+        return ['position' => null, 'discount_percent' => null, 'discount_amount' => null, 'net_amount' => 'amount'];
     }
 
     /** @return MorphTo<Model, $this> */

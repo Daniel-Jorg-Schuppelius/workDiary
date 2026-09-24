@@ -30,7 +30,7 @@ final class DatevMasterDataExportTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         // Optionalpaket-Guard (AGENTS.md §9.1) — der Export braucht die DATEV-Generatoren.
-        if (! \App\Services\Finance\FinancialFormatsSupport::isAvailable()) {
+        if (! \App\Services\Billing\FinancialFormatsSupport::isAvailable()) {
             $this->markTestSkipped('php-financial-formats nicht verfügbar.');
         }
         $this->setUpOrganization();

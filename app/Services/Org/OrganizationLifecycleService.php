@@ -11,9 +11,8 @@
 namespace App\Services\Org;
 
 use App\Http\Controllers\Platform\OrganizationSwitchController;
-use App\Models\Platform\Organization;
 use App\Models\Audit\OrganizationAuditLog;
-use App\Models\Platform\User;
+use App\Models\Platform\{Organization, User};
 use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\JsonHelper;
 use CommonToolkit\Helper\FileSystem\{File as ToolkitFile, Files, Folder as ToolkitFolder};

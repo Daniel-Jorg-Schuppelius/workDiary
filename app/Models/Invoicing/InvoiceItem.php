@@ -11,19 +11,18 @@
 namespace App\Models\Invoicing;
 
 use App\Casts\{MoneyCast, PercentageCast};
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
-use App\Support\CarbonFmt;
-use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
-use App\Models\Article\Article;
-use App\Models\Article\ArticleVariant;
+use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, IsDocumentLine};
+use App\Models\Contracts\DocumentLine;
 use App\Models\Diary\Tour;
 use App\Models\Inventory\StockDelivery;
-use App\Models\Material\Material;
-use App\Models\Material\MaterialUsage;
+use App\Models\Material\{Material, MaterialUsage};
 use App\Models\Time\TimeEntry;
 use App\Models\Travel\Expense;
+use App\Support\CarbonFmt;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
 
 /**
  * @property int $id
@@ -47,7 +46,7 @@ use App\Models\Travel\Expense;
  * @property \CommonToolkit\ValueObjects\Percentage|null $tax_rate
  * @property int $position
  */
-class InvoiceItem extends Model {
+class InvoiceItem extends Model implements DocumentLine {
     /**
      * Positionen einer ausgestellten Rechnung sind unveränderlich
      * (Sicherheitsscan 2026-08-23, S-59).
@@ -76,12 +75,14 @@ class InvoiceItem extends Model {
         static::deleting($assertMutable);
     }
 
+    use Auditable;
     use BelongsToOrganization;
 
-    /** @use HasFactory<Factory<static>> */
+    /** @use HasFactory<\Database\Factories\Invoicing\InvoiceItemFactory> */
     use HasFactory;
 
     use HasSqid;
+    use IsDocumentLine;
 
     protected $fillable = [
         'tax_rate',
@@ -130,6 +131,16 @@ class InvoiceItem extends Model {
     /** @return BelongsTo<Invoice, $this> */
     public function invoice(): BelongsTo {
         return $this->belongsTo(Invoice::class);
+    }
+
+    /** @return BelongsTo<Invoice, $this> */
+    public function lineDocument(): BelongsTo {
+        return $this->invoice();
+    }
+
+    /** @return array<string, string|null> */
+    protected static function lineColumns(): array {
+        return ['net_amount' => 'amount'];
     }
 
     /** @return BelongsTo<TimeEntry, $this> */

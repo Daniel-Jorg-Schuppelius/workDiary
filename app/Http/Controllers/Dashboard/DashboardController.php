@@ -10,12 +10,12 @@
 
 namespace App\Http\Controllers\Dashboard;
 
+use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Services\Dashboard\{DashboardLayoutService, DashboardService};
 use App\Support\Dashboard\DashboardLayoutItem;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class DashboardController extends Controller {
     /**

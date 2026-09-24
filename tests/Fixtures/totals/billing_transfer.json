@@ -1,0 +1,70 @@
+{
+    "kind": "billing_transfer",
+    "document": [],
+    "lines": [
+        {
+            "quantity": "10.500",
+            "unit_name": "Std.",
+            "unit_price": "95.0000",
+            "vat_rate": "19.00",
+            "amount": "997.50"
+        },
+        {
+            "quantity": "2.000",
+            "unit_name": "Stk.",
+            "unit_price": "12.3456",
+            "vat_rate": "19.00",
+            "amount": "24.69"
+        },
+        {
+            "quantity": "1.000",
+            "unit_name": "Std.",
+            "unit_price": "0.0000",
+            "vat_rate": null,
+            "amount": "0.00"
+        },
+        {
+            "quantity": "3.250",
+            "unit_name": "m",
+            "unit_price": "48.9900",
+            "vat_rate": "7.00",
+            "amount": "159.22"
+        }
+    ],
+    "expected": {
+        "line_nets": [
+            "997.50",
+            "24.69",
+            "0.00",
+            "159.22"
+        ],
+        "line_net_sum": "1181.41",
+        "document_discount": "0.00",
+        "by_rate": {
+            "0.00": {
+                "rate": 0,
+                "net": "0.00",
+                "allowance": "0.00",
+                "taxable": "0.00",
+                "tax": "0.00"
+            },
+            "7.00": {
+                "rate": 7,
+                "net": "159.22",
+                "allowance": "0.00",
+                "taxable": "159.22",
+                "tax": "11.15"
+            },
+            "19.00": {
+                "rate": 19,
+                "net": "1022.19",
+                "allowance": "0.00",
+                "taxable": "1022.19",
+                "tax": "194.22"
+            }
+        },
+        "subtotal": "1181.41",
+        "tax_amount": "205.37",
+        "total": "1386.78"
+    }
+}

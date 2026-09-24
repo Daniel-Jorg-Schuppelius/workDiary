@@ -15,7 +15,7 @@ use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\RetentionProposal;
-use App\Services\Privacy\Retention\{RetentionRegistry, RetentionScanService};
+use App\Services\Retention\{RetentionRegistry, RetentionScanService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;

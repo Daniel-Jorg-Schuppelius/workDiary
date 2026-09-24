@@ -22,7 +22,7 @@ final class DokumentdesignManifest extends Manifest {
     }
 
     public function kind(): ModuleKind {
-        return ModuleKind::Feature;
+        return ModuleKind::Core;
     }
 
     public function label(): string {

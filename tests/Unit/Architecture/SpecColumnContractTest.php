@@ -29,11 +29,11 @@ class SpecColumnContractTest extends TestCase {
      * @var array<class-string, class-string>
      */
     private const PAIRS = [
-        \App\Services\Export\Specs\CustomerExportSpec::class => \App\Services\Import\Specs\CustomerSpec::class,
-        \App\Services\Export\Specs\MaterialExportSpec::class => \App\Services\Import\Specs\MaterialSpec::class,
-        \App\Services\Export\Specs\ProjectExportSpec::class => \App\Services\Import\Specs\ProjectSpec::class,
-        \App\Services\Export\Specs\ScheduledShiftExportSpec::class => \App\Services\Import\Specs\ScheduledShiftSpec::class,
-        \App\Services\Export\Specs\UserExportSpec::class => \App\Services\Import\Specs\UserSpec::class,
+        \App\Services\Export\Specs\CustomerExportSpec::class => \App\Services\Customer\Import\CustomerSpec::class,
+        \App\Services\Export\Specs\MaterialExportSpec::class => \App\Services\Material\Import\MaterialSpec::class,
+        \App\Services\Export\Specs\ProjectExportSpec::class => \App\Services\Project\Import\ProjectSpec::class,
+        \App\Services\Export\Specs\ScheduledShiftExportSpec::class => \App\Services\Schedule\Import\ScheduledShiftSpec::class,
+        \App\Services\Export\Specs\UserExportSpec::class => \App\Services\Users\Import\UserSpec::class,
     ];
 
     public function test_export_columns_are_subset_of_import_columns(): void {

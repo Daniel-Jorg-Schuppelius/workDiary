@@ -12,6 +12,7 @@ namespace App\Models\Safety;
 
 use App\Enums\Safety\{SafetyEventKind, SafetyEventSeverity, SafetyEventStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Diary\OpenIssue;
 use App\Models\Platform\User;
 use Database\Factories\Safety\SafetyEventFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,7 +20,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany, MorphTo};
 use Illuminate\Support\Carbon;
-use App\Models\Diary\OpenIssue;
 
 /**
  * Sicherheitsereignis (Feature 013): Unfall, Beinaheunfall, Gefährdung oder

@@ -13,10 +13,9 @@ namespace App\Http\Controllers\Time;
 use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
-use App\Models\Time\Attendance;
-use App\Models\Time\TimeCorrectionRequest;
-use App\Models\Time\TimeEntry;
+use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
+use App\Models\Time\{Attendance, TimeCorrectionRequest, TimeEntry};
 use App\Services\TimeApproval\{TimeCorrectionService, TimeCorrectionWorkflowException};
 use App\Support\{CarbonFmt, Formats, MorphMap, Sqid};
 use App\Support\Query\DateRange;
@@ -26,7 +25,6 @@ use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Mitarbeiter-Ansicht für Zeit-Korrekturanträge (MVP-017).

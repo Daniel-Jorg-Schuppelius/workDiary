@@ -11,7 +11,7 @@
 namespace Tests\Feature\Plugins\JtlWawi;
 
 use App\Enums\Inventory\StockState;
-use App\Jobs\Integration\InventoryOutboxDeliveryJob;
+use App\Jobs\Inventory\InventoryOutboxDeliveryJob;
 use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Integration\ExternalArticleMapping;
 use App\Models\Inventory\Warehouse;

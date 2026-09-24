@@ -55,10 +55,6 @@ class RequirementIndexFilter {
         return array_key_exists($value, $this->maxCountOptions()) ? $value : null;
     }
 
-    public function normalizeSortField(string $value): string {
-        return array_key_exists($value, $this->sortOptions()) ? $value : 'entry_type_code';
-    }
-
     public function normalizeSeverityFilter(string $value): ?string {
         foreach (ClassificationRequirementSeverity::cases() as $severity) {
             if ($severity->value === $value) {

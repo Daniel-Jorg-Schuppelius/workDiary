@@ -11,13 +11,11 @@
 namespace App\Models\Inventory;
 
 use App\Enums\Inventory\{OwnershipType, ReservationStatus};
+use App\Models\Article\ArticleVariant;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
-use App\Models\Article\ArticleVariant;
-use App\Models\Inventory\Warehouse;
-use App\Models\Inventory\WarehouseBin;
 
 /**
  * Bestandsreservierung als eigene Entität (Feature 048, MVP-068): hält

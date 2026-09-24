@@ -10,13 +10,13 @@
 
 namespace App\Http\Controllers\Material;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Material\SaveMaterialRequest;
 use App\Models\Material\Material;
 use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class MaterialController extends Controller {
     public function index(Request $request): View {

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Asset;
 
+use App\Enums\Asset\MaintenanceWindowStatus;
 use App\Models\Concerns\{Auditable, HasSqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
@@ -34,7 +35,7 @@ use Illuminate\Support\Facades\Cache;
  * @property string|null $message
  * @property bool $read_only
  * @property bool $block_ingest
- * @property string $status
+ * @property MaintenanceWindowStatus $status
  * @property int|null $created_by
  * @property string|null $notes
  */
@@ -45,28 +46,6 @@ class MaintenanceWindow extends Model {
     public const SCOPE_SYSTEM = 'system';
 
     public const SCOPE_ORGANIZATION = 'organization';
-
-    public const STATUS_PLANNED = 'planned';
-
-    public const STATUS_ANNOUNCED = 'announced';
-
-    public const STATUS_ACTIVE = 'active';
-
-    public const STATUS_EXTENDED = 'extended';
-
-    public const STATUS_COMPLETED = 'completed';
-
-    public const STATUS_ROLLED_BACK = 'rolled_back';
-
-    public const STATUS_CANCELLED = 'cancelled';
-
-    /** Nicht-terminale Status — nur diese können wirksam werden. */
-    public const OPEN_STATUSES = [
-        self::STATUS_PLANNED,
-        self::STATUS_ANNOUNCED,
-        self::STATUS_ACTIVE,
-        self::STATUS_EXTENDED,
-    ];
 
     public const CACHE_KEY = 'maintenance.windows.open';
 
@@ -93,6 +72,7 @@ class MaintenanceWindow extends Model {
         'ends_at' => 'immutable_datetime',
         'read_only' => 'boolean',
         'block_ingest' => 'boolean',
+        'status' => MaintenanceWindowStatus::class,
     ];
 
     protected static function booted(): void {
@@ -102,7 +82,7 @@ class MaintenanceWindow extends Model {
     }
 
     public function isEffectiveNow(): bool {
-        return in_array($this->status, self::OPEN_STATUSES, true)
+        return $this->status->isOpen()
             && $this->starts_at->isPast()
             && $this->ends_at->isFuture();
     }
@@ -110,7 +90,7 @@ class MaintenanceWindow extends Model {
     public function isAnnouncedUpcoming(): bool {
         $announceFrom = $this->announce_from ?? $this->starts_at->subDay();
 
-        return in_array($this->status, [self::STATUS_PLANNED, self::STATUS_ANNOUNCED], true)
+        return in_array($this->status, [MaintenanceWindowStatus::Planned, MaintenanceWindowStatus::Announced], true)
             && $this->starts_at->isFuture()
             && $announceFrom->isPast();
     }
@@ -125,7 +105,7 @@ class MaintenanceWindow extends Model {
             /** @var Collection<int, self> $windows */
             $windows = Cache::remember(self::CACHE_KEY, 60, static function (): Collection {
                 return self::query()
-                    ->whereIn('status', self::OPEN_STATUSES)
+                    ->whereIn('status', MaintenanceWindowStatus::open())
                     ->where('ends_at', '>', now()->subHour())
                     ->orderBy('starts_at')
                     ->get();

@@ -21,6 +21,7 @@ use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Domain\DomainProjection;
 use App\Models\Platform\{Organization, User};
 use App\Models\Plugins\Lexoffice\LexofficeArticle;
+use App\Services\Billing\DocumentTotalsCalculator;
 use App\Services\Reselling\Marketplace\ProductNameMatcher;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
@@ -438,11 +439,11 @@ class ResaleSubscription extends Model {
 
     /** Erwarteter Verkauf je Periode (Menge × Stückpreis), wenn ein Preis hinterlegt ist. */
     public function expectedSalePerPeriod(): ?Money {
-        return $this->sale_unit_price?->times($this->quantity);
+        return $this->sale_unit_price === null ? null : DocumentTotalsCalculator::lineNet($this->quantity, $this->sale_unit_price);
     }
 
     public function expectedPurchasePerPeriod(): ?Money {
-        return $this->purchase_unit_price?->times($this->quantity);
+        return $this->purchase_unit_price === null ? null : DocumentTotalsCalculator::lineNet($this->quantity, $this->purchase_unit_price);
     }
 
     /** Offene Perioden mit erreichtem Beginn (Stichtag in Ortszeit) — das, was noch nicht berechnet ist. */

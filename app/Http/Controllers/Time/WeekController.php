@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Time;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Services\Calendar\{HolidayService, WeekViewService};
 use App\Services\UI\DateRangeContext;
@@ -20,7 +21,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class WeekController extends Controller {
     use ResolvesGlobalDateRange;

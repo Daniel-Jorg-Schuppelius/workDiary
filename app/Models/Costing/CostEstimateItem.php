@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace App\Models\Costing;
 
+use App\Models\Concerns\{Auditable, HasSqid, IsDocumentLine};
+use App\Models\Contracts\DocumentLine;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -35,7 +38,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $parent_code
  * @property int $position
  */
-class CostEstimateItem extends Model {
+class CostEstimateItem extends Model implements DocumentLine {
+    use Auditable;
+    /** @use HasFactory<\Database\Factories\Costing\CostEstimateItemFactory> */
+    use HasFactory;
+    use HasSqid;
+    use IsDocumentLine;
+
     protected $table = 'cost_estimate_items';
 
     protected $fillable = [
@@ -55,5 +64,15 @@ class CostEstimateItem extends Model {
     /** @return BelongsTo<CostEstimate, $this> */
     public function estimate(): BelongsTo {
         return $this->belongsTo(CostEstimate::class, 'cost_estimate_id');
+    }
+
+    /** @return BelongsTo<CostEstimate, $this> */
+    public function lineDocument(): BelongsTo {
+        return $this->estimate();
+    }
+
+    /** @return array<string, string|null> */
+    protected static function lineColumns(): array {
+        return ['tax_rate' => null, 'discount_percent' => null, 'discount_amount' => null, 'net_amount' => 'amount'];
     }
 }

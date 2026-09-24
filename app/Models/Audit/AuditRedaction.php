@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Models\Audit;
 
 use App\Models\Concerns\{BelongsToOrganization, HashChainable, HashChained};
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Platform\User;
 
 /**
  * Nachweis einer Schwärzung im Audit-Protokoll (Sicherheitsscan 2026-08-23,

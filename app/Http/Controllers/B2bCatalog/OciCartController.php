@@ -12,16 +12,15 @@ namespace App\Http\Controllers\B2bCatalog;
 
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
-use App\Models\Platform\{Organization, User};
-use App\Models\Supplier\Supplier;
-use App\Models\Supplier\SupplierCatalogSource;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\Procurement\SupplierCatalogController;
 use App\Models\Inventory\Warehouse;
+use App\Models\Platform\{Organization, User};
+use App\Models\Supplier\{Supplier, SupplierCatalogSource};
 use App\Services\Procurement\OciCartImportService;
 use App\Support\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\Supplier\SupplierCatalogController;
 
 /**
  * OCI-/IDS-Warenkorb-Übernahme (Feature 050, MVP-096). Der externe Shop sendet

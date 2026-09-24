@@ -13,14 +13,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Supplier;
 
 use App\Http\Controllers\Concerns\{MergesDuplicates, ResolvesCurrentOrganization};
+use App\Http\Controllers\Controller;
 use App\Models\Platform\Organization;
-use App\Models\Supplier\Supplier;
-use App\Models\Supplier\SupplierMergeDismissal;
+use App\Models\Supplier\{Supplier, SupplierMergeDismissal};
 use App\Services\Stammdaten\{SupplierDuplicateFinder, SupplierMergeService};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Lieferanten-Abgleich (Audit 2026-08, W2.3): stellt Dubletten-Kandidaten

@@ -107,7 +107,7 @@ class GobdLockGuardRuleTest extends TestCase {
         // Muster wie beim Buchhaltungs-Lastprofil: das Kommando verweigert in
         // der Produktivumgebung den Dienst und weist darauf hin, dass die
         // erzeugten Audit-Zeilen bewusst keine Hash-Kette tragen.
-        'app/Console/Commands/Support/SeedQueryLoadCommand.php' => 'Messdatensatz der Listen-Lastprofile, nur außerhalb der Produktivumgebung (MVP-722).',
+        'app/Console/Commands/Billing/SeedQueryLoadCommand.php' => 'Messdatensatz der Listen-Lastprofile, nur außerhalb der Produktivumgebung (MVP-722).',
     ];
 
     public function test_guarded_models_register_lock_guards(): void {
@@ -117,7 +117,9 @@ class GobdLockGuardRuleTest extends TestCase {
         foreach (GobdLockRegistry::MODELS as $name => $model) {
             $source = (string) file_get_contents($root . '/' . $model['file']);
 
-            $appendOnly = str_contains($source, 'use AppendOnly;') || str_contains($source, 'use HashChained;');
+            // Journale erben den Guard von der Basis (MVP-864).
+            $appendOnly = str_contains($source, 'use AppendOnly;') || str_contains($source, 'use HashChained;')
+                || str_contains($source, 'extends JournalEntry') || str_contains($source, 'extends HashChainedJournalEntry');
             $freezeGuard = str_contains($source, 'static::updating(') && str_contains($source, 'static::deleting(');
 
             if (! $appendOnly && ! $freezeGuard) {

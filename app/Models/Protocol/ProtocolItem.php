@@ -14,7 +14,6 @@ use App\Enums\Protocol\{ProtocolItemResult, ProtocolItemType};
 use App\Models\Concerns\{HasAttachments, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
-use App\Models\Protocol\ProtocolItemPhoto;
 
 /**
  * @property int $id

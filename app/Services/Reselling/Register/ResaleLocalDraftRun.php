@@ -17,7 +17,7 @@ use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\ResalePeriod;
-use App\Services\Finance\BillingModeResolver;
+use App\Services\Billing\BillingModeResolver;
 use App\Settings\SettingsRegistry;
 use App\Support\OrganizationContext;
 use App\Support\Query\DateRange;

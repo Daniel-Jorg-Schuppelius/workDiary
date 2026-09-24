@@ -295,7 +295,7 @@ class ChangeController extends Controller {
 
     /**
      * Strukturierte Step-Liste → Kette in der von
-     * {@see \App\Services\ServiceTicket\ApprovalService::createChain}
+     * {@see \App\Services\Approval\ApprovalService::createChain}
      * erwarteten Form (Muster ServiceCatalogController::buildApprovalChain;
      * user-Sqids werden hier je Zielklasse dekodiert und org-gescopt geprüft).
      *

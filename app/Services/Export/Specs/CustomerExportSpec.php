@@ -18,7 +18,7 @@ use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Export-Spezifikation für Kunden — Round-Trip zur {@see \App\Services\Import\Specs\CustomerSpec}.
+ * Export-Spezifikation für Kunden — Round-Trip zur {@see \App\Services\Customer\Import\CustomerSpec}.
  *
  * Filter:
  * - `status`: active|archived (Standard: alle)

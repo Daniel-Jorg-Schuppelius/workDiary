@@ -11,7 +11,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\Platform\User;
-use App\Services\Isms\SbomGenerator;
+use App\Services\Release\SbomGenerator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;

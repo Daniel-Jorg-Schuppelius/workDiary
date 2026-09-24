@@ -15,7 +15,6 @@ use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Gaeb\BoqItem;
 
 /**
  * Nachtragskopf eines Leistungsverzeichnisses (GAEB `COInfo`). Ein LV kann

@@ -10,9 +10,7 @@
 
 namespace Database\Factories\Asset;
 
-use App\Models\Asset\Asset;
-use App\Models\Asset\Software;
-use App\Models\Asset\SoftwareInstallation;
+use App\Models\Asset\{Asset, Software, SoftwareInstallation};
 use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

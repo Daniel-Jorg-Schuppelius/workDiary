@@ -18,9 +18,8 @@ use App\Models\Document\Document;
 use App\Models\Integration\IntegrationOutboxEntry;
 use App\Models\Invoicing\Invoice;
 use App\Models\Protocol\Protocol;
-use App\Services\Invoicing\InvoicePdfRenderer;
-use App\Services\Protocol\ProtocolPdfRenderer;
-use Illuminate\Support\Facades\Storage;
+use App\Modules\ModuleRegistry;
+use App\Plugins\Support\Mirror\Contracts\MirrorPdfRenderer;
 
 /**
  * Gemeinsamer Outbox-Dispatcher der Dokumentspiegelung (MVP-330, Bauturbo A10 —
@@ -103,7 +102,7 @@ class MirrorOutboxDispatcher implements IntegrationOutboxDispatcher {
             return true;
         }
 
-        $bytes = app(InvoicePdfRenderer::class)->output($invoice);
+        $bytes = $this->pdfFor($invoice);
         $path = $this->invoicePath($invoice);
 
         app(DocumentMirrorService::class)->mirrorBytes($this->target, $invoice, 'invoice_pdf', $path, $bytes, 'application/pdf', (string) $invoice->number, $connection, $this->target->gatewayFor($connection));
@@ -127,9 +126,7 @@ class MirrorOutboxDispatcher implements IntegrationOutboxDispatcher {
             return true;
         }
 
-        // Idempotenter Renderer schreibt das PDF auf 'local' und liefert den Pfad.
-        $relativePath = app(ProtocolPdfRenderer::class)->render($protocol);
-        $bytes = (string) Storage::disk(ProtocolPdfRenderer::DISK)->get($relativePath);
+        $bytes = $this->pdfFor($protocol);
         $path = $this->protocolPath($protocol);
 
         app(DocumentMirrorService::class)->mirrorBytes($this->target, $protocol, 'protocol_pdf', $path, $bytes, 'application/pdf', (string) $protocol->title, $connection, $this->target->gatewayFor($connection));
@@ -153,5 +150,17 @@ class MirrorOutboxDispatcher implements IntegrationOutboxDispatcher {
         $year = ($protocol->occurred_at ?? now())->format('Y');
 
         return 'protocols/' . $year . '/protocol-' . $protocol->getKey() . '.pdf';
+    }
+
+    /** PDF über den Renderer des Fachmoduls; ohne Modul keine Spiegelung dieser Belegart. */
+    private function pdfFor(\Illuminate\Database\Eloquent\Model $document): string {
+        foreach (app(ModuleRegistry::class)->extensions(MirrorPdfRenderer::class) as $class) {
+            $renderer = app($class);
+            if ($document instanceof ($renderer->modelClass())) {
+                return $renderer->pdf($document);
+            }
+        }
+
+        throw new \RuntimeException('Kein Spiegel-Renderer für ' . $document::class . '.');
     }
 }

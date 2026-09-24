@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Procurement;
+namespace App\Services\Article;
 
 use App\Models\Article\{Article, ArticleVariant};
 use App\Models\B2b\{B2bCatalogAccess, B2bCatalogItem};

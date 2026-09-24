@@ -75,7 +75,7 @@ class GaebDemoSeeder extends Seeder {
         app(\App\Services\Gaeb\CatalogSuggestionService::class)->apply($boq->fresh() ?? $boq);
 
         // LV in Ausführung setzen und einen Export protokollieren.
-        if ($workflow->canTransition($boq->status, BoqItemStatus::Ordered)) {
+        if ($boq->status->canTransitionTo(BoqItemStatus::Ordered)) {
             $workflow->transitionBill($boq, BoqItemStatus::Ordered);
         }
         app(BoqExportService::class)->export($boq->fresh() ?? $boq, GaebPhase::Award);

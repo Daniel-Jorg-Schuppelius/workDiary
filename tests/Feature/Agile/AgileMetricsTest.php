@@ -72,14 +72,7 @@ final class AgileMetricsTest extends TestCase {
 
         // Pflicht-Payload: column.moved ohne from/to wird abgewiesen.
         $this->expectException(\InvalidArgumentException::class);
-        AgileEvent::record([
-            'organization_id' => $this->board->organization_id,
-            'board_id' => $this->board->id,
-            'work_item_id' => $item->id,
-            'event' => 'column.moved',
-            'payload' => ['to' => 1],
-            'created_at' => now(),
-        ]);
+        AgileEvent::log(null, 'column.moved', ['to' => 1], null, extra: ['organization_id' => $this->board->organization_id, 'board_id' => $this->board->id, 'work_item_id' => $item->id]);
     }
 
     public function test_metrics_reproduce_hand_fixture(): void {

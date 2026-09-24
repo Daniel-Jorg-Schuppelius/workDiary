@@ -13,13 +13,13 @@ declare(strict_types=1);
 namespace App\Models\Privacy;
 
 use App\Enums\Privacy\{DataSubjectRequestStatus, DataSubjectRequestType};
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{BelongsToOrganization, HasJournal, HasSqid};
 use App\Models\Platform\User;
 use App\Models\Privacy\Casts\RecordEncrypted;
 use App\Models\Privacy\Concerns\ProvidesRecordDek;
 use App\Services\Privacy\DataProtectionCryptoService;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany};
 
 /**
  * Betroffenenanfrage (DSGVO Art. 15–21). Identitaet/Anliegen sind per-Fall
@@ -34,7 +34,11 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
  */
 class DataSubjectRequest extends Model implements ProvidesRecordDek {
     use BelongsToOrganization;
+    use HasJournal;
     use HasSqid;
+
+    /** @var class-string<RequestEvent> Journal des Trägers (MVP-864) */
+    protected static string $journalClass = RequestEvent::class;
 
     /** Eingangskanal `channel` fuer Anfragen aus dem oeffentlichen Selbstmeldeportal (G11). */
     public const CHANNEL_PORTAL = 'portal';
@@ -113,11 +117,6 @@ class DataSubjectRequest extends Model implements ProvidesRecordDek {
     /** @return BelongsTo<User, $this> */
     public function assignedUser(): BelongsTo {
         return $this->belongsTo(User::class, 'assigned_user_id');
-    }
-
-    /** @return HasMany<RequestEvent, $this> */
-    public function events(): HasMany {
-        return $this->hasMany(RequestEvent::class, 'request_id')->orderBy('id');
     }
 
     /** @return MorphMany<PrivacyAttachment, $this> */

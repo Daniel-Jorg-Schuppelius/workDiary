@@ -10,13 +10,12 @@
 
 namespace App\Http\Controllers\Inventory;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Inventory\SaveWarehouseBinRequest;
-use App\Models\Inventory\Warehouse;
-use App\Models\Inventory\WarehouseBin;
+use App\Models\Inventory\{Warehouse, WarehouseBin};
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Lagerplätze je Lagerort (Feature 048, MVP-706) als Modal-Dialoge. Rechte

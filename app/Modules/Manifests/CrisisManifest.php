@@ -88,4 +88,16 @@ final class CrisisManifest extends Manifest {
             'groups' => [],
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function listeners(): array {
+        return [
+            \App\Events\Security\SecurityCrisisRaised::class => [
+                \App\Listeners\Crisis\AlertCrisisTeam::class,
+            ],
+            \App\Events\Release\IntegrityCrisisRaised::class => [
+                \App\Listeners\Crisis\AlertCrisisTeam::class,
+            ],
+        ];
+    }
 }

@@ -82,6 +82,7 @@
                     <x-table.th sort="location_text">{{ __('Standort') }}</x-table.th>
                     <th>{{ __('Kunde') }}</th>
                     <x-table.th sort="status">{{ __('Status') }}</x-table.th>
+                    <x-custom-field-heads :columns="$customColumns" />
                     <th></th>
                 </tr>
             </x-slot:head>
@@ -124,12 +125,13 @@
                             @endif
                         </div>
                     </td>
+                    <x-custom-field-cells :columns="$customColumns" :model="$asset" />
                     <td class="text-right">
                         <x-icon-btn icon="open_in_new" :href="route('assets.show', $asset)" :label="__('Details')" />
                     </td>
                 </tr>
             @empty
-                <x-table.empty :colspan="8"
+                <x-table.empty :colspan="8 + count($customColumns)"
                                :title="__('Keine Assets gefunden')"
                                :message="$hasActiveFilters ? __('Für die aktuellen Filter wurden keine Assets gefunden.') : __('Es sind noch keine Assets erfasst.')" />
             @endforelse

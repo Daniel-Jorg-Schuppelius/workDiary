@@ -1,0 +1,70 @@
+{
+    "kind": "invoice",
+    "document": {
+        "currency": "EUR",
+        "tax_rate": "19.00",
+        "is_reverse_charge": false,
+        "discount_percent": null,
+        "discount_amount": "-10.00",
+        "skonto_percent": null,
+        "skonto_days": null
+    },
+    "lines": [
+        {
+            "quantity": "-2.000",
+            "unit_price": "100.0000",
+            "discount_percent": null,
+            "discount_amount": null,
+            "tax_rate": "19.00"
+        },
+        {
+            "quantity": "-1.000",
+            "unit_price": "30.0000",
+            "discount_percent": null,
+            "discount_amount": null,
+            "tax_rate": "7.00"
+        }
+    ],
+    "expected": {
+        "line_nets": [
+            "-200.00",
+            "-30.00"
+        ],
+        "line_net_sum": "-230.00",
+        "document_discount": "-10.00",
+        "by_rate": {
+            "7.00": {
+                "rate": 7,
+                "net": "-30.00",
+                "allowance": "-5.00",
+                "taxable": "-25.00",
+                "tax": "-1.75"
+            },
+            "19.00": {
+                "rate": 19,
+                "net": "-200.00",
+                "allowance": "-5.00",
+                "taxable": "-195.00",
+                "tax": "-37.05"
+            }
+        },
+        "subtotal": "-220.00",
+        "tax_amount": "-38.80",
+        "total": "-258.80",
+        "tax_breakdown": [
+            {
+                "rate": 7,
+                "net": "-25.00",
+                "tax": "-1.75"
+            },
+            {
+                "rate": 19,
+                "net": "-195.00",
+                "tax": "-37.05"
+            }
+        ],
+        "line_subtotal": "-230.00",
+        "document_discount_total": "-10.00",
+        "skonto_amount": "0.00"
+    }
+}

@@ -13,13 +13,12 @@ namespace App\Http\Controllers\Procurement;
 use App\Enums\Procurement\PurchaseOrderStatus;
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Procurement\SavePurchaseOrderRequest;
 use App\Models\Article\Article;
-use App\Models\Procurement\PurchaseOrder;
-use App\Models\Procurement\PurchaseOrderAdvice;
-use App\Models\Procurement\PurchaseOrderLine;
-use App\Models\Supplier\Supplier;
 use App\Models\Inventory\Warehouse;
+use App\Models\Procurement\{PurchaseOrder, PurchaseOrderAdvice, PurchaseOrderLine};
+use App\Models\Supplier\Supplier;
 use App\Services\Procurement\{AdviceService, DespatchAdviceImportService, GoodsReceiptService, ProcurementSuggestionService, PurchaseOrderExportService, PurchaseOrderPdfRenderer, PurchaseOrderService, UglInvoiceReconciler};
 use App\Support\{ErrorText, SqidEncoder};
 use CommonToolkit\Helper\FileSystem\File;
@@ -29,7 +28,6 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
-use App\Http\Controllers\Controller;
 
 /**
  * Beschaffungs-UI (Feature 048, E4): Bestellungen anlegen, Zeilen pflegen,

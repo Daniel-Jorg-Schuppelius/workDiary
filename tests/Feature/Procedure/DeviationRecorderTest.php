@@ -49,7 +49,7 @@ class DeviationRecorderTest extends TestCase {
         $this->assertSame((int) $deviation->id, (int) $stepRun->fresh()->deviation_id);
         $this->assertSame(
             1,
-            $run->events()->where('event_type', ProcedureRunEventType::DeviationRecorded->value)->count(),
+            $run->journal()->where('event_type', ProcedureRunEventType::DeviationRecorded->value)->count(),
         );
     }
 
@@ -82,7 +82,7 @@ class DeviationRecorderTest extends TestCase {
         $this->assertSame((int) $deviation->id, (int) $issue->source_ref_id);
         $this->assertSame(
             1,
-            $run->events()->where('event_type', ProcedureRunEventType::DeviationActionTriggered->value)->count(),
+            $run->journal()->where('event_type', ProcedureRunEventType::DeviationActionTriggered->value)->count(),
         );
     }
 
@@ -118,7 +118,7 @@ class DeviationRecorderTest extends TestCase {
         $this->assertNotNull($completed->completed_at);
         $this->assertSame(
             1,
-            $run->events()->where('event_type', ProcedureRunEventType::CriticalRiskAccepted->value)->count(),
+            $run->journal()->where('event_type', ProcedureRunEventType::CriticalRiskAccepted->value)->count(),
         );
     }
 

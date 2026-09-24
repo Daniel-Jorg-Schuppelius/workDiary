@@ -20,7 +20,7 @@ use DateTimeImmutable;
  * (MVP-328, Bauturbo A8): providerneutral strukturiert (Titel, Zeiten,
  * Ort) statt ICS, weil Microsoft Graph und Google Calendar JSON-Events
  * erwarten. Die stabile UID entspricht der CalDAV-/Feed-UID
- * ({@see \App\Services\Event\IcsFeedService::eventUid()}), damit alle
+ * ({@see \App\Models\Calendar\Event::icsUid()}), damit alle
  * Kalender-Kanäle denselben Termin meinen. `cancelled` markiert ein
  * extern zu entfernendes Element (abgesagter Termin).
  */

@@ -17,7 +17,8 @@ use App\Models\Audit\AuditLog;
 use App\Models\Integration\{ImportRun, ImportRunError};
 use App\Models\Platform\User;
 use App\Plugins\Support\TimeWritebackObserver;
-use App\Services\Import\{CsvPreflightAnalyzer, DocumentZipImportService, EntitySpecRegistry, ImportOutcome};
+use App\Services\Import\Contracts\ProvidesZipImport;
+use App\Services\Import\{CsvPreflightAnalyzer, EntitySpecRegistry, ImportOutcome};
 use App\Services\Import\Source\ImportSourceFactory;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
@@ -77,7 +78,7 @@ class ProcessCsvImportJob implements ShouldQueue {
         $run->save();
     }
 
-    public function handle(EntitySpecRegistry $registry, ImportSourceFactory $sources, DocumentZipImportService $documentZip): void {
+    public function handle(EntitySpecRegistry $registry, ImportSourceFactory $sources): void {
         $run = ImportRun::query()->find($this->importRunId);
         if ($run === null) {
             return;
@@ -133,7 +134,7 @@ class ProcessCsvImportJob implements ShouldQueue {
                 if (! $actor instanceof User) {
                     throw new \RuntimeException((string) __('import.error.document.noActor'));
                 }
-                [$created, $updated, $skipped, $failed] = $documentZip->import(
+                [$created, $updated, $skipped, $failed] = $this->zipImporter($registry, $run->entity)->import(
                     $run,
                     \CommonToolkit\Helper\FileSystem\File::read($path),
                     $organization,
@@ -304,5 +305,14 @@ class ProcessCsvImportJob implements ShouldQueue {
         }
 
         return ImportRunState::Succeeded;
+    }
+
+    private function zipImporter(EntitySpecRegistry $registry, \App\Enums\Import\ImportEntity $entity): \App\Services\Import\Contracts\ZipImporter {
+        $spec = $registry->for($entity);
+        if (! $spec instanceof ProvidesZipImport) {
+            throw new \RuntimeException('Entität ohne ZIP-Import: ' . $entity->value);
+        }
+
+        return $spec->zipImporter();
     }
 }

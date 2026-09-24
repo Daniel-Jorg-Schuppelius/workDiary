@@ -11,8 +11,7 @@
 namespace Database\Factories\Procedure;
 
 use App\Enums\Procedure\ProcedureStepType;
-use App\Models\Procedure\ProcedureStepDef;
-use App\Models\Procedure\ProcedureTemplateVersion;
+use App\Models\Procedure\{ProcedureStepDef, ProcedureTemplateVersion};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

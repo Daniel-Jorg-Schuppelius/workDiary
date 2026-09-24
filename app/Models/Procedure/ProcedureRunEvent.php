@@ -11,11 +11,9 @@
 namespace App\Models\Procedure;
 
 use App\Enums\Procedure\ProcedureRunEventType;
-use App\Models\Concerns\AppendOnly;
+use App\Models\Journal\JournalEntry;
 use App\Models\Platform\User;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Procedure\ProcedureStepRun;
 
 /**
  * Append-only Audit-Event eines {@see ProcedureRun}
@@ -29,9 +27,11 @@ use App\Models\Procedure\ProcedureStepRun;
  * @property int|null $actor_user_id
  * @property \Illuminate\Support\Carbon $created_at
  */
-class ProcedureRunEvent extends Model {
+class ProcedureRunEvent extends JournalEntry {
+    /** @var array<string, string|null> */
+    protected static array $journalColumns = ['event' => 'event_type'];
+
     // Append-only jetzt technisch erzwungen statt nur dokumentiert (Vollaudit 2026-07, M52).
-    use AppendOnly;
 
     public $timestamps = false;
 
@@ -63,5 +63,10 @@ class ProcedureRunEvent extends Model {
     /** @return BelongsTo<User, $this> */
     public function actor(): BelongsTo {
         return $this->belongsTo(User::class, 'actor_user_id');
+    }
+
+    /** @return BelongsTo<ProcedureRun, $this> */
+    public function subject(): BelongsTo {
+        return $this->run();
     }
 }

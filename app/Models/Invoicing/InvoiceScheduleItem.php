@@ -11,7 +11,9 @@
 namespace App\Models\Invoicing;
 
 use App\Casts\{MoneyCast, PercentageCast};
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, IsDocumentLine};
+use App\Models\Contracts\DocumentLine;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -32,9 +34,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \CommonToolkit\ValueObjects\Percentage|null $tax_rate
  * @property string|null $tax_category
  */
-class InvoiceScheduleItem extends Model {
+class InvoiceScheduleItem extends Model implements DocumentLine {
+    use Auditable;
     use BelongsToOrganization;
+    /** @use HasFactory<\Database\Factories\Invoicing\InvoiceScheduleItemFactory> */
+    use HasFactory;
     use HasSqid;
+    use IsDocumentLine;
 
     protected $fillable = [
         'organization_id',
@@ -64,5 +70,15 @@ class InvoiceScheduleItem extends Model {
     /** @return BelongsTo<InvoiceSchedule, $this> */
     public function schedule(): BelongsTo {
         return $this->belongsTo(InvoiceSchedule::class, 'invoice_schedule_id');
+    }
+
+    /** @return BelongsTo<InvoiceSchedule, $this> */
+    public function lineDocument(): BelongsTo {
+        return $this->schedule();
+    }
+
+    /** @return array<string, string|null> */
+    protected static function lineColumns(): array {
+        return ['net_amount' => null];
     }
 }

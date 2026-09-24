@@ -17,8 +17,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
 use Illuminate\Support\Carbon;
 use Spatie\Permission\Traits\HasRoles;
-use App\Models\Platform\Organization;
-use App\Models\Platform\User;
 
 /**
  * Organisationsspezifische Benutzergruppe für die Rechteverwaltung im

@@ -15,7 +15,7 @@ namespace App\Services\Invoicing;
 use App\Models\Finance\CashEntry;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
-use App\Services\Finance\ReconciliationService;
+use App\Services\Invoicing\Contracts\PaymentStatusProvider;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
@@ -43,7 +43,7 @@ class GirocodeService {
 
     public function __construct(
         private readonly RetentionService $retentions,
-        private readonly ReconciliationService $reconciliation,
+        private readonly PaymentStatusProvider $reconciliation,
     ) {}
 
     /**
@@ -167,7 +167,7 @@ class GirocodeService {
 
     /**
      * Bereits gezahlt — aus BEIDEN Quellen, die den Status `partially_paid`
-     * setzen können: der Bankzuordnung ({@see ReconciliationService}) und dem
+     * setzen können: der Bankzuordnung ({@see PaymentStatusProvider}) und dem
      * Kassenbuch ({@see \App\Services\Finance\CashBookService}). Nur eine
      * der beiden zu lesen hieße, bar bezahlte Teilbeträge zu übersehen und
      * einen zu hohen Betrag in den Code zu schreiben.

@@ -76,12 +76,13 @@
         </tr>
     </thead>
     <tbody>
+    @php($itemFields = app(\App\Services\Protocol\Fields\ProtocolItemFields::class))
     @foreach ($protocol->items->sortBy('sort_order') as $idx => $item)
         <tr>
             <td>{{ $idx + 1 }}</td>
             <td><strong>{{ $item->label }}</strong>@if ($item->description)<br><small>{{ $item->description }}</small>@endif</td>
             <td>{{ $item->item_type->label() }}</td>
-            <td><code>{{ json_encode($item->value_json, JSON_UNESCAPED_UNICODE) }}</code></td>
+            <td><x-field-display :field="$itemFields->definition($item)" :values="$itemFields->values($item)" /></td>
             <td>@if ($item->result)<span class="badge {{ $item->result->value }}">{{ $item->result->label() }}</span>@endif</td>
             <td>{{ $item->note }}</td>
         </tr>

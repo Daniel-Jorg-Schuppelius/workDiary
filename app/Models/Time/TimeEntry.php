@@ -15,8 +15,10 @@ use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Models\Classification\{ActivityCategory, Tag};
 use App\Models\Communication\Comment;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, HasTags};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Project\{Project, Task};
+use App\Models\Travel\TravelLog;
 use App\Services\Billing\RateCalculator;
 use App\Support\Formats;
 use CommonToolkit\Enums\CurrencyCode;
@@ -26,9 +28,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany};
 use Illuminate\Support\Carbon;
-use App\Models\Diary\DiaryEntry;
-use App\Models\Time\Timesheet;
-use App\Models\Travel\TravelLog;
 
 /**
  * @property int $id

@@ -10,8 +10,7 @@
 
 namespace App\Policies\Platform;
 
-use App\Models\Platform\User;
-use App\Models\Platform\UserFilterPreset;
+use App\Models\Platform\{User, UserFilterPreset};
 use App\Policies\Concerns\ChecksOwnership;
 
 class UserFilterPresetPolicy {

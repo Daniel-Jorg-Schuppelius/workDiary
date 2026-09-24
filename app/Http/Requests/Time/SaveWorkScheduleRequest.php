@@ -11,10 +11,10 @@
 namespace App\Http\Requests\Time;
 
 use App\Enums\WorkSchedule\ScheduleType;
+use App\Http\Requests\BaseFormRequest;
 use CommonToolkit\ValueObjects\Duration;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
-use App\Http\Requests\BaseFormRequest;
 
 class SaveWorkScheduleRequest extends BaseFormRequest {
     /**

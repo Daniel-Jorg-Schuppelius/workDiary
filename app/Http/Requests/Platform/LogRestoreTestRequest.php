@@ -11,9 +11,9 @@
 namespace App\Http\Requests\Platform;
 
 use App\Enums\Backup\RestoreTestResult;
+use App\Http\Requests\BaseFormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
-use App\Http\Requests\BaseFormRequest;
 
 class LogRestoreTestRequest extends BaseFormRequest {
     /**

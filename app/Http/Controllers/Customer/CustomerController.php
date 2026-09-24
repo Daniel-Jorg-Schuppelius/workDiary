@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Customer;
 
 use App\Enums\Import\ImportEntity;
 use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery, ResolvesGlobalDateRange};
+use App\Http\Controllers\Concerns\SavesCustomFields;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Diary\DiaryController;
 use App\Http\Requests\Customer\SaveCustomerRequest;
@@ -32,9 +33,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CustomerController extends Controller {
     use \App\Http\Controllers\Concerns\WritesContactDetails;
+
     use ArchivesModels;
     use ParsesIndexQuery;
     use ResolvesGlobalDateRange;
+    use SavesCustomFields;
 
     private const ALLOWED_SORTS = ['name', 'number', 'company', 'created_at'];
 
@@ -66,6 +69,7 @@ class CustomerController extends Controller {
             'sort' => $sort,
             'dir' => $dir,
             'lexofficeEnabled' => $lexofficeEnabled,
+            'customColumns' => app(\App\Services\Fields\CustomFieldService::class)->listColumnsFor($customers->getCollection(), Customer::class, (int) Auth::user()?->organization_id),
         ]);
     }
 
@@ -103,14 +107,16 @@ class CustomerController extends Controller {
         Gate::authorize('create', Customer::class);
 
         $data = $request->validated();
+        $custom = $this->validatedCustomFields($request, Customer::class);
         $tagIds = $data['tag_ids'] ?? [];
         $newTagsRaw = (string) ($data['new_tags'] ?? '');
-        unset($data['tag_ids'], $data['new_tags']);
+        unset($data['tag_ids'], $data['new_tags'], $data['custom']);
         $contactDetails = $this->pullContactDetails($data);
 
         $customer = Customer::create($data + ['created_by' => Auth::id()]);
         $this->writeContactDetails($customer, $contactDetails);
         $customer->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
+        $customer->syncCustomFields($custom);
 
         return redirect()->route('customers.show', $customer)
             ->with('success', __('Kunde angelegt.'));
@@ -130,9 +136,10 @@ class CustomerController extends Controller {
         Gate::authorize('update', $customer);
 
         $data = $request->validated();
+        $custom = $this->validatedCustomFields($request, Customer::class);
         $tagIds = $data['tag_ids'] ?? [];
         $newTagsRaw = (string) ($data['new_tags'] ?? '');
-        unset($data['tag_ids'], $data['new_tags']);
+        unset($data['tag_ids'], $data['new_tags'], $data['custom']);
         $contactDetails = $this->pullContactDetails($data);
 
         // fill() vor save(): getDirty() kennt die Änderungen erst danach.
@@ -141,6 +148,7 @@ class CustomerController extends Controller {
         $customer->save();
         $changed = array_merge($changed, $this->writeContactDetails($customer, $contactDetails));
         $customer->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
+        $customer->syncCustomFields($custom);
 
         // Korrigierte Stammdaten zurück an Lexoffice — sonst holt der nächste
         // Abgleich den alten Wert wieder.
@@ -167,7 +175,7 @@ class CustomerController extends Controller {
         Gate::authorize('delete', $customer);
 
         // Legal Hold (MVP-801): gesperrte Kunden werden nicht gelöscht.
-        if (app(\App\Services\Privacy\LegalHoldService::class)->activeHoldFor($customer) !== null) {
+        if (app(\App\Services\Retention\LegalHoldService::class)->activeHoldFor($customer) !== null) {
             return redirect()->route('customers.show', $customer)
                 ->with('error', __('Kunde steht unter Legal Hold — Löschen ist bis zur Aufhebung ausgeschlossen.'));
         }
@@ -184,7 +192,7 @@ class CustomerController extends Controller {
 
         // Vollaudit 2026-07 (M9): KI-Gedächtnis auditiert löschen (Einzel-Audit
         // je Eintrag + Provider-Glossar-Hook) statt stiller FK-Kaskade.
-        app(\App\Services\Ai\AiMemoryService::class)->deleteForCustomer(
+        app(\App\Services\Ai\Contracts\AiMemory::class)->deleteForCustomer(
             $customer->organization()->firstOrFail(),
             (int) $customer->id,
         );

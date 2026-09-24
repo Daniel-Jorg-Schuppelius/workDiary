@@ -16,6 +16,7 @@ use App\Models\Ai\AiTextSuggestion;
 use App\Models\Customer\CustomerQuery;
 use App\Models\Platform\{Organization, User};
 use App\Services\Ai\{AiInvocationService, AiMemoryService};
+use App\Services\Ai\Contracts\PortalQuerySuggester;
 use App\Services\Ai\Dto\{AiTextResult, SummarizeRequest};
 use App\Services\Ai\Exceptions\AiException;
 use App\Services\Ai\Suggestions\Concerns\DecidesSuggestions;
@@ -35,10 +36,8 @@ use App\Services\CustomerPortal\PortalQuerySubjects;
  * Vorschlag nur „verwerfen" — es gibt kein Schreibziel, das eine Übernahme
  * rechtfertigen würde.
  */
-class PortalQuerySuggestionService {
+class PortalQuerySuggestionService implements PortalQuerySuggester {
     use DecidesSuggestions;
-
-    public const CAPABILITY = 'portal.query_understand';
 
     /** @var list<string> */
     private const RULES = [

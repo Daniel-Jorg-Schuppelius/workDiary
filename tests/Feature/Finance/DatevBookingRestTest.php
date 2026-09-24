@@ -14,8 +14,9 @@ use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Models\Travel\{Expense, ExpenseCategory};
+use App\Services\Billing\FinancialFormatsSupport;
 use App\Services\Finance\Datev\{DatevBookingConfig, DatevMasterDataExporter};
-use App\Services\Finance\{DatevBookingException, DatevBookingService, FinancialFormatsSupport};
+use App\Services\Finance\{DatevBookingException, DatevBookingService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -103,7 +104,7 @@ class DatevBookingRestTest extends TestCase {
         $this->assertSame(2, (int) $batch->booking_count);
         $this->assertSame('238.00', (string) $batch->total_amount);
         $this->assertSame('manual', $batch->selection_mode);
-        $event = $batch->events()->where('event', 'sources_removed')->firstOrFail();
+        $event = $batch->journal()->where('event', 'sources_removed')->firstOrFail();
         $this->assertSame(['RE-A'], data_get($event->payload, 'removed_refs'));
 
         // Entfernte Quelle ist sofort wieder buchungsreif (zweiter Stapel je Zeitraum).

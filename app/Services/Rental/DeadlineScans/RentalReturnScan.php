@@ -10,11 +10,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Notification\DeadlineScans;
+namespace App\Services\Rental\DeadlineScans;
 
 use App\Enums\Rental\RentalCaseStatus;
 use App\Models\Platform\Organization;
 use App\Models\Rental\RentalCase;
+use App\Services\Notification\DeadlineScans\{AbstractDeadlineScan, DeadlineScanOptions};
 use App\Services\Notification\NotificationDispatcher;
 use App\Services\Rental\RentalCaseService;
 

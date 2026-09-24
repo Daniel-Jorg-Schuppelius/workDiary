@@ -19,9 +19,9 @@ use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Knowledge\ContentCollection;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Services\Ai\Suggestions\{SearchAnswerSuggestionService, SuggestionViewData};
-use App\Services\Collections\{CollectableTypes, ContentCollectionService};
+use App\Services\Ai\Contracts\{SearchAnswerSuggester, SuggestionView};
 use App\Services\Search\{ActivitySearchCriteria, ActivitySearchService, ActivitySearchVisibility, GlobalSearchService};
+use App\Services\Search\Contracts\CollectionScope;
 use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -43,9 +43,8 @@ class SearchController extends Controller {
         GlobalSearchService $search,
         ActivitySearchService $activities,
         ActivitySearchVisibility $visibility,
-        SuggestionViewData $aiView,
-        ContentCollectionService $collections,
-        CollectableTypes $collectables,
+        SuggestionView $aiView,
+        CollectionScope $collections,
     ): View {
         /** @var User $user */
         $user = Auth::user();
@@ -84,7 +83,7 @@ class SearchController extends Controller {
                 $activeTagName = $facet['name'];
             }
         }
-        $aiUsable = $aiView->capabilityUsable(SearchAnswerSuggestionService::CAPABILITY);
+        $aiUsable = $aiView->capabilityUsable(SearchAnswerSuggester::CAPABILITY);
 
         return view('search.index', [
             'criteria' => $criteria,
@@ -110,20 +109,20 @@ class SearchController extends Controller {
             'collectionOptions' => Gate::allows('viewAny', ContentCollection::class) ? $collections->tree($user) : [],
             // Sammeln aus der Trefferliste (MVP-813): Quelle → Sammlungstyp.
             'mayCollect' => Gate::allows('create', ContentCollection::class),
-            'collectableSources' => $this->collectableSources($collectables),
+            'collectableSources' => $this->collectableSources($collections),
             'activeTag' => $criteria->tagId !== null ? [
                 'sqid' => Sqid::encode(Tag::class, $criteria->tagId),
                 'name' => $activeTagName,
             ] : null,
             'aiUsable' => $aiUsable,
             'aiAnswer' => $aiUsable
-                ? $aiView->openSuggestionsFor($user->getMorphClass(), collect([$user]), SearchAnswerSuggestionService::CAPABILITY)->get($user->id)
+                ? $aiView->openSuggestionsFor($user->getMorphClass(), collect([$user]), SearchAnswerSuggester::CAPABILITY)->get($user->id)
                 : null,
         ]);
     }
 
     /** @return array<string, string> Quellwert → Sammlungstyp */
-    private function collectableSources(CollectableTypes $collectables): array {
+    private function collectableSources(CollectionScope $collectables): array {
         $map = [];
         foreach (SearchSourceType::cases() as $type) {
             $key = $collectables->keyFor(new ($type->modelClass())());

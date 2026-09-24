@@ -10,7 +10,6 @@
 
 namespace App\Services\Release;
 
-use App\Services\Isms\SbomGenerator;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\FileSystem\File;
 

@@ -11,11 +11,11 @@
 namespace App\Models\Integration;
 
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 use Illuminate\Support\Carbon;
-use App\Models\Platform\User;
 
 /**
  * @property int $id

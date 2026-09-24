@@ -11,8 +11,8 @@
 namespace App\Policies\Absence;
 
 use App\Enums\Vacation\VacationStatus;
-use App\Models\Platform\User;
 use App\Models\Absence\Vacation;
+use App\Models\Platform\User;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class VacationPolicy {

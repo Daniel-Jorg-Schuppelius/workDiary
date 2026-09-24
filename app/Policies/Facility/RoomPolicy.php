@@ -11,8 +11,8 @@
 namespace App\Policies\Facility;
 
 use App\Enums\User\UserRole;
-use App\Models\Platform\User;
 use App\Models\Facility\Room;
+use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
 
 class RoomPolicy {

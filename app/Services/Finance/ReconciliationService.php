@@ -20,10 +20,13 @@ use App\Models\Finance\{BankTransaction, PaymentAllocation, PaymentReconciliatio
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Travel\Expense;
+use App\Modules\ModuleRegistry;
 use App\Services\Billing\CustomerAccountStatementService;
-use App\Services\Club\ClubFeePaymentService;
 use App\Services\Concerns\ResolvesActorId;
+use App\Services\Finance\Contracts\AllocationTargetHandler;
+use App\Services\Invoicing\Contracts\PaymentStatusProvider;
 use App\Support\MorphMap;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -35,7 +38,7 @@ use InvalidArgumentException;
  * Bankumsatz selbst wird NIE inhaltlich verändert — nur sein match_status.
  * Jede Aktion schreibt ein {@see PaymentReconciliationEvent} (Hash-Kette).
  */
-class ReconciliationService {
+class ReconciliationService implements PaymentStatusProvider {
     use ResolvesActorId;
 
     public function __construct(private readonly MatchingService $matching) {}
@@ -114,8 +117,8 @@ class ReconciliationService {
                 $this->revertExpense($target, $allocation);
             } elseif ($target instanceof CustomerBillingAgreement) {
                 $this->revertAccount($allocation);
-            } elseif ($target instanceof ClubFeeClaim) {
-                app(ClubFeePaymentService::class)->revertBankAllocation($allocation);
+            } elseif ($target !== null && ($handler = $this->handlerFor($target)) !== null) {
+                $handler->revert($allocation);
             }
 
             // Verbleiben keine aktiven Zuordnungen, ist der Umsatz wieder offen.
@@ -198,7 +201,7 @@ class ReconciliationService {
 
         return DB::transaction(function () use ($returnTransaction, $original, $reason, $actorId): BankTransaction {
             $target = $original->allocatable;
-            if (! $target instanceof Invoice && ! $target instanceof Expense && ! $target instanceof CustomerBillingAgreement && ! $target instanceof ClubFeeClaim) {
+            if (! $target instanceof Invoice && ! $target instanceof Expense && ! $target instanceof CustomerBillingAgreement && ($target === null || $this->handlerFor($target) === null)) {
                 throw new BankImportException('targetNotFound', (string) __('bank.reconcile.error.target_not_found'), [
                     'allocation_id' => $original->id,
                 ]);
@@ -221,9 +224,8 @@ class ReconciliationService {
 
             if ($target instanceof Invoice) {
                 $this->revertInvoice($target);
-            } elseif ($target instanceof ClubFeeClaim) {
-                // Beitragsforderung: Rücklastschrift kompensiert die gebuchte Zahlung genau einmal, Rest öffnet sich, Einzug gesperrt.
-                app(ClubFeePaymentService::class)->chargebackFromBank($original, $returnTransaction, $compensation, $reason);
+            } elseif ($target instanceof Expense) {
+                $this->revertExpense($target, $original);
             } elseif ($target instanceof CustomerBillingAgreement) {
                 // GoBD-Symmetrie: Original-Zahlung bleibt, der Rückläufer wird
                 // als NEGATIVE Konto-Zahlung gebucht (Saldo öffnet sich wieder).
@@ -236,7 +238,8 @@ class ReconciliationService {
                     'note' => trim('RET#' . $original->id . ' ' . (string) $reason),
                 ]);
             } else {
-                $this->revertExpense($target, $original);
+                // Modulziel (z. B. Beitragsforderung): das Modul kompensiert die gebuchte Zahlung selbst.
+                $this->handlerFor($target)?->chargeback($original, $returnTransaction, $compensation, $reason);
             }
 
             $returnTransaction->match_status = MatchStatus::Matched;
@@ -278,19 +281,30 @@ class ReconciliationService {
         });
     }
 
-    private function applyEffect(Invoice|Expense|CustomerBillingAgreement|ClubFeeClaim $target, BankTransaction $transaction, ?int $actorId = null, ?PaymentAllocation $allocation = null): void {
+    private function applyEffect(Model $target, BankTransaction $transaction, ?int $actorId = null, ?PaymentAllocation $allocation = null): void {
         if ($target instanceof Invoice) {
             $this->applyInvoiceEffect($target, $transaction, $actorId);
         } elseif ($target instanceof CustomerBillingAgreement) {
             $this->applyAccountEffect($target, $transaction, $allocation);
-        } elseif ($target instanceof ClubFeeClaim) {
-            // Beitragsforderung (Feature 159, MVP-851): Zahlung buchen oder eine bereits gebuchte wiedererkennen.
-            if ($allocation !== null) {
-                app(ClubFeePaymentService::class)->bookBankAllocation($target, $transaction, $allocation);
-            }
-        } else {
+        } elseif ($target instanceof Expense) {
             $this->applyExpenseEffect($target, $transaction);
+        } elseif ($allocation !== null && ($handler = $this->handlerFor($target)) !== null) {
+            // Modulziel (Feature 159, MVP-851: Beitragsforderung): Zahlung buchen oder eine bereits gebuchte wiedererkennen.
+            $handler->book($target, $transaction, $allocation);
         }
+    }
+
+    /** Zielbehandlung eines Moduls ({@see AllocationTargetHandler}), null = Kernziel oder unbekannt. */
+    private function handlerFor(Model $target): ?AllocationTargetHandler {
+        foreach (app(ModuleRegistry::class)->extensions(AllocationTargetHandler::class) as $class) {
+            /** @var AllocationTargetHandler $handler */
+            $handler = app($class);
+            if ($handler->supports($target)) {
+                return $handler;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -519,14 +533,7 @@ class ReconciliationService {
 
     /** @param array<string, mixed> $payload */
     private function recordEvent(BankTransaction $transaction, string $event, ?int $actorId, array $payload): void {
-        PaymentReconciliationEvent::create([
-            'organization_id' => $transaction->organization_id,
-            'bank_transaction_id' => $transaction->id,
-            'event' => $event,
-            'actor_user_id' => $actorId,
-            'payload' => $payload,
-            'created_at' => now(),
-        ]);
+        $transaction->record($event, $payload, $actorId);
     }
 
 }

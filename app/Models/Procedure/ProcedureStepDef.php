@@ -15,7 +15,6 @@ use Database\Factories\Procedure\ProcedureStepDefFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Procedure\ProcedureTemplateVersion;
 
 /**
  * Schritt-Definition einer Prozedurvorlagen-Version (MVP-025 §3.3).

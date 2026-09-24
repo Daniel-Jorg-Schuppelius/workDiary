@@ -15,6 +15,7 @@ namespace App\Services\Ai\Suggestions;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
 use App\Services\Ai\{AiInvocationService, AiMemoryService};
+use App\Services\Ai\Contracts\CoveringTextSuggester;
 use App\Services\Ai\Dto\{AiTextResult, AiTranslationResult, FormulateRequest, TranslateRequest};
 
 /**
@@ -28,13 +29,7 @@ use App\Services\Ai\Dto\{AiTextResult, AiTranslationResult, FormulateRequest, Tr
  * Empfängername (DoD Feature 084); Stil/Glossar kommen aus dem
  * KI-Gedächtnis (MVP-404) mit Kundenkontext.
  */
-class CoveringTextSuggestionService {
-    public const CAPABILITY_MAIL_TEXT = 'invoicing.mail_text';
-
-    public const CAPABILITY_DUNNING_TEXT = 'invoicing.dunning_text';
-
-    public const CAPABILITY_ANSWER_TRANSLATE = 'portal.answer_translate';
-
+class CoveringTextSuggestionService implements CoveringTextSuggester {
     public function __construct(
         private readonly AiInvocationService $invocation,
         private readonly AiMemoryService $memory,

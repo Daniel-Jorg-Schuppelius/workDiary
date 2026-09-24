@@ -12,10 +12,10 @@ namespace App\Models\Integration;
 
 use App\Enums\Sync\SyncCommandStatus;
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use App\Models\Platform\User;
 
 /**
  * Idempotenz-Register der Offline-Sync-Befehle (Feature 035, Phase 1).

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Applications;
 
+use App\Casts\FieldDocumentCast;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -30,7 +31,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $email
  * @property \Illuminate\Support\Carbon|null $planned_start_on
  * @property array<int, string>|null $qualifications
- * @property array<int, array{label: string, done: bool}>|null $checklist
+ * @property \App\Services\Fields\FieldDocument|null $checklist
  * @property string|null $note
  * @property string $status
  * @property int|null $invited_user_id
@@ -53,7 +54,7 @@ class EmployeeDraft extends Model {
     protected $casts = [
         'planned_start_on' => 'date',
         'qualifications' => 'array',
-        'checklist' => 'array',
+        'checklist' => FieldDocumentCast::class,
     ];
 
     /** @return BelongsTo<JobApplication, $this> */

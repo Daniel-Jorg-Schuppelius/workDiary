@@ -11,8 +11,8 @@
 namespace App\Http\Requests\Asset;
 
 use App\Enums\Asset\MaintenanceIntervalKind;
-use Illuminate\Validation\Rules\Enum;
 use App\Http\Requests\BaseFormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class SaveMaintenancePlanRequest extends BaseFormRequest {
     /** @return array<string, mixed> */

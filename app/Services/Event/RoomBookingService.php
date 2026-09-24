@@ -12,6 +12,8 @@ namespace App\Services\Event;
 
 use App\Models\Calendar\Event;
 use App\Models\Facility\Room;
+use App\Modules\ModuleRegistry;
+use App\Services\Event\Contracts\RoomBlockingSource;
 use App\Support\Tz;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\{Carbon, Collection};
@@ -43,9 +45,12 @@ class RoomBookingService {
         $blockEnd = $endedAt->copy()->addMinutes($teardownMinutesAfter);
         // Sportstätten (Feature 159, MVP-853): Teilflächen/Tische einer Halle, die an
         // diesen Raum gebunden ist, blockieren ihn mit — keine isolierten Kalender.
-        $clubEvents = $includeClubResources
-            ? app(\App\Services\Club\ClubResourceService::class)->eventsBlockingRoom($room, $blockStart, $blockEnd, $ignoreEventId)
-            : new Collection();
+        $clubEvents = new Collection();
+        if ($includeClubResources) {
+            foreach (app(ModuleRegistry::class)->extensions(RoomBlockingSource::class) as $sourceClass) {
+                $clubEvents = $clubEvents->merge(app($sourceClass)->eventsBlockingRoom($room, $blockStart, $blockEnd, $ignoreEventId));
+            }
+        }
 
         // Grobe DB-Filter ±1 Tag um den Anfrage-Block, damit auch bestehende
         // Buchungen mit Setup-/Teardown-Puffer erfasst werden. Feinprüfung

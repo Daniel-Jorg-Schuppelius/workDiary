@@ -21,7 +21,7 @@ use App\Models\Privacy\{PrivacyAttachment, RetentionProposal};
 use App\Services\Hr\PersonnelFilePermissions;
 use App\Services\Org\UserOffboardingService;
 use App\Services\Privacy\{DataProtectionPermissions, DataSubjectRequestService, SubjectDataExporter, UserAnonymizationService};
-use App\Services\Privacy\Retention\RetentionScanService;
+use App\Services\Retention\RetentionScanService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;

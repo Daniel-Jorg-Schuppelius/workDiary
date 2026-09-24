@@ -16,8 +16,6 @@ use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\Team;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
-use App\Models\ServiceTicket\ServiceTicket;
-use App\Models\ServiceTicket\SlaContract;
 
 /**
  * Ticket-Queue (Feature 065, MVP-150): Arbeitsvorrat des Helpdesks mit

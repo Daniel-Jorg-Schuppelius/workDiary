@@ -10,10 +10,9 @@
 
 namespace App\Http\Requests\Inventory;
 
-use App\Models\Inventory\Warehouse;
-use App\Models\Inventory\WarehouseBin;
-use Illuminate\Validation\Rule;
 use App\Http\Requests\BaseFormRequest;
+use App\Models\Inventory\{Warehouse, WarehouseBin};
+use Illuminate\Validation\Rule;
 
 /** Lagerplatz anlegen/bearbeiten (Feature 048, MVP-706); Kürzel je Lager eindeutig. */
 class SaveWarehouseBinRequest extends BaseFormRequest {

@@ -10,8 +10,8 @@
 
 namespace App\Policies\Hr;
 
-use App\Models\Platform\User;
 use App\Models\Hr\Qualification;
+use App\Models\Platform\User;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class QualificationPolicy {

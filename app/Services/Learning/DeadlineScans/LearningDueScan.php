@@ -10,12 +10,13 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Notification\DeadlineScans;
+namespace App\Services\Learning\DeadlineScans;
 
 use App\Enums\Learning\LearningEnrollmentStatus;
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Learning\LearningEnrollment;
 use App\Models\Platform\User;
+use App\Services\Notification\DeadlineScans\{AbstractDeadlineScan, DeadlineScanOptions};
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;

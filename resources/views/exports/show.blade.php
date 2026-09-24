@@ -256,31 +256,7 @@
 
     <x-card class="flex flex-col gap-2">
         <h3 class="card-title text-base">{{ __('Audit-Verlauf') }}</h3>
-        @if ($export->events->isEmpty())
-            <p class="text-sm text-muted">{{ __('Keine Ereignisse vorhanden.') }}</p>
-        @else
-            <ul class="timeline timeline-vertical timeline-compact">
-                @foreach ($export->events as $ev)
-                    <li>
-                        <div class="timeline-middle">
-                            <x-icon name="history" class="text-base" />
-                        </div>
-                        <div class="timeline-end timeline-box">
-                            <div class="flex items-center gap-2 text-xs text-base-content/70">
-                                <span class="tabular-nums">{{ $ev->created_at?->fdatetime() }}</span>
-                                <span>·</span>
-                                <span>{{ $ev->actor?->name ?? __('System') }}</span>
-                            </div>
-                            <div class="font-medium">{{ $ev->event }}</div>
-                            @if ($ev->note)
-                                <p class="text-sm">{{ $ev->note }}</p>
-                            @endif
-                        </div>
-                        <hr />
-                    </li>
-                @endforeach
-            </ul>
-        @endif
+        <x-journal :entries="$export->journal" :empty-text="__('Keine Ereignisse vorhanden.')" />
     </x-card>
 </x-index-page>
 @endsection

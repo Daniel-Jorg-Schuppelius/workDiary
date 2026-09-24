@@ -83,4 +83,20 @@ final class ContractManifest extends Manifest {
             'groups' => [],
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Contract\DeadlineScans\ContractObligationScan::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function bindings(): array {
+        return [
+            \App\Services\Reselling\Contracts\ContractObligationSink::class => \App\Services\Contract\ContractService::class,
+        ];
+    }
 }

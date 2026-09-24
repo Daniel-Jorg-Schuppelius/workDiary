@@ -13,14 +13,12 @@ declare(strict_types=1);
 namespace App\Mail;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
-use App\Models\Construction\ConstructionNotice;
+use App\Models\Customer\Customer;
 use App\Models\Document\DocumentDispatch;
-use App\Models\Inventory\StockDelivery;
-use App\Models\Procurement\PurchaseOrder;
-use App\Models\Sales\Quote;
 use App\Services\Document\DocumentMailService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\{Attachment, Content, Envelope, Headers};
 use Illuminate\Queue\SerializesModels;
@@ -41,16 +39,18 @@ class DocumentMail extends Mailable implements ShouldQueue {
     use Queueable, SerializesModels;
 
     public function __construct(
-        public Quote|PurchaseOrder|StockDelivery|ConstructionNotice $document,
+        public Model $document,
         public string $documentKind,
         public string $renderedSubject,
         public string $renderedHtml,
         public string $renderedText,
         public ?int $dispatchId = null,
+        ?Customer $localeCustomer = null,
     ) {
         // Belegsprache je Kunde (Feature 034, MVP-721); Bestellungen haben
-        // keinen Kunden und bleiben bei der Sprache der Organisation/Anzeige.
-        $this->locale(\App\Support\DocumentLocale::for($document instanceof PurchaseOrder ? null : $document->customer));
+        // keinen Kunden und bleiben bei der Sprache der Organisation/Anzeige —
+        // welcher Kunde gilt, weiß der Belegversand-Anbieter des Moduls.
+        $this->locale(\App\Support\DocumentLocale::for($localeCustomer));
     }
 
     public function envelope(): Envelope {

@@ -10,14 +10,14 @@
 
 namespace App\Http\Requests\Inventory;
 
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Article\ArticleVariant;
-use App\Models\Inventory\Warehouse;
 use App\Models\Customer\Customer;
+use App\Models\Inventory\Warehouse;
 use App\Models\Project\Project;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Contracts\Validation\Validator;
-use App\Http\Requests\BaseFormRequest;
 
 /**
  * Lagerentnahme zugunsten eines Kunden (Materialkosten): Variante + Lagerort +

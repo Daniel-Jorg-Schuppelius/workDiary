@@ -10,8 +10,7 @@
 
 namespace Database\Factories\Schedule;
 
-use App\Models\Schedule\CoverageRequirement;
-use App\Models\Schedule\ShiftType;
+use App\Models\Schedule\{CoverageRequirement, ShiftType};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

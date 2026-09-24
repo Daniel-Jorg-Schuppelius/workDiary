@@ -17,7 +17,6 @@ use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
-use App\Models\Asset\AssetBlockException;
 
 /**
  * Gemeinsame Asset-Sperre (Entscheidung D12): Verleih, Disposition und

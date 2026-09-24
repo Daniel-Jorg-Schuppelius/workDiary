@@ -11,8 +11,7 @@
 namespace Database\Factories\Asset;
 
 use App\Enums\Asset\MaintenanceIntervalKind;
-use App\Models\Asset\Asset;
-use App\Models\Asset\MaintenancePlan;
+use App\Models\Asset\{Asset, MaintenancePlan};
 use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

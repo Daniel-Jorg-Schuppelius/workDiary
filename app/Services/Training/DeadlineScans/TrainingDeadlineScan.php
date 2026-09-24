@@ -10,11 +10,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Notification\DeadlineScans;
+namespace App\Services\Training\DeadlineScans;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Platform\{Organization, User};
 use App\Models\Training\{TrainingAssignment, TrainingCourse, TrainingRequirement};
+use App\Services\Notification\DeadlineScans\{AbstractDeadlineScan, DeadlineScanOptions};
 use App\Services\Notification\NotificationDispatcher;
 use App\Services\Training\TrainingAssignmentService;
 use Illuminate\Support\Carbon;

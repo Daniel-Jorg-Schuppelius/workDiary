@@ -18,6 +18,7 @@ use App\Models\Platform\User;
 use App\Modules\ModuleRegistry;
 use App\Plugins\PluginManager;
 use App\Services\Licensing\FeatureFlagResolver;
+use App\Services\Navigation\Contracts\NavigationCondition;
 use App\Support\OrganizationContext;
 use Illuminate\Support\Facades\{Auth, Cache, Gate, Route};
 
@@ -264,8 +265,7 @@ class NavigationRegistry {
 
         // Einstieg „Wissen" (MVP-820): trägt die Fachlisten als Typansichten,
         // erscheint aber nur, wenn die Person überhaupt einen Inhaltstyp sieht.
-        $knowledgeHubAvailable = $user instanceof User
-            && app(\App\Services\Collections\CollectableTypes::class)->availableKeys($user) !== [];
+        $knowledgeHubAvailable = $user instanceof User && $this->condition('knowledge.hub', $user, $user->organization);
         $documentsAvailable = $this->features->isEnabled('module.documents')
             && Gate::allows('viewAny', \App\Models\Document\Document::class);
 
@@ -815,7 +815,7 @@ class NavigationRegistry {
         $navOrganization = $user?->organization;
         if (
             $navOrganization !== null
-            && app(\App\Services\Passenger\PassengerRideService::class)->isPassengerProfileActive($navOrganization)
+            && $this->condition('passenger.profile', $user, $navOrganization)
             && Gate::allows('viewAny', \App\Models\Passenger\PassengerRide::class)
         ) {
             $sidebarSections[] = [
@@ -833,7 +833,7 @@ class NavigationRegistry {
         // Branchenprofil druck-kopiershop (Profil-Gate wie im Controller).
         if (
             $navOrganization !== null
-            && app(\App\Services\Print\PrintOrderService::class)->isPrintProfileActive($navOrganization)
+            && $this->condition('print.profile', $user, $navOrganization)
             && Gate::allows('viewAny', \App\Models\Print\PrintOrder::class)
         ) {
             $sidebarSections[] = [
@@ -1616,7 +1616,7 @@ class NavigationRegistry {
         $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
 
         return $this->localLedgerVisible = $organization instanceof \App\Models\Platform\Organization
-            && app(\App\Services\Accounting\AccountingSovereigntyResolver::class)->hasLocalLedger($organization);
+            && $this->condition('accounting.local_ledger', null, $organization);
     }
 
     /**
@@ -1708,6 +1708,10 @@ class NavigationRegistry {
                     $adminNavItems[] = ['route' => 'admin.organizations.edit', 'route_params' => [$user->organization->sqid], 'label' => __('Organisation'), 'icon' => 'corporate_fare', 'modal' => false];
                 }
                 $adminNavItems[] = ['route' => 'admin.branding.edit', 'label' => __('Branding'), 'icon' => 'palette', 'modal' => false];
+                // Eigene Felder je Träger (MVP-868).
+                if (Gate::allows(Permission::OrganizationCustomFieldsManage->value)) {
+                    $adminNavItems[] = ['route' => 'admin.custom-fields.index', 'label' => __('fields.custom.title'), 'icon' => 'dashboard_customize', 'modal' => false, 'matches' => ['admin.custom-fields.*']];
+                }
                 // Such-Synonyme (Feature 153): wirken auf die Suche der ganzen Organisation.
                 if (Gate::allows('viewAny', \App\Models\Search\SearchSynonymGroup::class)) {
                     $adminNavItems[] = ['route' => 'admin.search-synonyms.index', 'label' => __('search.synonyms.title'), 'icon' => 'manage_search', 'modal' => false, 'matches' => ['admin.search-synonyms.*']];
@@ -1978,5 +1982,17 @@ class NavigationRegistry {
         }
 
         return $userNavItems;
+    }
+
+    /** Sichtbarkeitsbedingung eines Fachmoduls; ohne registrierte Bedingung (Modul fehlt) verborgen. */
+    private function condition(string $key, ?User $user, ?\App\Models\Platform\Organization $organization): bool {
+        foreach ($this->modules->extensions(NavigationCondition::class) as $class) {
+            $condition = app($class);
+            if ($condition->key() === $key) {
+                return $condition->passes($user, $organization);
+            }
+        }
+
+        return false;
     }
 }

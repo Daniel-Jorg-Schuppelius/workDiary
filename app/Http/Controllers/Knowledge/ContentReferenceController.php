@@ -10,8 +10,8 @@
 
 namespace App\Http\Controllers\Knowledge;
 
-use App\Models\Knowledge\ContentCollection;
-use App\Models\Knowledge\ContentReference;
+use App\Http\Controllers\Controller;
+use App\Models\Knowledge\{ContentCollection, ContentReference};
 use App\Models\Platform\User;
 use App\Services\Collections\{CollectableTypes, ContentReferenceService};
 use App\Support\Sqid;
@@ -20,7 +20,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Verweise setzen und lösen (MVP-811, Feature 155). Verweise ordnen wie

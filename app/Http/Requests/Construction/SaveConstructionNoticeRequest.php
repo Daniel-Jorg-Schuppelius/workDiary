@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Construction;
 
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Rules\ExistsInCurrentOrganization;
-use App\Http\Requests\BaseFormRequest;
 
 /**
  * VOB/B-Schreiben anlegen/bearbeiten (Feature 062, MVP-728). Bezuege kommen als

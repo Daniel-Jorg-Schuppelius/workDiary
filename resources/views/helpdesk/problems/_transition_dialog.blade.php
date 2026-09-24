@@ -7,10 +7,10 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
   Status-Card (Feature 065, MVP-156, Muster Ticket-Transition-Card):
-  Optionen kommen aus ProblemService::TRANSITIONS (einzige Wahrheit,
+  Optionen kommen aus ProblemStatus::allowedTransitions() (einzige Wahrheit,
   Controller reicht $transitions durch); beim Ziel „resolved" wird die
   Pflichtfrist für die Wirksamkeitsprüfung eingeblendet (Service erzwingt).
-  Erwartet: $problem, $transitions (list<string>), $statusLabels.
+  Erwartet: $problem, $transitions (list<ProblemStatus>).
 --}}
 
 <x-card>
@@ -18,11 +18,11 @@
     {{-- Ziel-Umschaltung via Alpine.data("reveal") (components.js) — CSP-Build-konform. --}}
     <form method="POST" action="{{ route('servicedesk.problems.transition', $problem) }}"
           class="flex flex-wrap items-end gap-2"
-          x-data="reveal(@js(old('status', $transitions[0] ?? '')))">
+          x-data="reveal(@js(old('status', ($transitions[0] ?? null)?->value ?? '')))">
         @csrf
         <select name="status" class="select select-sm select-bordered" x-model="value" aria-label="{{ __('Status') }}">
             @foreach ($transitions as $target)
-                <option value="{{ $target }}">{{ $statusLabels[$target] ?? $target }}</option>
+                <option value="{{ $target->value }}">{{ $target->label() }}</option>
             @endforeach
         </select>
 

@@ -12,10 +12,10 @@ namespace App\Models\Article;
 
 use App\Casts\MoneyCast;
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Supplier\Supplier;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Supplier\Supplier;
 
 /**
  * Bezugsquelle eines Artikels bei einem Lieferanten (Feature 048, E4).

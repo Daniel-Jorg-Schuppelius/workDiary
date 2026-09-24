@@ -29,7 +29,7 @@
                 <x-status-badge tone="warning">{{ __('nicht abrechenbar') }}</x-status-badge>
             @endunless
             {{-- Legal Hold (MVP-801): Löschen und Anonymisieren sind gesperrt. --}}
-            @if (app(\App\Services\Privacy\LegalHoldService::class)->activeHoldFor($customer))
+            @if (app(\App\Services\Retention\LegalHoldService::class)->activeHoldFor($customer))
                 <x-status-badge tone="error">{{ __('Legal Hold') }}</x-status-badge>
             @endif
         </x-slot:badges>
@@ -127,6 +127,7 @@
             </x-detail-grid>
             <x-contact-persons :persons="$customer->contact_persons" />
         </x-card>
+        <x-custom-fields-card :subject="$customer" />
 
         <x-card :title="__('Abrechnung')" icon="receipt_long">
             <x-detail-grid>

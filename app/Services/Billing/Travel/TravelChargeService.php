@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Services\Travel;
+namespace App\Services\Billing\Travel;
 
 use App\Enums\Tour\TourStatus;
 use App\Models\Customer\{Customer, ForeignCustomer};

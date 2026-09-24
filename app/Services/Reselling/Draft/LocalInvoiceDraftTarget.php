@@ -17,7 +17,7 @@ use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Platform\{Organization, User};
 use App\Models\Reselling\ResalePeriod;
-use App\Services\Finance\BillingModeResolver;
+use App\Services\Billing\BillingModeResolver;
 use App\Services\Invoicing\TaxResolver;
 use App\Services\Numbering\NumberSequenceService;
 use App\Support\Tz;

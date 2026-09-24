@@ -40,7 +40,7 @@ class UserAnonymizationService {
             return; // bereits anonymisiert — kein Doppel-Audit
         }
         // Legal Hold (MVP-801): laufendes Verfahren braucht den Personenbezug.
-        app(\App\Services\Privacy\LegalHoldService::class)->assertNotHeld($member);
+        app(\App\Services\Retention\LegalHoldService::class)->assertNotHeld($member);
         if (! $member->isDeactivated()) {
             throw new RuntimeException('Konto ist noch aktiv — Anonymisierung setzt den vollzogenen Austritt (Deaktivierung) voraus.');
         }

@@ -16,7 +16,7 @@ use App\Enums\Numbering\NumberScope;
 use App\Enums\Privacy\{ControllerRole, IncidentStatus, IncidentType};
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
-use App\Models\Privacy\{Incident, IncidentEvent, Measure};
+use App\Models\Privacy\{Incident, Measure};
 use App\Services\Numbering\NumberSequenceService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -190,14 +190,7 @@ class IncidentService {
 
     /** @param array<string, mixed> $metadata */
     private function event(Incident $incident, string $event, ?User $actor, array $metadata = []): void {
-        IncidentEvent::create([
-            'organization_id' => $incident->organization_id,
-            'incident_id' => $incident->id,
-            'actor_type' => $actor instanceof User ? 'staff' : 'system',
-            'actor_user_id' => $actor?->id,
-            'event' => $event,
-            'metadata' => $metadata === [] ? null : $metadata,
-        ]);
+        $incident->record($event, $metadata, $actor, extra: ['actor_type' => $actor instanceof User ? 'staff' : 'system']);
     }
 
     private function nextNumber(Organization $organization, Carbon $now): string {

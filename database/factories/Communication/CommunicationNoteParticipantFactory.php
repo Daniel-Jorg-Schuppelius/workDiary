@@ -11,8 +11,7 @@
 namespace Database\Factories\Communication;
 
 use App\Enums\Communication\ParticipantParty;
-use App\Models\Communication\CommunicationNote;
-use App\Models\Communication\CommunicationNoteParticipant;
+use App\Models\Communication\{CommunicationNote, CommunicationNoteParticipant};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

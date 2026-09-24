@@ -14,7 +14,7 @@ use App\Enums\Notification\NotificationEvent;
 use App\Models\Contract\Contract;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, InvoiceSchedule, InvoiceScheduleRun};
-use App\Services\Finance\BillingModeResolver;
+use App\Services\Billing\BillingModeResolver;
 use App\Services\Notification\NotificationDispatcher;
 use Carbon\{Carbon, CarbonInterface};
 use Illuminate\Support\Facades\DB;

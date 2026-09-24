@@ -16,7 +16,7 @@ use App\Models\Document\Document;
 use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\RetentionProposal;
 use App\Models\Time\TimeExport;
-use App\Services\Privacy\Retention\{RetentionRegistry, RetentionScanService};
+use App\Services\Retention\{RetentionRegistry, RetentionScanService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

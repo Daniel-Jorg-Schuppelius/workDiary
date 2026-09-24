@@ -13,11 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Claims;
 
 use App\Enums\Claims\{ClaimRmaDisposition, ClaimRmaStatus};
-use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState};
 use App\Enums\Numbering\NumberScope;
 use App\Models\Claims\{ClaimCase, ClaimInspection, ClaimRmaReturn};
 use App\Models\Platform\User;
-use App\Services\Inventory\{InventoryLedger, SerialService, StockPosting};
+use App\Services\Claims\Contracts\RmaStockHandler;
 use App\Services\Numbering\NumberSequenceService;
 use Illuminate\Support\Facades\DB;
 
@@ -34,8 +33,7 @@ class ClaimRmaService {
 
     public function __construct(
         private readonly NumberSequenceService $numbers,
-        private readonly InventoryLedger $ledger,
-        private readonly SerialService $serials,
+        private readonly RmaStockHandler $stock,
     ) {}
 
     /** @param array<string, mixed> $attributes */
@@ -74,26 +72,7 @@ class ClaimRmaService {
             ])->save();
 
             $rma->refresh();
-            $qtyRaw = (string) $rma->qty;
-            $qty = is_numeric($qtyRaw) ? bcadd($qtyRaw, '0', 4) : '0.0000';
-            if ($rma->articleVariant !== null && $rma->warehouse !== null && (float) $qty > 0) {
-                $this->ledger->post(new StockPosting(
-                    $rma->articleVariant,
-                    $rma->warehouse,
-                    StockState::from($state),
-                    $qty,
-                    StockMovementType::Return,
-                    OwnershipType::Own,
-                    idempotencyKey: 'claim-rma:' . $rma->id . ':receive',
-                    actorUserId: $actor->id,
-                    source: $rma,
-                    stockLotId: $rma->stock_lot_id,
-                    stockSerialId: $rma->stock_serial_id,
-                ));
-            }
-            if ($rma->stockSerial !== null) {
-                $this->serials->returnSerial($rma->stockSerial, $rma->warehouse);
-            }
+            $this->stock->bookReturn($rma, $state, $actor);
 
             return $rma;
         });
@@ -118,7 +97,7 @@ class ClaimRmaService {
             $serial = trim((string) ($rma->serial_no ?? $case->serial_no ?? ''));
             if ($serial !== '' && $case?->customer !== null) {
                 $serialChecked = true;
-                $serialResult = $this->serials->wasShippedTo((int) $rma->organization_id, $serial, $case->customer)
+                $serialResult = $this->stock->wasShippedTo((int) $rma->organization_id, $serial, $case->customer)
                     ? 'shipped_to_customer'
                     : 'not_shipped_to_customer';
             }
@@ -152,43 +131,7 @@ class ClaimRmaService {
         }
 
         return DB::transaction(function () use ($rma, $actor, $disposition, $note): ClaimRmaReturn {
-            $variant = $rma->articleVariant;
-            $warehouse = $rma->warehouse;
-            $qtyRaw = (string) $rma->qty;
-            $qtyIn = is_numeric($qtyRaw) ? bcadd($qtyRaw, '0', 4) : '0.0000';
-            $qtyOut = bcmul($qtyIn, '-1', 4);
-            $state = $rma->stock_state !== null ? StockState::from($rma->stock_state) : StockState::Quality;
-            $hasStock = $variant !== null && $warehouse !== null && (float) $qtyIn > 0;
-
-            switch ($disposition) {
-                case ClaimRmaDisposition::Restock:
-                    if ($hasStock) {
-                        // Quarantäne → frei verfügbar (zwei Korrekturzeilen).
-                        $this->ledger->post(new StockPosting($variant, $warehouse, $state, $qtyOut, StockMovementType::Correction, OwnershipType::Own, idempotencyKey: 'claim-rma:' . $rma->id . ':restock-out', actorUserId: $actor->id, source: $rma, stockLotId: $rma->stock_lot_id, stockSerialId: $rma->stock_serial_id));
-                        $this->ledger->post(new StockPosting($variant, $warehouse, StockState::Physical, $qtyIn, StockMovementType::Correction, OwnershipType::Own, idempotencyKey: 'claim-rma:' . $rma->id . ':restock-in', actorUserId: $actor->id, source: $rma, stockLotId: $rma->stock_lot_id, stockSerialId: $rma->stock_serial_id));
-                    }
-                    if ($rma->stockSerial !== null) {
-                        $this->serials->unblock($rma->stockSerial, $warehouse);
-                    }
-                    break;
-                case ClaimRmaDisposition::Scrap:
-                case ClaimRmaDisposition::Dispose:
-                    if ($hasStock) {
-                        $this->ledger->post(new StockPosting($variant, $warehouse, $state, $qtyOut, StockMovementType::Scrap, OwnershipType::Own, idempotencyKey: 'claim-rma:' . $rma->id . ':scrap', actorUserId: $actor->id, source: $rma, stockLotId: $rma->stock_lot_id, stockSerialId: $rma->stock_serial_id));
-                    }
-                    if ($rma->stockSerial !== null) {
-                        $this->serials->scrap($rma->stockSerial);
-                    }
-                    break;
-                case ClaimRmaDisposition::ReturnToSupplier:
-                    if ($hasStock) {
-                        $this->ledger->post(new StockPosting($variant, $warehouse, $state, $qtyOut, StockMovementType::Issue, OwnershipType::Own, idempotencyKey: 'claim-rma:' . $rma->id . ':rts', actorUserId: $actor->id, source: $rma, stockLotId: $rma->stock_lot_id, stockSerialId: $rma->stock_serial_id));
-                    }
-                    break;
-                case ClaimRmaDisposition::Repair:
-                    // bleibt in Quarantäne; Maßnahme (MVP-251) steuert weiter
-                    break;
-            }
+            $this->stock->applyDisposition($rma, $disposition, $actor);
 
             $rma->forceFill([
                 'status' => ClaimRmaStatus::Completed->value,

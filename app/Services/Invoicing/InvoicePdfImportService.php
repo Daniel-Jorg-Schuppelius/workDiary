@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
+use App\Services\Billing\DocumentTotalsCalculator;
 use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
 use CommonToolkit\Enums\CountryCode;
 use CommonToolkit\Helper\Data\{DateHelper, NumberHelper};
@@ -110,7 +111,7 @@ class InvoicePdfImportService {
         $schema = array_intersect_key($schemaCatalog, array_fill_keys($missing, true));
 
         try {
-            $invocation = app(\App\Services\Ai\AiInvocationService::class)->invoke(
+            $invocation = app(\App\Services\Ai\Contracts\AiInvoker::class)->invoke(
                 $organization,
                 self::AI_CAPABILITY,
                 new \App\Services\Ai\Dto\ExtractRequest(mb_substr($text, 0, 6000), $schema),
@@ -303,7 +304,7 @@ class InvoicePdfImportService {
             // BR-24-Logik rückwärts: Differenz Menge × Preis − Zeilennetto ist
             // der Positionsrabatt — unabhängig davon, ob der Parser die
             // Line-Allowance schon liefert.
-            $discount = $unitPrice->times($line->getQuantity())->withScale(2)->minus($netAmount);
+            $discount = DocumentTotalsCalculator::lineNet($line->getQuantity(), $unitPrice)->withScale(2)->minus($netAmount);
             $description = trim($line->getItemName());
             $detail = trim((string) $line->getItemDescription());
             if ($detail !== '' && $detail !== $description) {

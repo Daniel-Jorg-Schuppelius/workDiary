@@ -10,8 +10,7 @@
 
 namespace App\Policies\Platform;
 
-use App\Models\Platform\Organization;
-use App\Models\Platform\User;
+use App\Models\Platform\{Organization, User};
 
 class OrganizationPolicy {
     /**

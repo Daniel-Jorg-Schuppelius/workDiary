@@ -11,9 +11,9 @@
 namespace App\Http\Requests\Asset;
 
 use App\Enums\Software\{SoftwareKind, SoftwareLicenseType};
+use App\Http\Requests\BaseFormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
-use App\Http\Requests\BaseFormRequest;
 
 class SaveSoftwareRequest extends BaseFormRequest {
     /** @return array<string, mixed> */

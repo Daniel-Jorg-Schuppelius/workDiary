@@ -18,7 +18,7 @@ use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Services\Content\ContentSubjectResolver;
+use App\Services\Support\Content\ContentSubjectResolver;
 use App\Support\MorphMap;
 use Database\Factories\Document\DocumentFactory;
 use Illuminate\Database\Eloquent\Builder;

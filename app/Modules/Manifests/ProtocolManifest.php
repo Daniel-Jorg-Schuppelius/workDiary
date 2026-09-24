@@ -55,4 +55,22 @@ final class ProtocolManifest extends Manifest {
             PermissionGroup::Protocols,
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Plugins\Support\Mirror\Contracts\MirrorPdfRenderer::class => [
+                \App\Services\Protocol\Mirror\ProtocolMirrorPdf::class,
+            ],
+            \App\Services\Search\Indexing\Sources\SearchSource::class => [
+                \App\Services\Protocol\Search\ProtocolSource::class,
+            ],
+            \App\Services\Fields\Contracts\FieldExtension::class => [
+                \App\Services\Protocol\Fields\Extensions\DefectField::class,
+                \App\Services\Protocol\Fields\Extensions\MeasurementSeriesField::class,
+                \App\Services\Protocol\Fields\Extensions\AttachmentsField::class,
+                \App\Services\Protocol\Fields\Extensions\SignatureField::class,
+            ],
+        ];
+    }
 }

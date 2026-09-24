@@ -10,14 +10,15 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Import\Specs;
+namespace App\Services\Invoicing\Import;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
-use App\Services\Finance\BillingModeResolver;
+use App\Services\Billing\BillingModeResolver;
 use App\Services\Import\{ImportOutcome, ValidationIssue};
+use App\Services\Import\Specs\AbstractEntitySpec;
 use App\Services\Import\Specs\Concerns\{ResolvesImportReferences, ValidatesImportDates};
 use App\Services\Invoicing\InvoicePartySnapshot;
 use CommonToolkit\Enums\CurrencyCode;

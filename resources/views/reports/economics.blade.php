@@ -179,7 +179,7 @@
     @php
         // Plan-Ist erklären (Feature 148, MVP-732): Lesehilfe je Projektzeile;
         // in den Prompt gehen nur Kennzahlen, keine Namen.
-        $aiView = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
+        $aiView = app(\App\Services\Ai\Contracts\SuggestionView::class);
         $aiPlanActualUsable = $aiView->capabilityUsable(\App\Services\Ai\Suggestions\PlanActualExplainService::CAPABILITY);
         $aiProjects = $aiPlanActualUsable
             ? \App\Models\Project\Project::query()->whereIn('id', collect($byProject)->pluck('projectId')->all())->get(['id'])->keyBy('id')

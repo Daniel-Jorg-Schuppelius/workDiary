@@ -11,13 +11,13 @@
 namespace App\Models\Article;
 
 use App\Enums\Product\ProductStatus;
+use App\Models\Asset\Asset;
 use App\Models\Classification\Classification;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, HasTags, Searchable};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Facades\DB;
-use App\Models\Asset\Asset;
 
 /**
  * Produkt = Typ-Ebene Hersteller-Modell (produktmodell-konzept.md, MVP-369):

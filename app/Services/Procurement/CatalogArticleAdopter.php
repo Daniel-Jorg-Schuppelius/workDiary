@@ -18,6 +18,7 @@ use App\Models\Article\{Article, ArticleOptionDefinition, ArticleOptionValue, Ar
 use App\Models\Platform\Organization;
 use App\Models\Supplier\{SupplierCatalogItem, SupplierCatalogSource};
 use App\Services\Article\{ArticleService, VariantResolver};
+use App\Services\Article\PriceSuggestionService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Throwable;

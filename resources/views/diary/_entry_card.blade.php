@@ -79,6 +79,7 @@
             @endswitch
             <span>{{ __('Erstellt') }} {{ $entry->created_at->diffForHumans() }}</span>
         </div>
+        <x-custom-field-summary class="mt-2" :columns="$customColumns ?? []" :model="$entry" />
     </div>
     <div class="flex flex-col gap-2 md:items-end md:justify-between">
         <x-icon-btn icon="visibility" tone="outline" size="sm"

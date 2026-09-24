@@ -13,19 +13,19 @@ namespace App\Http\Controllers\Procedure;
 use App\Enums\Procedure\{ProcedureDeviationProposedAction, ProcedureDeviationSeverity, ProcedureDeviationType, ProcedureStepRunStatus};
 use App\Exceptions\{ProcedureDeviationValidationException, ProcedureRunIncompleteException, ProcedureSecondPersonException, ProcedureStepBlockedException};
 use App\Http\Controllers\Attachments\AttachmentController;
+use App\Http\Controllers\Controller;
 use App\Models\Attachments\Attachment;
 use App\Models\Diary\DiaryEntry;
-use App\Models\Procedure\ProcedureRun;
-use App\Models\Procedure\ProcedureStepRun;
-use App\Models\Procedure\ProcedureTemplate;
 use App\Models\Platform\User;
+use App\Models\Procedure\{ProcedureRun, ProcedureStepRun, ProcedureTemplate};
+use App\Services\Fields\{FieldSchema, FieldValidator};
 use App\Services\Procedure\{DeviationRecorder, ProcedureApplicabilityResolver, ProcedureExecutionService, SecondPersonGate, WaitStepService};
+use App\Services\Procedure\Fields\ProcedureStepFields;
 use App\Support\EntityUrl;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Ausführung und Lese-/Druckansicht von Prozedurläufen (Feature 026).
@@ -137,6 +137,16 @@ class ProcedureRunController extends Controller {
 
         $payload = [];
         if (array_key_exists('value', $data) && $data['value'] !== null && $data['value'] !== '') {
+            // Form des Werts nach Schritttyp (Zahl, Auswahl, Messwert) — MVP-867.
+            $definition = $stepRun->stepDef !== null ? app(ProcedureStepFields::class)->definition($stepRun->stepDef) : null;
+            if ($definition !== null) {
+                $schema = new FieldSchema([$definition]);
+                $rules = array_map(
+                    static fn (array $fieldRules): array => array_map(static fn (mixed $rule): mixed => $rule === 'required' ? 'nullable' : $rule, $fieldRules),
+                    app(FieldValidator::class)->rules($schema, ''),
+                );
+                $request->validate($rules, [], $schema->attributeNames(''));
+            }
             $payload['value_json'] = ['value' => (string) $data['value']];
         }
         if (array_key_exists('note', $data)) {

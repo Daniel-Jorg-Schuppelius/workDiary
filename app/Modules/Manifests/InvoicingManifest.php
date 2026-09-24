@@ -69,4 +69,33 @@ final class InvoicingManifest extends Manifest {
             'peppol-access-point',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Invoicing\Demo\InvoicingDemoBlock::class,
+            ],
+            \App\Plugins\Support\Mirror\Contracts\MirrorPdfRenderer::class => [
+                \App\Services\Invoicing\Mirror\InvoiceMirrorPdf::class,
+            ],
+            \App\Services\Import\EntitySpec::class => [
+                \App\Services\Invoicing\Import\InvoiceSpec::class,
+            ],
+            \App\Services\Document\Contracts\MailableDocumentProvider::class => [
+                \App\Services\Invoicing\Mail\QuoteMailDocument::class,
+            ],
+            \App\Services\Mail\Contracts\MailIntakeHandler::class => [
+                \App\Services\Invoicing\Mail\EInvoiceMailIntakeHandler::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\Invoicing\Contracts\PaymentStatusProvider::class => \App\Services\Invoicing\Contracts\NullPaymentStatusProvider::class,
+            \App\Services\Invoicing\Contracts\InvoiceGaebExporter::class => \App\Services\Invoicing\Contracts\NullInvoiceGaebExporter::class,
+        ];
+    }
 }

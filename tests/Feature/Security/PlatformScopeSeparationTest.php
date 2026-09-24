@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Security;
 
+use App\Enums\Asset\MaintenanceWindowStatus;
 use App\Models\Asset\MaintenanceWindow;
 use App\Models\Platform\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -74,7 +75,7 @@ class PlatformScopeSeparationTest extends TestCase {
             'organization_id' => null,
             'starts_at' => now()->addDay(),
             'ends_at' => now()->addDay()->addHour(),
-            'status' => MaintenanceWindow::STATUS_PLANNED,
+            'status' => MaintenanceWindowStatus::Planned,
             'message' => 'System-Fenster',
         ]);
         MaintenanceWindow::query()->create([
@@ -82,7 +83,7 @@ class PlatformScopeSeparationTest extends TestCase {
             'organization_id' => $fremde->id,
             'starts_at' => now()->addDays(2),
             'ends_at' => now()->addDays(2)->addHour(),
-            'status' => MaintenanceWindow::STATUS_PLANNED,
+            'status' => MaintenanceWindowStatus::Planned,
             'message' => 'Fremdes Fenster',
         ]);
 
@@ -164,7 +165,7 @@ class PlatformScopeSeparationTest extends TestCase {
             'organization_id' => $fremde->id,
             'starts_at' => now()->addDay(),
             'ends_at' => now()->addDay()->addHour(),
-            'status' => MaintenanceWindow::STATUS_PLANNED,
+            'status' => MaintenanceWindowStatus::Planned,
         ]);
 
         // Der Betreiber darf; ein Org-Admin einer anderen Organisation nicht —

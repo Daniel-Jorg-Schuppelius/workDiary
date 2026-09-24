@@ -12,12 +12,12 @@ namespace App\Http\Controllers\ServiceTicket;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Models\ServiceTicket\SlaContract;
 use App\Services\ServiceTicket\SlaQuotaService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * SLA-Vertrags-Detailseite (Feature 010): read-only Übersicht und Detail der

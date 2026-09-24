@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Whistleblowing\Scanning;
+namespace App\Services\Security\Scanning;
 
 use App\Enums\Whistleblowing\AttachmentScanStatus;
 

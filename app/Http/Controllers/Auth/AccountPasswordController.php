@@ -10,13 +10,13 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Services\Auth\UserSessionInvalidator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Hash};
 use Illuminate\Validation\Rules\Password;
-use App\Http\Controllers\Controller;
 
 class AccountPasswordController extends Controller {
     public function edit(Request $request): View {

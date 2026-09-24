@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services\Import\Source;
 
+use App\Services\Attendance\Import\AttendanceSpec;
 use App\Services\Import\Source\Ical\{AttendanceIcalMapper, ProjectTimeIcalMapper};
 use App\Services\Import\Source\{IcalImportSource, SourceRow};
-use App\Services\Import\Specs\AttendanceSpec;
 use Tests\TestCase;
 
 class IcalImportSourceTest extends TestCase {

@@ -18,7 +18,6 @@ use Database\Factories\Platform\RestoreTestFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Platform\User;
 
 /**
  * Protokollierter Restore-Test (Feature 017, §6.3).

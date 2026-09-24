@@ -53,7 +53,7 @@ class PrivacyWorkflowTest extends TestCase {
         $this->assertNotNull($fresh->closed_at);
 
         // Vollstaendige, integere Ereigniskette.
-        $this->assertSame(4, $fresh->events()->count()); // opened, identity_verified, assigned, decided
+        $this->assertSame(4, $fresh->journal()->count()); // opened, identity_verified, assigned, decided
         $this->artisan('audit:verify')->assertExitCode(0);
     }
 

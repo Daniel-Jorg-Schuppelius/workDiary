@@ -11,10 +11,10 @@
 namespace App\Models\Inventory;
 
 use App\Enums\Inventory\{OwnershipType, StockState};
+use App\Models\Article\ArticleVariant;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Article\ArticleVariant;
 
 /**
  * Zählzeile einer Inventur (Feature 048, MVP-069). Mandantengrenze transitiv

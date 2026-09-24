@@ -18,7 +18,7 @@ use App\Models\Project\Project;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Export-Spezifikation für Projekte — Round-Trip zur {@see \App\Services\Import\Specs\ProjectSpec}.
+ * Export-Spezifikation für Projekte — Round-Trip zur {@see \App\Services\Project\Import\ProjectSpec}.
  *
  * Die Kundenzuordnung wird als `customer_number` (Kundennummer) ausgegeben,
  * passend zum fachlichen Schlüssel des Imports.

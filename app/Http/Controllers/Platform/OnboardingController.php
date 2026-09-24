@@ -11,9 +11,9 @@
 namespace App\Http\Controllers\Platform;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Controller;
 use App\Models\Audit\AuditLog;
-use App\Models\Platform\OnboardingProgress;
-use App\Models\Platform\User;
+use App\Models\Platform\{OnboardingProgress, User};
 use App\Services\Onboarding\OnboardingChecklistResolver;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
@@ -21,7 +21,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Gate, Route};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
-use App\Http\Controllers\Controller;
 
 class OnboardingController extends Controller {
     /** @var list<string> */

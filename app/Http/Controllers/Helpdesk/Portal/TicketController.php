@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\CustomerPortal;
+namespace App\Http\Controllers\Helpdesk\Portal;
 
 use App\Enums\ServiceTicket\{ServiceTicketSource, ServiceTicketStatus, TicketMessageKind};
 use App\Http\Controllers\Attachments\AttachmentController;

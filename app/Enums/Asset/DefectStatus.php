@@ -10,11 +10,13 @@
 
 namespace App\Enums\Asset;
 
-use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Concerns\{HasOptions, HasTransitions};
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
-enum DefectStatus: string implements HasLabel {
+enum DefectStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
+
+    use HasTransitions;
 
     case Open = 'open';
     case InRepair = 'inRepair';
@@ -42,5 +44,15 @@ enum DefectStatus: string implements HasLabel {
 
     public function isClosed(): bool {
         return in_array($this, [self::Resolved, self::WrittenOff], true);
+    }
+
+    /** @return list<self> */
+    public function allowedTransitions(): array {
+        return match ($this) {
+            self::Open => [self::InRepair, self::Resolved, self::WrittenOff],
+            self::InRepair => [self::Resolved, self::WrittenOff, self::Open],
+            self::Resolved => [self::Open],
+            self::WrittenOff => [],
+        };
     }
 }

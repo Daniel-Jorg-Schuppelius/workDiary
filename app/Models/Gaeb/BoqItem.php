@@ -12,16 +12,11 @@ namespace App\Models\Gaeb;
 
 use App\Casts\{MoneyCast, QuantityCast};
 use App\Enums\Gaeb\{BoqItemStatus, BoqItemType};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, IsDocumentLine};
+use App\Models\Contracts\DocumentLine;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
-use App\Models\Gaeb\BoqItemCostApproach;
-use App\Models\Gaeb\BoqItemMapping;
-use App\Models\Gaeb\BoqItemPriceSnapshot;
-use App\Models\Gaeb\BoqItemProgress;
-use App\Models\Gaeb\BoqItemQuantitySplit;
-use App\Models\Gaeb\BoqSection;
 
 /**
  * LV-Position (Feature 049, MVP-082). Trägt Ordnungszahl, Texte, Menge/Einheit
@@ -64,12 +59,13 @@ use App\Models\Gaeb\BoqSection;
  * @property string|null $external_id
  * @property int $position
  */
-class BoqItem extends Model {
+class BoqItem extends Model implements DocumentLine {
     use Auditable;
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
     use HasSqid;
+    use IsDocumentLine;
 
     protected $fillable = [
         'organization_id',
@@ -131,6 +127,21 @@ class BoqItem extends Model {
     /** @return BelongsTo<BillOfQuantity, $this> */
     public function billOfQuantity(): BelongsTo {
         return $this->belongsTo(BillOfQuantity::class);
+    }
+
+    /** @return BelongsTo<BillOfQuantity, $this> */
+    public function lineDocument(): BelongsTo {
+        return $this->billOfQuantity();
+    }
+
+    /**
+     * `total_price` ist die Bieterangabe aus dem GAEB-Austausch und gilt vor
+     * der eigenen Rechnung.
+     *
+     * @return array<string, string|null>
+     */
+    protected static function lineColumns(): array {
+        return ['tax_rate' => 'vat_rate', 'discount_amount' => null, 'net_amount' => 'total_price'];
     }
 
     /** @return BelongsTo<BoqSection, $this> */

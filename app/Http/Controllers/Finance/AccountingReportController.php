@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Reporting;
+namespace App\Http\Controllers\Finance;
 
 use App\Enums\Finance\{BwaGroup, OpenItemDirection};
 use App\Enums\User\Permission;

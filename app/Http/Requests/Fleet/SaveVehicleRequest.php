@@ -11,9 +11,9 @@
 namespace App\Http\Requests\Fleet;
 
 use App\Enums\Vehicle\{VehicleOwnership, VehiclePropulsion, VehicleType};
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 class SaveVehicleRequest extends BaseFormRequest {
     use DecodesSqidInputs;

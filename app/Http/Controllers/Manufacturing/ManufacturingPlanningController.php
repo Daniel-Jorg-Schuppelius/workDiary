@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Manufacturing;
 
 use App\Enums\Procedure\ProcedureStepType;
+use App\Http\Controllers\Controller;
 use App\Models\Article\Article;
 use App\Models\Manufacturing\ManufacturingOrder;
 use App\Models\Procedure\ProcedureTemplateVersion;
@@ -20,7 +21,6 @@ use App\Support\SqidEncoder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Fertigungsplanung (Feature 047/048, E7): mehrstufige Materialbedarfsauflösung

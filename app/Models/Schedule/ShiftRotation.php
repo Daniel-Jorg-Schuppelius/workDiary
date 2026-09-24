@@ -13,8 +13,6 @@ namespace App\Models\Schedule;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Schedule\ShiftRotationAssignment;
-use App\Models\Schedule\ShiftRotationEntry;
 
 /**
  * Rollplan (MVP-522): mehrwöchiger Dienstrhythmus, der sich automatisch

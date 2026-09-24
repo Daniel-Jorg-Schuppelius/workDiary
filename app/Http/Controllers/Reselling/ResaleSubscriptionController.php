@@ -10,15 +10,14 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Finance;
+namespace App\Http\Controllers\Reselling;
 
 use App\Enums\Contract\ContractPartnerType;
 use App\Enums\Reselling\{BillingFrequency, CompanyMappingMode, ImportStatus};
 use App\Enums\Reselling\{PeriodStatus, RenewalMode, SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Finance\Resale\{AssignResaleHolderRequest, ImportResaleFilesRequest, TransferResaleSubscriptionRequest};
-use App\Http\Requests\Finance\SaveResaleSubscriptionRequest;
+use App\Http\Requests\Reselling\{AssignResaleHolderRequest, ImportResaleFilesRequest, SaveResaleSubscriptionRequest, TransferResaleSubscriptionRequest};
 use App\Models\Article\Article;
 use App\Models\Contract\Contract;
 use App\Models\Customer\{Customer, ForeignCustomer};

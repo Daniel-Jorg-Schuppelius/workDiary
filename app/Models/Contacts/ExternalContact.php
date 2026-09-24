@@ -11,11 +11,11 @@
 namespace App\Models\Contacts;
 
 use App\Enums\ExternalParticipant\ExternalParty;
+use App\Models\Communication\ExternalParticipant;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Communication\ExternalParticipant;
 
 /**
  * Wiederverwendbares externes Kontakt-/Rollenprofil (Feature 033, Rang 30):

@@ -467,11 +467,9 @@ class LearningEnrollmentService {
         ?string $reason = null,
         ?User $actor = null,
     ): void {
-        $enrollment->events()->create([
-            'organization_id' => $enrollment->organization_id,
+        $enrollment->record('status_changed', [], $actor, extra: [
             'from_status' => $from?->value,
             'to_status' => $to->value,
-            'actor_user_id' => $actor?->id,
             'reason' => $reason,
         ]);
     }

@@ -10,9 +10,9 @@
 
 namespace App\Http\Requests\Time;
 
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 class SaveTimeEntryRequest extends BaseFormRequest {
     use DecodesSqidInputs;

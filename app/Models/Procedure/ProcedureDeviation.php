@@ -12,14 +12,13 @@ namespace App\Models\Procedure;
 
 use App\Enums\Procedure\{ProcedureDeviationProposedAction, ProcedureDeviationSeverity, ProcedureDeviationType};
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Diary\OpenIssue;
 use App\Models\Platform\User;
 use Database\Factories\Procedure\ProcedureDeviationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use App\Models\Diary\OpenIssue;
-use App\Models\Procedure\ProcedureStepRun;
 
 /**
  * Strukturierte Abweichung eines {@see ProcedureStepRun} (MVP-029 §2).

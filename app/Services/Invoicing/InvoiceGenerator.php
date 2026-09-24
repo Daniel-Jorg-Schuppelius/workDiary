@@ -16,7 +16,7 @@ use App\Models\Invoicing\Invoice;
 use App\Models\Material\MaterialUsage;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
-use App\Services\Finance\{BillingModeLockedException, BillingModeResolver};
+use App\Services\Billing\{BillingModeLockedException, BillingModeResolver};
 use App\Services\Numbering\NumberSequenceService;
 use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
@@ -81,7 +81,7 @@ class InvoiceGenerator {
                 ->get();
 
             // Anfahrt der Touren dieses Zeitraums (Leistungstage bevorzugt).
-            $charges = app(\App\Services\Travel\TravelChargeService::class)
+            $charges = app(\App\Services\Billing\Travel\TravelChargeService::class)
                 ->chargesForRange($customer, $project, $range, $foreignCustomer, false);
 
             if ($entries->isEmpty() && count($charges) === 0) {
@@ -249,7 +249,7 @@ class InvoiceGenerator {
         $this->assertNotAccountManaged($customer);
 
         $entries = $this->openTimeEntriesQuery($customer, $project, $range, $foreignCustomer)->get();
-        $charges = app(\App\Services\Travel\TravelChargeService::class)
+        $charges = app(\App\Services\Billing\Travel\TravelChargeService::class)
             ->chargesForRange($customer, $project, $range, $foreignCustomer, false);
 
         $blocks = app(BillableTimeAggregator::class)->aggregate($entries);
@@ -406,7 +406,7 @@ class InvoiceGenerator {
                 ->lockForUpdate()
                 ->get();
 
-            $charges = app(\App\Services\Travel\TravelChargeService::class)
+            $charges = app(\App\Services\Billing\Travel\TravelChargeService::class)
                 ->chargesForRange($customer, $project, $range, $foreignCustomer, true);
 
             if ($usages->isEmpty() && count($charges) === 0) {
@@ -475,7 +475,7 @@ class InvoiceGenerator {
      *
      * @param  array{from?: string|CarbonInterface|null, to?: string|CarbonInterface|null}  $range
      */
-    /** @param iterable<int, \App\Services\Travel\TravelCharge> $charges vorab (unter Sperre) geladen */
+    /** @param iterable<int, \App\Services\Billing\Travel\TravelCharge> $charges vorab (unter Sperre) geladen */
     private function appendTravelCharges(
         Invoice $invoice,
         iterable $charges,

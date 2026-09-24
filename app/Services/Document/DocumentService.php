@@ -35,7 +35,7 @@ use Illuminate\Validation\ValidationException;
  * ../WorkDiary-Architecture/security/adr-attachment-paths.md: kein Org-Präfix, Mandanten-
  * trennung ausschließlich auf Anwendungsebene).
  */
-class DocumentService {
+class DocumentService implements \App\Plugins\Support\Mirror\Contracts\DocumentVersionImporter {
     /**
      * Erlaubte Datei-Endungen (analog AttachmentController) — eine Wahrheit für
      * Formular-Upload und Dokument-ZIP-Import (MVP-707).

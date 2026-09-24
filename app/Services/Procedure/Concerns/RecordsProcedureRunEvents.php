@@ -25,14 +25,10 @@ use App\Models\Procedure\{ProcedureRun, ProcedureRunEvent, ProcedureStepRun};
 trait RecordsProcedureRunEvents {
     /** @param array<string, mixed>|null $payload */
     protected function recordRunEvent(ProcedureRun $run, ProcedureRunEventType $type, ?User $actor, ?ProcedureStepRun $stepRun = null, ?array $payload = null): ProcedureRunEvent {
-        return ProcedureRunEvent::query()->create([
-            'procedure_run_id' => $run->id,
-            'procedure_step_run_id' => $stepRun?->id,
-            'event_type' => $type->value,
-            'payload' => $payload,
-            'actor_user_id' => $actor?->id,
-            'created_at' => now(),
-        ]);
+        /** @var ProcedureRunEvent $event */
+        $event = $run->record($type, $payload ?? [], $actor, extra: ['procedure_step_run_id' => $stepRun?->id]);
+
+        return $event;
     }
 
     /**

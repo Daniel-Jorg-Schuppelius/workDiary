@@ -18,7 +18,6 @@ use Database\Factories\Diary\EmergencyAssignmentFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
-use App\Models\Diary\OnCallShift;
 
 /**
  * @property int $id

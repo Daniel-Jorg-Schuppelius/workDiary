@@ -17,7 +17,7 @@ use App\Models\Platform\User;
 use App\Models\Privacy\ProcessingAgreement;
 use App\Models\Supplier\Supplier;
 use App\Services\Isms\SupplierAssessmentService;
-use App\Support\{Sqid, SqidEncoder};
+use App\Support\{SortableQuery, Sqid, SqidEncoder};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
@@ -42,7 +42,7 @@ class SupplierAssessmentController extends Controller {
             'status' => (string) $request->query('status', 'all'),
             'criticality' => (string) $request->query('criticality', 'all'),
             'risk' => (string) $request->query('risk', 'all'),
-            'sort' => (string) $request->query('sort', 'criticality'),
+            'sort' => SortableQuery::resolve($request, ['criticality', 'review', 'risk'], 'criticality')[0],
         ];
 
         $query = IsmsSupplierAssessment::query()->with(['owner', 'supplier', 'scope', 'processingAgreement']);
@@ -57,14 +57,11 @@ class SupplierAssessmentController extends Controller {
             $query->where('risk_rating', $filters['risk']);
         }
 
-        if ($filters['sort'] === 'review') {
-            $query->orderByRaw('next_review_on is null')->orderBy('next_review_on');
-        } elseif ($filters['sort'] === 'risk') {
-            $query->orderByRaw("FIELD(risk_rating, 'critical','high','medium','low')")->orderByDesc('assessment_no');
-        } else {
-            $filters['sort'] = 'criticality';
-            $query->orderByRaw("FIELD(criticality, 'critical','high','medium','low')")->orderByDesc('assessment_no');
-        }
+        match ($filters['sort']) {
+            'review' => $query->orderByRaw('next_review_on is null')->orderBy('next_review_on'),
+            'risk' => $query->orderByRaw("FIELD(risk_rating, 'critical','high','medium','low')")->orderByDesc('assessment_no'),
+            default => $query->orderByRaw("FIELD(criticality, 'critical','high','medium','low')")->orderByDesc('assessment_no'),
+        };
 
         $hasActiveFilters = $filters['status'] !== 'all'
             || $filters['criticality'] !== 'all'

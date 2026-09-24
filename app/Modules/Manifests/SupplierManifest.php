@@ -52,4 +52,16 @@ final class SupplierManifest extends Manifest {
             'suppliers',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Supplier\DeadlineScans\SupplierCredentialScan::class,
+            ],
+            \App\Services\Import\EntitySpec::class => [
+                \App\Services\Supplier\Import\SupplierSpec::class,
+            ],
+        ];
+    }
 }

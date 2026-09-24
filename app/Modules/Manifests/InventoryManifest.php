@@ -113,4 +113,20 @@ final class InventoryManifest extends Manifest {
             'etsy',
         ];
     }
+
+    /** @return array<class-string, class-string> */
+    public function bindings(): array {
+        return [
+            \App\Services\Claims\Contracts\RmaStockHandler::class => \App\Services\Inventory\Claims\InventoryRmaStockHandler::class,
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Plugins\Support\Contracts\PluginCapabilitySource::class => [
+                \App\Services\Inventory\InventoryCapabilitySource::class,
+            ],
+        ];
+    }
 }

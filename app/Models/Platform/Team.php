@@ -11,13 +11,12 @@
 namespace App\Models\Platform;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasSqid, Searchable};
+use App\Models\Project\Project;
 use Database\Factories\Platform\TeamFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
 use Illuminate\Support\Carbon;
-use App\Models\Project\Project;
-use App\Models\Platform\User;
 
 /**
  * Operatives Arbeits-Team innerhalb einer Organisation. Bündelt Mitarbeiter

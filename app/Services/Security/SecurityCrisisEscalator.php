@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Security;
 
+use App\Events\Security\SecurityCrisisRaised;
 use App\Models\Crisis\CrisisCase;
 use App\Models\Platform\{Organization, User};
-use App\Services\Crisis\CrisisAlertService;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -72,7 +72,7 @@ class SecurityCrisisEscalator {
                 'created_by' => $actor->id,
             ]);
             $case->audit('crisis.reported', ['trigger' => $trigger, 'count' => $count]);
-            app(CrisisAlertService::class)->alert($case, $actor);
+            SecurityCrisisRaised::dispatch($case, $actor);
 
             return $case;
         } catch (\Throwable $e) {

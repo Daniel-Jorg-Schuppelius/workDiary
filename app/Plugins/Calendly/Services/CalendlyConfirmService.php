@@ -15,7 +15,7 @@ namespace App\Plugins\Calendly\Services;
 use App\Enums\Diary\{DispatchStatus, Status};
 use App\Exceptions\InvalidOrderTransitionException;
 use App\Models\Calendar\AppointmentRequest;
-use App\Models\Diary\{DiaryEntry, DiaryEntryEvent};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\User;
 use App\Models\Plugins\Calendly\CalendlyConnection;
@@ -76,17 +76,11 @@ class CalendlyConfirmService {
 
         $this->dispatch->transition($entry, DispatchStatus::Confirmed);
 
-        DiaryEntryEvent::query()->create([
-            'organization_id' => $entry->organization_id,
-            'diary_entry_id' => $entry->id,
-            'event' => 'dispatch.calendly_confirmed',
+        $entry->record('dispatch.calendly_confirmed', ['appointment_request_id' => $request->id, 'source_uri' => $request->source_uri], (int) $decider->id, extra: [
             'from_status' => $entry->status->slug(),
             'to_status' => $entry->status->slug(),
-            'actor_user_id' => (int) $decider->id,
             'actor_kind' => 'user',
             'note' => (string) __('Calendly-Terminwunsch bestätigt'),
-            'payload' => ['appointment_request_id' => $request->id, 'source_uri' => $request->source_uri],
-            'occurred_at' => now(),
         ]);
 
         $request->forceFill([

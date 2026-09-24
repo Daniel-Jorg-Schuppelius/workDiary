@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Operations;
 
+use App\Enums\Asset\MaintenanceWindowStatus;
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskType};
 use App\Models\Asset\MaintenanceWindow;
 use Carbon\CarbonImmutable;
@@ -24,23 +25,12 @@ use InvalidArgumentException;
  * Abschluss/Abbruch löst die Aufgabe automatisch auf.
  */
 class MaintenanceWindowService {
-    /** @var array<string, list<string>> erlaubte Statusübergänge */
-    private const TRANSITIONS = [
-        MaintenanceWindow::STATUS_PLANNED => [MaintenanceWindow::STATUS_ANNOUNCED, MaintenanceWindow::STATUS_ACTIVE, MaintenanceWindow::STATUS_CANCELLED],
-        MaintenanceWindow::STATUS_ANNOUNCED => [MaintenanceWindow::STATUS_ACTIVE, MaintenanceWindow::STATUS_CANCELLED],
-        MaintenanceWindow::STATUS_ACTIVE => [MaintenanceWindow::STATUS_COMPLETED, MaintenanceWindow::STATUS_EXTENDED, MaintenanceWindow::STATUS_ROLLED_BACK],
-        MaintenanceWindow::STATUS_EXTENDED => [MaintenanceWindow::STATUS_COMPLETED, MaintenanceWindow::STATUS_ROLLED_BACK],
-        MaintenanceWindow::STATUS_COMPLETED => [],
-        MaintenanceWindow::STATUS_ROLLED_BACK => [],
-        MaintenanceWindow::STATUS_CANCELLED => [],
-    ];
-
     public function __construct(private readonly OperationsAlertService $alerts) {}
 
     /** @param array<string, mixed> $attributes */
     public function plan(array $attributes, ?int $userId = null): MaintenanceWindow {
         $window = MaintenanceWindow::query()->create($attributes + [
-            'status' => MaintenanceWindow::STATUS_PLANNED,
+            'status' => MaintenanceWindowStatus::Planned,
             'created_by' => $userId,
         ]);
 
@@ -52,8 +42,8 @@ class MaintenanceWindowService {
     }
 
     public function announce(MaintenanceWindow $window): void {
-        if ($window->status === MaintenanceWindow::STATUS_PLANNED) {
-            $this->transition($window, MaintenanceWindow::STATUS_ANNOUNCED);
+        if ($window->status === MaintenanceWindowStatus::Planned) {
+            $this->transition($window, MaintenanceWindowStatus::Announced);
         }
 
         $this->alerts->report(new OperationsSignal(
@@ -76,11 +66,11 @@ class MaintenanceWindowService {
     }
 
     public function start(MaintenanceWindow $window): void {
-        $this->transition($window, MaintenanceWindow::STATUS_ACTIVE);
+        $this->transition($window, MaintenanceWindowStatus::Active);
     }
 
     public function complete(MaintenanceWindow $window): void {
-        $this->transition($window, MaintenanceWindow::STATUS_COMPLETED, [
+        $this->transition($window, MaintenanceWindowStatus::Completed, [
             'ends_at' => CarbonImmutable::now(),
         ]);
         $this->alerts->resolve('maintenance_window:' . $window->getKey());
@@ -90,11 +80,11 @@ class MaintenanceWindowService {
         if ($newEnd->lessThanOrEqualTo($window->ends_at)) {
             throw new InvalidArgumentException('Verlängerung muss nach dem bisherigen Ende liegen.');
         }
-        $this->transition($window, MaintenanceWindow::STATUS_EXTENDED, ['ends_at' => $newEnd]);
+        $this->transition($window, MaintenanceWindowStatus::Extended, ['ends_at' => $newEnd]);
     }
 
     public function rollback(MaintenanceWindow $window, ?string $notes = null): void {
-        $this->transition($window, MaintenanceWindow::STATUS_ROLLED_BACK, [
+        $this->transition($window, MaintenanceWindowStatus::RolledBack, [
             'ends_at' => CarbonImmutable::now(),
             'notes' => $notes ?? $window->notes,
         ]);
@@ -102,7 +92,7 @@ class MaintenanceWindowService {
     }
 
     public function cancel(MaintenanceWindow $window): void {
-        $this->transition($window, MaintenanceWindow::STATUS_CANCELLED);
+        $this->transition($window, MaintenanceWindowStatus::Cancelled);
         $this->alerts->resolve('maintenance_window:' . $window->getKey());
     }
 
@@ -112,28 +102,27 @@ class MaintenanceWindowService {
      */
     public function tick(): void {
         foreach (MaintenanceWindow::openWindows() as $window) {
-            if ($window->status === MaintenanceWindow::STATUS_PLANNED && $window->isAnnouncedUpcoming()) {
+            if ($window->status === MaintenanceWindowStatus::Planned && $window->isAnnouncedUpcoming()) {
                 $this->announce($window);
                 continue;
             }
-            if (in_array($window->status, [MaintenanceWindow::STATUS_PLANNED, MaintenanceWindow::STATUS_ANNOUNCED], true)
+            if (in_array($window->status, [MaintenanceWindowStatus::Planned, MaintenanceWindowStatus::Announced], true)
                 && $window->isEffectiveNow()) {
-                $this->transition($window, MaintenanceWindow::STATUS_ACTIVE);
+                $this->transition($window, MaintenanceWindowStatus::Active);
                 continue;
             }
-            if (in_array($window->status, [MaintenanceWindow::STATUS_ACTIVE, MaintenanceWindow::STATUS_EXTENDED], true)
+            if (in_array($window->status, [MaintenanceWindowStatus::Active, MaintenanceWindowStatus::Extended], true)
                 && $window->ends_at->isPast()) {
-                $this->transition($window, MaintenanceWindow::STATUS_COMPLETED);
+                $this->transition($window, MaintenanceWindowStatus::Completed);
                 $this->alerts->resolve('maintenance_window:' . $window->getKey());
             }
         }
     }
 
     /** @param array<string, mixed> $extra */
-    private function transition(MaintenanceWindow $window, string $to, array $extra = []): void {
-        $allowed = self::TRANSITIONS[$window->status] ?? [];
-        if (!in_array($to, $allowed, true)) {
-            throw new InvalidArgumentException("Statuswechsel {$window->status} → {$to} ist nicht erlaubt.");
+    private function transition(MaintenanceWindow $window, MaintenanceWindowStatus $to, array $extra = []): void {
+        if (! $window->status->canTransitionTo($to)) {
+            throw new InvalidArgumentException("Statuswechsel {$window->status->value} → {$to->value} ist nicht erlaubt.");
         }
         $window->update($extra + ['status' => $to]);
     }

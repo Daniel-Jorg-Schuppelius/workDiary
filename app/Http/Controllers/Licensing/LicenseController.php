@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Licensing;
 
+use App\Http\Controllers\Controller;
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\User;
 use App\Services\Licensing\LicenseService;
@@ -18,7 +19,6 @@ use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class LicenseController extends Controller {
     public function __construct(private readonly LicenseService $service) {}

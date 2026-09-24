@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Import\Specs;
+namespace App\Services\Club\Import;
 
 use App\Enums\Club\ClubMembershipKind;
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
@@ -18,6 +18,7 @@ use App\Models\Club\ClubMember;
 use App\Models\Platform\Organization;
 use App\Services\Club\ClubMemberService;
 use App\Services\Import\{ImportOutcome, ValidationIssue};
+use App\Services\Import\Specs\AbstractEntitySpec;
 use App\Services\Import\Specs\Concerns\ParsesLocalDateTime;
 use CommonToolkit\Helper\Data\EmailHelper;
 use Throwable;
@@ -55,7 +56,7 @@ class ClubMemberSpec extends AbstractEntitySpec {
     }
 
     public function columns(): array {
-        return ['member_no', 'first_name', 'last_name', 'email', 'phone', 'street', 'postal_code', 'city', 'birth_date', 'kind', 'joined_on', 'notes'];
+        return ['member_no', 'first_name', 'last_name', 'email', 'phone', 'address_street', 'address_zip', 'address_city', 'birth_date', 'kind', 'joined_on', 'notes'];
     }
 
     public function requiredColumns(): array {
@@ -79,13 +80,17 @@ class ClubMemberSpec extends AbstractEntitySpec {
             'mail' => 'email',
             'telefon' => 'phone',
             'tel' => 'phone',
-            'strasse' => 'street',
-            'straße' => 'street',
-            'plz' => 'postal_code',
-            'postleitzahl' => 'postal_code',
-            'ort' => 'city',
-            'stadt' => 'city',
-            'wohnort' => 'city',
+            'street' => 'address_street',
+            'postal_code' => 'address_zip',
+            'zip' => 'address_zip',
+            'city' => 'address_city',
+            'strasse' => 'address_street',
+            'straße' => 'address_street',
+            'plz' => 'address_zip',
+            'postleitzahl' => 'address_zip',
+            'ort' => 'address_city',
+            'stadt' => 'address_city',
+            'wohnort' => 'address_city',
             'geburtsdatum' => 'birth_date',
             'geburtstag' => 'birth_date',
             'geb' => 'birth_date',
@@ -168,9 +173,9 @@ class ClubMemberSpec extends AbstractEntitySpec {
                     'last_name' => $row['last_name'] ?? null,
                     'email' => $row['email'] ?? null,
                     'phone' => $row['phone'] ?? null,
-                    'street' => $row['street'] ?? null,
-                    'postal_code' => $row['postal_code'] ?? null,
-                    'city' => $row['city'] ?? null,
+                    'address_street' => $row['address_street'] ?? null,
+                    'address_zip' => $row['address_zip'] ?? null,
+                    'address_city' => $row['address_city'] ?? null,
                     'birth_date' => $row['birth_date'] ?? null,
                     'notes' => $row['notes'] ?? null,
                 ], static fn($value): bool => $value !== null);
@@ -185,9 +190,9 @@ class ClubMemberSpec extends AbstractEntitySpec {
                 'last_name' => $row['last_name'],
                 'email' => $row['email'] ?? null,
                 'phone' => $row['phone'] ?? null,
-                'street' => $row['street'] ?? null,
-                'postal_code' => $row['postal_code'] ?? null,
-                'city' => $row['city'] ?? null,
+                'address_street' => $row['address_street'] ?? null,
+                'address_zip' => $row['address_zip'] ?? null,
+                'address_city' => $row['address_city'] ?? null,
                 'birth_date' => $row['birth_date'] ?? null,
                 'kind' => $row['kind'] ?? ClubMembershipKind::Active->value,
                 'joined_on' => $row['joined_on'] ?? null,

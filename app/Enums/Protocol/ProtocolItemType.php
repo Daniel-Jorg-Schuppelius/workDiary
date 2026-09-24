@@ -12,6 +12,9 @@ namespace App\Enums\Protocol;
 
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
+use App\Enums\Fields\Contracts\FieldTyped;
+use App\Enums\Fields\FieldType;
+use App\Services\Protocol\Fields\Extensions\{AttachmentsField, DefectField, MeasurementSeriesField, SignatureField};
 
 /**
  * Erlaubte Typen für `protocol_items.item_type` (MVP-021 §3).
@@ -20,7 +23,7 @@ use App\Enums\Contracts\HasLabel;
  * `result`-Ableitung und eine UI-Komponente. Die Validierung erfolgt
  * zentral im {@see \App\Services\Protocol\ProtocolItemValidator}.
  */
-enum ProtocolItemType: string implements HasLabel {
+enum ProtocolItemType: string implements FieldTyped, HasLabel {
     use HasOptions;
 
     case Group = 'group';
@@ -42,6 +45,39 @@ enum ProtocolItemType: string implements HasLabel {
 
     public function label(): string {
         return (string) __('enums.protocol.item-type.' . $this->value);
+    }
+
+    /**
+     * Grundtyp im Feldschema-Baustein (MVP-867). Der Enum-Wert bleibt der
+     * hash-relevante Speicherwert; `range` ist eine Zahl mit Toleranz, kein
+     * Bewertungsraster, und Freitext ist mehrzeilig.
+     */
+    public function fieldType(): FieldType {
+        return match ($this) {
+            self::Group, self::ProcedureStep => FieldType::Section,
+            self::Text => FieldType::Textarea,
+            self::Boolean, self::SignoffInternal => FieldType::Boolean,
+            self::Choice => FieldType::Choice,
+            self::Multichoice => FieldType::Multichoice,
+            self::Number, self::Range => FieldType::Number,
+            self::Date => FieldType::Date,
+            self::DateTime => FieldType::DateTime,
+            self::Signature => FieldType::Signature,
+            self::Photo => FieldType::Photo,
+            self::File => FieldType::File,
+            self::Defect => FieldType::Textarea,
+            self::MeasurementTimestamped => FieldType::Measurement,
+        };
+    }
+
+    public function fieldExtension(): ?string {
+        return match ($this) {
+            self::Defect => DefectField::KEY,
+            self::MeasurementTimestamped => MeasurementSeriesField::KEY,
+            self::Photo, self::File => AttachmentsField::KEY,
+            self::Signature => SignatureField::KEY,
+            default => null,
+        };
     }
 
     /**

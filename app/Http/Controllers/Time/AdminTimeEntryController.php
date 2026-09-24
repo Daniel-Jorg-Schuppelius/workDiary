@@ -12,16 +12,15 @@ namespace App\Http\Controllers\Time;
 
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Controllers\Concerns\{ProvidesTimeEntryTagPicker, ResolvesCurrentOrganization};
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Time\SaveAdminTimeEntryRequest;
-use App\Models\Time\Attendance;
-use App\Models\Time\TimeEntry;
 use App\Models\Classification\ActivityCategory;
 use App\Models\Platform\User;
+use App\Models\Time\{Attendance, TimeEntry};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Handles non-project (administrative) time entries that are not tied to a

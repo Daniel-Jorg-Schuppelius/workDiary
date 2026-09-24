@@ -196,6 +196,7 @@ return [
         'org.onboarding.skipStep' => 'Ignorer une étape d\'onboarding',
         'org.onboarding.dismissWidget' => 'Masquer le widget d\'onboarding',
         'organization.numberFormat.manage' => 'Gérer les séquences de numéros',
+        'organization.customFields.manage' => 'Gérer les champs personnalisés de l’organisation',
         'platform.diagnostics.view' => 'Voir la page de diagnostics',
         'platform.diagnostics.runCheck' => 'Déclencher les tests de diagnostic (mail/sauvegarde)',
         'platform.scheduler.manage' => 'Gérer les tâches planifiées (pause, replanification, test)',

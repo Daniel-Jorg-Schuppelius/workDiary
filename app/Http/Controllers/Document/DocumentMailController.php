@@ -22,10 +22,10 @@ use App\Models\Manufacturing\ManufacturingOrder;
 use App\Models\Procurement\PurchaseOrder;
 use App\Models\Project\Project;
 use App\Models\Sales\Quote;
-use App\Services\Construction\ConstructionNoticeService;
 use App\Services\Document\DocumentMailService;
 use App\Support\SqidEncoder;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 
@@ -94,7 +94,7 @@ class DocumentMailController extends Controller {
         Gate::authorize('view', $order);
         abort_unless($delivery->manufacturing_order_id === $order->id, 404);
 
-        return $this->form($delivery, RenderDocumentKind::DeliveryNote, route('manufacturing-orders.deliveries.mail', [$order, $delivery]), __('Lieferschein :nr per E-Mail senden', ['nr' => app(\App\Services\Manufacturing\DeliveryNotePdfRenderer::class)->number($delivery)]));
+        return $this->form($delivery, RenderDocumentKind::DeliveryNote, route('manufacturing-orders.deliveries.mail', [$order, $delivery]), __('Lieferschein :nr per E-Mail senden', ['nr' => $this->mailer->documentNumber($delivery, RenderDocumentKind::DeliveryNote)]));
     }
 
     public function deliveryNoteSend(Request $request, ManufacturingOrder $order, StockDelivery $delivery): RedirectResponse {
@@ -122,19 +122,17 @@ class DocumentMailController extends Controller {
     public function constructionNoticeSend(Request $request, ConstructionNotice $notice): RedirectResponse {
         Gate::authorize('create', Project::class);
 
-        $response = $this->send($request, $notice, $notice->kind, route('construction-notices.show', $notice));
-        app(ConstructionNoticeService::class)->markSent($notice);
-
-        return $response;
+        // Festschreiben übernimmt der Belegversand-Anbieter des Baumoduls (afterSent).
+        return $this->send($request, $notice, $notice->kind, route('construction-notices.show', $notice));
     }
 
     // ── Gemeinsame Mechanik ──────────────────────────────────────────────
 
-    private function form(Quote|PurchaseOrder|StockDelivery|ConstructionNotice $document, RenderDocumentKind $kind, string $action, string $title): View {
+    private function form(Model $document, RenderDocumentKind $kind, string $action, string $title): View {
         $templates = InvoiceMailTemplate::query()
             ->forKind($kind)
             ->where(function ($q) use ($document): void {
-                $q->where('organization_id', $document->organization_id)->orWhereNull('organization_id');
+                $q->where('organization_id', $document->getAttribute('organization_id'))->orWhereNull('organization_id');
             })
             ->orderByDesc('is_default')
             ->orderBy('name')
@@ -151,7 +149,7 @@ class DocumentMailController extends Controller {
         ]);
     }
 
-    private function send(Request $request, Quote|PurchaseOrder|StockDelivery|ConstructionNotice $document, RenderDocumentKind $kind, string $redirectTo): RedirectResponse {
+    private function send(Request $request, Model $document, RenderDocumentKind $kind, string $redirectTo): RedirectResponse {
         $data = $request->validate([
             'template_id' => ['nullable', 'string', 'max:64'],
             'to' => ['required', 'array', 'min:1', 'max:20'],
@@ -189,7 +187,7 @@ class DocumentMailController extends Controller {
      * Vorlage aus dem Sqid auflösen: muss zur Belegart passen und global
      * oder org-eigen sein — sonst 422/403. Leer = Default der Belegart.
      */
-    private function resolveTemplate(?string $sqid, Quote|PurchaseOrder|StockDelivery|ConstructionNotice $document, RenderDocumentKind $kind): ?InvoiceMailTemplate {
+    private function resolveTemplate(?string $sqid, Model $document, RenderDocumentKind $kind): ?InvoiceMailTemplate {
         if ($sqid === null || $sqid === '') {
             return null;
         }
@@ -197,7 +195,7 @@ class DocumentMailController extends Controller {
         $id = app(SqidEncoder::class)->decode(InvoiceMailTemplate::class, $sqid);
         $template = $id !== null ? InvoiceMailTemplate::query()->find($id) : null;
         abort_unless($template !== null && $template->document_kind === $kind->value, 422, (string) __('Vorlage passt nicht zur Belegart.'));
-        if ($template->organization_id !== null && $template->organization_id !== $document->organization_id) {
+        if ($template->organization_id !== null && $template->organization_id !== (int) $document->getAttribute('organization_id')) {
             abort(403);
         }
 

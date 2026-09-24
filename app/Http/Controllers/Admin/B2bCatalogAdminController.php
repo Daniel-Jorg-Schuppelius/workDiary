@@ -203,7 +203,7 @@ class B2bCatalogAdminController extends Controller {
      * K-Kontrollsatz mit der Kundennummer, effektive Nettopreise der
      * freigegebenen Artikel (Feature 099, `custom_price`).
      */
-    public function exportDatanorm(Request $request, B2bCatalogAccess $access, \App\Services\Procurement\DatanormExportService $export): \Illuminate\Http\Response|RedirectResponse {
+    public function exportDatanorm(Request $request, B2bCatalogAccess $access, \App\Services\Article\DatanormExportService $export): \Illuminate\Http\Response|RedirectResponse {
         $admin = $this->admin();
         $this->guard($admin, $access);
         $request->validate(['version' => ['nullable', 'in:4,5']]);

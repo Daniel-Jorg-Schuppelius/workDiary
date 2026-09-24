@@ -10,8 +10,8 @@
 
 namespace App\Http\Requests\Time;
 
-use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Http\Requests\BaseFormRequest;
+use App\Http\Requests\Concerns\DecodesSqidInputs;
 
 /**
  * Startet die Stoppuhr (laufender TimeEntry) aus der Eingabeleiste heraus.

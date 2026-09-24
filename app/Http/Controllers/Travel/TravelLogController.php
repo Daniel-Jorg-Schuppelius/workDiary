@@ -13,12 +13,13 @@ namespace App\Http\Controllers\Travel;
 use App\Enums\Travel\{TravelLogVehicle, TripKind};
 use App\Exceptions\{LogbookViolationException, TravelLogLockedException};
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Travel\SaveTravelLogRequest;
 use App\Models\Customer\Customer;
+use App\Models\Fleet\Vehicle;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Travel\TravelLog;
-use App\Models\Fleet\Vehicle;
 use App\Services\Travel\{LogbookRules, TravelLogService};
 use App\Support\{CsvExport, SortableQuery, Sqid};
 use App\Support\Query\DateRange;
@@ -28,7 +29,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use App\Http\Controllers\Controller;
 
 class TravelLogController extends Controller {
     use ResolvesCurrentOrganization;

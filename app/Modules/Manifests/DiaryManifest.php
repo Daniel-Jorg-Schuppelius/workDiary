@@ -63,4 +63,29 @@ final class DiaryManifest extends Manifest {
             PermissionGroup::OpenIssues,
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Diary\DeadlineScans\OpenIssueDeadlineScan::class,
+            ],
+            \App\Services\Search\Indexing\Sources\SearchSource::class => [
+                \App\Services\Diary\Search\DiaryEntrySource::class,
+                \App\Services\Diary\Search\OpenIssueSource::class,
+            ],
+            \App\Services\Sync\Contracts\SyncCommandHandler::class => [
+                \App\Services\Diary\Sync\DiaryCommentSyncHandler::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function listeners(): array {
+        return [
+            \App\Events\Time\TimeEntryCreated::class => [
+                \App\Listeners\Diary\StartOrderFromTimeEntry::class,
+            ],
+        ];
+    }
 }

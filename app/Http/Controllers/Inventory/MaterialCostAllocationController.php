@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Customers;
+namespace App\Http\Controllers\Inventory;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;

@@ -15,9 +15,9 @@ use App\Models\Audit\AuditLog;
 use App\Models\Classification\{Classification, ClassificationRequirement, EntryType, Tag};
 use App\Models\Facility\{CleaningProfile, RoomRequirementTemplate};
 use App\Models\Platform\{Organization, User};
-use App\Models\Procedure\ProcedureTemplate;
 use App\Models\ServiceTicket\SlaContract;
-use App\Services\Procedure\ProcedureTemplateService;
+use App\Modules\ModuleRegistry;
+use App\Services\Classification\Contracts\ProfileInstallStep;
 use App\Support\MorphMap;
 use CommonToolkit\Helper\FileSystem\File;
 use Database\Seeders\EntryTypeSeeder;
@@ -28,12 +28,13 @@ use Illuminate\Support\Facades\DB;
  * Installiert deklarative Branchenprofile pro Organisation.
  */
 class BranchProfileInstaller {
-    public function __construct(
-        private readonly ?ProcedureTemplateService $procedures = null,
-    ) {}
+    public function __construct(private readonly ?ModuleRegistry $modules = null) {}
 
-    private function procedureService(): ProcedureTemplateService {
-        return $this->procedures ?? app(ProcedureTemplateService::class);
+    /** @return list<ProfileInstallStep> Installationsschritte der Module ({@see ProfileInstallStep}) */
+    private function steps(): array {
+        $modules = $this->modules ?? app(ModuleRegistry::class);
+
+        return array_map(static fn(string $class): ProfileInstallStep => app($class), $modules->extensions(ProfileInstallStep::class));
     }
 
     /**
@@ -413,77 +414,11 @@ class BranchProfileInstaller {
             $created['software']++;
         }
 
-        /** @var list<array<string, mixed>> $procedureTemplates */
-        $procedureTemplates = (array) Arr::get($profile, 'procedure_templates', []);
-        foreach ($procedureTemplates as $row) {
-            $code = (string) ($row['code'] ?? '');
-            if ($code === '') {
-                continue;
-            }
-
-            $existing = ProcedureTemplate::query()
-                ->where('organization_id', $organization->id)
-                ->where('code', $code)
-                ->first();
-
-            // Vorlage existiert bereits (oder lokal angepasst): idempotent überspringen, nie überschreiben
-            // (auch nicht bei force – eine veröffentlichte Prozedurversion ist unveränderlich).
-            if ($existing instanceof ProcedureTemplate) {
-                $skipped['procedure_templates']++;
-
-                continue;
-            }
-
-            // Vollständige Vorlage (Name/Schritte) nur bei deklarativer Beschreibung UND vorhandenem Akteur (die
-            // Version braucht einen Autor). Reine Code-Platzhalter ohne Schritte werden als Folgearbeit übersprungen.
-            $name = isset($row['name']) ? trim((string) $row['name']) : '';
-            /** @var list<array<string, mixed>> $steps */
-            $steps = (array) ($row['steps'] ?? []);
-            if ($name === '' || $steps === [] || ! $actor instanceof User) {
-                $skipped['procedure_templates']++;
-
-                continue;
-            }
-
-            $service = $this->procedureService();
-            $template = $service->create($organization, $actor, [
-                'code' => $code,
-                'name' => $name,
-                'description' => isset($row['description']) ? (string) $row['description'] : null,
-                'domain' => isset($row['domain']) ? (string) $row['domain'] : null,
-                'active' => true,
-            ]);
-
-            $version = $template->versions()->firstOrFail();
-            if (isset($row['risk_level'])) {
-                $service->updateVersion($version, ['risk_level' => (string) $row['risk_level']]);
-            }
-
-            $normalizedSteps = [];
-            foreach ($steps as $step) {
-                $stepCode = (string) ($step['code'] ?? '');
-                $stepType = (string) ($step['step_type'] ?? '');
-                $stepLabel = (string) ($step['label'] ?? '');
-                if ($stepCode === '' || $stepType === '' || $stepLabel === '') {
-                    continue;
-                }
-
-                $normalizedSteps[] = [
-                    'code' => $stepCode,
-                    'step_type' => $stepType,
-                    'label' => $stepLabel,
-                    'description' => isset($step['description']) ? (string) $step['description'] : null,
-                    'required' => (bool) ($step['required'] ?? true),
-                    'blocking' => (bool) ($step['blocking'] ?? true),
-                    'requires_second_person' => (bool) ($step['requires_second_person'] ?? false),
-                    'requires_proof_type' => isset($step['requires_proof_type']) ? (string) $step['requires_proof_type'] : null,
-                ];
-            }
-
-            $service->syncSteps($version, $normalizedSteps);
-            $service->publish($version, $actor);
-
-            $created['procedure_templates']++;
+        // Modulabschnitte des Profils (MVP-863): Prozedurvorlagen u. a. installieren die Module selbst.
+        foreach ($this->steps() as $step) {
+            $result = $step->install($organization, (array) Arr::get($profile, $step->key(), []), $actor);
+            $created[$step->key()] = ($created[$step->key()] ?? 0) + $result['created'];
+            $skipped[$step->key()] = ($skipped[$step->key()] ?? 0) + $result['skipped'];
         }
 
         /** @var list<array<string, mixed>> $roomRequirementTemplates */

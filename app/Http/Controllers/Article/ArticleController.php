@@ -12,11 +12,10 @@ namespace App\Http\Controllers\Article;
 
 use App\Enums\Article\{ArticleStatus, ArticleType, ArticleUnitKind};
 use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesCurrentOrganization};
+use App\Http\Controllers\Concerns\SavesCustomFields;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Article\SaveArticleRequest;
-use App\Models\Article\Article;
-use App\Models\Article\ArticleOptionDefinition;
-use App\Models\Article\ArticleOptionValue;
-use App\Models\Article\ArticleVariant;
+use App\Models\Article\{Article, ArticleOptionDefinition, ArticleOptionValue, ArticleVariant};
 use App\Services\Article\{ArticleService, VariantResolver};
 use App\Support\ErrorText;
 use CommonToolkit\ValueObjects\Decimal;
@@ -24,7 +23,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * Admin-UI des kanonischen Artikelstamms (Feature 048, MVP-060): Artikel-CRUD
@@ -33,7 +31,9 @@ use App\Http\Controllers\Controller;
  */
 class ArticleController extends Controller {
     use ParsesIndexQuery;
+
     use ResolvesCurrentOrganization;
+    use SavesCustomFields;
 
     private const ALLOWED_SORTS = ['name', 'number', 'created_at'];
 
@@ -62,6 +62,7 @@ class ArticleController extends Controller {
 
         return view('articles.index', [
             'articles' => $articles,
+            'customColumns' => app(\App\Services\Fields\CustomFieldService::class)->listColumnsFor($articles->getCollection(), Article::class, (int) Auth::user()?->organization_id),
             'status' => $status,
             'search' => $search,
             'category' => $category,
@@ -91,19 +92,21 @@ class ArticleController extends Controller {
         Gate::authorize('create', Article::class);
 
         $data = $request->validated();
+        $custom = $this->validatedCustomFields($request, Article::class);
         $tagIds = $data['tag_ids'] ?? [];
         $newTagsRaw = (string) ($data['new_tags'] ?? '');
-        unset($data['tag_ids'], $data['new_tags']);
+        unset($data['tag_ids'], $data['new_tags'], $data['custom']);
 
         $data['created_by'] = Auth::id();
         $article = $this->articles->createArticle($this->currentOrganization(), $data);
         $article->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
+        $article->syncCustomFields($custom);
 
         return redirect()->route('articles.show', $article)
             ->with('success', __('article.flash.created'));
     }
 
-    public function show(Article $article, \App\Services\Procurement\SupplySourceComparator $comparator): View {
+    public function show(Article $article, \App\Services\Article\SupplySourceComparator $comparator): View {
         Gate::authorize('view', $article);
 
         $article->load(['optionDefinitions.values', 'variants.optionValues', 'units', 'externalMappings', 'priceTiers', 'costBenchmarks.catalog']);
@@ -143,12 +146,14 @@ class ArticleController extends Controller {
         Gate::authorize('update', $article);
 
         $data = $request->validated();
+        $custom = $this->validatedCustomFields($request, Article::class);
         $tagIds = $data['tag_ids'] ?? [];
         $newTagsRaw = (string) ($data['new_tags'] ?? '');
-        unset($data['tag_ids'], $data['new_tags']);
+        unset($data['tag_ids'], $data['new_tags'], $data['custom']);
 
         $article->update($data);
         $article->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
+        $article->syncCustomFields($custom);
 
         return redirect()->route('articles.show', $article)
             ->with('success', __('article.flash.updated'));

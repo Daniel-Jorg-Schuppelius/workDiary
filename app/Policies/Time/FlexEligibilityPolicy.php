@@ -10,8 +10,8 @@
 
 namespace App\Policies\Time;
 
-use App\Models\Time\FlexEligibility;
 use App\Models\Platform\User;
+use App\Models\Time\FlexEligibility;
 use App\Policies\Concerns\HasAdminBypass;
 
 /**

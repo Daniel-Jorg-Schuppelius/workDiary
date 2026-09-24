@@ -10,9 +10,9 @@
 
 namespace App\Models\Diary;
 
-use App\Models\Concerns\{AppendOnly, BelongsToOrganization};
+use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Journal\JournalEntry;
 use App\Models\Platform\User;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -28,9 +28,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property array<string, mixed>|null $payload
  * @property \Illuminate\Support\Carbon $occurred_at
  */
-class DiaryEntryEvent extends Model {
-    // Lebenszyklusereignisse: nie ändern, nie löschen.
-    use AppendOnly;
+class DiaryEntryEvent extends JournalEntry {
+    /** @var array<string, string|null> */
+    protected static array $journalColumns = ['occurred_at' => 'occurred_at'];
 
     use BelongsToOrganization;
 
@@ -62,5 +62,10 @@ class DiaryEntryEvent extends Model {
     /** @return BelongsTo<User, $this> */
     public function actor(): BelongsTo {
         return $this->belongsTo(User::class, 'actor_user_id');
+    }
+
+    /** @return BelongsTo<DiaryEntry, $this> */
+    public function subject(): BelongsTo {
+        return $this->diaryEntry();
     }
 }

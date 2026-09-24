@@ -12,12 +12,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Asset;
 
+use App\Http\Controllers\Controller;
 use App\Models\Asset\Asset;
 use App\Services\Stammdaten\AssetMergeService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Manuelles Zusammenführen doppelt angelegter Assets: Gegenüberstellung mit

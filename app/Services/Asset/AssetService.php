@@ -20,7 +20,6 @@ use Illuminate\Support\Carbon;
 class AssetService {
     public function __construct(
         private readonly AssetNumberGenerator $numbers,
-        private readonly AssetStatusMachine $statusMachine,
     ) {}
 
     /** @param array<string, mixed> $payload */
@@ -75,8 +74,8 @@ class AssetService {
             ? $this->parseStatus((string) $payload['status'])
             : $asset->status;
 
-        if ($nextStatus !== $asset->status) {
-            $this->statusMachine->ensureTransition($asset->status, $nextStatus);
+        if ($nextStatus !== $asset->status && ! $asset->status->canTransitionTo($nextStatus)) {
+            throw AssetValidationException::invalidStatusTransition($asset->status->value, $nextStatus->value);
         }
 
         $nextOwnedBy = array_key_exists('owned_by', $payload)
@@ -122,7 +121,9 @@ class AssetService {
     }
 
     public function decommission(Asset $asset, User $actor, string $date): Asset {
-        $this->statusMachine->ensureTransition($asset->status, AssetStatus::Decommissioned);
+        if ($asset->status !== AssetStatus::Decommissioned && ! $asset->status->canTransitionTo(AssetStatus::Decommissioned)) {
+            throw AssetValidationException::invalidStatusTransition($asset->status->value, AssetStatus::Decommissioned->value);
+        }
 
         $asset->status = AssetStatus::Decommissioned;
         $asset->decommissioned_on = $this->normalizeDate($date);

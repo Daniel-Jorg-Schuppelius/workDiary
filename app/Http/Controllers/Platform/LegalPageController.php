@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Platform;
 
+use App\Http\Controllers\Controller;
 use App\Support\Setting;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Öffentliche Rechtstexte der Installation (MVP-326): Impressum und

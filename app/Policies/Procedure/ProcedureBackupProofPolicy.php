@@ -12,8 +12,7 @@ namespace App\Policies\Procedure;
 
 use App\Enums\User\Permission as P;
 use App\Models\Platform\User;
-use App\Models\Procedure\ProcedureBackupProof;
-use App\Models\Procedure\ProcedureStepRun;
+use App\Models\Procedure\{ProcedureBackupProof, ProcedureStepRun};
 use App\Policies\Concerns\HasAdminBypass;
 use App\Policies\PermissionPolicy;
 

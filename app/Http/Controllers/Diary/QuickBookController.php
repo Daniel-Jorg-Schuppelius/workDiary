@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Diary;
 
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Models\Project\{Project, Task};
 use App\Models\Time\TimeEntry;
@@ -19,7 +20,6 @@ use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
-use App\Http\Controllers\Controller;
 
 /**
  * Quick-Buchung offener Zeitblöcke auf ein Projekt (MVP-015, Rang 37).

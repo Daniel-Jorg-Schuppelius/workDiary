@@ -12,8 +12,7 @@ namespace Database\Factories\Schedule;
 
 use App\Enums\Shift\ShiftExchangeStatus;
 use App\Models\Platform\User;
-use App\Models\Schedule\ScheduledShift;
-use App\Models\Schedule\ShiftExchange;
+use App\Models\Schedule\{ScheduledShift, ShiftExchange};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

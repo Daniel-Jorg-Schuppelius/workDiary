@@ -10,15 +10,14 @@
 
 namespace App\Http\Controllers\Time;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Material\SaveMaterialUsageRequest;
-use App\Models\Material\Material;
-use App\Models\Material\MaterialUsage;
-use App\Models\Time\Timesheet;
+use App\Models\Material\{Material, MaterialUsage};
 use App\Models\Project\Project;
+use App\Models\Time\Timesheet;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class TimesheetMaterialController extends Controller {
     public function create(Project $project, Timesheet $timesheet): View {

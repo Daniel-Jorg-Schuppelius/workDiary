@@ -14,7 +14,8 @@ namespace App\Models\Sales;
 
 use App\Casts\{MoneyCast, PercentageCast};
 use App\Models\Article\Article;
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, IsDocumentLine};
+use App\Models\Contracts\DocumentLine;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -33,28 +34,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \CommonToolkit\ValueObjects\Percentage|null $discount_percent
  * @property \CommonToolkit\ValueObjects\Money|null $discount_amount
  */
-class QuoteItem extends Model {
+class QuoteItem extends Model implements DocumentLine {
+    use Auditable;
     use BelongsToOrganization;
     /** @use HasFactory<\Database\Factories\Sales\QuoteItemFactory> */
     use HasFactory;
     use HasSqid;
+    use IsDocumentLine;
 
     protected $fillable = [
         'organization_id', 'quote_id', 'article_id', 'position', 'description',
         'quantity', 'unit', 'unit_price', 'discount_percent', 'discount_amount',
         'tax_rate', 'tax_category', 'optional', 'accepted',
     ];
-
-    /** Zeilennetto inkl. Positionsrabatt (MVP-416) — Quelle für Quote::recalculate(). */
-    public function netAmount(): \CommonToolkit\ValueObjects\Money {
-        return \App\Services\Invoicing\InvoiceTotalsCalculator::lineNet(
-            (float) $this->quantity,
-            $this->unit_price,
-            $this->discount_percent,
-            $this->discount_amount,
-            \CommonToolkit\Enums\CurrencyCode::Euro,
-        );
-    }
 
     /** @var array<string, string> */
     protected $casts = [
@@ -70,6 +62,11 @@ class QuoteItem extends Model {
     /** @return BelongsTo<Quote, $this> */
     public function quote(): BelongsTo {
         return $this->belongsTo(Quote::class);
+    }
+
+    /** @return BelongsTo<Quote, $this> */
+    public function lineDocument(): BelongsTo {
+        return $this->quote();
     }
 
     /**

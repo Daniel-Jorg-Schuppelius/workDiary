@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers\Reporting;
+namespace App\Http\Controllers\Helpdesk;
 
 use App\Enums\Reporting\{ReportTargetMetric, ReportTargetScope};
 use App\Enums\ServiceTicket\{ServiceTicketPriority, SlaViolationKind};

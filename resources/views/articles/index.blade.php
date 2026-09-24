@@ -111,6 +111,7 @@
                     <th>{{ __('article.field.type') }}</th>
                     <th class="text-right">{{ __('article.variants') }}</th>
                     <th>{{ __('article.field.status') }}</th>
+                    <x-custom-field-heads :columns="$customColumns" />
                     <th></th>
                 </tr>
             </x-slot:head>
@@ -127,6 +128,7 @@
                             {{ $article->status->label() }}
                         </span>
                     </td>
+                    <x-custom-field-cells :columns="$customColumns" :model="$article" />
                     <td class="text-right">
                         @can('update', $article)
                             <x-icon-btn icon="edit" size="xs" data-entry-modal-trigger

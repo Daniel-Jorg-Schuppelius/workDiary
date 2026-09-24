@@ -12,20 +12,15 @@ namespace App\Models\Manufacturing;
 
 use App\Casts\QuantityCast;
 use App\Enums\Manufacturing\{ManufacturingOrderStatus, ProcurementMode};
+use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
+use App\Models\Inventory\{StockDelivery, Warehouse};
+use App\Models\Procedure\{ProcedureRun, ProcedureTemplateVersion};
+use App\Models\Time\TimeEntry;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
-use App\Models\Article\Article;
-use App\Models\Article\ArticleVariant;
-use App\Models\Manufacturing\ManufacturingOrderMaterial;
-use App\Models\Manufacturing\ManufacturingOrderReport;
-use App\Models\Procedure\ProcedureRun;
-use App\Models\Procedure\ProcedureTemplateVersion;
-use App\Models\Inventory\StockDelivery;
-use App\Models\Time\TimeEntry;
-use App\Models\Inventory\Warehouse;
 
 /**
  * Fertigungs-/Montageauftrag (Feature 047, MVP-062).

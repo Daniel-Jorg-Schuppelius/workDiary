@@ -10,12 +10,12 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Finance;
+namespace App\Http\Controllers\Reselling;
 
 use App\Enums\Reselling\SubscriptionProvider;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Finance\{ResalePurchaseImportRequest, ResalePurchaseStoreRequest};
+use App\Http\Requests\Reselling\{ResalePurchaseImportRequest, ResalePurchaseStoreRequest};
 use App\Models\Reselling\{ResalePeriod, ResalePurchaseEntry};
 use App\Services\Reselling\Purchase\{PurchaseDocument, PurchaseDocuments};
 use App\Services\Reselling\Register\{ProviderInvoiceImport, PurchaseAllocator};

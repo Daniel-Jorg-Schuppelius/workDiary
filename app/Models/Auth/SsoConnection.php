@@ -16,7 +16,6 @@ use App\Models\Concerns\HasPrivateNetworkOptIn;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Auth\SsoIdentity;
 
 /**
  * SSO-Anbindung einer Organisation (Feature 057): genau eine Verbindung je

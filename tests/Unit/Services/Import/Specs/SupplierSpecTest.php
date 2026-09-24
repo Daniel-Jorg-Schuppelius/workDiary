@@ -14,7 +14,7 @@ namespace Tests\Unit\Services\Import\Specs;
 
 use App\Models\Supplier\Supplier;
 use App\Services\Import\ImportOutcome;
-use App\Services\Import\Specs\SupplierSpec;
+use App\Services\Supplier\Import\SupplierSpec;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

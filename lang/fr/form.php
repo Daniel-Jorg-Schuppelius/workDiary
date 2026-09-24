@@ -44,6 +44,9 @@ return [
         'field_options' => 'Options',
         'field_help' => 'Texte d’aide',
         'field_unit' => 'Unité',
+        'field_range' => 'Plage de valeurs',
+        'field_min' => 'Min',
+        'field_max' => 'Max',
     ],
 
     'action' => [
@@ -108,17 +111,7 @@ return [
     'validation' => [
 
         'no_upload_field' => 'Aucun champ fichier/photo ne porte cette clé dans le formulaire.',
-        'invalid_row' => 'La définition du champ à la ligne :row est invalide.',
-        'label_required' => 'Le champ :row nécessite un libellé (max. 160 caractères).',
-        'unknown_type' => 'Le champ :row a un type inconnu.',
-        'invalid_key' => 'La clé de champ « :key » est invalide (minuscules, chiffres, tirets bas).',
-        'duplicate_key' => 'La clé de champ « :key » est utilisée plusieurs fois.',
-        'select_needs_options' => 'Le champ de sélection « :label » nécessite au moins une option.',
-        'fields_required' => 'Le modèle nécessite au moins un champ.',
-        'too_many_fields' => 'Au maximum :max champs par modèle.',
         'template_not_active' => 'Ce modèle n’est pas actif et ne peut pas être rempli.',
-        'condition_unknown_field' => 'La condition du champ « :label » référence un champ inconnu « :field ».',
-        'condition_cycle' => 'Les conditions forment un cycle (le champ « :field » dépend indirectement de lui-même).',
     ],
 
     'flash' => [

@@ -173,12 +173,12 @@ class MonthClosureBundleService {
 
         // Freigabe-Protokoll (MonthClosureEvents, append-only).
         $rows = [['Zeitpunkt', 'Ereignis', 'Akteur', 'Notiz']];
-        foreach ($closure->events()->with('actor:id,name')->get() as $event) {
+        foreach ($closure->journal()->with('actor:id,name')->get() as $event) {
             $rows[] = [
-                (string) $event->created_at->toIso8601String(),
-                (string) $event->event,
+                (string) $event->occurredAt()?->toIso8601String(),
+                $event->eventKey(),
                 (string) ($event->actor->name ?? ''),
-                (string) ($event->note ?? ''),
+                (string) ($event->getAttribute('note') ?? ''),
             ];
         }
         $files['freigabe-protokoll.csv'] = $this->csv($rows);

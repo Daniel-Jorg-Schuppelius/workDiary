@@ -10,10 +10,9 @@
 
 namespace App\Models\Auth;
 
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Auth\SsoConnection;
-use App\Models\Platform\User;
 
 /**
  * Verknüpfung IdP-Identität ↔ WorkDiary-Konto (Feature 057). Identität ist

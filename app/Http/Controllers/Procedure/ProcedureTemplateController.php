@@ -11,15 +11,14 @@
 namespace App\Http\Controllers\Procedure;
 
 use App\Enums\Procedure\{ProcedureProofType, ProcedureRiskLevel, ProcedureStepType};
+use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
-use App\Models\Procedure\ProcedureTemplate;
-use App\Models\Procedure\ProcedureTemplateVersion;
+use App\Models\Procedure\{ProcedureTemplate, ProcedureTemplateVersion};
 use App\Services\Procedure\ProcedureTemplateService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Prozedurvorlagen-Designer (Feature 026 / MVP-025): Listenseite +

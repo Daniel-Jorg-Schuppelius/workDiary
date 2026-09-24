@@ -35,7 +35,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @php($metalService = app(\App\Services\Procurement\MetalSurchargeService::class))
+                        @php($metalService = app(\App\Services\Article\MetalSurchargeService::class))
                         @foreach ($items as $item)
                             <tr>
                                 <td>{{ $item->article?->number }}</td>

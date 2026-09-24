@@ -20,9 +20,8 @@ use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
 use App\Services\Communication\CommunicationNoteService;
-use App\Services\Ideas\NodeConversionService;
 use App\Support\{EntityUrl, Sqid, Tz};
-use App\Support\{ErrorText, MorphMap};
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -304,24 +303,6 @@ class CommunicationNoteController extends Controller {
             ->back()
             ->with('success', __('communication.flash.followup_completed'))
             ->withFragment('communication-note-' . $note->id);
-    }
-
-    /** Notiz → Wissensartikel-Entwurf mit Herkunftsverweis (MVP-813). */
-    public function convertToKnowledge(CommunicationNote $note, NodeConversionService $conversions): RedirectResponse {
-        Gate::authorize('view', $note);
-        $this->guardPrivate($note);
-
-        /** @var User $actor */
-        $actor = Auth::user();
-        try {
-            $reference = $conversions->convertNoteToKnowledgeArticle($note, $actor);
-        } catch (\RuntimeException $e) {
-            return redirect()->back()->with('error', ErrorText::for($e));
-        }
-
-        return redirect()
-            ->route('knowledge.show', Sqid::encode(\App\Models\Knowledge\KnowledgeArticle::class, $reference->target_id))
-            ->with($reference->wasRecentlyCreated ? 'success' : 'info', (string) __($reference->wasRecentlyCreated ? 'communication.convert.flash.created' : 'communication.convert.flash.existing'));
     }
 
     public function destroy(Request $request, CommunicationNote $note): RedirectResponse {

@@ -11,8 +11,8 @@
 namespace App\Http\Requests\Classification;
 
 use App\Enums\Activity\ActivityCategoryType;
-use Illuminate\Validation\Rule;
 use App\Http\Requests\BaseFormRequest;
+use Illuminate\Validation\Rule;
 
 class SaveActivityCategoryRequest extends BaseFormRequest {
     /** @return array<string, mixed> */

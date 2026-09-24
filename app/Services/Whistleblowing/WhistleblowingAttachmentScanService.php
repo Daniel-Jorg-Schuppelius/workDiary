@@ -14,7 +14,7 @@ namespace App\Services\Whistleblowing;
 
 use App\Enums\Whistleblowing\AttachmentScanStatus;
 use App\Models\Whistleblowing\Attachment;
-use App\Services\Whistleblowing\Scanning\ScanDriver;
+use App\Services\Security\Scanning\ScanDriver;
 use Illuminate\Support\Facades\{Log, Storage};
 
 /**

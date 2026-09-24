@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Schedule;
 use App\Enums\Diary\{DispatchStatus, Mode, Priority};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
+use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Services\Compliance\DrivingTimeBudget;
@@ -24,7 +25,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use App\Http\Controllers\Controller;
 
 /**
  * Leitstellen-Ansicht (Feature 029): Dispatch-Board und Karten-Sicht mit

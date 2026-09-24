@@ -1,0 +1,122 @@
+{
+    "kind": "invoice",
+    "document": {
+        "currency": "EUR",
+        "tax_rate": "19.00",
+        "is_reverse_charge": false,
+        "discount_percent": "3.00",
+        "discount_amount": null,
+        "skonto_percent": "2.00",
+        "skonto_days": 14
+    },
+    "lines": [
+        {
+            "quantity": "2.000",
+            "unit_price": "100.0000",
+            "discount_percent": null,
+            "discount_amount": null,
+            "tax_rate": "19.00"
+        },
+        {
+            "quantity": "1.500",
+            "unit_price": "80.5000",
+            "discount_percent": "10.00",
+            "discount_amount": null,
+            "tax_rate": "19.00"
+        },
+        {
+            "quantity": "3.000",
+            "unit_price": "0.3300",
+            "discount_percent": null,
+            "discount_amount": null,
+            "tax_rate": "19.00"
+        },
+        {
+            "quantity": "10.000",
+            "unit_price": "1.9900",
+            "discount_percent": null,
+            "discount_amount": null,
+            "tax_rate": "7.00"
+        },
+        {
+            "quantity": "7.000",
+            "unit_price": "12.3456",
+            "discount_percent": null,
+            "discount_amount": null,
+            "tax_rate": null
+        },
+        {
+            "quantity": "1.000",
+            "unit_price": "50.0000",
+            "discount_percent": null,
+            "discount_amount": "5.00",
+            "tax_rate": "7.00"
+        },
+        {
+            "quantity": "4.000",
+            "unit_price": "25.0000",
+            "discount_percent": null,
+            "discount_amount": null,
+            "tax_rate": "0.00"
+        }
+    ],
+    "expected": {
+        "line_nets": [
+            "200.00",
+            "108.68",
+            "0.99",
+            "19.90",
+            "86.42",
+            "45.00",
+            "100.00"
+        ],
+        "line_net_sum": "560.99",
+        "document_discount": "16.83",
+        "by_rate": {
+            "0.00": {
+                "rate": 0,
+                "net": "100.00",
+                "allowance": "3.00",
+                "taxable": "97.00",
+                "tax": "0.00"
+            },
+            "7.00": {
+                "rate": 7,
+                "net": "64.90",
+                "allowance": "1.95",
+                "taxable": "62.95",
+                "tax": "4.41"
+            },
+            "19.00": {
+                "rate": 19,
+                "net": "396.09",
+                "allowance": "11.88",
+                "taxable": "384.21",
+                "tax": "73.00"
+            }
+        },
+        "subtotal": "544.16",
+        "tax_amount": "77.41",
+        "total": "621.57",
+        "tax_breakdown": [
+            {
+                "rate": 0,
+                "net": "97.00",
+                "tax": "0.00"
+            },
+            {
+                "rate": 7,
+                "net": "62.95",
+                "tax": "4.41"
+            },
+            {
+                "rate": 19,
+                "net": "384.21",
+                "tax": "73.00"
+            }
+        ],
+        "line_subtotal": "560.99",
+        "document_discount_total": "16.83",
+        "skonto_amount": "12.43"
+    }
+}

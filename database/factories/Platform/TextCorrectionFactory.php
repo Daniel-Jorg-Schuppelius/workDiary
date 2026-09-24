@@ -12,8 +12,7 @@ declare(strict_types=1);
 
 namespace Database\Factories\Platform;
 
-use App\Models\Platform\Organization;
-use App\Models\Platform\TextCorrection;
+use App\Models\Platform\{Organization, TextCorrection};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

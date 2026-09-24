@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Concerns;
 
-use App\Models\Customer\Customer;
-use App\Models\Supplier\Supplier;
+use App\Models\Contracts\ContactDetailsHolder;
 use App\Services\Stammdaten\ContactDetailsWriter;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Formular-Naht für F8/E6 (Vollscan 2026-08-23): Die address_…/bank_…-Inputs
@@ -49,14 +49,14 @@ trait WritesContactDetails {
      * @param  array<string, mixed>  $fields
      * @return list<string>
      */
-    private function writeContactDetails(Customer|Supplier $contact, array $fields): array {
+    private function writeContactDetails(Model&ContactDetailsHolder $contact, array $fields): array {
         if ($fields === []) {
             return [];
         }
 
         $before = [];
         foreach (self::$contactDetailFields as $field) {
-            $before[$field] = (string) ($contact->{$field} ?? '');
+            $before[$field] = (string) ($contact->getAttribute($field) ?? '');
         }
 
         $writer = app(ContactDetailsWriter::class);
@@ -77,7 +77,7 @@ trait WritesContactDetails {
 
         $changed = [];
         foreach (self::$contactDetailFields as $field) {
-            if ((string) ($contact->{$field} ?? '') !== $before[$field]) {
+            if ((string) ($contact->getAttribute($field) ?? '') !== $before[$field]) {
                 $changed[] = $field;
             }
         }

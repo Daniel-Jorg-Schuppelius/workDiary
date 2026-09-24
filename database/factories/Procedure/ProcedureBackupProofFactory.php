@@ -11,8 +11,7 @@
 namespace Database\Factories\Procedure;
 
 use App\Enums\Procedure\{ProcedureBackupScope, ProcedureBackupStorageTarget, ProcedureBackupVerifyMethod};
-use App\Models\Procedure\ProcedureBackupProof;
-use App\Models\Procedure\ProcedureStepRun;
+use App\Models\Procedure\{ProcedureBackupProof, ProcedureStepRun};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

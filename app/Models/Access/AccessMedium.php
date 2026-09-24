@@ -14,14 +14,13 @@ namespace App\Models\Access;
 
 use App\Enums\Access\{AccessMediumStatus, AccessMediumType};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Facility\Site;
 use App\Models\Platform\User;
 use App\Models\Project\Task;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
-use App\Models\Access\AccessMediumHandover;
-use App\Models\Facility\Site;
 
 /**
  * Zutrittsmedium (Feature 092, Stufe 1): Transponder, Karte oder Code als

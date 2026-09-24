@@ -8,9 +8,10 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Services\Travel;
+namespace App\Services\Billing\Travel;
 
 use App\Models\Diary\Tour;
+use App\Services\Billing\DocumentTotalsCalculator;
 use Illuminate\Support\Carbon;
 
 /**
@@ -29,6 +30,6 @@ final class TravelCharge {
     ) {}
 
     public function amount(): float {
-        return round($this->quantity * $this->unitPrice, 2);
+        return DocumentTotalsCalculator::lineNet($this->quantity, $this->unitPrice)->withScale(2)->toFloat();
     }
 }

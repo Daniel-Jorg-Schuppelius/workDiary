@@ -14,10 +14,9 @@ namespace App\Models\ServiceTicket;
 
 use App\Models\Approval\Approval;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Procurement\RequestItem;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany, MorphTo};
-use App\Models\Procurement\RequestItem;
-use App\Models\ServiceTicket\ServiceTicket;
 
 /**
  * Service-Request (Feature 065, MVP-154): 1:1 zum Ticket der Art

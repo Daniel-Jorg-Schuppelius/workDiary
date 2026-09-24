@@ -375,7 +375,7 @@ final class CatalogDatanormImportTest extends TestCase {
         ]) . "\r\n");
         $item = SupplierCatalogItem::query()->where('external_no', 'NYM-DEL')->firstOrFail();
 
-        $service = app(\App\Services\Procurement\MetalSurchargeService::class);
+        $service = app(\App\Services\Article\MetalSurchargeService::class);
         // Ohne Notierung bleibt der Basispreis.
         $this->assertSame('1.8950', $service->effectivePurchasePrice($item)?->getAmount());
 

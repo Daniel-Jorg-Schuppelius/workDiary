@@ -10,16 +10,15 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Finance\Sepa;
+namespace App\Services\Billing\Sepa;
 
 use App\Enums\Document\DocumentType;
 use App\Enums\Finance\{PaymentRunKind, PaymentRunStatus};
 use App\Models\Finance\{BankAccount, PaymentRun, PaymentRunItem, SepaMandate};
 use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\User;
-use App\Services\Accounting\Posting\PostingInboxService;
+use App\Services\Billing\FinancialFormatsSupport;
 use App\Services\Document\DocumentService;
-use App\Services\Finance\FinancialFormatsSupport;
 use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\CryptoHelper;
@@ -210,7 +209,8 @@ class PaymentRunService {
         // Dasselbe Vier-Augen-Setting wie der Buchungskern (Vollscan 2026-08-23,
         // E4): Geldausgang ist der sensiblere Pfad — wer zusammenstellt, gibt
         // bei aktivem Prinzip nicht selbst frei.
-        if ((bool) Setting::get(PostingInboxService::FOUR_EYES_KEY, false)
+        // Gleicher Schlüssel wie PostingInboxService::FOUR_EYES_KEY (config/settings-registry.php) — kein Import aus dem Finanzmodul in den Kern.
+        if ((bool) Setting::get('finance.accounting_four_eyes', false)
             && $run->created_by !== null && (int) $run->created_by === (int) $actor->id) {
             throw new RuntimeException((string) __('sepa.error.four_eyes'));
         }

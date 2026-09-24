@@ -43,7 +43,7 @@ class SalesInvoiceAdapter extends AbstractPostingAdapter {
             ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID, Invoice::STATUS_PAID])
             // MVP-707: Altrechnungen sind Eröffnungs-OP ohne Journalbuchung —
             // ihr Erlös wurde im Vorsystem gebucht.
-            ->where('number_source', '!=', \App\Services\Import\Specs\InvoiceSpec::NUMBER_SOURCE)
+            ->where('number_source', '!=', \App\Services\Invoicing\Import\InvoiceSpec::NUMBER_SOURCE)
             ->whereNotNull('issued_on')
             ->whereDate('issued_on', '>=', $from->toDateString())
             ->whereDate('issued_on', '<=', $to->toDateString())
@@ -99,8 +99,8 @@ class SalesInvoiceAdapter extends AbstractPostingAdapter {
             $rate = (string) ($group['rate'] ?? '0.00');
             // Die Aufschlüsselung liegt als JSON vor; Money normalisiert die
             // Rohwerte ohne Float-Zwischenschritt (Vollscan 2026-08-23, C1).
-            $net = Money::of((string) ($group['net'] ?? '0'), $source->currencyCode())->getAmount();
-            $tax = Money::of((string) ($group['tax'] ?? '0'), $source->currencyCode())->getAmount();
+            $net = Money::of((string) ($group['net'] ?? '0'), $source->documentCurrency())->getAmount();
+            $tax = Money::of((string) ($group['tax'] ?? '0'), $source->documentCurrency())->getAmount();
             $context = ['tax_rate' => $rate];
 
             $revenue = $this->rule($organization, PostingAccountRole::Revenue, $context, $issuedOn);

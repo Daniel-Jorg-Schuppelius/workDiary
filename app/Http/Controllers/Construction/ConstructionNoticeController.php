@@ -15,6 +15,7 @@ namespace App\Http\Controllers\Construction;
 use App\Enums\Construction\ConstructionNoticeStatus;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Construction\SaveConstructionNoticeRequest;
 use App\Models\Construction\ConstructionNotice;
 use App\Models\Customer\Customer;
@@ -27,7 +28,6 @@ use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use RuntimeException;
-use App\Http\Controllers\Controller;
 
 /**
  * VOB/B-Schreiben (Feature 062, MVP-728, H23): Behinderungsanzeige (§ 6 VOB/B)

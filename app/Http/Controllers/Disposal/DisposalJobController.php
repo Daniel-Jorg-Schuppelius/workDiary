@@ -78,7 +78,7 @@ class DisposalJobController extends Controller {
             'customer', 'site', 'diaryEntry', 'responsible', 'creator',
             'items.treatments.performer', 'items.asset', 'items.attachments',
             'handovers.disposer', 'handovers.document.currentVersion',
-            'recordDocument.currentVersion', 'events.actor', 'signatureAttachment',
+            'recordDocument.currentVersion', 'journal.actor', 'signatureAttachment',
         ]);
 
         return view('disposal.show', [

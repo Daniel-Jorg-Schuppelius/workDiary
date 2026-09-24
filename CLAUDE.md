@@ -112,6 +112,9 @@ Modul-Gate, Rechtegruppen, Navigationsschlüssel, `requires()` und Plugins.
   Manufacturing, Procurement); genau eines ist Eigentümer (`ownsLicense()`).
 - Betrieb: `modules:cache` nach dem Deploy (steht in deploy.sh), `modules:clear`
   beim Entwickeln nach neuen Manifesten.
+- **Modulregister:** nach jeder Manifest-Änderung `php artisan modules:doc`
+  (schreibt `../WorkDiary-Architecture/modul-register.md`); `modules:check`
+  meldet ein veraltetes Register, sobald das Architektur-Repo daneben liegt.
 
 ## Domänenordner: keine Klasse direkt im Schichtordner (MVP-862)
 
@@ -124,6 +127,203 @@ Gate `DomainFolderRuleTest`; Plugin-Modelle unter `app/Models/Plugins/<Name>`.
 Wer eine Klasse verschiebt: `use`-Zeilen und Nachbarn im alten Namespace
 nachziehen, `morph-map:generate` laufen lassen (Legacy-Schlüssel bleiben,
 Werte wandern), Views bleiben wo sie sind.
+
+## Modulgrenzen: Contracts, Events, Erweiterungspunkte (MVP-863)
+
+`App\Modules\BoundaryRules` (Matrix nach `ModuleKind`): Plattform → nur
+Plattform, Kern → Plattform/Kern, Feature → Plattform/Kern direkt, Feature →
+Feature nur mit `requires()` (transitiv, Lizenzfamilie zählt). Ausgenommen:
+Modelle, `…\Contracts\…`, `…\Dto\…`, `…\Exceptions\…`, `App\Events\…`;
+konkrete Plugins werden nicht gemessen, `app/Plugins/Support` ist Plattform.
+`php artisan modules:deps [--all|--baseline]` zeigt Kanten und Verstöße;
+Gate `ModuleBoundaryRuleTest` gegen
+`tests/Unit/Architecture/baselines/module-boundaries.php` — seit Phase 111
+Welle 4 leer; ein neuer Verstoß wird gelöst, nicht eingetragen.
+
+Über eine Modulgrenze führen drei Wege, alle im Manifest:
+
+- **Erweiterungspunkt** — Plattform/Kern definiert das Interface und liest
+  `ModuleRegistry::extensions(Interface::class)`; das Modul nennt seine Klassen
+  in `extensions()`. Bestehend: `DeadlineScan`, `EntitySpec`, `SearchSource`,
+  `DemoBlock`, `SyncCommandHandler`, `MailableDocumentProvider`,
+  `ProfileInstallStep`, `AllocationTargetHandler`, `InboxGroupBooker`,
+  `VehicleReservationGuard`, `ProjectEconomicsDimension`, `RoomBlockingSource`,
+  `CloudIntakeHandler`, `RetentionPolicyProvider`, `MailIntakeHandler`,
+  `OffboardingStep`, `NavigationCondition`, `PluginCapabilitySource`,
+  `MirrorPdfRenderer`. Neue Scans, Specs, Quellen,
+  Demo-Blöcke, Löschbereiche usw. **nie** in eine feste Liste, sondern ins
+  Manifest des Moduls.
+- **Contract mit Null-Bindung** — der Aufrufer braucht eine Antwort:
+  Interface im aufrufenden Modul unter `Services/<Modul>/Contracts`,
+  Null-Implementierung daneben, `contracts()` im definierenden und
+  `bindings()` im bindenden Manifest (genau eins). Null antwortet neutral oder
+  wirft `ModuleUnavailableException::for($code)`.
+- **Domain-Event** — es soll nur etwas geschehen: Event unter
+  `App\Events\<Domäne>` (Vergangenheitsform), Listener unter
+  `App\Listeners\<Domäne>` in `listeners()`; Fachmodul-Listener erben
+  `ModuleListener`; Konsistenz-Events synchron, Folgeprozesse
+  `ShouldDispatchAfterCommit`; Benachrichtigung über `NotifiesUsers` +
+  `NotificationBridge`. Observer nutzen nur ihr Modul oder die Plattform
+  (Gate `ObserverModuleRuleTest`), Gate `EventNamingRuleTest`.
+
+`modules:check` prüft die Verdrahtung (Interface erfüllt, Contract genau
+einmal definiert/gebunden, Listener mit `handle()`).
+
+## Journale: ein Baustein für alle Ereignisketten (MVP-864)
+
+Ereignisjournale (`*Event` auf `*_events`) erben von
+`App\Models\Journal\JournalEntry` (append-only) bzw.
+`HashChainedJournalEntry` (GoBD-Kette, Kanonik bleibt in `hashPayload()`).
+Vertrag: `event`, `actor_user_id`, `payload`, `occurred_at`; abweichende
+Spalten nennt das Journal in `$journalColumns` (`metadata`, `meta`,
+`event_type`, `user_id`, `created_at` ist Standard für `occurred_at`).
+Der Träger nutzt `HasJournal` (`journal()`, `record($event, $payload, $actor,
+$at, $extra)`), trägerlose Journale `X::log(null, …)`. **Nie** `XEvent::create(`
+oder `->journal()->create(` (Gate `JournalContractRuleTest`). Anzeige über
+`<x-journal :entries="$x->journal">`, Labels über `label()` (Enum →
+`journal.<modul>.<event>` in `lang/*/journal.php` → Modulpräfix → lesbarer
+Schlüssel). Neues Journal: Modell erben, `subject()`, Träger `HasJournal`,
+Labels ×5.
+
+## Belegpositionen: ein Vertrag, ein Rechner (MVP-865)
+
+Positionen von Rechnung, Angebot, Rechnungsplan, Kostenermittlung, Übergabe
+(Quellnachweis und Rechnungssicht) und LV tragen `App\Models\Contracts\DocumentLine`
+über den Trait `App\Models\Concerns\IsDocumentLine`; ihr Kopf trägt
+`HasDocumentLines` (`lines()`, `documentCurrency()`, `documentTotals()`).
+Abweichende Spalten nennt das Modell in `lineColumns()`
+(`'tax_rate' => 'vat_rate'`, `'net_amount' => 'total_price'`, `null` = Feld
+fehlt). Gelesen wird über den Vertrag (`netAmount()`, `taxRate()`,
+`lineQuantity()`), nie über rohe Spalten quer durch die Belegarten.
+
+- **Menge × Einzelpreis rechnet nur `App\Services\Billing\DocumentTotalsCalculator::lineNet()`**
+  (HalfUp auf der Preisskala, dann Währungsskala; Positionsrabatt Prozent vor
+  Betrag). Kein `round($q * $p, 2)`, kein `$price->times($qty)` im Code —
+  Gate `DocumentLineContractRuleTest`, Ausnahme nur der Rechner selbst.
+- **Belegsummen** liefert `documentTotals()` des Kopfes über
+  `DocumentTotalsCalculator::totals($lines, DocumentTotalsContext)`:
+  Zeilennettos in Währungspräzision je Steuersatz, Belegrabatt anteilig,
+  Steuer pro Satz gerundet, Reverse Charge ohne Steuer. Neue Belegart: Kopf
+  implementiert `HasDocumentLines` und baut seinen Kontext (Währung,
+  Satz-Rückfall, Rabatt) selbst — keine zweite Summenrechnung.
+- **Neue Positionstabelle** (`quantity` + `unit_price` + `tax_rate|vat_rate`)
+  ⇒ Modell mit `DocumentLine`, `IsDocumentLine`, `HasSqid`, `Auditable`,
+  `HasFactory` + Factory, `entity-types` ×5; Quellposten (wie
+  `material_usages`) nur mit Grund in der Allowlist des Gates.
+- Gespeicherte Beträge gelten vor der Rechnung (`InvoiceItem.amount` setzt
+  der Observer über `calculatedNetAmount()`, LV-`total_price` ist die
+  Bieterangabe); Rechnungspositionen ausgestellter Rechnungen bleiben
+  unveränderlich. Skonto bleibt an der Rechnung. Eingefrorene Summen unter
+  `tests/Fixtures/totals` — Änderungen an Rundung oder Rabattlogik brechen
+  sie absichtlich.
+
+## Feldschema: ein Typkatalog für Erfassung (MVP-866)
+
+Formulare, Checklisten und Kundenportal erfassen über `App\Services\Fields`:
+`FieldType` (14 Typen) ist der einzige Erfassungs-Typkatalog; `FieldSchema`
+(Definitionen, `fromRows()` für Dialogzeilen, `fromArray()` für Bestand),
+`FieldValidator` (Laravel-Regeln je Typ, Pflichtanhänge), `FieldValues`
+(typtreue Werte, `display()`), `FieldDocument` (Schema + Werte in einer
+JSON-Spalte, Cast `FieldDocumentCast`). Blade: `<x-field-input :field>` und
+`<x-field-display :field :values>` — die einzigen Stellen, die auf den Typ
+verzweigen (Gate `FieldSchemaRuleTest`).
+
+- **Kein neues Typ-Enum** mit `text/number/date/choice/photo/…`; Fachtypen
+  registriert ein Modul als `Contracts\FieldExtension` in `extensions()` seines
+  Manifests und referenziert sie in `FieldDefinition::extension`.
+- **Neue `checklist`-Spalte ⇒ `FieldDocumentCast`**; neue Schema-/Werte-
+  Spalten (`fields`, `value_json`, `values`) nur mit Grund in der Gate-
+  Allowlist. Kein `@switch($field['type'])` / `match ($field->type)` in
+  Views oder Diensten — Komponente bzw. Validator nutzen.
+- Formularvorlagen speichern `FieldSchema::fromRows()->toArray()`; alte
+  Typnamen `select`/`checkbox` liest `FieldType::fromStored()` weiter.
+- **Fach-Enums mit eigenen Speicherwerten** (`ProtocolItemType`,
+  `ProcedureStepType`, `SurveyQuestionType`, MVP-867) implementieren
+  `App\Enums\Fields\Contracts\FieldTyped` (`fieldType()`, `fieldExtension()`)
+  statt eigene Regeln zu tragen; Adapter lesen die Fachform
+  (`Protocol\Fields\ProtocolItemFields` liest `value_json` nur — der
+  Protokoll-Hash bleibt, Fixture `tests/Fixtures/protocols`;
+  `Procedure\Fields\ProcedureStepFields`, `SurveyQuestion::fieldDefinition()`).
+  Fachtypen (Mangel, Messreihe, Anhänge, Signatur) sind `FieldExtension`s im
+  Protokoll-Manifest. Datumsfelder prüfen strikt (`DateHelper::isDateTime`,
+  kein „tomorrow"), Eingabenamen ohne Präfix über `FieldValidator::rules($schema, '')`.
+
+## Eigene Felder je Organisation (MVP-868)
+
+Kunde, Auftrag, Asset, Artikel und Projekt tragen `HasCustomFields`
+(Vertrag `App\Models\Contracts\CustomFieldSubject`); das Schema je Träger
+liegt in `custom_field_definitions` (Org × Morph-Alias, `FieldSchemaCast`,
+Version, aktiv), die Werte in `custom_field_values` (ein Satz je Datensatz,
+`FieldValuesCast`). Alles läuft über `App\Services\Fields\CustomFieldService`
+(`schemaFor()`, `rules()`, `saveDefinition()`, `sync()`, `texts()`,
+`exportColumns()/exportRow()`).
+
+- **Neuer Träger**: Klasse in `CustomFieldService::SUBJECTS`, Modell mit
+  `HasCustomFields implements CustomFieldSubject`, Controller mit
+  `SavesCustomFields` (`validatedCustomFields()` vor dem Speichern,
+  `syncCustomFields()` danach), Formular `<x-custom-fields-group :model :subject>`,
+  Detailseite `<x-custom-fields-card :subject>`; Exporte hängen
+  `exportColumns()/exportRow()` an, Suchquellen `customFieldTexts()`.
+- Feldlisten bearbeitet `x-field-schema-editor` (auch Formularvorlagen);
+  Upload-/Signaturtypen gibt es hier nicht. Deaktivieren statt löschen,
+  Recht `organization.customFields.manage`.
+- Branchenprofile: Schlüssel `custom_fields` (Alias → Zeilen) ergänzt nur
+  fehlende Schlüssel (`CustomFieldInstallStep`); eigene Felder werden nie
+  überschrieben.
+
+## Kontaktdaten: Primärkontakt inline, Anschrift als Satellit (MVP-869)
+
+Jede Partei (Kunde, Lieferant, Fremdkunde, Lead, Bewerbung, Vereinsmitglied,
+Erziehungsberechtigte) trägt `HasContactAndBankDetails` und implementiert
+`App\Models\Contracts\ContactDetailsHolder`. E-Mail, Telefon und
+Ansprechpartner stehen inline; Anschriften und Bankverbindungen liegen in
+`contact_addresses`/`contact_bank_accounts`. Nur Kunde und Lieferant haben
+eine Projektion (`address_*`, `bank_*`, `ContactDetailsProjectionObserver`).
+
+- **Keine Spalten `street`/`zip`/`postal_code`/`city`** an Parteien (Gate
+  `ContactColumnsRuleTest`, Allowlist mit Grund: Einsatzort, Objekt, Absender).
+- Formular: `<x-contact-address-fields :subject>` mit Eingaben
+  `address_street`/`address_zip`/`address_city`, Regeln
+  `ContactSatelliteFields::addressRules()`; Controller
+  `WritesContactDetails` (`pullContactDetails()` vor, `writeContactDetails()`
+  nach dem Speichern); Dienste `ContactDetailsWriter::pullInline()` +
+  `writeInline()` (Teil-Update). Anzeige `postalAddressLines()`.
+- Anonymisierung löscht den Satelliten ausdrücklich (`addresses()->delete()`),
+  Auskunftsabschnitte geben die Anschrift aus; harte Löschung der Partei
+  räumt die Satelliten selbst ab.
+- Konventionen für Spaltennamen und Kontaktdaten:
+  [datenbank-konventionen.md](../WorkDiary-Architecture/datenbank-konventionen.md).
+
+## Spaltennamen (MVP-870)
+
+Neue Spalten folgen [datenbank-konventionen.md](../WorkDiary-Architecture/datenbank-konventionen.md):
+`created_by`/`updated_by`, `<rolle>_user_id`, `note`, `is_*`, `valid_from`/
+`valid_until`, Fachart `kind`, `<name>_type` nur mit `<name>_id`,
+`*_amount` + `currency`. Gate `ColumnNamingRuleTest` prüft Migrationen nach
+`2027_02_24_140000` (verboten: `created_by_user_id`, `updated_by_user_id`,
+`notes`, `active`, `valid_to`, `type`, loses `*_type`); der Bestand bleibt.
+
+## Listen-Sortierung über den Index-Parser (MVP-871)
+
+`sort`/`dir` liest ein Controller nur über `App\Support\SortableQuery::resolve()`
+(bzw. `apply()` oder `ParsesIndexQuery`): Whitelist, ungültiger Schlüssel setzt
+Schlüssel **und** Richtung auf den Default, `dir` unabhängig von der
+Schreibweise. Nie `$request->query('sort')`/`string('dir')` direkt (Gate
+`IndexQueryRuleTest`). `direction` ist in der App ein Fachfilter
+(Zahlungs-/Bürgschaftsrichtung, Verschieben), `input('sort')` ein Positionsfeld.
+
+## Statusvertrag: Übergänge nur im Enum (MVP-872)
+
+Status-Enums mit Lebenszyklus implementieren `HasStatusTransitions` und
+nutzen `HasTransitions`; die Tabelle steht in `allowedTransitions()`. Dienste
+prüfen mit `$status->canTransitionTo()` oder den Guard-Traits
+`AssertsStatusTransition` (RuntimeException) bzw.
+`AssertsValidatedTransition` (ValidationException mit Meldungsschlüssel).
+Keine `TRANSITIONS`-Konstante, keine Methode `canTransition`/`transitionTo`/
+`assertTransition` außerhalb `app/Enums` (Gate `EnumTransitionContractTest`,
+Regel 3). Gleicher Status zählt nicht als Übergang — wer ihn zulassen will,
+prüft `$from !== $to` selbst. Status-Spalten casten auf ein Enum
+(`StatusEnumCastRuleTest`, Baseline nur schrumpfen).
 
 ## Verweise
 

@@ -355,7 +355,7 @@ class ServiceCatalogController extends Controller {
 
     /**
      * Strukturierte Step-Liste → Genehmigungskette in der von
-     * {@see \App\Services\ServiceTicket\ApprovalService::createChain}
+     * {@see \App\Services\Approval\ApprovalService::createChain}
      * erwarteten Form [{approver: {type, value}}].
      *
      * @param array<int, array<string, mixed>> $steps

@@ -11,8 +11,7 @@
 namespace App\Policies\Platform;
 
 use App\Enums\User\Permission;
-use App\Models\Platform\Team;
-use App\Models\Platform\User;
+use App\Models\Platform\{Team, User};
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 /**

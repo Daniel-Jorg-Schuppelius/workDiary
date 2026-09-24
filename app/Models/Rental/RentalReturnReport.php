@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Rental;
 
+use App\Casts\FieldDocumentCast;
 use App\Enums\Rental\{RentalCondition, RentalReturnFollowUp};
 use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
@@ -52,7 +53,7 @@ class RentalReturnReport extends Model {
         'condition' => RentalCondition::class,
         'follow_up' => RentalReturnFollowUp::class,
         'reported_at' => 'datetime',
-        'checklist' => 'array',
+        'checklist' => FieldDocumentCast::class,
         'consumables' => 'array',
         'meter_value' => 'decimal:4',
         'operating_hours' => 'decimal:2',

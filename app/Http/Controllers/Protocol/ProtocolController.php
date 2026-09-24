@@ -13,15 +13,14 @@ namespace App\Http\Controllers\Protocol;
 use App\Enums\Protocol\ProtocolItemPhotoPhase;
 use App\Enums\User\Permission;
 use App\Exceptions\{InvalidProtocolTransitionException, ProtocolValidationException};
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Protocol\{AddProtocolItemRequest, FillProtocolItemRequest, IssueProtocolSignatureTokenRequest, StoreProtocolRequest, TransitionProtocolRequest, UpdateProtocolRequest, UploadProtocolItemPhotoRequest};
 use App\Models\Asset\Asset;
-use App\Models\Diary\DiaryEntry;
-use App\Models\Protocol\Protocol;
-use App\Models\Protocol\ProtocolItem;
-use App\Models\Protocol\ProtocolItemPhoto;
 use App\Models\Customer\Customer;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Models\Protocol\{Protocol, ProtocolItem, ProtocolItemPhoto};
 use App\Services\Protocol\{ProtocolItemPhotoService, ProtocolPdfRenderer, ProtocolService, ProtocolSignatureTokenService};
 use App\Services\Weather\WeatherService;
 use App\Support\ErrorText;
@@ -31,7 +30,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use App\Http\Controllers\Controller;
 
 class ProtocolController extends Controller {
     /**
@@ -67,7 +65,7 @@ class ProtocolController extends Controller {
             'subject',
             'weatherSnapshot',
             'creator:id,name',
-            'events.actor:id,name',
+            'journal.actor:id,name',
             'attachments',
             'tags',
         ]);

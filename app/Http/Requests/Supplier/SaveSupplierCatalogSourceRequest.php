@@ -10,11 +10,11 @@
 
 namespace App\Http\Requests\Supplier;
 
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Support\UrlSafety;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 /**
  * Validierung für eine Lieferanten-Katalogquelle (Feature 050, MVP-091).

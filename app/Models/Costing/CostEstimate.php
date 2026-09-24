@@ -14,8 +14,13 @@ namespace App\Models\Costing;
 
 use App\Models\Catalog\CatalogRegistry;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Contracts\HasDocumentLines;
 use App\Models\Gaeb\BillOfQuantity;
 use App\Models\Project\Project;
+use App\Services\Billing\DocumentTotalsCalculator;
+use App\Services\Billing\Dto\DocumentTotalsContext;
+use CommonToolkit\Enums\CurrencyCode;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
@@ -40,8 +45,10 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int|null $catalog_registry_id
  * @property string|null $note
  */
-class CostEstimate extends Model {
+class CostEstimate extends Model implements HasDocumentLines {
     use BelongsToOrganization;
+    /** @use HasFactory<\Database\Factories\Costing\CostEstimateFactory> */
+    use HasFactory;
     use HasSqid;
 
     /** Die vier HOAI-Stufen, in der Reihenfolge des Vorhabens. */
@@ -73,6 +80,20 @@ class CostEstimate extends Model {
     /** @return HasMany<CostEstimateItem, $this> */
     public function items(): HasMany {
         return $this->hasMany(CostEstimateItem::class, 'cost_estimate_id')->orderBy('position');
+    }
+
+    /** @return HasMany<CostEstimateItem, $this> */
+    public function lines(): HasMany {
+        return $this->items();
+    }
+
+    public function documentCurrency(): CurrencyCode {
+        return CurrencyCode::tryFrom(strtoupper((string) $this->currency)) ?? CurrencyCode::Euro;
+    }
+
+    /** Kostenermittlungen führen keine Steuer — die Summe ist das Netto. */
+    public function documentTotals(): array {
+        return app(DocumentTotalsCalculator::class)->totals($this->items, new DocumentTotalsContext(currency: $this->documentCurrency()));
     }
 
     /** @return BelongsTo<Project, $this> */

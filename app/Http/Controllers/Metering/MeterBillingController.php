@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Metering;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Metering\SaveMeterBillingAgreementRequest;
 use App\Models\Asset\Asset;
 use App\Models\Customer\Customer;
@@ -22,7 +23,6 @@ use App\Services\Metering\MeterBillingService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /**
  * Zählerstands-Faktura (Feature 116, MVP-605).

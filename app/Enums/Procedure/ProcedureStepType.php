@@ -12,12 +12,14 @@ namespace App\Enums\Procedure;
 
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
+use App\Enums\Fields\Contracts\FieldTyped;
+use App\Enums\Fields\FieldType;
 
 /**
  * Definiert die in MVP-025 unterstuetzten Schritt-Typen einer
  * Prozedurvorlage (siehe ../WorkDiary-Architecture/prozedurvorlagen.md §5).
  */
-enum ProcedureStepType: string implements HasLabel {
+enum ProcedureStepType: string implements FieldTyped, HasLabel {
     use HasOptions;
 
     case Confirm = 'confirm';
@@ -38,5 +40,23 @@ enum ProcedureStepType: string implements HasLabel {
 
     public function label(): string {
         return (string) __('enums.procedure.step-type.' . $this->value);
+    }
+
+    /** Erfassungsfeld des Schritts (MVP-867); Schrittarten ohne Wert (Bestätigung, Warten, Backup, Freigabe, …) haben keins. */
+    public function fieldType(): ?FieldType {
+        return match ($this) {
+            self::Text => FieldType::Text,
+            self::Number => FieldType::Number,
+            self::Choice => FieldType::Choice,
+            self::Photo => FieldType::Photo,
+            self::File => FieldType::File,
+            self::Signature => FieldType::Signature,
+            self::Messreihe => FieldType::Measurement,
+            default => null,
+        };
+    }
+
+    public function fieldExtension(): ?string {
+        return null;
     }
 }

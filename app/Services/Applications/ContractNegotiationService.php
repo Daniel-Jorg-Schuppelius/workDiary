@@ -14,7 +14,7 @@ namespace App\Services\Applications;
 
 use App\Models\Applications\{ApplicationContractNegotiation, ApplicationContractVersion, ApplicationOpportunity, JobApplication};
 use App\Models\Platform\User;
-use App\Services\ServiceTicket\ApprovalService;
+use App\Services\Approval\ApprovalService;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\Facades\DB;
 

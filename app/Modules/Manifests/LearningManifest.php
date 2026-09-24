@@ -112,4 +112,32 @@ final class LearningManifest extends Manifest {
             'api.learning.*',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Learning\Demo\LearningDemoBlock::class,
+            ],
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Learning\DeadlineScans\LearningDueScan::class,
+            ],
+            \App\Services\Search\Indexing\Sources\SearchSource::class => [
+                \App\Services\Learning\Search\LearningCourseSource::class,
+            ],
+            \App\Services\Sync\Contracts\SyncCommandHandler::class => [
+                \App\Services\Learning\Sync\LearningSyncHandler::class,
+            ],
+            \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
+                \App\Services\Learning\Retention\LearningRetentionPolicies::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\Learning\Contracts\QuestionTicketOpener::class => \App\Services\Learning\Contracts\NullQuestionTicketOpener::class,
+        ];
+    }
 }

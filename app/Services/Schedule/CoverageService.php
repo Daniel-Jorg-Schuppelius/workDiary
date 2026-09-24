@@ -13,10 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Schedule;
 
 use App\Enums\Shift\ScheduledShiftStatus;
-use App\Models\Schedule\CoverageRequirement;
-use App\Models\Schedule\DutyPlan;
-use App\Models\Schedule\ScheduledShift;
-use App\Models\Schedule\ShiftType;
+use App\Models\Schedule\{CoverageRequirement, DutyPlan, ScheduledShift, ShiftType};
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonPeriod};
 use Illuminate\Support\Collection;

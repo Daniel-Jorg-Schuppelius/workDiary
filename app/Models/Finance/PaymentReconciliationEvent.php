@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Models\Finance;
 
-use App\Models\Concerns\{HashChainable, HashChained};
+use App\Models\Journal\HashChainedJournalEntry;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Append-only Ereignisprotokoll des Zahlungsabgleichs (Feature 045,
@@ -34,10 +34,11 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @phpstan-consistent-constructor
  */
-class PaymentReconciliationEvent extends Model implements HashChainable {
+class PaymentReconciliationEvent extends HashChainedJournalEntry {
+    protected static ?string $labelPrefix = 'finance.event';
+
     /** @use HasFactory<\Database\Factories\Finance\PaymentReconciliationEventFactory> */
     use HasFactory;
-    use HashChained;
 
     protected $table = 'payment_reconciliation_events';
 
@@ -75,7 +76,8 @@ class PaymentReconciliationEvent extends Model implements HashChainable {
         ];
     }
 
-    private function nullableInt(mixed $value): ?int {
-        return $value === null ? null : (int) $value;
+    /** @return BelongsTo<BankTransaction, $this> */
+    public function subject(): BelongsTo {
+        return $this->belongsTo(BankTransaction::class, 'bank_transaction_id');
     }
 }

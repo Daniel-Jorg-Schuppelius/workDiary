@@ -17,7 +17,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
-use App\Models\Diary\DayCorrectionRequest;
 
 /**
  * Tagesabschluss (MVP-015, ../WorkDiary-Architecture/tagesabschluss.md §3).

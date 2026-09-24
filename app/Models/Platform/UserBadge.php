@@ -15,7 +15,6 @@ use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Platform\User;
 
 /**
  * RFID-/NFC-Badge eines Nutzers (Feature 061, MVP-130). Die Kennung wird nur als

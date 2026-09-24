@@ -103,7 +103,7 @@ class LearningParticipantsTest extends TestCase {
         $this->assertSame(LearningEnrollmentSource::Manual, $enrollment->source);
         $this->assertSame($manager->id, $enrollment->assigned_by_user_id);
         $this->assertSame(now()->addDays(14)->toDateString(), $enrollment->due_at?->toDateString());
-        $this->assertSame('Neue Aufgabe im Lager', $enrollment->events()->firstOrFail()->reason);
+        $this->assertSame('Neue Aufgabe im Lager', $enrollment->journal()->firstOrFail()->reason);
     }
 
     public function test_person_aus_fremder_organisation_wird_abgewiesen(): void {
@@ -227,7 +227,7 @@ class LearningParticipantsTest extends TestCase {
         $enrollment->refresh();
         $this->assertSame(now()->addMonth()->toDateString(), $enrollment->due_at?->toDateString());
         $this->assertSame(now()->addMonths(2)->toDateString(), $enrollment->access_until?->toDateString());
-        $this->assertSame('Krankheitsbedingt verschoben', $enrollment->events()->latest('id')->firstOrFail()->reason);
+        $this->assertSame('Krankheitsbedingt verschoben', $enrollment->journal()->reorder('id', 'desc')->firstOrFail()->reason);
     }
 
     public function test_zugang_darf_nicht_vor_der_faelligkeit_enden(): void {

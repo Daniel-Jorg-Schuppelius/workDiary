@@ -19,7 +19,7 @@ use App\Models\Platform\User;
 use App\Models\Privacy\RetentionProposal;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Passenger\PassengerRideService;
-use App\Services\Privacy\Retention\{RetentionRegistry, RetentionScanService};
+use App\Services\Retention\{RetentionRegistry, RetentionScanService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

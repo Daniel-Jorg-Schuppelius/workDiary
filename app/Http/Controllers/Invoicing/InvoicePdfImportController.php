@@ -14,13 +14,14 @@ namespace App\Http\Controllers\Invoicing;
 
 use App\Enums\Document\DocumentType;
 use App\Enums\Invoicing\InvoiceDeliveryFormat;
+use App\Http\Controllers\Controller;
 use App\Http\Controllers\Document\DocumentController;
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
+use App\Services\Billing\BillingModeResolver;
 use App\Services\Document\DocumentService;
-use App\Services\Finance\BillingModeResolver;
 use App\Services\Invoicing\{InvoiceGenerator, InvoicePdfImportService, TaxResolver};
 use App\Support\MorphMap;
 use CommonToolkit\Enums\CurrencyCode;
@@ -30,7 +31,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 /** PDF-/Word-/Excel-Rechnung → prüfbarer Entwurf → E-Rechnungs-Ausgabe. */
 class InvoicePdfImportController extends Controller {

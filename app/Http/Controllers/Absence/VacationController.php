@@ -12,8 +12,9 @@ namespace App\Http\Controllers\Absence;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Vacation\{VacationStatus, VacationType};
-use App\Models\Platform\User;
+use App\Http\Controllers\Controller;
 use App\Models\Absence\Vacation;
+use App\Models\Platform\User;
 use App\Services\Absence\VacationBalanceService;
 use App\Services\Approval\ApprovalFlowService;
 use App\Services\Notification\NotificationDispatcher;
@@ -23,7 +24,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class VacationController extends Controller {
     public function __construct(private readonly VacationBalanceService $balanceService) {}

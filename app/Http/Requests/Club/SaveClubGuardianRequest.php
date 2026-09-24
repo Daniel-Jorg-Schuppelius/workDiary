@@ -14,13 +14,14 @@ namespace App\Http\Requests\Club;
 
 use App\Enums\Club\ClubGuardianPermission;
 use App\Http\Requests\BaseFormRequest;
-use App\Http\Requests\Concerns\DecodesSqidInputs;
+use App\Http\Requests\Concerns\{ContactSatelliteFields, DecodesSqidInputs};
 use App\Models\Platform\User;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
 
 /** Vertretung eines Mitglieds (MVP-842): Kontakt, optionales Konto, erlaubte Handlungen, Gültigkeit. */
 class SaveClubGuardianRequest extends BaseFormRequest {
+    use ContactSatelliteFields;
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
@@ -30,7 +31,7 @@ class SaveClubGuardianRequest extends BaseFormRequest {
 
     /** @return array<string, mixed> */
     public function rules(): array {
-        return [
+        return $this->addressRules() + [
             'name' => ['required', 'string', 'max:160'],
             'email' => ['nullable', 'email', 'max:190'],
             'phone' => ['nullable', 'string', 'max:60'],

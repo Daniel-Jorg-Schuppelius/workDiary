@@ -19,6 +19,7 @@ use App\Models\Asset\{Asset, AssetBlock};
 use App\Models\AssetCompliance\{AssetCalibrationCertificate, AssetComplianceAssignment, AssetComplianceProfile, AssetInspectionEvent, AssetInspectionSchedule};
 use App\Models\Platform\{Organization, User};
 use App\Services\Asset\AssetBlockService;
+use App\Services\Asset\Contracts\AssetComplianceStatusProvider;
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,7 @@ use Illuminate\Support\Facades\DB;
  * GEMEINSAME Sperrmodell (D12) — Verleih, Disposition und Einsatzfreigabe
  * lesen denselben Status.
  */
-class AssetComplianceService {
+class AssetComplianceService implements AssetComplianceStatusProvider {
     public function __construct(
         private readonly AssetBlockService $blocks,
         private readonly NotificationDispatcher $notifier,
@@ -409,7 +410,7 @@ class AssetComplianceService {
             return;
         }
 
-        $claim = app(\App\Services\Claims\ClaimCaseService::class)->open(
+        $claim = app(\App\Services\Claims\Contracts\ClaimIntake::class)->open(
             Organization::query()->findOrFail($event->organization_id),
             $actor,
             [

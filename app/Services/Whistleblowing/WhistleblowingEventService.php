@@ -47,14 +47,10 @@ class WhistleblowingEventService {
         ?User $actor = null,
         array $metadata = [],
     ): CaseEvent {
-        return CaseEvent::create([
-            'organization_id' => $case->getAttribute('organization_id'),
-            'case_id' => $case->getKey(),
-            'actor_type' => $actor instanceof User ? 'user' : 'system',
-            'actor_user_id' => $actor?->getKey(),
-            'event' => $event,
-            'metadata' => $metadata === [] ? null : $metadata,
-        ]);
+        /** @var CaseEvent $entry */
+        $entry = $case->record($event, $metadata, $actor, extra: ['actor_type' => $actor instanceof User ? 'user' : 'system']);
+
+        return $entry;
     }
 
     /**
@@ -63,13 +59,6 @@ class WhistleblowingEventService {
      * @param array<string, scalar|null> $metadata
      */
     public function recordSystem(?int $organizationId, string $event, array $metadata = []): CaseEvent {
-        return CaseEvent::create([
-            'organization_id' => $organizationId,
-            'case_id' => null,
-            'actor_type' => 'system',
-            'actor_user_id' => null,
-            'event' => $event,
-            'metadata' => $metadata === [] ? null : $metadata,
-        ]);
+        return CaseEvent::log(null, $event, $metadata, null, extra: ['organization_id' => $organizationId, 'actor_type' => 'system']);
     }
 }

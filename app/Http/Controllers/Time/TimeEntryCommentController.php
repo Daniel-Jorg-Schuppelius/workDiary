@@ -10,13 +10,13 @@
 
 namespace App\Http\Controllers\Time;
 
+use App\Http\Controllers\Controller;
 use App\Models\Communication\Comment;
 use App\Models\Time\TimeEntry;
 use App\Support\Setting;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{Auth, Gate};
-use App\Http\Controllers\Controller;
 
 class TimeEntryCommentController extends Controller {
     /**

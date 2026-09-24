@@ -16,7 +16,7 @@
     <x-index-page :subtitle="__('bank.subtitle.index')"
                   :badge="$importAvailable ? null : __('bank.import.error.unavailable_badge')"
                   badge-tone="warning"
-                  :badge-title="$importAvailable ? null : \App\Services\Finance\FinancialFormatsSupport::unavailableMessage('bank.import.error.unavailable')">
+                  :badge-title="$importAvailable ? null : \App\Services\Billing\FinancialFormatsSupport::unavailableMessage('bank.import.error.unavailable')">
         <x-slot:actions>
             @can('create', \App\Models\Finance\BankStatement::class)
                 @if ($importAvailable)

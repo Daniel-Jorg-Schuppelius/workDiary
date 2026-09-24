@@ -10,10 +10,11 @@
 
 namespace App\Services\Form;
 
-use App\Enums\Form\{FormFieldType, FormTemplateStatus};
+use App\Enums\Form\FormTemplateStatus;
 use App\Models\Form\{FormSubmission, FormTemplate};
 use App\Models\Platform\User;
 use App\Services\Attachments\FileAttacher;
+use App\Services\Fields\{FieldExtensionRegistry, FieldSchema, FieldValidator, FieldValues};
 use CommonToolkit\Helper\Data\DataUrlHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
@@ -32,16 +33,21 @@ use Illuminate\Validation\ValidationException;
  * nicht — der Lebenszyklus ist trivial.
  */
 class FormService {
+    public function __construct(
+        private readonly FieldValidator $fieldValidator,
+        private readonly FieldExtensionRegistry $extensions,
+    ) {}
+
     /**
      * Legt eine Vorlage an (Status default draft). Die Felddefinition wird
-     * strukturell validiert und normalisiert (FormFieldDefinition).
+     * strukturell validiert und normalisiert (FieldSchema::fromRows).
      *
      * @param  array<string, mixed>  $attributes
      *
      * @throws ValidationException bei Strukturfehlern in der Felddefinition
      */
     public function createTemplate(User $creator, array $attributes): FormTemplate {
-        $fields = FormFieldDefinition::normalize((array) ($attributes['fields'] ?? []));
+        $fields = FieldSchema::fromRows((array) ($attributes['fields'] ?? []))->toArray();
 
         return DB::transaction(fn(): FormTemplate => FormTemplate::query()->create([
             'organization_id' => $creator->organization_id,
@@ -98,7 +104,7 @@ class FormService {
             $payload['description'] = $this->normalizeDescription($attributes['description']);
         }
         if (array_key_exists('fields', $attributes)) {
-            $payload['fields'] = FormFieldDefinition::normalize((array) $attributes['fields']);
+            $payload['fields'] = FieldSchema::fromRows((array) $attributes['fields'])->toArray();
         }
         // Gültigkeit + Zuordnung (M11): nur ändern, wenn die Felder mitkommen.
         if (array_key_exists('valid_from', $attributes) || array_key_exists('valid_until', $attributes)) {
@@ -180,31 +186,31 @@ class FormService {
         // Bedingungslogik (Rang 33): nur aktuell sichtbare Felder werden
         // validiert — unsichtbare Pflichtfelder blockieren nicht und ihre
         // Werte/Dateien werden nicht gespeichert.
-        $visibleFields = FormFieldDefinition::visibleFields($fields, $values);
+        $visible = FieldSchema::fromArray($fields)->visibleFor($values);
 
         $validated = Validator::make(
             ['values' => $values],
-            FormFieldDefinition::rules($visibleFields),
+            $this->fieldValidator->rules($visible),
             [],
-            FormFieldDefinition::attributeNames($visibleFields),
+            $visible->attributeNames(),
         )->validate();
 
         // Pflicht-Prüfung für Attachment-Felder (Rang 32): required + kein Inhalt.
-        $this->assertRequiredAttachments($visibleFields, $files, $signatures, $deferredKeys);
+        $this->assertRequiredAttachments($visible, $files, $signatures, $deferredKeys);
 
-        $submission = DB::transaction(function () use ($template, $subject, $fields, $visibleFields, $validated, $user, $files, $signatures, $deferredKeys): FormSubmission {
+        $submission = DB::transaction(function () use ($template, $subject, $fields, $visible, $validated, $user, $files, $signatures, $deferredKeys): FormSubmission {
             $submission = FormSubmission::query()->create([
                 'organization_id' => $user->organization_id,
                 'form_template_id' => $template->id,
                 'fields_snapshot' => $fields,
-                'values' => FormFieldDefinition::normalizeValues($visibleFields, (array) ($validated['values'] ?? [])),
+                'values' => FieldValues::normalize($visible, (array) ($validated['values'] ?? []), $this->extensions)->toArray(),
                 'subject_type' => $subject?->getMorphClass(),
                 'subject_id' => $subject?->getKey(),
                 'submitted_by_user_id' => $user->id,
                 'submitted_at' => now(),
             ]);
 
-            $this->storeFieldAttachments($submission, $visibleFields, $files, $signatures, $user, $deferredKeys);
+            $this->storeFieldAttachments($submission, $visible, $files, $signatures, $user, $deferredKeys);
 
             $template->audit('form.submitted', [
                 'actor_user_id' => $user->id,
@@ -242,28 +248,14 @@ class FormService {
     /**
      * Erzwingt Inhalt für Pflicht-Attachment-Felder (Foto/Datei/Unterschrift).
      *
-     * @param  list<array<string, mixed>>  $fields
      * @param  array<string, UploadedFile>  $files
      * @param  array<string, string>  $signatures
      * @param  list<string>  $deferredKeys
      *
      * @throws ValidationException
      */
-    private function assertRequiredAttachments(array $fields, array $files, array $signatures, array $deferredKeys = []): void {
-        $errors = [];
-        foreach ($fields as $field) {
-            $type = FormFieldType::from((string) $field['type']);
-            if (! $type->storesAttachment() || ! ($field['required'] ?? false)) {
-                continue;
-            }
-            $key = (string) $field['key'];
-            $present = $type->isSignature()
-                ? (isset($signatures[$key]) && trim($signatures[$key]) !== '')
-                : (($files[$key] ?? null) instanceof UploadedFile || in_array($key, $deferredKeys, true));
-            if (! $present) {
-                $errors['values.' . $key] = (string) __('validation.required', ['attribute' => (string) $field['label']]);
-            }
-        }
+    private function assertRequiredAttachments(FieldSchema $schema, array $files, array $signatures, array $deferredKeys = []): void {
+        $errors = $this->fieldValidator->missingAttachments($schema, $files, $signatures, $deferredKeys);
         if ($errors !== []) {
             throw ValidationException::withMessages($errors);
         }
@@ -274,16 +266,15 @@ class FormService {
      * `field:<key>`) am Submission ab und schreibt einen Anzeige-Marker in
      * `values` (Dateiname bzw. „signed").
      *
-     * @param  list<array<string, mixed>>  $fields
      * @param  array<string, UploadedFile>  $files
      * @param  array<string, string>  $signatures
      * @param  list<string>  $deferredKeys
      */
-    private function storeFieldAttachments(FormSubmission $submission, array $fields, array $files, array $signatures, User $user, array $deferredKeys = []): void {
+    private function storeFieldAttachments(FormSubmission $submission, FieldSchema $schema, array $files, array $signatures, User $user, array $deferredKeys = []): void {
         $markers = [];
-        foreach ($fields as $field) {
-            $key = (string) $field['key'];
-            $type = FormFieldType::from((string) $field['type']);
+        foreach ($schema as $field) {
+            $key = $field->key;
+            $type = $field->type;
 
             if ($type->isUpload() && ($files[$key] ?? null) instanceof UploadedFile) {
                 $attachment = app(FileAttacher::class)->store($submission, $files[$key], (int) $user->id);
@@ -316,15 +307,8 @@ class FormService {
      * fremde Abgabe hängen.
      */
     public function attachDeferred(FormSubmission $submission, string $fieldKey, UploadedFile $file, User $user): void {
-        $field = null;
-        foreach ((array) $submission->fields_snapshot as $candidate) {
-            if ((string) $candidate['key'] === $fieldKey) {
-                $field = $candidate;
-                break;
-            }
-        }
-
-        if ($field === null || ! FormFieldType::from((string) $field['type'])->isUpload()) {
+        $field = FieldSchema::fromArray($submission->fields_snapshot)->get($fieldKey);
+        if ($field === null || ! $field->type->isUpload()) {
             throw ValidationException::withMessages([
                 'field' => (string) __('form.validation.no_upload_field'),
             ]);

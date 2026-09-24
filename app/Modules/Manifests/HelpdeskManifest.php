@@ -83,4 +83,51 @@ final class HelpdeskManifest extends Manifest {
             'zammad',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\ServiceTicket\Demo\HelpdeskDemoBlock::class,
+            ],
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\ServiceTicket\DeadlineScans\HelpdeskFollowupScans::class,
+                \App\Services\ServiceTicket\DeadlineScans\SlaQuotaScan::class,
+                \App\Services\ServiceTicket\DeadlineScans\SlaTicketScan::class,
+            ],
+            \App\Services\Search\Indexing\Sources\SearchSource::class => [
+                \App\Services\ServiceTicket\Search\ServiceTicketSource::class,
+            ],
+            \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
+                \App\Services\ServiceTicket\Retention\HelpdeskRetentionPolicies::class,
+            ],
+            \App\Services\Mail\Contracts\MailIntakeHandler::class => [
+                \App\Services\ServiceTicket\Mail\TicketThreadMailIntakeHandler::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function bindings(): array {
+        return [
+            \App\Services\Learning\Contracts\QuestionTicketOpener::class => \App\Services\ServiceTicket\Learning\LearningQuestionTicketOpener::class,
+            \App\Services\Asset\Contracts\ServiceLevelResolver::class => \App\Services\ServiceTicket\SlaTimer::class,
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function listeners(): array {
+        return [
+            \App\Events\Asset\MaintenanceDue::class => [
+                \App\Listeners\Helpdesk\OpenMaintenanceTicket::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\ServiceTicket\Contracts\KnownErrorPublisher::class => \App\Services\ServiceTicket\Contracts\NullKnownErrorPublisher::class,
+        ];
+    }
 }

@@ -11,12 +11,12 @@
 namespace App\Http\Requests\Diary;
 
 use App\Enums\Tour\TourStatus;
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Fleet\Vehicle;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 class SaveTourRequest extends BaseFormRequest {
     use DecodesSqidInputs;

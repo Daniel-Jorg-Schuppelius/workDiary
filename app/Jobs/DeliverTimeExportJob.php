@@ -14,7 +14,7 @@ namespace App\Jobs;
 
 use App\Enums\TimeExport\TimeExportStatus;
 use App\Mail\TimeExportDeliveryMail;
-use App\Models\Time\{TimeExport, TimeExportDeliveryConfig, TimeExportEvent};
+use App\Models\Time\{TimeExport, TimeExportDeliveryConfig};
 use App\Services\TimeExport\{TimeExportService, TimeExportSftpUploader};
 use Carbon\CarbonImmutable;
 use Illuminate\Bus\Queueable;
@@ -173,12 +173,7 @@ class DeliverTimeExportJob implements ShouldQueue {
 
     /** @param  array<string, mixed>|null  $payload */
     private function logEvent(TimeExport $export, string $event, ?string $note, ?array $payload = null): void {
-        TimeExportEvent::query()->create([
-            'time_export_id' => $export->id,
-            'event' => $event,
-            'actor_user_id' => null, // System (Queue), kein menschlicher Akteur
-            'note' => $note,
-            'payload' => $payload,
-        ]);
+        // System (Queue), kein menschlicher Akteur.
+        $export->record($event, $payload ?? [], null, extra: ['note' => $note]);
     }
 }

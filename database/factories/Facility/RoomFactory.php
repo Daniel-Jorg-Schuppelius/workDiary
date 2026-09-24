@@ -10,8 +10,8 @@
 
 namespace Database\Factories\Facility;
 
-use App\Models\Platform\Organization;
 use App\Models\Facility\Room;
+use App\Models\Platform\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

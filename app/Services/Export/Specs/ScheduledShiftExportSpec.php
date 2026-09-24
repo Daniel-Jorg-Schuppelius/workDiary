@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Export-Spezifikation für Schichtpläne — Round-Trip zur
- * {@see \App\Services\Import\Specs\ScheduledShiftSpec}.
+ * {@see \App\Services\Schedule\Import\ScheduledShiftSpec}.
  *
  * Der Mitarbeiter wird als `user_email` (fachlicher Schlüssel des Imports)
  * ausgegeben, der Schichttyp als Name.

@@ -14,8 +14,9 @@ use App\Casts\MoneyCast;
 use App\Enums\Numbering\NumberScope;
 use App\Enums\Project\ProjectStatus;
 use App\Models\Asset\Asset;
-use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasClassifications, HasCommunicationNotes, HasContactAndBankDetails, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSequentialNumber, HasSqid, HasTags, Searchable};
-use App\Models\Contacts\{ContactAddress, ContactBankAccount};
+use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasClassifications, HasCommunicationNotes, HasContactAndBankDetails, HasCustomFields, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSequentialNumber, HasSqid, HasTags, Searchable};
+use App\Models\Contacts\ContactAddress;
+use App\Models\Contracts\{ContactDetailsHolder, CustomFieldSubject};
 use App\Models\Facility\{Room, Site};
 use App\Models\Integration\ExternalReference;
 use App\Models\Material\MaterialCostAllocation;
@@ -73,7 +74,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $archived_at
  * @property int|null $created_by
  */
-class Customer extends Model {
+class Customer extends Model implements ContactDetailsHolder, CustomFieldSubject {
     use Archivable;
     use Auditable;
     use BelongsToOrganization;
@@ -83,9 +84,10 @@ class Customer extends Model {
 
     use HasCommunicationNotes;
     use HasContactAndBankDetails;
+    use HasCustomFields;
+
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
-
     use HasPartyDisplayLabel;
     use HasPhoneSearchKeys;
     use HasSequentialNumber;
@@ -239,24 +241,8 @@ class Customer extends Model {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    /** @return MorphMany<ContactAddress, $this> */
-    public function addresses(): MorphMany {
-        return $this->morphMany(ContactAddress::class, 'addressable');
-    }
-
-    /** @return MorphMany<ContactBankAccount, $this> */
-    public function bankAccounts(): MorphMany {
-        return $this->morphMany(ContactBankAccount::class, 'accountable');
-    }
-
-    public function primaryAddress(): ?ContactAddress {
-        return $this->addresses()->where('is_primary', true)->first()
-            ?? $this->addresses()->first();
-    }
-
-    public function primaryBankAccount(): ?ContactBankAccount {
-        return $this->bankAccounts()->where('is_primary', true)->first()
-            ?? $this->bankAccounts()->first();
+    public function contactAddressKind(): string {
+        return ContactAddress::KIND_BILLING;
     }
 
     /** @return HasMany<Project, $this> */
