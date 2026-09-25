@@ -151,6 +151,17 @@ return [
         'cycle' => 'Cycle (ABC)',
         'cycle_open' => 'Count cycle',
         'cycle_empty' => 'No due items in this class.',
+        'mobile_title' => 'Mobile stocktake',
+        'mobile_open' => 'Count on mobile',
+        'mobile_qty' => 'Quantity per scan',
+        'mobile_add' => 'Count',
+        'mobile_hint' => 'Each scan adds to the quantity counted so far. Without a connection, the scan is stored and transmitted later.',
+        'mobile_last' => 'Last counted (total)',
+        'mobile_progress' => ':counted of :total positions counted',
+        'closed' => 'The stocktake is closed.',
+        'qty_positive' => 'The quantity must be greater than zero.',
+        'not_found' => 'Stocktake not found.',
+        'forbidden' => 'No permission for stocktake counts.',
     ],
     'overview' => [
         'avg' => 'Avg cost',
@@ -187,6 +198,7 @@ return [
             'purchased' => 'Purchased',
         ],
         'field' => [
+            'parcel' => 'Parcel',
             'serial_no' => 'Serial number',
             'status' => 'Status',
             'source' => 'Source',
@@ -295,6 +307,15 @@ return [
     ],
 
     'scan' => [
+        'match' => [
+            'serial' => 'Serial number',
+            'lot' => 'Lot',
+            'variant' => 'Variant',
+            'article' => 'Article',
+            'asset' => 'Asset',
+            'unknown' => 'Unknown',
+        ],
+        'open_asset' => 'Open asset',
         'action' => [
             'receipt' => 'Goods receipt',
             'issue' => 'Issue',

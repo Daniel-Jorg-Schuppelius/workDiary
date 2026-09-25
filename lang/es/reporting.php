@@ -147,4 +147,31 @@ return [
         'empty' => 'Sin repartos de tiempo en el período.',
         'note' => 'Basado únicamente en las partes del reparto; el tiempo no repartido aparece en los informes de tiempo habituales.',
     ],
+    'supplier_bridge' => [
+        'title' => 'Puente de gasto periodo anterior → periodo',
+        'start' => 'Periodo anterior',
+        'end' => 'Periodo',
+        'others' => 'Otros',
+        'note' => 'Periodo anterior = periodo de igual duración inmediatamente antes; los cinco mayores cambios por separado, el resto como «Otros». Un clic abre los justificantes del proveedor.',
+    ],
+    'warning' => [
+        'customer_rework' => [
+            'title' => 'Retrabajo en :name: :actual %',
+            'detail' => 'Últimos 90 días, objetivo :target %.',
+            'recommendation' => 'Recomendación: analizar con el equipo las causas del retrabajo, revisar la formación o las instrucciones de trabajo y replantear los precios de este cliente.',
+        ],
+        'asset_defects' => [
+            'title' => 'Defectos recurrentes: :name',
+            'detail' => ':count defectos en :months meses.',
+            'recommendation' => 'Recomendación: valorar la sustitución o un plan de mantenimiento más estricto e informar al fabricante.',
+        ],
+        'claim_pattern' => [
+            'recommendation' => 'Recomendación: informar al proveedor o fabricante y valorar un regreso; bloquear las existencias restantes de los lotes afectados.',
+        ],
+        'widget' => [
+            'title' => 'Incidencias destacadas',
+            'description' => 'Alertas tempranas de informes, objetos y reclamaciones con acción recomendada.',
+            'none' => 'No hay incidencias destacadas.',
+        ],
+    ],
 ];

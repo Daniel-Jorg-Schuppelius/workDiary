@@ -311,6 +311,7 @@ return [
             'cash_entry' => 'Kasse :register · :purpose',
             'payment' => 'Zahlung (:kind) · :target',
             'depreciation' => 'AfA :year · :no :name',
+            'asset_disposal' => 'Abgang :no :name',
         ],
         'reversal_reason' => [
             'unmatched' => 'Zahlungszuordnung aufgehoben — Gegenbuchung.',
@@ -347,6 +348,8 @@ return [
             'asset_account' => 'Anlagenkonto',
             'depreciation_account' => 'AfA-Aufwandskonto',
             'disposed_on' => 'Abgang am',
+            'disposal_kind' => 'Art des Abgangs',
+            'disposal_proceeds' => 'Veräußerungserlös (netto)',
             'created_by' => 'Angelegt von',
         ],
         'section' => [
@@ -365,12 +368,13 @@ return [
         'hint' => [
             'device' => 'Optionaler Bezug zum Geräte-Register; nicht jede Anlage ist ein Gerät.',
             'residual_value' => 'Bleibt am Ende der Nutzungsdauer stehen; Standard 0.',
-            'useful_life' => 'Betriebsgewöhnliche Nutzungsdauer laut AfA-Tabelle, in Monaten.',
+            'useful_life' => 'Betriebsgewöhnliche Nutzungsdauer laut AfA-Tabelle, in Monaten. Bei GWG und Sammelposten ergibt sich die Laufzeit aus der Methode.',
             'accounts' => 'Leer lassen, dann greift die Buchungsregel der Rolle (Anlagenkonto / AfA-Aufwand).',
             'frozen' => 'Eine AfA-Buchung ist festgeschrieben — Anschaffung, AK/HK, Restwert und Nutzungsdauer sind eingefroren.',
             'schedule' => 'Linear, monatsgenau im Anschaffungs- und Abgangsjahr (§ 7 Abs. 1 S. 4 EStG); das letzte Jahr nimmt die Restdifferenz.',
             'posting' => 'Die Jahres-AfA wird im Abschluss je Geschäftsjahr vorgeschlagen und in der Inbox festgeschrieben — nie direkt.',
-            'dispose' => 'Der Abgang beendet den AfA-Plan im Abgangsmonat. Der verbleibende Buchwert wird nicht automatisch ausgebucht.',
+            'dispose' => 'Der Abgang beendet den AfA-Plan im Abgangsmonat. Den verbleibenden Buchwert stellt die Buchungs-Inbox als Abgangsbuchung bereit.',
+            'disposal_proceeds' => 'Nur bei Verkauf. Der Erlös wird über die Ausgangsrechnung gebucht; hier entscheidet er nur, ob der Restbuchwert als Buchgewinn oder -verlust ausgebucht wird.',
         ],
         'action' => [
             'add' => 'Anlage anlegen',
@@ -384,6 +388,8 @@ return [
             'disposed' => 'Abgang erfasst.',
         ],
         'error' => [
+            'gwg_limit' => 'GWG nur bis :limit € netto (Einstellung der Organisation).',
+            'pool_range' => 'Sammelposten nur über :lower € bis :upper € netto (Einstellung der Organisation).',
             'disposed_frozen' => 'Eine abgegangene Anlage ist nicht mehr änderbar.',
             'values_frozen' => 'Wertbestimmende Felder sind nach der ersten festgeschriebenen AfA gesperrt.',
             'disposed_before_acquired' => 'Der Abgang kann nicht vor der Anschaffung liegen.',
@@ -534,6 +540,22 @@ return [
 
     // Finanzberichte (Feature 125, MVP-676).
     'reports' => [
+        'fixed_asset_schedule' => [
+            'subtitle' => 'Geschäftsjahr :year (:from – :to)',
+            'year' => 'Geschäftsjahr',
+            'show' => 'Anzeigen',
+            'hint' => 'Aus dem AfA-Plan: Werte gelten auch, wenn eine Jahres-AfA noch nicht gebucht ist. Abgänge beenden den Plan im Abgangsjahr.',
+            'cost_start' => 'AK/HK Anfang',
+            'additions' => 'Zugänge',
+            'disposals' => 'Abgänge',
+            'cost_end' => 'AK/HK Ende',
+            'dep_start' => 'Kum. AfA Anfang',
+            'dep_year' => 'AfA Geschäftsjahr',
+            'dep_disposals' => 'AfA auf Abgänge',
+            'dep_end' => 'Kum. AfA Ende',
+            'book_start' => 'Buchwert Anfang',
+            'book_end' => 'Buchwert Ende',
+        ],
         'title' => 'Finanzberichte',
         'menu' => 'Finanzberichte',
         'subtitle' => 'Auswertungen der lokalen Buchhaltung im gewählten Zeitraum.',
@@ -638,6 +660,10 @@ return [
             ],
         ],
         'card' => [
+            'fixed_asset_schedule' => [
+                'title' => 'Anlagenspiegel',
+                'text' => 'Entwicklung von AK/HK und kumulierter AfA je Anlage im Geschäftsjahr.',
+            ],
             'trial_balance' => [
                 'title' => 'Summen- und Saldenliste',
                 'text' => 'Vortrag, Bewegung und Saldo je Konto.',

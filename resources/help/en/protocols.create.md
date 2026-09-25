@@ -1,7 +1,7 @@
 ---
 title: "Creating a protocol"
 topic: protocols.create
-version: 2
+version: 3
 audience: []
 schema: process
 related:
@@ -18,20 +18,22 @@ attached to its case and findable in the case file.
 
 ## Requirements
 
-- An existing order entry (case file).
-- A suitable **template** (e.g. "acceptance", "commissioning",
-  "maintenance") — templates are maintained by the administration.
+- An existing order, project or asset.
+- Optionally a matching **template** (e.g. “Acceptance”, “Maintenance”).
+  Templates are created from a sample protocol via **“Save as template”**
+  and maintained under **Protocol templates** in the administration.
 - The right to create protocols.
 
 ## Recommended workflow
 
-1. Open the case file and choose **"Create protocol"** in the actions
-   menu.
-2. Pick the **template**.
-3. Work through the **protocol items**: text, choice, photo, reading.
+1. Open the order, project or asset and choose **“Create protocol”**.
+2. Choose type, title and, if needed, the **template** — it brings its
+   items along.
+3. Add further items via **“Add item”** and record each item via
+   **“Fill in item”**: text, yes/no, choice, reading, defect.
 4. Attach **before/after photos** to the respective item.
-5. **Saving** leaves the protocol in **draft** status; for the
-   acceptance, switch to the signature dialog afterwards.
+5. Submit the protocol **for review** or complete it with
+   **“Finalize / sign”**; customers receive the **signature link**.
 
 ## Practical example
 

@@ -60,6 +60,8 @@ return [
 
         // Zinsen
         ['number' => '2100', 'name' => 'Zinsen und ähnliche Aufwendungen', 'type' => 'expense', 'euer_category' => 'expense'],
+        ['number' => '2310', 'name' => 'Anlagenabgänge Sachanlagen (Restbuchwert bei Buchverlust)', 'type' => 'expense', 'euer_category' => 'expense'],
+        ['number' => '2315', 'name' => 'Anlagenabgänge Sachanlagen (Restbuchwert bei Buchgewinn)', 'type' => 'income', 'euer_category' => 'income'],
         ['number' => '2650', 'name' => 'Zinsen und ähnliche Erträge', 'type' => 'income', 'euer_category' => 'income'],
 
         // Wareneingang
@@ -139,5 +141,10 @@ return [
         // Fuhrpark/Software werden je Anlage überschrieben.
         ['source_kind' => 'depreciation', 'role' => 'fixed_asset', 'account' => '0410'],
         ['source_kind' => 'depreciation', 'role' => 'depreciation', 'account' => '4830'],
+
+        // Anlagenabgang (MVP-891): Restbuchwert gegen Buchverlust bzw. -gewinn.
+        ['source_kind' => 'asset_disposal', 'role' => 'fixed_asset', 'account' => '0410'],
+        ['source_kind' => 'asset_disposal', 'role' => 'disposal_loss', 'account' => '2310'],
+        ['source_kind' => 'asset_disposal', 'role' => 'disposal_gain', 'account' => '2315'],
     ],
 ];

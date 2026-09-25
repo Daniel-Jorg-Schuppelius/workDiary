@@ -35,10 +35,17 @@
                         :hint="__('finance.dunning.kpi.blocked_hint')" />
         </div>
 
-        @if ($interestRate > 0)
+        @if ($baseRateMissing ?? false)
+            <div role="alert" class="alert alert-warning text-sm">
+                <x-icon name="warning" />
+                <span>{{ __('finance.dunning.interest_base_missing') }}</span>
+            </div>
+        @elseif ($interestRate > 0)
             <div class="alert text-sm">
                 <x-icon name="percent" />
-                <span>{{ __('finance.dunning.interest_active', ['rate' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($interestRate, 2)]) }}</span>
+                <span>{{ ($interestMode ?? 'fixed') === 'base_rate'
+                    ? __('finance.dunning.interest_active_base', ['points' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($interestPoints, 2), 'rate' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($interestRate, 2)])
+                    : __('finance.dunning.interest_active', ['rate' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($interestRate, 2)]) }}</span>
             </div>
         @endif
 
@@ -58,6 +65,9 @@
                                 <span class="text-xs text-muted">
                                     {{ __('finance.dunning.blocked_since', ['date' => $row['invoice']->dunning_blocked_at?->fdate() ?? '—']) }}
                                 </span>
+                                @if ($row['invoice']->dunning_block_reason)
+                                    <span class="text-xs">{{ $row['invoice']->dunning_block_reason }}</span>
+                                @endif
                             </li>
                         @endforeach
                     </ul>

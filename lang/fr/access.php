@@ -523,6 +523,7 @@ return [
         'protocol.supersede' => 'Remplacer un protocole par une révision de correction',
         'protocol.delete' => 'Supprimer un protocole',
         'protocol.signatureRequest' => 'Envoyer un lien de signature',
+        'protocol.template.manage' => 'Gérer les modèles de protocole',
         'protocol.pdfDownload' => 'Télécharger le PDF du protocole',
         'protocol.item.photo.add' => 'Ajouter une photo de protocole',
         'protocol.item.photo.remove' => 'Supprimer une photo de protocole',

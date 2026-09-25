@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Inventory;
 
 use App\Http\Controllers\Controller;
 use App\Models\Platform\Organization;
+use App\Models\Shipping\ShipmentParcel;
 use App\Services\Inventory\{SerialPassportService, SerialService};
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -38,6 +39,7 @@ class PublicSerialController extends Controller {
 
         $serialNo = $request->string('serial')->toString();
         $serial = $serialNo !== '' ? $this->serials->lookup($org->id, $serialNo) : null;
+        $parcel = $serial?->parcels()->first();
 
         return view('public.serial-passport', [
             'token' => $token,
@@ -45,6 +47,9 @@ class PublicSerialController extends Controller {
             'serial' => $serial,
             'searched' => $serialNo !== '',
             'orgName' => $org->name,
+            // Packstück „x von n“ (MVP-900) — ohne Sendungsnummer, die verriete den Empfangsort.
+            'parcel' => $parcel,
+            'parcelCount' => $parcel !== null ? ShipmentParcel::query()->where('stock_delivery_id', $parcel->stock_delivery_id)->count() : null,
         ]);
     }
 }

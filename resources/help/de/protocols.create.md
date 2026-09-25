@@ -1,7 +1,7 @@
 ---
 title: "Protokoll erstellen"
 topic: protocols.create
-version: 2
+version: 3
 audience: []
 schema: process
 related:
@@ -18,20 +18,25 @@ Vorgang zugeordnet und in der Fallakte auffindbar.
 
 ## Voraussetzungen
 
-- Ein bestehender Auftragseintrag (Fallakte).
-- Eine passende **Vorlage** (z. B. „Abnahme", „Inbetriebnahme",
-  „Wartung") — Vorlagen pflegt die Verwaltung.
+- Ein bestehender Auftrag, ein Projekt oder ein Objekt.
+- Optional eine passende **Vorlage** (z. B. „Abnahme“, „Wartung“). Vorlagen
+  entstehen aus einem Musterprotokoll über **„Als Vorlage speichern“** und
+  werden in der Verwaltung unter **Protokollvorlagen** gepflegt.
 - Das Recht, Protokolle zu erstellen.
 
 ## Empfohlener Ablauf
 
-1. Öffnen Sie die Fallakte und wählen Sie **„Protokoll erzeugen"** im
-   Aktionen-Menü.
-2. Wählen Sie die **Vorlage**.
-3. Arbeiten Sie die **Protokollpunkte** ab: Text, Auswahl, Foto, Messwert.
+1. Öffnen Sie den Auftrag, das Projekt oder das Objekt und wählen Sie
+   **„Protokoll anlegen“**.
+2. Wählen Sie Typ, Titel und bei Bedarf die **Vorlage** — sie bringt ihre
+   Punkte mit.
+3. Ergänzen Sie weitere Punkte über **„Punkt hinzufügen“** und erfassen
+   Sie jeden Punkt über **„Punkt erfassen“**: Text, Ja/Nein, Auswahl, Messwert,
+   Mangel.
 4. Hängen Sie **Vorher-/Nachher-Fotos** an den jeweiligen Punkt.
-5. **Speichern** lässt das Protokoll im Status **Entwurf**; für die
-   Abnahme wechseln Sie anschließend in den Signatur-Dialog.
+5. Reichen Sie das Protokoll **zur Prüfung** ein oder schließen Sie es mit
+   **„Abschließen / Unterschreiben“** ab; für Kunden gibt es den
+   **Signaturlink**.
 
 ## Beispiel aus der Praxis
 

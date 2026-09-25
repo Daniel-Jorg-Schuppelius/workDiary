@@ -14,15 +14,8 @@ use App\Enums\User\Permission as P;
 use App\Http\Controllers\Controller;
 use App\Models\Article\ArticleVariant;
 use App\Models\Inventory\{StockLot, StockSerial};
-use App\Models\Platform\Organization;
-use App\Models\Print\LabelTemplate;
 use App\Services\Inventory\LabelService;
-use App\Support\SqidEncoder;
-use BaconQrCode\Renderer\Image\SvgImageBackEnd;
-use BaconQrCode\Renderer\ImageRenderer;
-use BaconQrCode\Renderer\RendererStyle\RendererStyle;
-use BaconQrCode\Writer;
-use CommonToolkit\Helper\Data\DataUrlHelper;
+use App\Services\Print\LabelPdfRenderer;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
@@ -32,7 +25,10 @@ use Illuminate\Support\Facades\Auth;
  * inventory.viewAny oder inventory.post.
  */
 class LabelController extends Controller {
-    public function __construct(private readonly LabelService $labels) {}
+    public function __construct(
+        private readonly LabelService $labels,
+        private readonly LabelPdfRenderer $renderer,
+    ) {}
 
     public function variant(ArticleVariant $variant): Response {
         return $this->pdf($this->labels->forVariant($variant));
@@ -50,61 +46,11 @@ class LabelController extends Controller {
     private function pdf(array $data): Response {
         abort_unless((Auth::user()?->can(P::InventoryViewAny->value) ?? false) || (Auth::user()?->can(P::InventoryPost->value) ?? false), 403);
 
-        $template = $this->resolveTemplate();
-        if ($template instanceof LabelTemplate) {
-            $paper = $template->paper_size;
-            $orientation = $template->orientation;
-            $withQr = $template->with_qr;
-            $fields = $template->fields;
-        } else {
-            // Fallback: leichtgewichtige Org-Konfiguration (settings.label).
-            $config = app()->bound('currentOrganization') && app('currentOrganization') instanceof Organization
-                ? (array) data_get(app('currentOrganization')->settings, 'label', [])
-                : [];
-            $paper = isset($config['paper_size']) && is_string($config['paper_size']) && $config['paper_size'] !== '' ? $config['paper_size'] : 'a7';
-            $orientation = 'landscape';
-            $withQr = ($config['with_qr'] ?? true) !== false;
-            $fields = LabelTemplate::FIELDS;
-        }
-
-        // View→PDF über den zentralen Renderer (C15; Vollaudit 2026-07, N27) —
-        // Writer-Options (Papierformat der Etikettenvorlage) werden durchgereicht.
-        // #83: registriertes Spezialformat mit deklarierter Einschränkung
-        // (kein Firmenbogen/Basisdesign — siehe RenderDocumentKind::capabilityNote()).
-        $bytes = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->renderPdf(
-            \App\Enums\DocumentDesign\RenderDocumentKind::Label,
-            'inventory.labels.label',
-            [
-                'label' => $data,
-                'qr' => $withQr ? $this->qrDataUri($data['code']) : null,
-                'fields' => $fields,
-            ],
-            null,
-            ['paper_size' => $paper, 'orientation' => $orientation],
-        );
+        $bytes = $this->renderer->render($data, null, request()->string('template')->toString());
 
         return response($bytes, 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="label-' . $data['code'] . '.pdf"',
         ]);
-    }
-
-    /** Wählt die Etikettenvorlage: ?template (Sqid) oder die Standardvorlage der Org. */
-    private function resolveTemplate(): ?LabelTemplate {
-        $sqid = request()->string('template')->toString();
-        if ($sqid !== '') {
-            $id = app(SqidEncoder::class)->decode(LabelTemplate::class, $sqid);
-
-            return $id !== null ? LabelTemplate::query()->find($id) : null;
-        }
-
-        return LabelTemplate::query()->where('is_default', true)->first();
-    }
-
-    /** Erzeugt einen scannbaren QR-Code als SVG-Data-URI für das Etikett. */
-    private function qrDataUri(string $value): string {
-        $svg = (new Writer(new ImageRenderer(new RendererStyle(120, 1), new SvgImageBackEnd())))->writeString($value);
-
-        return (string) DataUrlHelper::encode($svg, 'image/svg+xml');
     }
 }

@@ -56,6 +56,6 @@ class DefectField implements FieldExtension {
     }
 
     public function inputView(): ?string {
-        return null;
+        return 'protocols.fields.defect';
     }
 }

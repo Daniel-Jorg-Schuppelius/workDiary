@@ -12,6 +12,8 @@
 @php
     $presetCustomer ??= null;
     $agreementOnly ??= false;
+    $templates ??= collect();
+    $preset ??= [];
     $kindOptions = $agreementOnly ? \App\Enums\Contract\ContractKind::signingKinds() : \App\Enums\Contract\ContractKind::cases();
     $defaultPartnerType = $presetCustomer ? \App\Enums\Contract\ContractPartnerType::Customer->value : 'other';
 @endphp
@@ -28,11 +30,24 @@
     @if ($agreementOnly)
         <p class="mb-3 text-sm text-muted">{{ __('contract-signing.dialog.new_agreement_intro') }}</p>
     @endif
+    {{-- Vorlagen (MVP-893): Klick lädt den Dialog vorbelegt neu. --}}
+    @if ($templates->isNotEmpty())
+        <div class="mb-3 flex flex-wrap items-center gap-2 text-sm">
+            <span class="text-muted">{{ __('contract.template.use') }}</span>
+            @foreach ($templates as $template)
+                <x-button size="xs" :tone="($preset['template_id'] ?? null) === $template->sqid ? 'primary' : 'ghost'" data-entry-modal-trigger
+                          :href="route('contracts.create', array_filter(['template' => $template->sqid, 'customer' => $presetCustomer?->sqid, 'agreement' => $agreementOnly ? 1 : null]))">{{ $template->name }}</x-button>
+            @endforeach
+        </div>
+    @endif
+    @if (isset($preset['template_id']))
+        <input type="hidden" name="template_id" value="{{ $preset['template_id'] }}">
+    @endif
     <x-form-group :legend="__('Vertrag')" icon="contract" tone="primary" cols="2">
-        <x-input-field name="title" :label="__('Titel/Bezeichnung')" :value="old('title')" required span="2" />
+        <x-input-field name="title" :label="__('Titel/Bezeichnung')" :value="old('title', $preset['title'] ?? null)" required span="2" />
         <x-select-field name="kind" :label="__('Vertragsart')" required>
             @foreach ($kindOptions as $kind)
-                <option value="{{ $kind->value }}" @selected(old('kind') === $kind->value)>{{ $kind->label() }}</option>
+                <option value="{{ $kind->value }}" @selected(old('kind', $preset['kind'] ?? null) === $kind->value)>{{ $kind->label() }}</option>
             @endforeach
         </x-select-field>
         <x-select-field name="responsible_user_id" :label="__('Verantwortlich')">
@@ -69,23 +84,23 @@
     <x-form-group :legend="__('Laufzeit & Kündigung')" icon="event_repeat" tone="primary" cols="2">
         <x-select-field name="term_kind" :label="__('Laufzeitmodell')" required>
             @foreach (\App\Enums\Contract\ContractTermKind::cases() as $tk)
-                <option value="{{ $tk->value }}" @selected(old('term_kind', 'fixed') === $tk->value)>{{ $tk->label() }}</option>
+                <option value="{{ $tk->value }}" @selected(old('term_kind', $preset['term_kind'] ?? 'fixed') === $tk->value)>{{ $tk->label() }}</option>
             @endforeach
         </x-select-field>
-        <x-input-field name="notice_period_days" type="number" min="0" :label="__('Kündigungsfrist (Tage)')" :value="old('notice_period_days')" />
+        <x-input-field name="notice_period_days" type="number" min="0" :label="__('Kündigungsfrist (Tage)')" :value="old('notice_period_days', $preset['notice_period_days'] ?? null)" />
         <x-date-range class="md:col-span-2" layout="split" form-control
                       from-name="starts_on" to-name="ends_on" type="date" fromId="ct-starts-on" toId="ct-ends-on"
                       :from-label="__('Beginn')" :to-label="__('Ende (leer = unbefristet)')"
                       :from="old('starts_on')" :to="old('ends_on')" />
-        <x-input-field name="min_term_months" type="number" min="0" :label="__('Mindestlaufzeit (Monate)')" :value="old('min_term_months')" />
-        <x-input-field name="renew_period_months" type="number" min="1" :label="__('Verlängerung um (Monate)')" :value="old('renew_period_months')" />
-        <x-checkbox-field name="auto_renew" :label="__('Automatische Verlängerung')" :checked="old('auto_renew')" span="2" />
+        <x-input-field name="min_term_months" type="number" min="0" :label="__('Mindestlaufzeit (Monate)')" :value="old('min_term_months', $preset['min_term_months'] ?? null)" />
+        <x-input-field name="renew_period_months" type="number" min="1" :label="__('Verlängerung um (Monate)')" :value="old('renew_period_months', $preset['renew_period_months'] ?? null)" />
+        <x-checkbox-field name="auto_renew" :label="__('Automatische Verlängerung')" :checked="old('auto_renew', $preset['auto_renew'] ?? false)" span="2" />
     </x-form-group>
 
     <x-form-group :legend="__('Indexierung')" icon="trending_up" tone="primary" cols="2">
         <x-select-field name="indexation_method" :label="__('Anpassungsregel')" required>
             @foreach (\App\Enums\Contract\IndexationMethod::cases() as $im)
-                <option value="{{ $im->value }}" @selected(old('indexation_method', 'none') === $im->value)>{{ $im->label() }}</option>
+                <option value="{{ $im->value }}" @selected(old('indexation_method', $preset['indexation_method'] ?? 'none') === $im->value)>{{ $im->label() }}</option>
             @endforeach
         </x-select-field>
         <x-input-field name="indexation_value" type="number" step="0.0001" min="0" :label="__('Wert/Prozent')" :value="old('indexation_value')" />
@@ -99,11 +114,19 @@
             <x-currency-options :selected="old('currency', 'EUR')" />
         </x-select-field>
         <x-select-field name="value_period" :label="__('Wertbezug')" required>
-            <option value="once" @selected(old('value_period', 'once') === 'once')>{{ __('einmalig') }}</option>
-            <option value="monthly" @selected(old('value_period') === 'monthly')>{{ __('monatlich') }}</option>
-            <option value="quarterly" @selected(old('value_period') === 'quarterly')>{{ __('quartalsweise') }}</option>
-            <option value="yearly" @selected(old('value_period') === 'yearly')>{{ __('jährlich') }}</option>
+            <option value="once" @selected(old('value_period', $preset['value_period'] ?? 'once') === 'once')>{{ __('einmalig') }}</option>
+            <option value="monthly" @selected(old('value_period', $preset['value_period'] ?? null) === 'monthly')>{{ __('monatlich') }}</option>
+            <option value="quarterly" @selected(old('value_period', $preset['value_period'] ?? null) === 'quarterly')>{{ __('quartalsweise') }}</option>
+            <option value="yearly" @selected(old('value_period', $preset['value_period'] ?? null) === 'yearly')>{{ __('jährlich') }}</option>
         </x-select-field>
+        @if (($costCenters ?? collect())->isNotEmpty())
+            <x-select-field name="cost_center_id" :label="__('contract.cost_center.field')">
+                <option value="">—</option>
+                @foreach ($costCenters as $costCenter)
+                    <option value="{{ $costCenter->sqid }}" @selected(old('cost_center_id') === $costCenter->sqid)>{{ $costCenter->code }} · {{ $costCenter->label }}</option>
+                @endforeach
+            </x-select-field>
+        @endif
         <x-select-field name="document_id" :label="__('Dokument (optional)')">
             <option value="">{{ __('kein Dokumentbezug') }}</option>
             @foreach ($documents as $d)

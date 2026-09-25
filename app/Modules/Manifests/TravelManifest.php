@@ -84,4 +84,16 @@ final class TravelManifest extends Manifest {
             \App\Services\Routing\Contracts\TravelLogRecorder::class => \App\Services\Travel\TravelLogService::class,
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Automation\Actions\RuleAction::class => [
+                \App\Services\Expense\Automation\ApproveExpenseAction::class,
+            ],
+            \App\Automation\Triggers\RuleTrigger::class => [
+                \App\Services\Expense\Automation\ExpenseSubmittedTrigger::class,
+            ],
+        ];
+    }
 }

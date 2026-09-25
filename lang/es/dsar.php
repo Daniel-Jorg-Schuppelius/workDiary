@@ -76,6 +76,10 @@ return [
     ],
 
     'internal' => [
+
+        'subject_search' => 'Buscar persona',
+
+        'subject_search_placeholder' => 'Nombre, correo electrónico o número',
         'from_portal' => 'Entrada por el portal',
         'portal_banner' => 'Esta solicitud llegó a través del portal público para interesados. Los datos de identidad son una declaración propia sin verificar.',
         'contact_email' => 'Dirección de respuesta',
@@ -102,5 +106,9 @@ return [
         'default_locale' => 'Idioma predeterminado (opcional, p. ej. es)',
         'saved' => 'Portal de interesados guardado.',
         'rotated' => 'El enlace del portal se ha rotado. Los enlaces ya publicados ya no son válidos.',
+    ],
+    'export' => [
+        'rows_truncated' => 'Se muestran :shown de :count filas en el PDF; el paquete JSON las contiene todas.',
+        'families_hint' => 'Resumen por familia de datos con número y periodo, seguido de las filas individuales; no se incluye contenido de terceros (notas de otras personas, detalles de cambios).',
     ],
 ];

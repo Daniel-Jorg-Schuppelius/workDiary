@@ -126,4 +126,14 @@ return [
     'empty_versions' => 'Ancora nessuna versione.',
     'confirm_delete' => 'Eliminare davvero questo documento con tutte le versioni?',
     'confirm_archive' => 'Archiviare davvero questo documento?',
+    'dispatch' => [
+        'history' => 'Cronologia invii',
+        'at' => 'Momento',
+        'document' => 'Documento',
+        'kind' => 'Tipo di documento',
+        'channel' => 'Canale',
+        'recipient' => 'Destinatario',
+        'status' => 'Stato',
+        'none' => 'Non ancora inviato.',
+    ],
 ];

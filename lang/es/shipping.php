@@ -83,4 +83,18 @@ return [
         'problem' => 'Problema de entrega',
         'cancelled' => 'Cancelado',
     ],
+    'parcel' => [
+        'add' => 'Añadir bulto',
+        'edit' => 'Editar bulto :no',
+        'delete' => 'Eliminar bulto',
+        'confirm_delete' => '¿Eliminar el bulto :no? Sus números de serie vuelven a quedar libres.',
+        'label' => 'Bulto :no de :of',
+        'serials' => 'Números de serie en el bulto',
+        'no_serials' => 'Esta entrega no tiene números de serie libres.',
+        'serial_count' => ':count n.º de serie',
+        'saved' => 'Bulto guardado.',
+        'deleted' => 'Bulto eliminado.',
+        'serial_not_allowed' => 'Los números de serie deben proceder de esta entrega y no pueden estar en otro bulto.',
+        'locked' => 'Ya existe una orden de envío para esta entrega; los bultos están fijados.',
+    ],
 ];

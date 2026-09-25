@@ -148,6 +148,11 @@ return [
     // Zweitfolgejahres (§ 149 Abs. 3 AO). Eine Angabe, keine Ableitung —
     // ob eine Kanzlei mandatiert ist, weiß das Programm nicht.
     'finance.accounting_tax_advised' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+    // GWG und Sammelposten (MVP-892): Wertgrenzen netto, gesetzliche Werte prüft der Betrieb.
+    'finance.fixed_assets.gwg_limit' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:100000', 'fallback' => 800],
+    'finance.fixed_assets.pool_lower' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:100000', 'fallback' => 250],
+    'finance.fixed_assets.pool_upper' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:100000', 'fallback' => 1000],
+    'finance.fixed_assets.pool_years' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:1|max:20', 'fallback' => 5],
     // Vier-Augen-Freigabe für Kundenrundschreiben (Feature 119). Default aus:
     // Wer allein arbeitet, hätte sonst eine Sperre ohne Ausweg.
     'communication.circular_approval' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
@@ -167,6 +172,13 @@ return [
     'invoicing.dunning.level3.fee' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:10000', 'fallback' => 0],
     'invoicing.dunning.level3.pay_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:90', 'fallback' => 7],
     'invoicing.dunning.interest_rate' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:30', 'fallback' => 0],
+    'invoicing.dunning.interest_mode' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['fixed', 'base_rate'], 'fallback' => 'fixed'],
+    'invoicing.dunning.interest_points' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:20', 'fallback' => 0],
+    // Mietbedingungen (MVP-895): Übergabe nur mit unterschriebener Fassung.
+    'rental.require_signed_terms' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+    // Reklamationsmuster (MVP-886): ab wie vielen gleichartigen Fällen in wie vielen Tagen.
+    'claims.pattern.threshold' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:2|max:50', 'fallback' => 3],
+    'claims.pattern.window_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:7|max:365', 'fallback' => 90],
     'ui.dashboard.recent_limit' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'min:1|max:1000'],
     'ui.calendar.slot_minutes' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'options' => [10, 15, 20, 30, 60]],
     // Neuigkeiten-Rail: externe Kommunikation bleibt installationsweit Opt-in.

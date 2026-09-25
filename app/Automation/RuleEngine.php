@@ -11,7 +11,9 @@
 namespace App\Automation;
 
 use App\Automation\Actions\RuleAction;
+use App\Automation\Triggers\RuleTrigger;
 use App\Models\Automation\{AutomationRule, AutomationRuleRun};
+use App\Modules\ModuleRegistry;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 
@@ -26,13 +28,23 @@ use Illuminate\Support\Facades\Log;
  * `matched`-Run existiert, wird die Regel übersprungen.
  */
 class RuleEngine {
-    /**
-     * @param  iterable<RuleAction>  $actions
-     */
+    /** @var list<RuleAction>|null */
+    private ?array $actions = null;
+
     public function __construct(
         private readonly ConditionEvaluator $evaluator,
-        private readonly iterable $actions,
+        private readonly ModuleRegistry $modules,
     ) {}
+
+    /** @return list<RuleAction> */
+    public function actions(): array {
+        return $this->actions ??= array_map(static fn (string $class): RuleAction => app($class), $this->modules->extensions(RuleAction::class));
+    }
+
+    /** @return list<RuleTrigger> */
+    public function triggers(): array {
+        return array_map(static fn (string $class): RuleTrigger => app($class), $this->modules->extensions(RuleTrigger::class));
+    }
 
     public function dispatch(string $triggerEvent, Model $subject, ?int $organizationId = null): void {
         $organizationId ??= $this->resolveOrganizationId($subject);
@@ -116,7 +128,7 @@ class RuleEngine {
     }
 
     private function resolveAction(string $type): ?RuleAction {
-        foreach ($this->actions as $action) {
+        foreach ($this->actions() as $action) {
             if ($action->type() === $type) {
                 return $action;
             }

@@ -324,6 +324,19 @@ test("buildPayload: comment.diary nimmt Diary-Sqid + Body mit", () => {
     });
 });
 
+test("buildPayload: inventory.count nimmt Inventur-Sqid, Code und Menge mit (MVP-898)", () => {
+    const values = { '[name="code"]': { value: "DUE-8" }, '[name="qty"]': { value: "2" } };
+    const form = {
+        dataset: { syncPayloadCount: "sqc1" },
+        querySelector: (sel) => values[sel] || null,
+    };
+    assert.deepEqual(buildPayload("inventory.count", form), {
+        count: "sqc1",
+        code: "DUE-8",
+        qty: "2",
+    });
+});
+
 test("buildPayload: unbekannter Typ liefert null (kein Abfangen)", () => {
     assert.equal(buildPayload("unbekannt.typ", {}), null);
 });

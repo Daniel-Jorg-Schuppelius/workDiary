@@ -229,6 +229,7 @@ return [
         'tender_binding_expiring' => 'Binding period ends on :date.',
         'incident_critical' => 'New critical security incident reported.',
         'safety_critical_event' => 'Critical safety event (:severity) reported at :location.',
+        'procedure_deviation_escalated' => 'Deviation in step “:step” (:severity) was escalated: :reason',
         'safety_assessment_review_due' => 'Risk assessment review due on :date.',
         'safety_instruction_due' => 'Repeat safety instruction “:topic” due on :date.',
         'safety_checkup_due' => 'Occupational medical checkup (:kind) due on :date.',

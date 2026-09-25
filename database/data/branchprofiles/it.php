@@ -336,4 +336,35 @@ return [
         ['key' => 'tom_assigned'],
         ['key' => 'tom_proof_current'],
     ],
+    // Vertragsvorlagen (MVP-893): Laufzeit, Kündigung, Pflichten relativ zum Beginn.
+    'contract_templates' => [
+        [
+            'name' => 'Wartungs- und Supportvertrag',
+            'kind' => 'maintenance',
+            'title' => 'IT-Wartung und Support',
+            'term_kind' => 'fixed',
+            'min_term_months' => 12,
+            'auto_renew' => true,
+            'renew_period_months' => 12,
+            'notice_period_days' => 90,
+            'value_period' => 'monthly',
+            'obligations' => [
+                ['kind' => 'review', 'title' => 'Jahresgespräch und Leistungsbericht', 'offset_months' => 11, 'recurring' => true, 'recurrence_months' => 12],
+            ],
+        ],
+        [
+            'name' => 'Softwarelizenz',
+            'kind' => 'license',
+            'title' => 'Softwarelizenz',
+            'term_kind' => 'fixed',
+            'min_term_months' => 12,
+            'auto_renew' => true,
+            'renew_period_months' => 12,
+            'notice_period_days' => 30,
+            'value_period' => 'yearly',
+            'obligations' => [
+                ['kind' => 'renewal_warning', 'title' => 'Lizenzbedarf prüfen', 'offset_months' => 10, 'recurring' => true, 'recurrence_months' => 12],
+            ],
+        ],
+    ],
 ];

@@ -558,6 +558,7 @@ return [
         'protocol.supersede' => 'Replace protocol with correction revision',
         'protocol.delete' => 'Delete protocol',
         'protocol.signatureRequest' => 'Send signature link',
+        'protocol.template.manage' => 'Maintain protocol templates',
         'protocol.pdfDownload' => 'Download protocol PDF',
         'protocol.item.photo.add' => 'Add protocol photo',
         'protocol.item.photo.remove' => 'Remove protocol photo',

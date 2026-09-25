@@ -21,5 +21,7 @@ enum BarcodeMatchType: string {
     case Lot = 'lot';
     case Variant = 'variant';
     case Article = 'article';
+    /** Objekt (MVP-882): Nummer, Inventar-/Seriennummer oder Etiketten-URL. */
+    case Asset = 'asset';
     case Unknown = 'unknown';
 }

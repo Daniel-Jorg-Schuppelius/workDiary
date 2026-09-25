@@ -10,12 +10,13 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Reporting;
+namespace App\Http\Controllers\Claims;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
 use App\Models\Claims\{ClaimCase, ClaimFinancialOutcome, ClaimReportSnapshot};
+use App\Services\Claims\ClaimPatternDetector;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request, Response};
@@ -90,15 +91,12 @@ class ClaimsReportController extends Controller {
             ->groupBy(fn(ClaimCase $c): string => (string) $c->supplier?->name)
             ->map(fn($group) => $group->count())->sortDesc();
 
-        // Wiederholfehler: gleicher Artikel + gleiche Ursache mehrfach.
-        $repeats = $cases->filter(fn(ClaimCase $c): bool => $c->article_id !== null && $c->root_cause_classification_id !== null)
-            ->groupBy(fn(ClaimCase $c): string => $c->article_id . ':' . $c->root_cause_classification_id)
-            ->filter(fn($group) => $group->count() > 1)
-            ->map(fn($group) => [
-                'article' => (string) $group->first()?->article?->name,
-                'cause' => (string) $group->first()?->rootCause?->label,
-                'count' => $group->count(),
-            ])->values();
+        // Serienfehler/Chargenprobleme (MVP-886) über den Detektor — dieselben
+        // Regeln und dieselbe Schwelle wie die Benachrichtigung.
+        $detector = app(ClaimPatternDetector::class);
+        $organization = $this->currentOrganization();
+        [$threshold] = $detector->settingsFor($organization);
+        $patterns = $detector->detect((int) $organization->id, $from, $to, $threshold);
 
         $costs = ClaimFinancialOutcome::query()
             ->whereIn('claim_case_id', $cases->pluck('id'))
@@ -118,7 +116,8 @@ class ClaimsReportController extends Controller {
             'by_defect' => $byDefect->all(),
             'by_article' => $byArticle->all(),
             'by_supplier' => $bySupplier->all(),
-            'repeats' => $repeats->all(),
+            'patterns' => $patterns,
+            'pattern_threshold' => $threshold,
         ];
     }
 
@@ -138,8 +137,8 @@ class ClaimsReportController extends Controller {
                 $rows[] = [$label . ': ' . $name, (string) $count];
             }
         }
-        foreach ((array) $data['repeats'] as $repeat) {
-            $rows[] = ['Wiederholfehler: ' . $repeat['article'] . ' / ' . $repeat['cause'], (string) $repeat['count']];
+        foreach ((array) $data['patterns'] as $pattern) {
+            $rows[] = [__('claims.pattern.rule.' . $pattern['rule']) . ': ' . $pattern['label'], (string) $pattern['count']];
         }
 
         return $this->csvWithMetadata($rows, 'reklamationsbericht.csv', 'claims-quality', $filters, $request);

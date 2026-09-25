@@ -35,9 +35,15 @@ class ApplicationRecordsSection extends AbstractSubjectSection {
         $a = $subject;
 
         return ['families' => [
-            $this->family('job_application_documents', __('Unterlagen'), $a->documents()->getQuery(), 'created_at'),
-            $this->family('job_application_interviews', __('Gespräche'), $a->interviews()->getQuery(), 'created_at'),
-            $this->family('job_application_reviews', __('Bewertungen'), $a->reviews()->getQuery(), 'created_at'),
+            $this->family('job_application_documents', __('Unterlagen'), $a->documents()->getQuery(), 'created_at',
+            columns: ['created_at' => __('Datum'), 'label' => __('Bezeichnung')],
+        ),
+            $this->family('job_application_interviews', __('Gespräche'), $a->interviews()->getQuery(), 'created_at',
+            columns: ['scheduled_at' => __('Termin'), 'mode' => __('Art'), 'status' => __('Status')],
+        ),
+            $this->family('job_application_reviews', __('Bewertungen'), $a->reviews()->getQuery(), 'created_at',
+            columns: ['created_at' => __('Datum'), 'rating' => __('Bewertung')],
+        ),
         ]];
     }
 }

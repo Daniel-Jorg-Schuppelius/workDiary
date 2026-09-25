@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Accounting\Posting\Adapters;
 
 use App\Enums\Finance\PostingAccountRole;
-use App\Models\Accounting\{AccountingPostingRule, AccountingProfile};
+use App\Models\Accounting\{AccountingAccount, AccountingPostingRule, AccountingProfile, FixedAsset};
 use App\Models\Finance\DatevBookingSource;
 use App\Models\Platform\Organization;
 use App\Services\Accounting\Posting\{PostingProposalLine, PostingRuleResolver, PostingSourceAdapter};
@@ -139,5 +139,53 @@ abstract class AbstractPostingAdapter implements PostingSourceAdapter {
         $profile = AccountingProfile::query()->where('organization_id', $organization->id)->first();
 
         return $profile instanceof AccountingProfile ? $profile->base_currency : CurrencyCode::Euro;
+    }
+
+    /**
+     * Zeile aus dem Anlagenkonto oder — ohne Konto an der Anlage — aus der
+     * Buchungsregel der Rolle (AfA und Abgang, Feature 133). Ein inaktives Anlagenkonto zählt wie keines.
+     *
+     * @param  numeric-string  $debit
+     * @param  numeric-string  $credit
+     * @param  list<string>  $blockers
+     * @param  list<string>  $ruleVersions
+     */
+    protected function fixedAssetLine(
+        Organization $organization,
+        FixedAsset $asset,
+        PostingAccountRole $role,
+        ?AccountingAccount $explicit,
+        string $debit,
+        string $credit,
+        CarbonImmutable $on,
+        array &$blockers,
+        array &$ruleVersions,
+    ): ?PostingProposalLine {
+        if ($explicit instanceof AccountingAccount && $explicit->is_active && (int) $explicit->organization_id === (int) $organization->id) {
+            $ruleVersions[] = 'asset:' . $asset->getKey();
+
+            return new PostingProposalLine(
+                role: $role,
+                account: $explicit,
+                debit: $debit,
+                credit: $credit,
+                memo: $asset->displayNo() . ' ' . $asset->name,
+                ruleVersion: 'asset:' . $asset->getKey(),
+            );
+        }
+
+        $rule = $this->rule($organization, $role, [], $on);
+        if ($rule === null) {
+            $blockers[] = $this->missingRuleBlocker($role);
+
+            return null;
+        }
+
+        $line = $this->line($role, $rule, $debit, $credit, $asset->displayNo() . ' ' . $asset->name);
+        if ($line instanceof PostingProposalLine) {
+            $ruleVersions[] = $rule->versionTag();
+        }
+
+        return $line;
     }
 }

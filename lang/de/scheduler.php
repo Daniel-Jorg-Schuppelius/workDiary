@@ -149,7 +149,7 @@ return [
         'finance' => ['open_times_digest' => 'Offene-Zeiten-Digest an die Buchhaltung'],
         'inventory' => ['cycle_counts' => 'Zyklische Inventur anstoßen', 'expiring_lots' => 'MHD-Überwachung (ablaufende Chargen)'],
         'accounting' => ['recurring' => 'Wiederkehrende Belegerwartungen und Buchungsentwürfe', 'filings' => 'Steuertermine abgleichen und an Fristen erinnern'],
-        'invoicing' => ['recurring' => 'Wiederkehrende Rechnungsentwürfe erzeugen'],
+        'invoicing' => ['recurring' => 'Wiederkehrende Rechnungsentwürfe erzeugen', 'base_rate_sync' => 'Basiszinssatz von der Bundesbank abgleichen'],
         'jtl' => ['sync' => 'JTL-Wawi-Abgleich'],
         'resale' => [
             'sync_domains' => 'Reselling-Abos: Domains aus der Domainverwaltung übernehmen',

@@ -33,6 +33,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $required_qualification_code
  * @property bool $requires_second_person
  * @property ProcedureProofType|null $requires_proof_type
+ * @property int|null $library_step_id Herkunft aus der Schrittbibliothek (MVP-896)
  */
 class ProcedureStepDef extends Model {
     /** @use HasFactory<ProcedureStepDefFactory> */

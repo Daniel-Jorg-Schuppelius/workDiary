@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Accounting;
 
 use App\Casts\MoneyCast;
-use App\Enums\Finance\{DepreciationMethod, FixedAssetStatus};
+use App\Enums\Finance\{DepreciationMethod, FixedAssetDisposalKind, FixedAssetStatus};
 use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
@@ -40,6 +40,8 @@ use Illuminate\Support\Carbon;
  * @property CurrencyCode $currency
  * @property Money|null $acquisition_cost
  * @property Money|null $residual_value
+ * @property FixedAssetDisposalKind|null $disposal_kind
+ * @property Money|null $disposal_proceeds_amount
  * @property int $useful_life_months
  * @property DepreciationMethod $depreciation_method
  * @property int|null $asset_account_id
@@ -79,6 +81,8 @@ class FixedAsset extends Model {
         'depreciation_account_id',
         'status',
         'disposed_on',
+        'disposal_kind',
+        'disposal_proceeds_amount',
         'source_type',
         'source_id',
         'note',
@@ -90,6 +94,8 @@ class FixedAsset extends Model {
         'asset_no' => 'integer',
         'acquired_on' => 'date',
         'disposed_on' => 'date',
+        'disposal_kind' => FixedAssetDisposalKind::class,
+        'disposal_proceeds_amount' => MoneyCast::class . ':currency,2',
         'currency' => CurrencyCode::class,
         'acquisition_cost' => MoneyCast::class . ':currency,2',
         'residual_value' => MoneyCast::class . ':currency,2',

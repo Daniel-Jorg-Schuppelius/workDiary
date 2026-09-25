@@ -14,6 +14,7 @@ namespace App\Models\Rental;
 
 use App\Enums\Rental\RentalCaseStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Contract\ContractSigningRevision;
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Facility\Site;
@@ -48,7 +49,7 @@ class RentalCase extends Model {
         'organization_id', 'number', 'status', 'customer_id', 'contact_name',
         'project_id', 'diary_entry_id', 'site_id', 'handover_location',
         'return_location', 'starts_at', 'ends_at', 'actual_return_at',
-        'responsible_user_id', 'rental_rate_card_id', 'terms_snapshot',
+        'responsible_user_id', 'rental_rate_card_id', 'terms_snapshot', 'contract_signing_revision_id',
         'deposit_amount', 'insurance_note', 'notes', 'created_by',
         'closed_at', 'closed_by',
     ];
@@ -104,6 +105,11 @@ class RentalCase extends Model {
     /** @return BelongsTo<User, $this> */
     public function responsible(): BelongsTo {
         return $this->belongsTo(User::class, 'responsible_user_id');
+    }
+
+    /** @return BelongsTo<ContractSigningRevision, $this> Unterschriebene Mietbedingungen (MVP-895) */
+    public function rentalTermsRevision(): BelongsTo {
+        return $this->belongsTo(ContractSigningRevision::class, 'contract_signing_revision_id');
     }
 
     /** @return BelongsTo<RentalRateCard, $this> */

@@ -87,7 +87,7 @@ class ExpenseService {
             // Automation-Hook: eine aktive Regel kann direkt approve/route. Vor der Approver-Notification,
             // damit auto-approve eine Entscheidungs- statt Anfrage-Benachrichtigung auslöst.
             try {
-                app(\App\Automation\RuleEngine::class)->dispatch('expense.submitted', $expense);
+                app(\App\Automation\RuleEngine::class)->dispatch(\App\Services\Expense\Automation\ExpenseSubmittedTrigger::KEY, $expense);
                 $expense->refresh();
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::warning('automation: expense.submitted dispatch failed', [

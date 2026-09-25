@@ -25,6 +25,8 @@ use RuntimeException;
  * möglich (Status „Deviated" mit Begründung).
  */
 class WaitStepService {
+    use Concerns\RecordsProcedureRunEvents;
+
     /** Startet die Wartezeit eines Schritts und blockiert die Fortsetzung. */
     public function beginWait(ProcedureStepRun $step, int $seconds): ProcedureStepRun {
         $now = Carbon::now();
@@ -33,6 +35,7 @@ class WaitStepService {
             'wait_started_at' => $now,
             'wait_until' => $now->copy()->addSeconds(max(0, $seconds)),
         ])->save();
+        $this->announceProgress($step, null);
 
         return $step;
     }
@@ -58,6 +61,7 @@ class WaitStepService {
             'executed_at' => Carbon::now(),
             'note' => $elapsed ? $step->note : ($reason ?? 'Vorzeitige Fortsetzung der Wartezeit'),
         ])->save();
+        $this->announceProgress($step, null);
 
         return $step;
     }

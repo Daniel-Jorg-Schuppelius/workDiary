@@ -147,4 +147,31 @@ return [
         'empty' => 'Aucune répartition du temps sur la période.',
         'note' => 'Basé uniquement sur les parts de répartition ; le temps non réparti apparaît dans les rapports de temps habituels.',
     ],
+    'supplier_bridge' => [
+        'title' => 'Pont des dépenses période précédente → période',
+        'start' => 'Période précédente',
+        'end' => 'Période',
+        'others' => 'Autres',
+        'note' => 'Période précédente = période de même durée juste avant ; les cinq plus fortes variations séparément, le reste sous « Autres ». Un clic ouvre les pièces du fournisseur.',
+    ],
+    'warning' => [
+        'customer_rework' => [
+            'title' => 'Reprises chez :name : :actual %',
+            'detail' => '90 derniers jours, objectif :target %.',
+            'recommendation' => 'Recommandation : analyser les causes des reprises avec l’équipe, vérifier la formation ou les instructions de travail et reconsidérer la tarification de ce client.',
+        ],
+        'asset_defects' => [
+            'title' => 'Défauts récurrents : :name',
+            'detail' => ':count défauts en :months mois.',
+            'recommendation' => 'Recommandation : envisager un remplacement ou un plan de maintenance plus serré et informer le fabricant.',
+        ],
+        'claim_pattern' => [
+            'recommendation' => 'Recommandation : informer le fournisseur ou le fabricant et examiner un recours ; bloquer le stock restant des lots concernés.',
+        ],
+        'widget' => [
+            'title' => 'Points d’attention',
+            'description' => 'Alertes précoces issues des analyses, des objets et des réclamations avec action recommandée.',
+            'none' => 'Aucun point d’attention.',
+        ],
+    ],
 ];

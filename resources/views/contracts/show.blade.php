@@ -51,6 +51,9 @@
                         </details>
                     @endif
                 @endcan
+                @can('create', \App\Models\Contract\Contract::class)
+                    <x-icon-btn icon="library_add" size="sm" data-entry-modal-trigger :href="route('contracts.templates.from-contract.form', $contract)" show-label>{{ __('contract.template.save_title') }}</x-icon-btn>
+                @endcan
                 <x-icon-btn icon="arrow_back" size="sm" :href="route('contracts.index')" show-label>{{ __('Zur Liste') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
@@ -64,6 +67,7 @@
                 <x-detail-grid.row :label="__('Mindestlaufzeit')">{{ $contract->min_term_months !== null ? $contract->min_term_months . ' ' . __('Monate') : '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Automatische Verlängerung')">{{ $contract->auto_renew ? __('ja, um :n Monate', ['n' => $contract->renew_period_months ?? '—']) : __('nein') }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Vertragswert')">{{ $contract->value_amount !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $contract->value_amount, 2, withThousandsSeparator: true) . ' ' . $contract->currency->value : '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('contract.cost_center.field')">{{ $contract->costCenter ? $contract->costCenter->code . ' · ' . $contract->costCenter->label : '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Verantwortlich')">{{ $contract->responsible->name ?? '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Dokument')">{{ $contract->document->title ?? '—' }}</x-detail-grid.row>
             </x-detail-grid>

@@ -127,6 +127,9 @@ final class InventoryManifest extends Manifest {
             \App\Plugins\Support\Contracts\PluginCapabilitySource::class => [
                 \App\Services\Inventory\InventoryCapabilitySource::class,
             ],
+            \App\Services\Sync\Contracts\SyncCommandHandler::class => [
+                \App\Services\Inventory\Sync\StockCountSyncHandler::class,
+            ],
         ];
     }
 }

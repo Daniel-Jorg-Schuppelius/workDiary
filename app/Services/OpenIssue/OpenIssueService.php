@@ -10,13 +10,15 @@
 
 namespace App\Services\OpenIssue;
 
+use App\Automation\RuleEngine;
 use App\Enums\OpenIssue\{OpenIssueEventType, OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
 use App\Exceptions\InvalidOpenIssueTransitionException;
 use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Platform\User;
+use App\Services\OpenIssue\Automation\OpenIssueCreatedTrigger;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{DB, Log};
 use InvalidArgumentException;
 
 /**
@@ -92,6 +94,16 @@ class OpenIssueService {
             $this->notifyAssigned($issue, $creator);
         }
 
+        // Automationsregeln (MVP-880) nach dem Commit: eine Regel darf die
+        // Anlage des Punkts nie zurückrollen.
+        DB::afterCommit(function () use ($issue): void {
+            try {
+                app(RuleEngine::class)->dispatch(OpenIssueCreatedTrigger::KEY, $issue);
+            } catch (\Throwable $e) {
+                Log::warning('automation: openIssue.created dispatch failed', ['open_issue_id' => $issue->id, 'error' => $e->getMessage()]);
+            }
+        });
+
         return $issue;
     }
 
@@ -114,16 +126,17 @@ class OpenIssueService {
     }
 
     /**
-     * Verknüpft den manuell angelegten Folgeauftrag (Feature 139). Bewusst
+     * Verknüpft den Folgeauftrag (Feature 139, automatisch über MVP-880). Bewusst
      * kein Statuswechsel — ob der Punkt damit erledigt ist, entscheidet der
      * Bearbeiter beim Abschluss des Auftrags.
      */
-    public function linkFollowUp(OpenIssue $issue, DiaryEntry $entry, User $actor): OpenIssue {
+    public function linkFollowUp(OpenIssue $issue, DiaryEntry $entry, User $actor, bool $automated = false): OpenIssue {
         $issue->update(['follow_up_diary_entry_id' => $entry->id]);
-        $issue->audit('openIssue.followUpCreated', [
+        $issue->audit('openIssue.followUpCreated', array_filter([
             'diary_entry_id' => (int) $entry->id,
             'actor_user_id' => (int) $actor->id,
-        ]);
+            'automated' => $automated ?: null,
+        ]));
 
         return $issue;
     }

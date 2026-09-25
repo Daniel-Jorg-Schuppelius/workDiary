@@ -128,7 +128,8 @@ class OrglessUserDeniedTest extends TestCase {
             $uri = '/' . ltrim((string) preg_replace_callback('/\{(\w+)\??\}/', static function (array $m) use ($route): string {
                 $where = $route->wheres[$m[1]] ?? null;
                 // `timesheet`: Treffer-Sprung der Tätigkeitsrecherche (search.open, type = time_entry|timesheet).
-                foreach (['1', 'a', 'csv', 'block', 'timesheet'] as $candidate) {
+                // `sign`: Übergangsdialog der Protokolle (protocols.transition-form, MVP-883).
+                foreach (['1', 'a', 'csv', 'block', 'timesheet', 'sign'] as $candidate) {
                     if (! is_string($where) || preg_match('#^(?:' . $where . ')$#', $candidate) === 1) {
                         return $candidate;
                     }

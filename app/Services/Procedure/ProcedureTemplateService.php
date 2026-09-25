@@ -13,7 +13,7 @@ namespace App\Services\Procedure;
 use App\Enums\Procedure\ProcedureRiskLevel;
 use App\Exceptions\PublishedProcedureVersionLockedException;
 use App\Models\Platform\{Organization, User};
-use App\Models\Procedure\{ProcedureStepDef, ProcedureTemplate, ProcedureTemplateVersion};
+use App\Models\Procedure\{ProcedureLibraryStep, ProcedureStepDef, ProcedureTemplate, ProcedureTemplateVersion};
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -82,7 +82,7 @@ class ProcedureTemplateService {
      * Fuegt eine Schritt-Definition zur angegebenen (Draft-)Version
      * hinzu. Wirft auf veroeffentlichten Versionen.
      *
-     * @param  array{code: string, step_type: string, label: string, sort_order?: int, description?: ?string, required?: bool, blocking?: bool, config?: ?array<string, mixed>, required_role?: ?string, required_qualification_code?: ?string, requires_second_person?: bool, requires_proof_type?: ?string}  $attributes
+     * @param  array{code: string, step_type: string, label: string, sort_order?: int, description?: ?string, required?: bool, blocking?: bool, config?: ?array<string, mixed>, required_role?: ?string, required_qualification_code?: ?string, requires_second_person?: bool, requires_proof_type?: ?string, library_step_id?: ?int}  $attributes
      */
     public function addStepDef(ProcedureTemplateVersion $version, array $attributes): ProcedureStepDef {
         if ($version->isPublished()) {
@@ -107,10 +107,38 @@ class ProcedureTemplateService {
                 'requires_proof_type' => $attributes['requires_proof_type'] ?? null,
             ]);
             $step->procedure_template_version_id = $version->id;
+            $step->library_step_id = $attributes['library_step_id'] ?? null;
             $step->save();
 
             return $step->refresh();
         });
+    }
+
+    /**
+     * Bibliotheksschritt als Kopie in einen Entwurf einfügen (MVP-896). Ist
+     * der Code in der Version schon vergeben, bekommt die Kopie ein Suffix.
+     */
+    public function addStepFromLibrary(ProcedureTemplateVersion $version, ProcedureLibraryStep $library): ProcedureStepDef {
+        $taken = $version->steps()->pluck('code')->all();
+        $code = $library->code;
+        for ($n = 2; in_array($code, $taken, true); $n++) {
+            $code = mb_substr($library->code, 0, 56) . '-' . $n;
+        }
+
+        return $this->addStepDef($version, [
+            'code' => $code,
+            'step_type' => $library->step_kind->value,
+            'label' => $library->label,
+            'description' => $library->description,
+            'required' => $library->is_required,
+            'blocking' => $library->is_blocking,
+            'config' => $library->config,
+            'required_role' => $library->required_role,
+            'required_qualification_code' => $library->required_qualification_code,
+            'requires_second_person' => $library->requires_second_person,
+            'requires_proof_type' => $library->requires_proof_kind?->value,
+            'library_step_id' => $library->id,
+        ]);
     }
 
     /**
@@ -196,6 +224,8 @@ class ProcedureTemplateService {
         }
 
         return DB::transaction(function () use ($version, $steps) {
+            // Herkunft aus der Schrittbibliothek (MVP-896) überlebt das Neuanlegen je Code.
+            $origins = $version->steps()->whereNotNull('library_step_id')->pluck('library_step_id', 'code')->all();
             $version->steps()->delete();
 
             foreach ($steps as $index => $step) {
@@ -212,6 +242,7 @@ class ProcedureTemplateService {
                     'required_qualification_code' => $step['required_qualification_code'] ?? null,
                     'requires_second_person' => $step['requires_second_person'] ?? false,
                     'requires_proof_type' => $step['requires_proof_type'] ?? null,
+                    'library_step_id' => $step['library_step_id'] ?? $origins[$step['code']] ?? null,
                 ]);
             }
 

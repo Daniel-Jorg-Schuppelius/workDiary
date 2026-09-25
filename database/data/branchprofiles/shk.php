@@ -320,4 +320,21 @@ return [
         ['name' => 'Trinkwasserhygiene-Schulung (VDI 6023)', 'abbreviation' => 'VDI 6023', 'description' => 'Hygieneschulung Kategorie B für Trinkwasserinstallationen.'],
         ['name' => 'Kälteschein Kategorie I', 'abbreviation' => 'KälteS', 'description' => 'Sachkundebescheinigung nach ChemKlimaschutzV für Arbeiten an Wärmepumpen/Klimaanlagen.'],
     ],
+    // Vertragsvorlagen (MVP-893): Laufzeit, Kündigung, Pflichten relativ zum Beginn.
+    'contract_templates' => [
+        [
+            'name' => 'Wartungsvertrag Heizung',
+            'kind' => 'maintenance',
+            'title' => 'Wartungsvertrag Heizungsanlage',
+            'term_kind' => 'fixed',
+            'min_term_months' => 12,
+            'auto_renew' => true,
+            'renew_period_months' => 12,
+            'notice_period_days' => 90,
+            'value_period' => 'yearly',
+            'obligations' => [
+                ['kind' => 'review', 'title' => 'Heizungswartung', 'offset_months' => 8, 'recurring' => true, 'recurrence_months' => 12],
+            ],
+        ],
+    ],
 ];

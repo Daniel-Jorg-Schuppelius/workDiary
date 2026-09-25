@@ -189,16 +189,27 @@ final class DunningRunTest extends TestCase {
         $this->assertNull(app(DunningService::class)->interest($invoice));
     }
 
-    public function test_dunning_block_toggle_audits_and_blocks_single_dun(): void {
+    public function test_dunning_block_needs_reason_audits_and_blocks_single_dun(): void {
         $invoice = $this->overdueInvoice('R2026-8050', 10);
 
+        $this->actingAs($this->user)->get(route('invoices.dunning-block.form', $invoice))->assertOk()->assertSee(__('finance.dunning.block_reason'));
+        // Ohne Grund keine Sperre (MVP-874).
         $this->actingAs($this->user)
             ->from(route('invoices.show', $invoice))
             ->post(route('invoices.dunning-block', $invoice))
+            ->assertSessionHasErrors('reason');
+        $this->assertNull($invoice->refresh()->dunning_blocked_at);
+
+        $this->actingAs($this->user)
+            ->from(route('invoices.show', $invoice))
+            ->post(route('invoices.dunning-block', $invoice), ['reason' => 'Ratenzahlung vereinbart'])
             ->assertRedirect(route('invoices.show', $invoice));
         $invoice->refresh();
         $this->assertNotNull($invoice->dunning_blocked_at);
-        $this->assertSame(1, AuditLog::query()->where('event', 'invoice.dunningBlocked')->count());
+        $this->assertSame('Ratenzahlung vereinbart', $invoice->dunning_block_reason);
+        $audit = AuditLog::query()->where('event', 'invoice.dunningBlocked')->sole();
+        $this->assertSame('Ratenzahlung vereinbart', $audit->changes['reason'] ?? null);
+        $this->actingAs($this->user)->get(route('finance.dunning.index'))->assertOk()->assertSee('Ratenzahlung vereinbart');
 
         // Gesperrt: Einzelmahnung (Dialog + POST) ist zu.
         $this->actingAs($this->user)->get(route('invoices.dun.form', $invoice))->assertStatus(422);
@@ -207,11 +218,12 @@ final class DunningRunTest extends TestCase {
             ->assertSessionHas('error');
         $this->assertSame(0, (int) $invoice->refresh()->dunning_level);
 
-        // Aufheben: Audit + Feld leer.
+        // Aufheben: Audit + Felder leer.
         $this->actingAs($this->user)
-            ->post(route('invoices.dunning-block', $invoice))
+            ->post(route('invoices.dunning-unblock', $invoice))
             ->assertSessionHas('status');
         $this->assertNull($invoice->refresh()->dunning_blocked_at);
+        $this->assertNull($invoice->dunning_block_reason);
         $this->assertSame(1, AuditLog::query()->where('event', 'invoice.dunningUnblocked')->count());
     }
 
@@ -219,5 +231,35 @@ final class DunningRunTest extends TestCase {
         $member = User::factory()->create(['organization_id' => $this->org->id]);
         $this->actingAs($member)->get(route('finance.dunning.index'))->assertForbidden();
         $this->actingAs($member)->post(route('finance.dunning.run'), ['ids' => ['x']])->assertForbidden();
+    }
+
+    public function test_dunning_letter_shows_partial_payment_and_claims_only_the_rest(): void {
+        $invoice = $this->overdueInvoice('R2026-8060', 20, ['currency' => 'EUR']);
+        $register = \App\Models\Finance\CashRegister::query()->create([
+            'organization_id' => $this->org->id,
+            'name' => 'Kasse',
+            'currency' => 'EUR',
+            'opening_balance' => '0.00',
+            'opened_on' => now()->subMonth()->toDateString(),
+            'active' => true,
+        ]);
+        app(\App\Services\Finance\CashBookService::class)->record($register, [
+            'booked_on' => now()->subDays(2)->toDateString(),
+            'direction' => \App\Models\Finance\CashEntry::DIRECTION_IN,
+            'amount' => '19.00',
+            'purpose' => 'Teilzahlung R2026-8060',
+            'invoice_id' => $invoice->id,
+            'created_by' => $this->user->id,
+        ]);
+
+        $renderer = app(\App\Services\Invoicing\DunningPdfRenderer::class);
+        $data = $renderer->viewData($invoice, 1);
+        $this->assertSame(19.0, $data['paid']);
+        $this->assertSame(100.0, $data['outstanding']);
+
+        $html = view('invoices.dunning-pdf', $data)->render();
+        $this->assertStringContainsString(__('finance.dunning.paid_row'), $html);
+        $this->assertStringContainsString('−19,00', $html);
+        $this->assertMatchesRegularExpression('/' . preg_quote(__('Gesamtforderung'), '/') . '<\/td><td class="num">100,00/', $html);
     }
 }

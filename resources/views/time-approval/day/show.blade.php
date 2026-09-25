@@ -68,6 +68,9 @@
                 <x-icon-btn icon="search" tone="ghost" size="sm" type="submit"
                             :aria-label="__('day-close.action.show_day')" />
             </form>
+            @canany([\App\Enums\User\Permission::DayCloseViewTeam->value, \App\Enums\User\Permission::DayCloseViewOrganization->value])
+                <x-icon-btn icon="groups" size="sm" :href="route('day-close.team')" show-label>{{ __('day-close.team.title') }}</x-icon-btn>
+            @endcanany
         </x-slot:actions>
 
         <x-validation-errors first tone="warning" />

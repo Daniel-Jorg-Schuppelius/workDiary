@@ -32,6 +32,9 @@ enum PostingSourceKind: string implements HasLabel {
     /** Jahres-AfA aus dem Anlagenregister (Feature 133, MVP-698). */
     case Depreciation = 'depreciation';
 
+    /** Restbuchwert beim Anlagenabgang (Feature 133, MVP-891). */
+    case AssetDisposal = 'asset_disposal';
+
     public function label(): string {
         return (string) __('enums.finance.posting-source-kind.' . $this->value);
     }
@@ -44,6 +47,7 @@ enum PostingSourceKind: string implements HasLabel {
             self::CashEntry => 'secondary',
             self::Payment => 'primary',
             self::Depreciation => 'accent',
+            self::AssetDisposal => 'neutral',
         };
     }
 
@@ -55,6 +59,7 @@ enum PostingSourceKind: string implements HasLabel {
             self::CashEntry => 'payments',
             self::Payment => 'account_balance',
             self::Depreciation => 'trending_down',
+            self::AssetDisposal => 'logout',
         };
     }
 
@@ -67,6 +72,7 @@ enum PostingSourceKind: string implements HasLabel {
             self::CashEntry => 'cash',
             self::Payment => 'payment',
             self::Depreciation => 'depreciation',
+            self::AssetDisposal => 'asset_disposal',
         };
     }
 }

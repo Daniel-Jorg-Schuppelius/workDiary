@@ -229,6 +229,7 @@ return [
         'tender_binding_expiring' => 'Le délai d’engagement s’achève le :date.',
         'incident_critical' => 'Nouvel incident de sécurité critique signalé.',
         'safety_critical_event' => 'Événement de sécurité critique (:severity) signalé à :location.',
+        'procedure_deviation_escalated' => 'L’écart à l’étape « :step » (:severity) a été escaladé : :reason',
         'safety_assessment_review_due' => 'Révision de l’évaluation des risques à échéance le :date.',
         'safety_instruction_due' => 'Formation sécurité « :topic » à renouveler le :date.',
         'safety_checkup_due' => 'Visite médicale du travail (:kind) à échéance le :date.',

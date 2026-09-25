@@ -558,6 +558,7 @@ return [
         'protocol.supersede' => 'Protokoll durch Korrektur-Revision ersetzen',
         'protocol.delete' => 'Protokoll löschen',
         'protocol.signatureRequest' => 'Signaturlink versenden',
+        'protocol.template.manage' => 'Protokollvorlagen pflegen',
         'protocol.pdfDownload' => 'Protokoll-PDF herunterladen',
         'protocol.item.photo.add' => 'Protokoll-Foto hinzufügen',
         'protocol.item.photo.remove' => 'Protokoll-Foto entfernen',

@@ -90,7 +90,30 @@
                     </tr>
                 @endforeach
             </table>
-            <p class="hint">{{ __('Aggregierte Übersicht der Verknüpfungsfamilien — Detailauszüge stellt die verantwortliche Stelle auf Anforderung bereit.') }}</p>
+            @foreach ($section['families'] as $family)
+                @if (!empty($family['rows']))
+                    {{-- Detailauszug je Familie (MVP-877); das JSON-Paket enthält alle Zeilen. --}}
+                    <p class="hint"><strong>{{ $family['label'] }}</strong></p>
+                    <table>
+                        <tr>
+                            @foreach ($family['columns'] as $columnLabel)
+                                <th>{{ $columnLabel }}</th>
+                            @endforeach
+                        </tr>
+                        @foreach (array_slice($family['rows'], 0, 200) as $detailRow)
+                            <tr>
+                                @foreach ($detailRow as $cell)
+                                    <td>{{ $cell ?? '—' }}</td>
+                                @endforeach
+                            </tr>
+                        @endforeach
+                    </table>
+                    @if (count($family['rows']) > 200)
+                        <p class="hint">{{ __('dsar.export.rows_truncated', ['shown' => 200, 'count' => count($family['rows'])]) }}</p>
+                    @endif
+                @endif
+            @endforeach
+            <p class="hint">{{ __('dsar.export.families_hint') }}</p>
         @endif
     @endforeach
 @endsection

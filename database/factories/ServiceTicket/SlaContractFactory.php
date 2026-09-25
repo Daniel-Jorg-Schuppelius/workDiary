@@ -22,7 +22,7 @@ class SlaContractFactory extends Factory {
         return [
             'organization_id' => Organization::factory(),
             'customer_id' => null,
-            'code' => strtoupper(fake()->bothify('SLA-####')),
+            'code' => strtoupper(fake()->unique()->bothify('SLA-######')),
             'label' => 'Standard-SLA',
             'priority_table' => [
                 'low'    => ['reaction_minutes' => 1440, 'resolution_minutes' => 10080],

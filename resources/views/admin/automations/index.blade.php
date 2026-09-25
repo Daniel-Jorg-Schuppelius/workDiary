@@ -40,10 +40,10 @@
                 <td class="font-medium">
                     <a href="{{ route('admin.automations.show', $rule) }}" class="link link-hover">{{ $rule->name }}</a>
                 </td>
-                <td><code class="text-xs">{{ $rule->trigger_event }}</code></td>
+                <td>{{ $triggerLabels[$rule->trigger_event] ?? $rule->trigger_event }}</td>
                 <td class="text-xs">
                     @foreach ((array) $rule->actions as $a)
-                        <x-status-badge tone="ghost" size="sm">{{ $a['type'] ?? '?' }}</x-status-badge>
+                        <x-status-badge tone="ghost" size="sm">{{ $actionLabels[$a['type'] ?? ''] ?? ($a['type'] ?? '?') }}</x-status-badge>
                     @endforeach
                 </td>
                 <td class="text-center">

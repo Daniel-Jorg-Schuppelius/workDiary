@@ -1,7 +1,7 @@
 ---
 title: "Créer un procès-verbal"
 topic: protocols.create
-version: 2
+version: 3
 audience: []
 schema: process
 related:
@@ -18,21 +18,24 @@ reste rattachée à son dossier et se retrouve dans le dossier client.
 
 ## Prérequis
 
-- Une entrée de commande existante (dossier).
-- Un **modèle** adapté (« réception », « mise en service »,
-  « maintenance »…) — géré par l'administration.
-- Le droit de créer des procès-verbaux.
+- Une commande, un projet ou un objet existant.
+- En option, un **modèle** adapté (p. ex. « Réception », « Maintenance »).
+  Les modèles sont créés à partir d’un protocole type via
+  **« Enregistrer comme modèle »** et gérés dans l’administration sous
+  **Modèles de protocole**.
+- Le droit de créer des protocoles.
 
 ## Déroulement recommandé
 
-1. Ouvrez le dossier et choisissez **« Générer un procès-verbal »**
-   dans le menu Actions.
-2. Choisissez le **modèle**.
-3. Parcourez les **points du procès-verbal** : texte, choix, photo,
-   mesure.
-4. Joignez les **photos avant/après** au point concerné.
-5. **Enregistrer** laisse le procès-verbal en **brouillon** ; pour la
-   réception, passez ensuite au dialogue de signature.
+1. Ouvrez la commande, le projet ou l’objet et choisissez
+   **« Créer un protocole »**.
+2. Choisissez le type, le titre et, si besoin, le **modèle** — il apporte
+   ses points.
+3. Ajoutez d’autres points via **« Ajouter un élément »** et saisissez chaque
+   point via **« Renseigner l'élément »** : texte, oui/non, choix, mesure, défaut.
+4. Joignez des **photos avant/après** au point concerné.
+5. Soumettez le protocole **pour vérification** ou clôturez-le avec
+   **« Finaliser / signer »** ; les clients reçoivent le **lien de signature**.
 
 ## Exemple pratique
 

@@ -95,30 +95,32 @@
                         @if ($request->isFromPortal() && ! $request->identity_verified_at)
                             <p class="text-xs text-error mb-2">{{ __('dsar.internal.identity_required') }}</p>
                         @endif
-                        {{-- Betroffenenart-Umschaltung via Alpine.data("reveal") (components.js) — CSP-Build-konform. --}}
+                        {{-- Betroffenenart + Suche via Alpine.data("subjectSearch") (components.js, CSP-Build) —
+                             MVP-878: Treffer kommen aus der org-gescopten Suche, nicht als Vollliste. --}}
                         <form method="post" action="{{ route('dataprotection.requests.subject-export', $request) }}" class="space-y-1"
-                              x-data="reveal(@js(\App\Enums\Privacy\DataSubjectKind::User->value))">
+                              x-data="subjectSearch"
+                              data-url="{{ route('dataprotection.requests.subject-search', $request) }}"
+                              data-kind="{{ \App\Enums\Privacy\DataSubjectKind::User->value }}">
                             @csrf
                             <x-input-field name="subject_type" :label="__('Betroffenenart')">
-                                <select id="subject_type" name="subject_type" class="select select-bordered w-full" x-model="value">
+                                <select id="subject_type" name="subject_type" class="select select-bordered w-full" x-model="kind" x-on:change="search()">
                                     @foreach (\App\Enums\Privacy\DataSubjectKind::cases() as $kind)
                                         <option value="{{ $kind->value }}">{{ $kind->label() }}</option>
                                     @endforeach
                                 </select>
                             </x-input-field>
-                            @foreach (\App\Enums\Privacy\DataSubjectKind::cases() as $kind)
-                                <template x-if="is('{{ $kind->value }}')">
-                                    <x-input-field name="subject_id" :label="__('Datensatz')">
-                                        <select id="subject_id_{{ $kind->value }}" name="subject_id" class="select select-bordered w-full" required>
-                                            @forelse ($subjectPickers[$kind->value] ?? [] as $opt)
-                                                <option value="{{ $opt['sqid'] }}">{{ $opt['label'] }}</option>
-                                            @empty
-                                                <option value="" disabled>{{ __('Keine Datensätze vorhanden.') }}</option>
-                                            @endforelse
-                                        </select>
-                                    </x-input-field>
-                                </template>
-                            @endforeach
+                            <x-input-field name="subject_q" :label="__('dsar.internal.subject_search')">
+                                <input id="subject_q" type="search" maxlength="100" class="input input-bordered w-full"
+                                       x-model="q" x-on:input="onInput()" placeholder="{{ __('dsar.internal.subject_search_placeholder') }}">
+                            </x-input-field>
+                            <x-input-field name="subject_id" :label="__('Datensatz')">
+                                <select id="subject_id" name="subject_id" class="select select-bordered w-full" required>
+                                    <template x-for="item in results" :key="item.sqid">
+                                        <option :value="item.sqid" x-text="item.label"></option>
+                                    </template>
+                                    <option value="" disabled x-show="isEmpty()">{{ __('Keine Datensätze vorhanden.') }}</option>
+                                </select>
+                            </x-input-field>
                             <x-icon-btn icon="description" tone="primary" size="sm" type="submit" show-label class="w-full">{{ __('Auskunft erzeugen') }}</x-icon-btn>
                         </form>
                     </x-card>

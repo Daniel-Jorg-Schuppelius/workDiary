@@ -123,6 +123,31 @@ class SupplierAnalysisReportBuilder {
     }
 
     /**
+     * Ausgabenbrücke Vorperiode → Zeitraum (MVP-888): die größten Veränderungen
+     * je Lieferant als Schritte, der Rest als „Übrige“. Start + Schritte = Ende.
+     *
+     * @param  list<array{supplierId:int, supplierName:string, spend:float, spendPrev:float}>  $rows
+     * @return array{start: float, end: float, steps: list<array{x: string, y: float, supplierId: ?int}>}
+     */
+    public function spendBridge(array $rows, int $top = 5): array {
+        $deltas = array_map(static fn (array $r): array => ['x' => $r['supplierName'], 'y' => round($r['spend'] - $r['spendPrev'], 2), 'supplierId' => $r['supplierId']], $rows);
+        $deltas = array_values(array_filter($deltas, static fn (array $d): bool => $d['y'] != 0.0));
+        usort($deltas, static fn (array $a, array $b): int => abs($b['y']) <=> abs($a['y']));
+
+        $steps = array_slice($deltas, 0, $top);
+        $rest = round(array_sum(array_column(array_slice($deltas, $top), 'y')), 2);
+        if ($rest != 0.0) {
+            $steps[] = ['x' => (string) __('reporting.supplier_bridge.others'), 'y' => $rest, 'supplierId' => null];
+        }
+
+        return [
+            'start' => round(array_sum(array_column($rows, 'spendPrev')), 2),
+            'end' => round(array_sum(array_column($rows, 'spend')), 2),
+            'steps' => $steps,
+        ];
+    }
+
+    /**
      * Adaptive Zeitachse für die Trend-Charts: Granularität aus der Header-
      * Einheit ({@see ChartBucket}); 'hour' wird auf 'day' reduziert, da
      * Belege datumsgenau sind.

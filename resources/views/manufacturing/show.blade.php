@@ -317,6 +317,22 @@
                                     <span class="text-xs text-muted">Lexoffice: {{ $delivery->external_id }}</span>
                                 @endif
 
+                                {{-- Packstücke mit Seriennummern (MVP-900) --}}
+                                @foreach ($delivery->parcels as $parcel)
+                                    <span class="badge badge-sm badge-ghost" title="{{ $parcel->serials->pluck('serial_no')->implode(', ') }}">
+                                        {{ __('shipping.parcel.label', ['no' => $parcel->position, 'of' => $delivery->parcels->count()]) }} · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($parcel->weight_grams / 1000, 2) }} kg · {{ __('shipping.parcel.serial_count', ['count' => $parcel->serials->count()]) }}
+                                    </span>
+                                    @if ($canManage && ! $delivery->shipment)
+                                        <x-icon-btn icon="edit" size="xs" data-entry-modal-trigger :href="route('manufacturing-orders.deliveries.parcels.edit', [$order, $delivery, $parcel])" :label="__('shipping.parcel.edit', ['no' => $parcel->position])" />
+                                        <x-action-form :action="route('manufacturing-orders.deliveries.parcels.destroy', [$order, $delivery, $parcel])" method="DELETE" :confirm="__('shipping.parcel.confirm_delete', ['no' => $parcel->position])" confirm-icon="delete" confirm-tone="error">
+                                            <x-icon-btn icon="delete" tone="error" size="xs" type="submit" :label="__('shipping.parcel.delete')" />
+                                        </x-action-form>
+                                    @endif
+                                @endforeach
+                                @if ($canManage && ! $delivery->shipment)
+                                    <x-icon-btn icon="package_2" size="xs" data-entry-modal-trigger :href="route('manufacturing-orders.deliveries.parcels.create', [$order, $delivery])" show-label>{{ __('shipping.parcel.add') }}</x-icon-btn>
+                                @endif
+
                                 {{-- Versandauftrag (Feature 059, Rang 20) --}}
                                 @if ($delivery->shipment)
                                     <span class="badge badge-sm">{{ __('shipping.label_short') }}: {{ $delivery->shipment->status->label() }}</span>
@@ -330,6 +346,7 @@
                                                 <option value="{{ $carrier->carrier }}">{{ $carrier->name }}</option>
                                             @endforeach
                                         </select>
+                                        @if ($delivery->parcels->isEmpty())
                                         <input type="number" name="weight_grams" value="1000" min="1" step="1"
                                                class="join-item input input-xs input-bordered w-20"
                                                title="{{ __('shipping.field.weight_grams') }}" required>
@@ -343,6 +360,7 @@
                                         <input aria-label="{{ __('Höhe in cm') }}" type="number" name="height_cm" min="1" max="400" step="1" placeholder="H"
                                                class="join-item input input-xs input-bordered w-12"
                                                title="{{ __('shipping.field.height_cm') }}">
+                                        @endif
                                         <button type="submit" class="join-item btn btn-xs">{{ __('shipping.action.create') }}</button>
                                     </form>
                                 @endif
@@ -352,6 +370,10 @@
                 @endforeach
             </x-table>
         </x-card>
+        {{-- Versandhistorie der Lieferscheine (MVP-876). --}}
+        <x-dispatch-history :kinds="[\App\Enums\DocumentDesign\RenderDocumentKind::DeliveryNote]"
+                            :ids="$order->deliveries->pluck('id')->map(fn ($id) => (int) $id)->all()"
+                            :labels="$order->deliveries->mapWithKeys(fn ($delivery) => [(int) $delivery->id => app(\App\Services\Document\DocumentMailService::class)->documentNumber($delivery, \App\Enums\DocumentDesign\RenderDocumentKind::DeliveryNote)])->all()" />
     @endif
 </x-page-shell>
 @endsection

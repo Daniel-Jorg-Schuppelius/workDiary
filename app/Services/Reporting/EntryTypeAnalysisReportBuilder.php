@@ -18,6 +18,7 @@ use App\Models\Protocol\Protocol;
 use App\Models\Time\TimeEntry;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * Auftragstyp-/Gewerkeanalyse (MVP-040): Plan/Ist, Durchschnitts- und
@@ -211,8 +212,8 @@ class EntryTypeAnalysisReportBuilder {
                 'escalationCount' => $row['escalationCount'],
                 'escalationShare' => $escalationShare,
                 'firstTimeRightShare' => $firstTimeRightShare,
-                'medianActualMinutes' => $this->percentile($actualValues, 50),
-                'p90ActualMinutes' => $this->percentile($actualValues, 90),
+                'medianActualMinutes' => round(NumberHelper::percentile($actualValues, 50), 2),
+                'p90ActualMinutes' => round(NumberHelper::percentile($actualValues, 90), 2),
                 'revenue' => round($row['revenue'], 2),
                 'cost' => round($row['cost'], 2),
                 'contribution' => round($row['revenue'] - $row['cost'], 2),
@@ -225,27 +226,4 @@ class EntryTypeAnalysisReportBuilder {
         return $rows;
     }
 
-    /**
-     * Lineares-Interpolations-Perzentil über eine aufsteigend sortierte
-     * Werteliste.
-     *
-     * @param  list<int>  $values
-     */
-    private function percentile(array $values, int $percent): float {
-        if ($values === []) {
-            return 0.0;
-        }
-
-        $index = ($percent / 100) * (count($values) - 1);
-        $low = (int) floor($index);
-        $high = (int) ceil($index);
-
-        if ($low === $high) {
-            return (float) $values[$low];
-        }
-
-        $weight = $index - $low;
-
-        return round(($values[$low] * (1 - $weight)) + ($values[$high] * $weight), 2);
-    }
 }

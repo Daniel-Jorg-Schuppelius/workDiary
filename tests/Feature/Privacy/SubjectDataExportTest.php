@@ -133,11 +133,18 @@ class SubjectDataExportTest extends TestCase {
         $this->assertSame(1, $this->familyCount($work, 'vacations'));
         $this->assertSame(1, $this->familyCount($work, 'sick_leaves'));
 
+        // Detailauszüge (MVP-877): Einzelzeilen mit festgelegten Spalten.
+        $timeEntries = collect($work['families'])->firstWhere('table', 'time_entries');
+        $this->assertSame([__('Datum'), __('Beginn'), __('Ende'), __('Minuten'), __('Beschreibung')], array_values($timeEntries['columns']));
+        $this->assertCount(2, $timeEntries['rows']);
+        $this->assertCount(1, collect($work['families'])->firstWhere('table', 'vacations')['rows']);
+
         // Standortdaten: Zähler + Zeitraum, keine Koordinaten in der Auskunft.
         $location = $this->section($payload, 'location_data');
         $this->assertSame(1, $this->familyCount($location, 'location_points'));
         $this->assertSame('2026-08-01', $location['families'][0]['from']);
         $this->assertStringNotContainsString('52.52', $exporter->toJson($payload));
+        $this->assertArrayNotHasKey('rows', $location['families'][0], 'Standortdaten bleiben ohne Detailauszug.');
 
         // Mindestens der manuell angelegte Eintrag; die Anlage des Users selbst
         // kann (Auditable) weitere Ereignisse über die Person erzeugen.
@@ -262,16 +269,20 @@ class SubjectDataExportTest extends TestCase {
         $officer = $this->officer($org);
         $dsr = $this->dsr($org, $officer);
         $employee = User::factory()->create(['organization_id' => $org->id]);
+        TimeEntry::factory()->administration()->count(3)->create(['organization_id' => $org->id, 'user_id' => $employee->id]);
 
         $exporter = app(SubjectDataExporter::class);
-        $pdf = $exporter->renderPdf($exporter->build($dsr, DataSubjectKind::User, $employee), $org->id);
+        $payload = $exporter->build($dsr, DataSubjectKind::User, $employee);
+        $pdf = $exporter->renderPdf($payload, $org->id);
 
         $this->assertStringStartsWith('%PDF', $pdf);
+        $html = view('privacy.requests.subject-export-pdf', ['payload' => $payload])->render();
+        $this->assertStringContainsString(__('Beschreibung'), $html);
     }
 
     // ── Fall-Anbindung (HTTP): verschlüsselte Ablage, Audit, Download ───────
 
-    public function test_show_page_renders_generate_action_with_pickers(): void {
+    public function test_show_page_renders_generate_action_with_search(): void {
         $org = Organization::factory()->create();
         $officer = $this->officer($org);
         $dsr = $this->dsr($org, $officer);
@@ -281,8 +292,35 @@ class SubjectDataExportTest extends TestCase {
             ->get(route('dataprotection.requests.show', $dsr))
             ->assertOk()
             ->assertSee(__('Auskunft erzeugen (Art. 15/20)'))
-            ->assertSee('Muster GmbH')
+            ->assertDontSee('Muster GmbH', false)
+            ->assertSee(route('dataprotection.requests.subject-search', $dsr), false)
             ->assertSee(route('dataprotection.requests.subject-export', $dsr), false);
+    }
+
+    public function test_subject_search_is_scoped_filtered_and_limited(): void {
+        $org = Organization::factory()->create();
+        $officer = $this->officer($org);
+        $dsr = $this->dsr($org, $officer);
+        $match = Customer::factory()->create(['organization_id' => $org->id, 'name' => 'Muster GmbH']);
+        Customer::factory()->create(['organization_id' => $org->id, 'name' => 'Andere AG']);
+        Customer::factory()->count(25)->create(['organization_id' => $org->id]);
+        $foreign = Customer::factory()->create(['organization_id' => Organization::factory()->create()->id, 'name' => 'Muster Fremd']);
+        $application = JobApplication::create(['organization_id' => $org->id, 'candidate_name' => 'Erika Mustermann', 'source' => 'website', 'status' => 'received']);
+
+        $search = fn (string $kind, string $q) => $this->actingAs($officer)
+            ->getJson(route('dataprotection.requests.subject-search', ['dsr' => $dsr, 'kind' => $kind, 'q' => $q]))
+            ->assertOk()->json('items');
+
+        $this->assertSame([['sqid' => $match->sqid, 'label' => 'Muster GmbH']], $search('customer', 'Muster'));
+        $this->assertCount(20, $search('customer', ''));
+        $this->assertNotContains($foreign->sqid, array_column($search('customer', ''), 'sqid'));
+        // Verschlüsselte Bewerbernamen werden nach dem Entschlüsseln gefiltert.
+        $this->assertSame([$application->sqid], array_column($search('job_application', 'mustermann'), 'sqid'));
+
+        $stranger = User::factory()->create(['organization_id' => $org->id]);
+        $this->actingAs($stranger)
+            ->getJson(route('dataprotection.requests.subject-search', ['dsr' => $dsr, 'kind' => 'customer']))
+            ->assertForbidden();
     }
 
     public function test_generate_attaches_encrypted_files_with_audit_and_event(): void {

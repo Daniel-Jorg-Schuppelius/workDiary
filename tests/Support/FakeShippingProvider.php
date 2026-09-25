@@ -24,6 +24,8 @@ class FakeShippingProvider implements ShippingProvider {
 
     public int $cancelCount = 0;
 
+    public ?ShipmentRequest $lastRequest = null;
+
     public function __construct(
         private readonly string $carrier = 'mock',
         private TrackingResult $trackingResult = new TrackingResult(ShipmentStatus::InTransit, []),
@@ -39,6 +41,7 @@ class FakeShippingProvider implements ShippingProvider {
 
     public function createShipment(CarrierConnection $connection, ShipmentRequest $request): ShipmentLabel {
         $this->createCount++;
+        $this->lastRequest = $request;
 
         // Minimales, gültiges PDF (Base64) — der Service dekodiert und legt es ab.
         $pdf = base64_encode('%PDF-1.4 fake label');

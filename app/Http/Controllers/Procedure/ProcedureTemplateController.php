@@ -260,6 +260,7 @@ class ProcedureTemplateController extends Controller {
                     'required_qualification_code' => $s->required_qualification_code,
                     'requires_second_person' => $s->requires_second_person,
                     'requires_proof_type' => $s->requires_proof_type?->value,
+                    'library_step_id' => $s->library_step_id,
                 ];
             }
             $this->service->syncSteps($version, $carryOver);

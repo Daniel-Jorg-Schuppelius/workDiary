@@ -785,6 +785,7 @@ return [
         'overdue' => 'Rental overdue',
         'profileSaved' => 'Rental profile saved',
         'reserved' => 'Rental reserved',
+        'termsAttached' => 'Rental terms attached to the rental case',
         'returned' => 'Rental asset returned',
         'termsFrozen' => 'Rental terms frozen',
     ],

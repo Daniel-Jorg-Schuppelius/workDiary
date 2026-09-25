@@ -126,4 +126,14 @@ return [
     'empty_versions' => 'No versions yet.',
     'confirm_delete' => 'Really delete this document including all versions?',
     'confirm_archive' => 'Really archive this document?',
+    'dispatch' => [
+        'history' => 'Dispatch history',
+        'at' => 'Time',
+        'document' => 'Document',
+        'kind' => 'Document type',
+        'channel' => 'Channel',
+        'recipient' => 'Recipient',
+        'status' => 'Status',
+        'none' => 'Not sent yet.',
+    ],
 ];

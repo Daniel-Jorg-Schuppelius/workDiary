@@ -19,6 +19,9 @@
                         :badge="$count->status->label()" badgeTone="ghost"
                         :subtitle="__('inventory.count_ui.counted_at') . ': ' . $count->counted_at?->orgTz()->format('d.m.Y H:i')">
             <x-slot:actions>
+                @if ($canCount && $count->status->isOpen())
+                    <x-icon-btn icon="smartphone" size="sm" :href="route('inventory.counts.mobile', $count)" show-label>{{ __('inventory.count_ui.mobile_open') }}</x-icon-btn>
+                @endif
                 <x-icon-btn icon="arrow_back" size="sm" :href="route('inventory.counts.index', ['warehouse' => $count->warehouse?->sqid])" show-label>{{ __('Zurück') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>

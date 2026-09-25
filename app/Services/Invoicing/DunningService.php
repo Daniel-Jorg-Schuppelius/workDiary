@@ -16,6 +16,7 @@ use App\Mail\DunningMail;
 use App\Models\Document\DocumentDispatch;
 use App\Models\Finance\CashEntry;
 use App\Models\Invoicing\Invoice;
+use App\Models\Platform\User;
 use App\Services\Billing\BillingModeResolver;
 use App\Services\Invoicing\Contracts\PaymentStatusProvider;
 use App\Support\Setting;
@@ -43,6 +44,7 @@ final class DunningService {
         private readonly RetentionService $retentions,
         private readonly PaymentStatusProvider $reconciliation,
         private readonly BillingModeResolver $billingMode,
+        private readonly BaseInterestRateService $baseRates,
     ) {}
 
     /**
@@ -62,9 +64,45 @@ final class DunningService {
         ];
     }
 
-    /** Verzugszins in % p. a. (0 = aus; § 288 BGB als Anhalt, kein Feed). */
-    public function interestRate(): float {
-        return round(max(0.0, (float) Setting::get('invoicing.dunning.interest_rate', 0)), 2);
+    /** `fixed` = fester Satz, `base_rate` = Basiszinssatz + Prozentpunkte (MVP-879). */
+    public function interestMode(): string {
+        return Setting::get('invoicing.dunning.interest_mode', 'fixed') === 'base_rate' ? 'base_rate' : 'fixed';
+    }
+
+    /** Aufschlag in Prozentpunkten über dem Basiszinssatz — Höhe legt der Betrieb fest (§ 288 BGB nur als Hinweis). */
+    public function interestPoints(): float {
+        return round(max(0.0, (float) Setting::get('invoicing.dunning.interest_points', 0)), 2);
+    }
+
+    /** Verzugszins in % p. a. am Stichtag (0 = aus oder Basiszins unbekannt). */
+    public function interestRate(?CarbonInterface $on = null): float {
+        if ($this->interestMode() === 'fixed') {
+            return round(max(0.0, (float) Setting::get('invoicing.dunning.interest_rate', 0)), 2);
+        }
+        $base = $this->baseRates->rateOn($on ?? CarbonImmutable::today());
+
+        return $base === null ? 0.0 : round(max(0.0, $base + $this->interestPoints()), 2);
+    }
+
+    /** Basiszins-Modus ohne bekannten Basiszinssatz (Abruf noch nicht gelaufen). */
+    public function baseRateMissing(): bool {
+        return $this->interestMode() === 'base_rate' && $this->baseRates->rateOn(CarbonImmutable::today()) === null;
+    }
+
+    /** Mahnsperre mit Pflichtgrund (MVP-874): nimmt die Rechnung aus Einzeldialog und Mahnlauf. */
+    public function block(Invoice $invoice, string $reason, User $actor): Invoice {
+        $reason = mb_substr(trim($reason), 0, 255);
+        $invoice->update(['dunning_blocked_at' => now(), 'dunning_block_reason' => $reason]);
+        $invoice->audit('invoice.dunningBlocked', ['by' => $actor->id, 'reason' => $reason]);
+
+        return $invoice->refresh();
+    }
+
+    public function unblock(Invoice $invoice, User $actor): Invoice {
+        $invoice->update(['dunning_blocked_at' => null, 'dunning_block_reason' => null]);
+        $invoice->audit('invoice.dunningUnblocked', ['by' => $actor->id]);
+
+        return $invoice->refresh();
     }
 
     /**
@@ -74,14 +112,19 @@ final class DunningService {
      * `partially_paid`, nur eine zu lesen hieße Teilzahlungen mitzumahnen.
      */
     public function openAmount(Invoice $invoice): Money {
+        $open = round($this->retentions->payableAmountOf($invoice) - $this->paidAmount($invoice)->toFloat(), 2);
+
+        return Money::ofFloat(max(0.0, $open), $invoice->documentCurrency());
+    }
+
+    /** Bereits gezahlt: Zahlungszuordnungen plus Bareinnahmen der Kasse (MVP-875 zeigt sie im Mahnschreiben). */
+    public function paidAmount(Invoice $invoice): Money {
         $cash = (float) CashEntry::query()
             ->where('invoice_id', $invoice->id)
             ->where('direction', CashEntry::DIRECTION_IN)
             ->sum('amount');
-        $paid = round($this->reconciliation->allocatedSum($invoice) + $cash, 2);
-        $open = round($this->retentions->payableAmountOf($invoice) - $paid, 2);
 
-        return Money::ofFloat(max(0.0, $open), $invoice->documentCurrency());
+        return Money::ofFloat(round($this->reconciliation->allocatedSum($invoice) + $cash, 2), $invoice->documentCurrency());
     }
 
     /**
@@ -89,17 +132,36 @@ final class DunningService {
      * (taggenau seit Fälligkeit). Null, wenn kein Satz konfiguriert, kein
      * Verzugstag oder nichts offen ist.
      *
-     * @return array{rate: float, days: int, amount: float}|null
+     * @return array{rate: float, days: int, amount: float, mode: string, points: float}|null
      */
     public function interest(Invoice $invoice, ?CarbonInterface $asOf = null): ?array {
-        $rate = $this->interestRate();
-        if ($rate <= 0.0 || $invoice->due_on === null) {
+        if ($invoice->due_on === null) {
+            return null;
+        }
+        $asOfDay = CarbonImmutable::parse(($asOf ?? CarbonImmutable::today())->toDateString());
+        $dueDay = CarbonImmutable::parse($invoice->due_on->toDateString());
+        $days = (int) $dueDay->diffInDays($asOfDay, false);
+        if ($days <= 0) {
             return null;
         }
 
-        $asOfDay = CarbonImmutable::parse(($asOf ?? CarbonImmutable::today())->toDateString());
-        $days = (int) CarbonImmutable::parse($invoice->due_on->toDateString())->diffInDays($asOfDay, false);
-        if ($days <= 0) {
+        // Summe aus Tagen × Satz je Abschnitt: fester Satz ein Abschnitt,
+        // Basiszins-Modus je Basiszinsperiode (Wechsel 1. Januar/1. Juli).
+        if ($this->interestMode() === 'fixed') {
+            $rate = $this->interestRate();
+            $weighted = $rate * $days;
+        } else {
+            $periods = $this->baseRates->periods($dueDay->addDay(), $asOfDay);
+            if ($periods === null) {
+                return null;
+            }
+            $weighted = 0.0;
+            foreach ($periods as $period) {
+                $weighted += max(0.0, $period['rate'] + $this->interestPoints()) * ((int) $period['from']->diffInDays($period['to']) + 1);
+            }
+            $rate = $this->interestRate($asOfDay);
+        }
+        if ($weighted <= 0.0) {
             return null;
         }
 
@@ -108,14 +170,14 @@ final class DunningService {
             return null;
         }
 
-        // Money-Arithmetik: erst multiplizieren, zuletzt teilen — so rundet
-        // nur der Endbetrag auf Cent (deterministisch, HalfUp).
-        $amount = $open->times($days)->percentage($rate)->dividedBy(self::INTEREST_DAY_BASIS);
+        // Money-Arithmetik: erst gewichten, zuletzt teilen — so rundet nur
+        // der Endbetrag auf Cent (deterministisch, HalfUp).
+        $amount = $open->percentage(round($weighted, 6))->dividedBy(self::INTEREST_DAY_BASIS);
         if (! $amount->isPositive()) {
             return null;
         }
 
-        return ['rate' => $rate, 'days' => $days, 'amount' => $amount->toFloat()];
+        return ['rate' => $rate, 'days' => $days, 'amount' => $amount->toFloat(), 'mode' => $this->interestMode(), 'points' => $this->interestPoints()];
     }
 
     /** Mahnlauf gilt nur für lokal geführte Rechnungen (Rechnungshoheit, Feature 045). */

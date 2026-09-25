@@ -10,14 +10,20 @@
 
 namespace App\Services\Procedure;
 
+use App\Automation\RuleEngine;
+use App\Enums\Notification\NotificationEvent;
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueVisibility};
 use App\Enums\Procedure\{ProcedureDeviationProposedAction, ProcedureDeviationSeverity, ProcedureDeviationType, ProcedureRunEventType, ProcedureStepRunStatus};
-use App\Exceptions\ProcedureDeviationValidationException;
+use App\Events\Procedure\ProcedureRunProgressed;
+use App\Exceptions\{ClassificationRequirementException, ProcedureDeviationValidationException};
 use App\Models\Platform\User;
 use App\Models\Procedure\{ProcedureDeviation, ProcedureRun, ProcedureStepRun};
+use App\Services\Diary\FollowUpOrderService;
+use App\Services\Notification\NotificationDispatcher;
 use App\Services\OpenIssue\OpenIssueService;
+use App\Services\Procedure\Automation\DeviationRecordedTrigger;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{DB, Log};
 
 /**
  * Erfasst Abweichungen zu Prozedur-Schritten (MVP-029) und stoesst
@@ -32,6 +38,8 @@ class DeviationRecorder {
 
     public function __construct(
         private readonly OpenIssueService $openIssues,
+        private readonly FollowUpOrderService $followUps,
+        private readonly NotificationDispatcher $notifications,
     ) {}
 
     /**
@@ -97,7 +105,19 @@ class DeviationRecorder {
                 $this->triggerAction($deviation, $stepRun, $run, $actor, $action, $payload);
             }
 
-            return $deviation->refresh();
+            $deviation = $deviation->refresh();
+            ProcedureRunProgressed::dispatch($run, $actor);
+
+            // Automationsregeln (MVP-881) nach dem Commit, wie beim offenen Punkt.
+            DB::afterCommit(function () use ($deviation): void {
+                try {
+                    app(RuleEngine::class)->dispatch(DeviationRecordedTrigger::KEY, $deviation);
+                } catch (\Throwable $e) {
+                    Log::warning('automation: procedure.deviationRecorded dispatch failed', ['deviation_id' => $deviation->id, 'error' => $e->getMessage()]);
+                }
+            });
+
+            return $deviation;
         });
     }
 
@@ -113,6 +133,7 @@ class DeviationRecorder {
                     'deviation_id' => $deviation->id,
                     'note' => $note,
                 ]);
+                ProcedureRunProgressed::dispatch($run, $actor);
             }
 
             return $deviation->refresh();
@@ -162,17 +183,31 @@ class DeviationRecorder {
             $deviation->save();
             $detail['open_issue_id'] = $issue->id;
         } elseif ($action === ProcedureDeviationProposedAction::NewDiaryEntry) {
-            // Folgeauftrag-Erzeugung benoetigt einen Auftrag-Builder
-            // (Feature 005). MVP-029 speichert ausschliesslich die
-            // Verknuepfung, sofern Aufrufer eine ID mitliefern.
-            $followUpId = isset($payload['follow_up_diary_entry_id'])
-                ? (int) $payload['follow_up_diary_entry_id']
-                : null;
-            if ($followUpId !== null) {
-                $deviation->follow_up_diary_entry_id = $followUpId;
-                $deviation->save();
-                $detail['follow_up_diary_entry_id'] = $followUpId;
+            // Pflichtklassifikationen verhindern den Auftrag, nicht die
+            // Abweichung — der Grund steht im Lauf-Ereignis.
+            try {
+                $entry = $this->followUps->createForDeviation($deviation, $run->assignee ?? $actor);
+                $detail['follow_up_diary_entry_id'] = (int) $entry->id;
+            } catch (ClassificationRequirementException $e) {
+                $detail['follow_up_error'] = $e->getMessage();
             }
+        } elseif ($action === ProcedureDeviationProposedAction::Escalate) {
+            $step = (string) $stepRun->stepDef?->label;
+            $detail['notified'] = $this->notifications->notify(NotificationEvent::ProcedureDeviationEscalated, $deviation, null, [
+                'title' => (string) ($run->templateVersion->template->name ?? $step),
+                'message' => (string) __('notification.message.procedure_deviation_escalated', [
+                    'step' => $step,
+                    'severity' => $deviation->severity->label(),
+                    'reason' => $deviation->reason_text,
+                ]),
+                'message_key' => 'notification.message.procedure_deviation_escalated',
+                'message_params' => [
+                    'step' => $step,
+                    'severity' => ['key' => 'enums.procedure.deviation-severity.' . $deviation->severity->value, 'fallback' => $deviation->severity->label()],
+                    'reason' => $deviation->reason_text,
+                ],
+                'url' => route('procedure-runs.show', $run),
+            ]);
         }
 
         $this->recordRunEvent($run, ProcedureRunEventType::DeviationActionTriggered, $actor, $stepRun, $detail);

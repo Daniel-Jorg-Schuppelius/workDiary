@@ -45,6 +45,7 @@ final class ProtocolManifest extends Manifest {
             'protocol_items',
             'protocol_signature_tokens',
             'protocol_signatures',
+            'protocol_templates',
             'protocols',
         ];
     }
@@ -70,6 +71,9 @@ final class ProtocolManifest extends Manifest {
                 \App\Services\Protocol\Fields\Extensions\MeasurementSeriesField::class,
                 \App\Services\Protocol\Fields\Extensions\AttachmentsField::class,
                 \App\Services\Protocol\Fields\Extensions\SignatureField::class,
+            ],
+            \App\Services\Classification\Contracts\ProfileInstallStep::class => [
+                \App\Services\Protocol\Install\ProtocolTemplateInstallStep::class,
             ],
         ];
     }

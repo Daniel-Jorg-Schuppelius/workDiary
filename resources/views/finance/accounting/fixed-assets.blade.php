@@ -22,6 +22,7 @@
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('accounting.fixed_assets.subtitle')">
         <x-slot:actions>
+            <x-icon-btn icon="inventory" size="sm" show-label :href="route('reports.accounting.fixed-asset-schedule')">{{ __('accounting.reports.card.fixed_asset_schedule.title') }}</x-icon-btn>
             @if ($canConfigure)
                 <x-icon-btn icon="add" size="sm" tone="primary"
                             data-entry-modal-trigger

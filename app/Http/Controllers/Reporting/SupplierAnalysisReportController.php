@@ -74,6 +74,8 @@ class SupplierAnalysisReportController extends Controller {
             return $this->exportPdf(array_values($rows->all()), $result['concentration'], $label, $from->toDateString(), $to->toDateString(), $this->spendSeries(array_values($rows->all()), $from, $to), $withProcurement, $exportFilters, $request);
         }
 
+        $bridge = $this->builder->spendBridge(array_values($rows->all()));
+
         return view('reports.suppliers', [
             'rows' => $rows,
             'concentration' => $result['concentration'],
@@ -88,6 +90,12 @@ class SupplierAnalysisReportController extends Controller {
             'openSeries' => $this->openSeries(array_values($rows->all()), $from, $to),
             'periodPhrase' => $this->periodPhrase($this->bucketGranularity($from, $to)),
             'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($from, $to)),
+            'bridge' => $bridge,
+            'bridgeSeries' => array_map(fn (array $step): array => [
+                'x' => $step['x'],
+                'y' => $step['y'],
+                'url' => $step['supplierId'] !== null ? $this->supplierVoucherUrl($step['supplierId'], $from, $to) : null,
+            ], $bridge['steps']),
         ]);
     }
 

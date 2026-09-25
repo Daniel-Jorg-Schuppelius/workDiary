@@ -311,6 +311,7 @@ return [
             'cash_entry' => 'Cassa :register · :purpose',
             'payment' => 'Pagamento (:kind) · :target',
             'depreciation' => 'Ammortamento :year · :no :name',
+            'asset_disposal' => 'Dismissione :no :name',
         ],
         'reversal_reason' => [
             'unmatched' => 'Assegnazione del pagamento annullata — contro-registrazione.',
@@ -347,6 +348,8 @@ return [
             'asset_account' => 'Conto cespite',
             'depreciation_account' => 'Conto ammortamento',
             'disposed_on' => 'Dismesso il',
+            'disposal_kind' => 'Tipo di dismissione',
+            'disposal_proceeds' => 'Ricavo di cessione (netto)',
             'created_by' => 'Creato da',
         ],
         'section' => [
@@ -365,12 +368,13 @@ return [
         'hint' => [
             'device' => 'Collegamento facoltativo al registro dispositivi; non ogni cespite è un dispositivo.',
             'residual_value' => 'Resta alla fine della vita utile; predefinito 0.',
-            'useful_life' => 'Vita utile ordinaria secondo la tabella di ammortamento, in mesi.',
+            'useful_life' => 'Vita utile ordinaria secondo la tabella di ammortamento, in mesi. Per i beni di modesto valore e il fondo collettivo la durata deriva dal metodo.',
             'accounts' => 'Lasciare vuoto per applicare la regola contabile del ruolo (conto cespite / ammortamento).',
             'frozen' => 'Una quota è registrata — data d\'acquisto, costo, valore residuo e vita utile sono bloccati.',
             'schedule' => 'Lineare, pro rata mensile nell\'anno di acquisto e di dismissione; l\'ultimo anno prende il resto.',
             'posting' => 'L\'ammortamento annuale viene proposto per esercizio nella chiusura e registrato nella posta contabile — mai direttamente.',
-            'dispose' => 'La dismissione termina il piano nel mese di dismissione. Il valore residuo non viene stornato automaticamente.',
+            'dispose' => 'La dismissione chiude il piano di ammortamento nel mese di dismissione. La posta contabile propone il valore contabile residuo come registrazione di dismissione.',
+            'disposal_proceeds' => 'Solo in caso di vendita. Il ricavo viene registrato tramite la fattura di vendita; qui decide solo se il valore residuo viene stornato come plusvalenza o minusvalenza.',
         ],
         'action' => [
             'add' => 'Aggiungi cespite',
@@ -384,6 +388,8 @@ return [
             'disposed' => 'Dismissione registrata.',
         ],
         'error' => [
+            'gwg_limit' => 'Beni di modesto valore solo fino a :limit € netti (impostazione dell’organizzazione).',
+            'pool_range' => 'Fondo collettivo solo oltre :lower € fino a :upper € netti (impostazione dell’organizzazione).',
             'disposed_frozen' => 'Un cespite dismesso non è più modificabile.',
             'values_frozen' => 'I campi che determinano il valore sono bloccati dopo la prima quota registrata.',
             'disposed_before_acquired' => 'La dismissione non può precedere l\'acquisto.',
@@ -534,6 +540,22 @@ return [
 
     // Finanzberichte (Feature 125, MVP-676).
     'reports' => [
+        'fixed_asset_schedule' => [
+            'subtitle' => 'Esercizio :year (:from – :to)',
+            'year' => 'Esercizio',
+            'show' => 'Mostra',
+            'hint' => 'Dal piano di ammortamento: i valori valgono anche se l’ammortamento dell’anno non è ancora registrato. Le dismissioni chiudono il piano nell’anno della dismissione.',
+            'cost_start' => 'Costo inizio',
+            'additions' => 'Incrementi',
+            'disposals' => 'Dismissioni',
+            'cost_end' => 'Costo fine',
+            'dep_start' => 'Fondo amm. inizio',
+            'dep_year' => 'Ammortamento esercizio',
+            'dep_disposals' => 'Amm. su dismissioni',
+            'dep_end' => 'Fondo amm. fine',
+            'book_start' => 'Valore contabile inizio',
+            'book_end' => 'Valore contabile fine',
+        ],
         'title' => 'Report finanziari',
         'menu' => 'Report finanziari',
         'subtitle' => 'Analisi della contabilità locale nel periodo selezionato.',
@@ -638,6 +660,10 @@ return [
             ],
         ],
         'card' => [
+            'fixed_asset_schedule' => [
+                'title' => 'Prospetto dei cespiti',
+                'text' => 'Andamento del costo storico e degli ammortamenti cumulati per cespite nell’esercizio.',
+            ],
             'trial_balance' => [
                 'title' => 'Bilancio di verifica',
                 'text' => 'Riporto, movimento e saldo per conto.',

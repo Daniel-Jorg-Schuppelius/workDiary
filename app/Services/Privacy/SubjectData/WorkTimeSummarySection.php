@@ -51,18 +51,21 @@ class WorkTimeSummarySection extends AbstractSubjectSection {
                 TimeEntry::query()->withoutGlobalScopes()->where('organization_id', $orgId)->where('user_id', $u->id),
                 'date',
                 ['minutes_total' => $minutes],
+                columns: ['date' => __('Datum'), 'started_at' => __('Beginn'), 'ended_at' => __('Ende'), 'minutes' => __('Minuten'), 'description' => __('Beschreibung')],
             ),
             $this->family(
                 'vacations',
                 __('Urlaubsanträge'),
                 Vacation::query()->withoutGlobalScopes()->where('organization_id', $orgId)->where('user_id', $u->id),
                 'start_date',
+                columns: ['start_date' => __('Beginn'), 'end_date' => __('Ende'), 'type' => __('Art'), 'status' => __('Status')],
             ),
             $this->family(
                 'sick_leaves',
                 __('Krankmeldungen'),
                 SickLeave::query()->withoutGlobalScopes()->where('organization_id', $orgId)->where('user_id', $u->id),
                 'start_date',
+                columns: ['start_date' => __('Beginn'), 'end_date' => __('Ende'), 'kind' => __('Art')],
             ),
         ]];
     }

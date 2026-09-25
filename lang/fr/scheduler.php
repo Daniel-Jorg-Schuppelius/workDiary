@@ -149,7 +149,7 @@ return [
         'finance' => ['open_times_digest' => 'Digest des temps ouverts pour la comptabilité'],
         'inventory' => ['cycle_counts' => 'Lancer l\'inventaire tournant', 'expiring_lots' => 'Surveillance DLUO (lots expirants)'],
         "accounting" => ["recurring" => "Attentes de pièces et brouillons d'écriture récurrents", "filings" => "Synchroniser les échéances fiscales et rappeler"],
-        'invoicing' => ['recurring' => 'Générer les brouillons de factures récurrentes'],
+        'invoicing' => ['recurring' => 'Générer les brouillons de factures récurrentes', 'base_rate_sync' => 'Synchroniser le taux de base de la Bundesbank'],
         'jtl' => ['sync' => 'Synchronisation JTL Wawi'],
         'resale' => [
             'sync_domains' => 'Abonnements de revente : reprendre les domaines de la gestion des domaines',

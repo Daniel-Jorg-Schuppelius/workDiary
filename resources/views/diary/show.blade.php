@@ -15,6 +15,9 @@
         <div class="flex items-center justify-end gap-2">
             <x-icon-btn icon="folder_open" tone="outline" size="sm" show-label
                         :href="route('diary.case-file', $diary)">{{ __('timeline.action.case_file') }}</x-icon-btn>
+            @can('create', \App\Models\Protocol\Protocol::class)
+                <x-icon-btn icon="note_add" size="sm" data-entry-modal-trigger :href="route('protocols.create', ['subject_kind' => 'diary', 'subject' => $diary->sqid])" show-label>{{ __('protocol.title.create') }}</x-icon-btn>
+            @endcan
             <x-help-button topic="diary-entries.edit" :label="__('Hilfe zu Auftrag')" />
             <x-help-button topic="protocols.create" :label="__('Hilfe zu Protokoll')" />
             <x-help-button topic="procedures.run" :label="__('Hilfe zu Prozedur')" />

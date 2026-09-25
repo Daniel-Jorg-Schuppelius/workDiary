@@ -12,16 +12,18 @@ declare(strict_types=1);
 
 namespace App\Services\Procurement;
 
+use App\Enums\Claims\ClaimRecourseStatus;
 use App\Enums\Inventory\StockMovementType;
 use App\Enums\Isms\IncidentSeverity;
 use App\Enums\Procurement\PurchaseOrderStatus;
-use App\Models\Claims\ClaimCase;
+use App\Models\Claims\{ClaimCase, ClaimFinancialOutcome, ClaimSupplierRecourse};
 use App\Models\Inventory\StockMovement;
 use App\Models\Isms\IsmsSupplierAssessment;
 use App\Models\Procurement\{PurchaseOrder, PurchaseOrderLine};
 use App\Models\Supplier\Supplier;
 use App\Support\Setting;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Collection;
 
 /**
@@ -43,7 +45,7 @@ use Illuminate\Support\Collection;
  */
 class SupplierScorecardService {
     /** Formeländerungen erhöhen die Version (Nachweis/Reproduzierbarkeit). */
-    public const METRIC_VERSION = 1;
+    public const METRIC_VERSION = 2;
 
     /**
      * Dokumentierte Standardgewichte des Gesamt-Scores. Konfigurierbar je
@@ -57,6 +59,8 @@ class SupplierScorecardService {
         'complaints' => 0.30,
         'quality' => 0.20,
         'price' => 0.15,
+        // MVP-886/887: Regressverhalten (Anerkennung, Antwortfrist, Rückfluss).
+        'recourse' => 0.15,
     ];
 
     /** Als „ordered" (tatsächlich bestellt) zählende Bestellstatus. */
@@ -92,6 +96,7 @@ class SupplierScorecardService {
         $supplierIds = collect()
             ->merge(PurchaseOrder::query()->distinct()->pluck('supplier_id'))
             ->merge(ClaimCase::query()->whereNotNull('supplier_id')->distinct()->pluck('supplier_id'))
+            ->merge(ClaimSupplierRecourse::query()->distinct()->pluck('supplier_id'))
             ->merge(IsmsSupplierAssessment::query()->whereNotNull('supplier_id')->distinct()->pluck('supplier_id'))
             ->filter()
             ->map(static fn($v): int => (int) $v)
@@ -134,12 +139,15 @@ class SupplierScorecardService {
         $complaints = $this->complaintMetric($supplier, $from, $to, $withSeries);
         $price = $this->priceMetric($supplier, $from, $to, $withSeries);
         $quality = $this->qualityMetric($supplier);
+        $recourse = $this->recourseMetric($supplier, $from, $to);
+        $leadTime = $this->leadTimeMetric($supplier, $from, $to);
 
         $goodness = [
             'ontime' => $ontime['goodness'],
             'complaints' => $complaints['goodness'],
             'quality' => $quality['goodness'],
             'price' => $price['goodness'],
+            'recourse' => $recourse['goodness'],
         ];
 
         return [
@@ -153,6 +161,8 @@ class SupplierScorecardService {
             'complaints' => $complaints,
             'price' => $price,
             'quality' => $quality,
+            'recourse' => $recourse,
+            'lead_time' => $leadTime,
             'overall' => $this->overallScore($goodness),
         ];
     }
@@ -180,6 +190,12 @@ class SupplierScorecardService {
             'price_available' => $card['price']['available'],
             'quality_rating' => $card['quality']['rating'],
             'quality_available' => $card['quality']['available'],
+            'recourse_acceptance' => $card['recourse']['acceptance_rate'],
+            'recourse_available' => $card['recourse']['available'],
+            'claim_costs' => $card['recourse']['claim_costs'],
+            'lead_time_median' => $card['lead_time']['median'],
+            'lead_time_box' => $card['lead_time']['box'],
+            'lead_time_count' => $card['lead_time']['count'],
         ];
     }
 
@@ -350,6 +366,83 @@ class SupplierScorecardService {
             'goodness' => $rate === null ? null : (int) round(max(0.0, min(100.0, 100.0 - $rate * 100.0))),
             'available' => $rate !== null,
             'series' => $series,
+        ];
+    }
+
+    /**
+     * Bestell-Durchlaufzeit (MVP-888): Tage von der Bestellung bis zum letzten
+     * Wareneingang, für Bestellungen mit Abschluss im Zeitraum. Nur Anzeige,
+     * fließt nicht in den Gesamt-Score ein (Termintreue bewertet bereits).
+     *
+     * @return array{count:int, median:?float, min:?int, max:?int, box:array{min: float, q1: float, median: float, q3: float, max: float}|null, available:bool}
+     */
+    private function leadTimeMetric(Supplier $supplier, CarbonImmutable $from, CarbonImmutable $to): array {
+        $delivered = array_filter($this->deliveredAtByOrder($supplier), static fn (CarbonImmutable $at): bool => $at->betweenIncluded($from, $to));
+        $days = [];
+        if ($delivered !== []) {
+            foreach (PurchaseOrder::query()->whereIn('id', array_keys($delivered))->whereNotNull('ordered_at')->get(['id', 'ordered_at']) as $order) {
+                $days[] = (int) CarbonImmutable::parse((string) $order->ordered_at)->startOfDay()->diffInDays($delivered[(int) $order->id]->startOfDay(), false);
+            }
+        }
+
+        return [
+            'count' => count($days),
+            'median' => $days === [] ? null : round(NumberHelper::median($days), 1),
+            'min' => $days === [] ? null : min($days),
+            'max' => $days === [] ? null : max($days),
+            'box' => NumberHelper::quartiles($days),
+            'available' => $days !== [],
+        ];
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  Kennzahl 2b: Regressverhalten (Reklamationsmodul, MVP-887)
+    // ─────────────────────────────────────────────────────────────────────
+
+    /**
+     * Wie der Lieferant auf Regressforderungen reagiert (im Zeitraum
+     * eingereicht): Anerkennungsquote (ganz/teilweise anerkannt bzw. mit
+     * Rückfluss abgeschlossen) unter den beantworteten, Fristtreue der
+     * Antwort, Rückflussquote (erstattet ÷ gefordert) und mittlere
+     * Antwortdauer. Güte = Mittel der verfügbaren Quoten. Dazu die ausgeführten
+     * Reklamationskosten der Fälle mit diesem Lieferanten (nur Anzeige).
+     *
+     * @return array{submitted:int, answered:int, acceptance_rate:?float, response_ontime_rate:?float, recovery_rate:?float, avg_response_days:?float, claim_costs:float, goodness:?int, available:bool}
+     */
+    private function recourseMetric(Supplier $supplier, CarbonImmutable $from, CarbonImmutable $to): array {
+        $recourses = ClaimSupplierRecourse::query()
+            ->where('supplier_id', $supplier->id)
+            ->where('status', '!=', ClaimRecourseStatus::Draft->value)
+            ->whereBetween('submitted_at', [$from, $to])
+            ->get();
+        $answered = $recourses->filter(static fn (ClaimSupplierRecourse $r): bool => $r->responded_at !== null);
+
+        $accepted = $answered->filter(static fn (ClaimSupplierRecourse $r): bool => in_array($r->status, [ClaimRecourseStatus::Accepted, ClaimRecourseStatus::PartiallyAccepted], true)
+            || ($r->status === ClaimRecourseStatus::Closed && (float) $r->amount_recovered > 0.0))->count();
+        $withDue = $answered->filter(static fn (ClaimSupplierRecourse $r): bool => $r->response_due_at !== null);
+        $onTime = $withDue->filter(static fn (ClaimSupplierRecourse $r): bool => $r->responded_at <= $r->response_due_at)->count();
+        $claimed = (float) $recourses->sum(static fn (ClaimSupplierRecourse $r): float => (float) $r->amount_claimed);
+        $recovered = (float) $recourses->sum(static fn (ClaimSupplierRecourse $r): float => (float) $r->amount_recovered);
+
+        $acceptance = $answered->isEmpty() ? null : $accepted / $answered->count();
+        $ontimeRate = $withDue->isEmpty() ? null : $onTime / $withDue->count();
+        $recovery = $claimed > 0.0 ? min(1.0, $recovered / $claimed) : null;
+        $rates = array_values(array_filter([$acceptance, $ontimeRate, $recovery], static fn (?float $r): bool => $r !== null));
+
+        $caseIds = ClaimCase::query()->where('supplier_id', $supplier->id)->whereBetween('reported_at', [$from, $to])->pluck('id');
+        $costs = $caseIds->isEmpty() ? 0.0 : (float) ClaimFinancialOutcome::query()
+            ->whereIn('claim_case_id', $caseIds)->where('status', 'executed')->sum('amount');
+
+        return [
+            'submitted' => $recourses->count(),
+            'answered' => $answered->count(),
+            'acceptance_rate' => $acceptance,
+            'response_ontime_rate' => $ontimeRate,
+            'recovery_rate' => $recovery,
+            'avg_response_days' => $answered->isEmpty() ? null : round((float) $answered->avg(static fn (ClaimSupplierRecourse $r): float => (float) $r->submitted_at?->diffInDays($r->responded_at, true)), 1),
+            'claim_costs' => round($costs, 2),
+            'goodness' => $rates === [] ? null : (int) round(array_sum($rates) / count($rates) * 100),
+            'available' => $rates !== [],
         ];
     }
 

@@ -76,6 +76,10 @@ return [
     ],
 
     'internal' => [
+
+        'subject_search' => 'Person suchen',
+
+        'subject_search_placeholder' => 'Name, E-Mail oder Nummer',
         'from_portal' => 'Portal-Eingang',
         'portal_banner' => 'Diese Anfrage kam über das öffentliche Betroffenenportal. Die Identitätsangaben sind ungeprüfte Selbstauskunft.',
         'contact_email' => 'Rückadresse',
@@ -102,5 +106,9 @@ return [
         'default_locale' => 'Standardsprache (optional, z. B. de)',
         'saved' => 'Betroffenenportal gespeichert.',
         'rotated' => 'Portal-Link wurde rotiert. Bereits veröffentlichte Links sind jetzt ungültig.',
+    ],
+    'export' => [
+        'rows_truncated' => 'Weitere Zeilen: :shown von :count im PDF, vollständig im JSON-Paket.',
+        'families_hint' => 'Übersicht je Datenfamilie mit Anzahl und Zeitraum, darunter die Einzelzeilen; Inhalte Dritter (Notizen anderer Personen, Änderungsdetails) sind nicht enthalten.',
     ],
 ];

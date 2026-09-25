@@ -181,9 +181,15 @@ class ImportController extends Controller {
             // MVP-438: optionale iCal-Kategorie-Allowlist (nur Events dieser
             // Kategorien werden als Anwesenheit gewertet).
             'ical_category_allowlist' => ['nullable', 'string', 'max:500'],
+            // MVP-885: Zeitraum, in dem iCal-Serien aufgelöst werden.
+            'ical_recurrence_from' => ['nullable', 'date_format:Y-m-d'],
+            'ical_recurrence_until' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:ical_recurrence_from'],
         ]);
 
-        $options = [];
+        $options = array_filter([
+            'recurrence_from' => $data['ical_recurrence_from'] ?? null,
+            'recurrence_until' => $data['ical_recurrence_until'] ?? null,
+        ]);
         $allowlist = $this->parseCategoryAllowlist($data['ical_category_allowlist'] ?? null);
         if ($allowlist !== []) {
             $options['category_allowlist'] = $allowlist;

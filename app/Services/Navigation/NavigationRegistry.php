@@ -1137,6 +1137,10 @@ class NavigationRegistry {
                         $user?->can(Permission::ProcedureDeviationView->value)
                             ? ['route' => 'reports.procedure-deviations', 'label' => __('procedure.report.nav'), 'icon' => 'rule', 'modal' => false, 'matches' => ['reports.procedure-deviations']]
                             : null,
+                        // Blockierte Prozedurläufe (MVP-897): Recht wie die Laufansicht.
+                        $user?->can(Permission::ProcedureRunView->value)
+                            ? ['route' => 'reports.procedure-blocked', 'label' => __('procedure.blocked_report.nav'), 'icon' => 'block', 'modal' => false, 'matches' => ['reports.procedure-blocked']]
+                            : null,
                     ]),
                 ],
                 [
@@ -1783,6 +1787,9 @@ class NavigationRegistry {
                 }
                 if (Gate::allows(Permission::FormTemplateViewAny->value)) {
                     $adminNavItems[] = ['route' => 'form-templates.index', 'label' => __('form.title.templates'), 'icon' => 'assignment', 'modal' => false];
+                }
+                if (Gate::allows(Permission::ProtocolTemplateManage->value)) {
+                    $adminNavItems[] = ['route' => 'protocol-templates.index', 'label' => __('protocol.template.title'), 'icon' => 'fact_check', 'modal' => false];
                 }
                 if (Gate::allows(Permission::ProcedureTemplateView->value)) {
                     $adminNavItems[] = ['route' => 'procedures.index', 'label' => __('procedure.title.templates'), 'icon' => 'rule', 'modal' => false, 'matches' => ['procedures.*']];

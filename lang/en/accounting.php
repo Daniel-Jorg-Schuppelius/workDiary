@@ -311,6 +311,7 @@ return [
             'cash_entry' => 'Cash :register · :purpose',
             'payment' => 'Payment (:kind) · :target',
             'depreciation' => 'Depreciation :year · :no :name',
+            'asset_disposal' => 'Disposal :no :name',
         ],
         'reversal_reason' => [
             'unmatched' => 'Payment allocation removed — counter-entry.',
@@ -347,6 +348,8 @@ return [
             'asset_account' => 'Asset account',
             'depreciation_account' => 'Depreciation expense account',
             'disposed_on' => 'Disposed on',
+            'disposal_kind' => 'Type of disposal',
+            'disposal_proceeds' => 'Sale proceeds (net)',
             'created_by' => 'Created by',
         ],
         'section' => [
@@ -365,12 +368,13 @@ return [
         'hint' => [
             'device' => 'Optional link to the device register; not every fixed asset is a device.',
             'residual_value' => 'Remains at the end of the useful life; default 0.',
-            'useful_life' => 'Ordinary useful life according to the depreciation table, in months.',
+            'useful_life' => 'Ordinary useful life according to the depreciation table, in months. For low-value assets and the pool, the term follows from the method.',
             'accounts' => 'Leave empty to use the posting rule of the role (asset account / depreciation expense).',
             'frozen' => 'A depreciation entry is posted — acquisition date, cost, residual value and useful life are frozen.',
             'schedule' => 'Straight-line, pro rata by month in the year of acquisition and disposal; the last year takes the remainder.',
             'posting' => 'Annual depreciation is proposed per fiscal year in the closing and posted in the inbox — never directly.',
-            'dispose' => 'Disposal ends the schedule in the month of disposal. The remaining book value is not written off automatically.',
+            'dispose' => 'The disposal ends the depreciation plan in the month of disposal. The posting inbox provides the remaining book value as a disposal posting.',
+            'disposal_proceeds' => 'Only for sales. The proceeds are posted via the sales invoice; here they only decide whether the residual value is written off as a gain or a loss.',
         ],
         'action' => [
             'add' => 'Add fixed asset',
@@ -384,6 +388,8 @@ return [
             'disposed' => 'Disposal recorded.',
         ],
         'error' => [
+            'gwg_limit' => 'Low-value assets only up to € :limit net (organisation setting).',
+            'pool_range' => 'Collective pool only above € :lower up to € :upper net (organisation setting).',
             'disposed_frozen' => 'A disposed fixed asset can no longer be changed.',
             'values_frozen' => 'Value-determining fields are locked once a depreciation entry is posted.',
             'disposed_before_acquired' => 'The disposal cannot precede the acquisition.',
@@ -534,6 +540,22 @@ return [
 
     // Finanzberichte (Feature 125, MVP-676).
     'reports' => [
+        'fixed_asset_schedule' => [
+            'subtitle' => 'Fiscal year :year (:from – :to)',
+            'year' => 'Fiscal year',
+            'show' => 'Show',
+            'hint' => 'From the depreciation plan: values apply even if a year’s depreciation has not been posted yet. Disposals end the plan in the year of disposal.',
+            'cost_start' => 'Cost at start',
+            'additions' => 'Additions',
+            'disposals' => 'Disposals',
+            'cost_end' => 'Cost at end',
+            'dep_start' => 'Accum. depr. at start',
+            'dep_year' => 'Depreciation for the year',
+            'dep_disposals' => 'Depr. on disposals',
+            'dep_end' => 'Accum. depr. at end',
+            'book_start' => 'Book value at start',
+            'book_end' => 'Book value at end',
+        ],
         'title' => 'Financial reports',
         'menu' => 'Financial reports',
         'subtitle' => 'Reports of local accounting for the selected period.',
@@ -638,6 +660,10 @@ return [
             ],
         ],
         'card' => [
+            'fixed_asset_schedule' => [
+                'title' => 'Fixed asset schedule',
+                'text' => 'Development of acquisition cost and accumulated depreciation per asset in the fiscal year.',
+            ],
             'trial_balance' => [
                 'title' => 'Trial balance',
                 'text' => 'Opening, movement and balance per account.',

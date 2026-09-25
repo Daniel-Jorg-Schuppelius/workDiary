@@ -313,6 +313,14 @@ return [
             'allowed' => ['dailyAt', 'weeklyOn'],
             'criticality' => 'core',
         ],
+        // Basiszinssatz nach § 247 BGB (MVP-879): ändert sich halbjährlich,
+        // monatlicher Abgleich mit der Bundesbank-Reihe genügt.
+        'invoicing.base_rate_sync' => [
+            'command' => 'invoicing:base-rate-sync',
+            'cadence' => ['type' => 'monthlyOn', 'time' => '06:10', 'day' => 2],
+            'allowed' => ['monthlyOn', 'weeklyOn', 'dailyAt'],
+            'criticality' => 'core',
+        ],
         'privacy.retention_scan' => [
             'command' => 'privacy:retention-scan',
             'cadence' => ['type' => 'weeklyOn', 'time' => '04:30', 'day' => 1],

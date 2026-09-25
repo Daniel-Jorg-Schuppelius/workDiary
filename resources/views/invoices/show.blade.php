@@ -289,20 +289,16 @@
                      Einzeldialog UND Mahnlauf; Umschalten wird auditiert. --}}
                 @if (in_array($invoice->status, [\App\Models\Invoicing\Invoice::STATUS_ISSUED, \App\Models\Invoicing\Invoice::STATUS_PARTIALLY_PAID], true) && (auth()->user()?->canManageBilling() ?? false))
                     @if ($invoice->isDunningBlocked())
-                        <x-status-badge tone="warning" outline>{{ __('finance.dunning.badge_blocked') }}</x-status-badge>
-                        <x-action-form :action="route('invoices.dunning-block', $invoice)">
+                        <x-status-badge tone="warning" outline :title="$invoice->dunning_block_reason">{{ __('finance.dunning.badge_blocked') }}</x-status-badge>
+                        <x-action-form :action="route('invoices.dunning-unblock', $invoice)">
                             <x-icon-btn icon="notifications_active" tone="outline" size="sm" type="submit"
                                         show-label>{{ __('finance.dunning.action_unblock') }}</x-icon-btn>
                         </x-action-form>
                     @else
-                        <x-action-form :action="route('invoices.dunning-block', $invoice)"
-                              :confirm="__('finance.dunning.confirm_block', ['nr' => $invoice->number])"
-                              confirm-icon="notifications_off"
-                              confirm-tone="warning"
-                              :confirm-label="__('finance.dunning.action_block')">
-                            <x-icon-btn icon="notifications_off" tone="outline" size="sm" type="submit"
-                                        show-label>{{ __('finance.dunning.action_block') }}</x-icon-btn>
-                        </x-action-form>
+                        <x-icon-btn icon="notifications_off" tone="outline" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('invoices.dunning-block.form', $invoice)"
+                                    show-label>{{ __('finance.dunning.action_block') }}</x-icon-btn>
                     @endif
                 @endif
                 @can('pay', $invoice)

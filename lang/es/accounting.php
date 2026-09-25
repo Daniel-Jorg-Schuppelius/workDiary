@@ -311,6 +311,7 @@ return [
             'cash_entry' => 'Caja :register · :purpose',
             'payment' => 'Pago (:kind) · :target',
             'depreciation' => 'Amortización :year · :no :name',
+            'asset_disposal' => 'Baja :no :name',
         ],
         'reversal_reason' => [
             'unmatched' => 'Asignación de pago anulada — contraasiento.',
@@ -347,6 +348,8 @@ return [
             'asset_account' => 'Cuenta de activo',
             'depreciation_account' => 'Cuenta de gasto por amortización',
             'disposed_on' => 'Baja el',
+            'disposal_kind' => 'Tipo de baja',
+            'disposal_proceeds' => 'Precio de venta (neto)',
             'created_by' => 'Creado por',
         ],
         'section' => [
@@ -365,12 +368,13 @@ return [
         'hint' => [
             'device' => 'Enlace opcional al registro de equipos; no todo activo fijo es un equipo.',
             'residual_value' => 'Permanece al final de la vida útil; por defecto 0.',
-            'useful_life' => 'Vida útil habitual según la tabla de amortización, en meses.',
+            'useful_life' => 'Vida útil habitual según la tabla de amortización, en meses. Para bienes de escaso valor y el fondo colectivo, la duración resulta del método.',
             'accounts' => 'Dejar vacío para aplicar la regla contable del rol (cuenta de activo / gasto por amortización).',
             'frozen' => 'Hay una amortización contabilizada — fecha de adquisición, coste, valor residual y vida útil quedan congelados.',
             'schedule' => 'Lineal, prorrateo mensual en el año de adquisición y de baja; el último año toma el resto.',
             'posting' => 'La amortización anual se propone por ejercicio en el cierre y se contabiliza en la bandeja — nunca directamente.',
-            'dispose' => 'La baja termina el plan en el mes de baja. El valor contable restante no se da de baja automáticamente.',
+            'dispose' => 'La baja cierra el plan de amortización en el mes de la baja. La bandeja contable propone el valor contable restante como asiento de baja.',
+            'disposal_proceeds' => 'Solo en caso de venta. El importe se contabiliza mediante la factura de venta; aquí solo decide si el valor residual se da de baja como beneficio o pérdida.',
         ],
         'action' => [
             'add' => 'Añadir activo fijo',
@@ -384,6 +388,8 @@ return [
             'disposed' => 'Baja registrada.',
         ],
         'error' => [
+            'gwg_limit' => 'Bienes de escaso valor solo hasta :limit € netos (ajuste de la organización).',
+            'pool_range' => 'Fondo colectivo solo por encima de :lower € hasta :upper € netos (ajuste de la organización).',
             'disposed_frozen' => 'Un activo fijo dado de baja ya no se puede modificar.',
             'values_frozen' => 'Los campos que determinan el valor quedan bloqueados tras la primera amortización contabilizada.',
             'disposed_before_acquired' => 'La baja no puede ser anterior a la adquisición.',
@@ -534,6 +540,22 @@ return [
 
     // Finanzberichte (Feature 125, MVP-676).
     'reports' => [
+        'fixed_asset_schedule' => [
+            'subtitle' => 'Ejercicio :year (:from – :to)',
+            'year' => 'Ejercicio',
+            'show' => 'Mostrar',
+            'hint' => 'Del plan de amortización: los valores se aplican aunque la amortización del año aún no esté contabilizada. Las bajas cierran el plan en el año de la baja.',
+            'cost_start' => 'Coste inicio',
+            'additions' => 'Altas',
+            'disposals' => 'Bajas',
+            'cost_end' => 'Coste fin',
+            'dep_start' => 'Amort. acumulada inicio',
+            'dep_year' => 'Amortización del ejercicio',
+            'dep_disposals' => 'Amort. de bajas',
+            'dep_end' => 'Amort. acumulada fin',
+            'book_start' => 'Valor contable inicio',
+            'book_end' => 'Valor contable fin',
+        ],
         'title' => 'Informes financieros',
         'menu' => 'Informes financieros',
         'subtitle' => 'Análisis de la contabilidad local en el periodo seleccionado.',
@@ -638,6 +660,10 @@ return [
             ],
         ],
         'card' => [
+            'fixed_asset_schedule' => [
+                'title' => 'Cuadro de inmovilizado',
+                'text' => 'Evolución del coste de adquisición y de la amortización acumulada por activo en el ejercicio.',
+            ],
             'trial_balance' => [
                 'title' => 'Balance de sumas y saldos',
                 'text' => 'Apertura, movimiento y saldo por cuenta.',

@@ -84,4 +84,18 @@ return [
         'problem' => 'Zustellproblem',
         'cancelled' => 'Storniert',
     ],
+    'parcel' => [
+        'add' => 'Packstück hinzufügen',
+        'edit' => 'Packstück :no bearbeiten',
+        'delete' => 'Packstück löschen',
+        'confirm_delete' => 'Packstück :no löschen? Die Seriennummern werden wieder frei.',
+        'label' => 'Packstück :no von :of',
+        'serials' => 'Seriennummern im Packstück',
+        'no_serials' => 'Diese Auslieferung hat keine freien Seriennummern.',
+        'serial_count' => ':count Seriennr.',
+        'saved' => 'Packstück gespeichert.',
+        'deleted' => 'Packstück gelöscht.',
+        'serial_not_allowed' => 'Seriennummern müssen aus dieser Auslieferung stammen und dürfen in keinem anderen Packstück liegen.',
+        'locked' => 'Für diese Auslieferung besteht bereits ein Versandauftrag; die Packstücke sind fest.',
+    ],
 ];

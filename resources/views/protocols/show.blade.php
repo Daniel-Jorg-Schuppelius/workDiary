@@ -6,9 +6,9 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
-  Protokoll-Detailseite (Rang 28): Read-only-Trägerseite — Stammdaten,
-  Positionen, Signaturen, Wetter-Nachweis (Rang 10), Anhänge, Verlauf und
-  das Externe-Beteiligte-Panel (Feature 033).
+  Protokoll-Detailseite: Stammdaten, Positionen (Erfassung über Dialoge,
+  MVP-883), Signaturen, Wetter-Nachweis (Rang 10), Anhänge, Verlauf und das
+  Externe-Beteiligte-Panel (Feature 033).
 --}}
 
 @extends('layouts.app')
@@ -32,10 +32,45 @@
             </span>
             <x-slot:actions>
                 <x-status-badge size="sm">{{ $protocol->status->label() }}</x-status-badge>
+                @can('requestReview', $protocol)
+                    <x-action-form :action="route('protocols.transition', [$protocol, 'requestReview'])">
+                        <x-icon-btn icon="rate_review" size="sm" type="submit" show-label>{{ __('protocol.action.requestReview') }}</x-icon-btn>
+                    </x-action-form>
+                @endcan
+                @can('returnToDraft', $protocol)
+                    <x-icon-btn icon="undo" size="sm" data-entry-modal-trigger :href="route('protocols.transition-form', [$protocol, 'returnToDraft'])" show-label>{{ __('protocol.action.returnToDraft') }}</x-icon-btn>
+                @endcan
+                @can('sign', $protocol)
+                    <x-icon-btn icon="draw" tone="primary" size="sm" data-entry-modal-trigger :href="route('protocols.transition-form', [$protocol, 'sign'])" show-label>{{ __('protocol.action.sign') }}</x-icon-btn>
+                    @can(\App\Enums\User\Permission::ProtocolSignatureRequest->value)
+                        <x-icon-btn icon="link" size="sm" data-entry-modal-trigger :href="route('protocols.signature-tokens.create', $protocol)" show-label>{{ __('protocol.dialog.token_title') }}</x-icon-btn>
+                    @endcan
+                @endcan
+                @can('supersede', $protocol)
+                    <x-icon-btn icon="history_edu" size="sm" data-entry-modal-trigger :href="route('protocols.transition-form', [$protocol, 'supersede'])" show-label>{{ __('protocol.action.supersede') }}</x-icon-btn>
+                @endcan
+                @can('archive', $protocol)
+                    <x-action-form :action="route('protocols.transition', [$protocol, 'archive'])" :confirm="__('protocol.dialog.archive_confirm')">
+                        <x-icon-btn icon="archive" size="sm" type="submit" show-label>{{ __('protocol.action.archive') }}</x-icon-btn>
+                    </x-action-form>
+                @endcan
+                @can(\App\Enums\User\Permission::ProtocolTemplateManage->value)
+                    <x-icon-btn icon="library_add" size="sm" data-entry-modal-trigger :href="route('protocols.as-template.form', $protocol)" show-label>{{ __('protocol.template.save_title') }}</x-icon-btn>
+                @endcan
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm" :href="route('protocols.pdf', $protocol)" show-label>{{ __('PDF') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    @if (session('protocol.signature.token_url'))
+        <div class="alert alert-info">
+            <x-icon name="link" />
+            <div class="min-w-0">
+                <p class="text-sm">{{ __('protocol.dialog.token_url_hint') }}</p>
+                <code class="block break-all text-xs">{{ session('protocol.signature.token_url') }}</code>
+            </div>
+        </div>
+    @endif
 
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Stammdaten')" icon="badge">
@@ -87,12 +122,19 @@
         $aiMorph = (new \App\Models\Protocol\ProtocolItem)->getMorphClass();
         $aiTextSuggestions = $aiTextUsable ? $aiViewData->openSuggestionsFor($aiMorph, $aiItems, \App\Services\Ai\Suggestions\ProtocolTextSuggestionService::CAPABILITY_TEXT) : collect();
         $aiClassifySuggestions = $aiClassifyUsable ? $aiViewData->openSuggestionsFor($aiMorph, $aiItems, \App\Services\Ai\Suggestions\ProtocolTextSuggestionService::CAPABILITY_CLASSIFY) : collect();
-        $aiActions = $aiTextUsable || $aiClassifyUsable;
+        // Erfassung (MVP-883): Ausfüllen/Entfernen nur im bearbeitbaren Entwurf.
+        $canEditItems = $aiEditable;
+        $aiActions = $aiTextUsable || $aiClassifyUsable || $canEditItems;
         $aiColumns = $aiActions ? 6 : 5;
         // Erfasster Wert je Punkt über den Feldschema-Adapter (wie im PDF, MVP-867).
         $itemFields = app(\App\Services\Protocol\Fields\ProtocolItemFields::class);
     @endphp
     <x-card :title="__('Positionen')" icon="checklist" :count="$protocol->items->count()">
+        @if ($canEditItems)
+            <x-slot:actions>
+                <x-icon-btn icon="playlist_add" tone="primary" size="sm" data-entry-modal-trigger :href="route('protocols.items.create', $protocol)" show-label>{{ __('protocol.action.addItem') }}</x-icon-btn>
+            </x-slot:actions>
+        @endif
         @if ($protocol->items->isEmpty())
             <x-empty-state icon="checklist" :title="__('Keine Positionen erfasst.')" compact />
         @else
@@ -119,6 +161,12 @@
                         @if ($aiActions)
                             <td class="text-right whitespace-nowrap">
                                 <div class="flex justify-end gap-1">
+                                    @if ($canEditItems)
+                                        <x-icon-btn icon="edit_note" size="xs" data-entry-modal-trigger :href="route('protocols.items.fill-form', $item)" :title="__('protocol.action.fillItem')" />
+                                        <x-action-form :action="route('protocols.items.destroy', $item)" method="DELETE" :confirm="__('protocol.dialog.remove_confirm', ['label' => $item->label])">
+                                            <x-icon-btn icon="delete" size="xs" tone="error" type="submit" :title="__('protocol.action.removeItem')" />
+                                        </x-action-form>
+                                    @endif
                                     @if ($aiTextUsable)
                                         <x-action-form :action="route('ai.suggestions.protocol-item', $item)">
                                             <x-icon-btn icon="auto_awesome" size="xs" tone="info" type="submit" :title="__('ai.suggestion.suggest_protocol_item')" />
@@ -155,6 +203,12 @@
                             @if ($aiActions)
                                 <td class="text-right whitespace-nowrap">
                                     <div class="flex justify-end gap-1">
+                                        @if ($canEditItems)
+                                            <x-icon-btn icon="edit_note" size="xs" data-entry-modal-trigger :href="route('protocols.items.fill-form', $child)" :title="__('protocol.action.fillItem')" />
+                                            <x-action-form :action="route('protocols.items.destroy', $child)" method="DELETE" :confirm="__('protocol.dialog.remove_confirm', ['label' => $child->label])">
+                                                <x-icon-btn icon="delete" size="xs" tone="error" type="submit" :title="__('protocol.action.removeItem')" />
+                                            </x-action-form>
+                                        @endif
                                         @if ($aiTextUsable)
                                             <x-action-form :action="route('ai.suggestions.protocol-item', $child)">
                                                 <x-icon-btn icon="auto_awesome" size="xs" tone="info" type="submit" :title="__('ai.suggestion.suggest_protocol_item')" />

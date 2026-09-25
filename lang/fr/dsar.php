@@ -76,6 +76,10 @@ return [
     ],
 
     'internal' => [
+
+        'subject_search' => 'Rechercher une personne',
+
+        'subject_search_placeholder' => 'Nom, e-mail ou numéro',
         'from_portal' => 'Entrée par le portail',
         'portal_banner' => 'Cette demande provient du portail public des personnes concernées. Les données d’identité sont une déclaration non vérifiée.',
         'contact_email' => 'Adresse de réponse',
@@ -102,5 +106,9 @@ return [
         'default_locale' => 'Langue par défaut (facultatif, p. ex. fr)',
         'saved' => 'Portail des personnes concernées enregistré.',
         'rotated' => 'Le lien du portail a été renouvelé. Les liens déjà publiés sont désormais invalides.',
+    ],
+    'export' => [
+        'rows_truncated' => ':shown lignes sur :count affichées dans le PDF ; le paquet JSON les contient toutes.',
+        'families_hint' => "Aperçu par famille de données avec nombre et période, suivi des lignes individuelles ; les contenus de tiers (notes d'autres personnes, détails des modifications) ne sont pas inclus.",
     ],
 ];

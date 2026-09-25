@@ -112,6 +112,12 @@ final class ClaimsManifest extends Manifest {
             \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
                 \App\Services\Claims\Retention\ClaimsRetentionPolicies::class,
             ],
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Claims\DeadlineScans\ClaimPatternScan::class,
+            ],
+            \App\Services\Reporting\Contracts\EarlyWarningSource::class => [
+                \App\Services\Claims\EarlyWarnings\ClaimPatternWarningSource::class,
+            ],
         ];
     }
 }

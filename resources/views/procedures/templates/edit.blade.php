@@ -65,6 +65,9 @@
             </div>
             <div class="flex items-center gap-2">
                 <x-help-button topic="procedures.designer" :label="__('procedure.help.designer')" />
+                @if ($draft !== null)
+                    <x-icon-btn icon="library_add" size="sm" data-entry-modal-trigger :href="route('procedures.library.insert-form', $template)" show-label>{{ __('procedure.library.insert') }}</x-icon-btn>
+                @endif
                 <x-icon-btn icon="arrow_back" tone="ghost" size="sm" show-label
                             :href="route('procedures.index')">{{ __('procedure.action.backToList') }}</x-icon-btn>
             </div>

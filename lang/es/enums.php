@@ -166,6 +166,12 @@ return [
             'follow_up' => 'Certificado de continuación',
         ],
     ],
+    'asset_inspection_round' => [
+        'status' => [
+            'open' => 'Abierta',
+            'closed' => 'Cerrada',
+        ],
+    ],
     'tour' => [
         'status' => [
             'draft' => 'Borrador',
@@ -415,6 +421,13 @@ return [
             ],
             'claim' => [
                 'escalation' => 'Reclamación vencida',
+                'pattern' => 'Patrón de reclamaciones llamativo',
+            ],
+            'procedure' => [
+                'deviationEscalated' => 'Desviación de procedimiento escalada',
+            ],
+            'report' => [
+                'warning' => 'Alerta temprana de los informes',
             ],
             'rental' => [
                 'returnOverdue' => 'Devolución de alquiler vencida',
@@ -1335,6 +1348,7 @@ return [
             'cash_entry' => 'Libro de caja',
             'payment' => 'Pago',
             'depreciation' => 'Amortización',
+            'asset_disposal' => 'Baja de inmovilizado',
         ],
         'posting-account-role' => [
             'receivable' => 'Cliente',
@@ -1349,6 +1363,8 @@ return [
             'discount' => 'Descuento',
             'fixed_asset' => 'Cuenta de activo',
             'depreciation' => 'Gasto por amortización',
+            'disposal_loss' => 'Baja valor residual (pérdida)',
+            'disposal_gain' => 'Baja valor residual (beneficio)',
         ],
         // Buchungskern (Feature 125, MVP-672).
         'balance-side' => [
@@ -1409,8 +1425,14 @@ return [
             'active' => 'Activo',
             'disposed' => 'Dado de baja',
         ],
+        'fixed-asset-disposal-kind' => [
+            'sale' => 'Venta',
+            'scrap' => 'Desguace / eliminación',
+        ],
         'depreciation-method' => [
             'linear' => 'Lineal',
+            'immediate' => 'Amortización inmediata (bien de escaso valor)',
+            'pool' => 'Fondo colectivo',
         ],
         'accounting-period-status' => [
             'open' => 'Abierto',

@@ -147,4 +147,31 @@ return [
         'empty' => 'No time allocations in the period.',
         'note' => 'Based solely on allocation shares; unallocated time appears in the regular time reports.',
     ],
+    'supplier_bridge' => [
+        'title' => 'Spend bridge previous period → period',
+        'start' => 'Previous period',
+        'end' => 'Period',
+        'others' => 'Others',
+        'note' => 'Previous period = equally long period immediately before; the five largest changes individually, the rest as “Others”. Click opens the supplier’s vouchers.',
+    ],
+    'warning' => [
+        'customer_rework' => [
+            'title' => 'Rework for :name: :actual %',
+            'detail' => 'Last 90 days, target :target %.',
+            'recommendation' => 'Recommendation: discuss the causes of rework with the team, review training or work instructions and question the pricing for this customer.',
+        ],
+        'asset_defects' => [
+            'title' => 'Recurring defects: :name',
+            'detail' => ':count defects in :months months.',
+            'recommendation' => 'Recommendation: consider replacement or a tighter maintenance plan and inform the manufacturer.',
+        ],
+        'claim_pattern' => [
+            'recommendation' => 'Recommendation: inform the supplier or manufacturer and check recourse; block remaining stock for affected lots.',
+        ],
+        'widget' => [
+            'title' => 'Notable findings',
+            'description' => 'Early warnings from reports, assets and claims with a recommended action.',
+            'none' => 'No notable findings.',
+        ],
+    ],
 ];

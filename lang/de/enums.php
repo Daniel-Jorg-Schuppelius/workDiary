@@ -166,6 +166,12 @@ return [
             'follow_up' => 'Folgebescheinigung',
         ],
     ],
+    'asset_inspection_round' => [
+        'status' => [
+            'open' => 'Offen',
+            'closed' => 'Abgeschlossen',
+        ],
+    ],
     'tour' => [
         'status' => [
             'draft' => 'Entwurf',
@@ -415,6 +421,13 @@ return [
             ],
             'claim' => [
                 'escalation' => 'Reklamation überfällig',
+                'pattern' => 'Auffälliges Reklamationsmuster',
+            ],
+            'procedure' => [
+                'deviationEscalated' => 'Prozedur-Abweichung eskaliert',
+            ],
+            'report' => [
+                'warning' => 'Frühwarnung aus den Auswertungen',
             ],
             'rental' => [
                 'returnOverdue' => 'Verleih-Rückgabe überfällig',
@@ -1338,6 +1351,7 @@ return [
             'cash_entry' => 'Kassenbuch',
             'payment' => 'Zahlung',
             'depreciation' => 'Abschreibung (AfA)',
+            'asset_disposal' => 'Anlagenabgang',
         ],
         'posting-account-role' => [
             'receivable' => 'Forderung',
@@ -1352,6 +1366,8 @@ return [
             'discount' => 'Skonto',
             'fixed_asset' => 'Anlagenkonto',
             'depreciation' => 'AfA-Aufwand',
+            'disposal_loss' => 'Abgang Restbuchwert (Buchverlust)',
+            'disposal_gain' => 'Abgang Restbuchwert (Buchgewinn)',
         ],
         // Buchungskern (Feature 125, MVP-672).
         'balance-side' => [
@@ -1412,8 +1428,14 @@ return [
             'active' => 'Aktiv',
             'disposed' => 'Abgegangen',
         ],
+        'fixed-asset-disposal-kind' => [
+            'sale' => 'Verkauf',
+            'scrap' => 'Verschrottung / Entsorgung',
+        ],
         'depreciation-method' => [
             'linear' => 'Linear',
+            'immediate' => 'Sofortabschreibung (GWG)',
+            'pool' => 'Sammelposten',
         ],
         'accounting-period-status' => [
             'open' => 'Offen',

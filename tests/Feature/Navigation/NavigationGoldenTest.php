@@ -48,6 +48,9 @@ use Tests\TestCase;
  * Neu aufgenommen 2026-09-24 (`MVP-868`, eigene Felder je Organisation):
  * einziges Delta ist `/admin/custom-fields` im Header-Systemmenü der
  * Org-Admin-Personas.
+ *
+ * Neu aufgenommen 2026-09-25 (`MVP-901`, Protokollvorlagen): einziges Delta
+ * ist `/protocol-templates` im Header-Systemmenü der Org-Admin-Personas.
  */
 class NavigationGoldenTest extends TestCase {
     use RefreshDatabase;

@@ -102,4 +102,40 @@ class IcalImportSourceTest extends TestCase {
         $this->assertSame('12:00', $rows[0]->data['start_time']);
         $this->assertSame('13:30', $rows[0]->data['end_time']);
     }
+
+    public function test_recurring_series_is_expanded_in_window_with_exdate_and_override(): void {
+        // Wöchentlich montags 08:00–12:00 Europe/Berlin; 13.07. entfällt (EXDATE),
+        // 20.07. ist auf 09:00–13:00 verschoben (RECURRENCE-ID) — MVP-885.
+        $path = $this->writeIcs(
+            "BEGIN:VEVENT\r\nUID:serie-1\r\nDTSTART;TZID=Europe/Berlin:20260706T080000\r\nDTEND;TZID=Europe/Berlin:20260706T120000\r\n" .
+            "RRULE:FREQ=WEEKLY;BYDAY=MO\r\nEXDATE;TZID=Europe/Berlin:20260713T080000\r\nSUMMARY:Montagsdienst\r\nORGANIZER:mailto:worker@example.com\r\nEND:VEVENT\r\n" .
+            "BEGIN:VEVENT\r\nUID:serie-1\r\nRECURRENCE-ID;TZID=Europe/Berlin:20260720T080000\r\nDTSTART;TZID=Europe/Berlin:20260720T090000\r\nDTEND;TZID=Europe/Berlin:20260720T130000\r\n" .
+            "SUMMARY:Montagsdienst\r\nORGANIZER:mailto:worker@example.com\r\nEND:VEVENT\r\n"
+        );
+
+        $window = [new \DateTimeImmutable('2026-07-01 00:00', new \DateTimeZone('Europe/Berlin')), new \DateTimeImmutable('2026-07-28 00:00', new \DateTimeZone('Europe/Berlin'))];
+        $rows = $this->collect(new IcalImportSource($path, new AttendanceIcalMapper(), 'Europe/Berlin', [], $window));
+
+        $this->assertSame(
+            [['2026-07-06', '08:00', 'serie-1#20260706T060000'], ['2026-07-20', '09:00', 'serie-1#20260720T070000'], ['2026-07-27', '08:00', 'serie-1#20260727T060000']],
+            array_map(static fn (SourceRow $r): array => [$r->data['date'], $r->data['start_time'], $r->data['external_id']], $rows),
+        );
+    }
+
+    public function test_series_outside_window_is_reported_and_without_window_only_base_instance(): void {
+        $path = $this->writeIcs(
+            "BEGIN:VEVENT\r\nUID:serie-2\r\nDTSTART:20260105T070000Z\r\nDTEND:20260105T110000Z\r\nRRULE:FREQ=DAILY;COUNT=3\r\n" .
+            "SUMMARY:Januar\r\nORGANIZER:mailto:worker@example.com\r\nEND:VEVENT\r\n"
+        );
+
+        $window = [new \DateTimeImmutable('2026-07-01'), new \DateTimeImmutable('2026-08-01')];
+        $rows = $this->collect(new IcalImportSource($path, new AttendanceIcalMapper(), 'Europe/Berlin', [], $window));
+        $this->assertCount(1, $rows);
+        $this->assertTrue($rows[0]->isWarning());
+
+        $rows = $this->collect(new IcalImportSource($path, new AttendanceIcalMapper(), 'Europe/Berlin'));
+        $this->assertCount(2, $rows);
+        $this->assertTrue($rows[0]->isWarning());
+        $this->assertSame('serie-2', $rows[1]->data['external_id']);
+    }
 }

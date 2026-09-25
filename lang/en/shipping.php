@@ -83,4 +83,18 @@ return [
         'problem' => 'Delivery problem',
         'cancelled' => 'Cancelled',
     ],
+    'parcel' => [
+        'add' => 'Add parcel',
+        'edit' => 'Edit parcel :no',
+        'delete' => 'Delete parcel',
+        'confirm_delete' => 'Delete parcel :no? Its serial numbers become free again.',
+        'label' => 'Parcel :no of :of',
+        'serials' => 'Serial numbers in the parcel',
+        'no_serials' => 'This delivery has no free serial numbers.',
+        'serial_count' => ':count serial no.',
+        'saved' => 'Parcel saved.',
+        'deleted' => 'Parcel deleted.',
+        'serial_not_allowed' => 'Serial numbers must come from this delivery and must not be in another parcel.',
+        'locked' => 'A shipping order already exists for this delivery; the parcels are fixed.',
+    ],
 ];

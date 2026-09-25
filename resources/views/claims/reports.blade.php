@@ -61,19 +61,27 @@
         @endforeach
     </div>
 
-    <x-card :title="__('Wiederholfehler (Artikel × Ursache mehrfach)')">
-        @if ($data['repeats'] === [])
-            <p class="text-sm text-muted">{{ __('Keine Wiederholfehler im Zeitraum.') }}</p>
+    {{-- Serienfehler/Chargenprobleme (MVP-886): Regeln und Schwelle wie die Benachrichtigung. --}}
+    <x-card :title="__('claims.pattern.title')" :count="count($data['patterns'])">
+        <p class="mb-2 text-xs text-muted">{{ __('claims.pattern.hint', ['threshold' => $data['pattern_threshold']]) }}</p>
+        @if ($data['patterns'] === [])
+            <p class="text-sm text-muted">{{ __('claims.pattern.none') }}</p>
         @else
             <x-table bare>
                 <x-slot:head>
-                    <tr><th>{{ __('Artikel') }}</th><th>{{ __('Ursache') }}</th><th class="text-right">{{ __('Fälle') }}</th></tr>
+                    <tr><th>{{ __('claims.pattern.rule_label') }}</th><th>{{ __('claims.pattern.group') }}</th><th>{{ __('claims.pattern.cases') }}</th><th class="text-right">{{ __('claims.pattern.count') }}</th></tr>
                 </x-slot:head>
-                @foreach ($data['repeats'] as $repeat)
+                @foreach ($data['patterns'] as $pattern)
                     <tr>
-                        <td>{{ $repeat['article'] }}</td>
-                        <td>{{ $repeat['cause'] }}</td>
-                        <td class="text-right font-mono">{{ $repeat['count'] }}</td>
+                        <td>{{ __('claims.pattern.rule.' . $pattern['rule']) }}</td>
+                        <td>{{ $pattern['label'] }}</td>
+                        <td class="text-xs">
+                            @foreach (array_slice($pattern['case_ids'], 0, 5) as $index => $caseId)
+                                <a class="link link-hover" href="{{ route('claims.show', \App\Support\Sqid::encode(\App\Models\Claims\ClaimCase::class, $caseId)) }}">{{ $pattern['case_numbers'][$index] }}</a>@if (! $loop->last), @endif
+                            @endforeach
+                            @if ($pattern['count'] > 5) … @endif
+                        </td>
+                        <td class="text-right font-mono">{{ $pattern['count'] }}</td>
                     </tr>
                 @endforeach
             </x-table>

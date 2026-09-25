@@ -27,7 +27,10 @@
     // Verzugszins-Ausweis (MVP-691): berechnet im DunningService (act/365),
     // hier nur Anzeige — gebucht wird nichts.
     $interest ??= null;
-    $claimTotal = round($openAmount + ($fee ?? 0.0) + ($interest['amount'] ?? 0.0), 2);
+    // Teilzahlungen (MVP-875): eigene Zeile, Forderung über den offenen Betrag des DunningService.
+    $paid ??= 0.0;
+    $outstanding ??= max(0.0, round($openAmount - $paid, 2));
+    $claimTotal = round($outstanding + ($fee ?? 0.0) + ($interest['amount'] ?? 0.0), 2);
     $hasRetention = $retained > 0.0;
 @endphp
 <style>
@@ -115,11 +118,16 @@
                      bekannt und gewollt ist. --}}
                 <tr><td colspan="3" class="num">{{ __('invoicing.retention.dunning_note') }}</td><td class="num">−{{ $fmt($retained) }} {{ $invoice->currency->value }}</td></tr>
             @endif
+            @if ($paid > 0.0)
+                <tr><td colspan="3" class="num">{{ __('finance.dunning.paid_row') }}</td><td class="num">−{{ $fmt($paid) }} {{ $invoice->currency->value }}</td></tr>
+            @endif
             @if (($fee ?? null) !== null)
                 <tr><td colspan="3" class="num">{{ __('Mahngebühr') }}</td><td class="num">{{ $fmt($fee) }} {{ $invoice->currency->value }}</td></tr>
             @endif
             @if ($interest !== null)
-                <tr><td colspan="3" class="num">{{ __('finance.dunning.interest_row', ['rate' => \App\Support\DocumentNumber::decimal($interest['rate'], 2), 'days' => $interest['days']]) }}</td><td class="num">{{ $fmt($interest['amount']) }} {{ $invoice->currency->value }}</td></tr>
+                <tr><td colspan="3" class="num">{{ ($interest['mode'] ?? 'fixed') === 'base_rate'
+                    ? __('finance.dunning.interest_row_base', ['points' => \App\Support\DocumentNumber::decimal($interest['points'], 2), 'rate' => \App\Support\DocumentNumber::decimal($interest['rate'], 2), 'days' => $interest['days']])
+                    : __('finance.dunning.interest_row', ['rate' => \App\Support\DocumentNumber::decimal($interest['rate'], 2), 'days' => $interest['days']]) }}</td><td class="num">{{ $fmt($interest['amount']) }} {{ $invoice->currency->value }}</td></tr>
             @endif
             <tr><td colspan="3" class="num">{{ __('Gesamtforderung') }}</td><td class="num">{{ $fmt($claimTotal) }} {{ $invoice->currency->value }}</td></tr>
         </tfoot>

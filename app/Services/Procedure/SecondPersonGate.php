@@ -60,6 +60,7 @@ class SecondPersonGate {
         $this->recordStepEvent($stepRun, ProcedureRunEventType::SecondPersonRequested, $actor, [
             'requested_by' => $actor->id,
         ]);
+        $this->announceProgress($stepRun, $actor);
 
         return $stepRun->refresh();
     }
@@ -113,6 +114,7 @@ class SecondPersonGate {
             $this->recordStepEvent($stepRun, ProcedureRunEventType::SecondPersonAssigned, $taker, [
                 'taker_id' => $taker->id,
             ]);
+            $this->announceProgress($stepRun, $taker);
 
             return $stepRun->refresh();
         });
@@ -143,6 +145,7 @@ class SecondPersonGate {
             $this->recordStepEvent($stepRun, ProcedureRunEventType::SecondPersonSigned, $signer, [
                 'signer_id' => $signer->id,
             ]);
+            $this->announceProgress($stepRun, $signer);
 
             return $stepRun->refresh();
         });
@@ -165,6 +168,7 @@ class SecondPersonGate {
                 'previous_signer_id' => $previousSigner,
                 'reason' => $reason,
             ]);
+            $this->announceProgress($stepRun, $actor);
 
             return $stepRun->refresh();
         });

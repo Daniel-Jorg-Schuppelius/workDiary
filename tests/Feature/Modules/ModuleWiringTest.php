@@ -89,7 +89,7 @@ class ModuleWiringTest extends TestCase {
 
         $types = $this->app->make(SyncCommandService::class)->types();
         sort($types);
-        $this->assertSame(['attendance.clock-in', 'attendance.clock-out', 'attendance.correct', 'comment.diary', 'form.submission', 'learning.unit-complete'], $types);
+        $this->assertSame(['attendance.clock-in', 'attendance.clock-out', 'attendance.correct', 'comment.diary', 'form.submission', 'inventory.count', 'learning.unit-complete'], $types);
     }
 
     public function test_manifest_listeners_are_registered_exactly_once_for_their_events(): void {

@@ -14,6 +14,8 @@ namespace App\Http\Requests\Protocol;
 
 use App\Enums\Protocol\ProtocolItemType;
 use App\Http\Requests\BaseFormRequest;
+use App\Http\Requests\Concerns\DecodesSqidOrNumericInputs;
+use App\Models\Protocol\ProtocolItem;
 use Illuminate\Validation\Rule;
 
 /**
@@ -21,6 +23,11 @@ use Illuminate\Validation\Rule;
  * Berechtigung trägt der Controller (ProtocolPolicy).
  */
 class AddProtocolItemRequest extends BaseFormRequest {
+    use DecodesSqidOrNumericInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = ['parent_item_id' => ProtocolItem::class];
+
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
@@ -28,6 +35,11 @@ class AddProtocolItemRequest extends BaseFormRequest {
             'description' => ['nullable', 'string', 'max:5000'],
             'required' => ['nullable', 'boolean'],
             'item_type' => ['nullable', 'string', 'max:40', Rule::in(array_map(static fn($c) => $c->value, ProtocolItemType::cases()))],
+            // Konfiguration aus dem Dialog (MVP-883): Auswahlwerte je Zeile, Einheit, Grenzen.
+            'options' => ['nullable', 'string', 'max:5000'],
+            'unit' => ['nullable', 'string', 'max:20'],
+            'min' => ['nullable', 'numeric'],
+            'max' => ['nullable', 'numeric', 'gte:min'],
             // Org-Bindung läuft über das Eltern-Protokoll (Items tragen
             // keine eigene organization_id).
             'parent_item_id' => [

@@ -81,6 +81,15 @@
                 </label>
             @endif
 
+            {{-- MVP-885: Serientermine werden in diesem Zeitraum aufgelöst
+                 (Standard: die letzten 90 Tage bis heute). --}}
+            @if(in_array($entity, [\App\Enums\Import\ImportEntity::Attendances, \App\Enums\Import\ImportEntity::ProjectTimes], true))
+                <div class="form-control max-w-md">
+                    <x-date-range from-name="ical_recurrence_from" to-name="ical_recurrence_until" :label="__('import.upload.recurrenceWindow')" />
+                    <span class="label-text-alt text-muted">{{ __('import.upload.recurrenceWindowHint') }}</span>
+                </div>
+            @endif
+
             @error('file')<div class="text-error text-sm">{{ $message }}</div>@enderror
             @error('entity')<div class="text-error text-sm">{{ $message }}</div>@enderror
 

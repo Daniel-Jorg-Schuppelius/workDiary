@@ -156,6 +156,44 @@ final class SupplierScorecardServiceTest extends TestCase {
 
     // ── „keine Daten" verfälscht den Gesamt-Score nicht ──────────────────
 
+    // ── Regressverhalten (MVP-887) ─────────────────────────────────────
+
+    public function test_recourse_metric_combines_acceptance_timeliness_and_recovery(): void {
+        $case = $this->makeClaim('2026-06-03');
+        $base = ['organization_id' => $this->organization->id, 'claim_case_id' => $case->id, 'supplier_id' => $this->supplier->id];
+        // Anerkannt, fristgerecht, 80 von 100 erstattet.
+        \App\Models\Claims\ClaimSupplierRecourse::query()->create($base + [
+            'status' => 'accepted', 'amount_claimed' => '100.00', 'amount_recovered' => '80.00',
+            'submitted_at' => '2026-06-04 10:00', 'response_due_at' => '2026-06-14 10:00', 'responded_at' => '2026-06-08 10:00',
+        ]);
+        // Abgelehnt, verspätet, nichts erstattet.
+        \App\Models\Claims\ClaimSupplierRecourse::query()->create($base + [
+            'status' => 'rejected', 'amount_claimed' => '100.00', 'amount_recovered' => '0.00',
+            'submitted_at' => '2026-06-05 10:00', 'response_due_at' => '2026-06-10 10:00', 'responded_at' => '2026-06-15 10:00',
+        ]);
+        // Entwurf zählt nicht.
+        \App\Models\Claims\ClaimSupplierRecourse::query()->create($base + ['status' => 'draft', 'amount_claimed' => '999.00']);
+
+        $recourse = $this->service->scorecard($this->supplier, $this->from, $this->to)['recourse'];
+
+        $this->assertTrue($recourse['available']);
+        $this->assertSame(2, $recourse['submitted']);
+        $this->assertEqualsWithDelta(0.5, $recourse['acceptance_rate'], 0.0001);
+        $this->assertEqualsWithDelta(0.5, $recourse['response_ontime_rate'], 0.0001);
+        $this->assertEqualsWithDelta(0.4, $recourse['recovery_rate'], 0.0001);
+        $this->assertSame(47, $recourse['goodness']);
+        $this->assertSame(7.0, $recourse['avg_response_days']);
+    }
+
+    public function test_lead_time_reports_median_min_and_max_days(): void {
+        $this->makeReceivedOrder('2026-06-10', '2026-06-05', '2026-06-01', '10.00');
+        $this->makeReceivedOrder('2026-06-10', '2026-06-20', '2026-06-02', '10.00');
+
+        $lead = $this->service->scorecard($this->supplier, $this->from, $this->to)['lead_time'];
+
+        $this->assertSame(['count' => 2, 'median' => 11.0, 'min' => 4, 'max' => 18, 'box' => ['min' => 4.0, 'q1' => 7.5, 'median' => 11.0, 'q3' => 14.5, 'max' => 18.0], 'available' => true], $lead);
+    }
+
     public function test_missing_metrics_do_not_drag_overall_score(): void {
         // Nur eine ISMS-Bewertung (Low) — keine Einkaufs-/Reklamationsdaten.
         $this->makeAssessment(IncidentSeverity::Low, '2026-05-01');

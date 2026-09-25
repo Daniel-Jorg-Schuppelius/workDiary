@@ -76,6 +76,10 @@ return [
     ],
 
     'internal' => [
+
+        'subject_search' => 'Cerca persona',
+
+        'subject_search_placeholder' => 'Nome, e-mail o numero',
         'from_portal' => 'Ingresso dal portale',
         'portal_banner' => 'Questa richiesta proviene dal portale pubblico per gli interessati. I dati identificativi sono un’autodichiarazione non verificata.',
         'contact_email' => 'Indirizzo per la risposta',
@@ -102,5 +106,9 @@ return [
         'default_locale' => 'Lingua predefinita (facoltativa, ad es. it)',
         'saved' => 'Portale interessati salvato.',
         'rotated' => 'Il link del portale è stato ruotato. I link già pubblicati non sono più validi.',
+    ],
+    'export' => [
+        'rows_truncated' => 'Mostrate :shown di :count righe nel PDF; il pacchetto JSON le contiene tutte.',
+        'families_hint' => 'Panoramica per famiglia di dati con numero e periodo, seguita dalle singole righe; i contenuti di terzi (note di altre persone, dettagli delle modifiche) non sono inclusi.',
     ],
 ];

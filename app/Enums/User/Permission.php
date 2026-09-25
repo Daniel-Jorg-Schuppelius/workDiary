@@ -531,6 +531,7 @@ enum Permission: string implements HasLabel {
     case ProtocolSupersede = 'protocol.supersede';
     case ProtocolDelete = 'protocol.delete';
     case ProtocolSignatureRequest = 'protocol.signatureRequest';
+    case ProtocolTemplateManage = 'protocol.template.manage';
     case ProtocolPdfDownload = 'protocol.pdfDownload';
     case ProtocolItemPhotoAdd = 'protocol.item.photo.add';
     case ProtocolItemPhotoRemove = 'protocol.item.photo.remove';

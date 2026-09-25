@@ -43,6 +43,7 @@ class SupplierDocumentsSection extends AbstractSubjectSection {
                     ->where('organization_id', (int) $s->organization_id)
                     ->where('supplier_id', $s->id),
                 'created_at',
+                columns: ['ordered_at' => __('Bestellt am'), 'number' => __('Nummer'), 'status' => __('Status')],
             ),
         ]];
     }

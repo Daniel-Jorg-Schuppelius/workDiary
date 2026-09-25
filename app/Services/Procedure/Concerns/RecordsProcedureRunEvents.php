@@ -11,6 +11,7 @@
 namespace App\Services\Procedure\Concerns;
 
 use App\Enums\Procedure\ProcedureRunEventType;
+use App\Events\Procedure\ProcedureRunProgressed;
 use App\Models\Platform\User;
 use App\Models\Procedure\{ProcedureRun, ProcedureRunEvent, ProcedureStepRun};
 
@@ -44,6 +45,14 @@ trait RecordsProcedureRunEvents {
         }
 
         $this->recordRunEvent($run, $type, $actor, $stepRun, $payload);
+    }
+
+    /** Sperrstatus des Laufs nachführen lassen (MVP-897). */
+    protected function announceProgress(ProcedureStepRun $stepRun, ?User $actor): void {
+        $run = $stepRun->run;
+        if ($run !== null) {
+            ProcedureRunProgressed::dispatch($run, $actor);
+        }
     }
 
     /**

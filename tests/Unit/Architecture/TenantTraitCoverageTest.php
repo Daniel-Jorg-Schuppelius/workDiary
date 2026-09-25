@@ -212,6 +212,9 @@ class TenantTraitCoverageTest extends TestCase {
         // Vergleichsdaten (kein Org-Bezug). Der org-spezifische Mindestlohn
         // liegt separat in MinimumWage (tenant-scoped).
         \App\Models\Time\MinimumWageReference::class,
+        // Basiszinssatz nach § 247 BGB (MVP-879): installationsweite
+        // Referenzdaten der Bundesbank, für alle Organisationen gleich.
+        \App\Models\Invoicing\BaseInterestRate::class,
         // Chat: Child-Entitäten von Message/Poll — Mandantengrenze wird transitiv
         // über das tenant-gebundene Parent (Channel/Message, beide mit
         // BelongsToOrganization) durchgesetzt; eigene organization_id wäre redundant.

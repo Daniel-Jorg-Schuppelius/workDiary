@@ -106,7 +106,6 @@ class ConstructionNoticeController extends Controller {
 
         return view('construction-notices.show', [
             'notice' => $notice->load(['customer', 'project', 'site', 'diaryEntry', 'weatherSnapshot', 'creator']),
-            'dispatches' => $notice->dispatches()->get(),
             'deliveryMethods' => ConstructionNoticeService::DELIVERY_METHODS,
         ]);
     }

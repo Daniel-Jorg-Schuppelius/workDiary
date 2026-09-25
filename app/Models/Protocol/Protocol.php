@@ -60,6 +60,8 @@ class Protocol extends Model {
     protected $fillable = [
         'organization_id',
         'type',
+        'template_id',
+        'template_version',
         'subject_type',
         'subject_id',
         'title',
@@ -85,6 +87,11 @@ class Protocol extends Model {
         'signed_at' => 'datetime',
         'archived_at' => 'datetime',
     ];
+
+    /** @return BelongsTo<ProtocolTemplate, $this> */
+    public function template(): BelongsTo {
+        return $this->belongsTo(ProtocolTemplate::class, 'template_id');
+    }
 
     /** @return MorphTo<Model, $this> */
     public function subject(): MorphTo {

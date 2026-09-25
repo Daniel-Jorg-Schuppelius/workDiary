@@ -168,6 +168,7 @@ class SchedulerRegistrationTest extends TestCase {
         // Neu mit Feature 107 (W3-Rest): vorgemerkte DATANORM-Preisstände.
         'catalog:apply-pending-prices' => ['20 2 * * *', true, true],
         'security:advisories-pull' => ['30 5 * * *', true, true],
+        'invoicing:base-rate-sync' => ['10 6 2 * *', true, true],
         'privacy:retention-scan' => ['30 4 * * 1', true, true],
         // Neu mit Feature 006 (Welle D): ArbZG-Verstoß-Persistenz.
         'compliance:scan-findings' => ['30 1 * * *', true, true],

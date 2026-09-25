@@ -15,6 +15,8 @@ namespace App\Http\Requests\Protocol;
 use App\Enums\Protocol\{ProtocolType, ProtocolVisibility};
 use App\Http\Controllers\Protocol\ProtocolController;
 use App\Http\Requests\BaseFormRequest;
+use App\Http\Requests\Concerns\DecodesSqidOrNumericInputs;
+use App\Models\Protocol\ProtocolTemplate;
 
 /**
  * Validierung für das Anlegen eines Protokolls. Die Auflösung des Subjekts
@@ -23,6 +25,19 @@ use App\Http\Requests\BaseFormRequest;
  * Controller (ProtocolPolicy).
  */
 class StoreProtocolRequest extends BaseFormRequest {
+    use DecodesSqidOrNumericInputs;
+
+    /**
+     * Der Anlegedialog (MVP-883) schickt den Bezug als Sqid, die API als ID.
+     *
+     * @return array<string, class-string>
+     */
+    protected function sqidFields(): array {
+        $class = ProtocolController::SUBJECT_MAP[(string) $this->input('subject_kind')] ?? null;
+
+        return ['template_id' => ProtocolTemplate::class] + ($class !== null ? ['subject_id' => $class] : []);
+    }
+
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
@@ -34,6 +49,7 @@ class StoreProtocolRequest extends BaseFormRequest {
             'description' => ['nullable', 'string', 'max:10000'],
             'state_initial' => ['nullable', 'string', 'max:10000'],
             'occurred_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
+            'template_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('protocol_templates')],
             'visibility' => ['nullable', 'string', \Illuminate\Validation\Rule::enum(ProtocolVisibility::class)],
             'tag_ids' => ['nullable', 'array'],
             'tag_ids.*' => ['nullable', 'string', 'max:64'],

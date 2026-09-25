@@ -149,7 +149,7 @@ return [
         'finance' => ['open_times_digest' => 'Resumen de tiempos abiertos para contabilidad'],
         'inventory' => ['cycle_counts' => 'Iniciar inventario cíclico', 'expiring_lots' => 'Vigilancia de caducidad (lotes por vencer)'],
         'accounting' => ['recurring' => 'Expectativas de documentos y borradores de asiento recurrentes', 'filings' => 'Sincronizar plazos fiscales y recordar'],
-        'invoicing' => ['recurring' => 'Generar borradores de facturas recurrentes'],
+        'invoicing' => ['recurring' => 'Generar borradores de facturas recurrentes', 'base_rate_sync' => 'Sincronizar el tipo básico del Bundesbank'],
         'jtl' => ['sync' => 'Sincronización JTL Wawi'],
         'resale' => [
             'sync_domains' => 'Suscripciones de reventa: adoptar dominios de la gestión de dominios',

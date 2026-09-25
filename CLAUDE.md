@@ -150,7 +150,7 @@ Welle 4 leer; ein neuer Verstoß wird gelöst, nicht eingetragen.
   `VehicleReservationGuard`, `ProjectEconomicsDimension`, `RoomBlockingSource`,
   `CloudIntakeHandler`, `RetentionPolicyProvider`, `MailIntakeHandler`,
   `OffboardingStep`, `NavigationCondition`, `PluginCapabilitySource`,
-  `MirrorPdfRenderer`. Neue Scans, Specs, Quellen,
+  `MirrorPdfRenderer`, `RuleAction`, `RuleTrigger` (Automationsregeln), `EarlyWarningSource`. Neue Scans, Specs, Quellen,
   Demo-Blöcke, Löschbereiche usw. **nie** in eine feste Liste, sondern ins
   Manifest des Moduls.
 - **Contract mit Null-Bindung** — der Aufrufer braucht eine Antwort:

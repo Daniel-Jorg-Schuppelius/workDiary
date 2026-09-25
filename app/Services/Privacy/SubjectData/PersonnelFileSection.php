@@ -59,7 +59,13 @@ class PersonnelFileSection extends AbstractSubjectSection {
         return [
             'lists' => [__('hr.personnel_file.field.documents') => $rows],
             'families' => [
-                $this->family('documents', __('hr.personnel_file.title'), $query, 'created_at'),
+                $this->family(
+                    'documents',
+                    __('hr.personnel_file.title'),
+                    $query,
+                    'created_at',
+                    columns: ['created_at' => __('Datum'), 'title' => __('Titel'), 'hr_category' => __('Kategorie'), 'retention_until' => __('Aufbewahrung bis')],
+                ),
             ],
         ];
     }

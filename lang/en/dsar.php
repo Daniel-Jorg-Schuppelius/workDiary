@@ -76,6 +76,10 @@ return [
     ],
 
     'internal' => [
+
+        'subject_search' => 'Search person',
+
+        'subject_search_placeholder' => 'Name, e-mail or number',
         'from_portal' => 'Portal intake',
         'portal_banner' => 'This request came in through the public data subject portal. The identity details are unverified self-declaration.',
         'contact_email' => 'Reply address',
@@ -102,5 +106,9 @@ return [
         'default_locale' => 'Default language (optional, e.g. en)',
         'saved' => 'Data subject portal saved.',
         'rotated' => 'The portal link has been rotated. Links already published are now invalid.',
+    ],
+    'export' => [
+        'rows_truncated' => ':shown of :count rows shown in the PDF; the JSON package contains all of them.',
+        'families_hint' => "Overview per data family with count and period, followed by the individual rows; third-party content (other people's notes, change details) is not included.",
     ],
 ];

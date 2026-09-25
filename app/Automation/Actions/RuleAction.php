@@ -12,9 +12,20 @@ namespace App\Automation\Actions;
 
 use Illuminate\Database\Eloquent\Model;
 
+/** Erweiterungspunkt: Module nennen ihre Aktionen in `Manifest::extensions()`. */
 interface RuleAction {
     /** Eindeutiger Typ-Schlüssel, der in `automation_rules.actions[*].type` referenziert wird. */
     public function type(): string;
+
+    /** Anzeigename im Regelformular. */
+    public function label(): string;
+
+    /**
+     * Auslöser (`RuleTrigger::key()`), zu denen die Aktion passt.
+     *
+     * @return list<string>
+     */
+    public function triggers(): array;
 
     /**
      * Führt die Aktion gegen das Subject aus.

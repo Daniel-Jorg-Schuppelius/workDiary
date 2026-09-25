@@ -16,7 +16,7 @@ use App\Enums\Protocol\{ProtocolEventType, ProtocolItemResult, ProtocolItemType,
 use App\Exceptions\{ClassificationRequirementException, InvalidProtocolTransitionException, ProtocolValidationException};
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
-use App\Models\Protocol\{Protocol, ProtocolItem, ProtocolSignature};
+use App\Models\Protocol\{Protocol, ProtocolItem, ProtocolSignature, ProtocolTemplate};
 use App\Services\Classification\ClassificationRequirementValidator;
 use App\Services\Diary\OrderService;
 use App\Services\Integration\LifecycleWebhookPublisher;
@@ -79,6 +79,14 @@ class ProtocolService {
                 'type' => $type->value,
                 'visibility' => $visibility->value,
             ]);
+
+            $template = isset($attributes['template_id'])
+                ? ProtocolTemplate::query()->usable()->where('organization_id', $protocol->organization_id)->find((int) $attributes['template_id'])
+                : null;
+            if ($template instanceof ProtocolTemplate) {
+                $protocol->forceFill(['template_id' => $template->id, 'template_version' => $template->version])->save();
+                $this->addTemplateItems($protocol, $creator, $template->items);
+            }
 
             return $protocol->fresh(['journal']) ?? $protocol;
         });
@@ -274,6 +282,32 @@ class ProtocolService {
         return $item;
     }
 
+    /**
+     * Punkte einer Vorlage als Kopie (MVP-901); Gruppen tragen ihre Kinder.
+     *
+     * @param list<array<string, mixed>> $items
+     */
+    private function addTemplateItems(Protocol $protocol, User $actor, array $items, ?int $parentId = null): void {
+        foreach ($items as $spec) {
+            $type = ProtocolItemType::tryFrom((string) ($spec['item_type'] ?? ''));
+            if ($type === null || trim((string) ($spec['label'] ?? '')) === '') {
+                continue;
+            }
+            $config = is_array($spec['config'] ?? null) ? $spec['config'] : [];
+            $item = $this->addItem($protocol, $actor, [
+                'label' => (string) $spec['label'],
+                'item_type' => $type->value,
+                'description' => $spec['description'] ?? null,
+                'required' => (bool) ($spec['required'] ?? false),
+                'value_json' => $config === [] ? null : $config,
+                'parent_item_id' => $parentId,
+            ]);
+            if ($type === ProtocolItemType::Group && is_array($spec['children'] ?? null)) {
+                $this->addTemplateItems($protocol, $actor, array_values($spec['children']), (int) $item->id);
+            }
+        }
+    }
+
     public function removeItem(ProtocolItem $item, User $actor): void {
         $protocol = $this->protocolOf($item);
         $this->assertEditable($protocol);
@@ -293,8 +327,12 @@ class ProtocolService {
         $protocol = $this->protocolOf($item);
         $this->assertEditable($protocol);
 
+        // Werte legen sich über die Konfiguration des Punkts (Optionen,
+        // Grenzen, Einheit, verknüpfter Mangel-Punkt) — nie ersetzen.
         $provided = $values['value_json'] ?? null;
-        $newValue = $provided !== null ? $this->valueJsonFrom($provided) : $item->value_json;
+        $newValue = $provided !== null
+            ? array_replace(is_array($item->value_json) ? $item->value_json : [], $this->valueJsonFrom($provided))
+            : $item->value_json;
 
         // Defect-Punkt: bei erster Befuellung automatisch Open-Issue anlegen
         // (MVP-021 §3.12, Integration mit MVP-024).

@@ -535,6 +535,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ProtocolSupersede,
             PermissionEnum::ProtocolDelete,
             PermissionEnum::ProtocolSignatureRequest,
+            // Protokollvorlagen (MVP-901) pflegt, wer auch Formularvorlagen pflegt.
+            PermissionEnum::ProtocolTemplateManage,
             // Kunden-Rückfragen aus dem Portal (Feature 012): Teamleitung
             // sieht und beantwortet die Rückfragen der Kunden.
             PermissionEnum::ProtocolCustomerQueryManage,

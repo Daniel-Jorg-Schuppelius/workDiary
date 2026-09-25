@@ -785,6 +785,7 @@ return [
         'overdue' => 'Miete überfällig',
         'profileSaved' => 'Mietprofil gespeichert',
         'reserved' => 'Miete reserviert',
+        'termsAttached' => 'Mietbedingungen am Verleihvorgang festgehalten',
         'returned' => 'Mietgerät zurückgenommen',
         'termsFrozen' => 'Mietkonditionen eingefroren',
     ],

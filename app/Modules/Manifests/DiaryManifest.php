@@ -77,6 +77,12 @@ final class DiaryManifest extends Manifest {
             \App\Services\Sync\Contracts\SyncCommandHandler::class => [
                 \App\Services\Diary\Sync\DiaryCommentSyncHandler::class,
             ],
+            \App\Automation\Actions\RuleAction::class => [
+                \App\Services\Diary\Automation\CreateFollowUpOrderAction::class,
+            ],
+            \App\Automation\Triggers\RuleTrigger::class => [
+                \App\Services\OpenIssue\Automation\OpenIssueCreatedTrigger::class,
+            ],
         ];
     }
 

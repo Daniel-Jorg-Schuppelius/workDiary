@@ -24,6 +24,7 @@ use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Services\Archive\ArchiveService;
 use App\Services\Classification\ClassificationRequirementValidator;
+use App\Services\Diary\FollowUpOrderService;
 use App\Services\OpenIssue\OpenIssueService;
 use App\Services\Timeline\DiaryEntryTimelineService;
 use App\Services\UI\DateRangeContext;
@@ -137,7 +138,7 @@ class DiaryController extends Controller {
         if ($openIssueId !== null) {
             $issue = OpenIssue::query()->with('subject')->findOrFail($openIssueId);
             Gate::authorize('update', $issue);
-            $prefill = array_merge($prefill, $this->openIssuePrefill($issue));
+            $prefill = array_merge($prefill, app(FollowUpOrderService::class)->prefillForOpenIssue($issue), ['openIssueSqid' => $issue->sqid]);
             $prefillDate ??= CarbonImmutable::now()->format('Y-m-d\TH:i');
         }
 
@@ -159,33 +160,6 @@ class DiaryController extends Controller {
             'prefillContent' => $prefill['content'],
             'prefillOpenIssueSqid' => $prefill['openIssueSqid'],
         ] + $this->entryTypeFormData());
-    }
-
-    /**
-     * Kunde/Projekt aus dem Subjekt des Punkts (DiaryEntry/Project/Customer),
-     * Titel = Punkt-Titel, Inhalt = Verweis + Beschreibung.
-     *
-     * @return array{customerId: ?int, projectId: ?int, title: string, content: string, openIssueSqid: string}
-     */
-    private function openIssuePrefill(OpenIssue $issue): array {
-        $subject = $issue->subject;
-        [$customerId, $projectId] = match (true) {
-            $subject instanceof DiaryEntry => [$subject->customer_id, $subject->project_id],
-            $subject instanceof Project => [$subject->customer_id, (int) $subject->id],
-            $subject instanceof Customer => [(int) $subject->id, null],
-            default => [null, null],
-        };
-
-        $intro = (string) __('open-issue.follow_up.content_intro', ['id' => $issue->id, 'title' => $issue->title]);
-        $content = trim($intro . "\n\n" . (string) $issue->description);
-
-        return [
-            'customerId' => $customerId !== null ? (int) $customerId : null,
-            'projectId' => $projectId !== null ? (int) $projectId : null,
-            'title' => $issue->title,
-            'content' => $content,
-            'openIssueSqid' => $issue->sqid,
-        ];
     }
 
     private function parsePrefillDate(?string $value): ?string {

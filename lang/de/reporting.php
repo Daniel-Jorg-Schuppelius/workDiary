@@ -147,4 +147,31 @@ return [
         'empty' => 'Keine Zeitaufteilungen im Zeitraum.',
         'note' => 'Datenbasis sind ausschließlich Aufteilungs-Anteile; nicht aufgeteilte Zeit erscheint in den regulären Zeit-Auswertungen.',
     ],
+    'supplier_bridge' => [
+        'title' => 'Ausgabenbrücke Vorperiode → Zeitraum',
+        'start' => 'Vorperiode',
+        'end' => 'Zeitraum',
+        'others' => 'Übrige',
+        'note' => 'Vorperiode = gleich langer Zeitraum unmittelbar davor; die fünf größten Veränderungen einzeln, der Rest als „Übrige“. Klick öffnet die Belege des Lieferanten.',
+    ],
+    'warning' => [
+        'customer_rework' => [
+            'title' => 'Nacharbeit bei :name: :actual %',
+            'detail' => 'Letzte 90 Tage, Zielwert :target %.',
+            'recommendation' => 'Empfehlung: Ursachen der Nacharbeit mit dem Team besprechen, Schulung oder Arbeitsanweisung prüfen und die Preisgestaltung für diesen Kunden hinterfragen.',
+        ],
+        'asset_defects' => [
+            'title' => 'Wiederkehrende Defekte: :name',
+            'detail' => ':count Defekte in :months Monaten.',
+            'recommendation' => 'Empfehlung: Austausch oder engeren Wartungsplan prüfen und den Hersteller informieren.',
+        ],
+        'claim_pattern' => [
+            'recommendation' => 'Empfehlung: Lieferant bzw. Hersteller informieren und einen Regress prüfen; bei Chargen die Restbestände sperren.',
+        ],
+        'widget' => [
+            'title' => 'Auffälligkeiten',
+            'description' => 'Frühwarnungen aus Auswertungen, Objekten und Reklamationen mit Handlungsempfehlung.',
+            'none' => 'Keine Auffälligkeiten.',
+        ],
+    ],
 ];

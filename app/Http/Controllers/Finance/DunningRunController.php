@@ -48,6 +48,9 @@ class DunningRunController extends Controller {
             'blocked' => $blocked,
             'openSum' => round($openSum, 2),
             'interestRate' => $this->dunning->interestRate(),
+            'interestMode' => $this->dunning->interestMode(),
+            'interestPoints' => $this->dunning->interestPoints(),
+            'baseRateMissing' => $this->dunning->baseRateMissing(),
         ]);
     }
 

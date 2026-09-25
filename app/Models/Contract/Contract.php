@@ -16,6 +16,7 @@ use App\Enums\Contract\{ContractKind, ContractPartnerType, ContractStatus, Contr
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
+use App\Models\Finance\CostCenter;
 use App\Models\Platform\User;
 use App\Models\Reselling\ResaleSubscription;
 use App\Models\Supplier\Supplier;
@@ -62,7 +63,7 @@ class Contract extends Model {
         'term_kind', 'starts_on', 'ends_on', 'min_term_months', 'auto_renew',
         'renew_period_months', 'notice_period_days',
         'indexation_method', 'indexation_value', 'indexation_review_on', 'indexation_note',
-        'value_amount', 'currency', 'value_period', 'document_id',
+        'value_amount', 'currency', 'value_period', 'cost_center_id', 'document_id',
         'responsible_user_id', 'notes', 'created_by', 'closed_at', 'closed_by',
     ];
 
@@ -112,6 +113,11 @@ class Contract extends Model {
     /** @return BelongsTo<Supplier, $this> */
     public function supplier(): BelongsTo {
         return $this->belongsTo(Supplier::class);
+    }
+
+    /** @return BelongsTo<CostCenter, $this> Kostenstelle (MVP-894) */
+    public function costCenter(): BelongsTo {
+        return $this->belongsTo(CostCenter::class);
     }
 
     /** @return BelongsTo<Document, $this> */

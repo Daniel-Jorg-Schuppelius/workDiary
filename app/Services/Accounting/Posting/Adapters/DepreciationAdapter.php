@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Accounting\Posting\Adapters;
 
-use App\Enums\Finance\{PostingAccountRole, PostingSourceKind};
-use App\Models\Accounting\{AccountingAccount, AccountingFiscalYear, AccountingPeriod, FixedAsset};
+use App\Enums\Finance\{DepreciationMethod, PostingAccountRole, PostingSourceKind};
+use App\Models\Accounting\{AccountingFiscalYear, AccountingPeriod, FixedAsset};
 use App\Models\Platform\Organization;
 use App\Services\Accounting\{DepreciationCalculator, DepreciationScheduleRow};
 use App\Services\Accounting\Posting\{PostingProposal, PostingProposalLine, PostingRuleResolver};
@@ -153,12 +153,12 @@ class DepreciationAdapter extends AbstractPostingAdapter {
             }
         }
 
-        $expenseLine = $this->lineFor($organization, $source, PostingAccountRole::Depreciation, $source->depreciationAccount, $amount, '0.00', $bookedOn, $blockers, $ruleVersions);
+        $expenseLine = $this->fixedAssetLine($organization, $source, PostingAccountRole::Depreciation, $source->depreciationAccount, $amount, '0.00', $bookedOn, $blockers, $ruleVersions);
         if ($expenseLine instanceof PostingProposalLine) {
             $lines[] = $expenseLine;
         }
 
-        $assetLine = $this->lineFor($organization, $source, PostingAccountRole::FixedAsset, $source->assetAccount, '0.00', $amount, $bookedOn, $blockers, $ruleVersions);
+        $assetLine = $this->fixedAssetLine($organization, $source, PostingAccountRole::FixedAsset, $source->assetAccount, '0.00', $amount, $bookedOn, $blockers, $ruleVersions);
         if ($assetLine instanceof PostingProposalLine) {
             $lines[] = $assetLine;
         }
@@ -191,7 +191,8 @@ class DepreciationAdapter extends AbstractPostingAdapter {
 
     /** Buchungsdatum: Geschäftsjahresende, beim Abgang im Jahr der Abgangstag. */
     public function bookedOn(FixedAsset $asset, AccountingFiscalYear $year): CarbonImmutable {
-        $disposed = $asset->disposedOn();
+        // Sammelposten laufen nach einem Abgang unverändert weiter (MVP-892).
+        $disposed = $asset->depreciation_method === DepreciationMethod::Pool ? null : $asset->disposedOn();
         $yearEnd = CarbonImmutable::parse($year->ends_on)->startOfDay();
 
         if ($disposed instanceof CarbonImmutable && $disposed->lessThan($yearEnd) && $disposed->greaterThanOrEqualTo(CarbonImmutable::parse($year->starts_on))) {
@@ -199,53 +200,5 @@ class DepreciationAdapter extends AbstractPostingAdapter {
         }
 
         return $yearEnd;
-    }
-
-    /**
-     * Zeile aus dem Anlagenkonto oder — ohne Konto an der Anlage — aus der
-     * Buchungsregel der Rolle. Ein inaktives Anlagenkonto zählt wie keines.
-     *
-     * @param  numeric-string  $debit
-     * @param  numeric-string  $credit
-     * @param  list<string>  $blockers
-     * @param  list<string>  $ruleVersions
-     */
-    private function lineFor(
-        Organization $organization,
-        FixedAsset $asset,
-        PostingAccountRole $role,
-        ?AccountingAccount $explicit,
-        string $debit,
-        string $credit,
-        CarbonImmutable $on,
-        array &$blockers,
-        array &$ruleVersions,
-    ): ?PostingProposalLine {
-        if ($explicit instanceof AccountingAccount && $explicit->is_active && (int) $explicit->organization_id === (int) $organization->id) {
-            $ruleVersions[] = 'asset:' . $asset->getKey();
-
-            return new PostingProposalLine(
-                role: $role,
-                account: $explicit,
-                debit: $debit,
-                credit: $credit,
-                memo: $asset->displayNo() . ' ' . $asset->name,
-                ruleVersion: 'asset:' . $asset->getKey(),
-            );
-        }
-
-        $rule = $this->rule($organization, $role, [], $on);
-        if ($rule === null) {
-            $blockers[] = $this->missingRuleBlocker($role);
-
-            return null;
-        }
-
-        $line = $this->line($role, $rule, $debit, $credit, $asset->displayNo() . ' ' . $asset->name);
-        if ($line instanceof PostingProposalLine) {
-            $ruleVersions[] = $rule->versionTag();
-        }
-
-        return $line;
     }
 }

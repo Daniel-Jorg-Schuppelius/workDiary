@@ -14,6 +14,7 @@ use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * Zahlungsverhalten & Forderungstrend (MVP-468, Feature 002). Verhaltens-
@@ -215,9 +216,9 @@ class PaymentBehaviorReportBuilder {
             return [
                 'x' => $label,
                 'min' => (float) $values[0],
-                'q1' => round($this->percentile($values, 0.25), 1),
-                'median' => round($this->percentile($values, 0.5), 1),
-                'q3' => round($this->percentile($values, 0.75), 1),
+                'q1' => round(NumberHelper::percentile($values, 25), 1),
+                'median' => round(NumberHelper::percentile($values, 50), 1),
+                'q3' => round(NumberHelper::percentile($values, 75), 1),
                 'max' => (float) $values[count($values) - 1],
                 'n' => count($values),
                 'customerId' => $customerId,
@@ -268,21 +269,4 @@ class PaymentBehaviorReportBuilder {
         return array_slice($rows, 0, 10);
     }
 
-    /**
-     * Lineare Interpolation zwischen den Rängen (Standard-Perzentil).
-     *
-     * @param  list<int|float>  $sorted  aufsteigend sortiert, nicht leer
-     */
-    private function percentile(array $sorted, float $p): float {
-        $n = count($sorted);
-        if ($n === 1) {
-            return (float) $sorted[0];
-        }
-
-        $idx = ($n - 1) * $p;
-        $lo = (int) floor($idx);
-        $hi = (int) ceil($idx);
-
-        return $sorted[$lo] + ($sorted[$hi] - $sorted[$lo]) * ($idx - $lo);
-    }
 }

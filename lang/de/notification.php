@@ -229,6 +229,7 @@ return [
         'tender_binding_expiring' => 'Bindefrist endet am :date.',
         'incident_critical' => 'Neuer kritischer Sicherheitsvorfall gemeldet.',
         'safety_critical_event' => 'Kritisches Sicherheitsereignis (:severity) am Ort :location gemeldet.',
+        'procedure_deviation_escalated' => 'Abweichung im Schritt „:step“ (:severity) wurde eskaliert: :reason',
         'safety_assessment_review_due' => 'Wiedervorlage der Gefährdungsbeurteilung fällig am :date.',
         'safety_instruction_due' => 'Wiederholungsunterweisung „:topic" fällig am :date.',
         'safety_checkup_due' => 'Arbeitsmedizinische Vorsorge (:kind) fällig am :date.',

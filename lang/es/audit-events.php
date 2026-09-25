@@ -785,6 +785,7 @@ return [
         'overdue' => 'Alquiler vencido',
         'profileSaved' => 'Perfil de alquiler guardado',
         'reserved' => 'Alquiler reservado',
+        'termsAttached' => 'Condiciones de alquiler vinculadas al expediente',
         'returned' => 'Equipo de alquiler devuelto',
         'termsFrozen' => 'Condiciones de alquiler congeladas',
     ],

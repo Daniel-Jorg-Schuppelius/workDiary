@@ -166,6 +166,12 @@ return [
             'follow_up' => 'Certificato di proseguimento',
         ],
     ],
+    'asset_inspection_round' => [
+        'status' => [
+            'open' => 'Aperto',
+            'closed' => 'Chiuso',
+        ],
+    ],
     'tour' => [
         'status' => [
             'draft' => 'Bozza',
@@ -415,6 +421,13 @@ return [
             ],
             'claim' => [
                 'escalation' => 'Reclamo in ritardo',
+                'pattern' => 'Schema di reclami rilevante',
+            ],
+            'procedure' => [
+                'deviationEscalated' => 'Deviazione di procedura escalata',
+            ],
+            'report' => [
+                'warning' => 'Allerta precoce dalle analisi',
             ],
             'rental' => [
                 'returnOverdue' => 'Restituzione noleggio in ritardo',
@@ -1335,6 +1348,7 @@ return [
             'cash_entry' => 'Libro cassa',
             'payment' => 'Pagamento',
             'depreciation' => 'Ammortamento',
+            'asset_disposal' => 'Dismissione cespite',
         ],
         'posting-account-role' => [
             'receivable' => 'Credito',
@@ -1349,6 +1363,8 @@ return [
             'discount' => 'Sconto',
             'fixed_asset' => 'Conto cespite',
             'depreciation' => 'Ammortamento',
+            'disposal_loss' => 'Dismissione valore residuo (perdita)',
+            'disposal_gain' => 'Dismissione valore residuo (plusvalenza)',
         ],
         // Buchungskern (Feature 125, MVP-672).
         'balance-side' => [
@@ -1409,8 +1425,14 @@ return [
             'active' => 'Attivo',
             'disposed' => 'Dismesso',
         ],
+        'fixed-asset-disposal-kind' => [
+            'sale' => 'Vendita',
+            'scrap' => 'Rottamazione / smaltimento',
+        ],
         'depreciation-method' => [
             'linear' => 'Lineare',
+            'immediate' => 'Ammortamento immediato (bene di modesto valore)',
+            'pool' => 'Fondo collettivo',
         ],
         'accounting-period-status' => [
             'open' => 'Aperto',

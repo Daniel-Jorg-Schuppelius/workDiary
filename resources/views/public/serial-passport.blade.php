@@ -43,6 +43,10 @@
                     <dd>{{ $serial->article?->name }}</dd>
                     <dt class="opacity-60">{{ __('inventory.serial.field.source') }}</dt>
                     <dd>{{ $serial->source->label() }}</dd>
+                    @if ($parcel !== null)
+                        <dt class="opacity-60">{{ __('inventory.serial.field.parcel') }}</dt>
+                        <dd>{{ __('shipping.parcel.label', ['no' => $parcel->position, 'of' => $parcelCount]) }}</dd>
+                    @endif
                 </dl>
             </x-card>
         @endif

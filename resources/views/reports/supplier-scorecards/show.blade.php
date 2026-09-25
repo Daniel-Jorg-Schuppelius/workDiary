@@ -21,6 +21,8 @@
     $complaints = $card['complaints'];
     $price = $card['price'];
     $quality = $card['quality'];
+    $recourse = $card['recourse'];
+    $leadTime = $card['lead_time'];
 
     $toneFor = static fn(?int $g): string => match (true) {
         $g === null => 'ghost',
@@ -62,7 +64,7 @@
     </x-card>
 
     {{-- Kennzahlkacheln --}}
-    <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+    <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {{-- Termintreue --}}
         <x-card :title="__('scorecard.metric_ontime')">
             @if (! $ontime['available'])
@@ -117,6 +119,38 @@
                 @if ($quality['assessment'])
                     <a class="mt-2 inline-block text-xs link link-hover" href="{{ route('isms.suppliers.edit', $quality['assessment']) }}">{{ $quality['assessment']->displayNo() }} →</a>
                 @endif
+            @endif
+        </x-card>
+
+        {{-- Regressverhalten (MVP-887) --}}
+        <x-card :title="__('scorecard.metric_recourse')">
+            @if (! $recourse['available'])
+                <p class="text-muted">{{ __('scorecard.no_data') }}</p>
+                <p class="text-xs text-muted">{{ __('scorecard.recourse_no_source') }}</p>
+            @else
+                <p class="text-2xl font-semibold tabular-nums">{{ $recourse['acceptance_rate'] !== null ? round($recourse['acceptance_rate'] * 100) . ' %' : '—' }}</p>
+                <p class="text-xs text-muted">{{ __('scorecard.recourse_detail', ['answered' => $recourse['answered'], 'submitted' => $recourse['submitted']]) }}</p>
+                <dl class="mt-1 grid grid-cols-2 gap-x-2 text-xs">
+                    <dt class="text-muted">{{ __('scorecard.recourse_ontime') }}</dt>
+                    <dd class="tabular-nums">{{ $recourse['response_ontime_rate'] !== null ? round($recourse['response_ontime_rate'] * 100) . ' %' : '—' }}</dd>
+                    <dt class="text-muted">{{ __('scorecard.recourse_recovery') }}</dt>
+                    <dd class="tabular-nums">{{ $recourse['recovery_rate'] !== null ? round($recourse['recovery_rate'] * 100) . ' %' : '—' }}</dd>
+                    <dt class="text-muted">{{ __('scorecard.recourse_days') }}</dt>
+                    <dd class="tabular-nums">{{ $recourse['avg_response_days'] ?? '—' }}</dd>
+                </dl>
+                <x-status-badge :tone="$toneFor($recourse['goodness'])" size="sm" class="mt-1">{{ __('scorecard.goodness', ['g' => $recourse['goodness']]) }}</x-status-badge>
+            @endif
+            <p class="mt-2 text-xs text-muted">{{ __('scorecard.claim_costs', ['amount' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $recourse['claim_costs'], 2, withThousandsSeparator: true) . ' €']) }}</p>
+        </x-card>
+
+        {{-- Bestell-Durchlaufzeit (MVP-888, nur Anzeige) --}}
+        <x-card :title="__('scorecard.metric_lead_time')">
+            @if (! $leadTime['available'])
+                <p class="text-muted">{{ __('scorecard.no_data') }}</p>
+                <p class="text-xs text-muted">{{ __('scorecard.ontime_no_source') }}</p>
+            @else
+                <p class="text-2xl font-semibold tabular-nums">{{ __('scorecard.days', ['days' => $leadTime['median']]) }}</p>
+                <p class="text-xs text-muted">{{ __('scorecard.lead_time_detail', ['count' => $leadTime['count'], 'min' => $leadTime['min'], 'max' => $leadTime['max']]) }}</p>
             @endif
         </x-card>
     </div>

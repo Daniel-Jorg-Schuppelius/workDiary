@@ -285,5 +285,8 @@
     @if ($quote->decided_at !== null)
         <div class="text-sm text-base-content/70">{{ __('Entschieden am :date.', ['date' => $quote->decided_at->fdatetime()]) }}</div>
     @endif
+
+    {{-- Versandhistorie von Angebot und Auftragsbestätigung (MVP-876). --}}
+    <x-dispatch-history :kinds="[\App\Enums\DocumentDesign\RenderDocumentKind::Quote, \App\Enums\DocumentDesign\RenderDocumentKind::OrderConfirmation]" :ids="[(int) $quote->id]" />
 </x-page-shell>
 @endsection

@@ -151,6 +151,17 @@ return [
         'cycle' => 'Zyklus (ABC)',
         'cycle_open' => 'Zyklus zählen',
         'cycle_empty' => 'Keine fälligen Artikel in dieser Klasse.',
+        'mobile_title' => 'Inventur mobil',
+        'mobile_open' => 'Mobil zählen',
+        'mobile_qty' => 'Menge je Scan',
+        'mobile_add' => 'Zählen',
+        'mobile_hint' => 'Jeder Scan addiert zur bisher gezählten Menge. Ohne Netz wird der Scan gespeichert und später übertragen.',
+        'mobile_last' => 'Zuletzt gezählt (Summe)',
+        'mobile_progress' => ':counted von :total Positionen gezählt',
+        'closed' => 'Die Inventur ist abgeschlossen.',
+        'qty_positive' => 'Die Menge muss größer als null sein.',
+        'not_found' => 'Inventur nicht gefunden.',
+        'forbidden' => 'Keine Berechtigung für Inventurzählungen.',
     ],
     'overview' => [
         'avg' => 'Ø-Preis',
@@ -187,6 +198,7 @@ return [
             'purchased' => 'Zukauf',
         ],
         'field' => [
+            'parcel' => 'Packstück',
             'serial_no' => 'Seriennummer',
             'status' => 'Status',
             'source' => 'Herkunft',
@@ -295,6 +307,15 @@ return [
     ],
 
     'scan' => [
+        'match' => [
+            'serial' => 'Seriennummer',
+            'lot' => 'Charge',
+            'variant' => 'Variante',
+            'article' => 'Artikel',
+            'asset' => 'Objekt',
+            'unknown' => 'Unbekannt',
+        ],
+        'open_asset' => 'Objekt öffnen',
         'action' => [
             'receipt' => 'Wareneingang',
             'issue' => 'Entnahme',

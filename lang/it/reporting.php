@@ -147,4 +147,31 @@ return [
         'empty' => 'Nessuna ripartizione del tempo nel periodo.',
         'note' => 'Basato esclusivamente sulle quote di ripartizione; il tempo non ripartito appare nei normali report del tempo.',
     ],
+    'supplier_bridge' => [
+        'title' => 'Ponte della spesa periodo precedente → periodo',
+        'start' => 'Periodo precedente',
+        'end' => 'Periodo',
+        'others' => 'Altri',
+        'note' => 'Periodo precedente = periodo di pari durata immediatamente prima; le cinque variazioni maggiori singolarmente, il resto come «Altri». Un clic apre i documenti del fornitore.',
+    ],
+    'warning' => [
+        'customer_rework' => [
+            'title' => 'Rilavorazioni per :name: :actual %',
+            'detail' => 'Ultimi 90 giorni, obiettivo :target %.',
+            'recommendation' => 'Raccomandazione: discutere con il team le cause delle rilavorazioni, verificare formazione o istruzioni di lavoro e riconsiderare i prezzi per questo cliente.',
+        ],
+        'asset_defects' => [
+            'title' => 'Difetti ricorrenti: :name',
+            'detail' => ':count difetti in :months mesi.',
+            'recommendation' => 'Raccomandazione: valutare la sostituzione o un piano di manutenzione più stretto e informare il produttore.',
+        ],
+        'claim_pattern' => [
+            'recommendation' => 'Raccomandazione: informare il fornitore o il produttore e valutare un regresso; bloccare le giacenze dei lotti interessati.',
+        ],
+        'widget' => [
+            'title' => 'Anomalie',
+            'description' => 'Allerte precoci da analisi, oggetti e reclami con azione consigliata.',
+            'none' => 'Nessuna anomalia.',
+        ],
+    ],
 ];

@@ -83,6 +83,9 @@ final class AssetManifest extends Manifest {
             \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
                 \App\Services\Asset\DeadlineScans\AssetDeadlineScans::class,
             ],
+            \App\Services\Reporting\Contracts\EarlyWarningSource::class => [
+                \App\Services\Asset\EarlyWarnings\AssetDefectWarningSource::class,
+            ],
             \App\Services\Import\EntitySpec::class => [
                 \App\Services\Asset\Import\AssetSpec::class,
                 \App\Plugins\RemoteSupport\Import\RemoteSessionSpec::class,

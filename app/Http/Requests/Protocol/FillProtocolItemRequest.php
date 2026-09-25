@@ -26,6 +26,8 @@ class FillProtocolItemRequest extends BaseFormRequest {
             'result' => ['nullable', 'string', 'max:20'],
             'note' => ['nullable', 'string', 'max:5000'],
             'value_json' => ['nullable', 'array'],
+            // Formularwert aus x-field-input (MVP-883), Schlüssel item_<id>.
+            'values' => ['nullable', 'array'],
         ];
     }
 }

@@ -13,16 +13,19 @@ declare(strict_types=1);
 namespace App\Services\Rental;
 
 use App\Enums\Asset\AssetBlockReason;
+use App\Enums\Contract\{ContractKind, ContractStatus};
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Numbering\NumberScope;
 use App\Enums\Rental\{RentalCaseStatus, RentalReservationKind, RentalReturnFollowUp};
 use App\Models\Asset\Asset;
+use App\Models\Contract\{Contract, ContractSigningRevision};
 use App\Models\Notification\NotificationDispatchLog;
 use App\Models\Platform\{Organization, User};
 use App\Models\Rental\{RentalCase, RentalCaseAsset, RentalHandoverReport, RentalRateCard, RentalReservation, RentalReturnReport};
 use App\Services\Asset\AssetBlockService;
 use App\Services\Notification\NotificationDispatcher;
 use App\Services\Numbering\NumberSequenceService;
+use App\Support\Setting;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -130,6 +133,7 @@ class RentalCaseService {
             }
 
             $case->forceFill(['status' => RentalCaseStatus::Reserved->value])->save();
+            $this->attachRentalTerms($case);
             $case->audit('rental.reserved', ['assets' => $case->caseAssets()->count()]);
 
             return $case;
@@ -145,6 +149,11 @@ class RentalCaseService {
     public function handover(RentalCase $case, Asset $asset, User $actor, array $data = []): RentalHandoverReport {
         if (! in_array($case->status, [RentalCaseStatus::Reserved, RentalCaseStatus::HandedOver], true)) {
             throw new \RuntimeException((string) __('Übergaben sind nur aus reservierten Akten möglich.'));
+        }
+
+        $this->attachRentalTerms($case);
+        if ($case->contract_signing_revision_id === null && (bool) Setting::get('rental.require_signed_terms', false)) {
+            throw new \RuntimeException((string) __('rental.terms.required'));
         }
 
         return DB::transaction(function () use ($case, $asset, $actor, $data): RentalHandoverReport {
@@ -181,6 +190,41 @@ class RentalCaseService {
 
             return $report;
         });
+    }
+
+    /**
+     * Mietbedingungen (MVP-895): hält die jüngste unterschriebene Fassung des
+     * Kunden am Vorgang fest und legt ihren Hash in den Konditionen-Snapshot.
+     * Eine einmal festgehaltene Fassung bleibt — spätere Fassungen gelten für
+     * neue Vorgänge.
+     */
+    public function attachRentalTerms(RentalCase $case): void {
+        if ($case->contract_signing_revision_id !== null) {
+            return;
+        }
+        $revision = Contract::query()
+            ->where('customer_id', $case->customer_id)
+            ->where('kind', ContractKind::RentalTerms->value)
+            ->where('status', ContractStatus::Active->value)
+            ->get()
+            ->map(static fn (Contract $contract): ?ContractSigningRevision => $contract->signedRevision())
+            ->filter()
+            ->sortByDesc(static fn (ContractSigningRevision $r): string => (string) $r->completed_at)
+            ->first();
+        if (! $revision instanceof ContractSigningRevision) {
+            return;
+        }
+
+        $case->forceFill([
+            'contract_signing_revision_id' => $revision->id,
+            'terms_snapshot' => array_merge((array) $case->terms_snapshot, ['rental_terms' => [
+                'contract_number' => $revision->contract?->number,
+                'revision_no' => $revision->revision_no,
+                'manifest_hash' => $revision->manifest_hash,
+                'signed_at' => $revision->completed_at?->toIso8601String(),
+            ]]),
+        ])->save();
+        $case->audit('rental.termsAttached', ['revision_id' => $revision->id, 'manifest_hash' => $revision->manifest_hash]);
     }
 
     /**

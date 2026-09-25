@@ -27,6 +27,12 @@ enum DepreciationMethod: string implements HasLabel {
 
     case Linear = 'linear';
 
+    /** Geringwertiges Wirtschaftsgut: voll im Anschaffungsjahr (MVP-892). */
+    case Immediate = 'immediate';
+
+    /** Sammelposten: gleiche Jahresraten, Abgang beendet ihn nicht (MVP-892). */
+    case Pool = 'pool';
+
     public function label(): string {
         return (string) __('enums.finance.depreciation-method.' . $this->value);
     }

@@ -311,6 +311,7 @@ return [
             'cash_entry' => 'Caisse :register · :purpose',
             'payment' => 'Paiement (:kind) · :target',
             'depreciation' => 'Amortissement :year · :no :name',
+            'asset_disposal' => 'Sortie :no :name',
         ],
         'reversal_reason' => [
             'unmatched' => 'Affectation de paiement annulée — contre-écriture.',
@@ -347,6 +348,8 @@ return [
             'asset_account' => 'Compte d\'immobilisation',
             'depreciation_account' => 'Compte de dotation',
             'disposed_on' => 'Sortie le',
+            'disposal_kind' => 'Type de sortie',
+            'disposal_proceeds' => 'Prix de cession (net)',
             'created_by' => 'Créé par',
         ],
         'section' => [
@@ -365,12 +368,13 @@ return [
         'hint' => [
             'device' => 'Lien facultatif vers le registre des équipements ; toute immobilisation n\'est pas un équipement.',
             'residual_value' => 'Reste à la fin de la durée d\'utilisation ; 0 par défaut.',
-            'useful_life' => 'Durée d\'utilisation usuelle selon la table d\'amortissement, en mois.',
+            'useful_life' => 'Durée d\'utilisation usuelle selon la table d\'amortissement, en mois. Pour les biens de faible valeur et le pool, la durée découle de la méthode.',
             'accounts' => 'Laisser vide pour appliquer la règle comptable du rôle (compte d\'immobilisation / dotation).',
             'frozen' => 'Une dotation est comptabilisée — date d\'acquisition, coût, valeur résiduelle et durée sont figés.',
             'schedule' => 'Linéaire, prorata mensuel l\'année d\'acquisition et de sortie ; la dernière année prend le solde.',
             'posting' => 'L\'amortissement annuel est proposé par exercice lors de la clôture et comptabilisé dans la boîte de réception — jamais directement.',
-            'dispose' => 'La sortie termine le plan au mois de sortie. La valeur nette restante n\'est pas sortie automatiquement.',
+            'dispose' => 'La sortie clôt le plan d’amortissement le mois de la sortie. La boîte de réception comptable propose la valeur comptable restante comme écriture de sortie.',
+            'disposal_proceeds' => 'Uniquement en cas de vente. Le prix est comptabilisé via la facture de vente ; ici, il détermine seulement si la valeur résiduelle est sortie en plus-value ou en moins-value.',
         ],
         'action' => [
             'add' => 'Ajouter une immobilisation',
@@ -384,6 +388,8 @@ return [
             'disposed' => 'Sortie enregistrée.',
         ],
         'error' => [
+            'gwg_limit' => 'Biens de faible valeur uniquement jusqu’à :limit € HT (paramètre de l’organisation).',
+            'pool_range' => 'Pool uniquement au-delà de :lower € jusqu’à :upper € HT (paramètre de l’organisation).',
             'disposed_frozen' => 'Une immobilisation sortie n\'est plus modifiable.',
             'values_frozen' => 'Les champs déterminant la valeur sont verrouillés dès qu\'une dotation est comptabilisée.',
             'disposed_before_acquired' => 'La sortie ne peut pas précéder l\'acquisition.',
@@ -534,6 +540,22 @@ return [
 
     // Finanzberichte (Feature 125, MVP-676).
     'reports' => [
+        'fixed_asset_schedule' => [
+            'subtitle' => 'Exercice :year (:from – :to)',
+            'year' => 'Exercice',
+            'show' => 'Afficher',
+            'hint' => 'Issu du plan d’amortissement : les valeurs s’appliquent même si l’amortissement de l’année n’est pas encore comptabilisé. Une cession clôt le plan l’année de la cession.',
+            'cost_start' => 'Coût début',
+            'additions' => 'Entrées',
+            'disposals' => 'Sorties',
+            'cost_end' => 'Coût fin',
+            'dep_start' => 'Amort. cumulés début',
+            'dep_year' => 'Dotation de l’exercice',
+            'dep_disposals' => 'Amort. sur sorties',
+            'dep_end' => 'Amort. cumulés fin',
+            'book_start' => 'Valeur nette début',
+            'book_end' => 'Valeur nette fin',
+        ],
         'title' => 'Rapports financiers',
         'menu' => 'Rapports financiers',
         'subtitle' => 'Analyses de la comptabilité locale pour la période choisie.',
@@ -638,6 +660,10 @@ return [
             ],
         ],
         'card' => [
+            'fixed_asset_schedule' => [
+                'title' => 'Tableau des immobilisations',
+                'text' => 'Évolution du coût d’acquisition et des amortissements cumulés par immobilisation sur l’exercice.',
+            ],
             'trial_balance' => [
                 'title' => 'Balance générale',
                 'text' => 'Report, mouvement et solde par compte.',

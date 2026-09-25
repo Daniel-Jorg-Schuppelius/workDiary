@@ -53,6 +53,39 @@ class ContractService implements ContractObligationSink {
         ])));
     }
 
+    /**
+     * Vertragswerte je Kostenstelle (MVP-894): laufende Verträge (aktiv oder
+     * gekündigt, aber noch nicht beendet), wiederkehrende Werte auf Jahr und
+     * Monat normalisiert, Einmalwerte getrennt. Je Währung eine Zeile — keine
+     * Umrechnung. Plan-/Obligo-Sicht, keine Buchung.
+     *
+     * @return list<array{cost_center: ?\App\Models\Finance\CostCenter, currency: string, count: int, yearly: float, monthly: float, once: float}>
+     */
+    public function valueByCostCenter(): array {
+        $factor = ['monthly' => 12, 'quarterly' => 4, 'yearly' => 1];
+        $rows = [];
+        Contract::query()
+            ->whereIn('status', [ContractStatus::Active->value, ContractStatus::Terminated->value])
+            ->with('costCenter:id,code,label')
+            ->get()
+            ->each(function (Contract $contract) use (&$rows, $factor): void {
+                $key = ($contract->cost_center_id ?? 0) . '|' . $contract->currency->value;
+                $rows[$key] ??= ['cost_center' => $contract->costCenter, 'currency' => $contract->currency->value, 'count' => 0, 'yearly' => 0.0, 'monthly' => 0.0, 'once' => 0.0];
+                $rows[$key]['count']++;
+                $value = (float) ($contract->value_amount ?? 0);
+                if (isset($factor[$contract->value_period])) {
+                    $rows[$key]['yearly'] += $value * $factor[$contract->value_period];
+                } else {
+                    $rows[$key]['once'] += $value;
+                }
+            });
+
+        $out = array_map(static fn (array $row): array => ['yearly' => round($row['yearly'], 2), 'monthly' => round($row['yearly'] / 12, 2), 'once' => round($row['once'], 2)] + $row, array_values($rows));
+        usort($out, static fn (array $a, array $b): int => [$a['cost_center'] === null, (string) $a['cost_center']?->code] <=> [$b['cost_center'] === null, (string) $b['cost_center']?->code]);
+
+        return $out;
+    }
+
     public function activate(Contract $contract, User $actor): Contract {
         $this->assertStatusTransition($contract->status, ContractStatus::Active);
         // Kundenvereinbarungen (Feature 157): Aktivierung erst mit vollständig

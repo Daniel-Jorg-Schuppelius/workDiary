@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers\Procedure;
 
-use App\Enums\Procedure\{ProcedureDeviationProposedAction, ProcedureDeviationSeverity, ProcedureDeviationType, ProcedureStepRunStatus};
+use App\Enums\Procedure\{ProcedureDeviationProposedAction, ProcedureDeviationSeverity, ProcedureDeviationType, ProcedureRunStatus, ProcedureStepRunStatus};
 use App\Exceptions\{ProcedureDeviationValidationException, ProcedureRunIncompleteException, ProcedureSecondPersonException, ProcedureStepBlockedException};
 use App\Http\Controllers\Attachments\AttachmentController;
 use App\Http\Controllers\Controller;
@@ -19,7 +19,7 @@ use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Procedure\{ProcedureRun, ProcedureStepRun, ProcedureTemplate};
 use App\Services\Fields\{FieldSchema, FieldValidator};
-use App\Services\Procedure\{DeviationRecorder, ProcedureApplicabilityResolver, ProcedureExecutionService, SecondPersonGate, WaitStepService};
+use App\Services\Procedure\{DeviationRecorder, ProcedureApplicabilityResolver, ProcedureExecutionService, ProcedureRunBlockTracker, SecondPersonGate, WaitStepService};
 use App\Services\Procedure\Fields\ProcedureStepFields;
 use App\Support\EntityUrl;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -43,8 +43,11 @@ class ProcedureRunController extends Controller {
      * Mobile Ausführungsansicht: alle Schritte in Reihenfolge mit Status,
      * Sperrgrund, dem aktuell ausführbaren Schritt sowie Wartezeit-Restzeit.
      */
-    public function show(ProcedureRun $run, ProcedureExecutionService $execution): View {
+    public function show(ProcedureRun $run, ProcedureExecutionService $execution, ProcedureRunBlockTracker $blocks): View {
         Gate::authorize('view', $run);
+        if ($run->status === ProcedureRunStatus::Blocked) {
+            $blocks->refresh($run); // abgelaufene Wartezeit löst kein Ereignis aus
+        }
 
         $run->load([
             'templateVersion.template',
@@ -189,11 +192,17 @@ class ProcedureRunController extends Controller {
         $actor = Auth::user();
 
         try {
-            $deviations->record($stepRun, $actor, $data);
+            $deviation = $deviations->record($stepRun, $actor, $data);
         } catch (ProcedureDeviationValidationException $e) {
             return back()->with('error', $e->reason === ProcedureDeviationValidationException::REASON_REASON_TOO_SHORT
                 ? __('procedure.validation.deviationReasonTooShort')
                 : __('procedure.validation.deviationInvalid', ['reason' => $e->reason]));
+        }
+
+        if ($deviation->proposed_action === ProcedureDeviationProposedAction::NewDiaryEntry) {
+            return $deviation->follow_up_diary_entry_id !== null
+                ? back()->with('success', __('procedure.flash.deviationFollowUpCreated'))
+                : back()->with('warning', __('procedure.flash.deviationFollowUpBlocked'));
         }
 
         return back()->with('success', __('procedure.flash.deviationRecorded'));

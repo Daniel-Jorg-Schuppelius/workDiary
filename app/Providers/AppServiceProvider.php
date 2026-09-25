@@ -11,8 +11,6 @@
 namespace App\Providers;
 
 use App\Auth\CustomerUserProvider;
-use App\Automation\Actions\ApproveExpenseAction;
-use App\Automation\{ConditionEvaluator, RuleEngine};
 use App\Legacy\LegacyBridge;
 use App\Listeners\AuthEventSubscriber;
 use App\Models\Access\KeyHandover;
@@ -289,17 +287,6 @@ class AppServiceProvider extends ServiceProvider {
             \App\Plugins\InvoicePlane\Schema\VoucherReaderFactory::class,
             \App\Plugins\InvoicePlane\Schema\NullVoucherReaderFactory::class,
         );
-
-        // Automation: RuleEngine bekommt alle registrierten Aktionen injiziert.
-        $this->app->singleton(ConditionEvaluator::class);
-        $this->app->singleton(RuleEngine::class, function ($app): RuleEngine {
-            return new RuleEngine(
-                $app->make(ConditionEvaluator::class),
-                [
-                    $app->make(ApproveExpenseAction::class),
-                ],
-            );
-        });
 
         // Normprofil-Registry (Feature 046): Profile aus config/isms-norms/
         // einmal pro Prozess laden + Schema validieren.
@@ -1172,6 +1159,7 @@ class AppServiceProvider extends ServiceProvider {
             // Fristen & Betrieb
             \App\Dashboard\Widgets\AssetComplianceWidget::class,
             \App\Dashboard\Widgets\AssetBlocksWidget::class,
+            \App\Dashboard\Widgets\EarlyWarningsWidget::class,
             \App\Dashboard\Widgets\ContractDeadlinesWidget::class,
             \App\Dashboard\Widgets\LeasingDeadlinesWidget::class,
             \App\Dashboard\Widgets\SafetyDueWidget::class,

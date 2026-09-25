@@ -50,11 +50,20 @@
                     <x-icon name="check_circle" class="shrink-0 text-2xl text-success" />
                     <div class="min-w-0">
                         <div class="flex flex-wrap items-center gap-2">
-                            <x-status-badge tone="success" size="sm">{{ $match->type->value }}</x-status-badge>
-                            <span class="truncate font-semibold">{{ $match->variant?->article?->name }}</span>
+                            <x-status-badge tone="success" size="sm">{{ __('inventory.scan.match.' . $match->type->value) }}</x-status-badge>
+                            <span class="truncate font-semibold">{{ $match->asset?->name ?? $match->variant?->article?->name }}</span>
                         </div>
-                        <p class="mt-0.5 truncate font-mono text-sm text-base-content/70">{{ $match->variant?->name ?? $match->variant?->sku }}</p>
+                        @if ($match->asset)
+                            <p class="mt-0.5 truncate font-mono text-sm text-base-content/70">{{ $match->asset->asset_no }}</p>
+                        @else
+                            <p class="mt-0.5 truncate font-mono text-sm text-base-content/70">{{ $match->variant?->name ?? $match->variant?->sku }}</p>
+                        @endif
                     </div>
+                    @if ($match->asset)
+                        @can('view', $match->asset)
+                            <x-icon-btn icon="open_in_new" size="sm" class="ms-auto" :href="route('assets.show', $match->asset)" show-label>{{ __('inventory.scan.open_asset') }}</x-icon-btn>
+                        @endcan
+                    @endif
                 </div>
             @else
                 <div class="alert alert-warning mt-4">

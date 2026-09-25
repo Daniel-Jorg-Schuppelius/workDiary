@@ -50,6 +50,7 @@ class AuditTrailSection extends AbstractSubjectSection {
                     ->where('auditable_type', MorphMap::stableKey(User::class))
                     ->where('auditable_id', $u->id),
                 'created_at',
+                columns: ['created_at' => __('Zeitpunkt'), 'event' => __('Ereignis')],
             ),
             $this->family(
                 'audit_logs_by',
@@ -58,6 +59,7 @@ class AuditTrailSection extends AbstractSubjectSection {
                     ->where('organization_id', $orgId)
                     ->where('user_id', $u->id),
                 'created_at',
+                columns: ['created_at' => __('Zeitpunkt'), 'event' => __('Ereignis')],
             ),
         ]];
     }

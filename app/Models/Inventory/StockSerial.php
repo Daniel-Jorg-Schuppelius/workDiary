@@ -15,9 +15,10 @@ use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
 use App\Models\Manufacturing\ManufacturingOrder;
+use App\Models\Shipping\ShipmentParcel;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
 
 /**
  * Einzelseriennummer mit lückenlosem Lebenslauf (Feature 047/048, E2).
@@ -93,5 +94,10 @@ class StockSerial extends Model {
     /** @return BelongsTo<StockDelivery, $this> */
     public function delivery(): BelongsTo {
         return $this->belongsTo(StockDelivery::class, 'stock_delivery_id');
+    }
+
+    /** @return BelongsToMany<ShipmentParcel, $this> Packstück der Auslieferung (MVP-900, höchstens eines). */
+    public function parcels(): BelongsToMany {
+        return $this->belongsToMany(ShipmentParcel::class, 'shipment_parcel_serials');
     }
 }

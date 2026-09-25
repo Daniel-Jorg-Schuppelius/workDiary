@@ -18,7 +18,7 @@ use App\Models\Contracts\AuditsChanges;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\InvoiceItem;
 use App\Models\Manufacturing\ManufacturingOrder;
-use App\Models\Shipping\Shipment;
+use App\Models\Shipping\{Shipment, ShipmentParcel};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne};
@@ -114,5 +114,10 @@ class StockDelivery extends Model implements AuditsChanges {
     /** @return HasOne<Shipment, $this> Versandauftrag zu dieser Auslieferung (Feature 059, Rang 20). */
     public function shipment(): HasOne {
         return $this->hasOne(Shipment::class);
+    }
+
+    /** @return HasMany<ShipmentParcel, $this> Packstücke (MVP-900). */
+    public function parcels(): HasMany {
+        return $this->hasMany(ShipmentParcel::class)->orderBy('position');
     }
 }

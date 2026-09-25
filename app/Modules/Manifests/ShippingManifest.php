@@ -47,6 +47,8 @@ final class ShippingManifest extends Manifest {
     /** @return list<string> */
     public function tables(): array {
         return [
+            'shipment_parcel_serials',
+            'shipment_parcels',
             'shipments',
         ];
     }

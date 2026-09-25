@@ -87,16 +87,7 @@
 
                 <x-card>
                     <h3 class="text-sm font-semibold mb-1">{{ __('construction.section.delivery') }}</h3>
-                    @forelse ($dispatches as $dispatch)
-                        <p class="text-sm">
-                            <span class="font-medium">{{ __('values.' . $dispatch->channel) }}</span> ·
-                            {{ $dispatch->recipient }} ·
-                            {{ $dispatch->created_at?->orgTz()->format('d.m.Y H:i') }}
-                            <x-status-badge :tone="$dispatch->status === 'sent' ? 'success' : 'ghost'" size="sm">{{ __('values.' . $dispatch->status) }}</x-status-badge>
-                        </p>
-                    @empty
-                        <p class="text-sm text-muted">{{ __('construction.delivery.none') }}</p>
-                    @endforelse
+                    <x-dispatch-history :kinds="[$notice->kind]" :ids="[(int) $notice->id]" :empty="__('construction.delivery.none')" bare />
 
                     <form method="post" action="{{ route('construction-notices.delivery', $notice) }}" class="mt-3 space-y-1">
                         @csrf

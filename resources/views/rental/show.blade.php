@@ -101,6 +101,21 @@
             @else
                 <p class="text-sm text-muted">{{ __('Keine Preisliste hinterlegt — Positionen werden manuell erfasst.') }}</p>
             @endif
+            {{-- Mietbedingungen (MVP-895): unterschriebene Fassung des Kunden. --}}
+            <div class="mt-3 border-t border-base-300 pt-2 text-sm">
+                <p class="text-xs font-semibold uppercase tracking-wider text-muted">{{ __('rental.terms.title') }}</p>
+                @if ($terms = data_get($case->terms_snapshot, 'rental_terms'))
+                    <p>{{ __('rental.terms.signed', ['contract' => $terms['contract_number'] ?? '—', 'revision' => $terms['revision_no'] ?? '—', 'date' => isset($terms['signed_at']) ? \Carbon\CarbonImmutable::parse($terms['signed_at'])->fdate() : '—']) }}</p>
+                    <p class="font-mono text-xs text-muted" title="{{ $terms['manifest_hash'] ?? '' }}">{{ \Illuminate\Support\Str::limit((string) ($terms['manifest_hash'] ?? ''), 16, '…') }}</p>
+                @else
+                    <p class="text-warning">{{ (bool) \App\Support\Setting::get('rental.require_signed_terms', false) ? __('rental.terms.missing_required') : __('rental.terms.missing') }}</p>
+                    @if ($case->customer && \Illuminate\Support\Facades\Route::has('contracts.create'))
+                        @can('create', \App\Models\Contract\Contract::class)
+                            <x-button size="xs" tone="ghost" data-entry-modal-trigger :href="route('contracts.create', ['agreement' => 1, 'customer' => $case->customer->sqid])">{{ __('rental.terms.create_agreement') }}</x-button>
+                        @endcan
+                    @endif
+                @endif
+            </div>
         </x-card>
     </div>
 

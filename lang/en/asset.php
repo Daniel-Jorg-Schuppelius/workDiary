@@ -99,4 +99,7 @@ return [
             'replaced' => 'Replaced',
         ],
     ],
+    'label' => [
+        'print' => 'Label with QR',
+    ],
 ];

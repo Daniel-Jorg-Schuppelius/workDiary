@@ -16,6 +16,7 @@ use App\Enums\Import\ImportEntity;
 use App\Models\Platform\Organization;
 use App\Services\Import\Source\Ical\{AttendanceIcalMapper, ProjectTimeIcalMapper};
 use App\Support\Tz;
+use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\FileSystem\File;
 use RuntimeException;
 
@@ -42,11 +43,14 @@ final class ImportSourceFactory {
             $mapper = $this->icalMapper($entity)
                 ?? throw new RuntimeException((string) __('import.error.ical.unsupportedEntity'));
 
+            $timezone = Tz::ofOrganization($organization);
+
             return new IcalImportSource(
                 $absolutePath,
                 $mapper,
-                Tz::ofOrganization($organization),
+                $timezone,
                 $this->categoryAllowlist($options),
+                $this->recurrenceWindow($options, $timezone),
             );
         }
 
@@ -90,5 +94,23 @@ final class ImportSourceFactory {
         }
 
         return array_values(array_unique($normalized));
+    }
+
+    /**
+     * Zeitraum der Serien-Auflösung (MVP-885): `recurrence_from`/`recurrence_until`
+     * (JJJJ-MM-TT, bis einschließlich), sonst die letzten 90 Tage bis heute —
+     * Zeiterfassung betrifft Vergangenes, künftige Vorkommen sind keine Arbeitszeit.
+     *
+     * @param  array<string, mixed>  $options
+     * @return array{0: CarbonImmutable, 1: CarbonImmutable}
+     */
+    private function recurrenceWindow(array $options, string $timezone): array {
+        $parse = static fn (mixed $raw): ?CarbonImmutable => is_string($raw) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $raw) === 1
+            ? CarbonImmutable::createFromFormat('Y-m-d', $raw, $timezone)?->startOfDay()
+            : null;
+        $until = $parse($options['recurrence_until'] ?? null) ?? CarbonImmutable::now($timezone)->startOfDay();
+        $from = $parse($options['recurrence_from'] ?? null) ?? $until->subDays(90);
+
+        return [$from, $until->addDay()];
     }
 }

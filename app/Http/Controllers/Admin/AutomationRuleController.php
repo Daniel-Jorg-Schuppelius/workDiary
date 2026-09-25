@@ -10,6 +10,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Automation\Actions\RuleAction;
+use App\Automation\RuleEngine;
+use App\Automation\Triggers\RuleTrigger;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Automation\{AutomationRule, AutomationRuleRun};
@@ -17,6 +20,7 @@ use App\Models\Platform\User;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\{Rule, ValidationException};
 use Illuminate\View\View;
 
 /**
@@ -36,8 +40,12 @@ class AutomationRuleController extends Controller {
             ->orderBy('name')
             ->get();
 
+        $engine = app(RuleEngine::class);
+
         return view('admin.automations.index', [
             'rules' => $rules,
+            'triggerLabels' => collect($engine->triggers())->mapWithKeys(static fn (RuleTrigger $t): array => [$t->key() => $t->label()])->all(),
+            'actionLabels' => collect($engine->actions())->mapWithKeys(static fn (RuleAction $a): array => [$a->type() => $a->label()])->all(),
         ]);
     }
 
@@ -45,7 +53,12 @@ class AutomationRuleController extends Controller {
     public function create(): View {
         $this->ensureAdmin();
 
-        return view('admin.automations._form_dialog');
+        $engine = app(RuleEngine::class);
+
+        return view('admin.automations._form_dialog', [
+            'triggers' => $engine->triggers(),
+            'actions' => $engine->actions(),
+        ]);
     }
 
     public function show(AutomationRule $automationRule): View {
@@ -79,17 +92,24 @@ class AutomationRuleController extends Controller {
     public function store(Request $request): RedirectResponse {
         $this->ensureAdmin();
 
+        $engine = app(RuleEngine::class);
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'trigger_event' => 'required|string|max:64',
+            'trigger_event' => ['required', 'string', Rule::in(array_map(static fn (RuleTrigger $t): string => $t->key(), $engine->triggers()))],
             'conditions' => 'required|string',
-            'actions' => 'required|string',
+            'action_type' => ['required', 'string', Rule::in(array_map(static fn (RuleAction $a): string => $a->type(), $engine->actions()))],
             'priority' => 'nullable|integer|min:1|max:9999',
         ]);
 
         $conditions = $this->decodeJson($data['conditions']);
-        $actions = $this->decodeJson($data['actions']);
-        abort_if($conditions === null || $actions === null, 422, 'Ungültiges JSON');
+        if (! is_array($conditions)) {
+            throw ValidationException::withMessages(['conditions' => __('automation.error.invalid_json')]);
+        }
+        $action = collect($engine->actions())->first(static fn (RuleAction $a): bool => $a->type() === $data['action_type']);
+        if (! $action instanceof RuleAction || ! in_array($data['trigger_event'], $action->triggers(), true)) {
+            throw ValidationException::withMessages(['action_type' => __('automation.error.action_trigger_mismatch')]);
+        }
+        $actions = [['type' => $action->type(), 'params' => []]];
 
         AutomationRule::create([
             'organization_id' => (int) $this->currentOrganization()->id,

@@ -58,6 +58,7 @@ class SupplierScorecardController extends Controller {
         return view('reports.supplier-scorecards.index', [
             'rows' => $this->paginate($rows, self::PER_PAGE, $request),
             'scoreSeries' => $this->scoreSeries($rows),
+            'leadTimeBox' => $this->leadTimeBox($rows),
             'from' => $from,
             'to' => $to,
             'label' => $this->globalDateRange()['label'],
@@ -83,6 +84,36 @@ class SupplierScorecardController extends Controller {
                 'y' => (int) $row['overall'],
                 'url' => route('supplier-scorecards.show', $row['supplier']),
             ])
+            ->all());
+    }
+
+    /**
+     * Verteilung der Bestell-Durchlaufzeit je Lieferant (MVP-888, Boxplot
+     * über NumberHelper::quartiles) — die 12 mit den meisten Bestellungen.
+     *
+     * @param  list<array<string, mixed>>  $rows
+     * @return list<array{x: string, min: float, q1: float, median: float, q3: float, max: float, n: int, url: string}>
+     */
+    private function leadTimeBox(array $rows): array {
+        return array_values(collect($rows)
+            ->filter(static fn(array $row): bool => is_array($row['lead_time_box']))
+            ->sortByDesc('lead_time_count')
+            ->take(12)
+            ->map(static function (array $row): array {
+                /** @var array{min: float, q1: float, median: float, q3: float, max: float} $box */
+                $box = $row['lead_time_box'];
+
+                return [
+                    'x' => (string) $row['supplier_name'],
+                    'min' => round($box['min'], 1),
+                    'q1' => round($box['q1'], 1),
+                    'median' => round($box['median'], 1),
+                    'q3' => round($box['q3'], 1),
+                    'max' => round($box['max'], 1),
+                    'n' => (int) $row['lead_time_count'],
+                    'url' => route('supplier-scorecards.show', $row['supplier']),
+                ];
+            })
             ->all());
     }
 

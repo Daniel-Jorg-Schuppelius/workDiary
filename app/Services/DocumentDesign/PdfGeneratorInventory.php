@@ -83,7 +83,7 @@ final class PdfGeneratorInventory {
         'app/Http/Controllers/Patrol/PatrolController.php' => ['report'],
         'app/Http/Controllers/Whistleblowing/WhistleblowingPortalController.php' => ['report'],
         // Spezialformat (deklariert eingeschränkt, siehe RenderDocumentKind::capabilityNote())
-        'app/Http/Controllers/Inventory/LabelController.php' => ['label'],
+        'app/Services/Print/LabelPdfRenderer.php' => ['label'],
     ];
 
     /**

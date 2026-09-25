@@ -16,18 +16,19 @@ use App\Enums\Contract\{ContractKind, ContractObligationKind, ContractPartnerTyp
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\AssetFinance\AssetFinanceContract;
-use App\Models\Contract\{Contract, ContractObligation};
+use App\Models\Contract\{Contract, ContractObligation, ContractTemplate};
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
+use App\Models\Finance\CostCenter;
 use App\Models\Platform\User;
 use App\Models\Supplier\Supplier;
 use App\Rules\ExistsInCurrentOrganization;
-use App\Services\Contract\ContractService;
+use App\Services\Contract\{ContractService, ContractTemplateService};
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Support\{ErrorText, Sqid};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{DB, Gate};
 use Illuminate\Validation\Rule;
 
 /**
@@ -64,6 +65,13 @@ class ContractController extends Controller {
                 ->whereDate('ends_on', '<=', now()->addMonths(3)->toDateString())
                 ->count(),
         ]);
+    }
+
+    /** Vertragswerte je Kostenstelle (MVP-894). */
+    public function costCenters(): View {
+        Gate::authorize('viewAny', Contract::class);
+
+        return view('contracts.cost-centers', ['rows' => $this->service->valueByCostCenter()]);
     }
 
     public function show(Contract $contract): View {
@@ -111,9 +119,16 @@ class ContractController extends Controller {
             $presetCustomer = Customer::query()->whereKey(Sqid::decodeOrNumeric(Customer::class, $request->query('customer')))->first();
         }
 
+        // Vorlage (MVP-893): belegt den Dialog vor, Pflichten folgen beim Speichern.
+        $templates = app(ContractTemplateService::class);
+        $templateId = Sqid::decode(ContractTemplate::class, $request->string('template')->toString());
+        $template = $templateId !== null ? ContractTemplate::query()->where('is_active', true)->find($templateId) : null;
+
         return view('contracts._form_dialog', array_merge($this->formOptions(), [
             'presetCustomer' => $presetCustomer,
             'agreementOnly' => $request->boolean('agreement'),
+            'templates' => $templates->choices($request->boolean('agreement')),
+            'preset' => $template instanceof ContractTemplate ? $templates->preset($template) : [],
         ]));
     }
 
@@ -123,7 +138,16 @@ class ContractController extends Controller {
         $actor = $request->user() ?? abort(401);
         $organization = $actor->organization ?? abort(403);
 
-        $contract = $this->service->create($organization, $actor, $this->validated($request));
+        $templateId = Sqid::decode(ContractTemplate::class, $request->string('template_id')->toString());
+        $template = $templateId !== null ? ContractTemplate::query()->find($templateId) : null;
+        $contract = DB::transaction(function () use ($organization, $actor, $request, $template): Contract {
+            $contract = $this->service->create($organization, $actor, $this->validated($request));
+            if ($template instanceof ContractTemplate) {
+                app(ContractTemplateService::class)->applyObligations($template, $contract);
+            }
+
+            return $contract;
+        });
 
         return redirect()->route('contracts.show', $contract)
             ->with('status', __('Vertrag :number angelegt.', ['number' => $contract->number]));
@@ -232,6 +256,7 @@ class ContractController extends Controller {
             'suppliers' => Supplier::query()->orderBy('name')->get(['id', 'name']),
             'documents' => Document::query()->visibleTo($this->authUser())->orderByDesc('id')->limit(200)->get(['id', 'title']),
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
+            'costCenters' => CostCenter::query()->where('active', true)->orderBy('code')->get(['id', 'code', 'label']),
         ];
     }
 
@@ -242,6 +267,7 @@ class ContractController extends Controller {
             'supplier_id' => Supplier::class,
             'document_id' => Document::class,
             'responsible_user_id' => User::class,
+            'cost_center_id' => CostCenter::class,
         ];
         foreach ($fieldModels as $field => $model) {
             if ($request->filled($field)) {
@@ -270,6 +296,7 @@ class ContractController extends Controller {
             'value_amount' => ['nullable', 'numeric', 'min:0'],
             'currency' => ['required', Rule::enum(\CommonToolkit\Enums\CurrencyCode::class)],
             'value_period' => ['required', Rule::in(['once', 'monthly', 'quarterly', 'yearly'])],
+            'cost_center_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('cost_centers')],
             'document_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('documents')],
             'responsible_user_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('users')],
             'notes' => ['nullable', 'string', 'max:8000'],

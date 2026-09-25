@@ -17,13 +17,15 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
-use App\Models\Accounting\AccountingAccount;
+use App\Models\Accounting\{AccountingAccount, AccountingProfile};
 use App\Models\Finance\CostCenter;
+use App\Services\Accounting\DepreciationCalculator;
 use App\Services\Accounting\Filing\{FilingDeadlineCalculator, RecapitulativeStatementService, VatFilingPeriodService, VatReturnService};
 use App\Services\Accounting\{OpenItemService, TaxationMethodResolver, VatFilingProfileResolver};
-use App\Services\Accounting\Reports\{AbstractAccountingReportBuilder, AccountLedgerBuilder, BwaBuilder, DataQualityBuilder, EuerPreviewBuilder, ExportContextBuilder, LiquidityBuilder, LiquidityForecastBuilder, ProfitAndLossBuilder, TrialBalanceBuilder};
+use App\Services\Accounting\Reports\{AbstractAccountingReportBuilder, AccountLedgerBuilder, BwaBuilder, DataQualityBuilder, EuerPreviewBuilder, ExportContextBuilder, FixedAssetScheduleBuilder, LiquidityBuilder, LiquidityForecastBuilder, ProfitAndLossBuilder, TrialBalanceBuilder};
 use App\Support\{Sqid, Tz};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -60,6 +62,8 @@ class AccountingReportController extends Controller {
         private readonly TaxationMethodResolver $taxation,
         private readonly RecapitulativeStatementService $recapitulatives,
         private readonly FilingDeadlineCalculator $deadlines,
+        private readonly FixedAssetScheduleBuilder $fixedAssetSchedules,
+        private readonly DepreciationCalculator $depreciation,
     ) {}
 
     public function index(): View {
@@ -104,6 +108,37 @@ class AccountingReportController extends Controller {
         }
 
         return view('reports.accounting.trial-balance', $data + ['from' => $from, 'to' => $to]);
+    }
+
+    /**
+     * Anlagenspiegel eines Geschäftsjahres (Feature 133, MVP-890) — aus dem
+     * AfA-Plan, daher mit Geschäftsjahr statt Zeitraum.
+     */
+    public function fixedAssetSchedule(Request $request): View|SymfonyResponse {
+        $this->authorizeView();
+        $organization = $this->currentOrganizationOrAbort();
+        $profile = AccountingProfile::query()->where('organization_id', $organization->id)->first();
+        $startMonth = $profile instanceof AccountingProfile ? max(1, (int) $profile->fiscal_year_start_month) : 1;
+        $currency = $profile instanceof AccountingProfile ? $profile->base_currency : CurrencyCode::Euro;
+
+        $current = $this->depreciation->fiscalYearStartFor(CarbonImmutable::now(), $startMonth)->year;
+        $year = min($current + 1, max(1990, $request->integer('year', $current)));
+        $data = $this->fixedAssetSchedules->build($organization, $year, $startMonth, $currency);
+
+        if ($this->wantsExport($request)) {
+            $columns = FixedAssetScheduleBuilder::COLUMNS;
+
+            return $this->export($request, 'accounting-fixed-asset-schedule', 'accounting.fixed_asset_schedule', $data['starts_on'], $data['ends_on'], array_merge(
+                [array_merge([(string) __('accounting.fixed_assets.column.no'), (string) __('accounting.fixed_assets.column.name')], array_map(static fn (string $c): string => (string) __('accounting.reports.fixed_asset_schedule.' . $c), $columns))],
+                array_map(static fn (array $row): array => array_merge(
+                    [(string) $row['asset']->asset_no, (string) $row['asset']->name],
+                    array_map(static fn (string $c): string => $row['values'][$c]->getAmount(), $columns),
+                ), $data['rows']),
+                [array_merge([(string) __('accounting.ledger.entry.total'), ''], array_map(static fn (string $c): string => $data['totals'][$c]->getAmount(), $columns))],
+            ));
+        }
+
+        return view('reports.accounting.fixed-asset-schedule', $data + ['currentYear' => $current]);
     }
 
     /** Kontenblatt eines einzelnen Kontos. */

@@ -28,6 +28,9 @@
             </div>
             <x-slot:actions>
                 <x-icon-btn icon="timeline" size="sm" :href="route('projects.planning', $project)" show-label>{{ __('Projektplanung') }}</x-icon-btn>
+                @can('create', \App\Models\Protocol\Protocol::class)
+                    <x-icon-btn icon="note_add" size="sm" data-entry-modal-trigger :href="route('protocols.create', ['subject_kind' => 'project', 'subject' => $project->sqid])" show-label>{{ __('protocol.title.create') }}</x-icon-btn>
+                @endcan
                 {{-- Tätigkeitsrecherche (Feature 153) im Projekt inkl. Unterprojekte. --}}
                 <x-icon-btn icon="manage_search" size="sm" :href="route('search.index', ['project' => $project->sqid, 'focus' => 1])" show-label>{{ __('search.box.project_action') }}</x-icon-btn>
                 {{-- Einstieg Feature 064: auch ohne Board sichtbar (Erst-Aktivierung liegt auf der Board-Seite). --}}

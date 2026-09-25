@@ -58,6 +58,7 @@ use Illuminate\Support\Carbon;
  * @property int $dunning_level
  * @property Carbon|null $dunned_at
  * @property Carbon|null $dunning_blocked_at
+ * @property string|null $dunning_block_reason
  * @property CurrencyCode $currency
  * @property Money|null $subtotal
  * @property \CommonToolkit\ValueObjects\Percentage|null $tax_rate
@@ -149,6 +150,7 @@ class Invoice extends Model implements HasDocumentLines {
         'dunning_level',
         'dunned_at', // Mahnstatus ist Lifecycle, kein Beleginhalt
         'dunning_blocked_at', // Mahnsperre ist Lifecycle (MVP-691)
+        'dunning_block_reason', // Grund der Mahnsperre (MVP-874)
         'objection_at',
         'objection_note', // Widerspruch (§ 14 Abs. 2 UStG) ist Lifecycle
         // Vertriebszuordnung (Feature 146) ist kein Beleginhalt: sie steht in
@@ -201,6 +203,7 @@ class Invoice extends Model implements HasDocumentLines {
         'dunning_level',
         'dunned_at',
         'dunning_blocked_at',
+        'dunning_block_reason',
         'objection_at',
         'objection_note',
         'quote_id',

@@ -229,6 +229,7 @@ return [
         'tender_binding_expiring' => 'El plazo de vinculación termina el :date.',
         'incident_critical' => 'Nuevo incidente de seguridad crítico notificado.',
         'safety_critical_event' => 'Evento de seguridad crítico (:severity) notificado en :location.',
+        'procedure_deviation_escalated' => 'La desviación en el paso «:step» (:severity) se ha escalado: :reason',
         'safety_assessment_review_due' => 'Revisión de la evaluación de riesgos pendiente el :date.',
         'safety_instruction_due' => 'Formación de seguridad «:topic» a repetir el :date.',
         'safety_checkup_due' => 'Reconocimiento médico laboral (:kind) pendiente el :date.',

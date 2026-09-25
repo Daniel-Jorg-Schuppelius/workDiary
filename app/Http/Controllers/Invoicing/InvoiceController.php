@@ -18,8 +18,8 @@ use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\{Invoice, InvoiceItem, InvoiceMailTemplate};
 use App\Models\Project\Project;
+use App\Services\Invoicing\{DunningService, InvoiceIssueException, InvoiceIssueService};
 use App\Services\Invoicing\InvoiceGenerator;
-use App\Services\Invoicing\{InvoiceIssueException, InvoiceIssueService};
 use App\Services\UI\DateRangeContext;
 use CommonToolkit\Helper\Data\{CryptoHelper, NumberHelper};
 use Illuminate\Contracts\View\View;
@@ -391,24 +391,27 @@ class InvoiceController extends Controller {
         return redirect()->route('invoices.show', $invoice)->with('status', __('Mahnstufe :level vermerkt.', ['level' => $result['level']]));
     }
 
-    /**
-     * Mahnsperre umschalten (Feature 127, MVP-691): gesperrte Rechnungen
-     * bleiben im Mahnlauf und im Einzeldialog außen vor.
-     */
-    public function toggleDunningBlock(Invoice $invoice): RedirectResponse {
+    /** Dialog „Mahnsperre setzen" (MVP-874): Grund ist Pflicht. */
+    public function dunningBlockForm(Invoice $invoice): View {
         abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
 
-        if ($invoice->isDunningBlocked()) {
-            $invoice->update(['dunning_blocked_at' => null]);
-            $invoice->audit('invoice.dunningUnblocked', ['by' => (int) Auth::id()]);
+        return view('invoices._dunning_block_dialog', ['invoice' => $invoice, 'isDialog' => true]);
+    }
 
-            return back()->with('status', __('finance.dunning.flash_unblocked', ['nr' => (string) $invoice->number]));
-        }
+    /** Mahnsperre setzen (Feature 127, MVP-691/874): gesperrte Rechnungen bleiben im Mahnlauf und im Einzeldialog außen vor. */
+    public function blockDunning(Request $request, Invoice $invoice, DunningService $dunning): RedirectResponse {
+        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $data = $request->validate(['reason' => ['required', 'string', 'max:255']]);
+        $dunning->block($invoice, (string) $data['reason'], $request->user() ?? abort(401));
 
-        $invoice->update(['dunning_blocked_at' => now()]);
-        $invoice->audit('invoice.dunningBlocked', ['by' => (int) Auth::id()]);
+        return redirect()->route('invoices.show', $invoice)->with('status', __('finance.dunning.flash_blocked', ['nr' => (string) $invoice->number]));
+    }
 
-        return back()->with('status', __('finance.dunning.flash_blocked', ['nr' => (string) $invoice->number]));
+    public function unblockDunning(Request $request, Invoice $invoice, DunningService $dunning): RedirectResponse {
+        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $dunning->unblock($invoice, $request->user() ?? abort(401));
+
+        return back()->with('status', __('finance.dunning.flash_unblocked', ['nr' => (string) $invoice->number]));
     }
 
     /**

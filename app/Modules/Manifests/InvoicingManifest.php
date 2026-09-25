@@ -41,6 +41,7 @@ final class InvoicingManifest extends Manifest {
     /** @return list<string> */
     public function tables(): array {
         return [
+            'base_interest_rates',
             'incoming_einvoices',
             'invoice_commissions',
             'invoice_item_time_entries',

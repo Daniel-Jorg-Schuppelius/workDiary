@@ -11,6 +11,7 @@
 namespace App\Services\Procedure;
 
 use App\Enums\Procedure\{ProcedureRunEventType, ProcedureRunStatus, ProcedureStepRunStatus, ProcedureStepType};
+use App\Events\Procedure\ProcedureRunProgressed;
 use App\Exceptions\{ProcedureDeviationValidationException, ProcedureRunIncompleteException, ProcedureStepBlockedException};
 use App\Models\Platform\User;
 use App\Models\Procedure\{ProcedureBackupProof, ProcedureRun, ProcedureRunEvent, ProcedureStepDef, ProcedureStepRun, ProcedureTemplate, ProcedureTemplateVersion};
@@ -215,6 +216,7 @@ class ProcedureExecutionService {
                 $stepRun,
                 ['status' => $target->value],
             );
+            $this->announceProgress($stepRun, $actor);
 
             return $stepRun->refresh();
         });
@@ -251,6 +253,7 @@ class ProcedureExecutionService {
             $run->save();
 
             $this->recordEvent($run, ProcedureRunEventType::RunCompleted, $actor, null, null);
+            ProcedureRunProgressed::dispatch($run, $actor);
 
             return $run->refresh();
         });
@@ -266,6 +269,7 @@ class ProcedureExecutionService {
             $this->recordEvent($run, ProcedureRunEventType::RunAborted, $actor, null, [
                 'reason' => $reason,
             ]);
+            ProcedureRunProgressed::dispatch($run, $actor);
 
             return $run->refresh();
         });

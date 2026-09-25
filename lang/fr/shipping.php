@@ -83,4 +83,18 @@ return [
         'problem' => 'Problème de livraison',
         'cancelled' => 'Annulé',
     ],
+    'parcel' => [
+        'add' => 'Ajouter un colis',
+        'edit' => 'Modifier le colis :no',
+        'delete' => 'Supprimer le colis',
+        'confirm_delete' => 'Supprimer le colis :no ? Ses numéros de série redeviennent libres.',
+        'label' => 'Colis :no sur :of',
+        'serials' => 'Numéros de série dans le colis',
+        'no_serials' => 'Cette livraison n\'a aucun numéro de série libre.',
+        'serial_count' => ':count n° de série',
+        'saved' => 'Colis enregistré.',
+        'deleted' => 'Colis supprimé.',
+        'serial_not_allowed' => 'Les numéros de série doivent provenir de cette livraison et ne figurer dans aucun autre colis.',
+        'locked' => 'Un ordre d\'expédition existe déjà pour cette livraison ; les colis sont figés.',
+    ],
 ];

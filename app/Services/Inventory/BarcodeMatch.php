@@ -14,6 +14,7 @@ namespace App\Services\Inventory;
 
 use App\Enums\Inventory\BarcodeMatchType;
 use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Asset\Asset;
 use App\Models\Inventory\{StockLot, StockSerial};
 
 /**
@@ -28,6 +29,7 @@ final class BarcodeMatch {
         public readonly ?StockSerial $serial = null,
         public readonly ?StockLot $lot = null,
         public readonly ?Article $article = null,
+        public readonly ?Asset $asset = null,
     ) {}
 
     public function found(): bool {

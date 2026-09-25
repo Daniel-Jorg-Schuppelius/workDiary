@@ -15,6 +15,8 @@ namespace App\Services\Agile;
 use App\Enums\Agile\AgileColumnCategory;
 use App\Models\Agile\{AgileBoard, AgileBoardColumn, AgileEvent, AgileSprint};
 use App\Services\Agile\Metrics\MetricResult;
+use CommonToolkit\Enums\PercentileMethod;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\{Carbon, Collection};
 
 /**
@@ -449,9 +451,9 @@ class AgileMetricsService {
 
         return $this->result('forecast', 'weeks', ['board_id' => $board->id, 'remaining_items' => $remainingItems, 'seed' => $seed], [
             'available' => true,
-            'p50' => $this->percentile($outcomes, 50),
-            'p85' => $this->percentile($outcomes, 85),
-            'p95' => $this->percentile($outcomes, 95),
+            'p50' => NumberHelper::percentile($outcomes, 50, PercentileMethod::NearestRank),
+            'p85' => NumberHelper::percentile($outcomes, 85, PercentileMethod::NearestRank),
+            'p95' => NumberHelper::percentile($outcomes, 95, PercentileMethod::NearestRank),
             'runs' => $runs,
             'observed_weeks' => $poolSize,
         ]);
@@ -523,22 +525,11 @@ class AgileMetricsService {
      */
     private function percentiles(array $values): array {
         return [
-            'p50' => $this->percentile($values, 50),
-            'p85' => $this->percentile($values, 85),
-            'p95' => $this->percentile($values, 95),
+            'p50' => NumberHelper::percentile($values, 50, PercentileMethod::NearestRank),
+            'p85' => NumberHelper::percentile($values, 85, PercentileMethod::NearestRank),
+            'p95' => NumberHelper::percentile($values, 95, PercentileMethod::NearestRank),
             'count' => count($values),
         ];
-    }
-
-    /** @param array<int, float> $values */
-    private function percentile(array $values, int $percentile): float {
-        if ($values === []) {
-            return 0.0;
-        }
-        sort($values);
-        $index = (int) ceil($percentile / 100 * count($values)) - 1;
-
-        return (float) $values[max(0, $index)];
     }
 
     /** @param array<int, int|float> $values */

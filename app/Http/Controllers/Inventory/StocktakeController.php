@@ -70,6 +70,38 @@ class StocktakeController extends Controller {
         return redirect()->route('inventory.counts.show', $count)->with('success', __('inventory.count_ui.saved'));
     }
 
+    /** Zählansicht fürs Handy (MVP-898): Scan für Scan, jede Erfassung addiert. */
+    public function mobile(StockCount $count): View {
+        Gate::authorize(P::InventoryPost->value);
+
+        $count->load(['warehouse', 'lines.variant.article']);
+        $lastId = session('inventory.count.last_line');
+
+        return view('inventory.counts.mobile', [
+            'count' => $count,
+            'last' => is_int($lastId) ? $count->lines->firstWhere('id', $lastId) : null,
+            'countedLines' => $count->lines->whereNotNull('counted_qty')->count(),
+        ]);
+    }
+
+    public function scanAdd(Request $request, StockCount $count): RedirectResponse {
+        Gate::authorize(P::InventoryPost->value);
+        abort_unless($count->status->isOpen(), 422);
+
+        $data = $request->validate([
+            'code' => ['required', 'string', 'max:120'],
+            'qty' => ['required', 'numeric', 'gt:0'],
+        ]);
+
+        try {
+            $line = $this->stocktake->addByScan($count, (string) $data['code'], (string) $data['qty'], Auth::id() !== null ? (int) Auth::id() : null);
+        } catch (RuntimeException $e) {
+            return redirect()->route('inventory.counts.mobile', $count)->with('error', ErrorText::for($e));
+        }
+
+        return redirect()->route('inventory.counts.mobile', $count)->with('inventory.count.last_line', $line->id);
+    }
+
     public function index(Request $request): View {
         Gate::authorize('viewAny', Warehouse::class);
 

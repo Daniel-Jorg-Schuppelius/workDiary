@@ -136,13 +136,16 @@ return [
             'noTime' => 'Termin „:event" ohne Uhrzeit übersprungen.',
             'category' => 'Termin „:event" außerhalb der Kategorie-Allowlist übersprungen.',
             'transparent' => 'Als „frei"/abwesend markierter Termin „:event" übersprungen.',
-            'recurring' => 'Serientermin „:event": nur die Basisinstanz wurde importiert (Serien-Expansion folgt später).',
+            'recurring' => 'Serientermin „:event“: nur die Basisinstanz wurde importiert.',
+            'recurringOutside' => 'Serientermin „:event“: kein Vorkommen im gewählten Zeitraum.',
             'unsupportedEntity' => 'iCal-Import wird für diese Import-Art nicht unterstützt.',
         ],
     ],
 
     // MVP-707: Upload-Hinweise je Dateiart + Texte der Altrechnungs-Übernahme.
     'upload' => [
+        'recurrenceWindow' => 'Serientermine auflösen von / bis',
+        'recurrenceWindowHint' => 'Wiederkehrende Termine werden in diesem Zeitraum einzeln übernommen. Ohne Angabe: die letzten 90 Tage bis heute.',
         'csv' => 'CSV-, Excel- oder iCal-Datei (.csv, .xlsx, .ics, max. :mb MB, :rows Zeilen)',
         'zip' => 'ZIP-Datei mit manifest.csv und den Dokumentdateien (.zip, max. :mb MB, :entries Dateien)',
         'zipHint' => 'Die manifest.csv (Vorlage oben) verweist je Zeile auf eine Datei im ZIP und ordnet sie Kunde, Projekt oder Asset zu.',

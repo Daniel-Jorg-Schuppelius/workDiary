@@ -143,6 +143,34 @@ export function registerAlpineComponents(Alpine) {
         },
     }));
 
+    // Personenauswahl der DSGVO-Auskunft (MVP-878): Suche je Betroffenenart
+    // gegen den org-gescopten JSON-Endpunkt statt aller Datensätze im Markup.
+    Alpine.data("subjectSearch", () => ({
+        kind: "",
+        q: "",
+        results: [],
+        timer: null,
+        url: "",
+        init() {
+            // $el ist nur in init() die Wurzel; in Handlern das auslösende Feld.
+            this.kind = this.$el.dataset.kind || "";
+            this.url = this.$el.dataset.url || "";
+            this.search();
+        },
+        onInput() {
+            clearTimeout(this.timer);
+            this.timer = setTimeout(() => this.search(), 250);
+        },
+        async search() {
+            const params = new URLSearchParams({ kind: this.kind, q: this.q });
+            const res = await getJson(`${this.url}?${params.toString()}`);
+            this.results = res.ok && Array.isArray(res.data?.items) ? res.data.items : [];
+        },
+        isEmpty() {
+            return this.results.length === 0;
+        },
+    }));
+
     // Abhängiges Select: Kindoptionen, deren `parent` zur gewählten
     // Elternauswahl passt (Vollscan 2026-08-23, I1 — die Inline-Variante
     // nutzte eine Arrow-Funktion, die der CSP-Evaluator nicht kennt).

@@ -72,6 +72,7 @@
                         <x-icon-btn icon="merge" size="sm" :href="route('assets.merge.compare', ['source' => $asset->sqid])" show-label>{{ __('Zusammenführen') }}</x-icon-btn>
                     @endcan
                     <x-icon-btn icon="description" size="sm" :href="route('assets.dossier', $asset)" target="_blank" show-label>{{ __('Objektakte') }}</x-icon-btn>
+                    <x-icon-btn icon="qr_code_2" size="sm" :href="route('assets.label', $asset)" target="_blank" show-label>{{ __('asset.label.print') }}</x-icon-btn>
                     <x-icon-btn icon="arrow_back" size="sm" :href="route('assets.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
                 </div>
             </div>
@@ -532,6 +533,11 @@
 
         {{-- ── Protokolle ───────────────────────────────────────────────────── --}}
         <x-card :title="__('Protokolle')" icon="description" :count="$visibleCounts['protocols']">
+            <x-slot:actions>
+                @can('create', \App\Models\Protocol\Protocol::class)
+                    <x-icon-btn icon="note_add" size="sm" data-entry-modal-trigger :href="route('protocols.create', ['subject_kind' => 'asset', 'subject' => $asset->sqid])" show-label>{{ __('protocol.title.create') }}</x-icon-btn>
+                @endcan
+            </x-slot:actions>
             @if ($protocols->isEmpty())
                 <x-empty-state compact icon="description"
                                :title="__('Keine Protokolle')"
@@ -548,7 +554,7 @@
                     </x-slot:head>
                             @foreach ($protocols as $protocol)
                                 <tr>
-                                    <td>{{ $protocol->title }}</td>
+                                    <td><a class="link link-hover" href="{{ route('protocols.show', $protocol) }}">{{ $protocol->title }}</a></td>
                                     <td>{{ $protocol->type->label() }}</td>
                                     <td>{{ $protocol->status->label() }}</td>
                                     <td>{{ optional($protocol->occurred_at)->fdatetime() ?: '—' }}</td>

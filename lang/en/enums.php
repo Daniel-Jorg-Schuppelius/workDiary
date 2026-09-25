@@ -166,6 +166,12 @@ return [
             'follow_up' => 'Follow-up certificate',
         ],
     ],
+    'asset_inspection_round' => [
+        'status' => [
+            'open' => 'Open',
+            'closed' => 'Closed',
+        ],
+    ],
     'tour' => [
         'status' => [
             'draft' => 'Draft',
@@ -415,6 +421,13 @@ return [
             ],
             'claim' => [
                 'escalation' => 'Claim overdue',
+                'pattern' => 'Notable claim pattern',
+            ],
+            'procedure' => [
+                'deviationEscalated' => 'Procedure deviation escalated',
+            ],
+            'report' => [
+                'warning' => 'Early warning from reports',
             ],
             'rental' => [
                 'returnOverdue' => 'Rental return overdue',
@@ -1335,6 +1348,7 @@ return [
             'cash_entry' => 'Cash book',
             'payment' => 'Payment',
             'depreciation' => 'Depreciation',
+            'asset_disposal' => 'Asset disposal',
         ],
         'posting-account-role' => [
             'receivable' => 'Receivable',
@@ -1349,6 +1363,8 @@ return [
             'discount' => 'Discount',
             'fixed_asset' => 'Asset account',
             'depreciation' => 'Depreciation expense',
+            'disposal_loss' => 'Disposal residual value (loss)',
+            'disposal_gain' => 'Disposal residual value (gain)',
         ],
         // Buchungskern (Feature 125, MVP-672).
         'balance-side' => [
@@ -1409,8 +1425,14 @@ return [
             'active' => 'Active',
             'disposed' => 'Disposed',
         ],
+        'fixed-asset-disposal-kind' => [
+            'sale' => 'Sale',
+            'scrap' => 'Scrapping / disposal',
+        ],
         'depreciation-method' => [
             'linear' => 'Straight-line',
+            'immediate' => 'Immediate write-off (low-value asset)',
+            'pool' => 'Collective pool',
         ],
         'accounting-period-status' => [
             'open' => 'Open',

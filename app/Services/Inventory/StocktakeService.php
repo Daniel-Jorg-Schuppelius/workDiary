@@ -64,6 +64,31 @@ class StocktakeService {
 
     /** Erfasst eine Zählmenge per Scan: löst den Code zur Variante auf und trifft die passende Zeile. */
     public function recordByScan(StockCount $count, string $code, string $countedQty, ?int $countedBy = null): StockCountLine {
+        return $this->recordCount($this->lineForCode($count, $code), $countedQty, $countedBy);
+    }
+
+    /**
+     * Mobile Zählung (MVP-898): jeder Scan addiert zur bisher gezählten Menge
+     * der Zeile. Die Zeilensperre hält parallele Scanner auseinander.
+     */
+    public function addByScan(StockCount $count, string $code, string $qty = '1', ?int $countedBy = null): StockCountLine {
+        if (! $count->status->isOpen()) {
+            throw new RuntimeException((string) __('inventory.count_ui.closed'));
+        }
+        $delta = NumberHelper::normalizeDecimalString($qty);
+        if (bccomp($delta, '0', self::SCALE) <= 0) {
+            throw new RuntimeException((string) __('inventory.count_ui.qty_positive'));
+        }
+
+        return DB::transaction(function () use ($count, $code, $delta, $countedBy): StockCountLine {
+            /** @var StockCountLine $line */
+            $line = StockCountLine::query()->whereKey($this->lineForCode($count, $code)->id)->lockForUpdate()->firstOrFail();
+
+            return $this->recordCount($line, bcadd($line->counted_qty ?? '0', $delta, self::SCALE), $countedBy);
+        });
+    }
+
+    private function lineForCode(StockCount $count, string $code): StockCountLine {
         $variant = $this->resolver->resolve($code)->variant;
         if (! $variant instanceof ArticleVariant) {
             throw new RuntimeException('Unbekannter oder nicht bestandsführender Code: ' . trim($code));
@@ -77,7 +102,7 @@ class StocktakeService {
             throw new RuntimeException('Variante ist nicht Teil dieser Inventur.');
         }
 
-        return $this->recordCount($line, $countedQty, $countedBy);
+        return $line;
     }
 
     private function createCount(Warehouse $warehouse, StockCountType $type, ?int $createdBy): StockCount {

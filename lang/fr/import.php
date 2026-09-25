@@ -131,13 +131,16 @@ return [
             'noTime' => 'Événement « :event » sans heure ignoré.',
             'category' => 'Événement « :event » hors de la liste de catégories autorisées ignoré.',
             'transparent' => 'Événement « :event » marqué libre/absent ignoré.',
-            'recurring' => 'Événement récurrent « :event » : seule l\'instance de base a été importée (l\'expansion de la série viendra plus tard).',
+            'recurring' => 'Événement récurrent « :event » : seule l\'instance de base a été importée.',
+            'recurringOutside' => 'Événement récurrent « :event » : aucune occurrence dans la période choisie.',
             'unsupportedEntity' => 'L\'import iCal n\'est pas pris en charge pour ce type d\'import.',
         ],
     ],
 
     // MVP-707: Upload-Hinweise je Dateiart + Texte der Altrechnungs-Übernahme.
     'upload' => [
+        'recurrenceWindow' => 'Développer les séries du / au',
+        'recurrenceWindowHint' => 'Les événements récurrents sont repris occurrence par occurrence dans cette période. Sans indication : les 90 derniers jours jusqu\'à aujourd\'hui.',
         'csv' => 'Fichier CSV, Excel ou iCal (.csv, .xlsx, .ics, max. :mb Mo, :rows lignes)',
         'zip' => 'Fichier ZIP avec manifest.csv et les fichiers de documents (.zip, max. :mb Mo, :entries fichiers)',
         'zipHint' => 'Chaque ligne du manifest.csv (modèle ci-dessus) référence un fichier du ZIP et l\'affecte à un client, un projet ou un actif.',

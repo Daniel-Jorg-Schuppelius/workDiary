@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Finance;
 
-use App\Enums\Finance\{DepreciationMethod, FixedAssetStatus};
+use App\Enums\Finance\{DepreciationMethod, FixedAssetDisposalKind, FixedAssetStatus};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
@@ -156,10 +156,19 @@ class FixedAssetController extends Controller {
 
         $data = $request->validate([
             'disposed_on' => ['required', 'date'],
+            'disposal_kind' => ['required', Rule::enum(FixedAssetDisposalKind::class)],
+            'disposal_proceeds_amount' => ['nullable', 'required_if:disposal_kind,' . FixedAssetDisposalKind::Sale->value, 'numeric', 'gte:0'],
             'note' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $this->service->dispose($fixedAsset, CarbonImmutable::parse((string) $data['disposed_on']), $actor, $data['note'] ?? null);
+        $this->service->dispose(
+            $fixedAsset,
+            CarbonImmutable::parse((string) $data['disposed_on']),
+            $actor,
+            $data['note'] ?? null,
+            FixedAssetDisposalKind::from((string) $data['disposal_kind']),
+            isset($data['disposal_proceeds_amount']) ? (string) $data['disposal_proceeds_amount'] : null,
+        );
 
         return back()->with('status', __('accounting.fixed_assets.flash.disposed'));
     }

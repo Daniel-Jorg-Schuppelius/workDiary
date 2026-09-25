@@ -179,6 +179,7 @@
             "/reports/project-details",
             "/reports/project-inactive",
             "/reports/prozeduren/abweichungen",
+            "/reports/prozeduren/blockiert",
             "/reports/qualifications",
             "/reports/safety",
             "/reports/schulungen",
@@ -325,6 +326,7 @@
             "/payroll",
             "/procedures",
             "/profile/api-tokens",
+            "/protocol-templates",
             "/qualifications",
             "/shift-types",
             "/tags",
@@ -468,6 +470,7 @@
             "/org/members",
             "/procedures",
             "/profile/api-tokens",
+            "/protocol-templates",
             "/qualifications",
             "/tags",
             "/teams"

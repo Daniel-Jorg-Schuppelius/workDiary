@@ -149,7 +149,7 @@ return [
         'finance' => ['open_times_digest' => 'Digest dei tempi aperti per la contabilità'],
         'inventory' => ['cycle_counts' => 'Avvio inventario ciclico', 'expiring_lots' => 'Monitoraggio TMC (lotti in scadenza)'],
         'accounting' => ['recurring' => 'Attese di documenti e bozze di registrazione ricorrenti', 'filings' => 'Allinea le scadenze fiscali e invia promemoria'],
-        'invoicing' => ['recurring' => 'Generare bozze di fatture ricorrenti'],
+        'invoicing' => ['recurring' => 'Generare bozze di fatture ricorrenti', 'base_rate_sync' => 'Sincronizzare il tasso base dalla Bundesbank'],
         'jtl' => ['sync' => 'Sincronizzazione JTL Wawi'],
         'resale' => [
             'sync_domains' => 'Abbonamenti in rivendita: acquisire i domini dalla gestione domini',

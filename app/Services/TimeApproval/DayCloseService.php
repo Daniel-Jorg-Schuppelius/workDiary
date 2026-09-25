@@ -10,14 +10,16 @@
 
 namespace App\Services\TimeApproval;
 
-use App\Enums\TimeApproval\{DayClosureStatus, DayCorrectionStatus};
+use App\Enums\TimeApproval\{DayClosureStatus, DayCorrectionStatus, MonthClosureStatus};
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Models\Diary\{DayClosure, DayCorrectionRequest};
 use App\Models\Platform\User;
 use App\Models\Time\{Attendance, TimeEntry};
+use App\Models\Time\MonthClosure;
 use App\Services\Concerns\ResolvesActorId;
 use App\Services\Flextime\FlexCalculator;
 use App\Services\Timekeeping\BreakRuleEvaluator;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Collection;
@@ -91,6 +93,67 @@ class DayCloseService {
             ->first();
 
         return $closure;
+    }
+
+    /**
+     * Offene Tagesabschlüsse der Organisation (MVP-884): Tage mit Stempeln oder
+     * Buchungen vor heute, die weder abgeschlossen sind noch in einem
+     * gesperrten Monat liegen. Neueste zuerst.
+     *
+     * @return list<array{user: User, day: CarbonImmutable}>
+     */
+    public function openDays(int $organizationId, CarbonImmutable $from, CarbonImmutable $to): array {
+        $to = $to->min(CarbonImmutable::now()->subDay());
+        if ($to->lessThan($from)) {
+            return [];
+        }
+        $range = static fn ($query) => $query->where('organization_id', $organizationId)
+            ->where('date', '>=', $from->toDateString())
+            ->where('date', '<', DateRange::dayAfter($to));
+
+        $keys = [];
+        foreach ([Attendance::query(), TimeEntry::query()] as $query) {
+            foreach ($range($query)->distinct()->get(['user_id', 'date']) as $row) {
+                $keys[(int) $row->user_id . '|' . CarbonImmutable::parse($row->date)->toDateString()] = true;
+            }
+        }
+        if ($keys === []) {
+            return [];
+        }
+
+        DayClosure::query()
+            ->where('organization_id', $organizationId)
+            ->where('status', DayClosureStatus::Closed->value)
+            ->where('day', '>=', $from->toDateString())
+            ->where('day', '<', DateRange::dayAfter($to))
+            ->get(['user_id', 'day'])
+            ->each(function (DayClosure $closure) use (&$keys): void {
+                unset($keys[(int) $closure->user_id . '|' . $closure->day->toDateString()]);
+            });
+
+        $lockedMonths = MonthClosure::query()
+            ->where('organization_id', $organizationId)
+            ->whereIn('status', array_map(static fn (MonthClosureStatus $s): string => $s->value, MonthClosureStatus::lockedStates()))
+            ->get(['user_id', 'period_year', 'period_month'])
+            ->mapWithKeys(static fn (MonthClosure $m): array => [$m->user_id . '|' . sprintf('%04d-%02d', $m->period_year, $m->period_month) => true])
+            ->all();
+
+        $users = User::query()->where('organization_id', $organizationId)
+            ->whereIn('id', array_unique(array_map(static fn (string $key): int => (int) explode('|', $key)[0], array_keys($keys))))
+            ->get(['id', 'name'])->keyBy('id');
+
+        $open = [];
+        foreach (array_keys($keys) as $key) {
+            [$userId, $date] = explode('|', $key);
+            $user = $users->get((int) $userId);
+            if ($user === null || isset($lockedMonths[$userId . '|' . substr($date, 0, 7)])) {
+                continue;
+            }
+            $open[] = ['user' => $user, 'day' => CarbonImmutable::parse($date)];
+        }
+        usort($open, static fn (array $a, array $b): int => [$b['day'], $a['user']->name] <=> [$a['day'], $b['user']->name]);
+
+        return $open;
     }
 
     /**

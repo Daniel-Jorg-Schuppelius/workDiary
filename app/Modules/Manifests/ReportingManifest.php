@@ -51,4 +51,16 @@ final class ReportingManifest extends Manifest {
             PermissionGroup::Reports,
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Reporting\DeadlineScans\ReportWarningScan::class,
+            ],
+            \App\Services\Reporting\Contracts\EarlyWarningSource::class => [
+                \App\Services\Reporting\EarlyWarnings\CustomerReworkWarningSource::class,
+            ],
+        ];
+    }
 }

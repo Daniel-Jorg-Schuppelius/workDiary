@@ -404,6 +404,14 @@ function buildPayload(type, form) {
         };
     }
 
+    if (type === "inventory.count") {
+        return {
+            count: form.dataset.syncPayloadCount || "",
+            code: form.querySelector('[name="code"]')?.value || "",
+            qty: form.querySelector('[name="qty"]')?.value || "1",
+        };
+    }
+
     if (type === "comment.diary") {
         return {
             diary: form.dataset.syncPayloadDiary || "",
@@ -504,6 +512,8 @@ function bindForms() {
                 .then(() => queuePhotos(clientUuid, form, payload))
                 .then(() => {
                     form.reset();
+                    // Fortlaufende Erfassung (Inventur-Scan): gleich weiter scannen.
+                    form.querySelector("[autofocus]")?.focus();
                     updateBadge();
                 })
                 .catch(() => {

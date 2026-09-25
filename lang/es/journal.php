@@ -168,6 +168,8 @@ return [
             'runCompleted' => 'Ejecución completada',
             'runCompletionRejected' => 'Cierre rechazado',
             'runAborted' => 'Ejecución abortada',
+            'runBlocked' => 'Ejecución bloqueada',
+            'runUnblocked' => 'Ejecución desbloqueada',
             'secondPersonAssigned' => 'Segunda persona asignada',
             'secondPersonSigned' => 'Segunda persona ha firmado',
             'secondPersonRequested' => 'Segunda persona solicitada',

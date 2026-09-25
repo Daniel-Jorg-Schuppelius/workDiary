@@ -45,6 +45,7 @@ class CommunicationNotesSection extends AbstractSubjectSection {
                     ->where('notable_type', $subject->getMorphClass())
                     ->where('notable_id', $subject->getKey()),
                 'occurred_at',
+                columns: ['occurred_at' => __('Zeitpunkt'), 'type' => __('Art'), 'direction' => __('Richtung'), 'subject' => __('Betreff')],
             ),
         ]];
     }

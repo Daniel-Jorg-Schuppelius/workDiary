@@ -785,6 +785,7 @@ return [
         'overdue' => 'Location en retard',
         'profileSaved' => 'Profil de location enregistré',
         'reserved' => 'Location réservée',
+        'termsAttached' => 'Conditions de location rattachées au dossier de location',
         'returned' => 'Matériel de location restitué',
         'termsFrozen' => 'Conditions de location gelées',
     ],

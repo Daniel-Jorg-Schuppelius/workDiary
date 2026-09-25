@@ -1,7 +1,7 @@
 ---
 title: "Creare un verbale"
 topic: protocols.create
-version: 2
+version: 3
 audience: []
 schema: process
 related:
@@ -18,19 +18,22 @@ sua pratica e reperibile nel fascicolo.
 
 ## Prerequisiti
 
-- Una voce di commessa esistente (fascicolo).
-- Un **modello** adatto («collaudo», «messa in servizio»,
-  «manutenzione»…) — li cura l'amministrazione.
-- Il diritto di creare verbali.
+- Un ordine, un progetto o un oggetto esistente.
+- Facoltativo: un **modello** adatto (ad es. «Collaudo», «Manutenzione»).
+  I modelli nascono da un protocollo campione tramite **«Salva come
+  modello»** e si gestiscono nell’amministrazione in **Modelli di
+  protocollo**.
+- Il diritto di creare protocolli.
 
 ## Procedura consigliata
 
-1. Apra il fascicolo e scelga **«Genera verbale»** nel menu Azioni.
-2. Scelga il **modello**.
-3. Compili i **punti del verbale**: testo, scelta, foto, misura.
+1. Apra l’ordine, il progetto o l’oggetto e scelga **«Crea protocollo»**.
+2. Scelga tipo, titolo e, se serve, il **modello**: porta con sé i suoi
+   punti.
+3. Aggiunga altri punti con **«Aggiungi elemento»** e registri ogni punto con
+   **«Compila elemento»**: testo, sì/no, scelta, misura, difetto.
 4. Alleghi le **foto prima/dopo** al punto corrispondente.
-5. **Salvare** lascia il verbale in **bozza**; per il collaudo passa
-   poi alla finestra di firma.
+5. Invii il protocollo **in verifica** o lo chiuda con **«Finalizza / firma»**; ai clienti arriva il **link di firma**.
 
 ## Esempio pratico
 

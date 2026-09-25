@@ -135,4 +135,18 @@ class SupplierAnalysisReportTest extends TestCase {
             ->get(route('reports.suppliers'))
             ->assertForbidden();
     }
+
+    public function test_spend_bridge_steps_add_up_from_previous_period_to_period(): void {
+        $rows = [];
+        foreach ([['A', 100, 400], ['B', 300, 100], ['C', 50, 60], ['D', 10, 20], ['E', 5, 6], ['F', 1, 3], ['G', 2, 1]] as $i => [$name, $prev, $spend]) {
+            $rows[] = ['supplierId' => $i + 1, 'supplierName' => $name, 'spend' => (float) $spend, 'spendPrev' => (float) $prev];
+        }
+
+        $bridge = app(\App\Services\Reporting\SupplierAnalysisReportBuilder::class)->spendBridge($rows);
+
+        $this->assertSame(468.0, $bridge['start']);
+        $this->assertSame(590.0, $bridge['end']);
+        $this->assertSame(['A', 'B', 'C', 'D', 'F'], array_column(array_slice($bridge['steps'], 0, 5), 'x'));
+        $this->assertSame($bridge['end'], round($bridge['start'] + array_sum(array_column($bridge['steps'], 'y')), 2));
+    }
 }

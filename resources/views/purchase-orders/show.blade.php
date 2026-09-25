@@ -237,5 +237,8 @@
             </x-card>
         @endif
     @endif
+
+    {{-- Versandhistorie der Bestellung (MVP-876). --}}
+    <x-dispatch-history :kinds="[\App\Enums\DocumentDesign\RenderDocumentKind::PurchaseOrder]" :ids="[(int) $order->id]" />
 </x-page-shell>
 @endsection

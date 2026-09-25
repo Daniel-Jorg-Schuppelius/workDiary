@@ -159,6 +159,13 @@ enum NotificationEvent: string implements HasLabel {
 
     // Feature 072: Fristeneskalation überfälliger Reklamationen (MVP-255).
     case ClaimEscalation = 'claim.escalation';
+    /** Scanner: gleichartige Reklamationen über der Schwelle (Feature 072, MVP-886). */
+    case ClaimPattern = 'claim.pattern';
+    /** Scanner: Frühwarnung mit Handlungsempfehlung (Feature 002, MVP-889). */
+    case ReportWarning = 'report.warning';
+
+    // Feature 026: Prozedur-Abweichung mit Folgeaktion „eskalieren“ (MVP-881).
+    case ProcedureDeviationEscalated = 'procedure.deviationEscalated';
 
     // Feature 073: überfällige Verleih-Rückgabe (MVP-264).
     case RentalReturnOverdue = 'rental.returnOverdue';
@@ -335,7 +342,7 @@ enum NotificationEvent: string implements HasLabel {
             return false;
         }
 
-        return ! in_array($this, [self::TimeCorrectionRequested, self::OvertimeRequested, self::VacationRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::SafetyAssessmentReviewDue, self::ShiftExchangeRequested, self::CustomerQueryRaised, self::RentalRequested, self::ShipmentDeliveryProblem, self::SlaQuotaWarning,
+        return ! in_array($this, [self::TimeCorrectionRequested, self::OvertimeRequested, self::VacationRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::ProcedureDeviationEscalated, self::ClaimPattern, self::ReportWarning, self::SafetyAssessmentReviewDue, self::ShiftExchangeRequested, self::CustomerQueryRaised, self::RentalRequested, self::ShipmentDeliveryProblem, self::SlaQuotaWarning,
             // Domain-/Finanz-/Fristereignisse betreffen keine Einzelperson (Vollaudit 2026-07, W3.2).
             self::DomainExpiring, self::DomainTransferChanged, self::DomainSyncFailed, self::DomainHighRiskAction,
             self::FinanceTransferFailed, self::FinanceBankImportFailed, self::FinanceReconciliationReview, self::RetentionReleaseDue,
@@ -402,6 +409,8 @@ enum NotificationEvent: string implements HasLabel {
             // Kritisches Sicherheitsereignis: betrifft keine einzelne Person —
             // synchron an die Leitungs-/Admin-Rollen der Organisation.
             self::SafetyCriticalEvent => [UserRole::Teamleitung->value, UserRole::Admin->value],
+            self::ProcedureDeviationEscalated => [UserRole::Admin->value],
+            self::ClaimPattern, self::ReportWarning => [UserRole::Teamleitung->value, UserRole::Admin->value],
             // Arbeitsschutz-Fristen (Feature 132): GBU-Wiedervorlage betrifft keine
             // Einzelperson; Unterweisung/Vorsorge primär die Person (notify_affected),
             // die Teamleitung führt das Register und ist Fallback.
@@ -554,6 +563,9 @@ enum NotificationEvent: string implements HasLabel {
             self::TrainingDue => 'school',
             self::CrisisAlert => 'emergency_home',
             self::ClaimEscalation => 'assignment_late',
+            self::ProcedureDeviationEscalated => 'report',
+            self::ClaimPattern => 'troubleshoot',
+            self::ReportWarning => 'crisis_alert',
             self::RentalReturnOverdue => 'forklift',
             self::RentalRequested => 'forklift',
             self::AssetFinanceDeadline => 'request_quote',

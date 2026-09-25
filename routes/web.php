@@ -510,6 +510,7 @@ Route::middleware('auth')->group(function () {
             Route::get('anfragen/{dsr}/export', [\App\Http\Controllers\Privacy\DataSubjectRequestController::class, 'export'])->name('requests.export');
             // Auskunft mit echten Betroffenendaten (Art. 15/20, Feature 129)
             Route::post('anfragen/{dsr}/auskunft', [\App\Http\Controllers\Privacy\DataSubjectRequestController::class, 'generateSubjectExport'])->name('requests.subject-export');
+            Route::get('anfragen/{dsr}/auskunft/suche', [\App\Http\Controllers\Privacy\DataSubjectRequestController::class, 'subjectSearch'])->name('requests.subject-search');
             Route::post('anfragen/{dsr}/identitaet', [\App\Http\Controllers\Privacy\DataSubjectRequestController::class, 'verifyIdentity'])->name('requests.verify');
             Route::post('anfragen/{dsr}/zuweisung', [\App\Http\Controllers\Privacy\DataSubjectRequestController::class, 'assign'])->name('requests.assign');
             Route::post('anfragen/{dsr}/entscheidung', [\App\Http\Controllers\Privacy\DataSubjectRequestController::class, 'decide'])->name('requests.decide');
@@ -1477,6 +1478,8 @@ Route::middleware('auth')->group(function () {
         Route::get('inventory/counts/{count}', [\App\Http\Controllers\Inventory\StocktakeController::class, 'show'])->name('inventory.counts.show');
         Route::post('inventory/counts/{count}/record', [\App\Http\Controllers\Inventory\StocktakeController::class, 'record'])->name('inventory.counts.record');
         Route::post('inventory/counts/{count}/scan', [\App\Http\Controllers\Inventory\StocktakeController::class, 'recordScan'])->name('inventory.counts.scan'); // E6 Scan-Erfassung
+        Route::get('inventory/counts/{count}/mobil', [\App\Http\Controllers\Inventory\StocktakeController::class, 'mobile'])->name('inventory.counts.mobile'); // MVP-898
+        Route::post('inventory/counts/{count}/scan-add', [\App\Http\Controllers\Inventory\StocktakeController::class, 'scanAdd'])->name('inventory.counts.scan-add');
         Route::post('inventory/counts/{count}/apply', [\App\Http\Controllers\Inventory\StocktakeController::class, 'apply'])->name('inventory.counts.apply');
 
         // ── Scan-/Buchungs-UI (Feature 048, E5)
@@ -1529,6 +1532,12 @@ Route::middleware('auth')->group(function () {
         Route::get('manufacturing-orders/{order}/deliveries/{delivery}/mail', [\App\Http\Controllers\Document\DocumentMailController::class, 'deliveryNoteForm'])->name('manufacturing-orders.deliveries.mail.form');
         Route::post('manufacturing-orders/{order}/deliveries/{delivery}/mail', [\App\Http\Controllers\Document\DocumentMailController::class, 'deliveryNoteSend'])->name('manufacturing-orders.deliveries.mail');
         Route::post('manufacturing-orders/{order}/deliveries/{delivery}/shipment', [\App\Http\Controllers\Shipping\DeliveryShipmentController::class, 'store'])->name('manufacturing-orders.deliveries.shipment'); // 059/MVP-128 Rang 20 Versandauftrag
+        // Packstücke mit Seriennummern (059, MVP-900).
+        Route::get('manufacturing-orders/{order}/deliveries/{delivery}/parcels/create', [\App\Http\Controllers\Shipping\ShipmentParcelController::class, 'create'])->name('manufacturing-orders.deliveries.parcels.create');
+        Route::post('manufacturing-orders/{order}/deliveries/{delivery}/parcels', [\App\Http\Controllers\Shipping\ShipmentParcelController::class, 'store'])->name('manufacturing-orders.deliveries.parcels.store');
+        Route::get('manufacturing-orders/{order}/deliveries/{delivery}/parcels/{parcel}/edit', [\App\Http\Controllers\Shipping\ShipmentParcelController::class, 'edit'])->name('manufacturing-orders.deliveries.parcels.edit');
+        Route::put('manufacturing-orders/{order}/deliveries/{delivery}/parcels/{parcel}', [\App\Http\Controllers\Shipping\ShipmentParcelController::class, 'update'])->name('manufacturing-orders.deliveries.parcels.update');
+        Route::delete('manufacturing-orders/{order}/deliveries/{delivery}/parcels/{parcel}', [\App\Http\Controllers\Shipping\ShipmentParcelController::class, 'destroy'])->name('manufacturing-orders.deliveries.parcels.destroy');
         Route::post('manufacturing-orders/{order}/order-confirmation/lexoffice', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'pushOrderConfirmation'])->name('manufacturing-orders.order-confirmation.lexoffice'); // 045 Auftragsbestätigung an Lexoffice
         Route::post('manufacturing-orders/{order}/quotation/lexoffice', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'pushQuotation'])->name('manufacturing-orders.quotation.lexoffice'); // 045 Angebot an Lexoffice
         Route::post('manufacturing-orders/{order}/cancel', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'cancel'])->name('manufacturing-orders.cancel');
@@ -1989,7 +1998,9 @@ Route::middleware('auth')->group(function () {
         Route::get('invoices/{invoice}/dun', [InvoiceController::class, 'dunForm'])->name('invoices.dun.form');
         Route::post('invoices/{invoice}/dun', [InvoiceController::class, 'dun'])->name('invoices.dun');
         // Mahnsperre umschalten (Feature 127, MVP-691).
-        Route::post('invoices/{invoice}/mahnsperre', [InvoiceController::class, 'toggleDunningBlock'])->name('invoices.dunning-block');
+        Route::get('invoices/{invoice}/mahnsperre', [InvoiceController::class, 'dunningBlockForm'])->name('invoices.dunning-block.form');
+        Route::post('invoices/{invoice}/mahnsperre', [InvoiceController::class, 'blockDunning'])->name('invoices.dunning-block');
+        Route::post('invoices/{invoice}/mahnsperre/aufheben', [InvoiceController::class, 'unblockDunning'])->name('invoices.dunning-unblock');
         // Vollaudit 2026-07 (M27): § 14 Abs. 2 UStG — Widerspruch dokumentieren.
         Route::post('invoices/{invoice}/widerspruch', [InvoiceController::class, 'documentObjection'])->name('invoices.objection');
         Route::post('invoices/{invoice}/proforma-umwandeln', [InvoiceController::class, 'proformaConvert'])->name('invoices.proforma-convert');
@@ -2137,8 +2148,8 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [\App\Http\Controllers\Claims\ClaimCaseController::class, 'index'])->name('index');
             Route::get('neu', [\App\Http\Controllers\Claims\ClaimCaseController::class, 'create'])->name('create');
             Route::post('/', [\App\Http\Controllers\Claims\ClaimCaseController::class, 'store'])->name('store');
-            Route::get('bericht', [\App\Http\Controllers\Reporting\ClaimsReportController::class, 'index'])->name('reports.index');
-            Route::post('bericht/snapshot', [\App\Http\Controllers\Reporting\ClaimsReportController::class, 'snapshot'])->name('reports.snapshot');
+            Route::get('bericht', [\App\Http\Controllers\Claims\ClaimsReportController::class, 'index'])->name('reports.index');
+            Route::post('bericht/snapshot', [\App\Http\Controllers\Claims\ClaimsReportController::class, 'snapshot'])->name('reports.snapshot');
             Route::get('{claim}', [\App\Http\Controllers\Claims\ClaimCaseController::class, 'show'])->name('show');
             Route::put('{claim}', [\App\Http\Controllers\Claims\ClaimCaseController::class, 'update'])->name('update');
             Route::post('{claim}/bewerten', [\App\Http\Controllers\Claims\ClaimCaseController::class, 'assess'])->name('assess');
@@ -2405,6 +2416,14 @@ Route::middleware('auth')->group(function () {
         Route::prefix('vertraege')->name('contracts.')->group(function (): void {
             Route::get('/', [\App\Http\Controllers\Contract\ContractController::class, 'index'])->name('index');
             Route::get('neu', [\App\Http\Controllers\Contract\ContractController::class, 'create'])->name('create');
+            Route::get('kostenstellen', [\App\Http\Controllers\Contract\ContractController::class, 'costCenters'])->name('cost-centers');
+            // Vertragsvorlagen (MVP-893)
+            Route::get('vorlagen', [\App\Http\Controllers\Contract\ContractTemplateController::class, 'index'])->name('templates.index');
+            Route::get('vorlagen/{template}/bearbeiten', [\App\Http\Controllers\Contract\ContractTemplateController::class, 'edit'])->name('templates.edit');
+            Route::put('vorlagen/{template}', [\App\Http\Controllers\Contract\ContractTemplateController::class, 'update'])->name('templates.update');
+            Route::delete('vorlagen/{template}', [\App\Http\Controllers\Contract\ContractTemplateController::class, 'destroy'])->name('templates.destroy');
+            Route::get('{contract}/als-vorlage', [\App\Http\Controllers\Contract\ContractTemplateController::class, 'fromContractForm'])->name('templates.from-contract.form');
+            Route::post('{contract}/als-vorlage', [\App\Http\Controllers\Contract\ContractTemplateController::class, 'fromContract'])->name('templates.from-contract');
             Route::post('/', [\App\Http\Controllers\Contract\ContractController::class, 'store'])->name('store');
             Route::get('{contract}', [\App\Http\Controllers\Contract\ContractController::class, 'show'])->name('show');
             Route::put('{contract}', [\App\Http\Controllers\Contract\ContractController::class, 'update'])->name('update');
@@ -2457,6 +2476,15 @@ Route::middleware('auth')->group(function () {
             Route::get('kalender', [\App\Http\Controllers\AssetCompliance\AssetInspectionController::class, 'index'])->name('schedules.index');
             Route::post('kalender', [\App\Http\Controllers\AssetCompliance\AssetInspectionController::class, 'storeSchedule'])->name('schedules.store');
             Route::post('pflichten/{assignment}/pruefen', [\App\Http\Controllers\AssetCompliance\AssetInspectionController::class, 'record'])->name('inspections.record');
+            // Prüfmittelrunden (MVP-899): Soll-Liste, Scan, Schnellerfassung.
+            Route::get('runden', [\App\Http\Controllers\AssetCompliance\AssetInspectionRoundController::class, 'index'])->name('rounds.index');
+            Route::get('runden/neu', [\App\Http\Controllers\AssetCompliance\AssetInspectionRoundController::class, 'create'])->name('rounds.create');
+            Route::post('runden', [\App\Http\Controllers\AssetCompliance\AssetInspectionRoundController::class, 'store'])->name('rounds.store');
+            Route::get('runden/{round}', [\App\Http\Controllers\AssetCompliance\AssetInspectionRoundController::class, 'show'])->name('rounds.show');
+            Route::post('runden/{round}/scan', [\App\Http\Controllers\AssetCompliance\AssetInspectionRoundController::class, 'scan'])->name('rounds.scan');
+            Route::get('runden/{round}/positionen/{item}', [\App\Http\Controllers\AssetCompliance\AssetInspectionRoundController::class, 'captureForm'])->name('rounds.capture');
+            Route::post('runden/{round}/positionen/{item}', [\App\Http\Controllers\AssetCompliance\AssetInspectionRoundController::class, 'capture'])->name('rounds.capture.store');
+            Route::post('runden/{round}/abschliessen', [\App\Http\Controllers\AssetCompliance\AssetInspectionRoundController::class, 'close'])->name('rounds.close');
             Route::get('bericht', [\App\Http\Controllers\Reporting\AssetComplianceReportController::class, 'index'])->name('reports.index');
             Route::post('bericht/snapshot', [\App\Http\Controllers\Reporting\AssetComplianceReportController::class, 'snapshot'])->name('reports.snapshot');
         });
@@ -3861,6 +3889,15 @@ Route::middleware('auth')->group(function () {
         // ── Prozeduren / Arbeitsanweisungen (Feature 026) ──────────────────
         Route::get('procedures', [\App\Http\Controllers\Procedure\ProcedureTemplateController::class, 'index'])->name('procedures.index');
         Route::get('procedures/create', [\App\Http\Controllers\Procedure\ProcedureTemplateController::class, 'create'])->name('procedures.create');
+        // Schrittbibliothek (MVP-896)
+        Route::get('procedures/library', [\App\Http\Controllers\Procedure\ProcedureLibraryController::class, 'index'])->name('procedures.library.index');
+        Route::get('procedures/library/create', [\App\Http\Controllers\Procedure\ProcedureLibraryController::class, 'create'])->name('procedures.library.create');
+        Route::post('procedures/library', [\App\Http\Controllers\Procedure\ProcedureLibraryController::class, 'store'])->name('procedures.library.store');
+        Route::get('procedures/library/{step}/edit', [\App\Http\Controllers\Procedure\ProcedureLibraryController::class, 'edit'])->name('procedures.library.edit');
+        Route::put('procedures/library/{step}', [\App\Http\Controllers\Procedure\ProcedureLibraryController::class, 'update'])->name('procedures.library.update');
+        Route::delete('procedures/library/{step}', [\App\Http\Controllers\Procedure\ProcedureLibraryController::class, 'destroy'])->name('procedures.library.destroy');
+        Route::get('procedures/{template}/library-insert', [\App\Http\Controllers\Procedure\ProcedureLibraryController::class, 'insertForm'])->name('procedures.library.insert-form');
+        Route::post('procedures/{template}/library-insert', [\App\Http\Controllers\Procedure\ProcedureLibraryController::class, 'insert'])->name('procedures.library.insert');
         Route::post('procedures', [\App\Http\Controllers\Procedure\ProcedureTemplateController::class, 'store'])->name('procedures.store');
         Route::get('procedures/{template}/edit', [\App\Http\Controllers\Procedure\ProcedureTemplateController::class, 'edit'])->name('procedures.edit');
         Route::put('procedures/{template}', [\App\Http\Controllers\Procedure\ProcedureTemplateController::class, 'update'])->name('procedures.update');
@@ -3963,7 +4000,21 @@ Route::middleware('auth')->group(function () {
 
         // ── Protokolle (MVP-020) ───────────────────────────────────────────
         // Detailseite (Rang 28): Trägerseite für Panels (externe Beteiligte, Wetter, Verlauf).
+        Route::get('protocols/create', [ProtocolController::class, 'create'])->name('protocols.create');
         Route::get('protocols/{protocol}', [ProtocolController::class, 'show'])->name('protocols.show');
+        Route::get('protocols/{protocol}/items/create', [ProtocolController::class, 'itemForm'])->name('protocols.items.create');
+        Route::get('protocol-items/{item}/fill', [ProtocolController::class, 'fillForm'])->name('protocols.items.fill-form');
+        Route::get('protocols/{protocol}/transitions/{action}', [ProtocolController::class, 'transitionForm'])
+            ->whereIn('action', ['sign', 'returnToDraft', 'supersede'])
+            ->name('protocols.transition-form');
+        Route::get('protocols/{protocol}/signature-tokens/create', [ProtocolController::class, 'signatureTokenForm'])->name('protocols.signature-tokens.create');
+        // Protokollvorlagen (MVP-901)
+        Route::get('protocol-templates', [\App\Http\Controllers\Protocol\ProtocolTemplateController::class, 'index'])->name('protocol-templates.index');
+        Route::get('protocol-templates/{template}/edit', [\App\Http\Controllers\Protocol\ProtocolTemplateController::class, 'edit'])->name('protocol-templates.edit');
+        Route::put('protocol-templates/{template}', [\App\Http\Controllers\Protocol\ProtocolTemplateController::class, 'update'])->name('protocol-templates.update');
+        Route::delete('protocol-templates/{template}', [\App\Http\Controllers\Protocol\ProtocolTemplateController::class, 'destroy'])->name('protocol-templates.destroy');
+        Route::get('protocols/{protocol}/as-template', [\App\Http\Controllers\Protocol\ProtocolTemplateController::class, 'fromProtocolForm'])->name('protocols.as-template.form');
+        Route::post('protocols/{protocol}/as-template', [\App\Http\Controllers\Protocol\ProtocolTemplateController::class, 'fromProtocol'])->name('protocols.as-template');
         Route::post('protocols', [ProtocolController::class, 'store'])->name('protocols.store');
         Route::put('protocols/{protocol}', [ProtocolController::class, 'update'])->name('protocols.update');
         Route::delete('protocols/{protocol}', [ProtocolController::class, 'destroy'])->name('protocols.destroy');
@@ -4047,6 +4098,7 @@ Route::middleware('auth')->group(function () {
         Route::put('assets/{asset}', [AssetController::class, 'update'])->name('assets.update');
         Route::post('assets/{asset}/unblock', [AssetController::class, 'unblock'])->name('assets.unblock');
         Route::get('assets/{asset}/dossier', \App\Http\Controllers\Asset\AssetDossierController::class)->name('assets.dossier');
+        Route::get('assets/{asset}/label', \App\Http\Controllers\Asset\AssetLabelController::class)->name('assets.label');
         Route::get('assets/{asset}', [AssetController::class, 'show'])->name('assets.show');
 
         Route::get('assets/{asset}/maintenance-plans/create', [MaintenancePlanController::class, 'create'])->name('assets.maintenance-plans.create');
@@ -4365,6 +4417,8 @@ Route::middleware('auth')->group(function () {
         // ── Tagesabschluss (MVP-015) ────────────────────────────────────────────
         Route::get('tagesabschluss', [\App\Http\Controllers\Time\DayCloseController::class, 'show'])
             ->name('day-close.show');
+        Route::get('tagesabschluss/team', [\App\Http\Controllers\Time\DayCloseController::class, 'team'])
+            ->name('day-close.team');
         Route::post('tagesabschluss/save', [\App\Http\Controllers\Time\DayCloseController::class, 'save'])
             ->name('day-close.save');
         Route::post('tagesabschluss/close', [\App\Http\Controllers\Time\DayCloseController::class, 'close'])
@@ -4501,6 +4555,7 @@ Route::middleware('auth')->group(function () {
             Route::get('zusammenfassende-meldung', [\App\Http\Controllers\Finance\AccountingReportController::class, 'recapitulative'])->name('recapitulative');
             Route::get('/', [\App\Http\Controllers\Finance\AccountingReportController::class, 'index'])->name('index');
             Route::get('susa', [\App\Http\Controllers\Finance\AccountingReportController::class, 'trialBalance'])->name('trial-balance');
+            Route::get('anlagenspiegel', [\App\Http\Controllers\Finance\AccountingReportController::class, 'fixedAssetSchedule'])->name('fixed-asset-schedule');
             Route::get('kontenblatt', [\App\Http\Controllers\Finance\AccountingReportController::class, 'accountLedger'])->name('account-ledger');
             Route::get('umsatzsteuer', [\App\Http\Controllers\Finance\AccountingReportController::class, 'vat'])->name('vat');
             Route::get('euer', [\App\Http\Controllers\Finance\AccountingReportController::class, 'euer'])->name('euer');
@@ -4538,6 +4593,9 @@ Route::middleware('auth')->group(function () {
         // Prozedur-Abweichungen (Feature 026, MVP-713): Recht procedure.deviation.view im Controller.
         Route::get('reports/prozeduren/abweichungen', [\App\Http\Controllers\Reporting\ProcedureDeviationReportController::class, 'index'])
             ->name('reports.procedure-deviations');
+        // Blockierte Prozedurläufe (Feature 026, MVP-897): Recht procedure.run.view im Controller.
+        Route::get('reports/prozeduren/blockiert', [\App\Http\Controllers\Procedure\ProcedureBlockedRunsController::class, 'index'])
+            ->name('reports.procedure-blocked');
         // ArbZG-Compliance auf Ist-Arbeitszeit (Feature 006).
         // Compliance-Dashboard (Rang 39): org-weite Übersicht mit Drilldown in den Einzelreport.
         Route::get('reports/compliance/dashboard', [\App\Http\Controllers\Reporting\ArbZgComplianceReportController::class, 'dashboard'])

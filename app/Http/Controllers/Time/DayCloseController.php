@@ -11,10 +11,11 @@
 namespace App\Http\Controllers\Time;
 
 use App\Enums\TimeApproval\DayClosureStatus;
+use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Diary\{DayClosure, DayCorrectionRequest};
 use App\Models\Platform\User;
-use App\Services\Attendance\AttendanceClockService;
+use App\Services\Attendance\{AttendanceClockService, EmergencyAttendanceService};
 use App\Services\TimeApproval\{DayCloseService, DayCloseWorkflowException};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -85,6 +86,28 @@ class DayCloseController extends Controller {
             'isToday' => $day->isSameDay(CarbonImmutable::now()),
             'isFuture' => $day->startOfDay()->greaterThan(CarbonImmutable::now()->endOfDay()),
             'correctionRequests' => $closure->exists ? $closure->correctionRequests()->with(['requestedBy', 'decidedBy'])->get() : collect(),
+        ]);
+    }
+
+    /**
+     * Team heute (MVP-884): wer ist jetzt da, dazu die offenen
+     * Tagesabschlüsse im Zeitraum (Standard: die letzten 14 Tage). Abwesende
+     * ohne Grund — wie die Belegungstafel.
+     */
+    public function team(Request $request, EmergencyAttendanceService $attendance): View {
+        abort_unless(Gate::any([Permission::DayCloseViewTeam->value, Permission::DayCloseViewOrganization->value]), 403);
+        /** @var User $viewer */
+        $viewer = Auth::user();
+        $organizationId = (int) $viewer->organization_id;
+
+        $to = $this->parseDate($request->string('to')->toString()) ?? CarbonImmutable::now()->subDay()->startOfDay();
+        $from = $this->parseDate($request->string('from')->toString()) ?? $to->subDays(13);
+
+        return view('time-approval.day.team', [
+            'snapshot' => $attendance->snapshot($organizationId),
+            'openDays' => $this->service->openDays($organizationId, $from->min($to), $to),
+            'from' => $from,
+            'to' => $to,
         ]);
     }
 
@@ -209,6 +232,15 @@ class DayCloseController extends Controller {
     }
 
     // ── intern ─────────────────────────────────────────────────────────
+
+    private function parseDate(string $raw): ?CarbonImmutable {
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $raw) !== 1) {
+            return null;
+        }
+        $parsed = CarbonImmutable::createFromFormat('Y-m-d', $raw);
+
+        return $parsed instanceof CarbonImmutable ? $parsed->startOfDay() : null;
+    }
 
     private function resolveDay(Request $request): CarbonImmutable {
         $raw = (string) $request->input('date', '');

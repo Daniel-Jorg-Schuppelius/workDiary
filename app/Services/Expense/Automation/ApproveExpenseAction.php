@@ -8,8 +8,9 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Automation\Actions;
+namespace App\Services\Expense\Automation;
 
+use App\Automation\Actions\RuleAction;
 use App\Models\Platform\User;
 use App\Models\Travel\Expense;
 use App\Services\Expense\{ApproverResolver, ExpenseService};
@@ -23,6 +24,15 @@ class ApproveExpenseAction implements RuleAction {
 
     public function type(): string {
         return 'expense.approve';
+    }
+
+    public function label(): string {
+        return (string) __('automation.action.expense_approve');
+    }
+
+    /** @return list<string> */
+    public function triggers(): array {
+        return [ExpenseSubmittedTrigger::KEY];
     }
 
     /** @param array<string, mixed> $params */

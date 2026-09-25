@@ -66,6 +66,7 @@ class LearningRecordsSection extends AbstractSubjectSection {
                 $enrollments,
                 'created_at',
                 ['by_status' => implode(', ', $byStatus)],
+                columns: ['created_at' => __('Datum'), 'status' => __('Status'), 'started_at' => __('Beginn'), 'completed_at' => __('Abgeschlossen'), 'score_percent' => __('Ergebnis (%)')],
             ),
             $this->family(
                 'learning_quiz_attempts',
@@ -76,13 +77,15 @@ class LearningRecordsSection extends AbstractSubjectSection {
                 ['passed' => LearningQuizAttempt::query()->withoutGlobalScopes()
                     ->where('organization_id', $orgId)->whereIn('learning_enrollment_id', $enrollmentIds)
                     ->where('passed', true)->count()],
-            ),
+                    columns: ['started_at' => __('Beginn'), 'attempt_no' => __('Versuch'), 'score_percent' => __('Ergebnis (%)'), 'passed' => __('Bestanden')],
+                ),
             $this->family(
                 'learning_certificates',
                 __('Zertifikate'),
                 $certificates,
                 'issued_on',
                 ['numbers' => implode(', ', array_map('strval', (clone $certificates)->orderBy('issued_on')->pluck('number')->all()))],
+                columns: ['issued_on' => __('Ausgestellt'), 'number' => __('Nummer'), 'valid_until' => __('Gültig bis')],
             ),
             $this->family(
                 'learning_time_sessions',
@@ -92,13 +95,15 @@ class LearningRecordsSection extends AbstractSubjectSection {
                 'started_at',
                 ['active_minutes_total' => intdiv((int) LearningTimeSession::query()->withoutGlobalScopes()
                     ->where('organization_id', $orgId)->where('user_id', $u->id)->sum('active_seconds'), 60)],
-            ),
+                    columns: ['started_at' => __('Beginn'), 'ended_at' => __('Ende'), 'active_seconds' => __('Aktive Sekunden')],
+                ),
             $this->family(
                 'learning_bookings',
                 __('Kursbuchungen'),
                 LearningBooking::query()->withoutGlobalScopes()
                     ->where('organization_id', $orgId)->where('user_id', $u->id),
                 'requested_at',
+                columns: ['requested_at' => __('Angefragt'), 'status' => __('Status'), 'seats' => __('Plätze')],
             ),
         ]];
     }

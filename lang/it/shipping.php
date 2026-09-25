@@ -83,4 +83,18 @@ return [
         'problem' => 'Problema di consegna',
         'cancelled' => 'Annullato',
     ],
+    'parcel' => [
+        'add' => 'Aggiungi collo',
+        'edit' => 'Modifica collo :no',
+        'delete' => 'Elimina collo',
+        'confirm_delete' => 'Eliminare il collo :no? I suoi numeri di serie tornano liberi.',
+        'label' => 'Collo :no di :of',
+        'serials' => 'Numeri di serie nel collo',
+        'no_serials' => 'Questa consegna non ha numeri di serie liberi.',
+        'serial_count' => ':count n. di serie',
+        'saved' => 'Collo salvato.',
+        'deleted' => 'Collo eliminato.',
+        'serial_not_allowed' => 'I numeri di serie devono provenire da questa consegna e non possono trovarsi in un altro collo.',
+        'locked' => 'Per questa consegna esiste già un ordine di spedizione; i colli sono fissati.',
+    ],
 ];

@@ -55,6 +55,8 @@ final class AssetComplianceManifest extends Manifest {
             'asset_compliance_report_snapshots',
             'asset_compliance_requirements',
             'asset_inspection_events',
+            'asset_inspection_round_items',
+            'asset_inspection_rounds',
             'asset_inspection_results',
             'asset_inspection_schedules',
         ];

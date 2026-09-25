@@ -42,6 +42,9 @@
 
         <div class="min-h-0 flex-1 overflow-auto rounded-box border border-base-300 bg-base-100 p-4 shadow-xs md:p-6">
             <div class="mx-auto max-w-2xl space-y-4">
+                @if ($run->status === \App\Enums\Procedure\ProcedureRunStatus::Blocked && $run->blocked_reason !== null)
+                    <div role="status" class="alert alert-error text-sm">{{ __('procedure.blocked_report.run_hint', ['reason' => __('procedure.blocked.' . $run->blocked_reason)]) }}</div>
+                @endif
                 {{-- Fortschritt --}}
                 <div>
                     <div class="mb-1 flex items-center justify-between text-xs text-muted">

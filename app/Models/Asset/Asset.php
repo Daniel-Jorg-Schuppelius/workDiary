@@ -20,6 +20,7 @@ use App\Models\Facility\Room;
 use App\Models\Material\MaterialUsage;
 use App\Models\Protocol\Protocol;
 use App\Models\ServiceTicket\SlaContract;
+use App\Support\Sqid;
 use Database\Factories\Asset\AssetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -113,6 +114,27 @@ class Asset extends Model implements CustomFieldSubject {
         'custom' => 'array',
         'acquired_on' => 'date',
     ];
+
+    /**
+     * Objekt zu einem gescannten Code (MVP-882/899): QR-URL der Objektakte
+     * (Handscanner tippen sie als Text), sonst Anlagen-, Inventar- oder
+     * Seriennummer.
+     */
+    public static function findByCode(string $code): ?self {
+        $code = trim($code);
+        if ($code === '') {
+            return null;
+        }
+        if (preg_match('#/assets/([A-Za-z0-9]+)(?:/|$|\?)#', $code, $m) === 1) {
+            $id = Sqid::decode(self::class, $m[1]);
+
+            return $id !== null ? self::query()->find($id) : null;
+        }
+
+        return self::query()
+            ->where(fn ($q) => $q->where('asset_no', $code)->orWhere('inventory_no', $code)->orWhere('serial_no', $code))
+            ->first();
+    }
 
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {

@@ -96,7 +96,7 @@ class ManufacturingOrderController extends Controller {
 
     public function show(ManufacturingOrder $order, ManufacturingQualityService $quality): View {
         Gate::authorize('view', $order);
-        $order->load(['article', 'variant', 'warehouse', 'materials', 'reports', 'deliveries.customer', 'deliveries.shipment', 'deliveries.invoiceItems.invoice', 'procedureRun']);
+        $order->load(['article', 'variant', 'warehouse', 'materials', 'reports', 'deliveries.customer', 'deliveries.shipment', 'deliveries.parcels.serials', 'deliveries.invoiceItems.invoice', 'procedureRun']);
 
         return view('manufacturing.show', [
             'order' => $order,

@@ -24,7 +24,7 @@ use App\Models\Supplier\Supplier;
 use App\Services\Privacy\{DataSubjectRequestService, PrivacyExportService, SubjectDataExporter};
 use App\Support\Sqid;
 use CommonToolkit\Helper\Data\JsonHelper;
-use Illuminate\Http\{RedirectResponse, Request, Response};
+use Illuminate\Http\{JsonResponse, RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
@@ -95,40 +95,52 @@ class DataSubjectRequestController extends Controller {
                 ->where('organization_id', $dsr->organization_id)
                 ->orderBy('name')
                 ->get(['id', 'name']),
-            'subjectPickers' => Gate::allows('export', $dsr) ? $this->subjectPickers($dsr) : [],
         ]);
     }
 
     /**
-     * Org-gescopte Auswahllisten je Betroffenenart für „Auskunft erzeugen"
-     * (Feature 129). Bewusst nur Sqid + Anzeigename — keine weiteren PII.
-     *
-     * @return array<string, list<array{sqid: string, label: string}>>
+     * Suche für „Auskunft erzeugen" (MVP-878): org-gescopt je Betroffenenart,
+     * höchstens 20 Treffer, nur Sqid + Anzeigename. Bewerbernamen sind
+     * verschlüsselt und werden nach dem Entschlüsseln gefiltert.
      */
-    private function subjectPickers(DataSubjectRequest $dsr): array {
+    public function subjectSearch(Request $request, DataSubjectRequest $dsr): JsonResponse {
+        Gate::authorize('export', $dsr);
+        $data = $request->validate([
+            'kind' => ['required', \Illuminate\Validation\Rule::enum(DataSubjectKind::class)],
+            'q' => ['nullable', 'string', 'max:100'],
+        ]);
+        $kind = DataSubjectKind::from($data['kind']);
+        $q = trim((string) ($data['q'] ?? ''));
         $orgId = (int) $dsr->organization_id;
-        $users = User::query()->where('organization_id', $orgId)->orderBy('name')->get(['id', 'name', 'customer_id']);
+        $limit = 20;
+        $option = static fn (string $sqid, ?string $label): array => ['sqid' => $sqid, 'label' => trim((string) $label) !== '' ? (string) $label : '—'];
 
-        $option = static fn(string $sqid, ?string $label): array => ['sqid' => $sqid, 'label' => trim((string) $label) !== '' ? (string) $label : '—'];
+        $items = match ($kind) {
+            DataSubjectKind::User, DataSubjectKind::PortalUser => User::query()->where('organization_id', $orgId)
+                ->when($kind === DataSubjectKind::User, fn ($query) => $query->whereNull('customer_id'), fn ($query) => $query->whereNotNull('customer_id'))
+                ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w->whereLikeEscaped('name', $q)->orWhereLikeEscaped('email', $q)))
+                ->orderBy('name')->limit($limit)->get(['id', 'name'])
+                ->map(fn (User $u): array => $option($u->sqid, $u->name)),
+            DataSubjectKind::Customer => Customer::query()->withoutGlobalScopes()->where('organization_id', $orgId)
+                ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w->whereLikeEscaped('name', $q)->orWhereLikeEscaped('company', $q)->orWhereLikeEscaped('number', $q)))
+                ->orderBy('name')->limit($limit)->get(['id', 'name', 'company'])
+                ->map(fn (Customer $c): array => $option($c->sqid, $c->name ?: $c->company)),
+            DataSubjectKind::Supplier => Supplier::query()->withoutGlobalScopes()->where('organization_id', $orgId)
+                ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w->whereLikeEscaped('name', $q)->orWhereLikeEscaped('company', $q)))
+                ->orderBy('name')->limit($limit)->get(['id', 'name', 'company'])
+                ->map(fn (Supplier $s): array => $option($s->sqid, $s->name ?: $s->company)),
+            DataSubjectKind::Lead => Lead::query()->withoutGlobalScopes()->where('organization_id', $orgId)
+                ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w->whereLikeEscaped('company', $q)->orWhereLikeEscaped('contact_name', $q)))
+                ->orderByDesc('id')->limit($limit)->get()
+                ->map(fn (Lead $l): array => $option($l->sqid, $l->displayName())),
+            DataSubjectKind::JobApplication => JobApplication::query()->withoutGlobalScopes()->where('organization_id', $orgId)
+                ->orderByDesc('id')->get(['id', 'candidate_name'])
+                ->filter(fn (JobApplication $a): bool => $q === '' || mb_stripos((string) $a->candidate_name, $q) !== false)
+                ->take($limit)
+                ->map(fn (JobApplication $a): array => $option($a->sqid, $a->candidate_name)),
+        };
 
-        return [
-            DataSubjectKind::User->value => array_values($users->whereNull('customer_id')
-                ->map(fn(User $u): array => $option($u->sqid, $u->name))->all()),
-            DataSubjectKind::PortalUser->value => array_values($users->whereNotNull('customer_id')
-                ->map(fn(User $u): array => $option($u->sqid, $u->name))->all()),
-            DataSubjectKind::Customer->value => array_values(Customer::query()->withoutGlobalScopes()
-                ->where('organization_id', $orgId)->orderBy('name')->get(['id', 'name', 'company'])
-                ->map(fn(Customer $c): array => $option($c->sqid, $c->name ?: $c->company))->all()),
-            DataSubjectKind::Supplier->value => array_values(Supplier::query()->withoutGlobalScopes()
-                ->where('organization_id', $orgId)->orderBy('name')->get(['id', 'name', 'company'])
-                ->map(fn(Supplier $s): array => $option($s->sqid, $s->name ?: $s->company))->all()),
-            DataSubjectKind::Lead->value => array_values(Lead::query()->withoutGlobalScopes()
-                ->where('organization_id', $orgId)->orderBy('id')->get()
-                ->map(fn(Lead $l): array => $option($l->sqid, $l->displayName()))->all()),
-            DataSubjectKind::JobApplication->value => array_values(JobApplication::query()->withoutGlobalScopes()
-                ->where('organization_id', $orgId)->orderBy('id')->get()
-                ->map(fn(JobApplication $a): array => $option($a->sqid, $a->candidate_name))->all()),
-        ];
+        return response()->json(['items' => array_values($items->all())]);
     }
 
     /**

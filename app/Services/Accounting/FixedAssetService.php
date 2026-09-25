@@ -12,14 +12,15 @@ declare(strict_types=1);
 
 namespace App\Services\Accounting;
 
-use App\Enums\Finance\{AccountingEntryStatus, DepreciationMethod, FixedAssetStatus};
+use App\Enums\Finance\{AccountingEntryStatus, DepreciationMethod, FixedAssetDisposalKind, FixedAssetStatus};
 use App\Models\Accounting\{AccountingEntry, AccountingFiscalYear, FixedAsset};
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\Posting\Adapters\DepreciationAdapter;
 use App\Services\Accounting\Posting\PostingInboxService;
 use App\Services\Concerns\{AssertsStatusTransition, AssignsSequentialNo};
-use App\Support\MorphMap;
+use App\Support\{MorphMap, Setting};
 use Carbon\CarbonImmutable;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -49,6 +50,7 @@ class FixedAssetService {
 
     /** @param array<string, mixed> $attributes */
     public function create(Organization $organization, User $actor, array $attributes): FixedAsset {
+        $attributes = $this->withMethodRules($attributes);
         $this->assertValues($attributes);
 
         return DB::transaction(function () use ($organization, $actor, $attributes): FixedAsset {
@@ -87,7 +89,12 @@ class FixedAssetService {
             'acquisition_cost' => $asset->acquisition_cost?->getAmount() ?? '0.00',
             'residual_value' => $asset->residual_value?->getAmount() ?? '0.00',
             'useful_life_months' => $asset->useful_life_months,
+            'depreciation_method' => $asset->depreciation_method,
         ];
+        $merged = $this->withMethodRules($merged);
+        if (array_key_exists('depreciation_method', $attributes)) {
+            $attributes['useful_life_months'] = $merged['useful_life_months'];
+        }
         $this->assertValues($merged);
 
         if ($this->hasPostedDepreciation($asset)) {
@@ -113,11 +120,19 @@ class FixedAssetService {
     }
 
     /**
-     * Abgang: Statuswechsel active → disposed mit Abgangsdatum. Die AfA des
-     * Abgangsjahres läuft zeitanteilig bis zum Abgangsmonat; die Buchung des
-     * Restbuchwerts (Anlagenabgang) ist bewusst nicht Teil des MVP.
+     * Abgang: Statuswechsel active → disposed mit Abgangsdatum, Art und Erlös
+     * (MVP-891). Die AfA des Abgangsjahres läuft zeitanteilig bis zum
+     * Abgangsmonat; den Restbuchwert bucht der AssetDisposalAdapter über die
+     * Inbox aus. Der Erlös selbst läuft über die Ausgangsrechnung.
      */
-    public function dispose(FixedAsset $asset, CarbonImmutable $disposedOn, User $actor, ?string $note = null): FixedAsset {
+    public function dispose(
+        FixedAsset $asset,
+        CarbonImmutable $disposedOn,
+        User $actor,
+        ?string $note = null,
+        FixedAssetDisposalKind $kind = FixedAssetDisposalKind::Scrap,
+        ?string $proceeds = null,
+    ): FixedAsset {
         $this->assertStatusTransition($asset->status, FixedAssetStatus::Disposed);
 
         if ($disposedOn->lessThan($asset->acquiredOn())) {
@@ -125,16 +140,23 @@ class FixedAssetService {
                 'disposed_on' => (string) __('accounting.fixed_assets.error.disposed_before_acquired'),
             ]);
         }
+        $proceedsMoney = $kind === FixedAssetDisposalKind::Sale && $proceeds !== null && $proceeds !== ''
+            ? Money::of($proceeds, $asset->currency)
+            : null;
 
         $asset->update([
             'status' => FixedAssetStatus::Disposed,
             'disposed_on' => $disposedOn->toDateString(),
+            'disposal_kind' => $kind,
+            'disposal_proceeds_amount' => $proceedsMoney,
             'note' => $note !== null && trim($note) !== '' ? trim($note) : $asset->note,
         ]);
 
         $asset->audit('accounting.fixed_asset_disposed', [
             'asset_no' => $asset->displayNo(),
             'disposed_on' => $disposedOn->toDateString(),
+            'disposal_kind' => $kind->value,
+            'disposal_proceeds_amount' => $proceedsMoney?->getAmount(),
             'actor_user_id' => $actor->id,
         ]);
 
@@ -250,6 +272,46 @@ class FixedAssetService {
             ->where('source_id', $asset->getKey())
             ->whereIn('status', [AccountingEntryStatus::Posted->value, AccountingEntryStatus::Reversed->value])
             ->exists();
+    }
+
+    /** @param array<string, mixed> $attributes */
+    /**
+     * GWG und Sammelposten (MVP-892): Wertgrenzen aus den Einstellungen der
+     * Organisation (keine gesetzlichen Beträge im Code), Laufzeit aus der
+     * Methode — GWG ein Jahr, Sammelposten `pool_years` Jahre.
+     *
+     * @param array<string, mixed> $attributes
+     * @return array<string, mixed>
+     */
+    private function withMethodRules(array $attributes): array {
+        $method = $attributes['depreciation_method'] ?? DepreciationMethod::Linear;
+        $method = $method instanceof DepreciationMethod ? $method : DepreciationMethod::tryFrom((string) $method) ?? DepreciationMethod::Linear;
+        $cost = (string) ($attributes['acquisition_cost'] ?? '0');
+        if ($method === DepreciationMethod::Linear || ! is_numeric($cost)) {
+            return $attributes;
+        }
+
+        $amount = static function (string $key, int $fallback): string {
+            $raw = Setting::get($key, $fallback);
+
+            return is_numeric($raw) ? bcadd((string) $raw, '0', 2) : bcadd((string) $fallback, '0', 2);
+        };
+        if ($method === DepreciationMethod::Immediate) {
+            $limit = $amount('finance.fixed_assets.gwg_limit', 800);
+            if (bccomp($cost, $limit, 2) > 0) {
+                throw ValidationException::withMessages(['depreciation_method' => (string) __('accounting.fixed_assets.error.gwg_limit', ['limit' => $limit])]);
+            }
+            $attributes['useful_life_months'] = 12;
+        } else {
+            $lower = $amount('finance.fixed_assets.pool_lower', 250);
+            $upper = $amount('finance.fixed_assets.pool_upper', 1000);
+            if (bccomp($cost, $lower, 2) <= 0 || bccomp($cost, $upper, 2) > 0) {
+                throw ValidationException::withMessages(['depreciation_method' => (string) __('accounting.fixed_assets.error.pool_range', ['lower' => $lower, 'upper' => $upper])]);
+            }
+            $attributes['useful_life_months'] = 12 * max(1, (int) Setting::get('finance.fixed_assets.pool_years', 5));
+        }
+
+        return $attributes;
     }
 
     /** @param array<string, mixed> $attributes */

@@ -140,6 +140,12 @@ class DocumentMailTest extends TestCase {
         $this->assertSame('kunde@example.test', $dispatch->recipient);
         $this->assertNotNull($dispatch->sha256, 'PDF-Hash wird beim Anhang-Rendern festgehalten.');
 
+        // Versandhistorie am Beleg (MVP-876).
+        $this->actingAs($this->admin)->get(route('quotes.show', $quote))
+            ->assertOk()
+            ->assertSee(__('document.dispatch.history'))
+            ->assertSee('kunde@example.test');
+
         $this->assertTrue(AuditLog::query()
             ->where('auditable_type', MorphMap::stableKey(Quote::class))
             ->where('auditable_id', $quote->id)
@@ -216,6 +222,10 @@ class DocumentMailTest extends TestCase {
             return count($names) === 1 && str_starts_with($names[0], 'LS-') && str_ends_with($names[0], '.pdf');
         });
         $this->assertSame(1, DocumentDispatch::query()->forDocument(RenderDocumentKind::DeliveryNote, (int) $delivery->id)->count());
+        $this->actingAs($this->admin)->get(route('manufacturing-orders.show', $delivery->order))
+            ->assertOk()
+            ->assertSee(__('document.dispatch.history'))
+            ->assertSee('kunde@example.test');
         $this->assertTrue(AuditLog::query()->where('event', 'delivery_note.mailed')->exists());
     }
 

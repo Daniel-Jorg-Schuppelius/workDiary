@@ -55,6 +55,7 @@ final class ContractManifest extends Manifest {
             'contract_signature_requests',
             'contract_signing_manifest_items',
             'contract_signing_revisions',
+            'contract_templates',
             'contracts',
         ];
     }
@@ -87,6 +88,9 @@ final class ContractManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Classification\Contracts\ProfileInstallStep::class => [
+                \App\Services\Contract\Install\ContractTemplateInstallStep::class,
+            ],
             \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
                 \App\Services\Contract\DeadlineScans\ContractObligationScan::class,
             ],

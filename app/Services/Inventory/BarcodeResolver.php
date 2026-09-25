@@ -14,6 +14,7 @@ namespace App\Services\Inventory;
 
 use App\Enums\Inventory\BarcodeMatchType;
 use App\Models\Article\{Article, ArticleVariant};
+use App\Models\Asset\Asset;
 use App\Models\Inventory\{StockLot, StockSerial};
 
 /**
@@ -62,6 +63,11 @@ class BarcodeResolver {
         $article = Article::query()->where('gtin', $code)->first();
         if ($article instanceof Article) {
             return new BarcodeMatch(BarcodeMatchType::Article, variant: $this->defaultVariant($article), article: $article);
+        }
+
+        $asset = Asset::findByCode($code);
+        if ($asset instanceof Asset) {
+            return new BarcodeMatch(BarcodeMatchType::Asset, asset: $asset);
         }
 
         return new BarcodeMatch(BarcodeMatchType::Unknown);

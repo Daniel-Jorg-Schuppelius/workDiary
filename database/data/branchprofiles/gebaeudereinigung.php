@@ -326,4 +326,21 @@ return [
             ],
         ],
     ],
+    // Vertragsvorlagen (MVP-893): Laufzeit, Kündigung, Pflichten relativ zum Beginn.
+    'contract_templates' => [
+        [
+            'name' => 'Unterhaltsreinigung',
+            'kind' => 'service',
+            'title' => 'Vertrag Unterhaltsreinigung',
+            'term_kind' => 'fixed',
+            'min_term_months' => 12,
+            'auto_renew' => true,
+            'renew_period_months' => 12,
+            'notice_period_days' => 90,
+            'value_period' => 'monthly',
+            'obligations' => [
+                ['kind' => 'review', 'title' => 'Qualitätskontrolle mit dem Kunden', 'offset_months' => 3, 'recurring' => true, 'recurrence_months' => 3],
+            ],
+        ],
+    ],
 ];

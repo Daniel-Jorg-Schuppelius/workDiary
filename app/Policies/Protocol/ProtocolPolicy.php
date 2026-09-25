@@ -59,6 +59,12 @@ class ProtocolPolicy {
             && ($this->isParticipant($user, $protocol) || $user->can(P::ProtocolRequestReview->value));
     }
 
+    /** Zurück in den Entwurf aus der Prüfung — dieselben Personen wie die Prüfungsanfrage. */
+    public function returnToDraft(User $user, Protocol $protocol): bool {
+        return $protocol->status === ProtocolStatus::InReview
+            && ($this->isParticipant($user, $protocol) || $user->can(P::ProtocolRequestReview->value));
+    }
+
     public function sign(User $user, Protocol $protocol): bool {
         if (! in_array($protocol->status, [ProtocolStatus::Draft, ProtocolStatus::InReview], true)) {
             return false;

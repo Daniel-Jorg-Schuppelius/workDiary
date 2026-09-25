@@ -36,6 +36,8 @@ enum ContractKind: string implements HasLabel {
     // Aktivierung erst nach vollständig unterzeichneter Fassung.
     case DataProcessing = 'data_processing';
     case NonDisclosure = 'non_disclosure';
+    // Mietbedingungen des Geräteverleihs (Feature 073, MVP-895): Fassung je Kunde, unterschrieben.
+    case RentalTerms = 'rental_terms';
     case Other = 'other';
 
     public function label(): string {
@@ -50,6 +52,7 @@ enum ContractKind: string implements HasLabel {
             self::Membership => (string) __('Mitgliedschaft/Beitrag'),
             self::DataProcessing => (string) __('Auftragsverarbeitungsvertrag (AVV)'),
             self::NonDisclosure => (string) __('Verschwiegenheitsvereinbarung (NDA)'),
+            self::RentalTerms => (string) __('Mietbedingungen (Geräteverleih)'),
             self::Other => (string) __('Sonstiger Vertrag'),
         };
     }
@@ -61,6 +64,6 @@ enum ContractKind: string implements HasLabel {
 
     /** @return list<self> */
     public static function signingKinds(): array {
-        return [self::DataProcessing, self::NonDisclosure];
+        return [self::DataProcessing, self::NonDisclosure, self::RentalTerms];
     }
 }

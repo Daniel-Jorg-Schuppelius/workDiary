@@ -58,6 +58,10 @@ enum PostingAccountRole: string implements HasLabel {
 
     /** AfA-Aufwand (Abschreibungen auf Sachanlagen — Feature 133). */
     case Depreciation = 'depreciation';
+    /** Anlagenabgang, Restbuchwert bei Buchverlust (SKR03 2310, SKR04 6895 — MVP-891). */
+    case DisposalLoss = 'disposal_loss';
+    /** Anlagenabgang, Restbuchwert bei Buchgewinn (SKR03 2315, SKR04 4855 — MVP-891). */
+    case DisposalGain = 'disposal_gain';
 
     public function label(): string {
         return (string) __('enums.finance.posting-account-role.' . $this->value);
@@ -67,7 +71,8 @@ enum PostingAccountRole: string implements HasLabel {
         return match ($this) {
             self::Receivable, self::Payable, self::EmployeePayable => 'info',
             self::Revenue => 'success',
-            self::Expense, self::Depreciation => 'error',
+            self::Expense, self::Depreciation, self::DisposalLoss => 'error',
+            self::DisposalGain => 'success',
             self::TaxOutput, self::TaxInput => 'warning',
             self::Cash, self::Bank, self::FixedAsset => 'secondary',
             self::Discount => 'accent',

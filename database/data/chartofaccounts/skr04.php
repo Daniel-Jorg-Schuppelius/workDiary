@@ -63,6 +63,7 @@ return [
         ['number' => '4736', 'name' => 'Gewährte Skonti 19 % USt', 'type' => 'expense', 'euer_category' => 'expense'],
 
         // Material
+        ['number' => '4855', 'name' => 'Anlagenabgänge Sachanlagen (Restbuchwert bei Buchgewinn)', 'type' => 'income', 'euer_category' => 'income'],
         ['number' => '5400', 'name' => 'Wareneingang', 'type' => 'expense', 'euer_category' => 'expense'],
 
         // Betriebliche Aufwendungen
@@ -88,6 +89,7 @@ return [
         ['number' => '6830', 'name' => 'Buchführungskosten', 'type' => 'expense', 'euer_category' => 'expense'],
 
         // Vortrag
+        ['number' => '6895', 'name' => 'Anlagenabgänge Sachanlagen (Restbuchwert bei Buchverlust)', 'type' => 'expense', 'euer_category' => 'expense'],
         ['number' => '9000', 'name' => 'Saldenvorträge, Sachkonten', 'type' => 'equity'],
     ],
 
@@ -129,5 +131,10 @@ return [
         // Pkw/Software werden je Anlage überschrieben.
         ['source_kind' => 'depreciation', 'role' => 'fixed_asset', 'account' => '0500'],
         ['source_kind' => 'depreciation', 'role' => 'depreciation', 'account' => '6220'],
+
+        // Anlagenabgang (MVP-891): Restbuchwert gegen Buchverlust bzw. -gewinn.
+        ['source_kind' => 'asset_disposal', 'role' => 'fixed_asset', 'account' => '0500'],
+        ['source_kind' => 'asset_disposal', 'role' => 'disposal_loss', 'account' => '6895'],
+        ['source_kind' => 'asset_disposal', 'role' => 'disposal_gain', 'account' => '4855'],
     ],
 ];

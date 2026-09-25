@@ -785,6 +785,7 @@ return [
         'overdue' => 'Noleggio scaduto',
         'profileSaved' => 'Profilo di noleggio salvato',
         'reserved' => 'Noleggio prenotato',
+        'termsAttached' => 'Condizioni di noleggio associate alla pratica',
         'returned' => 'Attrezzatura a noleggio restituita',
         'termsFrozen' => 'Condizioni di noleggio congelate',
     ],

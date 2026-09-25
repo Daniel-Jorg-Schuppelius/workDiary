@@ -26,6 +26,16 @@
                    :label="__('accounting.fixed_assets.field.disposed_on')"
                    :value="old('disposed_on', now()->toDateString())" />
 
+    <x-select-field name="disposal_kind" :label="__('accounting.fixed_assets.field.disposal_kind')" required>
+        @foreach (\App\Enums\Finance\FixedAssetDisposalKind::cases() as $kind)
+            <option value="{{ $kind->value }}" @selected(old('disposal_kind', \App\Enums\Finance\FixedAssetDisposalKind::Scrap->value) === $kind->value)>{{ $kind->label() }}</option>
+        @endforeach
+    </x-select-field>
+    <x-input-field name="disposal_proceeds_amount" type="number" min="0" step="0.01" inputmode="decimal"
+                   :label="__('accounting.fixed_assets.field.disposal_proceeds')"
+                   :hint="__('accounting.fixed_assets.hint.disposal_proceeds')"
+                   :value="old('disposal_proceeds_amount')" />
+
     <x-textarea-field name="note" :label="__('accounting.ledger.field.note')" rows="2" maxlength="2000"
                       :value="old('note', $fixedAsset->note)" />
 </x-modal>

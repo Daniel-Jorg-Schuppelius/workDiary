@@ -17,9 +17,11 @@ use App\Services\Import\{EntitySpec, ValidationIssue};
 use App\Services\Import\Source\Ical\IcalEvent;
 use CommonToolkit\Helper\Data\EmailHelper;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
+use DateTimeImmutable;
 use DateTimeZone;
 use Sabre\VObject\Component\VEvent;
 use Sabre\VObject\{DateTimeParser, Reader};
+use Sabre\VObject\Recur\EventIterator;
 use Throwable;
 
 /**
@@ -43,14 +45,19 @@ use Throwable;
  * lokale `date`/`time` überführt (keine stille UTC-Verschiebung).
  */
 final class IcalImportSource implements ImportSource {
+    /** Obergrenze je Serie, damit eine fehlerhafte Regel den Import nicht aufbläht. */
+    private const MAX_OCCURRENCES = 1000;
+
     /**
      * @param  list<string>  $categoryAllowlist  normalisierte (lowercase) Kategorien; leer = keine Einschränkung
+     * @param  array{0: DateTimeImmutable, 1: DateTimeImmutable}|null  $recurrenceWindow  Zeitraum der Serien-Auflösung (MVP-885); null = nur Basisinstanz
      */
     public function __construct(
         private readonly string $absolutePath,
         private readonly IcalEventMapper $mapper,
         private readonly string $timezone,
         private readonly array $categoryAllowlist = [],
+        private readonly ?array $recurrenceWindow = null,
     ) {}
 
     public function headerIssues(EntitySpec $spec): array {
@@ -67,41 +74,110 @@ final class IcalImportSource implements ImportSource {
             throw new \RuntimeException((string) __('import.error.format.parse', ['reason' => $e->getMessage()]), 0, $e);
         }
 
-        $number = 0;
+        // Serie und ihre abweichenden Einzeltermine teilen die UID.
+        $groups = [];
         foreach ($document->select('VEVENT') as $vevent) {
-            if (! $vevent instanceof VEvent) {
-                continue;
+            if ($vevent instanceof VEvent) {
+                $groups[trim((string) ($vevent->UID ?? '')) ?: spl_object_id($vevent)][] = $vevent;
             }
-
-            $event = $this->extract($vevent);
-
-            if ($event->allDay) {
-                yield SourceRow::warning(++$number, $this->skip('import.error.ical.allDay', $event));
-
-                continue;
-            }
-            if (! $event->hasTime()) {
-                yield SourceRow::warning(++$number, $this->skip('import.error.ical.noTime', $event));
-
-                continue;
-            }
-            if ($this->categoryAllowlist !== [] && ! $this->matchesAllowlist($event)) {
-                yield SourceRow::warning(++$number, $this->skip('import.error.ical.category', $event));
-
-                continue;
-            }
-            if ($this->mapper->skipsTransparent() && $event->transparent) {
-                yield SourceRow::warning(++$number, $this->skip('import.error.ical.transparent', $event));
-
-                continue;
-            }
-            if ($event->recurring) {
-                // Serie: Basisinstanz importieren, Expansion als Hinweis melden.
-                yield SourceRow::warning(++$number, $this->skip('import.error.ical.recurring', $event));
-            }
-
-            yield SourceRow::data(++$number, $this->mapper->toRow($event));
         }
+
+        $number = 0;
+        foreach ($groups as $group) {
+            $master = null;
+            foreach ($group as $vevent) {
+                if (isset($vevent->RRULE) && ! isset($vevent->{'RECURRENCE-ID'})) {
+                    $master = $vevent;
+                }
+            }
+
+            if ($master === null || $this->recurrenceWindow === null) {
+                foreach ($group as $vevent) {
+                    yield from $this->emit($this->extract($vevent), $number);
+                }
+
+                continue;
+            }
+
+            $occurrences = $this->occurrences($group);
+            if ($occurrences === []) {
+                yield SourceRow::warning(++$number, $this->skip('import.error.ical.recurringOutside', $this->extract($master)));
+            }
+            foreach ($occurrences as $occurrence) {
+                yield from $this->emit($occurrence, $number);
+            }
+        }
+    }
+
+    /** @return iterable<SourceRow> */
+    private function emit(IcalEvent $event, int &$number): iterable {
+        if ($event->allDay) {
+            yield SourceRow::warning(++$number, $this->skip('import.error.ical.allDay', $event));
+
+            return;
+        }
+        if (! $event->hasTime()) {
+            yield SourceRow::warning(++$number, $this->skip('import.error.ical.noTime', $event));
+
+            return;
+        }
+        if ($this->categoryAllowlist !== [] && ! $this->matchesAllowlist($event)) {
+            yield SourceRow::warning(++$number, $this->skip('import.error.ical.category', $event));
+
+            return;
+        }
+        if ($this->mapper->skipsTransparent() && $event->transparent) {
+            yield SourceRow::warning(++$number, $this->skip('import.error.ical.transparent', $event));
+
+            return;
+        }
+        if ($event->recurring) {
+            // Ohne Auflösungszeitraum: Basisinstanz importieren, Hinweis melden.
+            yield SourceRow::warning(++$number, $this->skip('import.error.ical.recurring', $event));
+        }
+
+        yield SourceRow::data(++$number, $this->mapper->toRow($event));
+    }
+
+    /**
+     * Vorkommen einer Serie im Zeitraum; EXDATE und abweichende Einzeltermine
+     * (RECURRENCE-ID) löst der Iterator auf. Jedes Vorkommen bekommt eine
+     * eigene UID `uid#JJJJMMTTTHHMMSS`, damit ein erneuter Import idempotent bleibt.
+     *
+     * @param  list<VEvent>  $group
+     * @return list<IcalEvent>
+     */
+    private function occurrences(array $group): array {
+        [$from, $until] = $this->recurrenceWindow ?? throw new \LogicException('no recurrence window');
+        $tz = new DateTimeZone($this->timezone);
+        try {
+            $iterator = new EventIterator($group, null, $tz);
+            $iterator->fastForward($from);
+        } catch (Throwable) {
+            return [];
+        }
+
+        $out = [];
+        while ($iterator->valid() && $iterator->getDtStart() < $until && count($out) < self::MAX_OCCURRENCES) {
+            $occurrence = $iterator->getEventObject();
+            $base = $this->extract($occurrence);
+            $out[] = new IcalEvent(
+                uid: trim((string) ($occurrence->UID ?? '')) . '#' . $iterator->getDtStart()->setTimezone(new DateTimeZone('UTC'))->format('Ymd\THis'),
+                date: $base->date,
+                startTime: $base->startTime,
+                endTime: $base->endTime,
+                summary: $base->summary,
+                description: $base->description,
+                email: $base->email,
+                categories: $base->categories,
+                allDay: $base->allDay,
+                transparent: $base->transparent,
+                recurring: false,
+            );
+            $iterator->next();
+        }
+
+        return $out;
     }
 
     private function skip(string $key, IcalEvent $event): ValidationIssue {
@@ -127,6 +203,10 @@ final class IcalImportSource implements ImportSource {
     private function extract(VEvent $vevent): IcalEvent {
         $tz = new DateTimeZone($this->timezone);
         $uid = trim((string) ($vevent->UID ?? ''));
+        // Einzeltermin einer Serie ohne Serie in der Datei: eigene Kennung je Vorkommen.
+        if (isset($vevent->{'RECURRENCE-ID'})) {
+            $uid .= '#' . $vevent->{'RECURRENCE-ID'}->getDateTime()->setTimezone(new DateTimeZone('UTC'))->format('Ymd\THis');
+        }
         $summary = trim((string) ($vevent->SUMMARY ?? ''));
         $description = trim((string) ($vevent->DESCRIPTION ?? ''));
         $transparent = mb_strtoupper(trim((string) ($vevent->TRANSP ?? ''))) === 'TRANSPARENT';

@@ -167,6 +167,21 @@
                                :value="old('settings.invoicing.dunning.level' . $dunLevel . '.pay_days', data_get($stored, 'invoicing.dunning.level' . $dunLevel . '.pay_days', ''))"
                                :placeholder="__('settings.placeholder_default', ['value' => (string) config('invoicing.dunning.level' . $dunLevel . '.pay_days')])" />
             @endforeach
+            <x-select-field name="settings[invoicing][dunning][interest_mode]" :label="__('settings.dunning.interest_mode')"
+                            error="settings.invoicing.dunning.interest_mode" :hint="__('settings.dunning.interest_mode_hint')">
+                @php
+                    $interestMode = old('settings.invoicing.dunning.interest_mode', data_get($stored, 'invoicing.dunning.interest_mode', ''));
+                @endphp
+                <option value="" @selected($interestMode === '')>{{ __('settings.placeholder_default', ['value' => __('settings.dunning.interest_mode_fixed')]) }}</option>
+                <option value="fixed" @selected($interestMode === 'fixed')>{{ __('settings.dunning.interest_mode_fixed') }}</option>
+                <option value="base_rate" @selected($interestMode === 'base_rate')>{{ __('settings.dunning.interest_mode_base_rate') }}</option>
+            </x-select-field>
+            <x-input-field name="settings[invoicing][dunning][interest_points]" type="number" min="0" max="20" step="0.01"
+                           :label="__('settings.dunning.interest_points')" inputmode="decimal"
+                           error="settings.invoicing.dunning.interest_points"
+                           :value="old('settings.invoicing.dunning.interest_points', data_get($stored, 'invoicing.dunning.interest_points', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => '0'])"
+                           :hint="__('settings.dunning.interest_points_hint')" />
             <x-input-field name="settings[invoicing][dunning][interest_rate]" type="number" min="0" max="30" step="0.01"
                            :label="__('settings.dunning.interest_rate')" inputmode="decimal"
                            error="settings.invoicing.dunning.interest_rate"
@@ -229,6 +244,55 @@
                              error="settings.einvoice.small_business"
                              :checked="(string) old('settings.einvoice.small_business', data_get($stored, 'einvoice.small_business', '0')) === '1'"
                              :hint="__('settings.einvoice.small_business_hint')" />
+        </x-form-group>
+
+        {{-- ANLAGEN (MVP-892): Wertgrenzen für GWG und Sammelposten, netto. --}}
+        <x-form-group :legend="__('settings.fixed_assets.heading')" icon="inventory" tone="info" cols="2" compact
+                      :description="__('settings.fixed_assets.description')">
+            <x-input-field name="settings[finance][fixed_assets][gwg_limit]" type="number" min="0" step="0.01"
+                           :label="__('settings.fixed_assets.gwg_limit')"
+                           error="settings.finance.fixed_assets.gwg_limit"
+                           :value="old('settings.finance.fixed_assets.gwg_limit', data_get($stored, 'finance.fixed_assets.gwg_limit', ''))"
+                           placeholder="800" />
+            <x-input-field name="settings[finance][fixed_assets][pool_lower]" type="number" min="0" step="0.01"
+                           :label="__('settings.fixed_assets.pool_lower')"
+                           error="settings.finance.fixed_assets.pool_lower"
+                           :value="old('settings.finance.fixed_assets.pool_lower', data_get($stored, 'finance.fixed_assets.pool_lower', ''))"
+                           placeholder="250" />
+            <x-input-field name="settings[finance][fixed_assets][pool_upper]" type="number" min="0" step="0.01"
+                           :label="__('settings.fixed_assets.pool_upper')"
+                           error="settings.finance.fixed_assets.pool_upper"
+                           :value="old('settings.finance.fixed_assets.pool_upper', data_get($stored, 'finance.fixed_assets.pool_upper', ''))"
+                           placeholder="1000" />
+            <x-input-field name="settings[finance][fixed_assets][pool_years]" type="number" min="0" step="1"
+                           :label="__('settings.fixed_assets.pool_years')"
+                           error="settings.finance.fixed_assets.pool_years"
+                           :value="old('settings.finance.fixed_assets.pool_years', data_get($stored, 'finance.fixed_assets.pool_years', ''))"
+                           placeholder="5" />
+        </x-form-group>
+
+        {{-- MIETBEDINGUNGEN (MVP-895): Übergabe nur mit unterschriebener Fassung. --}}
+        <x-form-group :legend="__('settings.rental_terms.heading')" icon="handshake" tone="info" cols="1" compact
+                      :description="__('settings.rental_terms.description')">
+            <x-checkbox-field name="settings[rental][require_signed_terms]" tone="info"
+                              :label="__('settings.rental_terms.require_signed')"
+                              error="settings.rental.require_signed_terms"
+                              :checked="(string) old('settings.rental.require_signed_terms', data_get($stored, 'rental.require_signed_terms') ? '1' : '0') === '1'" />
+        </x-form-group>
+
+        {{-- REKLAMATIONSMUSTER (MVP-886): Schwelle und Zeitfenster für Bericht und Hinweis. --}}
+        <x-form-group :legend="__('settings.claims_pattern.heading')" icon="troubleshoot" tone="warning" cols="2" compact
+                      :description="__('settings.claims_pattern.description')">
+            <x-input-field name="settings[claims][pattern][threshold]" type="number" min="2" max="50"
+                           :label="__('settings.claims_pattern.threshold')"
+                           error="settings.claims.pattern.threshold"
+                           :value="old('settings.claims.pattern.threshold', data_get($stored, 'claims.pattern.threshold', ''))"
+                           placeholder="3" />
+            <x-input-field name="settings[claims][pattern][window_days]" type="number" min="7" max="365"
+                           :label="__('settings.claims_pattern.window_days')"
+                           error="settings.claims.pattern.window_days"
+                           :value="old('settings.claims.pattern.window_days', data_get($stored, 'claims.pattern.window_days', ''))"
+                           placeholder="90" />
         </x-form-group>
 
         {{-- ZEIT-IMPORT (MVP-483): Schlüsselwort-Zuordnung importierter Zeiten. --}}

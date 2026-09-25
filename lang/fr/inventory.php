@@ -151,6 +151,17 @@ return [
         'cycle' => 'Cycle (ABC)',
         'cycle_open' => 'Compter le cycle',
         'cycle_empty' => 'Aucun article dû dans cette classe.',
+        'mobile_title' => 'Inventaire mobile',
+        'mobile_open' => 'Compter sur mobile',
+        'mobile_qty' => 'Quantité par scan',
+        'mobile_add' => 'Compter',
+        'mobile_hint' => 'Chaque scan s\'ajoute à la quantité déjà comptée. Sans connexion, le scan est enregistré et transmis plus tard.',
+        'mobile_last' => 'Dernier comptage (total)',
+        'mobile_progress' => ':counted positions comptées sur :total',
+        'closed' => 'L\'inventaire est clôturé.',
+        'qty_positive' => 'La quantité doit être supérieure à zéro.',
+        'not_found' => 'Inventaire introuvable.',
+        'forbidden' => 'Aucune autorisation pour les comptages d\'inventaire.',
     ],
     'overview' => [
         'avg' => 'Coût moyen',
@@ -187,6 +198,7 @@ return [
             'purchased' => 'Achat',
         ],
         'field' => [
+            'parcel' => 'Colis',
             'serial_no' => 'Numéro de série',
             'status' => 'Statut',
             'source' => 'Origine',
@@ -295,6 +307,15 @@ return [
     ],
 
     'scan' => [
+        'match' => [
+            'serial' => 'Numéro de série',
+            'lot' => 'Lot',
+            'variant' => 'Variante',
+            'article' => 'Article',
+            'asset' => 'Objet',
+            'unknown' => 'Inconnu',
+        ],
+        'open_asset' => 'Ouvrir l’objet',
         'action' => [
             'receipt' => 'Réception',
             'issue' => 'Sortie',

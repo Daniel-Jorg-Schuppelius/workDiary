@@ -12,13 +12,15 @@ declare(strict_types=1);
 
 namespace App\Services\Accounting;
 
+use App\Enums\Finance\DepreciationMethod;
 use App\Models\Accounting\FixedAsset;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\RoundingMode;
 use CommonToolkit\ValueObjects\Money;
 
 /**
- * Lineare AfA (Feature 133, MVP-698) — rein, ohne Datenbank.
+ * AfA-Plan (Feature 133, MVP-698) — rein, ohne Datenbank. Linear wie unten,
+ * GWG und Sammelposten in vollen Geschäftsjahren (MVP-892, yearlySchedule()).
  *
  * Regeln:
  *  - Bemessungsgrundlage = AK/HK − Restwert, gleichmäßig über die
@@ -49,6 +51,10 @@ final class DepreciationCalculator {
         $acquired = $asset->acquiredOn();
         $disposed = $asset->disposedOn();
         $startMonth = min(12, max(1, $fiscalYearStartMonth));
+
+        if ($asset->depreciation_method === DepreciationMethod::Immediate || $asset->depreciation_method === DepreciationMethod::Pool) {
+            return $this->yearlySchedule($asset, $cost, $base, $this->fiscalYearStartFor($acquired, $startMonth));
+        }
 
         $yearStart = $this->fiscalYearStartFor($acquired, $startMonth);
         $remainingMonths = $totalMonths;
@@ -106,6 +112,37 @@ final class DepreciationCalculator {
             }
 
             $remainingMonths -= $months;
+            $yearStart = $yearStart->addYear();
+        }
+
+        return $rows;
+    }
+
+    /**
+     * GWG und Sammelposten (MVP-892): volle Geschäftsjahre ohne Zeitanteil —
+     * GWG in einer Rate, Sammelposten in gleichen Raten über die an der Anlage
+     * hinterlegte Laufzeit (Nutzungsdauer / 12). Ein Abgang ändert den
+     * Sammelposten nicht.
+     *
+     * @return list<DepreciationScheduleRow>
+     */
+    private function yearlySchedule(FixedAsset $asset, Money $cost, Money $base, CarbonImmutable $yearStart): array {
+        $years = $asset->depreciation_method === DepreciationMethod::Immediate ? 1 : max(1, intdiv($asset->useful_life_months + 11, 12));
+        $allocated = Money::zero($asset->currency);
+        $rows = [];
+        for ($i = 0; $i < $years; $i++) {
+            $amount = $i === $years - 1 ? $base->minus($allocated) : $base->dividedBy($years, RoundingMode::HalfUp);
+            $allocated = $allocated->plus($amount);
+            $yearEnd = $yearStart->addYear()->subDay();
+            $rows[] = new DepreciationScheduleRow(
+                fiscalYear: $yearStart->year,
+                label: $this->label($yearStart, $yearEnd),
+                startsOn: $yearStart,
+                endsOn: $yearEnd,
+                months: 12,
+                amount: $amount,
+                bookValueEnd: $cost->minus($allocated),
+            );
             $yearStart = $yearStart->addYear();
         }
 

@@ -54,12 +54,18 @@
             'complaints' => round($weights['complaints'] * 100),
             'quality' => round($weights['quality'] * 100),
             'price' => round($weights['price'] * 100),
+            'recourse' => round($weights['recourse'] * 100),
         ]) }}</span>
     </div>
 
     @if (! empty($scoreSeries))
         <x-charts.bar-h :title="__('scorecard.chart_ranking')" :unit="__('scorecard.unit_score')" :series="$scoreSeries"
                         :x-label="__('scorecard.col_supplier')" :y-label="__('scorecard.col_overall')" />
+    @endif
+    @if (! empty($leadTimeBox))
+        <x-charts.boxplot :title="__('scorecard.chart_lead_time')" :unit="__('scorecard.unit_days')" :series="$leadTimeBox"
+                          :x-label="__('scorecard.col_supplier')" :y-label="__('scorecard.unit_days')"
+                          :note="__('scorecard.chart_lead_time_note')" />
     @endif
 
     @if ($rows->total() === 0)
@@ -76,6 +82,8 @@
                     <th class="text-center">{{ __('scorecard.metric_complaints') }}</th>
                     <th class="text-center">{{ __('scorecard.metric_price') }}</th>
                     <th class="text-center">{{ __('scorecard.metric_quality') }}</th>
+                    <th class="text-center">{{ __('scorecard.metric_recourse') }}</th>
+                    <th class="text-right">{{ __('scorecard.metric_lead_time') }}</th>
                     <th></th>
                 </tr>
             </x-slot:head>
@@ -128,6 +136,15 @@
                             <x-status-badge :tone="$row['quality_rating']->tone()" size="sm">{{ $row['quality_rating']->label() }}</x-status-badge>
                         @endif
                     </td>
+                    {{-- Regressverhalten, Durchlaufzeit (MVP-887/888) --}}
+                    <td class="text-center tabular-nums">
+                        @if (! $row['recourse_available'] || $row['recourse_acceptance'] === null)
+                            <span class="text-muted text-xs">{{ __('scorecard.no_data') }}</span>
+                        @else
+                            {{ round($row['recourse_acceptance'] * 100) }} %
+                        @endif
+                    </td>
+                    <td class="text-right tabular-nums">{{ $row['lead_time_median'] !== null ? __('scorecard.days', ['days' => $row['lead_time_median']]) : '—' }}</td>
                     <td class="text-right">
                         <x-icon-btn icon="chevron_right" :href="route('supplier-scorecards.show', $row['supplier'])" :label="__('scorecard.open_detail')" />
                     </td>

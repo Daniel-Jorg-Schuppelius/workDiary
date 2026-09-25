@@ -40,6 +40,9 @@ abstract class AbstractSubjectSection implements SubjectDataSection {
         if (is_bool($value)) {
             return $value ? __('Ja') : __('Nein');
         }
+        if ($value instanceof \BackedEnum) {
+            return $value instanceof \App\Enums\Contracts\HasLabel ? $value->label() : (string) $value->value;
+        }
         if (is_scalar($value) || $value instanceof \Stringable) {
             $s = trim((string) $value);
 
@@ -54,17 +57,20 @@ abstract class AbstractSubjectSection implements SubjectDataSection {
     }
 
     /**
-     * Aggregierte Familienzeile: Anzahl + Zeitraum (min/max der Datumsspalte)
-     * in EINEM Query — keine Rohzeilen.
+     * Familienzeile: Anzahl + Zeitraum (min/max der Datumsspalte) in einem
+     * Query; mit `$columns` zusätzlich die Einzelzeilen als Detailauszug
+     * (MVP-877) — nur die genannten Spalten, chronologisch.
      *
      * @param  Builder<covariant Model>  $query
      * @param  literal-string  $dateColumn
      * @param  array<string, int|string>  $details
-     * @return array{table: string, label: string, count: int, from: string|null, to: string|null, details?: array<string, int|string>}
+     * @param  array<string, string>  $columns  Spalte → Beschriftung des Auszugs
+     * @return array{table: string, label: string, count: int, from: string|null, to: string|null, details?: array<string, int|string>, columns?: array<string, string>, rows?: list<list<string|null>>}
      */
-    protected function family(string $table, string $label, Builder $query, string $dateColumn, array $details = []): array {
+    protected function family(string $table, string $label, Builder $query, string $dateColumn, array $details = [], array $columns = []): array {
+        $rowsQuery = clone $query;
         /** @var object{cnt: int|string|null, min_d: string|null, max_d: string|null}|null $agg */
-        $agg = $query->toBase()
+        $agg = (clone $query)->toBase()
             ->reorder() // Relations-Sortierung entfernen — Aggregat + ORDER BY bricht unter ONLY_FULL_GROUP_BY
             ->selectRaw('COUNT(*) as cnt, MIN(' . $dateColumn . ') as min_d, MAX(' . $dateColumn . ') as max_d')
             ->first();
@@ -78,6 +84,13 @@ abstract class AbstractSubjectSection implements SubjectDataSection {
         ];
         if ($details !== []) {
             $row['details'] = $details;
+        }
+        if ($columns !== []) {
+            $row['columns'] = $columns;
+            $row['rows'] = [];
+            foreach ($rowsQuery->reorder()->orderBy($dateColumn)->orderBy($rowsQuery->getModel()->getKeyName())->cursor() as $record) {
+                $row['rows'][] = array_map(fn (string $column): ?string => $this->str($record->getAttribute($column)), array_keys($columns));
+            }
         }
 
         return $row;

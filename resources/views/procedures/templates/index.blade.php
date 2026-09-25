@@ -22,6 +22,7 @@
         <x-slot:actions>
             <x-help-button topic="procedures.designer" :label="__('procedure.help.designer')" />
             @if ($canManage)
+                <x-icon-btn icon="library_books" size="sm" :href="route('procedures.library.index')" show-label>{{ __('procedure.library.title') }}</x-icon-btn>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
                             :href="route('procedures.create')"

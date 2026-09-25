@@ -16,7 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
 use App\Models\Inventory\StockDelivery;
 use App\Models\Manufacturing\ManufacturingOrder;
-use App\Models\Shipping\{CarrierConnection, Shipment};
+use App\Models\Shipping\{CarrierConnection, Shipment, ShipmentParcel};
 use App\Services\Shipping\{ShipmentPackage, ShipmentRecipient, ShipmentRequest, ShipmentService};
 use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -44,7 +44,8 @@ class DeliveryShipmentController extends Controller {
 
         $data = $request->validate([
             'carrier' => ['required', 'string', 'max:24'],
-            'weight_grams' => ['required', 'integer', 'min:1', 'max:1000000'],
+            // Mit erfassten Packstücken (MVP-900) kommen Gewicht und Maße von dort.
+            'weight_grams' => [$delivery->parcels()->exists() ? 'nullable' : 'required', 'integer', 'min:1', 'max:1000000'],
             // Optionale Packstück-Maße (cm); UPS/FedEx nur wirksam, wenn alle drei gesetzt.
             'length_cm' => ['nullable', 'integer', 'min:1', 'max:400'],
             'width_cm' => ['nullable', 'integer', 'min:1', 'max:400'],
@@ -78,16 +79,16 @@ class DeliveryShipmentController extends Controller {
             phone: $customer->phone,
         );
 
-        $shipmentRequest = new ShipmentRequest(
-            $recipient,
-            [new ShipmentPackage(
+        $packages = array_values($delivery->parcels->map(static fn (ShipmentParcel $p): ShipmentPackage => new ShipmentPackage($p->weight_grams, $p->length_cm, $p->width_cm, $p->height_cm))->all());
+        if ($packages === []) {
+            $packages = [new ShipmentPackage(
                 (int) $data['weight_grams'],
                 isset($data['length_cm']) ? (int) $data['length_cm'] : null,
                 isset($data['width_cm']) ? (int) $data['width_cm'] : null,
                 isset($data['height_cm']) ? (int) $data['height_cm'] : null,
-            )],
-            'MO-' . $order->id . '/D-' . $delivery->id,
-        );
+            )];
+        }
+        $shipmentRequest = new ShipmentRequest($recipient, $packages, 'MO-' . $order->id . '/D-' . $delivery->id);
 
         try {
             $shipping->createLabel($shipment, $shipmentRequest);

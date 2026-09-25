@@ -356,4 +356,21 @@ return [
             ['label' => 'Objektnummer', 'type' => 'text'],
         ],
     ],
+    // Vertragsvorlagen (MVP-893): Laufzeit, Kündigung, Pflichten relativ zum Beginn.
+    'contract_templates' => [
+        [
+            'name' => 'Hausmeistervertrag',
+            'kind' => 'service',
+            'title' => 'Hausmeister- und Objektbetreuung',
+            'term_kind' => 'fixed',
+            'min_term_months' => 12,
+            'auto_renew' => true,
+            'renew_period_months' => 12,
+            'notice_period_days' => 90,
+            'value_period' => 'monthly',
+            'obligations' => [
+                ['kind' => 'review', 'title' => 'Leistungsverzeichnis überprüfen', 'offset_months' => 11, 'recurring' => true, 'recurrence_months' => 12],
+            ],
+        ],
+    ],
 ];

@@ -83,6 +83,13 @@
         <x-charts.bar :title="__('Ausgaben :per', ['per' => $periodPhrase])" unit="€" :series="$monthlySpendSeries" :x-label="$periodAxis" :y-label="__('Ausgaben')"
                       :note="__('Org-weite Gesamtausgaben im gewählten Zeitraum.')" />
     </div>
+    {{-- Ausgabenbrücke Vorperiode → Zeitraum (MVP-888). --}}
+    @if ($bridgeSeries !== [])
+        <x-charts.waterfall :title="__('reporting.supplier_bridge.title')" unit="€" :series="$bridgeSeries"
+                            :start-value="$bridge['start']" :start-label="__('reporting.supplier_bridge.start')" :end-label="__('reporting.supplier_bridge.end')"
+                            :x-label="__('Lieferant')" y-label="€"
+                            :note="__('reporting.supplier_bridge.note')" />
+    @endif
     <x-charts.bar-h :title="__('Offener Betrag je Lieferant (Top 15)')" unit="€" :series="$openSeries" :x-label="__('Lieferant')" :y-label="__('Offener Betrag')"
                     :note="__('Offene Verbindlichkeiten aus nicht vollständig bezahlten Einkaufsbelegen.')" />
 

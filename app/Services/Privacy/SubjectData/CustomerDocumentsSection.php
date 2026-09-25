@@ -44,12 +44,14 @@ class CustomerDocumentsSection extends AbstractSubjectSection {
                 __('Rechnungen'),
                 Invoice::query()->withoutGlobalScopes()->where('organization_id', $orgId)->where('customer_id', $c->id),
                 'created_at',
+                columns: ['issued_on' => __('Belegdatum'), 'number' => __('Nummer'), 'status' => __('Status'), 'total' => __('Betrag'), 'currency' => __('Währung')],
             ),
             $this->family(
                 'quotes',
                 __('Angebote'),
                 Quote::query()->withoutGlobalScopes()->where('organization_id', $orgId)->where('customer_id', $c->id),
                 'created_at',
+                columns: ['created_at' => __('Datum'), 'number' => __('Nummer'), 'status' => __('Status'), 'total' => __('Betrag')],
             ),
             $this->family(
                 'portal_users',

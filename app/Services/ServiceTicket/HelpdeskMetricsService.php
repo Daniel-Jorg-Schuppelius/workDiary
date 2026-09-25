@@ -17,6 +17,8 @@ use App\Models\Audit\AuditLog;
 use App\Models\Knowledge\{ContentReference, KnowledgeArticle};
 use App\Models\ServiceTicket\{Change, Problem, ServiceRequest, ServiceTicket, SlaClockSegment, TicketSatisfaction};
 use App\Support\MorphMap;
+use CommonToolkit\Enums\PercentileMethod;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -515,16 +517,12 @@ class HelpdeskMetricsService {
      * @return array{p50: float, p85: float, p95: float, count: int}
      */
     private function percentiles(array $values): array {
-        $p = function (array $values, int $percentile): float {
-            if ($values === []) {
-                return 0.0;
-            }
-            sort($values);
-
-            return (float) $values[max(0, (int) ceil($percentile / 100 * count($values)) - 1)];
-        };
-
-        return ['p50' => $p($values, 50), 'p85' => $p($values, 85), 'p95' => $p($values, 95), 'count' => count($values)];
+        return [
+            'p50' => NumberHelper::percentile($values, 50, PercentileMethod::NearestRank),
+            'p85' => NumberHelper::percentile($values, 85, PercentileMethod::NearestRank),
+            'p95' => NumberHelper::percentile($values, 95, PercentileMethod::NearestRank),
+            'count' => count($values),
+        ];
     }
 
     /** @param array<int, float> $values */

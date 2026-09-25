@@ -28,6 +28,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
  * @property string $subject_type
  * @property int $subject_id
  * @property ProcedureRunStatus $status
+ * @property string|null $blocked_reason
+ * @property \Illuminate\Support\Carbon|null $blocked_at
  * @property int|null $assigned_user_id
  * @property \Illuminate\Support\Carbon|null $started_at
  * @property \Illuminate\Support\Carbon|null $completed_at
@@ -68,6 +70,7 @@ class ProcedureRun extends Model {
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
         'aborted_at' => 'datetime',
+        'blocked_at' => 'datetime',
     ];
 
     /** @return BelongsTo<ProcedureTemplateVersion, $this> */

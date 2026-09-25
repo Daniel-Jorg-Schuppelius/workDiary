@@ -43,6 +43,7 @@ final class ProcedureManifest extends Manifest {
             'procedure_backup_proofs',
             'procedure_deviations',
             'procedure_documentations',
+            'procedure_library_steps',
             'procedure_material_requirements',
             'procedure_parameter_definitions',
             'procedure_run_events',
@@ -69,6 +70,17 @@ final class ProcedureManifest extends Manifest {
             ],
             \App\Services\Classification\Contracts\ProfileInstallStep::class => [
                 \App\Services\Procedure\Install\ProcedureTemplateInstallStep::class,
+            ],
+            \App\Automation\Triggers\RuleTrigger::class => [
+                \App\Services\Procedure\Automation\DeviationRecordedTrigger::class,
+            ],
+        ];
+    }
+
+    public function listeners(): array {
+        return [
+            \App\Events\Procedure\ProcedureRunProgressed::class => [
+                \App\Listeners\Procedure\RefreshProcedureRunBlockState::class,
             ],
         ];
     }

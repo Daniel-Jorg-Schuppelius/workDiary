@@ -1,7 +1,7 @@
 ---
 title: "Crear un acta"
 topic: protocols.create
-version: 2
+version: 3
 audience: []
 schema: process
 related:
@@ -18,20 +18,22 @@ expediente y localizable en él.
 
 ## Requisitos
 
-- Una entrada de orden existente (expediente).
-- Una **plantilla** adecuada («recepción», «puesta en marcha»,
-  «mantenimiento»…) — las mantiene la administración.
-- El derecho a crear actas.
+- Una orden, un proyecto o un objeto existente.
+- Opcionalmente, una **plantilla** adecuada (p. ej., «Recepción»,
+  «Mantenimiento»). Las plantillas se crean a partir de un protocolo de
+  muestra con **«Guardar como plantilla»** y se gestionan en la
+  administración en **Plantillas de protocolo**.
+- El derecho a crear protocolos.
 
 ## Procedimiento recomendado
 
-1. Abra el expediente y elija **«Generar acta»** en el menú de
-   acciones.
-2. Elija la **plantilla**.
-3. Recorra los **puntos del acta**: texto, selección, foto, medición.
-4. Adjunte las **fotos antes/después** al punto correspondiente.
-5. **Guardar** deja el acta en **borrador**; para la recepción pasa
-   después al diálogo de firma.
+1. Abra la orden, el proyecto o el objeto y elija **«Crear protocolo»**.
+2. Elija tipo, título y, si hace falta, la **plantilla**: aporta sus puntos.
+3. Añada más puntos con **«Añadir elemento»** y registre cada punto con
+   **«Rellenar elemento»**: texto, sí/no, selección, medición, defecto.
+4. Adjunte **fotos de antes y después** al punto correspondiente.
+5. Envíe el protocolo **a revisión** o ciérrelo con **«Finalizar / firmar»**;
+   los clientes reciben el **enlace de firma**.
 
 ## Ejemplo práctico
 

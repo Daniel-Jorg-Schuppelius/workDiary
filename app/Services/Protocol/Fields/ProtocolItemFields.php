@@ -20,9 +20,10 @@ use App\Services\Fields\{FieldDefinition, FieldSchema, FieldValues};
  * Adapter zwischen Protokollpunkt und Feldschema-Baustein (MVP-867). Der
  * Punkt speichert Konfiguration und Wert gemeinsam in `value_json` — diese
  * Form ist hash-relevant ({@see \App\Services\Protocol\ProtocolHasher}) und
- * bleibt unverändert; hier wird sie nur gelesen: Definition (Typ, Optionen,
- * Grenzen, Einheit, Fachtyp) und Wert (`text`, `value`, `selected`,
- * `attachment_ids`, `signature_id`, `samples`, Mangel).
+ * bleibt unverändert: Definition (Typ, Optionen, Grenzen, Einheit, Fachtyp)
+ * und Wert (`text`, `value`, `selected`, `attachment_ids`, `signature_id`,
+ * `samples`, Mangel) werden gelesen, `fromInput()` bildet die Formulareingabe
+ * zurück auf die Wertschlüssel (MVP-883).
  */
 class ProtocolItemFields {
     public function definition(ProtocolItem $item): FieldDefinition {
@@ -87,6 +88,38 @@ class ProtocolItemFields {
         }
 
         return new FieldSchema($fields);
+    }
+
+    /**
+     * Formularwert aus `x-field-input` → Wertschlüssel des `value_json`.
+     * Konfiguration (Optionen, Grenzen, Einheit) bleibt unberührt; der Dienst
+     * legt das Ergebnis darüber. Null: Typ wird nicht über das Formular
+     * gefüllt (Fotos über den Fotostreifen, Unterschrift über die Signatur).
+     *
+     * @return array<string, mixed>|null
+     */
+    public function fromInput(ProtocolItem $item, mixed $input): ?array {
+        $current = is_array($item->value_json) ? $item->value_json : [];
+
+        return match ($item->item_type) {
+            ProtocolItemType::Text => ['text' => is_scalar($input) ? trim((string) $input) : ''],
+            ProtocolItemType::Boolean => ['value' => filter_var($input, FILTER_VALIDATE_BOOL)],
+            ProtocolItemType::Number, ProtocolItemType::Range => ['value' => self::number($input)],
+            ProtocolItemType::Date, ProtocolItemType::DateTime => ['value' => is_scalar($input) && (string) $input !== '' ? (string) $input : null],
+            ProtocolItemType::Choice => ['selected' => is_scalar($input) && (string) $input !== '' ? (string) $input : null],
+            ProtocolItemType::Multichoice => ['selected' => array_values(array_map('strval', array_filter(is_array($input) ? $input : [], 'is_scalar')))],
+            ProtocolItemType::Defect => is_array($input) ? [
+                'severity' => is_scalar($input['severity'] ?? null) ? (string) $input['severity'] : null,
+                'description' => is_scalar($input['description'] ?? null) ? trim((string) $input['description']) : '',
+                'category' => is_scalar($input['category'] ?? null) && (string) $input['category'] !== '' ? (string) $input['category'] : null,
+            ] : null,
+            // Messreihe: jede Eingabe ist ein weiterer Messpunkt mit Zeitstempel.
+            ProtocolItemType::MeasurementTimestamped => self::number($input) === null ? null : ['samples' => [
+                ...array_values((array) ($current['samples'] ?? [])),
+                ['value' => self::number($input), 'at' => now()->toIso8601String()],
+            ]],
+            default => null,
+        };
     }
 
     public static function key(ProtocolItem $item): string {

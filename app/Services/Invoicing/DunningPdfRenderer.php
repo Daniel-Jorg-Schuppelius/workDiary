@@ -63,6 +63,8 @@ class DunningPdfRenderer {
             'fee' => $fee !== null && $fee > 0 ? round($fee, 2) : null,
             'payUntil' => $payUntil,
             'interest' => $interest,
+            'paid' => app(DunningService::class)->paidAmount($invoice)->toFloat(),
+            'outstanding' => app(DunningService::class)->openAmount($invoice)->toFloat(),
             'orgLegal' => app(BrandingService::class)->legalFor($organization),
             'design' => $this->design->context($this->designPayload($invoice)),
         ];
