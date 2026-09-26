@@ -137,6 +137,37 @@ class ProtocolTemplateTest extends TestCase {
         $this->assertSame('Abnahme Badezimmer', $template->fresh()->name);
     }
 
+    public function test_catalog_templates_of_all_branch_profiles_install_and_fill_a_protocol(): void {
+        $catalog = require database_path('data/protocol_templates.php');
+        foreach ($catalog as $code => $template) {
+            $this->assertNotNull(ProtocolType::tryFrom($template['kind']), $code);
+            array_walk_recursive($template['items'], static function (mixed $value, string|int $key) use ($code): void {
+                if ($key === 'item_type') {
+                    self::assertNotNull(ProtocolItemType::tryFrom((string) $value), $code . ': ' . $value);
+                }
+            });
+        }
+
+        $codes = [];
+        foreach (glob(database_path('data/branchprofiles/*.php')) ?: [] as $file) {
+            $profile = require $file;
+            foreach ($profile['protocol_templates'] ?? [] as $row) {
+                $codes[] = $row['code'];
+            }
+        }
+        $this->assertSame([], array_values(array_diff($codes, array_keys($catalog))), 'jeder Profilcode steht im Katalog');
+
+        $org = Organization::query()->findOrFail($this->admin->organization_id);
+        $result = app(ProtocolTemplateInstallStep::class)->install($org, [['code' => 'EL_PRUEFPROTOKOLL'], ['code' => 'UNBEKANNT']], $this->admin);
+        $this->assertSame(['created' => 1, 'skipped' => 1], $result);
+
+        $template = ProtocolTemplate::query()->where('name', 'Prüfprotokoll elektrische Anlage')->firstOrFail();
+        $protocol = app(ProtocolService::class)->create($this->entry, $this->admin, ['title' => 'E-Check', 'type' => ProtocolType::Inspection->value, 'template_id' => $template->id]);
+        $measurements = $protocol->items()->where('label', 'Messungen')->firstOrFail();
+        $this->assertSame(4, ProtocolItem::query()->where('parent_item_id', $measurements->id)->count());
+        $this->assertSame('MΩ', ProtocolItem::query()->where('label', 'Isolationswiderstand')->firstOrFail()->value_json['unit']);
+    }
+
     public function test_user_without_right_cannot_manage_templates(): void {
         $user = User::factory()->user()->create(['organization_id' => $this->admin->organization_id]);
 

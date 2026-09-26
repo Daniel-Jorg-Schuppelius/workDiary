@@ -36,6 +36,8 @@
                     <input id="qty" name="qty" type="number" step="0.0001" min="0.0001" value="1" inputmode="decimal"
                            class="input input-lg input-bordered w-full"></div>
                 <x-button type="submit" tone="primary" class="w-full">{{ __('inventory.count_ui.mobile_add') }}</x-button>
+                <x-icon-btn icon="nfc" class="hidden w-full" type="button" data-nfc-read="#code" data-nfc-submit show-label>{{ __('asset.nfc.read') }}</x-icon-btn>
+                <p class="text-xs text-muted" data-nfc-status aria-live="polite"></p>
             </form>
             <p class="mt-2 text-xs text-muted">{{ __('inventory.count_ui.mobile_hint') }}</p>
         </x-card>

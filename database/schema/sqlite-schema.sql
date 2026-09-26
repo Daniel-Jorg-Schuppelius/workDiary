@@ -438,30 +438,6 @@ CREATE INDEX "coverage_requirements_duty_plan_id_specific_date_index" on "covera
 CREATE INDEX "coverage_requirements_shift_type_id_index" on "coverage_requirements"(
   "shift_type_id"
 );
-CREATE TABLE IF NOT EXISTS "materials"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "sku" varchar,
-  "name" varchar not null,
-  "unit" varchar not null default 'Stk.',
-  "default_unit_price" numeric,
-  "tax_rate" numeric,
-  "external_provider" varchar,
-  "external_id" varchar,
-  "is_active" tinyint(1) not null default '1',
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete set null
-);
-CREATE UNIQUE INDEX "materials_organization_id_sku_unique" on "materials"(
-  "organization_id",
-  "sku"
-);
-CREATE INDEX "materials_external_provider_external_id_index" on "materials"(
-  "external_provider",
-  "external_id"
-);
-CREATE INDEX "materials_name_index" on "materials"("name");
 CREATE TABLE IF NOT EXISTS "work_schedules"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer,
@@ -5724,6 +5700,7 @@ CREATE TABLE IF NOT EXISTS "lexoffice_vouchers"(
   "service_ends_on" date,
   "lines_sync_failed_at" datetime,
   "lines_sync_attempts" integer not null default '0',
+  "categories_synced_at" datetime,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("customer_id") references "customers"("id") on delete set null,
   foreign key("supplier_id") references "suppliers"("id") on delete set null
@@ -21506,6 +21483,69 @@ CREATE TABLE IF NOT EXISTS "shipment_parcel_serials"(
 CREATE UNIQUE INDEX "shipment_parcel_serials_serial_uniq" on "shipment_parcel_serials"(
   "stock_serial_id"
 );
+CREATE TABLE IF NOT EXISTS "materials"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "sku" varchar,
+  "name" varchar not null,
+  "unit" varchar not null default('Stk.'),
+  "default_unit_price" numeric,
+  "tax_rate" numeric,
+  "external_provider" varchar,
+  "external_id" varchar,
+  "is_active" tinyint(1) not null default('1'),
+  "created_at" datetime,
+  "updated_at" datetime,
+  "article_id" integer,
+  foreign key("organization_id") references organizations("id") on delete set null on update no action,
+  foreign key("article_id") references "articles"("id") on delete set null
+);
+CREATE INDEX "materials_external_provider_external_id_index" on "materials"(
+  "external_provider",
+  "external_id"
+);
+CREATE INDEX "materials_name_index" on "materials"("name");
+CREATE UNIQUE INDEX "materials_organization_id_sku_unique" on "materials"(
+  "organization_id",
+  "sku"
+);
+CREATE TABLE IF NOT EXISTS "lexoffice_posting_categories"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "external_id" varchar not null,
+  "name" varchar not null,
+  "kind" varchar not null,
+  "group_name" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "lex_posting_cat_org_ext_uniq" on "lexoffice_posting_categories"(
+  "organization_id",
+  "external_id"
+);
+CREATE TABLE IF NOT EXISTS "lexoffice_voucher_categories"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "voucher_id" integer not null,
+  "position" integer not null,
+  "category_external_id" varchar,
+  "net_amount" numeric not null,
+  "currency" varchar not null,
+  "tax_rate" numeric,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("voucher_id") references "lexoffice_vouchers"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "lex_voucher_cat_pos_uniq" on "lexoffice_voucher_categories"(
+  "voucher_id",
+  "position"
+);
+CREATE INDEX "lex_voucher_cat_org_cat_idx" on "lexoffice_voucher_categories"(
+  "organization_id",
+  "category_external_id"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -22366,3 +22406,5 @@ INSERT INTO migrations VALUES(861,'2027_02_25_170000_create_procedure_library_st
 INSERT INTO migrations VALUES(862,'2027_02_25_180000_add_blocked_state_to_procedure_runs',11);
 INSERT INTO migrations VALUES(863,'2027_02_25_190000_create_asset_inspection_rounds_table',11);
 INSERT INTO migrations VALUES(864,'2027_02_25_200000_create_shipment_parcels_table',11);
+INSERT INTO migrations VALUES(865,'2027_02_25_210000_add_article_to_materials',12);
+INSERT INTO migrations VALUES(866,'2027_02_25_220000_create_lexoffice_voucher_categories_table',12);

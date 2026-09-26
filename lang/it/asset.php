@@ -102,4 +102,8 @@ return [
     'label' => [
         'print' => 'Etichetta con QR',
     ],
+    'nfc' => [
+        'read' => 'Leggi tag NFC',
+        'write' => 'Scrivi tag NFC',
+    ],
 ];

@@ -10,20 +10,27 @@
 
 namespace App\Http\Controllers\Material;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Material\SaveMaterialRequest;
+use App\Models\Article\Article;
 use App\Models\Material\Material;
+use App\Services\Material\MaterialArticleLinker;
 use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class MaterialController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(Request $request): View {
         Gate::authorize('viewAny', Material::class);
         $q = $request->string('q')->toString();
 
         $materials = Material::query()
+            ->with('article:id,name')
             ->when($q !== '', fn($builder) => $builder->whereLikeEscaped('name', $q));
 
         [$sort, $dir] = SortableQuery::apply($materials, $request, [
@@ -43,7 +50,7 @@ class MaterialController extends Controller {
     public function create(): View {
         Gate::authorize('create', Material::class);
 
-        return view('materials._form_dialog', ['material' => new Material(['unit' => 'Stk.', 'is_active' => true])]);
+        return view('materials._form_dialog', ['material' => new Material(['unit' => 'Stk.', 'is_active' => true]), 'articles' => $this->articleOptions()]);
     }
 
     public function store(SaveMaterialRequest $request): RedirectResponse {
@@ -56,7 +63,7 @@ class MaterialController extends Controller {
     public function edit(Material $material): View {
         Gate::authorize('update', $material);
 
-        return view('materials._form_dialog', compact('material'));
+        return view('materials._form_dialog', ['material' => $material, 'articles' => $this->articleOptions()]);
     }
 
     public function update(Material $material, SaveMaterialRequest $request): RedirectResponse {
@@ -71,5 +78,18 @@ class MaterialController extends Controller {
         $material->delete();
 
         return redirect()->toList('materials.index')->with('success', __('Material gelöscht.'));
+    }
+
+    /** Materialien ohne Artikel über die gleiche SKU bzw. Artikelnummer zuordnen (MVP-904). */
+    public function linkArticles(MaterialArticleLinker $linker): RedirectResponse {
+        Gate::authorize('create', Material::class);
+        $count = $linker->linkBySku($this->currentOrganizationId());
+
+        return redirect()->toList('materials.index')->with('success', __('material.article.linked', ['count' => $count]));
+    }
+
+    /** @return Collection<int, Article> */
+    private function articleOptions(): Collection {
+        return Article::query()->orderBy('name')->get(['id', 'name', 'number']);
     }
 }

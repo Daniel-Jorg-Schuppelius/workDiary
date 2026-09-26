@@ -90,6 +90,35 @@
                             :x-label="__('Lieferant')" y-label="€"
                             :note="__('reporting.supplier_bridge.note')" />
     @endif
+    {{-- Ausgaben je Buchungskategorie (MVP-905), aus den Kategoriezeilen der Einkaufsbelege. --}}
+    @if ($categorySpend['series'] !== [])
+        <x-charts.stacked-bar :title="__('reporting.supplier_category.title', ['per' => $periodPhrase])" unit="€"
+                              :series="$categorySpend['series']" :bands="$categorySpend['bands']"
+                              :x-label="$periodAxis"
+                              :note="__('reporting.supplier_category.note') . ($categorySpend['pending'] > 0 ? ' ' . __('reporting.supplier_category.pending', ['count' => $categorySpend['pending']]) : '')" />
+    @endif
+    {{-- Materialverbrauch je Lieferant (MVP-904), über Material → Artikel → Lieferquelle. --}}
+    @if ($materialUsage['rows'] !== [] || $materialUsage['unlinkedValue'] > 0)
+        <x-card :title="__('reporting.supplier_material.title')" :count="count($materialUsage['rows'])" class="mt-4">
+            <p class="mb-2 text-xs text-muted">{{ __('reporting.supplier_material.note', ['unlinked' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($materialUsage['unlinkedValue'], 2, withThousandsSeparator: true)]) }}</p>
+            @if ($materialUsage['rows'] !== [])
+                <x-table bare>
+                    <x-slot:head>
+                        <tr><th>{{ __('Lieferant') }}</th><th class="text-right">{{ __('reporting.supplier_material.materials') }}</th><th class="text-right">{{ __('reporting.supplier_material.usages') }}</th><th>{{ __('reporting.supplier_material.quantities') }}</th><th class="text-right">{{ __('reporting.supplier_material.value') }}</th></tr>
+                    </x-slot:head>
+                    @foreach ($materialUsage['rows'] as $row)
+                        <tr>
+                            <td>{{ $row['supplierName'] }}</td>
+                            <td class="text-right tabular-nums">{{ $row['materials'] }}</td>
+                            <td class="text-right tabular-nums">{{ $row['usages'] }}</td>
+                            <td class="text-xs">@foreach ($row['quantities'] as $unit => $qty){{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($qty, 3, trimTrailingZeros: true) }} {{ $unit }}@if (! $loop->last), @endif @endforeach</td>
+                            <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['value'], 2, withThousandsSeparator: true) }} €</td>
+                        </tr>
+                    @endforeach
+                </x-table>
+            @endif
+        </x-card>
+    @endif
     <x-charts.bar-h :title="__('Offener Betrag je Lieferant (Top 15)')" unit="€" :series="$openSeries" :x-label="__('Lieferant')" :y-label="__('Offener Betrag')"
                     :note="__('Offene Verbindlichkeiten aus nicht vollständig bezahlten Einkaufsbelegen.')" />
 

@@ -147,6 +147,21 @@ return [
         'empty' => 'Nessuna ripartizione del tempo nel periodo.',
         'note' => 'Basato esclusivamente sulle quote di ripartizione; il tempo non ripartito appare nei normali report del tempo.',
     ],
+    'supplier_category' => [
+        'title' => 'Spese :per per categoria',
+        'note' => 'Importi netti dei documenti di acquisto per categoria contabile Lexoffice; le note di credito riducono.',
+        'pending' => ':count documenti del periodo non hanno ancora categorie (caricate alla prossima sincronizzazione).',
+        'rest' => 'Altri',
+        'unknown' => 'senza categoria',
+    ],
+    'supplier_material' => [
+        'title' => 'Consumo di materiale per fornitore',
+        'note' => 'Consumo dai fogli ore del periodo, assegnato tramite materiale → articolo → fonte di approvvigionamento preferita. Senza collegamento all\'articolo: :unlinked €.',
+        'materials' => 'Materiali',
+        'usages' => 'Registrazioni',
+        'quantities' => 'Quantità',
+        'value' => 'Valore netto',
+    ],
     'supplier_bridge' => [
         'title' => 'Ponte della spesa periodo precedente → periodo',
         'start' => 'Periodo precedente',

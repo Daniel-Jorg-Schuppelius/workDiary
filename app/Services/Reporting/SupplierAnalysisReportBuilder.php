@@ -11,7 +11,9 @@
 namespace App\Services\Reporting;
 
 use App\Enums\Procurement\PurchaseOrderStatus;
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
+use App\Models\Article\ArticleSupply;
+use App\Models\Material\MaterialUsage;
+use App\Models\Plugins\Lexoffice\{LexofficePostingCategory, LexofficeVoucher, LexofficeVoucherCategory};
 use App\Models\Procurement\PurchaseOrder;
 use App\Models\Supplier\Supplier;
 use App\Support\Billing\VoucherTypes;
@@ -148,6 +150,55 @@ class SupplierAnalysisReportBuilder {
     }
 
     /**
+     * Materialverbrauch je Lieferant (MVP-904): Verbrauch aus den Stundenzetteln
+     * im Zeitraum, über das verknüpfte Material → Artikel → bevorzugte
+     * Lieferquelle. Verbrauch ohne Artikelbezug zählt nur in `unlinkedValue`.
+     *
+     * @return array{rows: list<array{supplierId: int, supplierName: string, materials: int, usages: int, value: float, quantities: array<string, float>}>, unlinkedValue: float}
+     */
+    public function materialUsageBySupplier(CarbonImmutable $from, CarbonImmutable $to): array {
+        $usages = MaterialUsage::query()
+            ->with('material:id,article_id')
+            ->whereHas('timesheet', fn ($q) => $q->where('work_date', '>=', $from->toDateString())->where('work_date', '<', DateRange::dayAfter($to)))
+            ->get();
+
+        $articleIds = $usages->map(fn (MaterialUsage $u): ?int => $u->material?->article_id)->filter()->unique()->values()->all();
+        $supplierByArticle = ArticleSupply::query()
+            ->whereIn('article_id', $articleIds)
+            ->orderByDesc('is_preferred')
+            ->orderBy('id')
+            ->get(['article_id', 'supplier_id'])
+            ->unique('article_id')
+            ->pluck('supplier_id', 'article_id')
+            ->all();
+        $names = Supplier::query()->whereIn('id', array_values($supplierByArticle))->pluck('name', 'id')->all();
+
+        $rows = [];
+        $unlinked = 0.0;
+        foreach ($usages as $usage) {
+            $value = $usage->line_total_net?->toFloat() ?? 0.0;
+            $supplierId = $supplierByArticle[$usage->material->article_id ?? 0] ?? null;
+            if ($supplierId === null) {
+                $unlinked += $value;
+
+                continue;
+            }
+            $row = $rows[$supplierId] ?? ['supplierId' => (int) $supplierId, 'supplierName' => (string) ($names[$supplierId] ?? '—'), 'materials' => [], 'usages' => 0, 'value' => 0.0, 'quantities' => []];
+            $row['materials'][(int) $usage->material_id] = true;
+            $row['usages']++;
+            $row['value'] += $value;
+            $unit = (string) ($usage->unit ?? '');
+            $row['quantities'][$unit] = ($row['quantities'][$unit] ?? 0.0) + ($usage->quantity?->getValue()->toFloat() ?? 0.0);
+            $rows[$supplierId] = $row;
+        }
+
+        $rows = array_map(static fn (array $row): array => ['materials' => count($row['materials'])] + $row, array_values($rows));
+        usort($rows, static fn (array $a, array $b): int => $b['value'] <=> $a['value']);
+
+        return ['rows' => $rows, 'unlinkedValue' => round($unlinked, 2)];
+    }
+
+    /**
      * Adaptive Zeitachse für die Trend-Charts: Granularität aus der Header-
      * Einheit ({@see ChartBucket}); 'hour' wird auf 'day' reduziert, da
      * Belege datumsgenau sind.
@@ -167,6 +218,71 @@ class SupplierAnalysisReportBuilder {
         }
 
         return [$granularity, array_values($buckets)];
+    }
+
+    /**
+     * Ausgaben je Buchungskategorie (MVP-905) aus den Kategoriezeilen der
+     * Einkaufsbelege, netto, Gutschriften mindernd. Die vier größten
+     * Kategorien als eigene Bänder, der Rest als „Übrige“ (Diagramm trägt
+     * höchstens fünf Bänder). `pending` = Belege ohne geladene Kategorien.
+     *
+     * @return array{series: list<array<string, float|string>>, bands: list<array{key: string, label: string}>, pending: int}
+     */
+    public function spendByCategorySeries(CarbonImmutable $from, CarbonImmutable $to, string $unit): array {
+        [$granularity, $buckets] = $this->spendAxis($from, $to, $unit);
+        $vouchers = LexofficeVoucher::query()
+            ->whereNotNull('supplier_id')
+            ->where('archived', false)
+            ->whereNotNull('voucher_date')
+            ->whereBetween('voucher_date', DateRange::days($from, $to))
+            ->whereIn('voucher_type', self::EXPENSE_TYPES)
+            ->whereNotIn('voucher_status', ['draft', 'voided']);
+        $pending = (clone $vouchers)->whereNull('categories_synced_at')->count();
+
+        $names = LexofficePostingCategory::query()->pluck('name', 'external_id')->all();
+        $cells = [];
+        $totals = [];
+        LexofficeVoucherCategory::query()
+            ->with('voucher:id,voucher_type,voucher_date')
+            ->whereIn('voucher_id', (clone $vouchers)->select('id'))
+            ->get()
+            ->each(function (LexofficeVoucherCategory $row) use (&$cells, &$totals, $names, $granularity): void {
+                $date = $row->voucher->voucher_date;
+                if ($date === null) {
+                    return;
+                }
+                $category = (string) ($names[(string) $row->category_external_id] ?? __('reporting.supplier_category.unknown'));
+                $amount = $row->net_amount->toFloat() * (in_array($row->voucher->voucher_type, self::CREDIT_TYPES, true) ? -1 : 1);
+                $key = ChartBucket::keyLabel($granularity, CarbonImmutable::parse($date->toDateString()))[0];
+                $cells[$key][$category] = ($cells[$key][$category] ?? 0.0) + $amount;
+                $totals[$category] = ($totals[$category] ?? 0.0) + $amount;
+            });
+
+        arsort($totals);
+        $top = array_slice(array_keys($totals), 0, 4);
+        $bands = [];
+        foreach ($top as $index => $category) {
+            $bands[] = ['key' => 'c' . $index, 'label' => $category];
+        }
+        if (count($totals) > count($top)) {
+            $bands[] = ['key' => 'rest', 'label' => (string) __('reporting.supplier_category.rest')];
+        }
+
+        $series = [];
+        foreach ($buckets as $bucket) {
+            $point = ['x' => $bucket['label']];
+            foreach ($bands as $band) {
+                $point[$band['key']] = 0.0;
+            }
+            foreach ($cells[$bucket['key']] ?? [] as $category => $amount) {
+                $index = array_search($category, $top, true);
+                $key = $index === false ? 'rest' : 'c' . $index;
+                $point[$key] = round((float) $point[$key] + $amount, 2);
+            }
+            $series[] = $point;
+        }
+
+        return ['series' => $totals === [] ? [] : $series, 'bands' => $bands, 'pending' => $pending];
     }
 
     /**

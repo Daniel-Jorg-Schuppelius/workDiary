@@ -45,7 +45,7 @@ final class MobileStocktakeTest extends TestCase {
     }
 
     public function test_each_scan_adds_to_the_counted_quantity(): void {
-        $this->actingAs($this->admin)->get(route('inventory.counts.mobile', $this->count))->assertOk()->assertSee('data-offline-sync="inventory.count"', false);
+        $this->actingAs($this->admin)->get(route('inventory.counts.mobile', $this->count))->assertOk()->assertSee('data-offline-sync="inventory.count"', false)->assertSee('data-nfc-read="#code"', false);
 
         $this->actingAs($this->admin)->post(route('inventory.counts.scan-add', $this->count), ['code' => 'DUE-8', 'qty' => '1'])
             ->assertRedirect(route('inventory.counts.mobile', $this->count));

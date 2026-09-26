@@ -147,6 +147,21 @@ return [
         'empty' => 'Aucune répartition du temps sur la période.',
         'note' => 'Basé uniquement sur les parts de répartition ; le temps non réparti apparaît dans les rapports de temps habituels.',
     ],
+    'supplier_category' => [
+        'title' => 'Dépenses :per par catégorie',
+        'note' => 'Montants nets des pièces d\'achat par catégorie comptable Lexoffice ; les avoirs réduisent.',
+        'pending' => ':count pièces de la période n\'ont pas encore de catégories (chargées lors de la prochaine synchronisation).',
+        'rest' => 'Autres',
+        'unknown' => 'sans catégorie',
+    ],
+    'supplier_material' => [
+        'title' => 'Consommation de matériaux par fournisseur',
+        'note' => 'Consommation issue des feuilles de temps sur la période, attribuée via matériau → article → source d\'approvisionnement préférée. Sans lien d\'article : :unlinked €.',
+        'materials' => 'Matériaux',
+        'usages' => 'Saisies',
+        'quantities' => 'Quantités',
+        'value' => 'Valeur nette',
+    ],
     'supplier_bridge' => [
         'title' => 'Pont des dépenses période précédente → période',
         'start' => 'Période précédente',

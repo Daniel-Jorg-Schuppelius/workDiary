@@ -97,4 +97,11 @@ return [
     'quiz' => [
         'progress' => ':answered de :total respondidas',
     ],
+    // NFC-Scan (MVP-903).
+    'nfc' => [
+        'hold' => 'Acerque la etiqueta al dispositivo …',
+        'empty' => 'La etiqueta no contiene ningún enlace.',
+        'failed' => 'NFC no disponible.',
+        'written' => 'Etiqueta escrita.',
+    ],
 ];

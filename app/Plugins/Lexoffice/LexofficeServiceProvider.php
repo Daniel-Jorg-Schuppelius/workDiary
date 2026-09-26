@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Lexoffice;
 
-use App\Plugins\Lexoffice\Console\{LexofficeMaterializeVoucherFilesCommand, LexofficeRepairResaleLinksCommand, LexofficeSyncArticlesCommand, LexofficeSyncContactsCommand, LexofficeSyncVoucherLinesCommand, LexofficeSyncVouchersCommand, LexofficeWebhooksCommand};
+use App\Plugins\Lexoffice\Console\{LexofficeMaterializeVoucherFilesCommand, LexofficeRepairResaleLinksCommand, LexofficeSyncArticlesCommand, LexofficeSyncContactsCommand, LexofficeSyncVoucherCategoriesCommand, LexofficeSyncVoucherLinesCommand, LexofficeSyncVouchersCommand, LexofficeWebhooksCommand};
 use App\Plugins\Lexoffice\Services\{LexofficeInvoiceDraftTarget, LexofficeInvoiceMirrorSource, LexofficePurchaseDocumentSource};
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Billing\{BillingModeResolver, ExpenseLinkProviderResolver};
@@ -96,6 +96,7 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
             LexofficeSyncContactsCommand::class,
             LexofficeSyncVouchersCommand::class,
             LexofficeSyncVoucherLinesCommand::class,
+            LexofficeSyncVoucherCategoriesCommand::class,
             LexofficeRepairResaleLinksCommand::class,
             LexofficeMaterializeVoucherFilesCommand::class,
             LexofficeWebhooksCommand::class,

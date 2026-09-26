@@ -91,6 +91,8 @@ class SupplierAnalysisReportController extends Controller {
             'periodPhrase' => $this->periodPhrase($this->bucketGranularity($from, $to)),
             'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($from, $to)),
             'bridge' => $bridge,
+            'materialUsage' => $this->builder->materialUsageBySupplier($from, $to),
+            'categorySpend' => $this->builder->spendByCategorySeries($from, $to, $this->globalUnit()),
             'bridgeSeries' => array_map(fn (array $step): array => [
                 'x' => $step['x'],
                 'y' => $step['y'],

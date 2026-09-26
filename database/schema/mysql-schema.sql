@@ -13738,6 +13738,44 @@ CREATE TABLE `lexoffice_invoice_handovers` (
   CONSTRAINT `lexoffice_invoice_handovers_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `lexoffice_posting_categories`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `lexoffice_posting_categories` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `external_id` varchar(64) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `kind` varchar(20) NOT NULL,
+  `group_name` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lex_posting_cat_org_ext_uniq` (`organization_id`,`external_id`),
+  CONSTRAINT `lexoffice_posting_categories_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `lexoffice_voucher_categories`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `lexoffice_voucher_categories` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `voucher_id` bigint(20) unsigned NOT NULL,
+  `position` smallint(5) unsigned NOT NULL,
+  `category_external_id` varchar(64) DEFAULT NULL,
+  `net_amount` decimal(12,2) NOT NULL,
+  `currency` varchar(3) NOT NULL,
+  `tax_rate` decimal(5,2) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lex_voucher_cat_pos_uniq` (`voucher_id`,`position`),
+  KEY `lex_voucher_cat_org_cat_idx` (`organization_id`,`category_external_id`),
+  CONSTRAINT `lex_voucher_cat_voucher_fk` FOREIGN KEY (`voucher_id`) REFERENCES `lexoffice_vouchers` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `lexoffice_voucher_categories_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `lexoffice_voucher_lines`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -13802,6 +13840,7 @@ CREATE TABLE `lexoffice_vouchers` (
   `synced_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
+  `categories_synced_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `lexoffice_vouchers_organization_id_external_id_unique` (`organization_id`,`external_id`),
   KEY `lexoffice_vouchers_customer_id_foreign` (`customer_id`),
@@ -14274,6 +14313,7 @@ DROP TABLE IF EXISTS `materials`;
 CREATE TABLE `materials` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `organization_id` bigint(20) unsigned DEFAULT NULL,
+  `article_id` bigint(20) unsigned DEFAULT NULL,
   `sku` varchar(64) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `unit` varchar(20) NOT NULL DEFAULT 'Stk.',
@@ -14288,6 +14328,8 @@ CREATE TABLE `materials` (
   UNIQUE KEY `materials_organization_id_sku_unique` (`organization_id`,`sku`),
   KEY `materials_external_provider_external_id_index` (`external_provider`,`external_id`),
   KEY `materials_name_index` (`name`),
+  KEY `materials_article_id_foreign` (`article_id`),
+  CONSTRAINT `materials_article_id_foreign` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE SET NULL,
   CONSTRAINT `materials_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -24094,3 +24136,5 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (860,'2027_02_25_17
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (861,'2027_02_25_180000_add_blocked_state_to_procedure_runs',11);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (862,'2027_02_25_190000_create_asset_inspection_rounds_table',11);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (863,'2027_02_25_200000_create_shipment_parcels_table',11);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (864,'2027_02_25_210000_add_article_to_materials',12);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (865,'2027_02_25_220000_create_lexoffice_voucher_categories_table',12);

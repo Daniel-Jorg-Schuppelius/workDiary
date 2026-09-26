@@ -4617,6 +4617,7 @@ Route::middleware('auth')->group(function () {
             ->name('reports.sla.acknowledge');
 
         // ── Material-Stamm (Admin) ──────────────────────────────────────────────
+        Route::post('materials/link-articles', [MaterialController::class, 'linkArticles'])->name('materials.link-articles'); // MVP-904
         Route::resource('materials', MaterialController::class)->except('show');
 
         // ── Arbeitszeit-Modell ──────────────────────────────────────────────────

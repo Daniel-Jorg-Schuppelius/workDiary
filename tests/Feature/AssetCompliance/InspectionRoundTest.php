@@ -62,6 +62,8 @@ final class InspectionRoundTest extends TestCase {
         $this->assertSame(2, $round->items()->count(), 'nur fällige Pflichten des Standorts');
 
         $show = $this->actingAs($this->admin)->get(route('asset-compliance.rounds.show', $round))->assertOk();
+        $show->assertSee('data-nfc-read="#code"', false);
+        $this->actingAs($this->admin)->get(route('assets.show', $drill))->assertOk()->assertSee('data-nfc-write="' . route('assets.show', $drill) . '"', false);
         $show->assertSee('Bohrhammer')->assertSee(__('inspection_round.overdue'))->assertDontSee('Kompressor');
 
         $item = $round->items()->where('asset_id', $drill->id)->firstOrFail();

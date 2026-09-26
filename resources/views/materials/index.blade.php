@@ -24,6 +24,9 @@
                             data-entry-modal-trigger
                             :href="route('materials.create')"
                             show-label>{{ __('Material') }}</x-icon-btn>
+                <x-action-form :action="route('materials.link-articles')">
+                    <x-icon-btn icon="link" size="sm" type="submit" :title="__('material.article.link_hint')" show-label>{{ __('material.article.link') }}</x-icon-btn>
+                </x-action-form>
             @endcan
         </x-slot:extra>
     </x-filter-bar>
@@ -48,7 +51,7 @@
         @forelse($materials as $m)
             <tr>
                 <td>{{ $m->sku }}</td>
-                <td>{{ $m->name }}</td>
+                <td>{{ $m->name }}@if ($m->article)<span class="block text-xs text-muted">{{ __('material.article.label') }}: {{ $m->article->name }}</span>@endif</td>
                 <td>{{ $m->unit }}</td>
                 <td class="text-right">{{ $m->default_unit_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($m->default_unit_price?->toFloat() ?? 0.0), 4, withThousandsSeparator: true) : '—' }}</td>
                 <td class="text-right">{{ $m->tax_rate !== null ? rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(((float) ($m->tax_rate?->getNumericValue() ?? '0')), 2, withThousandsSeparator: true), '0'), ',') : '—' }}</td>

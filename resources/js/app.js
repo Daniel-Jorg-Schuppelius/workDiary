@@ -19,6 +19,7 @@ import { bindPushToggle } from "./push.js";
 import { registerServiceWorker, bindInstallPrompt } from "./pwa.js";
 import { initOfflineSync } from "./offline-sync.js";
 import { initVideoPositions } from "./video-position.js";
+import { initNfc } from "./nfc.js";
 import { __ } from "./i18n.js";
 import { html, setHtml, safeUrl, sameOriginPath, trustedServerHtml } from "./lib/html.js";
 import { postJson, request } from "./lib/http.js";
@@ -74,6 +75,7 @@ Alpine.start();
 // enhancebare `figure.wd-chart` auf der Seite sind. Ohne JS / im PDF bleibt das
 // serverseitige SVG die Darstellung.
 initCharts();
+initNfc();
 
 const htmlLang = (document.documentElement.lang || "de").toLowerCase();
 const isGerman = htmlLang.startsWith("de");

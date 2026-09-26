@@ -73,6 +73,8 @@ final class IntegrationManifest extends Manifest {
             'jtl_warehouse_mappings',
             'lexoffice_articles',
             'lexoffice_invoice_handovers',
+            'lexoffice_posting_categories',
+            'lexoffice_voucher_categories',
             'lexoffice_voucher_lines',
             'lexoffice_vouchers',
             'lexoffice_webhook_deliveries',

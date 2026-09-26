@@ -17,8 +17,9 @@ use App\Services\Classification\Contracts\ProfileInstallStep;
 
 /**
  * Branchenprofil-Abschnitt `protocol_templates` (MVP-901): Zeilen
- * `{name, kind, description?, items}` im Vorlagenformat. Vorhandene
- * Vorlagen gleichen Namens bleiben unberührt.
+ * `{name, kind, description?, items}` im Vorlagenformat oder nur `{code}`
+ * aus dem Katalog `database/data/protocol_templates.php` (MVP-902).
+ * Vorhandene Vorlagen gleichen Namens bleiben unberührt.
  */
 final class ProtocolTemplateInstallStep implements ProfileInstallStep {
     public function key(): string {
@@ -28,7 +29,12 @@ final class ProtocolTemplateInstallStep implements ProfileInstallStep {
     public function install(Organization $organization, array $rows, ?User $actor): array {
         $created = 0;
         $skipped = 0;
+        $catalog = null;
         foreach ($rows as $row) {
+            if (is_array($row) && isset($row['code']) && ! isset($row['items'])) {
+                $catalog ??= require database_path('data/protocol_templates.php');
+                $row = $catalog[(string) $row['code']] ?? $row;
+            }
             $name = is_array($row) ? trim((string) ($row['name'] ?? '')) : '';
             $kind = is_array($row) ? ProtocolType::tryFrom((string) ($row['kind'] ?? '')) : null;
             $items = is_array($row) && is_array($row['items'] ?? null) ? array_values($row['items']) : [];

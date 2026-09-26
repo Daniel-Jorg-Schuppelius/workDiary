@@ -14,6 +14,15 @@
     <x-input-field name="name" :label="__('Name')" required span="2" :value="old('name', $material->name)" />
     <x-input-field name="sku" label="SKU" :value="old('sku', $material->sku)" />
     <x-input-field name="unit" :label="__('Einheit')" required :value="old('unit', $material->unit)" />
+    @if (($articles ?? collect())->isNotEmpty())
+        @php $articleSqid = old('article_id', $material->article?->sqid); @endphp
+        <x-select-field name="article_id" :label="__('material.article.label')" span="2" :hint="__('material.article.hint')">
+            <option value="">{{ __('material.article.none') }}</option>
+            @foreach ($articles as $article)
+                <option value="{{ $article->sqid }}" @selected($articleSqid === $article->sqid)>{{ $article->number ? $article->number . ' · ' : '' }}{{ $article->name }}</option>
+            @endforeach
+        </x-select-field>
+    @endif
 </x-form-group>
 
 <x-form-group :legend="__('Preis & Status')" icon="payments" tone="info" cols="2">

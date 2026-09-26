@@ -337,16 +337,13 @@ return [
         ['code' => 'va_zugang', 'kind' => 'accessRestriction', 'label' => 'Zutrittskontrolle', 'note' => 'Zutrittskontrolle/Akkreditierung erforderlich.'],
         ['code' => 'va_sanitaer', 'kind' => 'other', 'label' => 'Sanitärversorgung', 'note' => 'Sanitär-/Toilettenversorgung nach Besucherzahl.'],
     ],
-    // HINWEIS: 'protocol_templates' und 'asset_categories' werden vom
-    // BranchProfileInstaller NICHT installiert (kein ProtocolTemplate-Modell;
-    // Asset-Kategorien stammen aus config('asset_categories')). Sie dienen als
-    // Branchen-Taxonomie/Vorlage für künftige Features.
+    // 'protocol_templates': Codes aus database/data/protocol_templates.php (MVP-902).
+    // 'asset_categories' installiert der BranchProfileInstaller nicht (Kategorien
+    // stammen aus config('asset_categories')); sie dienen als Branchen-Taxonomie.
     'protocol_templates' => [
-        ['code' => 'VA_KONZEPT'],
         ['code' => 'VA_GENEHMIGUNGSLISTE'],
         ['code' => 'VA_SICHERHEITSKONZEPT'],
         ['code' => 'VA_ABLAUFPLAN'],
-        ['code' => 'VA_DIENSTLEISTERLISTE'],
         ['code' => 'VA_ABNAHME'],
         ['code' => 'VA_ZWISCHENFALLBERICHT'],
     ],

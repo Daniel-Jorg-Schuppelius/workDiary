@@ -67,7 +67,7 @@ class LexofficeVoucherSync {
     }
 
     /**
-     * @return array{contacts: int, created: int, updated: int, archived: int, paid_dates: int, lines: int, frozen?: bool, lines_error?: string}
+     * @return array{contacts: int, created: int, updated: int, archived: int, paid_dates: int, lines: int, categories: int, frozen?: bool, lines_error?: string, categories_error?: string}
      */
     public function sync(Organization $organization): array {
         // G3 (MVP-690): Nach abgeschlossenem Buchhaltungswechsel mit Quelle
@@ -79,7 +79,7 @@ class LexofficeVoucherSync {
             ->where('status', \App\Enums\Migration\AccountingMigrationStatus::Completed->value)
             ->exists();
         if ($completedMigration) {
-            return ['contacts' => 0, 'created' => 0, 'updated' => 0, 'archived' => 0, 'paid_dates' => 0, 'lines' => 0, 'frozen' => true];
+            return ['contacts' => 0, 'created' => 0, 'updated' => 0, 'archived' => 0, 'paid_dates' => 0, 'lines' => 0, 'categories' => 0, 'frozen' => true];
         }
 
         if ($this->apiKey === null || $this->apiKey === '') {
@@ -116,6 +116,7 @@ class LexofficeVoucherSync {
             'archived' => (int) $archived,
             'paid_dates' => $this->enrichPaidDates($organization->id),
             'lines' => 0,
+            'categories' => 0,
         ];
         // Feature 152 (MVP-760): Positionen der neuen Rechnungen nachladen —
         // je Lauf begrenzt, der Backfill läuft über lexoffice:sync-voucher-lines.
@@ -126,6 +127,13 @@ class LexofficeVoucherSync {
         } catch (\Throwable $e) {
             $result['lines_error'] = class_basename($e) . ': ' . mb_substr($e->getMessage(), 0, 200);
             \Illuminate\Support\Facades\Log::warning('LexofficeVoucherSync: Positions-Sync abgebrochen.', ['organization_id' => $organization->id, 'error' => $result['lines_error']]);
+        }
+        // MVP-905: Kategoriezeilen der Einkaufsbelege, gleiche Regeln wie die Positionen.
+        try {
+            $result['categories'] = (new LexofficeVoucherCategorySync((string) $this->apiKey, $this->baseUrl, $this->requestInterval))->syncMissing($organization, self::LINES_PER_RUN)['synced'];
+        } catch (\Throwable $e) {
+            $result['categories_error'] = class_basename($e) . ': ' . mb_substr($e->getMessage(), 0, 200);
+            \Illuminate\Support\Facades\Log::warning('LexofficeVoucherSync: Kategorie-Sync abgebrochen.', ['organization_id' => $organization->id, 'error' => $result['categories_error']]);
         }
 
         return $result;

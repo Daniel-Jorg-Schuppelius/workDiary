@@ -283,16 +283,14 @@ return [
         ['code' => 'shk_pruefung', 'kind' => 'technicalInspection', 'label' => 'Wiederkehrende Prüfung (z. B. Trinkwasser)', 'level' => 'jährlich'],
         ['code' => 'shk_technikraum', 'kind' => 'accessRestriction', 'label' => 'Technikraum zutrittsbeschränkt', 'level' => 'fachkraft'],
     ],
-    // HINWEIS: 'protocol_templates' und 'asset_categories' werden vom
-    // BranchProfileInstaller NICHT installiert (kein ProtocolTemplate-Modell;
-    // Asset-Kategorien stammen aus config('asset_categories')). Sie dienen als
-    // Branchen-Taxonomie/Vorlage für künftige Features.
+    // 'protocol_templates': Codes aus database/data/protocol_templates.php (MVP-902).
+    // 'asset_categories' installiert der BranchProfileInstaller nicht (Kategorien
+    // stammen aus config('asset_categories')); sie dienen als Branchen-Taxonomie.
     'protocol_templates' => [
         ['code' => 'SHK_WARTUNGSPROTOKOLL'],
         ['code' => 'SHK_DRUCKPROTOKOLL'],
         ['code' => 'SHK_DICHTHEITSPROTOKOLL'],
         ['code' => 'SHK_ABNAHME'],
-        ['code' => 'SHK_ANLAGENAKTE'],
         ['code' => 'SHK_SERVICEBERICHT'],
     ],
     'asset_categories' => [

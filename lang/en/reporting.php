@@ -147,6 +147,21 @@ return [
         'empty' => 'No time allocations in the period.',
         'note' => 'Based solely on allocation shares; unallocated time appears in the regular time reports.',
     ],
+    'supplier_category' => [
+        'title' => 'Spend :per by category',
+        'note' => 'Net amounts of purchase vouchers per Lexoffice posting category; credit notes reduce.',
+        'pending' => ':count vouchers in the period have no categories yet (loaded with the next sync).',
+        'rest' => 'Others',
+        'unknown' => 'no category',
+    ],
+    'supplier_material' => [
+        'title' => 'Material consumption by supplier',
+        'note' => 'Consumption from timesheets in the period, assigned via material → article → preferred supply source. Without article link: :unlinked €.',
+        'materials' => 'Materials',
+        'usages' => 'Entries',
+        'quantities' => 'Quantities',
+        'value' => 'Net value',
+    ],
     'supplier_bridge' => [
         'title' => 'Spend bridge previous period → period',
         'start' => 'Previous period',

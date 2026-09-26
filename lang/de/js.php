@@ -102,4 +102,11 @@ return [
     'quiz' => [
         'progress' => ':answered von :total beantwortet',
     ],
+    // NFC-Scan (MVP-903).
+    'nfc' => [
+        'hold' => 'Tag an das Gerät halten …',
+        'empty' => 'Der Tag enthält keinen Link.',
+        'failed' => 'NFC nicht möglich.',
+        'written' => 'Tag beschrieben.',
+    ],
 ];

@@ -147,6 +147,21 @@ return [
         'empty' => 'Sin repartos de tiempo en el período.',
         'note' => 'Basado únicamente en las partes del reparto; el tiempo no repartido aparece en los informes de tiempo habituales.',
     ],
+    'supplier_category' => [
+        'title' => 'Gastos :per por categoría',
+        'note' => 'Importes netos de los comprobantes de compra por categoría contable de Lexoffice; los abonos restan.',
+        'pending' => ':count comprobantes del periodo aún no tienen categorías (se cargan en la próxima sincronización).',
+        'rest' => 'Otros',
+        'unknown' => 'sin categoría',
+    ],
+    'supplier_material' => [
+        'title' => 'Consumo de material por proveedor',
+        'note' => 'Consumo de los partes de horas del periodo, asignado mediante material → artículo → fuente de suministro preferida. Sin vínculo de artículo: :unlinked €.',
+        'materials' => 'Materiales',
+        'usages' => 'Registros',
+        'quantities' => 'Cantidades',
+        'value' => 'Valor neto',
+    ],
     'supplier_bridge' => [
         'title' => 'Puente de gasto periodo anterior → periodo',
         'start' => 'Periodo anterior',

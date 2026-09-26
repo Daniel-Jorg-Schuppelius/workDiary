@@ -46,6 +46,8 @@
                 <div class="fieldset grow"><label for="code" class="fieldset-label">{{ __('inspection_round.scan') }}</label>
                     <input id="code" name="code" autofocus required autocomplete="off" enterkeyhint="send" class="input input-bordered w-full font-mono" placeholder="QR / Anlagen-Nr. / Inventar-Nr. / SN"></div>
                 <x-button type="submit" tone="primary">{{ __('inspection_round.scan_submit') }}</x-button>
+                <x-icon-btn icon="nfc" class="hidden" type="button" data-nfc-read="#code" data-nfc-submit :label="__('asset.nfc.read')" />
+                <span class="text-xs text-muted" data-nfc-status aria-live="polite"></span>
             </form>
             @if ($matches->isNotEmpty())
                 <div class="mt-3 space-y-1">

@@ -11,10 +11,20 @@
 namespace App\Http\Requests\Material;
 
 use App\Http\Requests\BaseFormRequest;
+use App\Http\Requests\Concerns\DecodesSqidInputs;
+use App\Models\Article\Article;
 use App\Models\Material\Material;
+use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
 
 class SaveMaterialRequest extends BaseFormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'article_id' => Article::class,
+    ];
+
     /** @return array<string, mixed> */
     public function rules(): array {
         $material = $this->route('material');
@@ -27,6 +37,7 @@ class SaveMaterialRequest extends BaseFormRequest {
             'default_unit_price' => ['nullable', 'numeric', 'min:0', 'max:999999.9999'],
             'tax_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'is_active' => ['nullable', 'boolean'],
+            'article_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('articles')],
         ];
     }
 }

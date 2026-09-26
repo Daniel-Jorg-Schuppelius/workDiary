@@ -147,6 +147,21 @@ return [
         'empty' => 'Keine Zeitaufteilungen im Zeitraum.',
         'note' => 'Datenbasis sind ausschließlich Aufteilungs-Anteile; nicht aufgeteilte Zeit erscheint in den regulären Zeit-Auswertungen.',
     ],
+    'supplier_category' => [
+        'title' => 'Ausgaben :per nach Kategorie',
+        'note' => 'Nettobeträge der Einkaufsbelege je Lexoffice-Buchungskategorie; Gutschriften mindern.',
+        'pending' => ':count Belege im Zeitraum haben noch keine Kategorien (werden beim nächsten Sync geladen).',
+        'rest' => 'Übrige',
+        'unknown' => 'ohne Kategorie',
+    ],
+    'supplier_material' => [
+        'title' => 'Materialverbrauch je Lieferant',
+        'note' => 'Verbrauch aus den Stundenzetteln im Zeitraum, zugeordnet über Material → Artikel → bevorzugte Lieferquelle. Ohne Artikelbezug: :unlinked €.',
+        'materials' => 'Materialien',
+        'usages' => 'Buchungen',
+        'quantities' => 'Mengen',
+        'value' => 'Nettowert',
+    ],
     'supplier_bridge' => [
         'title' => 'Ausgabenbrücke Vorperiode → Zeitraum',
         'start' => 'Vorperiode',

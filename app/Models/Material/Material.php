@@ -11,9 +11,11 @@
 namespace App\Models\Material;
 
 use App\Casts\{MoneyCast, PercentageCast};
+use App\Models\Article\Article;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -43,6 +45,7 @@ class Material extends Model {
 
     protected $fillable = [
         'organization_id',
+        'article_id',
         'sku',
         'name',
         'unit',
@@ -59,4 +62,9 @@ class Material extends Model {
         'tax_rate' => PercentageCast::class . ':2',
         'is_active' => 'boolean',
     ];
+
+    /** @return BelongsTo<Article, $this> Optionaler Artikelbezug (MVP-904) für Lieferantenauswertungen. */
+    public function article(): BelongsTo {
+        return $this->belongsTo(Article::class);
+    }
 }

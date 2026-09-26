@@ -38,6 +38,7 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $service_starts_on
  * @property ?Carbon $service_ends_on
  * @property ?Carbon $lines_synced_at
+ * @property ?Carbon $categories_synced_at
  * @property ?Carbon $lines_sync_failed_at
  * @property int $lines_sync_attempts
  * @property-read \Illuminate\Database\Eloquent\Collection<int, LexofficeVoucherLine> $lines
@@ -72,6 +73,7 @@ class LexofficeVoucher extends Model {
         'service_starts_on',
         'service_ends_on',
         'lines_synced_at',
+        'categories_synced_at',
         'lines_sync_failed_at',
         'lines_sync_attempts',
         'total_amount',
@@ -94,6 +96,7 @@ class LexofficeVoucher extends Model {
         'service_starts_on' => 'date',
         'service_ends_on' => 'date',
         'lines_synced_at' => 'datetime',
+        'categories_synced_at' => 'datetime',
         'lines_sync_failed_at' => 'datetime',
         'lines_sync_attempts' => 'integer',
         'total_amount' => MoneyCast::class . ':currency,2',

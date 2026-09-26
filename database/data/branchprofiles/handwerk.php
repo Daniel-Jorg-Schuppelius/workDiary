@@ -263,10 +263,9 @@ return [
             ],
         ],
     ],
-    // HINWEIS: 'protocol_templates' und 'asset_categories' werden vom
-    // BranchProfileInstaller NICHT installiert (kein ProtocolTemplate-Modell;
-    // Asset-Kategorien stammen aus config('asset_categories')). Sie dienen als
-    // Branchen-Taxonomie/Vorlage für künftige Features.
+    // 'protocol_templates': Codes aus database/data/protocol_templates.php (MVP-902).
+    // 'asset_categories' installiert der BranchProfileInstaller nicht (Kategorien
+    // stammen aus config('asset_categories')); sie dienen als Branchen-Taxonomie.
     'protocol_templates' => [
         ['code' => 'HW_SERVICEBERICHT'],
         ['code' => 'HW_WARTUNGSPROTOKOLL'],

@@ -492,6 +492,8 @@ return [
         'letterhead_assets' => \App\Models\DocumentDesign\LetterheadAsset::class,
         'lexoffice_articles' => \App\Models\Plugins\Lexoffice\LexofficeArticle::class,
         'lexoffice_invoice_handovers' => \App\Models\Plugins\Lexoffice\LexofficeInvoiceHandover::class,
+        'lexoffice_posting_categories' => \App\Models\Plugins\Lexoffice\LexofficePostingCategory::class,
+        'lexoffice_voucher_categories' => \App\Models\Plugins\Lexoffice\LexofficeVoucherCategory::class,
         'lexoffice_voucher_lines' => \App\Models\Plugins\Lexoffice\LexofficeVoucherLine::class,
         'lexoffice_vouchers' => \App\Models\Plugins\Lexoffice\LexofficeVoucher::class,
         'lexoffice_webhook_deliveries' => \App\Models\Plugins\Lexoffice\LexofficeWebhookDelivery::class,
