@@ -133,14 +133,14 @@ if [ "${DEPLOY_SKIP_MAINTENANCE:-0}" != "1" ]; then
             $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
             $cfg = config("queue.connections.database");
             $rows = $app["db"]->connection($cfg["connection"] ?? null)->table($cfg["table"] ?? "jobs")
-                ->selectRaw("queue, count(*) as total, sum(case when available_at > ? then 1 else 0 end) as delayed", [time()])
+                ->selectRaw("queue, count(*) as total_jobs, sum(case when available_at > ? then 1 else 0 end) as delayed_jobs", [time()])
                 ->groupBy("queue")->orderBy("queue")->get();
         } catch (Throwable $e) {
             echo get_class($e), ": ", $e->getMessage();
             exit(2);
         }
         if ($rows->isEmpty()) { exit(0); }
-        echo $rows->map(fn ($r) => $r->queue.": ".$r->total.((int) $r->delayed > 0 ? " (davon ".(int) $r->delayed." verzögert)" : ""))->implode(", ");
+        echo $rows->map(fn ($r) => $r->queue.": ".$r->total_jobs.((int) $r->delayed_jobs > 0 ? " (davon ".(int) $r->delayed_jobs." verzögert)" : ""))->implode(", ");
         exit(3);
     ')" || queue_rc=$?
     case "$queue_rc" in
