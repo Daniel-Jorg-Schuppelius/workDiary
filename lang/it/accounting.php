@@ -638,6 +638,48 @@ return [
             ],
         ],
         // 13-Wochen-Liquiditätsvorschau (Feature 136, MVP-701).
+        // Liquiditätsszenarien (MVP-954).
+        'scenario' => [
+            'title' => 'Scenari di liquidità',
+            'subtitle' => 'Ipotesi accanto alla previsione base: ritardo di pagamento dei clienti, variazione di incassi e pagamenti, investimenti previsti e singole voci.',
+            'select' => 'Scenario',
+            'base' => 'Base',
+            'apply' => 'Applica',
+            'manage' => 'Scenari',
+            'open' => 'Mostra nella previsione',
+            'new' => 'Nuovo scenario',
+            'create' => 'Crea',
+            'save' => 'Salva',
+            'add_item' => 'Aggiungi voce',
+            'items_empty' => 'Nessuna voce singola.',
+            'confirm_delete' => 'Eliminare lo scenario con tutte le voci?',
+            'compare' => 'Scenario «:name»: saldo minimo :scenario (:scenario_week) invece di :base (:base_week) nella base.',
+            'field' => [
+                'name' => 'Nome',
+                'receipt_delay_days' => 'Ritardo di pagamento dei clienti (giorni)',
+                'inflow_change_percent' => 'Incassi ± %',
+                'outflow_change_percent' => 'Pagamenti ± %',
+                'is_including_investments' => 'Includere gli investimenti previsti',
+                'note' => 'Nota',
+                'label' => 'Denominazione',
+                'direction' => 'Direzione',
+                'expected_on' => 'Previsto il',
+                'amount' => 'Importo',
+            ],
+            'hint' => [
+                'receipt_delay_days' => 'Sposta crediti e piani di fatturazione.',
+            ],
+            'direction' => [
+                'in' => 'Incasso',
+                'out' => 'Pagamento',
+            ],
+            'flash' => [
+                'saved' => 'Scenario salvato.',
+                'deleted' => 'Scenario eliminato.',
+                'item_saved' => 'Voce aggiunta.',
+                'item_deleted' => 'Voce rimossa.',
+            ],
+        ],
         'forecast' => [
             'subtitle' => 'Saldo iniziale banca e cassa e pagamenti attesi per settimana di calendario dal :date — :weeks settimane.',
             'hint' => 'Un’aspettativa, non un saldo: partite aperte secondo il comportamento di pagamento e le scadenze di sconto, attese di documenti, piani di fatturazione, ordini di pagamento rilasciati, rate di finanziamento e scadenze fiscali quantificabili. Gli scaduti contano nella settimana corrente.',
@@ -669,6 +711,8 @@ return [
                 'payment_runs' => 'Ordini di pagamento',
                 'finance_rates' => 'Rate',
                 'filings' => 'Imposte',
+                'investments' => 'Investimenti',
+                'scenario' => 'Scenario',
             ],
             'note' => [
                 'overdue' => 'scaduto — settimana corrente',

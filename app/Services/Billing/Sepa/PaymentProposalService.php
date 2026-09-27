@@ -26,10 +26,12 @@ use Illuminate\Support\Collection;
  * was gezahlt wird, entscheidet der Mensch im nächsten Schritt.
  */
 class PaymentProposalService {
+    public function __construct(private readonly IncomingRetentionService $retentions) {}
+
     /**
      * Offene, zur Zahlung freigegebene Eingangsrechnungen mit Vorschlagswerten.
      *
-     * @return Collection<int, array{invoice: IncomingEInvoice, supplier: Supplier|null, iban: string|null, bic: string|null, amount: float, gross: float, discount_percent: float|null, execute_on: CarbonImmutable, uses_discount: bool, blocked: string|null}>
+     * @return Collection<int, array{invoice: IncomingEInvoice, supplier: Supplier|null, iban: string|null, bic: string|null, amount: float, gross: float, retained: float, discount_percent: float|null, execute_on: CarbonImmutable, uses_discount: bool, blocked: string|null}>
      */
     public function proposals(?CarbonImmutable $today = null): Collection {
         $today = $today ?? CarbonImmutable::today();
@@ -44,7 +46,7 @@ class PaymentProposalService {
     }
 
     /**
-     * @return array{invoice: IncomingEInvoice, supplier: Supplier|null, iban: string|null, bic: string|null, amount: float, gross: float, discount_percent: float|null, execute_on: CarbonImmutable, uses_discount: bool, blocked: string|null}
+     * @return array{invoice: IncomingEInvoice, supplier: Supplier|null, iban: string|null, bic: string|null, amount: float, gross: float, retained: float, discount_percent: float|null, execute_on: CarbonImmutable, uses_discount: bool, blocked: string|null}
      */
     public function proposalFor(IncomingEInvoice $invoice, ?CarbonImmutable $today = null): array {
         $today = $today ?? CarbonImmutable::today();
@@ -63,6 +65,9 @@ class PaymentProposalService {
         $amount = $usesDiscount && $grossMoney !== null
             ? $grossMoney->minusPercentage(NumberHelper::normalizeDecimalString((string) $invoice->discount_percent))->toFloat()
             : $gross;
+        // Einbehalte (MVP-953) mindern die Zahlung; Skonto gilt auf den vollen Betrag.
+        $retained = (float) $this->retentions->retainedAmount($invoice);
+        $amount = round($amount - $retained, 2);
 
         // Skontotermin schlägt Nettotermin — er ist der teurere, wenn man ihn
         // verpasst. Ohne Skonto wird zum Fälligkeitstag gezahlt, nie früher.
@@ -77,6 +82,7 @@ class PaymentProposalService {
             'bic' => $bic,
             'amount' => $amount,
             'gross' => $gross,
+            'retained' => $retained,
             'discount_percent' => $usesDiscount ? (float) $invoice->discount_percent : null,
             'execute_on' => $executeOn->lessThan($today) ? $today : $executeOn,
             'uses_discount' => $usesDiscount,

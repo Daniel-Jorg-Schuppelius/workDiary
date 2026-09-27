@@ -88,6 +88,9 @@ final class FinanceManifest extends Manifest {
             'datev_booking_events',
             'datev_booking_sources',
             'fixed_assets',
+            'incoming_invoice_retentions',
+            'liquidity_scenario_items',
+            'liquidity_scenarios',
             'payment_allocations',
             'payment_reconciliation_events',
             'payment_run_items',
@@ -177,6 +180,9 @@ final class FinanceManifest extends Manifest {
             ],
             \App\Services\Navigation\Contracts\NavigationCondition::class => [
                 \App\Services\Accounting\Navigation\LocalLedgerCondition::class,
+            ],
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Finance\DeadlineScans\IncomingRetentionReleaseScan::class,
             ],
         ];
     }

@@ -638,6 +638,48 @@ return [
             ],
         ],
         // 13-Wochen-Liquiditätsvorschau (Feature 136, MVP-701).
+        // Liquiditätsszenarien (MVP-954).
+        'scenario' => [
+            'title' => 'Scénarios de trésorerie',
+            'subtitle' => 'Hypothèses à côté de la prévision de base : retard de paiement des clients, variation des encaissements et décaissements, investissements prévus et postes ponctuels.',
+            'select' => 'Scénario',
+            'base' => 'Base',
+            'apply' => 'Appliquer',
+            'manage' => 'Scénarios',
+            'open' => 'Afficher dans la prévision',
+            'new' => 'Nouveau scénario',
+            'create' => 'Créer',
+            'save' => 'Enregistrer',
+            'add_item' => 'Ajouter un poste',
+            'items_empty' => 'Aucun poste ponctuel.',
+            'confirm_delete' => 'Supprimer le scénario et tous ses postes ?',
+            'compare' => 'Scénario « :name » : solde le plus bas :scenario (:scenario_week) au lieu de :base (:base_week) dans la base.',
+            'field' => [
+                'name' => 'Nom',
+                'receipt_delay_days' => 'Retard de paiement des clients (jours)',
+                'inflow_change_percent' => 'Encaissements ± %',
+                'outflow_change_percent' => 'Décaissements ± %',
+                'is_including_investments' => 'Inclure les investissements prévus',
+                'note' => 'Note',
+                'label' => 'Libellé',
+                'direction' => 'Sens',
+                'expected_on' => 'Prévu le',
+                'amount' => 'Montant',
+            ],
+            'hint' => [
+                'receipt_delay_days' => 'Décale les créances et les échéanciers de facturation.',
+            ],
+            'direction' => [
+                'in' => 'Encaissement',
+                'out' => 'Décaissement',
+            ],
+            'flash' => [
+                'saved' => 'Scénario enregistré.',
+                'deleted' => 'Scénario supprimé.',
+                'item_saved' => 'Poste ajouté.',
+                'item_deleted' => 'Poste supprimé.',
+            ],
+        ],
         'forecast' => [
             'subtitle' => 'Solde initial banque & caisse et paiements attendus par semaine calendaire à partir du :date — :weeks semaines.',
             'hint' => 'Une attente, pas un solde : postes ouverts selon le comportement de paiement et les échéances d’escompte, attentes de pièces, plans de facturation, ordres de paiement validés, échéances de financement et échéances fiscales chiffrables. Les retards comptent dans la semaine en cours.',
@@ -669,6 +711,8 @@ return [
                 'payment_runs' => 'Ordres de paiement',
                 'finance_rates' => 'Échéances',
                 'filings' => 'Impôts',
+                'investments' => 'Investissements',
+                'scenario' => 'Scénario',
             ],
             'note' => [
                 'overdue' => 'en retard — semaine en cours',

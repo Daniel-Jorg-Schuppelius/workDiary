@@ -563,7 +563,12 @@ class AccountingReportController extends Controller {
         $this->authorizeView();
         $organization = $this->currentOrganizationOrAbort();
         $weeks = (int) $request->query('weeks', (string) LiquidityForecastBuilder::DEFAULT_WEEKS);
-        $data = $this->forecasts->build($organization, Tz::now(), $weeks);
+        // Szenario (MVP-954): gerechnet neben der Basis, nicht statt ihr.
+        $scenario = $request->filled('scenario')
+            ? \App\Models\Finance\LiquidityScenario::query()->with('items')->find(\App\Support\Sqid::decodeOrNumeric(\App\Models\Finance\LiquidityScenario::class, $request->string('scenario')->toString()))
+            : null;
+        $data = $this->forecasts->build($organization, Tz::now(), $weeks, $scenario);
+        $baseTotals = $scenario !== null ? $this->forecasts->build($organization, Tz::now(), $weeks)['totals'] : null;
 
         $rows = [[
             (string) __('accounting.reports.forecast.column.week'),
@@ -599,6 +604,9 @@ class AccountingReportController extends Controller {
             'closingSeries' => $closingSeries,
             'flowSeries' => $flowSeries,
             'horizons' => LiquidityForecastBuilder::HORIZONS,
+            'scenario' => $scenario,
+            'scenarios' => \App\Models\Finance\LiquidityScenario::query()->orderBy('name')->get(['id', 'name']),
+            'baseTotals' => $baseTotals,
         ]);
     }
 

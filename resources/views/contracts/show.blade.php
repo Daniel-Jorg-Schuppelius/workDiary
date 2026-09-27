@@ -111,6 +111,10 @@
         </x-card>
     </div>
 
+    @if ($contract->indexation_method === \App\Enums\Contract\IndexationMethod::ConsumerPriceIndex)
+        @include('contracts._indexation_card', ['contract' => $contract, 'indexationPreview' => $indexationPreview])
+    @endif
+
     <x-card :title="__('Vertragskalender & Obligationen')">
         <x-table bare>
             <x-slot:head>

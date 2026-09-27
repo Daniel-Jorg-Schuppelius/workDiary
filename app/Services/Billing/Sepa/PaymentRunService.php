@@ -14,7 +14,9 @@ namespace App\Services\Billing\Sepa;
 
 use App\Enums\Document\DocumentType;
 use App\Enums\Finance\{PaymentRunKind, PaymentRunStatus};
+use App\Enums\Invoicing\RetentionStatus;
 use App\Models\Finance\{BankAccount, PaymentRun, PaymentRunItem, SepaMandate};
+use App\Models\Finance\IncomingInvoiceRetention;
 use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\User;
 use App\Services\Billing\FinancialFormatsSupport;
@@ -44,6 +46,7 @@ class PaymentRunService {
      * Zahllauf aus ausgewählten Eingangsrechnungen erzeugen.
      *
      * @param list<int> $incomingIds
+     * @param list<int> $retentionIds freigegebene Einbehalte (MVP-953)
      */
     public function createFromProposals(
         BankAccount $account,
@@ -51,12 +54,13 @@ class PaymentRunService {
         array $incomingIds,
         ?CarbonImmutable $executionDate = null,
         ?string $label = null,
+        array $retentionIds = [],
     ): PaymentRun {
-        if ($incomingIds === []) {
+        if ($incomingIds === [] && $retentionIds === []) {
             throw new RuntimeException((string) __('sepa.error.no_positions'));
         }
 
-        return DB::transaction(function () use ($account, $actor, $incomingIds, $executionDate, $label): PaymentRun {
+        return DB::transaction(function () use ($account, $actor, $incomingIds, $executionDate, $label, $retentionIds): PaymentRun {
             $run = PaymentRun::query()->create([
                 'organization_id' => $account->organization_id,
                 'bank_account_id' => $account->id,
@@ -91,12 +95,15 @@ class PaymentRunService {
                     'amount' => $proposal['amount'],
                     'gross_amount' => $proposal['gross'],
                     'discount_percent' => $proposal['discount_percent'],
+                    'deduction_reason' => $proposal['retained'] > 0 ? (string) __('sepa.retention.deduction') : null,
                     'reference' => $this->reference($invoice),
                     'end_to_end_id' => $this->endToEndId($invoice),
                 ]);
 
                 $invoice->forceFill(['paid_in_run_id' => $run->id])->save();
             }
+
+            $this->addRetentionItems($run, $retentionIds);
 
             return $this->recalculate($run);
         });
@@ -164,6 +171,7 @@ class PaymentRunService {
 
         DB::transaction(function () use ($item): void {
             $item->incomingEInvoice?->forceFill(['paid_in_run_id' => null])->save();
+            $item->retention?->forceFill(['paid_in_run_id' => null])->save();
             $item->delete();
         });
 
@@ -282,6 +290,7 @@ class PaymentRunService {
         DB::transaction(function () use ($run): void {
             foreach ($run->items as $item) {
                 $item->incomingEInvoice?->forceFill(['paid_in_run_id' => null])->save();
+                $item->retention?->forceFill(['paid_in_run_id' => null])->save();
             }
             $run->forceFill(['status' => PaymentRunStatus::Cancelled->value])->save();
         });
@@ -317,6 +326,47 @@ class PaymentRunService {
             $run->kind === PaymentRunKind::DirectDebit ? 'pain008' : 'pain001',
             $messageId,
         );
+    }
+
+    /**
+     * Freigegebene Einbehalte als eigene Posten (MVP-953); ohne Rechnungsbezug
+     * am Posten, damit Entfernen und Storno die Rechnung nicht wieder freigeben.
+     *
+     * @param list<int> $retentionIds
+     */
+    private function addRetentionItems(PaymentRun $run, array $retentionIds): void {
+        if ($retentionIds === []) {
+            return;
+        }
+        $retentions = IncomingInvoiceRetention::query()->whereIn('id', $retentionIds)
+            ->where('status', RetentionStatus::Released->value)
+            ->whereNull('paid_in_run_id')
+            ->with('incomingEInvoice')
+            ->get();
+        foreach ($retentions as $retention) {
+            $invoice = $retention->incomingEInvoice;
+            if ($invoice === null) {
+                continue;
+            }
+            $proposal = $this->proposals->proposalFor($invoice);
+            if ($proposal['iban'] === null || $this->proposals->ibanDiffersFromMaster($invoice, $proposal['supplier'])) {
+                continue;
+            }
+            PaymentRunItem::query()->create([
+                'organization_id' => $run->organization_id,
+                'payment_run_id' => $run->id,
+                'incoming_invoice_retention_id' => $retention->id,
+                'supplier_id' => $proposal['supplier']?->id,
+                'party_name' => mb_substr((string) ($invoice->seller_name ?? '—'), 0, 70),
+                'iban' => $proposal['iban'],
+                'bic' => $proposal['bic'],
+                'amount' => (string) $retention->amount,
+                'gross_amount' => (string) $retention->amount,
+                'reference' => mb_substr((string) __('sepa.retention.reference', ['number' => (string) ($invoice->invoice_number ?? '—')]), 0, 140),
+                'end_to_end_id' => mb_substr('EB-' . $retention->id, 0, 35),
+            ]);
+            $retention->forceFill(['paid_in_run_id' => $run->id])->save();
+        }
     }
 
     /** Verwendungszweck: Rechnungsnummer zuerst — daran erkennt sie der Empfänger. */

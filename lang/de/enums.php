@@ -439,6 +439,7 @@ return [
             'contract' => [
                 'deadlineDue' => 'Vertragsfrist fällig',
                 'signatureReceived' => 'Nachweis zur Vereinbarung eingegangen',
+                'indexationProposed' => 'Indexanpassung vorgeschlagen',
             ],
             'accounting' => [
                 'recurringOverdue' => 'Wiederkehrender Vorgang überfällig',

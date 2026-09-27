@@ -67,6 +67,7 @@ class PaymentRunController extends Controller {
 
         return view('finance.payment-runs.proposals', [
             'proposals' => $this->proposals->proposals(),
+            'retentions' => app(\App\Services\Billing\Sepa\IncomingRetentionService::class)->payable(),
             'accounts' => BankAccount::query()->where('is_active', true)->orderBy('label')->get(),
         ]);
     }
@@ -76,8 +77,10 @@ class PaymentRunController extends Controller {
 
         $data = $request->validate([
             'bank_account' => ['required', 'string'],
-            'invoices' => ['required', 'array', 'min:1'],
+            'invoices' => ['required_without:retentions', 'array'],
             'invoices.*' => ['string'],
+            'retentions' => ['required_without:invoices', 'array'],
+            'retentions.*' => ['string'],
             'execution_date' => ['nullable', 'date'],
             'label' => ['nullable', 'string', 'max:191'],
         ]);
@@ -88,7 +91,11 @@ class PaymentRunController extends Controller {
         $account = BankAccount::query()->findOrFail(Sqid::decodeOrNumeric(BankAccount::class, (string) $data['bank_account']));
         $ids = array_map(
             static fn (string $value): int => (int) Sqid::decodeOrNumeric(IncomingEInvoice::class, $value),
-            array_values($data['invoices']),
+            array_values($data['invoices'] ?? []),
+        );
+        $retentionIds = array_map(
+            static fn (string $value): int => (int) Sqid::decodeOrNumeric(\App\Models\Finance\IncomingInvoiceRetention::class, $value),
+            array_values($data['retentions'] ?? []),
         );
 
         try {
@@ -98,6 +105,7 @@ class PaymentRunController extends Controller {
                 array_values(array_filter($ids)),
                 filled($data['execution_date'] ?? null) ? CarbonImmutable::parse((string) $data['execution_date']) : null,
                 $data['label'] ?? null,
+                array_values(array_filter($retentionIds)),
             );
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));

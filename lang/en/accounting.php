@@ -638,6 +638,48 @@ return [
             ],
         ],
         // 13-Wochen-Liquiditätsvorschau (Feature 136, MVP-701).
+        // Liquiditätsszenarien (MVP-954).
+        'scenario' => [
+            'title' => 'Liquidity scenarios',
+            'subtitle' => 'Assumptions next to the base forecast: customer payment delay, change in receipts and payments, planned investments and individual items.',
+            'select' => 'Scenario',
+            'base' => 'Base',
+            'apply' => 'Apply',
+            'manage' => 'Scenarios',
+            'open' => 'Show in forecast',
+            'new' => 'New scenario',
+            'create' => 'Create',
+            'save' => 'Save',
+            'add_item' => 'Add item',
+            'items_empty' => 'No individual items.',
+            'confirm_delete' => 'Delete the scenario and all its items?',
+            'compare' => 'Scenario “:name”: lowest balance :scenario (:scenario_week) instead of :base (:base_week) in the base.',
+            'field' => [
+                'name' => 'Name',
+                'receipt_delay_days' => 'Customer payment delay (days)',
+                'inflow_change_percent' => 'Receipts ± %',
+                'outflow_change_percent' => 'Payments ± %',
+                'is_including_investments' => 'Include planned investments',
+                'note' => 'Note',
+                'label' => 'Label',
+                'direction' => 'Direction',
+                'expected_on' => 'Expected on',
+                'amount' => 'Amount',
+            ],
+            'hint' => [
+                'receipt_delay_days' => 'Shifts receivables and invoice schedules.',
+            ],
+            'direction' => [
+                'in' => 'Receipt',
+                'out' => 'Payment',
+            ],
+            'flash' => [
+                'saved' => 'Scenario saved.',
+                'deleted' => 'Scenario deleted.',
+                'item_saved' => 'Item added.',
+                'item_deleted' => 'Item removed.',
+            ],
+        ],
         'forecast' => [
             'subtitle' => 'Opening balance of bank & cash and expected payments per calendar week from :date — :weeks weeks.',
             'hint' => 'An expectation, not a balance: open items by payment behaviour and discount deadlines, document expectations, invoice schedules, released payment runs, financing instalments and quantifiable tax deadlines. Overdue items count in the current week.',
@@ -669,6 +711,8 @@ return [
                 'payment_runs' => 'Payment runs',
                 'finance_rates' => 'Instalments',
                 'filings' => 'Taxes',
+                'investments' => 'Investments',
+                'scenario' => 'Scenario',
             ],
             'note' => [
                 'overdue' => 'overdue — current week',

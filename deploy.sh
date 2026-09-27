@@ -29,6 +29,9 @@ MAINTENANCE_ON=0
 # solange der Wartungsmodus noch nicht an war — ein Abbruch in den ersten
 # Schritten (Backup, artisan down) sah damit aus, als hätte der Deploy einfach
 # nur ein Backup gemacht und sich dann kommentarlos beendet.
+# Das `exit` am Ende ist Pflicht: `set +e` im ERR-Trap schaltet errexit für das
+# ganze Skript ab — ohne exit liefe der Deploy nach jedem Fehler weiter, bis
+# hin zu `php artisan up` über einem halb migrierten Stand.
 finish_maintenance() {
     local rc=$? line="${1:-?}" cmd="${2:-?}"
     set +e  # nach dem Sichern von $?: sonst kann der Trap mitten in der Meldung abbrechen
@@ -37,6 +40,7 @@ finish_maintenance() {
         echo "⚠ Die Anwendung bleibt im WARTUNGSMODUS (halb migrierter Stand darf nicht online)." >&2
         echo "  Nach Klärung manuell: php artisan up" >&2
     fi
+    exit "$rc"
 }
 trap 'finish_maintenance "$LINENO" "$BASH_COMMAND"' ERR
 
@@ -117,11 +121,42 @@ if [ "${DEPLOY_SKIP_MAINTENANCE:-0}" != "1" ]; then
     # Klassenumzug (MVP-862): Queue-Payloads tragen Klassennamen. Vor dem
     # Wartungsmodus muss die Jobs-Tabelle leer sein, sonst scheitern die
     # wartenden Jobs nach dem Deploy an umgezogenen Klassen.
-    pending_jobs=$(php artisan tinker --execute='echo DB::table("jobs")->count();' 2>/dev/null | tail -n 1 | tr -d '[:space:]')
-    if [ -n "$pending_jobs" ] && [ "$pending_jobs" != "0" ]; then
-        echo "Abbruch: $pending_jobs offene Queue-Jobs — erst leerlaufen lassen (php artisan queue:work --stop-when-empty)." >&2
-        exit 1
-    fi
+    # Kein tinker: psysh will ~/.config/psysh anlegen, das ISPConfig-Home ist
+    # immutable → Notice auf stdout, Exit 1, der Code läuft gar nicht. Die
+    # Sonde bootet Laravel direkt; Exit 0 = leer, 3 = offene Jobs, sonst Fehler.
+    # Gezählt wird je Queue (default UND media teilen sich die Tabelle).
+    queue_rc=0
+    queue_report="$(php -r '
+        try {
+            require "vendor/autoload.php";
+            $app = require "bootstrap/app.php";
+            $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+            $cfg = config("queue.connections.database");
+            $rows = $app["db"]->connection($cfg["connection"] ?? null)->table($cfg["table"] ?? "jobs")
+                ->selectRaw("queue, count(*) as total, sum(case when available_at > ? then 1 else 0 end) as delayed", [time()])
+                ->groupBy("queue")->orderBy("queue")->get();
+        } catch (Throwable $e) {
+            echo get_class($e), ": ", $e->getMessage();
+            exit(2);
+        }
+        if ($rows->isEmpty()) { exit(0); }
+        echo $rows->map(fn ($r) => $r->queue.": ".$r->total.((int) $r->delayed > 0 ? " (davon ".(int) $r->delayed." verzögert)" : ""))->implode(", ");
+        exit(3);
+    ')" || queue_rc=$?
+    case "$queue_rc" in
+        0) ;;
+        3)
+            echo "Abbruch: offene Queue-Jobs — $queue_report." >&2
+            echo "  Erst leerlaufen lassen: php artisan queue:work --stop-when-empty" >&2
+            echo "                          php artisan queue:work media --queue=media --stop-when-empty" >&2
+            echo "  Verzögerte Jobs laufen erst zu ihrem Termin — bis dahin warten oder gezielt löschen." >&2
+            exit 1
+            ;;
+        *)
+            echo "Abbruch: Queue-Prüfung fehlgeschlagen (Exit $queue_rc)${queue_report:+: $queue_report}" >&2
+            exit 1
+            ;;
+    esac
     php artisan down --retry=60 --secret="$DEPLOY_SECRET" --render="errors::503"
     MAINTENANCE_ON=1
     DEPLOY_APP_URL="$(env_value APP_URL .env)"

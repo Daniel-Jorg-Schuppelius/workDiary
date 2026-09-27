@@ -321,6 +321,14 @@ return [
             'allowed' => ['monthlyOn', 'weeklyOn', 'dailyAt'],
             'criticality' => 'core',
         ],
+        // Verbraucherpreisindex (MVP-952): Destatis veröffentlicht monatlich,
+        // neue Werte warten auf Freigabe.
+        'contracts.price_index_sync' => [
+            'command' => 'contracts:price-index-sync',
+            'cadence' => ['type' => 'monthlyOn', 'time' => '06:20', 'day' => 20],
+            'allowed' => ['monthlyOn', 'weeklyOn', 'dailyAt'],
+            'criticality' => 'core',
+        ],
         'privacy.retention_scan' => [
             'command' => 'privacy:retention-scan',
             'cadence' => ['type' => 'weeklyOn', 'time' => '04:30', 'day' => 1],

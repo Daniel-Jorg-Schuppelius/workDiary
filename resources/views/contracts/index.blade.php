@@ -17,6 +17,7 @@
         @can('create', \App\Models\Contract\Contract::class)
             <x-icon-btn icon="library_books" size="sm" :href="route('contracts.templates.index')" show-label>{{ __('contract.template.title') }}</x-icon-btn>
             <x-icon-btn icon="account_tree" size="sm" :href="route('contracts.cost-centers')" show-label>{{ __('contract.cost_center.title') }}</x-icon-btn>
+            <x-icon-btn icon="trending_up" size="sm" :href="route('contracts.price-index.index')" show-label>{{ __('contract.price_index.title') }}</x-icon-btn>
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger
                         :href="route('contracts.create')"

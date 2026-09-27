@@ -242,7 +242,15 @@ return [
         'added' => 'Référence ajoutée',
         'removed' => 'Référence retirée',
     ],
+    'incomingRetention' => [
+        'created' => 'Retenue ajoutée',
+        'released' => 'Retenue libérée',
+        'removed' => 'Retenue supprimée',
+    ],
     'contract' => [
+        'indexationProposed' => 'Indexation proposée',
+        'indexationApplied' => 'Indexation appliquée',
+        'indexationDismissed' => 'Indexation rejetée',
         'activated' => 'Contrat activé',
         'approved_step' => 'Étape d\'approbation du contrat accordée',
         'cancelled' => 'Contrat annulé',

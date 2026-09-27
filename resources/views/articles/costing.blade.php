@@ -55,6 +55,39 @@
                     :hint="__('article.costing.kpi.scrap_hint', ['scrap' => $qty($result['quality']['scrap']), 'produced' => $qty($result['quality']['produced'])])" />
     </div>
 
+    {{-- Je Variante und Arbeitsplan-Version (MVP-955). --}}
+    @if (count($result['groups']) > 1)
+        <x-card>
+            <h2 class="font-semibold mb-3">{{ __('article.costing.per_group') }}</h2>
+            <x-table bare>
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('article.costing.col.variant') }}</th>
+                        <th>{{ __('article.costing.col.version') }}</th>
+                        <th class="text-right">{{ __('article.costing.col.orders') }}</th>
+                        <th class="text-right">{{ __('article.costing.col.good') }}</th>
+                        <th class="text-right">{{ __('article.costing.col.total') }}</th>
+                        <th class="text-right">{{ __('article.costing.col.minutes') }}</th>
+                        <th class="text-right">{{ __('article.costing.col.unit_cost') }}</th>
+                        <th class="text-right">{{ __('article.costing.col.deviation') }}</th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($result['groups'] as $group)
+                    <tr>
+                        <td>{{ $group['variant'] ?? __('article.costing.no_variant') }}</td>
+                        <td>{{ $group['version'] !== null ? 'v' . $group['version'] : '—' }}</td>
+                        <td class="text-right tabular-nums">{{ $group['order_count'] }}</td>
+                        <td class="text-right tabular-nums">{{ $qty($group['good']) }}</td>
+                        <td class="text-right tabular-nums">{{ $eur($group['total']) }}</td>
+                        <td class="text-right tabular-nums">{{ $group['actual_minutes'] }} <span class="text-muted">/ {{ $group['planned_minutes'] }}</span></td>
+                        <td class="text-right tabular-nums font-medium">{{ $eur($group['unit_cost_avg'], 4) }}</td>
+                        <td class="text-right tabular-nums {{ $devTone($group['deviation_pct']) }}">{{ $pct($group['deviation_pct']) }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
+        </x-card>
+    @endif
+
     <x-card>
         <h2 class="font-semibold mb-3">{{ __('article.costing.per_order') }}</h2>
         <x-table bare table-sort="client">

@@ -182,6 +182,9 @@ enum NotificationEvent: string implements HasLabel {
     // Kundenvereinbarung eingegangen — Nachweise warten auf die Prüfung.
     case ContractSignatureReceived = 'contract.signatureReceived';
 
+    // MVP-952: freigegebener VPI-Stand ergibt einen Anpassungsvorschlag.
+    case ContractIndexationProposed = 'contract.indexationProposed';
+
     // MVP-415: Rechnungsentwurf aus Abrechnungsplan erzeugt (nie Auto-Versand).
     case InvoiceRecurringDraft = 'invoice.recurringDraft';
 
@@ -452,6 +455,7 @@ enum NotificationEvent: string implements HasLabel {
             // Kundenvereinbarungen (Feature 157): Prüfung und Gegenzeichnung
             // sind Leitungsaufgabe; der Verantwortliche des Vertrags via Service.
             self::ContractSignatureReceived => [UserRole::Teamleitung->value],
+            self::ContractIndexationProposed => [UserRole::Teamleitung->value],
             // Wiederkehrende Rechnungsentwürfe (MVP-415): kaufmännische Prüfung.
             self::InvoiceRecurringDraft => [UserRole::Buchhaltung->value],
             // Belegerwartung/Buchungsvorlage (MVP-675): dieselbe Zielgruppe.
@@ -574,6 +578,7 @@ enum NotificationEvent: string implements HasLabel {
             self::AssetFinanceDeadline => 'request_quote',
             self::ContractDeadlineDue => 'contract',
             self::ContractSignatureReceived => 'draw',
+            self::ContractIndexationProposed => 'trending_up',
             self::InvoiceRecurringDraft => 'receipt_long',
             self::AccountingRecurringOverdue => 'event_repeat',
             self::AccountingFilingDue => 'event_available',

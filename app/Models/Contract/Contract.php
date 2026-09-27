@@ -51,6 +51,10 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne};
  * @property int|null $renew_period_months
  * @property int|null $notice_period_days
  * @property IndexationMethod $indexation_method
+ * @property numeric-string|null $indexation_base_value
+ * @property \Illuminate\Support\Carbon|null $indexation_base_period_on
+ * @property numeric-string|null $indexation_threshold_percent
+ * @property numeric-string|null $indexation_pass_through_percent
  * @property CurrencyCode $currency
  */
 class Contract extends Model {
@@ -67,6 +71,7 @@ class Contract extends Model {
         'term_kind', 'starts_on', 'ends_on', 'min_term_months', 'auto_renew',
         'renew_period_months', 'notice_period_days',
         'indexation_method', 'indexation_value', 'indexation_review_on', 'indexation_note',
+        'indexation_base_value', 'indexation_base_period_on', 'indexation_threshold_percent', 'indexation_pass_through_percent',
         'value_amount', 'currency', 'value_period', 'cost_center_id', 'document_id',
         'responsible_user_id', 'notes', 'created_by', 'closed_at', 'closed_by',
     ];
@@ -88,6 +93,10 @@ class Contract extends Model {
         'auto_renew' => 'boolean',
         'value_amount' => 'decimal:2',
         'indexation_value' => 'decimal:4',
+        'indexation_base_value' => 'decimal:1',
+        'indexation_base_period_on' => 'date',
+        'indexation_threshold_percent' => 'decimal:2',
+        'indexation_pass_through_percent' => 'decimal:2',
         'closed_at' => 'datetime',
     ];
 
@@ -184,5 +193,10 @@ class Contract extends Model {
             ->where('status', SigningRevisionStatus::Signed->value)
             ->orderByDesc('revision_no')
             ->first();
+    }
+
+    /** @return HasMany<ContractIndexation, $this> Indexanpassungen (MVP-952) */
+    public function indexations(): HasMany {
+        return $this->hasMany(ContractIndexation::class)->orderByDesc('id');
     }
 }

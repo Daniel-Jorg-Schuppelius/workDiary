@@ -14,8 +14,9 @@ namespace App\Models\Invoicing;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Document\Document;
+use App\Models\Finance\IncomingInvoiceRetention;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
 /**
  * Eingehende E-Rechnung im Prüfbereich (Feature 066, MVP-165/167):
@@ -139,6 +140,11 @@ class IncomingEInvoice extends Model {
     }
 
     /** Display-Label statt rohem Statuscode (Konvention: Codes nie roh in Views). */
+    /** @return HasMany<IncomingInvoiceRetention, $this> Einbehalte (MVP-953) */
+    public function retentions(): HasMany {
+        return $this->hasMany(IncomingInvoiceRetention::class, 'incoming_einvoice_id')->orderBy('id');
+    }
+
     public function statusLabel(): string {
         return match ($this->status) {
             self::STATUS_RECEIVED => (string) __('Empfangen'),

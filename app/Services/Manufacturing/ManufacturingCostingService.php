@@ -36,7 +36,8 @@ use CommonToolkit\Helper\Data\NumberHelper;
  *
  * @phpstan-type Costing array{planned: numeric-string, actual: numeric-string, labor: numeric-string, total: numeric-string, good: numeric-string, unit_cost: numeric-string}
  * @phpstan-type ArticleCostingOrder array{order_id: int, number: string, completed_at: ?CarbonImmutable, planned_material: numeric-string, actual_material: numeric-string, labor: numeric-string, total: numeric-string, planned_minutes: int, actual_minutes: int, good: numeric-string, scrap: numeric-string, unit_cost: numeric-string, deviation_abs: numeric-string, deviation_pct: ?numeric-string}
- * @phpstan-type ArticleCosting array{orders: list<ArticleCostingOrder>, order_count: int, planned_material: numeric-string, actual_material: numeric-string, labor: numeric-string, total: numeric-string, planned_minutes: int, actual_minutes: int, good: numeric-string, scrap: numeric-string, unit_cost_avg: numeric-string, unit_cost_min: ?numeric-string, unit_cost_max: ?numeric-string, deviation_abs: numeric-string, deviation_pct: ?numeric-string, minutes_deviation: int, quality: array{produced: numeric-string, good: numeric-string, scrap: numeric-string, rework: numeric-string, yield: numeric-string, scrap_rate: numeric-string, rework_rate: numeric-string}}
+ * @phpstan-type ArticleCostingGroup array{variant_id: ?int, variant: ?string, version_id: ?int, version: ?int, order_count: int, good: numeric-string, total: numeric-string, planned_material: numeric-string, actual_material: numeric-string, unit_cost_avg: numeric-string, deviation_pct: ?numeric-string, planned_minutes: int, actual_minutes: int}
+ * @phpstan-type ArticleCosting array{orders: list<ArticleCostingOrder>, groups: list<ArticleCostingGroup>, order_count: int, planned_material: numeric-string, actual_material: numeric-string, labor: numeric-string, total: numeric-string, planned_minutes: int, actual_minutes: int, good: numeric-string, scrap: numeric-string, unit_cost_avg: numeric-string, unit_cost_min: ?numeric-string, unit_cost_max: ?numeric-string, deviation_abs: numeric-string, deviation_pct: ?numeric-string, minutes_deviation: int, quality: array{produced: numeric-string, good: numeric-string, scrap: numeric-string, rework: numeric-string, yield: numeric-string, scrap_rate: numeric-string, rework_rate: numeric-string}}
  */
 class ManufacturingCostingService {
     public const SCALE = 4;
@@ -61,7 +62,10 @@ class ManufacturingCostingService {
             ->whereBetween('completed_at', [$from, $to])
             ->orderBy('completed_at')
             ->orderBy('id')
+            ->with(['variant:id,sku,name', 'procedureVersion:id,version'])
             ->get();
+        /** @var array<string, ArticleCostingGroup> $groups */
+        $groups = [];
 
         $rows = [];
         $plannedMaterial = '0';
@@ -101,6 +105,25 @@ class ManufacturingCostingService {
                 'deviation_pct' => $this->percent($deviation, $costing['planned']),
             ];
 
+            // Aggregation je Variante und Arbeitsplan-Version (MVP-955).
+            $groupKey = ($order->article_variant_id ?? 0) . ':' . ($order->procedure_template_version_id ?? 0);
+            $group = $groups[$groupKey] ?? [
+                'variant_id' => $order->article_variant_id !== null ? (int) $order->article_variant_id : null,
+                'variant' => $order->variant !== null ? (string) ($order->variant->sku ?? $order->variant->name) : null,
+                'version_id' => $order->procedure_template_version_id !== null ? (int) $order->procedure_template_version_id : null,
+                'version' => $order->procedureVersion?->version,
+                'order_count' => 0, 'good' => '0', 'total' => '0', 'planned_material' => '0', 'actual_material' => '0',
+                'unit_cost_avg' => '0', 'deviation_pct' => null, 'planned_minutes' => 0, 'actual_minutes' => 0,
+            ];
+            $group['order_count']++;
+            $group['good'] = bcadd($group['good'], $costing['good'], self::SCALE);
+            $group['total'] = bcadd($group['total'], $costing['total'], self::SCALE);
+            $group['planned_material'] = bcadd($group['planned_material'], $costing['planned'], self::SCALE);
+            $group['actual_material'] = bcadd($group['actual_material'], $costing['actual'], self::SCALE);
+            $group['planned_minutes'] += (int) ($order->planned_minutes ?? 0);
+            $group['actual_minutes'] += $orderMinutes;
+            $groups[$groupKey] = $group;
+
             $plannedMaterial = bcadd($plannedMaterial, $costing['planned'], self::SCALE);
             $actualMaterial = bcadd($actualMaterial, $costing['actual'], self::SCALE);
             $labor = bcadd($labor, $costing['labor'], self::SCALE);
@@ -119,8 +142,15 @@ class ManufacturingCostingService {
 
         $deviationAbs = bcsub($actualMaterial, $plannedMaterial, self::SCALE);
 
+        foreach ($groups as $key => $group) {
+            $group['unit_cost_avg'] = NumberHelper::divideOrDefault($group['total'], $group['good'], self::SCALE, '0.0000');
+            $group['deviation_pct'] = $this->percent(bcsub($group['actual_material'], $group['planned_material'], self::SCALE), $group['planned_material']);
+            $groups[$key] = $group;
+        }
+
         return [
             'orders' => $rows,
+            'groups' => array_values($groups),
             'order_count' => count($rows),
             'planned_material' => $plannedMaterial,
             'actual_material' => $actualMaterial,

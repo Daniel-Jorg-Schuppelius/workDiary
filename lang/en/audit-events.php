@@ -242,7 +242,15 @@ return [
         'added' => 'Reference added',
         'removed' => 'Reference removed',
     ],
+    'incomingRetention' => [
+        'created' => 'Retention added',
+        'released' => 'Retention released',
+        'removed' => 'Retention removed',
+    ],
     'contract' => [
+        'indexationProposed' => 'Index adjustment proposed',
+        'indexationApplied' => 'Index adjustment applied',
+        'indexationDismissed' => 'Index adjustment dismissed',
         'activated' => 'Contract activated',
         'approved_step' => 'Contract approval step granted',
         'cancelled' => 'Contract cancelled',

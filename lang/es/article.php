@@ -21,6 +21,8 @@ return [
     ],
     // Cálculo posterior por artículo (Feature 047, MVP-715).
     'costing' => [
+        'per_group' => 'Por variante y versión de ruta',
+        'no_variant' => 'sin variante',
         'title' => 'Cálculo posterior',
         'subtitle' => 'Material previsto/real, tiempo previsto/real y coste unitario de las órdenes de fabricación terminadas en el período.',
         'per_order' => 'Por orden de fabricación',
@@ -40,6 +42,9 @@ return [
             'scrap_hint' => ':scrap de :produced producidos',
         ],
         'col' => [
+            'variant' => 'Variante',
+            'version' => 'Ruta',
+            'orders' => 'Órdenes',
             'order' => 'Orden',
             'completed_at' => 'Terminada',
             'planned_material' => 'Material previsto',

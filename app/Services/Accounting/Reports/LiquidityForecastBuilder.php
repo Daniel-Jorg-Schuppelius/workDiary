@@ -16,9 +16,11 @@ use App\Enums\Finance\{FilingObligationKind, FilingObligationStatus, OpenItemDir
 use App\Models\Accounting\{AccountingFilingObligation, AccountingOpenItem, AccountingRecurringRun, AccountingRecurringTemplate, AccountingVatExtension};
 use App\Models\AssetFinance\AssetFinanceRateSchedule;
 use App\Models\Customer\Customer;
-use App\Models\Finance\PaymentRun;
+use App\Models\Finance\{LiquidityScenario, PaymentRun};
 use App\Models\Invoicing\{IncomingEInvoice, InvoiceSchedule};
 use App\Models\Platform\Organization;
+use App\Modules\ModuleRegistry;
+use App\Services\Accounting\Contracts\LiquidityForecastSource;
 use App\Services\Accounting\Filing\{VatFilingPeriodService, VatReturnService};
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
@@ -26,6 +28,7 @@ use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\{Decimal, Money};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use RoundingMode;
 
 /**
  * 13-Wochen-Liquiditätsvorschau (Feature 136, MVP-701).
@@ -71,7 +74,7 @@ class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
     /**
      * @return array{as_of: CarbonImmutable, weeks: int, from: CarbonImmutable, to: CarbonImmutable, opening_balance: numeric-string, buckets: list<ForecastBucket>, totals: array{inflow: numeric-string, outflow: numeric-string, closing: numeric-string, min_closing: numeric-string, min_week: string, items: int}, sources: list<string>}
      */
-    public function build(Organization $organization, CarbonImmutable $asOf, int $weeks = self::DEFAULT_WEEKS): array {
+    public function build(Organization $organization, CarbonImmutable $asOf, int $weeks = self::DEFAULT_WEEKS, ?LiquidityScenario $scenario = null): array {
         $weeks = in_array($weeks, self::HORIZONS, true) ? $weeks : self::DEFAULT_WEEKS;
         $asOf = $asOf->startOfDay();
         $from = $asOf->startOfWeek(CarbonInterface::MONDAY);
@@ -89,11 +92,15 @@ class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
             ...$this->financeRates($organization, $to),
             ...$this->filings($organization, $to),
         ];
+        $sources = self::SOURCES;
+        if ($scenario !== null) {
+            [$items, $sources] = $this->applyScenario($scenario, $organization, $items, $from, $to);
+        }
 
         $inflows = array_fill(0, $weeks, '0.00');
         $outflows = array_fill(0, $weeks, '0.00');
         /** @var array<int, array<string, array{in: numeric-string, out: numeric-string}>> $bySource */
-        $bySource = array_fill(0, $weeks, array_fill_keys(self::SOURCES, ['in' => '0.00', 'out' => '0.00']));
+        $bySource = array_fill(0, $weeks, array_fill_keys($sources, ['in' => '0.00', 'out' => '0.00']));
         /** @var array<int, list<ForecastItem>> $bucketItems */
         $bucketItems = array_fill(0, $weeks, []);
         $counted = 0;
@@ -167,8 +174,55 @@ class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
                 'min_week' => $minWeek,
                 'items' => $counted,
             ],
-            'sources' => self::SOURCES,
+            'sources' => $sources,
         ];
+    }
+
+    /**
+     * Szenario (MVP-954): Kundenzahlungen später, Ein- und Auszahlungen um einen
+     * Prozentsatz verändert, dazu Planquellen der Fachmodule und Einzelposten.
+     *
+     * @param  list<ForecastItem>  $items
+     * @return array{0: list<ForecastItem>, 1: list<string>}
+     */
+    private function applyScenario(LiquidityScenario $scenario, Organization $organization, array $items, CarbonImmutable $from, CarbonImmutable $to): array {
+        $sources = self::SOURCES;
+        $factorIn = bcadd('1', bcdiv((string) $scenario->inflow_change_percent, '100', 6), 6);
+        $factorOut = bcadd('1', bcdiv((string) $scenario->outflow_change_percent, '100', 6), 6);
+        foreach ($items as $i => $item) {
+            if ($item['direction'] === 'in') {
+                if ($scenario->receipt_delay_days > 0 && in_array($item['source'], ['receivables', 'invoice_schedules'], true)) {
+                    $item['expected_on'] = $item['expected_on']->addDays($scenario->receipt_delay_days);
+                }
+                $item['amount'] = bcround(bcmul($item['amount'], $factorIn, 6), 2, RoundingMode::HalfAwayFromZero);
+            } else {
+                $item['amount'] = bcround(bcmul($item['amount'], $factorOut, 6), 2, RoundingMode::HalfAwayFromZero);
+            }
+            $items[$i] = $item;
+        }
+        if ($scenario->is_including_investments) {
+            foreach (app(ModuleRegistry::class)->extensions(LiquidityForecastSource::class) as $class) {
+                $source = app($class);
+                if (! $source instanceof LiquidityForecastSource) {
+                    continue;
+                }
+                $sources[] = $source->key();
+                array_push($items, ...$source->items($organization, $from, $to));
+            }
+        }
+        $sources[] = 'scenario';
+        foreach ($scenario->items as $row) {
+            $items[] = [
+                'source' => 'scenario',
+                'direction' => $row->direction === 'in' ? 'in' : 'out',
+                'amount' => (string) $row->amount,
+                'expected_on' => CarbonImmutable::parse($row->expected_on->toDateString()),
+                'label' => $row->label,
+                'note' => null,
+            ];
+        }
+
+        return [array_values($items), array_values(array_unique($sources))];
     }
 
     /**

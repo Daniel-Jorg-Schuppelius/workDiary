@@ -15401,40 +15401,6 @@ CREATE UNIQUE INDEX "payment_run_org_msg_unique" on "payment_runs"(
   "organization_id",
   "message_id"
 );
-CREATE TABLE IF NOT EXISTS "payment_run_items"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "payment_run_id" integer not null,
-  "incoming_einvoice_id" integer,
-  "supplier_id" integer,
-  "customer_id" integer,
-  "sepa_mandate_id" integer,
-  "party_name" varchar not null,
-  "iban" text not null,
-  "bic" text,
-  "amount" numeric not null,
-  "gross_amount" numeric,
-  "discount_percent" numeric,
-  "deduction_reason" varchar,
-  "reference" varchar not null,
-  "end_to_end_id" varchar,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("payment_run_id") references "payment_runs"("id") on delete cascade,
-  foreign key("incoming_einvoice_id") references "incoming_einvoices"("id") on delete set null,
-  foreign key("supplier_id") references "suppliers"("id") on delete set null,
-  foreign key("customer_id") references "customers"("id") on delete set null,
-  foreign key("sepa_mandate_id") references "sepa_mandates"("id") on delete set null
-);
-CREATE INDEX "payment_run_item_org_run_idx" on "payment_run_items"(
-  "organization_id",
-  "payment_run_id"
-);
-CREATE UNIQUE INDEX "payment_run_item_invoice_unique" on "payment_run_items"(
-  "payment_run_id",
-  "incoming_einvoice_id"
-);
 CREATE TABLE IF NOT EXISTS "accounting_vouchers"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -21997,6 +21963,10 @@ CREATE TABLE IF NOT EXISTS "contracts"(
   "cost_center_id" integer,
   "employee_user_id" integer,
   "job_application_id" integer,
+  "indexation_base_value" numeric,
+  "indexation_base_period_on" date,
+  "indexation_threshold_percent" numeric,
+  "indexation_pass_through_percent" numeric,
   foreign key("cost_center_id") references cost_centers("id") on delete set null on update no action,
   foreign key("organization_id") references organizations("id") on delete cascade on update no action,
   foreign key("customer_id") references customers("id") on delete set null on update no action,
@@ -22076,6 +22046,141 @@ CREATE TABLE IF NOT EXISTS "rental_rate_rules"(
   "updated_at" datetime,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("rental_rate_card_id") references "rental_rate_cards"("id") on delete cascade
+);
+CREATE TABLE IF NOT EXISTS "price_index_values"(
+  "id" integer primary key autoincrement not null,
+  "series" varchar not null,
+  "period_on" date not null,
+  "value" numeric not null,
+  "source" varchar not null,
+  "status" varchar not null,
+  "approver_user_id" integer,
+  "approved_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("approver_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "price_index_series_period_unique" on "price_index_values"(
+  "series",
+  "period_on"
+);
+CREATE TABLE IF NOT EXISTS "contract_indexations"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "contract_id" integer not null,
+  "status" varchar not null,
+  "base_period_on" date not null,
+  "base_value" numeric not null,
+  "index_period_on" date not null,
+  "index_value" numeric not null,
+  "change_percent" numeric not null,
+  "old_amount" numeric not null,
+  "new_amount" numeric not null,
+  "currency" varchar not null,
+  "effective_on" date,
+  "decider_user_id" integer,
+  "decided_at" datetime,
+  "note" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("contract_id") references "contracts"("id") on delete cascade,
+  foreign key("decider_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "contract_idx_contract_status_idx" on "contract_indexations"(
+  "contract_id",
+  "status"
+);
+CREATE TABLE IF NOT EXISTS "incoming_invoice_retentions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "incoming_einvoice_id" integer not null,
+  "kind" varchar not null,
+  "percent" numeric,
+  "amount" numeric not null,
+  "currency" varchar not null,
+  "due_on" date,
+  "status" varchar not null,
+  "released_on" date,
+  "releaser_user_id" integer,
+  "paid_in_run_id" integer,
+  "note" varchar,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("incoming_einvoice_id") references "incoming_einvoices"("id") on delete cascade,
+  foreign key("releaser_user_id") references "users"("id") on delete set null,
+  foreign key("paid_in_run_id") references "payment_runs"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "incoming_ret_status_due_idx" on "incoming_invoice_retentions"(
+  "status",
+  "due_on"
+);
+CREATE TABLE IF NOT EXISTS "payment_run_items"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "payment_run_id" integer not null,
+  "incoming_einvoice_id" integer,
+  "supplier_id" integer,
+  "customer_id" integer,
+  "sepa_mandate_id" integer,
+  "party_name" varchar not null,
+  "iban" text not null,
+  "bic" text,
+  "amount" numeric not null,
+  "gross_amount" numeric,
+  "discount_percent" numeric,
+  "deduction_reason" varchar,
+  "reference" varchar not null,
+  "end_to_end_id" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "incoming_invoice_retention_id" integer,
+  foreign key("sepa_mandate_id") references sepa_mandates("id") on delete set null on update no action,
+  foreign key("customer_id") references customers("id") on delete set null on update no action,
+  foreign key("supplier_id") references suppliers("id") on delete set null on update no action,
+  foreign key("incoming_einvoice_id") references incoming_einvoices("id") on delete set null on update no action,
+  foreign key("payment_run_id") references payment_runs("id") on delete cascade on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("incoming_invoice_retention_id") references "incoming_invoice_retentions"("id") on delete set null
+);
+CREATE UNIQUE INDEX "payment_run_item_invoice_unique" on "payment_run_items"(
+  "payment_run_id",
+  "incoming_einvoice_id"
+);
+CREATE INDEX "payment_run_item_org_run_idx" on "payment_run_items"(
+  "organization_id",
+  "payment_run_id"
+);
+CREATE TABLE IF NOT EXISTS "liquidity_scenarios"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "name" varchar not null,
+  "receipt_delay_days" integer not null default '0',
+  "inflow_change_percent" numeric not null default '0',
+  "outflow_change_percent" numeric not null default '0',
+  "is_including_investments" tinyint(1) not null default '0',
+  "note" varchar,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE TABLE IF NOT EXISTS "liquidity_scenario_items"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "liquidity_scenario_id" integer not null,
+  "label" varchar not null,
+  "direction" varchar not null,
+  "amount" numeric not null,
+  "expected_on" date not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("liquidity_scenario_id") references "liquidity_scenarios"("id") on delete cascade
 );
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
@@ -22963,3 +23068,6 @@ INSERT INTO migrations VALUES(887,'2027_02_27_290000_add_classification_fields_t
 INSERT INTO migrations VALUES(888,'2027_02_27_300000_add_authority_report_fields_to_recalls',25);
 INSERT INTO migrations VALUES(889,'2027_02_27_310000_create_crisis_business_processes_table',25);
 INSERT INTO migrations VALUES(890,'2027_02_27_320000_create_rental_rate_rules_table',26);
+INSERT INTO migrations VALUES(891,'2027_02_27_330000_create_price_index_tables',27);
+INSERT INTO migrations VALUES(892,'2027_02_27_340000_create_incoming_invoice_retentions_table',27);
+INSERT INTO migrations VALUES(893,'2027_02_27_350000_create_liquidity_scenarios_table',27);

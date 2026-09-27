@@ -321,4 +321,40 @@ class LiquidityForecastTest extends TestCase {
         $pdf->assertOk();
         $this->assertSame('application/pdf', $pdf->headers->get('content-type'));
     }
+
+    /** MVP-954: Szenario verschiebt Forderungen, ändert Beträge und ergänzt Investitionen und Einzelposten. */
+    public function test_scenario_adjusts_items_next_to_the_unchanged_base(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->org->id]);
+        $this->postInvoice($customer, '2026-03-01', '2026-03-20');   // KW 12 → Index 2
+        \App\Models\Investments\InvestmentCase::factory()->create(['organization_id' => $this->org->id, 'title' => 'Neue Presse', 'status' => 'approved', 'starts_on' => '2026-04-15', 'estimated_amount' => '5000.00', 'currency' => 'EUR']);
+        $scenario = \App\Models\Finance\LiquidityScenario::query()->create(['organization_id' => $this->org->id, 'name' => 'Engpass', 'receipt_delay_days' => 14, 'inflow_change_percent' => '-10', 'outflow_change_percent' => '0', 'is_including_investments' => true]);
+        $scenario->items()->create(['organization_id' => $this->org->id, 'label' => 'Kredit', 'direction' => 'in', 'amount' => '2000.00', 'expected_on' => '2026-04-01']);
+
+        $base = $this->build();
+        $data = app(LiquidityForecastBuilder::class)->build($this->org, $this->today, 13, $scenario->load('items'));
+
+        $this->assertSame('119.00', $base['buckets'][2]['inflow']);
+        $this->assertSame('0.00', $data['buckets'][2]['inflow']);
+        $this->assertSame('107.10', $data['buckets'][4]['sources']['receivables']['in']);
+        $this->assertSame('2000.00', $data['buckets'][4]['sources']['scenario']['in']);
+        $this->assertSame('5000.00', $data['buckets'][6]['sources']['investments']['out']);
+        $this->assertContains('investments', $data['sources']);
+        $this->assertNotContains('scenario', $base['sources']);
+        $this->assertSame('-1892.90', $data['totals']['closing']);
+    }
+
+    public function test_scenarios_are_managed_and_shown_on_the_forecast(): void {
+        $this->actingAs($this->admin)->post(route('reports.accounting.liquidity-scenarios.store'), ['name' => 'Umsatzrückgang', 'inflow_change_percent' => '-20', 'receipt_delay_days' => 30])->assertRedirect();
+        $scenario = \App\Models\Finance\LiquidityScenario::query()->sole();
+        $this->actingAs($this->admin)->post(route('reports.accounting.liquidity-scenarios.items.store', $scenario), ['label' => 'Steuernachzahlung', 'direction' => 'out', 'amount' => '300', 'expected_on' => '2026-03-25'])->assertSessionHas('success');
+
+        $this->actingAs($this->admin)->get(route('reports.accounting.liquidity-scenarios.index'))->assertOk()->assertSeeText('Steuernachzahlung');
+        $this->actingAs($this->admin)->get(route('reports.accounting.liquidity-forecast', ['scenario' => $scenario->sqid]))
+            ->assertOk()
+            ->assertSeeText('Umsatzrückgang')
+            ->assertSee('700.00');
+
+        $member = User::factory()->create(['organization_id' => $this->org->id]);
+        $this->actingAs($member)->get(route('reports.accounting.liquidity-scenarios.index'))->assertForbidden();
+    }
 }

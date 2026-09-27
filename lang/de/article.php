@@ -21,6 +21,8 @@ return [
     ],
     // Nachkalkulation je Artikel (Feature 047, MVP-715).
     'costing' => [
+        'per_group' => 'Je Variante und Arbeitsplan-Version',
+        'no_variant' => 'ohne Variante',
         'title' => 'Nachkalkulation',
         'subtitle' => 'Plan/Ist-Material, Plan/Ist-Zeit und Stückkosten über die im Zeitraum abgeschlossenen Fertigungsaufträge.',
         'per_order' => 'Je Fertigungsauftrag',
@@ -40,6 +42,9 @@ return [
             'scrap_hint' => ':scrap von :produced produziert',
         ],
         'col' => [
+            'variant' => 'Variante',
+            'version' => 'Arbeitsplan',
+            'orders' => 'Aufträge',
             'order' => 'Auftrag',
             'completed_at' => 'Abgeschlossen',
             'planned_material' => 'Plan-Material',

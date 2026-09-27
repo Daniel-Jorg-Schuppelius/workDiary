@@ -638,6 +638,48 @@ return [
             ],
         ],
         // 13-Wochen-Liquiditätsvorschau (Feature 136, MVP-701).
+        // Liquiditätsszenarien (MVP-954).
+        'scenario' => [
+            'title' => 'Escenarios de liquidez',
+            'subtitle' => 'Supuestos junto a la previsión base: retraso de pago de clientes, variación de cobros y pagos, inversiones previstas y partidas puntuales.',
+            'select' => 'Escenario',
+            'base' => 'Base',
+            'apply' => 'Aplicar',
+            'manage' => 'Escenarios',
+            'open' => 'Mostrar en la previsión',
+            'new' => 'Nuevo escenario',
+            'create' => 'Crear',
+            'save' => 'Guardar',
+            'add_item' => 'Añadir partida',
+            'items_empty' => 'Sin partidas puntuales.',
+            'confirm_delete' => '¿Eliminar el escenario con todas sus partidas?',
+            'compare' => 'Escenario «:name»: saldo mínimo :scenario (:scenario_week) en lugar de :base (:base_week) en la base.',
+            'field' => [
+                'name' => 'Nombre',
+                'receipt_delay_days' => 'Retraso de pago de clientes (días)',
+                'inflow_change_percent' => 'Cobros ± %',
+                'outflow_change_percent' => 'Pagos ± %',
+                'is_including_investments' => 'Incluir inversiones previstas',
+                'note' => 'Nota',
+                'label' => 'Denominación',
+                'direction' => 'Dirección',
+                'expected_on' => 'Previsto el',
+                'amount' => 'Importe',
+            ],
+            'hint' => [
+                'receipt_delay_days' => 'Desplaza cobros pendientes y planes de facturación.',
+            ],
+            'direction' => [
+                'in' => 'Cobro',
+                'out' => 'Pago',
+            ],
+            'flash' => [
+                'saved' => 'Escenario guardado.',
+                'deleted' => 'Escenario eliminado.',
+                'item_saved' => 'Partida añadida.',
+                'item_deleted' => 'Partida eliminada.',
+            ],
+        ],
         'forecast' => [
             'subtitle' => 'Saldo inicial de banco y caja y pagos esperados por semana natural desde el :date — :weeks semanas.',
             'hint' => 'Una expectativa, no un saldo: partidas abiertas según el comportamiento de pago y los plazos de descuento, expectativas de documentos, planes de facturación, remesas liberadas, cuotas de financiación y vencimientos fiscales cuantificables. Lo vencido cuenta en la semana en curso.',
@@ -669,6 +711,8 @@ return [
                 'payment_runs' => 'Remesas',
                 'finance_rates' => 'Cuotas',
                 'filings' => 'Impuestos',
+                'investments' => 'Inversiones',
+                'scenario' => 'Escenario',
             ],
             'note' => [
                 'overdue' => 'vencido — semana en curso',

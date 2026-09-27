@@ -71,6 +71,9 @@
                             @elseif ($proposal['uses_discount'])
                                 <x-status-badge tone="success" outline>{{ __('sepa.discount_used', ['percent' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $proposal['discount_percent'], 2)]) }}</x-status-badge>
                             @endif
+                            @if ($proposal['retained'] > 0)
+                                <x-status-badge tone="warning" outline>{{ __('sepa.retention.retained', ['amount' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($proposal['retained'], 2, withThousandsSeparator: true)]) }}</x-status-badge>
+                            @endif
                         </td>
                     </tr>
                 @empty
@@ -78,7 +81,35 @@
                 @endforelse
             </x-table>
 
-            @if ($proposals->isNotEmpty())
+            {{-- Freigegebene Einbehalte (MVP-953) als eigene Posten. --}}
+            @if ($retentions->isNotEmpty())
+                <x-card :title="__('sepa.retention.payable_title')" padding="p-0">
+                    <x-table bare>
+                        <x-slot:head>
+                            <tr>
+                                <th class="w-10"></th>
+                                <th>{{ __('sepa.column.creditor') }}</th>
+                                <th>{{ __('sepa.column.invoice_number') }}</th>
+                                <th>{{ __('sepa.retention.field.kind') }}</th>
+                                <th>{{ __('sepa.retention.field.released_on') }}</th>
+                                <th class="text-right">{{ __('sepa.column.amount') }}</th>
+                            </tr>
+                        </x-slot:head>
+                        @foreach ($retentions as $retention)
+                            <tr>
+                                <td><input type="checkbox" class="checkbox checkbox-sm" name="retentions[]" value="{{ $retention->sqid }}" checked aria-label="{{ __('sepa.retention.select') }}"></td>
+                                <td class="font-medium">{{ $retention->incomingEInvoice?->seller_name ?? '—' }}</td>
+                                <td>{{ $retention->incomingEInvoice?->invoice_number ?? '—' }}</td>
+                                <td>{{ $retention->kind->label() }}</td>
+                                <td>{{ $retention->released_on?->fdate() ?? '—' }}</td>
+                                <td class="text-right tabular-nums font-medium">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $retention->amount, 2, withThousandsSeparator: true) }}</td>
+                            </tr>
+                        @endforeach
+                    </x-table>
+                </x-card>
+            @endif
+
+            @if ($proposals->isNotEmpty() || $retentions->isNotEmpty())
                 <div class="flex justify-end">
                     <button type="submit" class="btn btn-primary btn-sm">{{ __('sepa.action.create_run') }}</button>
                 </div>

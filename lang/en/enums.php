@@ -439,6 +439,7 @@ return [
             'contract' => [
                 'deadlineDue' => 'Contract deadline due',
                 'signatureReceived' => 'Agreement evidence received',
+                'indexationProposed' => 'Index adjustment proposed',
             ],
             'accounting' => [
                 'recurringOverdue' => 'Recurring item overdue',

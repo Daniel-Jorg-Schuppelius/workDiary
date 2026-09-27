@@ -24,9 +24,21 @@
         <x-slot:actions>
             @foreach ($horizons as $horizon)
                 <x-icon-btn icon="date_range" size="sm" :tone="$horizon === $weeks ? 'primary' : 'ghost'" show-label
-                            :href="route('reports.accounting.liquidity-forecast', ['weeks' => $horizon])"
+                            :href="route('reports.accounting.liquidity-forecast', array_filter(['weeks' => $horizon, 'scenario' => $scenario?->sqid]))"
                             :label="__('accounting.reports.forecast.horizon', ['weeks' => $horizon])" />
             @endforeach
+            {{-- Szenario (MVP-954) --}}
+            <form method="GET" action="{{ route('reports.accounting.liquidity-forecast') }}" class="flex items-center gap-1">
+                <input type="hidden" name="weeks" value="{{ $weeks }}">
+                <select name="scenario" class="select select-bordered select-sm" aria-label="{{ __('accounting.reports.scenario.select') }}" data-autosubmit>
+                    <option value="">{{ __('accounting.reports.scenario.base') }}</option>
+                    @foreach ($scenarios as $option)
+                        <option value="{{ $option->sqid }}" @selected($scenario?->is($option))>{{ $option->name }}</option>
+                    @endforeach
+                </select>
+                <x-icon-btn icon="play_arrow" size="sm" tone="ghost" type="submit" :title="__('accounting.reports.scenario.apply')" />
+            </form>
+            <x-icon-btn icon="tune" size="sm" tone="ghost" show-label :href="route('reports.accounting.liquidity-scenarios.index')" :label="__('accounting.reports.scenario.manage')" />
             <x-icon-btn icon="download" size="sm" tone="ghost" show-label
                         :href="route('reports.accounting.liquidity-forecast', ['weeks' => $weeks, 'export' => 'csv'])" :label="__('CSV')" />
             <x-icon-btn icon="table_view" size="sm" tone="ghost" show-label
@@ -39,6 +51,13 @@
             <x-icon name="info" />
             <span>{{ __('accounting.reports.forecast.hint') }}</span>
         </div>
+
+        @if ($scenario !== null && $baseTotals !== null)
+            <div class="alert alert-info text-sm" role="note">
+                <x-icon name="insights" />
+                <span>{{ __('accounting.reports.scenario.compare', ['name' => $scenario->name, 'base' => $baseTotals['min_closing'], 'base_week' => $baseTotals['min_week'] !== '' ? $baseTotals['min_week'] : '—', 'scenario' => $totals['min_closing'], 'scenario_week' => $totals['min_week'] !== '' ? $totals['min_week'] : '—']) }}</span>
+            </div>
+        @endif
 
         <div class="grid gap-3 sm:grid-cols-4">
             <x-kpi-tile :label="__('accounting.reports.forecast.kpi.opening')" :value="$opening_balance" />

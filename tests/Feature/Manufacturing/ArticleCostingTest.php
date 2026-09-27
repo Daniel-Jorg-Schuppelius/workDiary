@@ -153,4 +153,24 @@ final class ArticleCostingTest extends TestCase {
         $this->assertStringContainsString('9.5000', $body);
         $this->assertStringContainsString(__('article.costing.sum'), $body);
     }
+
+    /** MVP-955: Aggregation je Variante (und Arbeitsplan-Version). */
+    public function test_costing_is_grouped_by_variant(): void {
+        $red = \App\Models\Article\ArticleVariant::factory()->create(['organization_id' => $this->organization->id, 'article_id' => $this->product->id, 'sku' => 'S1-ROT']);
+        $a = $this->completedOrder('10', '8', '2', '8', '0', 0, 100, '2026-06-05 10:00:00');
+        $b = $this->completedOrder('10', '12', '2', '4', '0', 0, 50, '2026-06-20 10:00:00');
+        DB::table('manufacturing_orders')->where('id', $b->id)->update(['article_variant_id' => $red->id]);
+
+        $result = app(ManufacturingCostingService::class)->costingForArticle((int) $this->product->id, CarbonImmutable::parse('2026-06-01')->startOfDay(), CarbonImmutable::parse('2026-06-30')->endOfDay());
+
+        $this->assertCount(2, $result['groups']);
+        $groups = collect($result['groups'])->keyBy(fn (array $g): string => (string) ($g['variant'] ?? '-'));
+        $this->assertSame('2.0000', $groups['-']['unit_cost_avg']);      // 16 / 8
+        $this->assertSame('6.0000', $groups['S1-ROT']['unit_cost_avg']); // 24 / 4
+        $this->assertSame('20.0', $groups['S1-ROT']['deviation_pct']);
+        $this->assertSame(1, $groups['S1-ROT']['order_count']);
+        $this->assertNotNull($a);
+
+        $this->actingAs($this->orgAdmin())->get(route('articles.costing', $this->product))->assertOk()->assertSeeText(__('article.costing.per_group'))->assertSeeText('S1-ROT');
+    }
 }

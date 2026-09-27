@@ -193,6 +193,7 @@
                 </x-action-form>
             @endif
         </x-card>
+        @include('finance.incoming-invoices._retentions', ['incoming' => $incoming])
     @endif
 </x-page-shell>
 @endsection

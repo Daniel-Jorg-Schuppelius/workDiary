@@ -242,7 +242,15 @@ return [
         'added' => 'Verweis gesetzt',
         'removed' => 'Verweis gelöst',
     ],
+    'incomingRetention' => [
+        'created' => 'Einbehalt angelegt',
+        'released' => 'Einbehalt freigegeben',
+        'removed' => 'Einbehalt entfernt',
+    ],
     'contract' => [
+        'indexationProposed' => 'Indexanpassung vorgeschlagen',
+        'indexationApplied' => 'Indexanpassung übernommen',
+        'indexationDismissed' => 'Indexanpassung verworfen',
         'activated' => 'Vertrag aktiviert',
         'approved_step' => 'Vertrags-Freigabestufe erteilt',
         'cancelled' => 'Vertrag storniert',

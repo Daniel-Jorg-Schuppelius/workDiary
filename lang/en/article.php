@@ -21,6 +21,8 @@ return [
     ],
     // Article costing (Feature 047, MVP-715).
     'costing' => [
+        'per_group' => 'By variant and routing version',
+        'no_variant' => 'no variant',
         'title' => 'Post-calculation',
         'subtitle' => 'Planned/actual material, planned/actual time and unit cost across manufacturing orders completed in the period.',
         'per_order' => 'Per manufacturing order',
@@ -40,6 +42,9 @@ return [
             'scrap_hint' => ':scrap of :produced produced',
         ],
         'col' => [
+            'variant' => 'Variant',
+            'version' => 'Routing',
+            'orders' => 'Orders',
             'order' => 'Order',
             'completed_at' => 'Completed',
             'planned_material' => 'Planned material',

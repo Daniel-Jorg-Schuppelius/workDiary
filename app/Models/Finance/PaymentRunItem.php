@@ -37,7 +37,7 @@ class PaymentRunItem extends Model {
     use HasSqid;
 
     protected $fillable = [
-        'organization_id', 'payment_run_id', 'incoming_einvoice_id',
+        'organization_id', 'payment_run_id', 'incoming_einvoice_id', 'incoming_invoice_retention_id',
         'supplier_id', 'customer_id', 'sepa_mandate_id',
         'party_name', 'iban', 'bic', 'amount', 'gross_amount',
         'discount_percent', 'deduction_reason', 'reference', 'end_to_end_id',
@@ -60,6 +60,11 @@ class PaymentRunItem extends Model {
     /** @return BelongsTo<IncomingEInvoice, $this> */
     public function incomingEInvoice(): BelongsTo {
         return $this->belongsTo(IncomingEInvoice::class, 'incoming_einvoice_id');
+    }
+
+    /** @return BelongsTo<IncomingInvoiceRetention, $this> Auszahlung eines freigegebenen Einbehalts (MVP-953) */
+    public function retention(): BelongsTo {
+        return $this->belongsTo(IncomingInvoiceRetention::class, 'incoming_invoice_retention_id');
     }
 
     /** @return BelongsTo<Supplier, $this> */

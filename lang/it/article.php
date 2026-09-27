@@ -21,6 +21,8 @@ return [
     ],
     // Consuntivo per articolo (Feature 047, MVP-715).
     'costing' => [
+        'per_group' => 'Per variante e versione del ciclo',
+        'no_variant' => 'senza variante',
         'title' => 'Consuntivo',
         'subtitle' => 'Materiale pianificato/effettivo, tempo pianificato/effettivo e costo unitario sugli ordini di produzione completati nel periodo.',
         'per_order' => 'Per ordine di produzione',
@@ -40,6 +42,9 @@ return [
             'scrap_hint' => ':scrap su :produced prodotti',
         ],
         'col' => [
+            'variant' => 'Variante',
+            'version' => 'Ciclo',
+            'orders' => 'Ordini',
             'order' => 'Ordine',
             'completed_at' => 'Completato il',
             'planned_material' => 'Materiale pianif.',

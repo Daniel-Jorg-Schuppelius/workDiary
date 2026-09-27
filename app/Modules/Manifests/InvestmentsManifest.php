@@ -90,6 +90,9 @@ final class InvestmentsManifest extends Manifest {
             \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
                 \App\Services\Investments\DeadlineScans\InvestmentDecisionScan::class,
             ],
+            \App\Services\Accounting\Contracts\LiquidityForecastSource::class => [
+                \App\Services\Investments\Liquidity\PlannedInvestmentSource::class,
+            ],
         ];
     }
 

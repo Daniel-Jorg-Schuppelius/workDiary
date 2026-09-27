@@ -638,6 +638,48 @@ return [
             ],
         ],
         // 13-Wochen-Liquiditätsvorschau (Feature 136, MVP-701).
+        // Liquiditätsszenarien (MVP-954).
+        'scenario' => [
+            'title' => 'Liquiditätsszenarien',
+            'subtitle' => 'Annahmen neben der Basisvorschau: Zahlungsverzug der Kunden, Veränderung der Ein- und Auszahlungen, geplante Investitionen und Einzelposten.',
+            'select' => 'Szenario',
+            'base' => 'Basis',
+            'apply' => 'Anwenden',
+            'manage' => 'Szenarien',
+            'open' => 'In der Vorschau zeigen',
+            'new' => 'Neues Szenario',
+            'create' => 'Anlegen',
+            'save' => 'Speichern',
+            'add_item' => 'Posten ergänzen',
+            'items_empty' => 'Keine Einzelposten.',
+            'confirm_delete' => 'Szenario mit allen Posten löschen?',
+            'compare' => 'Szenario „:name“: tiefster Saldo :scenario (:scenario_week) statt :base (:base_week) in der Basis.',
+            'field' => [
+                'name' => 'Name',
+                'receipt_delay_days' => 'Zahlungsverzug der Kunden (Tage)',
+                'inflow_change_percent' => 'Einzahlungen ± %',
+                'outflow_change_percent' => 'Auszahlungen ± %',
+                'is_including_investments' => 'Geplante Investitionen einbeziehen',
+                'note' => 'Notiz',
+                'label' => 'Bezeichnung',
+                'direction' => 'Richtung',
+                'expected_on' => 'Erwartet am',
+                'amount' => 'Betrag',
+            ],
+            'hint' => [
+                'receipt_delay_days' => 'Verschiebt Forderungen und Rechnungspläne.',
+            ],
+            'direction' => [
+                'in' => 'Einzahlung',
+                'out' => 'Auszahlung',
+            ],
+            'flash' => [
+                'saved' => 'Szenario gespeichert.',
+                'deleted' => 'Szenario gelöscht.',
+                'item_saved' => 'Posten ergänzt.',
+                'item_deleted' => 'Posten entfernt.',
+            ],
+        ],
         'forecast' => [
             'subtitle' => 'Startsaldo Bank & Kasse und erwartete Zahlungen je Kalenderwoche ab :date — :weeks Wochen.',
             'hint' => 'Erwartung, kein Kontostand: offene Posten nach Zahlungsverhalten und Skontoterminen, Belegerwartungen, Rechnungspläne, freigegebene Zahlläufe, Finanzierungsraten und bezifferbare Steuertermine. Überfälliges zählt in der laufenden Woche.',
@@ -669,6 +711,8 @@ return [
                 'payment_runs' => 'Zahlläufe',
                 'finance_rates' => 'Raten',
                 'filings' => 'Steuern',
+                'investments' => 'Investitionen',
+                'scenario' => 'Szenario',
             ],
             'note' => [
                 'overdue' => 'überfällig — laufende Woche',

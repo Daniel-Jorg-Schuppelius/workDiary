@@ -21,6 +21,8 @@ return [
     ],
     // Calcul a posteriori par article (Feature 047, MVP-715).
     'costing' => [
+        'per_group' => 'Par variante et version de gamme',
+        'no_variant' => 'sans variante',
         'title' => 'Calcul a posteriori',
         'subtitle' => 'Matière prévue/réelle, temps prévu/réel et coût unitaire sur les ordres de fabrication terminés dans la période.',
         'per_order' => 'Par ordre de fabrication',
@@ -40,6 +42,9 @@ return [
             'scrap_hint' => ':scrap sur :produced produits',
         ],
         'col' => [
+            'variant' => 'Variante',
+            'version' => 'Gamme',
+            'orders' => 'Ordres',
             'order' => 'Ordre',
             'completed_at' => 'Terminé le',
             'planned_material' => 'Matière prévue',

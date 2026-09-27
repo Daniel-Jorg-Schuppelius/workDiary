@@ -49,6 +49,7 @@ final class ContractManifest extends Manifest {
     /** @return list<string> */
     public function tables(): array {
         return [
+            'contract_indexations',
             'contract_obligations',
             'contract_signature_evidences',
             'contract_signature_links',
@@ -57,6 +58,7 @@ final class ContractManifest extends Manifest {
             'contract_signing_revisions',
             'contract_templates',
             'contracts',
+            'price_index_values',
         ];
     }
 
@@ -93,6 +95,7 @@ final class ContractManifest extends Manifest {
             ],
             \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
                 \App\Services\Contract\DeadlineScans\ContractObligationScan::class,
+                \App\Services\Contract\DeadlineScans\ContractIndexationScan::class,
             ],
         ];
     }

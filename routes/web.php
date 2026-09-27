@@ -2501,6 +2501,16 @@ Route::middleware('auth')->group(function () {
             Route::delete('vorlagen/{template}', [\App\Http\Controllers\Contract\ContractTemplateController::class, 'destroy'])->name('templates.destroy');
             Route::get('{contract}/als-vorlage', [\App\Http\Controllers\Contract\ContractTemplateController::class, 'fromContractForm'])->name('templates.from-contract.form');
             Route::post('{contract}/als-vorlage', [\App\Http\Controllers\Contract\ContractTemplateController::class, 'fromContract'])->name('templates.from-contract');
+            // Verbraucherpreisindex und Indexanpassung (MVP-952) — vor {contract}.
+            Route::get('preisindex', [\App\Http\Controllers\Contract\PriceIndexController::class, 'index'])->name('price-index.index');
+            Route::post('preisindex', [\App\Http\Controllers\Contract\PriceIndexController::class, 'store'])->name('price-index.store');
+            Route::post('preisindex/{value}/freigeben', [\App\Http\Controllers\Contract\PriceIndexController::class, 'approve'])->name('price-index.approve');
+            Route::post('preisindex/{value}/verwerfen', [\App\Http\Controllers\Contract\PriceIndexController::class, 'reject'])->name('price-index.reject');
+            Route::post('indexanpassung/{indexation}/uebernehmen', [\App\Http\Controllers\Contract\ContractIndexationController::class, 'apply'])->name('indexation.apply');
+            Route::post('indexanpassung/{indexation}/verwerfen', [\App\Http\Controllers\Contract\ContractIndexationController::class, 'dismiss'])->name('indexation.dismiss');
+            Route::get('{contract}/indexierung', [\App\Http\Controllers\Contract\ContractIndexationController::class, 'edit'])->name('indexation.edit');
+            Route::put('{contract}/indexierung', [\App\Http\Controllers\Contract\ContractIndexationController::class, 'update'])->name('indexation.update');
+            Route::post('{contract}/indexierung/pruefen', [\App\Http\Controllers\Contract\ContractIndexationController::class, 'propose'])->name('indexation.propose');
             Route::post('/', [\App\Http\Controllers\Contract\ContractController::class, 'store'])->name('store');
             Route::get('{contract}', [\App\Http\Controllers\Contract\ContractController::class, 'show'])->name('show');
             Route::put('{contract}', [\App\Http\Controllers\Contract\ContractController::class, 'update'])->name('update');
@@ -2951,6 +2961,10 @@ Route::middleware('auth')->group(function () {
             Route::post('/', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'store'])->name('store');
             Route::post('{incoming}/entscheiden', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'decide'])->name('decide');
             Route::post('{incoming}/uebergeben', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'transfer'])->name('transfer');
+            // Einbehalte (MVP-953).
+            Route::post('{incoming}/einbehalte', [\App\Http\Controllers\Finance\IncomingRetentionController::class, 'store'])->name('retentions.store');
+            Route::post('einbehalte/{retention}/freigeben', [\App\Http\Controllers\Finance\IncomingRetentionController::class, 'release'])->name('retentions.release');
+            Route::delete('einbehalte/{retention}', [\App\Http\Controllers\Finance\IncomingRetentionController::class, 'destroy'])->name('retentions.destroy');
             Route::get('{document}/xml', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'xml'])->name('xml');
             Route::get('{document}', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'show'])->name('show');
         });
@@ -4751,6 +4765,13 @@ Route::middleware('auth')->group(function () {
             Route::get('liquiditaet', [\App\Http\Controllers\Finance\AccountingReportController::class, 'liquidity'])->name('liquidity');
             // 13-Wochen-Liquiditätsvorschau (Feature 136, MVP-701).
             Route::get('liquiditaet/vorschau', [\App\Http\Controllers\Finance\AccountingReportController::class, 'liquidityForecast'])->name('liquidity-forecast');
+            // Liquiditätsszenarien (MVP-954).
+            Route::get('liquiditaet/szenarien', [\App\Http\Controllers\Finance\LiquidityScenarioController::class, 'index'])->name('liquidity-scenarios.index');
+            Route::post('liquiditaet/szenarien', [\App\Http\Controllers\Finance\LiquidityScenarioController::class, 'store'])->name('liquidity-scenarios.store');
+            Route::put('liquiditaet/szenarien/{scenario}', [\App\Http\Controllers\Finance\LiquidityScenarioController::class, 'update'])->name('liquidity-scenarios.update');
+            Route::delete('liquiditaet/szenarien/{scenario}', [\App\Http\Controllers\Finance\LiquidityScenarioController::class, 'destroy'])->name('liquidity-scenarios.destroy');
+            Route::post('liquiditaet/szenarien/{scenario}/posten', [\App\Http\Controllers\Finance\LiquidityScenarioController::class, 'storeItem'])->name('liquidity-scenarios.items.store');
+            Route::delete('liquiditaet/szenario-posten/{item}', [\App\Http\Controllers\Finance\LiquidityScenarioController::class, 'destroyItem'])->name('liquidity-scenarios.items.destroy');
             Route::get('qualitaet', [\App\Http\Controllers\Finance\AccountingReportController::class, 'quality'])->name('quality');
         });
         Route::get('reports/expenses', [ExpenseReportController::class, 'index'])->name('reports.expenses');

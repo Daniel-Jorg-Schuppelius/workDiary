@@ -7081,6 +7081,37 @@ CREATE TABLE `content_references` (
   CONSTRAINT `cref_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `contract_indexations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `contract_indexations` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `contract_id` bigint(20) unsigned NOT NULL,
+  `status` varchar(16) NOT NULL,
+  `base_period_on` date NOT NULL,
+  `base_value` decimal(10,1) NOT NULL,
+  `index_period_on` date NOT NULL,
+  `index_value` decimal(10,1) NOT NULL,
+  `change_percent` decimal(8,4) NOT NULL,
+  `old_amount` decimal(14,2) NOT NULL,
+  `new_amount` decimal(14,2) NOT NULL,
+  `currency` varchar(3) NOT NULL,
+  `effective_on` date DEFAULT NULL,
+  `decider_user_id` bigint(20) unsigned DEFAULT NULL,
+  `decided_at` timestamp NULL DEFAULT NULL,
+  `note` varchar(500) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `contract_idx_org_fk` (`organization_id`),
+  KEY `contract_idx_decider_fk` (`decider_user_id`),
+  KEY `contract_idx_contract_status_idx` (`contract_id`,`status`),
+  CONSTRAINT `contract_idx_contract_fk` FOREIGN KEY (`contract_id`) REFERENCES `contracts` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `contract_idx_decider_fk` FOREIGN KEY (`decider_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `contract_idx_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `contract_obligations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -7351,6 +7382,10 @@ CREATE TABLE `contracts` (
   `indexation_value` decimal(8,4) DEFAULT NULL,
   `indexation_review_on` date DEFAULT NULL,
   `indexation_note` varchar(255) DEFAULT NULL,
+  `indexation_base_value` decimal(10,1) DEFAULT NULL,
+  `indexation_base_period_on` date DEFAULT NULL,
+  `indexation_threshold_percent` decimal(6,2) DEFAULT NULL,
+  `indexation_pass_through_percent` decimal(5,2) DEFAULT NULL,
   `value_amount` decimal(14,2) DEFAULT NULL,
   `currency` varchar(3) NOT NULL DEFAULT 'EUR',
   `value_period` varchar(20) NOT NULL DEFAULT 'once',
@@ -10921,6 +10956,40 @@ CREATE TABLE `incoming_einvoices` (
   CONSTRAINT `ine_transferred_by_fk` FOREIGN KEY (`transferred_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `incoming_invoice_retentions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `incoming_invoice_retentions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `incoming_einvoice_id` bigint(20) unsigned NOT NULL,
+  `kind` varchar(16) NOT NULL,
+  `percent` decimal(5,2) DEFAULT NULL,
+  `amount` decimal(14,2) NOT NULL,
+  `currency` varchar(3) NOT NULL,
+  `due_on` date DEFAULT NULL,
+  `status` varchar(16) NOT NULL,
+  `released_on` date DEFAULT NULL,
+  `releaser_user_id` bigint(20) unsigned DEFAULT NULL,
+  `paid_in_run_id` bigint(20) unsigned DEFAULT NULL,
+  `note` varchar(500) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `incoming_ret_org_fk` (`organization_id`),
+  KEY `incoming_ret_invoice_fk` (`incoming_einvoice_id`),
+  KEY `incoming_ret_releaser_fk` (`releaser_user_id`),
+  KEY `incoming_ret_run_fk` (`paid_in_run_id`),
+  KEY `incoming_ret_creator_fk` (`created_by`),
+  KEY `incoming_ret_status_due_idx` (`status`,`due_on`),
+  CONSTRAINT `incoming_ret_creator_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `incoming_ret_invoice_fk` FOREIGN KEY (`incoming_einvoice_id`) REFERENCES `incoming_einvoices` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `incoming_ret_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `incoming_ret_releaser_fk` FOREIGN KEY (`releaser_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `incoming_ret_run_fk` FOREIGN KEY (`paid_in_run_id`) REFERENCES `payment_runs` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `integration_inbox_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -14319,6 +14388,48 @@ CREATE TABLE `license_flag_overrides` (
   CONSTRAINT `license_flag_overrides_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `liquidity_scenario_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `liquidity_scenario_items` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `liquidity_scenario_id` bigint(20) unsigned NOT NULL,
+  `label` varchar(200) NOT NULL,
+  `direction` varchar(3) NOT NULL,
+  `amount` decimal(14,2) NOT NULL,
+  `expected_on` date NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `liq_items_org_fk` (`organization_id`),
+  KEY `liq_items_scenario_fk` (`liquidity_scenario_id`),
+  CONSTRAINT `liq_items_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `liq_items_scenario_fk` FOREIGN KEY (`liquidity_scenario_id`) REFERENCES `liquidity_scenarios` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `liquidity_scenarios`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `liquidity_scenarios` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `name` varchar(120) NOT NULL,
+  `receipt_delay_days` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `inflow_change_percent` decimal(6,2) NOT NULL DEFAULT 0.00,
+  `outflow_change_percent` decimal(6,2) NOT NULL DEFAULT 0.00,
+  `is_including_investments` tinyint(1) NOT NULL DEFAULT 0,
+  `note` varchar(500) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `liq_scenarios_org_fk` (`organization_id`),
+  KEY `liq_scenarios_creator_fk` (`created_by`),
+  CONSTRAINT `liq_scenarios_creator_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `liq_scenarios_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `location_device_tokens`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -16094,6 +16205,7 @@ CREATE TABLE `payment_run_items` (
   `organization_id` bigint(20) unsigned NOT NULL,
   `payment_run_id` bigint(20) unsigned NOT NULL,
   `incoming_einvoice_id` bigint(20) unsigned DEFAULT NULL,
+  `incoming_invoice_retention_id` bigint(20) unsigned DEFAULT NULL,
   `supplier_id` bigint(20) unsigned DEFAULT NULL,
   `customer_id` bigint(20) unsigned DEFAULT NULL,
   `sepa_mandate_id` bigint(20) unsigned DEFAULT NULL,
@@ -16115,6 +16227,8 @@ CREATE TABLE `payment_run_items` (
   KEY `payment_run_items_customer_id_foreign` (`customer_id`),
   KEY `payment_run_items_sepa_mandate_id_foreign` (`sepa_mandate_id`),
   KEY `payment_run_item_org_run_idx` (`organization_id`,`payment_run_id`),
+  KEY `payment_items_retention_fk` (`incoming_invoice_retention_id`),
+  CONSTRAINT `payment_items_retention_fk` FOREIGN KEY (`incoming_invoice_retention_id`) REFERENCES `incoming_invoice_retentions` (`id`) ON DELETE SET NULL,
   CONSTRAINT `payment_run_items_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `payment_run_items_incoming_einvoice_id_foreign` FOREIGN KEY (`incoming_einvoice_id`) REFERENCES `incoming_einvoices` (`id`) ON DELETE SET NULL,
   CONSTRAINT `payment_run_items_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
@@ -16501,6 +16615,26 @@ CREATE TABLE `price_change_requests` (
   CONSTRAINT `pcr_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `pcr_req_fk` FOREIGN KEY (`requested_by`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `pcr_rule_fk` FOREIGN KEY (`pricing_margin_rule_id`) REFERENCES `pricing_margin_rules` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `price_index_values`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `price_index_values` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `series` varchar(20) NOT NULL,
+  `period_on` date NOT NULL,
+  `value` decimal(10,1) NOT NULL,
+  `source` varchar(30) NOT NULL,
+  `status` varchar(16) NOT NULL,
+  `approver_user_id` bigint(20) unsigned DEFAULT NULL,
+  `approved_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `price_index_series_period_unique` (`series`,`period_on`),
+  KEY `price_index_approver_fk` (`approver_user_id`),
+  CONSTRAINT `price_index_approver_fk` FOREIGN KEY (`approver_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `pricing_change_alerts`;
@@ -24824,3 +24958,6 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (886,'2027_02_27_29
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (887,'2027_02_27_300000_add_authority_report_fields_to_recalls',22);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (888,'2027_02_27_310000_create_crisis_business_processes_table',22);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (889,'2027_02_27_320000_create_rental_rate_rules_table',23);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (890,'2027_02_27_330000_create_price_index_tables',24);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (891,'2027_02_27_340000_create_incoming_invoice_retentions_table',24);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (892,'2027_02_27_350000_create_liquidity_scenarios_table',24);

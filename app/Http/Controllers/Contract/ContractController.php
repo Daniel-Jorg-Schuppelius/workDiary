@@ -100,6 +100,7 @@ class ContractController extends Controller {
             'signingRevisions' => $signingRevisions,
             'nextTermination' => $contract->status->isOpen() ? $this->service->nextTerminationDate($contract) : null,
             'noticeDeadline' => $contract->status->isOpen() ? $this->service->noticeDeadline($contract) : null,
+            'indexationPreview' => app(\App\Services\Contract\ContractIndexationService::class)->calculate($contract),
             'obligationKinds' => ContractObligationKind::cases(),
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
             'assetFinanceOptions' => AssetFinanceContract::query()->orderByDesc('id')->limit(200)->get(['id', 'number', 'partner_name']),
