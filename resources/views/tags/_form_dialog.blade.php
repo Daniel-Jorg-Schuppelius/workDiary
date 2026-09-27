@@ -35,5 +35,6 @@
 
     <x-form-group :legend="__('Tag-Daten')" icon="label" tone="success">
         <x-input-field name="name" :label="__('Name')" required maxlength="60" :value="old('name', $tag?->name)" />
+        <x-translation-fields name="name_i18n" :values="$tag?->name_i18n" maxlength="60" />
     </x-form-group>
 </x-modal>

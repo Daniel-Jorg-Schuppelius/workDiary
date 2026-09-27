@@ -52,6 +52,12 @@
             <x-detail-grid>
                 <x-detail-grid.row :label="__('Verantwortlich')">{{ $case->responsible->name ?? '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Zeitraum')">{{ optional($case->starts_on)->fdate() ?? '—' }} – {{ optional($case->ends_on)->fdate() ?? '—' }}</x-detail-grid.row>
+                @if ($case->origin)
+                    <x-detail-grid.row :label="__('investment.proposal.field.origin')">{{ $case->origin->label() }}@if ($case->submitter_name) — {{ $case->submitter_name }}@endif @if ($case->submitter_email)<a class="link" href="mailto:{{ $case->submitter_email }}">{{ $case->submitter_email }}</a>@endif</x-detail-grid.row>
+                @endif
+                @if ($case->estimated_amount !== null)
+                    <x-detail-grid.row :label="__('investment.proposal.field.estimated_amount')">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($case->estimated_amount, 2, withThousandsSeparator: true) }} {{ $case->currency }}</x-detail-grid.row>
+                @endif
                 @if ($case->project)
                     <x-detail-grid.row :label="__('Projekt')"><a class="link" href="{{ route('projects.show', $case->project) }}">{{ $case->project->name }}</a></x-detail-grid.row>
                 @endif
@@ -125,6 +131,7 @@
                                     <td class="text-right">{{ $option->delivery_weeks !== null ? __(':count Wo.', ['count' => $option->delivery_weeks]) : '—' }}</td>
                                     <td>{{ $option->quality_score !== null ? str_repeat('★', (int) $option->quality_score) : '—' }}</td>
                                     <td class="whitespace-nowrap text-right">
+                                        <x-icon-btn icon="account_balance" size="xs" tone="ghost" :href="route('investments.options.financing', [$case, $option])" :title="__('investment.financing.open')" />
                                         @can('update', $case)
                                             <x-action-form :action="route('investments.options.recommend', [$case, $option])" class="inline">
                                                 <x-icon-btn icon="recommend" size="xs" tone="ghost" type="submit" :title="__('Als Empfehlung markieren')" />
@@ -143,6 +150,11 @@
 
     {{-- Budgetantrag + Freigabekette (MVP-202/203) --}}
     <x-card :title="__('Budget & Freigaben')">
+        @if ($canCapitalize)
+            <x-slot:actions>
+                <x-icon-btn icon="inventory" size="sm" data-entry-modal-trigger :href="route('investments.capitalize.create', $case)" show-label>{{ __('investment.capitalize.title') }}</x-icon-btn>
+            </x-slot:actions>
+        @endif
         @can('update', $case)
             @if (in_array($case->status, \App\Models\Investments\InvestmentCase::PLANNING_STATUSES, true))
                 @unless ($hasCostCenters)
@@ -343,5 +355,41 @@
             <p class="text-sm text-muted">{{ __('Nachbewertung wird nach Abschluss oder Abbruch möglich.') }}</p>
         @endif
     </x-card>
+
+    {{-- Lieferantenbewertung (MVP-928) --}}
+    @if ($ratingSuppliers->isNotEmpty())
+        <x-card :title="__('investment.supplier_rating.title')" icon="star_rate">
+            @unless ($canRateSuppliers)
+                <p class="text-sm text-muted">{{ __('investment.supplier_rating.hint') }}</p>
+            @endunless
+            <ul class="divide-y divide-base-300 text-sm">
+                @foreach ($ratingSuppliers as $supplier)
+                    @php($rating = $supplierRatings->get($supplier->id))
+                    <li class="flex flex-wrap items-center gap-2 py-2">
+                        <span class="min-w-40 flex-1 font-medium">{{ $supplier->name }}</span>
+                        @if ($canRateSuppliers)
+                            @can('update', $case)
+                                <form method="POST" action="{{ route('investments.supplier-ratings.store', $case) }}" class="flex flex-wrap items-center gap-1">
+                                    @csrf
+                                    <input type="hidden" name="supplier_id" value="{{ $supplier->sqid }}">
+                                    @foreach (\App\Models\Investments\InvestmentSupplierRating::CRITERIA as $criterion)
+                                        <select name="{{ $criterion }}" class="select select-xs select-bordered" aria-label="{{ __('investment.supplier_rating.' . $criterion) }}" title="{{ __('investment.supplier_rating.' . $criterion) }}">
+                                            @foreach ([5, 4, 3, 2, 1] as $score)
+                                                <option value="{{ $score }}" @selected(($rating?->{$criterion} ?? 3) === $score)>{{ __('investment.supplier_rating.' . $criterion) }}: {{ $score }}</option>
+                                            @endforeach
+                                        </select>
+                                    @endforeach
+                                    <input name="note" maxlength="2000" value="{{ $rating?->note }}" class="input input-xs input-bordered w-48" aria-label="{{ __('investment.supplier_rating.note') }}" placeholder="{{ __('investment.supplier_rating.note') }}">
+                                    <button type="submit" class="btn btn-xs">{{ __('investment.supplier_rating.save') }}</button>
+                                </form>
+                            @endcan
+                        @elseif ($rating !== null)
+                            <span class="tabular-nums">Ø {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($rating->average(), 1) }}</span>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        </x-card>
+    @endif
 </x-page-shell>
 @endsection

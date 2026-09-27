@@ -56,6 +56,8 @@ return [
                 'group:sales-billing',
                 'section:work',
                 'section:claims',
+                // Schadensfälle (MVP-919) gehören zur Reklamation und zum Verleih.
+                'section:damage',
                 // Branchenprofil Druck-/Kopiershop (MVP-459): Druckauftraege
                 // sind Auftraege und gehoeren in denselben Blick.
                 'section:print',
@@ -93,6 +95,8 @@ return [
                 // Reklamationen sind die kaufmaennische Fortsetzung eines
                 // Servicefalls (Feature 072) — wer den Desk fuehrt, braucht sie.
                 'section:claims',
+                // Schadensfälle (MVP-919) gehören zur Reklamation und zum Verleih.
+                'section:damage',
                 'group:reports-team',
             ],
             'manage' => ['tags.index', 'activity-categories.index'],

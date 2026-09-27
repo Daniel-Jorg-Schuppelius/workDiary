@@ -101,6 +101,8 @@ class TenantTraitCoverageTest extends TestCase {
         TimeExportEvent::class,
         TimeCorrectionItem::class,
         MonthClosureEvent::class,
+        // Journal des Schadensfalls (MVP-919): Mandantengrenze über damage_case_id.
+        \App\Models\Damage\DamageCaseEvent::class,
         ImportRunError::class,
         // Rollplan-Slot (MVP-522): Kind der mandantengebundenen ShiftRotation —
         // Mandantengrenze transitiv über shift_rotation_id (cascade).

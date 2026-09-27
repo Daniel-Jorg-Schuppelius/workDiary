@@ -115,6 +115,7 @@ return [
         'statusChanged' => 'Estado del defecto modificado',
     ],
     'assetFinance' => [
+        'classified' => 'Arrendamiento evaluado (NIIF 16/HGB)',
         'activated' => 'Financiación activada',
         'closed' => 'Financiación cerrada',
         'contractLinked' => 'Contrato de financiación vinculado',
@@ -445,6 +446,7 @@ return [
         'deviation_decided' => 'Desviación de inversión decidida',
         'linked' => 'Inversión vinculada',
         'option_recommended' => 'Opción de inversión recomendada',
+        'proposed' => 'Inversión propuesta',
         'reviewed' => 'Inversión revisada',
     ],
     'invoice' => [
@@ -749,6 +751,8 @@ return [
     ],
     'recruiting' => [
         'application_anonymized' => 'Candidatura anonimizada',
+        'interview_offered' => 'Horarios de entrevista ofrecidos',
+        'interview_chosen' => 'Horario de entrevista elegido',
         'application_decided' => 'Candidatura decidida',
         'application_exported' => 'Candidatura exportada',
         'application_received' => 'Candidatura recibida',
@@ -765,6 +769,7 @@ return [
     'rental' => [
         'requested' => 'Solicitud de alquiler enviada desde el portal',
         'requestAccepted' => 'Solicitud de alquiler aceptada',
+        'directBooked' => 'Reserva directa en el portal',
         'requestDeclined' => 'Solicitud de alquiler rechazada',
         'requestWithdrawn' => 'Solicitud de alquiler retirada por el cliente',
         'active' => 'Alquiler activo',
@@ -1007,6 +1012,7 @@ return [
         'corrected' => 'Trayecto corregido mediante trayecto de anulación',
     ],
     'user' => [
+        'deputyReplaced' => 'Suplencia reasignada',
         'anonymized' => 'Empleado anonimizado (datos personales eliminados, justificantes conservados)',
         'offboardingScheduled' => 'Salida programada',
         'offboarded' => 'Empleado dado de baja (cuenta desactivada)',
@@ -1268,5 +1274,11 @@ return [
             'confirmed' => 'Propuesta de cambio confirmada',
             'dismissed' => 'Propuesta de cambio descartada',
         ],
+    ],
+    'inspection_order' => [
+        'accepted' => 'Orden de inspección aceptada',
+        'offer_rejected' => 'Oferta de inspección rechazada',
+        'completed' => 'Orden de inspección completada',
+        'cancelled' => 'Orden de inspección anulada',
     ],
 ];

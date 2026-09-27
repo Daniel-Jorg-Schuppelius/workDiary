@@ -200,6 +200,7 @@ return [
         [
             'code' => 'EL_SICHERHEITSCHECK',
             'name' => 'Sicherheitscheck Elektro (5 Sicherheitsregeln)',
+            'name_i18n' => ['en' => 'Electrical safety check (5 safety rules)', 'es' => 'Comprobación de seguridad eléctrica (5 reglas)', 'fr' => 'Contrôle de sécurité électrique (5 règles)', 'it' => 'Controllo di sicurezza elettrica (5 regole)'],
             'domain' => 'elektro',
             'risk_level' => 'high',
             'description' => 'Arbeitsschutz-Vorabprüfung vor Arbeiten an elektrischen Anlagen.',
@@ -215,6 +216,7 @@ return [
         [
             'code' => 'EL_ECHECK',
             'name' => 'E-Check / Prüfung ortsfester Anlagen',
+            'name_i18n' => ['en' => 'E-check / inspection of fixed installations', 'es' => 'E-Check / inspección de instalaciones fijas', 'fr' => 'E-Check / contrôle des installations fixes', 'it' => 'E-Check / verifica degli impianti fissi'],
             'domain' => 'elektro',
             'risk_level' => 'normal',
             'description' => 'Wiederkehrende Prüfung mit Messwerterfassung und Protokoll.',
@@ -228,6 +230,7 @@ return [
         [
             'code' => 'EL_STOERUNG',
             'name' => 'Störungseinsatz Elektro',
+            'name_i18n' => ['en' => 'Electrical fault call-out', 'es' => 'Servicio de avería eléctrica', 'fr' => 'Dépannage électrique', 'it' => 'Intervento guasto elettrico'],
             'domain' => 'elektro',
             'risk_level' => 'high',
             'description' => 'Störungsbehebung an elektrischen Anlagen mit Sicherheitsregeln, Ursachenanalyse und Messnachweis.',
@@ -244,6 +247,7 @@ return [
         [
             'code' => 'EL_INSTALLATION',
             'name' => 'Elektroinstallation',
+            'name_i18n' => ['en' => 'Electrical installation', 'es' => 'Instalación eléctrica', 'fr' => 'Installation électrique', 'it' => 'Impianto elettrico'],
             'domain' => 'elektro',
             'risk_level' => 'normal',
             'description' => 'Installation nach Plan mit Kennzeichnung und Erstprüfung nach DIN VDE 0100-600.',
@@ -259,6 +263,7 @@ return [
         [
             'code' => 'EL_VERTEILER',
             'name' => 'Verteiler aufbauen/erweitern',
+            'name_i18n' => ['en' => 'Build/extend distribution board', 'es' => 'Montar/ampliar el cuadro', 'fr' => 'Monter/étendre le tableau', 'it' => 'Montare/ampliare il quadro'],
             'domain' => 'elektro',
             'risk_level' => 'high',
             'description' => 'Arbeiten am Verteiler mit Freischaltung, Bestückung nach Plan, Prüfung der Schutzmaßnahmen und Freigabe.',
@@ -274,6 +279,7 @@ return [
         [
             'code' => 'EL_WALLBOX',
             'name' => 'Wallbox-Installation',
+            'name_i18n' => ['en' => 'Wall box installation', 'es' => 'Instalación de wallbox', 'fr' => 'Installation de borne de recharge', 'it' => 'Installazione wallbox'],
             'domain' => 'elektro',
             'risk_level' => 'normal',
             'description' => 'Ladeeinrichtung installieren: Netzbetreiber, Zuleitung, Fehlerstromschutz, Erstprüfung, Ladetest und Einweisung.',
@@ -290,6 +296,7 @@ return [
         [
             'code' => 'EL_INBETRIEBNAHME',
             'name' => 'Inbetriebnahme Elektroanlage',
+            'name_i18n' => ['en' => 'Commissioning of electrical installation', 'es' => 'Puesta en marcha de la instalación eléctrica', 'fr' => 'Mise en service de l\'installation électrique', 'it' => 'Messa in funzione dell\'impianto elettrico'],
             'domain' => 'elektro',
             'risk_level' => 'high',
             'description' => 'Inbetriebnahme mit Erstprüfprotokoll, Messung, Funktionstest, Einweisung und Abnahme durch den Betreiber.',

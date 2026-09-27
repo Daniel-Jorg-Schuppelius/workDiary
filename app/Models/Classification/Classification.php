@@ -11,7 +11,7 @@
 namespace App\Models\Classification;
 
 use App\Enums\Classification\ClassificationDomain;
-use App\Models\Concerns\{Auditable, HasSqid};
+use App\Models\Concerns\{Auditable, HasSqid, HasTranslatedText};
 use App\Models\Platform\Organization;
 use Database\Factories\Classification\ClassificationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -42,8 +42,9 @@ class Classification extends Model {
     use Auditable;
     /** @use HasFactory<ClassificationFactory> */
     use HasFactory;
-
     use HasSqid;
+
+    use HasTranslatedText;
 
     protected $fillable = [
         'organization_id',
@@ -82,24 +83,7 @@ class Classification extends Model {
      * Anzeige; `label` bleibt der bearbeitbare Quellwert.
      */
     public function displayLabel(?string $locale = null): string {
-        $locale ??= app()->getLocale();
-        $i18n = is_array($this->label_i18n) ? $this->label_i18n : [];
-        $short = strtolower(substr($locale, 0, 2));
-        foreach (array_unique([$locale, $short]) as $key) {
-            $value = trim((string) ($i18n[$key] ?? ''));
-            if ($value !== '') {
-                return $value;
-            }
-        }
-        if ($short !== 'de') {
-            $fallback = strtolower(substr((string) config('app.fallback_locale', 'en'), 0, 2));
-            $value = trim((string) ($i18n[$fallback] ?? ''));
-            if ($value !== '') {
-                return $value;
-            }
-        }
-
-        return (string) $this->label;
+        return $this->translatedText(is_array($this->label_i18n) ? $this->label_i18n : null, (string) $this->label, $locale);
     }
 
     public function getDisplayLabelAttribute(): string {

@@ -31,6 +31,7 @@
                         :href="route('suppliers.duplicates.index')"
                         show-label>{{ __('Lieferanten-Abgleich') }}</x-icon-btn>
         @endif
+        <x-icon-btn icon="fact_check" size="sm" :href="route('supplier-questionnaires.index')" show-label>{{ __('supplier_questionnaire.title') }}</x-icon-btn>
         @can('create', App\Models\Supplier\Supplier::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger

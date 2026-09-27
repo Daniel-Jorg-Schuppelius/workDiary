@@ -151,6 +151,7 @@ return [
         [
             'code' => 'SD_REVIERFAHRT',
             'name' => 'Revierfahrt mit Kontrollpunkten',
+            'name_i18n' => ['en' => 'Mobile patrol with checkpoints', 'es' => 'Ronda móvil con puntos de control', 'fr' => 'Ronde motorisée avec points de contrôle', 'it' => 'Pattugliamento con punti di controllo'],
             'domain' => 'sicherheitsdienst',
             'risk_level' => 'normal',
             'description' => 'Geführte Revierfahrt: Tour, Kontrollpunkte und Zeiten nachweisbar.',
@@ -164,6 +165,7 @@ return [
         [
             'code' => 'SD_ALARMVERFOLGUNG',
             'name' => 'Alarmverfolgung',
+            'name_i18n' => ['en' => 'Alarm response', 'es' => 'Respuesta a alarmas', 'fr' => 'Suivi d\'alarme', 'it' => 'Intervento su allarme'],
             'domain' => 'sicherheitsdienst',
             'risk_level' => 'high',
             'description' => 'Strukturierte Alarmverfolgung: Objekt, Alarmzeit, Maßnahme und Ergebnis.',
@@ -177,6 +179,7 @@ return [
         [
             'code' => 'SD_WACHBUCH',
             'name' => 'Wachbuch führen',
+            'name_i18n' => ['en' => 'Keep guard log', 'es' => 'Llevar el libro de guardia', 'fr' => 'Tenir le registre de garde', 'it' => 'Tenere il registro di guardia'],
             'domain' => 'sicherheitsdienst',
             'risk_level' => 'normal',
             'description' => 'Dienstbeginn, Vorkommnisse und Dienstende nachvollziehbar im Wachbuch festhalten.',
@@ -190,6 +193,7 @@ return [
         [
             'code' => 'SD_KONTROLLGANG',
             'name' => 'Kontrollgang',
+            'name_i18n' => ['en' => 'Patrol', 'es' => 'Ronda de control', 'fr' => 'Ronde', 'it' => 'Ronda di controllo'],
             'domain' => 'sicherheitsdienst',
             'risk_level' => 'normal',
             'description' => 'Rundgang mit Kontrollpunkten, Verschlussprüfung und Dokumentation von Auffälligkeiten.',
@@ -204,6 +208,7 @@ return [
         [
             'code' => 'SD_VORFALL',
             'name' => 'Vorfallbearbeitung',
+            'name_i18n' => ['en' => 'Incident handling', 'es' => 'Gestión de incidentes', 'fr' => 'Traitement des incidents', 'it' => 'Gestione degli incidenti'],
             'domain' => 'sicherheitsdienst',
             'risk_level' => 'high',
             'description' => 'Lage sichern, Stellen benachrichtigen und den Vorfall lückenlos dokumentieren.',
@@ -218,6 +223,7 @@ return [
         [
             'code' => 'SD_SCHLUESSEL',
             'name' => 'Schlüsselausgabe/-rücknahme',
+            'name_i18n' => ['en' => 'Key issue/return', 'es' => 'Entrega/devolución de llaves', 'fr' => 'Remise/retour de clés', 'it' => 'Consegna/restituzione chiavi'],
             'domain' => 'sicherheitsdienst',
             'risk_level' => 'normal',
             'description' => 'Schlüsselvorgang mit Quittung der übernehmenden oder abgebenden Person.',
@@ -231,6 +237,7 @@ return [
         [
             'code' => 'SD_UEBERGABE',
             'name' => 'Dienstübergabe',
+            'name_i18n' => ['en' => 'Shift handover', 'es' => 'Relevo de turno', 'fr' => 'Passation de service', 'it' => 'Passaggio di consegne'],
             'domain' => 'sicherheitsdienst',
             'risk_level' => 'normal',
             'description' => 'Übergabe an die Ablösung mit offenen Punkten, Schlüsseln und Ausrüstung.',

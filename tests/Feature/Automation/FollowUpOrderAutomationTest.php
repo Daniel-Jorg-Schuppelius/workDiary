@@ -16,7 +16,7 @@ use App\Enums\Diary\Status;
 use App\Enums\Procedure\{ProcedureDeviationProposedAction, ProcedureDeviationType, ProcedureStepType};
 use App\Models\Automation\{AutomationRule, AutomationRuleRun};
 use App\Models\Customer\Customer;
-use App\Models\Diary\{DiaryEntry};
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Procedure\ProcedureStepRun;
 use App\Services\Diary\Automation\CreateFollowUpOrderAction;

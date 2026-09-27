@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany};
  * @property int $organization_id
  * @property int $investment_case_id
  * @property int $version
- * @property string $amount
+ * @property numeric-string $amount
  * @property string $cost_kind
  * @property string $financing
  * @property string|null $payment_plan

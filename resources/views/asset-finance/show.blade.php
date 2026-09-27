@@ -119,6 +119,14 @@
         @endif
     </div>
 
+    {{-- IFRS-16-/HGB-Einschätzung (MVP-947) --}}
+    @if ($canFinance)
+        @include('asset-finance._classification_card')
+    @endif
+
+    {{-- Schadensfälle (MVP-920) --}}
+    <x-damage-cases-card :subject="$contract" />
+
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Assets')" padding="p-0">
             <x-table bare>

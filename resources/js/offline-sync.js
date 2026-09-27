@@ -28,7 +28,7 @@ import { getJson, postForm, postJson } from "./lib/http.js";
 
 const DB_NAME = "workdiary-sync";
 // v2 (Audit 2026-08, W4.1): eigener Konflikt-Store + Foto-Warteschlange.
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 const OUTBOX = "outbox";
 const REJECTED = "rejected";
 const CONFLICTS = "conflicts";
@@ -37,6 +37,8 @@ const PHOTOS = "photos";
    Store: er wird beim Abmelden mitgeleert, und der Seiten-Cache bleibt
    unberuehrt (der Service Worker cacht keine angemeldeten Seiten). */
 const COURSES = "courses";
+/* Krisenmappe fuer den Offline-Leser (MVP-914): ein Eintrag je Geraet. */
+const CRISIS = "crisis";
 
 function openDb() {
     return new Promise((resolve, reject) => {
@@ -57,6 +59,9 @@ function openDb() {
             }
             if (!db.objectStoreNames.contains(COURSES)) {
                 db.createObjectStore(COURSES, { keyPath: "enrollment" });
+            }
+            if (!db.objectStoreNames.contains(CRISIS)) {
+                db.createObjectStore(CRISIS, { keyPath: "key" });
             }
             if (!db.objectStoreNames.contains(PHOTOS)) {
                 const store = db.createObjectStore(PHOTOS, {
@@ -161,7 +166,7 @@ async function photosFor(clientUuid) {
 /** §3.4: Logout leert die Outbox (Gerätewechsel/Abmeldung). */
 async function clearAll() {
     const db = await openDb();
-    for (const name of [OUTBOX, REJECTED, CONFLICTS, PHOTOS, COURSES]) {
+    for (const name of [OUTBOX, REJECTED, CONFLICTS, PHOTOS, COURSES, CRISIS]) {
         await tx(db, name, "readwrite", (store) => store.clear());
     }
 }
@@ -789,11 +794,60 @@ function bindOfflineCourses() {
     }
 }
 
+/* ── Offline-Krisenmappe (Feature 070, MVP-914) ───────────────────────── */
+
+async function crisisStore(url) {
+    const result = await getJson(url);
+    if (!result.ok || !result.data) throw new Error("crisis-bundle");
+    const db = await openDb();
+    await tx(db, CRISIS, "readwrite", (store) =>
+        store.put({ ...result.data, key: "bundle" }),
+    );
+}
+
+async function crisisStored() {
+    const db = await openDb();
+    return new Promise((resolve, reject) => {
+        const request = db.transaction(CRISIS, "readonly").objectStore(CRISIS).get("bundle");
+        request.onsuccess = () => resolve(Boolean(request.result));
+        request.onerror = () => reject(request.error);
+    });
+}
+
+/** Knopf „Krisenmappe offline speichern“; einmal gespeichert, frischt jeder Besuch sie auf. */
+function bindOfflineCrisis() {
+    for (const button of document.querySelectorAll("[data-offline-crisis]")) {
+        if (!(button instanceof HTMLElement)) continue;
+        const url = button.dataset.offlineCrisis;
+        if (!url) continue;
+
+        crisisStored()
+            .then((stored) => {
+                if (!stored) return;
+                button.dataset.offlineStored = "1";
+                return crisisStore(url);
+            })
+            .catch(() => {});
+
+        button.addEventListener("click", async (event) => {
+            event.preventDefault();
+            try {
+                await crisisStore(url);
+                button.dataset.offlineStored = "1";
+                delete button.dataset.offlineFailed;
+            } catch {
+                button.dataset.offlineFailed = "1";
+            }
+        });
+    }
+}
+
 export function initOfflineSync() {
     if (typeof indexedDB === "undefined") return;
 
     bindForms();
     bindOfflineCourses();
+    bindOfflineCrisis();
     window.addEventListener("online", flush);
     window.addEventListener("offline", updateBadge);
     document.addEventListener("visibilitychange", () => {

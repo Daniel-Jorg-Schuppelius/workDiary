@@ -13,6 +13,11 @@
 
 @section('content')
 <x-index-page :subtitle="__('Prüftermine mit internen Prüfern oder externen Prüfstellen; Prüfungen werden als unveränderbare Protokolle erfasst.')">
+    <x-slot:actions>
+        @can('create', \App\Models\AssetCompliance\AssetComplianceProfile::class)
+            <x-icon-btn icon="route" tone="ghost" size="sm" :href="route('asset-compliance.tours.index')" show-label>{{ __('inspection_tour.title') }}</x-icon-btn>
+        @endcan
+    </x-slot:actions>
     <x-validation-errors />
 
     <x-filter-bar :action="route('asset-compliance.schedules.index')" :reset="route('asset-compliance.schedules.index')">

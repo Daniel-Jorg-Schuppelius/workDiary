@@ -112,6 +112,7 @@
                     </form>
                 @endif
             @endcan
+            @include('rental.rates._rules', ['card' => $card])
         </x-card>
     @endforeach
 

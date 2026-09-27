@@ -156,7 +156,8 @@ return [
     ],
     'supplier_material' => [
         'title' => 'Material consumption by supplier',
-        'note' => 'Consumption from timesheets in the period, assigned via material → article → preferred supply source. Without article link: :unlinked €.',
+        'note' => 'Consumption from timesheets and completed production orders in the period; supplier from the latest goods receipt for the article, otherwise the preferred supply source. Without article link: :unlinked €.',
+        'manufacturing' => 'of which production',
         'materials' => 'Materials',
         'usages' => 'Entries',
         'quantities' => 'Quantities',
@@ -170,6 +171,16 @@ return [
         'note' => 'Previous period = equally long period immediately before; the five largest changes individually, the rest as “Others”. Click opens the supplier’s vouchers.',
     ],
     'warning' => [
+        'capacity' => [
+            'title' => 'Capacity shortage in team :name',
+            'detail' => 'Week from :week: :percent % of capacity planned.',
+            'recommendation' => 'Recommendation: postpone or redistribute orders, check deputies and external staff, or advertise a position.',
+        ],
+        'recurring_tickets' => [
+            'title' => 'Recurring tickets: :name',
+            'detail' => ':count tickets in :days days.',
+            'recommendation' => 'Recommendation: clarify the cause with the customer, inspect or replace the object and consider a work instruction or training for the team.',
+        ],
         'customer_rework' => [
             'title' => 'Rework for :name: :actual %',
             'detail' => 'Last 90 days, target :target %.',
@@ -187,6 +198,27 @@ return [
             'title' => 'Notable findings',
             'description' => 'Early warnings from reports, assets and claims with a recommended action.',
             'none' => 'No notable findings.',
+        ],
+    ],
+    // Management-Auswertung (MVP-926).
+    'management' => [
+        'title' => 'Management insights',
+        'nav' => 'Problems & training',
+        'subtitle' => 'Recurring problems from all early warnings and training needs from the organisation\'s competency gaps.',
+        'problems' => 'Recurring problems',
+        'training' => 'Training needs',
+        'competency' => 'Competency',
+        'people' => 'People with a gap',
+        'average_gap' => 'Avg. gap (levels)',
+        'courses' => 'Matching courses',
+        'no_course' => 'no released course',
+        'no_training' => 'No competency gaps — or no competency requirements per role.',
+        'kind' => [
+            'customer_rework' => 'Rework per customer',
+            'asset_defects' => 'Recurring defects',
+            'claim_pattern' => 'Claim patterns',
+            'recurring_tickets' => 'Recurring tickets',
+            'capacity' => 'Staff shortages',
         ],
     ],
 ];

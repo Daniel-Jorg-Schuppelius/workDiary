@@ -99,6 +99,8 @@ class ClassificationController extends Controller {
             'domain' => ['required_without:source_classification_id', 'string', Rule::in(array_map(static fn(ClassificationDomain $domain): string => $domain->value, ClassificationDomain::cases()))],
             'code' => ['required_without:source_classification_id', 'string', 'max:60'],
             'label' => ['required', 'string', 'max:180'],
+            'label_i18n' => ['nullable', 'array'],
+            'label_i18n.*' => ['nullable', 'string', 'max:180'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:100000'],
             'color_hex' => ['nullable', 'string', 'max:7'],
             'icon' => ['nullable', 'string', 'max:60'],
@@ -144,6 +146,8 @@ class ClassificationController extends Controller {
 
         $validated = $request->validate([
             'label' => ['required', 'string', 'max:180'],
+            'label_i18n' => ['nullable', 'array'],
+            'label_i18n.*' => ['nullable', 'string', 'max:180'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:100000'],
             'color_hex' => ['nullable', 'string', 'max:7'],
             'icon' => ['nullable', 'string', 'max:60'],
@@ -312,6 +316,8 @@ class ClassificationController extends Controller {
             'icon' => $this->nullableString($validated['icon'] ?? null),
             'description' => $this->nullableString($validated['description'] ?? null),
             'active' => $request->boolean('active'),
+            // Übersetzungen (MVP-912); Quellwert bleibt `label`.
+            'label_i18n' => Classification::cleanTranslations($request->input('label_i18n')),
         ];
 
         if (! $skipCode) {

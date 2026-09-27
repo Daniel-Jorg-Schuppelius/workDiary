@@ -151,6 +151,7 @@ return [
         [
             'code' => 'GR_QS_KONTROLLE',
             'name' => 'Qualitätskontrolle Reinigung',
+            'name_i18n' => ['en' => 'Cleaning quality control', 'es' => 'Control de calidad de limpieza', 'fr' => 'Contrôle qualité du nettoyage', 'it' => 'Controllo qualità della pulizia'],
             'domain' => 'gebaeudereinigung',
             'risk_level' => 'normal',
             'description' => 'Objektbegehung mit Bewertung und Foto-/Abnahmenachweis.',
@@ -165,6 +166,7 @@ return [
         [
             'code' => 'GR_SONDERREINIGUNG',
             'name' => 'Sonder-/Hygienereinigung',
+            'name_i18n' => ['en' => 'Special / hygiene cleaning', 'es' => 'Limpieza especial / higiénica', 'fr' => 'Nettoyage spécial / d\'hygiène', 'it' => 'Pulizia speciale / igienica'],
             'domain' => 'gebaeudereinigung',
             'risk_level' => 'normal',
             'description' => 'Sonderreinigung mit PSA-/Hygienehinweis und Materialnachweis.',
@@ -179,6 +181,7 @@ return [
         [
             'code' => 'GR_UNTERHALT',
             'name' => 'Unterhaltsreinigung nach Leistungsverzeichnis',
+            'name_i18n' => ['en' => 'Maintenance cleaning per service specification', 'es' => 'Limpieza de mantenimiento según pliego', 'fr' => 'Nettoyage d\'entretien selon cahier des charges', 'it' => 'Pulizia ordinaria secondo capitolato'],
             'domain' => 'gebaeudereinigung',
             'risk_level' => 'normal',
             'description' => 'Regelmäßige Reinigung nach Objekt-/Revierplan mit Leistungsnachweis.',
@@ -194,6 +197,7 @@ return [
         [
             'code' => 'GR_GRUNDREINIGUNG',
             'name' => 'Grundreinigung Bodenbelag',
+            'name_i18n' => ['en' => 'Deep cleaning of flooring', 'es' => 'Limpieza a fondo del suelo', 'fr' => 'Nettoyage en profondeur des sols', 'it' => 'Pulizia a fondo del pavimento'],
             'domain' => 'gebaeudereinigung',
             'risk_level' => 'normal',
             'description' => 'Intensivreinigung mit Materialnachweis, Trocknungszeit und Abnahme.',
@@ -209,6 +213,7 @@ return [
         [
             'code' => 'GR_GLAS',
             'name' => 'Glas- und Rahmenreinigung',
+            'name_i18n' => ['en' => 'Glass and frame cleaning', 'es' => 'Limpieza de cristales y marcos', 'fr' => 'Nettoyage des vitres et cadres', 'it' => 'Pulizia vetri e telai'],
             'domain' => 'gebaeudereinigung',
             'risk_level' => 'high',
             'description' => 'Glasreinigung mit Witterungsprüfung und Absturzsicherung.',
@@ -223,6 +228,7 @@ return [
         [
             'code' => 'GR_REKLAMATION',
             'name' => 'Reklamationsbearbeitung',
+            'name_i18n' => ['en' => 'Complaint handling', 'es' => 'Gestión de reclamaciones', 'fr' => 'Traitement des réclamations', 'it' => 'Gestione dei reclami'],
             'domain' => 'gebaeudereinigung',
             'risk_level' => 'normal',
             'description' => 'Beanstandung aufnehmen, nacharbeiten und mit dem Auftraggeber abschließen.',

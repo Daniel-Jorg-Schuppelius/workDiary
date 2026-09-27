@@ -162,6 +162,7 @@ return [
         [
             'code' => 'VT_STROM_CHECK',
             'name' => 'Stromcheck / Elektrosicherheit',
+            'name_i18n' => ['en' => 'Power check / electrical safety', 'es' => 'Comprobación eléctrica / seguridad', 'fr' => 'Contrôle électrique / sécurité', 'it' => 'Controllo elettrico / sicurezza'],
             'domain' => 'veranstaltungstechnik',
             'risk_level' => 'critical',
             'description' => 'Prüfung der Stromversorgung mit Messung und Freigabe im Vier-Augen-Prinzip.',
@@ -175,6 +176,7 @@ return [
         [
             'code' => 'VT_RIGGING_CHECK',
             'name' => 'Rigging-Check',
+            'name_i18n' => ['en' => 'Rigging check', 'es' => 'Comprobación del rigging', 'fr' => 'Contrôle de l\'accroche', 'it' => 'Controllo rigging'],
             'domain' => 'veranstaltungstechnik',
             'risk_level' => 'critical',
             'description' => 'Lastprüfung und Sichtkontrolle des Riggings mit Freigabe im Vier-Augen-Prinzip.',
@@ -188,6 +190,7 @@ return [
         [
             'code' => 'VT_SOUNDCHECK',
             'name' => 'Soundcheck',
+            'name_i18n' => ['en' => 'Sound check', 'es' => 'Prueba de sonido', 'fr' => 'Balance', 'it' => 'Soundcheck'],
             'domain' => 'veranstaltungstechnik',
             'risk_level' => 'normal',
             'description' => 'Soundcheck inkl. Pegelmessung und Freigabe.',
@@ -201,6 +204,7 @@ return [
         [
             'code' => 'VT_EVENT_PLANUNG',
             'name' => 'Technikplanung Event',
+            'name_i18n' => ['en' => 'Event technical planning', 'es' => 'Planificación técnica del evento', 'fr' => 'Planification technique de l\'événement', 'it' => 'Pianificazione tecnica dell\'evento'],
             'domain' => 'veranstaltungstechnik',
             'risk_level' => 'normal',
             'description' => 'Technische Planung mit Rider, Materialliste, Strombedarf, Crew, Zeitplan und Freigabe.',
@@ -216,6 +220,7 @@ return [
         [
             'code' => 'VT_AUFBAU',
             'name' => 'Aufbau',
+            'name_i18n' => ['en' => 'Setup', 'es' => 'Montaje', 'fr' => 'Montage', 'it' => 'Allestimento'],
             'domain' => 'veranstaltungstechnik',
             'risk_level' => 'normal',
             'description' => 'Aufbau nach Plan mit Stromcheck, Rigging-Check und Funktionstest.',
@@ -231,6 +236,7 @@ return [
         [
             'code' => 'VT_SHOWBETREUUNG',
             'name' => 'Showbetreuung',
+            'name_i18n' => ['en' => 'Show support', 'es' => 'Asistencia al espectáculo', 'fr' => 'Accompagnement du spectacle', 'it' => 'Assistenza allo spettacolo'],
             'domain' => 'veranstaltungstechnik',
             'risk_level' => 'normal',
             'description' => 'Betreuung während der Show mit Übergabe, Cues, Störungen, Pegelkontrolle und Abschluss.',
@@ -245,6 +251,7 @@ return [
         [
             'code' => 'VT_ABBAU',
             'name' => 'Abbau',
+            'name_i18n' => ['en' => 'Dismantling', 'es' => 'Desmontaje', 'fr' => 'Démontage', 'it' => 'Smontaggio'],
             'domain' => 'veranstaltungstechnik',
             'risk_level' => 'normal',
             'description' => 'Abbau mit Spannungsfreiheit, Zählung, Schadensvermerk und Verladung.',
@@ -260,6 +267,7 @@ return [
         [
             'code' => 'VT_SCHADEN',
             'name' => 'Schaden/Ausfall Equipment',
+            'name_i18n' => ['en' => 'Equipment damage/failure', 'es' => 'Daño/fallo del equipo', 'fr' => 'Dommage/panne d\'équipement', 'it' => 'Danno/guasto dell\'attrezzatura'],
             'domain' => 'veranstaltungstechnik',
             'risk_level' => 'normal',
             'description' => 'Schaden oder Ausfall eines Geräts dokumentieren, sperren, Ersatz beschaffen und melden.',

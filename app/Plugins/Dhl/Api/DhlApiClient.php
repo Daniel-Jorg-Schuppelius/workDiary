@@ -65,6 +65,19 @@ class DhlApiClient {
         );
     }
 
+    /**
+     * Retourenlabel über die DHL Parcel DE Returns API (MVP-917); Antwort mit
+     * `shipmentNo` und `label.b64`.
+     *
+     * @param  array<string, mixed>  $body
+     */
+    public function createReturnOrder(array $body): Response {
+        return $this->api->postJson(
+            $this->base . '/parcel/de/shipping/returns/v1/orders?labelType=SHIPMENT_LABEL',
+            $body,
+        );
+    }
+
     /** Storniert eine noch nicht produzierte Sendung anhand ihrer Sendungsnummer. */
     public function deleteOrder(string $shipmentNo): Response {
         return $this->api->deleteResponse(

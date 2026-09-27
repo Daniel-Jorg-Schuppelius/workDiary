@@ -172,6 +172,13 @@ class ClassificationSeeder extends Seeder {
                 'laermschutz' => 'Lärmschutz / Ausnahme',
                 'lebensmittel' => 'Lebensmittel / Gaststätte',
             ],
+            // Kundengruppen (MVP-949) für Auswertungen wie den ESG-Vergleich.
+            ClassificationDomain::CustomerGroup->value => [
+                'private' => 'Privatkunden',
+                'business' => 'Gewerbe',
+                'industry' => 'Industrie',
+                'public' => 'Öffentliche Hand',
+            ],
         ];
     }
 }

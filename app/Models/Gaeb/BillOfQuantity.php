@@ -14,6 +14,7 @@ use App\Enums\Gaeb\{BoqItemStatus, GaebPhase};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Contracts\HasDocumentLines;
 use App\Models\Diary\DiaryEntry;
+use App\Models\Invoicing\Invoice;
 use App\Models\Project\Project;
 use App\Services\Billing\DocumentTotalsCalculator;
 use App\Services\Billing\Dto\DocumentTotalsContext;
@@ -38,6 +39,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property GaebPhase|null $phase
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property BoqItemStatus $status
+ * @property bool $is_framework
  */
 class BillOfQuantity extends Model implements HasDocumentLines {
     use Auditable;
@@ -59,6 +61,7 @@ class BillOfQuantity extends Model implements HasDocumentLines {
         'phase',
         'currency',
         'status',
+        'is_framework',
         'created_by',
     ];
 
@@ -80,6 +83,7 @@ class BillOfQuantity extends Model implements HasDocumentLines {
         'status' => BoqItemStatus::class,
         'up_components' => 'array',
         'totals' => 'array',
+        'is_framework' => 'boolean',
     ];
 
     /** @return BelongsTo<Project, $this> */
@@ -155,5 +159,15 @@ class BillOfQuantity extends Model implements HasDocumentLines {
     /** @return HasMany<BoqCatalogAssignment, $this> */
     public function catalogAssignments(): HasMany {
         return $this->hasMany(BoqCatalogAssignment::class);
+    }
+
+    /** @return HasMany<BoqCallOff, $this> */
+    public function callOffs(): HasMany {
+        return $this->hasMany(BoqCallOff::class);
+    }
+
+    /** @return HasMany<Invoice, $this> */
+    public function invoices(): HasMany {
+        return $this->hasMany(Invoice::class);
     }
 }

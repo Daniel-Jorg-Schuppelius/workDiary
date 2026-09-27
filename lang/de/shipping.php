@@ -24,6 +24,8 @@ return [
         'username' => 'Benutzer / Client-ID',
         'password' => 'Passwort / Client-Secret',
         'api_key' => 'API-Schlüssel (nur DHL: dhl-api-key)',
+        'returns_receiver_id' => 'Retourenempfänger-ID (nur DHL)',
+        'returns_receiver_id_hint' => 'Im DHL-Geschäftskundenportal angelegter Retourenempfänger; nötig für Retourenlabels.',
         'billing_number' => 'Abrechnungs-/Kontonummer',
         'sandbox' => 'Sandbox / Testumgebung',
         'active' => 'Aktiv',

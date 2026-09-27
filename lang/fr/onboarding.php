@@ -117,4 +117,82 @@ return [
             ],
         ],
     ],
+    // Persönlicher Einstieg je Rolle (MVP-911).
+    'personal' => [
+        'title' => 'Mes premiers pas',
+        'description' => 'Quelques étapes pour bien démarrer avec WorkDiary dans votre rôle. WorkDiary détecte lui-même les étapes accomplies ; cochez celles sans indicateur.',
+        'progress' => ':done étapes sur :total effectuées',
+        'open' => 'Ouvrir les premiers pas',
+        'go' => 'Ouvrir',
+        'mark_done' => 'Fait',
+        'dismiss' => 'Masquer les premiers pas',
+        'marked' => 'Étape marquée comme faite.',
+        'dismissed' => 'Premiers pas masqués ; vous les retrouvez sous « Mes premiers pas ».',
+        'step' => [
+            'profile' => [
+                'two_factor' => [
+                    'title' => 'Configurer un second facteur',
+                    'hint' => 'Protège votre compte par une application, une clé d\'accès ou une clé de sécurité.',
+                ],
+                'startpage' => [
+                    'title' => 'Choisir la page d\'accueil',
+                    'hint' => 'Définissez ce que WorkDiary ouvre après la connexion.',
+                ],
+            ],
+            'dashboard' => [
+                'customize' => [
+                    'title' => 'Personnaliser le tableau de bord',
+                    'hint' => 'Affichez les tuiles dont vous avez besoin chaque jour.',
+                ],
+            ],
+            'time' => [
+                'first' => [
+                    'title' => 'Saisir un premier temps',
+                    'hint' => 'Enregistrez un temps de travail, par exemple via « Aujourd\'hui ».',
+                ],
+            ],
+            'attendance' => [
+                'first' => [
+                    'title' => 'Pointer sa présence',
+                    'hint' => 'Enregistrez une fois l\'arrivée et le départ.',
+                ],
+            ],
+            'expense' => [
+                'first' => [
+                    'title' => 'Saisir des frais',
+                    'hint' => 'Enregistrez un justificatif ou un déplacement comme frais.',
+                ],
+            ],
+            'diary' => [
+                'first' => [
+                    'title' => 'Créer une première intervention',
+                    'hint' => 'Créez et attribuez une intervention.',
+                ],
+            ],
+            'invoice' => [
+                'first' => [
+                    'title' => 'Créer une première facture',
+                    'hint' => 'Créez une facture en brouillon.',
+                ],
+            ],
+            'reports' => [
+                'accounting' => [
+                    'title' => 'Découvrir les rapports financiers',
+                    'hint' => 'Ouvrez une fois l\'aperçu des rapports financiers.',
+                ],
+            ],
+            'org' => [
+                'checklist' => [
+                    'title' => 'Configuration de l\'organisation',
+                    'hint' => 'Parcourez la liste de contrôle de l\'organisation.',
+                ],
+            ],
+            'help' => [
+                'center' => [
+                    'title' => 'Ouvrir le centre d\'aide',
+                    'hint' => 'Guides et réponses pour vos tâches.',
+                ],
+            ],
+        ],
+    ],
 ];

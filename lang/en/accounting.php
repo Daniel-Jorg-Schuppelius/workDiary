@@ -540,6 +540,23 @@ return [
 
     // Finanzberichte (Feature 125, MVP-676).
     'reports' => [
+        'replacement' => [
+            'subtitle' => 'As of :from, horizon until :to, price increase :inflation % p.a.',
+            'horizon' => 'Horizon',
+            'years' => ':count years',
+            'year_total' => 'Replacement need :year',
+            'assets' => 'Assets at the end of their useful life',
+            'no_assets' => 'No useful life ends within the horizon.',
+            'ends_on' => 'In use until',
+            'book_value' => 'Book value today',
+            'replacement' => 'Replacement (estimated)',
+            'overdue' => 'expired',
+            'hint' => 'Replacement = acquisition cost × (1 + price increase)^years of use; set the price increase in the organisation settings. Pooled items are not included.',
+            'leases' => 'Expiring leasing and financing contracts',
+            'contract' => 'Contract',
+            'partner' => 'Partner',
+            'residual' => 'Residual value',
+        ],
         'fixed_asset_schedule' => [
             'subtitle' => 'Fiscal year :year (:from – :to)',
             'year' => 'Fiscal year',
@@ -660,6 +677,10 @@ return [
             ],
         ],
         'card' => [
+            'replacement_forecast' => [
+                'title' => 'Replacement need',
+                'text' => 'Book values, end of useful life and estimated replacement; expiring leases.',
+            ],
             'fixed_asset_schedule' => [
                 'title' => 'Fixed asset schedule',
                 'text' => 'Development of acquisition cost and accumulated depreciation per asset in the fiscal year.',

@@ -183,6 +183,7 @@ return [
         [
             'code' => 'SHK_WARTUNG',
             'name' => 'Anlagenwartung (Heizung/Sanitär)',
+            'name_i18n' => ['en' => 'System maintenance (heating/plumbing)', 'es' => 'Mantenimiento de instalaciones (calefacción/fontanería)', 'fr' => 'Maintenance d\'installation (chauffage/sanitaire)', 'it' => 'Manutenzione impianti (riscaldamento/idraulica)'],
             'domain' => 'shk',
             'risk_level' => 'normal',
             'description' => 'Wiederkehrende Wartung mit Anlagenakte und Kundenabnahme.',
@@ -198,6 +199,7 @@ return [
         [
             'code' => 'SHK_DRUCKPRUEFUNG',
             'name' => 'Druck- und Dichtheitsprüfung',
+            'name_i18n' => ['en' => 'Pressure and leak test', 'es' => 'Prueba de presión y estanqueidad', 'fr' => 'Essai de pression et d\'étanchéité', 'it' => 'Prova di pressione e tenuta'],
             'domain' => 'shk',
             'risk_level' => 'high',
             'description' => 'Druckprüfung mit dokumentierten Messwerten vor Inbetriebnahme.',
@@ -212,6 +214,7 @@ return [
         [
             'code' => 'SHK_STOERUNG',
             'name' => 'Störungseinsatz Heizung/Sanitär',
+            'name_i18n' => ['en' => 'Heating/plumbing fault call-out', 'es' => 'Servicio de avería calefacción/fontanería', 'fr' => 'Dépannage chauffage/sanitaire', 'it' => 'Intervento guasto riscaldamento/idraulica'],
             'domain' => 'shk',
             'risk_level' => 'normal',
             'description' => 'Störungsbehebung mit Diagnose, Absperrung, Instandsetzung und Funktionsprüfung.',
@@ -228,6 +231,7 @@ return [
         [
             'code' => 'SHK_DICHTHEIT',
             'name' => 'Dichtheitsprüfung Gas/Wasser',
+            'name_i18n' => ['en' => 'Leak test gas/water', 'es' => 'Prueba de estanqueidad gas/agua', 'fr' => 'Contrôle d\'étanchéité gaz/eau', 'it' => 'Prova di tenuta gas/acqua'],
             'domain' => 'shk',
             'risk_level' => 'high',
             'description' => 'Dichtheitsprüfung mit Prüfmedium, Prüfdruck, Haltezeit, Bewertung und Protokoll.',
@@ -244,6 +248,7 @@ return [
         [
             'code' => 'SHK_INBETRIEBNAHME',
             'name' => 'Inbetriebnahme Anlage',
+            'name_i18n' => ['en' => 'System commissioning', 'es' => 'Puesta en marcha de la instalación', 'fr' => 'Mise en service de l\'installation', 'it' => 'Messa in funzione dell\'impianto'],
             'domain' => 'shk',
             'risk_level' => 'high',
             'description' => 'Inbetriebnahme mit Befüllen, Einstellung, Abgas-/Betriebswerten, Sicherheitseinrichtungen und Abnahme.',
@@ -259,6 +264,7 @@ return [
         [
             'code' => 'SHK_NOTDIENST',
             'name' => 'Notdiensteinsatz',
+            'name_i18n' => ['en' => 'Emergency call-out', 'es' => 'Servicio de urgencia', 'fr' => 'Intervention d\'urgence', 'it' => 'Intervento di emergenza'],
             'domain' => 'shk',
             'risk_level' => 'high',
             'description' => 'Notdienst mit Gefährdungseinstufung, Gefahrenabwehr, Provisorium und Folgeauftrag.',

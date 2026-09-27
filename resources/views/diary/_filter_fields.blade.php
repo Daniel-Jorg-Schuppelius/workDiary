@@ -33,7 +33,7 @@
         <select id="{{ $idPrefix }}-tag" name="tag" class="select select-bordered select-sm">
             <option value="">—</option>
             @foreach ($allTags as $tag)
-                <option value="{{ $tag->sqid }}" @selected((string) ($filters['tag'] ?? '') === $tag->sqid)>{{ $tag->name }}</option>
+                <option value="{{ $tag->sqid }}" @selected((string) ($filters['tag'] ?? '') === $tag->sqid)>{{ $tag->displayName() }}</option>
             @endforeach
         </select>
     </x-filter-field>

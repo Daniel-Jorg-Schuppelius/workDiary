@@ -179,6 +179,7 @@ return [
         [
             'code' => 'BAU_TAGESBERICHT',
             'name' => 'Bautagesbericht',
+            'name_i18n' => ['en' => 'Daily construction report', 'es' => 'Parte diario de obra', 'fr' => 'Journal de chantier', 'it' => 'Giornale di cantiere'],
             'domain' => 'bau-ausbau',
             'risk_level' => 'normal',
             'description' => 'Täglicher Bautagesbericht mit Wetter, Personal, Leistung und Behinderungen.',
@@ -193,6 +194,7 @@ return [
         [
             'code' => 'BAU_AUFMASS',
             'name' => 'Aufmaß',
+            'name_i18n' => ['en' => 'Measurement', 'es' => 'Medición', 'fr' => 'Métré', 'it' => 'Misurazione'],
             'domain' => 'bau-ausbau',
             'risk_level' => 'normal',
             'description' => 'Aufmaß der erbrachten Mengen mit Nachweis.',
@@ -206,6 +208,7 @@ return [
         [
             'code' => 'BAU_TEILABNAHME',
             'name' => 'Teilabnahme',
+            'name_i18n' => ['en' => 'Partial acceptance', 'es' => 'Recepción parcial', 'fr' => 'Réception partielle', 'it' => 'Collaudo parziale'],
             'domain' => 'bau-ausbau',
             'risk_level' => 'normal',
             'description' => 'Förmliche Teilabnahme mit Mängelaufnahme und Abnahmeprotokoll.',
@@ -218,6 +221,7 @@ return [
         [
             'code' => 'BAU_MANGEL',
             'name' => 'Mangelaufnahme',
+            'name_i18n' => ['en' => 'Defect recording', 'es' => 'Registro de defectos', 'fr' => 'Relevé des défauts', 'it' => 'Rilevazione dei difetti'],
             'domain' => 'bau-ausbau',
             'risk_level' => 'normal',
             'description' => 'Aufnahme eines Mangels mit Einstufung, Fotonachweis und Meldung an Bauleitung/Auftraggeber.',
@@ -233,6 +237,7 @@ return [
         [
             'code' => 'BAU_NACHTRAG',
             'name' => 'Nachtrag aufnehmen',
+            'name_i18n' => ['en' => 'Record change order', 'es' => 'Registrar adicional', 'fr' => 'Enregistrer un avenant', 'it' => 'Registrare variante'],
             'domain' => 'bau-ausbau',
             'risk_level' => 'normal',
             'description' => 'Geänderte oder zusätzliche Leistung mit Mengen aufnehmen und zur Anerkennung vorlegen.',
@@ -248,6 +253,7 @@ return [
         [
             'code' => 'BAU_RESTARBEIT',
             'name' => 'Restarbeiten abarbeiten',
+            'name_i18n' => ['en' => 'Complete remaining work', 'es' => 'Completar trabajos pendientes', 'fr' => 'Terminer les travaux restants', 'it' => 'Completare i lavori residui'],
             'domain' => 'bau-ausbau',
             'risk_level' => 'normal',
             'description' => 'Restpunkte aus der Abnahme abarbeiten und die Erledigung bestätigen lassen.',

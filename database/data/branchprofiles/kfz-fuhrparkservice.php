@@ -163,6 +163,7 @@ return [
         [
             'code' => 'KFZ_ANNAHME',
             'name' => 'Fahrzeugannahme mit Zustandserfassung',
+            'name_i18n' => ['en' => 'Vehicle intake with condition report', 'es' => 'Recepción del vehículo con registro de estado', 'fr' => 'Réception du véhicule avec état des lieux', 'it' => 'Accettazione del veicolo con verbale di stato'],
             'domain' => 'kfz',
             'risk_level' => 'normal',
             'description' => 'Dokumentierte Annahme mit Kilometerstand, Zustand und Kundenauftrag.',
@@ -176,6 +177,7 @@ return [
         [
             'code' => 'KFZ_UEBERGABE',
             'name' => 'Fahrzeugübergabe mit Unterschrift',
+            'name_i18n' => ['en' => 'Vehicle handover with signature', 'es' => 'Entrega del vehículo con firma', 'fr' => 'Remise du véhicule avec signature', 'it' => 'Consegna del veicolo con firma'],
             'domain' => 'kfz',
             'risk_level' => 'normal',
             'description' => 'Nachvollziehbare Übergabe mit Kilometerstand, Zustand und Quittung.',
@@ -188,6 +190,7 @@ return [
         [
             'code' => 'KFZ_WARTUNG',
             'name' => 'Inspektion nach Herstellervorgabe',
+            'name_i18n' => ['en' => 'Inspection per manufacturer specification', 'es' => 'Inspección según el fabricante', 'fr' => 'Inspection selon les prescriptions du fabricant', 'it' => 'Ispezione secondo le indicazioni del produttore'],
             'domain' => 'kfz',
             'risk_level' => 'normal',
             'description' => 'Wartung nach Serviceplan mit Teile- und Betriebsstoffnachweis.',
@@ -202,6 +205,7 @@ return [
         [
             'code' => 'KFZ_DIAGNOSE',
             'name' => 'Fehlerdiagnose',
+            'name_i18n' => ['en' => 'Fault diagnosis', 'es' => 'Diagnóstico de averías', 'fr' => 'Diagnostic de panne', 'it' => 'Diagnosi del guasto'],
             'domain' => 'kfz',
             'risk_level' => 'normal',
             'description' => 'Fehlerspeicher auslesen, Ursache eingrenzen und das weitere Vorgehen abstimmen.',
@@ -216,6 +220,7 @@ return [
         [
             'code' => 'KFZ_REPARATUR',
             'name' => 'Reparatur',
+            'name_i18n' => ['en' => 'Repair', 'es' => 'Reparación', 'fr' => 'Réparation', 'it' => 'Riparazione'],
             'domain' => 'kfz',
             'risk_level' => 'normal',
             'description' => 'Instandsetzung nach Kundenfreigabe mit Teile- und Probefahrtnachweis.',
@@ -230,6 +235,7 @@ return [
         [
             'code' => 'KFZ_REIFEN',
             'name' => 'Reifen- und Räderwechsel',
+            'name_i18n' => ['en' => 'Tyre and wheel change', 'es' => 'Cambio de neumáticos y ruedas', 'fr' => 'Changement de pneus et de roues', 'it' => 'Cambio pneumatici e ruote'],
             'domain' => 'kfz',
             'risk_level' => 'high',
             'description' => 'Wechsel mit Profil- und Zustandsprüfung, Drehmomentnachweis und Verbleib der Räder.',
@@ -246,6 +252,7 @@ return [
         [
             'code' => 'KFZ_SCHADEN',
             'name' => 'Schadenaufnahme',
+            'name_i18n' => ['en' => 'Damage recording', 'es' => 'Registro de daños', 'fr' => 'Constat de dommage', 'it' => 'Rilevazione del danno'],
             'domain' => 'kfz',
             'risk_level' => 'normal',
             'description' => 'Schadenbild mit Fotodokumentation und Bestätigung durch den Kunden.',

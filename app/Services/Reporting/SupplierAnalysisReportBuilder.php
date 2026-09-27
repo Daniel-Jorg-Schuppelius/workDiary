@@ -12,9 +12,10 @@ namespace App\Services\Reporting;
 
 use App\Enums\Procurement\PurchaseOrderStatus;
 use App\Models\Article\ArticleSupply;
+use App\Models\Manufacturing\ManufacturingOrderMaterial;
 use App\Models\Material\MaterialUsage;
 use App\Models\Plugins\Lexoffice\{LexofficePostingCategory, LexofficeVoucher, LexofficeVoucherCategory};
-use App\Models\Procurement\PurchaseOrder;
+use App\Models\Procurement\{PurchaseOrder, PurchaseOrderLine};
 use App\Models\Supplier\Supplier;
 use App\Support\Billing\VoucherTypes;
 use App\Support\ChartBucket;
@@ -150,52 +151,95 @@ class SupplierAnalysisReportBuilder {
     }
 
     /**
-     * Materialverbrauch je Lieferant (MVP-904): Verbrauch aus den Stundenzetteln
-     * im Zeitraum, über das verknüpfte Material → Artikel → bevorzugte
-     * Lieferquelle. Verbrauch ohne Artikelbezug zählt nur in `unlinkedValue`.
+     * Materialverbrauch je Lieferant (MVP-904/948): Verbrauch aus den
+     * Stundenzetteln und aus Fertigungsaufträgen, die im Zeitraum
+     * abgeschlossen wurden. Lieferant ist der des zuletzt eingegangenen
+     * Bestellpostens zum Artikel, sonst die bevorzugte Lieferquelle.
+     * Verbrauch ohne Artikelbezug zählt nur in `unlinkedValue`.
      *
-     * @return array{rows: list<array{supplierId: int, supplierName: string, materials: int, usages: int, value: float, quantities: array<string, float>}>, unlinkedValue: float}
+     * @return array{rows: list<array{supplierId: int, supplierName: string, materials: int, usages: int, manufacturing: int, value: float, quantities: array<string, float>}>, unlinkedValue: float}
      */
     public function materialUsageBySupplier(CarbonImmutable $from, CarbonImmutable $to): array {
+        $entries = [];
         $usages = MaterialUsage::query()
             ->with('material:id,article_id')
             ->whereHas('timesheet', fn ($q) => $q->where('work_date', '>=', $from->toDateString())->where('work_date', '<', DateRange::dayAfter($to)))
             ->get();
+        foreach ($usages as $usage) {
+            $entries[] = ['article' => $usage->material?->article_id, 'key' => 'm' . $usage->material_id, 'value' => $usage->line_total_net?->toFloat() ?? 0.0, 'unit' => (string) ($usage->unit ?? ''), 'qty' => $usage->quantity?->getValue()->toFloat() ?? 0.0, 'manufacturing' => false];
+        }
+        $consumed = ManufacturingOrderMaterial::query()
+            ->where('consumed_qty', '>', 0)
+            ->where('is_tool', false)
+            ->whereHas('order', fn ($q) => $q->whereNotNull('completed_at')->where('completed_at', '>=', DateRange::dayStart($from))->where('completed_at', '<', DateRange::dayAfter($to)))
+            ->get(['id', 'manufacturing_order_id', 'article_id', 'consumed_qty', 'unit_snapshot', 'actual_cost']);
+        foreach ($consumed as $material) {
+            $entries[] = ['article' => $material->article_id, 'key' => 'a' . $material->article_id, 'value' => (float) ($material->actual_cost?->getAmount() ?? 0), 'unit' => (string) ($material->unit_snapshot ?? ''), 'qty' => (float) $material->consumed_qty, 'manufacturing' => true];
+        }
 
-        $articleIds = $usages->map(fn (MaterialUsage $u): ?int => $u->material?->article_id)->filter()->unique()->values()->all();
-        $supplierByArticle = ArticleSupply::query()
-            ->whereIn('article_id', $articleIds)
-            ->orderByDesc('is_preferred')
-            ->orderBy('id')
-            ->get(['article_id', 'supplier_id'])
-            ->unique('article_id')
-            ->pluck('supplier_id', 'article_id')
-            ->all();
+        $supplierByArticle = $this->supplierByArticle(array_values(array_unique(array_filter(array_column($entries, 'article')))));
         $names = Supplier::query()->whereIn('id', array_values($supplierByArticle))->pluck('name', 'id')->all();
 
         $rows = [];
         $unlinked = 0.0;
-        foreach ($usages as $usage) {
-            $value = $usage->line_total_net?->toFloat() ?? 0.0;
-            $supplierId = $supplierByArticle[$usage->material->article_id ?? 0] ?? null;
+        foreach ($entries as $entry) {
+            $supplierId = $supplierByArticle[$entry['article'] ?? 0] ?? null;
             if ($supplierId === null) {
-                $unlinked += $value;
+                $unlinked += $entry['value'];
 
                 continue;
             }
-            $row = $rows[$supplierId] ?? ['supplierId' => (int) $supplierId, 'supplierName' => (string) ($names[$supplierId] ?? '—'), 'materials' => [], 'usages' => 0, 'value' => 0.0, 'quantities' => []];
-            $row['materials'][(int) $usage->material_id] = true;
+            $row = $rows[$supplierId] ?? ['supplierId' => (int) $supplierId, 'supplierName' => (string) ($names[$supplierId] ?? '—'), 'materials' => [], 'usages' => 0, 'manufacturing' => 0, 'value' => 0.0, 'quantities' => []];
+            $row['materials'][$entry['key']] = true;
             $row['usages']++;
-            $row['value'] += $value;
-            $unit = (string) ($usage->unit ?? '');
-            $row['quantities'][$unit] = ($row['quantities'][$unit] ?? 0.0) + ($usage->quantity?->getValue()->toFloat() ?? 0.0);
+            $row['manufacturing'] += $entry['manufacturing'] ? 1 : 0;
+            $row['value'] += $entry['value'];
+            $row['quantities'][$entry['unit']] = ($row['quantities'][$entry['unit']] ?? 0.0) + $entry['qty'];
             $rows[$supplierId] = $row;
         }
 
-        $rows = array_map(static fn (array $row): array => ['materials' => count($row['materials'])] + $row, array_values($rows));
+        $rows = array_map(static fn (array $row): array => ['materials' => count($row['materials']), 'value' => round($row['value'], 2)] + $row, array_values($rows));
         usort($rows, static fn (array $a, array $b): int => $b['value'] <=> $a['value']);
 
         return ['rows' => $rows, 'unlinkedValue' => round($unlinked, 2)];
+    }
+
+    /**
+     * Lieferant je Artikel: tatsächlicher Einkauf (letzter Bestellposten mit
+     * Wareneingang) vor der bevorzugten Lieferquelle.
+     *
+     * @param list<int> $articleIds
+     * @return array<int, int>
+     */
+    private function supplierByArticle(array $articleIds): array {
+        if ($articleIds === []) {
+            return [];
+        }
+        $bought = PurchaseOrderLine::query()
+            ->whereIn('article_id', $articleIds)
+            ->where('received_qty', '>', 0)
+            ->with('purchaseOrder:id,supplier_id')
+            ->orderByDesc('purchase_order_id')
+            ->orderByDesc('id')
+            ->get(['id', 'article_id', 'purchase_order_id'])
+            ->unique('article_id');
+        $suppliers = [];
+        foreach ($bought as $line) {
+            if ($line->purchaseOrder !== null) {
+                $suppliers[(int) $line->article_id] = (int) $line->purchaseOrder->supplier_id;
+            }
+        }
+        $supplies = ArticleSupply::query()
+            ->whereIn('article_id', array_values(array_diff($articleIds, array_keys($suppliers))))
+            ->orderByDesc('is_preferred')
+            ->orderBy('id')
+            ->get(['article_id', 'supplier_id'])
+            ->unique('article_id');
+        foreach ($supplies as $supply) {
+            $suppliers[(int) $supply->article_id] = (int) $supply->supplier_id;
+        }
+
+        return $suppliers;
     }
 
     /**

@@ -16,7 +16,7 @@ use App\Plugins\AbstractPlugin;
 use App\Plugins\Contracts\{PluginCapability, ShippingProvider};
 use App\Plugins\Dhl\Api\DhlApiClient;
 use App\Plugins\Support\ChecksCarrierHealth;
-use App\Services\Shipping\{ShipmentLabel, ShipmentRequest, TrackingEvent, TrackingResult};
+use App\Services\Shipping\{ShipmentLabel, ShipmentRecipient, ShipmentRequest, TrackingEvent, TrackingResult};
 use Illuminate\Support\Carbon;
 use RuntimeException;
 use Throwable;
@@ -87,6 +87,9 @@ class DhlPlugin extends AbstractPlugin implements ShippingProvider {
     }
 
     public function createShipment(CarrierConnection $connection, ShipmentRequest $request): ShipmentLabel {
+        if ($request->returnFrom !== null) {
+            return $this->createReturn($connection, $request, $request->returnFrom);
+        }
         $response = (new DhlApiClient($connection))->createOrder($this->buildOrderBody($connection, $request));
         if (! $response->successful()) {
             throw new RuntimeException("DHL createOrder failed (HTTP {$response->status()}).");
@@ -106,6 +109,45 @@ class DhlPlugin extends AbstractPlugin implements ShippingProvider {
         }
 
         // Bei DHL Paket ist die Sendungsnummer zugleich die Trackingnummer.
+        return new ShipmentLabel($shipmentNo, $shipmentNo, $b64);
+    }
+
+    /**
+     * Retoure (MVP-917): DHL führt Retouren über eine eigene API; Empfänger
+     * ist die im Geschäftskundenportal angelegte Retourenempfänger-ID der
+     * Anbindung, Absender der Kunde.
+     */
+    private function createReturn(CarrierConnection $connection, ShipmentRequest $request, ShipmentRecipient $sender): ShipmentLabel {
+        $receiverId = $connection->credential('returns_receiver_id');
+        if ($receiverId === null || $receiverId === '') {
+            throw new RuntimeException('DHL returns need the returns receiver ID of the connection.');
+        }
+        $shipper = ['name1' => $sender->name, 'addressStreet' => $sender->street, 'postalCode' => $sender->zip, 'city' => $sender->city];
+        if ($sender->email !== null) {
+            $shipper['email'] = $sender->email;
+        }
+        if ($sender->phone !== null) {
+            $shipper['phone'] = $sender->phone;
+        }
+        $response = (new DhlApiClient($connection))->createReturnOrder([
+            'receiverId' => $receiverId,
+            'customerReference' => $request->reference,
+            'shipper' => $shipper,
+            'itemWeight' => ['uom' => 'g', 'value' => $request->packages !== [] ? $request->packages[0]->weightGrams : 1000],
+        ]);
+        if (! $response->successful()) {
+            throw new RuntimeException("DHL createReturnOrder failed (HTTP {$response->status()}).");
+        }
+
+        /** @var array<string, mixed> $data */
+        $data = $response->json() ?? [];
+        $shipmentNo = isset($data['shipmentNo']) && is_scalar($data['shipmentNo']) ? (string) $data['shipmentNo'] : '';
+        $label = is_array($data['label'] ?? null) ? $data['label'] : [];
+        $b64 = isset($label['b64']) && is_string($label['b64']) ? $label['b64'] : '';
+        if ($shipmentNo === '' || $b64 === '') {
+            throw new RuntimeException('DHL createReturnOrder returned no shipment number or label.');
+        }
+
         return new ShipmentLabel($shipmentNo, $shipmentNo, $b64);
     }
 

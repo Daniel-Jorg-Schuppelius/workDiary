@@ -521,6 +521,7 @@ return [
         'translate' => 'Traduire',
         'approve_translation' => 'Valider la traduction',
         'save_offline' => 'Enregistrer hors ligne',
+        'save_offline_hint' => 'Enregistre le contenu du cours sans médias sur cet appareil ; lisible sans connexion sur la page hors ligne. Supprimé à la déconnexion.',
     ],
     'flash' => [
         'competency_created' => 'Compétence créée.',

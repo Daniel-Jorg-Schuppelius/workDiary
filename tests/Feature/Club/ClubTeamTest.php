@@ -39,6 +39,8 @@ class ClubTeamTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        // Feste Spieltage im September 2026: „kommende Spiele“ darf nicht an der Uhr hängen.
+        CarbonImmutable::setTestNow('2026-09-20 10:00:00');
         $this->setUpOrganization();
         $this->admin = $this->orgAdmin();
         $this->season = $this->teams()->createSeason($this->organization, ['name' => '2026/27', 'starts_on' => '2026-07-01', 'ends_on' => '2027-06-30']);

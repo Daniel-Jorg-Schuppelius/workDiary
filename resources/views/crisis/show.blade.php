@@ -305,6 +305,18 @@
         {{-- BCM (MVP-219) --}}
         <x-card :title="__('Wiederanlauf / Business Continuity')">
             @if ($canManage)
+                @if ($businessProcesses->isNotEmpty())
+                    {{-- Aus dem BIA-Register übernehmen (MVP-943) --}}
+                    <form method="POST" action="{{ route('crisis.bcm.adopt', $case) }}" class="mb-2 flex flex-wrap items-end gap-2">
+                        @csrf
+                        <select name="process_id" class="select select-sm select-bordered flex-1" aria-label="{{ __('crisis.bia.adopt') }}" required>
+                            @foreach ($businessProcesses as $bp)
+                                <option value="{{ $bp->sqid }}">{{ $bp->name }} ({{ $bp->criticality->label() }}, RTO {{ $bp->rto_hours ?? '—' }} h)</option>
+                            @endforeach
+                        </select>
+                        <x-icon-btn icon="playlist_add" size="sm" type="submit" show-label>{{ __('crisis.bia.adopt') }}</x-icon-btn>
+                    </form>
+                @endif
                 <form method="POST" action="{{ route('crisis.bcm.store', $case) }}" class="mb-3 flex flex-wrap items-end gap-2">
                     @csrf
                     <input aria-label="{{ __('Kritischer Prozess/Service') }}" name="process_name" required maxlength="200" class="input input-sm input-bordered flex-1" placeholder="{{ __('Kritischer Prozess/Service') }}">

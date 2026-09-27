@@ -10,6 +10,7 @@
 
 namespace App\Models\Concerns;
 
+use App\Enums\Classification\ClassificationDomain;
 use App\Models\Classification\Classification;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
@@ -26,5 +27,16 @@ trait HasClassifications {
     /** @return MorphToMany<Classification, $this> */
     public function classifications(): MorphToMany {
         return $this->morphToMany(Classification::class, 'classifiable');
+    }
+
+    /**
+     * Zuordnungen einer Domäne ersetzen; andere Domänen bleiben unberührt.
+     *
+     * @param list<int> $classificationIds
+     */
+    public function syncClassificationDomain(ClassificationDomain $domain, array $classificationIds): void {
+        $current = $this->classifications()->where('domain', $domain->value)->pluck('classifications.id')->all();
+        $this->classifications()->detach(array_diff($current, $classificationIds));
+        $this->classifications()->syncWithoutDetaching($classificationIds);
     }
 }

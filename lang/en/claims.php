@@ -27,4 +27,38 @@ return [
         'notify_title' => 'Notable claim pattern: :label',
         'notify_message' => ':count claims in :days days (:rule).',
     ],
+    // Retourenlabel einer RMA (MVP-917).
+    'return_label' => [
+        'title' => 'Return label',
+        'create' => 'Create return label',
+        'download' => 'Download label',
+        'created' => 'Return label created (shipment :tracking).',
+        'no_address' => 'The return label needs the customer address (street, postcode, city).',
+    ],
+    // Retourenanmeldung im Kundenportal (MVP-935).
+    'portal_return' => [
+        'capability' => 'Register a return',
+        'nav' => 'Register a return',
+        'title' => 'Register a return',
+        'intro' => 'Choose the delivery or object, describe the reason and attach photos if needed. You will receive a return number; we provide a return label if required.',
+        'empty' => 'There are no deliveries or objects for your account.',
+        'submit' => 'Register return',
+        'label' => 'Download return label',
+        'field' => [
+            'delivery' => 'Delivery',
+            'asset' => 'Object',
+            'serial_no' => 'Serial number',
+            'quantity' => 'Quantity',
+            'title' => 'Short description',
+            'description' => 'Reason for return',
+            'photos' => 'Photos or documents (max. 5)',
+        ],
+        'flash' => [
+            'submitted' => 'Return registered: claim :number, return number :rma.',
+        ],
+        'error' => [
+            'subject' => 'Please choose a delivery or an object.',
+            'serial' => 'This serial number does not belong to the selected delivery.',
+        ],
+    ],
 ];

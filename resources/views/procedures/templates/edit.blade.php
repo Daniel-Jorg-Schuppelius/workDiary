@@ -13,7 +13,7 @@
 --}}
 @extends('layouts.app')
 
-@section('title', $template->name . ' — ' . __('procedure.title.designer'))
+@section('title', $template->displayName() . ' — ' . __('procedure.title.designer'))
 @section('nav-title', __('procedure.title.designer'))
 
 @php
@@ -60,7 +60,7 @@
     <x-page-shell>
         <div class="flex flex-wrap items-center justify-between gap-2">
             <div>
-                <h1 class="text-lg font-semibold">{{ $template->name }}</h1>
+                <h1 class="text-lg font-semibold">{{ $template->displayName() }}</h1>
                 <p class="text-sm text-muted"><code>{{ $template->code }}</code></p>
             </div>
             <div class="flex items-center gap-2">
@@ -122,6 +122,7 @@
             {{-- Stammdaten --}}
             <x-form-group :legend="__('procedure.title.template')" icon="rule" tone="primary" cols="2">
                 <x-input-field name="name" :label="__('procedure.field.name')" required minlength="3" maxlength="180" span="2" :value="old('name', $template->name)" />
+                <div class="sm:col-span-2"><x-translation-fields name="name_i18n" :values="$template->name_i18n" /></div>
                 <x-input-field name="domain" :label="__('procedure.field.domain')" maxlength="40" :value="old('domain', $template->domain)" />
                 <x-select-field name="risk_level" :label="__('procedure.field.riskLevel')" :disabled="$draft === null">
                     @foreach ($riskLevels as $level)

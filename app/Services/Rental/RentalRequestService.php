@@ -19,7 +19,7 @@ use App\Mail\RentalRequestDecisionMail;
 use App\Models\Asset\Asset;
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
-use App\Models\Rental\{RentalProfile, RentalRequest};
+use App\Models\Rental\{RentalProfile, RentalRequest, RentalReservation};
 use App\Services\Notification\NotificationDispatcher;
 use App\Support\CarbonFmt;
 use Illuminate\Database\Eloquent\Collection;
@@ -71,23 +71,7 @@ class RentalRequestService {
 
     /** Portal-Anfrage anlegen (Status requested — nie mehr). */
     public function requestFromPortal(Customer $customer, User $portalUser, ?Asset $asset, ?string $groupCode, Carbon $from, Carbon $to, ?string $note = null): RentalRequest {
-        if ($asset === null && ($groupCode === null || $groupCode === '')) {
-            throw new RuntimeException((string) __('Bitte ein Gerät oder eine Gerätegruppe wählen.'));
-        }
-        if ($to->lessThanOrEqualTo($from)) {
-            throw new RuntimeException((string) __('Das Ende muss nach dem Beginn liegen.'));
-        }
-        if ($from->isPast()) {
-            throw new RuntimeException((string) __('Der Zeitraum darf nicht in der Vergangenheit beginnen.'));
-        }
-
-        $bookable = $this->bookableProfiles($customer);
-        if ($asset !== null && ! $bookable->contains(fn (RentalProfile $p): bool => (int) $p->asset_id === (int) $asset->id)) {
-            throw new RuntimeException((string) __('Dieses Gerät ist im Portal nicht anfragbar.'));
-        }
-        if ($asset === null && ! $bookable->contains(fn (RentalProfile $p): bool => $p->group_code === $groupCode)) {
-            throw new RuntimeException((string) __('Diese Gerätegruppe ist im Portal nicht anfragbar.'));
-        }
+        $this->assertPortalRequest($customer, $asset, $groupCode, $from, $to);
 
         $request = RentalRequest::query()->create([
             'organization_id' => $customer->organization_id,
@@ -105,6 +89,84 @@ class RentalRequestService {
         $this->notifyRequested($request, $customer);
 
         return $request;
+    }
+
+    /** Direktbuchung im Portal freigeschaltet (MVP-916, Einstellung der Organisation). */
+    public function directBookingEnabled(Organization $organization): bool {
+        return (bool) data_get($organization->settings, 'rental.portal_direct_booking', false);
+    }
+
+    /**
+     * Direktbuchung aus dem Portal (MVP-916): nur ein bestimmtes, freigegebenes
+     * Gerät. Verleihakte und harte Reservierung entstehen sofort über die
+     * bestehenden Schreibstellen; {@see RentalCaseService::reserve()} prüft
+     * Sperren und Doppelbuchung unter Sperre. Die Leitung wird benachrichtigt.
+     *
+     * @throws RuntimeException|RentalConflictException
+     */
+    public function bookFromPortal(Customer $customer, User $portalUser, Asset $asset, Carbon $from, Carbon $to, ?string $note = null): RentalRequest {
+        $organization = Organization::query()->withoutGlobalScopes()->findOrFail($customer->organization_id);
+        if (! $this->directBookingEnabled($organization)) {
+            throw new RuntimeException((string) __('rental.portal.direct_disabled'));
+        }
+        $this->assertPortalRequest($customer, $asset, null, $from, $to);
+        $note = $note !== null && trim($note) !== '' ? trim($note) : null;
+
+        $request = DB::transaction(function () use ($organization, $customer, $portalUser, $asset, $from, $to, $note): RentalRequest {
+            $profile = RentalProfile::query()->withoutGlobalScopes()->where('asset_id', $asset->id)->first();
+            $case = $this->cases->open($organization, $portalUser, [
+                'customer_id' => $customer->id,
+                'starts_at' => $from,
+                'ends_at' => $to,
+                'rental_rate_card_id' => $profile?->default_rate_card_id,
+                'notes' => $note !== null
+                    ? (string) __('Portal-Anfrage: :note', ['note' => $note])
+                    : (string) __('rental.portal.direct_case_note'),
+            ], [$asset->id]);
+            $this->cases->reserve($case, $portalUser);
+
+            $request = RentalRequest::query()->create([
+                'organization_id' => $customer->organization_id,
+                'customer_id' => $customer->id,
+                'portal_user_id' => $portalUser->id,
+                'asset_id' => $asset->id,
+                'starts_at' => $from,
+                'ends_at' => $to,
+                'note' => $note,
+                'status' => RentalRequestStatus::Accepted->value,
+                'is_direct' => true,
+                'decided_at' => Carbon::now(),
+                'rental_reservation_id' => RentalReservation::query()->withoutGlobalScopes()->where('rental_case_id', $case->id)->value('id'),
+                'rental_case_id' => $case->id,
+            ]);
+            $request->audit('rental.directBooked', ['rental_case_id' => $case->id, 'asset_id' => $asset->id, 'by_portal_user_id' => (int) $portalUser->id]);
+
+            return $request;
+        });
+        $this->notifyRequested($request, $customer);
+
+        return $request;
+    }
+
+    /** Gemeinsame Prüfung für Anfrage und Direktbuchung (Default-Deny über das freigegebene Sortiment). */
+    private function assertPortalRequest(Customer $customer, ?Asset $asset, ?string $groupCode, Carbon $from, Carbon $to): void {
+        if ($asset === null && ($groupCode === null || $groupCode === '')) {
+            throw new RuntimeException((string) __('Bitte ein Gerät oder eine Gerätegruppe wählen.'));
+        }
+        if ($to->lessThanOrEqualTo($from)) {
+            throw new RuntimeException((string) __('Das Ende muss nach dem Beginn liegen.'));
+        }
+        if ($from->isPast()) {
+            throw new RuntimeException((string) __('Der Zeitraum darf nicht in der Vergangenheit beginnen.'));
+        }
+
+        $bookable = $this->bookableProfiles($customer);
+        if ($asset !== null && ! $bookable->contains(fn (RentalProfile $p): bool => (int) $p->asset_id === (int) $asset->id)) {
+            throw new RuntimeException((string) __('Dieses Gerät ist im Portal nicht anfragbar.'));
+        }
+        if ($asset === null && ! $bookable->contains(fn (RentalProfile $p): bool => $p->group_code === $groupCode)) {
+            throw new RuntimeException((string) __('Diese Gerätegruppe ist im Portal nicht anfragbar.'));
+        }
     }
 
     /**
@@ -214,10 +276,11 @@ class RentalRequestService {
 
     private function notifyRequested(RentalRequest $request, Customer $customer): void {
         $subject = $request->subjectLabel();
-        DB::afterCommit(function () use ($request, $customer, $subject): void {
+        $titleKey = $request->is_direct ? 'rental.portal.direct_notification' : 'Verleih-Anfrage von :customer';
+        DB::afterCommit(function () use ($request, $customer, $subject, $titleKey): void {
             $this->notifier->notify(NotificationEvent::RentalRequested, $request, null, [
-                'title' => (string) __('Verleih-Anfrage von :customer', ['customer' => $customer->name]),
-                'title_key' => 'Verleih-Anfrage von :customer',
+                'title' => (string) __($titleKey, ['customer' => $customer->name]),
+                'title_key' => $titleKey,
                 'title_params' => ['customer' => $customer->name],
                 'message' => (string) __(':subject vom :from bis :to', ['subject' => $subject, 'from' => $request->starts_at->format('d.m.Y H:i'), 'to' => $request->ends_at->format('d.m.Y H:i')]),
                 'message_key' => ':subject vom :from bis :to',

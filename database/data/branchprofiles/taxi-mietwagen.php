@@ -194,6 +194,7 @@ return [
         [
             'code' => 'TX_FAHRTAUFTRAG_ANNAHME',
             'name' => 'Fahrtauftrag annehmen',
+            'name_i18n' => ['en' => 'Accept trip order', 'es' => 'Aceptar el servicio', 'fr' => 'Accepter la course', 'it' => 'Accettare la corsa'],
             'domain' => 'taxi-mietwagen',
             'risk_level' => 'normal',
             'description' => 'Bestellkanal, Abholung, Ziel/Zielfreiheit, Zeitfenster, Fahrgastanforderungen und Betriebsart erfassen.',
@@ -206,6 +207,7 @@ return [
         [
             'code' => 'TX_DISPOSITION',
             'name' => 'Fahrt disponieren',
+            'name_i18n' => ['en' => 'Dispatch trip', 'es' => 'Asignar el viaje', 'fr' => 'Planifier la course', 'it' => 'Assegnare la corsa'],
             'domain' => 'taxi-mietwagen',
             'risk_level' => 'high',
             'description' => 'Fahrer/Fahrzeug mit gültiger Konzession, Fahrgastbeförderungserlaubnis und Gerätestatus zuweisen; Konflikte prüfen.',
@@ -218,6 +220,7 @@ return [
         [
             'code' => 'TX_SCHICHTBEGINN',
             'name' => 'Schichtbeginn',
+            'name_i18n' => ['en' => 'Start of shift', 'es' => 'Inicio del turno', 'fr' => 'Début de service', 'it' => 'Inizio turno'],
             'domain' => 'taxi-mietwagen',
             'risk_level' => 'normal',
             'description' => 'Fahrzeug-, Geräte-, Sicherheits- und Kassenprüfung vor Schichtstart.',
@@ -230,6 +233,7 @@ return [
         [
             'code' => 'TX_FAHRTAUFTRAG_ABSCHLUSS',
             'name' => 'Fahrt abschließen',
+            'name_i18n' => ['en' => 'Complete trip', 'es' => 'Finalizar el viaje', 'fr' => 'Terminer la course', 'it' => 'Concludere la corsa'],
             'domain' => 'taxi-mietwagen',
             'risk_level' => 'normal',
             'description' => 'Fahrt-, Tarif-, Geräte-, Steuer- und Zahlungsabschluss dokumentieren.',
@@ -242,6 +246,7 @@ return [
         [
             'code' => 'TX_MIETWAGEN_RUECKKEHR',
             'name' => 'Mietwagen-Rückkehr/Folgeauftrag',
+            'name_i18n' => ['en' => 'Private hire return / follow-up order', 'es' => 'Regreso VTC / servicio siguiente', 'fr' => 'Retour VTC / course suivante', 'it' => 'Rientro NCC / corsa successiva'],
             'domain' => 'taxi-mietwagen',
             'risk_level' => 'high',
             'description' => 'Rückkehr zum Betriebssitz oder Folgeauftrag nach § 49 Abs. 4 PBefG nachweisbar dokumentieren.',
@@ -252,6 +257,7 @@ return [
         [
             'code' => 'TX_SCHICHTABRECHNUNG',
             'name' => 'Schichtabrechnung',
+            'name_i18n' => ['en' => 'Shift settlement', 'es' => 'Liquidación del turno', 'fr' => 'Décompte de service', 'it' => 'Rendiconto del turno'],
             'domain' => 'taxi-mietwagen',
             'risk_level' => 'high',
             'description' => 'Geräte-, Bar-, Karten-, Vermittler- und Kassenabgleich; Differenzen bleiben offen, bis sie begründet geklärt sind.',
@@ -264,6 +270,7 @@ return [
         [
             'code' => 'TX_STOERUNG_UNFALL',
             'name' => 'Störung / Unfall',
+            'name_i18n' => ['en' => 'Disruption / accident', 'es' => 'Avería / accidente', 'fr' => 'Incident / accident', 'it' => 'Guasto / incidente'],
             'domain' => 'taxi-mietwagen',
             'risk_level' => 'critical',
             'description' => 'Panne, Gerätefehler oder Unfall mit Fahrgastschutz und Eskalation dokumentieren.',
@@ -276,6 +283,7 @@ return [
         [
             'code' => 'TX_FUNDGEGENSTAND',
             'name' => 'Fundgegenstand',
+            'name_i18n' => ['en' => 'Found item', 'es' => 'Objeto encontrado', 'fr' => 'Objet trouvé', 'it' => 'Oggetto smarrito'],
             'domain' => 'taxi-mietwagen',
             'risk_level' => 'normal',
             'description' => 'Fundsache datensparsam aufnehmen und nachweisbar übergeben.',

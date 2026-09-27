@@ -97,11 +97,14 @@ return [
         'pool_lower' => 'Sammelposten ab (über)',
         'pool_upper' => 'Sammelposten bis',
         'pool_years' => 'Sammelposten Jahre',
+        'replacement_inflation_pct' => 'Preissteigerung für Ersatzprognose (% p. a.)',
     ],
     'rental_terms' => [
         'heading' => 'Mietbedingungen im Geräteverleih',
         'description' => 'Die Mietbedingungen führen Sie als Kundenvereinbarung „Mietbedingungen (Geräteverleih)“ mit Fassung und Unterschrift.',
         'require_signed' => 'Übergabe nur mit unterschriebenen Mietbedingungen',
+        'portal_direct_booking' => 'Direktbuchung im Kundenportal erlauben',
+        'portal_direct_booking_hint' => 'Kunden reservieren freie, fürs Portal freigegebene Geräte sofort verbindlich; die Leitung wird benachrichtigt.',
     ],
     'claims_pattern' => [
         'heading' => 'Reklamationsmuster',
@@ -235,5 +238,11 @@ return [
         'interest_mode_base_rate' => 'Basiszinssatz + Prozentpunkte',
         'interest_points' => 'Aufschlag (Prozentpunkte)',
         'interest_points_hint' => 'Nur beim Basiszins-Modus. Anhalt § 288 BGB: 5 Prozentpunkte gegenüber Verbrauchern, 9 im Geschäftsverkehr — die Höhe legt Ihr Betrieb fest.',
+    ],
+    'recurring_tickets' => [
+        'heading' => 'Wiederkehrende Probleme',
+        'description' => 'Ab wie vielen Tickets je Kunde bzw. Objekt in welchem Zeitraum eine Frühwarnung entsteht.',
+        'threshold' => 'Tickets ab',
+        'window_days' => 'Zeitfenster (Tage)',
     ],
 ];

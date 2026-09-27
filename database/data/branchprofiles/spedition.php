@@ -214,6 +214,7 @@ return [
         [
             'code' => 'SP_LADUNGSSICHERUNG',
             'name' => 'Ladungssicherung',
+            'name_i18n' => ['en' => 'Load securing', 'es' => 'Sujeción de la carga', 'fr' => 'Arrimage de la cargaison', 'it' => 'Fissaggio del carico'],
             'domain' => 'spedition',
             'risk_level' => 'high',
             'description' => 'Prüfung der Ladungssicherung vor Fahrtantritt mit Freigabe.',
@@ -228,6 +229,7 @@ return [
         [
             'code' => 'SP_ZUSTELLUNG_POD',
             'name' => 'Zustellung (POD)',
+            'name_i18n' => ['en' => 'Delivery (POD)', 'es' => 'Entrega (POD)', 'fr' => 'Livraison (POD)', 'it' => 'Consegna (POD)'],
             'domain' => 'spedition',
             'risk_level' => 'normal',
             'description' => 'Zustellung beim Empfänger mit Ablieferquittung (Proof of Delivery).',
@@ -241,6 +243,7 @@ return [
         [
             'code' => 'SP_SCHADENSMELDUNG',
             'name' => 'Schadensmeldung',
+            'name_i18n' => ['en' => 'Damage report', 'es' => 'Parte de daños', 'fr' => 'Déclaration de sinistre', 'it' => 'Denuncia di danno'],
             'domain' => 'spedition',
             'risk_level' => 'normal',
             'description' => 'Aufnahme eines Transportschadens mit Foto-Nachweis.',
@@ -253,6 +256,7 @@ return [
         [
             'code' => 'SP_TRANSPORTAUFTRAG',
             'name' => 'Transportauftrag annehmen',
+            'name_i18n' => ['en' => 'Accept transport order', 'es' => 'Aceptar la orden de transporte', 'fr' => 'Accepter l\'ordre de transport', 'it' => 'Accettare l\'ordine di trasporto'],
             'domain' => 'spedition',
             'risk_level' => 'normal',
             'description' => 'Auftragsannahme mit Ladungsart, Gefahrgutprüfung, Maßen/Gewicht und Bestätigung.',
@@ -268,6 +272,7 @@ return [
         [
             'code' => 'SP_DISPOSITION_TOUR',
             'name' => 'Tourendisposition',
+            'name_i18n' => ['en' => 'Tour dispatch', 'es' => 'Asignación de rutas', 'fr' => 'Planification des tournées', 'it' => 'Assegnazione dei giri'],
             'domain' => 'spedition',
             'risk_level' => 'normal',
             'description' => 'Tour disponieren: Fahrzeug, Fahrer, Stopp-Reihenfolge, Papiere und Freigabe.',
@@ -282,6 +287,7 @@ return [
         [
             'code' => 'SP_ABHOLUNG',
             'name' => 'Abholung beim Versender',
+            'name_i18n' => ['en' => 'Pickup at sender', 'es' => 'Recogida en el remitente', 'fr' => 'Enlèvement chez l\'expéditeur', 'it' => 'Ritiro presso il mittente'],
             'domain' => 'spedition',
             'risk_level' => 'normal',
             'description' => 'Abholung mit Identifikation, Zustandsprüfung, Packstückzählung und Übernahmequittung.',
@@ -296,6 +302,7 @@ return [
         [
             'code' => 'SP_TRANSPORTEREIGNIS',
             'name' => 'Transportereignis melden',
+            'name_i18n' => ['en' => 'Report transport incident', 'es' => 'Notificar incidente de transporte', 'fr' => 'Signaler un incident de transport', 'it' => 'Segnalare un evento di trasporto'],
             'domain' => 'spedition',
             'risk_level' => 'normal',
             'description' => 'Ereignis unterwegs (Verspätung, Panne, Unfall, Kontrolle, Sperrung) melden und abstimmen.',
@@ -310,6 +317,7 @@ return [
         [
             'code' => 'SP_PALETTENTAUSCH',
             'name' => 'Palettentausch',
+            'name_i18n' => ['en' => 'Pallet exchange', 'es' => 'Intercambio de palés', 'fr' => 'Échange de palettes', 'it' => 'Scambio pallet'],
             'domain' => 'spedition',
             'risk_level' => 'normal',
             'description' => 'Tausch von Ladehilfsmitteln mit Mengen, Qualitätsklasse und Palettenschein.',
@@ -324,6 +332,7 @@ return [
         [
             'code' => 'SP_WARTEZEIT_DOKU',
             'name' => 'Wartezeit dokumentieren',
+            'name_i18n' => ['en' => 'Document waiting time', 'es' => 'Documentar el tiempo de espera', 'fr' => 'Documenter le temps d\'attente', 'it' => 'Documentare il tempo di attesa'],
             'domain' => 'spedition',
             'risk_level' => 'normal',
             'description' => 'Standzeit an Lade-/Entladestelle mit Zeiten, Grund und Bestätigung.',
@@ -338,6 +347,7 @@ return [
         [
             'code' => 'SP_NACHKALKULATION',
             'name' => 'Tour nachkalkulieren',
+            'name_i18n' => ['en' => 'Recalculate tour', 'es' => 'Recalcular la ruta', 'fr' => 'Recalculer la tournée', 'it' => 'Ricalcolare il giro'],
             'domain' => 'spedition',
             'risk_level' => 'normal',
             'description' => 'Nachkalkulation der Tour: Kilometer, Zeiten, Zusatzkosten und Abgleich mit der Kalkulation.',

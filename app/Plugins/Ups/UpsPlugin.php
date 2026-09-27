@@ -228,7 +228,7 @@ class UpsPlugin extends AbstractPlugin implements ShippingProvider {
             $packages[] = $entry;
         }
 
-        return [
+        $body = [
             'ShipmentRequest' => [
                 'Request' => ['RequestOption' => 'nonvalidate'],
                 'Shipment' => [
@@ -256,6 +256,17 @@ class UpsPlugin extends AbstractPlugin implements ShippingProvider {
                 ],
             ],
         ];
+        // Retourenlabel (MVP-917): Abholung beim Kunden (ShipFrom), zurück an die Organisation, „Print Return Label“.
+        if ($request->returnFrom !== null) {
+            $from = $request->returnFrom;
+            $body['ShipmentRequest']['Shipment']['ShipFrom'] = [
+                'Name' => $from->name,
+                'Address' => ['AddressLine' => [$from->street], 'City' => $from->city, 'PostalCode' => $from->zip, 'CountryCode' => strtoupper($from->country)],
+            ];
+            $body['ShipmentRequest']['Shipment']['ReturnService'] = ['Code' => '9'];
+        }
+
+        return $body;
     }
 
     /** UPS-Aktivitäts-Statustyp → WorkDiary-Lebenszyklus. */

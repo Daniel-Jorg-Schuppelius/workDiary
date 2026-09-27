@@ -13,7 +13,10 @@ declare(strict_types=1);
 namespace App\Models\AssetFinance;
 
 use App\Enums\AssetFinance\{AssetFinanceKind, AssetFinanceStatus};
+use App\Enums\Damage\DamageKind;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Concerns\HasDamageCases;
+use App\Models\Contracts\DamageCaseSubject;
 use App\Models\Finance\CostCenter;
 use App\Models\Platform\User;
 use App\Models\Procurement\PurchaseOrder;
@@ -40,11 +43,16 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property numeric-string|null $rate_amount
  * @property CurrencyCode $currency
  * @property array<string, mixed>|null $terms_snapshot
+ * @property int|null $useful_life_months
+ * @property numeric-string|null $asset_value_amount
+ * @property bool $is_special_lease
+ * @property array{term_months: ?int, ratio: ?float, ifrs16: string, hgb: string, reasons: list<string>, assessed_at: string, assessed_by: int}|null $classification_snapshot
  */
-class AssetFinanceContract extends Model {
+class AssetFinanceContract extends Model implements DamageCaseSubject {
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
+    use HasDamageCases;
     use HasSqid;
 
     protected $fillable = [
@@ -52,6 +60,7 @@ class AssetFinanceContract extends Model {
         'supplier_id', 'contract_no', 'starts_on', 'ends_on',
         'notice_period_days', 'payment_rhythm', 'rate_amount', 'currency',
         'special_payment', 'residual_value', 'purchase_option_amount',
+        'useful_life_months', 'asset_value_amount', 'is_special_lease', 'classification_snapshot',
         'terms_snapshot', 'cost_center_id', 'cost_center_label', 'project_id',
         'purchase_order_id', 'responsible_user_id', 'insurance_note', 'notes',
         'created_by', 'closed_at', 'closed_by',
@@ -69,6 +78,10 @@ class AssetFinanceContract extends Model {
         'special_payment' => 'decimal:2',
         'residual_value' => 'decimal:2',
         'purchase_option_amount' => 'decimal:2',
+        'useful_life_months' => 'integer',
+        'asset_value_amount' => 'decimal:2',
+        'is_special_lease' => 'boolean',
+        'classification_snapshot' => 'array',
         'terms_snapshot' => 'array',
         'closed_at' => 'datetime',
     ];
@@ -156,5 +169,17 @@ class AssetFinanceContract extends Model {
     /** @return HasMany<AssetFinanceCostSnapshot, $this> */
     public function costSnapshots(): HasMany {
         return $this->hasMany(AssetFinanceCostSnapshot::class)->latest();
+    }
+
+    public function damageSubjectLabel(): string {
+        return trim($this->number . ' ' . ($this->partner_name ?? ''));
+    }
+
+    public function damageSubjectUrl(): ?string {
+        return route('asset-finance.show', $this);
+    }
+
+    public function damageDefaultKind(): DamageKind {
+        return DamageKind::Property;
     }
 }

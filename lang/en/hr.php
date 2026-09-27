@@ -48,4 +48,45 @@ return [
             'updated' => 'Personnel file document was updated.',
         ],
     ],
+    // Personal-Kapazität (MVP-940).
+    'capacity' => [
+        'title' => 'Staff capacity',
+        'button' => 'Capacity',
+        'subtitle' => 'Planned demand (assigned orders) against the target hours of team members per week; public holidays and approved leave are deducted.',
+        'team' => 'Team',
+        'week' => 'Week from :date',
+        'members' => ':count members',
+        'empty' => 'No teams yet.',
+        'hint' => 'Figures in hours: planned / available.',
+        'open_requisitions' => 'Open positions in total: :count.',
+    ],
+    // Vertretungen beim Austritt (MVP-941).
+    'offboarding' => [
+        'deputies' => 'Reassign deputies',
+        'deputies_hint' => 'These people have the leaving member as their deputy. Without a selection, the deputy role ends.',
+        'deputy_for' => 'New deputy for :name',
+        'no_deputy' => '— no deputy —',
+    ],
+    // Arbeitsvertrag zur Unterschrift (MVP-939).
+    'employment' => [
+        'title' => 'Employment contract for signature',
+        'intro' => 'The contract goes to the person via link; the organisation then countersigns. The signed version is filed in the personnel file.',
+        'send' => 'Send for signature',
+        'default_title' => 'Employment contract :name',
+        'default_declaration' => 'I have read the employment contract and agree to it.',
+        'filed_note' => 'Signed version from contract :number.',
+        'field' => [
+            'title' => 'Title',
+            'starts_on' => 'Start',
+            'email' => 'Person\'s email',
+            'declaration_text' => 'Declaration of consent',
+            'file' => 'Contract (PDF)',
+        ],
+        'flash' => [
+            'sent' => 'Employment contract sent to :email for signature.',
+        ],
+        'error' => [
+            'email' => 'Please enter an email address.',
+        ],
+    ],
 ];

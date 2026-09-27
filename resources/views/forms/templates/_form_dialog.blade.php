@@ -15,28 +15,7 @@
     $isEdit = $template !== null;
     $conditionTemplate = ['field' => '', 'op' => 'eq', 'value' => ''];
     $fieldTemplate = ['label' => '', 'type' => \App\Enums\Fields\FieldType::Text->value, 'required' => false, 'options' => '', 'help' => '', 'unit' => '', 'min' => '', 'max' => '', 'visible_if' => $conditionTemplate];
-    // Bedingung wird intern über den Feld-Key gespeichert, im Editor aber über
-    // das Label referenziert → für die Vorbelegung Key→Label zurückübersetzen.
-    $keyToLabel = $isEdit
-        ? collect($template->fields ?? [])->mapWithKeys(fn($f) => [(string) ($f['key'] ?? '') => (string) ($f['label'] ?? '')])->all()
-        : [];
-    $fieldItems = old('fields', $isEdit
-        ? collect($template->fields ?? [])->map(fn($f) => [
-            'label' => (string) ($f['label'] ?? ''),
-            'type' => (string) ($f['type'] ?? 'text'),
-            'required' => (bool) ($f['required'] ?? false),
-            'options' => implode(', ', (array) ($f['options'] ?? [])),
-            'help' => (string) ($f['help'] ?? ''),
-            'unit' => (string) ($f['unit'] ?? ''),
-            'min' => (string) ($f['min'] ?? ''),
-            'max' => (string) ($f['max'] ?? ''),
-            'visible_if' => [
-                'field' => (string) ($keyToLabel[(string) ($f['visible_if']['field'] ?? '')] ?? ''),
-                'op' => (string) ($f['visible_if']['op'] ?? 'eq'),
-                'value' => (string) ($f['visible_if']['value'] ?? ''),
-            ],
-        ])->values()->all()
-        : [$fieldTemplate]);
+    $fieldItems = old('fields', $isEdit ? \App\Services\Fields\FieldSchema::fromArray($template->fields ?? [])->toRows() : [$fieldTemplate]);
 @endphp
 
 <x-modal

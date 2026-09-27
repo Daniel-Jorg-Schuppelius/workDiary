@@ -153,6 +153,7 @@ return [
         'crisis' => 'Gestione delle crisi',
         'sustainability' => 'Sostenibilità ed ESG',
         'claims' => 'Reclami e garanzia',
+        'damage' => 'Sinistri',
         'rental' => 'Noleggio attrezzature',
         'disposal' => 'Smaltimento e attestati',
         'asset-finance' => 'Leasing e contratti asset',
@@ -609,6 +610,7 @@ return [
         'investment.view' => 'Consultare il fascicolo di investimento',
         'investment.manage' => 'Gestire i fascicoli di investimento',
         'investment.approve' => 'Approvare i budget di investimento',
+        'investment.propose' => 'Proporre investimenti',
 
         // Krisenmanagement (Feature 070)
         'crisis.viewAny' => 'Elencare le crisi',
@@ -624,6 +626,12 @@ return [
         'claim.view' => 'Consultare il fascicolo del reclamo',
         'claim.manage' => 'Accettare e gestire i reclami',
         'claim.decide' => 'Valutare e decidere i reclami',
+        'damage.viewAny' => 'Elencare i sinistri',
+        'damage.view' => 'Visualizzare un sinistro',
+        'damage.manage' => 'Gestire i sinistri (creazione, dati, stato)',
+        'recall.viewAny' => 'Elencare i richiami',
+        'recall.view' => 'Visualizzare un richiamo',
+        'recall.manage' => 'Gestire i richiami (ambito, attivazione, stato per cliente)',
         'claim.finance' => 'Approvare gli esiti commerciali dei reclami',
         'claim.warehouse' => 'Controllare e stoccare i resi',
         'claim.recourse' => 'Gestire la rivalsa sul fornitore',

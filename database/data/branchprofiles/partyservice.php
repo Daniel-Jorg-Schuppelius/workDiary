@@ -215,6 +215,7 @@ return [
         [
             'code' => 'PS_HACCP_KUEHLKETTE',
             'name' => 'HACCP-/Kühlkettenkontrolle',
+            'name_i18n' => ['en' => 'HACCP / cold chain check', 'es' => 'Control HACCP / cadena de frío', 'fr' => 'Contrôle HACCP / chaîne du froid', 'it' => 'Controllo HACCP / catena del freddo'],
             'domain' => 'partyservice',
             'risk_level' => 'high',
             'description' => 'Temperaturkontrolle der Kühlkette von Anlieferung bis Service mit Nachweis.',
@@ -230,6 +231,7 @@ return [
         [
             'code' => 'PS_ALLERGEN_KENNZEICHNUNG',
             'name' => 'Allergenkennzeichnung (LMIV)',
+            'name_i18n' => ['en' => 'Allergen labelling (FIC)', 'es' => 'Etiquetado de alérgenos (RIAC)', 'fr' => 'Étiquetage des allergènes (INCO)', 'it' => 'Etichettatura degli allergeni (FIC)'],
             'domain' => 'partyservice',
             'risk_level' => 'high',
             'description' => 'Kennzeichnung der 14 Hauptallergene je Gericht gemäß LMIV vor Auslieferung.',
@@ -244,6 +246,7 @@ return [
         [
             'code' => 'PS_MISE_EN_PLACE',
             'name' => 'Mise en place / Vorbereitung',
+            'name_i18n' => ['en' => 'Mise en place / preparation', 'es' => 'Mise en place / preparación', 'fr' => 'Mise en place / préparation', 'it' => 'Mise en place / preparazione'],
             'domain' => 'partyservice',
             'risk_level' => 'normal',
             'description' => 'Vorbereitung von Speisen, Material und Equipment vor Anlieferung.',
@@ -257,6 +260,7 @@ return [
         [
             'code' => 'PS_EVENT_ABNAHME',
             'name' => 'Event-Abnahme',
+            'name_i18n' => ['en' => 'Event acceptance', 'es' => 'Recepción del evento', 'fr' => 'Réception de l\'événement', 'it' => 'Collaudo dell\'evento'],
             'domain' => 'partyservice',
             'risk_level' => 'normal',
             'description' => 'Abnahme durch den Kunden nach Aufbau bzw. Service.',
@@ -269,6 +273,7 @@ return [
         [
             'code' => 'PS_EINKAUF',
             'name' => 'Einkauf und Wareneingang',
+            'name_i18n' => ['en' => 'Purchasing and goods receipt', 'es' => 'Compras y recepción de mercancías', 'fr' => 'Achats et réception des marchandises', 'it' => 'Acquisti e ricevimento merci'],
             'domain' => 'partyservice',
             'risk_level' => 'normal',
             'description' => 'Einkauf gegen Bestellliste mit Wareneingangsprüfung, Temperaturkontrolle und Lagerung.',
@@ -283,6 +288,7 @@ return [
         [
             'code' => 'PS_SERVICE',
             'name' => 'Service vor Ort',
+            'name_i18n' => ['en' => 'On-site service', 'es' => 'Servicio in situ', 'fr' => 'Service sur site', 'it' => 'Assistenza in loco'],
             'domain' => 'partyservice',
             'risk_level' => 'normal',
             'description' => 'Service am Veranstaltungsort mit Temperatur- und Hygienekontrolle.',
@@ -297,6 +303,7 @@ return [
         [
             'code' => 'PS_ABBAU_RUECKNAHME',
             'name' => 'Abbau und Rücknahme',
+            'name_i18n' => ['en' => 'Dismantling and return', 'es' => 'Desmontaje y devolución', 'fr' => 'Démontage et reprise', 'it' => 'Smontaggio e ritiro'],
             'domain' => 'partyservice',
             'risk_level' => 'normal',
             'description' => 'Abbau mit Resteentsorgung, Equipment-Zählung, Schadensvermerk und Reinigung.',
@@ -311,6 +318,7 @@ return [
         [
             'code' => 'PS_REKLAMATION',
             'name' => 'Reklamation',
+            'name_i18n' => ['en' => 'Complaint', 'es' => 'Reclamación', 'fr' => 'Réclamation', 'it' => 'Reclamo'],
             'domain' => 'partyservice',
             'risk_level' => 'normal',
             'description' => 'Reklamation aufnehmen, einstufen, Sofortlösung anbieten und Rückmeldung festhalten.',

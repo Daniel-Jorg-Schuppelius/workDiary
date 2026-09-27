@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Investments;
 
+use App\Enums\Investments\InvestmentOrigin;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Finance\CostCenter;
 use App\Models\Platform\User;
@@ -38,6 +39,15 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne};
  * @property int|null $cost_center_id
  * @property string|null $cost_center_label
  * @property int|null $project_id
+ * @property int|null $investment_program_id
+ * @property int|null $planned_year
+ * @property int|null $strategic_objective_id
+ * @property InvestmentOrigin|null $origin
+ * @property int|null $submitter_user_id
+ * @property string|null $submitter_name
+ * @property string|null $submitter_email
+ * @property numeric-string|null $estimated_amount
+ * @property string|null $currency
  * @property \Illuminate\Support\Carbon|null $starts_on
  * @property \Illuminate\Support\Carbon|null $ends_on
  * @property int|null $created_by
@@ -59,13 +69,17 @@ class InvestmentCase extends Model {
     protected $fillable = [
         'organization_id', 'title', 'category', 'reason', 'objective', 'urgency',
         'risk_note', 'status', 'responsible_user_id', 'cost_center_id',
-        'cost_center_label', 'project_id', 'starts_on', 'ends_on', 'created_by',
+        'cost_center_label', 'project_id', 'investment_program_id', 'planned_year', 'starts_on', 'ends_on', 'created_by',
+        'strategic_objective_id', 'origin', 'submitter_user_id', 'submitter_name', 'submitter_email', 'estimated_amount', 'currency',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
+        'planned_year' => 'integer',
         'starts_on' => 'date',
         'ends_on' => 'date',
+        'origin' => InvestmentOrigin::class,
+        'estimated_amount' => 'decimal:2',
     ];
 
     /** @return HasMany<InvestmentOption, $this> */
@@ -142,5 +156,15 @@ class InvestmentCase extends Model {
             'deferred', 'cancelled' => 'neutral',
             default => 'ghost',
         };
+    }
+
+    /** @return BelongsTo<InvestmentProgram, $this> */
+    public function program(): BelongsTo {
+        return $this->belongsTo(InvestmentProgram::class, 'investment_program_id');
+    }
+
+    /** @return BelongsTo<StrategicObjective, $this> */
+    public function strategicObjective(): BelongsTo {
+        return $this->belongsTo(StrategicObjective::class);
     }
 }

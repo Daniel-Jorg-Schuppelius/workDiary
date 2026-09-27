@@ -60,6 +60,8 @@ class SaveCustomerRequest extends BaseFormRequest {
             'no_bulk_mail' => ['sometimes', 'boolean'],
             // E-Rechnung (Feature 045): Leitweg-ID/Käuferreferenz (BT-10).
             'buyer_reference' => ['nullable', 'string', 'max:64'],
+            // Kundengruppe (MVP-949).
+            'customer_group_id' => ['nullable', 'integer', \Illuminate\Validation\Rule::in(app(\App\Services\Classification\ClassificationResolver::class)->list($organizationId, \App\Enums\Classification\ClassificationDomain::CustomerGroup)->modelKeys())],
             // Peppol-Empfängerkennung (Feature 066, MVP-734): `<ICD>:<Kennung>`.
             'peppol_participant_id' => ['nullable', 'string', 'max:64', new \App\Rules\PeppolParticipantId],
             'delivery_format' => ['nullable', \Illuminate\Validation\Rule::enum(\App\Enums\Invoicing\InvoiceDeliveryFormat::class)],
@@ -81,6 +83,9 @@ class SaveCustomerRequest extends BaseFormRequest {
     }
 
     protected function prepareForValidation(): void {
+        if ($this->filled('customer_group_id')) {
+            $this->merge(['customer_group_id' => \App\Support\Sqid::decodeOrNumeric(\App\Models\Classification\Classification::class, $this->string('customer_group_id')->toString())]);
+        }
         // Anfahrt-Übersteuerung: leere Werte entfernen, komplett leer ⇒ null (erben).
         $travel = $this->input('travel_settings', []);
         if (is_array($travel)) {

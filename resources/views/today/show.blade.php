@@ -225,7 +225,7 @@
                             @if ($e->tags->isNotEmpty())
                                 <span class="mt-0.5 flex flex-wrap gap-1">
                                     @foreach ($e->tags as $tag)
-                                        <span class="badge badge-xs" style="background:{{ $tag->color ?? '#94a3b8' }};color:#fff">{{ $tag->name }}</span>
+                                        <span class="badge badge-xs" style="background:{{ $tag->color ?? '#94a3b8' }};color:#fff">{{ $tag->displayName() }}</span>
                                     @endforeach
                                 </span>
                             @endif

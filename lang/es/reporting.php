@@ -156,7 +156,8 @@ return [
     ],
     'supplier_material' => [
         'title' => 'Consumo de material por proveedor',
-        'note' => 'Consumo de los partes de horas del periodo, asignado mediante material → artículo → fuente de suministro preferida. Sin vínculo de artículo: :unlinked €.',
+        'note' => 'Consumo de partes de horas y órdenes de fabricación finalizadas en el periodo; proveedor de la última recepción del artículo o, en su defecto, la fuente de suministro preferida. Sin vínculo con artículo: :unlinked €.',
+        'manufacturing' => 'de ello, fabricación',
         'materials' => 'Materiales',
         'usages' => 'Registros',
         'quantities' => 'Cantidades',
@@ -170,6 +171,16 @@ return [
         'note' => 'Periodo anterior = periodo de igual duración inmediatamente antes; los cinco mayores cambios por separado, el resto como «Otros». Un clic abre los justificantes del proveedor.',
     ],
     'warning' => [
+        'capacity' => [
+            'title' => 'Falta de capacidad en el equipo :name',
+            'detail' => 'Semana desde :week: :percent % de la capacidad planificada.',
+            'recommendation' => 'Recomendación: aplazar o redistribuir órdenes, revisar suplentes y personal externo o publicar una vacante.',
+        ],
+        'recurring_tickets' => [
+            'title' => 'Tickets recurrentes: :name',
+            'detail' => ':count tickets en :days días.',
+            'recommendation' => 'Recomendación: aclarar la causa con el cliente, revisar o sustituir el objeto y considerar una instrucción de trabajo o formación para el equipo.',
+        ],
         'customer_rework' => [
             'title' => 'Retrabajo en :name: :actual %',
             'detail' => 'Últimos 90 días, objetivo :target %.',
@@ -187,6 +198,27 @@ return [
             'title' => 'Incidencias destacadas',
             'description' => 'Alertas tempranas de informes, objetos y reclamaciones con acción recomendada.',
             'none' => 'No hay incidencias destacadas.',
+        ],
+    ],
+    // Management-Auswertung (MVP-926).
+    'management' => [
+        'title' => 'Análisis de dirección',
+        'nav' => 'Problemas y formación',
+        'subtitle' => 'Problemas recurrentes de todas las alertas tempranas y necesidades de formación a partir de las carencias de competencias.',
+        'problems' => 'Problemas recurrentes',
+        'training' => 'Necesidades de formación',
+        'competency' => 'Competencia',
+        'people' => 'Personas con carencia',
+        'average_gap' => 'Carencia media (niveles)',
+        'courses' => 'Cursos adecuados',
+        'no_course' => 'ningún curso publicado',
+        'no_training' => 'Sin carencias de competencias o sin requisitos por rol.',
+        'kind' => [
+            'customer_rework' => 'Retrabajos por cliente',
+            'asset_defects' => 'Defectos recurrentes',
+            'claim_pattern' => 'Patrones de reclamación',
+            'recurring_tickets' => 'Tickets recurrentes',
+            'capacity' => 'Falta de personal',
         ],
     ],
 ];

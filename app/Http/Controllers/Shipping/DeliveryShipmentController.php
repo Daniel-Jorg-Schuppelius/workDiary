@@ -68,16 +68,7 @@ class DeliveryShipmentController extends Controller {
             'created_by' => Auth::id() !== null ? (int) Auth::id() : null,
         ]);
 
-        $recipient = new ShipmentRecipient(
-            name: (string) ($customer->displayLabel()),
-            street: (string) $customer->address_street,
-            zip: (string) $customer->address_zip,
-            city: (string) $customer->address_city,
-            country: (string) ($customer->country ?: 'DE'),
-            contactName: $customer->company ? $customer->name : null,
-            email: $customer->email,
-            phone: $customer->phone,
-        );
+        $recipient = ShipmentRecipient::fromCustomer($customer);
 
         $packages = array_values($delivery->parcels->map(static fn (ShipmentParcel $p): ShipmentPackage => new ShipmentPackage($p->weight_grams, $p->length_cm, $p->width_cm, $p->height_cm))->all());
         if ($packages === []) {

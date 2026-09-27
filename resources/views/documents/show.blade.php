@@ -36,6 +36,14 @@
                 <x-collection-add-button :item="$document" />
                 @if ($document->currentVersion)
                     <x-icon-btn icon="download" tone="outline" size="sm" :href="route('documents.download', $document)" show-label>{{ __('Herunterladen') }}</x-icon-btn>
+                    {{-- Vertrag aus dem Dokument anlegen (MVP-906), nur mit Vertragsmodul und Recht. --}}
+                    @if (\Illuminate\Support\Facades\Route::has('contracts.create') && app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.contracts') && \Illuminate\Support\Facades\Gate::allows('create', \App\Models\Contract\Contract::class))
+                        <x-icon-btn icon="contract" tone="outline" size="sm" data-entry-modal-trigger :href="route('contracts.create', ['document' => $document->sqid])" show-label>{{ __('contract.extraction.create') }}</x-icon-btn>
+                    @endif
+                    {{-- Leasingakte aus dem Dokument (MVP-934). --}}
+                    @if (\Illuminate\Support\Facades\Route::has('asset-finance.create') && app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.asset_finance') && \Illuminate\Support\Facades\Gate::allows('create', \App\Models\AssetFinance\AssetFinanceContract::class))
+                        <x-icon-btn icon="request_quote" tone="outline" size="sm" data-entry-modal-trigger :href="route('asset-finance.create', ['document' => $document->sqid])" show-label>{{ __('contract.extraction.leasing_create') }}</x-icon-btn>
+                    @endif
                 @endif
             </x-slot:actions>
         </x-page-toolbar>

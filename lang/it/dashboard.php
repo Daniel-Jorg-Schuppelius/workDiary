@@ -156,4 +156,16 @@ return [
             'description' => 'Indicatori e segnalibri in alto, sotto le quattro sezioni Panoramica, Attività, Attività recenti e Finanze — la dashboard com’era prima della conversione in schede, più l’orologio marcatempo.',
         ],
     ],
+    // Dashboard-Vorgaben je Rolle (MVP-910).
+    'role_default' => [
+        'title' => 'Modelli per ruolo',
+        'hint' => 'Le persone senza un layout proprio partono dal modello del loro ruolo (stesso ordine delle pagine iniziali), altrimenti da quello dell\'organizzazione.',
+        'also_as' => 'Salvare anche come',
+        'only_me' => 'solo per me',
+        'organization' => 'modello dell\'organizzazione',
+        'for_role' => 'modello per :role',
+        'saved' => 'Dashboard salvata come modello per :role.',
+        'forgotten' => 'Modello per :role rimosso.',
+        'forget' => 'Rimuovere il modello per :role',
+    ],
 ];

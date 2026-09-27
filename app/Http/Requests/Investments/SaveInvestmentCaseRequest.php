@@ -28,6 +28,8 @@ class SaveInvestmentCaseRequest extends BaseFormRequest {
     protected array $sqidFields = [
         'responsible_user_id' => \App\Models\Platform\User::class,
         'cost_center_id' => \App\Models\Finance\CostCenter::class,
+        'investment_program_id' => \App\Models\Investments\InvestmentProgram::class,
+        'strategic_objective_id' => \App\Models\Investments\StrategicObjective::class,
     ];
 
     /** @return array<string, mixed> */
@@ -44,6 +46,9 @@ class SaveInvestmentCaseRequest extends BaseFormRequest {
             'cost_center_label' => ['nullable', 'string', 'max:200'],
             'starts_on' => ['nullable', 'date'],
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
+            'investment_program_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('investment_programs')],
+            'planned_year' => ['nullable', 'integer', 'min:2000', 'max:2100'],
+            'strategic_objective_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('strategic_objectives')],
         ];
     }
 }

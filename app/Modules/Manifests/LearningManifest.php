@@ -140,4 +140,11 @@ final class LearningManifest extends Manifest {
             \App\Services\Learning\Contracts\QuestionTicketOpener::class => \App\Services\Learning\Contracts\NullQuestionTicketOpener::class,
         ];
     }
+
+    /** @return array<class-string, class-string> */
+    public function bindings(): array {
+        return [
+            \App\Services\Reporting\Contracts\TrainingNeedSource::class => \App\Services\Learning\TrainingNeedReport::class,
+        ];
+    }
 }

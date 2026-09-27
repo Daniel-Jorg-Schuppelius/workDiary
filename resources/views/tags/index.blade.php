@@ -43,7 +43,7 @@
                         <td>
                             <x-status-badge size="md" outline
                                   :style="$tag->color ? 'border-color: '.$tag->color.'; color: '.$tag->color.';' : null">
-                                #{{ $tag->name }}
+                                #{{ $tag->displayName() }}
                             </x-status-badge>
                         </td>
                         <td class="text-right tabular-nums">{{ $tag->diary_entries_count }}</td>

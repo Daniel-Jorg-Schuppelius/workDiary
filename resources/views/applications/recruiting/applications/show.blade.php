@@ -28,6 +28,9 @@
                 @if ($application->received_at) · {{ __('eingegangen :date', ['date' => $application->received_at->fdate()]) }} @endif
             </div>
             <x-slot:actions>
+                @if (auth()->user()?->hasEffectivePermission(\App\Services\Hr\PersonnelFilePermissions::CREATE))
+                    <x-icon-btn icon="draw" size="sm" data-entry-modal-trigger :href="route('contracts.employment.application.create', $application)" show-label>{{ __('hr.employment.title') }}</x-icon-btn>
+                @endif
                 @can('update', $application)
                     @if (in_array($application->status, \App\Models\Applications\JobApplication::PIPELINE_STATUSES, true))
                         <form method="POST" action="{{ route('recruiting.applications.status', $application) }}" class="flex items-center gap-1">
@@ -137,6 +140,30 @@
                         </select>
                         <x-icon-btn icon="event" tone="primary" size="sm" type="submit" show-label>{{ __('Gespräch planen') }}</x-icon-btn>
                     </form>
+                    {{-- Terminwahl durch den Bewerber (MVP-925) --}}
+                    <details class="mb-3 rounded-box border border-base-300 p-2 text-sm">
+                        <summary class="cursor-pointer font-medium">{{ __('recruiting.offer.title') }}</summary>
+                        <form method="POST" action="{{ route('recruiting.applications.interview-offers.store', $application) }}" class="mt-2 grid gap-2 sm:grid-cols-2">
+                            @csrf
+                            @foreach (range(0, 2) as $i)
+                                <input type="datetime-local" name="slots[]" class="input input-sm input-bordered" @if ($i === 0) required @endif aria-label="{{ __('recruiting.offer.slot', ['n' => $i + 1]) }}">
+                            @endforeach
+                            <select name="mode" class="select select-sm select-bordered" aria-label="{{ __('recruiting.offer.mode') }}">
+                                @foreach (\App\Models\Applications\JobApplicationInterview::MODES as $m)
+                                    <option value="{{ $m }}">{{ __('values.' . $m) }}</option>
+                                @endforeach
+                            </select>
+                            <input type="number" name="duration_minutes" value="60" min="15" max="240" class="input input-sm input-bordered" aria-label="{{ __('recruiting.offer.duration') }}" title="{{ __('recruiting.offer.duration') }}">
+                            <input type="number" name="valid_days" value="7" min="1" max="30" class="input input-sm input-bordered" aria-label="{{ __('recruiting.offer.valid_days') }}" title="{{ __('recruiting.offer.valid_days') }}">
+                            <select name="interviewer_user_id" class="select select-sm select-bordered" aria-label="{{ __('recruiting.offer.interviewer') }}">
+                                <option value="">{{ __('recruiting.offer.interviewer') }}: —</option>
+                                @foreach ($users as $u)
+                                    <option value="{{ $u->sqid }}">{{ $u->name }}</option>
+                                @endforeach
+                            </select>
+                            <x-icon-btn icon="send" size="sm" tone="primary" type="submit" show-label>{{ __('recruiting.offer.send') }}</x-icon-btn>
+                        </form>
+                    </details>
                 @endunless
             @endcan
             @if ($application->interviews->isEmpty())
@@ -191,6 +218,39 @@
                 </ul>
             @endif
         </x-card>
+
+        {{-- Kompetenz-Einschätzung (MVP-924) gegen das Soll der Stelle --}}
+        @if ($suitabilityRequirements->isNotEmpty() && ! $application->isAnonymized())
+            <x-card :title="__('recruiting.suitability.rating_title')" icon="grid_view">
+                <ul class="space-y-2 text-sm">
+                    @foreach ($suitabilityRequirements as $requirement)
+                        @php
+                            $rating = $ratings->get($requirement->competency_id);
+                            $max = (int) ($requirement->competency?->max_level ?? 5);
+                        @endphp
+                        <li class="flex flex-wrap items-center gap-2">
+                            <span class="min-w-40 flex-1">{{ $requirement->competency?->name }}
+                                <span class="text-muted">({{ __('recruiting.suitability.required', ['level' => $requirement->required_level]) }})</span></span>
+                            @can('update', $application)
+                                <form method="POST" action="{{ route('recruiting.applications.ratings.store', $application) }}" class="flex flex-wrap items-center gap-1">
+                                    @csrf
+                                    <input type="hidden" name="competency_id" value="{{ $requirement->competency?->sqid }}">
+                                    <select name="level" class="select select-xs select-bordered" aria-label="{{ __('recruiting.suitability.level') }}">
+                                        @foreach (range(0, $max) as $lvl)
+                                            <option value="{{ $lvl }}" @selected(($rating?->level ?? 0) === $lvl)>{{ $lvl }}</option>
+                                        @endforeach
+                                    </select>
+                                    <input name="note" maxlength="2000" value="{{ $rating?->note }}" class="input input-xs input-bordered w-48" aria-label="{{ __('recruiting.suitability.note') }}" placeholder="{{ __('recruiting.suitability.note') }}">
+                                    <button type="submit" class="btn btn-xs">{{ __('recruiting.suitability.save') }}</button>
+                                </form>
+                            @else
+                                <span>{{ $rating?->level ?? '—' }}</span>
+                            @endcan
+                        </li>
+                    @endforeach
+                </ul>
+            </x-card>
+        @endif
     </div>
 
     {{-- Entscheidung (MVP-191) --}}

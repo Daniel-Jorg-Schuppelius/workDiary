@@ -12,11 +12,13 @@ declare(strict_types=1);
 
 namespace App\Policies\Contract;
 
+use App\Enums\Contract\ContractKind;
 use App\Enums\User\Permission as P;
 use App\Models\Contract\Contract;
 use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
 use App\Policies\PermissionPolicy;
+use App\Services\Hr\PersonnelFilePermissions as HR;
 
 /**
  * Policy des allgemeinen Vertrags (Welle D, CLM). Ein einheitliches
@@ -37,8 +39,23 @@ class ContractPolicy extends PermissionPolicy {
         'review' => P::ContractSigningReview,
     ];
 
+    /** Arbeitsverträge (MVP-939) führt die Personalabteilung über das Personalakten-Recht. */
+    public function view(User $user, mixed $model = null): bool {
+        return $model instanceof Contract && $model->kind === ContractKind::Employment
+            ? $user->hasEffectivePermission(HR::VIEW_ANY)
+            : parent::view($user, $model);
+    }
+
+    public function update(User $user, mixed $model = null): bool {
+        return $model instanceof Contract && $model->kind === ContractKind::Employment
+            ? $user->hasEffectivePermission(HR::CREATE)
+            : parent::update($user, $model);
+    }
+
     public function signing(User $user, Contract $contract): bool {
-        return $this->allows($user, 'signing');
+        return $contract->kind === ContractKind::Employment
+            ? $user->hasEffectivePermission(HR::CREATE)
+            : $this->allows($user, 'signing');
     }
 
     public function review(User $user, Contract $contract): bool {

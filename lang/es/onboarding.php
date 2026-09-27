@@ -117,4 +117,82 @@ return [
             ],
         ],
     ],
+    // Persönlicher Einstieg je Rolle (MVP-911).
+    'personal' => [
+        'title' => 'Mis primeros pasos',
+        'description' => 'Unos pasos para empezar bien con WorkDiary en su rol. WorkDiary detecta por sí mismo los pasos completados; marque usted los que no tienen indicador.',
+        'progress' => ':done de :total pasos completados',
+        'open' => 'Abrir primeros pasos',
+        'go' => 'Abrir',
+        'mark_done' => 'Hecho',
+        'dismiss' => 'Ocultar primeros pasos',
+        'marked' => 'Paso marcado como hecho.',
+        'dismissed' => 'Primeros pasos ocultos; los encontrará en «Mis primeros pasos».',
+        'step' => [
+            'profile' => [
+                'two_factor' => [
+                    'title' => 'Configurar un segundo factor',
+                    'hint' => 'Protege su cuenta con una aplicación, una clave de acceso o una llave de seguridad.',
+                ],
+                'startpage' => [
+                    'title' => 'Elegir la página de inicio',
+                    'hint' => 'Defina qué abre WorkDiary al iniciar sesión.',
+                ],
+            ],
+            'dashboard' => [
+                'customize' => [
+                    'title' => 'Personalizar el panel',
+                    'hint' => 'Muestre los mosaicos que necesita a diario.',
+                ],
+            ],
+            'time' => [
+                'first' => [
+                    'title' => 'Registrar el primer tiempo',
+                    'hint' => 'Registre un tiempo de trabajo, por ejemplo desde «Hoy».',
+                ],
+            ],
+            'attendance' => [
+                'first' => [
+                    'title' => 'Fichar la presencia',
+                    'hint' => 'Registre una vez la entrada y la salida.',
+                ],
+            ],
+            'expense' => [
+                'first' => [
+                    'title' => 'Registrar gastos',
+                    'hint' => 'Registre un comprobante o un viaje como gasto.',
+                ],
+            ],
+            'diary' => [
+                'first' => [
+                    'title' => 'Crear el primer encargo',
+                    'hint' => 'Cree y asigne un encargo.',
+                ],
+            ],
+            'invoice' => [
+                'first' => [
+                    'title' => 'Crear la primera factura',
+                    'hint' => 'Cree una factura como borrador.',
+                ],
+            ],
+            'reports' => [
+                'accounting' => [
+                    'title' => 'Conocer los informes financieros',
+                    'hint' => 'Abra una vez el resumen de los informes financieros.',
+                ],
+            ],
+            'org' => [
+                'checklist' => [
+                    'title' => 'Configuración de la organización',
+                    'hint' => 'Revise la lista de comprobación de la organización.',
+                ],
+            ],
+            'help' => [
+                'center' => [
+                    'title' => 'Abrir el centro de ayuda',
+                    'hint' => 'Guías y respuestas para sus tareas.',
+                ],
+            ],
+        ],
+    ],
 ];

@@ -156,7 +156,8 @@ return [
     ],
     'supplier_material' => [
         'title' => 'Consommation de matériaux par fournisseur',
-        'note' => 'Consommation issue des feuilles de temps sur la période, attribuée via matériau → article → source d\'approvisionnement préférée. Sans lien d\'article : :unlinked €.',
+        'note' => 'Consommation issue des feuilles de temps et des ordres de fabrication terminés sur la période ; fournisseur de la dernière réception pour l’article, sinon la source d’approvisionnement préférée. Sans lien article : :unlinked €.',
+        'manufacturing' => 'dont production',
         'materials' => 'Matériaux',
         'usages' => 'Saisies',
         'quantities' => 'Quantités',
@@ -170,6 +171,16 @@ return [
         'note' => 'Période précédente = période de même durée juste avant ; les cinq plus fortes variations séparément, le reste sous « Autres ». Un clic ouvre les pièces du fournisseur.',
     ],
     'warning' => [
+        'capacity' => [
+            'title' => 'Manque de capacité dans l\'équipe :name',
+            'detail' => 'Semaine du :week : :percent % de la capacité planifiés.',
+            'recommendation' => 'Recommandation : reporter ou répartir les ordres, vérifier suppléants et intérimaires ou ouvrir un poste.',
+        ],
+        'recurring_tickets' => [
+            'title' => 'Tickets récurrents : :name',
+            'detail' => ':count tickets en :days jours.',
+            'recommendation' => 'Recommandation : clarifier la cause avec le client, contrôler ou remplacer l\'objet et envisager une instruction de travail ou une formation pour l\'équipe.',
+        ],
         'customer_rework' => [
             'title' => 'Reprises chez :name : :actual %',
             'detail' => '90 derniers jours, objectif :target %.',
@@ -187,6 +198,27 @@ return [
             'title' => 'Points d’attention',
             'description' => 'Alertes précoces issues des analyses, des objets et des réclamations avec action recommandée.',
             'none' => 'Aucun point d’attention.',
+        ],
+    ],
+    // Management-Auswertung (MVP-926).
+    'management' => [
+        'title' => 'Analyse de direction',
+        'nav' => 'Problèmes et formation',
+        'subtitle' => 'Problèmes récurrents issus de toutes les alertes précoces et besoins de formation issus des écarts de compétences.',
+        'problems' => 'Problèmes récurrents',
+        'training' => 'Besoins de formation',
+        'competency' => 'Compétence',
+        'people' => 'Personnes avec écart',
+        'average_gap' => 'Écart moyen (niveaux)',
+        'courses' => 'Cours adaptés',
+        'no_course' => 'aucun cours publié',
+        'no_training' => 'Aucun écart de compétence — ou aucune exigence par rôle.',
+        'kind' => [
+            'customer_rework' => 'Reprises par client',
+            'asset_defects' => 'Défauts récurrents',
+            'claim_pattern' => 'Schémas de réclamation',
+            'recurring_tickets' => 'Tickets récurrents',
+            'capacity' => 'Manques de personnel',
         ],
     ],
 ];

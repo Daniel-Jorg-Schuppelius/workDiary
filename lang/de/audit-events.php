@@ -115,6 +115,7 @@ return [
         'statusChanged' => 'Mangel-Status geändert',
     ],
     'assetFinance' => [
+        'classified' => 'Leasingvertrag eingeschätzt (IFRS 16/HGB)',
         'activated' => 'Finanzierung aktiviert',
         'closed' => 'Finanzierung abgeschlossen',
         'contractLinked' => 'Finanzierungsvertrag verknüpft',
@@ -445,6 +446,7 @@ return [
         'deviation_decided' => 'Investitions-Abweichung entschieden',
         'linked' => 'Investition verknüpft',
         'option_recommended' => 'Investitions-Option empfohlen',
+        'proposed' => 'Investition vorgeschlagen',
         'reviewed' => 'Investition nachbetrachtet',
     ],
     'invoice' => [
@@ -749,6 +751,8 @@ return [
     ],
     'recruiting' => [
         'application_anonymized' => 'Bewerbung anonymisiert',
+        'interview_offered' => 'Gesprächstermine angeboten',
+        'interview_chosen' => 'Gesprächstermin gewählt',
         'application_decided' => 'Bewerbung entschieden',
         'application_exported' => 'Bewerbung exportiert',
         'application_received' => 'Bewerbung eingegangen',
@@ -765,6 +769,7 @@ return [
     'rental' => [
         'requested' => 'Verleih-Anfrage aus dem Portal gestellt',
         'requestAccepted' => 'Verleih-Anfrage angenommen',
+        'directBooked' => 'Direktbuchung im Portal',
         'requestDeclined' => 'Verleih-Anfrage abgelehnt',
         'requestWithdrawn' => 'Verleih-Anfrage vom Kunden zurückgenommen',
         'active' => 'Mietvorgang aktiv',
@@ -1007,6 +1012,7 @@ return [
         'corrected' => 'Fahrt per Stornofahrt korrigiert',
     ],
     'user' => [
+        'deputyReplaced' => 'Vertretung neu besetzt',
         'anonymized' => 'Mitarbeiter anonymisiert (PII entfernt, Nachweise bleiben)',
         'offboardingScheduled' => 'Austritt vorgemerkt',
         'offboarded' => 'Mitarbeiter ausgeschieden (Konto deaktiviert)',
@@ -1268,5 +1274,11 @@ return [
             'confirmed' => 'Wechselvorschlag bestätigt',
             'dismissed' => 'Wechselvorschlag verworfen',
         ],
+    ],
+    'inspection_order' => [
+        'accepted' => 'Prüfauftrag angenommen',
+        'offer_rejected' => 'Angebot zum Prüfauftrag abgelehnt',
+        'completed' => 'Prüfauftrag übernommen',
+        'cancelled' => 'Prüfauftrag storniert',
     ],
 ];

@@ -63,9 +63,27 @@ class PersonnelFileService {
      * @param  array<string, mixed>  $attributes
      */
     public function create(User $member, User $actor, array $attributes, UploadedFile $file): Document {
+        return $this->filed($member, $actor, $attributes, fn (array $documentAttributes): Document => $this->documents->create($member, $actor, $documentAttributes, $file));
+    }
+
+    /**
+     * Wie {@see create()}, mit Dateiinhalt statt Upload (etwa der unterschriebene
+     * Arbeitsvertrag, MVP-939).
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function createFromContents(User $member, User $actor, array $attributes, string $contents, string $originalName, ?string $mime = null): Document {
+        return $this->filed($member, $actor, $attributes, fn (array $documentAttributes): Document => $this->documents->createFromContents($member, $actor, $documentAttributes, $contents, $originalName, $mime));
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @param  callable(array<string, mixed>): Document  $store
+     */
+    private function filed(User $member, User $actor, array $attributes, callable $store): Document {
         $category = HrDocumentCategory::from((string) $attributes['hr_category']);
 
-        $document = $this->documents->create($member, $actor, [
+        $document = $store([
             'title' => $attributes['title'],
             'document_type' => $category->documentType()->value,
             'status' => DocumentStatus::Active->value,
@@ -76,7 +94,7 @@ class PersonnelFileService {
             'confidential' => true,
             'hr_category' => $category->value,
             'retention_until' => $this->retentionUntilFor($member, $category)?->toDateString(),
-        ], $file);
+        ]);
 
         $document->audit('hrFile.created', [
             'member_user_id' => $member->id,

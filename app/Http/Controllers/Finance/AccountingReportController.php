@@ -22,8 +22,8 @@ use App\Models\Finance\CostCenter;
 use App\Services\Accounting\DepreciationCalculator;
 use App\Services\Accounting\Filing\{FilingDeadlineCalculator, RecapitulativeStatementService, VatFilingPeriodService, VatReturnService};
 use App\Services\Accounting\{OpenItemService, TaxationMethodResolver, VatFilingProfileResolver};
-use App\Services\Accounting\Reports\{AbstractAccountingReportBuilder, AccountLedgerBuilder, BwaBuilder, DataQualityBuilder, EuerPreviewBuilder, ExportContextBuilder, FixedAssetScheduleBuilder, LiquidityBuilder, LiquidityForecastBuilder, ProfitAndLossBuilder, TrialBalanceBuilder};
-use App\Support\{Sqid, Tz};
+use App\Services\Accounting\Reports\{AbstractAccountingReportBuilder, AccountLedgerBuilder, BwaBuilder, DataQualityBuilder, EuerPreviewBuilder, ExportContextBuilder, FixedAssetScheduleBuilder, LiquidityBuilder, LiquidityForecastBuilder, ProfitAndLossBuilder, ReplacementForecastBuilder, TrialBalanceBuilder};
+use App\Support\{Setting, Sqid, Tz};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Http\Request;
@@ -139,6 +139,26 @@ class AccountingReportController extends Controller {
         }
 
         return view('reports.accounting.fixed-asset-schedule', $data + ['currentYear' => $current]);
+    }
+
+    /** Restwert- und Ersatzprognose (Feature 133/074, MVP-908). */
+    public function replacementForecast(Request $request, ReplacementForecastBuilder $builder): View|SymfonyResponse {
+        $this->authorizeView();
+        $organization = $this->currentOrganizationOrAbort();
+        $profile = AccountingProfile::query()->where('organization_id', $organization->id)->first();
+        $startMonth = $profile instanceof AccountingProfile ? max(1, (int) $profile->fiscal_year_start_month) : 1;
+        $horizon = min(15, max(1, $request->integer('years', 5)));
+        $inflation = (string) (Setting::get('finance.fixed_assets.replacement_inflation_pct', 0) ?? 0);
+        $data = $builder->build($organization, CarbonImmutable::now()->startOfDay(), $horizon, is_numeric($inflation) ? $inflation : '0', $startMonth);
+
+        if ($this->wantsExport($request)) {
+            return $this->export($request, 'accounting-replacement-forecast', 'accounting.replacement_forecast', $data['asOf'], $data['until'], array_merge(
+                [[(string) __('accounting.fixed_assets.column.no'), (string) __('accounting.fixed_assets.column.name'), (string) __('accounting.reports.replacement.ends_on'), (string) __('accounting.reports.replacement.book_value'), (string) __('accounting.reports.replacement.replacement')]],
+                array_map(static fn (array $row): array => [(string) $row['asset']->asset_no, (string) $row['asset']->name, $row['ends_on']->toDateString(), $row['book_value'], $row['replacement']], $data['assets']),
+            ));
+        }
+
+        return view('reports.accounting.replacement-forecast', $data + ['horizon' => $horizon, 'inflation' => $inflation]);
     }
 
     /** Kontenblatt eines einzelnen Kontos. */

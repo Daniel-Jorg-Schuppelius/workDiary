@@ -49,10 +49,13 @@ class TagController extends Controller {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:' . (int) Setting::get('validation.tag.name_max', 60), Rule::unique('tags', 'name')],
             'color' => ['nullable', 'string', 'max:16'],
+            'name_i18n' => ['nullable', 'array'],
+            'name_i18n.*' => ['nullable', 'string', 'max:60'],
         ]);
 
         Tag::create([
             'name' => $data['name'],
+            'name_i18n' => Tag::cleanTranslations($data['name_i18n'] ?? null),
             'color' => $data['color'] ?? null,
             'created_by' => Auth::id(),
         ]);
@@ -72,9 +75,11 @@ class TagController extends Controller {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:' . (int) Setting::get('validation.tag.name_max', 60), Rule::unique('tags', 'name')->ignore($tag->id)],
             'color' => ['nullable', 'string', 'max:16'],
+            'name_i18n' => ['nullable', 'array'],
+            'name_i18n.*' => ['nullable', 'string', 'max:60'],
         ]);
 
-        $tag->update($data);
+        $tag->update(['name_i18n' => Tag::cleanTranslations($data['name_i18n'] ?? null)] + $data);
 
         return redirect()->toList('tags.index')->with('success', __('Tag aktualisiert.'));
     }

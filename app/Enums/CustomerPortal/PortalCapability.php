@@ -48,6 +48,9 @@ enum PortalCapability: string implements HasLabel {
     /** Reklamationen (Feature 072). */
     case Claims = 'claims';
 
+    /** Rücksendung anmelden (MVP-935): legt Reklamation und angekündigte RMA an. */
+    case Returns = 'returns';
+
     /** Verleihvorgänge (Feature 073). */
     case Rentals = 'rentals';
 
@@ -76,6 +79,7 @@ enum PortalCapability: string implements HasLabel {
             self::OpenIssues => __('Offene Punkte & bekannte Fehler'),
             self::Tickets => __('Tickets & Servicekatalog'),
             self::Claims => __('Reklamationen'),
+            self::Returns => __('claims.portal_return.capability'),
             self::Rentals => __('Verleihvorgänge'),
             self::Queries => __('Rückfragen & Kommentare'),
             self::Appointments => __('Online-Terminbuchung'),
@@ -92,7 +96,7 @@ enum PortalCapability: string implements HasLabel {
     public function moduleFlag(): ?string {
         return match ($this) {
             self::Tickets => 'module.helpdesk',
-            self::Claims => 'module.claims',
+            self::Claims, self::Returns => 'module.claims',
             self::Rentals, self::RentalRequests => 'module.rental',
             self::Documents => 'module.documents',
             self::Appointments => 'module.planung',

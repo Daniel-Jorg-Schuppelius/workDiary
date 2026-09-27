@@ -156,4 +156,16 @@ return [
             'description' => 'Kennzahlen und Lesezeichen oben, darunter die vier Bereiche Überblick, Aufgaben, Aktivität und Finanzen — das Dashboard wie vor dem Kachel-Umbau, ergänzt um die Stempeluhr.',
         ],
     ],
+    // Dashboard-Vorgaben je Rolle (MVP-910).
+    'role_default' => [
+        'title' => 'Vorgaben je Rolle',
+        'hint' => 'Personen ohne eigenes Layout starten mit der Vorgabe ihrer Rolle (Rangfolge wie bei den Startseiten), sonst mit der Organisations-Vorgabe.',
+        'also_as' => 'Zusätzlich speichern als',
+        'only_me' => 'nur für mich',
+        'organization' => 'Standard der Organisation',
+        'for_role' => 'Vorgabe für :role',
+        'saved' => 'Dashboard gespeichert und als Vorgabe für :role hinterlegt.',
+        'forgotten' => 'Vorgabe für :role entfernt.',
+        'forget' => 'Vorgabe für :role entfernen',
+    ],
 ];

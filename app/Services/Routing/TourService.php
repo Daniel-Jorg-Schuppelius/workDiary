@@ -14,9 +14,11 @@ use App\Enums\Diary\{Mode, Status as DiaryStatus};
 use App\Enums\Tour\TourStatus;
 use App\Enums\Travel\TravelLogVehicle;
 use App\Models\Diary\{DiaryEntry, Tour};
-use App\Models\Platform\User;
+use App\Models\Platform\{Organization, User};
 use App\Models\Travel\TravelLog;
+use App\Services\AssetCompliance\Contracts\InspectionTourPlanner;
 use App\Services\Concerns\AssertsStatusTransition;
+use App\Services\Licensing\ModuleStatusResolver;
 use App\Services\Routing\Contracts\TravelLogRecorder;
 use App\Support\Tz;
 use Carbon\{CarbonImmutable, CarbonInterface};
@@ -31,13 +33,26 @@ use Illuminate\Support\Facades\DB;
  * hand-off to {@see TravelLogRecorder} which materialises the tour as actual
  * travel logs.
  */
-class TourService {
+class TourService implements InspectionTourPlanner {
     use AssertsStatusTransition;
     public function __construct(
         private readonly TourOptimizer $optimizer,
         private readonly OsrmRouter $router,
         private readonly TravelLogRecorder $travelLogs,
+        private readonly ModuleStatusResolver $modules,
     ) {}
+
+    public function available(Organization $organization): bool {
+        return $this->modules->isActiveFor($organization, 'module.planung');
+    }
+
+    /** Prüfertour (MVP-918): Entwurf anlegen und die Reihenfolge optimieren. */
+    public function planTour(User $driver, CarbonInterface $date, array $orderIds): Tour {
+        $tour = $this->createDraft($driver, $date, $orderIds);
+        $this->recalculate($tour);
+
+        return $tour->refresh();
+    }
 
     /**
      * @param  list<int>  $orderIds  service-order IDs in the desired initial order

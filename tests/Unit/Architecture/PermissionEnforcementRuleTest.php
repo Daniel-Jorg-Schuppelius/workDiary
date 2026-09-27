@@ -71,7 +71,7 @@ class PermissionEnforcementRuleTest extends TestCase {
         'ProcedureSecondPersonRevoke', 'ProcedureSecondPersonSign', 'ProcedureSecondPersonTake',
         'ProjectArchive', 'ProjectCreate', 'ProjectDelete', 'ProjectManageBilling', 'ProtocolCreate', 'ProtocolItemPhotoAdd', 'ProtocolItemPhotoRemove', 'QualificationManage',
         'ScheduledShiftManage', 'ShiftManage', 'ShiftTypeManage',
-        'SickLeaveManage', 'SupplierCreate', 'SupplierDelete', 'SupplierExport', 'SupplierLexofficeSync', 'SupplierUpdate', 'SupplierView', 'SupplierViewAny', 'TagManage',
+        'SickLeaveManage', 'SupplierCreate', 'SupplierDelete', 'SupplierExport', 'SupplierLexofficeSync', 'TagManage',
         'TaskManage', 'TimeEntryCreate', 'TimeEntryCreateForOthers',
         'TimeEntryDelete', 'TimeEntryUpdate', 'TimeEntryViewOwn', 'TimesheetCreate', 'TimesheetDelete',
         'TimesheetExport', 'TimesheetLock', 'TimesheetSign', 'TimesheetUnlock', 'TimesheetUpdate',

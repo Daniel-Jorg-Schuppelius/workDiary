@@ -540,6 +540,23 @@ return [
 
     // Finanzberichte (Feature 125, MVP-676).
     'reports' => [
+        'replacement' => [
+            'subtitle' => 'Alla data :from, orizzonte fino al :to, aumento dei prezzi :inflation % annuo',
+            'horizon' => 'Orizzonte',
+            'years' => ':count anni',
+            'year_total' => 'Fabbisogno di sostituzione :year',
+            'assets' => 'Cespiti a fine vita utile',
+            'no_assets' => 'Nessuna vita utile termina nell\'orizzonte.',
+            'ends_on' => 'In uso fino al',
+            'book_value' => 'Valore contabile oggi',
+            'replacement' => 'Sostituzione (stimata)',
+            'overdue' => 'scaduta',
+            'hint' => 'Sostituzione = costo di acquisto × (1 + aumento dei prezzi)^anni di utilizzo; imposti l\'aumento dei prezzi nelle impostazioni dell\'organizzazione. I cespiti in pool non sono inclusi.',
+            'leases' => 'Contratti di leasing e finanziamento in scadenza',
+            'contract' => 'Contratto',
+            'partner' => 'Partner',
+            'residual' => 'Valore residuo',
+        ],
         'fixed_asset_schedule' => [
             'subtitle' => 'Esercizio :year (:from – :to)',
             'year' => 'Esercizio',
@@ -660,6 +677,10 @@ return [
             ],
         ],
         'card' => [
+            'replacement_forecast' => [
+                'title' => 'Fabbisogno di sostituzione',
+                'text' => 'Valori contabili, fine vita utile e sostituzione stimata; leasing in scadenza.',
+            ],
             'fixed_asset_schedule' => [
                 'title' => 'Prospetto dei cespiti',
                 'text' => 'Andamento del costo storico e degli ammortamenti cumulati per cespite nell’esercizio.',

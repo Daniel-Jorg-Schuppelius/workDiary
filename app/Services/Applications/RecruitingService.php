@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Applications;
 
 use App\Enums\Notification\NotificationEvent;
-use App\Models\Applications\{EmployeeDraft, JobApplication, JobPosting};
+use App\Models\Applications\{EmployeeDraft, JobApplication, JobApplicationRating, JobPosting};
 use App\Models\Platform\{Organization, User};
 use App\Services\Fields\FieldDocument;
 use App\Services\Notification\NotificationDispatcher;
@@ -193,6 +193,7 @@ class RecruitingService {
         DB::transaction(function () use ($application, $actor): void {
             $application->interviews()->update(['notes' => null]);
             $application->reviews()->update(['comment' => null]);
+            $application->ratings()->update(['note' => null]);
             $application->addresses()->delete();
             $application->update([
                 'candidate_name' => null,
@@ -252,6 +253,12 @@ class RecruitingService {
             'documents' => $application->documents->map(fn($doc): array => [
                 'label' => $doc->label,
                 'document_id' => $doc->document_id,
+            ])->all(),
+            // Kompetenz-Einschätzungen (MVP-924) sind Angaben zur Person.
+            'competency_ratings' => $application->ratings()->with('competency')->get()->map(fn (JobApplicationRating $r): array => [
+                'competency' => $r->competency?->name,
+                'level' => $r->level,
+                'note' => $r->note,
             ])->all(),
         ];
     }

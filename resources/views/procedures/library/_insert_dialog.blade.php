@@ -8,7 +8,7 @@
 --}}
 {{-- Dialog: Bibliotheksschritte in den Entwurf einfügen (MVP-896). Die
      Kopien stehen am Ende der Schrittliste. --}}
-<x-modal :title="__('procedure.library.insert')" :eyebrow="$template->name" icon="library_add" tone="primary"
+<x-modal :title="__('procedure.library.insert')" :eyebrow="$template->displayName()" icon="library_add" tone="primary"
          :action="route('procedures.library.insert', $template)" method="POST"
          :form-data="['data-entry-form' => '']" :submit-label="__('procedure.library.insert')">
     <p class="text-sm text-warning">{{ __('procedure.library.insert_hint') }}</p>

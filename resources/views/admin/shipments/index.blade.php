@@ -50,6 +50,10 @@
                     <input type="password" name="api_key" class="input input-bordered input-sm" autocomplete="off">
                 </label>
                 <label class="form-control">
+                    <span class="label-text">{{ __('shipping.field.returns_receiver_id') }}</span>
+                    <input type="text" name="returns_receiver_id" value="{{ old('returns_receiver_id') }}" class="input input-bordered input-sm" maxlength="60" title="{{ __('shipping.field.returns_receiver_id_hint') }}">
+                </label>
+                <label class="form-control">
                     <span class="label-text">{{ __('shipping.field.billing_number') }}</span>
                     <input type="text" name="billing_number" value="{{ old('billing_number') }}" class="input input-bordered input-sm" maxlength="60">
                 </label>

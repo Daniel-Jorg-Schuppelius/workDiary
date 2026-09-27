@@ -48,4 +48,45 @@ return [
             'updated' => 'El documento del expediente personal se ha actualizado.',
         ],
     ],
+    // Personal-Kapazität (MVP-940).
+    'capacity' => [
+        'title' => 'Capacidad de personal',
+        'button' => 'Capacidad',
+        'subtitle' => 'Demanda planificada (órdenes asignadas) frente a las horas teóricas de los miembros por semana; festivos y vacaciones aprobadas descontados.',
+        'team' => 'Equipo',
+        'week' => 'Semana desde :date',
+        'members' => ':count miembros',
+        'empty' => 'Aún no hay equipos.',
+        'hint' => 'Valores en horas: planificado / disponible.',
+        'open_requisitions' => 'Puestos abiertos en total: :count.',
+    ],
+    // Vertretungen beim Austritt (MVP-941).
+    'offboarding' => [
+        'deputies' => 'Reasignar suplencias',
+        'deputies_hint' => 'Estas personas tienen al miembro saliente como suplente. Sin selección, la suplencia termina.',
+        'deputy_for' => 'Nuevo suplente para :name',
+        'no_deputy' => '— sin suplente —',
+    ],
+    // Arbeitsvertrag zur Unterschrift (MVP-939).
+    'employment' => [
+        'title' => 'Contrato de trabajo para firmar',
+        'intro' => 'El contrato se envía por enlace a la persona; después la organización lo contrafirma. La versión firmada se archiva en el expediente personal.',
+        'send' => 'Enviar para firmar',
+        'default_title' => 'Contrato de trabajo :name',
+        'default_declaration' => 'He leído el contrato de trabajo y lo acepto.',
+        'filed_note' => 'Versión firmada del contrato :number.',
+        'field' => [
+            'title' => 'Denominación',
+            'starts_on' => 'Inicio',
+            'email' => 'Correo de la persona',
+            'declaration_text' => 'Declaración de conformidad',
+            'file' => 'Contrato (PDF)',
+        ],
+        'flash' => [
+            'sent' => 'Contrato de trabajo enviado a :email para firmar.',
+        ],
+        'error' => [
+            'email' => 'Indique una dirección de correo.',
+        ],
+    ],
 ];

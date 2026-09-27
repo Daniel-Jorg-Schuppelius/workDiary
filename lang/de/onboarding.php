@@ -120,4 +120,82 @@ return [
             ],
         ],
     ],
+    // Persönlicher Einstieg je Rolle (MVP-911).
+    'personal' => [
+        'title' => 'Mein Einstieg',
+        'description' => 'Ein paar Schritte, um mit WorkDiary in Ihrer Rolle gut zu starten. Erledigtes erkennt WorkDiary selbst; Schritte ohne Merkmal haken Sie ab.',
+        'progress' => ':done von :total Schritten erledigt',
+        'open' => 'Einstieg öffnen',
+        'go' => 'Öffnen',
+        'mark_done' => 'Erledigt',
+        'dismiss' => 'Einstieg ausblenden',
+        'marked' => 'Schritt als erledigt markiert.',
+        'dismissed' => 'Einstieg ausgeblendet; Sie finden ihn weiter unter „Mein Einstieg“.',
+        'step' => [
+            'profile' => [
+                'two_factor' => [
+                    'title' => 'Zweiten Faktor einrichten',
+                    'hint' => 'Schützt Ihr Konto mit App, Passkey oder Sicherheitsschlüssel.',
+                ],
+                'startpage' => [
+                    'title' => 'Startseite wählen',
+                    'hint' => 'Legen Sie fest, womit WorkDiary nach der Anmeldung öffnet.',
+                ],
+            ],
+            'dashboard' => [
+                'customize' => [
+                    'title' => 'Dashboard anpassen',
+                    'hint' => 'Blenden Sie die Kacheln ein, die Sie täglich brauchen.',
+                ],
+            ],
+            'time' => [
+                'first' => [
+                    'title' => 'Erste Zeit erfassen',
+                    'hint' => 'Buchen Sie eine Arbeitszeit, zum Beispiel über „Heute“.',
+                ],
+            ],
+            'attendance' => [
+                'first' => [
+                    'title' => 'Anwesenheit stempeln',
+                    'hint' => 'Kommen und Gehen einmal erfassen.',
+                ],
+            ],
+            'expense' => [
+                'first' => [
+                    'title' => 'Spesen erfassen',
+                    'hint' => 'Einen Beleg oder eine Reise als Spesen erfassen.',
+                ],
+            ],
+            'diary' => [
+                'first' => [
+                    'title' => 'Ersten Auftrag anlegen',
+                    'hint' => 'Einen Auftrag anlegen und zuweisen.',
+                ],
+            ],
+            'invoice' => [
+                'first' => [
+                    'title' => 'Erste Rechnung anlegen',
+                    'hint' => 'Eine Rechnung als Entwurf anlegen.',
+                ],
+            ],
+            'reports' => [
+                'accounting' => [
+                    'title' => 'Finanzberichte kennenlernen',
+                    'hint' => 'Einmal die Übersicht der Finanzberichte öffnen.',
+                ],
+            ],
+            'org' => [
+                'checklist' => [
+                    'title' => 'Einrichtung der Organisation',
+                    'hint' => 'Die Checkliste der Organisation durchgehen.',
+                ],
+            ],
+            'help' => [
+                'center' => [
+                    'title' => 'Hilfecenter öffnen',
+                    'hint' => 'Anleitungen und Antworten zu Ihren Aufgaben.',
+                ],
+            ],
+        ],
+    ],
 ];

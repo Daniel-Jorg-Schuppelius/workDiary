@@ -97,20 +97,21 @@
                               :x-label="$periodAxis"
                               :note="__('reporting.supplier_category.note') . ($categorySpend['pending'] > 0 ? ' ' . __('reporting.supplier_category.pending', ['count' => $categorySpend['pending']]) : '')" />
     @endif
-    {{-- Materialverbrauch je Lieferant (MVP-904), über Material → Artikel → Lieferquelle. --}}
+    {{-- Materialverbrauch je Lieferant (MVP-904/948): Stundenzettel und Fertigung, Lieferant aus dem Einkauf. --}}
     @if ($materialUsage['rows'] !== [] || $materialUsage['unlinkedValue'] > 0)
         <x-card :title="__('reporting.supplier_material.title')" :count="count($materialUsage['rows'])" class="mt-4">
             <p class="mb-2 text-xs text-muted">{{ __('reporting.supplier_material.note', ['unlinked' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($materialUsage['unlinkedValue'], 2, withThousandsSeparator: true)]) }}</p>
             @if ($materialUsage['rows'] !== [])
                 <x-table bare>
                     <x-slot:head>
-                        <tr><th>{{ __('Lieferant') }}</th><th class="text-right">{{ __('reporting.supplier_material.materials') }}</th><th class="text-right">{{ __('reporting.supplier_material.usages') }}</th><th>{{ __('reporting.supplier_material.quantities') }}</th><th class="text-right">{{ __('reporting.supplier_material.value') }}</th></tr>
+                        <tr><th>{{ __('Lieferant') }}</th><th class="text-right">{{ __('reporting.supplier_material.materials') }}</th><th class="text-right">{{ __('reporting.supplier_material.usages') }}</th><th class="text-right">{{ __('reporting.supplier_material.manufacturing') }}</th><th>{{ __('reporting.supplier_material.quantities') }}</th><th class="text-right">{{ __('reporting.supplier_material.value') }}</th></tr>
                     </x-slot:head>
                     @foreach ($materialUsage['rows'] as $row)
                         <tr>
                             <td>{{ $row['supplierName'] }}</td>
                             <td class="text-right tabular-nums">{{ $row['materials'] }}</td>
                             <td class="text-right tabular-nums">{{ $row['usages'] }}</td>
+                            <td class="text-right tabular-nums">{{ $row['manufacturing'] }}</td>
                             <td class="text-xs">@foreach ($row['quantities'] as $unit => $qty){{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($qty, 3, trimTrailingZeros: true) }} {{ $unit }}@if (! $loop->last), @endif @endforeach</td>
                             <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['value'], 2, withThousandsSeparator: true) }} €</td>
                         </tr>

@@ -100,6 +100,7 @@ class CustomerController extends Controller {
             'customer' => null,
             'isDialog' => true,
             'allTags' => Tag::query()->orderBy('name')->get(),
+            'customerGroups' => app(\App\Services\Classification\ClassificationResolver::class)->list((int) Auth::user()?->organization_id, \App\Enums\Classification\ClassificationDomain::CustomerGroup),
         ]);
     }
 
@@ -110,13 +111,15 @@ class CustomerController extends Controller {
         $custom = $this->validatedCustomFields($request, Customer::class);
         $tagIds = $data['tag_ids'] ?? [];
         $newTagsRaw = (string) ($data['new_tags'] ?? '');
-        unset($data['tag_ids'], $data['new_tags'], $data['custom']);
+        $customerGroupId = $data['customer_group_id'] ?? null;
+        unset($data['tag_ids'], $data['new_tags'], $data['custom'], $data['customer_group_id']);
         $contactDetails = $this->pullContactDetails($data);
 
         $customer = Customer::create($data + ['created_by' => Auth::id()]);
         $this->writeContactDetails($customer, $contactDetails);
         $customer->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
         $customer->syncCustomFields($custom);
+        $customer->syncClassificationDomain(\App\Enums\Classification\ClassificationDomain::CustomerGroup, $customerGroupId !== null ? [(int) $customerGroupId] : []);
 
         return redirect()->route('customers.show', $customer)
             ->with('success', __('Kunde angelegt.'));
@@ -129,6 +132,7 @@ class CustomerController extends Controller {
             'customer' => $customer,
             'isDialog' => true,
             'allTags' => Tag::query()->orderBy('name')->get(),
+            'customerGroups' => app(\App\Services\Classification\ClassificationResolver::class)->list((int) $customer->organization_id, \App\Enums\Classification\ClassificationDomain::CustomerGroup),
         ]);
     }
 
@@ -139,7 +143,8 @@ class CustomerController extends Controller {
         $custom = $this->validatedCustomFields($request, Customer::class);
         $tagIds = $data['tag_ids'] ?? [];
         $newTagsRaw = (string) ($data['new_tags'] ?? '');
-        unset($data['tag_ids'], $data['new_tags'], $data['custom']);
+        $customerGroupId = $data['customer_group_id'] ?? null;
+        unset($data['tag_ids'], $data['new_tags'], $data['custom'], $data['customer_group_id']);
         $contactDetails = $this->pullContactDetails($data);
 
         // fill() vor save(): getDirty() kennt die Änderungen erst danach.
@@ -149,6 +154,7 @@ class CustomerController extends Controller {
         $changed = array_merge($changed, $this->writeContactDetails($customer, $contactDetails));
         $customer->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
         $customer->syncCustomFields($custom);
+        $customer->syncClassificationDomain(\App\Enums\Classification\ClassificationDomain::CustomerGroup, $customerGroupId !== null ? [(int) $customerGroupId] : []);
 
         // Korrigierte Stammdaten zurück an Lexoffice — sonst holt der nächste
         // Abgleich den alten Wert wieder.

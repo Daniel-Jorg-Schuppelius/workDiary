@@ -21,6 +21,7 @@ use App\Models\Platform\User;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Claims\ClaimCaseService;
+use App\Services\Claims\Contracts\RmaReturnLabelIssuer;
 use App\Services\Classification\ClassificationResolver;
 use App\Support\{ErrorText, Sqid};
 use Illuminate\Contracts\View\View;
@@ -64,7 +65,7 @@ class ClaimCaseController extends Controller {
             'diaryEntry', 'project', 'serviceTicket', 'protocol', 'stockSerial',
             'defectType', 'rootCause', 'goodwillReason',
             'evidence.recorder', 'assessments.assessor', 'decisions.decider',
-            'rmaReturns.inspections', 'actions.assignee',
+            'rmaReturns.inspections', 'rmaReturns.returnShipments', 'actions.assignee',
             'financialOutcomes.resultInvoice', 'supplierRecourses.supplier',
             'links', 'attachments',
         ]);
@@ -78,6 +79,7 @@ class ClaimCaseController extends Controller {
             'rootCauses' => $resolver->list($orgId, ClassificationDomain::RootCause),
             'goodwillReasons' => $resolver->list($orgId, ClassificationDomain::GoodwillReason),
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
+            'returnCarriers' => $claim->organization !== null ? app(RmaReturnLabelIssuer::class)->carriers($claim->organization) : [],
             'duplicates' => $this->service->duplicates($claim->only([
                 'diary_entry_id', 'invoice_id', 'asset_id', 'stock_serial_id', 'serial_no', 'customer_id', 'title',
             ]), (int) $claim->id),

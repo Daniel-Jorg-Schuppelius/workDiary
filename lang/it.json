@@ -939,6 +939,7 @@
     "Arbeitstagebuch & Aufgaben": "Diario di lavoro e attività",
     "Arbeitsvertrag unterschrieben abgelegt": "Contratto di lavoro firmato e archiviato",
     "Arbeitsvorräte des Helpdesks mit Team, Standard-SLA und Sichtbarkeit.": "Code di lavoro dell'helpdesk con team, SLA predefinito e visibilità.",
+    "Arbeitsvertrag": "Contratto di lavoro",
     "Arbeitszeit": "Orario di lavoro",
     "Arbeitszeit-Compliance": "Conformità dell'orario di lavoro",
     "Arbeitszeit-Grenzwerte": "Limiti orario di lavoro",
@@ -11372,5 +11373,9 @@
     "… und :count weitere": "… e altre :count",
     "€/km": "€/km",
     "≤ 14 Tage": "≤ 14 giorni",
-    "≤ 3 Monate": "≤ 3 mesi"
+    "≤ 3 Monate": "≤ 3 mesi",
+    "Rückrufaktion": "Richiamo del prodotto",
+    "Schadensfall": "Sinistro",
+    "Kundengruppen": "Gruppi di clienti",
+    "Kundengruppe": "Gruppo di clienti"
 }

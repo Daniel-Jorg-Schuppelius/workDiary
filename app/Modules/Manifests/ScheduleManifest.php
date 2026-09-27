@@ -112,6 +112,7 @@ final class ScheduleManifest extends Manifest {
     public function bindings(): array {
         return [
             \App\Services\Calendar\Contracts\FreeSlotSource::class => \App\Services\Dispatch\GapFillSuggester::class,
+            \App\Services\AssetCompliance\Contracts\InspectionTourPlanner::class => \App\Services\Routing\TourService::class,
         ];
     }
 

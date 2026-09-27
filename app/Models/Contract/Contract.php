@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Models\Contract;
 
 use App\Enums\Contract\{ContractKind, ContractPartnerType, ContractStatus, ContractTermKind, IndexationMethod, SigningRevisionStatus};
+use App\Models\Applications\JobApplication;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Contract\Scopes\ConfidentialContractScope;
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
 use App\Models\Finance\CostCenter;
@@ -39,6 +41,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne};
  * @property ContractKind $kind
  * @property ContractStatus $status
  * @property ContractPartnerType $partner_type
+ * @property int|null $employee_user_id
+ * @property int|null $job_application_id
  * @property ContractTermKind $term_kind
  * @property \Illuminate\Support\Carbon $starts_on
  * @property \Illuminate\Support\Carbon|null $ends_on
@@ -59,7 +63,7 @@ class Contract extends Model {
 
     protected $fillable = [
         'organization_id', 'number', 'title', 'kind', 'status',
-        'partner_type', 'customer_id', 'supplier_id', 'partner_name',
+        'partner_type', 'customer_id', 'supplier_id', 'employee_user_id', 'job_application_id', 'partner_name',
         'term_kind', 'starts_on', 'ends_on', 'min_term_months', 'auto_renew',
         'renew_period_months', 'notice_period_days',
         'indexation_method', 'indexation_value', 'indexation_review_on', 'indexation_note',
@@ -110,9 +114,23 @@ class Contract extends Model {
         return $this->belongsTo(Customer::class);
     }
 
+    protected static function booted(): void {
+        static::addGlobalScope(new ConfidentialContractScope);
+    }
+
     /** @return BelongsTo<Supplier, $this> */
     public function supplier(): BelongsTo {
         return $this->belongsTo(Supplier::class);
+    }
+
+    /** @return BelongsTo<User, $this> Teammitglied eines Arbeitsvertrags (MVP-939) */
+    public function employee(): BelongsTo {
+        return $this->belongsTo(User::class, 'employee_user_id');
+    }
+
+    /** @return BelongsTo<JobApplication, $this> Bewerbung eines Arbeitsvertrags (MVP-939) */
+    public function jobApplication(): BelongsTo {
+        return $this->belongsTo(JobApplication::class);
     }
 
     /** @return BelongsTo<CostCenter, $this> Kostenstelle (MVP-894) */

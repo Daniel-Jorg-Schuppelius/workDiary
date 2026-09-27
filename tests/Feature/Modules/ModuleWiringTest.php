@@ -161,6 +161,12 @@ class ModuleWiringTest extends TestCase {
         $keys = array_map(static fn (string $class): string => app($class)->key(), $registry->extensions(\App\Services\Navigation\Contracts\NavigationCondition::class));
         sort($keys);
         $this->assertSame(['accounting.local_ledger', 'knowledge.hub', 'passenger.profile', 'print.profile'], $keys);
-        $this->assertCount(2, $registry->extensions(\App\Services\Org\Contracts\OffboardingStep::class));
+        $steps = $registry->extensions(\App\Services\Org\Contracts\OffboardingStep::class);
+        sort($steps);
+        $this->assertSame([
+            \App\Services\Access\Offboarding\AccessMediaOffboardingStep::class,
+            \App\Services\Crisis\Offboarding\CrisisDeputyOffboardingStep::class,
+            \App\Services\Hr\Offboarding\PersonnelFileOffboardingStep::class,
+        ], $steps);
     }
 }

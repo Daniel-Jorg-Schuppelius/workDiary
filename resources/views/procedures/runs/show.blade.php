@@ -23,12 +23,12 @@
     };
     $runActive = $run->status->isActive();
 @endphp
-@section('title', ($tpl?->name ?? __('procedure.print.title')) . ' — WorkDiary')
+@section('title', ($tpl?->displayName() ?? __('procedure.print.title')) . ' — WorkDiary')
 @section('nav-title', __('procedure.run.navTitle') . ' #' . $run->id)
 
 @section('content')
     <x-page-shell>
-        <x-page-toolbar :title="$tpl?->name ?? '—'"
+        <x-page-toolbar :title="$tpl?->displayName() ?? '—'"
                         :badge="$run->status->label()"
                         :badge-tone="$statusTone"
                         :subtitle="__('Version :v', ['v' => $version?->version])">

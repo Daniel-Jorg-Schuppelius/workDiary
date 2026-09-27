@@ -23,6 +23,7 @@
             <x-help-button topic="procedures.designer" :label="__('procedure.help.designer')" />
             @if ($canManage)
                 <x-icon-btn icon="library_books" size="sm" :href="route('procedures.library.index')" show-label>{{ __('procedure.library.title') }}</x-icon-btn>
+                <x-icon-btn icon="upload_file" size="sm" data-entry-modal-trigger :href="route('procedures.import.form')" show-label>{{ __('procedure.import.title') }}</x-icon-btn>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
                             :href="route('procedures.create')"
@@ -69,7 +70,7 @@
                     <td>
                         <span class="flex items-center gap-2 font-medium">
                             <x-icon name="rule" class="text-muted" />
-                            {{ $template->name }}
+                            {{ $template->displayName() }}
                         </span>
                         @if ($template->description)
                             <span class="block max-w-md truncate text-xs text-muted">{{ $template->description }}</span>

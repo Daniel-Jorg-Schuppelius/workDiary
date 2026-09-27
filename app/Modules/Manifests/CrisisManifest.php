@@ -48,6 +48,7 @@ final class CrisisManifest extends Manifest {
     /** @return list<string> */
     public function tables(): array {
         return [
+            'crisis_business_processes',
             'crisis_actions',
             'crisis_case_links',
             'crisis_cases',
@@ -97,6 +98,18 @@ final class CrisisManifest extends Manifest {
             ],
             \App\Events\Release\IntegrityCrisisRaised::class => [
                 \App\Listeners\Crisis\AlertCrisisTeam::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Org\Contracts\OffboardingStep::class => [
+                \App\Services\Crisis\Offboarding\CrisisDeputyOffboardingStep::class,
+            ],
+            \App\Services\CustomerPortal\Contracts\PortalNoticeSource::class => [
+                \App\Services\Crisis\CrisisStatusPageService::class,
             ],
         ];
     }

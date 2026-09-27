@@ -19,6 +19,7 @@ use App\Models\Finance\CostCenter;
 use App\Models\Investments\{InvestmentBudgetRequest, InvestmentCase, InvestmentDeviation, InvestmentOption};
 use App\Models\Platform\User;
 use App\Models\Supplier\Supplier;
+use App\Services\Investments\Contracts\AssetCapitalizer;
 use App\Services\Investments\InvestmentService;
 use App\Support\{ErrorText, SortableQuery};
 use Illuminate\Contracts\View\View;
@@ -86,7 +87,7 @@ class InvestmentController extends Controller {
         return redirect()->route('investments.show', $case)->with('success', __('Investitionsakte angelegt.'));
     }
 
-    public function show(InvestmentCase $case): View {
+    public function show(InvestmentCase $case, AssetCapitalizer $capitalizer): View {
         Gate::authorize('view', $case);
         $case->load(['options.supplier', 'budgetRequests.approvals', 'links.linkable', 'actuals', 'deviations', 'review', 'responsible', 'costCenter', 'project']);
 
@@ -95,6 +96,13 @@ class InvestmentController extends Controller {
             'projection' => $this->investments->projection($case),
             'suppliers' => Supplier::query()->orderBy('name')->get(['id', 'name', 'company']),
             'hasCostCenters' => CostCenter::query()->where('active', true)->exists(),
+            // MVP-928: Lieferanten der Optionen und ihre Bewertung.
+            'ratingSuppliers' => app(\App\Services\Investments\InvestmentSupplierRatingService::class)->suppliersFor($case),
+            'supplierRatings' => \App\Models\Investments\InvestmentSupplierRating::query()->where('investment_case_id', $case->id)->get()->keyBy('supplier_id'),
+            'canRateSuppliers' => app(\App\Services\Investments\InvestmentSupplierRatingService::class)->isRateable($case),
+            // MVP-909: nur mit Anlagenbuchhaltung, genehmigtem Budget und ohne aktivierte Anlage.
+            'canCapitalize' => Gate::allows('update', $case) && $capitalizer->available() && $case->approvedBudget() !== null
+                && ! $case->links->contains(static fn ($link): bool => $link->linkable instanceof \App\Models\Accounting\FixedAsset),
         ]);
     }
 
@@ -363,6 +371,8 @@ class InvestmentController extends Controller {
             'case' => $case,
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
             'costCenters' => CostCenter::query()->where('active', true)->orderBy('code')->get(),
+            'objectives' => \App\Models\Investments\StrategicObjective::query()->where('is_active', true)->orderBy('title')->get(['id', 'title']),
+            'programs' => \App\Models\Investments\InvestmentProgram::query()->where('status', '!=', \App\Enums\Investments\InvestmentProgramStatus::Closed->value)->orderByDesc('starts_year')->get(['id', 'name', 'starts_year', 'ends_year']),
         ]);
     }
 

@@ -43,7 +43,7 @@
                             </x-status-badge>
                         @endif
                         @foreach ($entry->tags as $tag)
-                            <span class="badge badge-xs" style="background:{{ $tag->color ?? '#94a3b8' }};color:#fff">{{ $tag->name }}</span>
+                            <span class="badge badge-xs" style="background:{{ $tag->color ?? '#94a3b8' }};color:#fff">{{ $tag->displayName() }}</span>
                         @endforeach
                     </div>
                     <div class="line-clamp-2 text-sm">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->content, 200) }}</div>

@@ -939,6 +939,7 @@
     "Arbeitstagebuch & Aufgaben": "Work diary & tasks",
     "Arbeitsvertrag unterschrieben abgelegt": "Employment contract signed and filed",
     "Arbeitsvorräte des Helpdesks mit Team, Standard-SLA und Sichtbarkeit.": "Helpdesk work queues with team, default SLA and visibility.",
+    "Arbeitsvertrag": "Employment contract",
     "Arbeitszeit": "Working time",
     "Arbeitszeit-Compliance": "Working time compliance",
     "Arbeitszeit-Grenzwerte": "Working time limits",
@@ -11372,5 +11373,9 @@
     "… und :count weitere": "… and :count more",
     "€/km": "€/km",
     "≤ 14 Tage": "≤ 14 days",
-    "≤ 3 Monate": "≤ 3 months"
+    "≤ 3 Monate": "≤ 3 months",
+    "Rückrufaktion": "Recall",
+    "Schadensfall": "Damage case",
+    "Kundengruppen": "Customer groups",
+    "Kundengruppe": "Customer group"
 }

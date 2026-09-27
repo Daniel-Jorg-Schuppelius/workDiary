@@ -12,9 +12,12 @@ declare(strict_types=1);
 
 namespace App\Models\Rental;
 
+use App\Enums\Damage\DamageKind;
 use App\Enums\Rental\RentalCaseStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Concerns\HasDamageCases;
 use App\Models\Contract\ContractSigningRevision;
+use App\Models\Contracts\DamageCaseSubject;
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Facility\Site;
@@ -39,10 +42,11 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property array<string, mixed>|null $terms_snapshot
  * @property numeric-string|null $deposit_amount
  */
-class RentalCase extends Model {
+class RentalCase extends Model implements DamageCaseSubject {
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
+    use HasDamageCases;
     use HasSqid;
 
     protected $fillable = [
@@ -152,5 +156,17 @@ class RentalCase extends Model {
             || ($this->status === RentalCaseStatus::HandedOver
                 && $this->actual_return_at === null
                 && $this->ends_at->isPast());
+    }
+
+    public function damageSubjectLabel(): string {
+        return trim($this->number . ' ' . ($this->customer->name ?? ''));
+    }
+
+    public function damageSubjectUrl(): ?string {
+        return route('rental.show', $this);
+    }
+
+    public function damageDefaultKind(): DamageKind {
+        return DamageKind::Property;
     }
 }

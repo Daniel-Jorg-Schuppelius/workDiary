@@ -27,4 +27,38 @@ return [
         'notify_title' => 'Schema di reclami rilevante: :label',
         'notify_message' => ':count reclami in :days giorni (:rule).',
     ],
+    // Retourenlabel einer RMA (MVP-917).
+    'return_label' => [
+        'title' => 'Etichetta di reso',
+        'create' => 'Crea etichetta di reso',
+        'download' => 'Scarica etichetta',
+        'created' => 'Etichetta di reso creata (spedizione :tracking).',
+        'no_address' => 'L\'etichetta di reso richiede l\'indirizzo del cliente (via, CAP, città).',
+    ],
+    // Retourenanmeldung im Kundenportal (MVP-935).
+    'portal_return' => [
+        'capability' => 'Registrare un reso',
+        'nav' => 'Registrare un reso',
+        'title' => 'Registrare un reso',
+        'intro' => 'Scelga la consegna o l\'oggetto, descriva il motivo e alleghi foto se necessario. Riceverà un numero di reso; se serve forniamo un\'etichetta di reso.',
+        'empty' => 'Non ci sono consegne né oggetti per il suo account.',
+        'submit' => 'Registra il reso',
+        'label' => 'Scarica l\'etichetta di reso',
+        'field' => [
+            'delivery' => 'Consegna',
+            'asset' => 'Oggetto',
+            'serial_no' => 'Numero di serie',
+            'quantity' => 'Quantità',
+            'title' => 'Descrizione breve',
+            'description' => 'Motivo del reso',
+            'photos' => 'Foto o documenti (max. 5)',
+        ],
+        'flash' => [
+            'submitted' => 'Reso registrato: reclamo :number, numero di reso :rma.',
+        ],
+        'error' => [
+            'subject' => 'Scelga una consegna o un oggetto.',
+            'serial' => 'Questo numero di serie non appartiene alla consegna scelta.',
+        ],
+    ],
 ];

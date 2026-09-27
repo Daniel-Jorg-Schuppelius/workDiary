@@ -18,7 +18,7 @@ use App\Models\Project\Project;
 use App\Models\Time\{Attendance, TimeEntry};
 use App\Services\Attendance\AttendanceClockService;
 use App\Services\Flextime\FlexCalculator;
-use App\Services\TimeApproval\{DayCloseService, UntrackedBlockCalculator};
+use App\Services\TimeApproval\{DayCloseService, TimeBookingSuggester, UntrackedBlockCalculator};
 use App\Services\Timesheet\Stopwatch;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
@@ -111,6 +111,8 @@ class TodayController extends Controller {
         // gruppiert x-project-options („Zuletzt verwendet" + Kunden-Optgroups).
         $recentProjects = $projects->filter(fn(Project $p): bool => $recentProjectIds->contains($p->id))->values();
         $recentEntryTexts = $isFuture ? collect() : $this->recentEntryTexts($user, $projects);
+        // MVP-923: Projektvorschlag je offenem Block (Auftrag, Tour, zuletzt gebucht).
+        $openBlocks = app(TimeBookingSuggester::class)->suggest($user, $day, $openBlocks, $projects, $recentProjectIds);
 
         return view('today.show', [
             'day' => $day,

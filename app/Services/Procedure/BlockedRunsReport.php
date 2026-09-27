@@ -39,7 +39,7 @@ final class BlockedRunsReport {
             ->get()
             ->map(static fn (ProcedureRun $run): array => [
                 'run' => $run,
-                'template' => (string) ($run->templateVersion?->template->name ?? '—'),
+                'template' => $run->templateVersion?->template?->displayName() ?? '—',
                 'reason' => (string) $run->blocked_reason,
                 'since' => CarbonImmutable::parse($run->blocked_at),
                 'hours' => round(CarbonImmutable::parse($run->blocked_at)->diffInSeconds($now) / 3600, 1),
@@ -60,7 +60,7 @@ final class BlockedRunsReport {
         $groups = [];
         foreach ($events as $event) {
             $reason = (string) data_get($event->payload, 'reason', '');
-            $template = (string) ($event->run?->templateVersion?->template->name ?? '—');
+            $template = $event->run?->templateVersion?->template?->displayName() ?? '—';
             $key = $reason . "\0" . $template;
             $groups[$key] ??= ['reason' => $reason, 'template' => $template, 'seconds' => []];
             $groups[$key]['seconds'][] = (int) data_get($event->payload, 'seconds', 0);

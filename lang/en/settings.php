@@ -94,11 +94,14 @@ return [
         'pool_lower' => 'Pool from (above)',
         'pool_upper' => 'Pool up to',
         'pool_years' => 'Pool years',
+        'replacement_inflation_pct' => 'Price increase for replacement forecast (% p.a.)',
     ],
     'rental_terms' => [
         'heading' => 'Rental terms in equipment rental',
         'description' => 'Rental terms are kept as the customer agreement “Rental terms (equipment rental)” with version and signature.',
         'require_signed' => 'Handover only with signed rental terms',
+        'portal_direct_booking' => 'Allow direct booking in the customer portal',
+        'portal_direct_booking_hint' => 'Customers reserve available equipment released for the portal immediately; the managers are notified.',
     ],
     'claims_pattern' => [
         'heading' => 'Claim patterns',
@@ -232,5 +235,11 @@ return [
         'interest_mode_base_rate' => 'Base rate + percentage points',
         'interest_points' => 'Surcharge (percentage points)',
         'interest_points_hint' => 'Base-rate mode only. Guidance § 288 BGB: 5 percentage points towards consumers, 9 in business transactions — your company decides the amount.',
+    ],
+    'recurring_tickets' => [
+        'heading' => 'Recurring problems',
+        'description' => 'How many tickets per customer or object within which period trigger an early warning.',
+        'threshold' => 'Tickets from',
+        'window_days' => 'Window (days)',
     ],
 ];

@@ -14,6 +14,7 @@ namespace App\Services\Gaeb;
 
 use App\Enums\Gaeb\BoqItemType;
 use App\Models\Gaeb\BillOfQuantity;
+use App\Services\Billing\DocumentTotalsCalculator;
 
 /**
  * Nachkalkulation eines LV (Feature 049, MVP-083): Soll-Wert aus Sollmengen ×
@@ -35,9 +36,8 @@ class BoqCostingService {
                 continue;
             }
 
-            $unitPrice = $item->unit_price->toFloat();
-            $planned += ($item->quantity?->getValue()->toFloat() ?? 0.0)* $unitPrice;
-            $executed += $item->executedQuantity() * $unitPrice;
+            $planned += DocumentTotalsCalculator::lineNet($item->quantity?->getNumericValue() ?? '0', $item->unit_price, $item->discount_percent, null, $boq->currency)->toFloat();
+            $executed += DocumentTotalsCalculator::lineNet($item->executedQuantity(), $item->unit_price, $item->discount_percent, null, $boq->currency)->toFloat();
         }
 
         $progress = $planned > 0.0 ? round($executed / $planned, 4) : 0.0;

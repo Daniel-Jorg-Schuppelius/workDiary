@@ -64,6 +64,9 @@
             <label class="label" for="classification-label"><span class="label-text">{{ __('Bezeichnung') }}</span></label>
             <input id="classification-label" type="text" name="label" value="{{ old('label', $classification->label ?? $sourceClassification?->label) }}" class="input input-bordered w-full" maxlength="180" required />
         </div>
+        <div class="md:col-span-2">
+            <x-translation-fields name="label_i18n" :values="$classification->label_i18n ?? $sourceClassification?->label_i18n" />
+        </div>
 
         <div>
             <label class="label" for="classification-sort"><span class="label-text">{{ __('Sortierung') }}</span></label>

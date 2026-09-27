@@ -10,7 +10,7 @@
 
 namespace App\Models\Procedure;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, Searchable};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, HasTranslatedText, Searchable};
 use Database\Factories\Procedure\ProcedureTemplateFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $organization_id
  * @property string $code
  * @property string $name
+ * @property array<string, string>|null $name_i18n
  * @property string|null $description
  * @property string|null $domain
  * @property bool $active
@@ -32,16 +33,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ProcedureTemplate extends Model {
     use Auditable;
     use BelongsToOrganization;
-
     /** @use HasFactory<ProcedureTemplateFactory> */
     use HasFactory;
+
     use HasSqid;
+    use HasTranslatedText;
     use Searchable;
 
     protected $fillable = [
         'organization_id',
         'code',
         'name',
+        'name_i18n',
         'description',
         'domain',
         'active',
@@ -49,7 +52,13 @@ class ProcedureTemplate extends Model {
 
     protected $casts = [
         'active' => 'bool',
+        'name_i18n' => 'array',
     ];
+
+    /** Name in der aktiven Sprache (MVP-912); `name` bleibt der Quellwert. */
+    public function displayName(?string $locale = null): string {
+        return $this->translatedText($this->name_i18n, (string) $this->name, $locale);
+    }
 
     /** @return HasMany<ProcedureTemplateVersion, $this> */
     public function versions(): HasMany {

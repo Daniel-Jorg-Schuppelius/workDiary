@@ -12,6 +12,10 @@
     <h1 class="text-2xl font-semibold mb-6">{{ __('Willkommen') }}, {{ $user->name }}</h1>
     <p class="text-sm text-base-content/70 mb-6">{{ $customer?->name }}</p>
 
+    @if (($notices ?? []) !== [])
+        <x-portal-notices :notices="$notices" class="mb-6" />
+    @endif
+
     {{-- Kacheln nur für freigegebene Bereiche (MVP-511); ohne Freigaben ein
          erklärter Leerzustand statt automatischer Vollsicht. --}}
     @if ($stats === [])

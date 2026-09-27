@@ -261,6 +261,10 @@ class PermissionsSeeder extends Seeder {
                     // Feature 072: Anspruchs-/Kulanzentscheidung ist GF-Sache;
                     // die .view-Heuristik trifft claim.decide nicht.
                     PermissionEnum::ClaimDecide->value,
+                    // MVP-919: Schadensfälle mit der Versicherung führt die Leitung mit.
+                    PermissionEnum::DamageManage->value,
+                    // MVP-921: Rückrufe entscheidet und führt die Leitung.
+                    PermissionEnum::RecallManage->value,
                     // Feature 074: vertrauliche Leasingkonditionen (Raten/
                     // Restwerte/Optionen) sind Leitungssache.
                     PermissionEnum::AssetFinanceFinance->value,
@@ -303,6 +307,14 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ClaimManage,
             PermissionEnum::ClaimWarehouse,
             PermissionEnum::ClaimRecourse,
+            // MVP-919: Schadensfälle an Verleih/Leasing/Reklamation/Fahrzeug melden und führen.
+            PermissionEnum::DamageViewAny,
+            PermissionEnum::DamageView,
+            PermissionEnum::DamageManage,
+            // MVP-921: Rückrufe operativ führen (Kunden informieren, Rücklauf erfassen).
+            PermissionEnum::RecallViewAny,
+            PermissionEnum::RecallView,
+            PermissionEnum::RecallManage,
             // Feature 073: Verleih operativ führen (Akten, Reservierung,
             // Übergabe/Rücknahme, Preislisten) — kaufmännische Freigabe
             // (finance) bleibt bei der Buchhaltung.
@@ -652,6 +664,10 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ClaimViewAny,
             PermissionEnum::ClaimView,
             PermissionEnum::ClaimFinance,
+            // MVP-919: Regulierung und Selbstbehalt der Schadensfälle.
+            PermissionEnum::DamageViewAny,
+            PermissionEnum::DamageView,
+            PermissionEnum::DamageManage,
             // Feature 073: Mietpositionen/Kautionen freigeben und abrechnen.
             PermissionEnum::RentalViewAny,
             PermissionEnum::RentalView,
@@ -1037,6 +1053,9 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ClaimViewAny,
             PermissionEnum::ClaimView,
             PermissionEnum::ClaimManage,
+            // MVP-921: Auskunft zu Rückrufen am Telefon.
+            PermissionEnum::RecallViewAny,
+            PermissionEnum::RecallView,
             PermissionEnum::UserViewAny,
             PermissionEnum::UserView,
             PermissionEnum::CustomerViewAny,
@@ -1116,6 +1135,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::TeamViewAny,
             PermissionEnum::TeamView,
         ];
+        // MVP-936: Investitionen vorschlagen darf jede interne Rolle.
+        $proposals = [PermissionEnum::InvestmentPropose];
         $teamManage = [
             ...$teamRead,
             PermissionEnum::TeamCreate,
@@ -1126,14 +1147,14 @@ class PermissionsSeeder extends Seeder {
 
         return [
             UserRole::Admin->value => $all,
-            UserRole::Geschaeftsfuehrung->value => $geschaeftsfuehrung,
-            UserRole::Personalverwaltung->value => [...$personalverwaltung, ...$teamRead],
-            UserRole::Teamleitung->value => [...$teamleitung, ...$foreignCustomerRead, ...$teamManage, ...$agileLead],
-            UserRole::Buchhaltung->value => [...$buchhaltung, ...$teamRead],
-            UserRole::User->value => [...$user, ...$foreignCustomerRead, ...$teamRead, ...$agileWork],
-            UserRole::Aussendienst->value => [...$aussendienst, ...$foreignCustomerRead, ...$teamRead],
-            UserRole::Callcenter->value => [...$callcenter, ...$foreignCustomerRead, ...$teamRead],
-            UserRole::Support->value => [...$support, ...$foreignCustomerRead, ...$teamRead],
+            UserRole::Geschaeftsfuehrung->value => [...$proposals, ...$geschaeftsfuehrung],
+            UserRole::Personalverwaltung->value => [...$proposals, ...$personalverwaltung, ...$teamRead],
+            UserRole::Teamleitung->value => [...$proposals, ...$teamleitung, ...$foreignCustomerRead, ...$teamManage, ...$agileLead],
+            UserRole::Buchhaltung->value => [...$proposals, ...$buchhaltung, ...$teamRead],
+            UserRole::User->value => [...$proposals, ...$user, ...$foreignCustomerRead, ...$teamRead, ...$agileWork],
+            UserRole::Aussendienst->value => [...$proposals, ...$aussendienst, ...$foreignCustomerRead, ...$teamRead],
+            UserRole::Callcenter->value => [...$proposals, ...$callcenter, ...$foreignCustomerRead, ...$teamRead],
+            UserRole::Support->value => [...$proposals, ...$support, ...$foreignCustomerRead, ...$teamRead],
             UserRole::Kunde->value => $kunde,
         ];
     }

@@ -117,4 +117,82 @@ return [
             ],
         ],
     ],
+    // Persönlicher Einstieg je Rolle (MVP-911).
+    'personal' => [
+        'title' => 'I miei primi passi',
+        'description' => 'Alcuni passaggi per iniziare bene con WorkDiary nel suo ruolo. WorkDiary riconosce da solo i passaggi completati; spunti quelli senza indicatore.',
+        'progress' => ':done passaggi su :total completati',
+        'open' => 'Apri primi passi',
+        'go' => 'Apri',
+        'mark_done' => 'Fatto',
+        'dismiss' => 'Nascondi primi passi',
+        'marked' => 'Passaggio contrassegnato come fatto.',
+        'dismissed' => 'Primi passi nascosti; li trova ancora in «I miei primi passi».',
+        'step' => [
+            'profile' => [
+                'two_factor' => [
+                    'title' => 'Configurare un secondo fattore',
+                    'hint' => 'Protegge il suo account con app, passkey o chiave di sicurezza.',
+                ],
+                'startpage' => [
+                    'title' => 'Scegliere la pagina iniziale',
+                    'hint' => 'Stabilisca cosa apre WorkDiary dopo l\'accesso.',
+                ],
+            ],
+            'dashboard' => [
+                'customize' => [
+                    'title' => 'Personalizzare la dashboard',
+                    'hint' => 'Mostri i riquadri che le servono ogni giorno.',
+                ],
+            ],
+            'time' => [
+                'first' => [
+                    'title' => 'Registrare il primo tempo',
+                    'hint' => 'Registri un tempo di lavoro, ad esempio tramite «Oggi».',
+                ],
+            ],
+            'attendance' => [
+                'first' => [
+                    'title' => 'Timbrare la presenza',
+                    'hint' => 'Registri una volta entrata e uscita.',
+                ],
+            ],
+            'expense' => [
+                'first' => [
+                    'title' => 'Registrare le spese',
+                    'hint' => 'Registri un documento o una trasferta come spesa.',
+                ],
+            ],
+            'diary' => [
+                'first' => [
+                    'title' => 'Creare il primo incarico',
+                    'hint' => 'Crei e assegni un incarico.',
+                ],
+            ],
+            'invoice' => [
+                'first' => [
+                    'title' => 'Creare la prima fattura',
+                    'hint' => 'Crei una fattura come bozza.',
+                ],
+            ],
+            'reports' => [
+                'accounting' => [
+                    'title' => 'Scoprire i report finanziari',
+                    'hint' => 'Apra una volta la panoramica dei report finanziari.',
+                ],
+            ],
+            'org' => [
+                'checklist' => [
+                    'title' => 'Configurazione dell\'organizzazione',
+                    'hint' => 'Esamini la checklist dell\'organizzazione.',
+                ],
+            ],
+            'help' => [
+                'center' => [
+                    'title' => 'Aprire il centro assistenza',
+                    'hint' => 'Guide e risposte per le sue attività.',
+                ],
+            ],
+        ],
+    ],
 ];

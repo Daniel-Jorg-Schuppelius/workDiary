@@ -540,6 +540,23 @@ return [
 
     // Finanzberichte (Feature 125, MVP-676).
     'reports' => [
+        'replacement' => [
+            'subtitle' => 'Stichtag :from, Horizont bis :to, Preissteigerung :inflation % p. a.',
+            'horizon' => 'Horizont',
+            'years' => ':count Jahre',
+            'year_total' => 'Ersatzbedarf :year',
+            'assets' => 'Anlagen am Ende der Nutzungsdauer',
+            'no_assets' => 'Im Horizont endet keine Nutzungsdauer.',
+            'ends_on' => 'Nutzung bis',
+            'book_value' => 'Buchwert heute',
+            'replacement' => 'Wiederbeschaffung (geschätzt)',
+            'overdue' => 'abgelaufen',
+            'hint' => 'Wiederbeschaffung = Anschaffungskosten × (1 + Preissteigerung)^Nutzungsjahre; die Preissteigerung stellen Sie in den Organisationseinstellungen ein. Sammelposten sind nicht enthalten.',
+            'leases' => 'Auslaufende Leasing- und Finanzierungsverträge',
+            'contract' => 'Vertrag',
+            'partner' => 'Partner',
+            'residual' => 'Restwert',
+        ],
         'fixed_asset_schedule' => [
             'subtitle' => 'Geschäftsjahr :year (:from – :to)',
             'year' => 'Geschäftsjahr',
@@ -660,6 +677,10 @@ return [
             ],
         ],
         'card' => [
+            'replacement_forecast' => [
+                'title' => 'Ersatzbedarf',
+                'text' => 'Buchwerte, Ende der Nutzungsdauer und geschätzte Wiederbeschaffung; auslaufende Leasingverträge.',
+            ],
             'fixed_asset_schedule' => [
                 'title' => 'Anlagenspiegel',
                 'text' => 'Entwicklung von AK/HK und kumulierter AfA je Anlage im Geschäftsjahr.',

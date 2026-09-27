@@ -27,6 +27,11 @@
         @include('vehicles._form_body', ['vehicle' => $vehicle ?? null])
     </div>
 
+    @if ($vehicle)
+        {{-- Schadensfälle (MVP-920) --}}
+        <div class="mt-4"><x-damage-cases-card :subject="$vehicle" /></div>
+    @endif
+
     @if ($vehicle && ! $vehicle->archived_at)
         <x-slot:footerExtra>
             <x-action-form :action="route('vehicles.destroy', $vehicle)" method="DELETE"

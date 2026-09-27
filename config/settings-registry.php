@@ -153,6 +153,8 @@ return [
     'finance.fixed_assets.pool_lower' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:100000', 'fallback' => 250],
     'finance.fixed_assets.pool_upper' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:100000', 'fallback' => 1000],
     'finance.fixed_assets.pool_years' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:1|max:20', 'fallback' => 5],
+    // Ersatzprognose (MVP-908): erwartete Preissteigerung je Jahr in Prozent.
+    'finance.fixed_assets.replacement_inflation_pct' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:50', 'fallback' => 0],
     // Vier-Augen-Freigabe für Kundenrundschreiben (Feature 119). Default aus:
     // Wer allein arbeitet, hätte sonst eine Sperre ohne Ausweg.
     'communication.circular_approval' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
@@ -176,7 +178,12 @@ return [
     'invoicing.dunning.interest_points' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:20', 'fallback' => 0],
     // Mietbedingungen (MVP-895): Übergabe nur mit unterschriebener Fassung.
     'rental.require_signed_terms' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+    // Direktbuchung im Kundenportal (MVP-916): freie, freigegebene Geräte ohne Anfrage reservieren.
+    'rental.portal_direct_booking' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
     // Reklamationsmuster (MVP-886): ab wie vielen gleichartigen Fällen in wie vielen Tagen.
+    // Wiederkehrende Probleme (MVP-926): ab wie vielen Tickets je Kunde/Objekt in wie vielen Tagen.
+    'reporting.recurring_tickets.threshold' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:2|max:50', 'fallback' => 3],
+    'reporting.recurring_tickets.window_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:7|max:365', 'fallback' => 90],
     'claims.pattern.threshold' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:2|max:50', 'fallback' => 3],
     'claims.pattern.window_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:7|max:365', 'fallback' => 90],
     'ui.dashboard.recent_limit' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'min:1|max:1000'],

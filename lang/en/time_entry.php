@@ -21,4 +21,14 @@ return [
         'standby' => 'Standby',
         'other' => 'Other',
     ],
+    // Projektvorschläge für offene Zeitblöcke (MVP-923).
+    'suggestion' => [
+        'source' => [
+            'order' => 'Suggestion: order “:title”',
+            'day' => 'Suggestion: today “:title”',
+            'recent' => 'Suggestion: last booked',
+        ],
+        'book_all' => 'Book all :count suggestions',
+        'booked' => ':count time blocks booked.',
+    ],
 ];

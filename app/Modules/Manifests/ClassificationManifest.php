@@ -40,6 +40,7 @@ final class ClassificationManifest extends Manifest {
     public function tables(): array {
         return [
             'activity_categories',
+            'branch_profile_variants',
             'classifiables',
             'classification_requirements',
             'classifications',

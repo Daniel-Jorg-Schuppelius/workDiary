@@ -24,6 +24,8 @@ return [
         'username' => 'User / client ID',
         'password' => 'Password / client secret',
         'api_key' => 'API key (DHL only: dhl-api-key)',
+        'returns_receiver_id' => 'Returns receiver ID (DHL only)',
+        'returns_receiver_id_hint' => 'Returns receiver set up in the DHL business customer portal; required for return labels.',
         'billing_number' => 'Billing/account number',
         'sandbox' => 'Sandbox / test environment',
         'active' => 'Active',

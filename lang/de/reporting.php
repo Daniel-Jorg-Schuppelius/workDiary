@@ -156,7 +156,8 @@ return [
     ],
     'supplier_material' => [
         'title' => 'Materialverbrauch je Lieferant',
-        'note' => 'Verbrauch aus den Stundenzetteln im Zeitraum, zugeordnet über Material → Artikel → bevorzugte Lieferquelle. Ohne Artikelbezug: :unlinked €.',
+        'note' => 'Verbrauch aus Stundenzetteln und abgeschlossenen Fertigungsaufträgen im Zeitraum; Lieferant aus dem letzten Wareneingang zum Artikel, sonst die bevorzugte Lieferquelle. Ohne Artikelbezug: :unlinked €.',
+        'manufacturing' => 'davon Fertigung',
         'materials' => 'Materialien',
         'usages' => 'Buchungen',
         'quantities' => 'Mengen',
@@ -170,6 +171,16 @@ return [
         'note' => 'Vorperiode = gleich langer Zeitraum unmittelbar davor; die fünf größten Veränderungen einzeln, der Rest als „Übrige“. Klick öffnet die Belege des Lieferanten.',
     ],
     'warning' => [
+        'capacity' => [
+            'title' => 'Engpass im Team :name',
+            'detail' => 'Woche ab :week: :percent % der Kapazität verplant.',
+            'recommendation' => 'Empfehlung: Aufträge verschieben oder umverteilen, Vertretungen und Fremdpersonal prüfen oder eine Stelle ausschreiben.',
+        ],
+        'recurring_tickets' => [
+            'title' => 'Wiederkehrende Tickets: :name',
+            'detail' => ':count Tickets in :days Tagen.',
+            'recommendation' => 'Empfehlung: Ursache mit dem Kunden klären, Objekt prüfen oder austauschen und eine Arbeitsanweisung oder Schulung für das Team erwägen.',
+        ],
         'customer_rework' => [
             'title' => 'Nacharbeit bei :name: :actual %',
             'detail' => 'Letzte 90 Tage, Zielwert :target %.',
@@ -187,6 +198,27 @@ return [
             'title' => 'Auffälligkeiten',
             'description' => 'Frühwarnungen aus Auswertungen, Objekten und Reklamationen mit Handlungsempfehlung.',
             'none' => 'Keine Auffälligkeiten.',
+        ],
+    ],
+    // Management-Auswertung (MVP-926).
+    'management' => [
+        'title' => 'Management-Auswertung',
+        'nav' => 'Probleme & Schulung',
+        'subtitle' => 'Wiederkehrende Probleme aus allen Frühwarnungen und Schulungsbedarf aus den Kompetenzlücken der Organisation.',
+        'problems' => 'Wiederkehrende Probleme',
+        'training' => 'Schulungsbedarf',
+        'competency' => 'Kompetenz',
+        'people' => 'Personen mit Lücke',
+        'average_gap' => 'Ø Lücke (Stufen)',
+        'courses' => 'Passende Kurse',
+        'no_course' => 'kein freigegebener Kurs',
+        'no_training' => 'Keine Kompetenzlücken — oder kein Kompetenz-Soll je Rolle hinterlegt.',
+        'kind' => [
+            'customer_rework' => 'Nacharbeit je Kunde',
+            'asset_defects' => 'Wiederkehrende Defekte',
+            'claim_pattern' => 'Reklamationsmuster',
+            'recurring_tickets' => 'Wiederkehrende Tickets',
+            'capacity' => 'Personal-Engpässe',
         ],
     ],
 ];

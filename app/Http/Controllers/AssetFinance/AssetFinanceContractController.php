@@ -13,9 +13,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\AssetFinance;
 
 use App\Enums\AssetFinance\{AssetFinanceKind, AssetFinanceStatus, AssetFinanceTermKind};
+use App\Exceptions\DocumentTextUnavailableException;
 use App\Http\Controllers\Controller;
 use App\Models\Asset\Asset;
 use App\Models\AssetFinance\AssetFinanceContract;
+use App\Models\Document\Document;
 use App\Models\Finance\CostCenter;
 use App\Models\Investments\{InvestmentCase, InvestmentLink};
 use App\Models\Platform\User;
@@ -23,6 +25,7 @@ use App\Models\Project\Project;
 use App\Models\Supplier\Supplier;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\AssetFinance\AssetFinanceService;
+use App\Services\Document\{ContractTextAnalyzer, DocumentTextExtractor};
 use App\Support\{ErrorText, Sqid};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -99,10 +102,27 @@ class AssetFinanceContractController extends Controller {
     }
 
     /** Anlege-Dialog (Formulare in Dialogen). */
-    public function create(): View {
+    public function create(Request $request, ContractTextAnalyzer $analyzer, DocumentTextExtractor $extractor): View {
         Gate::authorize('create', AssetFinanceContract::class);
 
+        // Vorschläge aus einem DMS-Dokument (MVP-934): übernommen wird erst beim Speichern.
+        $preset = [];
+        $analysis = null;
+        $documentId = Sqid::decode(Document::class, $request->string('document')->toString());
+        $document = $documentId !== null ? Document::query()->visibleTo($this->authUser())->with('currentVersion')->find($documentId) : null;
+        if ($document instanceof Document && $document->currentVersion !== null) {
+            try {
+                $analysis = $analyzer->leasing($extractor->extract($document->currentVersion));
+                $preset = $analysis['fields'];
+            } catch (DocumentTextUnavailableException) {
+                $analysis = ['fields' => [], 'hints' => []];
+            }
+        }
+
         return view('asset-finance._form_dialog', [
+            'preset' => $preset,
+            'analysis' => $analysis,
+            'analysisDocument' => $document,
             'suppliers' => Supplier::query()->orderBy('name')->get(['id', 'name']),
             'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),

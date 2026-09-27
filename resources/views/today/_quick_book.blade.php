@@ -54,6 +54,12 @@
                         {{ $block['started_at']->format('H:i') }}–{{ $block['ended_at']->format('H:i') }}
                         <span class="text-muted">({{ $fmt($block['minutes']) }})</span>
                     </span>
+                    {{-- Vorschlag (MVP-923): nur vorbelegt, gebucht wird erst per Klick. --}}
+                    @if (($block['project'] ?? null) !== null)
+                        <span class="badge badge-info badge-outline badge-sm" title="{{ $block['hint'] ?? '' }}">
+                            {{ __('time_entry.suggestion.source.' . $block['source'], ['title' => \Illuminate\Support\Str::limit((string) ($block['hint'] ?? ''), 40)]) }}
+                        </span>
+                    @endif
                     <form method="POST" action="{{ route('today.quick-book') }}" class="qb-form ml-auto flex items-center gap-2">
                         @csrf
                         <input type="hidden" name="started_at" value="{{ $block['started_at']->toIso8601String() }}">
@@ -68,12 +74,29 @@
                         <select id="qb-project-{{ $loop->index }}" name="project" required
                                 class="select select-sm select-bordered w-64 max-w-full">
                             <option value="">{{ __('— Projekt —') }}</option>
-                            <x-project-options :projects="$quickBookProjects" :recent="$quickBookRecent" />
+                            <x-project-options :projects="$quickBookProjects" :recent="$quickBookRecent" :selected="($block['project'] ?? null)?->sqid ?? ''" />
                         </select>
                         <button type="submit" class="btn btn-sm btn-primary">{{ __('Buchen') }}</button>
                     </form>
                 </li>
             @endforeach
         </ul>
+
+        @php
+            $suggested = array_values(array_filter($openBlocks, static fn (array $b): bool => ($b['project'] ?? null) !== null));
+        @endphp
+        @if (count($suggested) > 1)
+            {{-- Sammelübernahme (MVP-923): bucht genau die angezeigten Vorschläge. --}}
+            <form method="POST" action="{{ route('today.quick-book-all') }}" class="mt-3 flex justify-end">
+                @csrf
+                <input type="hidden" name="date" value="{{ $suggested[0]['started_at']->toDateString() }}">
+                @foreach ($suggested as $i => $b)
+                    <input type="hidden" name="blocks[{{ $i }}][started_at]" value="{{ $b['started_at']->toIso8601String() }}">
+                    <input type="hidden" name="blocks[{{ $i }}][ended_at]" value="{{ $b['ended_at']->toIso8601String() }}">
+                    <input type="hidden" name="blocks[{{ $i }}][project]" value="{{ $b['project']->sqid }}">
+                @endforeach
+                <x-button type="submit" size="sm" icon="done_all">{{ __('time_entry.suggestion.book_all', ['count' => count($suggested)]) }}</x-button>
+            </form>
+        @endif
     </x-card>
 @endif

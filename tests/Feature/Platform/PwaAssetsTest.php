@@ -52,13 +52,13 @@ final class PwaAssetsTest extends TestCase {
         $path = public_path('offline.html');
         $this->assertFileExists($path);
         $html = ToolkitFile::read($path);
-        $this->assertStringContainsString('Du bist offline', $html);
+        $this->assertStringContainsString('Sie sind offline', $html);
         $this->assertStringContainsString('manifest.webmanifest', $html);
     }
 
     public function test_offline_fallback_page_is_self_contained(): void {
-        // Der Service Worker cacht NUR offline.html (kein Asset-Caching, siehe
-        // sw.js). Jede externe Referenz der Seite scheitert daher genau dann,
+        // Der Service Worker cacht nur offline.html und den Offline-Leser
+        // (kein Asset-Caching, siehe sw.js). Jede externe Referenz der Seite scheitert daher genau dann,
         // wenn die Seite gebraucht wird \u2014 sichtbar zuletzt als kaputtes
         // Logo. Erlaubt sind nur data:-URIs; das Manifest ist reine
         // PWA-Metainfo und beeinflusst die Darstellung nicht.
@@ -71,6 +71,12 @@ final class PwaAssetsTest extends TestCase {
             if ($url === '/manifest.webmanifest') {
                 continue;
             }
+            // Offline-Leser der Krisenmappe (MVP-914): vom Service Worker mit der Seite vorgecacht.
+            if ($url === '/offline-reader.js') {
+                $this->assertStringContainsString('cache.addAll([OFFLINE_URL, OFFLINE_READER])', ToolkitFile::read(public_path('sw.js')));
+
+                continue;
+            }
 
             $this->assertStringStartsWith(
                 'data:',
@@ -78,5 +84,16 @@ final class PwaAssetsTest extends TestCase {
                 sprintf('Offline-Seite referenziert die netzabhaengige Ressource "%s" - bitte als data:-URI einbetten.', $url),
             );
         }
+    }
+
+    /** Befund C3-01: gespeicherte Kurse sind auf der Offline-Seite lesbar (Browserlauf im Protokoll). */
+    public function test_offline_reader_shows_stored_courses_without_creating_the_database(): void {
+        $html = ToolkitFile::read(public_path('offline.html'));
+        $reader = ToolkitFile::read(public_path('offline-reader.js'));
+
+        $this->assertStringContainsString('id="courses"', $html);
+        $this->assertStringContainsString('objectStore("courses").getAll()', $reader);
+        $this->assertStringContainsString('request.transaction.abort()', $reader);
+        $this->assertStringNotContainsString('innerHTML', $reader);
     }
 }

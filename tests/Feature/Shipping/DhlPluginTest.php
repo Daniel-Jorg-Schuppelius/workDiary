@@ -145,4 +145,43 @@ class DhlPluginTest extends TestCase {
 
         $this->assertTrue($ok);
     }
+
+    /** MVP-917: Retouren laufen über die Returns API mit der Retourenempfänger-ID. */
+    public function test_return_label_uses_returns_api_with_receiver_id(): void {
+        $connection = $this->connection();
+        $request = new ShipmentRequest(
+            new ShipmentRecipient('WorkDiary GmbH', 'Werkstr. 1', '10115', 'Berlin', 'DE'),
+            [new ShipmentPackage(1500)],
+            'RMA-1',
+            returnFrom: new ShipmentRecipient('Erika Muster', 'Bahnhofstr. 5', '80331', 'München', 'DE'),
+        );
+
+        try {
+            app(DhlPlugin::class)->createShipment($connection, $request);
+            $this->fail('Ohne Retourenempfänger-ID muss die Retoure scheitern.');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString('returns receiver', $e->getMessage());
+        }
+
+        $connection->forceFill(['credentials' => $connection->credentials + ['returns_receiver_id' => 'deu']])->save();
+        $fake = FakePluginHttp::fake([
+            'https://api-sandbox.dhl.com/parcel/de/shipping/returns/v1/orders*' => FakePluginHttp::response([
+                'shipmentNo' => '999990000001',
+                'label' => ['b64' => base64_encode('%PDF-1.4 retoure'), 'fileFormat' => 'PDF'],
+            ], 201),
+        ]);
+
+        $label = app(DhlPlugin::class)->createShipment($connection->fresh(), $request);
+
+        $this->assertSame('999990000001', $label->trackingNumber);
+        $fake->assertSent(function (RequestInterface $request): bool {
+            $body = json_decode((string) $request->getBody(), true);
+
+            return str_contains((string) $request->getUri(), '/returns/v1/orders')
+                && data_get($body, 'receiverId') === 'deu'
+                && data_get($body, 'shipper.postalCode') === '80331'
+                && (int) data_get($body, 'itemWeight.value') === 1500
+                && data_get($body, 'customerReference') === 'RMA-1';
+        });
+    }
 }

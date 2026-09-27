@@ -155,6 +155,45 @@ Route::get('serial-passport/{token}', [\App\Http\Controllers\Inventory\PublicSer
     ->middleware('throttle:30,1')
     ->name('serials.public-passport');
 
+// Terminwahl durch Bewerber (MVP-925): Link aus der Einladungsmail, nur Abdruck gespeichert.
+Route::get('bewerbung/termin/{token}', [\App\Http\Controllers\Applications\PublicInterviewOfferController::class, 'show'])
+    ->middleware('throttle:30,1')
+    ->name('interview-offers.show');
+Route::post('bewerbung/termin/{token}', [\App\Http\Controllers\Applications\PublicInterviewOfferController::class, 'choose'])
+    ->middleware('throttle:10,1')
+    ->name('interview-offers.choose');
+
+// Prüfauftrag an Dienstleister (MVP-938): Link je Auftrag.
+Route::get('pruefauftrag/{token}', [\App\Http\Controllers\AssetCompliance\PublicInspectionOrderController::class, 'show'])->middleware('throttle:30,1')->name('inspection-order.public');
+Route::post('pruefauftrag/{token}/angebot', [\App\Http\Controllers\AssetCompliance\PublicInspectionOrderController::class, 'offer'])->middleware('throttle:10,1')->name('inspection-order.public.offer');
+Route::post('pruefauftrag/{token}/ergebnisse', [\App\Http\Controllers\AssetCompliance\PublicInspectionOrderController::class, 'report'])->middleware('throttle:10,1')->name('inspection-order.public.report');
+
+// Lieferanten-Selbstauskunft (MVP-937): Einmal-Link je Anfrage.
+Route::get('lieferantenauskunft/{token}', [\App\Http\Controllers\Supplier\PublicSupplierQuestionnaireController::class, 'show'])
+    ->middleware('throttle:30,1')
+    ->name('supplier-questionnaire.public');
+Route::post('lieferantenauskunft/{token}', [\App\Http\Controllers\Supplier\PublicSupplierQuestionnaireController::class, 'store'])
+    ->middleware('throttle:10,1')
+    ->name('supplier-questionnaire.public.store');
+
+// Öffentliche Investitionsvorschläge (MVP-936): Token-Link, pro Org freizuschalten.
+Route::get('investitionsvorschlag/{token}', [\App\Http\Controllers\Investments\PublicInvestmentProposalController::class, 'show'])
+    ->middleware('throttle:30,1')
+    ->name('investment-proposal.public');
+Route::post('investitionsvorschlag/{token}', [\App\Http\Controllers\Investments\PublicInvestmentProposalController::class, 'store'])
+    ->middleware('throttle:5,1')
+    ->name('investment-proposal.public.store');
+
+// Öffentlicher Nachhaltigkeitsauszug (MVP-930): Token-Link, freigegebener Snapshot.
+Route::get('nachhaltigkeitsbericht/{token}', [\App\Http\Controllers\Sustainability\PublicSustainabilityExcerptController::class, 'show'])
+    ->middleware('throttle:60,1')
+    ->name('sustainability-excerpt.public');
+
+// Öffentliche Krisen-Statusseite (MVP-915): Token-Link, pro Org freizuschalten.
+Route::get('status/{token}', [\App\Http\Controllers\Crisis\PublicCrisisStatusController::class, 'show'])
+    ->middleware('throttle:120,1')
+    ->name('crisis-status.public');
+
 // OCI-Punchout-Rücksprung (Feature 050, MVP-096): Der Shop POSTet den Warenkorb
 // cross-site ohne Session-Cookie — Autorisierung über die beim Absprung erzeugte,
 // zeitlich begrenzte signierte HOOK_URL (CSRF-Ausnahme in bootstrap/app.php).
@@ -401,6 +440,8 @@ Route::middleware('auth')->group(function () {
         ->name('dashboard.customize.save');
     Route::post('me/dashboard/customize/reset', [\App\Http\Controllers\Me\DashboardCustomizationController::class, 'reset'])
         ->name('dashboard.customize.reset');
+    Route::post('me/dashboard/customize/role-default/forget', [\App\Http\Controllers\Me\DashboardCustomizationController::class, 'forgetRoleDefault'])
+        ->name('dashboard.customize.role-default.forget'); // MVP-910
     Route::post('me/dashboard/customize/preset', [\App\Http\Controllers\Me\DashboardCustomizationController::class, 'preset'])
         ->name('dashboard.customize.preset');
 
@@ -411,6 +452,10 @@ Route::middleware('auth')->group(function () {
         ->name('me.navigation.customize.save');
     Route::post('me/navigation/unhide', [\App\Http\Controllers\Me\NavigationCustomizationController::class, 'unhide'])
         ->name('me.navigation.unhide');
+    // Persönlicher Einstieg je Rolle (MVP-911).
+    Route::get('me/einstieg', [\App\Http\Controllers\Me\PersonalOnboardingController::class, 'index'])->name('me.onboarding');
+    Route::post('me/einstieg/{step}/erledigt', [\App\Http\Controllers\Me\PersonalOnboardingController::class, 'done'])->where('step', '[a-z_.]+')->name('me.onboarding.done');
+    Route::post('me/einstieg/ausblenden', [\App\Http\Controllers\Me\PersonalOnboardingController::class, 'dismiss'])->name('me.onboarding.dismiss');
     Route::get('me/functions', [\App\Http\Controllers\Me\FunctionCatalogController::class, 'index'])
         ->name('me.functions');
 
@@ -1421,6 +1466,16 @@ Route::middleware('auth')->group(function () {
         Route::post('suppliers/duplicates/merge', [SupplierMergeController::class, 'merge'])->name('suppliers.duplicates.merge');
         Route::post('suppliers/duplicates/bulk-merge', [SupplierMergeController::class, 'bulkMerge'])->name('suppliers.duplicates.bulk-merge');
         Route::post('suppliers/duplicates/dismiss', [SupplierMergeController::class, 'dismiss'])->name('suppliers.duplicates.dismiss');
+        // Lieferanten-Selbstauskunft (MVP-937) — vor der Ressource, damit „selbstauskunft“ kein Lieferant ist.
+        Route::get('suppliers/selbstauskunft', [\App\Http\Controllers\Supplier\SupplierQuestionnaireController::class, 'index'])->name('supplier-questionnaires.index');
+        Route::get('suppliers/selbstauskunft/neu', [\App\Http\Controllers\Supplier\SupplierQuestionnaireController::class, 'create'])->name('supplier-questionnaires.create');
+        Route::post('suppliers/selbstauskunft', [\App\Http\Controllers\Supplier\SupplierQuestionnaireController::class, 'store'])->name('supplier-questionnaires.store');
+        Route::get('suppliers/selbstauskunft/{questionnaire}/bearbeiten', [\App\Http\Controllers\Supplier\SupplierQuestionnaireController::class, 'edit'])->name('supplier-questionnaires.edit');
+        Route::put('suppliers/selbstauskunft/{questionnaire}', [\App\Http\Controllers\Supplier\SupplierQuestionnaireController::class, 'update'])->name('supplier-questionnaires.update');
+        Route::get('suppliers/selbstauskunft/anfragen/{questionnaireRequest}', [\App\Http\Controllers\Supplier\SupplierQuestionnaireController::class, 'show'])->name('supplier-questionnaires.requests.show');
+        Route::post('suppliers/selbstauskunft/anfragen/{questionnaireRequest}/pruefung', [\App\Http\Controllers\Supplier\SupplierQuestionnaireController::class, 'review'])->name('supplier-questionnaires.requests.review');
+        Route::get('suppliers/{supplier}/selbstauskunft', [\App\Http\Controllers\Supplier\SupplierQuestionnaireController::class, 'sendForm'])->name('supplier-questionnaires.send-form');
+        Route::post('suppliers/{supplier}/selbstauskunft', [\App\Http\Controllers\Supplier\SupplierQuestionnaireController::class, 'send'])->name('supplier-questionnaires.send');
         Route::resource('suppliers', SupplierController::class);
         Route::post('suppliers/{supplier}/archive', [SupplierController::class, 'archive'])->name('suppliers.archive');
         Route::post('suppliers/{supplier}/restore', [SupplierController::class, 'restore'])->name('suppliers.restore');
@@ -1692,6 +1747,16 @@ Route::middleware('auth')->group(function () {
         Route::post('bill-of-quantities/items/{boqItem}/progress', [\App\Http\Controllers\Gaeb\BillOfQuantityController::class, 'recordProgress'])->name('bill-of-quantities.items.progress');
         Route::post('bill-of-quantities/items/{boqItem}/mappings', [\App\Http\Controllers\Gaeb\BillOfQuantityController::class, 'addMapping'])->name('bill-of-quantities.items.mappings.add');
         Route::post('bill-of-quantities/items/{boqItem}/transition', [\App\Http\Controllers\Gaeb\BillOfQuantityController::class, 'transitionItem'])->name('bill-of-quantities.items.transition');
+        // MVP-931: Zeitvertragsarbeiten (Rahmen-LV, Abrufe).
+        Route::patch('bill-of-quantities/{billOfQuantity}/rahmen', [\App\Http\Controllers\Gaeb\BoqCallOffController::class, 'framework'])->name('bill-of-quantities.framework');
+        Route::get('bill-of-quantities/{billOfQuantity}/abrufe', [\App\Http\Controllers\Gaeb\BoqCallOffController::class, 'index'])->name('bill-of-quantities.call-offs.index');
+        Route::get('bill-of-quantities/{billOfQuantity}/abrufe/neu', [\App\Http\Controllers\Gaeb\BoqCallOffController::class, 'create'])->name('bill-of-quantities.call-offs.create');
+        Route::post('bill-of-quantities/{billOfQuantity}/abrufe', [\App\Http\Controllers\Gaeb\BoqCallOffController::class, 'store'])->name('bill-of-quantities.call-offs.store');
+        Route::post('bill-of-quantities/abrufe/{callOff}/status', [\App\Http\Controllers\Gaeb\BoqCallOffController::class, 'transition'])->name('bill-of-quantities.call-offs.transition');
+        Route::post('bill-of-quantities/abrufe/{callOff}/abrechnen', [\App\Http\Controllers\Gaeb\BoqCallOffController::class, 'invoice'])->name('bill-of-quantities.call-offs.invoice');
+        // MVP-932: Rechnungen und Zahlungen je LV, Abschlag aus dem Leistungsstand.
+        Route::get('bill-of-quantities/{billOfQuantity}/abrechnung', [\App\Http\Controllers\Gaeb\BoqBillingController::class, 'show'])->name('bill-of-quantities.billing');
+        Route::post('bill-of-quantities/{billOfQuantity}/abrechnung', [\App\Http\Controllers\Gaeb\BoqBillingController::class, 'store'])->name('bill-of-quantities.billing.store');
 
         // Plugin-spezifische Routen (z. B. Lexoffice customers.lexoffice.*) werden
         // vom jeweiligen Plugin-ServiceProvider geladen — siehe app/Plugins/*/routes.php.
@@ -2112,6 +2177,10 @@ Route::middleware('auth')->group(function () {
             // MVP-437: öffentlicher Karrierebereich — explizite Veröffentlichung/Pause.
             Route::post('{requisition}/karriere', [\App\Http\Controllers\Applications\JobRequisitionController::class, 'publishCareer'])->name('career.publish');
             Route::post('{requisition}/karriere/pausieren', [\App\Http\Controllers\Applications\JobRequisitionController::class, 'pauseCareer'])->name('career.pause');
+            // Eignungsmatrix (MVP-924)
+            Route::get('{requisition}/eignung', [\App\Http\Controllers\Applications\JobSuitabilityController::class, 'show'])->name('suitability');
+            Route::post('{requisition}/eignung/soll', [\App\Http\Controllers\Applications\JobSuitabilityController::class, 'storeRequirement'])->name('suitability.requirements.store');
+            Route::delete('{requisition}/eignung/soll/{requirement}', [\App\Http\Controllers\Applications\JobSuitabilityController::class, 'destroyRequirement'])->name('suitability.requirements.destroy');
         });
         Route::prefix('personal/bewerbungen')->name('recruiting.applications.')->group(function (): void {
             Route::get('/', [\App\Http\Controllers\Applications\JobApplicationController::class, 'index'])->name('index');
@@ -2122,6 +2191,8 @@ Route::middleware('auth')->group(function () {
             Route::post('{application}/gespraeche', [\App\Http\Controllers\Applications\JobApplicationController::class, 'addInterview'])->name('interviews.store');
             Route::post('{application}/gespraeche/{interview}/abschliessen', [\App\Http\Controllers\Applications\JobApplicationController::class, 'completeInterview'])->name('interviews.complete');
             Route::post('{application}/bewertungen', [\App\Http\Controllers\Applications\JobApplicationController::class, 'addReview'])->name('reviews.store');
+            Route::post('{application}/kompetenzen', [\App\Http\Controllers\Applications\JobSuitabilityController::class, 'rate'])->name('ratings.store'); // MVP-924
+            Route::post('{application}/terminangebot', [\App\Http\Controllers\Applications\InterviewOfferController::class, 'store'])->name('interview-offers.store'); // MVP-925
             Route::post('{application}/unterlagen', [\App\Http\Controllers\Applications\JobApplicationController::class, 'addDocument'])->name('documents.store');
             Route::post('{application}/entscheiden', [\App\Http\Controllers\Applications\JobApplicationController::class, 'decide'])->name('decide');
             Route::get('{application}/unterlagen/{upload}', [\App\Http\Controllers\Applications\JobApplicationController::class, 'downloadUpload'])->name('uploads.download');
@@ -2160,6 +2231,8 @@ Route::middleware('auth')->group(function () {
             Route::post('ruecksendungen/{rma}/wareneingang', [\App\Http\Controllers\Claims\ClaimRmaController::class, 'receive'])->name('rma.receive');
             Route::post('ruecksendungen/{rma}/pruefen', [\App\Http\Controllers\Claims\ClaimRmaController::class, 'inspect'])->name('rma.inspect');
             Route::post('ruecksendungen/{rma}/verwendung', [\App\Http\Controllers\Claims\ClaimRmaController::class, 'disposition'])->name('rma.disposition');
+            Route::post('ruecksendungen/{rma}/retourenlabel', [\App\Http\Controllers\Claims\ClaimRmaController::class, 'returnLabel'])->name('rma.return-label'); // MVP-917
+            Route::get('ruecksendungen/{rma}/retourenlabel/{shipment}', [\App\Http\Controllers\Claims\ClaimRmaController::class, 'downloadReturnLabel'])->name('rma.return-label.download');
             Route::post('{claim}/massnahmen', [\App\Http\Controllers\Claims\ClaimActionController::class, 'store'])->name('actions.store');
             Route::put('massnahmen/{action}', [\App\Http\Controllers\Claims\ClaimActionController::class, 'update'])->name('actions.update');
             Route::post('{claim}/folgen', [\App\Http\Controllers\Claims\ClaimFinancialController::class, 'store'])->name('financial.store');
@@ -2334,6 +2407,9 @@ Route::middleware('auth')->group(function () {
             Route::post('preislisten/{rateCard}/aktivieren', [\App\Http\Controllers\Rental\RentalRateCardController::class, 'activate'])->name('rates.activate');
             Route::post('preislisten/{rateCard}/konditionen', [\App\Http\Controllers\Rental\RentalRateCardController::class, 'storeItem'])->name('rates.items.store');
             Route::delete('preislisten/{rateCard}/konditionen/{item}', [\App\Http\Controllers\Rental\RentalRateCardController::class, 'destroyItem'])->name('rates.items.destroy');
+            // Mietpreisregeln (MVP-950).
+            Route::post('preislisten/{rateCard}/regeln', [\App\Http\Controllers\Rental\RentalRateCardController::class, 'storeRule'])->name('rates.rules.store');
+            Route::delete('preislisten/{rateCard}/regeln/{rule}', [\App\Http\Controllers\Rental\RentalRateCardController::class, 'destroyRule'])->name('rates.rules.destroy');
             Route::get('bericht', [\App\Http\Controllers\Reporting\RentalReportController::class, 'index'])->name('reports.index');
             Route::post('bericht/snapshot', [\App\Http\Controllers\Reporting\RentalReportController::class, 'snapshot'])->name('reports.snapshot');
             // Portal-Verleihanfragen (MVP-714): Annahme erzeugt Akte + Vormerkung.
@@ -2390,6 +2466,7 @@ Route::middleware('auth')->group(function () {
         Route::prefix('leasing')->name('asset-finance.')->group(function (): void {
             Route::get('/', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'index'])->name('index');
             Route::get('neu', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'create'])->name('create');
+            Route::put('{contract}/einschaetzung', [\App\Http\Controllers\AssetFinance\AssetFinanceClassificationController::class, 'update'])->name('classification.update'); // MVP-947
             Route::post('/', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'store'])->name('store');
             Route::get('fristen', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'deadlines'])->name('deadlines.index');
             Route::get('bericht', [\App\Http\Controllers\AssetFinance\AssetFinanceReportController::class, 'index'])->name('reports.index');
@@ -2474,7 +2551,17 @@ Route::middleware('auth')->group(function () {
             Route::post('profile/{profile}/anforderungen', [\App\Http\Controllers\AssetCompliance\AssetComplianceProfileController::class, 'storeRequirement'])->name('profiles.requirements.store');
             Route::post('profile/{profile}/zuweisen', [\App\Http\Controllers\AssetCompliance\AssetComplianceProfileController::class, 'assign'])->name('profiles.assign');
             Route::get('kalender', [\App\Http\Controllers\AssetCompliance\AssetInspectionController::class, 'index'])->name('schedules.index');
+            // Prüfaufträge an Dienstleister (MVP-938).
+            Route::get('auftraege', [\App\Http\Controllers\AssetCompliance\InspectionOrderController::class, 'index'])->name('orders.index');
+            Route::get('auftraege/neu', [\App\Http\Controllers\AssetCompliance\InspectionOrderController::class, 'create'])->name('orders.create');
+            Route::post('auftraege', [\App\Http\Controllers\AssetCompliance\InspectionOrderController::class, 'store'])->name('orders.store');
+            Route::get('auftraege/{order}', [\App\Http\Controllers\AssetCompliance\InspectionOrderController::class, 'show'])->name('orders.show');
+            Route::post('auftraege/{order}/angebot', [\App\Http\Controllers\AssetCompliance\InspectionOrderController::class, 'decide'])->name('orders.decide');
+            Route::post('auftraege/{order}/uebernehmen', [\App\Http\Controllers\AssetCompliance\InspectionOrderController::class, 'takeOver'])->name('orders.take-over');
+            Route::post('auftraege/{order}/stornieren', [\App\Http\Controllers\AssetCompliance\InspectionOrderController::class, 'cancel'])->name('orders.cancel');
             Route::post('kalender', [\App\Http\Controllers\AssetCompliance\AssetInspectionController::class, 'storeSchedule'])->name('schedules.store');
+            Route::get('pruefertour', [\App\Http\Controllers\AssetCompliance\InspectorTourController::class, 'index'])->name('tours.index'); // MVP-918
+            Route::post('pruefertour', [\App\Http\Controllers\AssetCompliance\InspectorTourController::class, 'store'])->name('tours.store');
             Route::post('pflichten/{assignment}/pruefen', [\App\Http\Controllers\AssetCompliance\AssetInspectionController::class, 'record'])->name('inspections.record');
             // Prüfmittelrunden (MVP-899): Soll-Liste, Scan, Schnellerfassung.
             Route::get('runden', [\App\Http\Controllers\AssetCompliance\AssetInspectionRoundController::class, 'index'])->name('rounds.index');
@@ -2504,14 +2591,67 @@ Route::middleware('auth')->group(function () {
             Route::put('massnahmen/{measure}', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'updateMeasure'])->name('measures.update');
             Route::post('ziele', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'storeTarget'])->name('targets.store');
             Route::post('bericht/snapshot', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'storeSnapshot'])->name('snapshot.store');
+            // Standorte und Benchmarking (MVP-929)
+            Route::get('standorte', [\App\Http\Controllers\Sustainability\SustainabilitySiteController::class, 'benchmark'])->name('sites.benchmark');
+            Route::post('standorte', [\App\Http\Controllers\Sustainability\SustainabilitySiteController::class, 'store'])->name('sites.store');
+            Route::put('standorte/{site}', [\App\Http\Controllers\Sustainability\SustainabilitySiteController::class, 'update'])->name('sites.update');
+            // Nachhaltigkeitsauszug (MVP-930)
+            Route::get('auszug', [\App\Http\Controllers\Sustainability\SustainabilityExcerptController::class, 'edit'])->name('excerpt.edit');
+            Route::put('auszug', [\App\Http\Controllers\Sustainability\SustainabilityExcerptController::class, 'publish'])->name('excerpt.publish');
+            Route::post('auszug/token', [\App\Http\Controllers\Sustainability\SustainabilityExcerptController::class, 'rotate'])->name('excerpt.rotate');
+            Route::delete('auszug/token', [\App\Http\Controllers\Sustainability\SustainabilityExcerptController::class, 'revoke'])->name('excerpt.revoke');
+            Route::patch('auszug', [\App\Http\Controllers\Sustainability\SustainabilityExcerptController::class, 'toggle'])->name('excerpt.toggle');
+        });
+
+        // ── Schadensfälle (MVP-919, Kernmodul damage) ──
+        Route::prefix('schadensfaelle')->name('damage-cases.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Damage\DamageCaseController::class, 'index'])->name('index');
+            Route::get('neu', [\App\Http\Controllers\Damage\DamageCaseController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Damage\DamageCaseController::class, 'store'])->name('store');
+            Route::get('{damageCase}', [\App\Http\Controllers\Damage\DamageCaseController::class, 'show'])->name('show');
+            Route::get('{damageCase}/bearbeiten', [\App\Http\Controllers\Damage\DamageCaseController::class, 'edit'])->name('edit');
+            Route::put('{damageCase}', [\App\Http\Controllers\Damage\DamageCaseController::class, 'update'])->name('update');
+            Route::post('{damageCase}/status', [\App\Http\Controllers\Damage\DamageCaseController::class, 'transition'])->name('transition');
+        });
+
+        // ── Rückrufaktionen (MVP-921, module.lager) ──
+        Route::prefix('rueckrufe')->name('recalls.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Inventory\RecallController::class, 'index'])->name('index');
+            Route::get('neu', [\App\Http\Controllers\Inventory\RecallController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Inventory\RecallController::class, 'store'])->name('store');
+            Route::get('{recall}', [\App\Http\Controllers\Inventory\RecallController::class, 'show'])->name('show');
+            Route::get('{recall}/bearbeiten', [\App\Http\Controllers\Inventory\RecallController::class, 'edit'])->name('edit');
+            Route::put('{recall}', [\App\Http\Controllers\Inventory\RecallController::class, 'update'])->name('update');
+            Route::post('{recall}/status', [\App\Http\Controllers\Inventory\RecallController::class, 'transition'])->name('transition');
+            Route::post('{recall}/betroffene/{item}/status', [\App\Http\Controllers\Inventory\RecallController::class, 'itemStatus'])->name('items.status');
+            Route::post('{recall}/anschreiben', [\App\Http\Controllers\Inventory\RecallController::class, 'notify'])->name('notify');
+            // Behördenmeldung (MVP-945).
+            Route::get('{recall}/behoerde', [\App\Http\Controllers\Inventory\RecallController::class, 'authorityForm'])->name('authority.edit');
+            Route::put('{recall}/behoerde', [\App\Http\Controllers\Inventory\RecallController::class, 'updateAuthority'])->name('authority.update');
+            Route::get('{recall}/behoerde/meldebogen', [\App\Http\Controllers\Inventory\RecallController::class, 'authorityPdf'])->name('authority.pdf');
+            Route::post('{recall}/betroffene/{item}/reklamation', [\App\Http\Controllers\Inventory\RecallController::class, 'claim'])->name('items.claim');
         });
 
         // ── Notfall-/Krisenmanagement (Feature 070, module.crisis_management) ──
         Route::prefix('krisen')->name('crisis.')->group(function (): void {
             Route::get('/', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'index'])->name('index');
             Route::get('neu', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'create'])->name('create');
+            Route::get('offline-mappe', [\App\Http\Controllers\Crisis\CrisisOfflineController::class, 'bundle'])->name('offline-bundle'); // MVP-914
+            Route::get('statusseite', [\App\Http\Controllers\Crisis\CrisisStatusPageController::class, 'edit'])->name('status-page.edit'); // MVP-915
+            Route::post('statusseite/token', [\App\Http\Controllers\Crisis\CrisisStatusPageController::class, 'rotate'])->name('status-page.rotate');
+            Route::delete('statusseite/token', [\App\Http\Controllers\Crisis\CrisisStatusPageController::class, 'revoke'])->name('status-page.revoke');
+            Route::patch('statusseite', [\App\Http\Controllers\Crisis\CrisisStatusPageController::class, 'toggle'])->name('status-page.toggle');
             Route::post('/', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'store'])->name('store');
             Route::post('stabsrollen', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'storeRole'])->name('roles.store');
+            // BIA-Register (MVP-943) und BCM-Auswertung (MVP-944) — vor {case}.
+            Route::get('bia', [\App\Http\Controllers\Crisis\CrisisBiaController::class, 'index'])->name('bia.index');
+            Route::get('bia/neu', [\App\Http\Controllers\Crisis\CrisisBiaController::class, 'create'])->name('bia.create');
+            Route::post('bia', [\App\Http\Controllers\Crisis\CrisisBiaController::class, 'store'])->name('bia.store');
+            Route::post('bia/import', [\App\Http\Controllers\Crisis\CrisisBiaController::class, 'import'])->name('bia.import');
+            Route::get('bia/{process}/bearbeiten', [\App\Http\Controllers\Crisis\CrisisBiaController::class, 'edit'])->name('bia.edit');
+            Route::put('bia/{process}', [\App\Http\Controllers\Crisis\CrisisBiaController::class, 'update'])->name('bia.update');
+            Route::get('bcm-bericht', [\App\Http\Controllers\Crisis\CrisisBcmReportController::class, 'index'])->name('bcm-report');
+            Route::get('bcm-bericht/pdf', [\App\Http\Controllers\Crisis\CrisisBcmReportController::class, 'pdf'])->name('bcm-report.pdf');
             Route::get('uebungen', [\App\Http\Controllers\Crisis\CrisisExerciseController::class, 'index'])->name('exercises.index');
             Route::get('uebungen/neu', [\App\Http\Controllers\Crisis\CrisisExerciseController::class, 'create'])->name('exercises.create');
             Route::post('uebungen', [\App\Http\Controllers\Crisis\CrisisExerciseController::class, 'store'])->name('exercises.store');
@@ -2535,6 +2675,7 @@ Route::middleware('auth')->group(function () {
             Route::post('{case}/kommunikation/{communication}/freigeben', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'approveCommunication'])->name('communications.approve');
             Route::post('{case}/kommunikation/{communication}/gesendet', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'markCommunicationSent'])->name('communications.sent');
             Route::post('{case}/bcm', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'storeContinuityImpact'])->name('bcm.store');
+            Route::post('{case}/bcm/aus-bia', [\App\Http\Controllers\Crisis\CrisisBiaController::class, 'adopt'])->name('bcm.adopt'); // MVP-943
             Route::put('{case}/bcm/{impact}', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'updateContinuityImpact'])->name('bcm.update');
             Route::post('{case}/verknuepfungen', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'addLink'])->name('links.store');
             Route::post('{case}/nachbereitung', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'storeReview'])->name('review.store');
@@ -2547,7 +2688,32 @@ Route::middleware('auth')->group(function () {
             Route::post('/', [\App\Http\Controllers\Investments\InvestmentController::class, 'store'])->name('store');
             Route::post('kostenstellen', [\App\Http\Controllers\Investments\InvestmentController::class, 'storeCostCenter'])->name('cost-centers.store');
             Route::get('bericht', [\App\Http\Controllers\Investments\InvestmentsReportController::class, 'index'])->name('report');
+            // Investitionsprogramme (MVP-927) — vor {case}, damit „programme“ nicht als Akte gebunden wird.
+            Route::get('lieferantenbewertung', [\App\Http\Controllers\Investments\InvestmentSupplierRatingController::class, 'index'])->name('supplier-ratings.index'); // MVP-928
+            // Strategische Ziele (MVP-942).
+            Route::get('ziele', [\App\Http\Controllers\Investments\StrategicObjectiveController::class, 'index'])->name('objectives.index');
+            Route::get('ziele/neu', [\App\Http\Controllers\Investments\StrategicObjectiveController::class, 'create'])->name('objectives.create');
+            Route::post('ziele', [\App\Http\Controllers\Investments\StrategicObjectiveController::class, 'store'])->name('objectives.store');
+            Route::get('ziele/{objective}', [\App\Http\Controllers\Investments\StrategicObjectiveController::class, 'show'])->name('objectives.show');
+            Route::get('ziele/{objective}/bearbeiten', [\App\Http\Controllers\Investments\StrategicObjectiveController::class, 'edit'])->name('objectives.edit');
+            Route::put('ziele/{objective}', [\App\Http\Controllers\Investments\StrategicObjectiveController::class, 'update'])->name('objectives.update');
+            // Investitionsvorschläge (MVP-936).
+            Route::get('vorschlag', [\App\Http\Controllers\Investments\InvestmentProposalController::class, 'create'])->name('proposals.create');
+            Route::post('vorschlag', [\App\Http\Controllers\Investments\InvestmentProposalController::class, 'store'])->name('proposals.store');
+            Route::get('vorschlag/link', [\App\Http\Controllers\Investments\InvestmentProposalController::class, 'link'])->name('proposals.link');
+            Route::post('vorschlag/link', [\App\Http\Controllers\Investments\InvestmentProposalController::class, 'rotate'])->name('proposals.rotate');
+            Route::patch('vorschlag/link', [\App\Http\Controllers\Investments\InvestmentProposalController::class, 'toggle'])->name('proposals.toggle');
+            Route::delete('vorschlag/link', [\App\Http\Controllers\Investments\InvestmentProposalController::class, 'revoke'])->name('proposals.revoke');
+            Route::get('programme', [\App\Http\Controllers\Investments\InvestmentProgramController::class, 'index'])->name('programs.index');
+            Route::get('programme/neu', [\App\Http\Controllers\Investments\InvestmentProgramController::class, 'create'])->name('programs.create');
+            Route::post('programme', [\App\Http\Controllers\Investments\InvestmentProgramController::class, 'store'])->name('programs.store');
+            Route::get('programme/{program}', [\App\Http\Controllers\Investments\InvestmentProgramController::class, 'show'])->name('programs.show');
+            Route::get('programme/{program}/bearbeiten', [\App\Http\Controllers\Investments\InvestmentProgramController::class, 'edit'])->name('programs.edit');
+            Route::put('programme/{program}', [\App\Http\Controllers\Investments\InvestmentProgramController::class, 'update'])->name('programs.update');
+            Route::put('programme/{program}/budgets', [\App\Http\Controllers\Investments\InvestmentProgramController::class, 'budgets'])->name('programs.budgets');
+            Route::post('programme/{program}/status', [\App\Http\Controllers\Investments\InvestmentProgramController::class, 'status'])->name('programs.status');
             Route::get('{case}', [\App\Http\Controllers\Investments\InvestmentController::class, 'show'])->name('show');
+            Route::post('{case}/lieferantenbewertung', [\App\Http\Controllers\Investments\InvestmentSupplierRatingController::class, 'store'])->name('supplier-ratings.store');
             Route::get('{case}/bearbeiten', [\App\Http\Controllers\Investments\InvestmentController::class, 'edit'])->name('edit');
             Route::put('{case}', [\App\Http\Controllers\Investments\InvestmentController::class, 'update'])->name('update');
             Route::delete('{case}', [\App\Http\Controllers\Investments\InvestmentController::class, 'destroy'])->name('destroy');
@@ -2555,6 +2721,10 @@ Route::middleware('auth')->group(function () {
             Route::post('{case}/varianten', [\App\Http\Controllers\Investments\InvestmentController::class, 'addOption'])->name('options.store');
             Route::post('{case}/varianten/{option}/empfehlen', [\App\Http\Controllers\Investments\InvestmentController::class, 'recommendOption'])->name('options.recommend');
             Route::delete('{case}/varianten/{option}', [\App\Http\Controllers\Investments\InvestmentController::class, 'removeOption'])->name('options.destroy');
+            // Finanzierungsvergleich (MVP-907).
+            Route::get('{case}/varianten/{option}/finanzierung', [\App\Http\Controllers\Investments\InvestmentFinancingController::class, 'show'])->name('options.financing');
+            Route::post('{case}/varianten/{option}/finanzierung', [\App\Http\Controllers\Investments\InvestmentFinancingController::class, 'store'])->name('options.financing.store');
+            Route::delete('{case}/varianten/{option}/finanzierung/{variant}', [\App\Http\Controllers\Investments\InvestmentFinancingController::class, 'destroy'])->name('options.financing.destroy');
             Route::post('{case}/budget', [\App\Http\Controllers\Investments\InvestmentController::class, 'submitBudget'])->name('budget.submit');
             Route::post('{case}/budget/{budgetRequest}/freigeben', [\App\Http\Controllers\Investments\InvestmentController::class, 'approveBudget'])->name('budget.approve');
             Route::post('{case}/budget/{budgetRequest}/ablehnen', [\App\Http\Controllers\Investments\InvestmentController::class, 'rejectBudget'])->name('budget.reject');
@@ -2564,6 +2734,9 @@ Route::middleware('auth')->group(function () {
             Route::post('{case}/abweichungen/{deviation}/entscheiden', [\App\Http\Controllers\Investments\InvestmentController::class, 'decideDeviation'])->name('deviations.decide');
             Route::post('{case}/abweichungen/{deviation}/nachtrag', [\App\Http\Controllers\Investments\InvestmentController::class, 'supplementBudget'])->name('budget.supplement');
             Route::post('{case}/nachbewertung', [\App\Http\Controllers\Investments\InvestmentController::class, 'storeReview'])->name('review.store');
+            // Als Anlage übernehmen (MVP-909).
+            Route::get('{case}/anlage', [\App\Http\Controllers\Investments\InvestmentCapitalizeController::class, 'create'])->name('capitalize.create');
+            Route::post('{case}/anlage', [\App\Http\Controllers\Investments\InvestmentCapitalizeController::class, 'store'])->name('capitalize.store');
         });
 
         // ── Angebote (Feature 066, MVP-170) ───────────────────────────
@@ -3042,6 +3215,7 @@ Route::middleware('auth')->group(function () {
         Route::get('today', [TodayController::class, 'show'])->name('today.show');
         // Quick-Buchung offener Blöcke → Projekt (MVP-015, Rang 37).
         Route::post('today/quick-book', [QuickBookController::class, 'store'])->name('today.quick-book');
+        Route::post('today/quick-book/alle', [QuickBookController::class, 'storeAll'])->name('today.quick-book-all'); // MVP-923
         // Eingabeleiste (Toggl-artig): manuelle Buchung + projektabhängige Optionen.
         Route::post('today/entry-bar', [TimeEntryBarController::class, 'store'])->name('today.entry-bar.store');
         Route::get('today/entry-bar/{project}/options', [TimeEntryBarController::class, 'options'])->name('today.entry-bar.options');
@@ -3890,6 +4064,10 @@ Route::middleware('auth')->group(function () {
         Route::get('procedures', [\App\Http\Controllers\Procedure\ProcedureTemplateController::class, 'index'])->name('procedures.index');
         Route::get('procedures/create', [\App\Http\Controllers\Procedure\ProcedureTemplateController::class, 'create'])->name('procedures.create');
         // Schrittbibliothek (MVP-896)
+        // Arbeitsanweisung importieren (MVP-913) — vor procedures/{template}.
+        Route::get('procedures/import', [\App\Http\Controllers\Procedure\ProcedureImportController::class, 'form'])->name('procedures.import.form');
+        Route::post('procedures/import/vorschau', [\App\Http\Controllers\Procedure\ProcedureImportController::class, 'preview'])->name('procedures.import.preview');
+        Route::post('procedures/import', [\App\Http\Controllers\Procedure\ProcedureImportController::class, 'store'])->name('procedures.import.store');
         Route::get('procedures/library', [\App\Http\Controllers\Procedure\ProcedureLibraryController::class, 'index'])->name('procedures.library.index');
         Route::get('procedures/library/create', [\App\Http\Controllers\Procedure\ProcedureLibraryController::class, 'create'])->name('procedures.library.create');
         Route::post('procedures/library', [\App\Http\Controllers\Procedure\ProcedureLibraryController::class, 'store'])->name('procedures.library.store');
@@ -4479,6 +4657,7 @@ Route::middleware('auth')->group(function () {
         Route::get('reports/external-payouts', [ExternalPayoutReportController::class, 'index'])->name('reports.external-payouts');
         Route::get('reports/customers', [CustomerAnalysisReportController::class, 'index'])->name('reports.customers');
         // Entscheidungsanalysen (Phase 53, MVP-465/466/467/468).
+        Route::get('reports/management', [\App\Http\Controllers\Reporting\ManagementInsightsController::class, 'index'])->name('reports.management'); // MVP-926
         Route::get('reports/customer-value', [\App\Http\Controllers\Reporting\CustomerValueReportController::class, 'index'])
             ->name('reports.customer-value');
         // Zeitaufteilung nach Dimension (Feature 103, MVP-514 P3).
@@ -4556,6 +4735,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [\App\Http\Controllers\Finance\AccountingReportController::class, 'index'])->name('index');
             Route::get('susa', [\App\Http\Controllers\Finance\AccountingReportController::class, 'trialBalance'])->name('trial-balance');
             Route::get('anlagenspiegel', [\App\Http\Controllers\Finance\AccountingReportController::class, 'fixedAssetSchedule'])->name('fixed-asset-schedule');
+            Route::get('ersatzbedarf', [\App\Http\Controllers\Finance\AccountingReportController::class, 'replacementForecast'])->name('replacement-forecast'); // MVP-908
             Route::get('kontenblatt', [\App\Http\Controllers\Finance\AccountingReportController::class, 'accountLedger'])->name('account-ledger');
             Route::get('umsatzsteuer', [\App\Http\Controllers\Finance\AccountingReportController::class, 'vat'])->name('vat');
             Route::get('euer', [\App\Http\Controllers\Finance\AccountingReportController::class, 'euer'])->name('euer');
@@ -4640,6 +4820,9 @@ Route::middleware('auth')->group(function () {
 
         Route::get('audit', [AuditLogController::class, 'index'])->name('audit.index');
 
+        // Nutzung je Mandant und Branchenvergleich (MVP-951/949), nur Plattformbetrieb — vor der Ressource.
+        Route::get('admin/organizations/nutzung', [\App\Http\Controllers\Platform\TenantUsageController::class, 'index'])->name('admin.organizations.usage');
+        Route::get('admin/organizations/branchenvergleich', [\App\Http\Controllers\Sustainability\BranchBenchmarkController::class, 'index'])->name('admin.organizations.branch-benchmark');
         Route::resource('admin/organizations', OrganizationController::class)
             ->except(['show'])
             ->names('admin.organizations')
@@ -4757,6 +4940,14 @@ Route::middleware('auth')->group(function () {
             ->name('admin.branch-profiles.primary');
         Route::post('admin/branch-profiles/{profile}/uninstall', [BranchProfileController::class, 'uninstall'])
             ->name('admin.branch-profiles.uninstall');
+        // MVP-933: kundenspezifische Profilvarianten.
+        Route::get('admin/branch-profile-variants/neu', [\App\Http\Controllers\Admin\BranchProfileVariantController::class, 'create'])->name('admin.branch-profile-variants.create');
+        Route::post('admin/branch-profile-variants', [\App\Http\Controllers\Admin\BranchProfileVariantController::class, 'store'])->name('admin.branch-profile-variants.store');
+        Route::get('admin/branch-profile-variants/{variant}', [\App\Http\Controllers\Admin\BranchProfileVariantController::class, 'edit'])->name('admin.branch-profile-variants.edit');
+        Route::put('admin/branch-profile-variants/{variant}', [\App\Http\Controllers\Admin\BranchProfileVariantController::class, 'update'])->name('admin.branch-profile-variants.update');
+        Route::post('admin/branch-profile-variants/{variant}/installieren', [\App\Http\Controllers\Admin\BranchProfileVariantController::class, 'install'])->name('admin.branch-profile-variants.install');
+        Route::get('admin/branch-profile-variants/{variant}/export', [\App\Http\Controllers\Admin\BranchProfileVariantController::class, 'export'])->name('admin.branch-profile-variants.export');
+        Route::delete('admin/branch-profile-variants/{variant}', [\App\Http\Controllers\Admin\BranchProfileVariantController::class, 'destroy'])->name('admin.branch-profile-variants.destroy');
         Route::get('admin/classifications/import/form', [ClassificationController::class, 'importForm'])
             ->name('admin.classifications.import.form');
         Route::post('admin/classifications/import', [ClassificationController::class, 'import'])
@@ -4853,6 +5044,11 @@ Route::middleware('auth')->group(function () {
         Route::post('org/members-import', [OrgMemberController::class, 'import'])->name('org.members.import');
         Route::get('org/members-import/template', [OrgMemberController::class, 'importTemplate'])->name('org.members.import.template');
         Route::get('org/members/{member}/austritt', [OrgMemberController::class, 'offboardDialog'])->name('org.members.offboard.dialog');
+        // Arbeitsvertrag zur Unterschrift (MVP-939).
+        Route::get('org/members/{member}/arbeitsvertrag', [\App\Http\Controllers\Contract\EmploymentContractController::class, 'createForMember'])->name('contracts.employment.member.create');
+        Route::post('org/members/{member}/arbeitsvertrag', [\App\Http\Controllers\Contract\EmploymentContractController::class, 'storeForMember'])->name('contracts.employment.member.store');
+        Route::get('personal/bewerbungen/{application}/arbeitsvertrag', [\App\Http\Controllers\Contract\EmploymentContractController::class, 'createForApplication'])->name('contracts.employment.application.create');
+        Route::post('personal/bewerbungen/{application}/arbeitsvertrag', [\App\Http\Controllers\Contract\EmploymentContractController::class, 'storeForApplication'])->name('contracts.employment.application.store');
         Route::post('org/members/{member}/austritt', [OrgMemberController::class, 'offboard'])->name('org.members.offboard');
         // Digitale Personalakte (Feature 141, MVP-708): eigener hrFile-Zugriffskreis
         // (DocumentPolicy ohne Admin-Bypass); Download/Versionen/Löschen über documents.*.
@@ -4869,6 +5065,8 @@ Route::middleware('auth')->group(function () {
             ->except('show');
 
         // ── Arbeits-Teams (operative Einheiten, getrennt von Rechte-Gruppen) ──
+        // Personal-Kapazität (MVP-940) — vor der Ressource, damit „kapazitaet“ kein Team ist.
+        Route::get('teams/kapazitaet', [\App\Http\Controllers\Hr\CapacityController::class, 'index'])->name('teams.capacity');
         Route::resource('teams', TeamController::class)
             ->parameters(['teams' => 'team']);
         Route::get('teams/{team}/members/attach', [TeamController::class, 'attachMemberForm'])

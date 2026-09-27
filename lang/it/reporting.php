@@ -156,7 +156,8 @@ return [
     ],
     'supplier_material' => [
         'title' => 'Consumo di materiale per fornitore',
-        'note' => 'Consumo dai fogli ore del periodo, assegnato tramite materiale → articolo → fonte di approvvigionamento preferita. Senza collegamento all\'articolo: :unlinked €.',
+        'note' => 'Consumo da fogli ore e ordini di produzione completati nel periodo; fornitore dall’ultimo ricevimento merci dell’articolo, altrimenti la fonte di fornitura preferita. Senza collegamento all’articolo: :unlinked €.',
+        'manufacturing' => 'di cui produzione',
         'materials' => 'Materiali',
         'usages' => 'Registrazioni',
         'quantities' => 'Quantità',
@@ -170,6 +171,16 @@ return [
         'note' => 'Periodo precedente = periodo di pari durata immediatamente prima; le cinque variazioni maggiori singolarmente, il resto come «Altri». Un clic apre i documenti del fornitore.',
     ],
     'warning' => [
+        'capacity' => [
+            'title' => 'Carenza di capacità nel team :name',
+            'detail' => 'Settimana dal :week: :percent % della capacità pianificata.',
+            'recommendation' => 'Raccomandazione: rinviare o ridistribuire gli ordini, verificare sostituti e personale esterno o aprire una posizione.',
+        ],
+        'recurring_tickets' => [
+            'title' => 'Ticket ricorrenti: :name',
+            'detail' => ':count ticket in :days giorni.',
+            'recommendation' => 'Raccomandazione: chiarire la causa con il cliente, verificare o sostituire l\'oggetto e valutare un\'istruzione di lavoro o una formazione per il team.',
+        ],
         'customer_rework' => [
             'title' => 'Rilavorazioni per :name: :actual %',
             'detail' => 'Ultimi 90 giorni, obiettivo :target %.',
@@ -187,6 +198,27 @@ return [
             'title' => 'Anomalie',
             'description' => 'Allerte precoci da analisi, oggetti e reclami con azione consigliata.',
             'none' => 'Nessuna anomalia.',
+        ],
+    ],
+    // Management-Auswertung (MVP-926).
+    'management' => [
+        'title' => 'Analisi direzionale',
+        'nav' => 'Problemi e formazione',
+        'subtitle' => 'Problemi ricorrenti da tutti gli allarmi precoci e fabbisogno formativo dalle lacune di competenze dell\'organizzazione.',
+        'problems' => 'Problemi ricorrenti',
+        'training' => 'Fabbisogno formativo',
+        'competency' => 'Competenza',
+        'people' => 'Persone con lacuna',
+        'average_gap' => 'Lacuna media (livelli)',
+        'courses' => 'Corsi adatti',
+        'no_course' => 'nessun corso pubblicato',
+        'no_training' => 'Nessuna lacuna di competenze — o nessun requisito per ruolo.',
+        'kind' => [
+            'customer_rework' => 'Rilavorazioni per cliente',
+            'asset_defects' => 'Difetti ricorrenti',
+            'claim_pattern' => 'Schemi di reclamo',
+            'recurring_tickets' => 'Ticket ricorrenti',
+            'capacity' => 'Carenze di personale',
         ],
     ],
 ];

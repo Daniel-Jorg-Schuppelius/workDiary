@@ -20,6 +20,8 @@
                 @if ($requisition->department) · {{ $requisition->department }} @endif
             </div>
             <x-slot:actions>
+                {{-- Eignungsmatrix (MVP-924) --}}
+                <x-icon-btn icon="grid_view" size="sm" :href="route('recruiting.requisitions.suitability', $requisition)" show-label>{{ __('recruiting.suitability.title') }}</x-icon-btn>
                 @can('update', $requisition)
                     <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('recruiting.requisitions.edit', $requisition)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                     {{-- Karrierebereich veröffentlichen/pausieren (MVP-798, Befund C1-07):

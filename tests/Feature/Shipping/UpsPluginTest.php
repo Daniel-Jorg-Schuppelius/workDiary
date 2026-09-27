@@ -334,4 +334,29 @@ class UpsPluginTest extends TestCase {
 
         $this->assertSame(ShipmentStatus::Problem, $result->status);
     }
+
+    /** MVP-917: Retourenlabel — ShipFrom ist der Kunde, ReturnService „Print Return Label“. */
+    public function test_return_label_sets_ship_from_and_return_service(): void {
+        $fake = FakePluginHttp::fake([
+            self::TOKEN_URL => self::tokenResponse(),
+            self::SHIP_URL => self::shipResponse(),
+        ]);
+        $request = new ShipmentRequest(
+            new ShipmentRecipient('WorkDiary GmbH', 'Werkstr. 1', '10115', 'Berlin', 'DE'),
+            [new ShipmentPackage(1000)],
+            'RMA-1',
+            returnFrom: new ShipmentRecipient('Erika Muster', 'Bahnhofstr. 5', '80331', 'München', 'DE'),
+        );
+
+        app(UpsPlugin::class)->createShipment($this->connection(), $request);
+
+        $fake->assertSent(function (RequestInterface $request): bool {
+            $body = json_decode((string) $request->getBody(), true);
+
+            return str_contains((string) $request->getUri(), '/ship')
+                && data_get($body, 'ShipmentRequest.Shipment.ReturnService.Code') === '9'
+                && data_get($body, 'ShipmentRequest.Shipment.ShipFrom.Address.PostalCode') === '80331'
+                && data_get($body, 'ShipmentRequest.Shipment.ShipTo.Name') === 'WorkDiary GmbH';
+        });
+    }
 }

@@ -100,7 +100,7 @@
                         @if ($article->tags->isNotEmpty())
                             <span class="mt-1 flex flex-wrap gap-1">
                                 @foreach ($article->tags as $tag)
-                                    <x-status-badge tone="ghost" outline>{{ $tag->name }}</x-status-badge>
+                                    <x-status-badge tone="ghost" outline>{{ $tag->displayName() }}</x-status-badge>
                                 @endforeach
                             </span>
                         @endif

@@ -68,4 +68,11 @@ final class ShippingManifest extends Manifest {
             'fedex',
         ];
     }
+
+    /** @return array<class-string, class-string> */
+    public function bindings(): array {
+        return [
+            \App\Services\Claims\Contracts\RmaReturnLabelIssuer::class => \App\Services\Shipping\RmaReturnLabelService::class,
+        ];
+    }
 }

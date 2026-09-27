@@ -115,6 +115,7 @@ return [
         'statusChanged' => 'Defect status changed',
     ],
     'assetFinance' => [
+        'classified' => 'Lease assessed (IFRS 16/HGB)',
         'activated' => 'Financing activated',
         'closed' => 'Financing closed',
         'contractLinked' => 'Finance contract linked',
@@ -445,6 +446,7 @@ return [
         'deviation_decided' => 'Investment deviation decided',
         'linked' => 'Investment linked',
         'option_recommended' => 'Investment option recommended',
+        'proposed' => 'Investment proposed',
         'reviewed' => 'Investment reviewed',
     ],
     'invoice' => [
@@ -749,6 +751,8 @@ return [
     ],
     'recruiting' => [
         'application_anonymized' => 'Application anonymized',
+        'interview_offered' => 'Interview slots offered',
+        'interview_chosen' => 'Interview slot chosen',
         'application_decided' => 'Application decided',
         'application_exported' => 'Application exported',
         'application_received' => 'Application received',
@@ -765,6 +769,7 @@ return [
     'rental' => [
         'requested' => 'Rental request submitted via portal',
         'requestAccepted' => 'Rental request accepted',
+        'directBooked' => 'Direct booking in the portal',
         'requestDeclined' => 'Rental request declined',
         'requestWithdrawn' => 'Rental request withdrawn by customer',
         'active' => 'Rental active',
@@ -1007,6 +1012,7 @@ return [
         'corrected' => 'Trip corrected by cancellation trip',
     ],
     'user' => [
+        'deputyReplaced' => 'Deputy reassigned',
         'anonymized' => 'Employee anonymized (PII removed, evidence retained)',
         'offboardingScheduled' => 'Offboarding scheduled',
         'offboarded' => 'Employee offboarded (account deactivated)',
@@ -1268,5 +1274,11 @@ return [
             'confirmed' => 'Change proposal confirmed',
             'dismissed' => 'Change proposal dismissed',
         ],
+    ],
+    'inspection_order' => [
+        'accepted' => 'Inspection order accepted',
+        'offer_rejected' => 'Inspection offer rejected',
+        'completed' => 'Inspection order completed',
+        'cancelled' => 'Inspection order cancelled',
     ],
 ];

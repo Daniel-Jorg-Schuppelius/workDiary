@@ -72,7 +72,7 @@
                     <select id="notes-tag" name="tag" class="select select-sm select-bordered w-full" data-autosubmit>
                         <option value="">{{ __('communication.filter.all_tags') }}</option>
                         @foreach ($tags as $tag)
-                            <option value="{{ $tag->sqid }}" @selected($filters['tag'] === $tag->sqid)>{{ $tag->name }}</option>
+                            <option value="{{ $tag->sqid }}" @selected($filters['tag'] === $tag->sqid)>{{ $tag->displayName() }}</option>
                         @endforeach
                     </select>
                 </x-filter-field>

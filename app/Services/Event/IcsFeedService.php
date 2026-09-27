@@ -13,6 +13,7 @@ namespace App\Services\Event;
 use App\Enums\Event\EventVisibility;
 use App\Enums\Vacation\VacationStatus;
 use App\Models\Absence\Vacation;
+use App\Models\Applications\JobApplicationInterview;
 use App\Models\Calendar\{AppointmentRequest, Event};
 use App\Models\Platform\{Organization, User};
 use App\Models\Schedule\ScheduledShift;
@@ -164,6 +165,20 @@ class IcsFeedService {
         return Calendar::create($title)
             ->productIdentifier((string) config('events.ics.product_id', '-//workDiary//Appointments//DE'))
             ->event($event)
+            ->get();
+    }
+
+    /** Einzel-ICS eines Bewerbungsgesprächs (MVP-925) für die Bestätigung an den Bewerber. */
+    public function documentForInterview(JobApplicationInterview $interview, int $durationMinutes = 60): string {
+        $start = CarbonImmutable::instance($interview->scheduled_at);
+        $title = (string) __('recruiting.offer.ics_title');
+
+        return Calendar::create($title)
+            ->productIdentifier((string) config('events.ics.product_id', '-//workDiary//Recruiting//DE'))
+            ->event(IcsEvent::create($title)
+                ->uniqueIdentifier('interview-' . $interview->sqid . '@workdiary')
+                ->startsAt($start->toDateTimeImmutable())
+                ->endsAt($start->addMinutes(max(15, $durationMinutes))->toDateTimeImmutable()))
             ->get();
     }
 

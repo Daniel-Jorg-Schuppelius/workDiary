@@ -55,6 +55,8 @@ final class AssetComplianceManifest extends Manifest {
             'asset_compliance_report_snapshots',
             'asset_compliance_requirements',
             'asset_inspection_events',
+            'asset_inspection_order_items',
+            'asset_inspection_orders',
             'asset_inspection_round_items',
             'asset_inspection_rounds',
             'asset_inspection_results',
@@ -84,6 +86,7 @@ final class AssetComplianceManifest extends Manifest {
                 'asset-compliance.index',
                 'asset-compliance.profiles.index',
                 'asset-compliance.schedules.index',
+                'asset-compliance.orders.index',
                 'asset-compliance.reports.index',
             ],
             'groups' => [],
@@ -106,6 +109,13 @@ final class AssetComplianceManifest extends Manifest {
     public function bindings(): array {
         return [
             \App\Services\Asset\Contracts\AssetComplianceStatusProvider::class => \App\Services\AssetCompliance\AssetComplianceService::class,
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\AssetCompliance\Contracts\InspectionTourPlanner::class => \App\Services\AssetCompliance\Contracts\NullInspectionTourPlanner::class,
         ];
     }
 }

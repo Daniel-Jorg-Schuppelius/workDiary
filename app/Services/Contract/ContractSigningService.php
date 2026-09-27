@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Contract;
 
-use App\Enums\Contract\{ContractObligationKind, EvidenceReviewStatus, SignatureLinkPurpose, SignatureMethod, SignatureParty, SignatureRequestStatus, SigningRevisionStatus};
+use App\Enums\Contract\{ContractKind, ContractObligationKind, EvidenceReviewStatus, SignatureLinkPurpose, SignatureMethod, SignatureParty, SignatureRequestStatus, SigningRevisionStatus};
 use App\Enums\Notification\NotificationEvent;
+use App\Events\Contract\ContractSigningCompleted;
 use App\Mail\AgreementLinkMail;
 use App\Models\Contract\{Contract, ContractSignatureEvidence, ContractSignatureLink, ContractSignatureRequest, ContractSigningManifestItem, ContractSigningRevision};
 use App\Models\Document\DocumentVersion;
@@ -648,6 +649,7 @@ class ContractSigningService {
             $contract = $revision->contract()->firstOrFail();
             $contract->audit('contract.signing.completed', ['revision_id' => $revision->id, 'manifest_hash' => $revision->manifest_hash, 'by' => $actor?->id]);
             $this->scheduleReview($revision, $contract);
+            ContractSigningCompleted::dispatch($revision);
 
             return;
         }
@@ -896,7 +898,11 @@ class ContractSigningService {
         if (! $contract->kind->requiresSigning()) {
             throw new RuntimeException((string) __('contract-signing.error.kind_not_signing'));
         }
-        if ($contract->customer_id === null) {
+        if ($contract->kind === ContractKind::Employment) {
+            if ($contract->employee_user_id === null && $contract->job_application_id === null) {
+                throw new RuntimeException((string) __('contract-signing.error.employee_required'));
+            }
+        } elseif ($contract->customer_id === null) {
             throw new RuntimeException((string) __('contract-signing.error.customer_required'));
         }
         if (! $contract->status->isOpen()) {

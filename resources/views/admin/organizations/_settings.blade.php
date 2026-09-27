@@ -269,6 +269,11 @@
                            error="settings.finance.fixed_assets.pool_years"
                            :value="old('settings.finance.fixed_assets.pool_years', data_get($stored, 'finance.fixed_assets.pool_years', ''))"
                            placeholder="5" />
+            <x-input-field name="settings[finance][fixed_assets][replacement_inflation_pct]" type="number" min="0" max="50" step="0.1"
+                           :label="__('settings.fixed_assets.replacement_inflation_pct')"
+                           error="settings.finance.fixed_assets.replacement_inflation_pct"
+                           :value="old('settings.finance.fixed_assets.replacement_inflation_pct', data_get($stored, 'finance.fixed_assets.replacement_inflation_pct', ''))"
+                           placeholder="0" />
         </x-form-group>
 
         {{-- MIETBEDINGUNGEN (MVP-895): Übergabe nur mit unterschriebener Fassung. --}}
@@ -278,6 +283,12 @@
                               :label="__('settings.rental_terms.require_signed')"
                               error="settings.rental.require_signed_terms"
                               :checked="(string) old('settings.rental.require_signed_terms', data_get($stored, 'rental.require_signed_terms') ? '1' : '0') === '1'" />
+            {{-- Direktbuchung im Kundenportal (MVP-916). --}}
+            <x-checkbox-field name="settings[rental][portal_direct_booking]" tone="info"
+                              :label="__('settings.rental_terms.portal_direct_booking')"
+                              :hint="__('settings.rental_terms.portal_direct_booking_hint')"
+                              error="settings.rental.portal_direct_booking"
+                              :checked="(string) old('settings.rental.portal_direct_booking', data_get($stored, 'rental.portal_direct_booking') ? '1' : '0') === '1'" />
         </x-form-group>
 
         {{-- REKLAMATIONSMUSTER (MVP-886): Schwelle und Zeitfenster für Bericht und Hinweis. --}}
@@ -292,6 +303,21 @@
                            :label="__('settings.claims_pattern.window_days')"
                            error="settings.claims.pattern.window_days"
                            :value="old('settings.claims.pattern.window_days', data_get($stored, 'claims.pattern.window_days', ''))"
+                           placeholder="90" />
+        </x-form-group>
+
+        {{-- WIEDERKEHRENDE PROBLEME (MVP-926): Ticket-Häufung je Kunde/Objekt. --}}
+        <x-form-group :legend="__('settings.recurring_tickets.heading')" icon="repeat" tone="warning" cols="2" compact
+                      :description="__('settings.recurring_tickets.description')">
+            <x-input-field name="settings[reporting][recurring_tickets][threshold]" type="number" min="2" max="50"
+                           :label="__('settings.recurring_tickets.threshold')"
+                           error="settings.reporting.recurring_tickets.threshold"
+                           :value="old('settings.reporting.recurring_tickets.threshold', data_get($stored, 'reporting.recurring_tickets.threshold', ''))"
+                           placeholder="3" />
+            <x-input-field name="settings[reporting][recurring_tickets][window_days]" type="number" min="7" max="365"
+                           :label="__('settings.recurring_tickets.window_days')"
+                           error="settings.reporting.recurring_tickets.window_days"
+                           :value="old('settings.reporting.recurring_tickets.window_days', data_get($stored, 'reporting.recurring_tickets.window_days', ''))"
                            placeholder="90" />
         </x-form-group>
 

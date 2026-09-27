@@ -16,6 +16,7 @@ use App\Enums\AssetCompliance\AssetInspectionScheduleStatus;
 use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use App\Models\Contacts\ExternalContact;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,6 +30,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $organization_id
  * @property int $asset_compliance_assignment_id
  * @property int $asset_id
+ * @property int|null $diary_entry_id
  * @property \Illuminate\Support\Carbon $due_on
  * @property \Illuminate\Support\Carbon|null $planned_on
  * @property AssetInspectionScheduleStatus $status
@@ -40,7 +42,7 @@ class AssetInspectionSchedule extends Model {
     use HasSqid;
 
     protected $fillable = [
-        'organization_id', 'asset_compliance_assignment_id', 'asset_id',
+        'organization_id', 'asset_compliance_assignment_id', 'asset_id', 'diary_entry_id',
         'due_on', 'planned_on', 'inspector_user_id', 'external_contact_id',
         'status', 'note',
     ];
@@ -79,5 +81,14 @@ class AssetInspectionSchedule extends Model {
     /** @return BelongsTo<ExternalContact, $this> */
     public function externalContact(): BelongsTo {
         return $this->belongsTo(ExternalContact::class);
+    }
+
+    /**
+     * Auftrag der Prüfertour (MVP-918).
+     *
+     * @return BelongsTo<DiaryEntry, $this>
+     */
+    public function diaryEntry(): BelongsTo {
+        return $this->belongsTo(DiaryEntry::class);
     }
 }

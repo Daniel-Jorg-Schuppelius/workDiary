@@ -185,6 +185,7 @@ return [
         [
             'code' => 'DR_DATEICHECK',
             'name' => 'Dateicheck / Preflight',
+            'name_i18n' => ['en' => 'File check / preflight', 'es' => 'Revisión de archivos / preflight', 'fr' => 'Contrôle des fichiers / preflight', 'it' => 'Controllo file / preflight'],
             'domain' => 'druck-kopiershop',
             'risk_level' => 'high',
             'description' => 'Produktionsdatei annehmen, Prüfsumme sichern, Preflight ausführen und Befunde (Fehler/Warnungen) dokumentieren.',
@@ -197,6 +198,7 @@ return [
         [
             'code' => 'DR_DRUCKFREIGABE',
             'name' => 'Proof / Druckfreigabe',
+            'name_i18n' => ['en' => 'Proof / print approval', 'es' => 'Prueba / aprobación de impresión', 'fr' => 'Épreuve / bon à tirer', 'it' => 'Bozza / visto si stampi'],
             'domain' => 'druck-kopiershop',
             'risk_level' => 'high',
             'description' => 'Freigabe bindet Person, Zeitpunkt, Datei-Hash und Produktions-Snapshot unveränderlich zusammen.',
@@ -209,6 +211,7 @@ return [
         [
             'code' => 'DR_PRODUKTIONSSTART',
             'name' => 'Produktionsstart / Andruck',
+            'name_i18n' => ['en' => 'Production start / proof run', 'es' => 'Inicio de producción / prueba de máquina', 'fr' => 'Lancement de production / BAT machine', 'it' => 'Avvio produzione / prova di stampa'],
             'domain' => 'druck-kopiershop',
             'risk_level' => 'high',
             'description' => 'Maschinen-/Kalibrierstatus prüfen, Andruck gegen Freigabestand kontrollieren, Produktion starten.',
@@ -221,6 +224,7 @@ return [
         [
             'code' => 'DR_WEITERVERARBEITUNG',
             'name' => 'Weiterverarbeitung',
+            'name_i18n' => ['en' => 'Finishing', 'es' => 'Acabado', 'fr' => 'Façonnage', 'it' => 'Allestimento'],
             'domain' => 'druck-kopiershop',
             'risk_level' => 'normal',
             'description' => 'Schneiden, Falzen, Binden, Laminieren oder Konfektionieren gemäß Produktions-Snapshot.',
@@ -233,6 +237,7 @@ return [
         [
             'code' => 'DR_QUALITAETSKONTROLLE',
             'name' => 'Qualitätskontrolle',
+            'name_i18n' => ['en' => 'Quality control', 'es' => 'Control de calidad', 'fr' => 'Contrôle qualité', 'it' => 'Controllo qualità'],
             'domain' => 'druck-kopiershop',
             'risk_level' => 'high',
             'description' => 'Ergebnis gegen Freigabestand und Auftragsparameter prüfen; Gutbogen-, Foto- oder Messnachweis optional.',
@@ -245,6 +250,7 @@ return [
         [
             'code' => 'DR_AUSGABE_VERSAND',
             'name' => 'Ausgabe / Versand',
+            'name_i18n' => ['en' => 'Issue / dispatch', 'es' => 'Entrega / envío', 'fr' => 'Remise / expédition', 'it' => 'Consegna / spedizione'],
             'domain' => 'druck-kopiershop',
             'risk_level' => 'normal',
             'description' => 'Abholung mit Übergabenachweis oder Versand über die vorhandene Sendungslogik; Tresen-Ausgabe datensparsam.',
@@ -257,6 +263,7 @@ return [
         [
             'code' => 'DR_REKLAMATION',
             'name' => 'Reklamation / Nacharbeit',
+            'name_i18n' => ['en' => 'Complaint / rework', 'es' => 'Reclamación / retrabajo', 'fr' => 'Réclamation / retouche', 'it' => 'Reclamo / rilavorazione'],
             'domain' => 'druck-kopiershop',
             'risk_level' => 'high',
             'description' => 'Reklamation mit Bezug auf Auftrag, freigegebene Datei, Snapshot, Qualitätsnachweis und betroffene Menge aufnehmen.',

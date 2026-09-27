@@ -133,6 +133,31 @@ final class FieldSchema implements \Countable, \IteratorAggregate {
         return $schema;
     }
 
+    /**
+     * Gegenstück zu {@see fromRows()}: Zeilen für `x-field-schema-editor`
+     * (Optionen als Komma-Liste, Bedingungen über das Label des Bezugsfelds).
+     *
+     * @return list<array{label: string, type: string, required: bool, listed: bool, options: string, help: string, unit: string, min: string, max: string, visible_if: array{field: string, op: string, value: string}}>
+     */
+    public function toRows(): array {
+        return array_map(fn (FieldDefinition $f): array => [
+            'label' => $f->label,
+            'type' => $f->type->value,
+            'required' => $f->required,
+            'listed' => $f->listed,
+            'options' => implode(', ', $f->options),
+            'help' => (string) $f->help,
+            'unit' => (string) $f->unit,
+            'min' => $f->min === null ? '' : (string) $f->min,
+            'max' => $f->max === null ? '' : (string) $f->max,
+            'visible_if' => [
+                'field' => $f->visibleIf !== null ? ($this->get((string) $f->visibleIf['field'])->label ?? (string) $f->visibleIf['field']) : '',
+                'op' => (string) ($f->visibleIf['op'] ?? 'eq'),
+                'value' => (string) ($f->visibleIf['value'] ?? ''),
+            ],
+        ], $this->fields);
+    }
+
     /** @return list<DefinitionArray> */
     public function toArray(): array {
         return array_map(static fn (FieldDefinition $field): array => $field->toArray(), $this->fields);

@@ -19,7 +19,7 @@
 
 @php
     $bg    = $color ?? ($tag?->color ?? '#e5e7eb');
-    $label = $name ?? $tag?->name;
+    $label = $name ?? $tag?->displayName();
 @endphp
 
 <span {{ $attributes->merge(['class' => 'badge badge-sm']) }} style="background:{{ $bg }};color:#000">{{ $label }}</span>

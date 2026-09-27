@@ -16,7 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Asset\Asset;
 use App\Models\Platform\User;
 use App\Models\Rental\RentalRequest;
-use App\Services\Rental\RentalRequestService;
+use App\Services\Rental\{RentalBillingService, RentalRequestService};
 use App\Support\{ErrorText, Sqid, Tz};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
@@ -26,11 +26,15 @@ use RuntimeException;
 
 /**
  * Portal-Verleihanfrage (Feature 073, MVP-714): freigegebenes Sortiment,
- * grobe Verfügbarkeit (nur frei/belegt), zweiphasige Anfrage — der Kunde
- * reserviert nie selbst. Eigene Anfragen, eigener Kunde, sonst 404.
+ * grobe Verfügbarkeit (nur frei/belegt), zweiphasige Anfrage; mit
+ * Einstellung der Organisation zusätzlich Direktbuchung eines Geräts und
+ * Preisangabe aus der Preisliste (MVP-916). Eigene Anfragen, eigener Kunde, sonst 404.
  */
 class RentalRequestController extends Controller {
-    public function __construct(private readonly RentalRequestService $service) {}
+    public function __construct(
+        private readonly RentalRequestService $service,
+        private readonly RentalBillingService $billing,
+    ) {}
 
     public function index(Request $request): View {
         $user = $this->portalUser();
@@ -41,13 +45,16 @@ class RentalRequestController extends Controller {
 
         $profiles = $this->service->bookableProfiles($customer);
         $availability = [];
+        $prices = [];
         if ($from !== null && $to !== null && $to->greaterThan($from)) {
             foreach ($profiles as $profile) {
                 /** @var Asset $asset */
                 $asset = $profile->asset;
                 $availability[$asset->id] = $this->service->isRoughlyAvailable($asset, $from, $to);
+                $prices[$asset->id] = $this->billing->estimate($profile, $from, $to);
             }
         }
+        $organization = $user->organization;
 
         $requests = RentalRequest::query()
             ->withoutGlobalScopes()
@@ -64,6 +71,8 @@ class RentalRequestController extends Controller {
             'from' => $from,
             'to' => $to,
             'availability' => $availability,
+            'prices' => $prices,
+            'direct' => $organization !== null && $this->service->directBookingEnabled($organization),
             'requests' => $requests,
         ]);
     }
@@ -78,9 +87,28 @@ class RentalRequestController extends Controller {
             'from' => ['required', 'date'],
             'to' => ['required', 'date', 'after:from'],
             'note' => ['nullable', 'string', 'max:1000'],
+            'booking' => ['nullable', 'in:direct'],
         ]);
 
         [$asset, $group] = $this->resolveSubject((string) $data['subject'], (int) $user->organization_id);
+
+        if (($data['booking'] ?? null) === 'direct') {
+            abort_if($asset === null, 404);
+            try {
+                $this->service->bookFromPortal(
+                    $customer,
+                    $user,
+                    $asset,
+                    Carbon::instance(Tz::parse((string) $data['from'])),
+                    Carbon::instance(Tz::parse((string) $data['to'])),
+                    $data['note'] ?? null,
+                );
+            } catch (RuntimeException $e) {
+                return back()->withInput()->with('error', ErrorText::for($e));
+            }
+
+            return redirect()->route('customer.rentals.requests.index')->with('success', __('rental.portal.direct_booked'));
+        }
 
         try {
             $this->service->requestFromPortal(

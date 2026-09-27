@@ -51,6 +51,11 @@ class RentalRateCard extends Model {
         $query->where('status', RentalRateCardStatus::Active->value);
     }
 
+    /** @return HasMany<RentalRateRule, $this> Mietpreisregeln (MVP-950) */
+    public function rules(): HasMany {
+        return $this->hasMany(RentalRateRule::class)->orderBy('id');
+    }
+
     /** @return HasMany<RentalRateItem, $this> */
     public function items(): HasMany {
         return $this->hasMany(RentalRateItem::class);
@@ -79,6 +84,7 @@ class RentalRateCard extends Model {
                 'unit' => $item->unit,
                 'min_duration_days' => $item->min_duration_days,
             ])->values()->all(),
+            'rules' => $this->rules->map(fn (RentalRateRule $rule): array => $rule->toSnapshot())->values()->all(),
         ];
     }
 }

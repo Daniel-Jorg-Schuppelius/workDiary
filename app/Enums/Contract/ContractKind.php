@@ -38,6 +38,8 @@ enum ContractKind: string implements HasLabel {
     case NonDisclosure = 'non_disclosure';
     // Mietbedingungen des Geräteverleihs (Feature 073, MVP-895): Fassung je Kunde, unterschrieben.
     case RentalTerms = 'rental_terms';
+    // Arbeitsvertrag (MVP-939): Gegenpartei ist die Person, nur mit Personalakten-Recht sichtbar.
+    case Employment = 'employment';
     case Other = 'other';
 
     public function label(): string {
@@ -53,13 +55,14 @@ enum ContractKind: string implements HasLabel {
             self::DataProcessing => (string) __('Auftragsverarbeitungsvertrag (AVV)'),
             self::NonDisclosure => (string) __('Verschwiegenheitsvereinbarung (NDA)'),
             self::RentalTerms => (string) __('Mietbedingungen (Geräteverleih)'),
+            self::Employment => (string) __('Arbeitsvertrag'),
             self::Other => (string) __('Sonstiger Vertrag'),
         };
     }
 
     /** Vertragsart mit Unterzeichnungsschicht (Fassungen, Links, Nachweise). */
     public function requiresSigning(): bool {
-        return in_array($this, self::signingKinds(), true);
+        return $this === self::Employment || in_array($this, self::signingKinds(), true);
     }
 
     /** @return list<self> */

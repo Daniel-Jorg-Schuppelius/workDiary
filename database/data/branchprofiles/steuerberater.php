@@ -173,6 +173,7 @@ return [
         [
             'code' => 'STB_USTVA',
             'name' => 'Umsatzsteuer-Voranmeldung',
+            'name_i18n' => ['en' => 'Advance VAT return', 'es' => 'Declaración provisional de IVA', 'fr' => 'Déclaration de TVA provisoire', 'it' => 'Liquidazione IVA periodica'],
             'domain' => 'steuerberater',
             'risk_level' => 'high',
             'description' => 'USt-Voranmeldung mit Vier-Augen-Kontrolle und ELSTER-Übermittlung.',
@@ -188,6 +189,7 @@ return [
         [
             'code' => 'STB_FRISTEN_REVIEW',
             'name' => 'Fristenkontrolle',
+            'name_i18n' => ['en' => 'Deadline control', 'es' => 'Control de plazos', 'fr' => 'Contrôle des délais', 'it' => 'Controllo scadenze'],
             'domain' => 'steuerberater',
             'risk_level' => 'normal',
             'description' => 'Periodische Kontrolle laufender Fristen und Eskalation kritischer Termine.',
@@ -200,6 +202,7 @@ return [
         [
             'code' => 'STB_GELDWAESCHE_CHECK',
             'name' => 'Geldwäsche-Prüfung (GwG)',
+            'name_i18n' => ['en' => 'Anti-money laundering check (GwG)', 'es' => 'Control de blanqueo de capitales (GwG)', 'fr' => 'Contrôle anti-blanchiment (GwG)', 'it' => 'Verifica antiriciclaggio (GwG)'],
             'domain' => 'steuerberater',
             'risk_level' => 'high',
             'description' => 'Identifizierung und Risikoeinstufung nach GwG bei Mandatsannahme.',
@@ -213,6 +216,7 @@ return [
         [
             'code' => 'STB_FIBU_MONAT',
             'name' => 'Finanzbuchhaltung Monat',
+            'name_i18n' => ['en' => 'Monthly financial accounting', 'es' => 'Contabilidad mensual', 'fr' => 'Comptabilité mensuelle', 'it' => 'Contabilità mensile'],
             'domain' => 'steuerberater',
             'risk_level' => 'normal',
             'description' => 'Monatliche Finanzbuchhaltung: Belege, Buchen, Bankabstimmung, Auswertungen.',
@@ -228,6 +232,7 @@ return [
         [
             'code' => 'STB_LOHN_MONAT',
             'name' => 'Lohnabrechnung Monat',
+            'name_i18n' => ['en' => 'Monthly payroll', 'es' => 'Nómina mensual', 'fr' => 'Paie mensuelle', 'it' => 'Elaborazione paghe mensile'],
             'domain' => 'steuerberater',
             'risk_level' => 'high',
             'description' => 'Monatliche Lohnabrechnung mit Vier-Augen-Prüfung, Meldungen und Nachweis.',
@@ -243,6 +248,7 @@ return [
         [
             'code' => 'STB_LSTAN',
             'name' => 'Lohnsteuer-Anmeldung',
+            'name_i18n' => ['en' => 'Wage tax return', 'es' => 'Declaración de retenciones', 'fr' => 'Déclaration d\'impôt sur les salaires', 'it' => 'Dichiarazione delle ritenute'],
             'domain' => 'steuerberater',
             'risk_level' => 'high',
             'description' => 'Lohnsteuer-Anmeldung mit Vier-Augen-Kontrolle und ELSTER-Übermittlung.',
@@ -257,6 +263,7 @@ return [
         [
             'code' => 'STB_JAHRESABSCHLUSS',
             'name' => 'Jahresabschluss',
+            'name_i18n' => ['en' => 'Annual financial statements', 'es' => 'Cierre anual', 'fr' => 'Comptes annuels', 'it' => 'Bilancio d\'esercizio'],
             'domain' => 'steuerberater',
             'risk_level' => 'high',
             'description' => 'Jahresabschluss mit Abstimmung, Bewertung, Entwurf, Vier-Augen-Prüfung, Besprechung und Offenlegung.',
@@ -273,6 +280,7 @@ return [
         [
             'code' => 'STB_STEUERERKLAERUNG',
             'name' => 'Steuererklärung',
+            'name_i18n' => ['en' => 'Tax return', 'es' => 'Declaración de impuestos', 'fr' => 'Déclaration fiscale', 'it' => 'Dichiarazione dei redditi'],
             'domain' => 'steuerberater',
             'risk_level' => 'normal',
             'description' => 'Steuererklärung erstellen, prüfen, vom Mandanten freigeben lassen und übermitteln.',
@@ -288,6 +296,7 @@ return [
         [
             'code' => 'STB_MANDANTENANNAHME',
             'name' => 'Mandantenannahme',
+            'name_i18n' => ['en' => 'Client onboarding', 'es' => 'Alta de cliente', 'fr' => 'Acceptation du mandant', 'it' => 'Accettazione del cliente'],
             'domain' => 'steuerberater',
             'risk_level' => 'normal',
             'description' => 'Neues Mandat mit GwG-Prüfung, Kollisionsprüfung, Auftrag/Vollmacht, Honorar und Aktenanlage.',
@@ -302,6 +311,7 @@ return [
         [
             'code' => 'STB_BETRIEBSPRUEFUNG',
             'name' => 'Betriebsprüfung begleiten',
+            'name_i18n' => ['en' => 'Accompany tax audit', 'es' => 'Acompañar la inspección fiscal', 'fr' => 'Accompagner le contrôle fiscal', 'it' => 'Assistere alla verifica fiscale'],
             'domain' => 'steuerberater',
             'risk_level' => 'high',
             'description' => 'Betriebsprüfung von der Anordnung bis zu den Änderungsbescheiden begleiten.',

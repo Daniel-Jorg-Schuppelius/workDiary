@@ -177,6 +177,7 @@ return [
         [
             'code' => 'GL_BAUMPFLEGE',
             'name' => 'Baumpflege / Verkehrssicherung',
+            'name_i18n' => ['en' => 'Tree care / safety inspection', 'es' => 'Cuidado de árboles / seguridad vial', 'fr' => 'Entretien des arbres / sécurité', 'it' => 'Cura degli alberi / messa in sicurezza'],
             'domain' => 'galabau',
             'risk_level' => 'high',
             'description' => 'Baumarbeiten mit Gefährdungsbeurteilung und Absicherung.',
@@ -191,6 +192,7 @@ return [
         [
             'code' => 'GL_ABNAHME',
             'name' => 'Abnahme Außenanlage',
+            'name_i18n' => ['en' => 'Acceptance of outdoor area', 'es' => 'Recepción de exteriores', 'fr' => 'Réception des aménagements extérieurs', 'it' => 'Collaudo area esterna'],
             'domain' => 'galabau',
             'risk_level' => 'normal',
             'description' => 'Abnahme mit Restpunkten und Kundenunterschrift.',
@@ -204,6 +206,7 @@ return [
         [
             'code' => 'GL_PFLEGEGANG',
             'name' => 'Pflegegang Außenanlage',
+            'name_i18n' => ['en' => 'Outdoor maintenance round', 'es' => 'Ronda de mantenimiento exterior', 'fr' => 'Tournée d\'entretien extérieur', 'it' => 'Giro di manutenzione esterna'],
             'domain' => 'galabau',
             'risk_level' => 'normal',
             'description' => 'Turnusmäßiger Pflegegang mit Erfassung der Arbeiten und Auffälligkeiten.',
@@ -218,6 +221,7 @@ return [
         [
             'code' => 'GL_PFLANZUNG',
             'name' => 'Pflanzung',
+            'name_i18n' => ['en' => 'Planting', 'es' => 'Plantación', 'fr' => 'Plantation', 'it' => 'Piantagione'],
             'domain' => 'galabau',
             'risk_level' => 'normal',
             'description' => 'Pflanzung mit Qualitätsprüfung des Pflanzguts, Bodenvorbereitung und Anwuchspflege.',
@@ -233,6 +237,7 @@ return [
         [
             'code' => 'GL_NEUANLAGE',
             'name' => 'Neuanlage Außenbereich',
+            'name_i18n' => ['en' => 'New outdoor installation', 'es' => 'Nueva instalación exterior', 'fr' => 'Nouvel aménagement extérieur', 'it' => 'Nuova sistemazione esterna'],
             'domain' => 'galabau',
             'risk_level' => 'normal',
             'description' => 'Neuanlage nach Plan mit Erdarbeiten, Vegetationsschicht, Aufmaß und Abnahme.',
@@ -248,6 +253,7 @@ return [
         [
             'code' => 'GL_PFLASTER',
             'name' => 'Pflasterarbeiten',
+            'name_i18n' => ['en' => 'Paving work', 'es' => 'Trabajos de adoquinado', 'fr' => 'Travaux de pavage', 'it' => 'Lavori di pavimentazione'],
             'domain' => 'galabau',
             'risk_level' => 'normal',
             'description' => 'Pflasterung mit Unterbauprüfung, Gefälle, Verlegung, Fugen und Aufmaß.',
@@ -263,6 +269,7 @@ return [
         [
             'code' => 'GL_WINTERDIENST',
             'name' => 'Winterdienst-Einsatz',
+            'name_i18n' => ['en' => 'Winter service call-out', 'es' => 'Servicio invernal', 'fr' => 'Intervention de service hivernal', 'it' => 'Intervento del servizio invernale'],
             'domain' => 'galabau',
             'risk_level' => 'normal',
             'description' => 'Räum- und Streueinsatz mit Zeiten, Streumittel und Nachweis im Streubuch.',

@@ -57,4 +57,9 @@ return [
             'type_not_allowed' => 'Field ":label": file, photo and signature fields are not available here.',
         ],
     ],
+    // Übersetzungen von Stammdatentexten (MVP-912).
+    'translations' => [
+        'title' => 'Translations',
+        'hint' => 'Leave empty where the German text should apply. The translation of the language the person has set is shown.',
+    ],
 ];

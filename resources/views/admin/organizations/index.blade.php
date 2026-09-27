@@ -21,6 +21,9 @@
 @endphp
 <x-index-page overflow="clip" :subtitle="__('Mandanten der Plattform verwalten und konfigurieren.')">
     <x-slot:actions>
+        @if (auth()->user()?->isGlobalAdmin())
+            <x-icon-btn icon="monitoring" size="sm" :href="route('admin.organizations.usage')" show-label>{{ __('platform_usage.title') }}</x-icon-btn>
+        @endif
         @if ($demoCount > 0)
             <x-icon-btn :icon="$showDemo ? 'visibility_off' : 'visibility'" size="sm" show-label
                         :href="route('admin.organizations.index', array_filter(['show_demo' => $showDemo ? null : 1, 'sort' => request('sort'), 'dir' => request('dir')]))">

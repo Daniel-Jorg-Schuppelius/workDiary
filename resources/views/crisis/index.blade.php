@@ -14,6 +14,16 @@
 @section('content')
 <x-index-page :subtitle="__('Gemeinsames Lagebild über Vorfälle, Krisenstab, Kommunikation und Wiederanlauf.')">
     <x-slot:actions>
+        {{-- Offline-Krisenmappe (MVP-914): Speichern auf Anforderung, Auffrischen bei jedem Besuch. --}}
+        <x-icon-btn icon="download_for_offline" tone="ghost" size="sm" type="button"
+                    data-offline-crisis="{{ route('crisis.offline-bundle') }}"
+                    :title="__('crisis.offline.hint')" show-label>{{ __('crisis.offline.save') }}</x-icon-btn>
+        <x-icon-btn icon="account_tree" tone="ghost" size="sm" :href="route('crisis.bia.index')" show-label>{{ __('crisis.bia.title') }}</x-icon-btn>
+        <x-icon-btn icon="insights" tone="ghost" size="sm" :href="route('crisis.bcm-report')" show-label>{{ __('crisis.bcm_report.title') }}</x-icon-btn>
+        @can(\App\Enums\User\Permission::OrganizationUpdate->value)
+            <x-icon-btn icon="campaign" tone="ghost" size="sm" data-entry-modal-trigger
+                        :href="route('crisis.status-page.edit')" show-label>{{ __('crisis.status_page.title') }}</x-icon-btn>
+        @endcan
         @can('create', \App\Models\Crisis\CrisisCase::class)
             <x-icon-btn icon="add" tone="error" size="sm"
                         data-entry-modal-trigger

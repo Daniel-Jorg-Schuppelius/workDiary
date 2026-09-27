@@ -7,14 +7,14 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Verleih-Anfrage im Portal (Feature 073, MVP-714): freigegebenes Sortiment, grobe Verfügbarkeit, zweiphasige Anfrage.
-     Erwartet: $profiles, $groups, $from, $to, $availability, $requests --}}
+     Erwartet: $profiles, $groups, $from, $to, $availability, $prices, $direct, $requests --}}
 @extends('customer.layout')
 
 @section('title', __('Verleih-Anfrage'))
 
 @section('content')
     <h1 class="mb-1 text-2xl font-semibold">{{ __('Verleih-Anfrage') }}</h1>
-    <p class="mb-4 text-sm text-base-content/70">{{ __('Sie fragen Gerät oder Gerätegruppe für einen Zeitraum an — wir prüfen die Verfügbarkeit und bestätigen verbindlich.') }}</p>
+    <p class="mb-4 text-sm text-base-content/70">{{ $direct ? __('rental.portal.direct_intro') : __('Sie fragen Gerät oder Gerätegruppe für einen Zeitraum an — wir prüfen die Verfügbarkeit und bestätigen verbindlich.') }}</p>
 
     <div class="mb-6 rounded-box bg-base-100 p-4 shadow">
         <form method="GET" action="{{ route('customer.rentals.requests.index') }}" class="flex flex-wrap items-end gap-3">
@@ -33,6 +33,7 @@
                         <x-table.th>{{ __('Gerät') }}</x-table.th>
                         <x-table.th>{{ __('Gerätegruppe') }}</x-table.th>
                         <x-table.th>{{ __('Verfügbarkeit') }}</x-table.th>
+                        <x-table.th class="text-right">{{ __('rental.portal.price') }}</x-table.th>
                     </tr>
                 </x-slot:head>
                 @foreach ($profiles as $profile)
@@ -48,6 +49,13 @@
                                 @endif
                             @else
                                 <span class="text-muted">{{ __('Zeitraum wählen') }}</span>
+                            @endif
+                        </td>
+                        <td class="text-right whitespace-nowrap">
+                            @if (($prices[(int) $profile->asset_id] ?? null) !== null)
+                                {{ __('rental.portal.price_estimate', ['amount' => $prices[(int) $profile->asset_id]->format()]) }}
+                            @else
+                                <span class="text-muted">—</span>
                             @endif
                         </td>
                     </tr>
@@ -75,7 +83,11 @@
                         @endif
                     </x-select-field>
                     <x-textarea-field name="note" :label="__('Zweck / Notiz (optional)')" rows="2">{{ old('note') }}</x-textarea-field>
-                    <div class="sm:col-span-2 flex justify-end">
+                    <div class="sm:col-span-2 flex justify-end gap-2">
+                        @if ($direct)
+                            {{-- Direktbuchung (MVP-916): nur ein bestimmtes, freies Gerät; der Dienst prüft unter Sperre. --}}
+                            <x-button type="submit" tone="secondary" name="booking" value="direct" icon="event_available" :title="__('rental.portal.direct_hint')"><span>{{ __('rental.portal.direct_book') }}</span></x-button>
+                        @endif
                         <x-button type="submit" tone="primary" icon="send"><span>{{ __('Anfrage senden') }}</span></x-button>
                     </div>
                 </form>
@@ -98,7 +110,7 @@
                 <td class="whitespace-nowrap">{{ $request->starts_at->orgTz()->format('d.m.Y H:i') }} – {{ $request->ends_at->orgTz()->format('d.m.Y H:i') }}</td>
                 <td>{{ $request->subjectLabel() }}</td>
                 <td>
-                    <span class="badge badge-{{ $request->status->badgeTone() }} badge-sm">{{ $request->status->label() }}</span>
+                    <span class="badge badge-{{ $request->status->badgeTone() }} badge-sm">{{ $request->is_direct ? __('rental.portal.direct_status') : $request->status->label() }}</span>
                     @if ($request->status === \App\Enums\Rental\RentalRequestStatus::Declined && $request->decline_reason)
                         <span class="block text-xs text-muted">{{ $request->decline_reason }}</span>
                     @endif

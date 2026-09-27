@@ -21,4 +21,14 @@ return [
         'standby' => 'Astreinte',
         'other' => 'Autre',
     ],
+    // Projektvorschläge für offene Zeitblöcke (MVP-923).
+    'suggestion' => [
+        'source' => [
+            'order' => 'Suggestion : intervention « :title »',
+            'day' => 'Suggestion : aujourd\'hui « :title »',
+            'recent' => 'Suggestion : dernière imputation',
+        ],
+        'book_all' => 'Imputer les :count suggestions',
+        'booked' => ':count blocs de temps imputés.',
+    ],
 ];

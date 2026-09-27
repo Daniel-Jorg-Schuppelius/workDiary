@@ -672,6 +672,7 @@ enum Permission: string implements HasLabel {
     case InvestmentView = 'investment.view';
     case InvestmentManage = 'investment.manage';
     case InvestmentApprove = 'investment.approve';
+    case InvestmentPropose = 'investment.propose';
 
         // ── Notfall-/Krisenmanagement (Feature 070, MVP-211) ──────────
     case CrisisViewAny = 'crisis.viewAny';
@@ -684,6 +685,14 @@ enum Permission: string implements HasLabel {
     case SustainabilityView = 'sustainability.view';
     case SustainabilityManage = 'sustainability.manage';
 
+        // ── Rückrufaktionen (MVP-921) ───────────────────────────────────
+    case RecallViewAny = 'recall.viewAny';
+    case RecallView = 'recall.view';
+    case RecallManage = 'recall.manage';
+        // ── Schadensfälle (MVP-919) ─────────────────────────────────────
+    case DamageViewAny = 'damage.viewAny';
+    case DamageView = 'damage.view';
+    case DamageManage = 'damage.manage';
         // ── Reklamation/Gewährleistung (Feature 072, MVP-246) ──────────
         // Getrennte Rollen: manage/decide/finance/warehouse/recourse.
     case ClaimViewAny = 'claim.viewAny';
@@ -867,6 +876,8 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'crisis.') => PermissionGroup::Crisis,
             str_starts_with($this->value, 'sustainability.') => PermissionGroup::Sustainability,
             str_starts_with($this->value, 'claim.') => PermissionGroup::Claims,
+            str_starts_with($this->value, 'damage.') => PermissionGroup::Damage,
+            str_starts_with($this->value, 'recall.') => PermissionGroup::Claims,
             str_starts_with($this->value, 'domain.') => PermissionGroup::Domains,
             str_starts_with($this->value, 'rental.') => PermissionGroup::Rental,
             str_starts_with($this->value, 'disposal.') => PermissionGroup::Disposal,

@@ -166,6 +166,7 @@ return [
         'crisis' => 'Krisenmanagement',
         'sustainability' => 'Nachhaltigkeit & ESG',
         'claims' => 'Reklamation & Gewährleistung',
+        'damage' => 'Schadensfälle',
         'rental' => 'Geräteverleih',
         'disposal' => 'Entsorgung & Nachweise',
         'asset-finance' => 'Leasing & Asset-Verträge',
@@ -644,6 +645,7 @@ return [
         'investment.view' => 'Investitionsakte einsehen',
         'investment.manage' => 'Investitionsakten führen',
         'investment.approve' => 'Investitionsbudgets freigeben',
+        'investment.propose' => 'Investitionen vorschlagen',
 
         // Krisenmanagement (Feature 070)
         'crisis.viewAny' => 'Krisenakten auflisten',
@@ -659,6 +661,12 @@ return [
         'claim.view' => 'Reklamationsakte einsehen',
         'claim.manage' => 'Reklamationen annehmen und führen',
         'claim.decide' => 'Reklamationen bewerten und entscheiden',
+        'damage.viewAny' => 'Schadensfälle auflisten',
+        'damage.view' => 'Schadensfall einsehen',
+        'damage.manage' => 'Schadensfälle führen (Anlage, Angaben, Status)',
+        'recall.viewAny' => 'Rückrufaktionen auflisten',
+        'recall.view' => 'Rückrufaktion einsehen',
+        'recall.manage' => 'Rückrufaktionen führen (Eingrenzung, Aktivierung, Stand je Kunde)',
         'claim.finance' => 'Kaufmännische Reklamationsfolgen freigeben',
         'claim.warehouse' => 'Rückläufer prüfen und einlagern',
         'claim.recourse' => 'Lieferantenregress führen',

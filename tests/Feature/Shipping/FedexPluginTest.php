@@ -297,4 +297,31 @@ class FedexPluginTest extends TestCase {
 
         $this->assertSame(ShipmentStatus::Problem, $result->status);
     }
+
+    /** MVP-917: Retourenlabel — der Kunde versendet, die Organisation zahlt als Empfänger. */
+    public function test_return_label_swaps_shipper_and_marks_return_shipment(): void {
+        $fake = FakePluginHttp::fake([
+            self::TOKEN_URL => self::tokenResponse(),
+            self::SHIP_URL => self::shipResponse(),
+        ]);
+        $request = new ShipmentRequest(
+            new ShipmentRecipient('WorkDiary GmbH', 'Werkstr. 1', '10115', 'Berlin', 'DE'),
+            [new ShipmentPackage(1000)],
+            'RMA-1',
+            returnFrom: new ShipmentRecipient('Erika Muster', 'Bahnhofstr. 5', '80331', 'München', 'DE'),
+        );
+
+        app(FedexPlugin::class)->createShipment($this->connection(), $request);
+
+        $fake->assertSent(function (RequestInterface $request): bool {
+            $body = json_decode((string) $request->getBody(), true);
+
+            return str_contains((string) $request->getUri(), '/ship/v1/shipments')
+                && data_get($body, 'requestedShipment.shipper.address.postalCode') === '80331'
+                && data_get($body, 'requestedShipment.recipients.0.address.city') === 'Berlin'
+                && data_get($body, 'requestedShipment.shipmentSpecialServices.specialServiceTypes.0') === 'RETURN_SHIPMENT'
+                && data_get($body, 'requestedShipment.shippingChargesPayment.paymentType') === 'RECIPIENT'
+                && data_get($body, 'requestedShipment.shippingChargesPayment.payor.responsibleParty.accountNumber.value') === '740561073';
+        });
+    }
 }

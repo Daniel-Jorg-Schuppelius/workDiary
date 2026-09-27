@@ -88,7 +88,7 @@
                 <a href="{{ route('diary.index', ['tag' => $tag->sqid]) }}"
                     class="badge badge-outline"
                     @if ($tag->color) style="border-color: {{ $tag->color }}; color: {{ $tag->color }};" @endif>
-                    #{{ $tag->name }}
+                    #{{ $tag->displayName() }}
                 </a>
             @endforeach
         </div>

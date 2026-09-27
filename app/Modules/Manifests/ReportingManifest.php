@@ -63,4 +63,11 @@ final class ReportingManifest extends Manifest {
             ],
         ];
     }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\Reporting\Contracts\TrainingNeedSource::class => \App\Services\Reporting\Contracts\NullTrainingNeedSource::class,
+        ];
+    }
 }

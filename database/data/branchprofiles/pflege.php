@@ -147,6 +147,7 @@ return [
         [
             'code' => 'PF_MEDIKAMENTENGABE',
             'name' => 'Medikamentengabe (5-R-Regel)',
+            'name_i18n' => ['en' => 'Medication administration (5 rights)', 'es' => 'Administración de medicamentos (regla de los 5 correctos)', 'fr' => 'Administration de médicaments (règle des 5 B)', 'it' => 'Somministrazione di farmaci (regola delle 5 G)'],
             'domain' => 'pflege',
             'risk_level' => 'high',
             'description' => 'Sichere Medikamentengabe nach 5-R (richtiger Klient, Medikament, Dosis, Zeitpunkt, Applikationsform) mit Handzeichen; BtM-Bestand im Vier-Augen-Prinzip.',
@@ -162,6 +163,7 @@ return [
         [
             'code' => 'PF_STURZPROTOKOLL',
             'name' => 'Sturzereignis dokumentieren',
+            'name_i18n' => ['en' => 'Document fall incident', 'es' => 'Documentar una caída', 'fr' => 'Documenter une chute', 'it' => 'Documentare una caduta'],
             'domain' => 'pflege',
             'risk_level' => 'high',
             'description' => 'Sturz erfassen, Vitalzeichen prüfen, Verletzung bewerten, Arzt/Angehörige informieren und nachweisen.',
@@ -177,6 +179,7 @@ return [
         [
             'code' => 'PF_WUNDVERSORGUNG',
             'name' => 'Wundversorgung',
+            'name_i18n' => ['en' => 'Wound care', 'es' => 'Cura de heridas', 'fr' => 'Soins des plaies', 'it' => 'Medicazione'],
             'domain' => 'pflege',
             'risk_level' => 'normal',
             'description' => 'Wundversorgung nach ärztlicher Anordnung mit Materialnachweis und Wunddokumentation.',
@@ -191,6 +194,7 @@ return [
         [
             'code' => 'PF_ERSTBESUCH',
             'name' => 'Erstbesuch / Pflegeanamnese',
+            'name_i18n' => ['en' => 'First visit / care assessment', 'es' => 'Primera visita / valoración de cuidados', 'fr' => 'Première visite / évaluation des soins', 'it' => 'Prima visita / anamnesi assistenziale'],
             'domain' => 'pflege',
             'risk_level' => 'normal',
             'description' => 'Erstbesuch mit Pflegeanamnese, Medikationsplan-Abgleich und Einwilligung.',
@@ -204,6 +208,7 @@ return [
         [
             'code' => 'PF_BERATUNGSBESUCH_37_3',
             'name' => 'Beratungsbesuch (§37.3 SGB XI)',
+            'name_i18n' => ['en' => 'Counselling visit (§37.3 SGB XI)', 'es' => 'Visita de asesoramiento (§37.3 SGB XI)', 'fr' => 'Visite de conseil (§37.3 SGB XI)', 'it' => 'Visita di consulenza (§37.3 SGB XI)'],
             'domain' => 'pflege',
             'risk_level' => 'normal',
             'description' => 'Nachweispflichtiger Beratungsbesuch bei Pflegegeld-Empfängern mit Empfehlungen und Bestätigung.',

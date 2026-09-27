@@ -242,4 +242,10 @@ return [
             'ip_blocked' => 'Platform admin IP blocked',
         ],
     ],
+    // Schadensfälle (MVP-919).
+    'damage' => [
+        'opened' => 'Damage case created',
+        'updated' => 'Details changed',
+        'status' => 'Status changed',
+    ],
 ];

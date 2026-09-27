@@ -79,10 +79,10 @@ class ClaimsReportController extends Controller {
 
         $closed = $cases->filter(fn(ClaimCase $c): bool => $c->closed_at !== null);
         $byCause = $cases->filter(fn(ClaimCase $c): bool => $c->rootCause !== null)
-            ->groupBy(fn(ClaimCase $c): string => (string) $c->rootCause?->label)
+            ->groupBy(fn(ClaimCase $c): string => (string) $c->rootCause?->display_label)
             ->map(fn($group) => $group->count())->sortDesc();
         $byDefect = $cases->filter(fn(ClaimCase $c): bool => $c->defectType !== null)
-            ->groupBy(fn(ClaimCase $c): string => (string) $c->defectType?->label)
+            ->groupBy(fn(ClaimCase $c): string => (string) $c->defectType?->display_label)
             ->map(fn($group) => $group->count())->sortDesc();
         $byArticle = $cases->filter(fn(ClaimCase $c): bool => $c->article !== null)
             ->groupBy(fn(ClaimCase $c): string => (string) $c->article?->name)

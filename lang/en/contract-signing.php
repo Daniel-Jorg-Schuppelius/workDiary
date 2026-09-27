@@ -84,6 +84,7 @@ return [
         'activate_unsigned' => 'The contract can only be activated once a version has been fully signed.',
         'contract_closed' => 'The contract has ended or been cancelled — signing is no longer possible.',
         'countersign_party' => 'Only the organisation side can countersign; the customer side signs via the link or submits a PDF.',
+        'employee_required' => 'An employment contract requires a team member or an application.',
         'customer_required' => 'This contract kind requires a customer as contracting partner.',
         'declaration_required' => 'Please confirm your authority to represent and your consent to the contract.',
         'document_bound' => 'This document is bound to a contract version as evidence and cannot be deleted.',
@@ -248,6 +249,7 @@ return [
         'title' => 'Signing',
     ],
     'party' => [
+        'employee' => 'Employee',
         'customer' => 'Customer side',
         'organization' => 'Organisation side',
     ],

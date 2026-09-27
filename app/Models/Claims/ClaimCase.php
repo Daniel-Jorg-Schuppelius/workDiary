@@ -13,10 +13,13 @@ declare(strict_types=1);
 namespace App\Models\Claims;
 
 use App\Enums\Claims\{ClaimSource, ClaimStatus};
+use App\Enums\Damage\DamageKind;
 use App\Models\Article\Article;
 use App\Models\Asset\Asset;
 use App\Models\Classification\Classification;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Concerns\HasDamageCases;
+use App\Models\Contracts\DamageCaseSubject;
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Inventory\{StockLot, StockSerial};
@@ -58,10 +61,11 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property \Illuminate\Support\Carbon|null $closed_at
  * @property \Illuminate\Support\Carbon|null $anonymized_at
  */
-class ClaimCase extends Model {
+class ClaimCase extends Model implements DamageCaseSubject {
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
+    use HasDamageCases;
     use HasSqid;
 
     public const PRIORITIES = ['low', 'normal', 'high', 'urgent'];
@@ -229,5 +233,17 @@ class ClaimCase extends Model {
 
     public function latestDecision(): ?ClaimDecision {
         return $this->decisions->sortByDesc('decided_at')->first();
+    }
+
+    public function damageSubjectLabel(): string {
+        return $this->number . ' ' . $this->title;
+    }
+
+    public function damageSubjectUrl(): ?string {
+        return route('claims.show', $this);
+    }
+
+    public function damageDefaultKind(): DamageKind {
+        return DamageKind::Liability;
     }
 }

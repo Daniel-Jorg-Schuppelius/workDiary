@@ -49,6 +49,8 @@ final class SupplierManifest extends Manifest {
             'supplier_credential_types',
             'supplier_credentials',
             'supplier_merge_dismissals',
+            'supplier_questionnaire_requests',
+            'supplier_questionnaires',
             'suppliers',
         ];
     }

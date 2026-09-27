@@ -540,6 +540,23 @@ return [
 
     // Finanzberichte (Feature 125, MVP-676).
     'reports' => [
+        'replacement' => [
+            'subtitle' => 'Au :from, horizon jusqu\'au :to, hausse des prix :inflation % par an',
+            'horizon' => 'Horizon',
+            'years' => ':count ans',
+            'year_total' => 'Besoin de remplacement :year',
+            'assets' => 'Immobilisations en fin de durée d\'utilisation',
+            'no_assets' => 'Aucune durée d\'utilisation ne se termine dans l\'horizon.',
+            'ends_on' => 'Utilisation jusqu\'au',
+            'book_value' => 'Valeur comptable aujourd\'hui',
+            'replacement' => 'Remplacement (estimé)',
+            'overdue' => 'échu',
+            'hint' => 'Remplacement = coût d\'acquisition × (1 + hausse des prix)^années d\'utilisation ; réglez la hausse des prix dans les paramètres de l\'organisation. Les postes collectifs ne sont pas inclus.',
+            'leases' => 'Contrats de leasing et de financement arrivant à échéance',
+            'contract' => 'Contrat',
+            'partner' => 'Partenaire',
+            'residual' => 'Valeur résiduelle',
+        ],
         'fixed_asset_schedule' => [
             'subtitle' => 'Exercice :year (:from – :to)',
             'year' => 'Exercice',
@@ -660,6 +677,10 @@ return [
             ],
         ],
         'card' => [
+            'replacement_forecast' => [
+                'title' => 'Besoin de remplacement',
+                'text' => 'Valeurs comptables, fin de durée d\'utilisation et remplacement estimé ; leasings arrivant à échéance.',
+            ],
             'fixed_asset_schedule' => [
                 'title' => 'Tableau des immobilisations',
                 'text' => 'Évolution du coût d’acquisition et des amortissements cumulés par immobilisation sur l’exercice.',

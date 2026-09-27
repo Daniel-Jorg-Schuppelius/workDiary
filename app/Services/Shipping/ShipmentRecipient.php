@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Shipping;
 
+use App\Models\Customer\Customer;
+
 /**
  * Empfängeradresse eines Versandauftrags (Feature 059, MVP-128) — providerneutral.
  */
@@ -26,6 +28,20 @@ final class ShipmentRecipient {
         public readonly ?string $email = null,
         public readonly ?string $phone = null,
     ) {}
+
+    /** Anschrift eines Kunden (Projektion der Kontaktdaten, MVP-869). */
+    public static function fromCustomer(Customer $customer): self {
+        return new self(
+            name: (string) $customer->displayLabel(),
+            street: (string) $customer->address_street,
+            zip: (string) $customer->address_zip,
+            city: (string) $customer->address_city,
+            country: (string) ($customer->country ?: 'DE'),
+            contactName: $customer->company ? $customer->name : null,
+            email: $customer->email,
+            phone: $customer->phone,
+        );
+    }
 
     /**
      * Adress-Schnappschuss für die Ablage am Versandauftrag (Nachweis).

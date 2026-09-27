@@ -47,4 +47,20 @@
             </ul>
         @endif
     </x-form-group>
+
+    @if ($checklist['deputies']->isNotEmpty())
+        {{-- Vertretungen neu besetzen (MVP-941) --}}
+        <x-form-group :legend="__('hr.offboarding.deputies')" icon="swap_horiz" tone="primary">
+            <p class="text-sm text-muted">{{ __('hr.offboarding.deputies_hint') }}</p>
+            @foreach ($checklist['deputies'] as $person)
+                <x-select-field :name="'deputy_replacements[' . $person->sqid . ']'" :id="'deputy-' . $person->sqid" :label="__('hr.offboarding.deputy_for', ['name' => $person->name])">
+                    <option value="">{{ __('hr.offboarding.no_deputy') }}</option>
+                    @foreach ($deputyCandidates as $candidate)
+                        @continue($candidate->id === $person->id)
+                        <option value="{{ $candidate->sqid }}">{{ $candidate->name }}</option>
+                    @endforeach
+                </x-select-field>
+            @endforeach
+        </x-form-group>
+    @endif
 </x-modal>

@@ -18,14 +18,17 @@ use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Reselling\ResaleSubscription;
 use App\Models\Time\TimeEntry;
+use App\Modules\ModuleRegistry;
+use App\Services\CustomerPortal\Contracts\PortalNoticeSource;
 use App\Services\CustomerPortal\PortalVisibility;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Log};
 use Illuminate\View\View;
+use Throwable;
 
 class DashboardController extends Controller {
-    public function __invoke(PortalVisibility $visibility): View {
+    public function __invoke(PortalVisibility $visibility, ModuleRegistry $modules): View {
         /** @var User $user */
         $user = Auth::guard('customer')->user();
         $customerId = (int) $user->customer_id;
@@ -81,10 +84,26 @@ class DashboardController extends Controller {
                 ->count();
         }
 
+        // Hinweise der Module (MVP-915, z. B. Krisenmitteilungen); eine fehlerhafte Quelle fällt einzeln aus.
+        $notices = [];
+        $organization = $user->organization;
+        if ($customer !== null && $organization !== null) {
+            foreach ($modules->extensions(PortalNoticeSource::class) as $class) {
+                try {
+                    /** @var PortalNoticeSource $source */
+                    $source = app($class);
+                    array_push($notices, ...$source->portalNotices($organization, $customer));
+                } catch (Throwable $e) {
+                    Log::warning('portal notice source failed', ['source' => $class, 'organization_id' => $organization->id, 'error' => $e->getMessage()]);
+                }
+            }
+        }
+
         return view('customer.dashboard', [
             'user' => $user,
             'customer' => $customer,
             'stats' => $stats,
+            'notices' => $notices,
         ]);
     }
 }

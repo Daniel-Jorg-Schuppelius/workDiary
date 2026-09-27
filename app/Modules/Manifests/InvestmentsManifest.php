@@ -51,8 +51,14 @@ final class InvestmentsManifest extends Manifest {
             'investment_budget_requests',
             'investment_cases',
             'investment_deviations',
+            'investment_financing_variants',
             'investment_links',
             'investment_options',
+            'investment_program_budgets',
+            'investment_programs',
+            'investment_supplier_ratings',
+            'strategic_key_results',
+            'strategic_objectives',
             'investment_reviews',
         ];
     }
@@ -84,6 +90,13 @@ final class InvestmentsManifest extends Manifest {
             \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
                 \App\Services\Investments\DeadlineScans\InvestmentDecisionScan::class,
             ],
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\Investments\Contracts\AssetCapitalizer::class => \App\Services\Investments\Contracts\NullAssetCapitalizer::class,
         ];
     }
 }

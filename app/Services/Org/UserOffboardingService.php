@@ -90,7 +90,7 @@ class UserOffboardingService {
      * Person noch hält oder offen hat — aus dem Bestand berechnet, kein eigenes
      * Modell. Sperrgründe (z. B. Zutrittsmedien) liefern die Offboarding-Schritte.
      *
-     * @return array{blockers: list<string>, assets: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Asset\AssetAssignment>, tasks: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Project\Task>, open_attendances: int}
+     * @return array{blockers: list<string>, assets: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Asset\AssetAssignment>, tasks: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Project\Task>, open_attendances: int, deputies: \Illuminate\Database\Eloquent\Collection<int, User>}
      */
     public function handoverChecklist(User $member): array {
         return [
@@ -105,7 +105,23 @@ class UserOffboardingService {
                 ->orderBy('title')
                 ->get(),
             'open_attendances' => \App\Models\Time\Attendance::query()->open()->where('user_id', $member->id)->count(),
+            // MVP-941: Personen, die das austretende Mitglied als Vertretung eingetragen haben.
+            'deputies' => User::query()->where('organization_id', $member->organization_id)->where('deputy_user_id', $member->id)->whereKeyNot($member->id)->orderBy('name')->get(['id', 'name']),
         ];
+    }
+
+    /**
+     * Vertretungen neu besetzen (MVP-941): Person → neue Vertretung oder null.
+     *
+     * @param array<int, int|null> $replacements
+     */
+    public function replaceDeputies(User $member, array $replacements, User $actor): void {
+        foreach (User::query()->where('organization_id', $member->organization_id)->where('deputy_user_id', $member->id)->get() as $user) {
+            $new = $replacements[$user->id] ?? null;
+            $new = $new !== null && $new !== $member->id && $new !== $user->id ? $new : null;
+            $user->forceFill(['deputy_user_id' => $new])->save();
+            $user->audit('user.deputyReplaced', ['previous_user_id' => $member->id, 'deputy_user_id' => $new, 'by_user_id' => $actor->id]);
+        }
     }
 
     public function initiate(User $member, CarbonImmutable $leftAt, User $actor): void {
@@ -149,6 +165,9 @@ class UserOffboardingService {
             ->where('tokenable_type', $member->getMorphClass())
             ->where('tokenable_id', $member->id)
             ->delete();
+
+        // Verbliebene Vertretungen auf die ausgetretene Person enden (MVP-941).
+        User::query()->withoutGlobalScopes()->where('organization_id', $member->organization_id)->where('deputy_user_id', $member->id)->update(['deputy_user_id' => null]);
 
         foreach ($this->steps() as $step) {
             $step->onExit($member);

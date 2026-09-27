@@ -158,4 +158,13 @@ class JobApplication extends Model implements ContactDetailsHolder {
             default => 'ghost',
         };
     }
+
+    /**
+     * Kompetenz-Einschätzungen (MVP-924).
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<JobApplicationRating, $this>
+     */
+    public function ratings(): \Illuminate\Database\Eloquent\Relations\HasMany {
+        return $this->hasMany(JobApplicationRating::class);
+    }
 }

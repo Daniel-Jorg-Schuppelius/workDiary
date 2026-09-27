@@ -16,7 +16,7 @@ use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Document\Document;
 use App\Models\Supplier\Supplier;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
 /**
  * Variante/Angebot einer Investition (Feature 069, MVP-201): bleibt als
@@ -72,5 +72,10 @@ class InvestmentOption extends Model {
     /** @return BelongsTo<Document, $this> */
     public function document(): BelongsTo {
         return $this->belongsTo(Document::class);
+    }
+
+    /** @return HasMany<InvestmentFinancingVariant, $this> Finanzierungsvarianten (MVP-907). */
+    public function financingVariants(): HasMany {
+        return $this->hasMany(InvestmentFinancingVariant::class)->orderBy('id');
     }
 }

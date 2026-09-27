@@ -255,7 +255,10 @@ class Document extends Model {
             if ($seesPersonnelFiles) {
                 $outer->orWhere('documentable_type', MorphMap::alias(User::class));
             }
-        });
+        })->when(! $seesPersonnelFiles, fn (Builder $q) => $q->whereNot(fn (Builder $employment) => $employment
+            // Arbeitsverträge (MVP-939) gehören zur Personalakte, nicht zu den vertraulichen Dokumenten.
+            ->where('documentable_type', MorphMap::alias(\App\Models\Contract\Contract::class))
+            ->whereIn('documentable_id', \App\Models\Contract\Contract::query()->withoutGlobalScopes()->where('kind', \App\Enums\Contract\ContractKind::Employment->value)->select('id'))));
     }
 
     /**

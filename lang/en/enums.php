@@ -569,6 +569,7 @@ return [
             ],
             'investment' => [
                 'decisionDue' => 'Investment decision due',
+                'proposed' => 'Investment proposed',
                 'decided' => 'Investment request decided',
             ],
             'inventory' => [

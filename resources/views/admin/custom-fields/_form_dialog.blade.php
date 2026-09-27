@@ -10,24 +10,7 @@
   $definition (CustomFieldDefinition|null), $types (list<FieldType>)
 --}}
 @php
-    $items = old('fields', $definition !== null
-        ? collect($definition->schema->all())->map(fn ($f) => [
-            'label' => $f->label,
-            'type' => $f->type->value,
-            'required' => $f->required,
-            'listed' => $f->listed,
-            'options' => implode(', ', $f->options),
-            'help' => (string) $f->help,
-            'unit' => (string) $f->unit,
-            'min' => $f->min === null ? '' : (string) $f->min,
-            'max' => $f->max === null ? '' : (string) $f->max,
-            'visible_if' => [
-                'field' => $f->visibleIf !== null ? (string) ($definition->schema->get($f->visibleIf['field'])?->label ?? $f->visibleIf['field']) : '',
-                'op' => $f->visibleIf['op'] ?? 'eq',
-                'value' => $f->visibleIf['value'] ?? '',
-            ],
-        ])->values()->all()
-        : null);
+    $items = old('fields', $definition?->schema->toRows());
 @endphp
 <x-modal
     :title="__('fields.custom.edit') . ': ' . $label"

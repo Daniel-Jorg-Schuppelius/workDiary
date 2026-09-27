@@ -94,11 +94,14 @@ return [
         'pool_lower' => 'Pool à partir de (au-delà)',
         'pool_upper' => 'Pool jusqu’à',
         'pool_years' => 'Durée du pool (ans)',
+        'replacement_inflation_pct' => 'Hausse des prix pour la prévision de remplacement (% par an)',
     ],
     'rental_terms' => [
         'heading' => 'Conditions de location du matériel',
         'description' => 'Les conditions de location sont gérées comme accord client « Conditions de location (location de matériel) » avec version et signature.',
         'require_signed' => 'Remise uniquement avec des conditions de location signées',
+        'portal_direct_booking' => 'Autoriser la réservation directe dans le portail client',
+        'portal_direct_booking_hint' => 'Les clients réservent immédiatement les appareils disponibles ouverts au portail ; la direction est informée.',
     ],
     'claims_pattern' => [
         'heading' => 'Schémas de réclamations',
@@ -232,5 +235,11 @@ return [
         'interest_mode_base_rate' => 'Taux de base + points de pourcentage',
         'interest_points' => 'Majoration (points de pourcentage)',
         'interest_points_hint' => 'Uniquement en mode taux de base. Repère § 288 BGB : 5 points envers les consommateurs, 9 entre professionnels — votre entreprise fixe le montant.',
+    ],
+    'recurring_tickets' => [
+        'heading' => 'Problèmes récurrents',
+        'description' => 'À partir de combien de tickets par client ou objet sur quelle période une alerte est émise.',
+        'threshold' => 'Tickets à partir de',
+        'window_days' => 'Fenêtre (jours)',
     ],
 ];

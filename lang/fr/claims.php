@@ -27,4 +27,38 @@ return [
         'notify_title' => 'Schéma de réclamations remarquable : :label',
         'notify_message' => ':count réclamations en :days jours (:rule).',
     ],
+    // Retourenlabel einer RMA (MVP-917).
+    'return_label' => [
+        'title' => 'Étiquette de retour',
+        'create' => 'Créer l\'étiquette de retour',
+        'download' => 'Télécharger l\'étiquette',
+        'created' => 'Étiquette de retour créée (envoi :tracking).',
+        'no_address' => 'L\'étiquette de retour nécessite l\'adresse du client (rue, code postal, ville).',
+    ],
+    // Retourenanmeldung im Kundenportal (MVP-935).
+    'portal_return' => [
+        'capability' => 'Déclarer un retour',
+        'nav' => 'Déclarer un retour',
+        'title' => 'Déclarer un retour',
+        'intro' => 'Choisissez la livraison ou l\'objet, décrivez le motif et joignez des photos si nécessaire. Vous recevrez un numéro de retour ; nous fournissons une étiquette de retour si besoin.',
+        'empty' => 'Aucune livraison ni aucun objet pour votre compte.',
+        'submit' => 'Déclarer le retour',
+        'label' => 'Télécharger l\'étiquette de retour',
+        'field' => [
+            'delivery' => 'Livraison',
+            'asset' => 'Objet',
+            'serial_no' => 'Numéro de série',
+            'quantity' => 'Quantité',
+            'title' => 'Description courte',
+            'description' => 'Motif du retour',
+            'photos' => 'Photos ou justificatifs (5 au maximum)',
+        ],
+        'flash' => [
+            'submitted' => 'Retour déclaré : réclamation :number, numéro de retour :rma.',
+        ],
+        'error' => [
+            'subject' => 'Veuillez choisir une livraison ou un objet.',
+            'serial' => 'Ce numéro de série n\'appartient pas à la livraison choisie.',
+        ],
+    ],
 ];

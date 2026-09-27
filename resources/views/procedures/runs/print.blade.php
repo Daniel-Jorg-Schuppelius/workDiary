@@ -56,7 +56,7 @@
     </div>
 
     {{-- Kopf --}}
-    <h1>{{ __('procedure.print.title') }}: {{ $tpl?->name ?? '—' }}</h1>
+    <h1>{{ __('procedure.print.title') }}: {{ $tpl?->displayName() ?? '—' }}</h1>
     <div class="meta">
         {{ __('procedure.print.generatedAt') }} {{ $generatedAt->format('Y-m-d H:i') }}
         — {{ __('procedure.print.run') }} #{{ $run->id }}
@@ -65,7 +65,7 @@
 
     <h2>{{ __('procedure.print.overview') }}</h2>
     <table class="kv">
-        <tr><th>{{ __('procedure.field.name') }}</th><td>{{ $tpl?->name ?? '—' }} <span class="muted">({{ $tpl?->code ?? '—' }})</span></td></tr>
+        <tr><th>{{ __('procedure.field.name') }}</th><td>{{ $tpl?->displayName() ?? '—' }} <span class="muted">({{ $tpl?->code ?? '—' }})</span></td></tr>
         <tr><th>{{ __('procedure.field.currentVersion') }}</th><td>v{{ $version?->version ?? '—' }} @if($version?->risk_level)— {{ $version->risk_level->label() }}@endif</td></tr>
         <tr><th>{{ __('procedure.print.subject') }}</th><td>
             @if ($subject instanceof \App\Models\Diary\DiaryEntry)

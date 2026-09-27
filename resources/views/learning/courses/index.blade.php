@@ -70,7 +70,7 @@
                 <select id="flt-tag" name="tag" class="select select-sm select-bordered" data-autosubmit>
                     <option value="">{{ __('learning.filter.all_tags') }}</option>
                     @foreach ($tags as $tag)
-                        <option value="{{ $tag->sqid }}" @selected($tagId === $tag->id)>{{ $tag->name }}</option>
+                        <option value="{{ $tag->sqid }}" @selected($tagId === $tag->id)>{{ $tag->displayName() }}</option>
                     @endforeach
                 </select>
             </x-filter-field>

@@ -109,6 +109,36 @@ class DashboardCustomizationTest extends TestCase {
         $this->assertSame(WidgetWidth::Full, $resolved['bookmarks']->width);
     }
 
+    public function test_role_default_applies_before_the_organization_default(): void {
+        $this->setUpOrganization();
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $field = User::factory()->aussendienst()->create(['organization_id' => $this->organization->id]);
+        $office = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($admin)->post(route('dashboard.customize.save'), ['scope' => 'organization', 'widgets' => [['key' => 'bookmarks', 'hidden' => '0'], ['key' => 'attendance-clock', 'hidden' => '1']]])->assertRedirect();
+        $this->actingAs($admin)->post(route('dashboard.customize.save'), [
+            'scope' => 'role:aussendienst',
+            'widgets' => [['key' => 'attendance-clock', 'hidden' => '0', 'width' => 'full'], ['key' => 'bookmarks', 'hidden' => '1']],
+            'tabs' => [['key' => 'unterwegs', 'label' => 'Unterwegs']],
+        ])->assertSessionHas('status', __('dashboard.role_default.saved', ['role' => \App\Enums\User\UserRole::Aussendienst->label()]));
+
+        $layout = app(DashboardLayoutService::class);
+        $fieldView = $layout->resolveFor($field)->keyBy(fn ($i) => $i->key());
+        $this->assertSame('role', $fieldView['attendance-clock']->source);
+        $this->assertFalse($fieldView['attendance-clock']->hidden);
+        $this->assertTrue($fieldView['bookmarks']->hidden);
+        $this->assertSame(['unterwegs'], array_column($layout->tabsFor($field), 'key'));
+
+        $officeView = $layout->resolveFor($office)->keyBy(fn ($i) => $i->key());
+        $this->assertSame('organization', $officeView['attendance-clock']->source);
+        $this->assertTrue($officeView['attendance-clock']->hidden);
+
+        $this->actingAs($admin)->get(route('dashboard.customize'))->assertOk()->assertSee(__('dashboard.role_default.title'));
+        $this->actingAs($admin)->post(route('dashboard.customize.role-default.forget'), ['role' => 'aussendienst'])->assertRedirect();
+        $this->assertSame('organization', $layout->resolveFor($field->fresh())->keyBy(fn ($i) => $i->key())['attendance-clock']->source);
+        $this->actingAs($field)->post(route('dashboard.customize.save'), ['scope' => 'role:aussendienst', 'widgets' => [['key' => 'bookmarks']]])->assertForbidden();
+    }
+
     public function test_organization_default_is_refused_without_permission(): void {
         $this->setUpOrganization();
         $user = User::factory()->user()->create(['organization_id' => $this->organization->id]);

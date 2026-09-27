@@ -46,6 +46,10 @@ final class PdfGeneratorInventory {
         'app/Services/Manufacturing/DeliveryNotePdfRenderer.php' => ['delivery_note'],
         // Kommissionierliste (Feature 048, MVP-706): interner Arbeitsbeleg.
         'app/Services/Inventory/PickListPdfRenderer.php' => ['report'],
+        // Meldebogen eines Rückrufs (MVP-945).
+        'app/Services/Inventory/RecallAuthorityReportPdfRenderer.php' => ['report'],
+        // BCM-Auswertung (MVP-944).
+        'app/Http/Controllers/Crisis/CrisisBcmReportController.php' => ['report'],
         // Leistung/Nachweis
         'app/Services/Protocol/ProtocolPdfRenderer.php' => ['protocol'],
         'app/Services/Disposal/DisposalRecordPdfRenderer.php' => ['protocol'],

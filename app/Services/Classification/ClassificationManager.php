@@ -91,6 +91,7 @@ class ClassificationManager {
             'active' => (bool) ($attributes['active'] ?? true),
             'deprecated_at' => (bool) ($attributes['active'] ?? true) ? null : now(),
             'description' => $attributes['description'] ?? null,
+            'label_i18n' => $attributes['label_i18n'] ?? null,
         ];
 
         $row = Classification::query()->create($payload);
@@ -128,6 +129,7 @@ class ClassificationManager {
             'color_hex',
             'icon',
             'description',
+            'label_i18n',
         ]));
 
         $classification->fill($update);

@@ -221,6 +221,9 @@
         </x-card>
     </div>
 
+    {{-- Schadensfälle (MVP-920) --}}
+    <x-damage-cases-card :subject="$claim" />
+
     <x-card :title="__('Rückläufer (RMA)')">
         @foreach ($claim->rmaReturns as $rma)
             <div class="mb-3 rounded border border-base-300 p-2 text-sm">
@@ -250,8 +253,32 @@
                         @endif
                     </p>
                 @endforeach
+                {{-- Retourenlabels (MVP-917) --}}
+                @foreach ($rma->returnShipments as $shipment)
+                    <p class="mt-1 flex flex-wrap items-center gap-2">
+                        <x-icon name="assignment_return" />
+                        <span>{{ __('claims.return_label.title') }}: {{ strtoupper($shipment->carrier) }} {{ $shipment->tracking_number }}</span>
+                        <span class="badge badge-sm">{{ $shipment->status->label() }}</span>
+                        @can('warehouse', $claim)
+                            <a class="link text-xs" href="{{ route('claims.rma.return-label.download', [$rma, $shipment]) }}">{{ __('claims.return_label.download') }}</a>
+                        @endcan
+                    </p>
+                @endforeach
                 @can('warehouse', $claim)
                     <div class="mt-2 flex flex-wrap gap-2">
+                        @if ($rma->status === \App\Enums\Claims\ClaimRmaStatus::Announced && $returnCarriers !== [])
+                            <form method="POST" action="{{ route('claims.rma.return-label', $rma) }}" class="flex flex-wrap items-center gap-1">
+                                @csrf
+                                <select name="carrier" class="select select-xs select-bordered" aria-label="{{ __('shipping.field.carrier') }}" required>
+                                    @foreach ($returnCarriers as $code => $name)
+                                        <option value="{{ $code }}">{{ $name }}</option>
+                                    @endforeach
+                                </select>
+                                <input type="number" name="weight_grams" value="1000" min="1" step="1" required class="input input-xs input-bordered w-24"
+                                       aria-label="{{ __('shipping.field.weight_grams') }}" title="{{ __('shipping.field.weight_grams') }}">
+                                <button type="submit" class="btn btn-xs">{{ __('claims.return_label.create') }}</button>
+                            </form>
+                        @endif
                         @if ($rma->status === \App\Enums\Claims\ClaimRmaStatus::Announced)
                             <form method="POST" action="{{ route('claims.rma.receive', $rma) }}" class="flex flex-wrap items-center gap-1">
                                 @csrf

@@ -29,13 +29,14 @@ use Illuminate\Support\Facades\DB;
  */
 class ProcedureTemplateService {
     /**
-     * @param  array{code: string, name: string, description?: ?string, domain?: ?string, active?: bool}  $attributes
+     * @param  array{code: string, name: string, name_i18n?: array<string, string>|null, description?: ?string, domain?: ?string, active?: bool}  $attributes
      */
     public function create(Organization $organization, User $author, array $attributes): ProcedureTemplate {
         return DB::transaction(function () use ($organization, $author, $attributes) {
             $template = new ProcedureTemplate([
                 'code' => $attributes['code'],
                 'name' => $attributes['name'],
+                'name_i18n' => $attributes['name_i18n'] ?? null,
                 'description' => $attributes['description'] ?? null,
                 'domain' => $attributes['domain'] ?? null,
                 'active' => $attributes['active'] ?? true,
@@ -176,7 +177,7 @@ class ProcedureTemplateService {
      */
     public function updateTemplate(ProcedureTemplate $template, array $attributes): ProcedureTemplate {
         $template->fill(array_intersect_key($attributes, array_flip([
-            'name', 'description', 'domain', 'active',
+            'name', 'name_i18n', 'description', 'domain', 'active',
         ])));
         $template->save();
         return $template->refresh();

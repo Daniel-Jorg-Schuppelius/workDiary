@@ -15,12 +15,15 @@ namespace App\Http\Controllers\Claims;
 use App\Enums\Claims\ClaimRmaDisposition;
 use App\Http\Controllers\Controller;
 use App\Models\Claims\{ClaimCase, ClaimInspection, ClaimRmaReturn};
+use App\Models\Shipping\Shipment;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Claims\ClaimRmaService;
+use App\Services\Claims\Contracts\RmaReturnLabelIssuer;
 use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Gate, Storage};
 use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * RMA-/Rückläuferprozess (Feature 072, MVP-250): Ankündigung mit
@@ -107,5 +110,33 @@ class ClaimRmaController extends Controller {
         }
 
         return back()->with('status', __('Verwendungsentscheidung gebucht.'));
+    }
+
+    /** Retourenlabel (MVP-917): Versand über die Carrier-Anbindung, Absender der Kunde. */
+    public function returnLabel(Request $request, ClaimRmaReturn $rma, RmaReturnLabelIssuer $issuer): RedirectResponse {
+        Gate::authorize('warehouse', $rma->claimCase);
+
+        $data = $request->validate([
+            'carrier' => ['required', 'string', 'max:24'],
+            'weight_grams' => ['required', 'integer', 'min:1', 'max:1000000'],
+        ]);
+
+        try {
+            $shipment = $issuer->issue($rma, $request->user() ?? abort(401), (string) $data['carrier'], (int) $data['weight_grams']);
+        } catch (\RuntimeException $e) {
+            return back()->with('error', __('shipping.flash.label_failed', ['reason' => ErrorText::for($e)]));
+        }
+
+        return back()->with('status', __('claims.return_label.created', ['tracking' => (string) $shipment->tracking_number]));
+    }
+
+    public function downloadReturnLabel(ClaimRmaReturn $rma, Shipment $shipment): BinaryFileResponse {
+        Gate::authorize('warehouse', $rma->claimCase);
+        abort_unless($shipment->claim_rma_return_id === $rma->id, 404);
+        $label = $shipment->labelAttachment() ?? abort(404);
+        $disk = Storage::disk($label->disk);
+        abort_unless($disk->exists($label->path), 404);
+
+        return response()->download($disk->path($label->path), 'retoure-' . $rma->rma_number . '.' . pathinfo($label->original_name, PATHINFO_EXTENSION));
     }
 }

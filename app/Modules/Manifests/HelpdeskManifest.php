@@ -87,6 +87,9 @@ final class HelpdeskManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Reporting\Contracts\EarlyWarningSource::class => [
+                \App\Services\ServiceTicket\EarlyWarnings\RecurringTicketWarningSource::class,
+            ],
             \App\Services\Demo\Contracts\DemoBlock::class => [
                 \App\Services\ServiceTicket\Demo\HelpdeskDemoBlock::class,
             ],

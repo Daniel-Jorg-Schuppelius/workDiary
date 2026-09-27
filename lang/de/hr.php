@@ -48,4 +48,45 @@ return [
             'updated' => 'Personalakten-Dokument wurde aktualisiert.',
         ],
     ],
+    // Personal-Kapazität (MVP-940).
+    'capacity' => [
+        'title' => 'Personal-Kapazität',
+        'button' => 'Kapazität',
+        'subtitle' => 'Geplanter Bedarf (zugewiesene Aufträge) gegen die Sollzeit der Teammitglieder je Woche; Feiertage und genehmigter Urlaub sind abgezogen.',
+        'team' => 'Team',
+        'week' => 'Woche ab :date',
+        'members' => ':count Mitglieder',
+        'empty' => 'Noch keine Teams.',
+        'hint' => 'Angaben in Stunden: geplant / verfügbar.',
+        'open_requisitions' => 'Offene Stellen gesamt: :count.',
+    ],
+    // Vertretungen beim Austritt (MVP-941).
+    'offboarding' => [
+        'deputies' => 'Vertretungen neu besetzen',
+        'deputies_hint' => 'Diese Personen haben das austretende Mitglied als Vertretung eingetragen. Ohne Auswahl endet die Vertretung.',
+        'deputy_for' => 'Neue Vertretung für :name',
+        'no_deputy' => '— keine Vertretung —',
+    ],
+    // Arbeitsvertrag zur Unterschrift (MVP-939).
+    'employment' => [
+        'title' => 'Arbeitsvertrag zur Unterschrift',
+        'intro' => 'Der Vertrag geht per Link an die Person; danach zeichnet die Organisation gegen. Die unterschriebene Fassung landet in der Personalakte.',
+        'send' => 'Zur Unterschrift senden',
+        'default_title' => 'Arbeitsvertrag :name',
+        'default_declaration' => 'Ich habe den Arbeitsvertrag gelesen und stimme ihm zu.',
+        'filed_note' => 'Unterschriebene Fassung aus Vertrag :number.',
+        'field' => [
+            'title' => 'Bezeichnung',
+            'starts_on' => 'Beginn',
+            'email' => 'E-Mail der Person',
+            'declaration_text' => 'Zustimmungserklärung',
+            'file' => 'Vertrag (PDF)',
+        ],
+        'flash' => [
+            'sent' => 'Arbeitsvertrag an :email zur Unterschrift gesendet.',
+        ],
+        'error' => [
+            'email' => 'Bitte eine E-Mail-Adresse angeben.',
+        ],
+    ],
 ];

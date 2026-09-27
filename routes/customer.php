@@ -118,6 +118,13 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
             Route::post('/claims/{claim}/nachreichung', [\App\Http\Controllers\Claims\Portal\ClaimPortalController::class, 'addNote'])->name('claims.note');
         });
 
+        Route::middleware('portal.capability:returns')->group(function (): void {
+            // Retourenanmeldung (MVP-935).
+            Route::get('/ruecksendung', [\App\Http\Controllers\Claims\Portal\ReturnRequestController::class, 'create'])->name('returns.create');
+            Route::post('/ruecksendung', [\App\Http\Controllers\Claims\Portal\ReturnRequestController::class, 'store'])->name('returns.store');
+            Route::get('/ruecksendung/{rma}/label/{shipment}', [\App\Http\Controllers\Claims\Portal\ReturnRequestController::class, 'label'])->name('returns.label');
+        });
+
         Route::middleware('portal.capability:rentals')->group(function (): void {
             // Verleihvorgänge + Übergabebestätigung (Feature 073, MVP-263/269).
             Route::get('/rentals', [\App\Http\Controllers\Rental\Portal\RentalPortalController::class, 'index'])->name('rentals.index');

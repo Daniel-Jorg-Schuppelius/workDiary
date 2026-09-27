@@ -939,6 +939,7 @@
     "Arbeitstagebuch & Aufgaben": "Diario de trabajo y tareas",
     "Arbeitsvertrag unterschrieben abgelegt": "Contrato de trabajo firmado y archivado",
     "Arbeitsvorräte des Helpdesks mit Team, Standard-SLA und Sichtbarkeit.": "Colas de trabajo del helpdesk con equipo, SLA predeterminado y visibilidad.",
+    "Arbeitsvertrag": "Contrato de trabajo",
     "Arbeitszeit": "Horario de trabajo",
     "Arbeitszeit-Compliance": "Cumplimiento del tiempo de trabajo",
     "Arbeitszeit-Grenzwerte": "Límites de horario de trabajo",
@@ -11372,5 +11373,9 @@
     "… und :count weitere": "… y :count más",
     "€/km": "€/km",
     "≤ 14 Tage": "≤ 14 días",
-    "≤ 3 Monate": "≤ 3 meses"
+    "≤ 3 Monate": "≤ 3 meses",
+    "Rückrufaktion": "Retirada de producto",
+    "Schadensfall": "Siniestro",
+    "Kundengruppen": "Grupos de clientes",
+    "Kundengruppe": "Grupo de clientes"
 }

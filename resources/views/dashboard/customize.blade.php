@@ -312,6 +312,21 @@
                 <input type="hidden" name="preset" value="{{ $preset['key'] }}">
             </form>
         @endforeach
+        @if ($canManageOrgDefault && $rolesWithDefault !== [])
+            {{-- Vorgaben je Rolle (MVP-910). --}}
+            <x-card :title="__('dashboard.role_default.title')" class="mt-4">
+                <p class="mb-2 text-xs text-muted">{{ __('dashboard.role_default.hint') }}</p>
+                <div class="flex flex-wrap gap-2">
+                    @foreach ($rolesWithDefault as $role)
+                        <x-action-form :action="route('dashboard.customize.role-default.forget')" class="inline-flex items-center gap-1 rounded-box border border-base-300 px-2 py-1 text-sm">
+                            <input type="hidden" name="role" value="{{ $role->value }}">
+                            <span>{{ $role->label() }}</span>
+                            <x-icon-btn icon="close" size="xs" tone="ghost" type="submit" :label="__('dashboard.role_default.forget', ['role' => $role->label()])" />
+                        </x-action-form>
+                    @endforeach
+                </div>
+            </x-card>
+        @endif
     </x-page-shell>
 
     {{-- Speichern-Balken als STEHENDER Footer (gleiches Muster wie die
@@ -325,9 +340,16 @@
                 <span class="text-xs text-muted">{{ __('Die Auswahl gilt für Ihr Konto, auf allen Geräten.') }}</span>
                 <div class="flex flex-wrap items-center gap-3">
                     @if ($canManageOrgDefault)
-                        <label class="label cursor-pointer gap-2">
-                            <input type="checkbox" name="scope" value="organization" form="dashboard-customize-form" class="checkbox checkbox-sm">
-                            <span class="label-text text-xs">{{ __('Zusätzlich als Standard für die Organisation speichern') }}</span>
+                        {{-- MVP-910: zusätzlich als Vorgabe der Organisation oder einer Rolle. --}}
+                        <label class="flex items-center gap-2 text-xs">
+                            <span>{{ __('dashboard.role_default.also_as') }}</span>
+                            <select name="scope" form="dashboard-customize-form" class="select select-xs select-bordered" aria-label="{{ __('dashboard.role_default.also_as') }}">
+                                <option value="user">{{ __('dashboard.role_default.only_me') }}</option>
+                                <option value="organization">{{ __('dashboard.role_default.organization') }}</option>
+                                @foreach ($configurableRoles as $role)
+                                    <option value="role:{{ $role->value }}">{{ __('dashboard.role_default.for_role', ['role' => $role->label()]) }}</option>
+                                @endforeach
+                            </select>
                         </label>
                     @endif
                     <x-button type="submit" form="dashboard-customize-form" tone="primary" size="sm" icon="save">{{ __('Speichern') }}</x-button>

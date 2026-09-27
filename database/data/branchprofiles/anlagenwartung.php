@@ -166,6 +166,7 @@ return [
         [
             'code' => 'AW_WARTUNG',
             'name' => 'Anlagenwartung nach Plan',
+            'name_i18n' => ['en' => 'Scheduled system maintenance', 'es' => 'Mantenimiento planificado de la instalación', 'fr' => 'Maintenance planifiée de l\'installation', 'it' => 'Manutenzione programmata dell\'impianto'],
             'domain' => 'anlagenwartung',
             'risk_level' => 'normal',
             'description' => 'Geführte Wartung nach Herstellervorgabe inkl. Messwerten und Probelauf.',
@@ -180,6 +181,7 @@ return [
         [
             'code' => 'AW_STOERUNG',
             'name' => 'Störungsbeseitigung',
+            'name_i18n' => ['en' => 'Troubleshooting', 'es' => 'Resolución de averías', 'fr' => 'Dépannage', 'it' => 'Eliminazione guasti'],
             'domain' => 'anlagenwartung',
             'risk_level' => 'normal',
             'description' => 'Strukturierte Störungsaufnahme mit Diagnose, Befunddokumentation und Maßnahme.',
@@ -194,6 +196,7 @@ return [
         [
             'code' => 'AW_INSPEKTION',
             'name' => 'Inspektion (Sicht- und Funktionsprüfung)',
+            'name_i18n' => ['en' => 'Inspection (visual and function check)', 'es' => 'Inspección (visual y de funcionamiento)', 'fr' => 'Inspection (contrôle visuel et fonctionnel)', 'it' => 'Ispezione (controllo visivo e funzionale)'],
             'domain' => 'anlagenwartung',
             'risk_level' => 'normal',
             'description' => 'Zustandsfeststellung ohne Eingriff mit Befund und Empfehlung zur Instandsetzung.',
@@ -209,6 +212,7 @@ return [
         [
             'code' => 'AW_KALIBRIERUNG',
             'name' => 'Kalibrierung Mess- und Regeltechnik',
+            'name_i18n' => ['en' => 'Calibration of measurement and control', 'es' => 'Calibración de instrumentos de medida y control', 'fr' => 'Étalonnage des instruments de mesure et de régulation', 'it' => 'Taratura strumenti di misura e regolazione'],
             'domain' => 'anlagenwartung',
             'risk_level' => 'normal',
             'description' => 'Abgleich gegen ein Referenznormal mit Messwerten vor und nach der Justierung.',
@@ -223,6 +227,7 @@ return [
         [
             'code' => 'AW_ERSATZTEIL',
             'name' => 'Ersatzteiltausch',
+            'name_i18n' => ['en' => 'Spare part replacement', 'es' => 'Cambio de repuesto', 'fr' => 'Remplacement de pièce', 'it' => 'Sostituzione ricambio'],
             'domain' => 'anlagenwartung',
             'risk_level' => 'normal',
             'description' => 'Tausch mit Material- und Seriennummernnachweis, Probelauf und Verbleib des Altteils.',
@@ -238,6 +243,7 @@ return [
         [
             'code' => 'AW_INBETRIEBNAHME',
             'name' => 'Inbetriebnahme',
+            'name_i18n' => ['en' => 'Commissioning', 'es' => 'Puesta en marcha', 'fr' => 'Mise en service', 'it' => 'Messa in funzione'],
             'domain' => 'anlagenwartung',
             'risk_level' => 'high',
             'description' => 'Erstinbetriebnahme mit Prüfung, Einweisung des Betreibers und Abnahme.',

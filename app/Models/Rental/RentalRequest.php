@@ -37,6 +37,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $ends_at
  * @property string|null $note
  * @property RentalRequestStatus $status
+ * @property bool $is_direct
  * @property int|null $decided_by
  * @property Carbon|null $decided_at
  * @property string|null $decline_reason
@@ -50,13 +51,14 @@ class RentalRequest extends Model {
 
     protected $fillable = [
         'organization_id', 'customer_id', 'portal_user_id', 'asset_id', 'group_code',
-        'starts_at', 'ends_at', 'note', 'status', 'decided_by', 'decided_at',
+        'starts_at', 'ends_at', 'note', 'status', 'is_direct', 'decided_by', 'decided_at',
         'decline_reason', 'rental_reservation_id', 'rental_case_id',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
         'status' => RentalRequestStatus::class,
+        'is_direct' => 'boolean',
         'starts_at' => 'datetime',
         'ends_at' => 'datetime',
         'decided_at' => 'datetime',

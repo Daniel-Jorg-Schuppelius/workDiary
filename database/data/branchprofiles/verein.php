@@ -125,6 +125,7 @@ return [
         [
             'code' => 'VE_MITGLIEDSAUFNAHME',
             'name' => 'Mitgliedsaufnahme',
+            'name_i18n' => ['en' => 'Membership admission', 'es' => 'Alta de socios', 'fr' => 'Admission des membres', 'it' => 'Ammissione dei soci'],
             'domain' => 'verein',
             'risk_level' => 'low',
             'description' => 'Aufnahmeantrag prüfen, Mitglied und Beitragskonto anlegen, Gruppe zuordnen, Willkommensinformation versenden.',
@@ -139,6 +140,7 @@ return [
         [
             'code' => 'VE_SPORTFEST',
             'name' => 'Sportfest / Vereinsveranstaltung',
+            'name_i18n' => ['en' => 'Sports festival / club event', 'es' => 'Fiesta deportiva / evento del club', 'fr' => 'Fête sportive / événement associatif', 'it' => 'Festa sportiva / evento associativo'],
             'domain' => 'verein',
             'risk_level' => 'normal',
             'description' => 'Sportstätten belegen, Helfer und Terminrollen einteilen, Sicherheit und Erste Hilfe sicherstellen, Nachbereitung.',

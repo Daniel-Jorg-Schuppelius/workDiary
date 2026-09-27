@@ -57,6 +57,7 @@ final class RentalManifest extends Manifest {
             'rental_handover_reports',
             'rental_profiles',
             'rental_rate_cards',
+            'rental_rate_rules',
             'rental_rate_items',
             'rental_report_snapshots',
             'rental_requests',

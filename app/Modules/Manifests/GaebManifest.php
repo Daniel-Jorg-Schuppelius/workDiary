@@ -52,6 +52,8 @@ final class GaebManifest extends Manifest {
         return [
             'bill_of_quantities',
             'boq_catalog_assignments',
+            'boq_call_off_items',
+            'boq_call_offs',
             'boq_catalogs',
             'boq_change_orders',
             'boq_cost_types',

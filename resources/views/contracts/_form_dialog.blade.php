@@ -14,7 +14,7 @@
     $agreementOnly ??= false;
     $templates ??= collect();
     $preset ??= [];
-    $kindOptions = $agreementOnly ? \App\Enums\Contract\ContractKind::signingKinds() : \App\Enums\Contract\ContractKind::cases();
+    $kindOptions = $agreementOnly ? \App\Enums\Contract\ContractKind::signingKinds() : array_filter(\App\Enums\Contract\ContractKind::cases(), static fn (\App\Enums\Contract\ContractKind $k): bool => $k !== \App\Enums\Contract\ContractKind::Employment);
     $defaultPartnerType = $presetCustomer ? \App\Enums\Contract\ContractPartnerType::Customer->value : 'other';
 @endphp
 <x-modal
@@ -42,6 +42,22 @@
     @endif
     @if (isset($preset['template_id']))
         <input type="hidden" name="template_id" value="{{ $preset['template_id'] }}">
+    @endif
+    @if (($analysis ?? null) !== null)
+        {{-- Vorschläge aus dem Dokument (MVP-906): nur Hinweise, übernommen wird erst mit dem Speichern. --}}
+        <div role="status" class="alert alert-info mb-3 block text-sm">
+            <p class="font-medium">{{ __('contract.extraction.title', ['document' => $analysisDocument?->title]) }}</p>
+            @if ($analysis['hints'] === [])
+                <p>{{ __('contract.extraction.none') }}</p>
+            @else
+                <p>{{ __('contract.extraction.check') }}</p>
+                <ul class="mt-1 list-disc pl-5 text-xs">
+                    @foreach ($analysis['hints'] as $hint)
+                        <li><span class="font-medium">{{ __('contract.extraction.field.' . $hint['field']) }}:</span> „{{ \Illuminate\Support\Str::limit($hint['snippet'], 140) }}“</li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
     @endif
     <x-form-group :legend="__('Vertrag')" icon="contract" tone="primary" cols="2">
         <x-input-field name="title" :label="__('Titel/Bezeichnung')" :value="old('title', $preset['title'] ?? null)" required span="2" />
@@ -91,7 +107,7 @@
         <x-date-range class="md:col-span-2" layout="split" form-control
                       from-name="starts_on" to-name="ends_on" type="date" fromId="ct-starts-on" toId="ct-ends-on"
                       :from-label="__('Beginn')" :to-label="__('Ende (leer = unbefristet)')"
-                      :from="old('starts_on')" :to="old('ends_on')" />
+                      :from="old('starts_on', $preset['starts_on'] ?? null)" :to="old('ends_on', $preset['ends_on'] ?? null)" />
         <x-input-field name="min_term_months" type="number" min="0" :label="__('Mindestlaufzeit (Monate)')" :value="old('min_term_months', $preset['min_term_months'] ?? null)" />
         <x-input-field name="renew_period_months" type="number" min="1" :label="__('Verlängerung um (Monate)')" :value="old('renew_period_months', $preset['renew_period_months'] ?? null)" />
         <x-checkbox-field name="auto_renew" :label="__('Automatische Verlängerung')" :checked="old('auto_renew', $preset['auto_renew'] ?? false)" span="2" />
@@ -109,7 +125,7 @@
     </x-form-group>
 
     <x-form-group :legend="__('Wert & Nachweis')" icon="payments" tone="primary" cols="2">
-        <x-input-field name="value_amount" type="number" step="0.01" min="0" :label="__('Vertragswert')" :value="old('value_amount')" />
+        <x-input-field name="value_amount" type="number" step="0.01" min="0" :label="__('Vertragswert')" :value="old('value_amount', $preset['value_amount'] ?? null)" />
         <x-select-field name="currency" :label="__('Währung')">
             <x-currency-options :selected="old('currency', 'EUR')" />
         </x-select-field>
@@ -130,7 +146,7 @@
         <x-select-field name="document_id" :label="__('Dokument (optional)')">
             <option value="">{{ __('kein Dokumentbezug') }}</option>
             @foreach ($documents as $d)
-                <option value="{{ $d->sqid }}" @selected((string) old('document_id') === $d->sqid)>{{ $d->title }}</option>
+                <option value="{{ $d->sqid }}" @selected((string) old('document_id', $preset['document_id'] ?? null) === $d->sqid)>{{ $d->title }}</option>
             @endforeach
         </x-select-field>
         <x-textarea-field name="notes" :label="__('Notizen')" rows="2" span="2">{{ old('notes') }}</x-textarea-field>

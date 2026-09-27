@@ -16,7 +16,7 @@ use App\Enums\User\Permission as P;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\Platform\User;
-use App\Models\Sustainability\{SustainabilityActivityRecord, SustainabilityAssessment, SustainabilityCriterion, SustainabilityFactorSet, SustainabilityFrameMapping, SustainabilityMeasure, SustainabilityReportSnapshot, SustainabilityTarget};
+use App\Models\Sustainability\{SustainabilityActivityRecord, SustainabilityAssessment, SustainabilityCriterion, SustainabilityFactorSet, SustainabilityFrameMapping, SustainabilityMeasure, SustainabilityReportSnapshot, SustainabilitySite, SustainabilityTarget};
 use App\Services\Sustainability\{EmissionCalculationService, SustainabilityAssessmentService};
 use App\Support\ErrorText;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -86,6 +86,9 @@ class SustainabilityController extends Controller {
         }
 
         return view('sustainability.index', [
+            'sites' => SustainabilitySite::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            // Kunden mit Kundengruppe (MVP-949) als Bezug der Aktivität.
+            'groupedCustomers' => \App\Models\Customer\Customer::query()->whereHas('classifications', fn ($q) => $q->where('domain', \App\Enums\Classification\ClassificationDomain::CustomerGroup->value))->orderBy('name')->get(['id', 'name']),
             'from' => $from,
             'to' => $to,
             'aggregate' => $aggregate,
@@ -130,7 +133,15 @@ class SustainabilityController extends Controller {
 
     public function storeActivity(Request $request): RedirectResponse {
         Gate::authorize('create', SustainabilityAssessment::class);
+        if ($request->filled('site_id')) {
+            $request->merge(['site_id' => \App\Support\Sqid::decodeOrNumeric(SustainabilitySite::class, $request->string('site_id')->toString())]);
+        }
+        if ($request->filled('customer_id')) {
+            $request->merge(['customer_id' => \App\Support\Sqid::decodeOrNumeric(\App\Models\Customer\Customer::class, $request->string('customer_id')->toString())]);
+        }
         $data = $request->validate([
+            'site_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('sustainability_sites')],
+            'customer_id' => ['nullable', 'integer', 'prohibits:site_id', new \App\Rules\ExistsInCurrentOrganization('customers')],
             'activity_code' => ['required', 'in:' . implode(',', SustainabilityActivityRecord::ACTIVITY_CODES)],
             'amount' => ['required', 'numeric', 'min:0', 'max:99999999999.999'],
             'unit' => ['required', 'string', 'max:20'],
@@ -140,6 +151,17 @@ class SustainabilityController extends Controller {
             'subject_label' => ['nullable', 'string', 'max:200'],
             'source_note' => ['nullable', 'string', 'max:300'],
         ]);
+
+        // Standort (MVP-929) als Bezug der Aktivität.
+        $site = isset($data['site_id']) ? SustainabilitySite::query()->find((int) $data['site_id']) : null;
+        // Kundenbezug (MVP-949) für den Vergleich nach Kundengruppe.
+        $customer = isset($data['customer_id']) ? \App\Models\Customer\Customer::query()->find((int) $data['customer_id']) : null;
+        unset($data['site_id'], $data['customer_id']);
+        $subject = $site ?? $customer;
+        if ($subject !== null) {
+            $data += ['subject_type' => $subject->getMorphClass(), 'subject_id' => $subject->id];
+            $data['subject_label'] = $subject->name;
+        }
 
         SustainabilityActivityRecord::query()->create([
             ...$data,

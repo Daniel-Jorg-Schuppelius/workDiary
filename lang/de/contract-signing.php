@@ -84,6 +84,7 @@ return [
         'activate_unsigned' => 'Der Vertrag kann erst aktiviert werden, wenn eine Fassung vollständig unterzeichnet ist.',
         'contract_closed' => 'Der Vertrag ist beendet oder storniert — keine Unterzeichnung mehr möglich.',
         'countersign_party' => 'Gegenzeichnen kann nur die Organisationsseite; die Kundenseite unterzeichnet über den Link oder reicht ein PDF ein.',
+        'employee_required' => 'Für einen Arbeitsvertrag ist ein Teammitglied oder eine Bewerbung Pflicht.',
         'customer_required' => 'Für diese Vertragsart ist ein Kunde als Vertragspartner Pflicht.',
         'declaration_required' => 'Bitte bestätigen Sie die Vertretungsberechtigung und die Zustimmung zum Vertrag.',
         'document_bound' => 'Dieses Dokument ist als Nachweis an eine Vertragsfassung gebunden und kann nicht gelöscht werden.',
@@ -248,6 +249,7 @@ return [
         'title' => 'Unterzeichnung',
     ],
     'party' => [
+        'employee' => 'Arbeitnehmerseite',
         'customer' => 'Kundenseite',
         'organization' => 'Organisationsseite',
     ],

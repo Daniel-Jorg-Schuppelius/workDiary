@@ -191,7 +191,7 @@ class ProcedureDeviationReportBuilder {
             'id' => (int) $deviation->id,
             'createdAt' => $createdAt,
             'templateId' => $template?->id !== null ? (int) $template->id : null,
-            'templateName' => $template !== null ? (string) $template->name : '–',
+            'templateName' => $template !== null ? $template->displayName() : '–',
             'stepLabel' => $stepRun?->stepDef !== null ? (string) $stepRun->stepDef->label : '–',
             'runSqid' => $run?->sqid,
             'type' => $deviation->deviation_type,

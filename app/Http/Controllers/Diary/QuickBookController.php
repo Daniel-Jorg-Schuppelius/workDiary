@@ -19,7 +19,7 @@ use App\Models\Time\TimeEntry;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\{Auth, DB, Gate};
 
 /**
  * Quick-Buchung offener Zeitblöcke auf ein Projekt (MVP-015, Rang 37).
@@ -91,6 +91,46 @@ class QuickBookController extends Controller {
 
         return redirect()->route('today.show', ['date' => $dateString])
             ->with('status', __('Zeit auf „:project" gebucht.', ['project' => $project->name]));
+    }
+
+    /**
+     * Alle Vorschläge des Tages auf einmal buchen (MVP-923): je Block die
+     * gewählte oder vorgeschlagene Projektzuordnung; nichts ohne Bestätigung.
+     */
+    public function storeAll(Request $request): RedirectResponse {
+        Gate::authorize('create', TimeEntry::class);
+        /** @var User $user */
+        $user = Auth::user();
+
+        $data = $request->validate([
+            'blocks' => ['required', 'array', 'min:1', 'max:50'],
+            'blocks.*.started_at' => ['required', 'date'],
+            'blocks.*.ended_at' => ['required', 'date', 'after:blocks.*.started_at'],
+            'blocks.*.project' => ['nullable', 'string'],
+            'date' => ['nullable', 'date'],
+        ]);
+
+        $booked = 0;
+        DB::transaction(function () use ($data, $user, &$booked): void {
+            foreach ($data['blocks'] as $block) {
+                if (blank($block['project'] ?? null)) {
+                    continue;
+                }
+                $project = $this->resolveProject((string) $block['project']);
+                TimeEntry::create([
+                    'project_id' => $project->id,
+                    'user_id' => $user->id,
+                    'organization_id' => $this->currentOrganization()->id,
+                    'kind' => TimeEntryKind::Work,
+                    'started_at' => CarbonImmutable::parse((string) $block['started_at']),
+                    'ended_at' => CarbonImmutable::parse((string) $block['ended_at']),
+                ]);
+                $booked++;
+            }
+        });
+
+        return redirect()->route('today.show', array_filter(['date' => $data['date'] ?? null]))
+            ->with('status', __('time_entry.suggestion.booked', ['count' => $booked]));
     }
 
     /** Projekt über Sqid auflösen, strikt organisationsgescopet (404 bei fremd). */

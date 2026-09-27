@@ -11,10 +11,11 @@
 namespace App\Http\Controllers\Me;
 
 use App\Enums\Dashboard\WidgetWidth;
-use App\Enums\User\Permission;
+use App\Enums\User\{Permission, UserRole};
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Services\Dashboard\{DashboardLayoutService, DashboardPresets};
+use App\Services\Navigation\StartPageResolver;
 use App\Support\Dashboard\DashboardLayoutItem;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -64,6 +65,8 @@ class DashboardCustomizationController extends Controller {
                 'description' => $this->presets->description($key),
             ], $this->presets->keys()),
             'canManageOrgDefault' => Gate::allows(Permission::OrganizationUpdate->value),
+            'configurableRoles' => StartPageResolver::CONFIGURABLE_ROLES,
+            'rolesWithDefault' => $this->layout->rolesWithDefault(Auth::user()?->organization),
             'hasOrgDefault' => $this->layout->hasOrgDefault($user->organization),
             'hasOwnLayout' => $user->dashboardWidgets()->exists() || $this->layout->hasOwnTabs($user),
         ]);
@@ -87,7 +90,8 @@ class DashboardCustomizationController extends Controller {
             // Symbol ist ein Material-Symbol-Name; eng gefasst, weil er auch
             // in der Org-Vorgabe landet und dort ungeprüft gerendert wird.
             'tabs.*.icon' => ['nullable', 'string', 'regex:/^[a-z0-9_]{1,40}$/'],
-            'scope' => ['nullable', Rule::in(['user', 'organization'])],
+            // MVP-910: zusätzlich als Vorgabe einer Rolle („role:<rolle>“).
+            'scope' => ['nullable', Rule::in(array_merge(['user', 'organization'], array_map(static fn (UserRole $r): string => 'role:' . $r->value, StartPageResolver::CONFIGURABLE_ROLES)))],
         ]);
 
         /** @var list<array{key:string,hidden?:mixed,width?:?string,tab?:?string}> $rows */
@@ -95,21 +99,25 @@ class DashboardCustomizationController extends Controller {
         /** @var list<array{key:string,label:string}> $tabs */
         $tabs = $payload['tabs'] ?? [];
 
-        $asOrgDefault = ($payload['scope'] ?? 'user') === 'organization';
+        $scope = (string) ($payload['scope'] ?? 'user');
+        $role = str_starts_with($scope, 'role:') ? UserRole::from(substr($scope, 5)) : null;
+        $asOrgDefault = $scope === 'organization' || $role !== null;
         if ($asOrgDefault) {
             Gate::authorize(Permission::OrganizationUpdate->value);
             $organization = $user->organization;
             abort_if($organization === null, 404);
 
-            $this->layout->saveOrgDefault($organization, $rows, $tabs);
+            $this->layout->saveOrgDefault($organization, $rows, $tabs, $role);
         }
 
         $this->layout->saveForUser($user, $rows, $tabs);
 
         return redirect()->route('dashboard.customize')
-            ->with('status', $asOrgDefault
-                ? __('Dashboard-Konfiguration gespeichert und als Standard der Organisation hinterlegt.')
-                : __('Dashboard-Konfiguration gespeichert.'));
+            ->with('status', match (true) {
+                $role !== null => __('dashboard.role_default.saved', ['role' => $role->label()]),
+                $asOrgDefault => __('Dashboard-Konfiguration gespeichert und als Standard der Organisation hinterlegt.'),
+                default => __('Dashboard-Konfiguration gespeichert.'),
+            });
     }
 
     /**
@@ -134,6 +142,17 @@ class DashboardCustomizationController extends Controller {
      * Verwirft die eigene Anordnung; danach gilt wieder die Vorgabe der
      * Organisation bzw. die der Kacheln selbst.
      */
+    /** Rollen-Vorgabe entfernen (MVP-910). */
+    public function forgetRoleDefault(Request $request): RedirectResponse {
+        Gate::authorize(Permission::OrganizationUpdate->value);
+        $role = UserRole::from((string) $request->validate(['role' => ['required', Rule::in(array_map(static fn (UserRole $r): string => $r->value, StartPageResolver::CONFIGURABLE_ROLES))]])['role']);
+        $organization = Auth::user()?->organization;
+        abort_if($organization === null, 404);
+        $this->layout->forgetRoleDefault($organization, $role);
+
+        return redirect()->route('dashboard.customize')->with('status', __('dashboard.role_default.forgotten', ['role' => $role->label()]));
+    }
+
     public function reset(): RedirectResponse {
         /** @var User $user */
         $user = Auth::user();

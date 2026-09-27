@@ -17,6 +17,7 @@ use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Contracts\HasDocumentLines;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Document\{Document, DocumentDispatch};
+use App\Models\Gaeb\BillOfQuantity;
 use App\Models\Material\Material;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
@@ -35,6 +36,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $organization_id
  * @property int $customer_id
  * @property int|null $project_id
+ * @property int|null $bill_of_quantity_id
  * @property int|null $foreign_customer_id
  * @property string $number
  * @property string|null $external_number
@@ -163,6 +165,7 @@ class Invoice extends Model implements HasDocumentLines {
         'customer_id',
         'project_id',
         'foreign_customer_id',
+        'bill_of_quantity_id',
         'number',
         'external_number',
         'number_source',
@@ -257,6 +260,11 @@ class Invoice extends Model implements HasDocumentLines {
     /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo {
         return $this->belongsTo(Project::class);
+    }
+
+    /** @return BelongsTo<BillOfQuantity, $this> */
+    public function billOfQuantity(): BelongsTo {
+        return $this->belongsTo(BillOfQuantity::class);
     }
 
     /** @return BelongsTo<ForeignCustomer, $this> */

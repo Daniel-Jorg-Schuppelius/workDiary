@@ -242,4 +242,10 @@ return [
             'ip_blocked' => 'IP amministratore piattaforma bloccato',
         ],
     ],
+    // Schadensfälle (MVP-919).
+    'damage' => [
+        'opened' => 'Sinistro creato',
+        'updated' => 'Dati modificati',
+        'status' => 'Stato modificato',
+    ],
 ];

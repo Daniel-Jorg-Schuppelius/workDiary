@@ -49,5 +49,7 @@
     "{1}:n Spese wartet auf Freigabe|[2,*]:n Spesen warten auf Freigabe": "{1}:n Spese wartet auf Freigabe|[2,*]:n Spesen warten auf Freigabe",
     "{1}:n Spesen-Entwurf wartet auf Abgabe|[2,*]:n Spesen-Entwürfe warten auf Abgabe": "{1}:n Spesen-Entwurf wartet auf Abgabe|[2,*]:n Spesen-Entwürfe warten auf Abgabe",
     "{1}:n Urlaubsantrag wartet auf Entscheidung|[2,*]:n Urlaubsanträge warten auf Entscheidung": "{1}:n Urlaubsantrag wartet auf Entscheidung|[2,*]:n Urlaubsanträge warten auf Entscheidung",
-    "{1}:n Urlaubsantrag wartet auf Freigabe|[2,*]:n Urlaubsanträge warten auf Freigabe": "{1}:n Urlaubsantrag wartet auf Freigabe|[2,*]:n Urlaubsanträge warten auf Freigabe"
+    "{1}:n Urlaubsantrag wartet auf Freigabe|[2,*]:n Urlaubsanträge warten auf Freigabe": "{1}:n Urlaubsantrag wartet auf Freigabe|[2,*]:n Urlaubsanträge warten auf Freigabe",
+    "Kundengruppen": "Kundengruppen",
+    "Kundengruppe": "Kundengruppe"
 }

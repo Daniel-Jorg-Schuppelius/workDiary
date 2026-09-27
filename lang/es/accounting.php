@@ -540,6 +540,23 @@ return [
 
     // Finanzberichte (Feature 125, MVP-676).
     'reports' => [
+        'replacement' => [
+            'subtitle' => 'A fecha :from, horizonte hasta :to, subida de precios :inflation % anual',
+            'horizon' => 'Horizonte',
+            'years' => ':count años',
+            'year_total' => 'Necesidad de reposición :year',
+            'assets' => 'Activos al final de su vida útil',
+            'no_assets' => 'Ninguna vida útil termina dentro del horizonte.',
+            'ends_on' => 'En uso hasta',
+            'book_value' => 'Valor contable hoy',
+            'replacement' => 'Reposición (estimada)',
+            'overdue' => 'vencida',
+            'hint' => 'Reposición = coste de adquisición × (1 + subida de precios)^años de uso; configure la subida de precios en los ajustes de la organización. Las partidas colectivas no se incluyen.',
+            'leases' => 'Contratos de leasing y financiación que vencen',
+            'contract' => 'Contrato',
+            'partner' => 'Socio',
+            'residual' => 'Valor residual',
+        ],
         'fixed_asset_schedule' => [
             'subtitle' => 'Ejercicio :year (:from – :to)',
             'year' => 'Ejercicio',
@@ -660,6 +677,10 @@ return [
             ],
         ],
         'card' => [
+            'replacement_forecast' => [
+                'title' => 'Necesidad de reposición',
+                'text' => 'Valores contables, fin de la vida útil y reposición estimada; leasings que vencen.',
+            ],
             'fixed_asset_schedule' => [
                 'title' => 'Cuadro de inmovilizado',
                 'text' => 'Evolución del coste de adquisición y de la amortización acumulada por activo en el ejercicio.',

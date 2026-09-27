@@ -62,4 +62,9 @@ final class ShipperAddress {
             strtoupper($get('country') !== '' ? $get('country') : 'DE'),
         );
     }
+
+    /** Die Organisation als Empfänger, z. B. einer Retoure (MVP-917). */
+    public function toRecipient(): ShipmentRecipient {
+        return new ShipmentRecipient($this->name, $this->street, $this->zip, $this->city, $this->country);
+    }
 }

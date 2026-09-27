@@ -39,7 +39,7 @@ class CrisisContinuityImpact extends Model {
     public const STATUSES = ['down', 'degraded', 'workaround', 'restored'];
 
     protected $fillable = [
-        'organization_id', 'crisis_case_id', 'process_name', 'rto_hours',
+        'organization_id', 'crisis_case_id', 'crisis_business_process_id', 'process_name', 'rto_hours',
         'rpo_hours', 'workaround', 'substitute_process', 'status', 'residual_note',
     ];
 

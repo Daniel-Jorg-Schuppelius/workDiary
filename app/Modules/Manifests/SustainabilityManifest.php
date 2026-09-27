@@ -48,6 +48,7 @@ final class SustainabilityManifest extends Manifest {
     /** @return list<string> */
     public function tables(): array {
         return [
+            'sustainability_sites',
             'sustainability_activity_records',
             'sustainability_assessment_items',
             'sustainability_assessments',
@@ -89,6 +90,9 @@ final class SustainabilityManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\CustomerPortal\Contracts\PortalNoticeSource::class => [
+                \App\Services\Sustainability\SustainabilityExcerptService::class,
+            ],
             \App\Services\Demo\Contracts\DemoBlock::class => [
                 \App\Services\Sustainability\Demo\SustainabilityDemoBlock::class,
             ],

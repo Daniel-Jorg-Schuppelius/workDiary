@@ -94,11 +94,14 @@ return [
         'pool_lower' => 'Fondo da (oltre)',
         'pool_upper' => 'Fondo fino a',
         'pool_years' => 'Anni del fondo',
+        'replacement_inflation_pct' => 'Aumento dei prezzi per la previsione di sostituzione (% annuo)',
     ],
     'rental_terms' => [
         'heading' => 'Condizioni di noleggio attrezzature',
         'description' => 'Le condizioni di noleggio si gestiscono come accordo cliente «Condizioni di noleggio (noleggio attrezzature)» con versione e firma.',
         'require_signed' => 'Consegna solo con condizioni di noleggio firmate',
+        'portal_direct_booking' => 'Consentire la prenotazione diretta nel portale clienti',
+        'portal_direct_booking_hint' => 'I clienti prenotano subito i dispositivi liberi abilitati per il portale; la direzione viene informata.',
     ],
     'claims_pattern' => [
         'heading' => 'Schemi di reclami',
@@ -232,5 +235,11 @@ return [
         'interest_mode_base_rate' => 'Tasso base + punti percentuali',
         'interest_points' => 'Maggiorazione (punti percentuali)',
         'interest_points_hint' => "Solo in modalità tasso base. Riferimento § 288 BGB: 5 punti verso i consumatori, 9 tra imprese — l'importo lo stabilisce la vostra azienda.",
+    ],
+    'recurring_tickets' => [
+        'heading' => 'Problemi ricorrenti',
+        'description' => 'Da quanti ticket per cliente o oggetto in quale periodo nasce un allarme.',
+        'threshold' => 'Ticket da',
+        'window_days' => 'Finestra (giorni)',
     ],
 ];

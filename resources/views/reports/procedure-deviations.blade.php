@@ -46,7 +46,7 @@
             <select id="pdev-template" name="template" class="select select-sm select-bordered w-full" data-autosubmit>
                 <option value="">{{ __('procedure.report.filter.all_templates') }}</option>
                 @foreach ($templates as $template)
-                    <option value="{{ $template->sqid }}" @selected($templateId === $template->id)>{{ $template->name }}</option>
+                    <option value="{{ $template->sqid }}" @selected($templateId === $template->id)>{{ $template->displayName() }}</option>
                 @endforeach
             </select>
         </x-filter-field>

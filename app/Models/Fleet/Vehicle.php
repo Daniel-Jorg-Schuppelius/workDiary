@@ -10,9 +10,12 @@
 
 namespace App\Models\Fleet;
 
+use App\Enums\Damage\DamageKind;
 use App\Enums\Vehicle\{VehicleOwnership, VehiclePropulsion, VehicleType};
 use App\Models\Asset\{Asset, EnergyLog};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\HasDamageCases;
+use App\Models\Contracts\DamageCaseSubject;
 use App\Models\Platform\User;
 use App\Models\Travel\TravelLog;
 use Database\Factories\Fleet\VehicleFactory;
@@ -49,10 +52,11 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-class Vehicle extends Model {
+class Vehicle extends Model implements DamageCaseSubject {
     use Auditable;
 
     use BelongsToOrganization;
+    use HasDamageCases;
     /** @use HasFactory<VehicleFactory> */
     use HasFactory;
 
@@ -195,5 +199,17 @@ class Vehicle extends Model {
     /** @return HasMany<TravelLog, $this> */
     public function travelLogs(): HasMany {
         return $this->hasMany(TravelLog::class);
+    }
+
+    public function damageSubjectLabel(): string {
+        return $this->displayName();
+    }
+
+    public function damageSubjectUrl(): ?string {
+        return route('vehicles.edit', $this);
+    }
+
+    public function damageDefaultKind(): DamageKind {
+        return DamageKind::Vehicle;
     }
 }

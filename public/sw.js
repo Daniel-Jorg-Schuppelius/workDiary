@@ -9,14 +9,16 @@
  * Assets/XHR laufen unverändert am SW vorbei (Schreibpfade gehen explizit
  * über die IndexedDB-Outbox, resources/js/offline-sync.js).
  */
-const OFFLINE_CACHE = "workdiary-offline-v1";
+const OFFLINE_CACHE = "workdiary-offline-v3";
+// Offline-Leser der Krisenmappe (MVP-914), mit offline.html vorgecacht.
+const OFFLINE_READER = "/offline-reader.js";
 const OFFLINE_URL = "/offline.html";
 
 self.addEventListener("install", (event) => {
     event.waitUntil(
         caches
             .open(OFFLINE_CACHE)
-            .then((cache) => cache.add(OFFLINE_URL))
+            .then((cache) => cache.addAll([OFFLINE_URL, OFFLINE_READER]))
             .then(() => self.skipWaiting()),
     );
 });
@@ -33,6 +35,11 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+    // Das Leseskript der Offline-Seite kommt ohne Netz aus dem Cache.
+    if (new URL(event.request.url).pathname === OFFLINE_READER) {
+        event.respondWith(fetch(event.request).catch(() => caches.match(OFFLINE_READER).then((cached) => cached || Response.error())));
+        return;
+    }
     if (event.request.mode !== "navigate") return;
 
     // `.well-known` nie aus dem Offline-Cache bedienen (CRA-Tabletop

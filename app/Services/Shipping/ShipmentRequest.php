@@ -15,7 +15,9 @@ namespace App\Services\Shipping;
 /**
  * Providerneutrale Anforderung eines Versandlabels (Feature 059, MVP-128):
  * Empfänger, Packstücke, eine fachliche Referenz (Auslieferungs-/Auftragsnummer)
- * und die optionale Carrier-Abrechnungs-/Kostenstellenreferenz.
+ * und die optionale Carrier-Abrechnungs-/Kostenstellenreferenz. Mit
+ * `returnFrom` ist es ein Retourenlabel (MVP-917): Absender ist der Kunde,
+ * Empfänger die Organisation, bezahlt über das Konto der Anbindung.
  */
 final class ShipmentRequest {
     /**
@@ -26,5 +28,6 @@ final class ShipmentRequest {
         public readonly array $packages,
         public readonly string $reference,
         public readonly ?string $billingNumber = null,
+        public readonly ?ShipmentRecipient $returnFrom = null,
     ) {}
 }

@@ -97,6 +97,7 @@ class AttachmentPolicy {
             $parent instanceof \App\Models\Supplier\SupplierCredential => $parent->supplier,
             $parent instanceof \App\Models\AssetCompliance\AssetInspectionEvent => $parent->asset,
             $parent instanceof \App\Models\AssetCompliance\AssetInspectionSchedule => $parent->asset,
+            $parent instanceof \App\Models\AssetCompliance\AssetInspectionOrderItem => $parent->asset,
             $parent instanceof \App\Models\Rental\RentalHandoverReport => $parent->asset,
             $parent instanceof \App\Models\Rental\RentalReturnReport => $parent->asset,
             $parent instanceof \App\Models\Asset\AssetDefect => $parent->asset,

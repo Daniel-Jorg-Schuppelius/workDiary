@@ -102,6 +102,25 @@ class OperationsMetricsService {
      * Organisation + Feature + Tag, fire-and-forget — Fehler hier dürfen
      * NIE den fachlichen Ablauf brechen, daher schluckt die Methode alles.
      */
+    /**
+     * Kennzahlen einer beliebigen Organisation für den Plattformbetrieb (MVP-951):
+     * dieselben Abfragen wie {@see collect()}, im Kontext der Organisation.
+     *
+     * @return array{active_users: ?int, bytes: int, last_activity: ?CarbonImmutable}
+     */
+    public function tenantUsage(Organization $organization): array {
+        return \App\Support\OrganizationContext::run($organization, function (): array {
+            $storage = $this->safe(fn (): array => $this->storageMetrics(), ['attachments' => ['bytes' => 0], 'document_versions' => ['bytes' => 0]]);
+            $last = $this->safe(fn (): mixed => $this->withoutDemo(AuditLog::query())->max('created_at'), null);
+
+            return [
+                'active_users' => $this->safe(fn (): ?int => $this->activeUserCount(), null),
+                'bytes' => (int) $storage['attachments']['bytes'] + (int) $storage['document_versions']['bytes'],
+                'last_activity' => $last !== null ? CarbonImmutable::parse((string) $last) : null,
+            ];
+        });
+    }
+
     public function increment(string $feature, ?int $organizationId = null): void {
         try {
             $organizationId ??= $this->resolveOrganizationId();

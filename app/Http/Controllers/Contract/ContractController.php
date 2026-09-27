@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Contract;
 
 use App\Enums\Contract\{ContractKind, ContractObligationKind, ContractPartnerType, ContractStatus, ContractTermKind, IndexationMethod};
 use App\Enums\User\Permission;
+use App\Exceptions\DocumentTextUnavailableException;
 use App\Http\Controllers\Controller;
 use App\Models\AssetFinance\AssetFinanceContract;
 use App\Models\Contract\{Contract, ContractObligation, ContractTemplate};
@@ -24,6 +25,7 @@ use App\Models\Platform\User;
 use App\Models\Supplier\Supplier;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Contract\{ContractService, ContractTemplateService};
+use App\Services\Document\{ContractTextAnalyzer, DocumentTextExtractor};
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Support\{ErrorText, Sqid};
 use Illuminate\Contracts\View\View;
@@ -111,7 +113,7 @@ class ContractController extends Controller {
      * bei `agreement=1`, beschränkt auf die Vertragsarten mit Unterzeichnung
      * (Feature 157: AVV/NDA).
      */
-    public function create(Request $request): View {
+    public function create(Request $request, ContractTextAnalyzer $analyzer, DocumentTextExtractor $extractor): View {
         Gate::authorize('create', Contract::class);
 
         $presetCustomer = null;
@@ -124,11 +126,29 @@ class ContractController extends Controller {
         $templateId = Sqid::decode(ContractTemplate::class, $request->string('template')->toString());
         $template = $templateId !== null ? ContractTemplate::query()->where('is_active', true)->find($templateId) : null;
 
+        $preset = $template instanceof ContractTemplate ? $templates->preset($template) : [];
+
+        // Vorschläge aus einem DMS-Dokument (MVP-906): füllen nur, was die Vorlage frei lässt.
+        $analysis = null;
+        $documentId = Sqid::decode(Document::class, $request->string('document')->toString());
+        $document = $documentId !== null ? Document::query()->visibleTo($this->authUser())->with('currentVersion')->find($documentId) : null;
+        if ($document instanceof Document && $document->currentVersion !== null) {
+            try {
+                $analysis = $analyzer->analyze($extractor->extract($document->currentVersion));
+                $preset += $analysis['fields'] + ['title' => $document->title];
+            } catch (DocumentTextUnavailableException) {
+                $analysis = ['fields' => [], 'hints' => []];
+            }
+            $preset['document_id'] = $document->sqid;
+        }
+
         return view('contracts._form_dialog', array_merge($this->formOptions(), [
             'presetCustomer' => $presetCustomer,
             'agreementOnly' => $request->boolean('agreement'),
             'templates' => $templates->choices($request->boolean('agreement')),
-            'preset' => $template instanceof ContractTemplate ? $templates->preset($template) : [],
+            'preset' => $preset,
+            'analysis' => $analysis,
+            'analysisDocument' => $document,
         ]));
     }
 
@@ -277,7 +297,8 @@ class ContractController extends Controller {
 
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'kind' => ['required', Rule::enum(ContractKind::class)],
+            // Arbeitsverträge entstehen nur über die Personalakte (MVP-939).
+            'kind' => ['required', Rule::enum(ContractKind::class)->except([ContractKind::Employment])],
             'partner_type' => ['required', Rule::enum(ContractPartnerType::class)],
             'customer_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('customers')],
             'supplier_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('suppliers')],

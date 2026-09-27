@@ -48,6 +48,21 @@
                       :from-label="__('Zeitraum von')" :to-label="__('Zeitraum bis')"
                       :from="old('starts_on', optional($case->starts_on)->toDateString())"
                       :to="old('ends_on', optional($case->ends_on)->toDateString())" />
+        {{-- Investitionsprogramm (MVP-927) --}}
+        <x-select-field name="investment_program_id" :label="__('investment.program.field.program')">
+            <option value="">—</option>
+            @foreach ($programs as $program)
+                <option value="{{ $program->sqid }}" @selected(old('investment_program_id', $case->investment_program_id !== null ? \App\Support\Sqid::encode(\App\Models\Investments\InvestmentProgram::class, $case->investment_program_id) : '') === $program->sqid)>{{ $program->name }} ({{ $program->starts_year }}–{{ $program->ends_year }})</option>
+            @endforeach
+        </x-select-field>
+        <x-input-field name="planned_year" type="number" min="2000" max="2100" :label="__('investment.program.field.planned_year')" :hint="__('investment.program.hint.planned_year')" :value="old('planned_year', $case->planned_year)" />
+        {{-- Strategisches Ziel (MVP-942) --}}
+        <x-select-field name="strategic_objective_id" :label="__('investment.objective.field.objective')">
+            <option value="">—</option>
+            @foreach ($objectives as $objective)
+                <option value="{{ $objective->sqid }}" @selected(old('strategic_objective_id', $case->strategic_objective_id !== null ? \App\Support\Sqid::encode(\App\Models\Investments\StrategicObjective::class, $case->strategic_objective_id) : '') === $objective->sqid)>{{ $objective->title }}</option>
+            @endforeach
+        </x-select-field>
         <x-textarea-field name="reason" :label="__('Anlass')" rows="2" span="2">{{ old('reason', $case->reason ?? '') }}</x-textarea-field>
         <x-textarea-field name="objective" :label="__('Ziel / erwarteter Nutzen')" rows="2" span="2">{{ old('objective', $case->objective ?? '') }}</x-textarea-field>
         <x-textarea-field name="risk_note" :label="__('Risiko')" rows="2" span="2">{{ old('risk_note', $case->risk_note ?? '') }}</x-textarea-field>

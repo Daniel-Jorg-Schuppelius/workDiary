@@ -377,6 +377,7 @@ class OrgMemberController extends Controller {
         return view('org.members._offboard_dialog', [
             'member' => $member,
             'checklist' => app(\App\Services\Org\UserOffboardingService::class)->handoverChecklist($member),
+            'deputyCandidates' => User::inCurrentOrganization()->whereKeyNot($member->id)->whereNull('deactivated_at')->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -391,7 +392,7 @@ class OrgMemberController extends Controller {
             return back()->with('error', __('Sie können sich nicht selbst entfernen.'));
         }
 
-        $data = $request->validate(['left_at' => ['required', 'date']]);
+        $data = $request->validate(['left_at' => ['required', 'date'], 'deputy_replacements' => ['nullable', 'array'], 'deputy_replacements.*' => ['nullable', 'string', 'max:64']]);
 
         $blockers = app(\App\Services\Org\UserOffboardingService::class)->blockers($member);
         if ($blockers !== []) {
@@ -400,6 +401,18 @@ class OrgMemberController extends Controller {
 
         app(\App\Services\Org\UserOffboardingService::class)
             ->initiate($member, \Carbon\CarbonImmutable::parse($data['left_at']), $auth);
+        // MVP-941: neue Vertretungen aus dem Dialog (Schlüssel und Werte als Sqid).
+        $replacements = [];
+        foreach ((array) ($data['deputy_replacements'] ?? []) as $userKey => $deputyKey) {
+            $userId = \App\Support\Sqid::decode(User::class, (string) $userKey);
+            if ($userId !== null) {
+                $deputyId = filled($deputyKey) ? \App\Support\Sqid::decode(User::class, (string) $deputyKey) : null;
+                $replacements[$userId] = $deputyId !== null && User::inCurrentOrganization()->whereKey($deputyId)->exists() ? $deputyId : null;
+            }
+        }
+        if ($replacements !== []) {
+            app(\App\Services\Org\UserOffboardingService::class)->replaceDeputies($member, $replacements, $auth);
+        }
 
         return redirect()->toList('org.members.index')
             ->with('success', $member->fresh()?->isDeactivated()

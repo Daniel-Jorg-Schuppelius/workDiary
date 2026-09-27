@@ -119,6 +119,9 @@
         </x-card>
     </div>
 
+    {{-- Schadensfälle (MVP-920) --}}
+    <x-damage-cases-card :subject="$case" />
+
     <x-card :title="__('Leihobjekte')" padding="p-0">
         <x-table bare>
             <x-slot:head>

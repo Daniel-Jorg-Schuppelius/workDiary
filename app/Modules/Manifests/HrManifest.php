@@ -57,6 +57,9 @@ final class HrManifest extends Manifest {
             \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
                 \App\Services\Hr\DeadlineScans\QualificationExpiryScan::class,
             ],
+            \App\Services\Reporting\Contracts\EarlyWarningSource::class => [
+                \App\Services\Hr\EarlyWarnings\CapacityWarningSource::class,
+            ],
         ];
     }
 
@@ -65,6 +68,9 @@ final class HrManifest extends Manifest {
         return [
             \App\Events\Platform\OrganizationCreated::class => [
                 \App\Listeners\Hr\SeedPersonnelFileRole::class,
+            ],
+            \App\Events\Contract\ContractSigningCompleted::class => [
+                \App\Listeners\Hr\FileSignedEmploymentContract::class,
             ],
         ];
     }

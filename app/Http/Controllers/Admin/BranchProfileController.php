@@ -13,8 +13,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Concerns\{RequiresPlatformOperator, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Models\Audit\AuditLog;
+use App\Models\Classification\BranchProfileVariant;
 use App\Models\Platform\User;
-use App\Services\Classification\BranchProfileInstaller;
+use App\Services\Classification\{BranchProfileInstaller, BranchProfileVariantService};
 use App\Support\ErrorText;
 use CommonToolkit\Helper\FileSystem\{File, Folder};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -95,6 +96,8 @@ class BranchProfileController extends Controller {
             'canUninstall' => $this->isPlatformOperator() && Gate::allows('branchProfile.uninstall'),
             // Restpunkt 042: angewandte Version je Profil → Update-Erkennung.
             'installedVersions' => (array) data_get((array) ($organization->settings ?? []), 'branch_profile_versions', []),
+            'variants' => BranchProfileVariant::query()->orderBy('label')->get(),
+            'installedVariants' => (array) data_get((array) ($organization->settings ?? []), BranchProfileVariantService::SETTINGS_KEY, []),
             'activeFilters' => [
                 'q' => $query,
                 'installed' => $installedFilter,
@@ -190,18 +193,10 @@ class BranchProfileController extends Controller {
             }
         }
 
-        // Klassifikations-Domänen bleiben hart begrenzt (Branchenprofile-Regel).
-        foreach (array_keys((array) ($profile['classifications'] ?? [])) as $domain) {
-            if (\App\Enums\Classification\ClassificationDomain::tryFrom((string) $domain) === null) {
-                return back()->with('error', __('Unbekannte Klassifikations-Domäne ":domain" — Profil abgelehnt.', ['domain' => $domain]));
-            }
-        }
-
-        // Feature 081 (MVP-373): Modul-Empfehlungen nur mit bekannten Katalog-Codes.
-        foreach ((array) ($profile['modules_recommended'] ?? []) as $module) {
-            if (! app(\App\Services\Licensing\ModuleCatalog::class)->has((string) $module)) {
-                return back()->with('error', __('Unbekanntes Modul ":module" in der Modul-Empfehlung — Profil abgelehnt.', ['module' => (string) $module]));
-            }
+        // Harte Domänen und bekannte Modul-Codes (Branchenprofile-Regel, MVP-373).
+        $error = app(BranchProfileVariantService::class)->profileError($profile);
+        if ($error !== null) {
+            return back()->with('error', $error);
         }
 
         /** @var \App\Models\Platform\User $actor */

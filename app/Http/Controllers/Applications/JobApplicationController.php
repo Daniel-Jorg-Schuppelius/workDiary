@@ -109,6 +109,9 @@ class JobApplicationController extends Controller {
         return view('applications.recruiting.applications.show', [
             'application' => $application,
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
+            // Eignung (MVP-924): Soll der Stelle und eigene Einschätzungen.
+            'suitabilityRequirements' => $application->requisition !== null ? app(\App\Services\Applications\SuitabilityService::class)->requirements($application->requisition) : collect(),
+            'ratings' => $application->ratings()->get()->keyBy('competency_id'),
         ]);
     }
 

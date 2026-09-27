@@ -26,7 +26,7 @@
                 @foreach ($procedureRuns as $run)
                     <li class="flex items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200/40 px-3 py-2">
                         <div>
-                            <span class="font-medium">{{ $run->templateVersion?->template?->name ?? '—' }}</span>
+                            <span class="font-medium">{{ $run->templateVersion?->template?->displayName() ?? '—' }}</span>
                             <span class="ml-1 text-xs text-muted">v{{ $run->templateVersion?->version }}</span>
                             <x-status-badge :tone="$run->status->value === 'completed' ? 'success' : ($run->status->value === 'aborted' ? 'neutral' : 'warning')" class="ml-2">{{ $run->status->label() }}</x-status-badge>
                         </div>
@@ -55,7 +55,7 @@
                 @foreach ($suggestedProcedures as $tpl)
                     <form method="POST" action="{{ route('procedure-runs.start', [$diary, $tpl]) }}">
                         @csrf
-                        <x-icon-btn icon="play_arrow" tone="primary" size="xs" type="submit" show-label>{{ $tpl->name }}</x-icon-btn>
+                        <x-icon-btn icon="play_arrow" tone="primary" size="xs" type="submit" show-label>{{ $tpl->displayName() }}</x-icon-btn>
                     </form>
                 @endforeach
             </div>

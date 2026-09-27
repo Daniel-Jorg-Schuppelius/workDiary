@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Rental;
 
-use App\Enums\Rental\{RentalChargeKind, RentalRateCardStatus};
+use App\Enums\Rental\{RentalChargeKind, RentalRateCardStatus, RentalRateRuleKind};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\Rental\{RentalRateCard, RentalRateItem};
+use App\Models\Rental\{RentalRateCard, RentalRateItem, RentalRateRule};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -34,7 +34,7 @@ class RentalRateCardController extends Controller {
 
         return view('rental.rates.index', [
             'cards' => RentalRateCard::query()
-                ->with('items')
+                ->with(['items', 'rules'])
                 ->orderBy('name')
                 ->orderByDesc('version')
                 ->paginate(25),
@@ -148,5 +148,34 @@ class RentalRateCardController extends Controller {
         $item->delete();
 
         return back()->with('status', __('Kondition entfernt.'));
+    }
+
+    /** Mietpreisregel ergänzen (MVP-950), nur im Entwurf. */
+    public function storeRule(Request $request, RentalRateCard $rateCard): RedirectResponse {
+        Gate::authorize('update', $rateCard);
+        if ($rateCard->status !== RentalRateCardStatus::Draft) {
+            return back()->withErrors(['status' => __('Aktive oder abgelöste Versionen sind unveränderlich — neue Version anlegen.')]);
+        }
+        $data = $request->validate([
+            'kind' => ['required', Rule::enum(RentalRateRuleKind::class)],
+            'label' => ['required', 'string', 'max:200'],
+            'valid_from' => ['nullable', 'date', 'required_if:kind,season'],
+            'valid_until' => ['nullable', 'date', 'after_or_equal:valid_from'],
+            'weekdays' => ['nullable', 'array', 'required_if:kind,weekday'],
+            'weekdays.*' => ['integer', 'between:1,7'],
+            'utilization_min_percent' => ['nullable', 'integer', 'between:1,100', 'required_if:kind,utilization'],
+            'adjust_percent' => ['required', 'numeric', 'between:-90,500', 'not_in:0'],
+        ]);
+        RentalRateRule::query()->create($data + ['organization_id' => $rateCard->organization_id, 'rental_rate_card_id' => $rateCard->id]);
+
+        return back()->with('status', __('rental.rule.flash.saved'));
+    }
+
+    public function destroyRule(RentalRateCard $rateCard, RentalRateRule $rule): RedirectResponse {
+        Gate::authorize('update', $rateCard);
+        abort_unless($rateCard->status === RentalRateCardStatus::Draft && (int) $rule->rental_rate_card_id === (int) $rateCard->id, 404);
+        $rule->delete();
+
+        return back()->with('status', __('rental.rule.flash.deleted'));
     }
 }

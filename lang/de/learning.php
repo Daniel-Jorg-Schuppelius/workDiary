@@ -521,6 +521,7 @@ return [
         'translate' => 'Übersetzen',
         'approve_translation' => 'Übersetzung freigeben',
         'save_offline' => 'Für offline speichern',
+        'save_offline_hint' => 'Speichert den Kursstoff ohne Medien auf diesem Gerät; ohne Netz auf der Offline-Seite lesbar. Beim Abmelden gelöscht.',
     ],
     'flash' => [
         'competency_created' => 'Kompetenz angelegt.',

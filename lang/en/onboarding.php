@@ -120,4 +120,82 @@ return [
             ],
         ],
     ],
+    // Persönlicher Einstieg je Rolle (MVP-911).
+    'personal' => [
+        'title' => 'My start',
+        'description' => 'A few steps to get started with WorkDiary in your role. WorkDiary detects completed steps itself; tick off steps without an indicator.',
+        'progress' => ':done of :total steps done',
+        'open' => 'Open start',
+        'go' => 'Open',
+        'mark_done' => 'Done',
+        'dismiss' => 'Hide start',
+        'marked' => 'Step marked as done.',
+        'dismissed' => 'Start hidden; you can still find it under “My start”.',
+        'step' => [
+            'profile' => [
+                'two_factor' => [
+                    'title' => 'Set up a second factor',
+                    'hint' => 'Protects your account with an app, passkey or security key.',
+                ],
+                'startpage' => [
+                    'title' => 'Choose your start page',
+                    'hint' => 'Decide what WorkDiary opens after you sign in.',
+                ],
+            ],
+            'dashboard' => [
+                'customize' => [
+                    'title' => 'Customise the dashboard',
+                    'hint' => 'Show the tiles you need every day.',
+                ],
+            ],
+            'time' => [
+                'first' => [
+                    'title' => 'Record your first time entry',
+                    'hint' => 'Book working time, for example via “Today”.',
+                ],
+            ],
+            'attendance' => [
+                'first' => [
+                    'title' => 'Clock in',
+                    'hint' => 'Record arrival and departure once.',
+                ],
+            ],
+            'expense' => [
+                'first' => [
+                    'title' => 'Record expenses',
+                    'hint' => 'Record a receipt or a trip as an expense.',
+                ],
+            ],
+            'diary' => [
+                'first' => [
+                    'title' => 'Create your first order',
+                    'hint' => 'Create and assign an order.',
+                ],
+            ],
+            'invoice' => [
+                'first' => [
+                    'title' => 'Create your first invoice',
+                    'hint' => 'Create an invoice as a draft.',
+                ],
+            ],
+            'reports' => [
+                'accounting' => [
+                    'title' => 'Explore the financial reports',
+                    'hint' => 'Open the overview of the financial reports once.',
+                ],
+            ],
+            'org' => [
+                'checklist' => [
+                    'title' => 'Organisation setup',
+                    'hint' => 'Go through the organisation checklist.',
+                ],
+            ],
+            'help' => [
+                'center' => [
+                    'title' => 'Open the help centre',
+                    'hint' => 'Guides and answers for your tasks.',
+                ],
+            ],
+        ],
+    ],
 ];

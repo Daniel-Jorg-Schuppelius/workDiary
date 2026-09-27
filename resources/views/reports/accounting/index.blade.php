@@ -45,6 +45,7 @@
                 ['route' => 'reports.accounting.vat', 'icon' => 'percent', 'key' => 'vat'],
                 ['route' => 'reports.accounting.euer', 'icon' => 'savings', 'key' => 'euer'],
                 ['route' => 'reports.accounting.fixed-asset-schedule', 'icon' => 'inventory', 'key' => 'fixed_asset_schedule'],
+                ['route' => 'reports.accounting.replacement-forecast', 'icon' => 'update', 'key' => 'replacement_forecast'],
                 ['route' => 'reports.accounting.recapitulative', 'icon' => 'public', 'key' => 'recapitulative'],
                 ['route' => 'reports.accounting.profit-and-loss', 'icon' => 'trending_up', 'key' => 'pnl'],
                 ['route' => 'reports.accounting.bwa', 'icon' => 'analytics', 'key' => 'bwa'],

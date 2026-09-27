@@ -576,6 +576,8 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(\App\Models\Investments\InvestmentCase::class, \App\Policies\Investments\InvestmentCasePolicy::class);
         // Feature 070: Krisenmanagement (eigene Rechte + Stab-Notfallzugriff).
         Gate::policy(\App\Models\Crisis\CrisisCase::class, \App\Policies\Crisis\CrisisCasePolicy::class);
+        Gate::policy(\App\Models\Damage\DamageCase::class, \App\Policies\Damage\DamageCasePolicy::class);
+        Gate::policy(\App\Models\Inventory\Recall::class, \App\Policies\Inventory\RecallPolicy::class);
         // Feature 071: Nachhaltigkeit/ESG.
         Gate::policy(\App\Models\Sustainability\SustainabilityAssessment::class, \App\Policies\Sustainability\SustainabilityAssessmentPolicy::class);
         // Feature 072: Reklamation/Gewährleistung (getrennte Rollen-Rechte).
@@ -1121,6 +1123,7 @@ class AppServiceProvider extends ServiceProvider {
         foreach ([
             // Überblick
             \App\Dashboard\Widgets\OnboardingWidget::class,
+            \App\Dashboard\Widgets\PersonalOnboardingWidget::class,
             \App\Dashboard\Widgets\PersonalKpisWidget::class,
             \App\Dashboard\Widgets\TeamKpisWidget::class,
             \App\Dashboard\Widgets\TodayShiftsWidget::class,

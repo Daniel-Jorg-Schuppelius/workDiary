@@ -153,6 +153,7 @@ return [
         'crisis' => 'Gestion de crise',
         'sustainability' => 'Durabilité et ESG',
         'claims' => 'Réclamations et garantie',
+        'damage' => 'Sinistres',
         'rental' => 'Location de matériel',
         'disposal' => 'Élimination et justificatifs',
         'asset-finance' => 'Leasing et contrats d\'actifs',
@@ -609,6 +610,7 @@ return [
         'investment.view' => 'Consulter le dossier d’investissement',
         'investment.manage' => 'Gérer les dossiers d’investissement',
         'investment.approve' => 'Approuver les budgets d’investissement',
+        'investment.propose' => 'Proposer des investissements',
 
         // Krisenmanagement (Feature 070)
         'crisis.viewAny' => 'Lister les crises',
@@ -624,6 +626,12 @@ return [
         'claim.view' => 'Consulter le dossier de réclamation',
         'claim.manage' => 'Accepter et gérer les réclamations',
         'claim.decide' => 'Évaluer et décider des réclamations',
+        'damage.viewAny' => 'Lister les sinistres',
+        'damage.view' => 'Consulter un sinistre',
+        'damage.manage' => 'Gérer les sinistres (création, données, statut)',
+        'recall.viewAny' => 'Lister les rappels',
+        'recall.view' => 'Consulter un rappel',
+        'recall.manage' => 'Gérer les rappels (périmètre, activation, suivi par client)',
         'claim.finance' => 'Approuver les suites commerciales des réclamations',
         'claim.warehouse' => 'Contrôler et stocker les retours',
         'claim.recourse' => 'Gérer le recours fournisseur',

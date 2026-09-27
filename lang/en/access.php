@@ -166,6 +166,7 @@ return [
         'crisis' => 'Crisis management',
         'sustainability' => 'Sustainability & ESG',
         'claims' => 'Claims & warranty',
+        'damage' => 'Damage cases',
         'rental' => 'Equipment rental',
         'disposal' => 'Disposal & proofs',
         'asset-finance' => 'Leasing & asset contracts',
@@ -644,6 +645,7 @@ return [
         'investment.view' => 'View investment case',
         'investment.manage' => 'Manage investment cases',
         'investment.approve' => 'Approve investment budgets',
+        'investment.propose' => 'Propose investments',
 
         // Krisenmanagement (Feature 070)
         'crisis.viewAny' => 'List crisis cases',
@@ -659,6 +661,12 @@ return [
         'claim.view' => 'View claim case',
         'claim.manage' => 'Accept and manage claims',
         'claim.decide' => 'Assess and decide claims',
+        'damage.viewAny' => 'List damage cases',
+        'damage.view' => 'View damage case',
+        'damage.manage' => 'Manage damage cases (create, details, status)',
+        'recall.viewAny' => 'List recalls',
+        'recall.view' => 'View recall',
+        'recall.manage' => 'Manage recalls (scope, activation, status per customer)',
         'claim.finance' => 'Approve financial claim outcomes',
         'claim.warehouse' => 'Inspect and restock returns',
         'claim.recourse' => 'Handle supplier recourse',

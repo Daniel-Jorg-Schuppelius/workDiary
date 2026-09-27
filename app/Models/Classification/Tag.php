@@ -12,7 +12,7 @@ namespace App\Models\Classification;
 
 use App\Models\Asset\Asset;
 use App\Models\Communication\CommunicationNote;
-use App\Models\Concerns\{BelongsToOrganization, GeneratesUniqueSlug, HasSqid};
+use App\Models\Concerns\{BelongsToOrganization, GeneratesUniqueSlug, HasSqid, HasTranslatedText};
 use App\Models\Customer\Customer;
 use App\Models\Diary\{DiaryEntry, EmergencyAssignment, OnCallShift};
 use App\Models\Document\Document;
@@ -30,13 +30,22 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphToMany};
 class Tag extends Model {
     use BelongsToOrganization;
     use GeneratesUniqueSlug;
-
     /** @use HasFactory<TagFactory> */
     use HasFactory;
 
     use HasSqid;
 
-    protected $fillable = ['name', 'slug', 'color', 'created_by', 'organization_id'];
+    use HasTranslatedText;
+
+    protected $fillable = ['name', 'name_i18n', 'slug', 'color', 'created_by', 'organization_id'];
+
+    /** @var array<string, string> */
+    protected $casts = ['name_i18n' => 'array'];
+
+    /** Name in der aktiven Sprache (MVP-912); `name` bleibt der Quellwert. */
+    public function displayName(?string $locale = null): string {
+        return $this->translatedText($this->name_i18n, (string) $this->name, $locale);
+    }
 
     protected static function booted(): void {
         static::saving(function (Tag $tag): void {

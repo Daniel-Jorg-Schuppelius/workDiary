@@ -17,7 +17,7 @@ use App\Models\Audit\AuditLog;
 use App\Models\Classification\Tag;
 use App\Models\Integration\ExternalReference;
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
-use App\Models\Supplier\Supplier;
+use App\Models\Supplier\{Supplier, SupplierQuestionnaireRequest};
 use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
@@ -123,6 +123,8 @@ class SupplierController extends Controller {
             'periodPhrase' => $this->periodPhrase($this->bucketGranularity($lexofficeVoucherRange['from'], $lexofficeVoucherRange['to'])),
             'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($lexofficeVoucherRange['from'], $lexofficeVoucherRange['to'])),
             'lexofficePlugin' => $lexoffice,
+            // Selbstauskunft (MVP-937).
+            'questionnaireRequests' => SupplierQuestionnaireRequest::query()->where('supplier_id', $supplier->id)->with('questionnaire')->orderByDesc('id')->limit(10)->get(),
             'lexofficeContactRef' => $lexofficeContactRef,
             'lexofficeVoucherRange' => $lexofficeVoucherRange,
             'lexofficeVoucherCache' => $lexoffice

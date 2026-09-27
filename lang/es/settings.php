@@ -94,11 +94,14 @@ return [
         'pool_lower' => 'Fondo desde (más de)',
         'pool_upper' => 'Fondo hasta',
         'pool_years' => 'Años del fondo',
+        'replacement_inflation_pct' => 'Subida de precios para la previsión de reposición (% anual)',
     ],
     'rental_terms' => [
         'heading' => 'Condiciones de alquiler de equipos',
         'description' => 'Las condiciones de alquiler se gestionan como acuerdo con el cliente «Condiciones de alquiler (alquiler de equipos)» con versión y firma.',
         'require_signed' => 'Entrega solo con condiciones de alquiler firmadas',
+        'portal_direct_booking' => 'Permitir la reserva directa en el portal de clientes',
+        'portal_direct_booking_hint' => 'Los clientes reservan de inmediato los equipos libres habilitados para el portal; se notifica a la dirección.',
     ],
     'claims_pattern' => [
         'heading' => 'Patrones de reclamaciones',
@@ -232,5 +235,11 @@ return [
         'interest_mode_base_rate' => 'Tipo básico + puntos porcentuales',
         'interest_points' => 'Recargo (puntos porcentuales)',
         'interest_points_hint' => 'Solo en el modo de tipo básico. Referencia § 288 BGB: 5 puntos frente a consumidores, 9 entre empresas; la cuantía la decide su empresa.',
+    ],
+    'recurring_tickets' => [
+        'heading' => 'Problemas recurrentes',
+        'description' => 'A partir de cuántos tickets por cliente u objeto en qué periodo se genera una alerta.',
+        'threshold' => 'Tickets desde',
+        'window_days' => 'Ventana (días)',
     ],
 ];

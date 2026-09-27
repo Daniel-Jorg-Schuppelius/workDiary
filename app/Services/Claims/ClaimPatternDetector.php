@@ -88,10 +88,10 @@ final class ClaimPatternDetector {
     private function label(string $rule, ClaimCase $case): string {
         return implode(' × ', array_filter(match ($rule) {
             'lot' => [$case->stockLot?->lot_no, $case->article?->name],
-            'article_defect' => [$case->article?->name, $case->defectType?->label],
-            'article_cause' => [$case->article?->name, $case->rootCause?->label],
-            'supplier_defect' => [$case->supplier?->name, $case->defectType?->label],
-            'entry_type_cause' => [$case->diaryEntry?->entryType?->label, $case->rootCause?->label],
+            'article_defect' => [$case->article?->name, $case->defectType?->display_label],
+            'article_cause' => [$case->article?->name, $case->rootCause?->display_label],
+            'supplier_defect' => [$case->supplier?->name, $case->defectType?->display_label],
+            'entry_type_cause' => [$case->diaryEntry?->entryType?->label, $case->rootCause?->display_label],
             default => [],
         }));
     }

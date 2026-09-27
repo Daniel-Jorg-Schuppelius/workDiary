@@ -71,6 +71,9 @@
                     @if ($portalAllows(PortalCapability::Claims))
                         <a href="{{ route('customer.claims.index') }}" class="hover:underline">{{ __('Reklamationen') }}</a>
                     @endif
+                    @if ($portalAllows(PortalCapability::Returns))
+                        <a href="{{ route('customer.returns.create') }}" class="hover:underline">{{ __('claims.portal_return.nav') }}</a>
+                    @endif
                     @if ($portalAllows(PortalCapability::Rentals))
                         <a href="{{ route('customer.rentals.index') }}" class="hover:underline">{{ __('Verleih') }}</a>
                     @endif

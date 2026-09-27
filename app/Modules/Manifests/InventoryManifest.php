@@ -48,6 +48,8 @@ final class InventoryManifest extends Manifest {
     public function tables(): array {
         return [
             'inventory_outbox',
+            'recall_items',
+            'recalls',
             'stock_count_lines',
             'stock_counts',
             'stock_deliveries',
@@ -68,6 +70,7 @@ final class InventoryManifest extends Manifest {
         return [
             'articles.*',
             'api.articles.*',
+            'recalls.*',
             'api.legacy.articles.*',
             'api.inventory.*',
             'api.legacy.inventory.*',
@@ -100,6 +103,7 @@ final class InventoryManifest extends Manifest {
                 'inventory.scan',
                 'inventory.lots',
                 'inventory.label-templates.index',
+                'recalls.index',
             ],
             'groups' => [],
         ];
@@ -124,6 +128,9 @@ final class InventoryManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\CustomerPortal\Contracts\PortalNoticeSource::class => [
+                \App\Services\Inventory\RecallPortalNotices::class,
+            ],
             \App\Plugins\Support\Contracts\PluginCapabilitySource::class => [
                 \App\Services\Inventory\InventoryCapabilitySource::class,
             ],

@@ -218,6 +218,7 @@ return [
         [
             'code' => 'VA_GENEHMIGUNGEN',
             'name' => 'Genehmigungs- / Behördencheck',
+            'name_i18n' => ['en' => 'Permit / authority check', 'es' => 'Comprobación de permisos', 'fr' => 'Vérification des autorisations', 'it' => 'Verifica autorizzazioni'],
             'domain' => 'veranstalter',
             'risk_level' => 'high',
             'description' => 'Erforderliche Genehmigungen ermitteln, beantragen und Nachweise ablegen.',
@@ -232,6 +233,7 @@ return [
         [
             'code' => 'VA_SICHERHEITSKONZEPT',
             'name' => 'Sicherheitskonzept',
+            'name_i18n' => ['en' => 'Security concept', 'es' => 'Concepto de seguridad', 'fr' => 'Concept de sécurité', 'it' => 'Piano di sicurezza'],
             'domain' => 'veranstalter',
             'risk_level' => 'critical',
             'description' => 'Sicherheitskonzept inkl. Kapazität, Flucht-/Rettungswegen, Sanitäts- und Sicherheitsdienst – Freigabe im Vier-Augen-Prinzip.',
@@ -248,6 +250,7 @@ return [
         [
             'code' => 'VA_AUFBAU_KOORDINATION',
             'name' => 'Aufbau-Koordination',
+            'name_i18n' => ['en' => 'Setup coordination', 'es' => 'Coordinación del montaje', 'fr' => 'Coordination du montage', 'it' => 'Coordinamento dell\'allestimento'],
             'domain' => 'veranstalter',
             'risk_level' => 'normal',
             'description' => 'Koordination der Gewerke beim Aufbau gegen den Ablaufplan.',
@@ -261,6 +264,7 @@ return [
         [
             'code' => 'VA_NACHBEREITUNG',
             'name' => 'Nachbereitung / Abrechnung',
+            'name_i18n' => ['en' => 'Follow-up / billing', 'es' => 'Seguimiento / facturación', 'fr' => 'Suivi / facturation', 'it' => 'Chiusura / fatturazione'],
             'domain' => 'veranstalter',
             'risk_level' => 'normal',
             'description' => 'Abbau-Abnahme, Dienstleister-Abrechnung und Kundenabnahme.',
@@ -273,6 +277,7 @@ return [
         [
             'code' => 'VA_KONZEPT',
             'name' => 'Veranstaltungskonzept',
+            'name_i18n' => ['en' => 'Event concept', 'es' => 'Concepto del evento', 'fr' => 'Concept d\'événement', 'it' => 'Concept dell\'evento'],
             'domain' => 'veranstalter',
             'risk_level' => 'normal',
             'description' => 'Konzept mit Ziel, Rahmen, Ablaufplan, Risiken und Freigabe.',
@@ -287,6 +292,7 @@ return [
         [
             'code' => 'VA_LOCATION_SCOUTING',
             'name' => 'Location-Besichtigung',
+            'name_i18n' => ['en' => 'Venue inspection', 'es' => 'Visita al lugar', 'fr' => 'Visite du lieu', 'it' => 'Sopralluogo della location'],
             'domain' => 'veranstalter',
             'risk_level' => 'normal',
             'description' => 'Besichtigung mit Kapazität, Infrastruktur, Sicherheit, Fotos und Eignungsbewertung.',
@@ -302,6 +308,7 @@ return [
         [
             'code' => 'VA_DIENSTLEISTER_BUCHUNG',
             'name' => 'Dienstleister buchen',
+            'name_i18n' => ['en' => 'Book service provider', 'es' => 'Contratar proveedor', 'fr' => 'Réserver un prestataire', 'it' => 'Prenotare il fornitore'],
             'domain' => 'veranstalter',
             'risk_level' => 'normal',
             'description' => 'Dienstleister anfragen, vergleichen, beauftragen und briefen.',
@@ -316,6 +323,7 @@ return [
         [
             'code' => 'VA_ZWISCHENFALL',
             'name' => 'Zwischenfall',
+            'name_i18n' => ['en' => 'Incident', 'es' => 'Incidente', 'fr' => 'Incident', 'it' => 'Incidente'],
             'domain' => 'veranstalter',
             'risk_level' => 'high',
             'description' => 'Zwischenfall während der Veranstaltung: Sofortmaßnahme, Dokumentation, Meldung, Nachbereitung.',

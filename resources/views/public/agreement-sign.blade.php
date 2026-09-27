@@ -29,7 +29,7 @@
             {{ __('contract-signing.public.for_party', ['party' => $signatureRequest->party->label(), 'name' => $signatureRequest->signer_name]) }}
         </div>
         <div class="mt-2 text-xs text-muted">
-            {{ __('contract-signing.party.customer') }}: {{ $contract?->customer?->name }} ·
+            {{ __($contract?->kind === \App\Enums\Contract\ContractKind::Employment ? 'contract-signing.party.employee' : 'contract-signing.party.customer') }}: {{ $contract?->customer?->name ?? $contract?->partner_name }} ·
             {{ __('contract-signing.party.organization') }}: {{ $contract?->organization?->name }}
             @if ($revision->controller_party) · {{ __('contract-signing.revision.controller', ['party' => $revision->controller_party->label()]) }} @endif
             · {{ __('contract-signing.link.expires', ['at' => $link->expires_at->fdatetime()]) }}

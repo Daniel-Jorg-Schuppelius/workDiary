@@ -135,6 +135,8 @@ class DocumentService implements \App\Plugins\Support\Mirror\Contracts\DocumentV
                 'description' => $attributes['description'] ?? null,
                 'created_by_user_id' => $creator->id,
                 'confidential' => (bool) ($attributes['confidential'] ?? false),
+                'hr_category' => $attributes['hr_category'] ?? null,
+                'retention_until' => $attributes['retention_until'] ?? null,
             ]);
 
             $this->addVersionFromContents($document, $creator, $contents, $originalName, $mime, $attributes['version_note'] ?? null, 'generated');

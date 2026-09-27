@@ -69,6 +69,8 @@ class AttachmentController extends Controller {
         'knowledge' => KnowledgeArticle::class,
         'service-ticket' => ServiceTicket::class,
         'expense' => Expense::class,
+        'damage' => \App\Models\Damage\DamageCase::class,
+        'recall' => \App\Models\Inventory\Recall::class,
     ];
 
     /**

@@ -33,6 +33,15 @@
                            :hint="__('Für den Alias-Abgleich der Fernwartungs-Inbox, z. B. GSL.')" />
             <x-input-field name="company" :label="__('Firma')" maxlength="200" :value="old('company', $customer?->company)" />
             <x-input-field name="vat_id" :label="__('USt-IdNr.')" maxlength="64" :value="old('vat_id', $customer?->vat_id)" />
+        @if (($customerGroups ?? collect())->isNotEmpty())
+            {{-- Kundengruppe (MVP-949) --}}
+            <x-select-field name="customer_group_id" :label="__('Kundengruppe')">
+                <option value="">—</option>
+                @foreach ($customerGroups as $group)
+                    <option value="{{ $group->sqid }}" @selected(old('customer_group_id', $customer?->classifications->firstWhere('domain', \App\Enums\Classification\ClassificationDomain::CustomerGroup->value)?->sqid) === $group->sqid)>{{ $group->displayLabel() }}</option>
+                @endforeach
+            </x-select-field>
+        @endif
         </x-form-group>
 
         <x-form-group :legend="__('Kontakt')" icon="call" tone="info" cols="2">

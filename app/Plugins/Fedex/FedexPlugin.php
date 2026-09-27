@@ -229,7 +229,7 @@ class FedexPlugin extends AbstractPlugin implements ShippingProvider {
             $lineItems[] = $item;
         }
 
-        return [
+        $body = [
             'labelResponseOptions' => 'LABEL',
             'accountNumber' => ['value' => $account],
             'requestedShipment' => [
@@ -262,6 +262,24 @@ class FedexPlugin extends AbstractPlugin implements ShippingProvider {
                 'requestedPackageLineItems' => $lineItems,
             ],
         ];
+        // Retourenlabel (MVP-917): der Kunde versendet an die Organisation, die über ihr Konto bezahlt.
+        if ($request->returnFrom !== null) {
+            $from = $request->returnFrom;
+            $body['requestedShipment']['shipper'] = [
+                'contact' => ['personName' => $from->contactName ?? $from->name, 'companyName' => $from->name],
+                'address' => ['streetLines' => [$from->street], 'city' => $from->city, 'postalCode' => $from->zip, 'countryCode' => strtoupper($from->country)],
+            ];
+            $body['requestedShipment']['shipmentSpecialServices'] = [
+                'specialServiceTypes' => ['RETURN_SHIPMENT'],
+                'returnShipmentDetail' => ['returnType' => 'PRINT_RETURN_LABEL'],
+            ];
+            $body['requestedShipment']['shippingChargesPayment'] = [
+                'paymentType' => 'RECIPIENT',
+                'payor' => ['responsibleParty' => ['accountNumber' => ['value' => $account]]],
+            ];
+        }
+
+        return $body;
     }
 
     /** FedEx-Statuscode (derivedCode) → WorkDiary-Lebenszyklus. */

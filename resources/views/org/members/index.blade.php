@@ -103,6 +103,9 @@
                                         <x-icon-btn icon="switch_account" tone="warning" type="submit" :label="__('Als Nutzer anmelden (Support)')" />
                                     </x-action-form>
                                 @endif
+                                @if (! $member->isDeactivated() && (auth()->user()?->hasEffectivePermission(\App\Services\Hr\PersonnelFilePermissions::CREATE) ?? false))
+                                    <x-icon-btn icon="draw" data-entry-modal-trigger :href="route('contracts.employment.member.create', $member)" :label="__('hr.employment.title')" />
+                                @endif
                                 @if (($canManageMembers ?? true) && $mayManageMember && ! $member->isDeactivated() && $member->id !== auth()->id())
                                     {{-- Feature 126 (H1/E4): Regelweg Austritt — deaktiviert, Nachweise bleiben. --}}
                                     <x-icon-btn icon="logout" tone="warning" data-entry-modal-trigger

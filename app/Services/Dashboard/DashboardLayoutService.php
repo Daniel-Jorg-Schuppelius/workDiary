@@ -14,7 +14,9 @@ namespace App\Services\Dashboard;
 
 use App\Dashboard\{Widget, WidgetRegistry};
 use App\Enums\Dashboard\WidgetWidth;
+use App\Enums\User\UserRole;
 use App\Models\Platform\{Organization, User, UserDashboardWidget};
+use App\Services\Navigation\StartPageResolver;
 use App\Support\Dashboard\DashboardLayoutItem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -40,6 +42,9 @@ class DashboardLayoutService {
 
     public const SETTINGS_TABS_KEY = 'tabs';
 
+    /** Vorgaben je Rolle (MVP-910): Rolle → {layout, tabs}. */
+    public const SETTINGS_ROLES_KEY = 'role_layouts';
+
     /** Präferenz-Schlüssel der nutzereigenen Bereichsliste. */
     public const PREFERENCE_TABS_KEY = 'dashboard_tabs';
 
@@ -57,10 +62,12 @@ class DashboardLayoutService {
     public function resolveFor(User $user): Collection {
         /** @var Collection<string, UserDashboardWidget> $stored */
         $stored = $user->dashboardWidgets()->get()->keyBy('widget_key');
-        $orgDefaults = $this->orgDefaults($user->organization);
+        $role = $this->layoutRoleFor($user);
+        $orgDefaults = $role !== null ? $this->roleDefaults($user->organization, $role) : $this->orgDefaults($user->organization);
+        $orgSource = $role !== null ? 'role' : 'organization';
 
         return $this->registry->availableFor($user)
-            ->map(function (Widget $widget) use ($stored, $orgDefaults): DashboardLayoutItem {
+            ->map(function (Widget $widget) use ($stored, $orgDefaults, $orgSource): DashboardLayoutItem {
                 $row = $stored->get($widget->key());
                 $orgRow = $orgDefaults[$widget->key()] ?? null;
 
@@ -82,7 +89,7 @@ class DashboardLayoutService {
                         hidden: (bool) ($orgRow['hidden'] ?? false),
                         width: WidgetWidth::tryFromValue($orgRow['width'] ?? null) ?? $widget->defaultWidth(),
                         tabKey: is_string($orgRow['tab'] ?? null) ? $orgRow['tab'] : null,
-                        source: 'organization',
+                        source: $orgSource,
                     );
                 }
 
@@ -164,10 +171,10 @@ class DashboardLayoutService {
      * @param list<array{key:string,hidden?:mixed,width?:?string,tab?:?string}> $rows
      * @param list<array{key:string,label:string,icon?:?string}>|null $tabs
      */
-    public function saveOrgDefault(Organization $organization, array $rows, ?array $tabs = null): void {
+    public function saveOrgDefault(Organization $organization, array $rows, ?array $tabs = null, ?UserRole $role = null): void {
         $allowed = $this->registry->all()->keys()->all();
         $tabs = $tabs === null ? null : $this->normalizeTabs($tabs);
-        $tabKeys = array_column($tabs ?? $this->orgTabs($organization), 'key');
+        $tabKeys = array_column($tabs ?? ($role !== null ? $this->roleTabs($organization, $role) : $this->orgTabs($organization)), 'key');
 
         $layout = [];
         $sort = 0;
@@ -185,9 +192,20 @@ class DashboardLayoutService {
 
         $settings = is_array($organization->settings) ? $organization->settings : [];
         $group = is_array($settings[self::SETTINGS_GROUP] ?? null) ? $settings[self::SETTINGS_GROUP] : [];
-        $group[self::SETTINGS_KEY] = $layout;
-        if ($tabs !== null) {
-            $group[self::SETTINGS_TABS_KEY] = $tabs;
+        if ($role !== null) {
+            $roles = is_array($group[self::SETTINGS_ROLES_KEY] ?? null) ? $group[self::SETTINGS_ROLES_KEY] : [];
+            $entry = is_array($roles[$role->value] ?? null) ? $roles[$role->value] : [];
+            $entry['layout'] = $layout;
+            if ($tabs !== null) {
+                $entry['tabs'] = $tabs;
+            }
+            $roles[$role->value] = $entry;
+            $group[self::SETTINGS_ROLES_KEY] = $roles;
+        } else {
+            $group[self::SETTINGS_KEY] = $layout;
+            if ($tabs !== null) {
+                $group[self::SETTINGS_TABS_KEY] = $tabs;
+            }
         }
         $settings[self::SETTINGS_GROUP] = $group;
 
@@ -215,6 +233,63 @@ class DashboardLayoutService {
         return $filtered;
     }
 
+    /**
+     * Vorgabe einer Rolle (MVP-910), Aufbau wie {@see orgDefaults()}.
+     *
+     * @return array<string, array{sort_order?:int,hidden?:bool,width?:?string,tab?:?string}>
+     */
+    public function roleDefaults(?Organization $organization, UserRole $role): array {
+        $layout = $this->roleEntry($organization, $role)['layout'] ?? null;
+
+        /** @var array<string, array{sort_order?:int,hidden?:bool,width?:?string,tab?:?string}> $filtered */
+        $filtered = is_array($layout) ? array_filter($layout, static fn ($row) => is_array($row)) : [];
+
+        return $filtered;
+    }
+
+    /** @return list<array{key:string,label:string,icon:?string}> */
+    public function roleTabs(?Organization $organization, UserRole $role): array {
+        $tabs = $this->roleEntry($organization, $role)['tabs'] ?? null;
+
+        return is_array($tabs) ? $this->normalizeTabs($tabs) : [];
+    }
+
+    /** Rollenvorgabe entfernen; die Rolle folgt wieder der Organisations-Vorgabe. */
+    public function forgetRoleDefault(Organization $organization, UserRole $role): void {
+        $settings = is_array($organization->settings) ? $organization->settings : [];
+        unset($settings[self::SETTINGS_GROUP][self::SETTINGS_ROLES_KEY][$role->value]);
+        $organization->settings = $settings;
+        $organization->save();
+    }
+
+    /** @return list<UserRole> Rollen mit eigener Vorgabe */
+    public function rolesWithDefault(?Organization $organization): array {
+        return array_values(array_filter(StartPageResolver::CONFIGURABLE_ROLES, fn (UserRole $role): bool => $this->roleDefaults($organization, $role) !== []));
+    }
+
+    /**
+     * Rolle, deren Vorgabe für die Person gilt: erste Rolle mit Vorgabe in der
+     * Rangfolge der Startseiten ({@see StartPageResolver::CONFIGURABLE_ROLES}).
+     */
+    public function layoutRoleFor(User $user): ?UserRole {
+        $names = $user->getRoleNames()->all();
+        foreach ($this->rolesWithDefault($user->organization) as $role) {
+            if (in_array($role->value, $names, true)) {
+                return $role;
+            }
+        }
+
+        return null;
+    }
+
+    /** @return array<string, mixed> */
+    private function roleEntry(?Organization $organization, UserRole $role): array {
+        $settings = $organization !== null && is_array($organization->settings) ? $organization->settings : [];
+        $entry = $settings[self::SETTINGS_GROUP][self::SETTINGS_ROLES_KEY][$role->value] ?? null;
+
+        return is_array($entry) ? $entry : [];
+    }
+
     public function hasOrgDefault(?Organization $organization): bool {
         return $this->orgDefaults($organization) !== [];
     }
@@ -230,8 +305,9 @@ class DashboardLayoutService {
         if (is_array($own) && $own !== []) {
             return $this->normalizeTabs($own);
         }
+        $role = $this->layoutRoleFor($user);
 
-        return $this->orgTabs($user->organization);
+        return $role !== null ? $this->roleTabs($user->organization, $role) : $this->orgTabs($user->organization);
     }
 
     /**

@@ -93,6 +93,7 @@ final class ClaimsManifest extends Manifest {
         return [
             \App\Services\Claims\Contracts\RmaStockHandler::class => \App\Services\Claims\Contracts\NullRmaStockHandler::class,
             \App\Services\Claims\Contracts\ClaimIntake::class => \App\Services\Claims\Contracts\NullClaimIntake::class,
+            \App\Services\Claims\Contracts\RmaReturnLabelIssuer::class => \App\Services\Claims\Contracts\NullRmaReturnLabelIssuer::class,
         ];
     }
 

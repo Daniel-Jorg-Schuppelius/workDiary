@@ -521,6 +521,7 @@ return [
         'translate' => 'Translate',
         'approve_translation' => 'Approve translation',
         'save_offline' => 'Save for offline',
+        'save_offline_hint' => 'Stores the course content without media on this device; readable on the offline page without a connection. Deleted on sign-out.',
     ],
     'flash' => [
         'competency_created' => 'Competency created.',

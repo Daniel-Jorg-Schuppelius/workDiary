@@ -77,12 +77,15 @@ class ProcedureTemplateController extends Controller {
         $data = $request->validate([
             'code' => ['required', 'string', 'max:60', 'regex:/^[A-Za-z0-9_.\-]+$/'],
             'name' => ['required', 'string', 'min:3', 'max:180'],
+            'name_i18n' => ['nullable', 'array'],
+            'name_i18n.*' => ['nullable', 'string', 'max:180'],
             'description' => ['nullable', 'string', 'max:2000'],
             'domain' => ['nullable', 'string', 'max:40'],
         ]);
 
         /** @var User $author */
         $author = Auth::user();
+        $data['name_i18n'] = ProcedureTemplate::cleanTranslations($data['name_i18n'] ?? null);
         $template = $this->service->create($author->organization()->firstOrFail(), $author, $data);
 
         return redirect()
@@ -182,6 +185,8 @@ class ProcedureTemplateController extends Controller {
 
         $data = $request->validate([
             'name' => ['required', 'string', 'min:3', 'max:180'],
+            'name_i18n' => ['nullable', 'array'],
+            'name_i18n.*' => ['nullable', 'string', 'max:180'],
             'description' => ['nullable', 'string', 'max:2000'],
             'domain' => ['nullable', 'string', 'max:40'],
             'risk_level' => ['nullable', Rule::enum(ProcedureRiskLevel::class)],
@@ -206,6 +211,7 @@ class ProcedureTemplateController extends Controller {
 
         $this->service->updateTemplate($template, [
             'name' => $data['name'],
+            'name_i18n' => ProcedureTemplate::cleanTranslations($data['name_i18n'] ?? null),
             'description' => $data['description'] ?? null,
             'domain' => $data['domain'] ?? null,
         ]);

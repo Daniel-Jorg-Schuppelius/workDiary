@@ -41,6 +41,9 @@ enum NumberScope: string implements HasLabel {
     // Zertifikate der Lernplattform (Feature 149, MVP-740): je
     // Organisation lückenlos, weil ein Auftraggeber sie prüfen können muss.
     case Certificate = 'certificate';
+    // Schadensfälle und Rückrufaktionen (MVP-919/921).
+    case Damage = 'damage';
+    case Recall = 'recall';
 
     public function label(): string {
         return match ($this) {
@@ -67,6 +70,8 @@ enum NumberScope: string implements HasLabel {
             self::DataSubjectRequest => __('Betroffenenanfrage'),
             self::Disposal => __('Entsorgungsakte'),
             self::Certificate => __('Zertifikat'),
+            self::Damage => __('Schadensfall'),
+            self::Recall => __('Rückrufaktion'),
         };
     }
 
@@ -85,6 +90,7 @@ enum NumberScope: string implements HasLabel {
             self::PrivacyIncident, self::DataSubjectRequest => false, // Datenschutz-Fallakten, keine Belegwirkung
             self::Disposal => false, // Entsorgungs-Fallakte, keine Belegwirkung
             self::Certificate => false, // Lernnachweis, keine Belegwirkung
+            self::Damage, self::Recall => false, // Fallakten, keine Belegwirkung
         };
     }
 }

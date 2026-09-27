@@ -11,6 +11,8 @@
 namespace App\Models\Shipping;
 
 use App\Enums\Shipping\ShipmentStatus;
+use App\Models\Attachments\Attachment;
+use App\Models\Claims\ClaimRmaReturn;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use App\Models\Inventory\StockDelivery;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -26,6 +28,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $organization_id
  * @property int|null $stock_delivery_id
+ * @property int|null $claim_rma_return_id
+ * @property bool $is_return
  * @property string $carrier
  * @property ShipmentStatus $status
  * @property string|null $tracking_number
@@ -53,8 +57,10 @@ class Shipment extends Model {
     protected $fillable = [
         'organization_id',
         'stock_delivery_id',
+        'claim_rma_return_id',
         'carrier',
         'status',
+        'is_return',
         'tracking_number',
         'carrier_shipment_id',
         'billing_number',
@@ -67,6 +73,7 @@ class Shipment extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'status' => ShipmentStatus::class,
+        'is_return' => 'boolean',
         'recipient_snapshot' => 'array',
         'events' => 'array',
         'last_tracked_at' => 'datetime',
@@ -80,5 +87,15 @@ class Shipment extends Model {
     /** @return BelongsTo<StockDelivery, $this> */
     public function delivery(): BelongsTo {
         return $this->belongsTo(StockDelivery::class, 'stock_delivery_id');
+    }
+
+    /** @return BelongsTo<ClaimRmaReturn, $this> */
+    public function rmaReturn(): BelongsTo {
+        return $this->belongsTo(ClaimRmaReturn::class, 'claim_rma_return_id');
+    }
+
+    /** Label-Anhang (PDF/GIF des Carriers). */
+    public function labelAttachment(): ?Attachment {
+        return $this->attachments()->where('meta_type', self::LABEL_META)->latest('id')->first();
     }
 }

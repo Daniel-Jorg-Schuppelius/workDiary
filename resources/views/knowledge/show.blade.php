@@ -28,7 +28,7 @@
                             <a href="{{ route('knowledge-hub.index', ['collection' => $articleCollection->sqid]) }}" class="badge badge-ghost badge-outline gap-1"><x-icon name="folder" class="text-sm" /> {{ $articleCollection->title }}</a>
                         @endforeach
                         @foreach ($article->tags as $tag)
-                            <x-status-badge tone="ghost" outline>{{ $tag->name }}</x-status-badge>
+                            <x-status-badge tone="ghost" outline>{{ $tag->displayName() }}</x-status-badge>
                         @endforeach
                     </div>
                     <p class="text-xs text-muted">

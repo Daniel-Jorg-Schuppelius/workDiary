@@ -117,6 +117,31 @@
         </x-card>
     </div>
 
+    {{-- Selbstauskunft (MVP-937) --}}
+    <x-card :title="__('supplier_questionnaire.card')" icon="fact_check">
+        @can(\App\Enums\User\Permission::SupplierUpdate->value)
+            <x-slot:actions>
+                <x-icon-btn icon="send" size="sm" data-entry-modal-trigger :href="route('supplier-questionnaires.send-form', $supplier)" show-label>{{ __('supplier_questionnaire.send') }}</x-icon-btn>
+            </x-slot:actions>
+        @endcan
+        @if ($questionnaireRequests->isEmpty())
+            <p class="text-sm text-muted">{{ __('supplier_questionnaire.none') }}</p>
+        @else
+            <ul class="divide-y divide-base-200 text-sm">
+                @foreach ($questionnaireRequests as $qr)
+                    <li class="flex flex-wrap items-center justify-between gap-2 py-1">
+                        <span>{{ $qr->questionnaire?->name }} · {{ $qr->sent_at?->format('d.m.Y') }}</span>
+                        <span class="flex items-center gap-2">
+                            <span class="wd-badge badge-ghost">{{ $qr->status->label() }}</span>
+                            @if ($qr->valid_until)<span class="text-xs text-muted">{{ __('supplier_questionnaire.valid_until', ['date' => $qr->valid_until->format('d.m.Y')]) }}</span>@endif
+                            <x-icon-btn icon="visibility" size="xs" data-entry-modal-trigger :href="route('supplier-questionnaires.requests.show', $qr)" :label="__('supplier_questionnaire.open')" />
+                        </span>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </x-card>
+
     {{-- Lexoffice --}}
     @if ($lexofficePlugin && $lexofficePlugin->isEnabled())
         <x-card>

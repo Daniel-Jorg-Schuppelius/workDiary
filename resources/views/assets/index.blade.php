@@ -105,7 +105,7 @@
                             <div class="mt-1 flex flex-wrap gap-1">
                                 @foreach ($asset->tags as $tag)
                                     <span class="badge badge-xs badge-outline"
-                                          @if ($tag->color) style="border-color: {{ $tag->color }}; color: {{ $tag->color }};" @endif>#{{ $tag->name }}</span>
+                                          @if ($tag->color) style="border-color: {{ $tag->color }}; color: {{ $tag->color }};" @endif>#{{ $tag->displayName() }}</span>
                                 @endforeach
                             </div>
                         @endif

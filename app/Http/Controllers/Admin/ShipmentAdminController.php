@@ -30,7 +30,7 @@ use Illuminate\View\View;
  */
 class ShipmentAdminController extends Controller {
     /** Zugangsdaten-Schlüssel im verschlüsselten credentials-Array. */
-    private const CREDENTIAL_KEYS = ['username', 'password', 'api_key'];
+    private const CREDENTIAL_KEYS = ['username', 'password', 'api_key', 'returns_receiver_id'];
 
     /**
      * Pflicht-Zugangsdaten je Carrier bei Neuanlage: DHL braucht zusätzlich
@@ -69,6 +69,7 @@ class ShipmentAdminController extends Controller {
             'username' => ['nullable', 'string', 'max:190'],
             'password' => ['nullable', 'string', 'max:255'],
             'api_key' => ['nullable', 'string', 'max:255'],
+            'returns_receiver_id' => ['nullable', 'string', 'max:60'],
             'billing_number' => ['nullable', 'string', 'max:60'],
             'sandbox' => ['nullable', 'boolean'],
             'active' => ['nullable', 'boolean'],

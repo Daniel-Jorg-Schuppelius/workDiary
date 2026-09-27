@@ -35,6 +35,8 @@ enum ClassificationDomain: string implements HasLabel {
     case Trade = 'trade';
     case PermitType = 'permit_type';
     case WasteCode = 'waste_code';
+    // Kundengruppe (MVP-949): Segment für Auswertungen wie den ESG-Vergleich.
+    case CustomerGroup = 'customer_group';
 
     /** Anzeigename der Domäne (Label-Helfer, nie rohen Enum-Wert in Views). */
     public function label(): string {
@@ -53,6 +55,7 @@ enum ClassificationDomain: string implements HasLabel {
             self::Trade => (string) __('Gewerke'),
             self::PermitType => (string) __('Genehmigungsarten'),
             self::WasteCode => (string) __('Abfallschlüssel (AVV)'),
+            self::CustomerGroup => (string) __('Kundengruppen'),
         };
     }
 }

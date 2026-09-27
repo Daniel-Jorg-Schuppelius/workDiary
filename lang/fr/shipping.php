@@ -24,6 +24,8 @@ return [
         'username' => 'Utilisateur / ID client',
         'password' => 'Mot de passe / secret client',
         'api_key' => 'Clé API (DHL uniquement : dhl-api-key)',
+        'returns_receiver_id' => 'ID du destinataire des retours (DHL uniquement)',
+        'returns_receiver_id_hint' => 'Destinataire des retours créé dans le portail clients professionnels DHL ; nécessaire pour les étiquettes de retour.',
         'billing_number' => 'Numéro de facturation / de compte',
         'sandbox' => 'Sandbox / environnement de test',
         'active' => 'Actif',

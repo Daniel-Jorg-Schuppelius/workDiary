@@ -16,6 +16,7 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Operative Arbeits-Teams verwalten – Mitglieder, Teamleiter und zugewiesene Aufträge.')">
     <x-slot:actions>
+        <x-icon-btn icon="event_available" size="sm" :href="route('teams.capacity')" show-label>{{ __('hr.capacity.button') }}</x-icon-btn>
         @can('create', \App\Models\Platform\Team::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger

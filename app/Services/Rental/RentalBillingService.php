@@ -12,12 +12,15 @@ declare(strict_types=1);
 
 namespace App\Services\Rental;
 
-use App\Enums\Rental\{RentalChargeKind, RentalChargeStatus, RentalDepositStatus};
+use App\Enums\Rental\{RentalChargeKind, RentalChargeStatus, RentalDepositStatus, RentalRateCardStatus};
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
-use App\Models\Rental\{RentalCase, RentalCharge, RentalDeposit};
+use App\Models\Rental\{RentalCase, RentalCharge, RentalDeposit, RentalProfile, RentalRateCard};
 use App\Services\Billing\{BillingModeResolver, DocumentTotalsCalculator};
 use App\Services\Invoicing\{InvoiceGenerator, TaxResolver};
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -32,6 +35,7 @@ class RentalBillingService {
         private readonly BillingModeResolver $billingModes,
         private readonly InvoiceGenerator $invoices,
         private readonly TaxResolver $taxes,
+        private readonly RentalPriceRuleService $rules,
     ) {}
 
     /**
@@ -41,15 +45,50 @@ class RentalBillingService {
      * @return list<array<string, mixed>>
      */
     public function suggestCharges(RentalCase $case): array {
-        $snapshot = $case->terms_snapshot ?? [];
-        $items = (array) ($snapshot['items'] ?? []);
+        $groupCodes = $case->caseAssets->map(fn ($ca) => $ca->asset?->rentalProfile?->group_code)->filter()->unique()->values()->all();
 
+        $snapshot = (array) ($case->terms_snapshot ?? []);
+
+        return $this->chargesFor((array) ($snapshot['items'] ?? []), $case->starts_at, $case->actual_return_at ?? $case->ends_at, $groupCodes, array_values(array_filter((array) ($snapshot['rules'] ?? []), 'is_array')), isset($snapshot['utilization']) ? (int) $snapshot['utilization'] : null);
+    }
+
+    /**
+     * Preisangabe fürs Portal (MVP-916): Summe der Vorschläge aus der
+     * Standard-Preisliste des Geräts, netto; null ohne aktive Preisliste.
+     */
+    public function estimate(RentalProfile $profile, Carbon $from, Carbon $to): ?Money {
+        $card = $profile->defaultRateCard;
+        if (! $card instanceof RentalRateCard || $card->status !== RentalRateCardStatus::Active) {
+            return null;
+        }
+        $snapshot = $card->toSnapshot();
+        $charges = $this->chargesFor($snapshot['items'], $from, $to, array_filter([$profile->group_code]), $snapshot['rules'], $this->rules->utilization((int) $profile->organization_id, $profile->group_code, $from, $to));
+        if ($charges === []) {
+            return null;
+        }
+        $total = Money::zero(CurrencyCode::Euro);
+        foreach ($charges as $charge) {
+            $total = $total->plus(DocumentTotalsCalculator::lineNet($charge['quantity'], $charge['unit_price']));
+        }
+
+        return $total;
+    }
+
+    /**
+     * Tagessätze über die Laufzeit, Pauschalen einmalig; gruppengebundene
+     * Konditionen nur, wenn eine Position zur Gerätegruppe passt.
+     *
+     * @param  array<int, mixed>  $items
+     * @param  array<int, string>  $groupCodes
+     * @param  list<array<string, mixed>>  $rules  Mietpreisregeln aus dem Snapshot (MVP-950)
+     * @return list<array<string, mixed>>
+     */
+    private function chargesFor(array $items, Carbon $from, Carbon $until, array $groupCodes, array $rules = [], ?int $utilization = null): array {
         if ($items === []) {
             return [];
         }
 
-        $days = max(1, (int) ceil($case->starts_at->diffInHours($case->actual_return_at ?? $case->ends_at) / 24));
-        $groupCodes = $case->caseAssets->map(fn ($ca) => $ca->asset?->rentalProfile?->group_code)->filter()->unique();
+        $days = max(1, (int) ceil($from->diffInHours($until) / 24));
 
         $suggestions = [];
         foreach ($items as $item) {
@@ -58,16 +97,17 @@ class RentalBillingService {
                 continue;
             }
 
-            // Gruppengebundene Konditionen nur, wenn eine Position der Akte
-            // zur Gerätegruppe passt.
             $group = $item['group_code'] ?? null;
-            if ($group !== null && ! $groupCodes->contains($group)) {
+            if ($group !== null && ! in_array($group, $groupCodes, true)) {
                 continue;
             }
 
             $quantity = match ($kind) {
                 RentalChargeKind::DailyRate => max($days, (int) ($item['min_duration_days'] ?? 0)),
-                RentalChargeKind::HourlyRate => $case->starts_at->diffInHours($case->actual_return_at ?? $case->ends_at),
+                RentalChargeKind::HourlyRate => $from->diffInHours($until),
+                // Zuschläge je betroffenem Tag (MVP-950), nicht mehr pauschal.
+                RentalChargeKind::WeekendSurcharge => $this->rules->weekendDays($from, $until),
+                RentalChargeKind::HolidaySurcharge => $this->rules->holidayDays($from, $until),
                 default => 1,
             };
 
@@ -82,6 +122,19 @@ class RentalBillingService {
                 'unit' => (string) ($item['unit'] ?? 'day'),
                 'unit_price' => (float) ($item['amount'] ?? 0),
             ];
+
+            // Mietpreisregeln (MVP-950): Auf-/Abschlag je zutreffendem Tag auf den Tagessatz.
+            if ($kind === RentalChargeKind::DailyRate) {
+                foreach ($this->rules->adjustments($rules, $from, $until, $utilization) as $adjustment) {
+                    $suggestions[] = [
+                        'kind' => RentalChargeKind::Other->value,
+                        'label' => (string) __('rental.rule.line', ['label' => $adjustment['label'], 'percent' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($adjustment['percent'], 0)]),
+                        'quantity' => (float) $adjustment['days'],
+                        'unit' => 'day',
+                        'unit_price' => round((float) ($item['amount'] ?? 0) * $adjustment['percent'] / 100, 2),
+                    ];
+                }
+            }
         }
 
         return $suggestions;

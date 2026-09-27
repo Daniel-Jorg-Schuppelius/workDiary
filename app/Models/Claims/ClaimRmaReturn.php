@@ -17,6 +17,7 @@ use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Inventory\{StockLot, StockSerial, Warehouse};
 use App\Models\Platform\User;
+use App\Models\Shipping\Shipment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
@@ -99,5 +100,14 @@ class ClaimRmaReturn extends Model {
     /** @return HasMany<ClaimInspection, $this> */
     public function inspections(): HasMany {
         return $this->hasMany(ClaimInspection::class, 'claim_rma_return_id');
+    }
+
+    /**
+     * Retourenlabels (MVP-917).
+     *
+     * @return HasMany<Shipment, $this>
+     */
+    public function returnShipments(): HasMany {
+        return $this->hasMany(Shipment::class, 'claim_rma_return_id')->latest('id');
     }
 }

@@ -45,6 +45,10 @@ final class ProcedureTemplateInstallStep implements ProfileInstallStep {
                 // Vorlage existiert bereits (oder lokal angepasst): idempotent überspringen, nie überschreiben
                 // (auch nicht bei force – eine veröffentlichte Prozedurversion ist unveränderlich).
                 if ($existing instanceof ProcedureTemplate) {
+                    // Nur fehlende Übersetzungen des Namens nachtragen (MVP-912), wie bei den Klassifikationen.
+                    if (! is_array($existing->name_i18n) && is_array($row['name_i18n'] ?? null)) {
+                        $existing->update(['name_i18n' => $row['name_i18n']]);
+                    }
                     $skipped++;
 
                     continue;
@@ -65,6 +69,7 @@ final class ProcedureTemplateInstallStep implements ProfileInstallStep {
                 $template = $service->create($organization, $actor, [
                     'code' => $code,
                     'name' => $name,
+                    'name_i18n' => is_array($row['name_i18n'] ?? null) ? $row['name_i18n'] : null,
                     'description' => isset($row['description']) ? (string) $row['description'] : null,
                     'domain' => isset($row['domain']) ? (string) $row['domain'] : null,
                     'active' => true,

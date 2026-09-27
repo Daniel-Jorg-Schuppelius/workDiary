@@ -16,6 +16,10 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Zeitraum: :from – :to · erklärbare Kennzahlen, keine Konformitätszusage.', ['from' => $from, 'to' => $to])">
             <x-slot:actions>
+                <x-icon-btn icon="location_city" size="sm" :href="route('sustainability.sites.benchmark')" show-label>{{ __('sustainability.site.benchmark') }}</x-icon-btn>
+                @if ($canManage)
+                    <x-icon-btn icon="public" size="sm" data-entry-modal-trigger :href="route('sustainability.excerpt.edit')" show-label>{{ __('sustainability.excerpt.title') }}</x-icon-btn>
+                @endif
                 <x-icon-btn icon="download" size="sm" :href="route('sustainability.index', ['export' => 'csv', 'from' => $from, 'to' => $to])" show-label>{{ __('CSV') }}</x-icon-btn>
                 <x-icon-btn icon="table_view" size="sm" :href="route('sustainability.index', ['export' => 'xlsx', 'from' => $from, 'to' => $to])" show-label>Excel</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" size="sm" tone="ghost" :href="route('sustainability.index', ['export' => 'pdf', 'from' => $from, 'to' => $to])" show-label>{{ __('PDF') }}</x-icon-btn>
@@ -294,6 +298,30 @@
                     <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Quelle (Zähler/Rechnung/Schätzung)') }}</span>
                     <input name="source_note" maxlength="300" class="input input-bordered input-sm w-full">
                 </label>
+                {{-- Kunde mit Kundengruppe (MVP-949) --}}
+                @if ($groupedCustomers->isNotEmpty())
+                    <label class="block sm:col-span-2">
+                        <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('sustainability.customer_group.customer') }}</span>
+                        <select name="customer_id" class="select select-bordered select-sm w-full">
+                            <option value="">—</option>
+                            @foreach ($groupedCustomers as $groupedCustomer)
+                                <option value="{{ $groupedCustomer->sqid }}">{{ $groupedCustomer->name }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                @endif
+                {{-- Standort (MVP-929) --}}
+                @if ($sites->isNotEmpty())
+                    <label class="block sm:col-span-2">
+                        <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('sustainability.site.field.site') }}</span>
+                        <select name="site_id" class="select select-bordered select-sm w-full">
+                            <option value="">—</option>
+                            @foreach ($sites as $site)
+                                <option value="{{ $site->sqid }}">{{ $site->name }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                @endif
             </div>
         </x-modal>
 

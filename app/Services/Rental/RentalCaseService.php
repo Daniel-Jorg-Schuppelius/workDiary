@@ -89,6 +89,11 @@ class RentalCaseService {
             if ($manualOverrides !== null && $manualOverrides !== []) {
                 $snapshot['overrides'] = $manualOverrides;
             }
+            // Auslastung zum Buchungszeitpunkt (MVP-950), damit Auslastungsregeln reproduzierbar bleiben.
+            if ($snapshot['rules'] !== []) {
+                $group = $case->caseAssets->map(fn ($ca) => $ca->asset?->rentalProfile?->group_code)->filter()->first();
+                $snapshot['utilization'] = app(RentalPriceRuleService::class)->utilization((int) $case->organization_id, $group, $case->starts_at, $case->ends_at);
+            }
 
             $case->forceFill(['terms_snapshot' => $snapshot])->save();
             $case->audit('rental.termsFrozen', ['rate_card' => $card->name, 'version' => $card->version]);

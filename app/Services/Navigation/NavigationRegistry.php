@@ -810,6 +810,22 @@ class NavigationRegistry {
                 ],
             ];
         }
+        // MVP-919/921: Schadensfälle (Kernmodul) und Rückrufe (Lager), je eigenes Recht.
+        $damageItems = [];
+        if (Gate::allows('viewAny', \App\Models\Damage\DamageCase::class)) {
+            $damageItems[] = ['route' => 'damage-cases.index', 'label' => __('damage.nav.cases'), 'icon' => 'car_crash', 'modal' => false, 'matches' => ['damage-cases.*']];
+        }
+        if (Gate::allows('viewAny', \App\Models\Inventory\Recall::class)) {
+            $damageItems[] = ['route' => 'recalls.index', 'label' => __('recall.nav'), 'icon' => 'campaign', 'modal' => false, 'matches' => ['recalls.*']];
+        }
+        if ($damageItems !== []) {
+            $sidebarSections[] = [
+                'key' => 'damage',
+                'label' => __('damage.nav.section'),
+                'collapsible' => true,
+                'items' => $damageItems,
+            ];
+        }
         // MVP-456: Personenbeförderung — erscheint nur mit installiertem
         // Branchenprofil taxi-mietwagen (Profil-Gate wie im Controller).
         $navOrganization = $user?->organization;
@@ -914,6 +930,7 @@ class NavigationRegistry {
                     ['route' => 'asset-compliance.index', 'label' => __('Prüf-Dashboard'), 'icon' => 'rule_settings', 'modal' => false, 'matches' => ['asset-compliance.index']],
                     ['route' => 'asset-compliance.profiles.index', 'label' => __('Prüfprofile'), 'icon' => 'checklist', 'modal' => false, 'matches' => ['asset-compliance.profiles.*']],
                     ['route' => 'asset-compliance.schedules.index', 'label' => __('Prüfkalender'), 'icon' => 'event_available', 'modal' => false, 'matches' => ['asset-compliance.schedules.*']],
+                    ['route' => 'asset-compliance.orders.index', 'label' => __('inspection_order.title'), 'icon' => 'handshake', 'modal' => false, 'matches' => ['asset-compliance.orders.*']],
                     ['route' => 'asset-compliance.reports.index', 'label' => __('Auditbericht'), 'icon' => 'query_stats', 'modal' => false, 'matches' => ['asset-compliance.reports.*']],
                 ],
             ];
@@ -1107,6 +1124,10 @@ class NavigationRegistry {
                         // Kundenwert/Kundenbindung (MVP-465/466): Erlösdaten → nur report.view/Admin.
                         ($user?->isAdmin() || $user?->can(Permission::ReportView->value))
                             ? ['route' => 'reports.customer-value', 'label' => __('Kundenwert'), 'icon' => 'diamond', 'modal' => false, 'matches' => ['reports.customer-value']]
+                            : null,
+                        // Management-Auswertung (MVP-926): Probleme + Schulungsbedarf, nur report.view/Admin.
+                        ($user?->isAdmin() || $user?->can(Permission::ReportView->value))
+                            ? ['route' => 'reports.management', 'label' => __('reporting.management.nav'), 'icon' => 'insights', 'modal' => false, 'matches' => ['reports.management']]
                             : null,
                         ($user?->isAdmin() || $user?->can(Permission::ReportView->value))
                             ? ['route' => 'reports.customer-retention', 'label' => __('Kundenbindung'), 'icon' => 'favorite', 'modal' => false, 'matches' => ['reports.customer-retention']]
@@ -1971,6 +1992,12 @@ class NavigationRegistry {
             $userNavItems[] = ['route' => 'account.calendar.show', 'label' => __('Kalender-Abo'), 'modal' => false];
             // Eigenauskunft Personalakte (Feature 141): eigene Akte lesend.
             $userNavItems[] = ['route' => 'account.personnel-file', 'label' => __('hr.personnel_file.nav'), 'modal' => false];
+            // Persönlicher Einstieg (MVP-911), auch nach dem Ausblenden der Kachel erreichbar.
+            $userNavItems[] = ['route' => 'me.onboarding', 'label' => __('onboarding.personal.title'), 'modal' => false];
+            // Investition vorschlagen (MVP-936), auch ohne Zugriff auf die Investitionsliste.
+            if (Auth::user()?->can(Permission::InvestmentPropose->value) ?? false) {
+                $userNavItems[] = ['route' => 'investments.proposals.create', 'label' => __('investment.proposal.nav'), 'modal' => true];
+            }
         } else {
             $userNavItems[] = ['route' => 'legacy.account.password.edit', 'label' => __('Passwort ändern'), 'modal' => true];
         }

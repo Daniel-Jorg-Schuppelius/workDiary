@@ -84,6 +84,7 @@ return [
         'activate_unsigned' => 'El contrato solo puede activarse cuando una versión esté completamente firmada.',
         'contract_closed' => 'El contrato ha finalizado o se ha cancelado — ya no es posible firmar.',
         'countersign_party' => 'Solo la organización puede contrafirmar; el cliente firma mediante el enlace o envía un PDF.',
+        'employee_required' => 'Un contrato de trabajo requiere un miembro del equipo o una candidatura.',
         'customer_required' => 'Este tipo de contrato exige un cliente como parte contratante.',
         'declaration_required' => 'Confirme su poder de representación y su conformidad con el contrato.',
         'document_bound' => 'Este documento está vinculado como prueba a una versión del contrato y no puede eliminarse.',
@@ -248,6 +249,7 @@ return [
         'title' => 'Firma',
     ],
     'party' => [
+        'employee' => 'Trabajador',
         'customer' => 'Parte cliente',
         'organization' => 'Parte organización',
     ],

@@ -93,6 +93,7 @@ class CrisisCaseController extends Controller {
         $case->load(['team.user', 'team.deputy', 'team.role', 'situationReports', 'decisions', 'actions.assignee', 'communications', 'continuityImpacts', 'links.linkable', 'review', 'responsible']);
 
         return view('crisis.show', [
+            'businessProcesses' => \App\Models\Crisis\CrisisBusinessProcess::query()->where('is_active', true)->orderBy('name')->get(),
             'case' => $case,
             'roles' => CrisisRole::query()->where('active', true)->orderBy('name')->get(),
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),

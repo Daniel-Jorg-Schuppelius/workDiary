@@ -156,4 +156,16 @@ return [
             'description' => 'Indicateurs et favoris en haut, puis les quatre sections Vue d’ensemble, Tâches, Activité et Finances — le tableau de bord d’avant la refonte en tuiles, plus la pointeuse.',
         ],
     ],
+    // Dashboard-Vorgaben je Rolle (MVP-910).
+    'role_default' => [
+        'title' => 'Modèles par rôle',
+        'hint' => 'Les personnes sans disposition propre démarrent avec le modèle de leur rôle (même ordre que les pages d\'accueil), sinon avec le modèle de l\'organisation.',
+        'also_as' => 'Enregistrer aussi comme',
+        'only_me' => 'uniquement pour moi',
+        'organization' => 'modèle de l\'organisation',
+        'for_role' => 'modèle pour :role',
+        'saved' => 'Tableau de bord enregistré comme modèle pour :role.',
+        'forgotten' => 'Modèle pour :role supprimé.',
+        'forget' => 'Supprimer le modèle pour :role',
+    ],
 ];

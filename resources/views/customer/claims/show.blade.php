@@ -25,6 +25,13 @@
                 @else
                     @foreach ($claim->rmaReturns as $rma)
                         <span class="font-mono">{{ $rma->rma_number }}</span> ({{ $rma->status->label() }})
+                        @if ($portalReturns)
+                            @foreach ($rma->returnShipments as $shipment)
+                                @if ($shipment->labelAttachment())
+                                    <a class="link ml-1" href="{{ route('customer.returns.label', [$rma, $shipment]) }}">{{ __('claims.portal_return.label') }}</a>
+                                @endif
+                            @endforeach
+                        @endif
                     @endforeach
                 @endif
             </x-detail-grid.row>

@@ -17,6 +17,22 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Akte anlegen')"
 >
+    @if (($analysis ?? null) !== null)
+        {{-- Vorschläge aus dem Dokument (MVP-934): nur Hinweise, übernommen wird erst mit dem Speichern. --}}
+        <div role="status" class="alert alert-info mb-3 block text-sm">
+            <p class="font-medium">{{ __('contract.extraction.title', ['document' => $analysisDocument?->title]) }}</p>
+            @if ($analysis['hints'] === [])
+                <p>{{ __('contract.extraction.none') }}</p>
+            @else
+                <p>{{ __('contract.extraction.check') }}</p>
+                <ul class="mt-1 list-disc pl-5 text-xs">
+                    @foreach ($analysis['hints'] as $hint)
+                        <li><span class="font-medium">{{ __('contract.extraction.field.' . $hint['field']) }}:</span> „{{ \Illuminate\Support\Str::limit($hint['snippet'], 140) }}“</li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
+    @endif
     <x-form-group :legend="__('Vertrag')" icon="request_quote" tone="primary" cols="2">
         <x-select-field name="kind" :label="__('Vertragsart')" required>
             @foreach (\App\Enums\AssetFinance\AssetFinanceKind::cases() as $kind)
@@ -34,8 +50,8 @@
         <x-date-range class="md:col-span-2" layout="split" form-control
                       from-name="starts_on" to-name="ends_on" type="date" fromId="af-starts-on" toId="af-ends-on"
                       :from-label="__('Beginn')" :to-label="__('Ende')"
-                      :from="old('starts_on')" :to="old('ends_on')" />
-        <x-input-field name="notice_period_days" type="number" min="0" :label="__('Kündigungsfrist (Tage)')" :value="old('notice_period_days')" />
+                      :from="old('starts_on', $preset['starts_on'] ?? null)" :to="old('ends_on', $preset['ends_on'] ?? null)" />
+        <x-input-field name="notice_period_days" type="number" min="0" :label="__('Kündigungsfrist (Tage)')" :value="old('notice_period_days', $preset['notice_period_days'] ?? null)" />
         <x-select-field name="responsible_user_id" :label="__('Verantwortlich')">
             <option value="">{{ __('-- später zuweisen --') }}</option>
             @foreach ($users as $u)
@@ -46,14 +62,14 @@
 
     <x-form-group :legend="__('Konditionen (vertraulich)')" icon="lock" tone="primary" cols="2">
         <x-select-field name="payment_rhythm" :label="__('Zahlungsrhythmus')" required>
-            <option value="monthly" @selected(old('payment_rhythm', 'monthly') === 'monthly')>{{ __('monatlich') }}</option>
-            <option value="quarterly" @selected(old('payment_rhythm') === 'quarterly')>{{ __('quartalsweise') }}</option>
-            <option value="yearly" @selected(old('payment_rhythm') === 'yearly')>{{ __('jährlich') }}</option>
+            <option value="monthly" @selected(old('payment_rhythm', $preset['payment_rhythm'] ?? 'monthly') === 'monthly')>{{ __('monatlich') }}</option>
+            <option value="quarterly" @selected(old('payment_rhythm', $preset['payment_rhythm'] ?? null) === 'quarterly')>{{ __('quartalsweise') }}</option>
+            <option value="yearly" @selected(old('payment_rhythm', $preset['payment_rhythm'] ?? null) === 'yearly')>{{ __('jährlich') }}</option>
         </x-select-field>
-        <x-input-field name="rate_amount" type="number" step="0.01" min="0" :label="__('Rate')" :value="old('rate_amount')" />
-        <x-input-field name="special_payment" type="number" step="0.01" min="0" :label="__('Sonderzahlung')" :value="old('special_payment')" />
-        <x-input-field name="residual_value" type="number" step="0.01" min="0" :label="__('Restwertannahme')" :value="old('residual_value')" />
-        <x-input-field name="purchase_option_amount" type="number" step="0.01" min="0" :label="__('Kaufoption (Betrag)')" :value="old('purchase_option_amount')" />
+        <x-input-field name="rate_amount" type="number" step="0.01" min="0" :label="__('Rate')" :value="old('rate_amount', $preset['rate_amount'] ?? null)" />
+        <x-input-field name="special_payment" type="number" step="0.01" min="0" :label="__('Sonderzahlung')" :value="old('special_payment', $preset['special_payment'] ?? null)" />
+        <x-input-field name="residual_value" type="number" step="0.01" min="0" :label="__('Restwertannahme')" :value="old('residual_value', $preset['residual_value'] ?? null)" />
+        <x-input-field name="purchase_option_amount" type="number" step="0.01" min="0" :label="__('Kaufoption (Betrag)')" :value="old('purchase_option_amount', $preset['purchase_option_amount'] ?? null)" />
         <x-input-field name="insurance_note" :label="__('Versicherung')" :value="old('insurance_note')" />
     </x-form-group>
 

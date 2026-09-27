@@ -247,6 +247,8 @@ enum NotificationEvent: string implements HasLabel {
 
     // Vollaudit 2026-07 (M31), Feature 069 Investitionen (MVP-209).
     case InvestmentDecisionDue = 'investment.decisionDue';
+    /** Neuer Investitionsvorschlag von Mitarbeitenden oder über den öffentlichen Link (MVP-936). */
+    case InvestmentProposed = 'investment.proposed';
     case InvestmentDecided = 'investment.decided';
 
     case OperationsBackupOverdue = 'operations.backupOverdue';
@@ -347,7 +349,7 @@ enum NotificationEvent: string implements HasLabel {
             self::DomainExpiring, self::DomainTransferChanged, self::DomainSyncFailed, self::DomainHighRiskAction,
             self::FinanceTransferFailed, self::FinanceBankImportFailed, self::FinanceReconciliationReview, self::RetentionReleaseDue,
             self::GuaranteeExpiring, self::GuaranteeReturnDue, self::SupplierCredentialExpiring,
-            self::InvestmentDecisionDue, self::InventoryLotExpiring], true);
+            self::InvestmentDecisionDue, self::InvestmentProposed, self::InventoryLotExpiring], true);
     }
 
     /**
@@ -491,6 +493,7 @@ enum NotificationEvent: string implements HasLabel {
             // Investitionsfristen (M31): Entscheidung ist Leitungs-/Kaufmannssache;
             // die Entscheidung selbst geht an den Antragsteller (notify_affected).
             self::InvestmentDecisionDue => [UserRole::Teamleitung->value, UserRole::Buchhaltung->value],
+            self::InvestmentProposed => [UserRole::Geschaeftsfuehrung->value, UserRole::Admin->value],
             // MHD-Überwachung (M19): Lagerverantwortung ist Leitungsaufgabe.
             self::InventoryLotExpiring => [UserRole::Teamleitung->value],
             // Angebots-Nachfassen (MVP-601): primär der zugewiesene Zuständige
@@ -616,6 +619,7 @@ enum NotificationEvent: string implements HasLabel {
             self::FinanceBankImportFailed => 'account_balance',
             self::FinanceReconciliationReview => 'rule',
             self::InvestmentDecisionDue => 'pending_actions',
+            self::InvestmentProposed => 'lightbulb',
             self::InvestmentDecided => 'task_alt',
             self::InventoryLotExpiring => 'hourglass_bottom',
             self::RetentionReleaseDue => 'savings',

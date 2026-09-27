@@ -162,6 +162,7 @@ final class FinanceManifest extends Manifest {
             \App\Services\Invoicing\Contracts\PaymentStatusProvider::class => \App\Services\Finance\ReconciliationService::class,
             \App\Services\Passenger\Contracts\CashBookPosting::class => \App\Services\Finance\CashBookService::class,
             \App\Services\Stammdaten\Contracts\ContactPushTarget::class => \App\Services\Finance\Accounting\ContactPushService::class,
+            \App\Services\Investments\Contracts\AssetCapitalizer::class => \App\Services\Accounting\InvestmentAssetCapitalizer::class,
         ];
     }
 

@@ -192,6 +192,7 @@ return [
         [
             'code' => 'FM_OBJEKTKONTROLLE',
             'name' => 'Objektkontrolle / Begehungsrunde',
+            'name_i18n' => ['en' => 'Property check / patrol round', 'es' => 'Control del inmueble / ronda', 'fr' => 'Contrôle du site / ronde', 'it' => 'Controllo dell\'oggetto / giro di ispezione'],
             'domain' => 'facility',
             'risk_level' => 'normal',
             'description' => 'Strukturierte Objektbegehung mit Mängelerfassung.',
@@ -205,6 +206,7 @@ return [
         [
             'code' => 'FM_SCHLUESSEL',
             'name' => 'Schlüsselausgabe/-rücknahme',
+            'name_i18n' => ['en' => 'Key issue/return', 'es' => 'Entrega/devolución de llaves', 'fr' => 'Remise/retour de clés', 'it' => 'Consegna/restituzione chiavi'],
             'domain' => 'facility',
             'risk_level' => 'normal',
             'description' => 'Nachvollziehbare Schlüsselübergabe mit Unterschrift.',
@@ -217,6 +219,7 @@ return [
         [
             'code' => 'FM_MAENGEL',
             'name' => 'Mängelerfassung',
+            'name_i18n' => ['en' => 'Defect recording', 'es' => 'Registro de defectos', 'fr' => 'Relevé des défauts', 'it' => 'Rilevazione dei difetti'],
             'domain' => 'facility',
             'risk_level' => 'normal',
             'description' => 'Mangel aufnehmen, einstufen und an die zuständige Stelle weiterleiten.',
@@ -231,6 +234,7 @@ return [
         [
             'code' => 'FM_KLEINREPARATUR',
             'name' => 'Kleinreparatur',
+            'name_i18n' => ['en' => 'Minor repair', 'es' => 'Reparación menor', 'fr' => 'Petite réparation', 'it' => 'Piccola riparazione'],
             'domain' => 'facility',
             'risk_level' => 'normal',
             'description' => 'Reparatur ohne Fachgewerk mit Material- und Fotonachweis.',
@@ -246,6 +250,7 @@ return [
         [
             'code' => 'FM_WINTERDIENST',
             'name' => 'Winterdienst',
+            'name_i18n' => ['en' => 'Winter service', 'es' => 'Servicio invernal', 'fr' => 'Service hivernal', 'it' => 'Servizio invernale'],
             'domain' => 'facility',
             'risk_level' => 'high',
             'description' => 'Räum- und Streueinsatz mit Zeit-, Witterungs- und Streumittelnachweis (Verkehrssicherungspflicht).',
@@ -261,6 +266,7 @@ return [
         [
             'code' => 'FM_ZAEHLERSTAND',
             'name' => 'Zählerablesung',
+            'name_i18n' => ['en' => 'Meter reading', 'es' => 'Lectura del contador', 'fr' => 'Relevé de compteur', 'it' => 'Lettura del contatore'],
             'domain' => 'facility',
             'risk_level' => 'low',
             'description' => 'Ablesung mit Foto des Zählwerks als Nachweis.',

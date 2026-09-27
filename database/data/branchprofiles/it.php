@@ -169,6 +169,7 @@ return [
         [
             'code' => 'IT_NETWORK_CHANGE',
             'name' => 'Kritische Netzwerk-/Konfigurationsänderung',
+            'name_i18n' => ['en' => 'Critical network/configuration change', 'es' => 'Cambio crítico de red/configuración', 'fr' => 'Modification critique de réseau/configuration', 'it' => 'Modifica critica di rete/configurazione'],
             'domain' => 'it',
             'risk_level' => 'high',
             'description' => 'Change mit Konfigurationsbackup, Vier-Augen-Freigabe und Funktionstest.',
@@ -184,6 +185,7 @@ return [
         [
             'code' => 'IT_BACKUP_RESTORE_TEST',
             'name' => 'Backup-Restore-Test',
+            'name_i18n' => ['en' => 'Backup restore test', 'es' => 'Prueba de restauración de copia', 'fr' => 'Test de restauration de sauvegarde', 'it' => 'Test di ripristino backup'],
             'domain' => 'it',
             'risk_level' => 'normal',
             'description' => 'Wiederherstellbarkeit eines Backups prüfen und nachweisen.',
@@ -197,6 +199,7 @@ return [
         [
             'code' => 'IT_FW_UPDATE',
             'name' => 'Firewall-Update',
+            'name_i18n' => ['en' => 'Firewall update', 'es' => 'Actualización del cortafuegos', 'fr' => 'Mise à jour du pare-feu', 'it' => 'Aggiornamento firewall'],
             'domain' => 'it',
             'risk_level' => 'high',
             'description' => 'Firmware-/Regelwerk-Update mit Wartungsfenster, Backup, Vier-Augen-Freigabe und Funktionstest.',
@@ -213,6 +216,7 @@ return [
         [
             'code' => 'IT_PATCH_DEPLOY',
             'name' => 'Patch-Rollout',
+            'name_i18n' => ['en' => 'Patch rollout', 'es' => 'Despliegue de parches', 'fr' => 'Déploiement de correctifs', 'it' => 'Distribuzione patch'],
             'domain' => 'it',
             'risk_level' => 'normal',
             'description' => 'Patches auf Pilotgruppe testen, ausrollen und Fehlschläge nachziehen.',
@@ -227,6 +231,7 @@ return [
         [
             'code' => 'IT_INCIDENT_TRIAGE',
             'name' => 'Incident-Triage',
+            'name_i18n' => ['en' => 'Incident triage', 'es' => 'Triaje de incidencias', 'fr' => 'Tri des incidents', 'it' => 'Triage degli incidenti'],
             'domain' => 'it',
             'risk_level' => 'normal',
             'description' => 'Störung aufnehmen, Auswirkung einstufen, Sofortmaßnahme, Zuweisung und Kommunikation.',
@@ -241,6 +246,7 @@ return [
         [
             'code' => 'IT_NEW_CLIENT_ONBOARD',
             'name' => 'Client einrichten',
+            'name_i18n' => ['en' => 'Set up client device', 'es' => 'Configurar el equipo cliente', 'fr' => 'Configurer le poste client', 'it' => 'Configurare il client'],
             'domain' => 'it',
             'risk_level' => 'normal',
             'description' => 'Neuen Arbeitsplatzrechner inventarisieren, installieren, absichern und übergeben.',
@@ -255,6 +261,7 @@ return [
         [
             'code' => 'IT_OFFBOARD_USER',
             'name' => 'Benutzer offboarden',
+            'name_i18n' => ['en' => 'Offboard user', 'es' => 'Dar de baja al usuario', 'fr' => 'Désactiver l\'utilisateur', 'it' => 'Disattivare l\'utente'],
             'domain' => 'it',
             'risk_level' => 'high',
             'description' => 'Konten sperren, Geräte einziehen, Daten übergeben, Berechtigungen entziehen — mit Vier-Augen-Bestätigung.',

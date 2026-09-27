@@ -156,4 +156,16 @@ return [
             'description' => 'Indicadores y marcadores arriba y, debajo, las cuatro secciones Resumen, Tareas, Actividad y Finanzas: el panel tal como era antes de la conversión en tarjetas, más el reloj de fichar.',
         ],
     ],
+    // Dashboard-Vorgaben je Rolle (MVP-910).
+    'role_default' => [
+        'title' => 'Plantillas por rol',
+        'hint' => 'Las personas sin diseño propio empiezan con la plantilla de su rol (mismo orden que las páginas de inicio); si no, con la de la organización.',
+        'also_as' => 'Guardar también como',
+        'only_me' => 'solo para mí',
+        'organization' => 'plantilla de la organización',
+        'for_role' => 'plantilla para :role',
+        'saved' => 'Panel guardado como plantilla para :role.',
+        'forgotten' => 'Plantilla para :role eliminada.',
+        'forget' => 'Eliminar la plantilla para :role',
+    ],
 ];

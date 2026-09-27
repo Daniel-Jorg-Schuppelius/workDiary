@@ -59,7 +59,7 @@
                     <td>{{ $product->manufacturer }}</td>
                     <td class="font-mono text-sm">{{ $product->model }}</td>
                     <td>{{ $product->name }}</td>
-                    <td>{{ $product->productGroupClassification?->label ?? '—' }}</td>
+                    <td>{{ $product->productGroupClassification?->display_label ?? '—' }}</td>
                     <td class="text-right tabular-nums">{{ $product->articles_count }}</td>
                     <td class="text-right tabular-nums">{{ $product->assets_count }}</td>
                     <td><x-status-badge size="xs" :tone="$product->status->tone()">{{ $product->status->label() }}</x-status-badge></td>

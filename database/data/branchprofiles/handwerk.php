@@ -167,6 +167,7 @@ return [
         [
             'code' => 'HW_SERVICE_CALL',
             'name' => 'Serviceeinsatz',
+            'name_i18n' => ['en' => 'Service call', 'es' => 'Servicio técnico', 'fr' => 'Intervention de service', 'it' => 'Intervento di assistenza'],
             'domain' => 'handwerk',
             'risk_level' => 'normal',
             'description' => 'Serviceeinsatz beim Kunden: Aufnahme, Diagnose, Durchführung, Material.',
@@ -180,6 +181,7 @@ return [
         [
             'code' => 'HW_INSTALL_DEVICE',
             'name' => 'Geräteinstallation',
+            'name_i18n' => ['en' => 'Device installation', 'es' => 'Instalación de equipos', 'fr' => 'Installation d\'appareil', 'it' => 'Installazione apparecchio'],
             'domain' => 'handwerk',
             'risk_level' => 'normal',
             'description' => 'Installation/Inbetriebnahme eines Geräts mit Funktionstest und Einweisung.',
@@ -194,6 +196,7 @@ return [
         [
             'code' => 'HW_HANDOVER_CUSTOMER',
             'name' => 'Kundenübergabe',
+            'name_i18n' => ['en' => 'Customer handover', 'es' => 'Entrega al cliente', 'fr' => 'Remise au client', 'it' => 'Consegna al cliente'],
             'domain' => 'handwerk',
             'risk_level' => 'normal',
             'description' => 'Übergabe der Leistung an den Kunden mit Unterschrift.',
@@ -206,6 +209,7 @@ return [
         [
             'code' => 'HW_MAINTENANCE',
             'name' => 'Wartung',
+            'name_i18n' => ['en' => 'Maintenance', 'es' => 'Mantenimiento', 'fr' => 'Maintenance', 'it' => 'Manutenzione'],
             'domain' => 'handwerk',
             'risk_level' => 'normal',
             'description' => 'Wartung nach Wartungsplan mit Verschleißteilen, Funktionsprüfung und Kundenbestätigung.',
@@ -221,6 +225,7 @@ return [
         [
             'code' => 'HW_REPAIR',
             'name' => 'Reparatur',
+            'name_i18n' => ['en' => 'Repair', 'es' => 'Reparación', 'fr' => 'Réparation', 'it' => 'Riparazione'],
             'domain' => 'handwerk',
             'risk_level' => 'normal',
             'description' => 'Reparatur mit Fehlerbild, Ursache, Ersatzteilen und Funktionstest.',
@@ -236,6 +241,7 @@ return [
         [
             'code' => 'HW_INSPECTION',
             'name' => 'Inspektion/Prüfung',
+            'name_i18n' => ['en' => 'Inspection / test', 'es' => 'Inspección / prueba', 'fr' => 'Inspection / contrôle', 'it' => 'Ispezione / verifica'],
             'domain' => 'handwerk',
             'risk_level' => 'normal',
             'description' => 'Inspektion mit Prüfumfang, Sichtprüfung, Messwerten und Bewertung.',
@@ -251,6 +257,7 @@ return [
         [
             'code' => 'HW_AUFMASS',
             'name' => 'Aufmaß',
+            'name_i18n' => ['en' => 'Measurement', 'es' => 'Medición', 'fr' => 'Métré', 'it' => 'Misurazione'],
             'domain' => 'handwerk',
             'risk_level' => 'normal',
             'description' => 'Aufmaß vor Ort mit Maßen, Skizze und Bestätigung.',

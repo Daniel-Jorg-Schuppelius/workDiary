@@ -52,7 +52,7 @@
     </div>
     <div>
         <strong>{{ __('contract-signing.certificate.parties_heading') }}</strong><br>
-        {{ __('contract-signing.party.customer') }}: {{ $contract?->customer?->name }}<br>
+        {{ __($contract?->kind === \App\Enums\Contract\ContractKind::Employment ? 'contract-signing.party.employee' : 'contract-signing.party.customer') }}: {{ $contract?->customer?->name ?? $contract?->partner_name }}<br>
         {{ __('contract-signing.party.organization') }}: {{ $legalName }}
         @if ($revision->controller_party)
             <br>{{ __('contract-signing.revision.controller', ['party' => $revision->controller_party->label()]) }}

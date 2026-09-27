@@ -151,7 +151,7 @@ class KnowledgeHubService {
         $tags = [];
         foreach ($model->getRelationValue('tags') ?? [] as $tag) {
             if ($tag instanceof Tag) {
-                $tags[] = ['id' => (int) $tag->id, 'name' => (string) $tag->name];
+                $tags[] = ['id' => (int) $tag->id, 'name' => $tag->displayName()];
             }
         }
 

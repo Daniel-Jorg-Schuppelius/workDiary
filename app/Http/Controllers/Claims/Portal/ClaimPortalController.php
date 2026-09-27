@@ -12,8 +12,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Claims\Portal;
 
+use App\Enums\CustomerPortal\PortalCapability;
 use App\Http\Controllers\Controller;
 use App\Models\Claims\ClaimCase;
+use App\Services\CustomerPortal\PortalVisibility;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
@@ -43,7 +45,8 @@ class ClaimPortalController extends Controller {
         abort_unless((int) $claim->customer_id === (int) $user->customer_id, 404);
 
         return view('customer.claims.show', [
-            'claim' => $claim->load(['rmaReturns', 'actions']),
+            'claim' => $claim->load(['rmaReturns.returnShipments', 'actions']),
+            'portalReturns' => $user->customer !== null && app(PortalVisibility::class)->allows($user->customer, PortalCapability::Returns),
         ]);
     }
 

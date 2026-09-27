@@ -68,7 +68,8 @@ class LearningCompetencyController extends Controller {
             'matrix' => $matrix,
             'gaps' => $gaps,
             'catalog' => Competency::query()->orderBy('name')->get(),
-            'requirements' => CompetencyRequirement::query()->with('competency')->orderBy('subject_key')->get(),
+            // Soll je Rolle/Team; das Soll je Stelle pflegt das Recruiting (MVP-924).
+            'requirements' => CompetencyRequirement::query()->with('competency')->whereIn('subject_kind', ['role', 'team'])->orderBy('subject_key')->get(),
         ]);
     }
 

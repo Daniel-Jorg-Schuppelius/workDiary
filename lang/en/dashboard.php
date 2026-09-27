@@ -156,4 +156,16 @@ return [
             'description' => 'Metrics and bookmarks on top, below them the four sections Overview, Tasks, Activity and Finance — the dashboard as it was before the tile rebuild, plus the time clock.',
         ],
     ],
+    // Dashboard-Vorgaben je Rolle (MVP-910).
+    'role_default' => [
+        'title' => 'Defaults per role',
+        'hint' => 'People without their own layout start with the default of their role (same order as start pages), otherwise with the organisation default.',
+        'also_as' => 'Also save as',
+        'only_me' => 'only for me',
+        'organization' => 'organisation default',
+        'for_role' => 'default for :role',
+        'saved' => 'Dashboard saved and stored as the default for :role.',
+        'forgotten' => 'Default for :role removed.',
+        'forget' => 'Remove default for :role',
+    ],
 ];

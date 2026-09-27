@@ -33,7 +33,7 @@
                 <x-icon-btn icon="download_for_offline" tone="ghost" size="sm" type="button"
                             data-offline-course="{{ $enrollment->sqid }}"
                             data-offline-course-url="{{ route('learning.my.offline', $enrollment->sqid) }}"
-                            show-label>{{ __('learning.action.save_offline') }}</x-icon-btn>
+                            :title="__('learning.action.save_offline_hint')" show-label>{{ __('learning.action.save_offline') }}</x-icon-btn>
                 {{-- Fokusmodus (MVP-794): Seitenleiste aus, Präferenz je Person. --}}
                 <form method="POST" action="{{ route('learning.my.focus', $enrollment) }}">
                     @csrf

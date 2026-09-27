@@ -24,6 +24,8 @@ return [
         'username' => 'Utente / ID client',
         'password' => 'Password / secret client',
         'api_key' => 'Chiave API (solo DHL: dhl-api-key)',
+        'returns_receiver_id' => 'ID destinatario resi (solo DHL)',
+        'returns_receiver_id_hint' => 'Destinatario dei resi creato nel portale clienti business DHL; necessario per le etichette di reso.',
         'billing_number' => 'Numero di fatturazione / conto',
         'sandbox' => 'Sandbox / ambiente di test',
         'active' => 'Attivo',

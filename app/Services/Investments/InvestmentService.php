@@ -252,6 +252,9 @@ class InvestmentService {
                 $actual += (float) data_get($target->summary, 'gross', 0);
             } elseif ($target instanceof \App\Models\Asset\Asset) {
                 $actual += (float) ($target->getAttribute('acquisition_cost') ?? 0);
+            } elseif ($target instanceof \App\Models\Accounting\FixedAsset) {
+                // Aktivierte Anlage (MVP-909): Anschaffungskosten als Ist.
+                $actual += $target->acquisition_cost?->toFloat() ?? 0.0;
             }
         }
 

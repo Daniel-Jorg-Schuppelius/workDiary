@@ -169,6 +169,47 @@
         </div>
     @endif
 
+    {{-- Kundenspezifische Varianten (MVP-933) --}}
+    <x-card padding="p-0" class="mt-6" :title="__('branch_profile.variant.list')">
+        @can(\App\Enums\User\Permission::BranchProfileInstall->value)
+            <x-slot:actions>
+                <x-icon-btn icon="add" size="sm" tone="primary" data-entry-modal-trigger :href="route('admin.branch-profile-variants.create')" show-label>{{ __('branch_profile.variant.create') }}</x-icon-btn>
+            </x-slot:actions>
+        @endcan
+        <x-table bare>
+            <x-slot:head>
+                <tr>
+                    <th>{{ __('branch_profile.variant.field.label') }}</th>
+                    <th>{{ __('branch_profile.variant.field.code') }}</th>
+                    <th>{{ __('branch_profile.variant.field.base_code') }}</th>
+                    <th class="text-right">{{ __('Aktionen') }}</th>
+                </tr>
+            </x-slot:head>
+            @forelse ($variants as $variant)
+                <tr>
+                    <td>
+                        {{ $variant->label }}
+                        @if (($installedVariants[$variant->base_code]['code'] ?? null) === $variant->code)
+                            <x-status-badge tone="info" size="xs">{{ __('Bereits installiert') }}</x-status-badge>
+                        @endif
+                    </td>
+                    <td class="font-mono text-sm">{{ $variant->code }} · v{{ $variant->version }}</td>
+                    <td class="font-mono text-sm">{{ $variant->base_code }}</td>
+                    <td>
+                        <div class="flex justify-end gap-1">
+                            @can(\App\Enums\User\Permission::BranchProfileInstall->value)
+                                <x-icon-btn icon="edit" size="xs" :href="route('admin.branch-profile-variants.edit', $variant)" :label="__('branch_profile.variant.edit')" />
+                            @endcan
+                            <x-icon-btn icon="download" size="xs" :href="route('admin.branch-profile-variants.export', $variant)" :label="__('branch_profile.variant.export')" />
+                        </div>
+                    </td>
+                </tr>
+            @empty
+                <x-table.empty icon="tune" :colspan="4" :title="__('branch_profile.variant.empty')" compact />
+            @endforelse
+        </x-table>
+    </x-card>
+
     {{-- Marketplace-Import (Restpunkt 042): kuratiertes JSON-Profil hochladen. --}}
     <x-card :title="__('Profil importieren')">
         <p class="mb-2 text-xs text-muted">{{ __('JSON-Profil (Struktur wie die mitgelieferten Branchenprofile). Klassifikations-Domänen sind hart begrenzt — unbekannte Domänen werden abgelehnt.') }}</p>
