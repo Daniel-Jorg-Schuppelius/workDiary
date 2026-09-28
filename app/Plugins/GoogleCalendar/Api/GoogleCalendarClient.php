@@ -191,6 +191,37 @@ class GoogleCalendarClient implements RemoteCalendarGateway {
         ];
     }
 
+    /**
+     * Termine eines Zeitraums als Einzelvorkommen (`singleEvents`) für den
+     * Zeitimport (MVP-976); höchstens zehn Seiten.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function eventsBetween(DateTimeInterface $from, DateTimeInterface $until): array {
+        $items = [];
+        $pageToken = null;
+        $pages = 0;
+        do {
+            $query = [
+                'singleEvents' => 'true', 'orderBy' => 'startTime', 'maxResults' => 250,
+                'timeMin' => $from->format('Y-m-d\TH:i:s\Z'), 'timeMax' => $until->format('Y-m-d\TH:i:s\Z'),
+            ];
+            if ($pageToken !== null) {
+                $query['pageToken'] = $pageToken;
+            }
+            $response = $this->api->getResponse($this->eventsUrl(), $query);
+            if (! $response->successful()) {
+                throw new RuntimeException(sprintf('Google Calendar events.list antwortete mit HTTP %d.', $response->status()));
+            }
+            /** @var array{items?: list<array<string, mixed>>, nextPageToken?: string} $data */
+            $data = (array) $response->json();
+            array_push($items, ...($data['items'] ?? []));
+            $pageToken = ($data['nextPageToken'] ?? '') !== '' ? (string) $data['nextPageToken'] : null;
+        } while ($pageToken !== null && ++$pages < 10);
+
+        return $items;
+    }
+
     private function eventsUrl(): string {
         return $this->base . '/calendars/' . rawurlencode($this->connection->targetCalendarId()) . '/events';
     }

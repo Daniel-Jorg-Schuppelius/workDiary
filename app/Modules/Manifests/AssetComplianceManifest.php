@@ -96,6 +96,9 @@ final class AssetComplianceManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Import\EntitySpec::class => [
+                \App\Services\AssetCompliance\Import\InspectionMeasurementSpec::class,
+            ],
             \App\Services\Demo\Contracts\DemoBlock::class => [
                 \App\Services\AssetCompliance\Demo\AssetComplianceDemoBlock::class,
             ],

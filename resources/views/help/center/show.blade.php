@@ -38,7 +38,8 @@
     </nav>
 
     <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
-        <article class="rounded-(--panel-radius) border border-base-300 bg-base-100 p-6 shadow-xs lg:p-8">
+        <article class="rounded-(--panel-radius) border border-base-300 bg-base-100 p-6 shadow-xs lg:p-8"
+                 data-help-center-topic="{{ $row->topic }}" data-help-center-title="{{ $row->title }}">
             <div class="mb-1 flex flex-wrap items-center gap-2">
                 <span class="badge badge-sm badge-primary badge-outline">{{ $sectionTitle }}</span>
                 <span class="text-xs text-muted">

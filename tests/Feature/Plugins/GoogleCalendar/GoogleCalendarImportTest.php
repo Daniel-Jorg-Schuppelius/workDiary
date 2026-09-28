@@ -25,8 +25,8 @@ use Tests\TestCase;
 /**
  * Kalender-Rückimport Google (Feature 121, MVP-610a): Änderungsliste →
  * NUR Inbox-Fälle, nie blinde Anlage. Publish-Echos werden über
- * `updated` ≤ `synced_at` + Toleranz gefiltert; Serieninstanzen bleiben
- * bewusst draußen; der `syncToken` ist der Wiederanlaufpunkt.
+ * `updated` ≤ `synced_at` + Toleranz gefiltert; Serien kommen als
+ * Einzelvorkommen (MVP-977); der `syncToken` ist der Wiederanlaufpunkt.
  */
 final class GoogleCalendarImportTest extends TestCase {
     use RefreshDatabase;
@@ -167,30 +167,49 @@ final class GoogleCalendarImportTest extends TestCase {
         $this->assertDatabaseHas('integration_inbox_items', ['dedupe_key' => 'calendar-deleted:evt-eigen']);
     }
 
-    public function test_recurring_instances_are_skipped(): void {
+    public function test_modified_and_cancelled_instances_update_their_occurrence(): void {
+        Carbon::setTestNow('2026-08-19 08:00:00');
         $connection = $this->connection();
         FakePluginHttp::fake([self::EVENTS => FakePluginHttp::response([
-            'items' => [$this->remoteEvent(['id' => 'evt-instanz', 'recurringEventId' => 'evt-serie'])],
+            'items' => [
+                $this->remoteEvent(['id' => 'evt-serie', 'summary' => 'Jour fixe', 'recurrence' => ['RRULE:FREQ=WEEKLY;COUNT=3']]),
+                $this->remoteEvent(['id' => 'evt-serie_20260827T070000Z', 'recurringEventId' => 'evt-serie', 'summary' => 'Jour fixe (später)',
+                    'originalStartTime' => ['dateTime' => '2026-08-27T09:00:00+02:00', 'timeZone' => 'Europe/Berlin'],
+                    'start' => ['dateTime' => '2026-08-27T11:00:00+02:00', 'timeZone' => 'Europe/Berlin'],
+                    'end' => ['dateTime' => '2026-08-27T12:00:00+02:00', 'timeZone' => 'Europe/Berlin']]),
+                ['id' => 'evt-serie_20260903T070000Z', 'status' => 'cancelled', 'recurringEventId' => 'evt-serie',
+                    'originalStartTime' => ['dateTime' => '2026-09-03T09:00:00+02:00', 'timeZone' => 'Europe/Berlin']],
+            ],
             'nextSyncToken' => 'd',
         ])]);
 
         $result = app(GoogleCalendarImportService::class)->run($connection->fresh());
 
-        $this->assertSame(0, $result['proposals']);
-        $this->assertSame(0, IntegrationInboxItem::query()->count());
+        $this->assertSame(3, $result['proposals']);
+        $open = IntegrationInboxItem::query()->where('status', IntegrationInboxItem::STATUS_OPEN)->orderBy('id')->get();
+        $this->assertCount(2, $open);
+        $this->assertSame('Jour fixe (später)', $open[1]->display_title);
+        $this->assertSame('evt-serie', $open[1]->remote_snapshot['series_uid'] ?? null);
+        $this->assertSame(IntegrationInboxItem::STATUS_DISMISSED, IntegrationInboxItem::query()->where('dedupe_key', 'calendar-proposal:evt-serie:' . strtotime('2026-09-03 07:00:00 UTC'))->value('status'));
+        Carbon::setTestNow();
     }
 
-    public function test_series_master_carries_the_recurrence_rule(): void {
+    public function test_series_master_becomes_single_occurrences_in_the_window(): void {
+        Carbon::setTestNow('2026-08-19 08:00:00');
         $connection = $this->connection();
         FakePluginHttp::fake([self::EVENTS => FakePluginHttp::response([
-            'items' => [$this->remoteEvent(['id' => 'evt-serie', 'recurrence' => ['RRULE:FREQ=WEEKLY;BYDAY=MO']])],
+            'items' => [$this->remoteEvent(['id' => 'evt-serie', 'recurrence' => ['RRULE:FREQ=WEEKLY;BYDAY=TH;COUNT=4', 'EXDATE;TZID=Europe/Berlin:20260903T090000']])],
             'nextSyncToken' => 'e',
         ])]);
 
-        app(GoogleCalendarImportService::class)->run($connection->fresh());
+        $result = app(GoogleCalendarImportService::class)->run($connection->fresh());
 
-        $item = IntegrationInboxItem::query()->firstOrFail();
-        $this->assertSame('FREQ=WEEKLY;BYDAY=MO', (string) ($item->mapped_snapshot['recurrence_rule'] ?? ''));
+        $this->assertSame(3, $result['proposals']);
+        $item = IntegrationInboxItem::query()->orderBy('id')->firstOrFail();
+        $this->assertArrayNotHasKey('recurrence_rule', (array) $item->mapped_snapshot);
+        $this->assertSame('calendar-proposal:evt-serie:' . strtotime('2026-08-20 07:00:00 UTC'), $item->dedupe_key);
+        $this->assertCount(1, app(\App\Plugins\GoogleCalendar\Services\GoogleCalendarSeriesGroupBooker::class)->groups($this->organization));
+        Carbon::setTestNow();
     }
 
     public function test_stale_sync_token_triggers_exactly_one_full_pass(): void {

@@ -34,6 +34,10 @@ return [
         'start',
         // Kiosk-Modus (MVP-800): Tablet-Terminal ohne Anmeldung und ohne App-Layout.
         'kiosk.show',
+        // Terminwahl durch Bewerber (MVP-925): öffentlicher Token-Link ohne App-Layout.
+        'interview-offers.show',
+        // Komponenten-Vorschau (MVP-958): Entwicklungswerkzeug des Betreibers, keine Fachfunktion.
+        'admin.ui-patterns.*',
         // Entfernt am 2026-09-17 (MVP-797, Befund P8-35): Hier standen
         // 'b2b-catalog.index'/'.show' mit der Begründung "tokengesicherte
         // Public-Routen". Das sind aber die ADMIN-Routen (admin/b2b-katalog);
@@ -355,6 +359,12 @@ return [
         'protocols.public-sign*' => 'protocols.sign',
         'protocols.signature-tokens.*' => 'protocols.sign',
         'protocols.*' => 'protocols.create',
+        // Protokollvorlagen-Katalog (MVP-902).
+        'protocol-templates.*' => 'protocols.create',
+        // Schadensfälle (MVP-919/920), Rückrufe (MVP-921/922/945), Lieferanten-Selbstauskunft (MVP-937).
+        'damage-cases.*' => 'damage-cases.overview',
+        'recalls.*' => 'recalls.overview',
+        'supplier-questionnaires.*' => 'supplier-questionnaires.overview',
 
         // Kundenportal & Freigaben (Feature 012): interne Rückfragen-Liste.
         'customer-queries.*' => 'customer.queries',
@@ -589,6 +599,8 @@ return [
         'admin.organizations.*' => 'admin.tenants',
         'admin.access.*' => 'admin.roles',
         'admin.license.*' => 'admin.license',
+        // Abrechnungsdaten und Tarifwechsel-Anfrage (MVP-957).
+        'admin.billing-profile.*' => 'admin.license',
         'license.show' => 'admin.license',
         'admin.imports.*' => 'admin.import',
         'admin.security.*' => 'admin.security',

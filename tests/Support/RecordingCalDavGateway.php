@@ -31,6 +31,9 @@ class RecordingCalDavGateway implements CalDavGateway {
     /** @var list<array<string, string>> */
     public array $seenEtags = [];
 
+    /** @var list<string> Objekte für den Zeitimport aus dem Kalender (MVP-976) */
+    public array $rangeObjects = [];
+
     public function __construct(
         public bool $putOk = true,
         public bool $deleteOk = true,
@@ -65,5 +68,9 @@ class RecordingCalDavGateway implements CalDavGateway {
         $this->seenEtags[] = $localEtags;
 
         return $this->syncPage ?? new CalDavSyncPage([], [], '');
+    }
+
+    public function eventsBetween(DateTimeInterface $from, DateTimeInterface $until): array {
+        return $this->rangeObjects;
     }
 }

@@ -289,6 +289,13 @@
                               :hint="__('settings.rental_terms.portal_direct_booking_hint')"
                               error="settings.rental.portal_direct_booking"
                               :checked="(string) old('settings.rental.portal_direct_booking', data_get($stored, 'rental.portal_direct_booking') ? '1' : '0') === '1'" />
+            {{-- Geofence-Abweichung verliehener Geräte (MVP-975). --}}
+            <x-input-field name="settings[rental][geofence_radius_m]" type="number" min="50" max="50000"
+                           :label="__('settings.rental_terms.geofence_radius')"
+                           :hint="__('settings.rental_terms.geofence_radius_hint')"
+                           error="settings.rental.geofence_radius_m"
+                           :value="old('settings.rental.geofence_radius_m', data_get($stored, 'rental.geofence_radius_m', ''))"
+                           placeholder="500" />
         </x-form-group>
 
         {{-- REKLAMATIONSMUSTER (MVP-886): Schwelle und Zeitfenster für Bericht und Hinweis. --}}

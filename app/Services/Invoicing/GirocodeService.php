@@ -92,11 +92,12 @@ class GirocodeService {
         }
 
         try {
-            $builder = EpcQrBuilder::to($holder, $iban)
-                ->amount($amount)
-                // Verwendungszweck ist die Rechnungsnummer, nie die interne ID:
-                // Sie steht auf dem Beleg und der Zahlungsabgleich sucht danach.
-                ->remittance((string) $invoice->number);
+            $builder = EpcQrBuilder::to($holder, $iban)->amount($amount);
+            // Verwendungszweck ist die Rechnungsnummer, nie die interne ID: Sie
+            // steht auf dem Beleg und der Zahlungsabgleich sucht danach. Mit
+            // RF-Referenz (MVP-978) geht sie strukturiert statt als Freitext.
+            $reference = $invoice->creditorReference();
+            $reference !== null ? $builder->reference($reference) : $builder->remittance((string) $invoice->number);
 
             $bic = trim((string) ($legal['bic'] ?? ''));
             if ($bic !== '') {

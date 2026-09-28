@@ -1,7 +1,7 @@
 ---
 title: "Gestión de licencias"
 topic: admin.license
-version: 1
+version: 2
 audience:
     - admin
 related:
@@ -21,3 +21,11 @@ inquilino** (prueba/activo/bloqueado): en estado bloqueado se
 desactivan las acciones de escritura y el límite de usuarios se aplica
 al crear miembros. Las licencias se introducen como claves firmadas,
 sin subir archivos.
+
+## Datos de facturación y cambio de plan
+
+En «Datos de facturación» gestiona el destinatario de la factura, el
+correo, la dirección, el NIF-IVA y la referencia de pedido para la
+facturación por parte del operador. Allí también solicita otro plan o
+módulos adicionales; cada organización tiene una solicitud abierta, que
+puede retirar. El operador la resuelve emitiendo una nueva licencia.

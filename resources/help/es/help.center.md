@@ -1,10 +1,11 @@
 ---
 title: "Centro de ayuda"
 topic: help.center
-version: 1
+version: 2
 audience: []
 related:
     - account.shortcuts
+    - help.errors
     - search.overview
 ---
 
@@ -26,3 +27,9 @@ momento: el icono del libro en la cabecera de la ayuda abre esta vista
 general y el campo de búsqueda situado debajo inicia su búsqueda
 directamente aquí. «Abrir la ayuda detallada» lleva a la página del tema
 mostrado en ese momento.
+
+«Vistos recientemente» en la vista general muestra los temas que abrió por
+última vez en el centro de ayuda o en la ayuda lateral. La lista se guarda
+solo en su navegador. Las páginas de error enlazan mediante «¿Qué
+significa esto?» directamente con la sección correspondiente de la ayuda
+sobre mensajes de error.

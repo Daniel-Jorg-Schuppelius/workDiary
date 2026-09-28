@@ -20,9 +20,9 @@ use App\Models\Schedule\ScheduledShift;
 use App\Services\Calendar\Contracts\FreeSlotSource;
 use App\Services\Routing\{Coordinate, OsrmRouter};
 use App\Services\Schedule\QualificationGate;
-use App\Services\Support\Geo\GeofenceMatcher;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Geo\GeoHelper;
 
 /**
  * Leerzeit-/Lückenfüller-Vorschläge (Epic 14.2, MVP-245): übersetzt
@@ -317,7 +317,7 @@ class GapFillSuggester implements FreeSlotSource {
             return [null, null, true];
         }
 
-        $meters = GeofenceMatcher::distanceMeters((float) $anchor->lat, (float) $anchor->lng, (float) $lat, (float) $lng);
+        $meters = GeoHelper::haversineMeters((float) $anchor->lat, (float) $anchor->lng, (float) $lat, (float) $lng);
         $km = round($meters / 1000, 1);
 
         // OSRM, wenn erreichbar: echte zusätzliche Fahrzeit hin+zurück zum Anker.

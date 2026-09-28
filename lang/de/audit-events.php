@@ -103,11 +103,15 @@ return [
         'checkedIn' => 'Asset-Zuweisung: Rückgabe',
         'checkedOut' => 'Asset-Zuweisung: Ausgabe',
     ],
+    'security' => [
+        'ipBanReleased' => 'IP-Sperre aufgehoben',
+    ],
     'assetCompliance' => [
         'assigned' => 'Compliance-Profil zugewiesen',
         'claimOpened' => 'Compliance: Reklamation eröffnet',
         'decommissionRequested' => 'Stilllegung angefordert',
         'inspected' => 'Asset geprüft',
+        'measurementImported' => 'Prüfmesswert importiert',
         'restrictedUse' => 'Nutzung eingeschränkt',
     ],
     'assetDefect' => [

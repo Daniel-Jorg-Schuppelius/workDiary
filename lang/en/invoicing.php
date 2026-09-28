@@ -87,6 +87,9 @@ return [
     ],
     // Sicherheitseinbehalte § 17 VOB/B (Feature 113, MVP-602).
     'retention' => [
+        'final_only' => 'Down payment and partial invoices carry no retention — it is calculated on the total performance in the final invoice.',
+        'final_base_hint' => 'Final invoice: the percentage refers to the total performance before deducting down payments; it is deducted from the amount payable.',
+        'exceeds_after_settlement' => 'The recorded retentions exceed the amount payable after deducting the down payments. Please adjust the retentions.',
         'dialog_title' => 'Record a retention',
         'submit' => 'Record',
         'dialog_hint' => 'The retention appears on the document and is deducted from the open item. It cannot be changed once the invoice is issued.',

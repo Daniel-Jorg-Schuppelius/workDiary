@@ -12,6 +12,7 @@
 // HelpView-Schreibung wie im Drawer, nur an der Vollseiten-Karte.
 
 import { postJson } from "./lib/http.js";
+import { recentHelpTopics, rememberHelpTopic } from "./lib/help-recent.js";
 
 function bindHelpCenterFeedback() {
     const wrap = document.querySelector("[data-help-center-feedback]");
@@ -73,9 +74,36 @@ function bindHelpCenterLightbox() {
     });
 }
 
+// Zuletzt angesehen (MVP-972): die Artikelseite merkt sich das Thema, die
+// Übersicht zeigt die Liste — Links nur über die serverseitige URL-Vorlage.
+function bindHelpCenterRecent() {
+    const article = document.querySelector("[data-help-center-topic]");
+    if (article) {
+        rememberHelpTopic(article.getAttribute("data-help-center-topic"), article.getAttribute("data-help-center-title"));
+    }
+
+    const wrap = document.querySelector("[data-help-recent]");
+    const list = wrap?.querySelector("[data-help-recent-list]");
+    const template = wrap?.getAttribute("data-show-url") || "";
+    const entries = recentHelpTopics();
+    if (!wrap || !list || template === "" || entries.length === 0) return;
+
+    entries.forEach((entry) => {
+        const item = document.createElement("li");
+        const link = document.createElement("a");
+        link.className = "link link-primary";
+        link.href = template.replace("recent.placeholder", encodeURIComponent(entry.topic));
+        link.textContent = entry.title;
+        item.appendChild(link);
+        list.appendChild(item);
+    });
+    wrap.hidden = false;
+}
+
 function initHelpCenter() {
     bindHelpCenterFeedback();
     bindHelpCenterLightbox();
+    bindHelpCenterRecent();
 }
 
 if (document.readyState === "loading") {

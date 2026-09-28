@@ -13,6 +13,7 @@
 
 import { html, setHtml, clearHtml, trustedServerHtml, sameOriginPath } from "./lib/html.js";
 import { getJson, postJson } from "./lib/http.js";
+import { rememberHelpTopic } from "./lib/help-recent.js";
 
 const DRAWER_SELECTOR = "[data-help-drawer]";
 const BACKDROP_SELECTOR = "[data-help-backdrop]";
@@ -411,6 +412,7 @@ function renderTopic(payload) {
     const thanksEl = document.querySelector("[data-help-feedback-thanks]");
 
     setTitle(payload.title || payload.topic);
+    rememberHelpTopic(payload.topic, payload.title);
     // body_html kommt serverseitig gerendert aus der Help-Registry.
     if (bodyEl) setHtml(bodyEl, trustedServerHtml(payload.body_html || ""));
     if (footerEl) footerEl.classList.remove("hidden");

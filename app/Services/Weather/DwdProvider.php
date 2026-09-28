@@ -13,13 +13,13 @@ declare(strict_types=1);
 namespace App\Services\Weather;
 
 use App\Plugins\Support\PluginApiClient;
-use App\Services\Support\Geo\GeofenceMatcher;
 use App\Services\Weather\Contracts\WeatherProvider;
 use App\Support\Setting;
 use Carbon\CarbonInterface;
 use CommonToolkit\Enums\Units\SpeedUnit;
 use CommonToolkit\Helper\Data\{StringHelper, UnitConversionHelper};
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
+use CommonToolkit\Helper\Geo\GeoHelper;
 use CommonToolkit\Parsers\CSVDocumentParser;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -127,7 +127,7 @@ class DwdProvider implements WeatherProvider {
             if ($station['from'] > $day || $station['until'] < $requiredUntil) {
                 continue; // Station misst (noch) nicht bzw. nicht mehr.
             }
-            $km = GeofenceMatcher::distanceMeters($lat, $lng, $station['lat'], $station['lng']) / 1000.0;
+            $km = GeoHelper::haversineKm($lat, $lng, $station['lat'], $station['lng']);
             if ($km < $bestKm) {
                 $best = $station;
                 $bestKm = $km;

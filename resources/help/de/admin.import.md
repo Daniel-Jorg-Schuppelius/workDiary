@@ -1,7 +1,7 @@
 ---
 title: "CSV-Import"
 topic: admin.import
-version: 2
+version: 3
 audience:
     - admin
 schema: process
@@ -63,3 +63,18 @@ Vorschau sind gefahrlos. Die Import-Historie zeigt alle Läufe mit
 Status und lässt sich nach Entität und Zustand filtern. Als Nächstes:
 importierte Stammdaten stichprobenartig prüfen und Dubletten über die
 Zusammenführung bereinigen.
+
+## Bewegungs- und Messdaten
+
+Neben Stammdaten übernimmt der Import auch laufende Daten: Zählerstände,
+ESG-Verbräuche (Aktivität, Menge, Zeitraum und Datenqualität), Prüfmesswerte
+zu vorhandenen Prüfungen und Gerätepositionen aus Telematik-Exporten. Bei
+Positionen meldet WorkDiary, wenn ein verliehenes Gerät den Einsatzort
+verlässt.
+
+## Stempelungen und Projektzeiten aus dem Kalender
+
+Für Stempelungen und Projektzeiten können Sie statt einer Datei eine
+verbundene Kalenderquelle wählen (CalDAV, Google Calendar, Microsoft 365).
+Die Termine des gewählten Zeitraums werden abgerufen und wie eine iCal-Datei
+geprüft — mit Vorschau, Kategorie-Filter und Auflösung von Serien.

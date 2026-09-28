@@ -1,7 +1,7 @@
 ---
 title: "Geräte- & Maschinenverleih"
 topic: rental.overview
-version: 1
+version: 2
 audience: []
 modules:
     - module.rental
@@ -36,3 +36,9 @@ kontrollierte Übergabe an die Reklamation.
 manuell, werden freigegeben und lokal fakturiert oder an das führende
 Fakturasystem übergeben. Die Kaution läuft als eigener Finanzvorgang —
 Einbehalt braucht eine Pflichtbegründung.
+
+**Einsatzort und Geofence:** Kommen Gerätepositionen per Import (etwa aus
+einem Telematik-Export), prüft WorkDiary während eines Verleihs, ob das Gerät
+am Einsatzort ist: am Standort des Verleihs mit dem in den Einstellungen
+festgelegten Radius, sonst in den Geofences des Kunden. Verlässt es ihn,
+werden die verantwortliche Person und die Teamleitung benachrichtigt.

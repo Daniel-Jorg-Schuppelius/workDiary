@@ -1191,6 +1191,7 @@ return [
         'hu_valid_until' => 'Inspección técnica',
         'iban' => 'IBAN',
         'ical_category_allowlist' => 'Categorías iCal',
+        'calendar' => 'Calendario',
         'ical_recurrence_from' => 'Series desde',
         'ical_recurrence_until' => 'Series hasta',
         'icon' => 'Icono',

@@ -1,7 +1,7 @@
 ---
 title: "Sicherheit & Härtung"
 topic: admin.security
-version: 1
+version: 2
 audience:
     - admin
 related:
@@ -50,3 +50,15 @@ Migrationen, Storage, Queue, APP_KEY, Mail und Lizenz, ohne Daten zu
 zeigt App-, PHP-, Laravel- und DB-Version, Module und Plugins und
 erzeugt eine **SBOM** (CycloneDX 1.5) aus den Lock-Dateien – als
 Download für Audits. Zugriff haben nur globale Admins.
+
+## Temporäre IP-Sperre und SIEM-Export
+
+Ohne fail2ban auf dem Server kann WorkDiary Adressen nach wiederholten
+Fehlversuchen selbst vorübergehend sperren (Umgebungsvariable
+`SECURITY_IP_BAN`, Standard aus): 15 Minuten, bei Wiederholung eine Stunde,
+dann 24 Stunden. Angemeldete Sitzungen und private Netze sind nie betroffen;
+aktive Sperren sehen und lösen Sie unter „Angriffserkennung“. Da sich viele
+Nutzer eine Adresse teilen können (Mobilfunk, Firmennetz), bleibt fail2ban
+die erste Wahl. Für ein SIEM schreibt WorkDiary jedes Sicherheitsereignis
+zusätzlich im Format CEF oder JSON in eine eigene Datei oder per Syslog
+(`SECURITY_SIEM_FORMAT`, `SECURITY_SIEM_TARGET`).

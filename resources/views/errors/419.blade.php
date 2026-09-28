@@ -7,6 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 @include('errors._page', [
+    'help' => \App\Enums\Help\HelpDeepLink::SessionExpired,
     'code' => 419,
     'icon' => 'schedule',
     'tone' => 'warning',

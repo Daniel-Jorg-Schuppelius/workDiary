@@ -1,7 +1,7 @@
 ---
 title: "Gérer les intégrations"
 topic: admin.integrations
-version: 1
+version: 2
 audience:
     - admin
 related:
@@ -95,3 +95,9 @@ usage, pour que vous n'ayez pas à deviner où va quoi :
 
 Une intégration absente de cette liste n'existe pas — en cas de doute, demandez
 plutôt que d'enregistrer des identifiants à un endroit non prévu pour cela.
+
+**Événements récurrents des calendriers :** Les événements récurrents de
+CalDAV, Google Agenda ou Microsoft 365 apparaissent dans la boîte de
+réception comme événements individuels dans la fenêtre d'import, en tenant
+compte des événements déplacés et annulés. Une série peut être créée comme
+rendez-vous ou rejetée d'un coup en tant que groupe.

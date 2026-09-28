@@ -87,6 +87,9 @@ return [
     ],
     // Sicherheitseinbehalte § 17 VOB/B (Feature 113, MVP-602).
     'retention' => [
+        'final_only' => 'Abschlags- und Teilrechnungen tragen keinen Sicherheitseinbehalt — er wird in der Schlussrechnung auf die Gesamtleistung berechnet.',
+        'final_base_hint' => 'Schlussrechnung: Der Prozentsatz bezieht sich auf die Gesamtleistung vor Abzug der Abschläge; abgezogen wird vom Zahlbetrag.',
+        'exceeds_after_settlement' => 'Die erfassten Sicherheitseinbehalte übersteigen den Zahlbetrag nach Anrechnung der Abschläge. Bitte Einbehalte anpassen.',
         'dialog_title' => 'Sicherheitseinbehalt hinterlegen',
         'submit' => 'Hinterlegen',
         'dialog_hint' => 'Der Einbehalt erscheint auf dem Beleg und wird aus dem offenen Posten herausgerechnet. Nach dem Ausstellen ist er nicht mehr änderbar.',

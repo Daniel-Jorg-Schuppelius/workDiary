@@ -1225,6 +1225,7 @@ return [
         'hu_valid_until' => 'Main inspection',
         'iban' => 'IBAN',
         'ical_category_allowlist' => 'iCal categories',
+        'calendar' => 'Calendar',
         'ical_recurrence_from' => 'Series from',
         'ical_recurrence_until' => 'Series to',
         'icon' => 'Icon',

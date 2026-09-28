@@ -28,7 +28,7 @@ use Tests\TestCase;
  * Zwei-Wege-Kalender, erster Schnitt (Feature 102, C3): calendarView-Delta →
  * NUR Inbox-Fälle (Vorschlag/Konflikt/Lösch-Hinweis), nie blinde Anlage;
  * Publish-Echos werden über lastModified≤synced_at+Toleranz gefiltert;
- * Serien-Occurrences bewusst übersprungen; Checkpoint an der Verbindung.
+ * Serien-Vorkommen als Einzelvorschläge (MVP-977); Checkpoint an der Verbindung.
  */
 final class MsgraphCalendarImportTest extends TestCase {
     use RefreshDatabase;
@@ -145,7 +145,7 @@ final class MsgraphCalendarImportTest extends TestCase {
         $this->assertDatabaseHas('integration_inbox_items', ['case_type' => IntegrationInboxItem::CASE_CONFLICT]);
     }
 
-    public function test_removed_published_event_is_flagged_and_occurrences_skipped(): void {
+    public function test_removed_published_event_is_flagged_and_occurrences_become_proposals(): void {
         $connection = $this->connection();
         $this->publishedReference('evt-geloescht', Carbon::now()->subHour());
 
@@ -153,7 +153,9 @@ final class MsgraphCalendarImportTest extends TestCase {
             'https://graph.microsoft.com/v1.0/me/calendarView/delta*' => FakePluginHttp::response([
                 'value' => [
                     ['id' => 'evt-geloescht', '@removed' => ['reason' => 'deleted']],
-                    $this->remoteEvent(['id' => 'evt-serie', 'type' => 'occurrence']),
+                    $this->remoteEvent(['id' => 'evt-occ-1', 'type' => 'occurrence', 'seriesMasterId' => 'evt-master', 'subject' => 'Jour fixe']),
+                    $this->remoteEvent(['id' => 'evt-occ-2', 'type' => 'exception', 'seriesMasterId' => 'evt-master', 'subject' => 'Jour fixe (verschoben)']),
+                    $this->remoteEvent(['id' => 'evt-master', 'type' => 'seriesMaster']),
                 ],
                 '@odata.deltaLink' => 'https://graph.microsoft.com/v1.0/me/calendarView/delta?token=x',
             ]),
@@ -162,8 +164,20 @@ final class MsgraphCalendarImportTest extends TestCase {
         $result = app(MsgraphCalendarImportService::class)->run($connection->fresh());
 
         $this->assertSame(1, $result['deleted']);
-        $this->assertSame(0, $result['proposals']); // occurrence übersprungen
+        $this->assertSame(2, $result['proposals']); // Vorkommen ja, Master nicht
         $this->assertDatabaseHas('integration_inbox_items', ['dedupe_key' => 'calendar-deleted:evt-geloescht']);
+        $this->assertDatabaseHas('integration_inbox_items', ['dedupe_key' => 'calendar-proposal:evt-master:evt-occ-2', 'display_title' => 'Jour fixe (verschoben)']);
+        $this->assertSame(2, app(\App\Plugins\Msgraph\Services\MsgraphSeriesGroupBooker::class)->groups($this->organization)[0]['count']);
+
+        // Ein später entferntes Vorkommen nimmt seinen offenen Vorschlag mit.
+        FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/calendarView/delta?token=x' => FakePluginHttp::response([
+                'value' => [['id' => 'evt-occ-1', '@removed' => ['reason' => 'deleted']]],
+                '@odata.deltaLink' => 'https://graph.microsoft.com/v1.0/me/calendarView/delta?token=y',
+            ]),
+        ]);
+        app(MsgraphCalendarImportService::class)->run($connection->fresh());
+        $this->assertSame(IntegrationInboxItem::STATUS_DISMISSED, IntegrationInboxItem::query()->where('dedupe_key', 'calendar-proposal:evt-master:evt-occ-1')->value('status'));
     }
 
     // ── Folgeausbau: Vorschlag-Übernahme („Neu anlegen" → Event) ────────
@@ -202,55 +216,6 @@ final class MsgraphCalendarImportTest extends TestCase {
             'referenceable_id' => $event->getKey(),
         ]);
         $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_CREATED, $item->fresh()?->status);
-    }
-
-    // ── Folgeausbau: Serien-Master → RRULE ──────────────────────────────
-
-    public function test_series_master_proposal_maps_recurrence_to_rrule(): void {
-        $connection = $this->connection();
-        FakePluginHttp::fake([
-            'https://graph.microsoft.com/v1.0/me/calendarView/delta*' => FakePluginHttp::response([
-                'value' => [$this->remoteEvent([
-                    'id' => 'evt-serie-master',
-                    'subject' => 'Jour fixe',
-                    'type' => 'seriesMaster',
-                    'recurrence' => [
-                        'pattern' => ['type' => 'weekly', 'interval' => 2, 'daysOfWeek' => ['monday', 'wednesday']],
-                        'range' => ['type' => 'endDate', 'endDate' => '2026-12-31'],
-                    ],
-                ])],
-                '@odata.deltaLink' => 'https://graph.microsoft.com/v1.0/me/calendarView/delta?token=serie',
-            ]),
-        ]);
-
-        $result = app(MsgraphCalendarImportService::class)->run($connection->fresh());
-
-        $this->assertSame(1, $result['proposals']);
-        $mapped = (array) IntegrationInboxItem::query()->firstOrFail()->mapped_snapshot;
-        $this->assertSame('FREQ=WEEKLY;BYDAY=MO,WE;INTERVAL=2;UNTIL=20261231', $mapped['recurrence_rule'] ?? null);
-        $this->assertSame('2026-12-31', $mapped['series_until'] ?? null);
-
-        // Nicht abbildbares Muster ⇒ Einzeltermin-Übernahme (Regel bleibt leer).
-        FakePluginHttp::fake([
-            'https://graph.microsoft.com/v1.0/me/calendarView/delta?token=serie' => FakePluginHttp::response([
-                'value' => [$this->remoteEvent([
-                    'id' => 'evt-serie-unbekannt',
-                    'type' => 'seriesMaster',
-                    'recurrence' => [
-                        'pattern' => ['type' => 'relativeYearly'],
-                        'range' => ['type' => 'noEnd'],
-                    ],
-                ])],
-                '@odata.deltaLink' => 'https://graph.microsoft.com/v1.0/me/calendarView/delta?token=serie2',
-            ]),
-        ]);
-        app(MsgraphCalendarImportService::class)->run($connection->fresh());
-
-        $fallback = (array) IntegrationInboxItem::query()
-            ->where('dedupe_key', 'calendar-proposal:evt-serie-unbekannt')
-            ->firstOrFail()
-            ->mapped_snapshot;
-        $this->assertArrayNotHasKey('recurrence_rule', $fallback);
     }
 
     public function test_command_runs_only_for_two_way_connections(): void {

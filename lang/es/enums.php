@@ -432,6 +432,7 @@ return [
             'rental' => [
                 'returnOverdue' => 'Devolución de alquiler vencida',
                 'requested' => 'Solicitud de alquiler recibida desde el portal',
+                'geofenceDeviation' => 'Equipo alquilado fuera del lugar de uso',
             ],
             'assetFinance' => [
                 'deadline' => 'Plazo de leasing vencido',

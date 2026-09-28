@@ -9,6 +9,7 @@
 {{-- errors/_page-Gerüst statt eigener Kopie (Vollaudit 2026-07, N42);
      reportable=false wie zuvor — ein Lizenz-Block ist kein meldbarer Fehler. --}}
 @include('errors._page', [
+    'help' => \App\Enums\Help\HelpDeepLink::PlanLocked,
     'code' => 423,
     'icon' => 'workspace_premium',
     'tone' => 'primary',

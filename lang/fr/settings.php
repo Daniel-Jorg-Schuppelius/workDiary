@@ -102,6 +102,8 @@ return [
         'require_signed' => 'Remise uniquement avec des conditions de location signées',
         'portal_direct_booking' => 'Autoriser la réservation directe dans le portail client',
         'portal_direct_booking_hint' => 'Les clients réservent immédiatement les appareils disponibles ouverts au portail ; la direction est informée.',
+        'geofence_radius' => 'Rayon autour du lieu d\'intervention (m)',
+        'geofence_radius_hint' => 'Si la position signalée d\'un appareil loué est plus éloignée du site de la location, l\'écart est signalé. Sans site, les géorepérages du client s\'appliquent.',
     ],
     'claims_pattern' => [
         'heading' => 'Schémas de réclamations',

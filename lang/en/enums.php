@@ -432,6 +432,7 @@ return [
             'rental' => [
                 'returnOverdue' => 'Rental return overdue',
                 'requested' => 'Rental request received from the portal',
+                'geofenceDeviation' => 'Rented equipment outside the site',
             ],
             'assetFinance' => [
                 'deadline' => 'Leasing deadline due',

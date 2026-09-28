@@ -1,10 +1,11 @@
 ---
 title: "Help center"
 topic: help.center
-version: 1
+version: 2
 audience: []
 related:
     - account.shortcuts
+    - help.errors
     - search.overview
 ---
 
@@ -24,3 +25,8 @@ From the contextual help you can reach the help center at any time: the
 book icon in the help header opens this overview, and the search field
 below it starts your search right here. "Open detailed help" takes you
 straight to the topic page of the topic currently shown.
+
+"Recently viewed" on the overview lists the topics you last opened in the
+help center or in the side help. The list is stored only in your browser.
+Error pages link via "What does this mean?" straight to the matching
+section of the help on error messages.

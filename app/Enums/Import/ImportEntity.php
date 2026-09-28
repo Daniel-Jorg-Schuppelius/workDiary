@@ -42,6 +42,10 @@ enum ImportEntity: string implements HasLabel {
     case ClubMembers = 'club_members';
     // Zählerstände per Datei (MVP-962), z. B. Betriebsstunden aus Telematik-Exporten.
     case MeterReadings = 'meter_readings';
+    // Phase 120: ESG-Verbräuche (MVP-973), Prüfmesswerte (MVP-974), Gerätepositionen (MVP-975).
+    case SustainabilityActivities = 'sustainability_activities';
+    case InspectionMeasurements = 'inspection_measurements';
+    case AssetPositions = 'asset_positions';
 
     public function label(): string {
         return (string) __('import.entity.' . $this->value);
@@ -69,6 +73,9 @@ enum ImportEntity: string implements HasLabel {
             self::Documents => 'document.create',
             self::ClubMembers => 'club.manage',
             self::MeterReadings => 'meterReading.record',
+            self::SustainabilityActivities => 'sustainability.manage',
+            self::InspectionMeasurements => 'assetCompliance.inspect',
+            self::AssetPositions => 'asset.update',
         };
     }
 
@@ -99,6 +106,9 @@ enum ImportEntity: string implements HasLabel {
             self::Documents => \App\Models\Document\Document::class,
             self::ClubMembers => \App\Models\Club\ClubMember::class,
             self::MeterReadings => \App\Models\Asset\MeterReading::class,
+            self::SustainabilityActivities => \App\Models\Sustainability\SustainabilityActivityRecord::class,
+            self::InspectionMeasurements => \App\Models\AssetCompliance\AssetMeasurementValue::class,
+            self::AssetPositions => \App\Models\Asset\AssetPosition::class,
         };
     }
 

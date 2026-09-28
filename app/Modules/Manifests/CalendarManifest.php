@@ -63,6 +63,17 @@ final class CalendarManifest extends Manifest {
         ];
     }
 
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Import\Contracts\CalendarImportFeed::class => [
+                \App\Plugins\CalDav\Services\CalDavImportFeed::class,
+                \App\Plugins\GoogleCalendar\Services\GoogleCalendarImportFeed::class,
+                \App\Plugins\Msgraph\Services\MsgraphCalendarImportFeed::class,
+            ],
+        ];
+    }
+
     /** @return array<class-string, class-string> */
     public function contracts(): array {
         return [

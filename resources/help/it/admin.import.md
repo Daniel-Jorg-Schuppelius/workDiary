@@ -1,7 +1,7 @@
 ---
 title: "Import CSV"
 topic: admin.import
-version: 2
+version: 3
 audience:
     - admin
 schema: process
@@ -63,3 +63,18 @@ Prima della conferma non si scrive **nulla** — analisi e anteprima
 sono senza rischi. La cronologia mostra tutti i giri con stato,
 filtrabile per entità e condizione. Poi: controllare a campione le
 anagrafiche importate e unire i duplicati.
+
+## Dati di movimento e di misura
+
+Oltre ai dati anagrafici, l'importazione riprende anche dati correnti:
+letture contatore, consumi ESG (attività, quantità, periodo e qualità dei
+dati), misure di ispezione per ispezioni esistenti e posizioni delle
+attrezzature da esportazioni telematiche. Per le posizioni, WorkDiary
+segnala quando un'attrezzatura noleggiata lascia il luogo d'impiego.
+
+## Timbrature e tempi di progetto dal calendario
+
+Per timbrature e tempi di progetto può scegliere una fonte di calendario
+collegata invece di un file (CalDAV, Google Calendar, Microsoft 365). Gli
+eventi del periodo scelto vengono recuperati e verificati come un file
+iCal, con anteprima, filtro per categorie e risoluzione delle serie.

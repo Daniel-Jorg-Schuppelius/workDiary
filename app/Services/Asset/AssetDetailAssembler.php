@@ -122,6 +122,7 @@ class AssetDetailAssembler {
             'asset' => $asset,
             'lifecycle' => $this->lifecycle->summary($asset),
             'roomRequirements' => $asset->room_id !== null && $asset->room !== null ? $asset->room->requirements : collect(),
+            'positions' => $asset->positions()->limit(5)->get(),
             'classOptions' => $this->options->classOptions(),
             'statusOptions' => $this->options->statusOptions(),
             'diaryEntries' => $diaryEntries,

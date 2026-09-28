@@ -24,7 +24,7 @@ use App\Services\Import\CsvPreflightAnalyzer;
 use App\Support\MorphMap;
 use App\Support\Toolkit\CsvFacade;
 use Illuminate\Contracts\View\View;
-use Illuminate\Http\{RedirectResponse, Request, Response};
+use Illuminate\Http\{RedirectResponse, Request, Response, UploadedFile};
 use Illuminate\Support\Facades\{Auth, Storage};
 
 /**
@@ -90,7 +90,61 @@ class ImportController extends Controller {
             'entity' => $entity,
             'entities' => ImportEntity::cases(),
             'supportsInboxFirst' => $supportsInboxFirst,
+            'calendarSources' => $this->calendarSources($organization, $entity),
         ]);
+    }
+
+    /**
+     * Kalenderverbindungen als Quelle des Zeitimports (MVP-976), Wert
+     * `<quelle>:<verbindung>`.
+     *
+     * @return list<array{value: string, label: string}>
+     */
+    private function calendarSources(\App\Models\Platform\Organization $organization, ImportEntity $entity): array {
+        if (! in_array($entity, [ImportEntity::Attendances, ImportEntity::ProjectTimes], true)) {
+            return [];
+        }
+        $sources = [];
+        foreach (app(\App\Modules\ModuleRegistry::class)->extensions(\App\Services\Import\Contracts\CalendarImportFeed::class) as $class) {
+            /** @var \App\Services\Import\Contracts\CalendarImportFeed $feed */
+            $feed = app($class);
+            foreach ($feed->connections($organization) as $connection) {
+                $sources[] = ['value' => $feed->key() . ':' . $connection['id'], 'label' => $feed->label() . ' · ' . $connection['label']];
+            }
+        }
+
+        return $sources;
+    }
+
+    /**
+     * Termine des Zeitraums aus einer Kalenderverbindung als iCal-Datei, die
+     * denselben Weg nimmt wie ein Upload (MVP-976).
+     *
+     * @return array{0: UploadedFile, 1: string} Datei und Pfad der temporären Kopie
+     */
+    private function calendarUpload(\App\Models\Platform\Organization $organization, ImportEntity $entity, string $source, string $from, string $until): array {
+        [$key, $connectionId] = array_pad(explode(':', $source, 2), 2, '');
+        $feed = null;
+        foreach (app(\App\Modules\ModuleRegistry::class)->extensions(\App\Services\Import\Contracts\CalendarImportFeed::class) as $class) {
+            $candidate = app($class);
+            if ($candidate instanceof \App\Services\Import\Contracts\CalendarImportFeed && $candidate->key() === $key) {
+                $feed = $candidate;
+            }
+        }
+        if ($feed === null || ! in_array($entity, [ImportEntity::Attendances, ImportEntity::ProjectTimes], true)) {
+            throw new \RuntimeException((string) __('import.error.calendar.unknown'));
+        }
+
+        $tz = \App\Support\Tz::ofOrganization($organization);
+        $ics = $feed->fetch(
+            $organization,
+            $connectionId,
+            \Carbon\CarbonImmutable::parse($from, $tz)->startOfDay()->utc()->toDateTimeImmutable(),
+            \Carbon\CarbonImmutable::parse($until, $tz)->endOfDay()->utc()->toDateTimeImmutable(),
+        );
+        $path = \CommonToolkit\Helper\FileSystem\File::createTemp($ics, 'kalender', 'ics');
+
+        return [new UploadedFile($path, 'kalender.ics', 'text/calendar', null, true), $path];
     }
 
     /**
@@ -176,14 +230,16 @@ class ImportController extends Controller {
             // (manifest.csv + Dateien) mit eigenem Archiv-Limit.
             'file' => $entity->acceptsZip()
                 ? ['required', 'file', 'mimes:zip', 'max:' . ZipImporter::MAX_ZIP_KB]
-                : ['required', 'file', 'mimes:csv,txt,xlsx,ics', 'max:' . (CsvPreflightAnalyzer::MAX_BYTES / 1024)],
+                : ['required_without:calendar', 'nullable', 'file', 'mimes:csv,txt,xlsx,ics', 'max:' . (CsvPreflightAnalyzer::MAX_BYTES / 1024)],
+            // MVP-976: statt Datei eine Kalenderverbindung; dann ist der Zeitraum Pflicht.
+            'calendar' => ['nullable', 'string', 'max:200'],
             'match_policy' => ['nullable', 'in:auto_create,inbox_first'],
             // MVP-438: optionale iCal-Kategorie-Allowlist (nur Events dieser
             // Kategorien werden als Anwesenheit gewertet).
             'ical_category_allowlist' => ['nullable', 'string', 'max:500'],
             // MVP-885: Zeitraum, in dem iCal-Serien aufgelöst werden.
-            'ical_recurrence_from' => ['nullable', 'date_format:Y-m-d'],
-            'ical_recurrence_until' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:ical_recurrence_from'],
+            'ical_recurrence_from' => ['nullable', 'required_with:calendar', 'date_format:Y-m-d'],
+            'ical_recurrence_until' => ['nullable', 'required_with:calendar', 'date_format:Y-m-d', 'after_or_equal:ical_recurrence_from'],
         ]);
 
         $options = array_filter([
@@ -195,14 +251,32 @@ class ImportController extends Controller {
             $options['category_allowlist'] = $allowlist;
         }
 
-        $run = $this->analyzer->analyze(
-            $request->file('file'),
-            $entity,
-            $organization,
-            Auth::user(),
-            (string) ($data['match_policy'] ?? 'auto_create'),
-            $options,
-        );
+        $file = $request->file('file');
+        $temporary = null;
+        if (($data['calendar'] ?? '') !== '') {
+            try {
+                [$file, $temporary] = $this->calendarUpload($organization, $entity, (string) $data['calendar'], (string) $data['ical_recurrence_from'], (string) $data['ical_recurrence_until']);
+            } catch (\RuntimeException $e) {
+                \Illuminate\Support\Facades\Log::warning('Kalenderabruf für den Import fehlgeschlagen', ['exception' => $e]);
+
+                return back()->withInput()->withErrors(['calendar' => __('import.error.calendar.fetch')]);
+            }
+        }
+
+        try {
+            $run = $this->analyzer->analyze(
+                $file,
+                $entity,
+                $organization,
+                Auth::user(),
+                (string) ($data['match_policy'] ?? 'auto_create'),
+                $options,
+            );
+        } finally {
+            if ($temporary !== null) {
+                \CommonToolkit\Helper\FileSystem\File::delete($temporary);
+            }
+        }
 
         if ($run->state === ImportRunState::Failed) {
             AuditLog::create([

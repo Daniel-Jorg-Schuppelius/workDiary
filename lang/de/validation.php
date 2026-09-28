@@ -1191,6 +1191,7 @@ return [
         'hu_valid_until' => 'Hauptuntersuchung',
         'iban' => 'IBAN',
         'ical_category_allowlist' => 'iCal-Kategorien',
+        'calendar' => 'Kalender',
         'ical_recurrence_from' => 'Serien von',
         'ical_recurrence_until' => 'Serien bis',
         'icon' => 'Icon',

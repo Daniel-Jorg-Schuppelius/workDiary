@@ -979,6 +979,7 @@ Route::middleware('auth')->group(function () {
         // Angriffserkennung (Feature 096, MVP-445): Security-Events-Dashboard —
         // nur Plattform-Admin (Controller), plattformweite Daten.
         Route::get('admin/security-events', [\App\Http\Controllers\Admin\SecurityEventsController::class, 'index'])->name('admin.security-events.index');
+        Route::post('admin/security-events/ip-bans/{ban}/release', [\App\Http\Controllers\Admin\SecurityEventsController::class, 'releaseIpBan'])->name('admin.security-events.ip-bans.release');
 
         // Angemeldete Nutzer / Sitzungen (Feature 085): auflisten + fernabmelden.
         Route::get('admin/sessions', [SessionController::class, 'index'])->name('admin.sessions.index');

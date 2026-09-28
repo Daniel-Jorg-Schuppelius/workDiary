@@ -34,6 +34,10 @@ class InboxGroupBookerRegistry {
         'openproject' => OpenProjectGroupBooker::class,
         'remote-support' => RemoteSupportGroupBooker::class,
         'fritzbox' => FritzboxGroupBooker::class,
+        // Serien aus dem Kalender-Rückimport (MVP-977).
+        'caldav' => \App\Plugins\CalDav\Services\CalDavSeriesGroupBooker::class,
+        'google_calendar' => \App\Plugins\GoogleCalendar\Services\GoogleCalendarSeriesGroupBooker::class,
+        'msgraph' => \App\Plugins\Msgraph\Services\MsgraphSeriesGroupBooker::class,
     ];
 
     /** @var array<string, class-string<InboxGroupBooker>>|null */

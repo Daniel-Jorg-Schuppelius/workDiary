@@ -80,6 +80,8 @@ use Illuminate\Support\Carbon;
  * @property-read Project|null $project
  * @property-read Invoice|null $parent
  * @property-read Collection<int, Invoice> $creditNotes
+ *
+ * @phpstan-import-type Totals from \App\Services\Billing\DocumentTotalsCalculator
  */
 class Invoice extends Model implements HasDocumentLines {
     use Auditable;
@@ -351,6 +353,35 @@ class Invoice extends Model implements HasDocumentLines {
 
     public function documentTotals(): array {
         return app(DocumentTotalsCalculator::class)->totals($this->items, $this->totalsContext());
+    }
+
+    /**
+     * Gesamtleistung: Belegsummen ohne die Absetzungen angerechneter Abschläge
+     * (MVP-979) — Bemessung des Sicherheitseinbehalts in der Schlussrechnung.
+     *
+     * @return Totals
+     */
+    public function performanceTotals(): array {
+        return app(DocumentTotalsCalculator::class)->totals($this->items->whereNull('settled_invoice_id'), $this->totalsContext());
+    }
+
+    /**
+     * RF-Gläubigerreferenz (ISO 11649, MVP-978) aus der Rechnungsnummer, wenn die
+     * Organisation sie nutzt und die Nummer passt (Buchstaben/Ziffern, höchstens 21).
+     */
+    public function creditorReference(): ?string {
+        $organization = $this->organization;
+        if (! $organization instanceof \App\Models\Platform\Organization
+            || ! (bool) app(\App\Settings\SettingsRegistry::class)->effective('invoicing.creditor_reference', $organization)->value) {
+            return null;
+        }
+
+        return \CommonToolkit\Helper\Data\CreditorReferenceHelper::create(\App\Services\Finance\Banking\ReferenceExtractor::normalize((string) $this->number));
+    }
+
+    /** Abschlags- und Teilrechnungen tragen keinen Einbehalt; er entsteht erst in der Schlussrechnung (MVP-979). */
+    public function acceptsRetention(): bool {
+        return ! in_array($this->type, [self::TYPE_DOWN_PAYMENT, self::TYPE_PARTIAL], true);
     }
 
     private function totalsContext(): DocumentTotalsContext {

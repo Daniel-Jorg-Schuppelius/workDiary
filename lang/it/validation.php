@@ -1191,6 +1191,7 @@ return [
         'hu_valid_until' => 'Revisione principale',
         'iban' => 'IBAN',
         'ical_category_allowlist' => 'Categorie iCal',
+        'calendar' => 'Calendario',
         'ical_recurrence_from' => 'Serie dal',
         'ical_recurrence_until' => 'Serie al',
         'icon' => 'Icona',

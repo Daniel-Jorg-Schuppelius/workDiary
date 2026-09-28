@@ -1,10 +1,11 @@
 ---
 title: "Centro assistenza"
 topic: help.center
-version: 1
+version: 2
 audience: []
 related:
     - account.shortcuts
+    - help.errors
     - search.overview
 ---
 
@@ -27,3 +28,9 @@ momento: l'icona del libro nell'intestazione dell'aiuto apre questa
 panoramica e il campo di ricerca sottostante avvia la sua ricerca
 direttamente qui. «Apri la guida dettagliata» porta alla pagina
 dell'argomento attualmente visualizzato.
+
+«Visti di recente» nella panoramica elenca gli argomenti che ha aperto per
+ultimi nel centro assistenza o nell'aiuto laterale. L'elenco resta salvato
+solo nel suo browser. Le pagine di errore rimandano tramite «Che cosa
+significa?» direttamente alla sezione corrispondente dell'aiuto sui
+messaggi di errore.

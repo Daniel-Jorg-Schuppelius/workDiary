@@ -1,7 +1,7 @@
 ---
 title: "Zahlungsabgleich"
 topic: finance.reconciliation
-version: 1
+version: 2
 audience: []
 modules:
     - module.finance
@@ -62,3 +62,11 @@ Hash-Kette protokolliert.
 - **Bankdatei importieren** und **Zuordnungen bestätigen/zurücknehmen:**
   Rolle *Buchhaltung* (sowie Administration).
 - **Eigene Bankkonten verwalten:** nur Administration.
+
+## RF-Zahlungsreferenz
+
+Ist die RF-Zahlungsreferenz in den Einstellungen der Organisation eingeschaltet, trägt jede Rechnung eine
+RF-Gläubigerreferenz (ISO 11649) aus ihrer Nummer — im Zahlungshinweis und
+im Girocode als strukturierte Referenz. Überweist der Kunde mit dieser
+Referenz, erkennt der Zahlungsabgleich die Rechnung daran, auch in
+Vierergruppen geschrieben.

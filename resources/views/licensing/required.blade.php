@@ -25,18 +25,12 @@
         @endif
     </head>
     <body class="min-h-screen bg-primary-content text-base-content">
-        <header class="fixed inset-x-0 top-0 z-50 border-b border-base-300 bg-base-100 shadow-xs">
-            <div class="mx-auto flex w-full max-w-screen-2xl items-center justify-between gap-4 px-4 py-3 xl:px-8 2xl:px-12">
-                <a href="{{ url('/') }}" class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary">WorkDiary</a>
-                <div class="ml-auto flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-xs">
-                    <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
-                        <span data-theme-label class="text-base leading-none">◐</span>
-                    </button>
-                </div>
-            </div>
-        </header>
+        {{-- Ohne gültige Lizenz führt keine Anmeldung weiter: Header ohne Aktion. --}}
+        <x-guest-header>
+            <x-slot:actions></x-slot:actions>
+        </x-guest-header>
 
-        <div class="mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4 pb-20 pt-24 lg:px-10">
+        <div class="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-7xl items-center justify-center px-4 pb-20 pt-8 lg:px-10">
             <div class="w-full max-w-xl">
                 <div class="mb-8 text-center">
                     <p class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary">{{ __('Aktivierung') }}</p>
@@ -117,37 +111,6 @@
             </div>
         </div>
 
-        <footer class="fixed inset-x-0 bottom-0 z-50 border-t border-base-300 bg-base-100 shadow-xs">
-            <div class="mx-auto flex w-full max-w-screen-2xl items-center justify-center px-4 py-3 text-xs text-base-content/70 xl:px-8 2xl:px-12">
-                <x-footer-copyright />
-            </div>
-        </footer>
-
-        <script @cspNonce>
-            (function () {
-                var root = document.documentElement;
-                var toggle = document.querySelector('[data-theme-toggle]');
-                var label = document.querySelector('[data-theme-label]');
-
-                function setTheme(theme) {
-                    root.setAttribute('data-theme', theme);
-                    root.style.colorScheme = theme === 'corporate' ? 'light' : 'dark';
-                    localStorage.setItem('workDiaryTheme', theme);
-                    if (label) {
-                        label.textContent = theme === 'corporate' ? '☾' : '◐';
-                    }
-                }
-
-                var activeTheme = root.getAttribute('data-theme') === 'corporate' ? 'corporate' : 'dim';
-                setTheme(activeTheme);
-
-                if (toggle) {
-                    toggle.addEventListener('click', function () {
-                        var nextTheme = root.getAttribute('data-theme') === 'corporate' ? 'dim' : 'corporate';
-                        setTheme(nextTheme);
-                    });
-                }
-            })();
-        </script>
+        <x-guest-footer />
     </body>
 </html>

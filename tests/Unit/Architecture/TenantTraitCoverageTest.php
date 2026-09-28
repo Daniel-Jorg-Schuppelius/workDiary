@@ -403,6 +403,8 @@ class TenantTraitCoverageTest extends TestCase {
         // über Plattform-Admin (isGlobalAdmin), nie über fachliche Mandanten-Views.
         \App\Models\Platform\IntegrityCheck::class,
         \App\Models\Auth\SecurityEvent::class,
+        // Temporäre IP-Sperren (MVP-450): gelten für die ganze Installation.
+        \App\Models\Auth\SecurityIpBan::class,
         // Bekannte Anmelde-Geräte (Feature 096): über user_id (FK cascade) an den
         // User gebunden und damit transitiv mandantenfähig — analog UserBookmark;
         // Zugriff ausschließlich über den eigenen User beim Login.

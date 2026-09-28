@@ -221,6 +221,15 @@ class Asset extends Model implements CustomFieldSubject {
         return $this->hasMany(MaintenancePlan::class)->orderBy('next_due_on');
     }
 
+    /**
+     * Gemeldete Positionen, jüngste zuerst (MVP-975).
+     *
+     * @return HasMany<AssetPosition, $this>
+     */
+    public function positions(): HasMany {
+        return $this->hasMany(AssetPosition::class)->latest('recorded_at');
+    }
+
     /** @return HasMany<AssetAssignment, $this> */
     public function assignments(): HasMany {
         return $this->hasMany(AssetAssignment::class)->latest('checked_out_at')->latest('id');

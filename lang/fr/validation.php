@@ -1191,6 +1191,7 @@ return [
         'hu_valid_until' => 'Contrôle technique',
         'iban' => 'IBAN',
         'ical_category_allowlist' => 'Catégories iCal',
+        'calendar' => 'Calendrier',
         'ical_recurrence_from' => 'Séries du',
         'ical_recurrence_until' => 'Séries au',
         'icon' => 'Icon',

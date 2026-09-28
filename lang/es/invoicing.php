@@ -87,6 +87,9 @@ return [
     ],
     // Sicherheitseinbehalte § 17 VOB/B (Feature 113, MVP-602).
     'retention' => [
+        'final_only' => 'Las facturas de anticipo y parciales no llevan retención de garantía: se calcula sobre la prestación total en la factura final.',
+        'final_base_hint' => 'Factura final: el porcentaje se refiere a la prestación total antes de descontar los anticipos; se descuenta del importe a pagar.',
+        'exceeds_after_settlement' => 'Las retenciones registradas superan el importe a pagar tras imputar los anticipos. Ajuste las retenciones.',
         'dialog_title' => 'Registrar una retención',
         'submit' => 'Registrar',
         'dialog_hint' => 'La retención figura en el documento y se descuenta de la partida abierta. Tras la emisión ya no se puede modificar.',

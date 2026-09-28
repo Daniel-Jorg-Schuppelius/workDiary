@@ -1,7 +1,7 @@
 ---
 title: "Conciliación de pagos"
 topic: finance.reconciliation
-version: 1
+version: 2
 audience: []
 modules:
     - module.finance
@@ -22,3 +22,11 @@ asignación confirmada es reversible; el movimiento bancario nunca se
 modifica. Los datos bancarios personales se guardan cifrados y cada
 acción queda registrada de forma auditable. Importar y confirmar
 requiere el rol de contabilidad.
+
+## Referencia de pago RF
+
+Si la referencia de pago RF está activada en la configuración de la organización, cada factura lleva una
+referencia de acreedor RF (ISO 11649) derivada de su número, en los datos
+de pago y como referencia estructurada en el GiroCode. Si el cliente paga
+con esta referencia, la conciliación reconoce la factura por ella, incluso
+escrita en grupos de cuatro.

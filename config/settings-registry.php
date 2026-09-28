@@ -122,6 +122,8 @@ return [
     // (Feature 117, MVP-606) — Default AUS, siehe config/procurement.php.
     'procurement.credential_blocking' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
     'invoicing.girocode_enabled' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+    // RF-Gläubigerreferenz (ISO 11649, MVP-978) aus der Rechnungsnummer im Girocode und Zahlungshinweis.
+    'invoicing.creditor_reference' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
     // Lexware-Office-Tarifergänzungen (Feature 158, MVP-831): Tarifprofil je
     // Organisation — Orientierung, keine Berechtigung. Übergabewege entscheidet
     // die geprüfte Verfügbarkeit; `api` bleibt bis Paket A (MVP-834) an XL gebunden.
@@ -180,6 +182,8 @@ return [
     'rental.require_signed_terms' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
     // Direktbuchung im Kundenportal (MVP-916): freie, freigegebene Geräte ohne Anfrage reservieren.
     'rental.portal_direct_booking' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+    // Radius um den Einsatzort-Standort für die Geofence-Abweichung (MVP-975).
+    'rental.geofence_radius_m' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:50|max:50000', 'fallback' => 500],
     // Reklamationsmuster (MVP-886): ab wie vielen gleichartigen Fällen in wie vielen Tagen.
     // Wiederkehrende Probleme (MVP-926): ab wie vielen Tickets je Kunde/Objekt in wie vielen Tagen.
     'reporting.recurring_tickets.threshold' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:2|max:50', 'fallback' => 3],
@@ -319,6 +323,11 @@ return [
     'legal.imprint' => ['type' => 'text', 'scopes' => ['system'], 'rules' => 'nullable|max:65535'],
     'legal.privacy' => ['type' => 'text', 'scopes' => ['system'], 'rules' => 'nullable|max:65535'],
     'legal.accessibility' => ['type' => 'text', 'scopes' => ['system'], 'rules' => 'nullable|max:65535'],
+    // Vorhandene Seite des Betreibers: gesetzt → /impressum bzw. /datenschutz
+    // leiten dorthin weiter, der Text oben greift nicht. Die Barrierefreiheits-
+    // erklärung bleibt intern, sie betrifft diese Anwendung selbst.
+    'legal.imprint_url' => ['type' => 'string', 'scopes' => ['system'], 'rules' => 'nullable|url:http,https|max:2048'],
+    'legal.privacy_url' => ['type' => 'string', 'scopes' => ['system'], 'rules' => 'nullable|url:http,https|max:2048'],
 
     // --- Öffentlicher Karrierebereich (Feature 068, MVP-437) ---
     // Je Organisation Opt-in (Default AUS). Öffentliche Stellen + sessionlose

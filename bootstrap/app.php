@@ -110,6 +110,8 @@ return Application::configure(basePath: dirname(__DIR__))
             // dann, wenn der Sitzungsspeicher nicht die Datenbank ist — das
             // Löschen der `sessions`-Zeilen greift dort nicht.
             \Illuminate\Session\Middleware\AuthenticateSession::class,
+            // Temporäre IP-Sperre (MVP-450): nur ohne Anmeldung, Standard aus.
+            \App\Http\Middleware\BlockBannedIp::class,
             RedirectIfNotInstalled::class,
             EnsureValidLicense::class,
             SecurityHeaders::class,
@@ -148,6 +150,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->throttleApi();
 
         $middleware->api(append: [
+            \App\Http\Middleware\BlockBannedIp::class,
             SecurityHeaders::class,
             SetOrganizationContext::class,
             // Wartungsmodus gilt auch für die Sanctum-API (JSON-503); die

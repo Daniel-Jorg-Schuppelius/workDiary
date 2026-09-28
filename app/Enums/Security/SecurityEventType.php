@@ -27,6 +27,20 @@ enum SecurityEventType: string {
     case TerminalBadgeUnknown = 'terminal.badge_unknown';
     case PlatformAdminIpBlocked = 'admin.ip_blocked';
     case ImpossibleTravel = 'auth.impossible_travel';
+    /** Temporäre IP-Sperre gesetzt (MVP-450). */
+    case IpBanned = 'auth.ip_banned';
+
+    /** CEF-Schweregrad 0–10 für den SIEM-Export (MVP-452). */
+    public function cefSeverity(): int {
+        return match ($this) {
+            self::PasswordResetRequested => 3,
+            self::TerminalBadgeUnknown => 4,
+            self::AuthFailed, self::WbLoginFailed, self::SsoFailed => 5,
+            self::TwoFactorFailed, self::ApiTokenInvalid => 6,
+            self::AuthLockout, self::WebhookSignatureInvalid => 7,
+            self::PlatformAdminIpBlocked, self::ImpossibleTravel, self::IpBanned => 8,
+        };
+    }
 
     /** PSR-3-Level der Log-Zeile. */
     public function level(): string {

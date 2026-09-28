@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Finance\Banking;
 
+use CommonToolkit\Helper\Data\CreditorReferenceHelper;
+
 /**
  * Löst Rechnungsnummern-Kandidaten aus Verwendungszweck und End-to-End-ID
  * (Feature 045, „Zuordnungsvorschläge berücksichtigen Rechnungsnummer …").
@@ -32,6 +34,10 @@ final class ReferenceExtractor {
         foreach ($sources as $source) {
             if ($source === null || trim($source) === '') {
                 continue;
+            }
+            // RF-Gläubigerreferenz (MVP-978): die Kennung dahinter ist die Rechnungsnummer.
+            foreach (CreditorReferenceHelper::extract($source) as $reference) {
+                $candidates[] = (string) CreditorReferenceHelper::reference($reference);
             }
             // Tokens: Buchstaben/Ziffern/-/_/. zusammenhängend.
             if (preg_match_all('/[A-Za-z0-9][A-Za-z0-9._\/-]{2,}/u', $source, $matches) === false) {

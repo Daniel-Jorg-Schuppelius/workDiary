@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Platform;
 
 use App\Http\Controllers\Controller;
 use App\Support\Setting;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 /**
@@ -24,12 +25,12 @@ use Illuminate\View\View;
  * Seiten nie ins Leere laufen.
  */
 class LegalPageController extends Controller {
-    public function imprint(): View {
-        return $this->page('legal.imprint', __('Impressum'));
+    public function imprint(): View|RedirectResponse {
+        return $this->page('legal.imprint', 'legal.imprint_url', __('Impressum'));
     }
 
-    public function privacy(): View {
-        return $this->page('legal.privacy', __('Datenschutz'));
+    public function privacy(): View|RedirectResponse {
+        return $this->page('legal.privacy', 'legal.privacy_url', __('Datenschutz'));
     }
 
     /**
@@ -47,12 +48,19 @@ class LegalPageController extends Controller {
         ]);
     }
 
-    private function page(string $settingKey, string $title): View {
+    private function page(string $settingKey, string $urlKey, string $title): View|RedirectResponse {
+        // Vorhandene Seite des Betreibers geht dem hinterlegten Text vor.
+        $url = Setting::get($urlKey);
+        if (is_string($url) && trim($url) !== '') {
+            return redirect()->away(trim($url));
+        }
+
         $content = Setting::get($settingKey);
 
         return view('legal.show', [
             'title' => $title,
             'settingKey' => $settingKey,
+            'urlKey' => $urlKey,
             'content' => is_string($content) && trim($content) !== '' ? $content : null,
         ]);
     }

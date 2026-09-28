@@ -40,4 +40,12 @@ interface CalDavGateway {
      * @param  array<string, string>  $localEtags  href → zuletzt gesehenes ETag
      */
     public function syncEvents(string $prevSyncToken, array $localEtags, DateTimeInterface $windowStart, DateTimeInterface $windowEnd): CalDavSyncPage;
+
+    /**
+     * Kalenderobjekte, die den Zeitraum berühren (`calendar-query`), für den
+     * Zeitimport aus dem Kalender (MVP-976).
+     *
+     * @return list<string> iCalendar-Objekte
+     */
+    public function eventsBetween(DateTimeInterface $from, DateTimeInterface $until): array;
 }

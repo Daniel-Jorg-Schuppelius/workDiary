@@ -92,12 +92,71 @@ class LegalPagesTest extends TestCase {
         $this->assertDatabaseCount('system_settings', 0);
     }
 
+    public function test_configured_url_redirects_and_wins_over_text(): void {
+        $admin = User::factory()->platformAdmin()->create();
+        foreach (['legal.imprint' => 'Eigener Text', 'legal.imprint_url' => 'https://www.example.com/impressum'] as $key => $value) {
+            $this->actingAs($admin)->put(route('admin.settings.update', ['key' => $key]), [
+                'scope' => 'system',
+                'value' => $value,
+            ])->assertRedirect()->assertSessionMissing('error');
+        }
+
+        $this->get(route('legal.imprint'))->assertRedirect('https://www.example.com/impressum');
+        // Datenschutz bleibt ohne eigene URL die interne Seite.
+        $this->get(route('legal.privacy'))->assertOk()->assertSee(__('Datenschutz'));
+    }
+
+    public function test_privacy_url_redirects_independently(): void {
+        $admin = User::factory()->platformAdmin()->create();
+        $this->actingAs($admin)->put(route('admin.settings.update', ['key' => 'legal.privacy_url']), [
+            'scope' => 'system',
+            'value' => 'https://www.example.com/datenschutz',
+        ])->assertRedirect()->assertSessionMissing('error');
+
+        $this->get(route('legal.privacy'))->assertRedirect('https://www.example.com/datenschutz');
+        $this->get(route('legal.imprint'))->assertOk();
+    }
+
+    public function test_url_keys_accept_only_http_and_https(): void {
+        $admin = User::factory()->platformAdmin()->create();
+        foreach (['javascript:alert(1)', 'ftp://example.com/impressum', 'kein-link'] as $value) {
+            $this->actingAs($admin)->put(route('admin.settings.update', ['key' => 'legal.imprint_url']), [
+                'scope' => 'system',
+                'value' => $value,
+            ])->assertRedirect();
+        }
+
+        $this->assertDatabaseCount('system_settings', 0);
+        $this->get(route('legal.imprint'))->assertOk();
+    }
+
     public function test_home_footer_links_to_legal_pages(): void {
         $this->get(route('home'))
             ->assertOk()
             ->assertSee('href="' . route('legal.imprint') . '"', false)
             ->assertSee('href="' . route('legal.privacy') . '"', false);
     }
+
+    /** Rechtstexte und Formularseiten tragen x-guest-header/-footer wie die Startseite. */
+    public function test_guest_pages_share_header_and_footer(): void {
+        foreach (['home', 'legal.imprint', 'legal.privacy', 'legal.accessibility', 'login'] as $page) {
+            $response = $this->get(route($page))->assertOk();
+
+            $response->assertSee('data-theme-toggle', false)
+                ->assertSee('aria-label="' . e(__('Rechtliches')) . '"', false);
+            foreach (['legal.imprint', 'legal.privacy', 'legal.accessibility'] as $legal) {
+                $response->assertSee('href="' . route($legal) . '"', false);
+            }
+        }
+    }
+
+    public function test_footer_marks_the_current_legal_page(): void {
+        $html = (string) $this->get(route('legal.privacy'))->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('~href="' . preg_quote(route('legal.privacy'), '~') . '"[^>]*aria-current="page"~', $html);
+        $this->assertDoesNotMatchRegularExpression('~href="' . preg_quote(route('legal.imprint'), '~') . '"[^>]*aria-current="page"~', $html);
+    }
+
     /** H18 (Vollscan 2026-08-23): BFSG-Pflichtseite mit Anlage-3-Gerüst als Default. */
     public function test_accessibility_statement_renders_the_default_skeleton(): void {
         $this->get(route('legal.accessibility'))

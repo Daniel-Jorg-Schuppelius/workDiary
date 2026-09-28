@@ -1,0 +1,97 @@
+/*
+ * Created on   : Mon Sep 28 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : site.css
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+/* Statische Doku-Website (MVP-971): eigenständig, ohne App-Bundle; hell/dunkel nach Systemeinstellung. */
+:root {
+    --site-bg: #f6f7f9;
+    --site-panel: #ffffff;
+    --site-text: #1f2933;
+    --site-muted: #52606d;
+    --site-border: #d9dee4;
+    --site-link: #1d4ed8;
+    color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --site-bg: #111418;
+        --site-panel: #1a1f25;
+        --site-text: #e6e9ed;
+        --site-muted: #a7b0ba;
+        --site-border: #2f3740;
+        --site-link: #8ab4ff;
+    }
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: var(--site-bg);
+    color: var(--site-text);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+a { color: var(--site-link); }
+a:focus-visible { outline: 2px solid var(--site-link); outline-offset: 2px; }
+
+.site-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--site-panel);
+    border-bottom: 1px solid var(--site-border);
+}
+
+.site-brand { font-weight: 600; text-decoration: none; color: var(--site-text); }
+.site-language-switch { display: flex; gap: 0.5rem; font-size: 0.875rem; }
+.site-language-switch [aria-current] { font-weight: 700; }
+
+.site-main { max-width: 72rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+.site-main h1 { font-size: 1.75rem; line-height: 1.25; margin: 0 0 1rem; }
+.site-muted, .site-breadcrumb { color: var(--site-muted); font-size: 0.875rem; }
+
+.site-search { display: flex; flex-direction: column; gap: 0.35rem; max-width: 36rem; margin-bottom: 1.5rem; }
+.site-search input {
+    padding: 0.6rem 0.75rem;
+    font: inherit;
+    color: inherit;
+    background: var(--site-panel);
+    border: 1px solid var(--site-border);
+    border-radius: 0.5rem;
+}
+
+.site-sections { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
+.site-section, .site-results, .site-article, .site-aside {
+    background: var(--site-panel);
+    border: 1px solid var(--site-border);
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+}
+.site-section h2, .site-results h2 { font-size: 1.05rem; margin: 0 0 0.25rem; }
+.site-section ul, .site-results ul, .site-aside ul { list-style: none; margin: 0.5rem 0 0; padding: 0; }
+.site-section li, .site-results li, .site-aside li { padding: 0.15rem 0; }
+.site-results { margin-bottom: 1.5rem; }
+
+.site-article-layout { display: grid; gap: 1rem; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 64rem) {
+    .site-article-layout { grid-template-columns: minmax(0, 1fr) 17rem; }
+    .site-aside { position: sticky; top: 1rem; }
+}
+.site-article img { max-width: 100%; height: auto; border: 1px solid var(--site-border); border-radius: 0.5rem; }
+.site-article table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; }
+.site-article th, .site-article td { border: 1px solid var(--site-border); padding: 0.35rem 0.5rem; text-align: left; }
+.site-article pre, .site-article code { font-family: ui-monospace, monospace; font-size: 0.9em; }
+.site-article pre { overflow-x: auto; padding: 0.75rem; background: var(--site-bg); border-radius: 0.5rem; }
+.site-aside-title { margin: 0.75rem 0 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--site-muted); }
+.site-aside-title:first-child { margin-top: 0; }
+.site-languages { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 1rem; font-size: 1.1rem; }

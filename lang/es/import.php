@@ -11,6 +11,9 @@
 return [
     'entity' => [
         'meter_readings' => 'Lecturas de contador',
+        'sustainability_activities' => 'Consumos ESG',
+        'inspection_measurements' => 'Mediciones de inspección',
+        'asset_positions' => 'Posiciones de equipos',
         'customers' => 'Clientes',
         'suppliers' => 'Proveedores',
         'articles' => 'Artículos',
@@ -89,7 +92,21 @@ return [
             'contactPersons' => 'No se admiten más de :max personas de contacto por cliente/proveedor.',
         ],
         'meterReading' => ['decreasing' => 'Lectura inferior a la anterior.'],
+        'calendar' => [
+            'fetch' => 'No se pudo obtener el calendario. Compruebe la conexión.',
+            'unknown' => 'Conexión de calendario desconocida.',
+        ],
+        'sustainability' => [
+            'activityCode' => 'Actividad desconocida «:value».',
+            'period' => 'El final es anterior al inicio.',
+            'subjectBoth' => 'La ubicación y el cliente se excluyen mutuamente.',
+            'negative' => 'La cantidad no puede ser negativa.',
+        ],
+        'measurement' => ['ambiguous' => 'Varias inspecciones el :date: indique el perfil de inspección.'],
+        'position' => ['coordinates' => 'Coordenadas no válidas.'],
         'fkMissing' => [
+            'site' => 'No se encontró la ubicación «:value».',
+            'inspection' => 'No se encontró ninguna inspección el :date para :asset.',
             'customer' => 'No se encontró ningún cliente con el número :number.',
             'supplier' => 'No se encontró ningún proveedor con el número :number.',
             'asset' => 'No se encontró ningún activo con el número :number.',
@@ -143,6 +160,9 @@ return [
     'upload' => [
         'recurrenceWindow' => 'Expandir series desde / hasta',
         'recurrenceWindowHint' => 'Los eventos recurrentes se importan como ocurrencias individuales en este periodo. Si se deja vacío: los últimos 90 días hasta hoy.',
+        'calendar' => 'O desde un calendario conectado',
+        'calendarHint' => 'Los eventos del periodo se obtienen y se comprueban como un archivo iCal; el periodo pasa a ser obligatorio.',
+        'calendarNone' => '— Subir un archivo —',
         'csv' => 'Archivo CSV, Excel o iCal (.csv, .xlsx, .ics, máx. :mb MB, :rows filas)',
         'zip' => 'Archivo ZIP con manifest.csv y los archivos de documentos (.zip, máx. :mb MB, :entries archivos)',
         'zipHint' => 'Cada fila de manifest.csv (plantilla arriba) referencia un archivo del ZIP y lo asigna a un cliente, proyecto o activo.',

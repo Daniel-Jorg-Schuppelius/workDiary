@@ -97,6 +97,12 @@ class HttpCalDavGateway implements CalDavGateway {
         return $this->timeRangeSync($collection, $localEtags, $windowStart, $windowEnd);
     }
 
+    public function eventsBetween(DateTimeInterface $from, DateTimeInterface $until): array {
+        $collection = rtrim($this->connection->base_url, '/') . '/' . trim($this->connection->calendar_path, '/') . '/';
+
+        return array_map(static fn (CalDavEventChange $change): string => $change->ics, $this->timeRangeSync($collection, [], $from, $until)->changed);
+    }
+
     /** RFC-6578-Report; null = Server kann ihn nicht (kein Fehlerfall). */
     private function syncCollection(string $collection, string $prevSyncToken): ?CalDavSyncPage {
         $body = sprintf(

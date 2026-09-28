@@ -222,6 +222,7 @@ return [
             '2fa_failed' => 'Second factor failed',
             'password_reset_requested' => 'Password reset requested',
             'impossible_travel' => 'Impossible travel detected',
+            'ip_banned' => 'IP address temporarily banned',
         ],
         'wb' => [
             'login_failed' => 'Reporting channel: login failed',

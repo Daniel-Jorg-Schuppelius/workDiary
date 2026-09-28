@@ -65,10 +65,21 @@ class SecurityEventsController extends Controller {
             ->withQueryString();
 
         return view('admin.security-events.index', [
+            'ipBans' => \App\Models\Auth\SecurityIpBan::query()->active()->orderBy('banned_until')->get(),
+            'ipBanEnabled' => app(\App\Services\Security\IpBanService::class)->enabled(),
             'counts' => $counts,
             'topIps' => $topIps,
             'alarms' => $alarms,
             'events' => $events,
         ]);
+    }
+
+    /** Temporäre IP-Sperre vorzeitig aufheben (MVP-450, auditiert). */
+    public function releaseIpBan(Request $request, \App\Models\Auth\SecurityIpBan $ban): \Illuminate\Http\RedirectResponse {
+        $user = $request->user();
+        abort_unless($user instanceof \App\Models\Platform\User && $user->isGlobalAdmin(), 403);
+        app(\App\Services\Security\IpBanService::class)->release($ban, $user);
+
+        return back()->with('success', __('IP-Adresse entsperrt.'));
     }
 }

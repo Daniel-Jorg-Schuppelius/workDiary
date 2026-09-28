@@ -1,7 +1,7 @@
 ---
 title: "Alquiler de equipos"
 topic: rental.overview
-version: 1
+version: 2
 audience: []
 modules:
     - module.rental
@@ -30,3 +30,10 @@ posterior (limpieza, reparación/bloqueo, reclamación).
 **Facturación:** las partidas se aprueban y facturan localmente o se
 transfieren al sistema de facturación principal. La fianza es una
 operación financiera separada.
+
+**Lugar de uso y geocerca:** Cuando llegan posiciones de equipos por
+importación (por ejemplo, de una exportación telemática), WorkDiary
+comprueba durante un alquiler si el equipo está en el lugar de uso: en la
+ubicación del alquiler con el radio fijado en la configuración o, si no,
+dentro de las geocercas del cliente. Si lo abandona, se notifica a la
+persona responsable y a la jefatura de equipo.

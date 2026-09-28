@@ -87,6 +87,9 @@ return [
     ],
     // Sicherheitseinbehalte § 17 VOB/B (Feature 113, MVP-602).
     'retention' => [
+        'final_only' => 'Le fatture di acconto e parziali non prevedono ritenuta di garanzia: viene calcolata sulla prestazione complessiva nella fattura finale.',
+        'final_base_hint' => 'Fattura finale: la percentuale si riferisce alla prestazione complessiva prima della detrazione degli acconti; viene detratta dall\'importo da pagare.',
+        'exceeds_after_settlement' => 'Le ritenute registrate superano l\'importo da pagare dopo l\'imputazione degli acconti. Adegui le ritenute.',
         'dialog_title' => 'Registra una ritenuta',
         'submit' => 'Registra',
         'dialog_hint' => 'La ritenuta compare sul documento e viene dedotta dalla partita aperta. Dopo l’emissione non è più modificabile.',

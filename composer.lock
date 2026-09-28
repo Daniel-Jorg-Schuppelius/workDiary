@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f4d050a328ac3200ce8f5939c1392c30",
+    "content-hash": "c9237e51e46a8df04cf6211cbf87f8c1",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -1731,16 +1731,16 @@
         },
         {
             "name": "dschuppelius/php-common-toolkit",
-            "version": "v2.4.0",
+            "version": "v2.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DSchuppelius/php-common-toolkit.git",
-                "reference": "75cfc7c42f91b0fa33af33e27ff1c89b40ab3cb6"
+                "reference": "3d280755d198f582b6efc57683ac4b336581b58a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/75cfc7c42f91b0fa33af33e27ff1c89b40ab3cb6",
-                "reference": "75cfc7c42f91b0fa33af33e27ff1c89b40ab3cb6",
+                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/3d280755d198f582b6efc57683ac4b336581b58a",
+                "reference": "3d280755d198f582b6efc57683ac4b336581b58a",
                 "shasum": ""
             },
             "require": {
@@ -1782,7 +1782,7 @@
                 "issues": "https://github.com/DSchuppelius/php-common-toolkit/issues",
                 "source": "https://github.com/DSchuppelius/php-common-toolkit"
             },
-            "time": "2026-09-27T22:45:48+00:00"
+            "time": "2026-09-28T08:39:28+00:00"
         },
         {
             "name": "dschuppelius/php-config-toolkit",

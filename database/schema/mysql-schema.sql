@@ -2527,6 +2527,31 @@ CREATE TABLE `asset_ownership_changes` (
   CONSTRAINT `assetown_tocust_fk` FOREIGN KEY (`to_customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `asset_positions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `asset_positions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `asset_id` bigint(20) unsigned NOT NULL,
+  `recorded_at` timestamp NOT NULL,
+  `lat` decimal(10,7) NOT NULL,
+  `lng` decimal(10,7) NOT NULL,
+  `source` varchar(20) NOT NULL DEFAULT 'import',
+  `expected_label` varchar(200) DEFAULT NULL,
+  `deviation_m` int(10) unsigned DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `asset_pos_asset_time_unique` (`asset_id`,`recorded_at`),
+  KEY `asset_pos_org_fk` (`organization_id`),
+  KEY `asset_pos_creator_fk` (`created_by`),
+  CONSTRAINT `asset_pos_asset_fk` FOREIGN KEY (`asset_id`) REFERENCES `assets` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `asset_pos_creator_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `asset_pos_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `assets`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -19950,6 +19975,25 @@ CREATE TABLE `security_events` (
   CONSTRAINT `security_events_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `security_ip_bans`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `security_ip_bans` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `ip` varchar(45) NOT NULL,
+  `level` tinyint(3) unsigned NOT NULL,
+  `reason` varchar(40) NOT NULL,
+  `banned_until` timestamp NOT NULL,
+  `released_at` timestamp NULL DEFAULT NULL,
+  `released_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `sec_ipban_releaser_fk` (`released_by`),
+  KEY `sec_ipban_ip_until_idx` (`ip`,`banned_until`),
+  CONSTRAINT `sec_ipban_releaser_fk` FOREIGN KEY (`released_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `sepa_mandates`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -25090,3 +25134,5 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (894,'2027_02_27_37
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (895,'2027_02_27_380000_create_sustainability_offsets_table',26);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (896,'2027_02_27_390000_create_crisis_room_tables',26);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (897,'2027_02_27_400000_add_supplier_confirmation_to_purchase_orders',27);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (898,'2027_02_28_100000_create_asset_positions_table',28);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (899,'2027_02_28_110000_create_security_ip_bans_table',29);

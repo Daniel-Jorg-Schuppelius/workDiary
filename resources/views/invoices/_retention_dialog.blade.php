@@ -18,6 +18,9 @@
     :submit-label="__('invoicing.retention.submit')"
 >
     <p class="text-sm text-base-content/70">{{ __('invoicing.retention.dialog_hint') }}</p>
+    @if ($invoice->type === \App\Models\Invoicing\Invoice::TYPE_FINAL)
+        <p class="text-sm text-base-content/70">{{ __('invoicing.retention.final_base_hint') }}</p>
+    @endif
 
     <div>
         <label class="label" for="retention-kind"><span class="label-text">{{ __('invoicing.retention.kind') }}</span></label>

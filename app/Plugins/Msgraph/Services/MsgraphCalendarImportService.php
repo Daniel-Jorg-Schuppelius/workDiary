@@ -16,7 +16,7 @@ use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Plugins\Msgraph\MsgraphConnection;
 use App\Plugins\Msgraph\Api\MsgraphCalendarClient;
 use App\Plugins\Msgraph\MsgraphPlugin;
-use App\Plugins\Support\Calendar\RemoteCalendarPublishService;
+use App\Plugins\Support\Calendar\{CalendarSeriesStager, RemoteCalendarPublishService};
 use App\Services\CloudIntake\StaleCheckpointException;
 use Illuminate\Support\Carbon;
 
@@ -34,14 +34,17 @@ use Illuminate\Support\Carbon;
  *   (`calendar-deleted`) — der nächste Publish legt ihn sonst kommentarlos
  *   neu an.
  *
- * Serien: nur `singleInstance`/`seriesMaster` als Vorschlag; `occurrence`/
- * `exception` bewusst übersprungen (Serien-Auflösung ist Folgeausbau).
+ * Serien (MVP-977): `calendarView` liefert die Vorkommen selbst —
+ * `occurrence`/`exception` werden Einzelvorschläge, gruppiert je Serie
+ * ({@see CalendarSeriesStager}); ein `seriesMaster` bringt nichts Neues.
  * Checkpoint = absolute Delta-URL an der Verbindung; 410 ⇒ Neustart ab
  * Zeitfenster (−30/+180 Tage, wie der Publish).
  */
 class MsgraphCalendarImportService {
     /** Publish-Echo-Toleranz zwischen unserem PATCH und Graphs lastModified. */
     private const ECHO_TOLERANCE_SECONDS = 120;
+
+    public function __construct(private readonly CalendarSeriesStager $series) {}
 
     /** @return array{proposals: int, conflicts: int, deleted: int} */
     public function run(MsgraphConnection $connection): array {
@@ -96,8 +99,10 @@ class MsgraphCalendarImportService {
         }
         $reference = $references->get($remoteId);
 
-        // @removed: nur publizierte Termine sind ein Handlungsfall.
+        // @removed: nur publizierte Termine sind ein Handlungsfall; ein abgesagtes
+        // Serienvorkommen nimmt seinen offenen Vorschlag mit.
         if (isset($item['@removed'])) {
+            $this->series->dismissByRemoteId($connection->organization_id, MsgraphPlugin::ID, $remoteId);
             if ($reference instanceof ExternalReference && $this->stage($connection, 'calendar-deleted:' . $remoteId, IntegrationInboxItem::CASE_UNMATCHED, [
                 'remote_id' => $remoteId,
             ], (string) __('msgraph.import.deleted_title'), $reference)) {
@@ -108,8 +113,22 @@ class MsgraphCalendarImportService {
         }
 
         $type = (string) ($item['type'] ?? 'singleInstance');
-        if (! in_array($type, ['singleInstance', 'seriesMaster'], true)) {
-            return; // occurrences/exceptions: Serien-Auflösung ist Folgeausbau
+        if ($type === 'seriesMaster') {
+            return;
+        }
+        $seriesId = $item['seriesMasterId'] ?? null;
+        if (in_array($type, ['occurrence', 'exception'], true) && is_string($seriesId) && $seriesId !== '') {
+            $snapshot = ['series_uid' => $seriesId, 'series_title' => (string) ($item['subject'] ?? '')] + $this->snapshot($item);
+            if ($this->series->upsertOccurrence($connection->organization_id, MsgraphPlugin::ID, (string) ($connection->calendar_name ?? ''), [
+                'key' => CalendarSeriesStager::key($seriesId, $remoteId),
+                'title' => (string) ($item['subject'] ?? '—'),
+                'snapshot' => $snapshot,
+                'mapped' => $this->eventAttributes($item),
+            ])) {
+                $counters['proposals']++;
+            }
+
+            return;
         }
 
         if ($reference instanceof ExternalReference) {
@@ -159,9 +178,7 @@ class MsgraphCalendarImportService {
     /**
      * Event-Attribute für die Inbox-Übernahme („Neu anlegen" →
      * {@see \App\Services\Integration\Profiles\EventMatchProfile::create()}).
-     * Zeiten werden in die App-Zeitzone konvertiert; Serien-Master erhalten
-     * eine RRULE (recurr-Format) für die gängigen Graph-Muster — nicht
-     * abbildbare Muster ergeben einen Einzeltermin (Regel bleibt leer).
+     * Zeiten werden in die App-Zeitzone konvertiert.
      *
      * @param  array<string, mixed>  $item
      * @return array<string, mixed>
@@ -192,102 +209,7 @@ class MsgraphCalendarImportService {
             $attributes['external_contact_note'] = $organizer;
         }
 
-        // Serien-Master (C3-Ausbau #5): Graph-Recurrence → RRULE.
-        if (($item['type'] ?? null) === 'seriesMaster' && is_array($item['recurrence'] ?? null)) {
-            $mapped = $this->recurrenceRule($item['recurrence']);
-            if ($mapped['rule'] !== null) {
-                $attributes['recurrence_rule'] = $mapped['rule'];
-            }
-            if ($mapped['until'] !== null) {
-                $attributes['series_until'] = $mapped['until'];
-            }
-        }
-
         return $attributes;
-    }
-
-    /**
-     * Graph-Recurrence → RFC-5545-RRULE (recurr): daily/weekly/
-     * absoluteMonthly/relativeMonthly/absoluteYearly; Range endDate → UNTIL,
-     * numbered → COUNT. Unbekannte Muster ⇒ null (Einzeltermin-Übernahme).
-     *
-     * @param  array<string, mixed>  $recurrence
-     * @return array{rule: string|null, until: string|null}
-     */
-    private function recurrenceRule(array $recurrence): array {
-        $pattern = (array) ($recurrence['pattern'] ?? []);
-        $range = (array) ($recurrence['range'] ?? []);
-        $interval = max(1, (int) ($pattern['interval'] ?? 1));
-
-        $dayMap = ['monday' => 'MO', 'tuesday' => 'TU', 'wednesday' => 'WE', 'thursday' => 'TH', 'friday' => 'FR', 'saturday' => 'SA', 'sunday' => 'SU'];
-        $indexMap = ['first' => 1, 'second' => 2, 'third' => 3, 'fourth' => 4, 'last' => -1];
-
-        $parts = null;
-        switch ((string) ($pattern['type'] ?? '')) {
-            case 'daily':
-                $parts = ['FREQ=DAILY'];
-
-                break;
-            case 'weekly':
-                $days = [];
-                foreach ((array) ($pattern['daysOfWeek'] ?? []) as $day) {
-                    $mapped = $dayMap[strtolower((string) $day)] ?? null;
-                    if ($mapped !== null) {
-                        $days[] = $mapped;
-                    }
-                }
-                $parts = ['FREQ=WEEKLY'];
-                if ($days !== []) {
-                    $parts[] = 'BYDAY=' . implode(',', $days);
-                }
-
-                break;
-            case 'absoluteMonthly':
-                $parts = ['FREQ=MONTHLY'];
-                if ((int) ($pattern['dayOfMonth'] ?? 0) > 0) {
-                    $parts[] = 'BYMONTHDAY=' . (int) $pattern['dayOfMonth'];
-                }
-
-                break;
-            case 'relativeMonthly':
-                $index = $indexMap[strtolower((string) ($pattern['index'] ?? 'first'))] ?? 1;
-                $day = null;
-                foreach ((array) ($pattern['daysOfWeek'] ?? []) as $candidate) {
-                    $day = $dayMap[strtolower((string) $candidate)] ?? null;
-                    if ($day !== null) {
-                        break;
-                    }
-                }
-                if ($day === null) {
-                    break;
-                }
-                $parts = ['FREQ=MONTHLY', 'BYDAY=' . $index . $day];
-
-                break;
-            case 'absoluteYearly':
-                $parts = ['FREQ=YEARLY'];
-
-                break;
-        }
-
-        if ($parts === null) {
-            return ['rule' => null, 'until' => null];
-        }
-
-        if ($interval > 1) {
-            $parts[] = 'INTERVAL=' . $interval;
-        }
-
-        $until = null;
-        $rangeType = (string) ($range['type'] ?? 'noEnd');
-        if ($rangeType === 'endDate' && is_string($range['endDate'] ?? null) && $range['endDate'] !== '') {
-            $until = (string) $range['endDate'];
-            $parts[] = 'UNTIL=' . str_replace('-', '', $until);
-        } elseif ($rangeType === 'numbered' && (int) ($range['numberOfOccurrences'] ?? 0) > 0) {
-            $parts[] = 'COUNT=' . (int) $range['numberOfOccurrences'];
-        }
-
-        return ['rule' => implode(';', $parts), 'until' => $until];
     }
 
     /**

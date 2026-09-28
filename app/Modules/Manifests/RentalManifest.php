@@ -107,4 +107,13 @@ final class RentalManifest extends Manifest {
             ],
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function listeners(): array {
+        return [
+            \App\Events\Asset\AssetPositionRecorded::class => [
+                \App\Listeners\Rental\CheckRentalGeofence::class,
+            ],
+        ];
+    }
 }

@@ -22277,6 +22277,43 @@ CREATE TABLE IF NOT EXISTS "crisis_map_points"(
   foreign key("crisis_case_id") references "crisis_cases"("id") on delete cascade,
   foreign key("created_by") references "users"("id") on delete set null
 );
+CREATE TABLE IF NOT EXISTS "asset_positions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "asset_id" integer not null,
+  "recorded_at" datetime not null,
+  "lat" numeric not null,
+  "lng" numeric not null,
+  "source" varchar not null default 'import',
+  "expected_label" varchar,
+  "deviation_m" integer,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("asset_id") references "assets"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "asset_pos_asset_time_unique" on "asset_positions"(
+  "asset_id",
+  "recorded_at"
+);
+CREATE TABLE IF NOT EXISTS "security_ip_bans"(
+  "id" integer primary key autoincrement not null,
+  "ip" varchar not null,
+  "level" integer not null,
+  "reason" varchar not null,
+  "banned_until" datetime not null,
+  "released_at" datetime,
+  "released_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("released_by") references "users"("id") on delete set null
+);
+CREATE INDEX "sec_ipban_ip_until_idx" on "security_ip_bans"(
+  "ip",
+  "banned_until"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -23171,3 +23208,5 @@ INSERT INTO migrations VALUES(895,'2027_02_27_370000_add_carbon_footprint_fields
 INSERT INTO migrations VALUES(896,'2027_02_27_380000_create_sustainability_offsets_table',29);
 INSERT INTO migrations VALUES(897,'2027_02_27_390000_create_crisis_room_tables',29);
 INSERT INTO migrations VALUES(898,'2027_02_27_400000_add_supplier_confirmation_to_purchase_orders',30);
+INSERT INTO migrations VALUES(899,'2027_02_28_100000_create_asset_positions_table',31);
+INSERT INTO migrations VALUES(900,'2027_02_28_110000_create_security_ip_bans_table',32);

@@ -23,6 +23,7 @@ use App\Services\Routing\Contracts\TravelLogRecorder;
 use App\Support\Tz;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\Geo\GeoHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -382,7 +383,7 @@ class TourService implements InspectionTourPlanner {
 
         $logs = [];
         foreach ($legs as $leg) {
-            $distance = $this->haversineKm($leg['from'][0], $leg['from'][1], $leg['to'][0], $leg['to'][1]);
+            $distance = GeoHelper::haversineKm($leg['from'][0], $leg['from'][1], $leg['to'][0], $leg['to'][1]);
             /** @var DiaryEntry|null $stop */
             $stop = $leg['stop'];
             $logs[] = $this->travelLogs->create([
@@ -415,14 +416,5 @@ class TourService implements InspectionTourPlanner {
         $this->assertStatusTransition($tour->status, $target);
         $tour->status = $target;
         $tour->save();
-    }
-
-    private function haversineKm(float $lat1, float $lng1, float $lat2, float $lng2): float {
-        $earth = 6_371.0;
-        $dLat = deg2rad($lat2 - $lat1);
-        $dLng = deg2rad($lng2 - $lng1);
-        $h = sin($dLat / 2) ** 2 + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLng / 2) ** 2;
-
-        return 2 * $earth * asin(min(1.0, sqrt($h)));
     }
 }

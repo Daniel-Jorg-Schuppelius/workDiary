@@ -1,7 +1,7 @@
 ---
 title: "Import CSV"
 topic: admin.import
-version: 2
+version: 3
 audience:
     - admin
 schema: process
@@ -65,3 +65,19 @@ Rien n'est écrit avant la confirmation — analyse et aperçu sont sans
 risque. L'historique montre tous les passages avec leur statut,
 filtrable par entité et état. Ensuite : contrôler les données par
 sondage et fusionner les doublons.
+
+## Données de mouvement et de mesure
+
+Outre les données de base, l'import reprend aussi des données courantes :
+relevés de compteur, consommations ESG (activité, quantité, période et
+qualité des données), mesures d'inspection pour des inspections existantes
+et positions d'appareils issues d'exports télématiques. Pour les positions,
+WorkDiary signale lorsqu'un appareil loué quitte son lieu d'intervention.
+
+## Pointages et temps de projet depuis le calendrier
+
+Pour les pointages et les temps de projet, vous pouvez choisir une source
+de calendrier connectée au lieu d'un fichier (CalDAV, Google Agenda,
+Microsoft 365). Les événements de la période choisie sont récupérés et
+vérifiés comme un fichier iCal, avec aperçu, filtre de catégories et
+résolution des séries.

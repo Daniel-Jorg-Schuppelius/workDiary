@@ -123,7 +123,8 @@ class HelpTopicLoader {
 
     /**
      * Versieht h2/h3 im gerenderten HTML mit deterministischen Anker-IDs
-     * (`sec-<slug>`, Kollisionen mit Zähler-Suffix) und liefert die
+     * (`sec-<slug>` bzw. `sec-<anker>` bei `{#anker}`, Kollisionen mit
+     * Zähler-Suffix) und liefert die
      * TOC-Struktur. Bewusst KEIN HeadingPermalink-Symbol: ein leerer
      * Anker-Link im Heading wäre ein Accessibility-Befund.
      *
@@ -138,9 +139,15 @@ class HelpTopicLoader {
             static function (array $m) use (&$headings, &$seen): string {
                 $level = (int) $m[1];
                 $inner = $m[2];
+                // `## Titel {#anker}`: fester Anker, in allen Sprachen gleich (Deep-Links, MVP-972).
+                $fixed = null;
+                if (preg_match('/\s*\{#([a-z0-9][a-z0-9-]*)\}\s*$/', $inner, $explicit) === 1) {
+                    $fixed = $explicit[1];
+                    $inner = substr($inner, 0, -strlen($explicit[0]));
+                }
                 $text = trim(StringHelper::htmlEntitiesToText(strip_tags($inner)));
 
-                $slug = \Illuminate\Support\Str::slug($text);
+                $slug = $fixed ?? \Illuminate\Support\Str::slug($text);
                 if ($slug === '') {
                     $slug = 'abschnitt';
                 }

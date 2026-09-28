@@ -84,4 +84,19 @@ return [
     | (Aussperr-Risiko begrenzen).
     */
     'platform_admin_ip_allowlist' => env('PLATFORM_ADMIN_IP_ALLOWLIST', ''),
+
+    /*
+    | Temporäre IP-Sperre („fail2ban light“, Feature 096/097, MVP-450) für
+    | Installationen ohne OS-Sperre. Standard aus — fail2ban bleibt erste Wahl
+    | (Entscheidung E2). Achtung CGNAT/Firmen-NAT: eine Adresse kann viele
+    | Nutzer tragen; angemeldete Sitzungen sind deshalb nie betroffen.
+    */
+    'ip_ban' => [
+        'enabled' => (bool) env('SECURITY_IP_BAN', false),
+        'threshold' => (int) env('SECURITY_IP_BAN_THRESHOLD', 20),
+        'window_minutes' => (int) env('SECURITY_IP_BAN_WINDOW', 10),
+        'steps_minutes' => [15, 60, 1440],
+        'allowlist' => array_filter(array_map('trim', explode(',', (string) env('SECURITY_IP_BAN_ALLOWLIST', '')))),
+        'trusted_proxies' => (string) env('TRUSTED_PROXIES', ''),
+    ],
 ];

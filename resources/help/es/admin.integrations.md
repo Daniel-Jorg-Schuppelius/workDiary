@@ -1,7 +1,7 @@
 ---
 title: "Gestionar integraciones"
 topic: admin.integrations
-version: 1
+version: 2
 audience:
     - admin
 related:
@@ -92,3 +92,9 @@ finalidad, para que no tenga que adivinar dónde encaja cada cosa:
 
 Una integración que falte en esta lista no existe: ante la duda, pregunta en
 lugar de guardar credenciales donde no corresponde.
+
+**Eventos recurrentes de calendarios:** Los eventos recurrentes de CalDAV,
+Google Calendar o Microsoft 365 aparecen en la bandeja como eventos
+individuales dentro de la ventana de importación, con los eventos movidos
+y cancelados tratados correctamente. Una serie puede crearse como citas o
+descartarse de una vez como grupo.

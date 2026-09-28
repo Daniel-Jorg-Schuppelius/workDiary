@@ -1,7 +1,7 @@
 ---
 title: "Gestione licenze"
 topic: admin.license
-version: 1
+version: 2
 audience:
     - admin
 related:
@@ -20,3 +20,11 @@ i **feature flag** e, se autorizzato, emettere nuove licenze. Lo
 manualmente o derivato; con lo stato bloccato le azioni di scrittura
 sono disabilitate e il limite utenti viene applicato alla creazione di
 nuovi membri.
+
+## Dati di fatturazione e cambio di piano
+
+In «Dati di fatturazione» gestisce destinatario della fattura, e-mail,
+indirizzo, partita IVA e riferimento d'ordine per la fatturazione da parte
+del gestore. Lì richiede anche un altro piano o moduli aggiuntivi; ogni
+organizzazione ha una richiesta aperta, che può ritirare. Il gestore la
+evade emettendo una nuova licenza.

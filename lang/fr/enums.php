@@ -432,6 +432,7 @@ return [
             'rental' => [
                 'returnOverdue' => 'Retour de location en retard',
                 'requested' => 'Demande de location reçue via le portail',
+                'geofenceDeviation' => 'Appareil loué hors du lieu d\'intervention',
             ],
             'assetFinance' => [
                 'deadline' => 'Échéance de leasing',

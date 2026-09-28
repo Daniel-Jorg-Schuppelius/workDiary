@@ -11,6 +11,9 @@
 return [
     'entity' => [
         'meter_readings' => 'Relevés de compteur',
+        'sustainability_activities' => 'Consommations ESG',
+        'inspection_measurements' => 'Mesures d\'inspection',
+        'asset_positions' => 'Positions des appareils',
         'customers' => 'Clients',
         'suppliers' => 'Fournisseurs',
         'articles' => 'Articles',
@@ -89,7 +92,21 @@ return [
             'contactPersons' => 'Plus de :max interlocuteurs par client/fournisseur ne sont pas prévus.',
         ],
         'meterReading' => ['decreasing' => 'Relevé inférieur au précédent.'],
+        'calendar' => [
+            'fetch' => 'Le calendrier n\'a pas pu être récupéré. Veuillez vérifier la connexion.',
+            'unknown' => 'Connexion de calendrier inconnue.',
+        ],
+        'sustainability' => [
+            'activityCode' => 'Activité inconnue « :value ».',
+            'period' => 'La fin précède le début.',
+            'subjectBoth' => 'Le site et le client s\'excluent mutuellement.',
+            'negative' => 'La quantité ne doit pas être négative.',
+        ],
+        'measurement' => ['ambiguous' => 'Plusieurs inspections le :date — veuillez indiquer le profil d\'inspection.'],
+        'position' => ['coordinates' => 'Coordonnées invalides.'],
         'fkMissing' => [
+            'site' => 'Aucun site « :value » trouvé.',
+            'inspection' => 'Aucune inspection le :date trouvée pour :asset.',
             'customer' => 'Aucun client avec le numéro :number trouvé.',
             'supplier' => 'Aucun fournisseur avec le numéro :number trouvé.',
             'asset' => 'Aucun actif avec le numéro :number trouvé.',
@@ -143,6 +160,9 @@ return [
     'upload' => [
         'recurrenceWindow' => 'Développer les séries du / au',
         'recurrenceWindowHint' => 'Les événements récurrents sont repris occurrence par occurrence dans cette période. Sans indication : les 90 derniers jours jusqu\'à aujourd\'hui.',
+        'calendar' => 'Ou depuis un calendrier connecté',
+        'calendarHint' => 'Les événements de la période sont récupérés et vérifiés comme un fichier iCal ; la période devient alors obligatoire.',
+        'calendarNone' => '— Téléverser un fichier —',
         'csv' => 'Fichier CSV, Excel ou iCal (.csv, .xlsx, .ics, max. :mb Mo, :rows lignes)',
         'zip' => 'Fichier ZIP avec manifest.csv et les fichiers de documents (.zip, max. :mb Mo, :entries fichiers)',
         'zipHint' => 'Chaque ligne du manifest.csv (modèle ci-dessus) référence un fichier du ZIP et l\'affecte à un client, un projet ou un actif.',

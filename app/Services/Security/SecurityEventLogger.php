@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Security;
 
 use App\Enums\Security\SecurityEventType;
+use CommonToolkit\Generators\CEF\CEFGenerator;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Facades\{Log, Request};
 
 /**
@@ -36,8 +38,17 @@ class SecurityEventLogger {
             Log::warning('security_log_failed', ['event' => $type->value, 'error' => $e->getMessage()]);
         }
 
+        $this->siem($type, $context);
+
         // MVP-445 hängt hier die selektive Persistenz + Schwellwertzählung an.
         $this->persist($type, $context);
+
+        // Temporäre IP-Sperre (MVP-450, Standard aus); lazy aufgelöst — der Dienst loggt selbst hierher.
+        try {
+            app(IpBanService::class)->record($type, (string) ($context['ip'] ?? Request::ip() ?? ''));
+        } catch (\Throwable $e) {
+            Log::warning('security_ip_ban_failed', ['event' => $type->value, 'error' => $e->getMessage()]);
+        }
     }
 
     /** @return list<string> */
@@ -61,6 +72,44 @@ class SecurityEventLogger {
         }
 
         return implode(' ', $parts);
+    }
+
+    /**
+     * Strukturierte Zeile für ein SIEM (MVP-452): CEF mit `src`/`suser`/
+     * `requestClientApplication`, übrige Angaben in `msg`; oder JSON. Aus,
+     * solange `SECURITY_SIEM_FORMAT` nicht gesetzt ist.
+     *
+     * @param array<string, scalar|null> $context
+     */
+    private function siem(SecurityEventType $type, array $context): void {
+        $format = (string) config('logging.security_siem_format', 'off');
+        if (! in_array($format, ['cef', 'json'], true)) {
+            return;
+        }
+
+        try {
+            $ip = (string) ($context['ip'] ?? Request::ip() ?? '');
+            $rest = array_filter(array_diff_key($context, ['ip' => true]), static fn ($value): bool => $value !== null && $value !== '');
+            if ($format === 'json') {
+                $line = JsonHelper::encode(['time' => now()->toIso8601String(), 'event' => $type->value, 'severity' => $type->cefSeverity(), 'ip' => $ip] + $rest, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            } else {
+                $known = ['user' => 'suser', 'ua' => 'requestClientApplication'];
+                $extensions = ['src' => $ip];
+                $message = [];
+                foreach ($rest as $key => $value) {
+                    if (isset($known[$key])) {
+                        $extensions[$known[$key]] = $this->sanitize((string) $value);
+                    } else {
+                        $message[] = $key . '=' . $this->sanitize((string) $value);
+                    }
+                }
+                $extensions['msg'] = implode('; ', $message);
+                $line = CEFGenerator::line('WorkDiary', 'WorkDiary', (string) config('app.version', ''), $type->value, $type->value, $type->cefSeverity(), $extensions);
+            }
+            Log::channel('security_siem')->log($type->level(), $line);
+        } catch (\Throwable $e) {
+            Log::warning('security_siem_failed', ['event' => $type->value, 'error' => $e->getMessage()]);
+        }
     }
 
     /** Einzeiligkeit + Anker-Integrität der Log-Zeile erzwingen. */

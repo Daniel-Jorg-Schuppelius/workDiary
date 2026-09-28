@@ -293,10 +293,13 @@
                                     show-label>{{ __('Konditionen') }}</x-icon-btn>
                         {{-- MVP-602: Sicherheitseinbehalt § 17 VOB/B — nur am
                              Entwurf, danach ist er Teil des eingefrorenen Stands. --}}
-                        <x-icon-btn icon="savings" size="sm" placement="menu"
-                                    data-entry-modal-trigger
-                                    :href="route('invoices.retentions.dialog', $invoice)"
-                                    show-label>{{ __('invoicing.retention.action') }}</x-icon-btn>
+                        @if ($invoice->acceptsRetention())
+                            {{-- MVP-979: Abschläge tragen keinen Einbehalt, erst die Schlussrechnung. --}}
+                            <x-icon-btn icon="savings" size="sm" placement="menu"
+                                        data-entry-modal-trigger
+                                        :href="route('invoices.retentions.dialog', $invoice)"
+                                        show-label>{{ __('invoicing.retention.action') }}</x-icon-btn>
+                        @endif
                     @endif
                 @endcan
                 @if (! $invoice->isProforma() && $billingInternal)

@@ -52,6 +52,24 @@
         </div>
     </div>
 
+    @if ($ipBanEnabled || $ipBans->isNotEmpty())
+        {{-- Temporäre IP-Sperren (MVP-450): aktiv, mit vorzeitigem Entsperren. --}}
+        <div class="mb-3 shrink-0 rounded-box border border-base-300 bg-base-100 p-3">
+            <div class="mb-1 text-xs uppercase tracking-wide text-muted">{{ __('Gesperrte IP-Adressen') }}</div>
+            @forelse ($ipBans as $ban)
+                <div class="flex flex-wrap items-center justify-between gap-2 py-0.5 text-xs">
+                    <span><code>{{ $ban->ip }}</code> <span class="text-muted">({{ __('Stufe :level', ['level' => $ban->level]) }} · <code>{{ $ban->reason }}</code> · {{ __('bis :time', ['time' => $ban->banned_until->orgTz()->format('d.m.Y H:i')]) }})</span></span>
+                    <form method="POST" action="{{ route('admin.security-events.ip-bans.release', $ban) }}">
+                        @csrf
+                        <x-button type="submit" tone="ghost" size="sm" icon="lock_open">{{ __('Entsperren') }}</x-button>
+                    </form>
+                </div>
+            @empty
+                <div class="text-sm text-muted">{{ __('Keine aktiven Sperren') }}</div>
+            @endforelse
+        </div>
+    @endif
+
     @if ($events->count() === 0)
         <x-empty-state framed
             icon="gpp_good"

@@ -222,6 +222,7 @@ return [
             '2fa_failed' => 'Segundo factor fallido',
             'password_reset_requested' => 'Restablecimiento de contraseña solicitado',
             'impossible_travel' => 'Viaje imposible detectado',
+            'ip_banned' => 'Dirección IP bloqueada temporalmente',
         ],
         'wb' => [
             'login_failed' => 'Canal de denuncias: inicio de sesión fallido',

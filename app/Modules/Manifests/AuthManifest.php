@@ -46,6 +46,7 @@ final class AuthManifest extends Manifest {
             'scim_groups',
             'scim_tokens',
             'security_events',
+            'security_ip_bans',
             'sso_connections',
             'sso_identities',
             'two_factor_credentials',

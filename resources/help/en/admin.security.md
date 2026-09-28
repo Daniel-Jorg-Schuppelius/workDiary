@@ -1,7 +1,7 @@
 ---
 title: "Security & hardening"
 topic: admin.security
-version: 1
+version: 2
 audience:
     - admin
 related:
@@ -48,3 +48,15 @@ changing any data.
 area shows the app, PHP, Laravel and DB versions, modules and plugins
 and generates an **SBOM** (CycloneDX 1.5) from the lock files – as a
 download for audits. Access is limited to global admins.
+
+## Temporary IP ban and SIEM export
+
+Without fail2ban on the server, WorkDiary can itself temporarily ban
+addresses after repeated failed attempts (environment variable
+`SECURITY_IP_BAN`, off by default): 15 minutes, one hour on repetition,
+then 24 hours. Signed-in sessions and private networks are never affected;
+you see and lift active bans under "Threat detection". Because many users
+can share one address (mobile networks, company networks), fail2ban remains
+the first choice. For a SIEM, WorkDiary additionally writes every security
+event in CEF or JSON format to a separate file or via syslog
+(`SECURITY_SIEM_FORMAT`, `SECURITY_SIEM_TARGET`).

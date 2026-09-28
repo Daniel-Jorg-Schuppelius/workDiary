@@ -1,7 +1,7 @@
 ---
 title: "Lizenzverwaltung"
 topic: admin.license
-version: 1
+version: 2
 audience:
     - admin
 related:
@@ -55,3 +55,11 @@ Wichtig zu wissen:
   aufbewahrungspflichtiger Module bleiben erhalten.
 - Es werden keine Dateien hochgeladen – Lizenzen werden als signierte
   Schlüssel eingetragen.
+
+## Abrechnungsdaten und Tarifwechsel
+
+Unter „Abrechnungsdaten" pflegen Sie Rechnungsempfänger, E-Mail, Anschrift,
+USt-IdNr. und Bestellzeichen für die Abrechnung durch den Betreiber. Dort
+fragen Sie auch einen anderen Tarif oder Zusatzmodule an; es gibt je
+Organisation eine offene Anfrage, die Sie zurückziehen können. Der Betreiber
+erledigt sie, indem er eine neue Lizenz ausstellt.

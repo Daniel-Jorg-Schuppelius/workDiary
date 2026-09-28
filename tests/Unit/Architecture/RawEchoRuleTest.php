@@ -46,6 +46,7 @@ class RawEchoRuleTest extends TestCase {
         'resources/views/chat/_message.blade.php' => 'ChatText::render() saniert den Text (SafeHtml-Grenze).',
         'resources/views/help/center/show.blade.php' => 'Hilfetexte werden beim Speichern saniert.',
         'resources/views/customer/help/show.blade.php' => 'Hilfetexte werden beim Speichern saniert (dieselben Topics wie das Hilfecenter).',
+        'resources/views/help/site/page.blade.php' => 'Statische Doku-Website (MVP-971): Hilfetexte werden beim Einlesen escaped.',
         'resources/views/mail/invoice.blade.php' => 'Vom Dokument-Renderer erzeugtes Mail-HTML.',
         'resources/views/mail/document.blade.php' => 'Vom Dokument-Renderer erzeugtes Mail-HTML.',
         'resources/views/account/two-factor.blade.php' => 'QR-SVG aus der eigenen TOTP-Bibliothek.',

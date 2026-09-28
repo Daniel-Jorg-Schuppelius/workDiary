@@ -91,6 +91,9 @@ final class SustainabilityManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Import\EntitySpec::class => [
+                \App\Services\Sustainability\Import\SustainabilityActivitySpec::class,
+            ],
             \App\Services\CustomerPortal\Contracts\PortalNoticeSource::class => [
                 \App\Services\Sustainability\SustainabilityExcerptService::class,
             ],

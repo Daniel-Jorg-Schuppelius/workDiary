@@ -1,7 +1,7 @@
 ---
 title: "Rapprochement des paiements"
 topic: finance.reconciliation
-version: 1
+version: 2
 audience: []
 modules:
     - module.finance
@@ -23,3 +23,11 @@ l'opération bancaire elle-même n'est jamais modifiée. Les données
 bancaires nominatives sont chiffrées et chaque action est journalisée de
 façon inaltérable ; l'import et la confirmation requièrent le rôle
 *Comptabilité*.
+
+## Référence de paiement RF
+
+Lorsque la référence de paiement RF est activée dans les paramètres de l'organisation, chaque facture porte une
+référence créancier RF (ISO 11649) issue de son numéro — dans les
+informations de paiement et comme référence structurée dans le GiroCode.
+Si le client paie avec cette référence, le rapprochement reconnaît la
+facture grâce à elle, même écrite par groupes de quatre.

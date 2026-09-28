@@ -103,11 +103,15 @@ return [
         'checkedIn' => 'Affectation de ressource : restitution',
         'checkedOut' => 'Affectation de ressource : remise',
     ],
+    'security' => [
+        'ipBanReleased' => 'Blocage IP levé',
+    ],
     'assetCompliance' => [
         'assigned' => 'Profil de conformité attribué',
         'claimOpened' => 'Conformité : réclamation ouverte',
         'decommissionRequested' => 'Mise hors service demandée',
         'inspected' => 'Ressource contrôlée',
+        'measurementImported' => 'Mesure d\'inspection importée',
         'restrictedUse' => 'Utilisation restreinte',
     ],
     'assetDefect' => [

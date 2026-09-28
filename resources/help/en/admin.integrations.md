@@ -1,7 +1,7 @@
 ---
 title: "Managing integrations"
 topic: admin.integrations
-version: 1
+version: 2
 audience:
     - admin
 related:
@@ -86,3 +86,8 @@ purpose, so you do not have to guess where something belongs:
 
 An integration missing from this list does not exist — when in doubt, ask
 rather than storing credentials somewhere not intended for them.
+
+**Recurring events from calendars:** Recurring events from CalDAV, Google
+Calendar or Microsoft 365 appear in the inbox as single events within the
+import window, with moved and cancelled events handled correctly. A series
+can be created as appointments or dismissed at once as a group.

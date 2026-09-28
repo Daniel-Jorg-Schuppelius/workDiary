@@ -102,6 +102,8 @@ return [
         'require_signed' => 'Consegna solo con condizioni di noleggio firmate',
         'portal_direct_booking' => 'Consentire la prenotazione diretta nel portale clienti',
         'portal_direct_booking_hint' => 'I clienti prenotano subito i dispositivi liberi abilitati per il portale; la direzione viene informata.',
+        'geofence_radius' => 'Raggio intorno al luogo d\'impiego (m)',
+        'geofence_radius_hint' => 'Se la posizione segnalata di un\'attrezzatura noleggiata è più lontana dalla sede del noleggio, lo scostamento viene segnalato. Senza sede valgono i geofence del cliente.',
     ],
     'claims_pattern' => [
         'heading' => 'Schemi di reclami',

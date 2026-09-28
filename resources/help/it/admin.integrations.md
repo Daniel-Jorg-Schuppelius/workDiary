@@ -1,7 +1,7 @@
 ---
 title: "Gestire le integrazioni"
 topic: admin.integrations
-version: 1
+version: 2
 audience:
     - admin
 related:
@@ -93,3 +93,9 @@ scopo, così non deve indovinare dove va cosa:
 
 Un'integrazione assente da questo elenco non esiste: nel dubbio chieda, invece
 di salvare credenziali in un punto non previsto.
+
+**Eventi ricorrenti dai calendari:** Gli eventi ricorrenti da CalDAV,
+Google Calendar o Microsoft 365 compaiono nella inbox come eventi singoli
+nella finestra di importazione, con eventi spostati e annullati gestiti
+correttamente. Una serie può essere creata come appuntamenti o scartata in
+una volta sola come gruppo.

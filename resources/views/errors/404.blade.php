@@ -7,6 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 @include('errors._page', [
+    'help' => \App\Enums\Help\HelpDeepLink::NotFound,
     'code' => 404,
     'icon' => 'search_off',
     'tone' => 'primary',

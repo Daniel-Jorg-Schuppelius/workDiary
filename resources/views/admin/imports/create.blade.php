@@ -58,12 +58,22 @@
                 @else
                     <span class="label-text">{{ __('CSV-, Excel- oder iCal-Datei (.csv, .xlsx, .ics, max. :mb MB, :rows Zeilen)', ['mb' => 5, 'rows' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(50000, 0, withThousandsSeparator: true)]) }}</span>
                 @endif
-                <input type="file" name="file" required accept="{{ $acceptsZip ? '.zip' : '.csv,.txt,.xlsx,.ics' }}"
+                <input type="file" name="file" @if (($calendarSources ?? []) === []) required @endif accept="{{ $acceptsZip ? '.zip' : '.csv,.txt,.xlsx,.ics' }}"
                        class="file-input file-input-sm file-input-bordered w-full max-w-md" />
                 @if($acceptsZip)
                     <span class="label-text-alt text-muted">{{ __('import.upload.zipHint') }}</span>
                 @endif
             </label>
+
+            {{-- MVP-976: statt Datei die Termine einer Kalenderverbindung im Zeitraum abrufen. --}}
+            @if (($calendarSources ?? []) !== [])
+                <x-select-field name="calendar" :label="__('import.upload.calendar')" :hint="__('import.upload.calendarHint')" class="select-sm w-full max-w-md">
+                    <option value="">{{ __('import.upload.calendarNone') }}</option>
+                    @foreach ($calendarSources as $source)
+                        <option value="{{ $source['value'] }}" @selected(old('calendar') === $source['value'])>{{ $source['label'] }}</option>
+                    @endforeach
+                </x-select-field>
+            @endif
 
             {{-- MVP-438: optionale iCal-Kategorie-Allowlist (nur Stempelungen) —
                  damit ein voller Kalender nicht pauschal als Anwesenheit gilt. --}}

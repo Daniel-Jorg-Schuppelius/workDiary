@@ -1,7 +1,7 @@
 ---
 title: "Riconciliazione dei pagamenti"
 topic: finance.reconciliation
-version: 1
+version: 2
 audience: []
 modules:
     - module.finance
@@ -23,3 +23,11 @@ viene mai modificato. Sconto cassa e differenze di arrotondamento sono
 tollerati; i dati bancari personali sono cifrati e ogni azione è
 protocollata in una catena di hash. Import e conferme richiedono il ruolo
 *Contabilità*.
+
+## Riferimento di pagamento RF
+
+Se il riferimento di pagamento RF è attivato nelle impostazioni dell'organizzazione, ogni fattura riporta un
+riferimento creditore RF (ISO 11649) ricavato dal suo numero, nei dati di
+pagamento e come riferimento strutturato nel GiroCode. Se il cliente paga
+con questo riferimento, la riconciliazione riconosce la fattura grazie a
+esso, anche se scritto in gruppi di quattro.

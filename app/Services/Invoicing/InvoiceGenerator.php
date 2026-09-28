@@ -866,6 +866,12 @@ class InvoiceGenerator {
                     'invoice' => (string) __('Die Anrechnung der Abschläge übersteigt den Rechnungsbetrag — die Schlussrechnung wäre negativ.'),
                 ]);
             }
+            // Vorher erfasste Einbehalte (MVP-979) müssen in den Zahlbetrag nach den Abschlägen passen.
+            if (app(RetentionService::class)->openAmountOf($draft) > round($draft->total?->toFloat() ?? 0.0, 2)) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'invoice' => (string) __('invoicing.retention.exceeds_after_settlement'),
+                ]);
+            }
 
             $draft->type = Invoice::TYPE_FINAL;
             $existing = trim((string) $draft->notes);

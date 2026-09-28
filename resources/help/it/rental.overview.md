@@ -1,7 +1,7 @@
 ---
 title: "Noleggio attrezzature"
 topic: rental.overview
-version: 1
+version: 2
 audience: []
 modules:
     - module.rental
@@ -30,3 +30,10 @@ successiva (pulizia, riparazione/blocco, reclamo).
 **Fatturazione:** le voci vengono approvate e fatturate localmente o
 trasferite al sistema di fatturazione principale. La cauzione è
 un'operazione finanziaria separata.
+
+**Luogo d'impiego e geofence:** Quando le posizioni delle attrezzature
+arrivano tramite importazione (ad esempio da un'esportazione telematica),
+WorkDiary verifica durante un noleggio se l'attrezzatura si trova nel luogo
+d'impiego: presso la sede del noleggio con il raggio impostato nelle
+impostazioni, altrimenti nei geofence del cliente. Se lo lascia, vengono
+avvisati la persona responsabile e la direzione del team.

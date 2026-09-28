@@ -222,6 +222,7 @@ return [
             '2fa_failed' => 'Second facteur échoué',
             'password_reset_requested' => 'Réinitialisation du mot de passe demandée',
             'impossible_travel' => 'Déplacement impossible détecté',
+            'ip_banned' => 'Adresse IP temporairement bloquée',
         ],
         'wb' => [
             'login_failed' => 'Canal de signalement : connexion échouée',

@@ -17,6 +17,7 @@
         : ($exception ?? null)?->getMessage();
 @endphp
 @include('errors._page', [
+    'help' => \App\Enums\Help\HelpDeepLink::Forbidden,
     'code' => 403,
     'icon' => 'lock',
     'tone' => 'warning',

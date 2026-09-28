@@ -1,10 +1,11 @@
 ---
 title: "Hilfecenter"
 topic: help.center
-version: 1
+version: 2
 audience: []
 related:
     - account.shortcuts
+    - help.errors
     - search.overview
 ---
 
@@ -26,3 +27,8 @@ Aus der kontextbezogenen Hilfe erreichen Sie das Hilfecenter jederzeit: Das
 Buchsymbol in der Kopfzeile der Hilfe öffnet diese Übersicht, das Suchfeld
 darunter startet Ihre Suche direkt hier. „Ausführliche Hilfe öffnen" führt
 zur Themenseite des gerade angezeigten Themas.
+
+„Zuletzt angesehen" auf der Übersicht listet die Themen, die Sie zuletzt im
+Hilfecenter oder in der Hilfe am Rand geöffnet haben. Die Liste bleibt nur in
+Ihrem Browser gespeichert. Fehlerseiten verweisen über „Was bedeutet das?"
+direkt auf den passenden Abschnitt der Hilfe zu Fehlermeldungen.

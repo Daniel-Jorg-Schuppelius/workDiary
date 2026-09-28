@@ -187,6 +187,35 @@ class MsgraphCalendarClient implements GraphSubscriptionClient, RemoteCalendarGa
     }
 
     /**
+     * Vorkommen des Ziel-Kalenders in einem Zeitraum (`calendarView`) für den
+     * Zeitimport (MVP-976); Zeiten in UTC, höchstens zehn Seiten.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function calendarView(\DateTimeInterface $from, \DateTimeInterface $until): array {
+        $calendarId = trim((string) $this->connection->calendar_id);
+        $url = $calendarId !== ''
+            ? $this->base . '/me/calendars/' . rawurlencode($calendarId) . '/calendarView'
+            : $this->base . '/me/calendarView';
+        $query = ['startDateTime' => $from->format('Y-m-d\TH:i:s\Z'), 'endDateTime' => $until->format('Y-m-d\TH:i:s\Z'), '$top' => 200];
+        $items = [];
+        $pages = 0;
+        do {
+            $response = $query !== [] ? $this->api->getResponse($url, $query) : $this->api->getResponse($url);
+            if (! $response->successful()) {
+                throw new RuntimeException('Graph calendarView fehlgeschlagen (HTTP ' . $response->status() . ').');
+            }
+            /** @var array{value?: list<array<string, mixed>>, '@odata.nextLink'?: string} $data */
+            $data = (array) $response->json();
+            array_push($items, ...($data['value'] ?? []));
+            $url = isset($data['@odata.nextLink']) ? (string) $data['@odata.nextLink'] : '';
+            $query = [];
+        } while ($url !== '' && ++$pages < 10);
+
+        return $items;
+    }
+
+    /**
      * AAD-User-ID zu einer E-Mail/UPN (Presence, MS365-Plan F — braucht
      * `User.ReadBasic.All`). null = nicht auflösbar/kein Zugriff.
      */

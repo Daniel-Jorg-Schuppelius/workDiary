@@ -102,6 +102,8 @@ return [
         'require_signed' => 'Handover only with signed rental terms',
         'portal_direct_booking' => 'Allow direct booking in the customer portal',
         'portal_direct_booking_hint' => 'Customers reserve available equipment released for the portal immediately; the managers are notified.',
+        'geofence_radius' => 'Radius around the site (m)',
+        'geofence_radius_hint' => 'If the reported position of rented equipment is further from the rental\'s site, the deviation is reported. Without a site, the customer\'s geofences apply.',
     ],
     'claims_pattern' => [
         'heading' => 'Claim patterns',

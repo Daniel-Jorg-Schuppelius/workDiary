@@ -9,8 +9,8 @@
 {{--
     Gemeinsames Guest-Layout (Vollaudit 2026-07, M51) — ersetzt das zuvor
     7-fach kopierte Standalone-Skelett (auth/* + account/password): Head mit
-    Anti-Flash-Theme-Partial, Favicons, Vite+Fallback, fixed Brand-Header mit
-    Theme-Toggle, zentrierte Karte mit Brand-Kopf, fixed Footer.
+    Anti-Flash-Theme-Partial, Favicons, Vite+Fallback, x-guest-header und
+    x-guest-footer (App-Anatomie), zentrierte Karte mit Brand-Kopf.
 
     Sections:
       title          Seitentitel (Pflicht; „— <Brand>" hängt das Layout an)
@@ -52,29 +52,13 @@
         @endif
     </head>
     <body class="min-h-screen bg-primary-content text-base-content">
-        <header class="fixed inset-x-0 top-0 z-50 border-b border-base-300 bg-base-100 shadow-xs">
-            <div class="mx-auto flex w-full max-w-screen-2xl items-center justify-between gap-4 px-4 py-3 xl:px-8 2xl:px-12">
-                <a href="{{ route('home') }}" class="flex items-center gap-2">
-                    @if ($brandLogo)
-                        <img src="{{ $brandLogo }}" alt="{{ $brandName }}" class="h-10 w-auto max-w-48 object-contain">
-                    @else
-                        <span class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary">{{ $brandName }}</span>
-                    @endif
-                </a>
-                <div class="ml-auto flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-xs">
-                    <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
-                        <x-icon name="dark_mode" class="text-base leading-none" data-theme-label />
-                    </button>
-                    @hasSection('header-action')
-                        @yield('header-action')
-                    @else
-                        <x-button href="{{ route('login') }}" tone="ghost" size="sm" class="gap-1" icon="login">{{ __('Anmelden') }}</x-button>
-                    @endif
-                </div>
-            </div>
-        </header>
+        <x-guest-header>
+            @hasSection('header-action')
+                <x-slot:actions>@yield('header-action')</x-slot:actions>
+            @endif
+        </x-guest-header>
 
-        <div class="mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4 pb-20 pt-24 lg:px-10">
+        <div class="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-7xl items-center justify-center px-4 pb-20 pt-8 lg:px-10">
             <div class="w-full max-w-md" @yield('wrapper-attrs')>
                 <div class="mb-8 text-center">
                     <a href="{{ route('home') }}" class="inline-block">
@@ -98,11 +82,7 @@
             </div>
         </div>
 
-        <footer class="fixed inset-x-0 bottom-0 z-50 border-t border-base-300 bg-base-100 shadow-xs">
-            <div class="mx-auto flex w-full max-w-screen-2xl items-center justify-center px-4 py-3 text-xs text-base-content/70 xl:px-8 2xl:px-12">
-                <x-footer-copyright />
-            </div>
-        </footer>
+        <x-guest-footer />
         {{-- Theme-Toggle wird zentral von resources/js/layout.js (in app.js gebündelt)
              gesteuert. Ein zusätzliches Inline-Script hier würde einen ZWEITEN
              Click-Handler an denselben Button hängen → der Klick schaltet doppelt

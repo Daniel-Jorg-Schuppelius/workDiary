@@ -151,6 +151,28 @@
                                    :message="__('Dieses Asset hat noch keine Verortung.')" />
                 @endif
 
+                @if (($positions ?? collect())->isNotEmpty())
+                    {{-- Gemeldete Positionen (MVP-975), z. B. aus Telematik-Exporten. --}}
+                    <div class="mt-4 border-t border-base-200 pt-3">
+                        <h3 class="mb-2 flex items-center gap-2 text-sm font-semibold">
+                            <x-icon name="my_location" class="text-primary" /> {{ __('Letzte Positionen') }}
+                        </h3>
+                        <ul class="space-y-1 text-sm">
+                            @foreach ($positions as $position)
+                                <li class="flex flex-wrap items-center gap-2">
+                                    <span class="tabular-nums">{{ $position->recorded_at->orgTz()->format('d.m.Y H:i') }}</span>
+                                    <span class="font-mono text-xs text-muted">{{ \CommonToolkit\Helper\Geo\GeoHelper::formatCoordinates((float) $position->lat, (float) $position->lng) }}</span>
+                                    @if ($position->deviation_m !== null)
+                                        <x-status-badge :tone="$position->deviation_m > 0 ? 'warning' : 'success'" :title="__('Soll-Ort') . ': ' . $position->expected_label">
+                                            {{ $position->deviation_m > 0 ? __('Abweichung') . ': ' . $position->deviation_m . ' m' : __('Soll-Ort') }}
+                                        </x-status-badge>
+                                    @endif
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 @if ($roomRequirements->isNotEmpty() || $room?->cleaningProfile)
                     {{-- Raumbezogene Anforderungen des Standort-Raums (Feature 027). --}}
                     <div class="mt-4 border-t border-base-200 pt-3">

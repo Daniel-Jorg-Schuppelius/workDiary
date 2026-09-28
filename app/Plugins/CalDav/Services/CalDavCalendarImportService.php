@@ -17,8 +17,10 @@ use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Plugins\CalDav\CalDavConnection;
 use App\Plugins\CalDav\CalDavPlugin;
 use App\Plugins\CalDav\Contracts\CalDavGatewayFactory;
-use App\Plugins\Support\Calendar\RemoteCalendarPublishService;
+use App\Plugins\Support\Calendar\{CalendarSeriesStager, RemoteCalendarPublishService};
+use CommonToolkit\Entities\ICalendar\{Document, Event as CalendarEvent};
 use CommonToolkit\Parsers\ICalendarParser;
+use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Support\{Carbon, Collection};
 use Throwable;
@@ -30,13 +32,17 @@ use Throwable;
  * `sync-collection` (RFC 6578), wo der Server ihn kann, sonst über ein
  * rollierendes Zeitfenster mit ETag-Vergleich. Die Haltung bleibt die des
  * Microsoft- und Google-Zwillings: aus dem Kalender entstehen NUR
- * Integrations-Inbox-Fälle, nie blind angelegte Termine.
+ * Integrations-Inbox-Fälle, nie blind angelegte Termine. Serien kommen als
+ * Einzelvorkommen im Importfenster ({@see CalendarSeriesStager}, MVP-977).
  */
 class CalDavCalendarImportService {
     /** Echo-Toleranz zwischen unserem PUT und dem LAST-MODIFIED des Servers. */
     private const ECHO_TOLERANCE_SECONDS = 120;
 
-    public function __construct(private readonly CalDavGatewayFactory $gateways) {}
+    public function __construct(
+        private readonly CalDavGatewayFactory $gateways,
+        private readonly CalendarSeriesStager $series,
+    ) {}
 
     /** @return array{proposals: int, conflicts: int, deleted: int} */
     public function run(CalDavConnection $connection): array {
@@ -51,15 +57,17 @@ class CalDavCalendarImportService {
             ->get()
             ->keyBy('external_id');
 
+        $windowStart = Carbon::now()->subDays(30);
+        $windowEnd = Carbon::now()->addDays(180);
         $page = $this->gateways->for($connection)->syncEvents(
             (string) ($connection->sync_token ?? ''),
             $this->localEtags($references),
-            Carbon::now()->subDays(30),
-            Carbon::now()->addDays(180),
+            $windowStart,
+            $windowEnd,
         );
 
         foreach ($page->changed as $change) {
-            $this->handleChange($connection, $change, $references, $counters);
+            $this->handleChange($connection, $change, $references, $counters, $windowStart->toDateTimeImmutable(), $windowEnd->toDateTimeImmutable());
         }
         foreach ($page->deleted as $href) {
             $this->handleDeleted($connection, rawurldecode(basename($href)), $references, $counters);
@@ -96,7 +104,7 @@ class CalDavCalendarImportService {
      * @param  Collection<string, ExternalReference>  $references
      * @param  array{proposals: int, conflicts: int, deleted: int}  $counters
      */
-    private function handleChange(CalDavConnection $connection, CalDavEventChange $change, Collection $references, array &$counters): void {
+    private function handleChange(CalDavConnection $connection, CalDavEventChange $change, Collection $references, array &$counters, DateTimeImmutable $windowStart, DateTimeImmutable $windowEnd): void {
         $parsed = $this->parse($change->ics);
         if ($parsed === null) {
             return; // unlesbares Objekt: nichts erfinden
@@ -104,6 +112,18 @@ class CalDavCalendarImportService {
 
         $objectName = $change->objectName();
         $reference = $references->get($objectName);
+
+        if (! $reference instanceof ExternalReference && $parsed['series'] !== null) {
+            $counters['proposals'] += $this->series->stageSeries(
+                $connection->organization_id,
+                CalDavPlugin::ID,
+                $parsed['series']['uid'],
+                (string) $connection->name,
+                $this->occurrences($parsed['series']['group'], $windowStart, $windowEnd),
+            );
+
+            return;
+        }
 
         if ($reference instanceof ExternalReference) {
             // ETag am Beleg fortschreiben, damit der Fallback beim nächsten
@@ -176,11 +196,10 @@ class CalDavCalendarImportService {
     }
 
     /**
-     * iCalendar lesen (sabre/vobject — dieselbe Bibliothek, die den Publish
-     * schreibt). Serieninstanzen mit RECURRENCE-ID bleiben draußen; die
-     * Serien-Auflösung ist Folgeausbau wie bei den anderen Anbietern.
+     * iCalendar lesen (Toolkit-Parser). Eine Serie (Master mit RRULE samt
+     * abweichenden Einzelterminen derselben UID) kommt als Gruppe zurück.
      *
-     * @return array{snapshot: array<string, mixed>, attributes: array<string, mixed>, last_modified: Carbon|null}|null
+     * @return array{snapshot: array<string, mixed>, attributes: array<string, mixed>, last_modified: Carbon|null, series: array{uid: string, group: list<CalendarEvent>}|null}|null
      */
     private function parse(string $ics): ?array {
         try {
@@ -202,10 +221,65 @@ class CalDavCalendarImportService {
             return null;
         }
 
+        $mapped = $this->map($event);
+        $modified = $event->getLastModified();
+        $series = null;
+        if ($event->has('RRULE') && $event->getUid() !== '') {
+            foreach ($calendar->getSeries() as $group) {
+                if ($group[0]->getUid() === $event->getUid()) {
+                    $series = ['uid' => $event->getUid(), 'group' => $group];
+                }
+            }
+        }
+
+        return $mapped + ['last_modified' => $modified !== null ? Carbon::instance($modified) : null, 'series' => $series];
+    }
+
+    /**
+     * Vorkommen der Serie im Fenster; abgesagte Einzeltermine entfallen.
+     *
+     * @param  list<CalendarEvent>  $group
+     * @return list<array{key: string, title: string, snapshot: array<string, mixed>, mapped: array<string, mixed>}>
+     */
+    private function occurrences(array $group, DateTimeImmutable $from, DateTimeImmutable $until): array {
+        $zone = new DateTimeZone(date_default_timezone_get());
+        try {
+            $instances = Document::expand($group, $from, $until, $zone, CalendarSeriesStager::MAX_OCCURRENCES);
+        } catch (Throwable) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($instances as $instance) {
+            if (strtoupper((string) $instance->getEvent()->getText('STATUS')) === 'CANCELLED') {
+                continue;
+            }
+            $mapped = $this->map($instance->getEvent(), $instance->getStart(), $instance->getEnd());
+            $snapshot = $mapped['snapshot'] + ['series_uid' => $group[0]->getUid(), 'series_title' => $mapped['snapshot']['subject']];
+            unset($snapshot['recurrence']);
+            unset($mapped['attributes']['recurrence_rule']);
+            $out[] = [
+                'key' => CalendarSeriesStager::key($group[0]->getUid(), $instance->getRecurrenceStart()),
+                'title' => (string) $snapshot['subject'],
+                'snapshot' => $snapshot,
+                'mapped' => $mapped['attributes'],
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Snapshot und Event-Attribute eines Termins; ein Serienvorkommen übergibt
+     * seine eigenen Zeiten.
+     *
+     * @return array{snapshot: array<string, mixed>, attributes: array<string, mixed>}
+     */
+    private function map(CalendarEvent $event, ?DateTimeImmutable $start = null, ?DateTimeImmutable $end = null): array {
         $timezone = (string) config('app.timezone', 'Europe/Berlin');
         $zone = new DateTimeZone(date_default_timezone_get());
-        $start = $event->getStart($zone);
-        $end = $event->getEnd($zone);
+        $start ??= $event->getStart($zone);
+        $end ??= $event->getEnd($zone);
         $allDay = $event->isAllDay();
         $subject = $event->getSummary();
         $subject = $subject !== '' ? $subject : '—';
@@ -236,10 +310,7 @@ class CalDavCalendarImportService {
             $attributes['recurrence_rule'] = (string) $event->getProperty('RRULE')?->getValue();
         }
 
-        $modified = $event->getLastModified();
-        $lastModified = $modified !== null ? Carbon::instance($modified) : null;
-
-        return ['snapshot' => $snapshot, 'attributes' => $attributes, 'last_modified' => $lastModified];
+        return ['snapshot' => $snapshot, 'attributes' => $attributes];
     }
 
     /** `mailto:`-Präfix des ORGANIZER abtrennen; ohne Adresse null. */

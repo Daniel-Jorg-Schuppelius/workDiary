@@ -8,6 +8,7 @@
 --}}
 {{-- errors/_page-Gerüst statt eigener Kopie (Vollaudit 2026-07, N42). --}}
 @include('errors._page', [
+    'help' => \App\Enums\Help\HelpDeepLink::AreaMaintenance,
     'icon' => 'engineering',
     'tone' => 'warning',
     'title' => __('Wartungsarbeiten'),

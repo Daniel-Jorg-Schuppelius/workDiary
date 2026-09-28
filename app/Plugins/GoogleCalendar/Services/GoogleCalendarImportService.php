@@ -17,9 +17,14 @@ use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Plugins\GoogleCalendar\GoogleCalendarConnection;
 use App\Plugins\GoogleCalendar\Api\GoogleCalendarClient;
 use App\Plugins\GoogleCalendar\GoogleCalendarPlugin;
-use App\Plugins\Support\Calendar\RemoteCalendarPublishService;
+use App\Plugins\Support\Calendar\{CalendarSeriesStager, RemoteCalendarPublishService};
 use App\Services\CloudIntake\StaleCheckpointException;
+use CommonToolkit\Entities\ICalendar\Document;
+use CommonToolkit\Parsers\ICalendarParser;
+use DateTimeImmutable;
+use DateTimeZone;
 use Illuminate\Support\{Carbon, Collection};
+use Throwable;
 
 /**
  * Kalender-Rückimport Google (Feature 121, MVP-610a).
@@ -38,6 +43,8 @@ use Illuminate\Support\{Carbon, Collection};
 class GoogleCalendarImportService {
     /** Echo-Toleranz zwischen unserem PUT und Googles `updated`. */
     private const ECHO_TOLERANCE_SECONDS = 120;
+
+    public function __construct(private readonly CalendarSeriesStager $series) {}
 
     /** @return array{proposals: int, conflicts: int, deleted: int} */
     public function run(GoogleCalendarConnection $connection): array {
@@ -70,7 +77,7 @@ class GoogleCalendarImportService {
             }
 
             foreach ($page['items'] as $item) {
-                $this->handleItem($connection, $item, $references, $counters);
+                $this->handleItem($connection, $item, $references, $counters, $windowStart->toDateTimeImmutable(), $windowEnd->toDateTimeImmutable());
             }
 
             $pageToken = $page['pageToken'];
@@ -92,13 +99,31 @@ class GoogleCalendarImportService {
      * @param  Collection<string, ExternalReference>  $references
      * @param  array{proposals: int, conflicts: int, deleted: int}  $counters
      */
-    private function handleItem(GoogleCalendarConnection $connection, array $item, Collection $references, array &$counters): void {
+    private function handleItem(GoogleCalendarConnection $connection, array $item, Collection $references, array &$counters, DateTimeImmutable $windowStart, DateTimeImmutable $windowEnd): void {
         $remoteId = (string) ($item['id'] ?? '');
         if ($remoteId === '') {
             return;
         }
         $reference = $references->get($remoteId);
         $status = (string) ($item['status'] ?? 'confirmed');
+        $subtitle = (string) ($connection->calendar_name ?? __('google_calendar.calendar.default'));
+
+        // Abweichender oder abgesagter Einzeltermin einer Serie (MVP-977).
+        $seriesId = $item['recurringEventId'] ?? null;
+        if (is_string($seriesId) && $seriesId !== '') {
+            $original = $this->instant($item['originalStartTime'] ?? null);
+            if ($original === null) {
+                return;
+            }
+            $key = CalendarSeriesStager::key($seriesId, $original);
+            if ($status === 'cancelled') {
+                $this->series->dismiss($connection->organization_id, GoogleCalendarPlugin::ID, $key);
+            } elseif ($this->series->upsertOccurrence($connection->organization_id, GoogleCalendarPlugin::ID, $subtitle, $this->occurrence($item, $seriesId, $key))) {
+                $counters['proposals']++;
+            }
+
+            return;
+        }
 
         if ($status === 'cancelled') {
             // Nur publizierte Termine sind ein Handlungsfall — ein fremder
@@ -117,9 +142,9 @@ class GoogleCalendarImportService {
             return;
         }
 
-        // Serien: Master und Einzeltermine ja, abgeleitete Instanzen nein
-        // (Serien-Auflösung ist Folgeausbau — wie beim Microsoft-Zwilling).
-        if (($item['recurringEventId'] ?? null) !== null) {
+        if (! $reference instanceof ExternalReference && ($item['recurrence'] ?? []) !== []) {
+            $counters['proposals'] += $this->series->stageSeries($connection->organization_id, GoogleCalendarPlugin::ID, $remoteId, $subtitle, $this->occurrences($item, $windowStart, $windowEnd));
+
             return;
         }
 
@@ -215,27 +240,94 @@ class GoogleCalendarImportService {
             $attributes['external_contact_note'] = $organizer;
         }
 
-        $rule = $this->recurrenceRule($item);
-        if ($rule !== null) {
-            $attributes['recurrence_rule'] = $rule;
-        }
-
         return $attributes;
     }
 
     /**
-     * Googles `recurrence` ist bereits iCalendar — nur der Präfix fällt weg.
+     * Vorkommen einer Serie im Fenster: Googles `recurrence` ist bereits
+     * iCalendar (RRULE/EXDATE/RDATE), die Auflösung übernimmt das Toolkit.
+     * Abweichende Einzeltermine kommen als eigene Einträge nach.
      *
      * @param  array<string, mixed>  $item
+     * @return list<array{key: string, title: string, snapshot: array<string, mixed>, mapped: array<string, mixed>}>
      */
-    private function recurrenceRule(array $item): ?string {
-        foreach ((array) ($item['recurrence'] ?? []) as $line) {
-            if (is_string($line) && str_starts_with($line, 'RRULE:')) {
-                return substr($line, 6);
+    private function occurrences(array $item, DateTimeImmutable $from, DateTimeImmutable $until): array {
+        $start = $this->dateLine('DTSTART', $item['start'] ?? null);
+        $end = $this->dateLine('DTEND', $item['end'] ?? null);
+        if ($start === null) {
+            return [];
+        }
+        $lines = array_filter((array) ($item['recurrence'] ?? []), static fn (mixed $line): bool => is_string($line) && preg_match('/^(RRULE|EXDATE|RDATE)[;:]/', $line) === 1);
+        $ics = implode("\r\n", ['BEGIN:VCALENDAR', 'BEGIN:VEVENT', 'UID:' . $item['id'], $start, ...($end !== null ? [$end] : []), ...$lines, 'END:VEVENT', 'END:VCALENDAR']);
+        try {
+            $groups = ICalendarParser::fromString($ics)->getSeries();
+            $instances = $groups === [] ? [] : Document::expand($groups[0], $from, $until, $this->zone(), CalendarSeriesStager::MAX_OCCURRENCES);
+        } catch (Throwable) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($instances as $instance) {
+            $allDay = isset($item['start']['date']);
+            $copy = $item;
+            $copy['start'] = $allDay ? ['date' => $instance->getStart()->format('Y-m-d')] : ['dateTime' => $instance->getStart()->format(DATE_ATOM)];
+            if ($instance->getEnd() !== null) {
+                $copy['end'] = $allDay ? ['date' => $instance->getEnd()->format('Y-m-d')] : ['dateTime' => $instance->getEnd()->format(DATE_ATOM)];
             }
+            $out[] = $this->occurrence($copy, (string) $item['id'], CalendarSeriesStager::key((string) $item['id'], $instance->getRecurrenceStart()));
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  array<string, mixed>  $item
+     * @return array{key: string, title: string, snapshot: array<string, mixed>, mapped: array<string, mixed>}
+     */
+    private function occurrence(array $item, string $seriesId, string $key): array {
+        $snapshot = ['series_uid' => $seriesId, 'series_title' => (string) ($item['summary'] ?? '')] + $this->snapshot($item);
+        unset($snapshot['recurrence']);
+
+        return ['key' => $key, 'title' => (string) ($item['summary'] ?? '—'), 'snapshot' => $snapshot, 'mapped' => $this->eventAttributes($item)];
+    }
+
+    /** DTSTART/DTEND-Zeile aus Googles `{dateTime, timeZone}` bzw. `{date}`. */
+    private function dateLine(string $name, mixed $node): ?string {
+        if (! is_array($node)) {
+            return null;
+        }
+        if (is_string($node['date'] ?? null)) {
+            return $name . ';VALUE=DATE:' . str_replace('-', '', $node['date']);
+        }
+        if (! is_string($node['dateTime'] ?? null)) {
+            return null;
+        }
+        $zone = is_string($node['timeZone'] ?? null) && $node['timeZone'] !== '' ? (string) $node['timeZone'] : null;
+        $moment = Carbon::parse($node['dateTime']);
+
+        return $zone !== null
+            ? $name . ';TZID=' . $zone . ':' . $moment->setTimezone($zone)->format('Ymd\THis')
+            : $name . ':' . $moment->utc()->format('Ymd\THis\Z');
+    }
+
+    /** Ursprünglicher Beginn eines Einzeltermins als Zeitpunkt (Schlüssel des Vorkommens). */
+    private function instant(mixed $node): ?DateTimeImmutable {
+        if (! is_array($node)) {
+            return null;
+        }
+        if (is_string($node['dateTime'] ?? null)) {
+            return Carbon::parse($node['dateTime'])->toDateTimeImmutable();
+        }
+        if (is_string($node['date'] ?? null)) {
+            return new DateTimeImmutable($node['date'] . ' 00:00:00', $this->zone());
         }
 
         return null;
+    }
+
+    /** Ganztägige Serien rechnen in der App-Zeitzone — wie die Übernahme ins Event. */
+    private function zone(): DateTimeZone {
+        return new DateTimeZone((string) config('app.timezone', 'Europe/Berlin'));
     }
 
     /**

@@ -1066,7 +1066,7 @@ class AppServiceProvider extends ServiceProvider {
      * bereit (kein eigenes resolve nötig).
      */
     private function registerBrandingViewComposer(): void {
-        View::composer(['layouts.*', 'auth.*', 'pdf.*', 'reports.pdf.*', 'reports.drilldown.pdf.*', 'components.pdf-layout'], function ($view): void {
+        View::composer(['layouts.*', 'auth.*', 'pdf.*', 'reports.pdf.*', 'reports.drilldown.pdf.*', 'components.pdf-layout', 'components.guest-header'], function ($view): void {
             try {
                 $branding = app(BrandingService::class);
             } catch (\Throwable $e) {

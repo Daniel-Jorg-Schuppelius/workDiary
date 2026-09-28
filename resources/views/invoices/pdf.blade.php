@@ -226,7 +226,12 @@
                         @if (! empty($legal['bic']))
                             <tr><td class="label">{{ __('BIC') }}</td><td>{{ $legal['bic'] }}</td></tr>
                         @endif
-                        <tr><td class="label">{{ __('Verwendungszweck') }}</td><td>{{ $invoice->number }}</td></tr>
+                        @php($creditorReference = $invoice->creditorReference())
+                        @if ($creditorReference !== null)
+                            <tr><td class="label">{{ __('Zahlungsreferenz') }}</td><td>{{ \CommonToolkit\Helper\Data\CreditorReferenceHelper::format($creditorReference) }}</td></tr>
+                        @else
+                            <tr><td class="label">{{ __('Verwendungszweck') }}</td><td>{{ $invoice->number }}</td></tr>
+                        @endif
                     </table>
                 </td>
                 @if ($girocode !== null)

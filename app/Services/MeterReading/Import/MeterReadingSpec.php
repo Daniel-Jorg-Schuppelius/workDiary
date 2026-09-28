@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\MeterReading\Import;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
-use App\Models\Asset\{Asset, MeterReading};
+use App\Models\Asset\MeterReading;
 use App\Models\Platform\Organization;
+use App\Services\Asset\Import\ResolvesAssetCode;
 use App\Services\Import\{ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\AbstractEntitySpec;
 use App\Services\Import\Specs\Concerns\ParsesLocalDateTime;
@@ -32,6 +33,7 @@ use Throwable;
  */
 class MeterReadingSpec extends AbstractEntitySpec {
     use ParsesLocalDateTime;
+    use ResolvesAssetCode;
 
     public function __construct(private readonly MeterReadingService $readings) {}
 
@@ -81,7 +83,7 @@ class MeterReadingSpec extends AbstractEntitySpec {
 
     public function upsert(array $row, Organization $organization): array {
         try {
-            $asset = $this->asset($organization, (string) $row['asset']);
+            $asset = $this->assetByCode($organization, (string) $row['asset']);
             if ($asset === null) {
                 return [ImportOutcome::Failed, new ValidationIssue(ImportErrorCode::FkMissing, 'asset', (string) __('import.error.fkMissing.asset', ['number' => (string) $row['asset']]))];
             }
@@ -104,11 +106,5 @@ class MeterReadingSpec extends AbstractEntitySpec {
         } catch (Throwable $e) {
             return [ImportOutcome::Failed, new ValidationIssue(ImportErrorCode::Persist, null, $e->getMessage())];
         }
-    }
-
-    private function asset(Organization $organization, string $code): ?Asset {
-        return Asset::query()->where('organization_id', $organization->id)
-            ->where(fn ($q) => $q->where('asset_no', $code)->orWhere('inventory_no', $code)->orWhere('serial_no', $code))
-            ->first();
     }
 }

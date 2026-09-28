@@ -222,6 +222,7 @@ return [
             '2fa_failed' => 'Secondo fattore non riuscito',
             'password_reset_requested' => 'Reimpostazione password richiesta',
             'impossible_travel' => 'Spostamento impossibile rilevato',
+            'ip_banned' => 'Indirizzo IP bloccato temporaneamente',
         ],
         'wb' => [
             'login_failed' => 'Canale di segnalazione: accesso non riuscito',

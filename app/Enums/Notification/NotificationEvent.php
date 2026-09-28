@@ -171,6 +171,8 @@ enum NotificationEvent: string implements HasLabel {
     case RentalReturnOverdue = 'rental.returnOverdue';
     /** Synchron: Portal-Verleihanfrage eingegangen (Feature 073, MVP-714) — an die Leitung zur Entscheidung. */
     case RentalRequested = 'rental.requested';
+    /** Synchron: Position eines verliehenen Geräts außerhalb des Einsatzorts (MVP-975). */
+    case RentalGeofenceDeviation = 'rental.geofenceDeviation';
 
     // Feature 074: Leasing-/Vertragsfrist wird fällig (MVP-273/278).
     case AssetFinanceDeadline = 'assetFinance.deadline';
@@ -446,6 +448,8 @@ enum NotificationEvent: string implements HasLabel {
             self::RentalReturnOverdue => [UserRole::Teamleitung->value],
             // Portal-Verleihanfrage (MVP-714): Entscheidung ist Leitungsaufgabe.
             self::RentalRequested => [UserRole::Teamleitung->value],
+            // Geofence-Abweichung (MVP-975): Akten-Verantwortlicher plus Leitung.
+            self::RentalGeofenceDeviation => [UserRole::Teamleitung->value],
             // Leasingfristen (Feature 074): Vertrags-/Fristensteuerung ist
             // Leitungsaufgabe; der Verantwortliche der Akte via Service.
             self::AssetFinanceDeadline => [UserRole::Teamleitung->value],
@@ -575,6 +579,7 @@ enum NotificationEvent: string implements HasLabel {
             self::ReportWarning => 'crisis_alert',
             self::RentalReturnOverdue => 'forklift',
             self::RentalRequested => 'forklift',
+            self::RentalGeofenceDeviation => 'wrong_location',
             self::AssetFinanceDeadline => 'request_quote',
             self::ContractDeadlineDue => 'contract',
             self::ContractSignatureReceived => 'draw',

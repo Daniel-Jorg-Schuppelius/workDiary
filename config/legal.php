@@ -11,9 +11,13 @@
  * betreiberspezifisch und werden über die Settings-Registry
  * (legal.imprint / legal.privacy, System-Scope) gepflegt; diese Datei
  * liefert nur die env-überschreibbaren Defaults (typisch: leer).
+ * Ist eine *_url gesetzt, leitet die Seite dorthin weiter (vorhandenes
+ * Impressum bzw. vorhandene Datenschutzerklärung des Betreibers).
  */
 
 return [
     'imprint' => env('LEGAL_IMPRINT'),
     'privacy' => env('LEGAL_PRIVACY'),
+    'imprint_url' => env('LEGAL_IMPRINT_URL'),
+    'privacy_url' => env('LEGAL_PRIVACY_URL'),
 ];

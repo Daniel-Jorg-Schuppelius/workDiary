@@ -1,7 +1,7 @@
 ---
 title: "Integrationen verwalten"
 topic: admin.integrations
-version: 1
+version: 2
 audience:
     - admin
 related:
@@ -91,3 +91,8 @@ Anbindungen nach Zweck, damit Sie nicht raten müssen, wo etwas hingehört:
 
 Eine Anbindung, die hier fehlt, gibt es nicht — fragen Sie im Zweifel nach, statt
 Zugangsdaten an einer Stelle zu hinterlegen, die dafür nicht gedacht ist.
+
+**Serientermine aus Kalendern:** Wiederkehrende Termine aus CalDAV, Google
+Calendar oder Microsoft 365 erscheinen in der Inbox als Einzeltermine im
+Importfenster, verschobene und abgesagte Termine richtig. Eine Serie lässt
+sich als Gruppe auf einmal als Termine anlegen oder verwerfen.

@@ -102,6 +102,8 @@ return [
         'require_signed' => 'Entrega solo con condiciones de alquiler firmadas',
         'portal_direct_booking' => 'Permitir la reserva directa en el portal de clientes',
         'portal_direct_booking_hint' => 'Los clientes reservan de inmediato los equipos libres habilitados para el portal; se notifica a la dirección.',
+        'geofence_radius' => 'Radio alrededor del lugar de uso (m)',
+        'geofence_radius_hint' => 'Si la posición notificada de un equipo alquilado está más lejos de la ubicación del alquiler, se notifica la desviación. Sin ubicación se aplican las geocercas del cliente.',
     ],
     'claims_pattern' => [
         'heading' => 'Patrones de reclamaciones',

@@ -1,7 +1,7 @@
 ---
 title: "Equipment rental"
 topic: rental.overview
-version: 1
+version: 2
 audience: []
 modules:
     - module.rental
@@ -31,3 +31,9 @@ decision: cleaning, repair/block or controlled escalation to claims.
 **Billing:** Rental charges are released and invoiced locally or handed
 over to the leading invoicing system. Deposits are separate financial
 transactions — retention requires a mandatory reason.
+
+**Site and geofence:** When equipment positions arrive via import (for
+example from a telematics export), WorkDiary checks during a rental whether
+the equipment is on site: at the rental's site with the radius set in the
+settings, otherwise within the customer's geofences. If it leaves, the
+responsible person and the team leads are notified.

@@ -1,7 +1,7 @@
 ---
 title: "Location de matériel"
 topic: rental.overview
-version: 1
+version: 2
 audience: []
 modules:
     - module.rental
@@ -30,3 +30,10 @@ de suite (nettoyage, réparation/blocage, réclamation).
 **Facturation :** les postes sont validés puis facturés localement ou
 transmis au système de facturation principal. La caution est une
 opération financière distincte.
+
+**Lieu d'intervention et géorepérage :** Lorsque des positions d'appareils
+arrivent par import (par exemple d'un export télématique), WorkDiary
+vérifie pendant une location si l'appareil se trouve sur le lieu
+d'intervention : au site de la location avec le rayon défini dans les
+paramètres, sinon dans les géorepérages du client. S'il le quitte, la
+personne responsable et la direction d'équipe sont informées.

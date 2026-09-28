@@ -105,6 +105,8 @@ return [
         'require_signed' => 'Übergabe nur mit unterschriebenen Mietbedingungen',
         'portal_direct_booking' => 'Direktbuchung im Kundenportal erlauben',
         'portal_direct_booking_hint' => 'Kunden reservieren freie, fürs Portal freigegebene Geräte sofort verbindlich; die Leitung wird benachrichtigt.',
+        'geofence_radius' => 'Radius um den Einsatzort (m)',
+        'geofence_radius_hint' => 'Liegt die gemeldete Position eines verliehenen Geräts weiter vom Standort des Verleihs entfernt, wird die Abweichung gemeldet. Ohne Standort gelten die Geofences des Kunden.',
     ],
     'claims_pattern' => [
         'heading' => 'Reklamationsmuster',

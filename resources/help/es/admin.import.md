@@ -1,7 +1,7 @@
 ---
 title: "Importación CSV"
 topic: admin.import
-version: 2
+version: 3
 audience:
     - admin
 schema: process
@@ -63,3 +63,20 @@ Antes de confirmar no se escribe **nada** — análisis y vista previa
 son seguros. El historial muestra todas las pasadas con su estado,
 filtrable por entidad y condición. Después: revisar por muestreo los
 datos importados y fusionar duplicados.
+
+## Datos de movimiento y de medición
+
+Además de los datos maestros, la importación también recoge datos
+continuos: lecturas de contador, consumos ESG (actividad, cantidad,
+periodo y calidad de los datos), mediciones de inspección para
+inspecciones existentes y posiciones de equipos de exportaciones
+telemáticas. En las posiciones, WorkDiary avisa cuando un equipo alquilado
+abandona su lugar de uso.
+
+## Fichajes y tiempos de proyecto desde el calendario
+
+Para fichajes y tiempos de proyecto puede elegir una fuente de calendario
+conectada en lugar de un archivo (CalDAV, Google Calendar, Microsoft 365).
+Los eventos del periodo elegido se obtienen y se comprueban como un
+archivo iCal, con vista previa, filtro de categorías y resolución de
+series.

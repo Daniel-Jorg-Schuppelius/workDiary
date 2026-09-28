@@ -98,6 +98,8 @@ class ClubMyTest extends TestCase {
         $self = $this->orgUser();
         $member = $this->memberIn($group, $self);
         $foreign = $this->memberIn($other);
+        // Fester Name: Faker-Nachnamen wie „Schuppe" stecken im Copyright-Fuß jeder Seite.
+        $foreign->update(['last_name' => 'Fremdgruppenmitglied']);
         $course = $this->makeEvent([$group->id]);
         $otherCourse = $this->makeEvent([$other->id], null, ['title' => 'Fremder Lehrgang']);
         $invitedOnly = $this->makeEvent([], null, ['title' => 'Nur eingeladen', 'visibility' => ClubEventVisibility::Invited->value]);

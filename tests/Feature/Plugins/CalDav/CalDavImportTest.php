@@ -26,7 +26,7 @@ use Tests\TestCase;
 /**
  * Kalender-Rückimport CalDAV (Feature 121, MVP-610b): sync-collection bzw.
  * ETag-Fallback → NUR Inbox-Fälle. Publish-Echos filtert LAST-MODIFIED
- * gegen den letzten Sync; Serieninstanzen bleiben draußen.
+ * gegen den letzten Sync; Serien kommen als Einzelvorkommen (MVP-977).
  */
 final class CalDavImportTest extends TestCase {
     use RefreshDatabase;
@@ -189,18 +189,63 @@ final class CalDavImportTest extends TestCase {
         $this->assertDatabaseHas('integration_inbox_items', ['dedupe_key' => 'calendar-deleted:eigen.ics']);
     }
 
-    public function test_recurrence_instances_are_skipped_and_master_keeps_its_rule(): void {
+    public function test_series_become_occurrences_with_overrides_and_can_be_booked_as_group(): void {
+        Carbon::setTestNow('2026-08-19 08:00:00');
         $connection = $this->connection();
+        $series = implode("\r\n", [
+            'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Test//EN',
+            'BEGIN:VEVENT', 'UID:serie', 'SUMMARY:Jour fixe', 'DTSTART:20260820T090000Z', 'DTEND:20260820T100000Z',
+            'RRULE:FREQ=WEEKLY;COUNT=4', 'EXDATE:20260903T090000Z', 'LAST-MODIFIED:20260801T000000Z', 'END:VEVENT',
+            'BEGIN:VEVENT', 'UID:serie', 'RECURRENCE-ID:20260827T090000Z', 'SUMMARY:Jour fixe (verschoben)',
+            'DTSTART:20260827T110000Z', 'DTEND:20260827T120000Z', 'END:VEVENT',
+            'END:VCALENDAR',
+        ]) . "\r\n";
         $this->bindGateway(new CalDavSyncPage([
             $this->change('instanz.ics', $this->ics('instanz', 'Instanz', null, recurrenceInstance: true)),
-            $this->change('serie.ics', $this->ics('serie', 'Serie', null, rrule: 'FREQ=WEEKLY;BYDAY=MO')),
+            $this->change('serie.ics', $series),
         ], [], 't'));
 
         $result = app(CalDavCalendarImportService::class)->run($connection);
 
-        $this->assertSame(1, $result['proposals']);
-        $item = IntegrationInboxItem::query()->firstOrFail();
-        $this->assertSame('FREQ=WEEKLY;BYDAY=MO', (string) ($item->mapped_snapshot['recurrence_rule'] ?? ''));
+        // 20.08., 27.08. (verschoben), 10.09. — der 03.09. ist ausgenommen, die lose Instanz bleibt draußen.
+        $this->assertSame(3, $result['proposals']);
+        $items = IntegrationInboxItem::query()->orderBy('id')->get();
+        $this->assertSame(['2026-08-20 09:00:00', '2026-08-27 11:00:00', '2026-09-10 09:00:00'], $items->map(fn ($item) => \Carbon\CarbonImmutable::parse((string) $item->mapped_snapshot['started_at'], (string) $item->mapped_snapshot['timezone'])->utc()->format('Y-m-d H:i:s'))->all());
+        $this->assertSame('Jour fixe (verschoben)', $items[1]->display_title);
+        $this->assertArrayNotHasKey('recurrence_rule', (array) $items[0]->mapped_snapshot);
+        $this->assertSame('serie', $items[0]->remote_snapshot['series_uid'] ?? null);
+
+        $booker = app(\App\Plugins\CalDav\Services\CalDavSeriesGroupBooker::class);
+        $groups = $booker->groups($this->organization);
+        $this->assertCount(1, $groups);
+        $this->assertSame(3, $groups[0]['count']);
+        $this->assertSame('calendar_series', $groups[0]['form']);
+        $admin = \App\Models\Platform\User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $this->actingAs($admin)->get(route('admin.integration.inbox'))->assertOk()
+            ->assertSeeText(__('Serie') . ': Jour fixe')->assertSeeText(__('Alle als Termine anlegen'));
+        $this->assertSame(['created' => 3, 'skipped' => 0], $booker->book($this->organization, 'serie', []));
+        $this->assertSame(3, Event::query()->where('organization_id', $this->organization->id)->count());
+        Carbon::setTestNow();
+    }
+
+    public function test_cancelled_occurrence_removes_its_open_proposal(): void {
+        Carbon::setTestNow('2026-08-19 08:00:00');
+        $connection = $this->connection();
+        $series = fn (string $exdate): string => implode("\r\n", array_filter([
+            'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Test//EN',
+            'BEGIN:VEVENT', 'UID:serie', 'SUMMARY:Jour fixe', 'DTSTART:20260820T090000Z', 'DTEND:20260820T100000Z',
+            'RRULE:FREQ=WEEKLY;COUNT=3', $exdate, 'END:VEVENT', 'END:VCALENDAR',
+        ])) . "\r\n";
+        $this->bindGateway(new CalDavSyncPage([$this->change('serie.ics', $series(''))], [], 't1'));
+        app(CalDavCalendarImportService::class)->run($connection);
+        $this->assertSame(3, IntegrationInboxItem::query()->where('status', IntegrationInboxItem::STATUS_OPEN)->count());
+
+        $this->bindGateway(new CalDavSyncPage([$this->change('serie.ics', $series('EXDATE:20260827T090000Z'), '"etag-2"')], [], 't2'));
+        app(CalDavCalendarImportService::class)->run($connection->fresh());
+
+        $this->assertSame(2, IntegrationInboxItem::query()->where('status', IntegrationInboxItem::STATUS_OPEN)->count());
+        $this->assertSame(IntegrationInboxItem::STATUS_DISMISSED, IntegrationInboxItem::query()->where('dedupe_key', 'calendar-proposal:serie:' . strtotime('2026-08-27 09:00:00 UTC'))->value('status'));
+        Carbon::setTestNow();
     }
 
     public function test_unreadable_object_is_ignored(): void {

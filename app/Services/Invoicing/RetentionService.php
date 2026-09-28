@@ -49,6 +49,9 @@ class RetentionService {
         if (! $this->isMutable($invoice)) {
             throw new RuntimeException((string) __('invoicing.retention.locked'));
         }
+        if (! $invoice->acceptsRetention()) {
+            throw new RuntimeException((string) __('invoicing.retention.final_only'));
+        }
         if (($percent === null) === ($fixedAmount === null)) {
             throw new RuntimeException((string) __('invoicing.retention.needs_one_basis'));
         }
@@ -57,9 +60,15 @@ class RetentionService {
         // gegen zu hohe Einbehalte bleibt der Bruttobetrag, denn nur der wird
         // tatsächlich überwiesen.
         $gross = round($invoice->total?->toFloat() ?? 0.0, 2);
-        $base = $baseKind === RetentionBase::Net
-            ? round($invoice->subtotal?->toFloat() ?? 0.0, 2)
-            : $gross;
+        if ($invoice->type === Invoice::TYPE_FINAL) {
+            // Schlussrechnung: Grundlage ist die Gesamtleistung, nicht der Rest nach den Abschlägen.
+            $performance = $invoice->performanceTotals();
+            $base = round(($baseKind === RetentionBase::Net ? $performance['subtotal'] : $performance['total'])->toFloat(), 2);
+        } else {
+            $base = $baseKind === RetentionBase::Net
+                ? round($invoice->subtotal?->toFloat() ?? 0.0, 2)
+                : $gross;
+        }
         if ($base <= 0.0 || $gross <= 0.0) {
             throw new RuntimeException((string) __('invoicing.retention.no_total'));
         }

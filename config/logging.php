@@ -59,6 +59,9 @@ return [
     // Security-Log zusätzlich an Syslog spiegeln (SIEM-Anbindung, Feature 096).
     'security_syslog' => env('SECURITY_LOG_SYSLOG', false),
 
+    // Strukturierter SIEM-Export (MVP-452): off | cef | json; Ziel Datei oder Syslog über UDP.
+    'security_siem_format' => env('SECURITY_SIEM_FORMAT', 'off'),
+
     'channels' => [
 
         'stack' => [
@@ -83,6 +86,27 @@ return [
                 'allowInlineLineBreaks' => false,
             ],
         ],
+
+        // SIEM-Export (MVP-452): eine Zeile je Ereignis (CEF oder JSON), nur über den SecurityEventLogger.
+        'security_siem' => env('SECURITY_SIEM_TARGET', 'file') === 'syslog'
+            ? [
+                'driver' => 'monolog',
+                'handler' => Monolog\Handler\SyslogUdpHandler::class,
+                'handler_with' => [
+                    'host' => env('SECURITY_SIEM_HOST', '127.0.0.1'),
+                    'port' => (int) env('SECURITY_SIEM_PORT', 514),
+                    'ident' => 'workdiary',
+                ],
+                'formatter' => Monolog\Formatter\LineFormatter::class,
+                'formatter_with' => ['format' => '%message%', 'allowInlineLineBreaks' => false],
+            ]
+            : [
+                'driver' => 'daily',
+                'path' => storage_path('logs/security-siem.log'),
+                'days' => (int) env('SECURITY_LOG_DAYS', 30),
+                'formatter' => Monolog\Formatter\LineFormatter::class,
+                'formatter_with' => ['format' => "%message%\n", 'allowInlineLineBreaks' => false],
+            ],
 
         'single' => [
             'driver' => 'single',

@@ -1,7 +1,7 @@
 ---
 title: "License management"
 topic: admin.license
-version: 1
+version: 2
 audience:
     - admin
 related:
@@ -51,3 +51,11 @@ Good to know:
 - Plan downgrades lock modules via plan gating; contents of modules
   with retention obligations are preserved.
 - No files are uploaded – licenses are entered as signed keys.
+
+## Billing details and plan change
+
+Under "Billing details" you maintain the invoice recipient, email, address,
+VAT ID and purchase order reference for billing by the operator. There you
+also request a different plan or add-on modules; each organization has one
+open request, which you can withdraw. The operator completes it by issuing
+a new license.

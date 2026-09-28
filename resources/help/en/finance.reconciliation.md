@@ -1,7 +1,7 @@
 ---
 title: "Payment reconciliation"
 topic: finance.reconciliation
-version: 1
+version: 2
 audience: []
 modules:
     - module.finance
@@ -58,3 +58,11 @@ recorded in a tamper-evident hash chain.
 - **Import bank file** and **confirm/undo allocations:** the *Accounting*
   role (and administrators).
 - **Manage own bank accounts:** administrators only.
+
+## RF payment reference
+
+When the RF payment reference is switched on in the organization settings, every invoice carries an
+RF creditor reference (ISO 11649) derived from its number — in the payment
+details and as a structured reference in the GiroCode. When the customer
+pays with this reference, the reconciliation recognises the invoice by it,
+even when written in groups of four.

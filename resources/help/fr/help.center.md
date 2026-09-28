@@ -1,10 +1,11 @@
 ---
 title: "Centre d'aide"
 topic: help.center
-version: 1
+version: 2
 audience: []
 related:
     - account.shortcuts
+    - help.errors
     - search.overview
 ---
 
@@ -26,3 +27,9 @@ Depuis l'aide contextuelle, vous accédez à tout moment au centre d'aide :
 l'icône de livre dans l'en-tête de l'aide ouvre cette vue d'ensemble et le
 champ de recherche situé en dessous lance votre recherche directement ici.
 « Ouvrir l'aide détaillée » mène à la page du sujet actuellement affiché.
+
+« Consultés récemment » dans la vue d'ensemble liste les sujets que vous
+avez ouverts en dernier dans le centre d'aide ou dans l'aide latérale. La
+liste est enregistrée uniquement dans votre navigateur. Les pages d'erreur
+renvoient via « Qu'est-ce que cela signifie ? » directement à la section
+correspondante de l'aide sur les messages d'erreur.

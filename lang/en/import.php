@@ -13,6 +13,9 @@ declare(strict_types=1);
 return [
     'entity' => [
         'meter_readings' => 'Meter readings',
+        'sustainability_activities' => 'ESG consumption',
+        'inspection_measurements' => 'Inspection measurements',
+        'asset_positions' => 'Equipment positions',
         'customers' => 'Customers',
         'suppliers' => 'Suppliers',
         'articles' => 'Articles',
@@ -94,7 +97,21 @@ return [
             'contactPersons' => 'More than :max contact persons per customer/supplier are not supported.',
         ],
         'meterReading' => ['decreasing' => 'Reading lower than the previous one.'],
+        'calendar' => [
+            'fetch' => 'The calendar could not be fetched. Please check the connection.',
+            'unknown' => 'Unknown calendar connection.',
+        ],
+        'sustainability' => [
+            'activityCode' => 'Unknown activity “:value”.',
+            'period' => 'The end lies before the start.',
+            'subjectBoth' => 'Site and customer are mutually exclusive.',
+            'negative' => 'The quantity must not be negative.',
+        ],
+        'measurement' => ['ambiguous' => 'Several inspections on :date — please specify the inspection profile.'],
+        'position' => ['coordinates' => 'Invalid coordinates.'],
         'fkMissing' => [
+            'site' => 'No site “:value” found.',
+            'inspection' => 'No inspection on :date found for :asset.',
             'customer' => 'No customer with number :number found.',
             'supplier' => 'No supplier with number :number found.',
             'asset' => 'No asset with number :number found.',
@@ -148,6 +165,9 @@ return [
     'upload' => [
         'recurrenceWindow' => 'Expand recurring events from / to',
         'recurrenceWindowHint' => 'Recurring events are imported as individual occurrences within this period. If left empty: the last 90 days up to today.',
+        'calendar' => 'Or from a connected calendar',
+        'calendarHint' => 'The events of the period are fetched and checked like an iCal file; the period is then required.',
+        'calendarNone' => '— Upload a file —',
         'csv' => 'CSV, Excel or iCal file (.csv, .xlsx, .ics, max. :mb MB, :rows rows)',
         'zip' => 'ZIP file with manifest.csv and the document files (.zip, max. :mb MB, :entries files)',
         'zipHint' => 'Each manifest.csv row (template above) references one file inside the ZIP and assigns it to a customer, project or asset.',

@@ -432,6 +432,7 @@ return [
             'rental' => [
                 'returnOverdue' => 'Verleih-Rückgabe überfällig',
                 'requested' => 'Verleih-Anfrage aus dem Portal eingegangen',
+                'geofenceDeviation' => 'Verliehenes Gerät außerhalb des Einsatzorts',
             ],
             'assetFinance' => [
                 'deadline' => 'Leasingfrist fällig',

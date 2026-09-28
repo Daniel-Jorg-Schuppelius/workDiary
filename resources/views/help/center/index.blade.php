@@ -159,6 +159,12 @@
                 </a>
             @endforeach
         </div>
+        {{-- Zuletzt angesehen (MVP-972): füllt help-center.js aus dem Browser-Speicher. --}}
+        <div class="rounded-(--panel-radius) border border-base-300 bg-base-100 p-5 shadow-xs" hidden
+             data-help-recent data-show-url="{{ route('help.center.show', ['topic' => 'recent.placeholder']) }}">
+            <h2 class="mb-3 font-['Space_Grotesk'] text-sm font-semibold text-base-content">{{ __('Zuletzt angesehen') }}</h2>
+            <ul class="grid grid-cols-1 gap-x-5 gap-y-2 text-sm sm:grid-cols-2 xl:grid-cols-3" data-help-recent-list></ul>
+        </div>
         @if (($popular ?? []) !== [])
             {{-- Beliebte Themen (MVP-755): meistgelesene Artikel der eigenen
                  Organisation, bereits sichtbarkeitsgefiltert. --}}

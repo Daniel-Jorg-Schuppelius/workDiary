@@ -103,11 +103,15 @@ return [
         'checkedIn' => 'Asset assignment: checked in',
         'checkedOut' => 'Asset assignment: checked out',
     ],
+    'security' => [
+        'ipBanReleased' => 'IP ban released',
+    ],
     'assetCompliance' => [
         'assigned' => 'Compliance profile assigned',
         'claimOpened' => 'Compliance: claim opened',
         'decommissionRequested' => 'Decommission requested',
         'inspected' => 'Asset inspected',
+        'measurementImported' => 'Inspection measurement imported',
         'restrictedUse' => 'Use restricted',
     ],
     'assetDefect' => [

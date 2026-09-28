@@ -62,7 +62,7 @@ return [
                 'agile.*', 'open-issues*', 'construction-notices*', 'boq.*',
                 'permits.*', 'recipes.*', 'manufacturing.*', 'print.*',
                 'patrols.*', 'helpdesk.*', 'sla.*', 'support.*', 'ideas.*',
-                'claims.*', 'passenger.*',
+                'claims.*', 'passenger.*', 'damage-cases.*',
             ],
         ],
         'material-lager' => [
@@ -72,7 +72,7 @@ return [
                 'supplier-scorecards.*', 'inventory.*', 'warehouses.*',
                 'materials.*', 'procurement.*', 'products.*', 'pricing.*',
                 'serials.*', 'disposal.*', 'rental.*', 'metering.*',
-                'meter-readings*',
+                'meter-readings*', 'recalls.*', 'supplier-questionnaires.*',
             ],
         ],
         'geraete-fuhrpark' => [

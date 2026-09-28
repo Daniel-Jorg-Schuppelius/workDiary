@@ -1,7 +1,7 @@
 ---
 title: "CSV import"
 topic: admin.import
-version: 2
+version: 3
 audience:
     - admin
 schema: process
@@ -62,3 +62,18 @@ Nothing is written before confirmation — preflight and preview are
 safe. The import history shows all runs with status and can be
 filtered by entity and state. Next: spot-check imported master data
 and clean duplicates via merging.
+
+## Transaction and measurement data
+
+Besides master data, the import also takes ongoing data: meter readings,
+ESG consumption (activity, quantity, period and data quality), inspection
+measurements for existing inspections and equipment positions from
+telematics exports. For positions, WorkDiary reports when rented equipment
+leaves its site.
+
+## Attendances and project times from the calendar
+
+For attendances and project times you can choose a connected calendar
+source instead of a file (CalDAV, Google Calendar, Microsoft 365). The
+events of the chosen period are fetched and checked like an iCal file —
+with preview, category filter and resolution of series.

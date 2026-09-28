@@ -55,6 +55,7 @@ final class AssetManifest extends Manifest {
             'maintenance_plans',
             'maintenance_windows',
             'meter_readings',
+            'asset_positions',
             'permits',
             'software',
             'software_installations',
@@ -90,6 +91,7 @@ final class AssetManifest extends Manifest {
                 \App\Services\Asset\Import\AssetSpec::class,
                 \App\Plugins\RemoteSupport\Import\RemoteSessionSpec::class,
                 \App\Services\MeterReading\Import\MeterReadingSpec::class,
+                \App\Services\Asset\Import\AssetPositionSpec::class,
             ],
         ];
     }

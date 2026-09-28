@@ -222,6 +222,7 @@ return [
             '2fa_failed' => 'Zweiter Faktor fehlgeschlagen',
             'password_reset_requested' => 'Passwort-Zurücksetzung angefordert',
             'impossible_travel' => 'Unmögliche Reise erkannt',
+            'ip_banned' => 'IP-Adresse vorübergehend gesperrt',
         ],
         'wb' => [
             'login_failed' => 'Meldestelle: Anmeldung fehlgeschlagen',

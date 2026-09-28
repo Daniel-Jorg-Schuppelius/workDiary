@@ -1,7 +1,7 @@
 ---
 title: "Sécurité et durcissement"
 topic: admin.security
-version: 1
+version: 2
 audience:
     - admin
 related:
@@ -23,3 +23,16 @@ irrécupérables. `php artisan audit:verify` valide les chaînes de
 hachage des journaux d'audit (à garder au vert), `php artisan
 system:health` vérifie l'état du système, et l'aperçu des composants
 génère une **SBOM** (CycloneDX 1.5) pour les audits.
+
+## Blocage IP temporaire et export SIEM
+
+Sans fail2ban sur le serveur, WorkDiary peut bloquer lui-même
+temporairement des adresses après des échecs répétés (variable
+d'environnement `SECURITY_IP_BAN`, désactivée par défaut) : 15 minutes, une
+heure en cas de récidive, puis 24 heures. Les sessions connectées et les
+réseaux privés ne sont jamais concernés ; vous voyez et levez les blocages
+actifs sous « Détection d’attaques ». Comme de nombreux utilisateurs
+peuvent partager une adresse (réseaux mobiles, réseaux d'entreprise),
+fail2ban reste le premier choix. Pour un SIEM, WorkDiary écrit en outre
+chaque événement de sécurité au format CEF ou JSON dans un fichier distinct
+ou via syslog (`SECURITY_SIEM_FORMAT`, `SECURITY_SIEM_TARGET`).

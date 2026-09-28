@@ -128,6 +128,8 @@
                         @if ($form === 'asset')
                             <span class="font-semibold">{{ $g['alias'] ?: $g['remote_id'] }}</span>
                             <span class="text-sm text-muted">· {{ $g['provider'] }}</span>
+                        @elseif ($form === 'calendar_series')
+                            <span class="font-semibold">{{ __('Serie') }}: {{ $g['title'] }}</span>
                         @elseif ($form === 'b2b_order')
                             <span class="font-semibold">{{ __('Bestellung') }} {{ $g['order_id'] }}</span>
                             <span class="text-sm text-muted">· {{ $g['customer_name'] ?? $g['buyer_name'] }}</span>
@@ -280,6 +282,17 @@
                             <div class="ms-auto flex flex-wrap items-center justify-end gap-2">
                                 <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost">{{ __('Gruppe verwerfen') }}</button>
                                 <button type="submit" class="btn btn-sm btn-primary">{{ __('Benutzer zuordnen und buchen') }}</button>
+                            </div>
+                        </form>
+                    @elseif ($form === 'calendar_series')
+                        {{-- Serie aus dem Kalender-Rückimport (MVP-977): alle offenen Vorkommen als Termine. --}}
+                        <form method="POST" action="{{ route('admin.integration.inbox.group.book') }}" class="flex flex-wrap items-end gap-2">
+                            @csrf
+                            <input type="hidden" name="plugin" value="{{ $g['plugin_id'] }}">
+                            <input type="hidden" name="group_key" value="{{ $g['group_key'] }}">
+                            <div class="ms-auto flex flex-wrap items-center justify-end gap-2">
+                                <x-button type="submit" form="{{ $dismissFormId }}" tone="ghost" size="sm">{{ __('Gruppe verwerfen') }}</x-button>
+                                <x-button type="submit" tone="primary" size="sm">{{ __('Alle als Termine anlegen') }}</x-button>
                             </div>
                         </form>
                     @elseif ($form === 'b2b_order')

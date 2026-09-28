@@ -18,6 +18,8 @@
        extraNote   Zusatzzeile unter der Message (kleiner, gedämpfter Text)
        details     Inhalt eines aufklappbaren Debug-Blocks (Aufrufer gated
                    selbst auf config('app.debug'))
+       help        App\Enums\Help\HelpDeepLink — „Was bedeutet das?“ verlinkt den
+                   passenden Hilfeabschnitt (nicht bei safe; MVP-972)
        actions     eigene Buttons statt Zurück/Startseite:
                    list<array{label: string, href?: string, tone?: string,
                    icon?: string, reload?: bool}> — reload=true rendert den
@@ -28,6 +30,7 @@
     $requestId = (! $safe && app()->bound(\App\Http\Middleware\AssignRequestId::CONTAINER_KEY))
         ? app(\App\Http\Middleware\AssignRequestId::CONTAINER_KEY)
         : null;
+    $helpUrl = (! $safe && ($help ?? null) instanceof \App\Enums\Help\HelpDeepLink) ? $help->url() : null;
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -85,6 +88,11 @@
                 @php [$retryBefore, $retryAfterText] = array_pad(explode(':seconds', __('Die Seite prüft selbst, ob die Anwendung wieder erreichbar ist, und lädt dann neu — nächste Prüfung in :seconds Sekunden.'), 2), 2, ''); @endphp
                 <p class="mt-3 text-xs text-muted" data-auto-retry-note hidden>
                     {{ $retryBefore }}<span data-auto-retry-countdown>{{ (int) $autoRetry }}</span>{{ $retryAfterText }}
+                </p>
+            @endif
+            @if ($helpUrl !== null)
+                <p class="mt-3 text-sm">
+                    <a href="{{ $helpUrl }}" class="link link-primary">{{ __('Was bedeutet das?') }}</a>
                 </p>
             @endif
             @if ($requestId !== null)

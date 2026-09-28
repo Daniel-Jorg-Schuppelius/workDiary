@@ -432,6 +432,7 @@ return [
             'rental' => [
                 'returnOverdue' => 'Restituzione noleggio in ritardo',
                 'requested' => 'Richiesta di noleggio ricevuta dal portale',
+                'geofenceDeviation' => 'Attrezzatura noleggiata fuori dal luogo d\'impiego',
             ],
             'assetFinance' => [
                 'deadline' => 'Scadenza leasing',

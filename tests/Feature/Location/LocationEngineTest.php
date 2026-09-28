@@ -66,10 +66,6 @@ class LocationEngineTest extends TestCase {
     }
 
     public function test_distance_matcher_is_accurate(): void {
-        // ~0.0001° Breite ≈ 11.1 m.
-        $distance = GeofenceMatcher::distanceMeters(self::LAT, self::LNG, self::LAT + 0.0001, self::LNG);
-        $this->assertEqualsWithDelta(11.1, $distance, 0.5);
-
         $matcher = new GeofenceMatcher();
         $this->assertNotNull($matcher->match(self::LAT + 0.0001, self::LNG, [$this->geofence]));
         $this->assertNull($matcher->match(self::LAT + 0.01, self::LNG, [$this->geofence])); // ~1.1 km

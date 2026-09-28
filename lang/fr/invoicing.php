@@ -87,6 +87,9 @@ return [
     ],
     // Sicherheitseinbehalte § 17 VOB/B (Feature 113, MVP-602).
     'retention' => [
+        'final_only' => 'Les factures d\'acompte et partielles ne portent pas de retenue de garantie — elle est calculée sur la prestation totale dans la facture finale.',
+        'final_base_hint' => 'Facture finale : le pourcentage porte sur la prestation totale avant déduction des acomptes ; il est déduit du montant à payer.',
+        'exceeds_after_settlement' => 'Les retenues saisies dépassent le montant à payer après imputation des acomptes. Veuillez ajuster les retenues.',
         'dialog_title' => 'Enregistrer une retenue',
         'submit' => 'Enregistrer',
         'dialog_hint' => 'La retenue figure sur le document et est déduite du poste ouvert. Elle n’est plus modifiable après émission.',

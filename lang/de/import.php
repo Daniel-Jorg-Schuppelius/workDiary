@@ -13,6 +13,9 @@ declare(strict_types=1);
 return [
     'entity' => [
         'meter_readings' => 'Zählerstände',
+        'sustainability_activities' => 'ESG-Verbräuche',
+        'inspection_measurements' => 'Prüfmesswerte',
+        'asset_positions' => 'Gerätepositionen',
         'customers' => 'Kunden',
         'suppliers' => 'Lieferanten',
         'articles' => 'Artikel',
@@ -94,7 +97,21 @@ return [
             'contactPersons' => 'Mehr als :max Ansprechpartner je Kunde/Lieferant sind nicht vorgesehen.',
         ],
         'meterReading' => ['decreasing' => 'Stand kleiner als der vorherige.'],
+        'calendar' => [
+            'fetch' => 'Der Kalender konnte nicht abgerufen werden. Bitte die Verbindung prüfen.',
+            'unknown' => 'Unbekannte Kalenderverbindung.',
+        ],
+        'sustainability' => [
+            'activityCode' => 'Unbekannte Aktivität „:value“.',
+            'period' => 'Das Ende liegt vor dem Beginn.',
+            'subjectBoth' => 'Standort und Kunde schließen sich aus.',
+            'negative' => 'Die Menge darf nicht negativ sein.',
+        ],
+        'measurement' => ['ambiguous' => 'Mehrere Prüfungen am :date — bitte das Prüfprofil angeben.'],
+        'position' => ['coordinates' => 'Ungültige Koordinaten.'],
         'fkMissing' => [
+            'site' => 'Kein Standort „:value“ gefunden.',
+            'inspection' => 'Keine Prüfung am :date für :asset gefunden.',
             'customer' => 'Kein Kunde mit Nummer :number gefunden.',
             'supplier' => 'Kein Lieferant mit Nummer :number gefunden.',
             'asset' => 'Kein Asset mit Nummer :number gefunden.',
@@ -148,6 +165,9 @@ return [
     'upload' => [
         'recurrenceWindow' => 'Serientermine auflösen von / bis',
         'recurrenceWindowHint' => 'Wiederkehrende Termine werden in diesem Zeitraum einzeln übernommen. Ohne Angabe: die letzten 90 Tage bis heute.',
+        'calendar' => 'Oder aus einem verbundenen Kalender',
+        'calendarHint' => 'Die Termine des Zeitraums werden abgerufen und wie eine iCal-Datei geprüft; der Zeitraum ist dann Pflicht.',
+        'calendarNone' => '— Datei hochladen —',
         'csv' => 'CSV-, Excel- oder iCal-Datei (.csv, .xlsx, .ics, max. :mb MB, :rows Zeilen)',
         'zip' => 'ZIP-Datei mit manifest.csv und den Dokumentdateien (.zip, max. :mb MB, :entries Dateien)',
         'zipHint' => 'Die manifest.csv (Vorlage oben) verweist je Zeile auf eine Datei im ZIP und ordnet sie Kunde, Projekt oder Asset zu.',

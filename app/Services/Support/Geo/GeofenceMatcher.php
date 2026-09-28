@@ -11,14 +11,13 @@
 namespace App\Services\Support\Geo;
 
 use App\Models\Location\CustomerGeofence;
+use CommonToolkit\Helper\Geo\GeoHelper;
 
 /**
  * Ordnet eine Koordinate dem nächstgelegenen aktiven Geofence zu, dessen Radius
  * den Punkt einschließt. Reine Geometrie, keine Persistenz.
  */
 class GeofenceMatcher {
-    private const EARTH_RADIUS_M = 6_371_000.0;
-
     /**
      * Liefert den nächsten Geofence, in dessen Radius (lat,lng) liegt, oder null.
      *
@@ -29,7 +28,7 @@ class GeofenceMatcher {
         $bestDistance = INF;
 
         foreach ($geofences as $geofence) {
-            $distance = self::distanceMeters(
+            $distance = GeoHelper::haversineMeters(
                 $lat,
                 $lng,
                 (float) $geofence->center_lat,
@@ -43,18 +42,5 @@ class GeofenceMatcher {
         }
 
         return $best;
-    }
-
-    /**
-     * Haversine-Distanz in Metern zwischen zwei WGS84-Koordinaten.
-     */
-    public static function distanceMeters(float $lat1, float $lng1, float $lat2, float $lng2): float {
-        $dLat = deg2rad($lat2 - $lat1);
-        $dLng = deg2rad($lng2 - $lng1);
-
-        $a = sin($dLat / 2) ** 2
-            + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLng / 2) ** 2;
-
-        return self::EARTH_RADIUS_M * 2 * asin(min(1.0, sqrt($a)));
     }
 }
