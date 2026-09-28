@@ -51,6 +51,10 @@ use Tests\TestCase;
  *
  * Neu aufgenommen 2026-09-25 (`MVP-901`, Protokollvorlagen): einziges Delta
  * ist `/protocol-templates` im Header-Systemmenü der Org-Admin-Personas.
+ *
+ * Neu aufgenommen 2026-09-28 (Feature 158 aufgeteilt): Sidebar und Kopfnavigation
+ * führen `/lexware/uebergabe` statt `/lexware/tarif`; das Tarifprofil steht im
+ * Header-Systemmenü (`enterprise_admin`, Recht Finanzkonfiguration).
  */
 class NavigationGoldenTest extends TestCase {
     use RefreshDatabase;

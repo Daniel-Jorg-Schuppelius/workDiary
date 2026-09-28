@@ -12,7 +12,7 @@
 @extends('layouts.app')
 
 @section('title', __('lexware.handover.title'))
-@section('nav-title', __('lexware.menu'))
+@section('nav-title', __('lexware.handover.title'))
 
 @php
     use App\Enums\Lexoffice\LexofficeHandoverStatus;

@@ -10,15 +10,17 @@
 
 namespace App\Http\Controllers\Platform;
 
+use App\Enums\Modules\ModuleKind;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
+use App\Modules\{Manifest, ModuleRegistry};
 use App\Services\Navigation\StartPageResolver;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class HomeController extends Controller {
-    public function __invoke(Request $request, StartPageResolver $startPages): View|RedirectResponse {
+    public function __invoke(Request $request, StartPageResolver $startPages, ModuleRegistry $modules): View|RedirectResponse {
         $canViewSensitive = Auth::check();
         $legacyConfigured = filled(config('database.connections.legacy.database'));
 
@@ -55,7 +57,12 @@ class HomeController extends Controller {
         }
 
         // Ab hier nur noch Gäste: öffentliche Produkt-Landingpage.
-        return view('home');
+        return view('home', [
+            'moduleCount' => count(array_filter(
+                $modules->all(),
+                static fn(Manifest $manifest): bool => $manifest->kind() !== ModuleKind::Platform,
+            )),
+        ]);
     }
 
     public function switchMode(Request $request, string $mode): RedirectResponse {

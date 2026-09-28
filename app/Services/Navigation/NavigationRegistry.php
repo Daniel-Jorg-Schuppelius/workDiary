@@ -568,8 +568,9 @@ class NavigationRegistry {
                             ? [['route' => 'finance.resale.index', 'label' => __('resale.title.menu'), 'icon' => 'subscriptions', 'modal' => false, 'matches' => ['finance.resale.*']]]
                             : []),
                         ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
-                        // Lexware-Office-Tarifergänzungen (Feature 158): Tarifprofil, Funktionsmatrix, Übergabeliste.
-                        ['route' => 'lexoffice.plan.index', 'label' => __('lexware.menu'), 'icon' => 'tune', 'modal' => false, 'matches' => ['lexoffice.plan.*', 'lexoffice.handover.*']],
+                        // Lexware-Übergabe (Feature 158): lokal ausgestellte Belege an Lexware übergeben —
+                        // Abrechnungsarbeit; Tarifprofil und Funktionsmatrix stehen im Systemmenü.
+                        ['route' => 'lexoffice.handover.index', 'label' => __('lexware.handover.title'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['lexoffice.handover.*']],
                         ['route' => 'investments.index', 'label' => __('Investitionen'), 'icon' => 'trending_up', 'modal' => false, 'matches' => ['investments.*']],
                     ],
                 ],
@@ -1688,7 +1689,7 @@ class NavigationRegistry {
                 ['route' => 'finance.transfers.index', 'label' => __('finance.title.menu'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['finance.transfers.*']],
                 ['route' => 'finance.reconciliation.index', 'label' => __('bank.title.menu'), 'icon' => 'account_balance', 'modal' => false, 'matches' => ['finance.reconciliation.*', 'finance.bank-accounts.*']],
                 ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
-                ['route' => 'lexoffice.plan.index', 'label' => __('lexware.menu'), 'icon' => 'tune', 'modal' => false, 'matches' => ['lexoffice.plan.*', 'lexoffice.handover.*']],
+                ['route' => 'lexoffice.handover.index', 'label' => __('lexware.handover.title'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['lexoffice.handover.*']],
                 ['route' => 'events.index', 'label' => __('Veranstaltungen'), 'icon' => 'event', 'modal' => false, 'matches' => ['events.*']],
                 ['route' => 'flex.index', 'label' => __('Arbeitszeitkonto'), 'icon' => 'hourglass_top', 'modal' => false, 'matches' => ['flex.*']],
                 ['route' => 'archive.index', 'label' => __('Archiv'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['archive.*']],
@@ -1804,6 +1805,8 @@ class NavigationRegistry {
                 }
                 if (Gate::allows(Permission::FinanceConfig->value)) {
                     $adminNavItems[] = ['route' => 'finance.bank-accounts.index', 'label' => __('bank.title.accounts'), 'icon' => 'account_balance', 'modal' => false];
+                    // Lexware-Tarifprofil und Funktionsmatrix (Feature 158): Einrichtung, keine Tagesarbeit.
+                    $adminNavItems[] = ['route' => 'lexoffice.plan.index', 'label' => __('lexware.menu'), 'icon' => 'tune', 'modal' => false, 'matches' => ['lexoffice.plan.*']];
                     $adminNavItems[] = ['route' => 'admin.text-corrections.index', 'label' => __('textcorrections.title.index'), 'icon' => 'spellcheck', 'modal' => false, 'matches' => ['admin.text-corrections.*']];
                 }
                 if (Gate::allows(Permission::FormTemplateViewAny->value)) {
