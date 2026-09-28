@@ -33,6 +33,9 @@ use Illuminate\Validation\ValidationException;
  * nicht angerechnet. Keine Kopplung an Arbeitszeitkonten.
  */
 class ClubAttendanceService {
+    /** Selbst-Check-in öffnet so viele Minuten vor Beginn (MVP-1004). */
+    public const CHECKIN_LEAD_MINUTES = 60;
+
     public function __construct(
         private readonly ClubEventService $clubEvents,
     ) {}
@@ -87,6 +90,23 @@ class ClubAttendanceService {
         }
 
         return $members->sortBy(fn(ClubMember $member): string => $member->last_name . ' ' . $member->first_name)->values();
+    }
+
+    /**
+     * Selbst-Check-in per Termincode (MVP-1004): nur im Zeitfenster bis Terminende
+     * und nur für Mitglieder der Soll-Liste; die Leitung kann danach korrigieren.
+     */
+    public function selfCheckIn(Event $event, ClubMember $member, User $actor): ClubAttendanceSheet {
+        $now = CarbonImmutable::now();
+        if ($now->lessThan(CarbonImmutable::instance($event->started_at)->subMinutes(self::CHECKIN_LEAD_MINUTES)) || $now->greaterThan(CarbonImmutable::instance($event->ended_at))) {
+            throw ValidationException::withMessages(['checkin' => __('club.checkin.error.window')]);
+        }
+        $sheet = $this->sheetFor($event);
+        if (! $this->rosterFor($sheet, $event)->contains('id', $member->id)) {
+            throw ValidationException::withMessages(['checkin' => __('club.checkin.error.not_expected')]);
+        }
+
+        return $this->saveRows($sheet, [$member->id => ['status' => ClubAttendanceStatus::Present->value]], $actor, $sheet->version);
     }
 
     /**

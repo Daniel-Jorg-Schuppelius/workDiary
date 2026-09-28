@@ -249,4 +249,10 @@ return [
         'threshold' => 'Tickets from',
         'window_days' => 'Window (days)',
     ],
+    'shipping' => [
+        'heading' => 'Shipping and customs',
+        'description' => 'Sender details for commercial and pro forma invoices on shipments outside the EU.',
+        'eori_number' => 'EORI number',
+        'eori_number_hint' => 'Customs number of the company (country code and up to 15 characters), e.g. DE1234567.',
+    ],
 ];

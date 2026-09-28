@@ -50,9 +50,10 @@ class GirocodeService {
      * SVG-Data-URI des Girocodes — oder null, wenn er nicht erscheinen soll.
      *
      * @param array<string, mixed> $legal Rechtsangaben der Organisation (BrandingService::legalFor)
+     * @param float|null $amount abweichender Zahlbetrag, etwa die Gesamtforderung einer Mahnung (MVP-997)
      */
-    public function dataUri(Invoice $invoice, array $legal): ?string {
-        $payload = $this->payload($invoice, $legal);
+    public function dataUri(Invoice $invoice, array $legal, ?float $amount = null): ?string {
+        $payload = $this->payload($invoice, $legal, $amount);
 
         return $payload === null ? null : $this->render($payload);
     }
@@ -63,7 +64,7 @@ class GirocodeService {
      *
      * @param array<string, mixed> $legal
      */
-    public function payload(Invoice $invoice, array $legal): ?string {
+    public function payload(Invoice $invoice, array $legal, ?float $amount = null): ?string {
         if (! $this->enabled($invoice)) {
             return null;
         }
@@ -80,7 +81,7 @@ class GirocodeService {
             return null;
         }
 
-        $amount = $this->amount($invoice);
+        $amount = $amount === null ? $this->amount($invoice) : ($invoice->status === Invoice::STATUS_PAID || round($amount, 2) < 0.01 ? null : round($amount, 2));
         if ($amount === null) {
             return null;
         }

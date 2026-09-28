@@ -86,6 +86,16 @@
         </x-select-field>
     </x-form-group>
 
+    {{-- MVP-1007: Zollangaben für Handels- und Proformarechnungen. --}}
+    <x-form-group :legend="__('article.group.customs')" icon="public" tone="primary" cols="3">
+        <x-input-field name="customs_tariff_number" :label="__('article.field.customs_tariff_number')" maxlength="20" inputmode="numeric"
+                       :value="old('customs_tariff_number', $article?->customs_tariff_number)" :hint="__('article.field.customs_tariff_number_hint')" />
+        <x-input-field name="origin_country" :label="__('article.field.origin_country')" maxlength="2" class="uppercase"
+                       :value="old('origin_country', $article?->origin_country)" :hint="__('article.field.origin_country_hint')" />
+        <x-input-field name="net_weight_kg" type="number" step="0.0001" min="0" :label="__('article.field.net_weight_kg')"
+                       :value="old('net_weight_kg', $article?->net_weight_kg?->getValue())" :hint="__('article.field.net_weight_kg_hint')" />
+    </x-form-group>
+
     <x-form-group :legend="__('article.group.pricing')" icon="payments" tone="primary" cols="3">
         <x-input-field name="default_purchase_price" type="number" step="0.0001" min="0"
                        :label="__('article.field.default_purchase_price')"

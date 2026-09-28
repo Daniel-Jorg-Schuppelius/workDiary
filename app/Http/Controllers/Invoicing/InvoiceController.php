@@ -1018,7 +1018,7 @@ class InvoiceController extends Controller {
             if ($invoice->status === Invoice::STATUS_DRAFT && ! $invoice->isCreditNote()) {
                 $validationInvoice->status = Invoice::STATUS_ISSUED;
                 $validationInvoice->issued_on ??= now();
-                $validationInvoice->due_on ??= now()->addDays($validationInvoice->payment_terms_days ?? 14);
+                $validationInvoice->due_on ??= now()->addDays($validationInvoice->effectivePaymentTermsDays());
             }
             $generator = app(\App\Services\Invoicing\EInvoice\XRechnungGenerator::class);
             $profile = $deliveryFormat->needsZugferd()

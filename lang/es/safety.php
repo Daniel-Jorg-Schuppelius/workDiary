@@ -34,6 +34,7 @@ return [
         'closed_by' => 'Cerrado por',
         'followup_title' => 'Título de la medida de seguimiento',
         'followup_description' => 'Descripción (opcional)',
+        'hazard_assessment' => 'Evaluación de riesgos',
     ],
 
     'section' => [
@@ -64,6 +65,7 @@ return [
     'hint' => [
         'root_cause_for_close' => 'Para cerrar el evento se requiere un análisis de causa raíz.',
         'followup' => 'Crea un punto abierto como retrabajo vinculado a este evento.',
+        'hazard_assessment' => 'La evaluación se considera pendiente de revisión hasta que se apruebe una nueva versión.',
     ],
 
     'flash' => [
@@ -272,5 +274,39 @@ return [
             'open_count' => '{1} :count pendiente|[2,*] :count pendientes',
         ],
         'status_summary' => ':signed de :total confirmados',
+    ],
+    // Gefährdungskatalog (MVP-1002).
+    'catalog' => [
+        'title' => 'Catálogo de peligros',
+        'subtitle' => 'Peligros típicos con medidas como plantilla para evaluaciones de riesgos',
+        'empty' => 'El catálogo está vacío.',
+        'own' => 'propio',
+        'action' => [
+            'add' => 'Añadir peligro',
+            'edit' => 'Editar peligro',
+            'import' => 'Tomar del catálogo',
+        ],
+        'field' => [
+            'category' => 'Categoría',
+            'hazard' => 'Peligro',
+            'measure' => 'Medida',
+            'severity' => 'Gravedad (1–5)',
+            'likelihood' => 'Probabilidad (1–5)',
+            'risk' => 'Riesgo',
+            'risk_short' => 'gravedad :severity, probabilidad :likelihood',
+            'source' => 'Origen',
+            'is_active' => 'Activo',
+        ],
+        'hint' => [
+            'import' => 'Los peligros elegidos se toman con medida y riesgo previo; los ya incluidos se omiten.',
+        ],
+        'events' => [
+            'title' => 'Motivos de eventos de seguridad',
+            'review_triggered' => 'Revisión iniciada: tras aprobar esta versión se produjo un evento.',
+        ],
+        'flash' => [
+            'saved' => 'Peligro guardado.',
+            'added' => '{0} No se tomó ningún peligro nuevo.|{1} Se tomó :count peligro.|[2,*] Se tomaron :count peligros.',
+        ],
     ],
 ];

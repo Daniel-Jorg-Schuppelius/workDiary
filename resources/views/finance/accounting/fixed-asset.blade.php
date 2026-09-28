@@ -50,6 +50,17 @@
                                 <a class="link link-hover" href="{{ route('assets.show', $fixedAsset->asset) }}">{{ $fixedAsset->asset->asset_no }} · {{ $fixedAsset->asset->name }}</a>
                             </x-detail-grid.row>
                         @endif
+                        @if ($fixedAsset->assetClass !== null)
+                            <x-detail-grid.row :label="__('accounting.fixed_assets.field.class')" :value="$fixedAsset->assetClass->name" />
+                        @endif
+                        {{-- Herkunft (MVP-999): Eingangsrechnung oder Auslage, aus der die Anlage entstand. --}}
+                        @if ($fixedAsset->source instanceof \App\Models\Invoicing\IncomingEInvoice)
+                            <x-detail-grid.row :label="__('accounting.fixed_assets.field.source')">
+                                <a class="link link-primary" href="{{ route('finance.incoming-invoices.show', $fixedAsset->source->document_id) }}">{{ __('accounting.fixed_assets.source.incoming', ['number' => $fixedAsset->source->invoice_number ?? $fixedAsset->source->sqid]) }}</a>
+                            </x-detail-grid.row>
+                        @elseif ($fixedAsset->source instanceof \App\Models\Travel\Expense)
+                            <x-detail-grid.row :label="__('accounting.fixed_assets.field.source')" :value="__('accounting.fixed_assets.source.expense', ['description' => $fixedAsset->source->description])" />
+                        @endif
                         <x-detail-grid.row :label="__('accounting.fixed_assets.column.acquired_on')" :value="$fixedAsset->acquired_on->fdate()" />
                         <x-detail-grid.row :label="__('accounting.fixed_assets.column.cost')" :value="$fixedAsset->acquisition_cost?->format()" />
                         <x-detail-grid.row :label="__('accounting.fixed_assets.field.residual_value')" :value="$fixedAsset->residual_value?->format() ?? '—'" />

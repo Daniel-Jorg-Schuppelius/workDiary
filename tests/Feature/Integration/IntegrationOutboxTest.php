@@ -16,6 +16,7 @@ use App\Jobs\Integration\IntegrationOutboxDeliveryJob;
 use App\Models\Integration\{IntegrationInboxItem, IntegrationOutboxEntry};
 use App\Services\Integration\{IntegrationOutboxDispatcherResolver, IntegrationOutboxService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Queue\{MaxAttemptsExceededException, TimeoutExceededException};
 use Illuminate\Support\Facades\Queue;
 use RuntimeException;
 use Tests\Concerns\WithOrganization;
@@ -155,5 +156,22 @@ final class IntegrationOutboxTest extends TestCase {
         // Wiederholtes failed() erzeugt keinen zweiten Fall.
         (new IntegrationOutboxDeliveryJob($entry->id))->failed(new RuntimeException('noch einmal'));
         $this->assertSame(1, IntegrationInboxItem::withoutGlobalScopes()->where('dedupe_key', 'outbox-failed:op:terminal')->count());
+    }
+
+    /** Nutzerbefund 2026-09-28: Laravels Timeout-Text mit Job-Klassenname stand als Untertitel in der Inbox. */
+    public function test_queue_timeout_is_stored_as_readable_reason(): void {
+        Queue::fake();
+        $timeout = $this->enqueueEntry('op:timeout');
+        $exhausted = $this->enqueueEntry('op:exhausted');
+
+        (new IntegrationOutboxDeliveryJob($timeout->id))->failed(new TimeoutExceededException(IntegrationOutboxDeliveryJob::class . ' has timed out.'));
+        (new IntegrationOutboxDeliveryJob($exhausted->id))->failed(new MaxAttemptsExceededException(IntegrationOutboxDeliveryJob::class . ' has been attempted too many times.'));
+
+        $subtitles = IntegrationInboxItem::withoutGlobalScopes()
+            ->whereIn('dedupe_key', ['outbox-failed:op:timeout', 'outbox-failed:op:exhausted'])
+            ->pluck('display_subtitle', 'dedupe_key');
+        $this->assertSame('Zeitüberschreitung bei der Zustellung', $subtitles['outbox-failed:op:timeout']);
+        $this->assertSame('Zustellung nach zu vielen Versuchen abgebrochen', $subtitles['outbox-failed:op:exhausted']);
+        $this->assertSame('Zeitüberschreitung bei der Zustellung', $timeout->refresh()->last_error);
     }
 }

@@ -38,3 +38,10 @@ suppression de comptes ou de clients sont refusées, et les points de
 localisation de la personne sont conservés. Lors d'une fusion de clients, le
 gel passe au client cible. Il n'est levé qu'avec un motif ; les deux restent
 visibles dans le journal de la personne ou du client.
+
+Le rapport d’accès (art. 15/20) peut aussi être créé pour les **membres du
+club** si votre organisation utilise la gestion associative : données de base
+avec représentants légaux, adresses et coordonnées bancaires, ainsi qu’un
+aperçu des données du club (périodes d’adhésion, groupes, présences,
+cotisations, dons, grades, performances et autres) avec un extrait par
+domaine. La recherche trouve les membres par nom, e-mail ou numéro de membre.

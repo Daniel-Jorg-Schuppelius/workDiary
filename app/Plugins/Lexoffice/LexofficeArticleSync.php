@@ -17,6 +17,7 @@ use App\Models\Platform\Organization;
 use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use App\Services\Inventory\VariantMatcher;
+use App\Support\MorphMap;
 use RuntimeException;
 
 /**
@@ -201,7 +202,7 @@ class LexofficeArticleSync {
                 [
                     'plugin_id' => LexofficePlugin::ID,
                     'source' => LexofficePlugin::ID,
-                    'target_type' => 'article_variant',
+                    'target_type' => MorphMap::alias(ArticleVariant::class),
                     'external_type' => 'article',
                     'external_id' => $external,
                     'case_type' => IntegrationInboxItem::CASE_AMBIGUOUS,

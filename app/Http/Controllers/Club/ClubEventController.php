@@ -23,10 +23,16 @@ use App\Models\Platform\User;
 use App\Services\Club\ClubEventService;
 use App\Services\UI\DateRangeContext;
 use App\Support\{ErrorText, Sqid, Tz};
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\DataUrlHelper;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use RuntimeException;
 
@@ -142,6 +148,10 @@ class ClubEventController extends Controller {
             'occurrenceCount' => $event->series_id === null ? $event->occurrences()->count() : null,
             'canManage' => Gate::allows('update', $details),
             'canParticipants' => Gate::allows('manageParticipants', $details),
+            // QR-Selbst-Check-in (MVP-1004): nur für die Leitung sichtbar.
+            'checkinQr' => $details->checkin_code !== null && Gate::allows('update', $details)
+                ? DataUrlHelper::encode((new Writer(new ImageRenderer(new RendererStyle(220, 1), new SvgImageBackEnd())))->writeString(route('club.checkin.show', $details->checkin_code)), 'image/svg+xml')
+                : null,
             // Zustellprotokoll (MVP-845): Fehler sichtbar, kein Gelesen-Status.
             'clubNotifications' => $event->clubNotifications()->with('member:id,first_name,last_name')->orderByDesc('id')->limit(50)->get(),
             // Ressourcen (MVP-853): Belegungen und fehlende Freigaben.
@@ -266,6 +276,15 @@ class ClubEventController extends Controller {
         return redirect()
             ->route('club.events.show', $event)
             ->with('success', __('club.events.flash.registration_cancelled', ['name' => $member->fullName()]));
+    }
+
+    /** Termincode für den QR-Selbst-Check-in erzeugen bzw. erneuern (MVP-1004); ein erneuerter Code entwertet den alten. */
+    public function checkinCode(Event $event): RedirectResponse {
+        $details = $this->detailsOrFail($event);
+        Gate::authorize('update', $details);
+        $details->update(['checkin_code' => Str::random(32)]);
+
+        return redirect()->route('club.events.show', $event)->with('success', __('club.checkin.flash.code_created'));
     }
 
     private function detailsOrFail(Event $event): ClubEventDetails {

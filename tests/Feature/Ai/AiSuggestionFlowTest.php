@@ -226,6 +226,21 @@ class AiSuggestionFlowTest extends TestCase {
             ->count());
     }
 
+    /** MVP-1006: alle Positionen übersetzen über die Warteschlange. */
+    public function test_translate_all_queues_one_suggestion_per_line(): void {
+        $invoice = $this->draftInvoice();
+        $first = $this->item($invoice, 'Wartung der Serversysteme');
+        $second = $this->item($invoice, 'Einrichtung Drucker');
+        $this->fake->textResponse = 'Translated';
+
+        $this->actingAs($this->user)->get(route('ai.suggestions.invoice-all-translate-form', $invoice))->assertOk();
+        $this->actingAs($this->user)->post(route('ai.suggestions.invoice-all-translate', $invoice), ['target_language' => 'en'])->assertRedirect();
+
+        $this->assertSame(2, $this->fake->callCount('translate'));
+        $this->assertSame(2, AiTextSuggestion::query()->whereIn('subject_id', [$first->id, $second->id])
+            ->where('capability', ItemTextSuggestionService::CAPABILITY_TRANSLATE)->where('status', AiTextSuggestion::STATUS_PROPOSED)->count());
+    }
+
     public function test_translate_flow_creates_suggestion(): void {
         $invoice = $this->draftInvoice();
         $item = $this->item($invoice, 'Wartung der Serversysteme');

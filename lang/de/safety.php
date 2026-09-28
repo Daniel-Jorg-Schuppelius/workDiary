@@ -34,6 +34,7 @@ return [
         'closed_by' => 'Geschlossen von',
         'followup_title' => 'Titel der Folgemaßnahme',
         'followup_description' => 'Beschreibung (optional)',
+        'hazard_assessment' => 'Gefährdungsbeurteilung',
     ],
 
     'section' => [
@@ -64,6 +65,7 @@ return [
     'hint' => [
         'root_cause_for_close' => 'Für den Abschluss wird eine Ursachenanalyse benötigt.',
         'followup' => 'Legt einen offenen Punkt als Nacharbeit zu diesem Ereignis an.',
+        'hazard_assessment' => 'Die Beurteilung gilt als zur Überprüfung angestoßen, bis eine neue Fassung freigegeben ist.',
     ],
 
     'flash' => [
@@ -272,5 +274,39 @@ return [
             'open_count' => '{1} :count offen|[2,*] :count offen',
         ],
         'status_summary' => ':signed von :total bestätigt',
+    ],
+    // Gefährdungskatalog (MVP-1002).
+    'catalog' => [
+        'title' => 'Gefährdungskatalog',
+        'subtitle' => 'Typische Gefährdungen mit Maßnahmen als Vorlage für Gefährdungsbeurteilungen',
+        'empty' => 'Der Katalog ist leer.',
+        'own' => 'eigene',
+        'action' => [
+            'add' => 'Gefährdung anlegen',
+            'edit' => 'Gefährdung bearbeiten',
+            'import' => 'Aus Katalog übernehmen',
+        ],
+        'field' => [
+            'category' => 'Kategorie',
+            'hazard' => 'Gefährdung',
+            'measure' => 'Maßnahme',
+            'severity' => 'Schwere (1–5)',
+            'likelihood' => 'Wahrscheinlichkeit (1–5)',
+            'risk' => 'Risiko',
+            'risk_short' => 'Schwere :severity, Wahrscheinlichkeit :likelihood',
+            'source' => 'Herkunft',
+            'is_active' => 'Aktiv',
+        ],
+        'hint' => [
+            'import' => 'Die gewählten Gefährdungen werden mit Maßnahme und Risiko vor der Maßnahme übernommen; bereits enthaltene bleiben aus.',
+        ],
+        'events' => [
+            'title' => 'Anlässe aus Sicherheitsereignissen',
+            'review_triggered' => 'Überprüfung angestoßen: Nach der Freigabe dieses Standes ist ein Ereignis eingetreten.',
+        ],
+        'flash' => [
+            'saved' => 'Gefährdung gespeichert.',
+            'added' => '{0} Keine neue Gefährdung übernommen.|{1} :count Gefährdung übernommen.|[2,*] :count Gefährdungen übernommen.',
+        ],
     ],
 ];

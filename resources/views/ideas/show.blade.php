@@ -132,6 +132,7 @@
                 'pos_y' => $n->pos_y,
                 'sort_order' => (int) $n->sort_order,
                 'lock_version' => (int) $n->lock_version,
+                'comment_count' => (int) ($n->comments_count ?? 0),
             ])->values(),
             // Karten-Kopf inkl. karten-weiter lock_version (Whole-Map-Sync des Canvas, MVP-136).
             'map' => [
@@ -165,6 +166,7 @@
                 'presence' => route('ideas.maps.presence', $map),
                 'history' => route('ideas.maps.history', $map),
                 'convert' => route('ideas.nodes.convert', [$map, '__NODE__']),
+                'comments' => route('ideas.nodes.comments', [$map, '__NODE__']),
             ],
             // Überführungsziele (MVP-109): nur anbieten, was lizenziert UND erlaubt ist.
             'convert_targets' => array_values(array_filter([
@@ -419,8 +421,13 @@
                     </label>
                 </div>
 
-                {{-- Überführung + Rückreferenzen (MVP-109) --}}
+                {{-- Überführung + Rückreferenzen (MVP-109), Kommentare am Knoten (MVP-1005) --}}
                 <div class="mt-3 flex flex-wrap items-center gap-2">
+                    <a class="btn btn-xs btn-outline gap-1" data-entry-modal-trigger :href="urlFor('comments', selected)">
+                        <x-icon name="forum" class="text-sm" />
+                        {{ __('ideas.comments.action.open') }}
+                        <span class="badge badge-xs" x-text="commentCount(selected)"></span>
+                    </a>
                     <template x-for="ref in selectedReferences()" :key="ref.label + ref.kind">
                         <a class="badge badge-outline badge-sm gap-1" :href="ref.url" target="_blank">
                             <span class="material-symbols-outlined text-xs" aria-hidden="true" x-text="ref.kind === 'converted' ? 'east' : 'link'"></span>

@@ -249,4 +249,10 @@ return [
         'threshold' => 'Tickets desde',
         'window_days' => 'Ventana (días)',
     ],
+    'shipping' => [
+        'heading' => 'Envío y aduana',
+        'description' => 'Datos del remitente para facturas comerciales y proforma de envíos fuera de la UE.',
+        'eori_number' => 'Número EORI',
+        'eori_number_hint' => 'Número aduanero de la empresa (código de país y hasta 15 caracteres), p. ej. DE1234567.',
+    ],
 ];

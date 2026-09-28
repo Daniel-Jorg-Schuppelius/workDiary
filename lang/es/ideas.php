@@ -194,4 +194,19 @@ return [
         'root_immovable' => 'El nodo raíz no puede moverse ni eliminarse.',
         'foreign_node' => 'El nodo no pertenece a este mapa.',
     ],
+    // Kommentare an Knoten (MVP-1005).
+    'comments' => [
+        'title' => 'Comentarios',
+        'empty' => 'Aún no hay comentarios en este nodo.',
+        'action' => [
+            'open' => 'Comentarios',
+            'add' => 'Comentar',
+        ],
+        'field' => [
+            'body' => 'Comentario',
+        ],
+        'flash' => [
+            'saved' => 'Comentario sobre «:node» guardado.',
+        ],
+    ],
 ];

@@ -10,7 +10,7 @@
 
 namespace App\Models\Customer;
 
-use App\Casts\MoneyCast;
+use App\Casts\{MoneyCast, PercentageCast};
 use App\Enums\Numbering\NumberScope;
 use App\Enums\Project\ProjectStatus;
 use App\Models\Asset\Asset;
@@ -70,6 +70,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $peppol_participant_id
  * @property string|null $peppol_scheme
  * @property \App\Enums\Invoicing\InvoiceDeliveryFormat|null $delivery_format
+ * @property int<0, max>|null $payment_terms_days
+ * @property \CommonToolkit\ValueObjects\Percentage|null $skonto_percent
+ * @property int<0, max>|null $skonto_days
  * @property string|null $debtor_no
  * @property Carbon|null $archived_at
  * @property int|null $created_by
@@ -147,6 +150,10 @@ class Customer extends Model implements ContactDetailsHolder, CustomFieldSubject
         'peppol_participant_id',
         'peppol_scheme',
         'delivery_format',
+        // Zahlungsbedingungen als Vorgabe für neue Rechnungen (MVP-996).
+        'payment_terms_days',
+        'skonto_percent',
+        'skonto_days',
         'debtor_no',
         'exclude_from_reports',
         // Rundschreiben-Opt-out (Feature 119, MVP-608) — getrennt von der
@@ -172,6 +179,9 @@ class Customer extends Model implements ContactDetailsHolder, CustomFieldSubject
         'billing_mode' => \App\Enums\Finance\BillingMode::class,
         // Kunden-Default fürs E-Rechnungs-Ausgabeformat (NULL = PDF).
         'delivery_format' => \App\Enums\Invoicing\InvoiceDeliveryFormat::class,
+        'payment_terms_days' => 'integer',
+        'skonto_percent' => PercentageCast::class . ':2',
+        'skonto_days' => 'integer',
         'archived_at' => 'datetime',
         'hourly_rate' => MoneyCast::class . ':currency,2',
         'internal_rate' => MoneyCast::class . ':currency,2',

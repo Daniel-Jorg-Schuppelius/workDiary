@@ -60,3 +60,14 @@ can share one address (mobile networks, company networks), fail2ban remains
 the first choice. For a SIEM, WorkDiary additionally writes every security
 event in CEF or JSON format to a separate file or via syslog
 (`SECURITY_SIEM_FORMAT`, `SECURITY_SIEM_TARGET`).
+
+## Securing an account after a takeover
+
+If it is confirmed that someone has taken over an account, signing out is not
+enough: whoever knows the password signs in again. “Secure account” in session
+management (for members of your organisation) and “Confirm account takeover”
+on a security event (platform administration) end all sessions and API tokens,
+invalidate the password and all passkeys and send the person a link to set a
+new password. App-based two-factor methods are kept. The action appears as a
+security event and in the audit log. You secure your own account on your
+two-factor authentication page.

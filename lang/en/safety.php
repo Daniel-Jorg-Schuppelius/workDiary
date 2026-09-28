@@ -34,6 +34,7 @@ return [
         'closed_by' => 'Closed by',
         'followup_title' => 'Follow-up title',
         'followup_description' => 'Description (optional)',
+        'hazard_assessment' => 'Risk assessment',
     ],
 
     'section' => [
@@ -64,6 +65,7 @@ return [
     'hint' => [
         'root_cause_for_close' => 'A root cause analysis is required to close the event.',
         'followup' => 'Creates an open issue as rework linked to this event.',
+        'hazard_assessment' => 'The assessment counts as due for review until a new version is approved.',
     ],
 
     'flash' => [
@@ -272,5 +274,39 @@ return [
             'open_count' => '{1} :count open|[2,*] :count open',
         ],
         'status_summary' => ':signed of :total confirmed',
+    ],
+    // Gefährdungskatalog (MVP-1002).
+    'catalog' => [
+        'title' => 'Hazard catalogue',
+        'subtitle' => 'Typical hazards with measures as templates for risk assessments',
+        'empty' => 'The catalogue is empty.',
+        'own' => 'own',
+        'action' => [
+            'add' => 'Add hazard',
+            'edit' => 'Edit hazard',
+            'import' => 'Take from catalogue',
+        ],
+        'field' => [
+            'category' => 'Category',
+            'hazard' => 'Hazard',
+            'measure' => 'Measure',
+            'severity' => 'Severity (1–5)',
+            'likelihood' => 'Likelihood (1–5)',
+            'risk' => 'Risk',
+            'risk_short' => 'severity :severity, likelihood :likelihood',
+            'source' => 'Origin',
+            'is_active' => 'Active',
+        ],
+        'hint' => [
+            'import' => 'The selected hazards are taken over with measure and risk before the measure; ones already included are left out.',
+        ],
+        'events' => [
+            'title' => 'Reasons from safety events',
+            'review_triggered' => 'Review triggered: an event occurred after this version was approved.',
+        ],
+        'flash' => [
+            'saved' => 'Hazard saved.',
+            'added' => '{0} No new hazard taken over.|{1} :count hazard taken over.|[2,*] :count hazards taken over.',
+        ],
     ],
 ];

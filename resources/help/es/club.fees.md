@@ -39,3 +39,14 @@ La gestión de cuotas forma parte de la base de la asociación y funciona sin gr
 **Reclamación:** Solo se reclaman reclamaciones vencidas y no bloqueadas, en como máximo tres niveles (recordatorio, reclamación, última reclamación). Plazo y gastos se fijan conscientemente por reclamación, no se toman de valores por defecto de facturas; los gastos son una reclamación vinculada propia. La reclamación existe como PDF y correo con justificante de entrega. Para reclamaciones en disputa o aplazadas hay un bloqueo con motivo.
 
 **Cobro SEPA:** La propuesta de cobro lista importes restantes vencidos de cuentas con mandato utilizable (el mandato activo del cliente o uno fijado en la cuenta). Una remesa es un lote de adeudos del módulo financiero: liberación y exportación pain.008 ocurren allí. Cada intento recibe una referencia única (número de reclamación y de intento) y la remesa reserva la posición contra un nuevo cobro. La exportación no es un pago: solo «Registrar abono» tras el abono marca la reclamación como pagada. Sin el paquete financiero siguen siendo posibles pagos, reclamación y preparación; solo no la exportación SEPA.
+
+**Donativos y certificados:** En la pestaña «Donativos» registra los
+donativos de socios u otras personas. Con ellos, WorkDiary emite un
+certificado individual o, por persona y año, un certificado conjunto según el
+modelo oficial alemán, con numeración correlativa y anexo. Los datos de
+exención de la asociación (oficina tributaria, número fiscal, resolución, fin
+beneficiado) deben constar en la configuración de la asociación. WorkDiary no
+comprueba si la asociación goza de beneficios fiscales. Las cuotas de socio
+solo pueden certificarse si lo activa; para el deporte y otros fines de ocio
+su deducción está excluida por ley. Los donativos certificados no pueden
+modificarse.

@@ -55,17 +55,23 @@ class DunningPdfRenderer {
     public function viewData(Invoice $invoice, int $level, ?string $note = null, ?float $fee = null, ?CarbonInterface $payUntil = null, ?array $interest = null): array {
         $invoice->loadMissing(['customer', 'organization']);
         $organization = $invoice->organization;
+        $fee = $fee !== null && $fee > 0 ? round($fee, 2) : null;
+        $dunning = app(DunningService::class);
+        $claimTotal = $dunning->claimTotal($invoice, $fee, $interest)->toFloat();
+        $legal = app(BrandingService::class)->legalFor($organization);
 
         return [
             'invoice' => $invoice,
             'level' => $level,
             'note' => $note !== null && trim($note) !== '' ? trim($note) : null,
-            'fee' => $fee !== null && $fee > 0 ? round($fee, 2) : null,
+            'fee' => $fee,
             'payUntil' => $payUntil,
             'interest' => $interest,
-            'paid' => app(DunningService::class)->paidAmount($invoice)->toFloat(),
-            'outstanding' => app(DunningService::class)->openAmount($invoice)->toFloat(),
-            'orgLegal' => app(BrandingService::class)->legalFor($organization),
+            'paid' => $dunning->paidAmount($invoice)->toFloat(),
+            'outstanding' => $dunning->openAmount($invoice)->toFloat(),
+            'claimTotal' => $claimTotal,
+            'girocode' => app(GirocodeService::class)->dataUri($invoice, $legal, $claimTotal),
+            'orgLegal' => $legal,
             'design' => $this->design->context($this->designPayload($invoice)),
         ];
     }

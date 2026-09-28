@@ -28,3 +28,10 @@ fissata subito.
 **Promemoria:** Il controllo notturno delle scadenze segnala i solleciti in
 scadenza e scaduti tramite le regole di notifica. Le offerte accettate o
 rifiutate non compaiono più nell’elenco.
+
+**Tasso di successo:** In «Tasso di successo» WorkDiary mostra per il periodo
+scelto quante offerte sono state vinte, perse o scadute, per numero e per
+volume netto, per cliente o per responsabile. Conta solo la versione più
+recente per numero di offerta. Vale la data della decisione, per le offerte
+scadute la fine della validità. Le offerte aperte non contano per il tasso e
+sono indicate a parte.

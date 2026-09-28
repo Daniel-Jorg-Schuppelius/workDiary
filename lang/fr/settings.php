@@ -249,4 +249,10 @@ return [
         'threshold' => 'Tickets à partir de',
         'window_days' => 'Fenêtre (jours)',
     ],
+    'shipping' => [
+        'heading' => 'Expédition et douane',
+        'description' => 'Données de l’expéditeur pour les factures commerciales et pro forma des envois hors de l’UE.',
+        'eori_number' => 'Numéro EORI',
+        'eori_number_hint' => 'Numéro douanier de l’entreprise (code pays et jusqu’à 15 caractères), p. ex. DE1234567.',
+    ],
 ];

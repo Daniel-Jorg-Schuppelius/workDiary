@@ -78,6 +78,7 @@ return [
             'post_now' => 'Comptabiliser immédiatement',
             'reversal_reason' => 'Motif',
             'reversal_booked_on' => 'Date de la contre-écriture',
+            'cost_center' => 'Centre de coûts',
         ],
         'hint' => [
             'profit_determination' => 'Modifie l\'analyse (recettes/dépenses ou partie double), pas les règles d\'écriture et de preuve.',
@@ -95,6 +96,8 @@ return [
             'normal_balance' => 'Prérempli selon le type de compte, modifiable au cas par cas.',
             'post_now' => 'Une fois comptabilisée, l\'écriture ne se corrige que par une contre-écriture.',
             'reversal_booked_on' => 'Laisser vide pour le jour d\'origine, tant que sa période est ouverte.',
+            'cost_center_required' => 'Les écritures sur ce compte ne peuvent être validées qu’avec un centre de coûts, y compris depuis la boîte de propositions.',
+            'cost_center' => 'S’applique aux lignes débit et crédit.',
         ],
         'action' => [
             'activate' => 'Activer la comptabilité locale',
@@ -177,6 +180,7 @@ return [
             'account_in_use' => 'Ce compte a déjà été mouvementé — il ne peut qu\'être désactivé.',
             'entry_without_organization' => 'L\'écriture n\'a pas d\'organisation — merci d\'informer l\'administrateur.',
             'account_number_taken' => 'Ce numéro de compte existe déjà.',
+            'cost_center_required' => 'Le compte :account exige un centre de coûts.',
         ],
         'preflight' => [
             'not_configured' => 'Profil non encore enregistré — le contrôle démarre au premier enregistrement.',
@@ -243,6 +247,7 @@ return [
             'cash' => 'Caisse',
             'clearing' => 'Attente',
             'inactive' => 'Désactivé',
+            'cost_center_required' => 'Centre de coûts obligatoire',
         ],
         'confirm' => [
             'deactivate' => 'Désactiver vraiment ce compte ? Les écritures existantes sont conservées.',
@@ -361,6 +366,8 @@ return [
             'disposal_kind' => 'Type de sortie',
             'disposal_proceeds' => 'Prix de cession (net)',
             'created_by' => 'Créé par',
+            'class' => 'Catégorie d’immobilisation',
+            'source' => 'Origine',
         ],
         'section' => [
             'master' => 'Données de base',
@@ -380,18 +387,22 @@ return [
             'device' => 'Lien facultatif vers le registre des équipements ; toute immobilisation n\'est pas un équipement.',
             'residual_value' => 'Reste à la fin de la durée d\'utilisation ; 0 par défaut.',
             'useful_life' => 'Durée d\'utilisation usuelle selon la table d\'amortissement, en mois. Pour les biens de faible valeur et le pool, la durée découle de la méthode.',
-            'accounts' => 'Laisser vide pour appliquer la règle comptable du rôle (compte d\'immobilisation / dotation).',
+            'accounts' => 'Laisser vide pour appliquer le compte de la catégorie, sinon la règle comptable du rôle (compte d\'immobilisation / dotation).',
             'frozen' => 'Une dotation est comptabilisée — date d\'acquisition, coût, valeur résiduelle et durée sont figés.',
             'schedule' => 'Linéaire, prorata mensuel l\'année d\'acquisition et de sortie ; la dernière année prend le solde.',
             'posting' => 'L\'amortissement annuel est proposé par exercice lors de la clôture et comptabilisé dans la boîte de réception — jamais directement.',
             'dispose' => 'La sortie clôt le plan d’amortissement le mois de la sortie. La boîte de réception comptable propose la valeur comptable restante comme écriture de sortie.',
             'disposal_proceeds' => 'Uniquement en cas de vente. Le prix est comptabilisé via la facture de vente ; ici, il détermine seulement si la valeur résiduelle est sortie en plus-value ou en moins-value.',
+            'class' => 'Fournit la durée d’utilisation, la méthode et les comptes lorsque vous laissez ces champs vides.',
+            'useful_life_class' => 'En mois ; vide : valeur de la catégorie.',
         ],
         'action' => [
             'add' => 'Ajouter une immobilisation',
             'edit' => 'Modifier l\'immobilisation',
             'dispose' => 'Enregistrer la sortie',
             'dispose_submit' => 'Enregistrer la sortie',
+            'from_source' => 'Enregistrer comme immobilisation',
+            'open_asset' => 'Immobilisation :no',
         ],
         'flash' => [
             'special_saved' => 'Amortissement exceptionnel enregistré.',
@@ -418,6 +429,31 @@ return [
             'disposed_before_acquired' => 'La sortie ne peut pas précéder l\'acquisition.',
             'residual_exceeds_cost' => 'La valeur résiduelle doit être inférieure au coût d\'acquisition.',
             'useful_life_required' => 'La durée d\'utilisation doit être d\'au moins un mois.',
+            'source_used' => 'L’immobilisation :no a déjà été créée à partir de ce justificatif.',
+        ],
+        'method_from_class' => 'Valeur de la catégorie',
+        'source' => [
+            'incoming' => 'Facture fournisseur :number',
+            'expense' => 'Dépense « :description »',
+        ],
+        'classes' => [
+            'title' => 'Catégories d’immobilisations',
+            'subtitle' => 'Valeurs par défaut de durée, méthode et comptes des nouvelles immobilisations',
+            'empty' => 'Aucune catégorie créée pour l’instant.',
+            'action' => [
+                'add' => 'Créer une catégorie',
+                'edit' => 'Modifier la catégorie',
+            ],
+            'field' => [
+                'name' => 'Désignation',
+                'is_active' => 'Active',
+            ],
+            'hint' => [
+                'is_active' => 'Les catégories inactives ne sont plus proposées pour les nouvelles immobilisations ; les immobilisations existantes gardent leurs valeurs.',
+            ],
+            'flash' => [
+                'saved' => 'Catégorie enregistrée.',
+            ],
         ],
     ],
     'rules' => [

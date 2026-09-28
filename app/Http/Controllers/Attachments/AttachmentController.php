@@ -71,6 +71,9 @@ class AttachmentController extends Controller {
         'expense' => Expense::class,
         'damage' => \App\Models\Damage\DamageCase::class,
         'recall' => \App\Models\Inventory\Recall::class,
+        // Arbeitsschutz (MVP-1002): Nachweise an GBU und Unterweisung.
+        'hazard-assessment' => \App\Models\Safety\HazardAssessment::class,
+        'safety-instruction' => \App\Models\Safety\SafetyInstruction::class,
     ];
 
     /**

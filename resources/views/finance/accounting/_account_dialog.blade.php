@@ -53,6 +53,9 @@
                           :checked="(bool) old('is_cash', $account->is_cash ?? false)" />
         <x-checkbox-field name="is_clearing" :label="__('accounting.ledger.flag.clearing')"
                           :checked="(bool) old('is_clearing', $account->is_clearing ?? false)" />
+        <x-checkbox-field name="is_cost_center_required" :label="__('accounting.ledger.flag.cost_center_required')"
+                          :hint="__('accounting.ledger.hint.cost_center_required')"
+                          :checked="(bool) old('is_cost_center_required', $account->is_cost_center_required ?? false)" />
     </div>
 
     <div class="grid gap-3 sm:grid-cols-2">

@@ -194,4 +194,19 @@ return [
         'root_immovable' => 'Le nœud racine ne peut être ni déplacé ni supprimé.',
         'foreign_node' => 'Le nœud n\'appartient pas à cette carte.',
     ],
+    // Kommentare an Knoten (MVP-1005).
+    'comments' => [
+        'title' => 'Commentaires',
+        'empty' => 'Aucun commentaire sur ce nœud.',
+        'action' => [
+            'open' => 'Commentaires',
+            'add' => 'Commenter',
+        ],
+        'field' => [
+            'body' => 'Commentaire',
+        ],
+        'flash' => [
+            'saved' => 'Commentaire sur « :node » enregistré.',
+        ],
+    ],
 ];

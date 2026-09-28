@@ -142,11 +142,18 @@ return [
         'factor_to_base' => 'Faktor zur Basiseinheit',
         'external_id' => 'Externe ID',
         'sync_status' => 'Sync-Status',
+        'customs_tariff_number' => 'Zolltarifnummer',
+        'customs_tariff_number_hint' => 'Warennummer für Zollpapiere: 8 Stellen (Kombinierte Nomenklatur) oder 6 Stellen (HS-Code).',
+        'origin_country' => 'Ursprungsland',
+        'origin_country_hint' => 'Land der Herstellung als ISO-Code, z. B. DE.',
+        'net_weight_kg' => 'Nettogewicht (kg je Einheit)',
+        'net_weight_kg_hint' => 'Gewicht ohne Verpackung; die Zollpapiere rechnen es mit der Menge hoch.',
     ],
 
     'group' => [
         'pricing' => 'Preise',
         'flags' => 'Eigenschaften',
+        'customs' => 'Zoll und Ausfuhr',
     ],
 
     'flag' => [

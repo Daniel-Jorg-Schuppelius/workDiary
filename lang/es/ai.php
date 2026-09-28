@@ -377,5 +377,9 @@ return [
         ],
         'suggest_tags' => 'Sugerir etiquetas IA',
         'tags_hint' => 'Las sugerencias provienen de las etiquetas existentes de la organización — nada se aplica hasta hacer clic.',
+        'translate_all' => 'Traducir todo',
+        'translate_all_title' => 'Traduce cada posición en segundo plano como sugerencia; solo se aplica con un clic.',
+        'suggest_protocol_all' => 'Mejorar todos los puntos',
+        'suggest_protocol_all_title' => 'Reformula en segundo plano cada punto con texto como sugerencia; se aplica punto por punto.',
     ],
 ];

@@ -32,6 +32,9 @@
         'copper_base_price' => __('Kupfer-Basispreis'),
         'valuation_method' => __('Bewertungsverfahren'),
         'serial_scheme' => __('Seriennummern-Schema'),
+        'customs_tariff_number' => __('article.field.customs_tariff_number'),
+        'origin_country' => __('article.field.origin_country'),
+        'net_weight_kg' => __('article.field.net_weight_kg'),
     ];
 @endphp
 

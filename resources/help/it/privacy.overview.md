@@ -36,3 +36,10 @@ clienti vengono respinte e i punti di posizione della persona restano
 conservati. In una fusione di clienti il blocco passa al cliente di
 destinazione. Si revoca solo con un motivo; entrambi restano visibili nel
 registro della persona o del cliente.
+
+Il rapporto di accesso (art. 15/20) può essere creato anche per i **soci del
+club** se la Sua organizzazione usa la gestione del club: dati anagrafici con
+tutori legali, indirizzi e coordinate bancarie e una panoramica dei dati del
+club (periodi di iscrizione, gruppi, presenze, quote, donazioni, gradi,
+prestazioni e altro) con un estratto per area. La ricerca trova i soci per
+nome, e-mail o numero di socio.

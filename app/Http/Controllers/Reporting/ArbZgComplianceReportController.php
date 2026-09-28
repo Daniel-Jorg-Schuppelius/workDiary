@@ -636,6 +636,8 @@ class ArbZgComplianceReportController extends Controller {
             AttendanceComplianceChecker::KIND_NIGHT_WORK,
             AttendanceComplianceChecker::KIND_SUBSTITUTE_REST_DAY,
             AttendanceComplianceChecker::KIND_FREE_SUNDAYS,
+            // Jugendarbeitsschutz (MVP-1001).
+            ...AttendanceComplianceChecker::YOUTH_KINDS,
         ];
     }
 

@@ -30,3 +30,9 @@ Training fremder Modelle. Gelernt wird nur nach Ihrer Bestätigung
 **Leistungstexte:** Im Rechnungs- und Angebotsentwurf erzeugt die
 KI Textvorschläge je Position (auch übersetzt). Übernommen wird erst
 per Klick — Mengen, Preise und Steuer bleiben unberührt.
+
+**Sammelaktionen:** An einer Rechnung im Entwurf übersetzt „Alle übersetzen“
+jede Position, und im Protokoll formuliert „Alle Punkte veredeln“ jeden Punkt
+mit Text neu. Beides läuft im Hintergrund. Jede Position und jeder Punkt
+erhält einen eigenen Vorschlag, den Sie einzeln übernehmen oder verwerfen;
+nichts wird automatisch übernommen.

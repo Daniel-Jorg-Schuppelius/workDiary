@@ -276,6 +276,16 @@
                            placeholder="0" />
         </x-form-group>
 
+        {{-- VERSAND UND ZOLL (MVP-1007): Absenderangaben der Zollpapiere. --}}
+        <x-form-group :legend="__('settings.shipping.heading')" icon="local_shipping" tone="info" cols="2" compact
+                      :description="__('settings.shipping.description')">
+            <x-input-field name="settings[shipping][eori_number]" maxlength="17" class="uppercase"
+                           :label="__('settings.shipping.eori_number')"
+                           error="settings.shipping.eori_number"
+                           :value="old('settings.shipping.eori_number', data_get($stored, 'shipping.eori_number', ''))"
+                           :hint="__('settings.shipping.eori_number_hint')" />
+        </x-form-group>
+
         {{-- MIETBEDINGUNGEN (MVP-895): Übergabe nur mit unterschriebener Fassung. --}}
         <x-form-group :legend="__('settings.rental_terms.heading')" icon="handshake" tone="info" cols="1" compact
                       :description="__('settings.rental_terms.description')">

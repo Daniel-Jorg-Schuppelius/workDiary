@@ -16,8 +16,9 @@ use App\Enums\Safety\HazardAssessmentStatus;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
-use App\Models\Safety\{HazardAssessment, HazardAssessmentItem};
+use App\Models\Safety\{HazardAssessment, HazardAssessmentItem, HazardCatalogItem};
 use App\Services\Safety\{HazardAssessmentService, SafetyEvidencePdfRenderer};
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
@@ -84,12 +85,35 @@ class HazardAssessmentController extends Controller {
     public function show(HazardAssessment $assessment): View {
         Gate::authorize('view', $assessment);
 
-        $assessment->load(['items', 'approvedBy:id,name', 'createdBy:id,name', 'supersedes', 'successors']);
+        $assessment->load(['items', 'approvedBy:id,name', 'createdBy:id,name', 'supersedes', 'successors', 'attachments', 'safetyEvents']);
 
         return view('safety.assessments.show', [
             'assessment' => $assessment,
             'canManage' => Gate::allows('update', $assessment),
+            'reviewTriggers' => $assessment->reviewTriggers(),
+            'hasCatalog' => HazardCatalogItem::query()->where('organization_id', $assessment->organization_id)->active()->exists(),
         ]);
+    }
+
+    /** Dialog „Aus Katalog übernehmen“ (MVP-1002). */
+    public function catalogForm(HazardAssessment $assessment): View {
+        Gate::authorize('update', $assessment);
+
+        return view('safety.assessments._catalog_dialog', [
+            'assessment' => $assessment,
+            'catalog' => HazardCatalogItem::query()->where('organization_id', $assessment->organization_id)->active()
+                ->orderBy('category')->orderBy('hazard')->get()->groupBy('category'),
+        ]);
+    }
+
+    public function storeFromCatalog(Request $request, HazardAssessment $assessment): RedirectResponse {
+        Gate::authorize('update', $assessment);
+        $data = $request->validate(['catalog_items' => ['required', 'array', 'min:1'], 'catalog_items.*' => ['string']]);
+        $ids = array_map(static fn (string $ref): int => (int) Sqid::decodeOrNumeric(HazardCatalogItem::class, $ref), $data['catalog_items']);
+        $added = $this->service->addFromCatalog($assessment, HazardCatalogItem::query()
+            ->where('organization_id', $assessment->organization_id)->whereKey($ids)->orderBy('category')->orderBy('hazard')->get());
+
+        return redirect()->back()->with('success', trans_choice('safety.catalog.flash.added', $added, ['count' => $added]));
     }
 
     /** Gefährdungsbeurteilung als PDF (MVP-985). */

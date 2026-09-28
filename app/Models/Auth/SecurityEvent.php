@@ -12,6 +12,7 @@ namespace App\Models\Auth;
 
 use App\Casts\IpAddressCast;
 use App\Enums\Security\SecurityEventType;
+use App\Models\Concerns\HasSqid;
 use App\Models\Journal\JournalEntry;
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,6 +31,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon $occurred_at
  */
 class SecurityEvent extends JournalEntry {
+    use HasSqid;
+
     protected static ?string $labelPrefix = 'audit-events';
 
     /** @var array<string, string|null> */

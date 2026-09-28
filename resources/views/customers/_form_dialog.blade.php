@@ -99,6 +99,15 @@
                  (iso6523-actorid-upis) und ist deshalb kein Formularfeld. --}}
             <x-input-field name="peppol_participant_id" :label="__('peppol.field.participant_id')" maxlength="64"
                            :value="old('peppol_participant_id', $customer?->peppol_participant_id)" :hint="__('peppol.field.participant_id_hint')" />
+            {{-- Zahlungsbedingungen (MVP-996): Vorgabe für neue Rechnungen; leer = Organisation. --}}
+            <x-input-field name="payment_terms_days" type="number" min="0" max="365" :label="__('Zahlungsziel (Tage)')"
+                           :value="old('payment_terms_days', $customer?->payment_terms_days)" :hint="__('Leer: Zahlungsziel der Organisation.')" />
+            <div class="grid grid-cols-2 gap-3">
+                <x-input-field name="skonto_percent" type="number" step="0.01" min="0.01" max="100" :label="__('Skonto %')"
+                               :value="old('skonto_percent', $customer?->skonto_percent?->getNumericValue())" />
+                <x-input-field name="skonto_days" type="number" min="1" max="365" :label="__('Skonto-Frist (Tage)')"
+                               :value="old('skonto_days', $customer?->skonto_days)" />
+            </div>
             <x-select-field name="delivery_format" :label="__('invoice-import.customer_default_format')" :hint="__('invoice-import.customer_default_format_hint')">
                 <option value="">{{ __('invoice-import.no_default_format') }}</option>
                 @foreach (\App\Enums\Invoicing\InvoiceDeliveryFormat::cases() as $format)

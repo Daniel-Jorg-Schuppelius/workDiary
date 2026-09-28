@@ -22,3 +22,7 @@ automáticamente una SKU. La creación y edición se realizan en un diálogo;
 en lugar de borrar, retire artículos y variantes (estado «Retired»),
 ya que el borrado se bloquea si existen datos dependientes. Cree las
 variantes solo cuando las opciones y sus valores estén completos.
+
+Para los documentos aduaneros, los artículos indican en «Aduana y exportación»
+el código arancelario (de 6 a 11 dígitos; se eliminan espacios y puntos), el
+país de origen como código ISO y el peso neto por unidad.

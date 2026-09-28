@@ -40,14 +40,15 @@ use Carbon\CarbonImmutable;
  * Eingabeformat je Tag (recorded_at = Erfassungszeitpunkt, optional):
  *  list<array{started_at: CarbonImmutable, ended_at: ?CarbonImmutable, break_minutes: int, recorded_at?: ?CarbonImmutable}>
  *
- * Zeitzone: Zeitstempel werden als Wandzeit interpretiert (Nachtfenster 23–6);
- * der Aufrufer übergibt sie in der Anzeige-Zeitzone (vgl. ComplianceScanService).
+ * Zeitzone: Zeitstempel werden als Wandzeit interpretiert (Nachtfenster aus den
+ * Einstellungen, Standard 23–6); der Aufrufer übergibt sie in der
+ * Anzeige-Zeitzone (vgl. ComplianceScanService).
  *
  * Ausgabe: list<AttendanceComplianceFinding>.
  *
- * Bewusste MVP-Grenzen (Feature 131): JArbSchG/MuSchG werden NICHT geprüft
- * (Personenmerkmale Alter/Schwangerschaft fehlen im Datenmodell); die
- * Nachtzeit ist hart 23–6 Uhr (§2 Abs. 3 ArbZG), nicht konfigurierbar.
+ * Jugendarbeitsschutz (MVP-1001): mit Geburtsdatum prüft der Checker die Tage vor
+ * dem 18. Geburtstag zusätzlich nach JArbSchG. MuSchG bleibt außen vor — es
+ * bräuchte Gesundheitsdaten (Art. 9 DSGVO).
  */
 final class AttendanceComplianceChecker {
     public const KIND_MAX_DAILY_HOURS = 'maxDailyHours';
@@ -73,6 +74,33 @@ final class AttendanceComplianceChecker {
     /** ArbZG §11 Abs. 1: weniger als 15 beschäftigungsfreie Sonntage im Kalenderjahr erreichbar (MVP-696). */
     public const KIND_FREE_SUNDAYS = 'freeSundays';
 
+    /** JArbSchG §8 Abs. 1 (MVP-1001): mehr als 8 h täglich. */
+    public const KIND_YOUTH_DAILY_HOURS = 'youthDailyHours';
+
+    /** JArbSchG §8 Abs. 1: mehr als 40 h in der Woche. */
+    public const KIND_YOUTH_WEEKLY_HOURS = 'youthWeeklyHours';
+
+    /** JArbSchG §11: 30 min Pause ab 4,5 h, 60 min ab 6 h Arbeitszeit. */
+    public const KIND_YOUTH_BREAK = 'youthBreak';
+
+    /** JArbSchG §13: 12 h Freizeit zwischen zwei Arbeitstagen. */
+    public const KIND_YOUTH_REST = 'youthRest';
+
+    /** JArbSchG §14: Arbeit zwischen 20 und 6 Uhr. */
+    public const KIND_YOUTH_NIGHT = 'youthNight';
+
+    /** JArbSchG §15: mehr als 5 Arbeitstage in der Woche. */
+    public const KIND_YOUTH_FIVE_DAYS = 'youthFiveDays';
+
+    /** JArbSchG §16/§17: Arbeit am Samstag oder Sonntag (Ausnahmen je Branche, daher Hinweis). */
+    public const KIND_YOUTH_WEEKEND = 'youthWeekend';
+
+    /** @var list<string> */
+    public const YOUTH_KINDS = [
+        self::KIND_YOUTH_DAILY_HOURS, self::KIND_YOUTH_WEEKLY_HOURS, self::KIND_YOUTH_BREAK, self::KIND_YOUTH_REST,
+        self::KIND_YOUTH_NIGHT, self::KIND_YOUTH_FIVE_DAYS, self::KIND_YOUTH_WEEKEND,
+    ];
+
     /** MiLoG §17 Abs. 1 / SchwarzArbG §2a: Aufzeichnungsfrist in Kalendertagen. */
     public const RECORDING_DEADLINE_DAYS = 7;
 
@@ -88,10 +116,18 @@ final class AttendanceComplianceChecker {
     /** ArbZG §3: 8 h je Werktag (Mo–Sa) als Durchschnittsgrenze. */
     private const AVERAGE_DAILY_MINUTES = 480;
 
-    /** Nachtzeit 23–6 Uhr (§2 Abs. 3 ArbZG) — MVP bewusst hart, nicht konfigurierbar. */
-    private const NIGHT_START_HOUR = 23;
+    /** JArbSchG §14: Nachtruhe 20–6 Uhr. */
+    private const YOUTH_NIGHT_START_HOUR = 20;
 
-    private const NIGHT_END_HOUR = 6;
+    private const YOUTH_NIGHT_END_HOUR = 6;
+
+    private const YOUTH_DAILY_MINUTES = 480;
+
+    private const YOUTH_WEEKLY_MINUTES = 2400;
+
+    private const YOUTH_REST_MINUTES = 720;
+
+    private const YOUTH_MAX_WORKDAYS = 5;
 
     /** §2 Abs. 4 ArbZG: Nachtarbeit = mehr als 2 h innerhalb der Nachtzeit. */
     private const NIGHT_WORK_MIN_MINUTES = 120;
@@ -106,7 +142,7 @@ final class AttendanceComplianceChecker {
     private const MIN_FREE_SUNDAYS_PER_YEAR = 15;
 
     /**
-     * @param  array{mode:string, max_hours_day:int, min_rest_hours:int, max_hours_week:int, max_consecutive_days:int, rules:array<string,bool>}  $settings  z. B. Organization::complianceSettings()
+     * @param  array{mode:string, max_hours_day:int, min_rest_hours:int, max_hours_week:int, max_consecutive_days:int, night_start_hour?:int, night_end_hour?:int, rules:array<string,bool>}  $settings  z. B. Organization::complianceSettings()
      */
     public function __construct(
         private readonly array $settings,
@@ -131,10 +167,11 @@ final class AttendanceComplianceChecker {
      * Prüft die Ist-Arbeitszeit EINES Mitarbeiters über einen Zeitraum.
      *
      * @param  array<string, list<array{started_at: CarbonImmutable, ended_at: ?CarbonImmutable, break_minutes: int, recorded_at?: ?CarbonImmutable}>>  $attendancesByDate  Stempel-Spannen je Kalendertag (Y-m-d)
-     * @param  list<string>  $holidays  Gesetzliche Feiertage (Y-m-d) im betrachteten Fenster — nur für §11 relevant
+     * @param  list<string>  $holidays  Gesetzliche Feiertage (Y-m-d) im betrachteten Fenster — §3-Werktage und §11
+     * @param  CarbonImmutable|null  $birthDate  Geburtsdatum: Tage vor dem 18. Geburtstag prüft zusätzlich das JArbSchG
      * @return list<AttendanceComplianceFinding>
      */
-    public function checkUser(int $userId, array $attendancesByDate, ?CarbonImmutable $now = null, array $holidays = []): array {
+    public function checkUser(int $userId, array $attendancesByDate, ?CarbonImmutable $now = null, array $holidays = [], ?CarbonImmutable $birthDate = null): array {
         if (! $this->enabled()) {
             return [];
         }
@@ -185,7 +222,7 @@ final class AttendanceComplianceChecker {
         }
 
         // 7. ArbZG §3 S. 2: rollierender 24-Wochen-Durchschnitt je Werktag (MVP-696).
-        foreach ($this->checkSixMonthAverage($userId, $days) as $f) {
+        foreach ($this->checkSixMonthAverage($userId, $days, $holidaySet) as $f) {
             $findings[] = $f;
         }
 
@@ -199,6 +236,15 @@ final class AttendanceComplianceChecker {
             $findings[] = $f;
         }
 
+        // 10. JArbSchG für Tage vor dem 18. Geburtstag (MVP-1001).
+        if ($birthDate !== null) {
+            $adultFrom = $birthDate->addYears(18)->toDateString();
+            $youthDays = array_filter($days, static fn (string $date): bool => $date < $adultFrom, ARRAY_FILTER_USE_KEY);
+            foreach ($this->checkYouth($userId, $youthDays, $birthDate) as $f) {
+                $findings[] = $f;
+            }
+        }
+
         usort($findings, static fn(AttendanceComplianceFinding $a, AttendanceComplianceFinding $b): int => [$a->date, $a->kind] <=> [$b->date, $b->kind]);
 
         return $findings;
@@ -207,7 +253,7 @@ final class AttendanceComplianceChecker {
     // ── Einzelprüfungen ──────────────────────────────────────────────────
 
     /**
-     * @param  array{gross:int, breaks:int, net:int, night:int, first_start: ?CarbonImmutable, last_end: ?CarbonImmutable}  $agg
+     * @param  array{gross:int, breaks:int, net:int, night:int, youth_night:int, first_start: ?CarbonImmutable, last_end: ?CarbonImmutable}  $agg
      * @return list<AttendanceComplianceFinding>
      */
     private function checkMaxDailyHours(int $userId, string $date, array $agg): array {
@@ -227,7 +273,7 @@ final class AttendanceComplianceChecker {
     }
 
     /**
-     * @param  array{gross:int, breaks:int, net:int, night:int, first_start: ?CarbonImmutable, last_end: ?CarbonImmutable}  $agg
+     * @param  array{gross:int, breaks:int, net:int, night:int, youth_night:int, first_start: ?CarbonImmutable, last_end: ?CarbonImmutable}  $agg
      * @return list<AttendanceComplianceFinding>
      */
     private function checkBreak(int $userId, string $date, array $agg): array {
@@ -248,7 +294,7 @@ final class AttendanceComplianceChecker {
     }
 
     /**
-     * @param  array<string, array{gross:int, breaks:int, net:int, night:int, first_start: ?CarbonImmutable, last_end: ?CarbonImmutable}>  $days
+     * @param  array<string, array{gross:int, breaks:int, net:int, night:int, youth_night:int, first_start: ?CarbonImmutable, last_end: ?CarbonImmutable}>  $days
      * @return list<AttendanceComplianceFinding>
      */
     private function checkRestPeriods(int $userId, array $days): array {
@@ -284,7 +330,7 @@ final class AttendanceComplianceChecker {
      * sich auf den Durchschnitt über den Bezugszeitraum — hier je ISO-Woche
      * summiert, analog MaxWeeklyHoursRule).
      *
-     * @param  array<string, array{gross:int, breaks:int, net:int, night:int, first_start: ?CarbonImmutable, last_end: ?CarbonImmutable}>  $days
+     * @param  array<string, array{gross:int, breaks:int, net:int, night:int, youth_night:int, first_start: ?CarbonImmutable, last_end: ?CarbonImmutable}>  $days
      * @return list<AttendanceComplianceFinding>
      */
     private function checkWeeklyHours(int $userId, array $days): array {
@@ -367,7 +413,7 @@ final class AttendanceComplianceChecker {
      * erfasst → Hinweis (warning) mit Ausgleichs-Kontext statt hartem Verstoß;
      * > 10 h deckt weiterhin KIND_MAX_DAILY_HOURS ab.
      *
-     * @param  array{gross:int, breaks:int, net:int, night:int, first_start: ?CarbonImmutable, last_end: ?CarbonImmutable}  $agg
+     * @param  array{gross:int, breaks:int, net:int, night:int, youth_night:int, first_start: ?CarbonImmutable, last_end: ?CarbonImmutable}  $agg
      * @return list<AttendanceComplianceFinding>
      */
     private function checkNightWork(int $userId, string $date, array $agg): array {
@@ -391,14 +437,13 @@ final class AttendanceComplianceChecker {
      * Werktag bleibt. Bewertet wird rollierend je ISO-Woche mit Arbeit:
      * Fenster = 24 Wochen bis Wochenende, geklemmt auf den ersten Datentag
      * (Teilfenster < 28 Tage werden übersprungen — zu wenig Abdeckung).
-     * Werktage = Mo–Sa OHNE Feiertagsabzug (bewusste MVP-Vereinfachung:
-     * Feiertage erhöhen den Nenner, der Durchschnitt sinkt — der Befund
-     * bleibt eher aus, keine Falsch-Positiven).
+     * Werktage = Mo–Sa ohne gesetzliche Feiertage (MVP-1001).
      *
-     * @param  array<string, array{gross:int, breaks:int, net:int, night:int, first_start: ?CarbonImmutable, last_end: ?CarbonImmutable}>  $days
+     * @param  array<string, array{gross:int, breaks:int, net:int, night:int, youth_night:int, youth_night:int, first_start: ?CarbonImmutable, last_end: ?CarbonImmutable}>  $days
+     * @param  array<string, true>  $holidaySet
      * @return list<AttendanceComplianceFinding>
      */
-    private function checkSixMonthAverage(int $userId, array $days): array {
+    private function checkSixMonthAverage(int $userId, array $days, array $holidaySet = []): array {
         if ($days === []) {
             return [];
         }
@@ -435,7 +480,7 @@ final class AttendanceComplianceChecker {
             $workdays = 0;
             $sumNet = 0;
             for ($cursor = $windowStart; $cursor->lessThanOrEqualTo($weekEnd); $cursor = $cursor->addDay()) {
-                if (! $cursor->isSunday()) {
+                if (! $cursor->isSunday() && ! isset($holidaySet[$cursor->toDateString()])) {
                     $workdays++;
                 }
                 $sumNet += $netByDate[$cursor->toDateString()] ?? 0;
@@ -469,7 +514,7 @@ final class AttendanceComplianceChecker {
      * der Datenabdeckung entsteht damit NIE ein Falsch-Positiv, allenfalls
      * eine (dokumentierte) Untererfassung am Fensterrand.
      *
-     * @param  array<string, array{gross:int, breaks:int, net:int, night:int, first_start: ?CarbonImmutable, last_end: ?CarbonImmutable}>  $days
+     * @param  array<string, array{gross:int, breaks:int, net:int, night:int, youth_night:int, first_start: ?CarbonImmutable, last_end: ?CarbonImmutable}>  $days
      * @param  array<string, true>  $holidaySet  Feiertage (Y-m-d)
      * @return list<AttendanceComplianceFinding>
      */
@@ -526,7 +571,7 @@ final class AttendanceComplianceChecker {
      * (Untererfassung, kein Falsch-Positiv); aussagekräftig ist die Regel
      * daher vor allem für Jahres-Zeiträume.
      *
-     * @param  array<string, array{gross:int, breaks:int, net:int, night:int, first_start: ?CarbonImmutable, last_end: ?CarbonImmutable}>  $days
+     * @param  array<string, array{gross:int, breaks:int, net:int, night:int, youth_night:int, first_start: ?CarbonImmutable, last_end: ?CarbonImmutable}>  $days
      * @return list<AttendanceComplianceFinding>
      */
     private function checkFreeSundays(int $userId, array $days): array {
@@ -573,6 +618,60 @@ final class AttendanceComplianceChecker {
 
     // ── Aggregation ──────────────────────────────────────────────────────
 
+    /**
+     * JArbSchG (MVP-1001) für die Arbeitstage einer minderjährigen Person.
+     * Nachtarbeit ist unter 16 ein Verstoß, ab 16 ein Hinweis (Branchenausnahmen
+     * nach §14 Abs. 2–4); Wochenendarbeit ist stets ein Hinweis (§16/§17 Abs. 2).
+     *
+     * @param  array<string, array{gross:int, breaks:int, net:int, night:int, youth_night:int, first_start: ?CarbonImmutable, last_end: ?CarbonImmutable}>  $days
+     * @return list<AttendanceComplianceFinding>
+     */
+    private function checkYouth(int $userId, array $days, CarbonImmutable $birthDate): array {
+        ksort($days);
+        $findings = [];
+        $finding = static fn (string $date, string $kind, string $severity, int $value, int $threshold): AttendanceComplianceFinding => new AttendanceComplianceFinding(
+            userId: $userId, date: $date, kind: $kind, severity: $severity, value: $value, threshold: $threshold,
+        );
+        $weeks = [];
+        $previousEnd = null;
+        foreach ($days as $date => $agg) {
+            $day = CarbonImmutable::parse($date);
+            if ($agg['net'] > self::YOUTH_DAILY_MINUTES) {
+                $findings[] = $finding($date, self::KIND_YOUTH_DAILY_HOURS, AttendanceComplianceFinding::SEVERITY_ERROR, $agg['net'], self::YOUTH_DAILY_MINUTES);
+            }
+            $requiredBreak = $agg['net'] > 360 ? 60 : ($agg['net'] > 270 ? 30 : 0);
+            if ($agg['breaks'] < $requiredBreak) {
+                $findings[] = $finding($date, self::KIND_YOUTH_BREAK, AttendanceComplianceFinding::SEVERITY_ERROR, $agg['breaks'], $requiredBreak);
+            }
+            if ($agg['youth_night'] > 0) {
+                $severity = $birthDate->addYears(16)->toDateString() > $date ? AttendanceComplianceFinding::SEVERITY_ERROR : AttendanceComplianceFinding::SEVERITY_WARNING;
+                $findings[] = $finding($date, self::KIND_YOUTH_NIGHT, $severity, $agg['youth_night'], 0);
+            }
+            if ($day->isWeekend()) {
+                $findings[] = $finding($date, self::KIND_YOUTH_WEEKEND, AttendanceComplianceFinding::SEVERITY_WARNING, $agg['net'], 0);
+            }
+            if ($previousEnd !== null && $agg['first_start'] !== null && $agg['first_start']->greaterThan($previousEnd)) {
+                $gap = (int) $previousEnd->diffInMinutes($agg['first_start'], false);
+                if ($gap < self::YOUTH_REST_MINUTES) {
+                    $findings[] = $finding($date, self::KIND_YOUTH_REST, AttendanceComplianceFinding::SEVERITY_ERROR, $gap, self::YOUTH_REST_MINUTES);
+                }
+            }
+            $previousEnd = $agg['last_end'];
+            $week = $day->endOfWeek()->toDateString();
+            $weeks[$week] = ['minutes' => ($weeks[$week]['minutes'] ?? 0) + $agg['net'], 'days' => ($weeks[$week]['days'] ?? 0) + 1];
+        }
+        foreach ($weeks as $weekEnd => $week) {
+            if ($week['minutes'] > self::YOUTH_WEEKLY_MINUTES) {
+                $findings[] = $finding($weekEnd, self::KIND_YOUTH_WEEKLY_HOURS, AttendanceComplianceFinding::SEVERITY_ERROR, $week['minutes'], self::YOUTH_WEEKLY_MINUTES);
+            }
+            if ($week['days'] > self::YOUTH_MAX_WORKDAYS) {
+                $findings[] = $finding($weekEnd, self::KIND_YOUTH_FIVE_DAYS, AttendanceComplianceFinding::SEVERITY_ERROR, $week['days'], self::YOUTH_MAX_WORKDAYS);
+            }
+        }
+
+        return $findings;
+    }
+
     /** Maximale Tages-Netto-Arbeitszeit in Minuten (Standard 10h, ArbZG §3). */
     private function maxDailyMinutes(): int {
         return (int) $this->settings['max_hours_day'] * 60;
@@ -581,15 +680,17 @@ final class AttendanceComplianceChecker {
     /**
      * Brutto/Pausen/Netto eines Kalendertags — identische Rechnung wie
      * DayClosureValidator::aggregate() (Netto = max(0, brutto − Pausen));
-     * zusätzlich die Minuten innerhalb der Nachtzeit 23–6 (§6-Prüfung).
+     * zusätzlich die Minuten innerhalb der Nachtzeit (§6-Prüfung) und der
+     * Jugend-Nachtruhe 20–6 (JArbSchG §14).
      *
      * @param  list<array{started_at: CarbonImmutable, ended_at: ?CarbonImmutable, break_minutes: int, recorded_at?: ?CarbonImmutable}>  $spans
-     * @return array{gross:int, breaks:int, net:int, night:int, first_start: ?CarbonImmutable, last_end: ?CarbonImmutable}
+     * @return array{gross:int, breaks:int, net:int, night:int, youth_night:int, youth_night:int, first_start: ?CarbonImmutable, last_end: ?CarbonImmutable}
      */
     private function aggregateDay(array $spans, CarbonImmutable $now): array {
         $gross = 0;
         $breaks = 0;
         $night = 0;
+        $youthNight = 0;
         $firstStart = null;
         $lastEnd = null;
 
@@ -598,7 +699,8 @@ final class AttendanceComplianceChecker {
             $end = $s['ended_at'] ?? ($start->lessThan($now) ? $now : $start);
             $gross += max(0, (int) $start->diffInMinutes($end, false));
             $breaks += max(0, $s['break_minutes']);
-            $night += $this->nightMinutes($start, $end);
+            $night += $this->nightMinutes($start, $end, (int) ($this->settings['night_start_hour'] ?? 23), (int) ($this->settings['night_end_hour'] ?? 6));
+            $youthNight += $this->nightMinutes($start, $end, self::YOUTH_NIGHT_START_HOUR, self::YOUTH_NIGHT_END_HOUR);
 
             if ($firstStart === null || $start->lessThan($firstStart)) {
                 $firstStart = $start;
@@ -613,22 +715,23 @@ final class AttendanceComplianceChecker {
             'breaks' => $breaks,
             'net' => max(0, $gross - $breaks),
             'night' => $night,
+            'youth_night' => $youthNight,
             'first_start' => $firstStart,
             'last_end' => $lastEnd,
         ];
     }
 
     /**
-     * Überlappung einer Spanne mit der Nachtzeit 23–6 (§2 Abs. 3 ArbZG) in
+     * Überlappung einer Spanne mit einem Nachtfenster über Mitternacht in
      * Minuten — Wandzeit der übergebenen Zeitstempel; Fenster um den Starttag
      * herum decken auch Mitternachts-Übergänge ab.
      */
-    private function nightMinutes(CarbonImmutable $start, CarbonImmutable $end): int {
+    private function nightMinutes(CarbonImmutable $start, CarbonImmutable $end, int $startHour, int $endHour): int {
         $minutes = 0;
         $anchor = $start->startOfDay();
         for ($offset = -1; $offset <= 1; $offset++) {
-            $windowStart = $anchor->addDays($offset)->setTime(self::NIGHT_START_HOUR, 0);
-            $windowEnd = $anchor->addDays($offset + 1)->setTime(self::NIGHT_END_HOUR, 0);
+            $windowStart = $anchor->addDays($offset)->setTime($startHour, 0);
+            $windowEnd = $anchor->addDays($offset + 1)->setTime($endHour, 0);
             $overlapStart = $start->greaterThan($windowStart) ? $start : $windowStart;
             $overlapEnd = $end->lessThan($windowEnd) ? $end : $windowEnd;
             if ($overlapEnd->greaterThan($overlapStart)) {

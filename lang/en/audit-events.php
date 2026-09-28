@@ -1058,6 +1058,7 @@ return [
         'sessions' => [
             'revoked_all' => 'All sessions revoked',
         ],
+        'account_secured' => 'Account secured after takeover',
     ],
     'user_group' => [
         'member_added' => 'User group: member added',

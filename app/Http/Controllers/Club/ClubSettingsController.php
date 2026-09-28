@@ -15,9 +15,10 @@ namespace App\Http\Controllers\Club;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Club\ClubMember;
-use App\Services\Club\ClubGradingService;
+use App\Services\Club\{ClubDonationService, ClubGradingService};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /** Vereinseinstellungen der Organisation (MVP-846): optionales Graduierungsmodul. */
@@ -26,6 +27,7 @@ class ClubSettingsController extends Controller {
 
     public function __construct(
         private readonly ClubGradingService $grading,
+        private readonly ClubDonationService $donations,
     ) {}
 
     public function edit(): View {
@@ -35,16 +37,35 @@ class ClubSettingsController extends Controller {
             'graduationEnabled' => $this->grading->isEnabled($this->currentOrganization()),
             // Beitragsmitteilung (MVP-850): freier Fußtext, z. B. Hinweis zur Beleg-/Steuerzuordnung.
             'feeNoticeFooter' => (string) data_get($this->currentOrganization()->settings, 'club.fees.notice_footer', ''),
+            // Freistellungsdaten für Zuwendungsbestätigungen (MVP-1003).
+            'exemption' => $this->donations->exemption($this->currentOrganization()),
+            'feesConfirmable' => $this->donations->membershipFeesConfirmable($this->currentOrganization()),
         ]);
     }
 
     public function update(Request $request): RedirectResponse {
         Gate::authorize('create', ClubMember::class);
-        $data = $request->validate(['graduation_enabled' => ['nullable', 'boolean'], 'fee_notice_footer' => ['nullable', 'string', 'max:2000']]);
+        $data = $request->validate([
+            'graduation_enabled' => ['nullable', 'boolean'],
+            'fee_notice_footer' => ['nullable', 'string', 'max:2000'],
+            'donations' => ['nullable', 'array'],
+            'donations.tax_office' => ['nullable', 'string', 'max:120'],
+            'donations.tax_number' => ['nullable', 'string', 'max:40'],
+            'donations.exemption_kind' => ['nullable', Rule::in(ClubDonationService::EXEMPTION_KINDS)],
+            'donations.notice_date' => ['nullable', 'date'],
+            'donations.assessment_period' => ['nullable', 'string', 'max:40'],
+            'donations.purpose' => ['nullable', 'string', 'max:500'],
+            'donations.signatory' => ['nullable', 'string', 'max:120'],
+            'donations.membership_fees_confirmable' => ['nullable', 'boolean'],
+        ]);
         $organization = $this->currentOrganization();
         $this->grading->setEnabled($organization, (bool) ($data['graduation_enabled'] ?? false));
         $settings = (array) ($organization->refresh()->settings ?? []);
         data_set($settings, 'club.fees.notice_footer', trim((string) ($data['fee_notice_footer'] ?? '')));
+        foreach (['tax_office', 'tax_number', 'exemption_kind', 'notice_date', 'assessment_period', 'purpose', 'signatory'] as $key) {
+            data_set($settings, 'club.donations.' . $key, trim((string) ($data['donations'][$key] ?? '')));
+        }
+        data_set($settings, 'club.donations.membership_fees_confirmable', $request->boolean('donations.membership_fees_confirmable'));
         $organization->update(['settings' => $settings]);
 
         return redirect()->route('club.grading.index')->with('success', __('club.grading.flash.settings_saved'));

@@ -44,3 +44,5 @@ welcher Arbeit geführt hat.
 **Import & Export:** Bestehende Mindmaps lassen sich aus FreeMind- oder
 OPML-Dateien importieren; Karten können als JSON, OPML, Markdown oder PDF
 exportiert werden — etwa zur Weitergabe außerhalb des Systems.
+
+**Kommentare an Knoten:** Im Detailbereich eines Knotens öffnet „Kommentare“ den Faden zu diesem Knoten; die Zahl daneben zeigt, wie viele es gibt. Kommentieren kann jede Person, die die Karte sehen darf.

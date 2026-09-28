@@ -69,3 +69,17 @@ Une sortie (vente, mise au rebut, vol) est enregistrée avec sa date.
 L’immobilisation ne **disparaît pas** du registre — l’historique reste
 lisible, sans quoi un rapprochement ultérieur avec le bilan serait
 impossible.
+
+## Catégories et immobilisation à partir d’un justificatif
+
+Sous « Catégories d’immobilisations », vous créez des valeurs par défaut,
+par exemple « Véhicules » ou « Logiciels » : durée d’utilisation, méthode et
+comptes. Si vous choisissez une catégorie à la création d’une immobilisation,
+WorkDiary remplit à partir d’elle les champs laissés vides. Les
+immobilisations existantes gardent leurs valeurs si vous modifiez une
+catégorie ensuite.
+
+Sur une facture fournisseur et sur une dépense approuvée, « Enregistrer comme
+immobilisation » crée directement une immobilisation. Désignation, date et
+montant hors taxes sont préremplis, et l’immobilisation renvoie au
+justificatif. Un justificatif donne au plus une immobilisation.

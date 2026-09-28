@@ -17,3 +17,7 @@ utilizzabile una sola volta. Può registrare più metodi e rimuoverli
 singolarmente; se la sua organizzazione richiede la 2FA, l'ultimo
 fattore attivo non può essere rimosso. Non condivida mai codice QR,
 chiave manuale, codici monouso o codici di recupero.
+
+Se non riconosce un accesso o un dispositivo, usi «Non ero io – proteggi
+account»: tutte le sessioni terminano, password e passkey non sono più valide
+e riceve via e-mail un link per impostare una nuova password.

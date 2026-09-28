@@ -36,3 +36,16 @@ dirección (redes móviles, redes de empresa), fail2ban sigue siendo la
 primera opción. Para un SIEM, WorkDiary escribe además cada evento de
 seguridad en formato CEF o JSON en un archivo propio o por syslog
 (`SECURITY_SIEM_FORMAT`, `SECURITY_SIEM_TARGET`).
+
+## Proteger una cuenta tras una usurpación
+
+Si se confirma que alguien ha usurpado una cuenta, cerrar la sesión no basta:
+quien conoce la contraseña vuelve a iniciar sesión. «Proteger la cuenta» en la
+gestión de sesiones (para miembros de su organización) y «Confirmar la
+usurpación de la cuenta» en un evento de seguridad (administración de la
+plataforma) terminan todas las sesiones y tokens de API, invalidan la
+contraseña y todas las llaves de acceso y envían a la persona un enlace para
+establecer una nueva contraseña. Los métodos de dos factores basados en
+aplicación se conservan. La acción aparece como evento de seguridad y en el
+registro de auditoría. Su propia cuenta la protege en su página de
+autenticación de dos factores.

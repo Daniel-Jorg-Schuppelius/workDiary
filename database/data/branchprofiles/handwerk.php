@@ -295,6 +295,14 @@ return [
         'vehicle',
         'lift',
     ],
+    // Gefährdungskatalog (Feature 132, MVP-1002): Vorlagen für die Gefährdungsbeurteilung, Schwere und Wahrscheinlichkeit 1–5.
+    'hazard_catalog' => [
+        ['code' => 'handwerk/leiter', 'category' => 'Absturz', 'hazard' => 'Absturz von Leitern und Tritten', 'measure' => 'Leitern prüfen, nur für kurzzeitige Arbeiten nutzen, auf sicheren Stand achten', 'severity' => 4, 'likelihood' => 3],
+        ['code' => 'handwerk/handmaschinen', 'category' => 'Mechanische Gefährdung', 'hazard' => 'Schnitt- und Quetschverletzungen durch Handmaschinen', 'measure' => 'Schutzeinrichtungen nutzen, Schnittschutzhandschuhe, Unterweisung', 'severity' => 3, 'likelihood' => 3],
+        ['code' => 'handwerk/laerm', 'category' => 'Lärm', 'hazard' => 'Lärm beim Schleifen, Bohren und Stemmen', 'measure' => 'Gehörschutz ab 80 dB(A) bereitstellen, ab 85 dB(A) tragen', 'severity' => 2, 'likelihood' => 4],
+        ['code' => 'handwerk/staub', 'category' => 'Gefahrstoffe', 'hazard' => 'Holz- und Mineralstaub', 'measure' => 'Absaugung, Staubmaske FFP2, Nassreinigung statt Kehren', 'severity' => 3, 'likelihood' => 3],
+        ['code' => 'handwerk/heben', 'category' => 'Physische Belastung', 'hazard' => 'Heben und Tragen schwerer Lasten', 'measure' => 'Hebehilfen, zu zweit tragen, Lasten teilen', 'severity' => 2, 'likelihood' => 4],
+    ],
     'tags_seed' => [
         '#wartung',
         '#stoerung',

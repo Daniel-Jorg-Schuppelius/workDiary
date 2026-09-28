@@ -76,6 +76,11 @@
                     <x-detail-grid.row :label="__('safety.field.location')" :value="$event->location ?? '–'" />
                     <x-detail-grid.row :label="__('safety.field.affected_person')" :value="$event->affected_person ?? '–'" />
                     <x-detail-grid.row :label="__('safety.field.reporter')" :value="$event->reporter?->name ?? '–'" />
+                    @if ($event->hazardAssessment !== null)
+                        <x-detail-grid.row :label="__('safety.field.hazard_assessment')">
+                            <a class="link link-primary" href="{{ route('safety.assessments.show', $event->hazardAssessment) }}">{{ $event->hazardAssessment->displayNo() }} · {{ $event->hazardAssessment->area }}</a>
+                        </x-detail-grid.row>
+                    @endif
                     @if ($event->subject)
                         <x-detail-grid.row :label="__('safety.field.subject')"
                                            :value="\App\Support\EntityType::label($event->subject->getMorphClass()) . ': ' . ($event->subject->name ?? $event->subject->title ?? ('#' . $event->subject->getKey()))" />

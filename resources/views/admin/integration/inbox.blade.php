@@ -65,7 +65,7 @@
         </form>
     </x-slot:actions>
 
-    @php $customerOptions = $assignTargets[\App\Models\Customer\Customer::class] ?? (reset($assignTargets) ?: []); @endphp
+    @php $customerOptions = $assignTargets[\App\Support\MorphMap::alias(\App\Models\Customer\Customer::class)] ?? []; @endphp
 
     {{-- Quellen-Tabs: eine Ansicht je Plugin (Toggl, FritzBox, …), Zähler =
          offene Einzel-Items der Quelle (Gruppen hängen an eigenen Zählern). --}}
@@ -204,7 +204,7 @@
                             <input type="hidden" name="group_key" value="{{ $g['group_key'] }}">
                             <select name="asset" required class="select select-sm select-bordered">
                                 <option value="">{{ __('… Gerät auswählen') }}</option>
-                                @foreach (($assignTargets[\App\Models\Asset\Asset::class] ?? []) as $sqid => $label)
+                                @foreach (($assignTargets[\App\Support\MorphMap::alias(\App\Models\Asset\Asset::class)] ?? []) as $sqid => $label)
                                     <option value="{{ $sqid }}">{{ $label }}</option>
                                 @endforeach
                             </select>
@@ -304,7 +304,7 @@
                             <input type="hidden" name="group_key" value="{{ $g['group_key'] }}">
                             <select name="customer" class="select select-sm select-bordered" @if (! ($g['customer_sqid'] ?? null)) required @endif>
                                 <option value="">{{ ($g['customer_name'] ?? null) ? __('Zugeordnet: :name', ['name' => $g['customer_name']]) : __('… Kunde auswählen') }}</option>
-                                @foreach (($assignTargets[\App\Models\Customer\Customer::class] ?? []) as $sqid => $label)
+                                @foreach (($assignTargets[\App\Support\MorphMap::alias(\App\Models\Customer\Customer::class)] ?? []) as $sqid => $label)
                                     <option value="{{ $sqid }}">{{ $label }}</option>
                                 @endforeach
                             </select>
@@ -436,7 +436,9 @@
                 @php
                     $diff = $item->diff_fields ?? [];
                     $candidates = $item->candidate_ids ?? [];
-                    $targetLabel = $targets[$item->target_type] ?? class_basename($item->target_type);
+                    // Outbox-Fälle ohne Subjekt tragen die Operation als Zieltyp — kein Badge.
+                    $targetLabel = $targets[$item->target_type]
+                        ?? (\App\Support\MorphMap::classFor($item->target_type) !== null ? \App\Support\EntityType::label($item->target_type) : null);
                 @endphp
                 <x-card>
                     <div class="mb-2 flex flex-wrap items-center gap-2">
@@ -449,7 +451,9 @@
                         @endphp
                         <span class="badge badge-sm {{ $caseBadge }}">{{ $caseLabels[$item->case_type] ?? $item->case_type }}</span>
                         <span class="badge badge-sm badge-outline">{{ $pluginNames[$item->plugin_id] ?? $item->plugin_id }}</span>
-                        <span class="badge badge-sm badge-outline">{{ $targetLabel }}</span>
+                        @if ($targetLabel !== null)
+                            <span class="badge badge-sm badge-outline">{{ $targetLabel }}</span>
+                        @endif
                         @unless ($item->isOpen())
                             <span class="badge badge-sm badge-success">{{ $statusLabels[$item->status] ?? $item->status }}</span>
                         @endunless
@@ -457,7 +461,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <div class="font-semibold">{{ $item->displayTitleText() ?: __('(ohne Titel)') }}</div>
+                        <div class="font-semibold">{{ $item->displayTitleText($pluginNames[$item->plugin_id] ?? null) ?: __('(ohne Titel)') }}</div>
                         @if ($item->display_subtitle)
                             {{-- Gespeicherte Klartexte laufen durch __(): bekannte
                                  Meldungen („extern nicht bestätigt") werden übersetzt,
@@ -551,7 +555,7 @@
                                     <input type="hidden" name="item" value="{{ $item->sqid }}">
                                     <select name="customer" class="join-item select select-sm select-bordered">
                                         <option value="">{{ __('mail.inbox.book_customer_placeholder') }}</option>
-                                        @foreach (($assignTargets[\App\Models\Customer\Customer::class] ?? []) as $sqid => $label)
+                                        @foreach (($assignTargets[\App\Support\MorphMap::alias(\App\Models\Customer\Customer::class)] ?? []) as $sqid => $label)
                                             <option value="{{ $sqid }}">{{ $label }}</option>
                                         @endforeach
                                     </select>

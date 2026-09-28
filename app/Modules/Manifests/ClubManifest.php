@@ -71,6 +71,8 @@ final class ClubManifest extends Manifest {
             'club_fee_dunnings',
             'club_fee_exemptions',
             'club_fee_payments',
+            'club_donations',
+            'club_donation_receipts',
             'club_fee_runs',
             'club_fee_surcharges',
             'club_fee_tariff_rates',

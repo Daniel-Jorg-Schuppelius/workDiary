@@ -24,6 +24,7 @@
         <x-slot:actions>
             <x-icon-btn icon="inventory" size="sm" show-label :href="route('reports.accounting.fixed-asset-schedule')">{{ __('accounting.reports.card.fixed_asset_schedule.title') }}</x-icon-btn>
             @if ($canConfigure)
+                <x-icon-btn icon="category" size="sm" show-label :href="route('finance.accounting.fixed-asset-classes.index')">{{ __('accounting.fixed_assets.classes.title') }}</x-icon-btn>
                 <x-icon-btn icon="add" size="sm" tone="primary"
                             data-entry-modal-trigger
                             :href="route('finance.accounting.fixed-assets.create')"

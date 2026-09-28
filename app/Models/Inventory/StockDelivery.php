@@ -12,6 +12,7 @@ namespace App\Models\Inventory;
 
 use App\Casts\{MoneyCast, QuantityCast};
 use App\Enums\Manufacturing\DeliveryFacturationStatus;
+use App\Enums\Shipping\ShipmentExportReason;
 use App\Models\Article\ArticleVariant;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Contracts\AuditsChanges;
@@ -33,6 +34,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne};
  * @property string $stock_status
  * @property DeliveryFacturationStatus $facturation_status
  * @property \CommonToolkit\ValueObjects\Money|null $unit_price_snapshot
+ * @property ShipmentExportReason|null $export_reason
  */
 class StockDelivery extends Model implements AuditsChanges {
     use Auditable;
@@ -53,6 +55,7 @@ class StockDelivery extends Model implements AuditsChanges {
         'name_snapshot',
         'unit_price_snapshot',
         'currency',
+        'export_reason',
         'stock_status',
         'facturation_status',
         'facturation_target',
@@ -68,6 +71,7 @@ class StockDelivery extends Model implements AuditsChanges {
         'quantity' => QuantityCast::class . ':unit,4',
         'unit_price_snapshot' => MoneyCast::class . ':currency,4',
         'facturation_status' => DeliveryFacturationStatus::class,
+        'export_reason' => ShipmentExportReason::class,
         'delivered_at' => 'datetime',
     ];
 

@@ -161,6 +161,12 @@
                 @if ($customer->hourly_rate !== null)
                     <x-detail-grid.row :label="__('Stundensatz')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($customer->hourly_rate?->toFloat() ?? 0.0), 2, withThousandsSeparator: true).' '.$customer->currency->value" />
                 @endif
+                @if ($customer->payment_terms_days !== null)
+                    <x-detail-grid.row :label="__('Zahlungsziel (Tage)')" :value="$customer->payment_terms_days" />
+                @endif
+                @if ($customer->skonto_percent !== null && $customer->skonto_days !== null)
+                    <x-detail-grid.row :label="__('Skonto')" :value="__(':percent innerhalb von :days Tagen', ['percent' => $customer->skonto_percent->format(), 'days' => $customer->skonto_days])" />
+                @endif
                 @if ($customer->internal_rate !== null)
                     <x-detail-grid.row :label="__('Interner Satz')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($customer->internal_rate?->toFloat() ?? 0.0), 2, withThousandsSeparator: true).' '.$customer->currency->value" />
                 @endif

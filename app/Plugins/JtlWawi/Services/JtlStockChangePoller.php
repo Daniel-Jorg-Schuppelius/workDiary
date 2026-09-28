@@ -12,10 +12,12 @@ declare(strict_types=1);
 
 namespace App\Plugins\JtlWawi\Services;
 
+use App\Models\Article\ArticleVariant;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Plugins\JtlWawi\JtlConnection;
 use App\Plugins\JtlWawi\Api\JtlGatewayFactory;
 use App\Plugins\JtlWawi\JtlWawiPlugin;
+use App\Support\MorphMap;
 
 /**
  * Bestands-Delta-Polling über das JTL-Änderungsjournal (Feature 078,
@@ -112,7 +114,7 @@ class JtlStockChangePoller {
             [
                 'plugin_id' => JtlWawiPlugin::ID,
                 'source' => JtlWawiPlugin::ID,
-                'target_type' => 'article_variant',
+                'target_type' => MorphMap::alias(ArticleVariant::class),
                 'external_type' => 'item',
                 'external_id' => $jtlItemId,
                 'case_type' => IntegrationInboxItem::CASE_UNMATCHED,

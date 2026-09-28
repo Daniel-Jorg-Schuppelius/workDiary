@@ -91,12 +91,15 @@ final class InvoiceIssueService {
         $fromFile = $invoice->number_source === 'file_import';
 
         $invoice->freezeParties();
+        // Festgeschrieben, damit Fälligkeit und E-Rechnung dasselbe Ziel nennen (MVP-996).
+        $paymentTermsDays = $invoice->effectivePaymentTermsDays();
         $invoice->update($extra + [
             'status' => Invoice::STATUS_ISSUED,
+            'payment_terms_days' => $paymentTermsDays,
             'issued_on' => $fromFile && $invoice->issued_on !== null ? $invoice->issued_on : ($invoice->issued_on ?? now()),
             'due_on' => $fromFile && $invoice->due_on !== null
                 ? $invoice->due_on
-                : ($invoice->due_on ?? now()->addDays($invoice->payment_terms_days ?? 14)),
+                : ($invoice->due_on ?? now()->addDays($paymentTermsDays)),
             'tax_context' => [
                 'resolved_on' => $resolvedOn->toDateString(),
                 'rate' => $invoice->tax_rate?->getNumericValue() ?? '',

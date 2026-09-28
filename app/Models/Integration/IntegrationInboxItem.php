@@ -77,6 +77,9 @@ class IntegrationInboxItem extends Model {
     // Quelle des Imports (für csv-import)
     public const PLUGIN_CSV = 'csv-import';
 
+    /** Dedupe-Präfix der Fälle aus fehlgeschlagener Outbox-Zustellung. */
+    public const DEDUPE_OUTBOX_FAILED = 'outbox-failed:';
+
     protected $fillable = [
         'organization_id',
         'plugin_id',
@@ -120,20 +123,24 @@ class IntegrationInboxItem extends Model {
     }
 
     /**
-     * Menschenlesbarer Titel: bekannte technische Schlüssel (Outbox-Operationen
-     * wie `toggl.time_entry.update`, Import-Reason-Codes) werden übersetzt,
-     * alles andere kommt unverändert aus `display_title`. Import-Konflikte
-     * setzen gar keinen Titel — dort trägt der Reason-Code die Bedeutung.
+     * Menschenlesbarer Titel: Outbox-Fehlschläge tragen den Operationsschlüssel
+     * (`toggl.entry.create`, `task.update`, …) als Titel und werden übersetzt,
+     * Import-Reason-Codes ebenso; alles andere kommt unverändert aus
+     * `display_title`. Import-Konflikte setzen gar keinen Titel — dort trägt
+     * der Reason-Code die Bedeutung.
      */
-    public function displayTitleText(): ?string {
+    public function displayTitleText(?string $pluginName = null): ?string {
         $title = trim((string) $this->display_title);
 
-        if (preg_match('/^([a-z0-9_-]+)\.time_entry\.(update|delete)$/', $title, $m) === 1) {
-            $plugin = ucfirst($m[1]);
+        if (str_starts_with((string) $this->dedupe_key, self::DEDUPE_OUTBOX_FAILED)) {
+            $plugin = $pluginName ?? ucfirst((string) $this->plugin_id);
 
-            return $m[2] === 'delete'
-                ? (string) __('Zeit-Löschung nicht nach :plugin übertragen', ['plugin' => $plugin])
-                : (string) __('Zeit-Änderung nicht nach :plugin übertragen', ['plugin' => $plugin]);
+            return match (1) {
+                preg_match('/\.time_entry\.delete$/', $title) => (string) __('Zeit-Löschung nicht nach :plugin übertragen', ['plugin' => $plugin]),
+                preg_match('/\.time_entry\.update$/', $title) => (string) __('Zeit-Änderung nicht nach :plugin übertragen', ['plugin' => $plugin]),
+                preg_match('/\.entry\.create$/', $title) => (string) __('Neuer Zeiteintrag nicht nach :plugin übertragen', ['plugin' => $plugin]),
+                default => (string) __('Übertragung nach :plugin fehlgeschlagen', ['plugin' => $plugin]),
+            };
         }
 
         if ($title === '') {

@@ -44,6 +44,8 @@ class AccountingAccount extends Model {
         'is_bank',
         'is_cash',
         'is_clearing',
+        // Kostenstelle beim Festschreiben Pflicht (MVP-1000).
+        'is_cost_center_required',
         'euer_category',
         'bwa_group',
         'deductible_percent',
@@ -61,6 +63,7 @@ class AccountingAccount extends Model {
         'is_bank' => 'boolean',
         'is_cash' => 'boolean',
         'is_clearing' => 'boolean',
+        'is_cost_center_required' => 'boolean',
         'euer_category' => EuerCategory::class,
         'bwa_group' => BwaGroup::class,
         'deductible_percent' => 'decimal:2',

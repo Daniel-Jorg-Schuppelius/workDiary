@@ -116,4 +116,21 @@ return [
         'mass_attack_title' => 'Ataque masivo detectado (:event)',
         'mass_attack_description' => ':count eventos de tipo :event en :window minutos (límite :limit). Revise los accesos, aplique bloqueos, documente la causa.',
     ],
+    'account_secure' => [
+        'action' => 'Proteger la cuenta',
+        'action_event' => 'Confirmar la usurpación de la cuenta',
+        'action_self' => 'No fui yo – proteger la cuenta',
+        'confirm' => '¿Proteger la cuenta de «:name»? Todas las sesiones, tokens de API y llaves de acceso terminan y la contraseña deja de ser válida. :name recibe un enlace para establecer una nueva contraseña.',
+        'confirm_self' => '¿Proteger su cuenta? Se cerrarán todas sus sesiones y su contraseña y llaves de acceso dejarán de ser válidas. Recibirá un enlace para establecer una nueva contraseña.',
+        'self_heading' => '¿Inicio de sesión desconocido?',
+        'self_hint' => 'Si no reconoce un inicio de sesión o un dispositivo, proteja su cuenta: todas las sesiones terminan, la contraseña y las llaves de acceso dejan de ser válidas y recibe un enlace para establecer una nueva contraseña.',
+        'flash' => [
+            'done' => 'La cuenta de :name está protegida. Se ha enviado un enlace para establecer una nueva contraseña.',
+            'self' => 'Su cuenta está protegida. Le hemos enviado un enlace para establecer una nueva contraseña.',
+        ],
+        'error' => [
+            'not_securable' => 'Solo las cuentas de empleados con dirección de correo electrónico pueden protegerse así.',
+            'self_admin' => 'Proteja su propia cuenta en su página de seguridad.',
+        ],
+    ],
 ];

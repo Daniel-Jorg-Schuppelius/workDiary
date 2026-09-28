@@ -31,3 +31,9 @@ la sua conferma (dialogo «Ricordare?»).
 suggerimenti di testo per posizione (traduzioni incluse). Nulla viene
 applicato prima del clic — quantità, prezzi e imposte restano
 invariati.
+
+**Azioni cumulative:** In una fattura in bozza, «Traduci tutto» traduce ogni
+posizione, e in un verbale «Migliora tutti i punti» riformula ogni punto con
+testo. Entrambe vengono eseguite in background. Ogni posizione e ogni punto
+riceve una propria proposta, che lei accetta o rifiuta singolarmente; nulla
+viene applicato automaticamente.

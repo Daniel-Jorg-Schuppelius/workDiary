@@ -32,3 +32,9 @@ qu'après votre confirmation (dialogue « Mémoriser ? »).
 l'IA crée des suggestions de texte par position (traductions incluses).
 Rien n'est appliqué avant le clic — quantités, prix et taxes restent
 intacts.
+
+**Actions groupées :** Sur une facture en brouillon, « Tout traduire » traduit
+chaque ligne, et dans un procès-verbal « Affiner tous les points » reformule
+chaque point avec texte. Les deux s’exécutent en arrière-plan. Chaque ligne
+et chaque point reçoit sa propre proposition, que vous acceptez ou rejetez
+individuellement ; rien n’est appliqué automatiquement.

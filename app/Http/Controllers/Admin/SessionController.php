@@ -17,7 +17,7 @@ use App\Models\Location\LocationDeviceToken;
 use App\Models\Platform\User;
 use App\Models\Time\AttendanceTerminal;
 use App\Services\Auth\UserSessionInvalidator;
-use App\Services\Security\SessionManagementService;
+use App\Services\Security\{AccountTakeoverResponder, SessionManagementService};
 use App\Support\{MorphMap, Sqid};
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{DB, Gate};
@@ -140,6 +140,30 @@ class SessionController extends Controller {
         ]);
 
         return back()->with('success', __('sessions.flash.all_revoked', ['name' => $target->name]));
+    }
+
+    /**
+     * Konto nach Übernahme sichern (MVP-1008): mehr als Abmelden — Passwort
+     * und Passkeys werden ungültig, der Nutzer erhält einen Reset-Link.
+     */
+    public function secureUser(Request $request, string $userSqid, AccountTakeoverResponder $responder): RedirectResponse {
+        Gate::authorize(Permission::SecuritySessionsRevoke->value);
+
+        $organization = $this->organization($request);
+        /** @var User $actor */
+        $actor = $request->user();
+
+        $userId = Sqid::decodeOrAbort(User::class, $userSqid);
+        abort_unless($this->belongsToOrg($userId, $organization->id), Response::HTTP_NOT_FOUND);
+        if ($userId === (int) $actor->id) {
+            return back()->withErrors(['user' => __('security.account_secure.error.self_admin')]);
+        }
+
+        /** @var User $target */
+        $target = User::query()->findOrFail($userId);
+        $responder->secure($target, $actor, AccountTakeoverResponder::SOURCE_ORGANIZATION_ADMIN);
+
+        return back()->with('success', __('security.account_secure.flash.done', ['name' => $target->name]));
     }
 
     /** API-Token (Sanctum) widerrufen. */

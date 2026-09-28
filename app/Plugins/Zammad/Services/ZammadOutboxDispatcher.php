@@ -99,7 +99,7 @@ class ZammadOutboxDispatcher implements IntegrationOutboxDispatcher {
         $gateway = app(ZammadGatewayFactory::class)->for($connection);
 
         if (! $gateway->addArticle($ticketId, $body, (bool) ($payload['internal'] ?? true))) {
-            throw new RuntimeException('Zammad article creation failed'); // → Queue-Retry
+            throw new RuntimeException('Zammad: Artikel konnte nicht angelegt werden'); // → Queue-Retry
         }
 
         return true;
@@ -136,7 +136,7 @@ class ZammadOutboxDispatcher implements IntegrationOutboxDispatcher {
 
         $gateway = app(ZammadGatewayFactory::class)->for($connection);
         if (! $gateway->accountTime($ticketId, $value)) {
-            throw new RuntimeException('Zammad time accounting failed'); // → Queue-Retry
+            throw new RuntimeException('Zammad: Zeitbuchung fehlgeschlagen'); // → Queue-Retry
         }
 
         if ($timeEntryId > 0) {

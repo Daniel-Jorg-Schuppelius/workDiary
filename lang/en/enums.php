@@ -2033,5 +2033,13 @@ return [
             'view_attendance' => 'View attendance',
             'receive_messages' => 'Receive messages',
         ],
+        'donation-kind' => [
+            'donation' => 'Monetary donation',
+            'membership_fee' => 'Membership fee',
+        ],
+        'donation-receipt-kind' => [
+            'single' => 'Single receipt',
+            'collective' => 'Collective receipt',
+        ],
     ],
 ];

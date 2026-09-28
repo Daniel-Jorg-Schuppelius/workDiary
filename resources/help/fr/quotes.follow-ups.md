@@ -27,3 +27,10 @@ foulée.
 **Rappel :** Le contrôle nocturne des échéances signale les relances dues et
 en retard via les règles de notification. Les devis acceptés ou refusés
 disparaissent de la liste.
+
+**Taux de réussite :** Sous « Taux de réussite », WorkDiary indique pour la
+période choisie combien de devis ont été gagnés, perdus ou ont expiré — en
+nombre et en volume hors taxes, par client ou par responsable. Seule la
+dernière version par numéro de devis compte. La date de décision fait foi,
+pour les devis expirés la fin de validité. Les devis ouverts ne comptent pas
+dans le taux et figurent à part.

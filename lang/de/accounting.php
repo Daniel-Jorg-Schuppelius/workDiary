@@ -78,6 +78,7 @@ return [
             'post_now' => 'Sofort festschreiben',
             'reversal_reason' => 'Begründung',
             'reversal_booked_on' => 'Buchungsdatum der Gegenbuchung',
+            'cost_center' => 'Kostenstelle',
         ],
         'hint' => [
             'profit_determination' => 'Ändert die Auswertung (EÜR oder doppelte Buchführung), nicht die Buchungs- und Nachweisregeln.',
@@ -95,6 +96,8 @@ return [
             'normal_balance' => 'Vorbelegt aus der Kontoart, im Einzelfall überschreibbar.',
             'post_now' => 'Nach dem Festschreiben ist die Buchung nur noch über eine Gegenbuchung korrigierbar.',
             'reversal_booked_on' => 'Leer lassen für den Originaltag, sofern dessen Periode noch offen ist.',
+            'cost_center_required' => 'Buchungen auf dieses Konto lassen sich nur mit Kostenstelle festschreiben — auch aus der Buchungs-Inbox.',
+            'cost_center' => 'Gilt für Soll- und Habenzeile.',
         ],
         'action' => [
             'activate' => 'Lokale Buchhaltung aktivieren',
@@ -177,6 +180,7 @@ return [
             'account_in_use' => 'Auf dieses Konto wurde bereits gebucht — es kann nur stillgelegt werden.',
             'entry_without_organization' => 'Die Buchung hat keine Organisation — bitte den Systembetreuer informieren.',
             'account_number_taken' => 'Diese Kontonummer ist bereits vergeben.',
+            'cost_center_required' => 'Das Konto :account verlangt eine Kostenstelle.',
         ],
         'preflight' => [
             'not_configured' => 'Profil noch nicht gespeichert — der Preflight läuft ab der ersten Speicherung.',
@@ -243,6 +247,7 @@ return [
             'cash' => 'Kasse',
             'clearing' => 'Klärung',
             'inactive' => 'Stillgelegt',
+            'cost_center_required' => 'Kostenstelle Pflicht',
         ],
         'confirm' => [
             'deactivate' => 'Konto wirklich stilllegen? Bestehende Buchungen bleiben erhalten.',
@@ -361,6 +366,8 @@ return [
             'disposal_kind' => 'Art des Abgangs',
             'disposal_proceeds' => 'Veräußerungserlös (netto)',
             'created_by' => 'Angelegt von',
+            'class' => 'Anlagenklasse',
+            'source' => 'Herkunft',
         ],
         'section' => [
             'master' => 'Stammdaten',
@@ -380,18 +387,22 @@ return [
             'device' => 'Optionaler Bezug zum Geräte-Register; nicht jede Anlage ist ein Gerät.',
             'residual_value' => 'Bleibt am Ende der Nutzungsdauer stehen; Standard 0.',
             'useful_life' => 'Betriebsgewöhnliche Nutzungsdauer laut AfA-Tabelle, in Monaten. Bei GWG und Sammelposten ergibt sich die Laufzeit aus der Methode.',
-            'accounts' => 'Leer lassen, dann greift die Buchungsregel der Rolle (Anlagenkonto / AfA-Aufwand).',
+            'accounts' => 'Leer lassen, dann gilt das Konto der Anlagenklasse, sonst die Buchungsregel der Rolle (Anlagenkonto / AfA-Aufwand).',
             'frozen' => 'Eine AfA-Buchung ist festgeschrieben — Anschaffung, AK/HK, Restwert und Nutzungsdauer sind eingefroren.',
             'schedule' => 'Linear, monatsgenau im Anschaffungs- und Abgangsjahr (§ 7 Abs. 1 S. 4 EStG); das letzte Jahr nimmt die Restdifferenz.',
             'posting' => 'Die Jahres-AfA wird im Abschluss je Geschäftsjahr vorgeschlagen und in der Inbox festgeschrieben — nie direkt.',
             'dispose' => 'Der Abgang beendet den AfA-Plan im Abgangsmonat. Den verbleibenden Buchwert stellt die Buchungs-Inbox als Abgangsbuchung bereit.',
             'disposal_proceeds' => 'Nur bei Verkauf. Der Erlös wird über die Ausgangsrechnung gebucht; hier entscheidet er nur, ob der Restbuchwert als Buchgewinn oder -verlust ausgebucht wird.',
+            'class' => 'Gibt Nutzungsdauer, Methode und Konten vor, soweit Sie diese Felder leer lassen.',
+            'useful_life_class' => 'In Monaten; leer: Vorgabe der Anlagenklasse.',
         ],
         'action' => [
             'add' => 'Anlage anlegen',
             'edit' => 'Anlage bearbeiten',
             'dispose' => 'Abgang erfassen',
             'dispose_submit' => 'Abgang buchen',
+            'from_source' => 'Als Anlage erfassen',
+            'open_asset' => 'Anlage :no',
         ],
         'flash' => [
             'special_saved' => 'Sonder-AfA gespeichert.',
@@ -418,6 +429,31 @@ return [
             'disposed_before_acquired' => 'Der Abgang kann nicht vor der Anschaffung liegen.',
             'residual_exceeds_cost' => 'Der Restwert muss kleiner als die AK/HK sein.',
             'useful_life_required' => 'Die Nutzungsdauer muss mindestens einen Monat betragen.',
+            'source_used' => 'Aus diesem Beleg wurde bereits die Anlage :no erfasst.',
+        ],
+        'method_from_class' => 'Vorgabe der Anlagenklasse',
+        'source' => [
+            'incoming' => 'Eingangsrechnung :number',
+            'expense' => 'Auslage „:description“',
+        ],
+        'classes' => [
+            'title' => 'Anlagenklassen',
+            'subtitle' => 'Vorgaben für Nutzungsdauer, Methode und Konten neuer Anlagen',
+            'empty' => 'Noch keine Anlagenklasse angelegt.',
+            'action' => [
+                'add' => 'Anlagenklasse anlegen',
+                'edit' => 'Anlagenklasse bearbeiten',
+            ],
+            'field' => [
+                'name' => 'Bezeichnung',
+                'is_active' => 'Aktiv',
+            ],
+            'hint' => [
+                'is_active' => 'Inaktive Klassen stehen bei neuen Anlagen nicht mehr zur Auswahl; bestehende Anlagen behalten ihre Werte.',
+            ],
+            'flash' => [
+                'saved' => 'Anlagenklasse gespeichert.',
+            ],
         ],
     ],
     'rules' => [

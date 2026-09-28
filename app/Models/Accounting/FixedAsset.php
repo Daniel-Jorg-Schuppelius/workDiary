@@ -36,6 +36,7 @@ use Illuminate\Support\Carbon;
  * @property int $asset_no
  * @property string $name
  * @property int|null $asset_id
+ * @property int|null $fixed_asset_class_id
  * @property Carbon $acquired_on
  * @property CurrencyCode $currency
  * @property Money|null $acquisition_cost
@@ -72,6 +73,7 @@ class FixedAsset extends Model {
         'asset_no',
         'name',
         'asset_id',
+        'fixed_asset_class_id',
         'acquired_on',
         'currency',
         'acquisition_cost',
@@ -110,6 +112,11 @@ class FixedAsset extends Model {
     /** @return BelongsTo<Asset, $this> */
     public function asset(): BelongsTo {
         return $this->belongsTo(Asset::class, 'asset_id');
+    }
+
+    /** @return BelongsTo<FixedAssetClass, $this> */
+    public function assetClass(): BelongsTo {
+        return $this->belongsTo(FixedAssetClass::class, 'fixed_asset_class_id');
     }
 
     /** @return BelongsTo<AccountingAccount, $this> */

@@ -58,3 +58,10 @@ dates are listed there too (without health data).
 In the check-up register you maintain **check-up occasions** with type and
 interval. When an occasion is selected, it sets the type and calculates the
 next due date unless you enter your own.
+
+**Hazard catalogue, evidence and reasons:** The hazard catalogue lists typical
+hazards with measure and risk; an industry profile can prefill it, and you add
+your own entries. In a draft assessment, “Take from catalogue” adds several
+hazards at once. Assessments and instructions accept attached evidence. If a
+safety event refers to an approved assessment, the assessment shows “Review
+triggered” until a new version is approved.

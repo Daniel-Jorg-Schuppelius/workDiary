@@ -35,3 +35,11 @@ rendez-vous de suivi médical y figurent aussi (sans données de santé).
 Dans le registre du suivi médical, vous gérez des **motifs** avec type et
 intervalle. Un motif choisi fixe le type et calcule la prochaine échéance, sauf
 si vous en saisissez une vous-même.
+
+**Catalogue des dangers, justificatifs et motifs :** Le catalogue des dangers
+regroupe des dangers typiques avec mesure et risque ; un profil de branche
+peut le préremplir, vous ajoutez vos propres entrées. Dans une évaluation en
+brouillon, « Reprendre du catalogue » ajoute plusieurs dangers à la fois. Les
+évaluations et les instructions acceptent des justificatifs en pièce jointe.
+Si un événement de sécurité renvoie à une évaluation approuvée, celle-ci
+affiche « Réexamen déclenché » jusqu’à l’approbation d’une nouvelle version.

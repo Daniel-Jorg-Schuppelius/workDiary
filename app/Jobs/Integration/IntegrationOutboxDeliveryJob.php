@@ -54,7 +54,7 @@ class IntegrationOutboxDeliveryJob extends AbstractOutboxDeliveryJob {
         IntegrationInboxItem::query()->withoutGlobalScopes()->firstOrCreate([
             'organization_id' => $entry->organization_id,
             'plugin_id' => $entry->plugin_id,
-            'dedupe_key' => 'outbox-failed:' . $entry->idempotency_key,
+            'dedupe_key' => IntegrationInboxItem::DEDUPE_OUTBOX_FAILED . $entry->idempotency_key,
         ], [
             'source' => $entry->plugin_id,
             'target_type' => $entry->subject_type ?? $entry->operation,

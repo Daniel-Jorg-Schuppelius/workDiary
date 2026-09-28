@@ -21,7 +21,7 @@ use App\Models\Customer\Customer;
 use App\Models\Finance\BillingTransferPosition;
 use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Platform\User;
-use App\Models\Protocol\ProtocolItem;
+use App\Models\Protocol\{Protocol, ProtocolItem};
 use App\Models\Sales\{Quote, QuoteItem};
 use App\Services\Ai\AiMemoryService;
 use App\Services\Ai\Exceptions\AiException;
@@ -61,6 +61,24 @@ class AiSuggestionController extends Controller {
 
         return $this->guarded(function () use ($invoice): string {
             $count = $this->suggestions->queueAllForInvoice($invoice, Auth::user());
+
+            return __('ai.flash.suggestions_queued', ['count' => $count]);
+        });
+    }
+
+    /** Dialog: Zielsprache für alle Positionen (MVP-1006). */
+    public function invoiceAllTranslateForm(Invoice $invoice): View {
+        $this->authorizeInvoice($invoice);
+
+        return view('ai._translate_dialog', ['action' => route('ai.suggestions.invoice-all-translate', $invoice)]);
+    }
+
+    public function invoiceAllTranslate(Request $request, Invoice $invoice): RedirectResponse {
+        $this->authorizeInvoice($invoice);
+        $data = $request->validate(['target_language' => ['required', 'string', Rule::in(Locales::enabledCodes())]]);
+
+        return $this->guarded(function () use ($invoice, $data): string {
+            $count = $this->suggestions->queueTranslateAllForInvoice($invoice, $data['target_language'], Auth::user());
 
             return __('ai.flash.suggestions_queued', ['count' => $count]);
         });
@@ -109,6 +127,18 @@ class AiSuggestionController extends Controller {
             $this->protocolSuggestions->suggestForItem($item, Auth::user());
 
             return __('ai.flash.suggestion_created');
+        });
+    }
+
+    /** Alle Punkte eines Protokolls veredeln (MVP-1006): Warteschlange, Einzelentscheidung je Punkt. */
+    public function protocolAll(Protocol $protocol): RedirectResponse {
+        Gate::authorize('update', $protocol);
+        abort_unless(Gate::allows(Permission::AiUse->value), 403);
+
+        return $this->guarded(function () use ($protocol): string {
+            $count = $this->protocolSuggestions->queueAllForProtocol($protocol, Auth::user());
+
+            return __('ai.flash.suggestions_queued', ['count' => $count]);
         });
     }
 

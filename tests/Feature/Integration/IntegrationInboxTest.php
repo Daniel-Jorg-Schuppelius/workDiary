@@ -131,13 +131,71 @@ class IntegrationInboxTest extends TestCase {
             ->get(route('admin.integration.inbox'))
             ->assertOk()
             // Technischer Key wird übersetzt statt roh angezeigt …
-            ->assertSee(__('Zeit-Änderung nicht nach :plugin übertragen', ['plugin' => 'Toggl']))
+            ->assertSee(__('Zeit-Änderung nicht nach :plugin übertragen', ['plugin' => 'Toggl Track']))
             ->assertDontSee('toggl.time_entry.update')
             // … und der betroffene Zeiteintrag ist erkennbar.
             ->assertSee('31.07.2026')
             ->assertSee('PC-SEMSO (Starten der Maschine)')
             ->assertSee('Fernwartung')
             ->assertSee('Semso Multimedia');
+    }
+
+    /**
+     * Nutzerbefund 2026-09-28: Outbox-Fehlschlag `toggl.entry.create` zeigte
+     * Operationsschlüssel, Morph-Alias und Laravels Timeout-Text roh an.
+     */
+    public function test_outbox_failure_shows_readable_title_target_and_reason(): void {
+        $entry = \App\Models\Time\TimeEntry::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->admin->id,
+        ]);
+        $this->item([
+            'case_type' => IntegrationInboxItem::CASE_CONFLICT,
+            'target_type' => $entry->getMorphClass(),
+            'external_type' => 'toggl.entry.create',
+            'dedupe_key' => IntegrationInboxItem::DEDUPE_OUTBOX_FAILED . 'toggl:entry:1',
+            'referenceable_type' => $entry->getMorphClass(),
+            'referenceable_id' => $entry->id,
+            'display_title' => 'toggl.entry.create',
+            'display_subtitle' => 'Zeitüberschreitung bei der Zustellung',
+        ]);
+        // Outbox-Fall ohne Subjekt: die Operation steht als Zieltyp.
+        $this->item([
+            'case_type' => IntegrationInboxItem::CASE_CONFLICT,
+            'target_type' => 'receipt.push',
+            'external_type' => 'receipt.push',
+            'dedupe_key' => IntegrationInboxItem::DEDUPE_OUTBOX_FAILED . 'toggl:receipt:1',
+            'display_title' => 'receipt.push',
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.integration.inbox'))
+            ->assertOk()
+            ->assertSee(__('Neuer Zeiteintrag nicht nach :plugin übertragen', ['plugin' => 'Toggl Track']))
+            ->assertSee(__('Übertragung nach :plugin fehlgeschlagen', ['plugin' => 'Toggl Track']))
+            ->assertSee('<span class="badge badge-sm badge-outline">' . __('entity-types.TimeEntry') . '</span>', false)
+            ->assertSee(__('Zeitüberschreitung bei der Zustellung'))
+            ->assertDontSee('toggl.entry.create')
+            ->assertDontSee('receipt.push')
+            ->assertDontSee('>time_entries<', false);
+    }
+
+    /** Die Auswahllisten sind nach Morph-Alias geschlüsselt — Klassenschlüssel liefen leer. */
+    public function test_mail_intake_item_lists_customers_for_booking(): void {
+        Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Zielkunde Mail GmbH']);
+        $this->item([
+            'plugin_id' => \App\Services\Mail\MailIntakeService::PLUGIN_ID,
+            'external_type' => 'mail',
+            'dedupe_key' => 'mail:1',
+            'display_title' => 'Anfrage',
+            'remote_snapshot' => [],
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.integration.inbox'))
+            ->assertOk()
+            ->assertSee(__('mail.inbox.book_action'))
+            ->assertSee('Zielkunde Mail GmbH');
     }
 
     /** Konflikt-Item mit Zeiteintrag + Toggl-Plugin-Setup für inspectConflict. */
@@ -225,7 +283,7 @@ class IntegrationInboxTest extends TestCase {
         $this->actingAs($this->admin)
             ->get(route('admin.integration.inbox'))
             ->assertOk()
-            ->assertSee(__('Zeit-Löschung nicht nach :plugin übertragen', ['plugin' => 'Toggl']))
+            ->assertSee(__('Zeit-Löschung nicht nach :plugin übertragen', ['plugin' => 'Toggl Track']))
             ->assertSee(__('Zeiteintrag #:id existiert nicht mehr', ['id' => 424242]));
     }
 

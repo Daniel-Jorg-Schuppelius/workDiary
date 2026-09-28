@@ -29,6 +29,19 @@
                             :href="route('finance.incoming-invoices.xml', $document)"
                             :title="__('Extrahierte Rechnungs-XML (bei ZUGFeRD aus dem PDF)')"
                             show-label>{{ __('Rechnungs-XML') }}</x-icon-btn>
+                {{-- Anlage aus der Eingangsrechnung (MVP-999): einmal erfassen, danach verlinken. --}}
+                @if ($incoming !== null)
+                    @can(\App\Enums\User\Permission::AccountingLedgerConfigure->value)
+                        @if ($fixedAsset !== null)
+                            <x-icon-btn icon="precision_manufacturing" tone="outline" size="sm" :href="route('finance.accounting.fixed-assets.show', $fixedAsset)"
+                                        show-label>{{ __('accounting.fixed_assets.action.open_asset', ['no' => $fixedAsset->displayNo()]) }}</x-icon-btn>
+                        @else
+                            <x-icon-btn icon="precision_manufacturing" tone="outline" size="sm" data-entry-modal-trigger
+                                        :href="route('finance.accounting.fixed-assets.create', ['source_kind' => 'incoming', 'source_ref' => $incoming->sqid])"
+                                        show-label>{{ __('accounting.fixed_assets.action.from_source') }}</x-icon-btn>
+                        @endif
+                    @endcan
+                @endif
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

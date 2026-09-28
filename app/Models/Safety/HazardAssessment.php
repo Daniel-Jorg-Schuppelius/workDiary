@@ -11,12 +11,12 @@
 namespace App\Models\Safety;
 
 use App\Enums\Safety\HazardAssessmentStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use App\Models\Platform\User;
 use Database\Factories\Safety\HazardAssessmentFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\{Collection, Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -50,6 +50,7 @@ class HazardAssessment extends Model {
     use Auditable;
 
     use BelongsToOrganization;
+    use HasAttachments;
     /** @use HasFactory<HazardAssessmentFactory> */
     use HasFactory;
     use HasSqid;
@@ -117,6 +118,29 @@ class HazardAssessment extends Model {
 
     public function isReviewOverdue(): bool {
         return $this->review_due_on !== null && $this->review_due_on->isPast() && ! $this->review_due_on->isToday();
+    }
+
+    /**
+     * Sicherheitsereignisse, die auf diesen Stand verweisen (MVP-1002).
+     *
+     * @return HasMany<SafetyEvent, $this>
+     */
+    public function safetyEvents(): HasMany {
+        return $this->hasMany(SafetyEvent::class, 'hazard_assessment_id');
+    }
+
+    /**
+     * Überprüfung angestoßen: ein verknüpftes Ereignis nach der Freigabe dieses
+     * Standes. Eine neue freigegebene Fassung beendet den Zustand von selbst.
+     *
+     * @return Collection<int, SafetyEvent>
+     */
+    public function reviewTriggers(): Collection {
+        if ($this->status !== HazardAssessmentStatus::Approved || $this->approved_at === null) {
+            return new Collection();
+        }
+
+        return $this->safetyEvents()->where('occurred_at', '>', $this->approved_at)->orderBy('occurred_at')->get();
     }
 
     /** @return HasMany<HazardAssessmentItem, $this> */

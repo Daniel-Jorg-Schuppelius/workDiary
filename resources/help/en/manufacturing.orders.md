@@ -33,3 +33,17 @@ multi-level material requirements explosion (MRP) for a finished good as
 well as quality metrics per article. Cancelling is irreversible;
 creating, reporting and delivering require the inventory posting
 permission.
+
+## Customs documents for shipments outside the EU
+
+For every delivery with a recipient, “Customs documents” creates a commercial
+invoice (for a sale) or a pro forma invoice (gift, sample, returned goods,
+repair and other reasons) as a PDF. The dialog shows whether the destination
+is outside the EU and stores the chosen reason for export on the delivery. The
+document lists the description of goods, customs tariff number, country of
+origin, quantity, net weight and value; gross weight and number of parcels
+come from the recorded parcels. Maintain the customs tariff number, country of
+origin and net weight on the article, and the sender's EORI number in the
+organisation settings. If any of this is missing, the dialog names it and
+creates no document. The customs documents do not replace an electronic
+export declaration.

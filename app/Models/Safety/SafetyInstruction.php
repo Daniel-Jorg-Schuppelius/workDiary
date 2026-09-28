@@ -10,7 +10,7 @@
 
 namespace App\Models\Safety;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use App\Models\Platform\User;
 use App\Models\Training\{TrainingCourse, TrainingCourseVersion};
 use Database\Factories\Safety\SafetyInstructionFactory;
@@ -43,6 +43,7 @@ class SafetyInstruction extends Model {
     use Auditable;
 
     use BelongsToOrganization;
+    use HasAttachments;
     /** @use HasFactory<SafetyInstructionFactory> */
     use HasFactory;
     use HasSqid;

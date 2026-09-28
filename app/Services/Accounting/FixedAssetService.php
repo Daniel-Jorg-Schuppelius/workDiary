@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Accounting;
 
 use App\Enums\Finance\{AccountingEntryStatus, DepreciationMethod, FixedAssetDisposalKind, FixedAssetStatus};
-use App\Models\Accounting\{AccountingEntry, AccountingFiscalYear, AccountingProfile, FixedAsset, FixedAssetSpecialDepreciation};
+use App\Models\Accounting\{AccountingEntry, AccountingFiscalYear, AccountingProfile, FixedAsset, FixedAssetClass, FixedAssetSpecialDepreciation};
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\Posting\Adapters\DepreciationAdapter;
 use App\Services\Accounting\Posting\PostingInboxService;
@@ -57,8 +57,9 @@ class FixedAssetService {
 
     /** @param array<string, mixed> $attributes */
     public function create(Organization $organization, User $actor, array $attributes): FixedAsset {
-        $attributes = $this->withMethodRules($attributes);
+        $attributes = $this->withMethodRules($this->withClassDefaults($organization, $attributes));
         $this->assertValues($attributes);
+        $this->assertSourceUnused($organization, $attributes);
 
         return DB::transaction(function () use ($organization, $actor, $attributes): FixedAsset {
             return FixedAsset::query()->create([
@@ -66,6 +67,7 @@ class FixedAssetService {
                 'asset_no' => $this->nextNo(FixedAsset::class, 'asset_no', 'organization_id', (int) $organization->id),
                 'name' => $attributes['name'],
                 'asset_id' => $attributes['asset_id'] ?? null,
+                'fixed_asset_class_id' => $attributes['fixed_asset_class_id'] ?? null,
                 'acquired_on' => $attributes['acquired_on'],
                 'currency' => $attributes['currency'] ?? $this->journal->baseCurrency($organization),
                 'acquisition_cost' => $attributes['acquisition_cost'],
@@ -82,6 +84,44 @@ class FixedAssetService {
                 'created_by_user_id' => $actor->id,
             ]);
         });
+    }
+
+    /**
+     * Ein Beleg wird höchstens einmal Anlage (MVP-999).
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    private function assertSourceUnused(Organization $organization, array $attributes): void {
+        if (($attributes['source_type'] ?? null) === null || ($attributes['source_id'] ?? null) === null) {
+            return;
+        }
+        $existing = FixedAsset::query()->where('organization_id', $organization->id)
+            ->where('source_type', $attributes['source_type'])->where('source_id', $attributes['source_id'])->first();
+        if ($existing !== null) {
+            throw ValidationException::withMessages(['source_ref' => (string) __('accounting.fixed_assets.error.source_used', ['no' => $existing->displayNo()])]);
+        }
+    }
+
+    /**
+     * Vorgaben der Anlagenklasse für leer gelassene Felder (MVP-999); eine fremde
+     * oder unbekannte Klasse zählt als keine.
+     *
+     * @param  array<string, mixed>  $attributes
+     * @return array<string, mixed>
+     */
+    private function withClassDefaults(Organization $organization, array $attributes): array {
+        $classId = $attributes['fixed_asset_class_id'] ?? null;
+        $class = is_int($classId) ? FixedAssetClass::query()->where('organization_id', $organization->id)->find($classId) : null;
+        $attributes['fixed_asset_class_id'] = $class?->id;
+        if ($class === null) {
+            return $attributes;
+        }
+        $attributes['useful_life_months'] ??= $class->useful_life_months;
+        $attributes['depreciation_method'] ??= $class->depreciation_method;
+        $attributes['asset_account_id'] ??= $class->asset_account_id;
+        $attributes['depreciation_account_id'] ??= $class->depreciation_account_id;
+
+        return $attributes;
     }
 
     /** @param array<string, mixed> $attributes */
@@ -283,7 +323,6 @@ class FixedAssetService {
             ->exists();
     }
 
-    /** @param array<string, mixed> $attributes */
     /**
      * GWG und Sammelposten (MVP-892): Wertgrenzen aus den Einstellungen der
      * Organisation (keine gesetzlichen Beträge im Code), Laufzeit aus der

@@ -16,6 +16,7 @@ use App\Enums\Privacy\{DataSubjectKind, DataSubjectRequestType};
 use App\Http\Controllers\Controller;
 use App\Models\Applications\JobApplication;
 use App\Models\Audit\AuditLog;
+use App\Models\Club\ClubMember;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Privacy\DataSubjectRequest;
@@ -90,6 +91,7 @@ class DataSubjectRequestController extends Controller {
 
         return view('privacy.requests.show', [
             'request' => $dsr->load('assignedUser'),
+            'subjectKinds' => $this->subjectExporter->availableKinds(),
             'events' => $dsr->journal()->get(),
             'members' => User::query()
                 ->where('organization_id', $dsr->organization_id)
@@ -106,7 +108,7 @@ class DataSubjectRequestController extends Controller {
     public function subjectSearch(Request $request, DataSubjectRequest $dsr): JsonResponse {
         Gate::authorize('export', $dsr);
         $data = $request->validate([
-            'kind' => ['required', \Illuminate\Validation\Rule::enum(DataSubjectKind::class)],
+            'kind' => ['required', \Illuminate\Validation\Rule::in($this->subjectKindValues())],
             'q' => ['nullable', 'string', 'max:100'],
         ]);
         $kind = DataSubjectKind::from($data['kind']);
@@ -133,6 +135,11 @@ class DataSubjectRequestController extends Controller {
                 ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w->whereLikeEscaped('company', $q)->orWhereLikeEscaped('contact_name', $q)))
                 ->orderByDesc('id')->limit($limit)->get()
                 ->map(fn (Lead $l): array => $option($l->sqid, $l->displayName())),
+            DataSubjectKind::ClubMember => ClubMember::query()->withoutGlobalScopes()->where('organization_id', $orgId)
+                ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w->whereLikeEscaped('last_name', $q)->orWhereLikeEscaped('first_name', $q)
+                    ->orWhereLikeEscaped('email', $q)->when(ctype_digit($q), fn ($n) => $n->orWhere('member_no', (int) $q))))
+                ->orderBy('last_name')->orderBy('first_name')->limit($limit)->get()
+                ->map(fn (ClubMember $m): array => $option($m->sqid, $m->fullName() . ' (' . $m->member_no . ')')),
             DataSubjectKind::JobApplication => JobApplication::query()->withoutGlobalScopes()->where('organization_id', $orgId)
                 ->orderByDesc('id')->get(['id', 'candidate_name'])
                 ->filter(fn (JobApplication $a): bool => $q === '' || mb_stripos((string) $a->candidate_name, $q) !== false)
@@ -163,7 +170,7 @@ class DataSubjectRequestController extends Controller {
         }
 
         $data = $request->validate([
-            'subject_type' => ['required', \Illuminate\Validation\Rule::enum(DataSubjectKind::class)],
+            'subject_type' => ['required', \Illuminate\Validation\Rule::in($this->subjectKindValues())],
             'subject_id' => ['required', 'string', 'max:64'],
         ]);
 
@@ -178,6 +185,11 @@ class DataSubjectRequestController extends Controller {
         $this->audit($request, 'privacy.subjectExportGenerated', DataSubjectRequest::class, (int) $dsr->id);
 
         return back()->with('status', __('Auskunftspaket erzeugt und am Fall abgelegt.'));
+    }
+
+    /** @return list<string> */
+    private function subjectKindValues(): array {
+        return array_map(static fn (DataSubjectKind $kind): string => $kind->value, $this->subjectExporter->availableKinds());
     }
 
     public function verifyIdentity(DataSubjectRequest $dsr): RedirectResponse {

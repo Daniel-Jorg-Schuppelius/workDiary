@@ -47,3 +47,5 @@ trazable qué idea condujo a qué trabajo.
 importarse desde archivos FreeMind u OPML; los mapas pueden exportarse
 como JSON, OPML, Markdown o PDF — por ejemplo para compartirlos fuera
 del sistema.
+
+**Comentarios en nodos:** En el detalle de un nodo, «Comentarios» abre el hilo de ese nodo; el número al lado indica cuántos hay. Puede comentar cualquier persona que pueda ver el mapa.

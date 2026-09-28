@@ -1058,6 +1058,7 @@ return [
         'sessions' => [
             'revoked_all' => 'Todas las sesiones revocadas',
         ],
+        'account_secured' => 'Cuenta protegida tras usurpación',
     ],
     'user_group' => [
         'member_added' => 'Grupo de usuarios: miembro añadido',

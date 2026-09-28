@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Auth\TwoFactorCredential;
 use App\Models\Platform\User;
 use App\Services\Auth\{EmailOtpService, TwoFactorService, WebAuthnService};
+use App\Services\Security\AccountTakeoverResponder;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Hash};
@@ -66,6 +67,18 @@ class TwoFactorController extends Controller {
         $request->session()->flash('success', __('Sicherheitsschlüssel / Passkey aktiviert.'));
 
         return response()->json(['ok' => true]);
+    }
+
+    /** „Das war ich nicht“ (MVP-1008): Konto sichern und die eigene Sitzung beenden. */
+    public function secureAccount(Request $request, AccountTakeoverResponder $responder): RedirectResponse {
+        /** @var User $user */
+        $user = $request->user();
+        $responder->secure($user, $user, AccountTakeoverResponder::SOURCE_SELF);
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login')->with('status', __('security.account_secure.flash.self'));
     }
 
     public function show(Request $request): View {

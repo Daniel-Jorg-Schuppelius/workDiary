@@ -18,6 +18,9 @@
 
 @section('content')
     <x-index-page :subtitle="__('quotes.follow_up.subtitle')">
+        <x-slot:actions>
+            <x-icon-btn icon="percent" tone="outline" size="sm" :href="route('quotes.win-rate')" show-label>{{ __('quotes.win_rate.link') }}</x-icon-btn>
+        </x-slot:actions>
         <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
             <x-kpi-tile :label="__('quotes.follow_up.kpi.due')" :value="$due->count()" format="int"
                         :tone="$due->isNotEmpty() ? 'warning' : 'success'" />

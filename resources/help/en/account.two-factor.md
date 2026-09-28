@@ -30,3 +30,7 @@ factor cannot be removed and protection cannot be disabled completely.
 
 Important: Never share the QR code, manual secret, one-time codes or
 recovery codes with anyone.
+
+If you do not recognise a sign-in or a device, use “This was not me – secure
+account”: all sessions end, password and passkeys become invalid, and you
+receive an email with a link to set a new password.

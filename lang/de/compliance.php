@@ -52,6 +52,13 @@ return [
             'drivingBreakMissing' => 'Fahrtunterbrechung fehlt (Art. 7 VO 561/2006)',
             'dailyRest' => 'Tägliche Ruhezeit (Art. 8 VO 561/2006)',
             'weeklyRest' => 'Wöchentliche Ruhezeit (Art. 8 VO 561/2006)',
+            'youthDailyHours' => 'Jugendliche: über 8 h täglich (§ 8 JArbSchG)',
+            'youthWeeklyHours' => 'Jugendliche: über 40 h wöchentlich (§ 8 JArbSchG)',
+            'youthBreak' => 'Jugendliche: Ruhepause fehlt (§ 11 JArbSchG)',
+            'youthRest' => 'Jugendliche: Freizeit unter 12 h (§ 13 JArbSchG)',
+            'youthNight' => 'Jugendliche: Arbeit zwischen 20 und 6 Uhr (§ 14 JArbSchG)',
+            'youthFiveDays' => 'Jugendliche: mehr als 5 Arbeitstage (§ 15 JArbSchG)',
+            'youthWeekend' => 'Jugendliche: Arbeit am Wochenende (§§ 16, 17 JArbSchG)',
         ],
         'unit' => [
             'days' => '{1} :count Tag|[2,*] :count Tage',

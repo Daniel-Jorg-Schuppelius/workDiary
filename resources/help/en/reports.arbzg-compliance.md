@@ -33,3 +33,13 @@ identical to the day closure and duty-roster checks.
 Each entry links via **Open day closure** to the affected day. If an approved
 time correction exists for a day, the entry is flagged **corrected**. The list
 can be exported as CSV or PDF.
+
+**Night time and young workers:** You set the night time (default 11 pm to
+6 am, 10 pm to 5 am in bakeries) in the compliance settings; the § 3 average
+no longer counts public holidays as working days. If a date of birth is stored
+for the employee, the report also checks the days before their 18th birthday
+against the German Youth Employment Protection Act: at most 8 h a day and 40 h
+a week, rest breaks (30 min from 4.5 h, 60 min from 6 h), 12 h time off, no
+work between 8 pm and 6 am, at most 5 working days a week. Weekend work and
+night work from age 16 appear as notes, because the act allows exceptions by
+industry.

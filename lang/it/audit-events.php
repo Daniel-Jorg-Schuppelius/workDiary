@@ -1058,6 +1058,7 @@ return [
         'sessions' => [
             'revoked_all' => 'Tutte le sessioni revocate',
         ],
+        'account_secured' => 'Account protetto dopo il furto',
     ],
     'user_group' => [
         'member_added' => 'Gruppo utenti: membro aggiunto',

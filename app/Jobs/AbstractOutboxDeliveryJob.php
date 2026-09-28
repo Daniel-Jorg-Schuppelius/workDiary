@@ -20,7 +20,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\{InteractsWithQueue, SerializesModels};
+use Illuminate\Queue\{InteractsWithQueue, MaxAttemptsExceededException, SerializesModels, TimeoutExceededException};
 use Illuminate\Queue\Jobs\SyncJob;
 use RuntimeException;
 use Throwable;
@@ -41,6 +41,14 @@ abstract class AbstractOutboxDeliveryJob implements ShouldQueue {
     use InteractsWithQueue;
     use Queueable;
     use SerializesModels;
+
+    /**
+     * Über dem Worker-Standard von 60 s: ein einzelner api-toolkit-Aufruf
+     * braucht im Fehlerfall bis zu 3 × 20 s plus Backoff. Erst innerhalb des
+     * Budgets kommt der Transportfehler bei den Dispatchern an (Create-Pfad:
+     * Log statt Inbox-Fall); unter retry_after 630 s der DB-Queue.
+     */
+    public int $timeout = 180;
 
     public int $tries = 4;
 
@@ -142,7 +150,15 @@ abstract class AbstractOutboxDeliveryJob implements ShouldQueue {
             return;
         }
 
-        $this->compensate($entry, $this->outboxService(), $e?->getMessage() ?? 'Zustellung fehlgeschlagen');
+        // Die Queue-Ausnahmen nennen nur den Job-Klassennamen („… has timed out.")
+        // — der Grund landet als Untertitel in der Inbox.
+        $reason = match (true) {
+            $e instanceof TimeoutExceededException => 'Zeitüberschreitung bei der Zustellung',
+            $e instanceof MaxAttemptsExceededException => 'Zustellung nach zu vielen Versuchen abgebrochen',
+            default => $e?->getMessage() ?? 'Zustellung fehlgeschlagen',
+        };
+
+        $this->compensate($entry, $this->outboxService(), $reason);
     }
 
     /**

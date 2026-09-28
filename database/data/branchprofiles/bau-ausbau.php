@@ -287,6 +287,14 @@ return [
         'staubsauger',
         'leiter',
     ],
+    // Gefährdungskatalog (Feature 132, MVP-1002): Vorlagen für die Gefährdungsbeurteilung, Schwere und Wahrscheinlichkeit 1–5.
+    'hazard_catalog' => [
+        ['code' => 'bau-ausbau/absturz', 'category' => 'Absturz', 'hazard' => 'Absturz an ungesicherten Kanten und Öffnungen', 'measure' => 'Seitenschutz, Abdeckungen, Gerüst statt Leiter', 'severity' => 5, 'likelihood' => 3],
+        ['code' => 'bau-ausbau/geruest', 'category' => 'Absturz', 'hazard' => 'Gerüstmängel', 'measure' => 'Gerüst nur nach Freigabe nutzen, Kennzeichnung prüfen', 'severity' => 5, 'likelihood' => 2],
+        ['code' => 'bau-ausbau/herabfallend', 'category' => 'Mechanische Gefährdung', 'hazard' => 'Herabfallende Gegenstände', 'measure' => 'Schutzhelm, Absperrung des Gefahrenbereichs', 'severity' => 4, 'likelihood' => 3],
+        ['code' => 'bau-ausbau/staub', 'category' => 'Gefahrstoffe', 'hazard' => 'Quarzstaub beim Schneiden und Schleifen', 'measure' => 'Nassschnitt, Absaugung, Atemschutz FFP3', 'severity' => 4, 'likelihood' => 3],
+        ['code' => 'bau-ausbau/witterung', 'category' => 'Umgebung', 'hazard' => 'Hitze, Kälte und UV-Strahlung', 'measure' => 'Pausen im Schatten, Trinkwasser, Sonnenschutz, Kälteschutzkleidung', 'severity' => 2, 'likelihood' => 4],
+    ],
     'tags_seed' => [
         '#baustelle',
         '#aufmass',

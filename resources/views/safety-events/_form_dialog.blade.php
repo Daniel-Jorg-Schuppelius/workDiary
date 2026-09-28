@@ -41,6 +41,16 @@
     <x-input-field name="affected_person" :label="__('safety.field.affected_person')" maxlength="180"
                    :value="old('affected_person', $event?->affected_person)" />
 
+    {{-- Gefährdungsbeurteilung (MVP-1002): das Ereignis stößt ihre Überprüfung an. --}}
+    @if (($assessments ?? collect())->isNotEmpty())
+        <x-select-field name="hazard_assessment" :label="__('safety.field.hazard_assessment')" :hint="__('safety.hint.hazard_assessment')">
+            <option value="">—</option>
+            @foreach ($assessments as $assessment)
+                <option value="{{ $assessment->sqid }}" @selected(old('hazard_assessment', $event?->hazardAssessment?->sqid) === $assessment->sqid)>{{ $assessment->displayNo() }} · {{ $assessment->area }}</option>
+            @endforeach
+        </x-select-field>
+    @endif
+
     <x-textarea-field name="description" :label="__('safety.field.description')" rows="3" required
                       :value="old('description', $event?->description)" />
 

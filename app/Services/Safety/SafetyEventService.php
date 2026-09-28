@@ -55,6 +55,7 @@ class SafetyEventService {
                 'location' => $attributes['location'] ?? null,
                 'subject_type' => $attributes['subject_type'] ?? null,
                 'subject_id' => $attributes['subject_id'] ?? null,
+                'hazard_assessment_id' => $attributes['hazard_assessment_id'] ?? null,
                 'reported_by_user_id' => $reporter->id,
                 'affected_person' => $attributes['affected_person'] ?? null,
                 'description' => $attributes['description'],
@@ -85,6 +86,7 @@ class SafetyEventService {
             'description' => $attributes['description'] ?? $event->description,
             'immediate_action' => array_key_exists('immediate_action', $attributes) ? $attributes['immediate_action'] : $event->immediate_action,
             'root_cause' => array_key_exists('root_cause', $attributes) ? $attributes['root_cause'] : $event->root_cause,
+            'hazard_assessment_id' => array_key_exists('hazard_assessment_id', $attributes) ? $attributes['hazard_assessment_id'] : $event->hazard_assessment_id,
         ]);
 
         // Erst durch ein Update kritisch geworden → einmalig (dedup) melden.

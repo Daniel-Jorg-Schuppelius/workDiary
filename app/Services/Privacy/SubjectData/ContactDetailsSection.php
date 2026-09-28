@@ -13,13 +13,12 @@ declare(strict_types=1);
 namespace App\Services\Privacy\SubjectData;
 
 use App\Models\Contacts\{ContactAddress, ContactBankAccount};
-use App\Models\Customer\Customer;
-use App\Models\Supplier\Supplier;
+use App\Models\Contracts\ContactDetailsHolder;
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
 
 /**
- * Kontaktdaten aus den `contact_*`-Tabellen (Kunde/Lieferant): Primäradresse
+ * Kontaktdaten aus den `contact_*`-Tabellen (jede Partei mit Satelliten): Primäradresse
  * und -bankverbindung flach als Felder (→ Art.-20-CSV), alle Einträge als
  * Vollausgabe-Listen. Die at-rest verschlüsselten Felder entschlüsseln die
  * Casts beim Lesen.
@@ -38,8 +37,8 @@ class ContactDetailsSection extends AbstractSubjectSection {
     }
 
     public function build(Model $subject): array {
-        if (! $subject instanceof Customer && ! $subject instanceof Supplier) {
-            throw new InvalidArgumentException(self::class . ' erwartet Customer oder Supplier.');
+        if (! $subject instanceof ContactDetailsHolder) {
+            throw new InvalidArgumentException(self::class . ' erwartet einen ' . ContactDetailsHolder::class . '.');
         }
 
         $addresses = $subject->addresses()->orderBy('id')->get();

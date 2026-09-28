@@ -21,3 +21,9 @@ related:
 **Messages :** Rappels, reports, annulations et places attribuées vous parviennent via votre compte utilisateur (selon les règles de notification de l'organisation), sinon via l'adresse e-mail enregistrée ; de même pour les représentants disposant du droit « recevoir des messages ». Chaque message n'est envoyé qu'une fois, les échecs d'envoi sont visibles par l'administration au rendez-vous. Un message ne vaut pas lecture.
 
 **Mes cotisations :** Si vous êtes enregistré comme personne redevable d'un compte de cotisation, vous voyez vos avis (aussi en PDF), échéances, paiements enregistrés, avoir et montants ouverts. Un prélèvement exporté ne vaut payé qu'une fois le crédit enregistré. Les droits de représentation pour les inscriptions ne suffisent pas — la gestion des cotisations fixe la personne redevable explicitement.
+
+**Pointage par code QR :** Si le code QR d’un événement est affiché sur le
+lieu d’entraînement, scannez-le avec votre smartphone et pointez vous-même ou
+les membres que vous représentez — de 60 minutes avant le début jusqu’à la
+fin. La présence est inscrite dans la liste de l’entraîneur, qui la confirme
+ou la corrige comme d’habitude.

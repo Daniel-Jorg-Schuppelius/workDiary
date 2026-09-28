@@ -134,6 +134,13 @@
     <x-card :title="__('Positionen')" icon="checklist" :count="$protocol->items->count()">
         @if ($canEditItems)
             <x-slot:actions>
+                {{-- Sammelaktion (MVP-1006): alle Punkte mit Text veredeln, Entscheidung je Punkt. --}}
+                @if ($aiTextUsable && $protocol->items->isNotEmpty())
+                    <x-action-form :action="route('ai.suggestions.protocol-all', $protocol)">
+                        <x-icon-btn icon="auto_awesome" tone="info" size="sm" type="submit" show-label
+                                    :title="__('ai.suggestion.suggest_protocol_all_title')">{{ __('ai.suggestion.suggest_protocol_all') }}</x-icon-btn>
+                    </x-action-form>
+                @endif
                 <x-icon-btn icon="playlist_add" tone="primary" size="sm" data-entry-modal-trigger :href="route('protocols.items.create', $protocol)" show-label>{{ __('protocol.action.addItem') }}</x-icon-btn>
             </x-slot:actions>
         @endif

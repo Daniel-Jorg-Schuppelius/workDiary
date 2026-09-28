@@ -33,3 +33,11 @@ figuran también sus citas de vigilancia de la salud (sin datos de salud).
 En el registro de vigilancia usted mantiene **motivos** con tipo e intervalo. Si
 se elige un motivo, este fija el tipo y calcula el próximo vencimiento, salvo que
 usted indique uno propio.
+
+**Catálogo de peligros, justificantes y motivos:** El catálogo de peligros
+reúne peligros típicos con medida y riesgo; un perfil sectorial puede
+rellenarlo y usted añade sus propias entradas. En una evaluación en borrador,
+«Tomar del catálogo» añade varios peligros a la vez. Las evaluaciones y las
+instrucciones admiten justificantes adjuntos. Si un evento de seguridad remite
+a una evaluación aprobada, esta muestra «Revisión iniciada» hasta que se
+apruebe una nueva versión.

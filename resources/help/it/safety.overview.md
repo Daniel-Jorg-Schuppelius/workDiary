@@ -33,3 +33,11 @@ anche i propri appuntamenti di sorveglianza sanitaria (senza dati sanitari).
 Nel registro della sorveglianza Lei gestisce i **motivi** con tipo e intervallo.
 Se si sceglie un motivo, questo fissa il tipo e calcola la prossima scadenza,
 salvo che Lei ne indichi una propria.
+
+**Catalogo dei pericoli, documenti e motivi:** Il catalogo dei pericoli
+raccoglie pericoli tipici con misura e rischio; un profilo di settore può
+precompilarlo e lei aggiunge le proprie voci. In una valutazione in bozza,
+«Riprendi dal catalogo» aggiunge più pericoli insieme. Valutazioni e
+formazioni accettano documenti allegati. Se un evento di sicurezza rimanda a
+una valutazione approvata, questa mostra «Riesame avviato» finché non viene
+approvata una nuova versione.

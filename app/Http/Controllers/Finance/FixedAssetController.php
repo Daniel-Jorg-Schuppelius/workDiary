@@ -16,9 +16,12 @@ use App\Enums\Finance\{DepreciationMethod, FixedAssetDisposalKind, FixedAssetSta
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\Accounting\{AccountingAccount, AccountingProfile, FixedAsset};
+use App\Http\Controllers\Finance\Concerns\ResolvesOwnAccount;
+use App\Models\Accounting\{AccountingAccount, AccountingProfile, FixedAsset, FixedAssetClass};
 use App\Models\Asset\Asset;
+use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\Organization;
+use App\Models\Travel\Expense;
 use App\Services\Accounting\{DepreciationCalculator, FixedAssetService};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -37,6 +40,14 @@ use Illuminate\View\View;
  */
 class FixedAssetController extends Controller {
     use ResolvesCurrentOrganization;
+    use ResolvesOwnAccount;
+
+    /**
+     * Herkunft einer Anlage (MVP-999): Eingangsrechnung oder Auslage derselben Organisation.
+     *
+     * @var array<string, class-string<IncomingEInvoice|Expense>>
+     */
+    private const SOURCES = ['incoming' => IncomingEInvoice::class, 'expense' => Expense::class];
 
     public function __construct(
         private readonly FixedAssetService $service,
@@ -83,7 +94,7 @@ class FixedAssetController extends Controller {
     public function show(FixedAsset $fixedAsset): View {
         abort_unless(Gate::allows(Permission::AccountingLedgerView->value), 403);
         $organization = $this->assertSameOrganization($fixedAsset);
-        $fixedAsset->load(['asset', 'assetAccount', 'depreciationAccount', 'createdBy:id,name']);
+        $fixedAsset->load(['asset', 'assetClass', 'assetAccount', 'depreciationAccount', 'createdBy:id,name', 'source']);
 
         $rows = $this->calculator->scheduleFor($fixedAsset, $this->fiscalYearStartMonth($organization));
 
@@ -98,7 +109,7 @@ class FixedAssetController extends Controller {
         ]);
     }
 
-    public function form(?FixedAsset $fixedAsset = null): View {
+    public function form(Request $request, ?FixedAsset $fixedAsset = null): View {
         abort_unless(Gate::allows(Permission::AccountingLedgerConfigure->value), 403);
         $organization = $this->currentOrganizationOrAbort();
         if ($fixedAsset instanceof FixedAsset) {
@@ -107,6 +118,8 @@ class FixedAssetController extends Controller {
 
         return view('finance.accounting._fixed_asset_dialog', [
             'fixedAsset' => $fixedAsset,
+            'classes' => FixedAssetClass::query()->where('organization_id', $organization->id)->active()->orderBy('name')->get(),
+            'prefill' => $fixedAsset === null ? $this->prefillFromSource($organization, (string) $request->query('source_kind', ''), (string) $request->query('source_ref', '')) : null,
             'frozen' => $fixedAsset instanceof FixedAsset && $this->service->hasPostedDepreciation($fixedAsset),
             'methods' => DepreciationMethod::cases(),
             'accounts' => AccountingAccount::query()
@@ -127,7 +140,7 @@ class FixedAssetController extends Controller {
         $actor = $request->user();
         abort_if($actor === null, 403);
 
-        $asset = $this->service->create($organization, $actor, $this->validated($request, $organization));
+        $asset = $this->service->create($organization, $actor, $this->validated($request, $organization, create: true));
 
         return redirect()
             ->route('finance.accounting.fixed-assets.show', $asset)
@@ -176,15 +189,19 @@ class FixedAssetController extends Controller {
     }
 
     /** @return array<string, mixed> */
-    private function validated(Request $request, Organization $organization): array {
+    private function validated(Request $request, Organization $organization, bool $create = false): array {
         $data = $request->validate([
+            'fixed_asset_class' => ['nullable', 'string'],
+            'source_kind' => ['nullable', Rule::in(array_keys(self::SOURCES))],
+            'source_ref' => ['nullable', 'required_with:source_kind', 'string'],
             'name' => ['required', 'string', 'min:2', 'max:180'],
             'device' => ['nullable', 'string'],
             'acquired_on' => ['required', 'date'],
             'acquisition_cost' => ['required', 'numeric', 'gt:0'],
             'residual_value' => ['nullable', 'numeric', 'gte:0'],
-            'useful_life_months' => ['required', 'integer', 'between:1,1200'],
-            'depreciation_method' => ['required', 'string', Rule::enum(DepreciationMethod::class)],
+            // Beim Anlegen darf die Anlagenklasse Nutzungsdauer und Methode vorgeben (MVP-999).
+            'useful_life_months' => [$create ? 'required_without:fixed_asset_class' : 'required', 'nullable', 'integer', 'between:1,1200'],
+            'depreciation_method' => [$create ? 'nullable' : 'required', 'string', Rule::enum(DepreciationMethod::class)],
             'declining_rate' => ['nullable', 'required_if:depreciation_method,declining', 'numeric', 'gt:0', 'max:100'],
             'asset_account' => ['nullable', 'string'],
             'depreciation_account' => ['nullable', 'string'],
@@ -197,14 +214,24 @@ class FixedAssetController extends Controller {
             abort_unless(Asset::query()->where('organization_id', $organization->id)->whereKey($deviceId)->exists(), 422);
         }
 
+        $classId = null;
+        if (! empty($data['fixed_asset_class'])) {
+            $classId = (int) Sqid::decodeOrNumeric(FixedAssetClass::class, (string) $data['fixed_asset_class']);
+            abort_unless(FixedAssetClass::query()->where('organization_id', $organization->id)->whereKey($classId)->exists(), 422);
+        }
+        $source = $create && ! empty($data['source_kind']) ? $this->sourceModel($organization, (string) $data['source_kind'], (string) $data['source_ref']) : null;
+        abort_if($create && ! empty($data['source_kind']) && $source === null, 422);
+
         return [
             'name' => (string) $data['name'],
             'asset_id' => $deviceId,
+            'fixed_asset_class_id' => $classId,
+            ...($source === null ? [] : ['source_type' => $source->getMorphClass(), 'source_id' => (int) $source->getKey()]),
             'acquired_on' => CarbonImmutable::parse((string) $data['acquired_on'])->toDateString(),
             'acquisition_cost' => NumberHelper::roundPrecise(NumberHelper::normalizeDecimalString((string) $data['acquisition_cost']), 2),
             'residual_value' => NumberHelper::roundPrecise(NumberHelper::normalizeDecimalString((string) ($data['residual_value'] ?? '0')), 2),
-            'useful_life_months' => (int) $data['useful_life_months'],
-            'depreciation_method' => DepreciationMethod::from((string) $data['depreciation_method']),
+            'useful_life_months' => isset($data['useful_life_months']) ? (int) $data['useful_life_months'] : null,
+            'depreciation_method' => isset($data['depreciation_method']) ? DepreciationMethod::from((string) $data['depreciation_method']) : null,
             'declining_rate' => isset($data['declining_rate']) ? Percentage::of((string) $data['declining_rate'], 2) : null,
             'asset_account_id' => $this->ownAccountId($organization, $data['asset_account'] ?? null),
             'depreciation_account_id' => $this->ownAccountId($organization, $data['depreciation_account'] ?? null),
@@ -212,15 +239,42 @@ class FixedAssetController extends Controller {
         ];
     }
 
-    private function ownAccountId(Organization $organization, mixed $raw): ?int {
-        if ($raw === null || $raw === '') {
+    private function sourceModel(Organization $organization, string $kind, string $ref): IncomingEInvoice|Expense|null {
+        $class = self::SOURCES[$kind] ?? null;
+        if ($class === null || $ref === '') {
             return null;
         }
 
-        $id = (int) Sqid::decodeOrNumeric(AccountingAccount::class, (string) $raw);
-        abort_unless(AccountingAccount::query()->where('organization_id', $organization->id)->whereKey($id)->exists(), 422);
+        return $class::query()->where('organization_id', $organization->id)->find((int) Sqid::decodeOrNumeric($class, $ref));
+    }
 
-        return $id;
+    /**
+     * Vorbelegung aus Eingangsrechnung bzw. Auslage: Bezeichnung, Datum, Nettobetrag.
+     *
+     * @return array{name: string, acquired_on: string|null, acquisition_cost: string|null, source_kind: string, source_ref: string, label: string}|null
+     */
+    private function prefillFromSource(Organization $organization, string $kind, string $ref): ?array {
+        $source = $this->sourceModel($organization, $kind, $ref);
+        if ($source instanceof IncomingEInvoice) {
+            return [
+                'name' => trim(implode(' · ', array_filter([$source->seller_name, $source->invoice_number]))),
+                'acquired_on' => ($source->issue_date ?? $source->received_at)->toDateString(),
+                'acquisition_cost' => ($source->amount_net ?? $source->amount_gross)?->getAmount(),
+                'source_kind' => $kind, 'source_ref' => $source->sqid,
+                'label' => (string) __('accounting.fixed_assets.source.incoming', ['number' => $source->invoice_number ?? $source->sqid]),
+            ];
+        }
+        if ($source instanceof Expense) {
+            return [
+                'name' => trim(implode(' · ', array_filter([$source->vendor, $source->description]))),
+                'acquired_on' => $source->date->toDateString(),
+                'acquisition_cost' => ($source->amount_net ?? $source->amount_gross)?->getAmount(),
+                'source_kind' => $kind, 'source_ref' => $source->sqid,
+                'label' => (string) __('accounting.fixed_assets.source.expense', ['description' => $source->description]),
+            ];
+        }
+
+        return null;
     }
 
     private function fiscalYearStartMonth(Organization $organization): int {

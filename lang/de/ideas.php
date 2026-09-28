@@ -194,4 +194,19 @@ return [
         'root_immovable' => 'Der Wurzelknoten kann nicht verschoben oder gelöscht werden.',
         'foreign_node' => 'Der Knoten gehört nicht zu dieser Karte.',
     ],
+    // Kommentare an Knoten (MVP-1005).
+    'comments' => [
+        'title' => 'Kommentare',
+        'empty' => 'Noch keine Kommentare zu diesem Knoten.',
+        'action' => [
+            'open' => 'Kommentare',
+            'add' => 'Kommentieren',
+        ],
+        'field' => [
+            'body' => 'Kommentar',
+        ],
+        'flash' => [
+            'saved' => 'Kommentar zu „:node“ gespeichert.',
+        ],
+    ],
 ];

@@ -39,3 +39,14 @@ La gestion des cotisations fait partie de la base associative et fonctionne sans
 **Relance :** Seules les créances en retard et non bloquées sont relancées, en trois niveaux au plus (rappel, relance, dernière relance). Délai et frais sont fixés volontairement par relance, pas repris des valeurs par défaut des factures ; des frais de relance forment une créance liée propre. La relance existe en PDF et par e-mail avec preuve d'envoi. Les créances contestées ou différées reçoivent un blocage de relance avec motif.
 
 **Prélèvement SEPA :** La proposition de prélèvement liste les restes dus échus des comptes avec mandat utilisable (le mandat actif du client ou celui fixé sur le compte). Un lot de prélèvement est un lot du module finances : validation et export pain.008 s'y font. Chaque tentative reçoit une référence unique (numéro de créance et de tentative), le lot réserve la position contre un nouveau prélèvement. L'export n'est pas un paiement — seul « Enregistrer l'encaissement » après le crédit passe la créance en payée. Sans le paquet finances, paiements, relance et préparation restent possibles ; seul l'export SEPA ne l'est pas.
+
+**Dons et attestations :** Dans l’onglet « Dons », vous saisissez les dons de
+membres ou d’autres personnes. WorkDiary en tire une attestation individuelle
+ou, par personne et par an, une attestation récapitulative selon le modèle
+officiel allemand, numérotée en continu et accompagnée d’une annexe. Les
+données d’exonération de l’association (centre des impôts, numéro fiscal,
+avis, but privilégié) doivent figurer dans les paramètres de l’association.
+WorkDiary ne vérifie pas si l’association est reconnue d’utilité publique.
+Les cotisations ne peuvent être attestées que si vous l’activez ; pour le
+sport et d’autres buts de loisirs, leur déduction est exclue par la loi. Les
+dons attestés ne peuvent plus être modifiés.

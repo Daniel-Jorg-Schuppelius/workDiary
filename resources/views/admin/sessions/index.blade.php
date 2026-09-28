@@ -94,6 +94,18 @@
                             </x-button>
                         </x-action-form>
                     @endif
+                    {{-- MVP-1008: bestätigte Übernahme — Passwort und Passkeys ungültig, Reset-Link an den Nutzer. --}}
+                    @if ($canRevoke && $u['user_id'] !== auth()->id())
+                        <x-action-form :action="route('admin.sessions.user.secure', ['userSqid' => $u['sqid']])"
+                              :confirm="__('security.account_secure.confirm', ['name' => $u['name']])"
+                              confirm-icon="shield_lock"
+                              confirm-tone="error"
+                              :confirm-label="__('security.account_secure.action')">
+                            <x-button type="submit" tone="ghost" size="xs" class="text-error">
+                                <x-icon name="shield_lock" class="text-sm" />{{ __('security.account_secure.action') }}
+                            </x-button>
+                        </x-action-form>
+                    @endif
                 </div>
             </header>
 

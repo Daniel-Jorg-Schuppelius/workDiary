@@ -64,6 +64,7 @@ class ArticleMergeService extends AbstractEntityMergeService {
         'description', 'category', 'subcategory', 'assembly_minutes',
         'copper_weight', 'copper_base_price', 'sales_discount_group_id',
         'valuation_method', 'serial_scheme', 'default_procedure_template_version_id',
+        'customs_tariff_number', 'origin_country', 'net_weight_kg',
     ];
 
     protected function foreignKeyColumn(): string {

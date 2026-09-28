@@ -27,3 +27,17 @@ centro di lavoro o lo affida in conto lavoro a un fornitore; la vista di
 pianificazione mostra l'MRP multilivello e gli indicatori di qualità.
 L'annullamento è irreversibile; creare, confermare e consegnare
 richiedono l'autorizzazione alle registrazioni di magazzino.
+
+## Documenti doganali per spedizioni fuori dall’UE
+
+Per ogni consegna con destinatario, «Documenti doganali» crea una fattura
+commerciale (in caso di vendita) o una fattura proforma (regalo, campione,
+merce resa, riparazione e altri motivi) in PDF. La finestra indica se la
+destinazione è fuori dall’UE e salva il motivo scelto sulla consegna. Il
+documento riporta descrizione della merce, codice doganale, paese d’origine,
+quantità, peso netto e valore; peso lordo e numero di colli derivano dai colli
+registrati. Gestisca codice doganale, paese d’origine e peso netto
+sull’articolo e il numero EORI del mittente nelle impostazioni
+dell’organizzazione. Se manca un dato, la finestra lo indica e non crea alcun
+documento. I documenti doganali non sostituiscono una dichiarazione di
+esportazione elettronica.

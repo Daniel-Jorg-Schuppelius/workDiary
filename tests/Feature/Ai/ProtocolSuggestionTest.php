@@ -99,6 +99,30 @@ class ProtocolSuggestionTest extends TestCase {
         ]);
     }
 
+    /** MVP-1006: alle Punkte veredeln — je Punkt mit Text ein Vorschlag, Klassifikation bleibt stehen. */
+    public function test_bulk_refinement_queues_one_text_suggestion_per_item_with_text(): void {
+        $protocol = $this->draftProtocol();
+        $first = $this->textItem($protocol);
+        $defect = $this->defectItem($protocol);
+        $empty = $this->textItem($protocol, '');
+        $this->fake->textResponse = 'Sachlich formuliert.';
+        app(ProtocolTextSuggestionService::class)->classifyItem($first, $this->user);
+        $classifications = AiTextSuggestion::query()->where('capability', ProtocolTextSuggestionService::CAPABILITY_CLASSIFY)->count();
+
+        // QUEUE_CONNECTION=sync in Tests: Jobs laufen sofort durch den Handler.
+        $this->actingAs($this->user)->post(route('ai.suggestions.protocol-all', $protocol))->assertRedirect()
+            ->assertSessionHas('success', __('ai.flash.suggestions_queued', ['count' => 2]));
+
+        $texts = AiTextSuggestion::query()->where('capability', ProtocolTextSuggestionService::CAPABILITY_TEXT)->where('status', AiTextSuggestion::STATUS_PROPOSED)->get();
+        $this->assertEqualsCanonicalizing([$first->id, $defect->id], $texts->pluck('subject_id')->all());
+        $this->assertNotContains($empty->id, $texts->pluck('subject_id')->all());
+        $this->assertSame($classifications, AiTextSuggestion::query()->where('capability', ProtocolTextSuggestionService::CAPABILITY_CLASSIFY)->count(), 'Klassifikationsvorschlag bleibt');
+        $this->assertSame('Sachlich formuliert.', $texts->firstWhere('subject_id', $first->id)?->suggestion);
+
+        $protocol->forceFill(['status' => ProtocolStatus::Signed->value])->save();
+        $this->actingAs($this->user)->post(route('ai.suggestions.protocol-all', $protocol))->assertForbidden();
+    }
+
     public function test_text_suggestion_is_created_with_masked_names_and_no_facts_rule(): void {
         Customer::create([
             'organization_id' => $this->organization->id,

@@ -37,7 +37,8 @@ final class AttendanceComplianceFinding {
         return match ($kind) {
             AttendanceComplianceChecker::KIND_LATE_RECORDING => self::UNIT_DAYS,
             AttendanceComplianceChecker::KIND_SUBSTITUTE_REST_DAY,
-            AttendanceComplianceChecker::KIND_FREE_SUNDAYS => self::UNIT_COUNT,
+            AttendanceComplianceChecker::KIND_FREE_SUNDAYS,
+            AttendanceComplianceChecker::KIND_YOUTH_FIVE_DAYS => self::UNIT_COUNT,
             default => self::UNIT_MINUTES,
         };
     }

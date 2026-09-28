@@ -90,6 +90,45 @@ class ItemTextSuggestionService implements ItemTextSuggester {
         return $count;
     }
 
+    /**
+     * Sammelübersetzung (MVP-1006): je Position mit Text ein Job derselben
+     * Warteschlange; die Ergebnisse bleiben offene Vorschläge je Position.
+     */
+    public function queueTranslateAllForInvoice(Invoice $invoice, string $targetLanguage, ?User $user): int {
+        $this->assertInvoiceDraft($invoice);
+
+        $organization = $invoice->organization ?? Organization::query()->findOrFail($invoice->organization_id);
+        $customerId = (int) $invoice->customer_id;
+        $count = 0;
+        foreach ($invoice->items as $item) {
+            if (trim((string) $item->description) === '') {
+                continue;
+            }
+            \App\Jobs\Ai\AiInvocationJob::dispatch(
+                (int) $organization->id,
+                self::CAPABILITY_TRANSLATE,
+                new TranslateRequest(
+                    text: $this->masker->mask($organization, (string) $item->description),
+                    targetLanguage: $targetLanguage,
+                    sourceLanguage: 'de',
+                    formality: 'more',
+                    glossary: $this->memory->glossaryFor($organization, self::CAPABILITY_TRANSLATE, $customerId, $targetLanguage),
+                ),
+                StoreItemSuggestionHandler::class,
+                [
+                    'organization_id' => (int) $organization->id,
+                    'subject_type' => $item->getMorphClass(),
+                    'subject_id' => (int) $item->getKey(),
+                    'original' => (string) $item->description,
+                    'user_id' => $user?->getKey(),
+                ],
+            );
+            $count++;
+        }
+
+        return $count;
+    }
+
     /** @return array{0: string, 1: AiRequestInterface} */
     private function buildForInvoiceItem(Organization $organization, Invoice $invoice, InvoiceItem $item): array {
         $customerId = (int) $invoice->customer_id;

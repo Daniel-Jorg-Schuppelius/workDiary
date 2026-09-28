@@ -145,6 +145,9 @@ export function registerIdeaEditor(Alpine) {
         selectedReferences() {
             return this.node(this.selected)?.references || [];
         },
+        commentCount(sqid) {
+            return this.node(sqid)?.comment_count ?? 0;
+        },
         openDetails(sqid) {
             this.selected = sqid;
             this.detailOpen = true;

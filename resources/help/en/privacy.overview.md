@@ -55,3 +55,9 @@ confirmed deletions, anonymization and deleting accounts or customers are
 rejected, and the person's raw location points are kept. When customers are
 merged, the hold moves to the target customer. It is also released only with a
 reason; both remain visible in the person's or customer's log.
+
+The access report (Art. 15/20) can also be created for **club members** if
+your organisation uses club management: master data with guardians, addresses
+and bank details, and an overview of the club data (membership periods,
+groups, attendance, fees, donations, grades, performances and more) with an
+extract per area. The search finds members by name, email or member number.

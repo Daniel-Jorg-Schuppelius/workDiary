@@ -62,3 +62,11 @@ eigenen Vorsorgetermine (ohne Gesundheitsdaten).
 Im Vorsorge-Register pflegen Sie **Vorsorgeanlässe** mit Art und Intervall.
 Wird ein Anlass gewählt, legt er die Art fest und berechnet die nächste
 Fälligkeit, sofern Sie keine eigene eintragen.
+
+**Gefährdungskatalog, Nachweise und Anlässe:** Im Gefährdungskatalog stehen
+typische Gefährdungen mit Maßnahme und Risiko; ein Branchenprofil kann ihn
+vorbelegen, eigene Einträge ergänzen Sie selbst. In einer Beurteilung im
+Entwurf übernehmen Sie mit „Aus Katalog übernehmen“ mehrere Gefährdungen auf
+einmal. An Beurteilungen und Unterweisungen lassen sich Nachweise anhängen.
+Verweist ein Sicherheitsereignis auf eine freigegebene Beurteilung, zeigt die
+Beurteilung „Überprüfung angestoßen“, bis eine neue Fassung freigegeben ist.

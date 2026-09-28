@@ -62,3 +62,15 @@ Nutzer eine Adresse teilen können (Mobilfunk, Firmennetz), bleibt fail2ban
 die erste Wahl. Für ein SIEM schreibt WorkDiary jedes Sicherheitsereignis
 zusätzlich im Format CEF oder JSON in eine eigene Datei oder per Syslog
 (`SECURITY_SIEM_FORMAT`, `SECURITY_SIEM_TARGET`).
+
+## Konto nach einer Übernahme sichern
+
+Bestätigt sich, dass jemand ein Konto übernommen hat, reicht Abmelden nicht:
+Wer das Passwort kennt, meldet sich wieder an. „Konto sichern“ in der
+Sitzungsverwaltung (für Mitglieder Ihrer Organisation) und „Kontoübernahme
+bestätigen“ an einem Sicherheitsereignis (Plattform-Administration) beenden
+alle Sitzungen und API-Tokens, machen das Passwort und alle Passkeys ungültig
+und senden der Person einen Link zum Festlegen eines neuen Passworts.
+App-basierte Zwei-Faktor-Methoden bleiben erhalten. Der Vorgang erscheint als
+Sicherheitsereignis und im Prüfprotokoll. Ihr eigenes Konto sichern Sie auf
+Ihrer Seite zur Zwei-Faktor-Authentifizierung.

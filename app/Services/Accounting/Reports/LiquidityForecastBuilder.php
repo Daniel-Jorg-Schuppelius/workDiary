@@ -17,7 +17,7 @@ use App\Models\Accounting\{AccountingFilingObligation, AccountingOpenItem, Accou
 use App\Models\AssetFinance\AssetFinanceRateSchedule;
 use App\Models\Customer\Customer;
 use App\Models\Finance\{LiquidityPlanItem, LiquidityScenario, PaymentRun};
-use App\Models\Invoicing\{IncomingEInvoice, InvoiceSchedule};
+use App\Models\Invoicing\{IncomingEInvoice, Invoice, InvoiceSchedule};
 use App\Models\Platform\Organization;
 use App\Modules\ModuleRegistry;
 use App\Services\Accounting\Contracts\LiquidityForecastSource;
@@ -58,9 +58,6 @@ class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
     public const HORIZONS = [13, 26];
 
     public const DEFAULT_WEEKS = 13;
-
-    /** Zahlungsziel einer Rechnung aus einem Rechnungsplan — wie {@see \App\Services\Invoicing\InvoiceIssueService}. */
-    private const DEFAULT_PAYMENT_TERMS_DAYS = 14;
 
     /** Rückschau für das Zahlungsverhalten. */
     private const HISTORY_MONTHS = 12;
@@ -454,7 +451,7 @@ class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
                     'invoice_schedules',
                     'in',
                     $gross,
-                    $cursor->addDays(self::DEFAULT_PAYMENT_TERMS_DAYS + $delay),
+                    $cursor->addDays(Invoice::paymentTermsDaysFor($schedule->customer, $organization) + $delay),
                     trim($label),
                     $delay > 0 ? (string) __('accounting.reports.forecast.note.delay', ['days' => $delay]) : null,
                 );

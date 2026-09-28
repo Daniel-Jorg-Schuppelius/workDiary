@@ -65,3 +65,14 @@ più essere modificato.
 Una dismissione (vendita, rottamazione, furto) viene annotata con la data. Il
 cespite **non sparisce** dal registro — lo storico resta leggibile, altrimenti
 una successiva riconciliazione con il bilancio sarebbe impossibile.
+
+## Categorie di cespiti e cespite da un documento
+
+In «Categorie di cespiti» crea valori predefiniti, ad esempio «Automezzi» o
+«Software»: durata, metodo e conti. Se sceglie una categoria quando crea un
+cespite, WorkDiary compila da essa i campi lasciati vuoti. I cespiti esistenti
+mantengono i loro valori se in seguito modifica una categoria.
+
+In una fattura passiva e in una spesa approvata, «Registra come cespite» crea
+direttamente il cespite. Denominazione, data e importo netto sono precompilati
+e il cespite rimanda al documento. Da un documento nasce al massimo un cespite.

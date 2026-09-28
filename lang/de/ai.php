@@ -377,5 +377,9 @@ return [
         ],
         'suggest_tags' => 'KI-Tags vorschlagen',
         'tags_hint' => 'Vorschläge aus den bestehenden Tags der Organisation — übernommen wird erst mit Klick.',
+        'translate_all' => 'Alle übersetzen',
+        'translate_all_title' => 'Übersetzt jede Position im Hintergrund als Vorschlag — übernommen wird erst per Klick.',
+        'suggest_protocol_all' => 'Alle Punkte veredeln',
+        'suggest_protocol_all_title' => 'Formuliert jeden Punkt mit Text im Hintergrund als Vorschlag — übernommen wird je Punkt.',
     ],
 ];

@@ -78,6 +78,7 @@ return [
             'post_now' => 'Registrare subito',
             'reversal_reason' => 'Motivazione',
             'reversal_booked_on' => 'Data della contro-registrazione',
+            'cost_center' => 'Centro di costo',
         ],
         'hint' => [
             'profit_determination' => 'Cambia le analisi (per cassa o partita doppia), non le regole di registrazione e di prova.',
@@ -95,6 +96,8 @@ return [
             'normal_balance' => 'Precompilata dal tipo di conto, modificabile caso per caso.',
             'post_now' => 'Dopo la registrazione la correzione avviene solo tramite contro-registrazione.',
             'reversal_booked_on' => 'Lasciare vuoto per il giorno originale, se il periodo è ancora aperto.',
+            'cost_center_required' => 'Le registrazioni su questo conto si possono confermare solo con un centro di costo, anche dalla casella delle proposte.',
+            'cost_center' => 'Vale per la riga dare e avere.',
         ],
         'action' => [
             'activate' => 'Attivare la contabilità locale',
@@ -177,6 +180,7 @@ return [
             'account_in_use' => 'Su questo conto è già stato registrato — può solo essere disattivato.',
             'entry_without_organization' => 'La registrazione non ha un\'organizzazione — informare l\'amministratore.',
             'account_number_taken' => 'Questo numero di conto esiste già.',
+            'cost_center_required' => 'Il conto :account richiede un centro di costo.',
         ],
         'preflight' => [
             'not_configured' => 'Profilo non ancora salvato — il controllo parte dal primo salvataggio.',
@@ -243,6 +247,7 @@ return [
             'cash' => 'Cassa',
             'clearing' => 'Transitorio',
             'inactive' => 'Disattivato',
+            'cost_center_required' => 'Centro di costo obbligatorio',
         ],
         'confirm' => [
             'deactivate' => 'Disattivare davvero questo conto? Le registrazioni esistenti restano.',
@@ -361,6 +366,8 @@ return [
             'disposal_kind' => 'Tipo di dismissione',
             'disposal_proceeds' => 'Ricavo di cessione (netto)',
             'created_by' => 'Creato da',
+            'class' => 'Categoria cespite',
+            'source' => 'Origine',
         ],
         'section' => [
             'master' => 'Dati anagrafici',
@@ -380,18 +387,22 @@ return [
             'device' => 'Collegamento facoltativo al registro dispositivi; non ogni cespite è un dispositivo.',
             'residual_value' => 'Resta alla fine della vita utile; predefinito 0.',
             'useful_life' => 'Vita utile ordinaria secondo la tabella di ammortamento, in mesi. Per i beni di modesto valore e il fondo collettivo la durata deriva dal metodo.',
-            'accounts' => 'Lasciare vuoto per applicare la regola contabile del ruolo (conto cespite / ammortamento).',
+            'accounts' => 'Lasciare vuoto per applicare il conto della categoria, altrimenti la regola contabile del ruolo (conto cespite / ammortamento).',
             'frozen' => 'Una quota è registrata — data d\'acquisto, costo, valore residuo e vita utile sono bloccati.',
             'schedule' => 'Lineare, pro rata mensile nell\'anno di acquisto e di dismissione; l\'ultimo anno prende il resto.',
             'posting' => 'L\'ammortamento annuale viene proposto per esercizio nella chiusura e registrato nella posta contabile — mai direttamente.',
             'dispose' => 'La dismissione chiude il piano di ammortamento nel mese di dismissione. La posta contabile propone il valore contabile residuo come registrazione di dismissione.',
             'disposal_proceeds' => 'Solo in caso di vendita. Il ricavo viene registrato tramite la fattura di vendita; qui decide solo se il valore residuo viene stornato come plusvalenza o minusvalenza.',
+            'class' => 'Fornisce durata, metodo e conti quando lascia vuoti questi campi.',
+            'useful_life_class' => 'In mesi; vuoto: valore della categoria.',
         ],
         'action' => [
             'add' => 'Aggiungi cespite',
             'edit' => 'Modifica cespite',
             'dispose' => 'Registra dismissione',
             'dispose_submit' => 'Registra dismissione',
+            'from_source' => 'Registra come cespite',
+            'open_asset' => 'Cespite :no',
         ],
         'flash' => [
             'special_saved' => 'Ammortamento speciale salvato.',
@@ -418,6 +429,31 @@ return [
             'disposed_before_acquired' => 'La dismissione non può precedere l\'acquisto.',
             'residual_exceeds_cost' => 'Il valore residuo deve essere inferiore al costo d\'acquisto.',
             'useful_life_required' => 'La vita utile deve essere di almeno un mese.',
+            'source_used' => 'Da questo documento è già stato registrato il cespite :no.',
+        ],
+        'method_from_class' => 'Valore della categoria',
+        'source' => [
+            'incoming' => 'Fattura passiva :number',
+            'expense' => 'Spesa «:description»',
+        ],
+        'classes' => [
+            'title' => 'Categorie di cespiti',
+            'subtitle' => 'Valori predefiniti di durata, metodo e conti per i nuovi cespiti',
+            'empty' => 'Nessuna categoria creata finora.',
+            'action' => [
+                'add' => 'Crea categoria',
+                'edit' => 'Modifica categoria',
+            ],
+            'field' => [
+                'name' => 'Denominazione',
+                'is_active' => 'Attiva',
+            ],
+            'hint' => [
+                'is_active' => 'Le categorie inattive non sono più proposte per i nuovi cespiti; i cespiti esistenti mantengono i loro valori.',
+            ],
+            'flash' => [
+                'saved' => 'Categoria salvata.',
+            ],
         ],
     ],
     'rules' => [

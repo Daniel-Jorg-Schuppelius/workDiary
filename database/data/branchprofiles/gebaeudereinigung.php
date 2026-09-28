@@ -267,6 +267,14 @@ return [
         'dosieranlage',
         'psaReinigung',
     ],
+    // Gefährdungskatalog (Feature 132, MVP-1002): Vorlagen für die Gefährdungsbeurteilung, Schwere und Wahrscheinlichkeit 1–5.
+    'hazard_catalog' => [
+        ['code' => 'gebaeudereinigung/reinigungsmittel', 'category' => 'Gefahrstoffe', 'hazard' => 'Haut- und Augenkontakt mit Reinigungsmitteln', 'measure' => 'Dosiersysteme, Schutzhandschuhe und Schutzbrille, Hautschutzplan', 'severity' => 3, 'likelihood' => 4],
+        ['code' => 'gebaeudereinigung/ausrutschen', 'category' => 'Stolpern und Ausrutschen', 'hazard' => 'Ausrutschen auf nassen Böden', 'measure' => 'Warnschilder, rutschhemmende Schuhe, abschnittsweise wischen', 'severity' => 3, 'likelihood' => 4],
+        ['code' => 'gebaeudereinigung/feuchtarbeit', 'category' => 'Hautbelastung', 'hazard' => 'Feuchtarbeit über zwei Stunden täglich', 'measure' => 'Handschuhe mit Baumwollunterzieher, Hautpflege, arbeitsmedizinische Vorsorge', 'severity' => 2, 'likelihood' => 4],
+        ['code' => 'gebaeudereinigung/glas', 'category' => 'Absturz', 'hazard' => 'Absturz bei der Glas- und Fassadenreinigung', 'measure' => 'Teleskopstangen, Hubarbeitsbühne, Anschlagpunkte', 'severity' => 5, 'likelihood' => 2],
+        ['code' => 'gebaeudereinigung/alleinarbeit', 'category' => 'Organisation', 'hazard' => 'Alleinarbeit außerhalb der Betriebszeiten', 'measure' => 'Meldekette, Personen-Notsignal-Gerät bei gefährlichen Arbeiten', 'severity' => 3, 'likelihood' => 2],
+    ],
     'tags_seed' => [
         '#unterhalt',
         '#sonderreinigung',

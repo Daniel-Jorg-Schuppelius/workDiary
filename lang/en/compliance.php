@@ -52,6 +52,13 @@ return [
             'drivingBreakMissing' => 'Driving break missing (Art. 7 Reg. 561/2006)',
             'dailyRest' => 'Daily rest period (Art. 8 Reg. 561/2006)',
             'weeklyRest' => 'Weekly rest period (Art. 8 Reg. 561/2006)',
+            'youthDailyHours' => 'Young workers: over 8 h a day (§ 8 JArbSchG)',
+            'youthWeeklyHours' => 'Young workers: over 40 h a week (§ 8 JArbSchG)',
+            'youthBreak' => 'Young workers: rest break missing (§ 11 JArbSchG)',
+            'youthRest' => 'Young workers: time off under 12 h (§ 13 JArbSchG)',
+            'youthNight' => 'Young workers: work between 8 pm and 6 am (§ 14 JArbSchG)',
+            'youthFiveDays' => 'Young workers: more than 5 working days (§ 15 JArbSchG)',
+            'youthWeekend' => 'Young workers: weekend work (§§ 16, 17 JArbSchG)',
         ],
         'unit' => [
             'days' => '{1} :count day|[2,*] :count days',

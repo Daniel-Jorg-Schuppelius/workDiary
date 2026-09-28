@@ -21,3 +21,9 @@ related:
 **Messaggi:** Promemoria, spostamenti, annullamenti e posti assegnati la raggiungono tramite il suo account utente (secondo le regole di notifica dell'organizzazione), altrimenti tramite l'indirizzo e-mail registrato; lo stesso vale per i rappresentanti con il diritto «ricevere messaggi». Ogni messaggio viene consegnato una sola volta; gli errori di consegna sono visibili all'amministrazione presso l'appuntamento. Un messaggio non vale come letto.
 
 **Le mie quote:** Se è registrato come persona obbligata al pagamento di un conto quote, vede i suoi avvisi (anche in PDF), scadenze, pagamenti registrati, credito e importi aperti. Un addebito esportato vale come pagato solo quando l'accredito è registrato. I diritti di rappresentanza per le iscrizioni non bastano: la gestione quote fissa esplicitamente la persona obbligata al pagamento.
+
+**Check-in con codice QR:** Se nel luogo di allenamento è esposto il codice QR
+di un appuntamento, lo scansioni con lo smartphone ed effettui il check-in
+per sé o per i soci che rappresenta, da 60 minuti prima dell’inizio fino alla
+fine. La presenza finisce nell’elenco dell’allenatore, che la conferma o la
+corregge come di consueto.

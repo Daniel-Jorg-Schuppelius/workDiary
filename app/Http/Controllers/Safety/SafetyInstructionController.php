@@ -99,6 +99,7 @@ class SafetyInstructionController extends Controller {
             'assessment',
             'trainingCourse',
             'trainingCourseVersion',
+            'attachments',
         ]);
 
         /** @var User $viewer */

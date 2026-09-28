@@ -10,7 +10,7 @@
 
 namespace App\Models\Article;
 
-use App\Casts\MoneyCast;
+use App\Casts\{DecimalCast, MoneyCast};
 use App\Enums\Article\{ArticleStatus, ArticleType};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasClassifications, HasCustomFields, HasSqid, HasTags, Searchable};
 use App\Models\Contracts\CustomFieldSubject;
@@ -31,6 +31,9 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int|null $organization_id
  * @property string|null $number
  * @property string|null $gtin
+ * @property string|null $customs_tariff_number
+ * @property string|null $origin_country
+ * @property \CommonToolkit\ValueObjects\Decimal|null $net_weight_kg
  * @property int|null $product_id
  * @property string $name
  * @property ArticleType $type
@@ -59,6 +62,9 @@ class Article extends Model implements CustomFieldSubject {
         'organization_id',
         'number',
         'gtin',
+        'customs_tariff_number',
+        'origin_country',
+        'net_weight_kg',
         'product_id',
         'name',
         'description',
@@ -98,6 +104,7 @@ class Article extends Model implements CustomFieldSubject {
         'assembly_minutes' => 'decimal:2',
         'copper_weight' => 'decimal:4',
         'copper_base_price' => 'decimal:4',
+        'net_weight_kg' => DecimalCast::class . ':4',
         'type' => ArticleType::class,
         'status' => ArticleStatus::class,
         'resale_role' => \App\Enums\Reselling\ResaleArticleRole::class,

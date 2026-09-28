@@ -64,3 +64,15 @@ Un año cuya amortización ya se ha contabilizado no puede modificarse.
 Una baja (venta, desguace, robo) se anota con su fecha. El activo **no
 desaparece** del registro — el historial sigue siendo legible; de lo
 contrario, una conciliación posterior con el balance sería imposible.
+
+## Clases de activo y activo a partir de un justificante
+
+En «Clases de activo» crea valores por defecto, por ejemplo «Vehículos» o
+«Software»: vida útil, método y cuentas. Si elige una clase al crear un activo
+fijo, WorkDiary rellena con ella los campos que deje vacíos. Los activos
+existentes conservan sus valores si modifica una clase más adelante.
+
+En una factura recibida y en un gasto aprobado, «Registrar como activo fijo»
+crea el activo directamente. Denominación, fecha e importe neto vienen
+rellenados y el activo remite al justificante. De un justificante surge como
+máximo un activo.

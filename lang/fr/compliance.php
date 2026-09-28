@@ -52,6 +52,13 @@ return [
             'drivingBreakMissing' => 'Pause de conduite manquante (art. 7 règl. 561/2006)',
             'dailyRest' => 'Repos journalier (art. 8 règl. 561/2006)',
             'weeklyRest' => 'Repos hebdomadaire (art. 8 règl. 561/2006)',
+            'youthDailyHours' => 'Jeunes : plus de 8 h par jour (§ 8 JArbSchG)',
+            'youthWeeklyHours' => 'Jeunes : plus de 40 h par semaine (§ 8 JArbSchG)',
+            'youthBreak' => 'Jeunes : pause manquante (§ 11 JArbSchG)',
+            'youthRest' => 'Jeunes : repos inférieur à 12 h (§ 13 JArbSchG)',
+            'youthNight' => 'Jeunes : travail entre 20 h et 6 h (§ 14 JArbSchG)',
+            'youthFiveDays' => 'Jeunes : plus de 5 jours de travail (§ 15 JArbSchG)',
+            'youthWeekend' => 'Jeunes : travail le week-end (§§ 16, 17 JArbSchG)',
         ],
         'unit' => [
             'days' => '{1} :count jour|[2,*] :count jours',

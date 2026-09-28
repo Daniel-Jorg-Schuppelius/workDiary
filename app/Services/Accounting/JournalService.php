@@ -540,6 +540,12 @@ class JournalService {
                 ]);
             }
 
+            if ($account->is_cost_center_required && $line->cost_center_id === null) {
+                throw ValidationException::withMessages([
+                    'lines' => (string) __('accounting.ledger.error.cost_center_required', ['account' => $account->displayLabel()]),
+                ]);
+            }
+
             if ($line->currency !== $base) {
                 throw ValidationException::withMessages([
                     'lines' => (string) __('accounting.ledger.error.foreign_currency_line', ['currency' => $base->value]),

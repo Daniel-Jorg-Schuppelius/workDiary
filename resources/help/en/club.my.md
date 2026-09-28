@@ -21,3 +21,8 @@ related:
 **Messages:** Reminders, reschedules, cancellations and waitlist promotions reach you via your user account (according to the organisation’s notification rules), otherwise via the stored email address; guardians with the right “receive messages” likewise. Every message is delivered only once, delivery failures are visible to the administration at the event. A message does not count as read.
 
 **My fees:** If you are set as the paying person of a fee account, you see your fee notices (also as PDF), due dates, booked payments, credit and open amounts. An exported collection counts as paid only once the credit is booked. Guardian rights for registrations are not enough — fee management sets the paying person explicitly.
+
+**Check-in by QR code:** If the QR code of an event is displayed at the
+training venue, scan it with your smartphone and check in yourself or the
+members you represent — from 60 minutes before the start until the end. The
+attendance goes into the trainer’s list, who confirms or corrects it as usual.

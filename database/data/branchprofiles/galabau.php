@@ -316,6 +316,14 @@ return [
         'kettensaege',
         'streuwagen',
     ],
+    // Gefährdungskatalog (Feature 132, MVP-1002): Vorlagen für die Gefährdungsbeurteilung, Schwere und Wahrscheinlichkeit 1–5.
+    'hazard_catalog' => [
+        ['code' => 'galabau/motorsaege', 'category' => 'Mechanische Gefährdung', 'hazard' => 'Schnittverletzungen durch Motorsäge und Freischneider', 'measure' => 'Schnittschutzkleidung, Gesichts- und Gehörschutz, Fachkundenachweis', 'severity' => 5, 'likelihood' => 2],
+        ['code' => 'galabau/maschinen', 'category' => 'Mechanische Gefährdung', 'hazard' => 'Überfahren oder Einklemmen durch Bagger und Radlader', 'measure' => 'Einweiser, Warnkleidung, Sichtfeld freihalten', 'severity' => 5, 'likelihood' => 2],
+        ['code' => 'galabau/uv', 'category' => 'Umgebung', 'hazard' => 'UV-Strahlung bei Arbeiten im Freien', 'measure' => 'Sonnenschutz, Kopfbedeckung, Arbeitszeit anpassen', 'severity' => 3, 'likelihood' => 4],
+        ['code' => 'galabau/zecken', 'category' => 'Biologische Gefährdung', 'hazard' => 'Zeckenstiche (FSME, Borreliose)', 'measure' => 'Lange Kleidung, Absuchen nach der Arbeit, Impfangebot', 'severity' => 3, 'likelihood' => 3],
+        ['code' => 'galabau/laerm', 'category' => 'Lärm', 'hazard' => 'Lärm durch Laubbläser, Häcksler und Rüttelplatte', 'measure' => 'Gehörschutz, lärmarme Geräte, Einsatzzeiten begrenzen', 'severity' => 2, 'likelihood' => 4],
+    ],
     'tags_seed' => [
         '#pflege',
         '#saison',

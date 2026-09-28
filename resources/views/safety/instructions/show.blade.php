@@ -113,6 +113,10 @@
                     <p class="mt-2 text-sm text-error">{{ $errors->first('participant') }}</p>
                 @endif
             </x-card>
+
+            {{-- Nachweise (MVP-1002). --}}
+            <x-attachments-section :attachments="$instruction->attachments" upload-type="safety-instruction"
+                                   :upload-id="$instruction->sqid" :can-upload="$canManage" />
         </div>
 
         <div class="space-y-4">

@@ -28,3 +28,7 @@ sich stilllegen (Status „Retired"), statt sie zu löschen. Ein Löschen
 ist nur möglich, solange keine abhängigen Daten bestehen; andernfalls
 wird es blockiert. Legen Sie Varianten erst an, wenn Optionen und
 Optionswerte vollständig sind, da sich Varianten daraus zusammensetzen.
+
+Für Zollpapiere tragen Artikel unter „Zoll und Ausfuhr“ die Zolltarifnummer
+(6 bis 11 Ziffern, Leerzeichen und Punkte werden entfernt), das Ursprungsland
+als ISO-Code und das Nettogewicht je Einheit.

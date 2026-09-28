@@ -65,6 +65,10 @@ class SaveCustomerRequest extends BaseFormRequest {
             // Peppol-Empfängerkennung (Feature 066, MVP-734): `<ICD>:<Kennung>`.
             'peppol_participant_id' => ['nullable', 'string', 'max:64', new \App\Rules\PeppolParticipantId],
             'delivery_format' => ['nullable', \Illuminate\Validation\Rule::enum(\App\Enums\Invoicing\InvoiceDeliveryFormat::class)],
+            // Zahlungsbedingungen (MVP-996): leer = Vorgabe der Organisation.
+            'payment_terms_days' => ['nullable', 'integer', 'min:0', 'max:365'],
+            'skonto_percent' => ['nullable', 'numeric', 'min:0.01', 'max:100', 'required_with:skonto_days'],
+            'skonto_days' => ['nullable', 'integer', 'min:1', 'max:365', 'required_with:skonto_percent'],
             // Fakturierungsweg-Override (Feature 045): nur mit finance.config
             // änderbar — ohne die Permission wird das Feld verworfen (siehe
             // prepareForValidation) und taucht nicht in validated() auf.

@@ -34,6 +34,7 @@ return [
         'closed_by' => 'Chiuso da',
         'followup_title' => 'Titolo della misura di follow-up',
         'followup_description' => 'Descrizione (facoltativa)',
+        'hazard_assessment' => 'Valutazione dei rischi',
     ],
 
     'section' => [
@@ -64,6 +65,7 @@ return [
     'hint' => [
         'root_cause_for_close' => 'Per chiudere l’evento è necessaria un’analisi delle cause.',
         'followup' => 'Crea un punto aperto come rilavorazione collegato a questo evento.',
+        'hazard_assessment' => 'La valutazione risulta da riesaminare finché non viene approvata una nuova versione.',
     ],
 
     'flash' => [
@@ -272,5 +274,39 @@ return [
             'open_count' => '{1} :count in sospeso|[2,*] :count in sospeso',
         ],
         'status_summary' => ':signed di :total confermati',
+    ],
+    // Gefährdungskatalog (MVP-1002).
+    'catalog' => [
+        'title' => 'Catalogo dei pericoli',
+        'subtitle' => 'Pericoli tipici con misure come modello per le valutazioni dei rischi',
+        'empty' => 'Il catalogo è vuoto.',
+        'own' => 'proprio',
+        'action' => [
+            'add' => 'Aggiungi pericolo',
+            'edit' => 'Modifica pericolo',
+            'import' => 'Riprendi dal catalogo',
+        ],
+        'field' => [
+            'category' => 'Categoria',
+            'hazard' => 'Pericolo',
+            'measure' => 'Misura',
+            'severity' => 'Gravità (1–5)',
+            'likelihood' => 'Probabilità (1–5)',
+            'risk' => 'Rischio',
+            'risk_short' => 'gravità :severity, probabilità :likelihood',
+            'source' => 'Origine',
+            'is_active' => 'Attivo',
+        ],
+        'hint' => [
+            'import' => 'I pericoli scelti vengono ripresi con misura e rischio prima della misura; quelli già presenti vengono esclusi.',
+        ],
+        'events' => [
+            'title' => 'Motivi da eventi di sicurezza',
+            'review_triggered' => 'Riesame avviato: dopo l’approvazione di questa versione si è verificato un evento.',
+        ],
+        'flash' => [
+            'saved' => 'Pericolo salvato.',
+            'added' => '{0} Nessun nuovo pericolo ripreso.|{1} :count pericolo ripreso.|[2,*] :count pericoli ripresi.',
+        ],
     ],
 ];

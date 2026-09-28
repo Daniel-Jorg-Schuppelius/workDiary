@@ -15,14 +15,19 @@ namespace App\Services\Privacy;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Enums\Privacy\DataSubjectKind;
 use App\Models\Applications\JobApplication;
+use App\Models\Club\ClubMember;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Privacy\{DataSubjectRequest, PrivacyAttachment};
 use App\Models\Sales\Lead;
 use App\Models\Supplier\Supplier;
+use App\Modules\ModuleRegistry;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Privacy\SubjectData\{ApplicationRecordsSection,
     AuditTrailSection,
+    ClubMemberMasterDataSection,
+    ClubRecordsSection,
     CommunicationNotesSection,
     ContactDetailsSection,
     CustomerDocumentsSection,
@@ -99,7 +104,30 @@ class SubjectDataExporter {
                 new JobApplicationMasterDataSection,
                 new ApplicationRecordsSection,
             ],
+            DataSubjectKind::ClubMember => [
+                new ClubMemberMasterDataSection,
+                new ContactDetailsSection,
+                new ClubRecordsSection,
+            ],
         };
+    }
+
+    /**
+     * Betroffenenarten, deren Modul die Organisation nutzt — Arten aus Kern
+     * und Plattform immer (MVP-1009).
+     *
+     * @return list<DataSubjectKind>
+     */
+    public function availableKinds(): array {
+        $modules = app(ModuleRegistry::class);
+        $features = app(FeatureFlagResolver::class);
+
+        return array_values(array_filter(DataSubjectKind::cases(), static function (DataSubjectKind $kind) use ($modules, $features): bool {
+            $class = $kind->modelClass();
+            $code = $modules->byTable((new $class)->getTable())?->licenseCode();
+
+            return $code === null || $features->isEnabled($code);
+        }));
     }
 
     /**
@@ -154,6 +182,7 @@ class SubjectDataExporter {
             DataSubjectKind::Supplier => $subject instanceof Supplier ? ($subject->name ?: $subject->company) : null,
             DataSubjectKind::Lead => $subject instanceof Lead ? $subject->displayName() : null,
             DataSubjectKind::JobApplication => $subject instanceof JobApplication ? $subject->candidate_name : null,
+            DataSubjectKind::ClubMember => $subject instanceof ClubMember ? $subject->fullName() : null,
         };
 
         return trim((string) $label) !== '' ? (string) $label : '—';

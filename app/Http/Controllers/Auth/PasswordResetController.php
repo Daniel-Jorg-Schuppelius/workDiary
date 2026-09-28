@@ -12,12 +12,11 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
-use App\Notifications\PasswordResetLink;
-use App\Services\Auth\UserSessionInvalidator;
+use App\Services\Auth\{PasswordResetLinkSender, UserSessionInvalidator};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\{Carbon, Str};
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{DB, Hash};
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
@@ -29,9 +28,7 @@ use Illuminate\View\View;
  * (keine Account-Enumeration).
  */
 class PasswordResetController extends Controller {
-    private function expireMinutes(): int {
-        return (int) config('auth.passwords.users.expire', 60);
-    }
+    public function __construct(private readonly PasswordResetLinkSender $links) {}
 
     public function request(): View {
         return view('auth.forgot-password');
@@ -46,13 +43,7 @@ class PasswordResetController extends Controller {
 
         $user = User::query()->whereRaw('LOWER(email) = ?', [$email])->whereNull('customer_id')->first();
         if ($user instanceof User && $user->email && ! $this->sentRecently($user->email)) {
-            $token = Str::random(64);
-            DB::table('password_reset_tokens')->updateOrInsert(
-                ['email' => $user->email],
-                ['token' => Hash::make($token), 'created_at' => now()],
-            );
-            $url = $this->resetUrl($token, $user->email);
-            $user->notify(new PasswordResetLink($url, $this->expireMinutes()));
+            $this->links->send($user);
         }
 
         // Immer generisch antworten (kein Account-Enumeration) — auch dann,
@@ -98,7 +89,7 @@ class PasswordResetController extends Controller {
         $row = DB::table('password_reset_tokens')->whereRaw('LOWER(email) = ?', [$email])->first();
         $valid = $row !== null
             && Hash::check($data['token'], $row->token)
-            && Carbon::parse($row->created_at)->addMinutes($this->expireMinutes())->isFuture();
+            && Carbon::parse($row->created_at)->addMinutes($this->links->expireMinutes())->isFuture();
 
         if (! $valid) {
             return back()->withInput($request->only('email'))
@@ -124,32 +115,4 @@ class PasswordResetController extends Controller {
 
         return redirect()->route('login')->with('status', __('Passwort geändert. Bitte melden Sie sich an.'));
     }
-
-    /**
-     * Reset-Link aus der **konfigurierten** Adresse bauen, nicht aus dem
-     * Host-Header.
-     *
-     * `route()` bildet die Wurzel aus `Request::root()` — und die kommt vom
-     * Host-Header bzw. bei `TRUSTED_PROXIES=*` sogar aus `X-Forwarded-Host`.
-     * Der Aufruf ist unauthentifiziert: ein Angreifer mit der E-Mail-Adresse
-     * des Opfers konnte damit eine **echte** Reset-Mail auslösen, deren Link
-     * auf seinen eigenen Server zeigt (Sicherheitsscan 2026-08-23, S-11).
-     * Klickt das Opfer, hat er Token und Adresse.
-     *
-     * Dieselbe Härtung, die {@see \App\Services\Auth\WebAuthnService} schon
-     * hat: `app.url` gewinnt, solange sie gesetzt und nicht die lokale
-     * Entwicklungsadresse ist.
-     */
-    private function resetUrl(string $token, string $email): string {
-        $path = route('password.reset', ['token' => $token], absolute: false);
-        $configured = rtrim((string) config('app.url', ''), '/');
-        $host = parse_url($configured, PHP_URL_HOST);
-
-        $base = is_string($host) && $host !== '' && ! in_array($host, ['localhost', '127.0.0.1'], true)
-            ? $configured
-            : rtrim(url('/'), '/');
-
-        return $base . $path . '?email=' . urlencode($email);
-    }
-
 }

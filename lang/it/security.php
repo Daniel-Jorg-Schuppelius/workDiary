@@ -116,4 +116,21 @@ return [
         'mass_attack_title' => 'Attacco massivo rilevato (:event)',
         'mass_attack_description' => ':count eventi di tipo :event in :window minuti (limite :limit). Verificare gli accessi, applicare blocchi, documentare la causa.',
     ],
+    'account_secure' => [
+        'action' => 'Proteggi account',
+        'action_event' => 'Conferma furto dell’account',
+        'action_self' => 'Non ero io – proteggi account',
+        'confirm' => 'Proteggere l’account di «:name»? Tutte le sessioni, i token API e le passkey terminano e la password non è più valida. :name riceve un link per impostare una nuova password.',
+        'confirm_self' => 'Proteggere il Suo account? Verrà disconnesso ovunque; password e passkey non saranno più valide. Riceverà un link per impostare una nuova password.',
+        'self_heading' => 'Accesso sconosciuto?',
+        'self_hint' => 'Se non riconosce un accesso o un dispositivo, protegga il Suo account: tutte le sessioni terminano, password e passkey non sono più valide e riceve un link per impostare una nuova password.',
+        'flash' => [
+            'done' => 'L’account di :name è protetto. È stato inviato un link per impostare una nuova password.',
+            'self' => 'Il Suo account è protetto. Le abbiamo inviato un link per impostare una nuova password.',
+        ],
+        'error' => [
+            'not_securable' => 'Solo gli account dei dipendenti con indirizzo e-mail possono essere protetti in questo modo.',
+            'self_admin' => 'Protegga il Suo account dalla Sua pagina di sicurezza.',
+        ],
+    ],
 ];

@@ -39,3 +39,13 @@ Fee management is part of the club basis and works without gradings. It requires
 **Dunning:** Only overdue, unblocked claims can be dunned, in at most three levels (payment reminder, dunning notice, final dunning notice). Deadline and fee are set deliberately per dunning, not taken from invoice defaults; a dunning fee is its own linked claim. Dunnings exist as PDF and e-mail with delivery proof. Disputed or deferred claims get a dunning block with a reason.
 
 **SEPA collection:** The collection proposal lists due remaining amounts of accounts with a usable mandate (the customer’s active mandate or one fixed on the account). A collection run is a direct-debit run of the finance module: release and pain.008 export happen there. Each attempt gets a unique reference (claim number and attempt number), the run reserves the position against re-collection. The export is not a payment — only “Book receipt” after the credit sets the claim to paid. Without the finance package, payments, dunning and preparation still work, only the SEPA export does not.
+
+**Donations and donation receipts:** In the “Donations” tab you record
+donations from members or other people. From them, WorkDiary issues a single
+receipt or, per person and year, a collective receipt following the official
+German template, numbered consecutively and with an annex for collective
+receipts. The club’s exemption details (tax office, tax number, notice,
+tax-privileged purpose) must be entered in the club settings. WorkDiary does
+not check whether the club is tax-privileged. Membership fees can only be
+receipted if you enable it; for sport and other leisure purposes their
+deduction is excluded by law. Receipted donations cannot be changed.

@@ -15,6 +15,7 @@ namespace App\Enums\Privacy;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 use App\Models\Applications\JobApplication;
+use App\Models\Club\ClubMember;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Sales\Lead;
@@ -36,6 +37,7 @@ enum DataSubjectKind: string implements HasLabel {
     case Supplier = 'supplier';
     case Lead = 'lead';
     case JobApplication = 'job_application';  // Bewerber
+    case ClubMember = 'club_member';          // Vereinsmitglied (MVP-1009)
 
     public function label(): string {
         return match ($this) {
@@ -45,6 +47,7 @@ enum DataSubjectKind: string implements HasLabel {
             self::Supplier => __('Lieferant'),
             self::Lead => __('Lead'),
             self::JobApplication => __('Bewerber'),
+            self::ClubMember => __('Vereinsmitglied'),
         };
     }
 
@@ -56,6 +59,7 @@ enum DataSubjectKind: string implements HasLabel {
             self::Supplier => Supplier::class,
             self::Lead => Lead::class,
             self::JobApplication => JobApplication::class,
+            self::ClubMember => ClubMember::class,
         };
     }
 }

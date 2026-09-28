@@ -32,3 +32,13 @@ identisch zu Tagesabschluss und Dienstplan-Prüfung.
 Jeder Eintrag verlinkt über **Zum Tagesabschluss** auf den betroffenen Tag.
 Liegt für einen Tag eine genehmigte Zeitkorrektur vor, ist der Eintrag mit
 **korrigiert** markiert. Die Liste lässt sich als CSV oder PDF exportieren.
+
+**Nachtzeit und Jugendliche:** Die Nachtzeit (Standard 23–6 Uhr, in Bäckereien
+22–5 Uhr) stellen Sie in den Compliance-Einstellungen ein; bei der
+Durchschnittsprüfung nach § 3 zählen Feiertage nicht als Werktage. Ist am
+Mitarbeiter ein Geburtsdatum hinterlegt, prüft die Auswertung die Tage vor dem
+18. Geburtstag zusätzlich nach dem Jugendarbeitsschutzgesetz: höchstens 8 h
+täglich und 40 h wöchentlich, Ruhepausen (30 min ab 4,5 h, 60 min ab 6 h),
+12 h Freizeit, keine Arbeit zwischen 20 und 6 Uhr, höchstens 5 Arbeitstage je
+Woche. Arbeit am Wochenende und Nachtarbeit ab 16 Jahren erscheinen als
+Hinweis, weil das Gesetz dafür Branchenausnahmen kennt.

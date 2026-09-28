@@ -241,7 +241,9 @@ class MonthClosureBundleService {
             ];
         }
 
-        foreach ($checker->checkUser((int) $closure->user_id, $spansByDate) as $finding) {
+        $birthDate = User::query()->withoutGlobalScopes()->whereKey($closure->user_id)->value('date_of_birth');
+        $birthDate = $birthDate === null ? null : CarbonImmutable::parse((string) $birthDate)->startOfDay();
+        foreach ($checker->checkUser((int) $closure->user_id, $spansByDate, birthDate: $birthDate) as $finding) {
             if ($finding->date < $from->toDateString() || $finding->date > $to->toDateString()) {
                 continue;
             }

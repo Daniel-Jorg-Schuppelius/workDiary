@@ -52,6 +52,16 @@
                    :label="__('accounting.ledger.column.amount')"
                    :value="old('amount', '')" />
 
+    {{-- Kostenstelle (MVP-1000): gilt für beide Zeilen; Pflicht, wenn ein Konto sie verlangt. --}}
+    @if ($costCenters->isNotEmpty())
+        <x-select-field name="cost_center" :label="__('accounting.ledger.field.cost_center')" :hint="__('accounting.ledger.hint.cost_center')">
+            <option value="">—</option>
+            @foreach ($costCenters as $costCenter)
+                <option value="{{ $costCenter->sqid }}" @selected(old('cost_center') === $costCenter->sqid)>{{ $costCenter->code }} · {{ $costCenter->label }}</option>
+            @endforeach
+        </x-select-field>
+    @endif
+
     <x-checkbox-field name="post" :label="__('accounting.ledger.field.post_now')"
                       :hint="__('accounting.ledger.hint.post_now')"
                       :checked="(bool) old('post', false)" />

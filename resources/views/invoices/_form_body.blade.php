@@ -59,8 +59,8 @@
                           :hint="__('Abrechnung eines fachlich abgrenzbaren Leistungsteils; Folge: weitere Teil- oder Schlussrechnung.')" />
     </div>
     <x-input-field name="payment_terms_days" type="number" min="0" max="365" span="2"
-                   :label="__('Zahlungsziel (Tage)')" :value="old('payment_terms_days', 14)"
-                   :hint="__('Steuert die Fälligkeit bei der Ausstellung (Standard: 14 Tage).')" />
+                   :label="__('Zahlungsziel (Tage)')" :value="old('payment_terms_days')"
+                   :hint="__('Steuert die Fälligkeit bei der Ausstellung. Leer: Vorgabe des Kunden, sonst der Organisation (Standard 14 Tage).')" />
 </x-form-group>
 
 <x-form-group :legend="__('invoice-import.group_einvoice')" icon="data_object" tone="info" cols="2">

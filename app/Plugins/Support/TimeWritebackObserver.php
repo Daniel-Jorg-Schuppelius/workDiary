@@ -51,10 +51,12 @@ class TimeWritebackObserver {
      * Neuanlage (MVP-463): Spiegel-Plugins ({@see MirrorsCreatedEntries})
      * bekommen den Eintrag zeitnah über die Outbox statt erst per Stunden-
      * Batch. Eignungsprüfung (Projekt-Mapping, bestehende Referenzen) läuft
-     * erst im Dispatcher — hier nur die billigen Guards.
+     * erst im Dispatcher — hier nur die billigen Guards. 0-Minuten-Einträge
+     * spiegelt kein Plugin (pushSingle verlangt minutes > 0); ein Job dafür
+     * kostete nur API-Aufrufe (Nutzerbefund 2026-09-28).
      */
     public function created(TimeEntry $entry): void {
-        if (self::$suppressed || $entry->exported) {
+        if (self::$suppressed || $entry->exported || (int) $entry->minutes <= 0) {
             return;
         }
 

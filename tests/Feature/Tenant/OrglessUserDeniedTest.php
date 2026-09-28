@@ -129,7 +129,8 @@ class OrglessUserDeniedTest extends TestCase {
                 $where = $route->wheres[$m[1]] ?? null;
                 // `timesheet`: Treffer-Sprung der Tätigkeitsrecherche (search.open, type = time_entry|timesheet).
                 // `sign`: Übergangsdialog der Protokolle (protocols.transition-form, MVP-883).
-                foreach (['1', 'a', 'csv', 'block', 'timesheet', 'sign'] as $candidate) {
+                // 32 Zeichen: Termincode des Vereins-Check-ins (club.checkin.show, MVP-1004).
+                foreach (['1', 'a', 'csv', 'block', 'timesheet', 'sign', str_repeat('a', 32)] as $candidate) {
                     if (! is_string($where) || preg_match('#^(?:' . $where . ')$#', $candidate) === 1) {
                         return $candidate;
                     }

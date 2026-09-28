@@ -1058,6 +1058,7 @@ return [
         'sessions' => [
             'revoked_all' => 'Alle Sessions widerrufen',
         ],
+        'account_secured' => 'Konto nach Übernahme gesichert',
     ],
     'user_group' => [
         'member_added' => 'Benutzergruppe: Mitglied hinzugefügt',

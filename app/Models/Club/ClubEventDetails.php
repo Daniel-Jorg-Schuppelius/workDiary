@@ -51,6 +51,8 @@ class ClubEventDetails extends Model {
         'discipline',
         'registration_lead_hours',
         'cancellation_lead_hours',
+        // QR-Selbst-Check-in (MVP-1004).
+        'checkin_code',
     ];
 
     protected $casts = [

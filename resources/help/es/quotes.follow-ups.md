@@ -27,3 +27,10 @@ fijarse en el acto.
 **Recordatorio:** El control nocturno de plazos avisa de los seguimientos
 pendientes y vencidos mediante las reglas de notificación. Los presupuestos
 aceptados o rechazados ya no aparecen en la lista.
+
+**Tasa de éxito:** En «Tasa de éxito», WorkDiary muestra para el periodo
+elegido cuántos presupuestos se ganaron, se perdieron o vencieron, por
+cantidad y por volumen neto, por cliente o por persona responsable. Solo
+cuenta la versión más reciente por número de presupuesto. Vale la fecha de
+la decisión; en los vencidos, el fin de validez. Los presupuestos abiertos no
+cuentan para la tasa y se muestran aparte.

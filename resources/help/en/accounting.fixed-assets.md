@@ -66,3 +66,14 @@ changed.
 A disposal (sale, scrapping, theft) is recorded with a date. The asset does
 **not** disappear from the register — the history stays readable, otherwise a
 later reconciliation against the balance sheet would be impossible.
+
+## Asset classes and fixed assets from a document
+
+Under “Asset classes” you create defaults such as “Vehicles” or “Software”:
+useful life, method and accounts. If you choose a class when creating a fixed
+asset, WorkDiary fills the fields you leave empty from the class. Existing
+assets keep their values when you change a class later.
+
+On an incoming invoice and on an approved expense, “Record as fixed asset”
+creates a fixed asset directly. Name, date and net amount are prefilled, and
+the asset refers to the document. One document yields at most one fixed asset.

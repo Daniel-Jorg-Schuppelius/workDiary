@@ -165,6 +165,7 @@ return [
         'quotes.show' => 'quotes.overview',
         // Angebots-Nachfassen (Feature 112, MVP-601)
         'quotes.follow-ups.*' => 'quotes.follow-ups',
+        'quotes.win-rate' => 'quotes.follow-ups',
         // Bürgschaften (Feature 114) und Gewährleistung (Feature 115)
         'guarantees.*' => 'guarantees.overview',
         'warranties.*' => 'warranties.overview',
@@ -385,6 +386,7 @@ return [
 
         // Anlagenregister und AfA (Feature 133, MVP-698).
         'finance.accounting.fixed-assets.*' => 'accounting.fixed-assets',
+        'finance.accounting.fixed-asset-classes.*' => 'accounting.fixed-assets',
         // Mahnwesen (Feature 127, MVP-691).
         'finance.dunning.*' => 'finance.dunning',
         // Provisionen (Feature 146, MVP-729): Regeln, offene Zeilen, Läufe.
@@ -426,6 +428,7 @@ return [
         'club.seasons.*' => 'club.matches',
         'club.groups.*' => 'club.groups',
         'club.my.*' => 'club.my',
+        'club.checkin.*' => 'club.my',
         'club.grading.*' => 'club.grading',
         'club.exams.*' => 'club.exams',
         'club.fees.*' => 'club.fees',

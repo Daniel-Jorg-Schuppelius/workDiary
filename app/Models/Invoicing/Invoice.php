@@ -19,11 +19,12 @@ use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Document\{Document, DocumentDispatch};
 use App\Models\Gaeb\BillOfQuantity;
 use App\Models\Material\Material;
-use App\Models\Platform\User;
+use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
 use App\Models\Sales\Lead;
 use App\Services\Billing\DocumentTotalsCalculator;
 use App\Services\Billing\Dto\DocumentTotalsContext;
+use App\Settings\SettingsRegistry;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\{Collection, Model};
@@ -122,6 +123,9 @@ class Invoice extends Model implements HasDocumentLines {
     // TYPE_DOWN_PAYMENT: keine §14-Abs.-5-Anrechnung, kein lokaler Nummernkreis
     // (Lexoffice finalisiert), aus Bank-Reko/DATEV/Umsatzreport ausgeschlossen.
     public const TYPE_RETAINER = 'retainer';
+
+    /** Zahlungsziel, wenn weder Beleg, Kunde noch Organisation eines nennen. */
+    public const DEFAULT_PAYMENT_TERMS_DAYS = 14;
 
     public const CATEGORY_SERVICE = 'service';
 
@@ -419,6 +423,24 @@ class Invoice extends Model implements HasDocumentLines {
         return app(DocumentTotalsCalculator::class)->documentDiscount($this->totalsContext(), $lineNetSum);
     }
 
+    /**
+     * Zahlungsziel ohne Angabe am Beleg (MVP-996): Kunde, dann Organisation
+     * (`einvoice.payment_terms_days`, 0 = nicht gesetzt), dann 14 Tage.
+     */
+    public static function paymentTermsDaysFor(?Customer $customer, ?Organization $organization): int {
+        if ($customer?->payment_terms_days !== null) {
+            return (int) $customer->payment_terms_days;
+        }
+        $days = $organization === null ? 0 : (int) app(SettingsRegistry::class)->effective('einvoice.payment_terms_days', $organization)->value;
+
+        return $days > 0 ? $days : self::DEFAULT_PAYMENT_TERMS_DAYS;
+    }
+
+    /** Zahlungsziel dieses Belegs: eigene Angabe, sonst {@see paymentTermsDaysFor()}. */
+    public function effectivePaymentTermsDays(): int {
+        return $this->payment_terms_days ?? self::paymentTermsDaysFor($this->customer, $this->organization);
+    }
+
     /** Skonto-Kondition vollständig hinterlegt? */
     public function hasSkonto(): bool {
         return $this->skonto_percent !== null && $this->skonto_percent->isPositive()
@@ -444,6 +466,22 @@ class Invoice extends Model implements HasDocumentLines {
     }
 
     protected static function booted(): void {
+        // Zahlungsbedingungen des Kunden als Vorgabe (MVP-996), für jeden Anlageweg; Gutschrift und Storno zahlen nicht.
+        static::creating(function (self $invoice): void {
+            if (in_array($invoice->type, [self::TYPE_CREDIT_NOTE, self::TYPE_CANCELLATION], true)) {
+                return;
+            }
+            $customer = Customer::query()->withoutGlobalScopes()->where('organization_id', $invoice->organization_id)->find($invoice->customer_id);
+            if ($customer === null) {
+                return;
+            }
+            $invoice->payment_terms_days ??= $customer->payment_terms_days;
+            if ($invoice->skonto_percent === null && $invoice->skonto_days === null && $customer->skonto_percent !== null && $customer->skonto_days !== null) {
+                $invoice->skonto_percent = $customer->skonto_percent;
+                $invoice->skonto_days = $customer->skonto_days;
+            }
+        });
+
         // Ausstellungs-Unveränderlichkeit (MVP-162): Anker ist der beim offiziellen Ausstellen eingefrorene Partei-Snapshot
         // (issue()/markSent() → freezeParties) — ab dann sind fachliche Felder gesperrt (nur MUTABLE_AFTER_ISSUE-Whitelist änderbar).
         static::updating(function (self $invoice): void {

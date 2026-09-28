@@ -1058,6 +1058,7 @@ return [
         'sessions' => [
             'revoked_all' => 'Toutes les sessions révoquées',
         ],
+        'account_secured' => 'Compte sécurisé après prise de contrôle',
     ],
     'user_group' => [
         'member_added' => 'Groupe d\'utilisateurs : membre ajouté',

@@ -17,6 +17,7 @@ use App\Models\Integration\{ExternalArticleMapping, IntegrationInboxItem};
 use App\Models\Plugins\JtlWawi\JtlConnection;
 use App\Plugins\JtlWawi\Api\{JtlApiException, JtlGatewayFactory};
 use App\Plugins\JtlWawi\JtlWawiPlugin;
+use App\Support\MorphMap;
 
 /**
  * Artikel-/Variantenprojektion aus JTL-Wawi (Feature 078, MVP-318).
@@ -182,7 +183,7 @@ class JtlArticleImporter {
             [
                 'plugin_id' => JtlWawiPlugin::ID,
                 'source' => JtlWawiPlugin::ID,
-                'target_type' => 'article_variant',
+                'target_type' => MorphMap::alias(ArticleVariant::class),
                 'external_type' => 'item',
                 'external_id' => $jtlItemId,
                 'case_type' => $caseType,

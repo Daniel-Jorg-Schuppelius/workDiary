@@ -39,3 +39,14 @@ La gestione delle quote fa parte della base associativa e funziona senza graduaz
 **Sollecito:** Si sollecitano solo crediti scaduti e non bloccati, al massimo in tre livelli (promemoria, sollecito, ultimo sollecito). Termine e spese si impostano consapevolmente per sollecito, non ripresi dai valori predefiniti delle fatture; le spese di sollecito sono un credito collegato proprio. Il sollecito esiste come PDF ed e-mail con prova di consegna. I crediti contestati o dilazionati ricevono un blocco sollecito con motivo.
 
 **Incasso SEPA:** La proposta di incasso elenca i residui scaduti dei conti con mandato utilizzabile (il mandato attivo del cliente o uno fissato sul conto). Un lotto di incasso è un lotto di addebiti del modulo finanze: rilascio ed esportazione pain.008 avvengono lì. Ogni tentativo riceve un riferimento univoco (numero di credito e di tentativo), il lotto riserva la posizione contro un nuovo incasso. L'esportazione non è un pagamento: solo «Registra incasso» dopo l'accredito segna il credito come pagato. Senza il pacchetto finanze restano possibili pagamenti, solleciti e preparazione; solo l'esportazione SEPA no.
+
+**Donazioni e ricevute:** Nella scheda «Donazioni» registra le donazioni di
+soci o di altre persone. WorkDiary ne ricava una ricevuta singola o, per
+persona e anno, una ricevuta cumulativa secondo il modello ufficiale tedesco,
+con numerazione progressiva e allegato. I dati di esenzione dell’associazione
+(ufficio delle imposte, codice fiscale, avviso, finalità agevolata) devono
+essere inseriti nelle impostazioni dell’associazione. WorkDiary non verifica
+se l’associazione gode di agevolazioni fiscali. Le quote associative si
+possono attestare solo se lo attiva; per lo sport e altre finalità ricreative
+la loro detrazione è esclusa per legge. Le donazioni attestate non possono più
+essere modificate.

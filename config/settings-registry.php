@@ -137,6 +137,8 @@ return [
     // Gläubiger-Identifikationsnummer für SEPA-Lastschriften (Feature 120,
     // MVP-609). Ohne sie weist die Bank jede pain.008-Datei zurück.
     'finance.sepa_creditor_id' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|max:35'],
+    // Zollpapiere (MVP-1007): EORI-Nummer des Absenders — Ländercode + bis zu 15 Zeichen.
+    'shipping.eori_number' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|max:17|regex:/^[A-Za-z]{2}[A-Za-z0-9]{1,15}$/'],
     // Führungsrichtung der Stammdaten (Feature 122, MVP-611). Ohne
     // Festlegung entsteht Ping-Pong: zwei Systeme überschreiben sich
     // gegenseitig. Default: workDiary führt, der Push ist erlaubt.

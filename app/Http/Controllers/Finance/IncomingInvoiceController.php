@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Finance;
 
 use App\Enums\Document\DocumentType;
 use App\Http\Controllers\Controller;
+use App\Models\Accounting\FixedAsset;
 use App\Models\Document\Document;
 use App\Models\Platform\User;
 use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
@@ -216,6 +217,8 @@ class IncomingInvoiceController extends Controller {
             'document' => $document->load('currentVersion'),
             'parsed' => $parsed,
             'summary' => $parsed !== null ? $this->eInvoices->summary($parsed) : null,
+            'fixedAsset' => $incoming === null ? null : FixedAsset::query()
+                ->where('source_type', $incoming->getMorphClass())->where('source_id', $incoming->id)->first(),
         ]);
     }
 

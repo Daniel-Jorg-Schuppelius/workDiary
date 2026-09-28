@@ -142,11 +142,18 @@ return [
         'factor_to_base' => 'Factor a la unidad base',
         'external_id' => 'ID externo',
         'sync_status' => 'Estado de sincronización',
+        'customs_tariff_number' => 'Código arancelario',
+        'customs_tariff_number_hint' => 'Código de mercancía para los documentos aduaneros: 8 dígitos (Nomenclatura Combinada) o 6 dígitos (código SA).',
+        'origin_country' => 'País de origen',
+        'origin_country_hint' => 'País de fabricación como código ISO, p. ej. DE.',
+        'net_weight_kg' => 'Peso neto (kg por unidad)',
+        'net_weight_kg_hint' => 'Peso sin embalaje; los documentos aduaneros lo multiplican por la cantidad.',
     ],
 
     'group' => [
         'pricing' => 'Precios',
         'flags' => 'Propiedades',
+        'customs' => 'Aduana y exportación',
     ],
 
     'flag' => [

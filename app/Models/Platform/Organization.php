@@ -72,6 +72,9 @@ class Organization extends Model {
         'max_consecutive_days' => 6,
         // Bagatellgrenze (Minuten) für Rahmenzeit-Überschreitungen der Stempelzeiten.
         'frame_tolerance_minutes' => 15,
+        // Nachtzeit (§2 Abs. 3 ArbZG, MVP-1001): 23–6 Uhr, in Bäckereien 22–5 Uhr.
+        'night_start_hour' => 23,
+        'night_end_hour' => 6,
         // Feature 144: Lenk-/Ruhezeitregeln (VO (EG) 561/2006 / FPersV) auf
         // Fahrten mit geflaggten Fahrzeugen anwenden — Opt-in je Organisation.
         'driving_time_rules' => false,
@@ -384,7 +387,7 @@ class Organization extends Model {
         $stored = is_array($settings['compliance'] ?? null) ? $settings['compliance'] : [];
         $merged = array_replace_recursive(self::COMPLIANCE_DEFAULTS, $stored);
 
-        /** @var array{mode:string, max_hours_day:int, min_rest_hours:int, max_hours_week:int, max_consecutive_days:int, frame_tolerance_minutes:int, driving_time_rules:bool, rules:array<string,bool>} $merged */
+        /** @var array{mode:string, max_hours_day:int, min_rest_hours:int, max_hours_week:int, max_consecutive_days:int, frame_tolerance_minutes:int, night_start_hour:int, night_end_hour:int, driving_time_rules:bool, rules:array<string,bool>} $merged */
         return $merged;
     }
 

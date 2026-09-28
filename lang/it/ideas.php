@@ -194,4 +194,19 @@ return [
         'root_immovable' => 'Il nodo radice non può essere spostato né eliminato.',
         'foreign_node' => 'Il nodo non appartiene a questa mappa.',
     ],
+    // Kommentare an Knoten (MVP-1005).
+    'comments' => [
+        'title' => 'Commenti',
+        'empty' => 'Ancora nessun commento su questo nodo.',
+        'action' => [
+            'open' => 'Commenti',
+            'add' => 'Commenta',
+        ],
+        'field' => [
+            'body' => 'Commento',
+        ],
+        'flash' => [
+            'saved' => 'Commento su «:node» salvato.',
+        ],
+    ],
 ];

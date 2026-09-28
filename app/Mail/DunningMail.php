@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Mail;
 
-use App\Models\Invoicing\Invoice;
-use App\Services\Invoicing\{DunningPdfRenderer, InvoicePdfRenderer};
+use App\Enums\DocumentDesign\RenderDocumentKind;
+use App\Models\Invoicing\{Invoice, InvoiceMailTemplate};
+use App\Services\Invoicing\{DunningPdfRenderer, DunningService, InvoicePdfRenderer};
 use App\Support\DocumentNumber;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -70,6 +71,11 @@ class DunningMail extends Mailable implements ShouldQueue {
     }
 
     public function subjectLine(): string {
+        $template = $this->template();
+        if ($template !== null) {
+            return $template->render($this->templateVariables())['subject'];
+        }
+
         return $this->level <= 1
             ? (string) __('Zahlungserinnerung zur Rechnung :number', ['number' => $this->invoice->number])
             : (string) __(':level. Mahnung zur Rechnung :number', ['level' => $this->level, 'number' => $this->invoice->number]);
@@ -77,6 +83,17 @@ class DunningMail extends Mailable implements ShouldQueue {
 
     public function content(): Content {
         $this->invoice->loadMissing('customer');
+        $template = $this->template();
+        if ($template !== null) {
+            $rendered = $template->render($this->templateVariables());
+
+            return new Content(
+                view: 'mail.invoice',
+                text: 'mail.invoice-text',
+                with: ['invoice' => $this->invoice, 'html' => $rendered['html'], 'text' => $rendered['text']],
+            );
+        }
+
         $lines = [
             (string) __('Sehr geehrte Damen und Herren,'),
             '',
@@ -100,12 +117,7 @@ class DunningMail extends Mailable implements ShouldQueue {
         // Verzugszins-Ausweis (MVP-691): nur Text — gebucht wird nichts.
         if ($this->interest !== null) {
             $lines[] = '';
-            $lines[] = (string) __('finance.dunning.mail_interest', [
-                'amount' => DocumentNumber::decimal($this->interest['amount'], 2),
-                'currency' => $this->invoice->currency->value,
-                'rate' => DocumentNumber::decimal($this->interest['rate'], 2),
-                'days' => $this->interest['days'],
-            ]);
+            $lines[] = $this->interestLine();
         }
         if ($this->note !== null && trim($this->note) !== '') {
             $lines[] = '';
@@ -124,6 +136,37 @@ class DunningMail extends Mailable implements ShouldQueue {
                 'text' => $text,
             ],
         );
+    }
+
+    /** Eigene Mahn-Vorlage der Organisation (MVP-997); ohne sie bleibt der übersetzte Standardtext. */
+    private function template(): ?InvoiceMailTemplate {
+        $template = InvoiceMailTemplate::defaultFor($this->invoice->organization_id, RenderDocumentKind::Dunning);
+
+        return $template->exists ? $template : null;
+    }
+
+    /** @return array<string, string> */
+    private function templateVariables(): array {
+        $dunning = app(DunningService::class);
+
+        return [
+            ...InvoiceMailTemplate::variablesFor($this->invoice, $this->note),
+            'dunning_label' => $this->level <= 1 ? (string) __('Zahlungserinnerung') : (string) __(':level. Mahnung', ['level' => $this->level]),
+            'level' => (string) $this->level,
+            'open_amount' => $dunning->openAmount($this->invoice)->format(withSymbol: false),
+            'claim_total' => $dunning->claimTotal($this->invoice, $this->fee, $this->interest)->format(withSymbol: false),
+            'pay_until' => $this->payUntil?->format('d.m.Y') ?? '',
+            'interest_text' => $this->interest === null ? '' : $this->interestLine(),
+        ];
+    }
+
+    private function interestLine(): string {
+        return (string) __('finance.dunning.mail_interest', [
+            'amount' => DocumentNumber::decimal((float) ($this->interest['amount'] ?? 0.0), 2),
+            'currency' => $this->invoice->currency->value,
+            'rate' => DocumentNumber::decimal((float) ($this->interest['rate'] ?? 0.0), 2),
+            'days' => $this->interest['days'] ?? 0,
+        ]);
     }
 
     /** @return array<int, Attachment> */

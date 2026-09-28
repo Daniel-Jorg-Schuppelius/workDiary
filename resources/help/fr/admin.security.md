@@ -36,3 +36,17 @@ peuvent partager une adresse (réseaux mobiles, réseaux d'entreprise),
 fail2ban reste le premier choix. Pour un SIEM, WorkDiary écrit en outre
 chaque événement de sécurité au format CEF ou JSON dans un fichier distinct
 ou via syslog (`SECURITY_SIEM_FORMAT`, `SECURITY_SIEM_TARGET`).
+
+## Sécuriser un compte après une prise de contrôle
+
+S’il est confirmé qu’une personne a pris le contrôle d’un compte, la
+déconnexion ne suffit pas : quiconque connaît le mot de passe se reconnecte.
+« Sécuriser le compte » dans la gestion des sessions (pour les membres de
+votre organisation) et « Confirmer la prise de contrôle du compte » sur un
+événement de sécurité (administration de la plateforme) mettent fin à toutes
+les sessions et à tous les jetons API, invalident le mot de passe et toutes
+les clés d’accès et envoient à la personne un lien pour définir un nouveau mot
+de passe. Les méthodes à deux facteurs par application sont conservées.
+L’opération apparaît comme événement de sécurité et dans le journal d’audit.
+Vous sécurisez votre propre compte sur votre page d’authentification à deux
+facteurs.

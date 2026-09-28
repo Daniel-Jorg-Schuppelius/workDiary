@@ -269,7 +269,7 @@ class XRechnungGenerator {
         $taxRate = $invoice->tax_rate !== null ? (float) $invoice->tax_rate->getNumericValue() : 0.0;
 
         $issuedOn = $invoice->issued_on ?? now();
-        $dueOn = $invoice->due_on ?? $issuedOn->copy()->addDays($seller['payment_terms_days']);
+        $dueOn = $invoice->due_on ?? $issuedOn->copy()->addDays($invoice->effectivePaymentTermsDays());
 
         $builder = ERechnungDocumentBuilder::create((string) $invoice->number)
             ->withProfile($profile)
@@ -286,7 +286,7 @@ class XRechnungGenerator {
                 strtoupper(trim((string) $customer->country) ?: 'DE'),
             )
             ->withPaymentMeans(PaymentMeansCode::SEPA_CREDIT_TRANSFER)
-            ->withPaymentTerms($this->paymentTerms($invoice, $seller['payment_terms_days']));
+            ->withPaymentTerms($this->paymentTerms($invoice, $invoice->effectivePaymentTermsDays()));
 
         // 381 = Gutschrift (Korrekturrechnung); BT-25 verweist aufs Original.
         if ($invoice->isCreditNote()) {

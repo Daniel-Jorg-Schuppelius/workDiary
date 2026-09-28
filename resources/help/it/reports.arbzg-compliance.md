@@ -21,3 +21,14 @@ oltre 48 h). Le soglie provengono dalle impostazioni di conformità
 dell'organizzazione. Ogni voce rimanda alla **chiusura giornaliera** del
 giorno interessato; le giornate con correzione approvata sono marcate
 come **corrette** e la lista è esportabile in CSV o PDF.
+
+**Orario notturno e minori:** L’orario notturno (predefinito dalle 23 alle 6,
+nelle panetterie dalle 22 alle 5) si imposta nelle impostazioni di conformità;
+la media secondo il § 3 non conta più i giorni festivi come lavorativi. Se per
+il collaboratore è registrata una data di nascita, la valutazione controlla
+anche i giorni precedenti al 18º compleanno secondo la legge tedesca sulla
+tutela del lavoro minorile: al massimo 8 h al giorno e 40 h a settimana, pause
+(30 min da 4,5 h, 60 min da 6 h), 12 h di riposo, nessun lavoro tra le 20 e le
+6, al massimo 5 giorni lavorativi a settimana. Il lavoro nel fine settimana e
+quello notturno dai 16 anni compaiono come avviso, perché la legge prevede
+eccezioni per settore.

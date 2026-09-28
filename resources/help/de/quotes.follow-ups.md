@@ -27,3 +27,10 @@ Termin gesetzt.
 **Erinnerung:** Der nächtliche Fristenlauf meldet fällige und überfällige
 Nachfasstermine über die Benachrichtigungsregeln. Angenommene und
 abgelehnte Angebote erscheinen nicht mehr in der Liste.
+
+**Trefferquote:** Über „Trefferquote“ zeigt WorkDiary für den gewählten
+Zeitraum, wie viele Angebote gewonnen, verloren oder abgelaufen sind — nach
+Anzahl und nach Nettovolumen, je Kunde oder je zuständiger Person. Gezählt
+wird je Angebotsnummer nur die jüngste Fassung. Maßgeblich ist der Tag der
+Entscheidung, bei abgelaufenen Angeboten die Bindefrist. Offene Angebote
+zählen nicht zur Quote und stehen gesondert daneben.

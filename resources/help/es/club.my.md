@@ -21,3 +21,9 @@ related:
 **Mensajes:** Recordatorios, aplazamientos, cancelaciones y plazas asignadas le llegan a través de su cuenta de usuario (según las reglas de notificación de la organización), en su defecto a la dirección de correo registrada; igualmente a los representantes con el derecho «recibir mensajes». Cada mensaje se entrega una sola vez; la administración ve los errores de entrega en la cita. Un mensaje no cuenta como leído.
 
 **Mis cuotas:** Si figura como persona obligada al pago de una cuenta de cuotas, ve sus notificaciones (también en PDF), vencimientos, pagos registrados, saldo a favor e importes abiertos. Un cobro exportado cuenta como pagado solo cuando se registra el abono. Los derechos de representación para inscripciones no bastan: la gestión de cuotas fija expresamente a la persona obligada al pago.
+
+**Registro con código QR:** Si en el lugar de entrenamiento está el código QR
+de una cita, escanéelo con su smartphone y registre su entrada o la de los
+socios a los que representa, desde 60 minutos antes del inicio hasta el
+final. La asistencia pasa a la lista del entrenador, que la confirma o
+corrige como siempre.

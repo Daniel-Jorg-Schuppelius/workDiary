@@ -32,3 +32,17 @@ Lieferanten vergeben (erzeugt eine Bestellung). Die Planungssicht zeigt
 für ein Erzeugnis die mehrstufige Materialbedarfsauflösung (MRP) sowie
 Qualitätskennzahlen je Artikel. Stornieren ist nicht umkehrbar; Anlegen,
 Rückmelden und Ausliefern erfordern die Bestandsbuchungs-Berechtigung.
+
+## Zollpapiere für Sendungen außerhalb der EU
+
+An jeder Auslieferung mit Empfänger erstellt „Zollpapiere“ eine
+Handelsrechnung (bei Verkauf) oder eine Proformarechnung (Geschenk, Muster,
+Rücksendung, Reparatur und andere Gründe) als PDF. Der Dialog zeigt, ob das
+Ziel außerhalb der EU liegt, und speichert den gewählten Versandgrund an der
+Auslieferung. Das Dokument führt Warenbeschreibung, Zolltarifnummer,
+Ursprungsland, Menge, Nettogewicht und Wert; Bruttogewicht und Anzahl der
+Packstücke kommen aus den erfassten Packstücken. Zolltarifnummer,
+Ursprungsland und Nettogewicht pflegen Sie am Artikel, die EORI-Nummer des
+Absenders in den Einstellungen der Organisation. Fehlt eine Angabe, nennt der
+Dialog sie und erstellt kein Dokument. Die Zollpapiere ersetzen keine
+elektronische Ausfuhranmeldung.

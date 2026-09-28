@@ -83,6 +83,7 @@
                     <x-table.th>{{ __('Ereignis') }}</x-table.th>
                     <x-table.th>{{ __('IP') }}</x-table.th>
                     <x-table.th>{{ __('Details') }}</x-table.th>
+                    <x-table.th align="right"><span class="sr-only">{{ __('Aktionen') }}</span></x-table.th>
                 </tr>
             </x-slot:head>
             @foreach ($events as $event)
@@ -92,6 +93,18 @@
                     <td><code class="text-xs">{{ $event->ip?->getValue() ?? '—' }}</code></td>
                     <td class="text-xs max-w-md truncate" title="{{ collect($event->meta ?? [])->map(fn($v, $k) => $k . '=' . $v)->implode(' ') }}">
                         {{ collect($event->meta ?? [])->map(fn($v, $k) => $k . '=' . $v)->implode(' ') ?: '—' }}
+                    </td>
+                    <td class="text-right">
+                        {{-- MVP-1008: Übernahme bestätigen — Konto sichern, Reset-Link an den Nutzer. --}}
+                        @if ($event->user_id !== null && $event->user !== null)
+                            <x-action-form :action="route('admin.security-events.secure-account', $event)"
+                                  :confirm="__('security.account_secure.confirm', ['name' => $event->user->name])"
+                                  confirm-icon="shield_lock"
+                                  confirm-tone="error"
+                                  :confirm-label="__('security.account_secure.action_event')">
+                                <x-icon-btn icon="shield_lock" tone="error" size="xs" type="submit" :label="__('security.account_secure.action_event')" />
+                            </x-action-form>
+                        @endif
                     </td>
                 </tr>
             @endforeach

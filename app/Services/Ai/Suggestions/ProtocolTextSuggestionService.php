@@ -24,7 +24,7 @@ use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
 use App\Models\Protocol\{Protocol, ProtocolItem};
 use App\Services\Ai\{AiInvocationService, AiMemoryService};
-use App\Services\Ai\Dto\{AiClassificationResult, AiTextResult, ClassifyRequest, FormulateRequest};
+use App\Services\Ai\Dto\{AiClassificationResult, AiInvocationResult, AiTextResult, ClassifyRequest, FormulateRequest};
 use App\Services\Ai\Exceptions\AiException;
 use App\Services\Ai\Suggestions\Concerns\DecidesSuggestions;
 use App\Services\Ai\Support\CustomerNameMasker;
@@ -78,9 +78,58 @@ class ProtocolTextSuggestionService {
         $protocol = $this->editableProtocolOf($item);
         $organization = $this->organizationOf($protocol);
         $source = $this->requireSourceText($item);
+
+        $result = $this->invocation->invoke($organization, self::CAPABILITY_TEXT, $this->textRequest($organization, $protocol, $item, $source), $connectionId);
+        $payload = $result->result;
+        if (! $payload instanceof AiTextResult) {
+            throw new AiException((string) __('ai.error.unexpected_result_type'));
+        }
+
+        return $this->storeProposal((int) $organization->id, $item, self::CAPABILITY_TEXT, $source, $payload->text, $result, $user);
+    }
+
+    /**
+     * Sammelaktion (MVP-1006): alle Punkte mit Text über die Warteschlange; die
+     * Ergebnisse bleiben einzelne Vorschläge mit eigener Entscheidung.
+     */
+    public function queueAllForProtocol(Protocol $protocol, ?User $user): int {
+        if (! $protocol->status->isEditable()) {
+            throw new AiException((string) __('ai.error.only_protocol_editable'));
+        }
+        $organization = $this->organizationOf($protocol);
+        $count = 0;
+        foreach ($protocol->items()->get() as $item) {
+            $source = self::sourceTextOf($item);
+            if ($source === '') {
+                continue;
+            }
+            \App\Jobs\Ai\AiInvocationJob::dispatch(
+                (int) $organization->id,
+                self::CAPABILITY_TEXT,
+                $this->textRequest($organization, $protocol, $item, $source),
+                StoreProtocolItemSuggestionHandler::class,
+                ['organization_id' => (int) $organization->id, 'item_id' => (int) $item->id, 'original' => $source, 'user_id' => $user?->getKey()],
+            );
+            $count++;
+        }
+
+        return $count;
+    }
+
+    /** Asynchrones Ergebnis der Sammelaktion ablegen — nur solange das Protokoll bearbeitbar ist. */
+    public function storeQueued(Protocol $protocol, ProtocolItem $item, string $original, AiInvocationResult $result, ?User $user): ?AiTextSuggestion {
+        $payload = $result->result;
+        if ((int) $item->protocol_id !== (int) $protocol->id || ! $protocol->status->isEditable() || ! $payload instanceof AiTextResult) {
+            return null;
+        }
+
+        return $this->storeProposal((int) $protocol->organization_id, $item, self::CAPABILITY_TEXT, $original, $payload->text, $result, $user);
+    }
+
+    private function textRequest(Organization $organization, Protocol $protocol, ProtocolItem $item, string $source): FormulateRequest {
         $customerId = $this->customerIdOf($protocol);
 
-        $request = new FormulateRequest(
+        return new FormulateRequest(
             text: $this->masker->mask($organization, $source),
             styleRules: array_merge(self::TEXT_RULES, $this->memory->styleRulesFor($organization, self::CAPABILITY_TEXT, $customerId)),
             glossary: $this->memory->glossaryFor($organization, self::CAPABILITY_TEXT, $customerId),
@@ -90,14 +139,6 @@ class ProtocolTextSuggestionService {
                 'Punkt: ' . $this->masker->mask($organization, (string) $item->label),
             ],
         );
-
-        $result = $this->invocation->invoke($organization, self::CAPABILITY_TEXT, $request, $connectionId);
-        $payload = $result->result;
-        if (! $payload instanceof AiTextResult) {
-            throw new AiException((string) __('ai.error.unexpected_result_type'));
-        }
-
-        return $this->storeProposal((int) $organization->id, $item, self::CAPABILITY_TEXT, $source, $payload->text, $result, $user);
     }
 
     /**

@@ -8,10 +8,15 @@
 
   Anlage anlegen/bearbeiten (Feature 133, MVP-698). Nach der ersten
   festgeschriebenen AfA sind die wertbestimmenden Felder gesperrt.
-  Variablen: $fixedAsset (FixedAsset|null), $frozen, $methods, $accounts, $devices
+  Variablen: $fixedAsset (FixedAsset|null), $frozen, $methods, $accounts, $devices,
+  $classes (Anlagenklassen, MVP-999), $prefill (Vorbelegung aus Eingangsrechnung/Auslage)
 --}}
 @php
     $isEdit = $fixedAsset !== null;
+    $prefill ??= null;
+    $classes ??= collect();
+    // Beim Anlegen dürfen Nutzungsdauer und Methode aus der Anlagenklasse kommen.
+    $classDefaults = ! $isEdit && $classes->isNotEmpty();
 @endphp
 
 <x-modal
@@ -31,9 +36,27 @@
         </div>
     @endif
 
+    @if ($prefill !== null)
+        <div class="alert bg-info/10 border-info/30 text-sm text-base-content" role="note">
+            <x-icon name="receipt_long" />
+            <span>{{ $prefill['label'] }}</span>
+        </div>
+        <input type="hidden" name="source_kind" value="{{ $prefill['source_kind'] }}">
+        <input type="hidden" name="source_ref" value="{{ $prefill['source_ref'] }}">
+    @endif
+
     <x-form-group :legend="__('accounting.fixed_assets.section.master')" icon="precision_manufacturing" tone="primary" cols="2">
         <x-input-field name="name" :label="__('accounting.fixed_assets.column.name')" required minlength="2" maxlength="180"
-                       :value="old('name', $fixedAsset?->name)" span="2" />
+                       :value="old('name', $fixedAsset?->name ?? $prefill['name'] ?? null)" span="2" />
+
+        @if ($classes->isNotEmpty())
+            <x-select-field name="fixed_asset_class" :label="__('accounting.fixed_assets.field.class')" :hint="__('accounting.fixed_assets.hint.class')" span="2">
+                <option value="">—</option>
+                @foreach ($classes as $class)
+                    <option value="{{ $class->sqid }}" @selected(old('fixed_asset_class', $fixedAsset?->assetClass?->sqid ?? '') === $class->sqid)>{{ $class->name }}</option>
+                @endforeach
+            </x-select-field>
+        @endif
 
         <x-select-field name="device" :label="__('accounting.fixed_assets.field.device')" :hint="__('accounting.fixed_assets.hint.device')" span="2">
             <option value="">—</option>
@@ -44,26 +67,29 @@
 
         <x-input-field name="acquired_on" type="date" required
                        :label="__('accounting.fixed_assets.column.acquired_on')"
-                       :value="old('acquired_on', $fixedAsset?->acquired_on?->toDateString() ?? now()->toDateString())"
+                       :value="old('acquired_on', $fixedAsset?->acquired_on?->toDateString() ?? $prefill['acquired_on'] ?? now()->toDateString())"
                        :readonly="$frozen" />
         <x-input-field name="acquisition_cost" type="number" step="0.01" min="0.01" required
                        :label="__('accounting.fixed_assets.column.cost')"
-                       :value="old('acquisition_cost', $fixedAsset?->acquisition_cost?->getAmount())"
+                       :value="old('acquisition_cost', $fixedAsset?->acquisition_cost?->getAmount() ?? $prefill['acquisition_cost'] ?? null)"
                        :readonly="$frozen" />
         <x-input-field name="residual_value" type="number" step="0.01" min="0"
                        :label="__('accounting.fixed_assets.field.residual_value')"
                        :hint="__('accounting.fixed_assets.hint.residual_value')"
                        :value="old('residual_value', $fixedAsset?->residual_value?->getAmount() ?? '0.00')"
                        :readonly="$frozen" />
-        <x-input-field name="useful_life_months" type="number" min="1" max="1200" required
+        <x-input-field name="useful_life_months" type="number" min="1" max="1200" :required="! $classDefaults"
                        :label="__('accounting.fixed_assets.column.useful_life')"
-                       :hint="__('accounting.fixed_assets.hint.useful_life')"
-                       :value="old('useful_life_months', (string) ($fixedAsset?->useful_life_months ?? 36))"
+                       :hint="$classDefaults ? __('accounting.fixed_assets.hint.useful_life_class') : __('accounting.fixed_assets.hint.useful_life')"
+                       :value="old('useful_life_months', (string) ($fixedAsset?->useful_life_months ?? ($classDefaults ? '' : 36)))"
                        :readonly="$frozen" />
 
         <x-select-field name="depreciation_method" :label="__('accounting.fixed_assets.field.method')" span="2">
+            @if ($classDefaults)
+                <option value="">{{ __('accounting.fixed_assets.method_from_class') }}</option>
+            @endif
             @foreach ($methods as $method)
-                <option value="{{ $method->value }}" @selected(old('depreciation_method', $fixedAsset?->depreciation_method?->value ?? 'linear') === $method->value)>{{ $method->label() }}</option>
+                <option value="{{ $method->value }}" @selected(old('depreciation_method', $fixedAsset?->depreciation_method?->value ?? ($classDefaults ? '' : 'linear')) === $method->value)>{{ $method->label() }}</option>
             @endforeach
         </x-select-field>
         {{-- Degressive AfA (MVP-980): Satz in Prozent, nur mit Methode „degressiv“. --}}

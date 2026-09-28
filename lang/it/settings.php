@@ -249,4 +249,10 @@ return [
         'threshold' => 'Ticket da',
         'window_days' => 'Finestra (giorni)',
     ],
+    'shipping' => [
+        'heading' => 'Spedizione e dogana',
+        'description' => 'Dati del mittente per fatture commerciali e proforma di spedizioni fuori dall’UE.',
+        'eori_number' => 'Numero EORI',
+        'eori_number_hint' => 'Numero doganale dell’azienda (codice paese e fino a 15 caratteri), ad es. DE1234567.',
+    ],
 ];

@@ -47,3 +47,5 @@ retracer quelle idée a conduit à quel travail.
 depuis des fichiers FreeMind ou OPML ; les cartes peuvent être exportées
 en JSON, OPML, Markdown ou PDF — par exemple pour une transmission en
 dehors du système.
+
+**Commentaires sur les nœuds :** Dans le détail d’un nœud, « Commentaires » ouvre le fil de ce nœud ; le nombre à côté indique combien il y en a. Toute personne pouvant voir la carte peut commenter.

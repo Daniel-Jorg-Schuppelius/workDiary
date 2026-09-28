@@ -17,6 +17,7 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('safety.register.subtitle.assessments')">
     <x-slot:actions>
+        <x-icon-btn icon="library_books" size="sm" show-label :href="route('safety.hazard-catalog.index')">{{ __('safety.catalog.title') }}</x-icon-btn>
         @if ($canManage)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger

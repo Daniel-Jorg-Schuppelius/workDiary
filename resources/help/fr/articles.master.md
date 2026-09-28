@@ -22,3 +22,8 @@ variantes, chaque variante recevant automatiquement un SKU. La création et
 la modification se font par boîte de dialogue ; désactivez les articles
 (statut « Retired ») au lieu de les supprimer — la suppression n'est
 possible que sans données dépendantes.
+
+Pour les documents douaniers, les articles indiquent sous « Douane et
+exportation » la nomenclature douanière (6 à 11 chiffres ; les espaces et les
+points sont supprimés), le pays d’origine en code ISO et le poids net par
+unité.

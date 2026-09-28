@@ -377,5 +377,9 @@ return [
         ],
         'suggest_tags' => 'Suggest AI tags',
         'tags_hint' => 'Suggestions come from the organisation’s existing tags — nothing is applied until you click.',
+        'translate_all' => 'Translate all',
+        'translate_all_title' => 'Translates every line in the background as a suggestion — applied only by click.',
+        'suggest_protocol_all' => 'Refine all items',
+        'suggest_protocol_all_title' => 'Rephrases every item with text in the background as a suggestion — applied per item.',
     ],
 ];

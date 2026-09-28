@@ -100,7 +100,7 @@ class InvoiceMail extends Mailable implements ShouldQueue {
             $electronicInvoice = clone $this->invoice;
             $electronicInvoice->status = Invoice::STATUS_ISSUED;
             $electronicInvoice->issued_on ??= now();
-            $electronicInvoice->due_on ??= now()->addDays($electronicInvoice->payment_terms_days ?? 14);
+            $electronicInvoice->due_on ??= now()->addDays($electronicInvoice->effectivePaymentTermsDays());
         }
 
         if (in_array($this->deliveryFormat, [InvoiceDeliveryFormat::Pdf, InvoiceDeliveryFormat::PdfAndXRechnung], true)) {

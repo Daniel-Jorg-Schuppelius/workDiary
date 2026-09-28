@@ -26,3 +26,9 @@ quote history. The next date can be set right away.
 **Reminder:** The nightly deadline scan reports due and overdue follow-ups
 through the notification rules. Accepted and rejected quotes no longer
 appear in the list.
+
+**Win rate:** Under “Win rate” WorkDiary shows, for the selected period, how
+many quotes were won, lost or expired — by count and by net volume, per
+customer or per responsible person. Only the latest version per quote number
+counts. The decision date applies, for expired quotes the end of validity.
+Open quotes are not part of the rate and are shown separately.

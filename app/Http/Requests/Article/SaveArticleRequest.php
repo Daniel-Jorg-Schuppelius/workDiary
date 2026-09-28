@@ -44,6 +44,13 @@ class SaveArticleRequest extends BaseFormRequest {
         if ($this->filled('currency')) {
             $this->merge(['currency' => $this->string('currency')->upper()->value()]);
         }
+        // Zolltarifnummern werden oft gegliedert eingetippt („8471 30 00“).
+        if ($this->filled('customs_tariff_number')) {
+            $this->merge(['customs_tariff_number' => (string) preg_replace('/[\s.]/', '', $this->string('customs_tariff_number')->value())]);
+        }
+        if ($this->filled('origin_country')) {
+            $this->merge(['origin_country' => $this->string('origin_country')->trim()->upper()->value()]);
+        }
         $merge = [];
         foreach (self::FLAGS as $flag) {
             $merge[$flag] = $this->boolean($flag);
@@ -68,6 +75,10 @@ class SaveArticleRequest extends BaseFormRequest {
                     ->ignore($article?->id),
             ],
             'gtin' => ['nullable', 'string', 'max:14'],
+            // Zollangaben (MVP-1007): HS-Code bis TARIC-Zusatz, 6–11 Ziffern.
+            'customs_tariff_number' => ['nullable', 'string', 'regex:/^\d{6,11}$/'],
+            'origin_country' => ['nullable', Rule::enum(\CommonToolkit\Enums\CountryCode::class)],
+            'net_weight_kg' => ['nullable', 'numeric', 'min:0', 'max:999999'],
             // Typ-Zuordnung (produktmodell-konzept.md, MVP-370).
             'product_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('products')],
             'type' => ['required', Rule::enum(ArticleType::class)],

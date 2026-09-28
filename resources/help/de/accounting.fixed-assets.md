@@ -67,3 +67,16 @@ Ein Jahr, dessen AfA bereits gebucht ist, lässt sich nicht mehr ändern.
 Ein Abgang (Verkauf, Verschrottung, Diebstahl) wird mit Datum vermerkt. Die
 Anlage verschwindet **nicht** aus dem Register — der Verlauf bleibt lesbar,
 sonst wäre ein späterer Abgleich mit der Bilanz nicht möglich.
+
+## Anlagenklassen und Anlage aus einem Beleg
+
+Unter „Anlagenklassen“ legen Sie Vorgaben an, etwa „Fuhrpark“ oder
+„Software“: Nutzungsdauer, Methode und Konten. Wählen Sie beim Anlegen einer
+Anlage eine Klasse, füllt WorkDiary die Felder, die Sie leer lassen, aus der
+Klasse. Bestehende Anlagen behalten ihre Werte, wenn Sie eine Klasse später
+ändern.
+
+In einer Eingangsrechnung und in einer genehmigten Auslage erfassen Sie mit
+„Als Anlage erfassen“ direkt eine Anlage. Bezeichnung, Datum und Nettobetrag
+sind vorbelegt, die Anlage verweist auf den Beleg. Aus einem Beleg entsteht
+höchstens eine Anlage.

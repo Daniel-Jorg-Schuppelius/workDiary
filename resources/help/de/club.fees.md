@@ -39,3 +39,14 @@ Die Beitragsverwaltung gehört zur Vereinsbasis und funktioniert ohne Graduierun
 **Mahnung:** Gemahnt werden nur überfällige, nicht gesperrte Forderungen in höchstens drei Stufen (Zahlungserinnerung, Mahnung, letzte Mahnung). Zahlungsfrist und Gebühr werden je Mahnung bewusst gesetzt, nicht aus Rechnungsvorgaben übernommen; eine Mahngebühr ist eine eigene verknüpfte Nachforderung. Die Mahnung gibt es als PDF und per E-Mail mit Zustellnachweis. Für strittige oder gestundete Forderungen gibt es eine Mahnsperre mit Grund.
 
 **SEPA-Einzug:** Der Einzugsvorschlag listet fällige Restbeträge von Konten mit nutzbarem Mandat (das aktive Mandat des Kunden oder ein am Konto fest gewähltes). Ein Einzugslauf ist ein Lastschriftlauf des Finanzmoduls: Freigabe und pain.008-Export laufen dort. Jeder Versuch erhält eine eindeutige Referenz (Forderungsnummer und Versuchsnummer), der Lauf reserviert die Position gegen erneuten Einzug. Der Export ist keine Zahlung — erst „Eingang buchen“ nach der Gutschrift setzt die Forderung auf bezahlt. Fehlt das Finanzpaket, bleiben Zahlungen, Mahnung und Vorbereitung möglich, nur der SEPA-Export nicht.
+
+**Spenden und Zuwendungsbestätigungen:** Im Reiter „Spenden“ erfassen Sie
+Zuwendungen von Mitgliedern oder anderen Personen. Daraus entsteht eine
+Einzelbestätigung oder je Person und Jahr eine Sammelbestätigung nach
+amtlichem Muster, fortlaufend nummeriert, mit Anlage bei der
+Sammelbestätigung. Voraussetzung sind die Freistellungsdaten des Vereins
+(Finanzamt, Steuernummer, Bescheid, begünstigter Zweck) in den
+Vereinseinstellungen. Ob der Verein steuerbegünstigt ist, prüft WorkDiary
+nicht. Mitgliedsbeiträge lassen sich nur bestätigen, wenn Sie das
+einschalten; für Sport und andere Freizeitzwecke ist ihr Abzug gesetzlich
+ausgeschlossen. Bestätigte Zuwendungen sind unveränderlich.

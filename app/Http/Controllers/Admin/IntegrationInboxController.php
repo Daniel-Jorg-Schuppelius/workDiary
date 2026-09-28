@@ -106,10 +106,10 @@ class IntegrationInboxController extends Controller {
                 ->limit(self::ASSIGN_TARGET_LIMIT + 1)
                 ->get(['id', 'name']);
             if ($assetRows->count() > self::ASSIGN_TARGET_LIMIT) {
-                $assignTargetsTruncated[\App\Models\Asset\Asset::class] = true;
+                $assignTargetsTruncated[MorphMap::alias(\App\Models\Asset\Asset::class)] = true;
                 $assetRows = $assetRows->take(self::ASSIGN_TARGET_LIMIT);
             }
-            $assignTargets[\App\Models\Asset\Asset::class] = $assetRows
+            $assignTargets[MorphMap::alias(\App\Models\Asset\Asset::class)] = $assetRows
                 ->mapWithKeys(fn(\App\Models\Asset\Asset $a): array => [$a->getRouteKey() => (string) $a->name])
                 ->all();
         }
@@ -244,7 +244,7 @@ class IntegrationInboxController extends Controller {
                 $options[$row->getRouteKey()] = $label !== '' ? $label : ('#' . $row->getKey());
             }
             $out[$type] = $options;
-            if ($type === \App\Models\Project\Project::class) {
+            if (MorphMap::is($type, \App\Models\Project\Project::class)) {
                 $projectRows = $rows;
             }
         }

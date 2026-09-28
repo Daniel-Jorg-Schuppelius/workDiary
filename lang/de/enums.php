@@ -2038,5 +2038,13 @@ return [
             'view_attendance' => 'Anwesenheit einsehen',
             'receive_messages' => 'Nachrichten erhalten',
         ],
+        'donation-kind' => [
+            'donation' => 'Geldzuwendung',
+            'membership_fee' => 'Mitgliedsbeitrag',
+        ],
+        'donation-receipt-kind' => [
+            'single' => 'Einzelbestätigung',
+            'collective' => 'Sammelbestätigung',
+        ],
     ],
 ];

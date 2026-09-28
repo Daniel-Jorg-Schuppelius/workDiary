@@ -18,3 +18,8 @@ usarse una vez. Puede registrar varios métodos y eliminarlos; si su
 organización exige el segundo factor, el último factor activo no puede
 eliminarse. No comparta nunca el código QR, la clave manual ni los
 códigos con otras personas.
+
+Si no reconoce un inicio de sesión o un dispositivo, utilice «No fui yo –
+proteger la cuenta»: todas las sesiones terminan, la contraseña y las llaves
+de acceso dejan de ser válidas y recibe por correo electrónico un enlace para
+establecer una nueva contraseña.

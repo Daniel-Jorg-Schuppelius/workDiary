@@ -10,15 +10,15 @@
 
 namespace App\Http\Controllers\Safety;
 
-use App\Enums\Safety\{SafetyEventKind, SafetyEventSeverity, SafetyEventStatus};
+use App\Enums\Safety\{HazardAssessmentStatus, SafetyEventKind, SafetyEventSeverity, SafetyEventStatus};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
-use App\Models\Safety\SafetyEvent;
+use App\Models\Safety\{HazardAssessment, SafetyEvent};
 use App\Services\Safety\SafetyEventService;
 use App\Support\{Sqid, Tz};
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Collection, Model};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -83,6 +83,7 @@ class SafetyEventController extends Controller {
 
         return view('safety-events._form_dialog', [
             'event' => null,
+            'assessments' => $this->assessmentOptions(),
         ]);
     }
 
@@ -109,6 +110,7 @@ class SafetyEventController extends Controller {
             'closer:id,name',
             'attachments',
             'subject',
+            'hazardAssessment',
             'openIssues' => fn($q) => $q->with(['assignee:id,name', 'events'])->latest(),
         ]);
 
@@ -123,6 +125,7 @@ class SafetyEventController extends Controller {
 
         return view('safety-events._form_dialog', [
             'event' => $safety_event,
+            'assessments' => $this->assessmentOptions(),
         ]);
     }
 
@@ -210,6 +213,7 @@ class SafetyEventController extends Controller {
             'immediate_action' => ['nullable', 'string', 'max:10000'],
             'subject_kind' => ['nullable', 'string', 'in:' . implode(',', array_keys(self::SUBJECT_MAP))],
             'subject_id' => ['nullable', 'string'],
+            'hazard_assessment' => ['nullable', 'string'],
         ];
         if ($isUpdate) {
             $rules['root_cause'] = ['nullable', 'string', 'max:10000'];
@@ -233,6 +237,16 @@ class SafetyEventController extends Controller {
             unset($data['subject_id']);
         }
 
+        // Gefährdungsbeurteilung (MVP-1002): nur freigegebene Stände der eigenen Organisation.
+        $assessmentId = filled($data['hazard_assessment'] ?? null) ? Sqid::decodeOrNumeric(HazardAssessment::class, (string) $data['hazard_assessment']) : null;
+        $data['hazard_assessment_id'] = $assessmentId !== null && $this->assessmentOptions()->contains('id', $assessmentId) ? $assessmentId : null;
+        unset($data['hazard_assessment']);
+
         return $data;
+    }
+
+    /** @return Collection<int, HazardAssessment> */
+    private function assessmentOptions(): Collection {
+        return HazardAssessment::query()->where('status', HazardAssessmentStatus::Approved)->orderBy('area')->get();
     }
 }

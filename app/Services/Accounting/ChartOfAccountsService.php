@@ -46,6 +46,7 @@ class ChartOfAccountsService {
             'is_bank' => (bool) ($data['is_bank'] ?? false),
             'is_cash' => (bool) ($data['is_cash'] ?? false),
             'is_clearing' => (bool) ($data['is_clearing'] ?? false),
+            'is_cost_center_required' => (bool) ($data['is_cost_center_required'] ?? false),
             'euer_category' => $this->euerCategory($data['euer_category'] ?? null),
             'deductible_percent' => NumberHelper::roundPrecise(NumberHelper::normalizeDecimalString((string) ($data['deductible_percent'] ?? 100)), 2),
             'default_tax_code_id' => $data['default_tax_code_id'] ?? null,

@@ -344,6 +344,14 @@ return [
         'messadapter',
         'psaElektro',
     ],
+    // Gefährdungskatalog (Feature 132, MVP-1002): Vorlagen für die Gefährdungsbeurteilung, Schwere und Wahrscheinlichkeit 1–5.
+    'hazard_catalog' => [
+        ['code' => 'elektro/stromschlag', 'category' => 'Elektrische Gefährdung', 'hazard' => 'Elektrischer Schlag an aktiven Teilen', 'measure' => 'Fünf Sicherheitsregeln einhalten, Spannungsfreiheit feststellen', 'severity' => 5, 'likelihood' => 2],
+        ['code' => 'elektro/lichtbogen', 'category' => 'Elektrische Gefährdung', 'hazard' => 'Störlichtbogen beim Schalten und Messen', 'measure' => 'Persönliche Schutzausrüstung gegen Störlichtbogen, geeignete Messgeräte', 'severity' => 5, 'likelihood' => 2],
+        ['code' => 'elektro/leiter', 'category' => 'Absturz', 'hazard' => 'Absturz bei Montage in der Höhe', 'measure' => 'Hubarbeitsbühne oder Podesttreppe statt Anlegeleiter', 'severity' => 4, 'likelihood' => 3],
+        ['code' => 'elektro/kabelschacht', 'category' => 'Umgebung', 'hazard' => 'Enge Räume und Kabelschächte', 'measure' => 'Zweite Person, Belüftung, Freimessung bei Bedarf', 'severity' => 3, 'likelihood' => 2],
+        ['code' => 'elektro/pruefgeraete', 'category' => 'Elektrische Gefährdung', 'hazard' => 'Defekte Prüf- und Messgeräte', 'measure' => 'Regelmäßige Prüfung nach DGUV V3, Sichtkontrolle vor Gebrauch', 'severity' => 4, 'likelihood' => 2],
+    ],
     'tags_seed' => [
         '#vde',
         '#freischaltung',

@@ -78,6 +78,7 @@ return [
             'post_now' => 'Post immediately',
             'reversal_reason' => 'Reason',
             'reversal_booked_on' => 'Posting date of the counter-entry',
+            'cost_center' => 'Cost centre',
         ],
         'hint' => [
             'profit_determination' => 'Changes the reporting (cash basis or double entry), not the posting and audit rules.',
@@ -95,6 +96,8 @@ return [
             'normal_balance' => 'Prefilled from the account type, overridable per account.',
             'post_now' => 'Once posted, the entry can only be corrected through a counter-entry.',
             'reversal_booked_on' => 'Leave empty for the original day, as long as its period is still open.',
+            'cost_center_required' => 'Postings to this account can only be finalised with a cost centre — including from the posting inbox.',
+            'cost_center' => 'Applies to the debit and credit line.',
         ],
         'action' => [
             'activate' => 'Activate local accounting',
@@ -177,6 +180,7 @@ return [
             'account_in_use' => 'This account has been used — it can only be deactivated.',
             'entry_without_organization' => 'The entry has no organization — please inform your system administrator.',
             'account_number_taken' => 'This account number already exists.',
+            'cost_center_required' => 'Account :account requires a cost centre.',
         ],
         'preflight' => [
             'not_configured' => 'Profile not saved yet — the preflight runs from the first save.',
@@ -243,6 +247,7 @@ return [
             'cash' => 'Cash',
             'clearing' => 'Clearing',
             'inactive' => 'Inactive',
+            'cost_center_required' => 'Cost centre required',
         ],
         'confirm' => [
             'deactivate' => 'Really deactivate this account? Existing entries are kept.',
@@ -361,6 +366,8 @@ return [
             'disposal_kind' => 'Type of disposal',
             'disposal_proceeds' => 'Sale proceeds (net)',
             'created_by' => 'Created by',
+            'class' => 'Asset class',
+            'source' => 'Origin',
         ],
         'section' => [
             'master' => 'Master data',
@@ -380,18 +387,22 @@ return [
             'device' => 'Optional link to the device register; not every fixed asset is a device.',
             'residual_value' => 'Remains at the end of the useful life; default 0.',
             'useful_life' => 'Ordinary useful life according to the depreciation table, in months. For low-value assets and the pool, the term follows from the method.',
-            'accounts' => 'Leave empty to use the posting rule of the role (asset account / depreciation expense).',
+            'accounts' => 'Leave empty to use the asset class account, otherwise the posting rule of the role (asset account / depreciation expense).',
             'frozen' => 'A depreciation entry is posted — acquisition date, cost, residual value and useful life are frozen.',
             'schedule' => 'Straight-line, pro rata by month in the year of acquisition and disposal; the last year takes the remainder.',
             'posting' => 'Annual depreciation is proposed per fiscal year in the closing and posted in the inbox — never directly.',
             'dispose' => 'The disposal ends the depreciation plan in the month of disposal. The posting inbox provides the remaining book value as a disposal posting.',
             'disposal_proceeds' => 'Only for sales. The proceeds are posted via the sales invoice; here they only decide whether the residual value is written off as a gain or a loss.',
+            'class' => 'Provides useful life, method and accounts where you leave these fields empty.',
+            'useful_life_class' => 'In months; empty: default of the asset class.',
         ],
         'action' => [
             'add' => 'Add fixed asset',
             'edit' => 'Edit fixed asset',
             'dispose' => 'Record disposal',
             'dispose_submit' => 'Record disposal',
+            'from_source' => 'Record as fixed asset',
+            'open_asset' => 'Asset :no',
         ],
         'flash' => [
             'special_saved' => 'Special depreciation saved.',
@@ -418,6 +429,31 @@ return [
             'disposed_before_acquired' => 'The disposal cannot precede the acquisition.',
             'residual_exceeds_cost' => 'The residual value must be lower than the cost.',
             'useful_life_required' => 'The useful life must be at least one month.',
+            'source_used' => 'Fixed asset :no has already been recorded from this document.',
+        ],
+        'method_from_class' => 'Default of the asset class',
+        'source' => [
+            'incoming' => 'Incoming invoice :number',
+            'expense' => 'Expense “:description”',
+        ],
+        'classes' => [
+            'title' => 'Asset classes',
+            'subtitle' => 'Defaults for useful life, method and accounts of new fixed assets',
+            'empty' => 'No asset class created yet.',
+            'action' => [
+                'add' => 'Create asset class',
+                'edit' => 'Edit asset class',
+            ],
+            'field' => [
+                'name' => 'Name',
+                'is_active' => 'Active',
+            ],
+            'hint' => [
+                'is_active' => 'Inactive classes are no longer offered for new assets; existing assets keep their values.',
+            ],
+            'flash' => [
+                'saved' => 'Asset class saved.',
+            ],
         ],
     ],
     'rules' => [

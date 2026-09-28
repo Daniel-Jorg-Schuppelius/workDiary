@@ -35,3 +35,10 @@ confirmados, la anonimización y la eliminación de cuentas o clientes, y se
 conservan los puntos de ubicación de la persona. Al fusionar clientes, el bloqueo
 pasa al cliente de destino. Solo se levanta con motivo; ambos quedan visibles en
 el registro de la persona o del cliente.
+
+El informe de acceso (art. 15/20) también puede crearse para **socios del
+club** si su organización utiliza la gestión de clubes: datos maestros con
+tutores legales, direcciones y datos bancarios, y un resumen de los datos del
+club (periodos de afiliación, grupos, asistencias, cuotas, donaciones,
+graduaciones, rendimientos y más) con un extracto por área. La búsqueda
+encuentra a los socios por nombre, correo electrónico o número de socio.

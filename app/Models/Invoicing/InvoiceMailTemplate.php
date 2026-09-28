@@ -72,8 +72,9 @@ class InvoiceMailTemplate extends Model {
 
     /**
      * Belegarten mit Mail-Vorlagen: alles, was einen eigenen PDF-Renderer
-     * und einen Versandweg hat (Feature 128). Mahnungen bleiben bewusst
-     * draußen — deren Mail baut der Mahnlauf (MVP-691) selbst.
+     * und einen Versandweg hat (Feature 128). Für Mahnungen ist die Vorlage
+     * optional (MVP-997): ohne eigene baut die Mahn-Mail ihren übersetzten
+     * Standardtext.
      *
      * @return list<RenderDocumentKind>
      */
@@ -87,6 +88,7 @@ class InvoiceMailTemplate extends Model {
             // VOB/B-Schreiben (Feature 062, MVP-728).
             RenderDocumentKind::ConstructionObstructionNotice,
             RenderDocumentKind::ConstructionConcernNotice,
+            RenderDocumentKind::Dunning,
         ];
     }
 
@@ -280,6 +282,22 @@ class InvoiceMailTemplate extends Model {
                 'document_subject' => __('Betreff des Schreibens'),
                 'project_name' => __('Bauvorhaben / Einsatzort'),
                 'legal_reference' => __('Rechtsverweis'),
+            ],
+            RenderDocumentKind::Dunning => [
+                'dunning_label' => __('Zahlungserinnerung bzw. Mahnstufe'),
+                'level' => __('Mahnstufe'),
+                'customer_name' => __('Kunden-Name'),
+                'invoice_number' => __('Rechnungsnummer'),
+                'invoice_date' => __('Rechnungsdatum'),
+                'due_date' => __('Fälligkeitsdatum'),
+                'total' => __('Gesamtbetrag'),
+                'open_amount' => __('Offener Betrag'),
+                'claim_total' => __('Gesamtforderung'),
+                'pay_until' => __('Zahlbar bis'),
+                'interest_text' => __('Hinweis zu Verzugszinsen'),
+                'currency' => __('Währung'),
+                'company_name' => __('Firmenname'),
+                'custom_text' => __('Individueller Begleittext'),
             ],
             default => $common,
         };

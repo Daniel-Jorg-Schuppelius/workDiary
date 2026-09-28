@@ -142,11 +142,18 @@ return [
         'factor_to_base' => 'Fattore verso unità base',
         'external_id' => 'ID esterno',
         'sync_status' => 'Stato sincronizzazione',
+        'customs_tariff_number' => 'Codice doganale',
+        'customs_tariff_number_hint' => 'Codice merce per i documenti doganali: 8 cifre (Nomenclatura combinata) o 6 cifre (codice SA).',
+        'origin_country' => 'Paese d’origine',
+        'origin_country_hint' => 'Paese di fabbricazione come codice ISO, ad es. DE.',
+        'net_weight_kg' => 'Peso netto (kg per unità)',
+        'net_weight_kg_hint' => 'Peso senza imballaggio; i documenti doganali lo moltiplicano per la quantità.',
     ],
 
     'group' => [
         'pricing' => 'Prezzi',
         'flags' => 'Proprietà',
+        'customs' => 'Dogana ed esportazione',
     ],
 
     'flag' => [

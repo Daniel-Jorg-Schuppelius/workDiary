@@ -116,4 +116,21 @@ return [
         'mass_attack_title' => 'Attaque massive détectée (:event)',
         'mass_attack_description' => ':count événements de type :event en :window minutes (limite :limit). Vérifiez les accès, appliquez des blocages, documentez la cause.',
     ],
+    'account_secure' => [
+        'action' => 'Sécuriser le compte',
+        'action_event' => 'Confirmer la prise de contrôle du compte',
+        'action_self' => 'Ce n’était pas moi – sécuriser le compte',
+        'confirm' => 'Sécuriser le compte de « :name » ? Toutes les sessions, jetons API et clés d’accès prennent fin et le mot de passe devient invalide. :name reçoit un lien pour définir un nouveau mot de passe.',
+        'confirm_self' => 'Sécuriser votre compte ? Vous serez déconnecté partout, votre mot de passe et vos clés d’accès deviennent invalides. Vous recevrez un lien pour définir un nouveau mot de passe.',
+        'self_heading' => 'Connexion inconnue ?',
+        'self_hint' => 'Si vous ne reconnaissez pas une connexion ou un appareil, sécurisez votre compte : toutes les sessions prennent fin, le mot de passe et les clés d’accès deviennent invalides, et vous recevez un lien pour définir un nouveau mot de passe.',
+        'flash' => [
+            'done' => 'Le compte de :name est sécurisé. Un lien pour définir un nouveau mot de passe a été envoyé.',
+            'self' => 'Votre compte est sécurisé. Nous vous avons envoyé un lien pour définir un nouveau mot de passe.',
+        ],
+        'error' => [
+            'not_securable' => 'Seuls les comptes de collaborateurs avec une adresse e-mail peuvent être sécurisés ainsi.',
+            'self_admin' => 'Sécurisez votre propre compte depuis votre page de sécurité.',
+        ],
+    ],
 ];

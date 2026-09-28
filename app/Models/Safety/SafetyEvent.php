@@ -36,6 +36,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $location
  * @property string|null $subject_type
  * @property int|null $subject_id
+ * @property int|null $hazard_assessment_id
  * @property int $reported_by_user_id
  * @property string|null $affected_person
  * @property string $description
@@ -67,6 +68,7 @@ class SafetyEvent extends Model {
         'location',
         'subject_type',
         'subject_id',
+        'hazard_assessment_id',
         'reported_by_user_id',
         'affected_person',
         'description',
@@ -90,6 +92,15 @@ class SafetyEvent extends Model {
     /** Anzeige-Kennung im Register (z. B. "SE-12"). */
     public function displayNo(): string {
         return 'SE-' . $this->event_no;
+    }
+
+    /**
+     * Gefährdungsbeurteilung, die dieses Ereignis zur Überprüfung anstößt (MVP-1002).
+     *
+     * @return BelongsTo<HazardAssessment, $this>
+     */
+    public function hazardAssessment(): BelongsTo {
+        return $this->belongsTo(HazardAssessment::class, 'hazard_assessment_id');
     }
 
     /** @return MorphTo<Model, $this> */

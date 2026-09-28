@@ -52,6 +52,13 @@ return [
             'drivingBreakMissing' => 'Interruzione di guida mancante (art. 7 reg. 561/2006)',
             'dailyRest' => 'Riposo giornaliero (art. 8 reg. 561/2006)',
             'weeklyRest' => 'Riposo settimanale (art. 8 reg. 561/2006)',
+            'youthDailyHours' => 'Minori: oltre 8 h al giorno (§ 8 JArbSchG)',
+            'youthWeeklyHours' => 'Minori: oltre 40 h a settimana (§ 8 JArbSchG)',
+            'youthBreak' => 'Minori: pausa mancante (§ 11 JArbSchG)',
+            'youthRest' => 'Minori: riposo inferiore a 12 h (§ 13 JArbSchG)',
+            'youthNight' => 'Minori: lavoro tra le 20 e le 6 (§ 14 JArbSchG)',
+            'youthFiveDays' => 'Minori: più di 5 giorni lavorativi (§ 15 JArbSchG)',
+            'youthWeekend' => 'Minori: lavoro nel fine settimana (§§ 16, 17 JArbSchG)',
         ],
         'unit' => [
             'days' => '{1} :count giorno|[2,*] :count giorni',

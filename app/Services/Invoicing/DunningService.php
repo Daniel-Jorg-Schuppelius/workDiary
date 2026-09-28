@@ -117,6 +117,18 @@ final class DunningService {
         return Money::ofFloat(max(0.0, $open), $invoice->documentCurrency());
     }
 
+    /**
+     * Gesamtforderung einer Mahnstufe: offener Betrag, Mahngebühr und Zinsen —
+     * eine Zahl für Summenzeile, Girocode und Mail-Vorlage (MVP-997).
+     *
+     * @param  array{amount: float}|null  $interest
+     */
+    public function claimTotal(Invoice $invoice, ?float $fee = null, ?array $interest = null): Money {
+        $extra = round(max(0.0, $fee ?? 0.0) + (float) ($interest['amount'] ?? 0.0), 2);
+
+        return $this->openAmount($invoice)->plus(Money::ofFloat($extra, $invoice->documentCurrency()));
+    }
+
     /** Bereits gezahlt: Zahlungszuordnungen plus Bareinnahmen der Kasse (MVP-875 zeigt sie im Mahnschreiben). */
     public function paidAmount(Invoice $invoice): Money {
         $cash = (float) CashEntry::query()

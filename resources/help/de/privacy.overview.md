@@ -55,3 +55,10 @@ Anonymisierung und Löschen von Konten oder Kunden werden abgewiesen, und die
 Standort-Rohpunkte der Person bleiben erhalten. Bei einer Kundenzusammenführung
 wandert der Vermerk zum Zielkunden. Aufgehoben wird er ebenfalls nur mit
 Begründung; beides bleibt im Protokoll von Person bzw. Kunde sichtbar.
+
+Die Auskunft (Art. 15/20) lässt sich auch für **Vereinsmitglieder** erzeugen,
+sofern Ihre Organisation die Vereinsverwaltung nutzt: Stammdaten mit
+Erziehungsberechtigten, Anschriften und Bankverbindungen sowie eine Übersicht
+der Vereinsdaten (Mitgliedschaftszeiträume, Gruppen, Anwesenheiten, Beiträge,
+Spenden, Graduierungen, Leistungen und weitere) mit Auszug je Bereich. Die
+Suche findet Mitglieder über Name, E-Mail oder Mitgliedsnummer.

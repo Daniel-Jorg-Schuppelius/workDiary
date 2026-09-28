@@ -184,6 +184,23 @@
                 </x-detail-grid>
             </x-card>
 
+            {{-- QR-Selbst-Check-in (MVP-1004). --}}
+            @if ($canManage)
+                <x-card :title="__('club.checkin.title')" icon="qr_code_2">
+                    @if ($checkinQr !== null)
+                        <div class="flex flex-col items-center gap-2">
+                            <img src="{{ $checkinQr }}" alt="{{ __('club.checkin.qr_alt') }}" class="h-44 w-44">
+                            <p class="text-center text-xs text-muted">{{ __('club.checkin.hint.qr') }}</p>
+                        </div>
+                    @else
+                        <p class="text-sm text-muted">{{ __('club.checkin.hint.no_code') }}</p>
+                    @endif
+                    <x-action-form :action="route('club.events.checkin-code', $event)" class="mt-2">
+                        <x-icon-btn icon="qr_code_2" tone="outline" size="sm" type="submit" show-label>{{ $checkinQr !== null ? __('club.checkin.action.renew') : __('club.checkin.action.create') }}</x-icon-btn>
+                    </x-action-form>
+                </x-card>
+            @endif
+
             @if ($invited->isNotEmpty() || $cancelledCount > 0)
                 <x-card :title="__('club.events.field.invited')" icon="mail" :count="$invited->count()">
                     <ul class="space-y-1 text-sm">

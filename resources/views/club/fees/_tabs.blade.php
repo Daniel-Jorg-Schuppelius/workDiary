@@ -13,5 +13,6 @@
     ['route' => 'club.fees.runs.index', 'routeIs' => 'club.fees.runs.index', 'icon' => 'play_circle', 'label' => __('club.fees.title.runs')],
     ['route' => 'club.fees.collections.index', 'routeIs' => 'club.fees.collections.index', 'icon' => 'account_balance', 'label' => __('club.fees.title.collections')],
     ['route' => 'club.fees.tariffs.index', 'routeIs' => 'club.fees.tariffs.index', 'icon' => 'payments', 'label' => __('club.fees.title.tariffs')],
+    ['route' => 'club.fees.donations.index', 'routeIs' => 'club.fees.donations.index', 'icon' => 'volunteer_activism', 'label' => __('club.donations.title')],
     ['route' => 'club.fees.preview', 'routeIs' => 'club.fees.preview', 'icon' => 'calculate', 'label' => __('club.fees.action.preview')],
 ]" />

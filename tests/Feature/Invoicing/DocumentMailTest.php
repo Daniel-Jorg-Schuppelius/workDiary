@@ -328,8 +328,8 @@ class DocumentMailTest extends TestCase {
         $this->assertTrue((bool) InvoiceMailTemplate::query()->where('name', 'R1')->firstOrFail()->is_default);
         $this->assertTrue((bool) InvoiceMailTemplate::query()->where('name', 'A2')->firstOrFail()->is_default);
 
-        // Unbekannte Belegart wird abgelehnt.
-        $this->actingAs($this->admin)->post(route('admin.invoice-mail-templates.store'), $mkTemplate('dunning', 'M1'))
+        // Belegart ohne Versandweg wird abgelehnt (Mahnungen haben seit MVP-997 eine Vorlage).
+        $this->actingAs($this->admin)->post(route('admin.invoice-mail-templates.store'), $mkTemplate('protocol', 'P1'))
             ->assertSessionHasErrors(['document_kind']);
     }
 }

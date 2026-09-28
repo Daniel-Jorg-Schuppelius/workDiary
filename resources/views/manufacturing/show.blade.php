@@ -309,6 +309,12 @@
                                 <a href="{{ route('manufacturing-orders.deliveries.mail.form', [$order, $delivery]) }}"
                                    data-entry-modal-trigger
                                    class="btn btn-xs btn-ghost">{{ __('Per E-Mail senden') }}</a>
+                                {{-- MVP-1007: Handels- bzw. Proformarechnung für den Export. --}}
+                                @if ($canManage && $delivery->customer_id)
+                                    <a href="{{ route('manufacturing-orders.deliveries.customs.form', [$order, $delivery]) }}"
+                                       data-entry-modal-trigger
+                                       class="btn btn-xs btn-ghost">{{ __('shipping.customs.action') }}</a>
+                                @endif
                                 @if ($canManage && $delivery->facturation_target === 'lexoffice' && in_array($delivery->facturation_status->value, ['pending', 'failed'], true))
                                     <form method="POST" action="{{ route('manufacturing-orders.deliveries.lexoffice', [$order, $delivery]) }}">@csrf
                                         <button type="submit" class="btn btn-xs">{{ __('manufacturing.order.action.push_lexoffice') }}</button>

@@ -2033,5 +2033,13 @@ return [
             'view_attendance' => 'Vedere le presenze',
             'receive_messages' => 'Ricevere messaggi',
         ],
+        'donation-kind' => [
+            'donation' => 'Donazione in denaro',
+            'membership_fee' => 'Quota associativa',
+        ],
+        'donation-receipt-kind' => [
+            'single' => 'Ricevuta singola',
+            'collective' => 'Ricevuta cumulativa',
+        ],
     ],
 ];

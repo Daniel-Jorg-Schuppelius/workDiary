@@ -42,6 +42,7 @@ final class SafetyManifest extends Manifest {
         return [
             'hazard_assessment_items',
             'hazard_assessments',
+            'hazard_catalog_items',
             'medical_checkups',
             'medical_checkup_occasions',
             'safety_events',
@@ -62,6 +63,9 @@ final class SafetyManifest extends Manifest {
         return [
             \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
                 \App\Services\Safety\DeadlineScans\SafetyDeadlineScans::class,
+            ],
+            \App\Services\Classification\Contracts\ProfileInstallStep::class => [
+                \App\Services\Safety\Install\HazardCatalogInstallStep::class,
             ],
         ];
     }

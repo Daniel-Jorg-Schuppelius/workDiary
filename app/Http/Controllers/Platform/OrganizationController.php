@@ -128,6 +128,9 @@ class OrganizationController extends Controller {
             'compliance.max_consecutive_days' => ['sometimes', 'integer', 'min:1', 'max:14'],
             // Bagatellgrenze der Stempel-Plausibilität (MVP-519).
             'compliance.frame_tolerance_minutes' => ['sometimes', 'integer', 'min:0', 'max:240'],
+            // Nachtzeit (MVP-1001): Fenster über Mitternacht.
+            'compliance.night_start_hour' => ['sometimes', 'integer', 'min:20', 'max:23'],
+            'compliance.night_end_hour' => ['sometimes', 'integer', 'min:4', 'max:7'],
             // Feature 144: Lenk-/Ruhezeitregeln (VO (EG) 561/2006 / FPersV) anwenden.
             'compliance.driving_time_rules' => ['sometimes', 'boolean'],
             'compliance.rules' => ['sometimes', 'array'],

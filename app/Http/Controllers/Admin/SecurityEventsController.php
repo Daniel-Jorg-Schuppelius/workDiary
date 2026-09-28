@@ -12,7 +12,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Auth\SecurityEvent;
-use Illuminate\Http\Request;
+use App\Models\Platform\User;
+use App\Services\Security\AccountTakeoverResponder;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
@@ -60,6 +62,7 @@ class SecurityEventsController extends Controller {
         }
 
         $events = SecurityEvent::query()
+            ->with(['user' => fn ($query) => $query->withoutGlobalScopes()->select(['id', 'name'])])
             ->latest('occurred_at')->latest('id')
             ->paginate(50)
             ->withQueryString();
@@ -72,6 +75,17 @@ class SecurityEventsController extends Controller {
             'alarms' => $alarms,
             'events' => $events,
         ]);
+    }
+
+    /** Kontoübernahme zu einem Ereignis bestätigen und das Konto sichern (MVP-1008). */
+    public function secureAccount(Request $request, SecurityEvent $event, AccountTakeoverResponder $responder): RedirectResponse {
+        $actor = $request->user();
+        abort_unless($actor instanceof User && $actor->isGlobalAdmin(), 403);
+        $target = $event->user_id !== null ? User::query()->withoutGlobalScopes()->find($event->user_id) : null;
+        abort_unless($target instanceof User, 404);
+        $responder->secure($target, $actor, AccountTakeoverResponder::SOURCE_SECURITY_EVENT, $event);
+
+        return back()->with('success', __('security.account_secure.flash.done', ['name' => $target->name]));
     }
 
     /** Temporäre IP-Sperre vorzeitig aufheben (MVP-450, auditiert). */

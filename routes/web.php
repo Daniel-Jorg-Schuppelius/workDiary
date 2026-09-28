@@ -384,6 +384,8 @@ Route::middleware('auth')->group(function () {
 
     // Zwei-Faktor-Authentifizierung (Selbstverwaltung).
     Route::get('account/two-factor', [TwoFactorController::class, 'show'])->name('account.2fa.show');
+    // „Das war ich nicht“ (MVP-1008): eigenes Konto nach fremder Anmeldung sichern.
+    Route::post('account/secure', [TwoFactorController::class, 'secureAccount'])->middleware('throttle:3,1')->name('account.secure');
     Route::post('account/two-factor', [TwoFactorController::class, 'enable'])->name('account.2fa.enable');
     // throttle: die Code-prüfenden Routen liefen ohne Limit — ~330k Versuche
     // treffen im Mittel einen gültigen TOTP-Code, und die
@@ -986,12 +988,16 @@ Route::middleware('auth')->group(function () {
         // nur Plattform-Admin (Controller), plattformweite Daten.
         Route::get('admin/security-events', [\App\Http\Controllers\Admin\SecurityEventsController::class, 'index'])->name('admin.security-events.index');
         Route::post('admin/security-events/ip-bans/{ban}/release', [\App\Http\Controllers\Admin\SecurityEventsController::class, 'releaseIpBan'])->name('admin.security-events.ip-bans.release');
+        // Kontoübernahme bestätigen (MVP-1008): Konto sichern statt nur abmelden.
+        Route::post('admin/security-events/{event}/secure-account', [\App\Http\Controllers\Admin\SecurityEventsController::class, 'secureAccount'])->name('admin.security-events.secure-account');
 
         // Angemeldete Nutzer / Sitzungen (Feature 085): auflisten + fernabmelden.
         Route::get('admin/sessions', [SessionController::class, 'index'])->name('admin.sessions.index');
         Route::get('admin/sessions/data', [SessionController::class, 'data'])->name('admin.sessions.data');
         Route::delete('admin/sessions/user/{userSqid}', [SessionController::class, 'destroyAllForUser'])
             ->name('admin.sessions.user.destroy');
+        Route::post('admin/sessions/user/{userSqid}/secure', [SessionController::class, 'secureUser'])
+            ->name('admin.sessions.user.secure');
         Route::delete('admin/sessions/tokens/{tokenSqid}', [SessionController::class, 'destroyToken'])
             ->name('admin.sessions.tokens.destroy');
         Route::delete('admin/sessions/devices/{deviceSqid}', [SessionController::class, 'destroyLocationDevice'])
@@ -1603,6 +1609,9 @@ Route::middleware('auth')->group(function () {
         Route::post('manufacturing-orders/{order}/deliver', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'deliver'])->name('manufacturing-orders.deliver');
         Route::post('manufacturing-orders/{order}/deliveries/{delivery}/lexoffice', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'pushDeliveryNote'])->name('manufacturing-orders.deliveries.lexoffice'); // E4/045 Lieferschein an Lexoffice
         Route::get('manufacturing-orders/{order}/deliveries/{delivery}/delivery-note.pdf', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'deliveryNotePdf'])->name('manufacturing-orders.deliveries.pdf'); // MVP-074 Lieferschein-PDF
+        // Zollpapiere (MVP-1007): Versandgrund im Dialog, PDF im neuen Tab.
+        Route::get('manufacturing-orders/{order}/deliveries/{delivery}/customs', [\App\Http\Controllers\Shipping\DeliveryCustomsController::class, 'form'])->name('manufacturing-orders.deliveries.customs.form');
+        Route::post('manufacturing-orders/{order}/deliveries/{delivery}/customs.pdf', [\App\Http\Controllers\Shipping\DeliveryCustomsController::class, 'pdf'])->name('manufacturing-orders.deliveries.customs.pdf');
         // Feature 128 (MVP-692): Lieferschein per E-Mail an den Kunden.
         Route::get('manufacturing-orders/{order}/deliveries/{delivery}/mail', [\App\Http\Controllers\Document\DocumentMailController::class, 'deliveryNoteForm'])->name('manufacturing-orders.deliveries.mail.form');
         Route::post('manufacturing-orders/{order}/deliveries/{delivery}/mail', [\App\Http\Controllers\Document\DocumentMailController::class, 'deliveryNoteSend'])->name('manufacturing-orders.deliveries.mail');
@@ -2337,6 +2346,10 @@ Route::middleware('auth')->group(function () {
         Route::prefix('ki/vorschlaege')->name('ai.suggestions.')->group(function (): void {
             // Statische Segmente VOR dem {suggestion}-Wildcard.
             Route::post('rechnungen/{invoice}', [\App\Http\Controllers\Ai\AiSuggestionController::class, 'invoiceAll'])->name('invoice-all');
+            // Sammelaktionen (MVP-1006): alle Positionen übersetzen, alle Protokollpunkte veredeln.
+            Route::get('rechnungen/{invoice}/uebersetzen', [\App\Http\Controllers\Ai\AiSuggestionController::class, 'invoiceAllTranslateForm'])->name('invoice-all-translate-form');
+            Route::post('rechnungen/{invoice}/uebersetzen', [\App\Http\Controllers\Ai\AiSuggestionController::class, 'invoiceAllTranslate'])->name('invoice-all-translate');
+            Route::post('protokolle/{protocol}', [\App\Http\Controllers\Ai\AiSuggestionController::class, 'protocolAll'])->name('protocol-all');
             Route::post('rechnungen/{invoice}/positionen/{item}', [\App\Http\Controllers\Ai\AiSuggestionController::class, 'invoiceItem'])->name('invoice-item');
             Route::get('rechnungen/{invoice}/positionen/{item}/uebersetzen', [\App\Http\Controllers\Ai\AiSuggestionController::class, 'invoiceItemTranslateForm'])->name('invoice-item-translate-form');
             Route::post('rechnungen/{invoice}/positionen/{item}/uebersetzen', [\App\Http\Controllers\Ai\AiSuggestionController::class, 'invoiceItemTranslate'])->name('invoice-item-translate');
@@ -2786,6 +2799,8 @@ Route::middleware('auth')->group(function () {
             // Nachfass-Arbeitsliste (Feature 112, MVP-601) — VOR {quote},
             // sonst schluckt die Show-Route den Pfad als Angebots-Sqid.
             Route::get('nachfassen', [\App\Http\Controllers\Sales\QuoteFollowUpController::class, 'index'])->name('follow-ups.index');
+            // Trefferquote (Feature 112, MVP-998) — ebenfalls VOR {quote}.
+            Route::get('trefferquote', [\App\Http\Controllers\Sales\QuoteWinRateController::class, 'index'])->name('win-rate');
             Route::get('{quote}/nachfassen/dialog', [\App\Http\Controllers\Sales\QuoteFollowUpController::class, 'dialog'])->name('follow-ups.dialog');
             Route::post('{quote}/nachfassen', [\App\Http\Controllers\Sales\QuoteFollowUpController::class, 'store'])->name('follow-ups.store');
             Route::post('{quote}/nachfass-termin', [\App\Http\Controllers\Sales\QuoteFollowUpController::class, 'schedule'])->name('follow-ups.schedule');
@@ -3151,6 +3166,15 @@ Route::middleware('auth')->group(function () {
                 Route::post('{item}/ausgleichen', [\App\Http\Controllers\Finance\OpenItemController::class, 'settle'])->name('settle');
             });
 
+            // Anlagenklassen (MVP-999): Vorgaben für neue Anlagen.
+            Route::prefix('anlagenklassen')->name('fixed-asset-classes.')->group(function (): void {
+                Route::get('/', [\App\Http\Controllers\Finance\FixedAssetClassController::class, 'index'])->name('index');
+                Route::get('neu', [\App\Http\Controllers\Finance\FixedAssetClassController::class, 'form'])->name('create');
+                Route::post('/', [\App\Http\Controllers\Finance\FixedAssetClassController::class, 'store'])->name('store');
+                Route::get('{fixedAssetClass}/bearbeiten', [\App\Http\Controllers\Finance\FixedAssetClassController::class, 'form'])->name('edit');
+                Route::put('{fixedAssetClass}', [\App\Http\Controllers\Finance\FixedAssetClassController::class, 'update'])->name('update');
+            });
+
             // Anlagenregister (Feature 133, MVP-698): buchhalterische Sicht
             // auf Wirtschaftsgüter; AfA läuft als Vorschlag über die Inbox.
             Route::prefix('anlagen')->name('fixed-assets.')->group(function (): void {
@@ -3392,6 +3416,7 @@ Route::middleware('auth')->group(function () {
             Route::put('termine/{event}', [\App\Http\Controllers\Club\ClubEventController::class, 'update'])->name('events.update');
             Route::get('termine/{event}/absage', [\App\Http\Controllers\Club\ClubEventController::class, 'cancelDialog'])->name('events.cancel.edit');
             Route::post('termine/{event}/absage', [\App\Http\Controllers\Club\ClubEventController::class, 'cancel'])->name('events.cancel');
+            Route::post('termine/{event}/check-in-code', [\App\Http\Controllers\Club\ClubEventController::class, 'checkinCode'])->name('events.checkin-code');
             Route::get('termine/{event}/anmeldung', [\App\Http\Controllers\Club\ClubEventController::class, 'registerDialog'])->name('events.register.create');
             Route::post('termine/{event}/anmeldung', [\App\Http\Controllers\Club\ClubEventController::class, 'register'])->name('events.register');
             Route::post('termine/{event}/teilnahmen/{participation}/absagen', [\App\Http\Controllers\Club\ClubEventController::class, 'cancelRegistration'])->name('events.participations.cancel');
@@ -3441,6 +3466,16 @@ Route::middleware('auth')->group(function () {
             Route::put('mitglieder/{member}/nachweise/{proof}', [\App\Http\Controllers\Club\ClubMemberGradeController::class, 'updateProof'])->name('members.proofs.update');
             Route::delete('mitglieder/{member}/nachweise/{proof}', [\App\Http\Controllers\Club\ClubMemberGradeController::class, 'destroyProof'])->name('members.proofs.destroy');
             // Beiträge (MVP-849): Tarife, Sätze, Zuschläge, Beitragskonten, Zuordnungen, Befreiungen, Vorschau.
+            // Spenden und Zuwendungsbestätigungen (MVP-1003).
+            Route::get('beitraege/spenden', [\App\Http\Controllers\Club\ClubDonationController::class, 'index'])->name('fees.donations.index');
+            Route::get('beitraege/spenden/neu', [\App\Http\Controllers\Club\ClubDonationController::class, 'form'])->name('fees.donations.create');
+            Route::post('beitraege/spenden', [\App\Http\Controllers\Club\ClubDonationController::class, 'store'])->name('fees.donations.store');
+            Route::post('beitraege/spenden/sammelbestaetigung', [\App\Http\Controllers\Club\ClubDonationController::class, 'issueCollective'])->name('fees.donations.collective');
+            Route::get('beitraege/spenden/bestaetigungen/{receipt}/pdf', [\App\Http\Controllers\Club\ClubDonationController::class, 'pdf'])->name('fees.donations.receipts.pdf');
+            Route::get('beitraege/spenden/{donation}/bearbeiten', [\App\Http\Controllers\Club\ClubDonationController::class, 'form'])->name('fees.donations.edit');
+            Route::put('beitraege/spenden/{donation}', [\App\Http\Controllers\Club\ClubDonationController::class, 'update'])->name('fees.donations.update');
+            Route::delete('beitraege/spenden/{donation}', [\App\Http\Controllers\Club\ClubDonationController::class, 'destroy'])->name('fees.donations.destroy');
+            Route::post('beitraege/spenden/{donation}/bestaetigung', [\App\Http\Controllers\Club\ClubDonationController::class, 'issue'])->name('fees.donations.issue');
             Route::get('beitraege/tarife', [\App\Http\Controllers\Club\ClubFeeTariffController::class, 'index'])->name('fees.tariffs.index');
             Route::get('beitraege/tarife/create', [\App\Http\Controllers\Club\ClubFeeTariffController::class, 'create'])->name('fees.tariffs.create');
             Route::post('beitraege/tarife', [\App\Http\Controllers\Club\ClubFeeTariffController::class, 'store'])->name('fees.tariffs.store');
@@ -3626,6 +3661,9 @@ Route::middleware('auth')->group(function () {
             Route::get('mitglieder/{member}/graduierung/{memberGrade}/bescheinigung', [\App\Http\Controllers\Club\ClubMemberGradeController::class, 'certificate'])->name('members.grades.certificate');
             // „Mein Verein“ (MVP-845): verknüpftes Mitglied oder Vertretung, Gate club-my.
             Route::get('mein-verein', [\App\Http\Controllers\Club\ClubMyController::class, 'index'])->name('my.index');
+            // QR-Selbst-Check-in (MVP-1004): Termincode statt Termin-ID in der URL.
+            Route::get('check-in/{code}', [\App\Http\Controllers\Club\ClubCheckInController::class, 'show'])->where('code', '[A-Za-z0-9]{32}')->name('checkin.show');
+            Route::post('check-in/{code}', [\App\Http\Controllers\Club\ClubCheckInController::class, 'store'])->where('code', '[A-Za-z0-9]{32}')->middleware('throttle:30,1')->name('checkin.store');
             Route::post('mein-verein/mitglied', [\App\Http\Controllers\Club\ClubMyController::class, 'select'])->name('my.select');
             Route::get('mein-verein/anwesenheit', [\App\Http\Controllers\Club\ClubMyController::class, 'attendance'])->name('my.attendance');
             Route::post('mein-verein/termine/{event}/anmelden', [\App\Http\Controllers\Club\ClubMyController::class, 'register'])->name('my.register');
@@ -3669,6 +3707,14 @@ Route::middleware('auth')->group(function () {
             Route::get('gefaehrdungsbeurteilungen/{assessment}/positionen/{item}/edit', [\App\Http\Controllers\Safety\HazardAssessmentController::class, 'editItem'])->name('assessments.items.edit');
             Route::put('gefaehrdungsbeurteilungen/{assessment}/positionen/{item}', [\App\Http\Controllers\Safety\HazardAssessmentController::class, 'updateItem'])->name('assessments.items.update');
             Route::delete('gefaehrdungsbeurteilungen/{assessment}/positionen/{item}', [\App\Http\Controllers\Safety\HazardAssessmentController::class, 'destroyItem'])->name('assessments.items.destroy');
+            // Gefährdungskatalog (MVP-1002): pflegen und in die GBU übernehmen.
+            Route::get('gefaehrdungsbeurteilungen/{assessment}/katalog', [\App\Http\Controllers\Safety\HazardAssessmentController::class, 'catalogForm'])->name('assessments.catalog.create');
+            Route::post('gefaehrdungsbeurteilungen/{assessment}/katalog', [\App\Http\Controllers\Safety\HazardAssessmentController::class, 'storeFromCatalog'])->name('assessments.catalog.store');
+            Route::get('gefaehrdungskatalog', [\App\Http\Controllers\Safety\HazardCatalogController::class, 'index'])->name('hazard-catalog.index');
+            Route::get('gefaehrdungskatalog/neu', [\App\Http\Controllers\Safety\HazardCatalogController::class, 'form'])->name('hazard-catalog.create');
+            Route::post('gefaehrdungskatalog', [\App\Http\Controllers\Safety\HazardCatalogController::class, 'store'])->name('hazard-catalog.store');
+            Route::get('gefaehrdungskatalog/{hazardCatalogItem}/bearbeiten', [\App\Http\Controllers\Safety\HazardCatalogController::class, 'form'])->name('hazard-catalog.edit');
+            Route::put('gefaehrdungskatalog/{hazardCatalogItem}', [\App\Http\Controllers\Safety\HazardCatalogController::class, 'update'])->name('hazard-catalog.update');
 
             Route::get('unterweisungen', [\App\Http\Controllers\Safety\SafetyInstructionController::class, 'index'])->name('instructions.index');
             Route::get('meine-unterweisungen', [\App\Http\Controllers\Safety\SafetyInstructionController::class, 'mine'])->name('instructions.mine');
@@ -4108,6 +4154,8 @@ Route::middleware('auth')->group(function () {
         Route::post('ideas/{map}/nodes/{nodeSqid}/restore', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'restore'])->name('ideas.nodes.restore');
         Route::post('ideas/{map}/nodes/{node}/convert', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'convert'])->name('ideas.nodes.convert'); // MVP-109 Überführung
         Route::post('ideas/{map}/nodes/{node}/link', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'link'])->name('ideas.nodes.link');
+        Route::get('ideas/{map}/nodes/{node}/comments', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'comments'])->name('ideas.nodes.comments'); // MVP-1005
+        Route::post('ideas/{map}/nodes/{node}/comments', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'storeComment'])->name('ideas.nodes.comments.store');
         Route::delete('ideas/{map}/nodes/{node}', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'destroy'])->name('ideas.nodes.destroy');
         Route::post('ideas/{mapSqid}/restore', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'restore'])->name('ideas.restore'); // manuelles Sqid-Decoding (SoftDeleted bindet nicht implizit)
         Route::delete('ideas/{map}', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'destroy'])->name('ideas.destroy');

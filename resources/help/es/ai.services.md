@@ -31,3 +31,9 @@ sin entrenar modelos de terceros. Solo se aprende tras su confirmación
 crea sugerencias de texto por posición (incluidas traducciones). Nada
 se aplica hasta que hace clic — cantidades, precios e impuestos
 permanecen intactos.
+
+**Acciones en bloque:** En una factura en borrador, «Traducir todo» traduce
+cada posición, y en un protocolo «Mejorar todos los puntos» reformula cada
+punto con texto. Ambas se ejecutan en segundo plano. Cada posición y cada
+punto recibe su propia sugerencia, que usted acepta o rechaza de forma
+individual; nada se aplica automáticamente.

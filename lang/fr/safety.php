@@ -34,6 +34,7 @@ return [
         'closed_by' => 'Clôturé par',
         'followup_title' => 'Titre de la mesure de suivi',
         'followup_description' => 'Description (facultatif)',
+        'hazard_assessment' => 'Évaluation des risques',
     ],
 
     'section' => [
@@ -64,6 +65,7 @@ return [
     'hint' => [
         'root_cause_for_close' => 'Une analyse des causes est requise pour clôturer l’événement.',
         'followup' => 'Crée un point ouvert comme reprise lié à cet événement.',
+        'hazard_assessment' => 'L’évaluation est considérée comme à réexaminer jusqu’à l’approbation d’une nouvelle version.',
     ],
 
     'flash' => [
@@ -272,5 +274,39 @@ return [
             'open_count' => '{1} :count en attente|[2,*] :count en attente',
         ],
         'status_summary' => ':signed sur :total confirmés',
+    ],
+    // Gefährdungskatalog (MVP-1002).
+    'catalog' => [
+        'title' => 'Catalogue des dangers',
+        'subtitle' => 'Dangers typiques avec mesures comme modèles pour les évaluations des risques',
+        'empty' => 'Le catalogue est vide.',
+        'own' => 'propre',
+        'action' => [
+            'add' => 'Ajouter un danger',
+            'edit' => 'Modifier le danger',
+            'import' => 'Reprendre du catalogue',
+        ],
+        'field' => [
+            'category' => 'Catégorie',
+            'hazard' => 'Danger',
+            'measure' => 'Mesure',
+            'severity' => 'Gravité (1–5)',
+            'likelihood' => 'Probabilité (1–5)',
+            'risk' => 'Risque',
+            'risk_short' => 'gravité :severity, probabilité :likelihood',
+            'source' => 'Origine',
+            'is_active' => 'Actif',
+        ],
+        'hint' => [
+            'import' => 'Les dangers choisis sont repris avec la mesure et le risque avant mesure ; ceux déjà présents sont ignorés.',
+        ],
+        'events' => [
+            'title' => 'Motifs issus d’événements de sécurité',
+            'review_triggered' => 'Réexamen déclenché : un événement est survenu après l’approbation de cette version.',
+        ],
+        'flash' => [
+            'saved' => 'Danger enregistré.',
+            'added' => '{0} Aucun nouveau danger repris.|{1} :count danger repris.|[2,*] :count dangers repris.',
+        ],
     ],
 ];

@@ -13,15 +13,17 @@ namespace App\Http\Controllers\Ideas;
 use App\Enums\Ideas\IdeaNodeColor;
 use App\Exceptions\{IdeaMapConflictException, IdeaNodeConflictException};
 use App\Http\Controllers\Controller;
+use App\Models\Communication\Comment;
 use App\Models\Ideas\{IdeaMap, IdeaNode};
 use App\Models\Knowledge\{ContentReference, KnowledgeArticle};
 use App\Models\Platform\User;
 use App\Models\Project\{Project, Task};
 use App\Services\Ideas\{IdeaMapSyncService, IdeaNodeService, NodeConversionService};
-use App\Support\{ErrorText, SqidEncoder};
-use Illuminate\Http\{JsonResponse, Request};
+use App\Support\{ErrorText, Setting, SqidEncoder};
+use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 use RuntimeException;
 
 /**
@@ -85,7 +87,7 @@ class IdeaNodeController extends Controller {
      * @return array<string, mixed>
      */
     private function treePayload(IdeaMap $map): array {
-        $nodes = $map->nodes()->with('references.target')->orderBy('sort_order')->get();
+        $nodes = $map->nodes()->with('references.target')->withCount('comments')->orderBy('sort_order')->get();
         $encoder = app(SqidEncoder::class);
 
         return [
@@ -318,6 +320,29 @@ class IdeaNodeController extends Controller {
         ];
     }
 
+    /** Kommentarfaden eines Knotens als Dialog (MVP-1005); kommentieren darf, wer die Karte sieht. */
+    public function comments(IdeaMap $map, IdeaNode $node): View {
+        Gate::authorize('view', $map);
+        abort_unless((int) $node->idea_map_id === (int) $map->id, 404);
+
+        return view('ideas._node_comments_dialog', [
+            'map' => $map,
+            'node' => $node,
+            'comments' => $node->comments()->with('user:id,name')->get(),
+            'canComment' => Gate::allows('create', Comment::class),
+        ]);
+    }
+
+    public function storeComment(Request $request, IdeaMap $map, IdeaNode $node): RedirectResponse {
+        Gate::authorize('view', $map);
+        Gate::authorize('create', Comment::class);
+        abort_unless((int) $node->idea_map_id === (int) $map->id, 404);
+        $data = $request->validate(['body' => ['required', 'string', 'max:' . (int) Setting::get('validation.comment.body_max', 5000)]]);
+        $node->comments()->create(['user_id' => $request->user()?->id, 'body' => $data['body']]);
+
+        return redirect()->route('ideas.show', $map)->with('success', __('ideas.comments.flash.saved', ['node' => $node->title]));
+    }
+
     /** @return array<string, mixed> */
     private function serialize(IdeaNode $node): array {
         return [
@@ -334,6 +359,7 @@ class IdeaNodeController extends Controller {
             'pos_y' => $node->pos_y,
             'sort_order' => (int) $node->sort_order,
             'lock_version' => (int) $node->lock_version,
+            'comment_count' => (int) ($node->comments_count ?? $node->comments()->count()),
             'references' => $node->references->map(fn (ContentReference $r): array => $this->serializeReference($r))->values()->all(),
         ];
     }

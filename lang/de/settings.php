@@ -252,4 +252,10 @@ return [
         'threshold' => 'Tickets ab',
         'window_days' => 'Zeitfenster (Tage)',
     ],
+    'shipping' => [
+        'heading' => 'Versand und Zoll',
+        'description' => 'Absenderangaben für Handels- und Proformarechnungen zu Sendungen außerhalb der EU.',
+        'eori_number' => 'EORI-Nummer',
+        'eori_number_hint' => 'Zollnummer des Unternehmens (Ländercode und bis zu 15 Zeichen), z. B. DE1234567.',
+    ],
 ];

@@ -375,13 +375,19 @@
     {{-- Belegpositionen werden an der Tabelle angelegt, nicht im Seitenkopf (MVP-968). --}}
     @php $canAddItems = $isDraft && auth()->user()?->can('update', $invoice); @endphp
     <x-card :title="__('Positionen')" padding="p-0">
-        @if ($canAddItems || ($aiSuggestEnabled && $invoice->items->isNotEmpty()))
+        @if ($canAddItems || (($aiSuggestEnabled || $aiTranslateEnabled) && $invoice->items->isNotEmpty()))
             <x-slot:actions>
                 @if ($aiSuggestEnabled && $invoice->items->isNotEmpty())
                     <x-action-form :action="route('ai.suggestions.invoice-all', $invoice)">
                         <x-icon-btn icon="auto_awesome" tone="info" size="sm" type="submit" show-label
                                     :title="__('ai.suggestion.suggest_all_title')">{{ __('ai.suggestion.suggest_all') }}</x-icon-btn>
                     </x-action-form>
+                @endif
+                {{-- Sammelübersetzung (MVP-1006): je Position ein Vorschlag, einzeln zu übernehmen. --}}
+                @if ($aiTranslateEnabled && $invoice->items->isNotEmpty())
+                    <x-icon-btn icon="translate" tone="info" size="sm" show-label data-entry-modal-trigger
+                                :href="route('ai.suggestions.invoice-all-translate-form', $invoice)"
+                                :title="__('ai.suggestion.translate_all_title')">{{ __('ai.suggestion.translate_all') }}</x-icon-btn>
                 @endif
                 @if ($canAddItems)
                     <x-action-menu icon="add" tone="primary" :label="__('Hinzufügen')">

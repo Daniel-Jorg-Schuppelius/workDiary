@@ -377,5 +377,9 @@ return [
         ],
         'suggest_tags' => 'Proposer des tags IA',
         'tags_hint' => 'Les propositions viennent des tags existants de l’organisation — rien n’est appliqué avant le clic.',
+        'translate_all' => 'Tout traduire',
+        'translate_all_title' => 'Traduit chaque ligne en arrière-plan sous forme de proposition — appliquée seulement par clic.',
+        'suggest_protocol_all' => 'Affiner tous les points',
+        'suggest_protocol_all_title' => 'Reformule chaque point avec texte en arrière-plan sous forme de proposition — appliquée point par point.',
     ],
 ];

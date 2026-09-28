@@ -314,6 +314,20 @@ class TogglPushTest extends TestCase {
         $this->assertNotSame([], $result['errors']);
     }
 
+    /** Nutzerbefund 2026-09-28: 0-Minuten-Einträge (Fernwartung 20:16–20:16) liefen als Job in den Timeout. */
+    public function test_zero_minute_entry_enqueues_no_create(): void {
+        $this->config();
+        $entry = $this->timeEntry($this->mappedProject(), [
+            'ended_at' => CarbonImmutable::parse('2026-05-26 10:00:00'),
+        ]);
+
+        $this->assertSame(0, (int) $entry->minutes);
+        $this->assertDatabaseMissing('integration_outbox', [
+            'operation' => TogglOutboxDispatcher::OP_ENTRY_CREATE,
+            'idempotency_key' => TogglPlugin::ID . '-entry-create:' . $entry->getKey(),
+        ]);
+    }
+
     public function test_outbox_create_pushes_single_entry(): void {
         // MVP-463: der created()-Observer enqueued den Create; der Dispatcher
         // pusht mit denselben Schutzlinien wie der Stunden-Batch.

@@ -3406,48 +3406,6 @@ CREATE INDEX "adft_idx_block" on "asset_defects"(
   "blocks_usage",
   "status"
 );
-CREATE TABLE IF NOT EXISTS "safety_events"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "event_no" integer not null,
-  "kind" varchar not null,
-  "severity" varchar not null default 'low',
-  "occurred_at" datetime not null,
-  "location" varchar,
-  "subject_type" varchar,
-  "subject_id" integer,
-  "reported_by_user_id" integer not null,
-  "affected_person" varchar,
-  "description" text not null,
-  "immediate_action" text,
-  "status" varchar not null default 'reported',
-  "root_cause" text,
-  "closed_at" datetime,
-  "closed_by_user_id" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "deleted_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("reported_by_user_id") references "users"("id") on delete cascade,
-  foreign key("closed_by_user_id") references "users"("id") on delete set null
-);
-CREATE UNIQUE INDEX "safety_events_org_no_uq" on "safety_events"(
-  "organization_id",
-  "event_no"
-);
-CREATE INDEX "safety_events_org_status_idx" on "safety_events"(
-  "organization_id",
-  "status",
-  "severity"
-);
-CREATE INDEX "safety_events_kind_idx" on "safety_events"(
-  "kind",
-  "occurred_at"
-);
-CREATE INDEX "safety_events_subject_idx" on "safety_events"(
-  "subject_type",
-  "subject_id"
-);
 CREATE TABLE IF NOT EXISTS "webhook_endpoints"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -14096,6 +14054,9 @@ CREATE TABLE IF NOT EXISTS "articles"(
   "pcf_factor_kg" numeric,
   "pcf_process_kg" numeric,
   "pcf_source" varchar,
+  "customs_tariff_number" varchar,
+  "origin_country" varchar,
+  "net_weight_kg" numeric,
   foreign key("product_id") references products("id") on delete set null on update no action,
   foreign key("organization_id") references organizations("id") on delete set null on update no action,
   foreign key("default_procedure_template_version_id") references procedure_template_versions("id") on delete set null on update no action,
@@ -15690,6 +15651,7 @@ CREATE TABLE IF NOT EXISTS "accounting_accounts"(
   "euer_category" varchar,
   "deductible_percent" numeric not null default '100',
   "bwa_group" varchar,
+  "is_cost_center_required" tinyint(1) not null default '0',
   foreign key("organization_id") references organizations("id") on delete cascade on update no action,
   foreign key("default_tax_code_id") references "accounting_tax_codes"("id") on delete set null
 );
@@ -16230,51 +16192,6 @@ CREATE INDEX "safety_instr_part_due_idx" on "safety_instruction_participants"(
   "organization_id",
   "user_id",
   "next_due_on"
-);
-CREATE TABLE IF NOT EXISTS "fixed_assets"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "asset_no" integer not null,
-  "name" varchar not null,
-  "asset_id" integer,
-  "acquired_on" date not null,
-  "currency" varchar not null default 'EUR',
-  "acquisition_cost" numeric not null,
-  "residual_value" numeric not null default '0',
-  "useful_life_months" integer not null,
-  "depreciation_method" varchar not null default 'linear',
-  "asset_account_id" integer,
-  "depreciation_account_id" integer,
-  "status" varchar not null default 'active',
-  "disposed_on" date,
-  "source_type" varchar,
-  "source_id" integer,
-  "note" text,
-  "created_by_user_id" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "deleted_at" datetime,
-  "disposal_kind" varchar,
-  "disposal_proceeds_amount" numeric,
-  "declining_rate" numeric,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("asset_id") references "assets"("id") on delete set null,
-  foreign key("asset_account_id") references "accounting_accounts"("id") on delete restrict,
-  foreign key("depreciation_account_id") references "accounting_accounts"("id") on delete restrict,
-  foreign key("created_by_user_id") references "users"("id") on delete set null
-);
-CREATE INDEX "fixed_assets_source_idx" on "fixed_assets"(
-  "source_type",
-  "source_id"
-);
-CREATE UNIQUE INDEX "fixed_assets_org_no_uq" on "fixed_assets"(
-  "organization_id",
-  "asset_no"
-);
-CREATE INDEX "fixed_assets_org_status_idx" on "fixed_assets"(
-  "organization_id",
-  "status",
-  "acquired_on"
 );
 CREATE TABLE IF NOT EXISTS "travel_logs"(
   "id" integer primary key autoincrement not null,
@@ -17815,6 +17732,9 @@ CREATE TABLE IF NOT EXISTS "customers"(
   "document_locale" varchar,
   "peppol_participant_id" varchar,
   "peppol_scheme" varchar,
+  "payment_terms_days" integer,
+  "skonto_percent" numeric,
+  "skonto_days" integer,
   foreign key("organization_id") references organizations("id") on delete set null on update no action,
   foreign key("created_by") references users("id") on delete set null on update no action,
   foreign key("document_render_profile_id") references document_render_profiles("id") on delete set null on update no action
@@ -19358,6 +19278,7 @@ CREATE TABLE IF NOT EXISTS "club_event_details"(
   "created_at" datetime,
   "updated_at" datetime,
   "discipline" varchar,
+  "checkin_code" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("event_id") references "events"("id") on delete cascade,
   foreign key("club_department_id") references "club_departments"("id") on delete set null
@@ -20737,6 +20658,7 @@ CREATE TABLE IF NOT EXISTS "stock_deliveries"(
   "created_at" datetime,
   "updated_at" datetime,
   "invoice_item_id" integer,
+  "export_reason" varchar,
   foreign key("created_by") references users("id") on delete set null on update no action,
   foreign key("customer_id") references customers("id") on delete set null on update no action,
   foreign key("warehouse_id") references warehouses("id") on delete cascade on update no action,
@@ -22566,6 +22488,191 @@ CREATE UNIQUE INDEX "procedure_docs_org_version_uq" on "procedure_documentations
   "organization_id",
   "version"
 );
+CREATE TABLE IF NOT EXISTS "fixed_asset_classes"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "name" varchar not null,
+  "useful_life_months" integer not null,
+  "depreciation_method" varchar not null default 'linear',
+  "asset_account_id" integer,
+  "depreciation_account_id" integer,
+  "is_active" tinyint(1) not null default '1',
+  "note" text,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("asset_account_id") references "accounting_accounts"("id") on delete set null,
+  foreign key("depreciation_account_id") references "accounting_accounts"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "fac_org_name_uq" on "fixed_asset_classes"(
+  "organization_id",
+  "name"
+);
+CREATE TABLE IF NOT EXISTS "fixed_assets"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "asset_no" integer not null,
+  "name" varchar not null,
+  "asset_id" integer,
+  "acquired_on" date not null,
+  "currency" varchar not null default('EUR'),
+  "acquisition_cost" numeric not null,
+  "residual_value" numeric not null default('0'),
+  "useful_life_months" integer not null,
+  "depreciation_method" varchar not null default('linear'),
+  "asset_account_id" integer,
+  "depreciation_account_id" integer,
+  "status" varchar not null default('active'),
+  "disposed_on" date,
+  "source_type" varchar,
+  "source_id" integer,
+  "note" text,
+  "created_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "deleted_at" datetime,
+  "disposal_kind" varchar,
+  "disposal_proceeds_amount" numeric,
+  "declining_rate" numeric,
+  "fixed_asset_class_id" integer,
+  foreign key("created_by_user_id") references users("id") on delete set null on update no action,
+  foreign key("depreciation_account_id") references accounting_accounts("id") on delete restrict on update no action,
+  foreign key("asset_account_id") references accounting_accounts("id") on delete restrict on update no action,
+  foreign key("asset_id") references assets("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("fixed_asset_class_id") references "fixed_asset_classes"("id") on delete set null
+);
+CREATE UNIQUE INDEX "fixed_assets_org_no_uq" on "fixed_assets"(
+  "organization_id",
+  "asset_no"
+);
+CREATE INDEX "fixed_assets_org_status_idx" on "fixed_assets"(
+  "organization_id",
+  "status",
+  "acquired_on"
+);
+CREATE INDEX "fixed_assets_source_idx" on "fixed_assets"(
+  "source_type",
+  "source_id"
+);
+CREATE TABLE IF NOT EXISTS "hazard_catalog_items"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "code" varchar not null,
+  "category" varchar not null,
+  "hazard" varchar not null,
+  "measure" text,
+  "severity" integer not null,
+  "likelihood" integer not null,
+  "source_profile" varchar,
+  "is_active" tinyint(1) not null default '1',
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "hazcat_org_code_uq" on "hazard_catalog_items"(
+  "organization_id",
+  "code"
+);
+CREATE TABLE IF NOT EXISTS "safety_events"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "event_no" integer not null,
+  "kind" varchar not null,
+  "severity" varchar not null default('low'),
+  "occurred_at" datetime not null,
+  "location" varchar,
+  "subject_type" varchar,
+  "subject_id" integer,
+  "reported_by_user_id" integer not null,
+  "affected_person" varchar,
+  "description" text not null,
+  "immediate_action" text,
+  "status" varchar not null default('reported'),
+  "root_cause" text,
+  "closed_at" datetime,
+  "closed_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "deleted_at" datetime,
+  "hazard_assessment_id" integer,
+  foreign key("closed_by_user_id") references users("id") on delete set null on update no action,
+  foreign key("reported_by_user_id") references users("id") on delete cascade on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("hazard_assessment_id") references "hazard_assessments"("id") on delete set null
+);
+CREATE INDEX "safety_events_kind_idx" on "safety_events"(
+  "kind",
+  "occurred_at"
+);
+CREATE UNIQUE INDEX "safety_events_org_no_uq" on "safety_events"(
+  "organization_id",
+  "event_no"
+);
+CREATE INDEX "safety_events_org_status_idx" on "safety_events"(
+  "organization_id",
+  "status",
+  "severity"
+);
+CREATE INDEX "safety_events_subject_idx" on "safety_events"(
+  "subject_type",
+  "subject_id"
+);
+CREATE TABLE IF NOT EXISTS "club_donation_receipts"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "receipt_no" integer not null,
+  "year" integer not null,
+  "kind" varchar not null,
+  "club_member_id" integer,
+  "donor_snapshot" text not null,
+  "exemption_snapshot" text not null,
+  "total_amount" numeric not null,
+  "currency" varchar not null default 'EUR',
+  "issued_on" date not null,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "club_don_rcpt_no_uq" on "club_donation_receipts"(
+  "organization_id",
+  "receipt_no"
+);
+CREATE TABLE IF NOT EXISTS "club_donations"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "club_member_id" integer,
+  "donor_name" varchar,
+  "donor_address" text,
+  "kind" varchar not null default 'donation',
+  "amount" numeric not null,
+  "currency" varchar not null default 'EUR',
+  "received_on" date not null,
+  "is_expense_waiver" tinyint(1) not null default '0',
+  "note" text,
+  "club_donation_receipt_id" integer,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("club_member_id") references "club_members"("id") on delete set null,
+  foreign key("club_donation_receipt_id") references "club_donation_receipts"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "club_don_org_date_idx" on "club_donations"(
+  "organization_id",
+  "received_on"
+);
+CREATE UNIQUE INDEX "club_event_details_checkin_code_unique" on "club_event_details"(
+  "checkin_code"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -23474,3 +23581,11 @@ INSERT INTO migrations VALUES(909,'2027_02_28_191000_add_private_use_fields_to_v
 INSERT INTO migrations VALUES(910,'2027_02_28_192000_add_review_to_procedure_documentations',36);
 INSERT INTO migrations VALUES(911,'2027_02_28_193000_add_acquisition_and_charging_to_vehicles',37);
 INSERT INTO migrations VALUES(912,'2027_02_28_194000_add_reversal_kind_to_invoice_commissions',37);
+INSERT INTO migrations VALUES(913,'2027_02_28_200000_add_payment_terms_to_customers',38);
+INSERT INTO migrations VALUES(914,'2027_02_28_201000_create_fixed_asset_classes',38);
+INSERT INTO migrations VALUES(915,'2027_02_28_202000_add_cost_center_requirement_to_accounting_accounts',38);
+INSERT INTO migrations VALUES(916,'2027_02_28_203000_clean_integration_inbox_raw_values',38);
+INSERT INTO migrations VALUES(917,'2027_02_28_204000_create_hazard_catalog_and_event_link',39);
+INSERT INTO migrations VALUES(918,'2027_02_28_205000_create_club_donations',40);
+INSERT INTO migrations VALUES(919,'2027_02_28_206000_add_checkin_code_to_club_event_details',40);
+INSERT INTO migrations VALUES(920,'2027_02_28_207000_add_customs_fields',41);

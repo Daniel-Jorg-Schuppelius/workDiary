@@ -142,11 +142,18 @@ return [
         'factor_to_base' => 'Facteur vers l’unité de base',
         'external_id' => 'ID externe',
         'sync_status' => 'Statut de synchronisation',
+        'customs_tariff_number' => 'Nomenclature douanière',
+        'customs_tariff_number_hint' => 'Code marchandise pour les documents douaniers : 8 chiffres (nomenclature combinée) ou 6 chiffres (code SH).',
+        'origin_country' => 'Pays d’origine',
+        'origin_country_hint' => 'Pays de fabrication en code ISO, p. ex. DE.',
+        'net_weight_kg' => 'Poids net (kg par unité)',
+        'net_weight_kg_hint' => 'Poids sans emballage ; les documents douaniers le multiplient par la quantité.',
     ],
 
     'group' => [
         'pricing' => 'Prix',
         'flags' => 'Propriétés',
+        'customs' => 'Douane et exportation',
     ],
 
     'flag' => [

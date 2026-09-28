@@ -42,11 +42,8 @@ final class ComplianceScanService {
         }
 
         // Org-Grenze: User hat KEINEN globalen OrganizationScope — daher expliziter Filter.
-        $userIds = User::query()
-            ->where('organization_id', $organization->getKey())
-            ->pluck('id')
-            ->map(static fn ($v): int => (int) $v)
-            ->all();
+        $users = User::query()->where('organization_id', $organization->getKey())->get(['id', 'date_of_birth'])->keyBy('id');
+        $userIds = array_map('intval', $users->keys()->all());
         if ($userIds === []) {
             return [];
         }
@@ -104,7 +101,9 @@ final class ComplianceScanService {
         /** @var array<int, list<AttendanceComplianceFinding>> $result */
         $result = [];
         foreach ($spansByUserDate as $uid => $byDate) {
-            $findings = $checker->checkUser($uid, $byDate, holidays: $holidays);
+            // Jugendarbeitsschutz (MVP-1001) nur mit Geburtsdatum.
+            $birthDate = $users[$uid]?->date_of_birth;
+            $findings = $checker->checkUser($uid, $byDate, holidays: $holidays, birthDate: $birthDate === null ? null : CarbonImmutable::parse($birthDate->toDateString()));
 
             // Verstöße ausserhalb des angefragten Zeitraums (Vorlauf-Fenster
             // dient nur Ruhezeit/§3-Durchschnitt) verwerfen.

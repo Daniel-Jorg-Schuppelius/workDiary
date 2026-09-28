@@ -309,6 +309,14 @@ return [
         'leiter',
         'werkzeugkoffer',
     ],
+    // Gefährdungskatalog (Feature 132, MVP-1002): Vorlagen für die Gefährdungsbeurteilung, Schwere und Wahrscheinlichkeit 1–5.
+    'hazard_catalog' => [
+        ['code' => 'shk/verbrennung', 'category' => 'Thermische Gefährdung', 'hazard' => 'Verbrennung an heißen Leitungen und Armaturen', 'measure' => 'Anlage abkühlen lassen, Schutzhandschuhe', 'severity' => 3, 'likelihood' => 3],
+        ['code' => 'shk/loeten', 'category' => 'Brand und Explosion', 'hazard' => 'Brand beim Hartlöten und Schweißen', 'measure' => 'Brandschutzdecke, Feuerlöscher, Brandwache nach Arbeitsende', 'severity' => 4, 'likelihood' => 2],
+        ['code' => 'shk/gas', 'category' => 'Brand und Explosion', 'hazard' => 'Austretendes Gas an Gasleitungen', 'measure' => 'Dichtheitsprüfung, Gaswarngerät, Zündquellen fernhalten', 'severity' => 5, 'likelihood' => 2],
+        ['code' => 'shk/legionellen', 'category' => 'Biologische Gefährdung', 'hazard' => 'Legionellen bei Arbeiten an Trinkwasseranlagen', 'measure' => 'Aerosolbildung vermeiden, Atemschutz bei Spülungen', 'severity' => 3, 'likelihood' => 2],
+        ['code' => 'shk/heben', 'category' => 'Physische Belastung', 'hazard' => 'Heben von Heizkesseln und Speichern', 'measure' => 'Treppensackkarre, Hebezeug, ausreichend Personal', 'severity' => 3, 'likelihood' => 3],
+    ],
     'tags_seed' => [
         '#notdienst',
         '#leckage',

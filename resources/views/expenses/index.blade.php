@@ -117,6 +117,14 @@
                                     data-entry-modal-trigger
                                     :href="route('expenses.receipt', $expense)"
                                     :label="__('expenses.receipt.title')" />
+                        {{-- Anlage aus der Auslage (MVP-999); doppelt erfassen verhindert der Anlagendienst. --}}
+                        @if (in_array($expense->status, [\App\Enums\Expense\ExpenseStatus::Approved, \App\Enums\Expense\ExpenseStatus::Reimbursed, \App\Enums\Expense\ExpenseStatus::Invoiced], true))
+                            @can(\App\Enums\User\Permission::AccountingLedgerConfigure->value)
+                                <x-icon-btn icon="precision_manufacturing" size="sm" data-entry-modal-trigger
+                                            :href="route('finance.accounting.fixed-assets.create', ['source_kind' => 'expense', 'source_ref' => $expense->sqid])"
+                                            :label="__('accounting.fixed_assets.action.from_source')" />
+                            @endcan
+                        @endif
                         @can('submit', $expense)
                             <x-action-form :action="route('expenses.submit', $expense)">
                                 <x-icon-btn icon="send" tone="warning" size="sm" type="submit"

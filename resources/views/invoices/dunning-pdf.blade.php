@@ -30,7 +30,8 @@
     // Teilzahlungen (MVP-875): eigene Zeile, Forderung über den offenen Betrag des DunningService.
     $paid ??= 0.0;
     $outstanding ??= max(0.0, round($openAmount - $paid, 2));
-    $claimTotal = round($outstanding + ($fee ?? 0.0) + ($interest['amount'] ?? 0.0), 2);
+    $claimTotal ??= round($outstanding + ($fee ?? 0.0) + ($interest['amount'] ?? 0.0), 2);
+    $girocode ??= null;
     $hasRetention = $retained > 0.0;
 @endphp
 <style>
@@ -51,6 +52,10 @@
     .bank-block table { width: 100%; margin: 0; }
     .bank-block table td { border: none; padding: 2px 6px; }
     .bank-block .label { color: #666; width: 25%; }
+    /* Girocode (MVP-997) wie auf der Rechnung: Grafik rechts neben den Kontodaten. */
+    .bank-block .giro { width: 30mm; vertical-align: top; text-align: center; padding-left: 8px; }
+    .bank-block .giro img { width: 26mm; height: 26mm; }
+    .bank-block .giro span { display: block; font-size: 7px; color: #666; line-height: 1.2; }
     @page { margin: 20mm; }
 </style>
 </head>
@@ -150,19 +155,36 @@
     <div class="bank-block">
         <strong>{{ __('Zahlbar per Überweisung auf folgendes Konto') }}:</strong>
         <table>
-            @if (! empty($legal['account_holder']))
-                <tr><td class="label">{{ __('Kontoinhaber') }}</td><td>{{ $legal['account_holder'] }}</td></tr>
-            @endif
-            @if (! empty($legal['bank_name']))
-                <tr><td class="label">{{ __('Bank') }}</td><td>{{ $legal['bank_name'] }}</td></tr>
-            @endif
-            @if (! empty($legal['iban']))
-                <tr><td class="label">{{ __('IBAN') }}</td><td>{{ $legal['iban'] }}</td></tr>
-            @endif
-            @if (! empty($legal['bic']))
-                <tr><td class="label">{{ __('BIC') }}</td><td>{{ $legal['bic'] }}</td></tr>
-            @endif
-            <tr><td class="label">{{ __('Verwendungszweck') }}</td><td>{{ $invoice->number }}</td></tr>
+            <tr>
+                <td style="padding: 0;">
+                    <table>
+                        @if (! empty($legal['account_holder']))
+                            <tr><td class="label">{{ __('Kontoinhaber') }}</td><td>{{ $legal['account_holder'] }}</td></tr>
+                        @endif
+                        @if (! empty($legal['bank_name']))
+                            <tr><td class="label">{{ __('Bank') }}</td><td>{{ $legal['bank_name'] }}</td></tr>
+                        @endif
+                        @if (! empty($legal['iban']))
+                            <tr><td class="label">{{ __('IBAN') }}</td><td>{{ $legal['iban'] }}</td></tr>
+                        @endif
+                        @if (! empty($legal['bic']))
+                            <tr><td class="label">{{ __('BIC') }}</td><td>{{ $legal['bic'] }}</td></tr>
+                        @endif
+                        @php($creditorReference = $invoice->creditorReference())
+                        @if ($creditorReference !== null)
+                            <tr><td class="label">{{ __('Zahlungsreferenz') }}</td><td>{{ \CommonToolkit\Helper\Data\CreditorReferenceHelper::format($creditorReference) }}</td></tr>
+                        @else
+                            <tr><td class="label">{{ __('Verwendungszweck') }}</td><td>{{ $invoice->number }}</td></tr>
+                        @endif
+                    </table>
+                </td>
+                @if ($girocode !== null)
+                    <td class="giro">
+                        <img src="{{ $girocode }}" alt="{{ __('invoicing.girocode.alt') }}">
+                        <span>{{ __('invoicing.girocode.hint') }}</span>
+                    </td>
+                @endif
+            </tr>
         </table>
     </div>
 @endif

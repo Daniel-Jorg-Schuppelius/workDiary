@@ -18,7 +18,7 @@ use App\Models\Project\Project;
 use App\Models\Supplier\Supplier;
 use App\Services\Integration\Match\MatchProfile;
 use App\Services\Integration\Profiles\{ArticleMatchProfile, CustomerMatchProfile, EventMatchProfile, ProjectMatchProfile, SupplierMatchProfile};
-use App\Support\MorphMap;
+use App\Support\{EntityType, MorphMap};
 
 /**
  * Liefert das {@see MatchProfile} zu einer Ziel-Entität (Morph-Klasse). Neue
@@ -54,7 +54,7 @@ class MatchProfileRegistry {
             \App\Models\Project\Project::class => (string) __('Projekt'),
             \App\Models\Asset\Asset::class => (string) __('Gerät'),
             \App\Models\Calendar\Event::class => (string) __('Termin'),
-            default => MorphMap::basename($targetType),
+            default => EntityType::label($targetType),
         };
     }
 

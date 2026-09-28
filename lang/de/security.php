@@ -116,4 +116,21 @@ return [
         'mass_attack_title' => 'Massenangriff erkannt (:event)',
         'mass_attack_description' => ':count Ereignisse vom Typ :event in :window Minuten (Limit :limit). Zugänge prüfen, Sperren setzen, Ursache dokumentieren.',
     ],
+    'account_secure' => [
+        'action' => 'Konto sichern',
+        'action_event' => 'Kontoübernahme bestätigen',
+        'action_self' => 'Das war ich nicht – Konto sichern',
+        'confirm' => 'Konto von „:name“ sichern? Alle Sitzungen, API-Tokens und Passkeys enden, das Passwort wird ungültig. :name erhält einen Link zum Festlegen eines neuen Passworts.',
+        'confirm_self' => 'Ihr Konto sichern? Sie werden überall abgemeldet, Ihr Passwort und Ihre Passkeys werden ungültig. Sie erhalten einen Link zum Festlegen eines neuen Passworts.',
+        'self_heading' => 'Unbekannte Anmeldung?',
+        'self_hint' => 'Wenn Sie eine Anmeldung oder ein Gerät nicht kennen, sichern Sie Ihr Konto: Alle Sitzungen enden, Passwort und Passkeys werden ungültig, und Sie erhalten einen Link zum Festlegen eines neuen Passworts.',
+        'flash' => [
+            'done' => 'Das Konto von :name ist gesichert. Ein Link zum Festlegen eines neuen Passworts wurde verschickt.',
+            'self' => 'Ihr Konto ist gesichert. Wir haben Ihnen einen Link zum Festlegen eines neuen Passworts geschickt.',
+        ],
+        'error' => [
+            'not_securable' => 'Nur Mitarbeiterkonten mit E-Mail-Adresse lassen sich so sichern.',
+            'self_admin' => 'Ihr eigenes Konto sichern Sie auf Ihrer Sicherheitsseite.',
+        ],
+    ],
 ];

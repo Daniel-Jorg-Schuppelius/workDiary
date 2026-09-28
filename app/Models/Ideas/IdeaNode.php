@@ -11,6 +11,7 @@
 namespace App\Models\Ideas;
 
 use App\Enums\Ideas\IdeaNodeColor;
+use App\Models\Communication\Comment;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Knowledge\ContentReference;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -95,5 +96,14 @@ class IdeaNode extends Model {
     public function references(): MorphMany {
         return $this->morphMany(ContentReference::class, 'source')
             ->whereIn('kind', [ContentReference::KIND_CONVERTED, ContentReference::KIND_LINKED]);
+    }
+
+    /**
+     * Kommentarfaden am Knoten (Feature 054, MVP-1005).
+     *
+     * @return MorphMany<Comment, $this>
+     */
+    public function comments(): MorphMany {
+        return $this->morphMany(Comment::class, 'commentable')->orderBy('created_at');
     }
 }

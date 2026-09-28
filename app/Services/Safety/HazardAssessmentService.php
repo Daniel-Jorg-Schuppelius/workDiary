@@ -14,7 +14,7 @@ namespace App\Services\Safety;
 
 use App\Enums\Safety\HazardAssessmentStatus;
 use App\Models\Platform\{Organization, User};
-use App\Models\Safety\{HazardAssessment, HazardAssessmentItem};
+use App\Models\Safety\{HazardAssessment, HazardAssessmentItem, HazardCatalogItem};
 use App\Services\Concerns\{AssertsValidatedTransition, AssignsSequentialNo};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -164,6 +164,33 @@ class HazardAssessmentService {
             'organization_id' => $assessment->organization_id,
             'position' => $position,
         ] + $this->itemAttributes($attributes));
+    }
+
+    /**
+     * Gefährdungen aus dem Katalog übernehmen (MVP-1002): Risiko vor der
+     * Maßnahme aus dem Katalog, bereits enthaltene Gefährdungen bleiben aus.
+     *
+     * @param  iterable<HazardCatalogItem>  $catalogItems
+     */
+    public function addFromCatalog(HazardAssessment $assessment, iterable $catalogItems): int {
+        $this->assertEditable($assessment);
+        $existing = $assessment->items()->pluck('hazard')->map(static fn (string $hazard): string => mb_strtolower(trim($hazard)))->all();
+        $added = 0;
+        foreach ($catalogItems as $catalogItem) {
+            if ((int) $catalogItem->organization_id !== (int) $assessment->organization_id || in_array(mb_strtolower(trim($catalogItem->hazard)), $existing, true)) {
+                continue;
+            }
+            $this->addItem($assessment, [
+                'hazard' => $catalogItem->hazard,
+                'measure' => $catalogItem->measure,
+                'severity_before' => $catalogItem->severity,
+                'likelihood_before' => $catalogItem->likelihood,
+            ]);
+            $existing[] = mb_strtolower(trim($catalogItem->hazard));
+            $added++;
+        }
+
+        return $added;
     }
 
     /**

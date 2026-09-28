@@ -17,6 +17,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\{AccountingAccount, AccountingEntry};
+use App\Models\Finance\CostCenter;
 use App\Services\Accounting\JournalService;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -92,6 +93,7 @@ class JournalController extends Controller {
                 ->active()
                 ->orderBy('number')
                 ->get(),
+            'costCenters' => CostCenter::query()->where('organization_id', $organization->id)->where('active', true)->orderBy('code')->get(),
         ]);
     }
 
@@ -110,8 +112,11 @@ class JournalController extends Controller {
             'credit_account' => ['required', 'string'],
             // decimal statt nur numeric: keine Exponentenschreibweise (bcmath).
             'amount' => ['required', 'numeric', 'decimal:0,8', 'gt:0'],
+            'cost_center' => ['nullable', 'string'],
             'post' => ['nullable', 'boolean'],
         ]);
+        // Die Zugehörigkeit zur Organisation prüft der JournalService.
+        $costCenterId = empty($data['cost_center']) ? null : (int) Sqid::decodeOrNumeric(CostCenter::class, (string) $data['cost_center']);
 
         $debitId = (int) Sqid::decodeOrNumeric(AccountingAccount::class, (string) $data['debit_account']);
         $creditId = (int) Sqid::decodeOrNumeric(AccountingAccount::class, (string) $data['credit_account']);
@@ -124,8 +129,8 @@ class JournalController extends Controller {
             'memo' => (string) $data['memo'],
             'document_reference' => $data['document_reference'] ?? null,
             'lines' => [
-                ['accounting_account_id' => $debitId, 'debit' => $amount, 'credit' => '0.00'],
-                ['accounting_account_id' => $creditId, 'debit' => '0.00', 'credit' => $amount],
+                ['accounting_account_id' => $debitId, 'debit' => $amount, 'credit' => '0.00', 'cost_center_id' => $costCenterId],
+                ['accounting_account_id' => $creditId, 'debit' => '0.00', 'credit' => $amount, 'cost_center_id' => $costCenterId],
             ],
         ];
 

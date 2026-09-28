@@ -32,3 +32,7 @@ vollständig deaktiviert werden.
 
 Wichtig: Teilen Sie QR-Code, manuellen Schlüssel, Einmalcodes und
 Recovery-Codes niemals mit anderen Personen.
+
+Kennen Sie eine Anmeldung oder ein Gerät nicht, nutzen Sie „Das war ich nicht
+– Konto sichern“: Alle Sitzungen enden, Passwort und Passkeys werden ungültig,
+und Sie erhalten per E-Mail einen Link zum Festlegen eines neuen Passworts.

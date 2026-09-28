@@ -102,7 +102,7 @@
                             @csrf
                             <x-input-field name="subject_type" :label="__('Betroffenenart')">
                                 <select id="subject_type" name="subject_type" class="select select-bordered w-full" x-model="kind" x-on:change="search()">
-                                    @foreach (\App\Enums\Privacy\DataSubjectKind::cases() as $kind)
+                                    @foreach ($subjectKinds as $kind)
                                         <option value="{{ $kind->value }}">{{ $kind->label() }}</option>
                                     @endforeach
                                 </select>

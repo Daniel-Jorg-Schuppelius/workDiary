@@ -26,3 +26,17 @@ producto terminado se contabiliza como stock. Desde la página de detalle
 la orden puede asignarse a un puesto de trabajo o subcontratarse a un
 proveedor (genera un pedido); anular es irreversible y crear, notificar
 y entregar requieren el permiso de contabilización de stock.
+
+## Documentos aduaneros para envíos fuera de la UE
+
+En cada entrega con destinatario, «Documentos aduaneros» crea una factura
+comercial (en caso de venta) o una factura proforma (regalo, muestra,
+devolución, reparación y otros motivos) en PDF. El diálogo muestra si el
+destino está fuera de la UE y guarda el motivo elegido en la entrega. El
+documento incluye la descripción de la mercancía, el código arancelario, el
+país de origen, la cantidad, el peso neto y el valor; el peso bruto y el
+número de bultos proceden de los bultos registrados. Mantenga el código
+arancelario, el país de origen y el peso neto en el artículo, y el número
+EORI del remitente en la configuración de la organización. Si falta algún
+dato, el diálogo lo indica y no crea ningún documento. Los documentos
+aduaneros no sustituyen una declaración de exportación electrónica.

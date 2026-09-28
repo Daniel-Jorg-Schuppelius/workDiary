@@ -27,3 +27,7 @@ Creating and editing run as a dialog. Articles and variants can be
 retired instead of deleted. Deletion is only possible while no dependent
 data exists; otherwise it is blocked. Create variants only once options
 and option values are complete, because variants are composed from them.
+
+For customs documents, articles carry the customs tariff number (6 to 11
+digits; spaces and dots are removed), the country of origin as an ISO code and
+the net weight per unit under “Customs and export”.

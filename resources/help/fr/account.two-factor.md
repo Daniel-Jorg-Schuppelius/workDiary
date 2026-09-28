@@ -18,3 +18,8 @@ qu'une seule fois. Vous pouvez enregistrer plusieurs méthodes et en retirer ;
 si votre organisation exige la double authentification, le dernier facteur
 actif ne peut pas être supprimé. Ne partagez jamais le code QR, la clé
 manuelle, les codes à usage unique ni les codes de récupération.
+
+Si vous ne reconnaissez pas une connexion ou un appareil, utilisez « Ce
+n’était pas moi – sécuriser le compte » : toutes les sessions prennent fin, le
+mot de passe et les clés d’accès deviennent invalides, et vous recevez par
+e-mail un lien pour définir un nouveau mot de passe.

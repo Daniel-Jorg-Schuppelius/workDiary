@@ -116,4 +116,21 @@ return [
         'mass_attack_title' => 'Mass attack detected (:event)',
         'mass_attack_description' => ':count events of type :event within :window minutes (limit :limit). Review access, apply blocks, document the cause.',
     ],
+    'account_secure' => [
+        'action' => 'Secure account',
+        'action_event' => 'Confirm account takeover',
+        'action_self' => 'This was not me – secure account',
+        'confirm' => 'Secure the account of “:name”? All sessions, API tokens and passkeys end and the password becomes invalid. :name receives a link to set a new password.',
+        'confirm_self' => 'Secure your account? You will be signed out everywhere and your password and passkeys become invalid. You will receive a link to set a new password.',
+        'self_heading' => 'Unknown sign-in?',
+        'self_hint' => 'If you do not recognise a sign-in or a device, secure your account: all sessions end, password and passkeys become invalid, and you receive a link to set a new password.',
+        'flash' => [
+            'done' => 'The account of :name is secured. A link to set a new password has been sent.',
+            'self' => 'Your account is secured. We have sent you a link to set a new password.',
+        ],
+        'error' => [
+            'not_securable' => 'Only staff accounts with an email address can be secured this way.',
+            'self_admin' => 'Secure your own account on your security page.',
+        ],
+    ],
 ];

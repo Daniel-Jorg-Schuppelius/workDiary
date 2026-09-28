@@ -78,6 +78,7 @@ return [
             'post_now' => 'Contabilizar de inmediato',
             'reversal_reason' => 'Motivo',
             'reversal_booked_on' => 'Fecha del contraasiento',
+            'cost_center' => 'Centro de coste',
         ],
         'hint' => [
             'profit_determination' => 'Cambia los análisis (criterio de caja o partida doble), no las reglas de asiento y prueba.',
@@ -95,6 +96,8 @@ return [
             'normal_balance' => 'Preseleccionado según el tipo de cuenta, modificable en cada caso.',
             'post_now' => 'Una vez contabilizado, el asiento solo se corrige con un contraasiento.',
             'reversal_booked_on' => 'Dejar vacío para el día original, mientras su periodo siga abierto.',
+            'cost_center_required' => 'Los asientos en esta cuenta solo se pueden contabilizar con centro de coste, también desde la bandeja de propuestas.',
+            'cost_center' => 'Se aplica a la línea del debe y del haber.',
         ],
         'action' => [
             'activate' => 'Activar la contabilidad local',
@@ -177,6 +180,7 @@ return [
             'account_in_use' => 'Esta cuenta ya tiene asientos — solo puede desactivarse.',
             'entry_without_organization' => 'El asiento no tiene organización — informe al administrador del sistema.',
             'account_number_taken' => 'Este número de cuenta ya existe.',
+            'cost_center_required' => 'La cuenta :account requiere un centro de coste.',
         ],
         'preflight' => [
             'not_configured' => 'Perfil aún no guardado — la comprobación se ejecuta desde el primer guardado.',
@@ -243,6 +247,7 @@ return [
             'cash' => 'Caja',
             'clearing' => 'Regularización',
             'inactive' => 'Desactivada',
+            'cost_center_required' => 'Centro de coste obligatorio',
         ],
         'confirm' => [
             'deactivate' => '¿Desactivar realmente esta cuenta? Los asientos existentes se conservan.',
@@ -361,6 +366,8 @@ return [
             'disposal_kind' => 'Tipo de baja',
             'disposal_proceeds' => 'Precio de venta (neto)',
             'created_by' => 'Creado por',
+            'class' => 'Clase de activo',
+            'source' => 'Origen',
         ],
         'section' => [
             'master' => 'Datos maestros',
@@ -380,18 +387,22 @@ return [
             'device' => 'Enlace opcional al registro de equipos; no todo activo fijo es un equipo.',
             'residual_value' => 'Permanece al final de la vida útil; por defecto 0.',
             'useful_life' => 'Vida útil habitual según la tabla de amortización, en meses. Para bienes de escaso valor y el fondo colectivo, la duración resulta del método.',
-            'accounts' => 'Dejar vacío para aplicar la regla contable del rol (cuenta de activo / gasto por amortización).',
+            'accounts' => 'Dejar vacío para aplicar la cuenta de la clase de activo o, si no, la regla contable del rol (cuenta de activo / gasto por amortización).',
             'frozen' => 'Hay una amortización contabilizada — fecha de adquisición, coste, valor residual y vida útil quedan congelados.',
             'schedule' => 'Lineal, prorrateo mensual en el año de adquisición y de baja; el último año toma el resto.',
             'posting' => 'La amortización anual se propone por ejercicio en el cierre y se contabiliza en la bandeja — nunca directamente.',
             'dispose' => 'La baja cierra el plan de amortización en el mes de la baja. La bandeja contable propone el valor contable restante como asiento de baja.',
             'disposal_proceeds' => 'Solo en caso de venta. El importe se contabiliza mediante la factura de venta; aquí solo decide si el valor residual se da de baja como beneficio o pérdida.',
+            'class' => 'Aporta vida útil, método y cuentas cuando deja estos campos vacíos.',
+            'useful_life_class' => 'En meses; vacío: valor de la clase de activo.',
         ],
         'action' => [
             'add' => 'Añadir activo fijo',
             'edit' => 'Editar activo fijo',
             'dispose' => 'Registrar baja',
             'dispose_submit' => 'Registrar baja',
+            'from_source' => 'Registrar como activo fijo',
+            'open_asset' => 'Activo :no',
         ],
         'flash' => [
             'special_saved' => 'Amortización especial guardada.',
@@ -418,6 +429,31 @@ return [
             'disposed_before_acquired' => 'La baja no puede ser anterior a la adquisición.',
             'residual_exceeds_cost' => 'El valor residual debe ser inferior al coste de adquisición.',
             'useful_life_required' => 'La vida útil debe ser de al menos un mes.',
+            'source_used' => 'Ya se registró el activo :no a partir de este justificante.',
+        ],
+        'method_from_class' => 'Valor de la clase de activo',
+        'source' => [
+            'incoming' => 'Factura recibida :number',
+            'expense' => 'Gasto «:description»',
+        ],
+        'classes' => [
+            'title' => 'Clases de activo',
+            'subtitle' => 'Valores por defecto de vida útil, método y cuentas para nuevos activos fijos',
+            'empty' => 'Aún no hay ninguna clase de activo.',
+            'action' => [
+                'add' => 'Crear clase de activo',
+                'edit' => 'Editar clase de activo',
+            ],
+            'field' => [
+                'name' => 'Denominación',
+                'is_active' => 'Activa',
+            ],
+            'hint' => [
+                'is_active' => 'Las clases inactivas ya no se ofrecen para activos nuevos; los activos existentes conservan sus valores.',
+            ],
+            'flash' => [
+                'saved' => 'Clase de activo guardada.',
+            ],
         ],
     ],
     'rules' => [

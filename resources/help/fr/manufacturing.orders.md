@@ -27,3 +27,18 @@ poste de travail ou sous-traité à un fournisseur (crée une commande) ; la
 vue de planification montre le calcul des besoins multi-niveaux (MRP) et
 les indicateurs qualité. L'annulation est irréversible ; créer, déclarer et
 livrer exigent l'autorisation de mouvement de stock.
+
+## Documents douaniers pour les envois hors de l’UE
+
+Pour chaque livraison avec destinataire, « Documents douaniers » crée une
+facture commerciale (en cas de vente) ou une facture pro forma (cadeau,
+échantillon, marchandises retournées, réparation et autres motifs) au format
+PDF. La boîte de dialogue indique si la destination se trouve hors de l’UE et
+enregistre le motif choisi sur la livraison. Le document indique la
+désignation, la nomenclature douanière, le pays d’origine, la quantité, le
+poids net et la valeur ; le poids brut et le nombre de colis proviennent des
+colis saisis. Renseignez la nomenclature douanière, le pays d’origine et le
+poids net sur l’article, et le numéro EORI de l’expéditeur dans les paramètres
+de l’organisation. S’il manque une donnée, la boîte de dialogue l’indique et
+ne crée pas de document. Les documents douaniers ne remplacent pas une
+déclaration d’exportation électronique.

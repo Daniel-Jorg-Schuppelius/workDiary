@@ -142,11 +142,18 @@ return [
         'factor_to_base' => 'Factor to base unit',
         'external_id' => 'External ID',
         'sync_status' => 'Sync status',
+        'customs_tariff_number' => 'Customs tariff number',
+        'customs_tariff_number_hint' => 'Commodity code for customs documents: 8 digits (Combined Nomenclature) or 6 digits (HS code).',
+        'origin_country' => 'Country of origin',
+        'origin_country_hint' => 'Country of manufacture as ISO code, e.g. DE.',
+        'net_weight_kg' => 'Net weight (kg per unit)',
+        'net_weight_kg_hint' => 'Weight without packaging; the customs documents multiply it by the quantity.',
     ],
 
     'group' => [
         'pricing' => 'Pricing',
         'flags' => 'Properties',
+        'customs' => 'Customs and export',
     ],
 
     'flag' => [

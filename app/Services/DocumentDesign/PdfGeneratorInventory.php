@@ -44,6 +44,8 @@ final class PdfGeneratorInventory {
         // Einkauf/Logistik
         'app/Services/Procurement/PurchaseOrderPdfRenderer.php' => ['purchase_order'],
         'app/Services/Manufacturing/DeliveryNotePdfRenderer.php' => ['delivery_note'],
+        // Handels-/Proformarechnung für Sendungen außerhalb der EU (MVP-1007).
+        'app/Services/Shipping/CustomsInvoicePdfRenderer.php' => ['delivery_note'],
         // Kommissionierliste (Feature 048, MVP-706): interner Arbeitsbeleg.
         'app/Services/Inventory/PickListPdfRenderer.php' => ['report'],
         // Meldebogen eines Rückrufs (MVP-945).
@@ -66,6 +68,8 @@ final class PdfGeneratorInventory {
         'app/Services/Learning/LearningAttendanceListPdfRenderer.php' => ['report'],
         // Vereinsverwaltung (Feature 159, MVP-847): Graduierungsbescheinigung — dieselbe Dokumentart wie das Zertifikat.
         'app/Services/Club/ClubGradeCertificatePdfRenderer.php' => ['certificate'],
+        // Zuwendungsbestätigung nach amtlichem Muster (MVP-1003): Aussteller muss erkennbar sein.
+        'app/Services/Club/ClubDonationReceiptPdfRenderer.php' => ['certificate'],
         // Beitragsmitteilung (MVP-850): eigene Dokumentart, Fallback auf das Rechnungsdesign.
         'app/Services/Club/ClubFeeNoticePdfRenderer.php' => ['fee_notice'],
         'app/Services/Timesheet/PdfRenderer.php' => ['timesheet'],

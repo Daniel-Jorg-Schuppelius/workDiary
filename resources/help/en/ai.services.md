@@ -29,3 +29,8 @@ confirmation ("Remember?" dialog).
 **Item texts:** In invoice and quote drafts the AI creates text
 suggestions per item (including translations). Nothing is applied
 until you click — quantities, prices and tax remain untouched.
+
+**Bulk actions:** On a draft invoice, “Translate all” translates every line,
+and in a protocol “Refine all items” rephrases every item with text. Both run
+in the background. Each line and item receives its own suggestion, which you
+accept or reject individually; nothing is applied automatically.

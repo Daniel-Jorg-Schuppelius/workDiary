@@ -168,6 +168,19 @@
             </div>
         </x-card>
     @endif
+
+    {{-- MVP-1008: fremde Anmeldung — Konto sichern statt nur Passwort ändern. --}}
+    <x-card class="border-error/30">
+        <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('security.account_secure.self_heading') }}</h2>
+        <p class="mt-1 text-sm text-muted">{{ __('security.account_secure.self_hint') }}</p>
+        <x-action-form :action="route('account.secure')" class="mt-3"
+              :confirm="__('security.account_secure.confirm_self')"
+              confirm-icon="shield_lock"
+              confirm-tone="error"
+              :confirm-label="__('security.account_secure.action_self')">
+            <x-icon-btn icon="shield_lock" tone="error" size="sm" type="submit" show-label>{{ __('security.account_secure.action_self') }}</x-icon-btn>
+        </x-action-form>
+    </x-card>
 </x-index-page>
 @include('partials.webauthn-script')
 @endsection

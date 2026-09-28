@@ -86,10 +86,17 @@
                         <span class="font-normal text-muted">({{ $assessment->items->count() }})</span>
                     </h3>
                     @if ($editable)
-                        <x-icon-btn icon="add" tone="primary" size="xs"
-                                    data-entry-modal-trigger
-                                    :href="route('safety.assessments.items.create', $assessment)"
-                                    show-label>{{ __('safety.register.action.add_item') }}</x-icon-btn>
+                        <div class="flex gap-2">
+                            @if ($hasCatalog)
+                                <x-icon-btn icon="library_add" tone="outline" size="xs" data-entry-modal-trigger
+                                            :href="route('safety.assessments.catalog.create', $assessment)"
+                                            show-label>{{ __('safety.catalog.action.import') }}</x-icon-btn>
+                            @endif
+                            <x-icon-btn icon="add" tone="primary" size="xs"
+                                        data-entry-modal-trigger
+                                        :href="route('safety.assessments.items.create', $assessment)"
+                                        show-label>{{ __('safety.register.action.add_item') }}</x-icon-btn>
+                        </div>
                     @endif
                 </div>
                 <x-table :bare="true">
@@ -144,9 +151,34 @@
                     @endforelse
                 </x-table>
             </x-card>
+
+            {{-- Nachweise (MVP-1002). --}}
+            <x-attachments-section :attachments="$assessment->attachments" upload-type="hazard-assessment"
+                                   :upload-id="$assessment->sqid" :can-upload="$canManage" />
         </div>
 
         <div class="space-y-4">
+            {{-- Sicherheitsereignisse, die auf diesen Stand verweisen (MVP-1002). --}}
+            @if ($assessment->safetyEvents->isNotEmpty())
+                <x-card>
+                    <h3 class="mb-2 flex items-center gap-2 text-sm font-semibold">
+                        <x-icon name="report" class="text-muted" /> {{ __('safety.catalog.events.title') }}
+                    </h3>
+                    @if ($reviewTriggers->isNotEmpty())
+                        <div class="alert alert-warning mb-2 text-sm" role="status">
+                            <x-icon name="rule" />
+                            <span>{{ __('safety.catalog.events.review_triggered') }}</span>
+                        </div>
+                    @endif
+                    <ul class="space-y-1 text-sm">
+                        @foreach ($assessment->safetyEvents->sortByDesc('occurred_at') as $event)
+                            <li><a class="link link-primary" href="{{ route('safety-events.show', $event) }}">{{ $event->displayNo() }}</a>
+                                <span class="text-muted">· {{ $event->occurred_at->orgTz()->format('d.m.Y') }} · {{ $event->kind->label() }}</span></li>
+                        @endforeach
+                    </ul>
+                </x-card>
+            @endif
+
             @if ($canManage && $assessment->status->allowedTransitions() !== [])
                 <x-card>
                     <h3 class="mb-3 text-sm font-semibold">{{ __('safety.register.action.transition') }}</h3>
