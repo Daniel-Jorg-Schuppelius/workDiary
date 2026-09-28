@@ -26,11 +26,8 @@
 
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="$user->name . ' · ' . $year">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" tone="outline" size="sm"
-                            :href="route('reports.absence-calendar', ['year' => $year])" show-label>{{ __('Jahresübersicht') }}</x-icon-btn>
-            </x-slot:actions>
+        <x-page-toolbar :subtitle="$user->name . ' · ' . $year"
+                        :back="route('reports.absence-calendar', ['year' => $year])" :back-label="__('Jahresübersicht')">
         </x-page-toolbar>
     </x-slot:toolbar>
 

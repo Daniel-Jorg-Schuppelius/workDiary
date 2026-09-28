@@ -16,7 +16,8 @@
 @section('wrapper-height-class', 'wd-page-fill')
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 @section('content')
-<x-index-page overflow="clip" :subtitle="$course->title">
+<x-index-page overflow="clip" :subtitle="$course->title"
+              :back="route('learning.courses.show', $course)" :back-label="__('learning.action.back')">
     <x-slot:actions>
         @if ($canEnroll)
             <x-icon-btn icon="person_add" tone="primary" size="sm"
@@ -24,9 +25,6 @@
                         :href="route('learning.courses.enrollments.create', $course)"
                         show-label>{{ __('learning.action.add_participant') }}</x-icon-btn>
         @endif
-        <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                    :href="route('learning.courses.show', $course)"
-                    show-label>{{ __('learning.action.back') }}</x-icon-btn>
         <x-help-button topic="learning.overview" />
     </x-slot:actions>
 

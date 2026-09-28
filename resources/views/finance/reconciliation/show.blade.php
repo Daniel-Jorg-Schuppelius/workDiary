@@ -25,16 +25,14 @@
 @endphp
 
 @section('content')
-    <x-index-page :subtitle="$statement->bankAccount?->label">
+    <x-index-page :subtitle="$statement->bankAccount?->label"
+                  back-route="finance.reconciliation.index" :back-label="__('bank.title.index')">
         <x-slot:actions>
             @can('download', $statement)
                 <x-icon-btn icon="download" tone="ghost" size="sm"
                             :href="route('finance.reconciliation.download', $statement->sqid)"
                             show-label>{{ __('bank.action.download') }}</x-icon-btn>
             @endcan
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                        :href="route('finance.reconciliation.index')"
-                        show-label>{{ __('bank.title.index') }}</x-icon-btn>
         </x-slot:actions>
 
         <x-card class="mb-4">

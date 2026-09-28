@@ -20,14 +20,11 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar back-route="access-media.index" :back-label="__('Zur Liste')">
             <div class="flex min-w-0 items-center gap-2">
                 <span class="truncate font-medium">{{ $medium->label ?: __('Medium') }} <span class="font-mono text-sm text-muted">…{{ $medium->number_suffix }}</span></span>
                 <x-status-badge :tone="$medium->status->tone()" size="sm">{{ $medium->status->label() }}</x-status-badge>
             </div>
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('access-media.index')" show-label>{{ __('Zur Liste') }}</x-icon-btn>
-            </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 

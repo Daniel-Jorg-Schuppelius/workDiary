@@ -23,13 +23,9 @@
                         :href="route('commission-runs.create')"
                         show-label>{{ __('commission.action.create_run') }}</x-icon-btn>
         @endif
-        <x-icon-btn icon="receipt_long" tone="ghost" size="sm"
-                    :href="route('commissions.index')"
-                    show-label>{{ __('commission.action.to_commissions') }}</x-icon-btn>
-        <x-icon-btn icon="percent" tone="ghost" size="sm"
-                    :href="route('commission-rules.index')"
-                    show-label>{{ __('commission.action.to_rules') }}</x-icon-btn>
     </x-slot:actions>
+
+    @include('sales._commission_tabs')
 
     <x-table scroll="flex" table-sort="client">
         <x-slot:head>

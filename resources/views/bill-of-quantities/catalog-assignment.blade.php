@@ -31,8 +31,9 @@
     <x-slot:actions>
         <x-icon-btn icon="category" size="sm" :href="route('bill-of-quantities.cost-groups', $bill)" show-label>{{ __('Auswertung') }}</x-icon-btn>
         <x-icon-btn icon="swap_horiz" size="sm" :href="route('bill-of-quantities.catalog-edition', $bill)" show-label>{{ __('Ausgabe wechseln') }}</x-icon-btn>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('bill-of-quantities.show', $bill)" show-label>{{ __('Zum Leistungsverzeichnis') }}</x-icon-btn>
     </x-slot:actions>
+
+    @include('bill-of-quantities._tabs')
 
     @if ($catalog === null)
         <x-empty-state framed icon="category"

@@ -23,7 +23,7 @@ class AddCrisisLinkRequest extends BaseFormRequest {
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
-            'linkable_type' => ['required', 'in:service_ticket,isms_incident,privacy_incident,safety_event,procedure_run,document'],
+            'linkable_type' => ['required', 'in:service_ticket,isms_incident,privacy_incident,safety_event,procedure_run,document,asset,customer'],
             'linkable_sqid' => ['required', 'string', 'max:64'],
             'note' => ['nullable', 'string', 'max:500'],
         ];

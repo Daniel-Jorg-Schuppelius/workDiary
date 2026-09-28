@@ -14,15 +14,17 @@
 @section('content')
 <x-index-page :subtitle="__('Defekte, offene Punkte und Aufwand je Asset, Produktgruppe oder Modell.')">
     <x-slot:actions>
-        <x-icon-btn icon="download" tone="outline" size="sm"
-                    :href="route('reports.assets', array_merge($standardFilters->toQueryParams(), array_filter(['category_code' => $categoryCode, 'manufacturer' => $manufacturer, 'group_by' => $groupBy]), ['export' => 'csv']))"
-                    show-label>CSV</x-icon-btn>
-        <x-icon-btn icon="table_view" tone="outline" size="sm"
-                    :href="route('reports.assets', array_merge($standardFilters->toQueryParams(), array_filter(['category_code' => $categoryCode, 'manufacturer' => $manufacturer, 'group_by' => $groupBy]), ['export' => 'xlsx']))"
-                    show-label>Excel</x-icon-btn>
         <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
                     :href="route('reports.assets', array_merge($standardFilters->toQueryParams(), array_filter(['category_code' => $categoryCode, 'manufacturer' => $manufacturer, 'group_by' => $groupBy]), ['export' => 'pdf']))"
                     show-label>PDF</x-icon-btn>
+        <x-action-menu icon="download" tone="outline" :label="__('Export')">
+            <x-icon-btn icon="download" tone="outline" size="sm"
+                        :href="route('reports.assets', array_merge($standardFilters->toQueryParams(), array_filter(['category_code' => $categoryCode, 'manufacturer' => $manufacturer, 'group_by' => $groupBy]), ['export' => 'csv']))"
+                        show-label>CSV</x-icon-btn>
+            <x-icon-btn icon="table_view" tone="outline" size="sm"
+                        :href="route('reports.assets', array_merge($standardFilters->toQueryParams(), array_filter(['category_code' => $categoryCode, 'manufacturer' => $manufacturer, 'group_by' => $groupBy]), ['export' => 'xlsx']))"
+                        show-label>Excel</x-icon-btn>
+        </x-action-menu>
     </x-slot:actions>
 
     <x-filter-bar :action="route('reports.assets')" :reset="route('reports.assets')">

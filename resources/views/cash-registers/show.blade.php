@@ -25,7 +25,8 @@
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-index-page overflow="clip" :subtitle="__('Kassenbuch') . ' · ' . __('Saldo') . ': ' . \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($balance, 2, withThousandsSeparator: true) . ' ' . $register->currency->value">
+<x-index-page overflow="clip" :subtitle="__('Kassenbuch') . ' · ' . __('Saldo') . ': ' . \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($balance, 2, withThousandsSeparator: true) . ' ' . $register->currency->value"
+              back-route="cash-registers.index" :back-label="__('Alle Kassen')">
 
     <div class="grid grid-cols-1 gap-3 flex-none sm:grid-cols-3">
         <x-kpi-tile :label="__('Saldo')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($balance, 2, withThousandsSeparator: true) . ' ' . $register->currency->value" tone="neutral" />
@@ -35,7 +36,6 @@
 
     <x-filter-bar :action="route('cash-registers.show', $register)" :reset="route('cash-registers.show', $register)">
         <x-slot:extra>
-            <x-icon-btn icon="arrow_back" size="sm" :href="route('cash-registers.index')" show-label>{{ __('Alle Kassen') }}</x-icon-btn>
             @can(\App\Enums\User\Permission::CashManage->value)
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger

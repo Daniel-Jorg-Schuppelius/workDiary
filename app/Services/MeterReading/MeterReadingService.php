@@ -21,7 +21,7 @@ class MeterReadingService {
     use \App\Services\Concerns\ParsesMixedDate;
 
     /** @param array<string, mixed> $payload */
-    public function record(Asset $asset, User $actor, array $payload): MeterReading {
+    public function record(Asset $asset, ?User $actor, array $payload): MeterReading {
         $readAt = $this->parseDate($payload['read_at'] ?? null) ?? Carbon::now();
         $value = $this->parseDecimal($payload['value'] ?? null, 'value');
         $unit = trim((string) ($payload['unit'] ?? ''));
@@ -53,7 +53,7 @@ class MeterReadingService {
             'unit' => $unit,
             'previous_value' => $previousValue !== null ? NumberHelper::toUSFormat($previousValue, 4) : null,
             'consumption' => $consumption !== null ? NumberHelper::toUSFormat($consumption, 4) : null,
-            'read_by_user_id' => $actor->id,
+            'read_by_user_id' => $actor?->id,
             'photo_path' => $payload['photo_path'] ?? null,
             'notes' => $payload['notes'] ?? null,
             'is_estimated' => (bool) ($payload['is_estimated'] ?? false),

@@ -20,7 +20,8 @@
 @endphp
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :title="__('print.orders.detail_title') . ' — ' . ($mo->number ?? '')">
+        <x-page-toolbar :title="__('print.orders.detail_title') . ' — ' . ($mo->number ?? '')"
+                        back-route="print-orders.index" :back-label="__('Zur Liste')">
             <div class="flex flex-wrap items-center gap-2 text-sm">
                 <x-status-badge size="md" outline :tone="$status->tone()">{{ $status->label() }}</x-status-badge>
                 <x-status-badge size="md" outline :tone="$order->preflight_status->tone()">{{ __('print.field.preflight') }}: {{ $order->preflight_status->label() }}</x-status-badge>
@@ -33,7 +34,6 @@
                 @if ($mo !== null)
                     <x-icon-btn icon="factory" size="sm" :href="route('manufacturing-orders.show', $mo)" show-label>{{ __('print.orders.action.manufacturing') }}</x-icon-btn>
                 @endif
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('print-orders.index')" show-label>{{ __('Zur Liste') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

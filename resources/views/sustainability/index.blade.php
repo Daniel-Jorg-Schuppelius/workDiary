@@ -16,13 +16,14 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Zeitraum: :from – :to · erklärbare Kennzahlen, keine Konformitätszusage.', ['from' => $from, 'to' => $to])">
             <x-slot:actions>
-                <x-icon-btn icon="location_city" size="sm" :href="route('sustainability.sites.benchmark')" show-label>{{ __('sustainability.site.benchmark') }}</x-icon-btn>
                 @if ($canManage)
                     <x-icon-btn icon="public" size="sm" data-entry-modal-trigger :href="route('sustainability.excerpt.edit')" show-label>{{ __('sustainability.excerpt.title') }}</x-icon-btn>
                 @endif
-                <x-icon-btn icon="download" size="sm" :href="route('sustainability.index', ['export' => 'csv', 'from' => $from, 'to' => $to])" show-label>{{ __('CSV') }}</x-icon-btn>
-                <x-icon-btn icon="table_view" size="sm" :href="route('sustainability.index', ['export' => 'xlsx', 'from' => $from, 'to' => $to])" show-label>Excel</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" size="sm" tone="ghost" :href="route('sustainability.index', ['export' => 'pdf', 'from' => $from, 'to' => $to])" show-label>{{ __('PDF') }}</x-icon-btn>
+                <x-action-menu icon="download" :label="__('Export')">
+                    <x-icon-btn icon="download" size="sm" :href="route('sustainability.index', ['export' => 'csv', 'from' => $from, 'to' => $to])" show-label>{{ __('CSV') }}</x-icon-btn>
+                    <x-icon-btn icon="table_view" size="sm" :href="route('sustainability.index', ['export' => 'xlsx', 'from' => $from, 'to' => $to])" show-label>Excel</x-icon-btn>
+                </x-action-menu>
                 @if ($canManage)
                     <x-action-form :action="route('sustainability.snapshot.store')">
                         <input type="hidden" name="from" value="{{ $from }}">
@@ -34,6 +35,8 @@
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    @include('sustainability._tabs')
 
 
     {{-- Kennzahlen --}}

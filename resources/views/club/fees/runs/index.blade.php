@@ -18,10 +18,10 @@
         @if ($canManage)
             <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger :href="route('club.fees.runs.create')" show-label>{{ __('club.fees.action.create_run') }}</x-icon-btn>
         @endif
-        <x-icon-btn icon="receipt_long" tone="outline" size="sm" :href="route('club.fees.claims.index')" show-label>{{ __('club.fees.title.claims') }}</x-icon-btn>
-        <x-icon-btn icon="account_balance_wallet" tone="ghost" size="sm" :href="route('club.fees.accounts.index')" show-label>{{ __('club.fees.title.accounts') }}</x-icon-btn>
         <x-help-button topic="club.fees" />
     </x-slot:actions>
+
+    @include('club.fees._tabs')
 
     @if ($external)
         <div class="alert alert-warning mb-3 text-sm" role="status">

@@ -14,11 +14,10 @@
 
 @section('content')
 {{-- Erwartet: $list (PickList), $sourceSlug, $sourceSqid, $source (Model) --}}
-<x-index-page overflow="clip" :subtitle="__('inventory.pick_list.subtitle')" :badge="$list->sourceLabel()" badge-tone="ghost">
+<x-index-page overflow="clip" :subtitle="__('inventory.pick_list.subtitle')" :badge="$list->sourceLabel()" badge-tone="ghost"
+              :back="$source instanceof \App\Models\Manufacturing\ManufacturingOrder ? route('manufacturing-orders.show', $source) : null"
+              :back-label="__('inventory.pick_list.source')">
     <x-slot:actions>
-        @if ($source instanceof \App\Models\Manufacturing\ManufacturingOrder)
-            <x-icon-btn icon="arrow_back" size="sm" :href="route('manufacturing-orders.show', $source)" show-label>{{ __('inventory.pick_list.source') }}</x-icon-btn>
-        @endif
         <x-icon-btn icon="picture_as_pdf" tone="primary" size="sm" target="_blank"
                     :href="route('inventory.pick-lists.pdf', ['source' => $sourceSlug, 'sqid' => $sourceSqid])" show-label>{{ __('inventory.action.pick_list_pdf') }}</x-icon-btn>
     </x-slot:actions>

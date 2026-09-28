@@ -17,15 +17,13 @@
         <x-slot:toolbar>
             <x-page-toolbar :subtitle="$site->customer
                 ? __('Standort von :customer.', ['customer' => $site->customer->name])
-                : __('Standort ohne Kundenbindung.')">
+                : __('Standort ohne Kundenbindung.')"
+                            back-route="sites.index" :back-label="__('Zurück')">
                 <x-slot:actions>
                     <x-icon-btn icon="edit" size="sm"
                                 data-entry-modal-trigger
                                 :href="route('sites.edit', $site)"
                                 show-label>{{ __('Bearbeiten') }}</x-icon-btn>
-                    <x-icon-btn icon="arrow_back" size="sm"
-                                :href="route('sites.index')"
-                                show-label>{{ __('Zurück') }}</x-icon-btn>
                 </x-slot:actions>
             </x-page-toolbar>
         </x-slot:toolbar>

@@ -20,7 +20,8 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$assessment->area . ($assessment->activity ? ' · ' . $assessment->activity : '')"
-                        :badge="$assessment->status->label()" :badgeTone="$assessment->status->tone()">
+                        :badge="$assessment->status->label()" :badgeTone="$assessment->status->tone()"
+                        back-route="safety.assessments.index" :back-label="__('safety.register.action.back')">
             <x-slot:actions>
                 @if ($editable)
                     <x-icon-btn icon="edit" tone="outline" size="sm"
@@ -33,9 +34,6 @@
                         <x-icon-btn type="submit" icon="difference" tone="primary" size="sm" show-label>{{ __('safety.register.action.new_version') }}</x-icon-btn>
                     </x-action-form>
                 @endif
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                            :href="route('safety.assessments.index')"
-                            show-label>{{ __('safety.register.action.back') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

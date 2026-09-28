@@ -19,8 +19,9 @@
                         :href="route('admin.domain-provider.create')"
                         show-label>{{ __('domain.connect.title') }}</x-icon-btn>
         @endif
-        <x-icon-btn icon="dns" size="sm" :href="route('domains.index')" show-label>{{ __('domain.title.index') }}</x-icon-btn>
     </x-slot:actions>
+
+    @include('domain._tabs')
 
     <x-table :caption="__('domain.title.connections')">
         <x-slot:head>

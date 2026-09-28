@@ -20,21 +20,12 @@
     <x-index-page overflow="clip" :subtitle="__('form.subtitle.submissions')">
         <x-slot:actions>
             @if ($activeTemplates->isNotEmpty())
-                <div class="dropdown dropdown-end">
-                    <x-icon-btn icon="edit_note" tone="primary" size="sm" type="button" tabindex="0" show-label>
-                        {{ __('form.action.fill') }}
-                    </x-icon-btn>
-                    <ul tabindex="0" class="dropdown-content menu z-30 mt-1 w-64 rounded-box border border-base-300 bg-base-100 p-2 shadow">
-                        @foreach ($activeTemplates as $activeTemplate)
-                            <li>
-                                <a data-entry-modal-trigger
-                                   href="{{ route('form-submissions.create', ['template' => $activeTemplate->sqid]) }}">
-                                    {{ $activeTemplate->name }}
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
+                <x-action-menu icon="edit_note" tone="primary" :label="__('form.action.fill')" placement="bar">
+                    @foreach ($activeTemplates as $activeTemplate)
+                        <x-button tone="ghost" data-entry-modal-trigger
+                                  :href="route('form-submissions.create', ['template' => $activeTemplate->sqid])">{{ $activeTemplate->name }}</x-button>
+                    @endforeach
+                </x-action-menu>
             @endif
             @can('viewAny', \App\Models\Form\FormTemplate::class)
                 <x-icon-btn icon="assignment" tone="outline" size="sm"

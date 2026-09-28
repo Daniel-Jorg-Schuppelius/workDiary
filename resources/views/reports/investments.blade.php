@@ -17,11 +17,15 @@
         <x-page-toolbar>
             <div class="text-sm text-base-content/70">{{ __('Pipeline, Budgetauslastung und offene Entscheidungen.') }}</div>
             <x-slot:actions>
-                <x-icon-btn icon="download" size="sm" :href="route('investments.report', array_merge($standardFilters->toQueryParams(), ['export' => 'csv']))" show-label>{{ __('CSV') }}</x-icon-btn>
-                <x-icon-btn icon="table_view" size="sm" :href="route('investments.report', array_merge($standardFilters->toQueryParams(), ['export' => 'xlsx']))" show-label>Excel</x-icon-btn>
+                <x-action-menu icon="download" :label="__('Export')">
+                    <x-icon-btn icon="download" size="sm" :href="route('investments.report', array_merge($standardFilters->toQueryParams(), ['export' => 'csv']))" show-label>{{ __('CSV') }}</x-icon-btn>
+                    <x-icon-btn icon="table_view" size="sm" :href="route('investments.report', array_merge($standardFilters->toQueryParams(), ['export' => 'xlsx']))" show-label>Excel</x-icon-btn>
+                </x-action-menu>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    @include('investments._tabs')
 
     <x-filter-bar :action="route('investments.report')" :reset="route('investments.report')">
         @include('reports._standard_filters', ['idPrefix' => 'investments', 'statusOptions' => $statusOptions, 'statusLabel' => __('Status')])

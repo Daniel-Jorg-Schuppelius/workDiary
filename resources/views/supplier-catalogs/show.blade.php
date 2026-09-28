@@ -11,9 +11,9 @@
 @section('nav-title', __('procurement.catalog.title'))
 
 @section('content')
-<x-index-page :subtitle="$source->name">
+<x-index-page :subtitle="$source->name"
+              back-route="supplier-catalogs.index" :back-label="__('Zurück')">
     <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('supplier-catalogs.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
         @if ($canManage)
             <x-icon-btn icon="library_add" size="sm" data-entry-modal-trigger
                         :href="route('supplier-catalogs.adopt-form', $source)" show-label>{{ __('procurement.catalog.action.adopt') }}</x-icon-btn>

@@ -21,31 +21,32 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('compliance.report.subtitle')">
             <x-slot:actions>
-                <x-icon-btn icon="fact_check" tone="outline" size="sm"
-                            :href="route('reports.compliance.history')"
-                            show-label>{{ __('compliance.history.nav') }}</x-icon-btn>
-                <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.arbzg-compliance', array_merge($standardFilters->toQueryParams(), array_filter(['kind' => $kindFilter ?: null, 'category' => $categoryFilter ?: null, 'export' => 'csv'])))"
-                            show-label>CSV</x-icon-btn>
-                <x-icon-btn icon="table_view" tone="outline" size="sm"
-                            :href="route('reports.arbzg-compliance', array_merge($standardFilters->toQueryParams(), array_filter(['kind' => $kindFilter ?: null, 'category' => $categoryFilter ?: null, 'export' => 'xlsx'])))"
-                            show-label>Excel</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
                             :href="route('reports.arbzg-compliance', array_merge($standardFilters->toQueryParams(), array_filter(['kind' => $kindFilter ?: null, 'category' => $categoryFilter ?: null, 'export' => 'pdf'])))"
                             show-label>PDF</x-icon-btn>
-                {{-- MiLoG §17: Beginn/Ende/Dauer je Arbeitstag als Zoll-Nachweis (MVP-695). --}}
-                <x-icon-btn icon="assured_workload" tone="outline" size="sm"
-                            :href="route('reports.milog-evidence', $standardFilters->toQueryParams())"
-                            show-label>{{ __('compliance.milog.button') }}</x-icon-btn>
-                @if ($drivingTimeEnabled)
-                    {{-- Feature 144: Lenk-/Ruhezeit-Nachweis je Fahrer und Zeitraum (CSV/PDF). --}}
-                    <x-icon-btn icon="local_shipping" tone="outline" size="sm"
-                                :href="route('reports.driving-time-evidence', $standardFilters->toQueryParams())"
-                                show-label>{{ __('compliance.driving.button') }}</x-icon-btn>
-                @endif
+                <x-action-menu icon="download" tone="outline" :label="__('Export')">
+                    <x-icon-btn icon="download" tone="outline" size="sm"
+                                :href="route('reports.arbzg-compliance', array_merge($standardFilters->toQueryParams(), array_filter(['kind' => $kindFilter ?: null, 'category' => $categoryFilter ?: null, 'export' => 'csv'])))"
+                                show-label>CSV</x-icon-btn>
+                    <x-icon-btn icon="table_view" tone="outline" size="sm"
+                                :href="route('reports.arbzg-compliance', array_merge($standardFilters->toQueryParams(), array_filter(['kind' => $kindFilter ?: null, 'category' => $categoryFilter ?: null, 'export' => 'xlsx'])))"
+                                show-label>Excel</x-icon-btn>
+                    {{-- MiLoG §17: Beginn/Ende/Dauer je Arbeitstag als Zoll-Nachweis (MVP-695). --}}
+                    <x-icon-btn icon="assured_workload" tone="outline" size="sm"
+                                :href="route('reports.milog-evidence', $standardFilters->toQueryParams())"
+                                show-label>{{ __('compliance.milog.button') }}</x-icon-btn>
+                    @if ($drivingTimeEnabled)
+                        {{-- Feature 144: Lenk-/Ruhezeit-Nachweis je Fahrer und Zeitraum (CSV/PDF). --}}
+                        <x-icon-btn icon="local_shipping" tone="outline" size="sm"
+                                    :href="route('reports.driving-time-evidence', $standardFilters->toQueryParams())"
+                                    show-label>{{ __('compliance.driving.button') }}</x-icon-btn>
+                    @endif
+                </x-action-menu>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    @include('reports._compliance_tabs')
 
     <x-filter-bar :action="route('reports.arbzg-compliance')" :reset="route('reports.arbzg-compliance')">
         @include('reports._standard_filters', ['idPrefix' => 'arbzg'])

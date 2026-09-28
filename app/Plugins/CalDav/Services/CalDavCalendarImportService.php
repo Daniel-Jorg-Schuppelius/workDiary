@@ -18,9 +18,9 @@ use App\Models\Plugins\CalDav\CalDavConnection;
 use App\Plugins\CalDav\CalDavPlugin;
 use App\Plugins\CalDav\Contracts\CalDavGatewayFactory;
 use App\Plugins\Support\Calendar\RemoteCalendarPublishService;
+use CommonToolkit\Parsers\ICalendarParser;
+use DateTimeZone;
 use Illuminate\Support\{Carbon, Collection};
-use Sabre\VObject\Component\VCalendar;
-use Sabre\VObject\Reader;
 use Throwable;
 
 /**
@@ -184,17 +184,14 @@ class CalDavCalendarImportService {
      */
     private function parse(string $ics): ?array {
         try {
-            $calendar = Reader::read($ics, Reader::OPTION_FORGIVING);
+            $calendar = ICalendarParser::fromString($ics);
         } catch (Throwable) {
-            return null;
-        }
-        if (! $calendar instanceof VCalendar) {
             return null;
         }
 
         $event = null;
-        foreach ($calendar->VEVENT ?? [] as $candidate) {
-            if (isset($candidate->{'RECURRENCE-ID'})) {
+        foreach ($calendar->getEvents() as $candidate) {
+            if ($candidate->has('RECURRENCE-ID')) {
                 continue;
             }
             $event = $candidate;
@@ -206,21 +203,22 @@ class CalDavCalendarImportService {
         }
 
         $timezone = (string) config('app.timezone', 'Europe/Berlin');
-        $start = isset($event->DTSTART) ? $event->DTSTART->getDateTime() : null;
-        $end = isset($event->DTEND) ? $event->DTEND->getDateTime() : null;
-        $allDay = isset($event->DTSTART) && ! $event->DTSTART->hasTime();
-        $subject = trim((string) ($event->SUMMARY ?? ''));
+        $zone = new DateTimeZone(date_default_timezone_get());
+        $start = $event->getStart($zone);
+        $end = $event->getEnd($zone);
+        $allDay = $event->isAllDay();
+        $subject = $event->getSummary();
         $subject = $subject !== '' ? $subject : '—';
 
         $snapshot = [
-            'remote_id' => trim((string) ($event->UID ?? '')),
+            'remote_id' => $event->getUid(),
             'subject' => $subject,
             'start' => $start?->format(DATE_ATOM),
             'end' => $end?->format(DATE_ATOM),
-            'location' => trim((string) ($event->LOCATION ?? '')) ?: null,
-            'organizer' => $this->mailAddress((string) ($event->ORGANIZER ?? '')),
+            'location' => $event->getLocation(),
+            'organizer' => $this->mailAddress($event->getProperty('ORGANIZER')?->getValue() ?? ''),
             'is_all_day' => $allDay,
-            'recurrence' => isset($event->RRULE) ? (string) $event->RRULE : null,
+            'recurrence' => $event->getProperty('RRULE')?->getValue(),
         ];
 
         $attributes = [
@@ -234,18 +232,12 @@ class CalDavCalendarImportService {
         if ($snapshot['organizer'] !== null) {
             $attributes['external_contact_note'] = $snapshot['organizer'];
         }
-        if (isset($event->RRULE)) {
-            $attributes['recurrence_rule'] = (string) $event->RRULE;
+        if ($event->has('RRULE')) {
+            $attributes['recurrence_rule'] = (string) $event->getProperty('RRULE')?->getValue();
         }
 
-        $lastModified = null;
-        foreach (['LAST-MODIFIED', 'DTSTAMP'] as $property) {
-            if (isset($event->{$property})) {
-                $lastModified = Carbon::parse((string) $event->{$property});
-
-                break;
-            }
-        }
+        $modified = $event->getLastModified();
+        $lastModified = $modified !== null ? Carbon::instance($modified) : null;
 
         return ['snapshot' => $snapshot, 'attributes' => $attributes, 'last_modified' => $lastModified];
     }

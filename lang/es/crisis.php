@@ -112,4 +112,36 @@ return [
             'open' => 'sin evaluar',
         ],
     ],
+    // Krisenraum (MVP-963).
+    'room' => [
+        'title' => 'Sala de crisis',
+        'present' => 'Presentes',
+        'nobody' => 'nadie más',
+        'no_markers' => 'Sin ubicaciones: vincule activos o clientes con coordenadas o añada puntos.',
+        'add_point' => 'Añadir punto',
+        'field' => [
+            'label' => 'Denominación',
+            'kind' => 'Tipo',
+            'lat' => 'Latitud',
+            'lng' => 'Longitud',
+        ],
+        'kind' => [
+            'incident' => 'Lugar del incidente',
+            'assembly' => 'Punto de encuentro',
+            'closure' => 'Cierre',
+            'resource' => 'Recurso',
+            'other' => 'Otro',
+        ],
+        'layer' => [
+            'linked' => 'Objetos vinculados',
+        ],
+        'link' => [
+            'asset' => 'Activo',
+            'customer' => 'Cliente',
+        ],
+        'flash' => [
+            'point_saved' => 'Punto añadido.',
+            'point_deleted' => 'Punto eliminado.',
+        ],
+    ],
 ];

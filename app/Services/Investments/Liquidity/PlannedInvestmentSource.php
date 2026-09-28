@@ -39,8 +39,8 @@ class PlannedInvestmentSource implements LiquidityForecastSource {
             ->where('starts_on', '<', DateRange::dayAfter($to))
             ->get();
         foreach ($cases as $case) {
-            $amount = $case->approvedBudget()?->amount ?? $case->estimated_amount;
-            if ($amount === null || bccomp((string) $amount, '0', 2) <= 0) {
+            $amount = $case->approvedBudget()->amount ?? $case->estimated_amount;
+            if ($amount === null || $case->starts_on === null || bccomp($amount, '0', 2) <= 0) {
                 continue;
             }
             $items[] = [

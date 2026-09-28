@@ -506,4 +506,19 @@ return [
             'note' => 'Notiz',
         ],
     ],
+    // Auftragsbestätigung des Lieferanten (MVP-964).
+    'confirmation' => [
+        'import' => 'Auftragsbestätigung (openTRANS) einlesen',
+        'import_submit' => 'Bestätigung einlesen',
+        'received' => 'bestätigt am :date, Auftrag :ref',
+        'column' => 'Bestätigt',
+        'error' => [
+            'other_order' => 'Die Bestätigung gehört zu Bestellung :number.',
+            'no_lines' => 'Keine Position der Bestätigung passt zu einer Bestellzeile.',
+        ],
+        'flash' => [
+            'imported' => 'Auftragsbestätigung eingelesen: :count Positionen.',
+            'deviations' => ':count Positionen weichen von der Bestellung ab — bitte prüfen.',
+        ],
+    ],
 ];

@@ -20,7 +20,7 @@
             <input aria-label="{{ __('access.placeholder.search_members') }}" type="text" name="q" value="{{ $search ?? '' }}"
                    placeholder="{{ __('access.placeholder.search_members') }}"
                    class="input input-sm input-bordered join-item" />
-            <button class="btn btn-sm join-item">{{ __('access.action.search') }}</button>
+            <x-button type="submit" tone="ghost" class="join-item">{{ __('access.action.search') }}</x-button>
         </form>
     </x-slot:actions>
 

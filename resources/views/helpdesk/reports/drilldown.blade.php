@@ -20,12 +20,9 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar back-route="helpdesk.reports.index" :back-label="__('Zum Helpdesk-Bericht')">
             <x-slot:title>{{ $title }}</x-slot:title>
             <x-slot:subtitle>{{ __('Helpdesk-Bericht') }}</x-slot:subtitle>
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('helpdesk.reports.index')" show-label>{{ __('Zum Helpdesk-Bericht') }}</x-icon-btn>
-            </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 

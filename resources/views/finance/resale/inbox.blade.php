@@ -18,8 +18,9 @@
     <x-index-page :title="__('resale.inbox.title')" :subtitle="__('resale.inbox.subtitle')">
         <x-slot:actions>
             <x-icon-btn icon="upload" tone="primary" size="sm" data-entry-modal-trigger :href="route('finance.resale.import.create')" show-label>{{ __('resale.import.action') }}</x-icon-btn>
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('finance.resale.index')" show-label>{{ __('resale.action.back') }}</x-icon-btn>
         </x-slot:actions>
+
+        @include('finance.resale._tabs')
 
         <x-card :title="__('resale.inbox.companies')" padding="p-0" class="mb-4">
             <x-table bare>

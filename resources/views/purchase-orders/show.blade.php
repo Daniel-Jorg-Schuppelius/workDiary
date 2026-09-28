@@ -24,40 +24,30 @@
             <span class="text-sm text-base-content/70">{{ __('procurement.field.warehouse') }}: <strong>{{ $order->warehouse?->name }}</strong></span>
             @if ($canManage)
                 <x-slot:actions>
-                    @if ($status === 'draft')
-                        <form method="POST" action="{{ route('purchase-orders.submit', $order) }}">@csrf
-                            <x-icon-btn icon="check_circle" tone="primary" size="sm" type="submit" show-label>{{ __('procurement.action.submit') }}</x-icon-btn>
-                        </form>
-                    @endif
-                    @if ($isOpen)
-                        <x-action-form :action="route('purchase-orders.cancel', $order)" :confirm="__('procurement.action.cancel').'?'">
-                            <x-icon-btn icon="cancel" tone="error" size="sm" type="submit" :title="__('procurement.action.cancel')" />
-                        </x-action-form>
-                    @endif
-                    <a href="{{ route('purchase-orders.pdf', $order) }}" target="_blank" class="btn btn-sm btn-ghost gap-1">
-                        <span class="material-symbols-rounded text-base">picture_as_pdf</span>{{ __('procurement.action.export_pdf') }}
-                    </a>
+                    <x-button tone="ghost" icon="picture_as_pdf" :href="route('purchase-orders.pdf', $order)" target="_blank">{{ __('procurement.action.export_pdf') }}</x-button>
                     {{-- Feature 128 (MVP-692): Bestellung per E-Mail an den Lieferanten. --}}
                     <x-icon-btn icon="mail" tone="ghost" size="sm"
                                 data-entry-modal-trigger
                                 :href="route('purchase-orders.mail.form', $order)"
                                 show-label>{{ __('Per E-Mail senden') }}</x-icon-btn>
                     @if ($status !== 'draft')
-                        <a href="{{ route('purchase-orders.order-xml', $order) }}" class="btn btn-sm btn-ghost gap-1">
-                            <span class="material-symbols-rounded text-base">download</span>{{ __('procurement.action.export_xbestellung') }}
-                        </a>
-                        <a href="{{ route('purchase-orders.order-xml', ['purchaseOrder' => $order, 'format' => 'orderx']) }}" class="btn btn-sm btn-ghost gap-1">
-                            <span class="material-symbols-rounded text-base">download</span>{{ __('procurement.action.export_orderx') }}
-                        </a>
-                        <a href="{{ route('purchase-orders.order-xml', ['purchaseOrder' => $order, 'format' => 'opentrans']) }}" class="btn btn-sm btn-ghost gap-1">
-                            <span class="material-symbols-rounded text-base">download</span>{{ __('procurement.action.export_opentrans') }}
-                        </a>
-                        <a href="{{ route('purchase-orders.order-xml', ['purchaseOrder' => $order, 'format' => 'gaeb']) }}" class="btn btn-sm btn-ghost gap-1">
-                            <span class="material-symbols-rounded text-base">download</span>{{ __('procurement.action.export_gaeb') }}
-                        </a>
-                        <a href="{{ route('purchase-orders.order-xml', ['purchaseOrder' => $order, 'format' => 'ugl']) }}" class="btn btn-sm btn-ghost gap-1">
-                            <span class="material-symbols-rounded text-base">download</span>{{ __('procurement.action.export_ugl') }}
-                        </a>
+                        <x-action-menu icon="download" :label="__('Export')">
+                            <x-button tone="ghost" icon="download" :href="route('purchase-orders.order-xml', $order)">{{ __('procurement.action.export_xbestellung') }}</x-button>
+                            <x-button tone="ghost" icon="download" :href="route('purchase-orders.order-xml', ['purchaseOrder' => $order, 'format' => 'orderx'])">{{ __('procurement.action.export_orderx') }}</x-button>
+                            <x-button tone="ghost" icon="download" :href="route('purchase-orders.order-xml', ['purchaseOrder' => $order, 'format' => 'opentrans'])">{{ __('procurement.action.export_opentrans') }}</x-button>
+                            <x-button tone="ghost" icon="download" :href="route('purchase-orders.order-xml', ['purchaseOrder' => $order, 'format' => 'gaeb'])">{{ __('procurement.action.export_gaeb') }}</x-button>
+                            <x-button tone="ghost" icon="download" :href="route('purchase-orders.order-xml', ['purchaseOrder' => $order, 'format' => 'ugl'])">{{ __('procurement.action.export_ugl') }}</x-button>
+                        </x-action-menu>
+                    @endif
+                    @if ($status === 'draft')
+                        <x-action-form :action="route('purchase-orders.submit', $order)">
+                            <x-icon-btn icon="check_circle" tone="primary" size="sm" type="submit" placement="bar" show-label>{{ __('procurement.action.submit') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                    @if ($isOpen)
+                        <x-action-form :action="route('purchase-orders.cancel', $order)" :confirm="__('procurement.action.cancel').'?'">
+                            <x-icon-btn placement="danger" icon="cancel" tone="error" size="sm" type="submit" :label="__('procurement.action.cancel')" />
+                        </x-action-form>
                     @endif
                 </x-slot:actions>
             @endif
@@ -101,6 +91,9 @@
                     <th>{{ __('procurement.field.article') }}</th>
                     <th class="text-right">{{ __('procurement.field.ordered_qty') }}</th>
                     <th class="text-right">{{ __('procurement.field.received_qty') }}</th>
+                    @if ($order->supplier_confirmed_at !== null)
+                        <th>{{ __('procurement.confirmation.column') }}</th>
+                    @endif
                     @if ($canManage && in_array($status, ['ordered', 'partially_received'], true))
                         <th class="text-right">{{ __('procurement.action.receive') }}</th>
                     @endif
@@ -114,6 +107,19 @@
                     </td>
                     <td class="text-right tabular-nums">{{ $line->ordered_qty?->getNumericValue() }} {{ $line->unit }}</td>
                     <td class="text-right tabular-nums">{{ $line->received_qty?->getNumericValue() }}</td>
+                    {{-- Auftragsbestätigung (MVP-964): bestätigte Werte, Abweichung markiert --}}
+                    @if ($order->supplier_confirmed_at !== null)
+                        <td class="text-sm">
+                            @if ($line->confirmed_qty !== null)
+                                @php($qtyDiffers = abs((float) $line->confirmed_qty - ($line->ordered_qty?->getValue()->toFloat() ?? 0.0)) > 0.00005)
+                                <span class="{{ $qtyDiffers ? 'text-warning font-medium' : '' }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $line->confirmed_qty, 4, trimTrailingZeros: true) }}</span>
+                                @if ($line->confirmed_unit_price !== null) · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $line->confirmed_unit_price, 2, withThousandsSeparator: true) }}@endif
+                                @if ($line->confirmed_delivery_on !== null) · {{ $line->confirmed_delivery_on->fdate() }}@endif
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
+                    @endif
                     @if ($canManage && in_array($status, ['ordered', 'partially_received'], true))
                         <td class="text-right">
                             <form method="POST" action="{{ route('purchase-orders.receive', $order) }}" class="flex flex-wrap items-center justify-end gap-1">
@@ -164,6 +170,14 @@
             <x-card>
                 <h2 class="font-semibold mb-3">{{ __('procurement.advice.announce') }}</h2>
                 @if ($canImportAdvice)
+                    <form method="POST" action="{{ route('purchase-orders.confirmation.import', $order) }}" enctype="multipart/form-data" class="flex flex-wrap items-end gap-2 mb-3">
+                        @csrf
+                        <div class="fieldset grow">
+                            <label for="confirmation_xml" class="fieldset-label">{{ __('procurement.confirmation.import') }}@if ($order->supplier_confirmed_at !== null) <span class="text-xs text-muted">({{ __('procurement.confirmation.received', ['date' => $order->supplier_confirmed_at->orgTz()->isoFormat('L'), 'ref' => $order->supplier_order_ref ?? '—']) }})</span>@endif</label>
+                            <input id="confirmation_xml" name="confirmation_xml" type="file" accept=".xml,application/xml,text/xml" required class="file-input file-input-sm file-input-bordered">
+                        </div>
+                        <x-button type="submit" tone="secondary" size="sm">{{ __('procurement.confirmation.import_submit') }}</x-button>
+                    </form>
                     <form method="POST" action="{{ route('purchase-orders.advices.import', $order) }}" enctype="multipart/form-data" class="flex flex-wrap items-end gap-2 mb-3">
                         @csrf
                         <div class="fieldset grow">

@@ -18,10 +18,9 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="$change->title">
+        <x-page-toolbar :subtitle="$change->title"
+                        back-route="servicedesk.changes.index" :back-label="__('Zurück')">
             <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('servicedesk.changes.index')"
-                            show-label>{{ __('Zurück') }}</x-icon-btn>
                 @if ($canManage && in_array($change->status, ['approved', 'implementing'], true))
                     <x-icon-btn icon="task_alt" tone="primary" size="sm"
                                 data-entry-modal-trigger

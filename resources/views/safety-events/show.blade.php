@@ -32,7 +32,8 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$event->kind->label() . ' · ' . $event->severity->label()"
-                        :badge="$event->status->label()" :badgeTone="$event->status->tone()">
+                        :badge="$event->status->label()" :badgeTone="$event->status->tone()"
+                        back-route="safety-events.index" :back-label="__('safety.action.back')">
             <x-slot:actions>
                 @if ($canManage)
                     <x-icon-btn icon="edit" tone="outline" size="sm"
@@ -40,9 +41,6 @@
                                 :href="route('safety-events.edit', $event)"
                                 show-label>{{ __('safety.action.edit') }}</x-icon-btn>
                 @endif
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                            :href="route('safety-events.index')"
-                            show-label>{{ __('safety.action.back') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

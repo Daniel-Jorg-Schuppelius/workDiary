@@ -39,21 +39,21 @@
                     @endif
                     @if ($opportunity->go_decision === 'go' && $opportunity->isOpen())
                         {{-- Über den Assistenten: geprüft wird vor der Abgabe, nicht danach. --}}
-                        <x-icon-btn icon="outbox" tone="primary" size="sm" :href="route('tenders.submit-wizard', $opportunity)" show-label
+                        <x-icon-btn placement="bar" icon="outbox" tone="primary" size="sm" :href="route('tenders.submit-wizard', $opportunity)" show-label
                                     :title="__('Prüfen, ausgeben und Einreichung dokumentieren')">{{ __('Abgabe vorbereiten') }}</x-icon-btn>
                     @endif
                     @if ($opportunity->status === 'won')
                         <x-action-form :action="route('tenders.transfer', $opportunity)"
                               :confirm="__('Gewonnene Ausschreibung in ein Projekt überführen?')"
                               confirm-icon="folder_special" confirm-tone="primary" :confirm-label="__('Überführen')">
-                            <x-icon-btn icon="folder_special" tone="primary" size="sm" type="submit" show-label>{{ __('In Projekt überführen') }}</x-icon-btn>
+                            <x-icon-btn placement="bar" icon="folder_special" tone="primary" size="sm" type="submit" show-label>{{ __('In Projekt überführen') }}</x-icon-btn>
                         </x-action-form>
                     @endif
                 @endcan
                 @can('delete', $opportunity)
                     <x-action-form :action="route('tenders.destroy', $opportunity)" method="DELETE"
                           :confirm="__('Akte wirklich löschen?')" confirm-icon="delete" confirm-tone="error" :confirm-label="__('Löschen')">
-                        <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
+                        <x-icon-btn placement="danger" icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
                     </x-action-form>
                 @endcan
             </x-slot:actions>

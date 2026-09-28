@@ -18,8 +18,9 @@
         @if ($canManage)
             <x-icon-btn icon="add" size="sm" tone="primary" data-entry-modal-trigger :href="route('crisis.bia.create')" show-label>{{ __('crisis.bia.create') }}</x-icon-btn>
         @endif
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('crisis.index')" show-label>{{ __('crisis.bcm_report.back') }}</x-icon-btn>
     </x-slot:actions>
+
+    @include('crisis._tabs')
     <x-card padding="p-0">
         <x-table bare>
             <x-slot:head>

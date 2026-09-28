@@ -14,10 +14,10 @@
 @section('content')
 <x-index-page :subtitle="__('Belegungsfenster je Gerät: Reservierung, Verleih, Wartung, Reinigung und Transport — inklusive Pufferzeiten.')">
     <x-slot:actions>
-        <x-icon-btn icon="chevron_left" size="sm" :href="route('rental.calendar', array_merge(request()->query(), ['month' => $month->copy()->subMonth()->format('Y-m')]))" :label="__('Vormonat')" />
         <span class="font-medium">{{ $month->translatedFormat('F Y') }}</span>
-        <x-icon-btn icon="chevron_right" size="sm" :href="route('rental.calendar', array_merge(request()->query(), ['month' => $month->copy()->addMonth()->format('Y-m')]))" :label="__('Folgemonat')" />
     </x-slot:actions>
+
+    @include('rental._tabs')
 
     <x-filter-bar :action="route('rental.calendar')" :reset="route('rental.calendar')">
         <input type="hidden" name="month" value="{{ $month->format('Y-m') }}">

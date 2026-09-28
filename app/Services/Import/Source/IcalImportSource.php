@@ -15,17 +15,16 @@ namespace App\Services\Import\Source;
 use App\Enums\Import\ImportErrorCode;
 use App\Services\Import\{EntitySpec, ValidationIssue};
 use App\Services\Import\Source\Ical\IcalEvent;
+use CommonToolkit\Entities\ICalendar\{Document, Event};
 use CommonToolkit\Helper\Data\EmailHelper;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
+use CommonToolkit\Parsers\ICalendarParser;
 use DateTimeImmutable;
 use DateTimeZone;
-use Sabre\VObject\Component\VEvent;
-use Sabre\VObject\{DateTimeParser, Reader};
-use Sabre\VObject\Recur\EventIterator;
 use Throwable;
 
 /**
- * iCal-Quelle (MVP-438) auf `sabre/vobject`.
+ * iCal-Quelle (MVP-438) auf dem iCalendar-Parser des common-toolkit (MVP-965).
  *
  * Liest `VEVENT`s aus einer `.ics`-Datei (insbesondere Outlook-Exporte) und
  * bildet sie über einen {@see IcalEventMapper} auf die kanonischen Spalten der
@@ -66,34 +65,24 @@ final class IcalImportSource implements ImportSource {
 
     public function rows(EntitySpec $spec): iterable {
         try {
-            $document = Reader::read(
-                ToolkitFile::read($this->absolutePath),
-                Reader::OPTION_FORGIVING | Reader::OPTION_IGNORE_INVALID_LINES,
-            );
+            $document = ICalendarParser::fromString(ToolkitFile::read($this->absolutePath));
         } catch (Throwable $e) {
             throw new \RuntimeException((string) __('import.error.format.parse', ['reason' => $e->getMessage()]), 0, $e);
         }
 
         // Serie und ihre abweichenden Einzeltermine teilen die UID.
-        $groups = [];
-        foreach ($document->select('VEVENT') as $vevent) {
-            if ($vevent instanceof VEvent) {
-                $groups[trim((string) ($vevent->UID ?? '')) ?: spl_object_id($vevent)][] = $vevent;
-            }
-        }
-
         $number = 0;
-        foreach ($groups as $group) {
+        foreach ($document->getSeries() as $group) {
             $master = null;
-            foreach ($group as $vevent) {
-                if (isset($vevent->RRULE) && ! isset($vevent->{'RECURRENCE-ID'})) {
-                    $master = $vevent;
+            foreach ($group as $event) {
+                if ($event->has('RRULE') && ! $event->has('RECURRENCE-ID')) {
+                    $master = $event;
                 }
             }
 
             if ($master === null || $this->recurrenceWindow === null) {
-                foreach ($group as $vevent) {
-                    yield from $this->emit($this->extract($vevent), $number);
+                foreach ($group as $event) {
+                    yield from $this->emit($this->extract($event), $number);
                 }
 
                 continue;
@@ -141,28 +130,26 @@ final class IcalImportSource implements ImportSource {
 
     /**
      * Vorkommen einer Serie im Zeitraum; EXDATE und abweichende Einzeltermine
-     * (RECURRENCE-ID) löst der Iterator auf. Jedes Vorkommen bekommt eine
+     * (RECURRENCE-ID) löst das Toolkit auf. Jedes Vorkommen bekommt eine
      * eigene UID `uid#JJJJMMTTTHHMMSS`, damit ein erneuter Import idempotent bleibt.
      *
-     * @param  list<VEvent>  $group
+     * @param  list<Event>  $group
      * @return list<IcalEvent>
      */
     private function occurrences(array $group): array {
         [$from, $until] = $this->recurrenceWindow ?? throw new \LogicException('no recurrence window');
         $tz = new DateTimeZone($this->timezone);
         try {
-            $iterator = new EventIterator($group, null, $tz);
-            $iterator->fastForward($from);
+            $instances = Document::expand($group, $from, $until, $tz, self::MAX_OCCURRENCES);
         } catch (Throwable) {
             return [];
         }
 
         $out = [];
-        while ($iterator->valid() && $iterator->getDtStart() < $until && count($out) < self::MAX_OCCURRENCES) {
-            $occurrence = $iterator->getEventObject();
-            $base = $this->extract($occurrence);
+        foreach ($instances as $instance) {
+            $base = $this->extract($instance->getEvent(), $instance->getStart(), $instance->getEnd());
             $out[] = new IcalEvent(
-                uid: trim((string) ($occurrence->UID ?? '')) . '#' . $iterator->getDtStart()->setTimezone(new DateTimeZone('UTC'))->format('Ymd\THis'),
+                uid: $instance->getEvent()->getUid() . '#' . $instance->getStart()->setTimezone(new DateTimeZone('UTC'))->format('Ymd\THis'),
                 date: $base->date,
                 startTime: $base->startTime,
                 endTime: $base->endTime,
@@ -174,7 +161,6 @@ final class IcalImportSource implements ImportSource {
                 transparent: $base->transparent,
                 recurring: false,
             );
-            $iterator->next();
         }
 
         return $out;
@@ -200,41 +186,32 @@ final class IcalImportSource implements ImportSource {
         return false;
     }
 
-    private function extract(VEvent $vevent): IcalEvent {
+    /** Ohne $start/$end gelten DTSTART/DTEND bzw. DURATION des Termins; ein Serienvorkommen übergibt seine Zeiten. */
+    private function extract(Event $event, ?DateTimeImmutable $start = null, ?DateTimeImmutable $end = null): IcalEvent {
         $tz = new DateTimeZone($this->timezone);
-        $uid = trim((string) ($vevent->UID ?? ''));
+        $uid = $event->getUid();
         // Einzeltermin einer Serie ohne Serie in der Datei: eigene Kennung je Vorkommen.
-        if (isset($vevent->{'RECURRENCE-ID'})) {
-            $uid .= '#' . $vevent->{'RECURRENCE-ID'}->getDateTime()->setTimezone(new DateTimeZone('UTC'))->format('Ymd\THis');
+        $recurrenceId = $event->getRecurrenceId($tz);
+        if ($recurrenceId !== null) {
+            $uid .= '#' . $recurrenceId->setTimezone(new DateTimeZone('UTC'))->format('Ymd\THis');
         }
-        $summary = trim((string) ($vevent->SUMMARY ?? ''));
-        $description = trim((string) ($vevent->DESCRIPTION ?? ''));
-        $transparent = mb_strtoupper(trim((string) ($vevent->TRANSP ?? ''))) === 'TRANSPARENT';
-        $recurring = isset($vevent->RRULE);
-
-        $dtstart = $vevent->DTSTART ?? null;
-        $allDay = $dtstart !== null && ! $dtstart->hasTime();
+        $allDay = $event->isAllDay();
 
         $date = $startTime = $endTime = null;
-        if ($dtstart !== null && $dtstart->hasTime()) {
-            $start = $dtstart->getDateTime($tz)->setTimezone($tz);
+        $start ??= $event->getStart($tz);
+        if ($start !== null && ! $allDay) {
+            $start = $start->setTimezone($tz);
             $date = $start->format('Y-m-d');
             $startTime = $start->format('H:i');
-
-            $end = null;
-            if (isset($vevent->DTEND) && $vevent->DTEND->hasTime()) {
-                $end = $vevent->DTEND->getDateTime($tz)->setTimezone($tz);
-            } elseif (isset($vevent->DURATION)) {
-                $interval = DateTimeParser::parseDuration((string) $vevent->DURATION);
-                if ($interval instanceof \DateInterval) {
-                    $end = $start->add($interval);
-                }
+            if ($end === null) {
+                $duration = $event->getDuration();
+                $end = $event->endHasTime() ? $event->getEnd($tz) : ($duration !== null ? $start->add($duration) : null);
             }
             if ($end !== null) {
-                $endTime = $end->format('H:i');
+                $endTime = $end->setTimezone($tz)->format('H:i');
             }
-        } elseif ($allDay) {
-            $date = $dtstart->getDateTime($tz)->format('Y-m-d');
+        } elseif ($allDay && $start !== null) {
+            $date = $start->format('Y-m-d');
         }
 
         return new IcalEvent(
@@ -242,53 +219,24 @@ final class IcalImportSource implements ImportSource {
             date: $date,
             startTime: $startTime,
             endTime: $endTime,
-            summary: $summary,
-            description: $description,
-            email: $this->resolveEmail($vevent),
-            categories: $this->resolveCategories($vevent),
+            summary: $event->getSummary(),
+            description: $event->getDescription(),
+            email: $this->resolveEmail($event),
+            categories: $event->getCategories(),
             allDay: $allDay,
-            transparent: $transparent,
-            recurring: $recurring,
+            transparent: $event->isTransparent(),
+            recurring: $event->has('RRULE'),
         );
     }
 
-    private function resolveEmail(VEvent $vevent): ?string {
-        $candidates = [];
-        if (isset($vevent->ORGANIZER)) {
-            $candidates[] = (string) $vevent->ORGANIZER;
-        }
-        foreach ($vevent->select('ATTENDEE') as $attendee) {
-            $candidates[] = (string) $attendee;
-        }
-
-        foreach ($candidates as $candidate) {
+    private function resolveEmail(Event $event): ?string {
+        foreach (array_filter([$event->getOrganizer(), ...$event->getAttendees()]) as $candidate) {
             $value = trim($candidate);
-            if (stripos($value, 'mailto:') === 0) {
-                $value = substr($value, 7);
-            }
-            $value = trim($value);
             if (EmailHelper::isEmail($value)) {
                 return mb_strtolower($value);
             }
         }
 
         return null;
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function resolveCategories(VEvent $vevent): array {
-        $categories = [];
-        foreach ($vevent->select('CATEGORIES') as $property) {
-            foreach ((array) $property->getParts() as $part) {
-                $value = trim((string) $part);
-                if ($value !== '') {
-                    $categories[] = $value;
-                }
-            }
-        }
-
-        return array_values(array_unique($categories));
     }
 }

@@ -13,10 +13,8 @@
 @section('nav-title', __('recruiting.suitability.title'))
 
 @section('content')
-<x-index-page :subtitle="__('recruiting.suitability.subtitle', ['title' => $requisition->title])">
-    <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('recruiting.requisitions.show', $requisition)" :label="$requisition->title" />
-    </x-slot:actions>
+<x-index-page :subtitle="__('recruiting.suitability.subtitle', ['title' => $requisition->title])"
+              :back="route('recruiting.requisitions.show', $requisition)" :back-label="$requisition->title">
 
     <x-card :title="__('recruiting.suitability.requirements')" icon="checklist">
         @if ($matrix['requirements']->isEmpty())

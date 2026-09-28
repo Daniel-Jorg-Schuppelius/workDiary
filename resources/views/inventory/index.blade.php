@@ -25,10 +25,8 @@
      Reservierungen/Beschaffungsbedarf/Bestandsgrenzen — die Seite scrollt
      normal (Vollscan 2026-08 I10). --}}
 <x-index-page :subtitle="__('inventory.stock')">
-    <x-slot:actions>
-        <x-icon-btn icon="fact_check" size="sm" :href="route('inventory.counts.index', ['warehouse' => $selected?->sqid])" show-label>{{ __('inventory.count_ui.title') }}</x-icon-btn>
-        <x-icon-btn icon="warehouse" size="sm" :href="route('warehouses.index')" show-label>{{ __('inventory.warehouses') }}</x-icon-btn>
-    </x-slot:actions>
+
+    @include('inventory._tabs')
 
     @if ($warehouses->isEmpty())
         <x-empty-state framed :title="__('inventory.empty.warehouses')" />

@@ -19,7 +19,7 @@
     <x-slot:toolbar>
         <x-page-toolbar :title="$member->name"
                         :subtitle="__('flex.eligibility.subtitle', ['name' => $member->name])">
-            <x-slot:actions>
+            <x-slot:badges>
                 @if ($isCurrentlyEligible)
                     <x-status-badge tone="success" size="md" class="gap-2">
                         <x-icon name="schedule" />
@@ -31,7 +31,7 @@
                         {{ __('flex.eligibility.current.inactive') }}
                     </x-status-badge>
                 @endif
-            </x-slot:actions>
+            </x-slot:badges>
         </x-page-toolbar>
     </x-slot:toolbar>
 

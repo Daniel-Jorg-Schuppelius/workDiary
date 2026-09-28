@@ -19,7 +19,8 @@
 @section('content')
 <x-page-shell gap="4">
     <x-slot:toolbar>
-        <x-page-toolbar :title="__('accounting.reports.card.replacement_forecast.title')" :subtitle="__('accounting.reports.replacement.subtitle', ['from' => $asOf->fdate(), 'to' => $until->fdate(), 'inflation' => $inflation])">
+        <x-page-toolbar :title="__('accounting.reports.card.replacement_forecast.title')" :subtitle="__('accounting.reports.replacement.subtitle', ['from' => $asOf->fdate(), 'to' => $until->fdate(), 'inflation' => $inflation])"
+                        back-route="reports.accounting.index" :back-label="__('Zurück')">
             <x-slot:actions>
                 <form method="GET" action="{{ route('reports.accounting.replacement-forecast') }}" class="flex items-center gap-1">
                     <select name="years" class="select select-sm select-bordered" aria-label="{{ __('accounting.reports.replacement.horizon') }}">
@@ -27,10 +28,9 @@
                             <option value="{{ $y }}" @selected($y === $horizon)>{{ __('accounting.reports.replacement.years', ['count' => $y]) }}</option>
                         @endforeach
                     </select>
-                    <x-icon-btn icon="search" tone="ghost" size="sm" type="submit" :aria-label="__('accounting.reports.replacement.horizon')" />
+                    <x-icon-btn icon="search" tone="ghost" size="sm" type="submit" :label="__('accounting.reports.replacement.horizon')" />
                 </form>
                 <x-icon-btn icon="download" size="sm" tone="ghost" show-label :href="route('reports.accounting.replacement-forecast', ['years' => $horizon, 'export' => 'csv'])" :label="__('CSV')" />
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('reports.accounting.index')" :label="__('Zurück')" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

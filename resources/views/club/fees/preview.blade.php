@@ -15,9 +15,10 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('club.fees.subtitle.preview', ['month' => $month->translatedFormat('F Y')])">
     <x-slot:actions>
-        <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('club.fees.accounts.index')" show-label>{{ __('club.fees.title.accounts') }}</x-icon-btn>
         <x-help-button topic="club.fees" />
     </x-slot:actions>
+
+    @include('club.fees._tabs')
 
     <x-filter-bar :action="route('club.fees.preview')" :reset="route('club.fees.preview')">
         <label for="fee-preview-month" class="sr-only">{{ __('club.fees.field.month') }}</label>

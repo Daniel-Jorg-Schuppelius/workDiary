@@ -25,14 +25,9 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar :back="route('customers.show', $customer) . '#customer-billing'" :back-label="__('customer-billing.back_to_customer')">
             <x-slot:title>{{ $customer->name }} — {{ $statement->periodLabel() }}</x-slot:title>
             <x-slot:subtitle>{{ $locked ? __('customer-billing.locked_snapshot_hint') : __('customer-billing.provisional') }}</x-slot:subtitle>
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                            :href="route('customers.show', $customer) . '#customer-billing'"
-                            show-label>{{ __('customer-billing.back_to_customer') }}</x-icon-btn>
-            </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 

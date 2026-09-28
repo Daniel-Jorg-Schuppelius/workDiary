@@ -144,22 +144,14 @@
                             @endcan
                             @can('transition', $incident)
                                 @if ($incident->status->allowedTransitions() !== [])
-                                    <details class="dropdown dropdown-end">
-                                        <summary class="btn btn-outline btn-xs gap-1" title="{{ __('isms.action.transition') }}">
-                                            <x-icon name="swap_horiz" />
-                                        </summary>
-                                        <ul class="menu dropdown-content z-10 w-56 rounded-box bg-base-100 p-2 shadow">
-                                            @foreach ($incident->status->allowedTransitions() as $target)
-                                                <li>
-                                                    <form method="POST" action="{{ route('isms.incidents.transition', $incident) }}">
-                                                        @csrf
-                                                        <input type="hidden" name="status" value="{{ $target->value }}">
-                                                        <button type="submit" class="w-full text-left">{{ $target->label() }}</button>
-                                                    </form>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    </details>
+                                    <x-action-menu icon="swap_horiz" tone="outline" size="xs" icon-only :label="__('isms.action.transition')">
+                                        @foreach ($incident->status->allowedTransitions() as $target)
+                                            <x-action-form :action="route('isms.incidents.transition', $incident)">
+                                                <input type="hidden" name="status" value="{{ $target->value }}">
+                                                <x-button type="submit" tone="ghost" size="xs">{{ $target->label() }}</x-button>
+                                            </x-action-form>
+                                        @endforeach
+                                    </x-action-menu>
                                 @endif
                             @endcan
                             @can('delete', $incident)

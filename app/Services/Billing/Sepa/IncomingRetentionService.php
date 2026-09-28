@@ -17,6 +17,7 @@ use App\Models\Finance\IncomingInvoiceRetention;
 use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\User;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use RoundingMode;
@@ -28,6 +29,10 @@ use RuntimeException;
  * wird im Zahllauf als eigener Posten ausgezahlt.
  */
 class IncomingRetentionService {
+    /**
+     * @param  numeric-string|null  $percent
+     * @param  numeric-string|null  $amount
+     */
     public function add(IncomingEInvoice $invoice, RetentionKind $kind, ?string $percent, ?string $amount, ?CarbonImmutable $dueOn, ?string $note, User $actor): IncomingInvoiceRetention {
         if ($invoice->paid_in_run_id !== null) {
             throw new RuntimeException((string) __('sepa.retention.error.in_run'));
@@ -84,11 +89,15 @@ class IncomingRetentionService {
         });
     }
 
-    /** Summe der Einbehalte, die die Zahlung der Rechnung mindern (offen oder freigegeben). */
+    /**
+     * Summe der Einbehalte, die die Zahlung der Rechnung mindern (offen oder freigegeben).
+     *
+     * @return numeric-string
+     */
     public function retainedAmount(IncomingEInvoice $invoice): string {
         $sum = '0.00';
         foreach ($invoice->retentions()->whereIn('status', [RetentionStatus::Open->value, RetentionStatus::Released->value])->pluck('amount') as $amount) {
-            $sum = bcadd($sum, (string) $amount, 2);
+            $sum = bcadd($sum, NumberHelper::normalizeDecimalString((string) $amount), 2);
         }
 
         return $sum;

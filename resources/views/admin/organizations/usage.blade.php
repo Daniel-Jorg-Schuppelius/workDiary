@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Nutzung je Mandant (MVP-951). Erwartet: $rows, $organizations --}}
+{{-- Nutzung je Mandant (MVP-951). Erwartet: $rows, $organizations, $planRequests --}}
 @extends('layouts.app')
 
 @section('title', __('platform_usage.title'))
@@ -17,11 +17,48 @@
 @endphp
 
 @section('content')
-<x-index-page :subtitle="__('platform_usage.subtitle')">
+<x-index-page :subtitle="__('platform_usage.subtitle')"
+              back-route="admin.organizations.index" :back-label="__('platform_usage.back')">
     <x-slot:actions>
+        <x-icon-btn icon="receipt_long" size="sm" :href="route('admin.organizations.billing')" show-label>{{ __('platform_usage.billing.title') }}</x-icon-btn>
         <x-icon-btn icon="eco" size="sm" :href="route('admin.organizations.branch-benchmark')" show-label>{{ __('platform_usage.benchmark.link') }}</x-icon-btn>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('admin.organizations.index')" show-label>{{ __('platform_usage.back') }}</x-icon-btn>
     </x-slot:actions>
+    {{-- Offene Tarifanfragen (MVP-957) --}}
+    @if ($planRequests->isNotEmpty())
+        <x-card :title="__('platform_usage.plan_request.open_title')" padding="p-0" class="mb-4">
+            <x-table bare>
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('platform_usage.field.organization') }}</th>
+                        <th>{{ __('platform_usage.plan_request.field.plan') }}</th>
+                        <th>{{ __('platform_usage.plan_request.field.note') }}</th>
+                        <th class="text-right">{{ __('Aktionen') }}</th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($planRequests as $planRequest)
+                    <tr>
+                        <td>{{ $planRequest->organization->name ?? '—' }}</td>
+                        <td>{{ __('platform_usage.plan.' . $planRequest->requested_plan) }}@if (($planRequest->requested_addons ?? []) !== []) <span class="text-xs text-muted">+ {{ implode(', ', $planRequest->requested_addons) }}</span>@endif</td>
+                        <td class="text-sm">{{ $planRequest->note ?? '—' }}</td>
+                        <td class="text-right">
+                            <div class="flex justify-end gap-1">
+                                <form method="POST" action="{{ route('admin.organizations.plan-requests.decide', $planRequest->sqid) }}">
+                                    @csrf
+                                    <input type="hidden" name="decision" value="done">
+                                    <x-icon-btn icon="check" size="xs" type="submit" :title="__('platform_usage.plan_request.done')" />
+                                </form>
+                                <form method="POST" action="{{ route('admin.organizations.plan-requests.decide', $planRequest->sqid) }}">
+                                    @csrf
+                                    <input type="hidden" name="decision" value="declined">
+                                    <x-icon-btn icon="close" size="xs" type="submit" :title="__('platform_usage.plan_request.decline')" />
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+            </x-table>
+        </x-card>
+    @endif
     <x-card padding="p-0">
         <x-table bare>
             <x-slot:head>

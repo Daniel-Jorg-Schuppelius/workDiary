@@ -18,7 +18,8 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$horse->kind->label() . ($horse->owner ? ' · ' . $horse->owner->fullName() : '') . ($horse->suitable_for ? ' · ' . $horse->suitable_for : '')"
                         :badge="$horse->is_active ? __('club.grading.label.active') : __('club.label.inactive')"
-                        :badgeTone="$horse->is_active ? 'success' : 'ghost'">
+                        :badgeTone="$horse->is_active ? 'success' : 'ghost'"
+                        back-route="club.horses.index" :back-label="__('club.action.back')">
             <x-slot:actions>
                 <x-icon-btn icon="stadium" tone="outline" size="sm" :href="route('club.resources.show', $resource)" show-label>{{ __('club.horses.action.resource') }}</x-icon-btn>
                 @if ($canManage)
@@ -26,7 +27,6 @@
                     <x-icon-btn icon="verified_user" tone="outline" size="sm" data-entry-modal-trigger :href="route('club.resources.clearances.create', $resource)" show-label>{{ __('club.horses.action.clearance') }}</x-icon-btn>
                     <x-icon-btn icon="edit" tone="outline" size="sm" data-entry-modal-trigger :href="route('club.horses.edit', $horse)" show-label>{{ __('club.action.edit') }}</x-icon-btn>
                 @endif
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('club.horses.index')" show-label>{{ __('club.action.back') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

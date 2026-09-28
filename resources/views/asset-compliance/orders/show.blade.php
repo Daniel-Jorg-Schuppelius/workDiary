@@ -17,15 +17,15 @@
 @endphp
 
 @section('content')
-<x-index-page :subtitle="$order->supplier?->name">
+<x-index-page :subtitle="$order->supplier?->name"
+              back-route="asset-compliance.orders.index" :back-label="__('inspection_order.title')">
     <x-slot:actions>
         @if ($canManage && in_array(S::Cancelled, $order->status->allowedTransitions(), true))
             <form method="POST" action="{{ route('asset-compliance.orders.cancel', $order) }}" data-confirm-dialog data-confirm-message="{{ __('inspection_order.confirm_cancel') }}" data-confirm-tone="error">
                 @csrf
-                <button type="submit" class="btn btn-sm btn-ghost text-error">{{ __('inspection_order.cancel') }}</button>
+                <x-button type="submit" tone="ghost" class="text-error">{{ __('inspection_order.cancel') }}</x-button>
             </form>
         @endif
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('asset-compliance.orders.index')" show-label>{{ __('inspection_order.title') }}</x-icon-btn>
     </x-slot:actions>
 
     <x-card>

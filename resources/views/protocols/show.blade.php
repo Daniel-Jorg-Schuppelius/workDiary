@@ -30,32 +30,34 @@
             <span class="text-xs">
                 <x-term :glossary="$protocol->type === \App\Enums\Protocol\ProtocolType::Acceptance ? 'abnahme' : null">{{ $protocol->type->label() }}</x-term> · {{ \App\Support\EntityType::label($protocol->subject_type) }}@if ($subjectLabel !== null): {{ $subjectLabel }}@endif
             </span>
-            <x-slot:actions>
+            <x-slot:badges>
                 <x-status-badge size="sm">{{ $protocol->status->label() }}</x-status-badge>
+            </x-slot:badges>
+            <x-slot:actions>
                 @can('requestReview', $protocol)
                     <x-action-form :action="route('protocols.transition', [$protocol, 'requestReview'])">
-                        <x-icon-btn icon="rate_review" size="sm" type="submit" show-label>{{ __('protocol.action.requestReview') }}</x-icon-btn>
+                        <x-icon-btn placement="bar" icon="rate_review" size="sm" type="submit" show-label>{{ __('protocol.action.requestReview') }}</x-icon-btn>
                     </x-action-form>
                 @endcan
                 @can('returnToDraft', $protocol)
-                    <x-icon-btn icon="undo" size="sm" data-entry-modal-trigger :href="route('protocols.transition-form', [$protocol, 'returnToDraft'])" show-label>{{ __('protocol.action.returnToDraft') }}</x-icon-btn>
+                    <x-icon-btn placement="menu" icon="undo" size="sm" data-entry-modal-trigger :href="route('protocols.transition-form', [$protocol, 'returnToDraft'])" show-label>{{ __('protocol.action.returnToDraft') }}</x-icon-btn>
                 @endcan
                 @can('sign', $protocol)
-                    <x-icon-btn icon="draw" tone="primary" size="sm" data-entry-modal-trigger :href="route('protocols.transition-form', [$protocol, 'sign'])" show-label>{{ __('protocol.action.sign') }}</x-icon-btn>
+                    <x-icon-btn placement="bar" icon="draw" tone="primary" size="sm" data-entry-modal-trigger :href="route('protocols.transition-form', [$protocol, 'sign'])" show-label>{{ __('protocol.action.sign') }}</x-icon-btn>
                     @can(\App\Enums\User\Permission::ProtocolSignatureRequest->value)
                         <x-icon-btn icon="link" size="sm" data-entry-modal-trigger :href="route('protocols.signature-tokens.create', $protocol)" show-label>{{ __('protocol.dialog.token_title') }}</x-icon-btn>
                     @endcan
                 @endcan
                 @can('supersede', $protocol)
-                    <x-icon-btn icon="history_edu" size="sm" data-entry-modal-trigger :href="route('protocols.transition-form', [$protocol, 'supersede'])" show-label>{{ __('protocol.action.supersede') }}</x-icon-btn>
+                    <x-icon-btn placement="menu" icon="history_edu" size="sm" data-entry-modal-trigger :href="route('protocols.transition-form', [$protocol, 'supersede'])" show-label>{{ __('protocol.action.supersede') }}</x-icon-btn>
                 @endcan
                 @can('archive', $protocol)
                     <x-action-form :action="route('protocols.transition', [$protocol, 'archive'])" :confirm="__('protocol.dialog.archive_confirm')">
-                        <x-icon-btn icon="archive" size="sm" type="submit" show-label>{{ __('protocol.action.archive') }}</x-icon-btn>
+                        <x-icon-btn placement="menu" icon="archive" size="sm" type="submit" show-label>{{ __('protocol.action.archive') }}</x-icon-btn>
                     </x-action-form>
                 @endcan
                 @can(\App\Enums\User\Permission::ProtocolTemplateManage->value)
-                    <x-icon-btn icon="library_add" size="sm" data-entry-modal-trigger :href="route('protocols.as-template.form', $protocol)" show-label>{{ __('protocol.template.save_title') }}</x-icon-btn>
+                    <x-icon-btn placement="menu" icon="library_add" size="sm" data-entry-modal-trigger :href="route('protocols.as-template.form', $protocol)" show-label>{{ __('protocol.template.save_title') }}</x-icon-btn>
                 @endcan
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm" :href="route('protocols.pdf', $protocol)" show-label>{{ __('PDF') }}</x-icon-btn>
             </x-slot:actions>

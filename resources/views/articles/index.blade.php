@@ -33,32 +33,27 @@
                         :href="route('articles.duplicates.index')"
                         show-label>{{ __('Artikel-Abgleich') }}</x-icon-btn>
         @endif
-        <div class="dropdown dropdown-end">
-            <x-icon-btn icon="download" size="sm" type="button" tabindex="0" show-label>
-                {{ __('article.action.export_datanorm') }}
-            </x-icon-btn>
-            <ul tabindex="0" class="dropdown-content menu z-30 mt-1 w-72 rounded-box border border-base-300 bg-base-100 p-2 shadow">
-                <li><a href="{{ route('articles.export.datanorm', ['version' => 5, 'prices' => 'list']) }}">{{ __('article.action.export_datanorm_v5_list') }}</a></li>
-                <li><a href="{{ route('articles.export.datanorm', ['version' => 5, 'prices' => 'net']) }}">{{ __('article.action.export_datanorm_v5_net') }}</a></li>
-                <li><a href="{{ route('articles.export.datanorm', ['version' => 4, 'prices' => 'list']) }}">{{ __('article.action.export_datanorm_v4_list') }}</a></li>
-                <li><a href="{{ route('articles.sales-discount-groups.index') }}">{{ __('article.discount_group.title') }}</a></li>
-                <li class="menu-title">{{ __('article.action.export_datpreis_title') }}</li>
-                <li><a href="{{ route('articles.export.datanorm', ['type' => 'prices', 'version' => 5, 'prices' => 'list']) }}">{{ __('article.action.export_datpreis_v5') }}</a></li>
-                <li><a href="{{ route('articles.export.datanorm', ['type' => 'prices', 'version' => 4, 'prices' => 'list']) }}">{{ __('article.action.export_datpreis_v4') }}</a></li>
-                <li><a href="{{ route('articles.export.datanorm', ['type' => 'prices', 'version' => 5, 'prices' => 'list', 'since_days' => 30]) }}">{{ __('article.action.export_datpreis_since') }}</a></li>
-                <li class="pointer-events-auto">
-                    {{-- MVP-566: frei wählbares Änderungsdatum --}}
-                    <form method="GET" action="{{ route('articles.export.datanorm') }}" class="flex items-center gap-1 px-2 py-1">
-                        <input type="hidden" name="type" value="prices">
-                        <input type="hidden" name="version" value="5">
-                        <input type="hidden" name="prices" value="list">
-                        <input type="date" name="since" required max="{{ now()->toDateString() }}"
-                               class="input input-bordered input-xs" aria-label="{{ __('article.action.export_datpreis_custom') }}">
-                        <button type="submit" class="btn btn-ghost btn-xs">{{ __('article.action.export_datpreis_custom') }}</button>
-                    </form>
-                </li>
-            </ul>
-        </div>
+        <x-action-menu icon="download" :label="__('article.action.export_datanorm')">
+            <x-button tone="ghost" :href="route('articles.export.datanorm', ['version' => 5, 'prices' => 'list'])">{{ __('article.action.export_datanorm_v5_list') }}</x-button>
+            <x-button tone="ghost" :href="route('articles.export.datanorm', ['version' => 5, 'prices' => 'net'])">{{ __('article.action.export_datanorm_v5_net') }}</x-button>
+            <x-button tone="ghost" :href="route('articles.export.datanorm', ['version' => 4, 'prices' => 'list'])">{{ __('article.action.export_datanorm_v4_list') }}</x-button>
+            <x-button tone="ghost" :href="route('articles.sales-discount-groups.index')">{{ __('article.discount_group.title') }}</x-button>
+            <p class="wd-menu-heading">{{ __('article.action.export_datpreis_title') }}</p>
+            <x-button tone="ghost" :href="route('articles.export.datanorm', ['type' => 'prices', 'version' => 5, 'prices' => 'list'])">{{ __('article.action.export_datpreis_v5') }}</x-button>
+            <x-button tone="ghost" :href="route('articles.export.datanorm', ['type' => 'prices', 'version' => 4, 'prices' => 'list'])">{{ __('article.action.export_datpreis_v4') }}</x-button>
+            <x-button tone="ghost" :href="route('articles.export.datanorm', ['type' => 'prices', 'version' => 5, 'prices' => 'list', 'since_days' => 30])">{{ __('article.action.export_datpreis_since') }}</x-button>
+            {{-- MVP-566: frei wählbares Änderungsdatum --}}
+            <div class="px-2 py-1">
+                <form method="GET" action="{{ route('articles.export.datanorm') }}" class="flex items-center gap-1">
+                    <input type="hidden" name="type" value="prices">
+                    <input type="hidden" name="version" value="5">
+                    <input type="hidden" name="prices" value="list">
+                    <input type="date" name="since" required max="{{ now()->toDateString() }}"
+                           class="input input-bordered input-xs" aria-label="{{ __('article.action.export_datpreis_custom') }}">
+                    <x-button type="submit" tone="ghost" size="xs">{{ __('article.action.export_datpreis_custom') }}</x-button>
+                </form>
+            </div>
+        </x-action-menu>
         @can('create', App\Models\Article\Article::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger

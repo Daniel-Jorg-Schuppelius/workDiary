@@ -18,19 +18,19 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar back-route="reports.assets" :back-label="__('Zur Produktanalyse')">
             <x-slot:subtitle>
                 {{ $label }} · {{ __('Schwelle: :n Defekte in :m Monaten', ['n' => $threshold, 'm' => $windowMonths]) }}
             </x-slot:subtitle>
             <x-slot:actions>
-                <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.assets.drilldown.recurring-defects', ['export' => 'csv'])"
-                            show-label>CSV</x-icon-btn>
-                <x-icon-btn icon="table_view" tone="outline" size="sm"
-                            :href="route('reports.assets.drilldown.recurring-defects', ['export' => 'xlsx'])"
-                            show-label>Excel</x-icon-btn>
-                <x-icon-btn icon="arrow_back" tone="outline" size="sm"
-                            :href="route('reports.assets')" show-label>{{ __('Zur Produktanalyse') }}</x-icon-btn>
+                <x-action-menu icon="download" tone="outline" :label="__('Export')">
+                    <x-icon-btn icon="download" tone="outline" size="sm"
+                                :href="route('reports.assets.drilldown.recurring-defects', ['export' => 'csv'])"
+                                show-label>CSV</x-icon-btn>
+                    <x-icon-btn icon="table_view" tone="outline" size="sm"
+                                :href="route('reports.assets.drilldown.recurring-defects', ['export' => 'xlsx'])"
+                                show-label>Excel</x-icon-btn>
+                </x-action-menu>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

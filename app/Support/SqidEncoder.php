@@ -26,6 +26,14 @@ use Sqids\Sqids;
  * gleiche Sqid ergibt.
  */
 final class SqidEncoder {
+    /**
+     * Obergrenze plausibler Primärschlüssel. Die Sqid eines fremden Modells
+     * besteht gelegentlich auch den Rundlauf-Check, dekodiert dann aber zu einer
+     * riesigen Zahl (gemessen: kleinster Fehltreffer 6,8·10¹² bei rund einer
+     * Million Proben, 2026-09-28); Auto-Increment-IDs erreichen diesen Bereich nicht.
+     */
+    public const MAX_ID = 999_999_999_999;
+
     /** @var array<class-string, Sqids> */
     private array $encoders = [];
 
@@ -74,7 +82,7 @@ final class SqidEncoder {
         }
 
         $id = $decoded[0];
-        if ($id <= 0) {
+        if ($id <= 0 || $id > self::MAX_ID) {
             return null;
         }
 

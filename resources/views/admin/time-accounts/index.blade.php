@@ -23,7 +23,7 @@
                     @csrf
                     <input type="number" name="days" min="1" max="400" value="40"
                            class="input input-sm input-bordered w-20" aria-label="{{ __('Tage') }}">
-                    <button type="submit" class="btn btn-sm btn-outline">{{ __('Jetzt bebuchen') }}</button>
+                    <x-button type="submit" tone="outline">{{ __('Jetzt bebuchen') }}</x-button>
                 </form>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger

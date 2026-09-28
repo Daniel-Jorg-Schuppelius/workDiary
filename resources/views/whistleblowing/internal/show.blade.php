@@ -12,12 +12,8 @@
 @section('nav-title', $case->case_number)
 
 @section('content')
-    <x-index-page :subtitle="__('Fallakte einer Hinweisgeber-Meldung bearbeiten.')">
-        <x-slot:actions>
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                        :href="route('whistleblowing.internal.index')"
-                        show-label>{{ __('Zurück zur Liste') }}</x-icon-btn>
-        </x-slot:actions>
+    <x-index-page :subtitle="__('Fallakte einer Hinweisgeber-Meldung bearbeiten.')"
+                  back-route="whistleblowing.internal.index" :back-label="__('Zurück zur Liste')">
 
         <x-card>
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Fallinformationen') }}</h2>

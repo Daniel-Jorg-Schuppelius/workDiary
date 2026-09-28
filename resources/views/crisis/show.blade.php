@@ -150,6 +150,8 @@
             @endif
         </x-card>
 
+        @include('crisis._room', ['case' => $case, 'roomMarkers' => $roomMarkers, 'roomPresent' => $roomPresent, 'roomPoints' => $roomPoints, 'canManage' => $canManage])
+
         {{-- Lagebild (MVP-214) --}}
         <x-card :title="__('Lagebild (versioniert)')">
             @if ($canManage && ! in_array($case->status, ['closed', 'discarded'], true))
@@ -365,6 +367,8 @@
                         <option value="safety_event">{{ __('Arbeitsschutzereignis') }}</option>
                         <option value="procedure_run">{{ __('Playbook-/Prozedurlauf') }}</option>
                         <option value="document">{{ __('Dokument') }}</option>
+                        <option value="asset">{{ __('crisis.room.link.asset') }}</option>
+                        <option value="customer">{{ __('crisis.room.link.customer') }}</option>
                     </select>
                     <input aria-label="{{ __('Sqid/ID des Vorgangs') }}" name="linkable_sqid" required maxlength="64" class="input input-sm input-bordered w-40" placeholder="{{ __('Sqid/ID des Vorgangs') }}">
                     <x-icon-btn icon="link" tone="primary" size="sm" type="submit" show-label>{{ __('Verknüpfen') }}</x-icon-btn>

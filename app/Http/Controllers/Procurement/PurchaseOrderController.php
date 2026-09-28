@@ -254,6 +254,20 @@ class PurchaseOrderController extends Controller {
         return back()->with('success', __('procurement.advice.flash.imported'));
     }
 
+    /** Auftragsbestätigung des Lieferanten als openTRANS ORDERRESPONSE (MVP-964). */
+    public function importConfirmation(Request $request, PurchaseOrder $purchaseOrder, \App\Services\Procurement\OrderResponseImportService $import): RedirectResponse {
+        $this->canManage();
+        $request->validate(['confirmation_xml' => ['required', 'file', 'mimetypes:application/xml,text/xml', 'max:2048']]);
+        try {
+            $result = $import->import(File::read((string) $request->file('confirmation_xml')?->getRealPath()), $purchaseOrder);
+        } catch (RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
+        $redirect = back()->with('success', __('procurement.confirmation.flash.imported', ['count' => $result['confirmed']]));
+
+        return $result['deviations'] === [] ? $redirect : $redirect->with('warning', __('procurement.confirmation.flash.deviations', ['count' => count($result['deviations'])]));
+    }
+
     /**
      * Gleicht eine hochgeladene UGL-Rechnung (GC-Gruppe / SHK) gegen die Bestellung
      * ab (Feature 050): Positionen über Lieferanten-SKU, Mengen/Beträge mit Toleranz.

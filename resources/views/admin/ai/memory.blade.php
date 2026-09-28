@@ -23,8 +23,9 @@
         <x-icon-btn icon="download" size="sm"
                     :href="route('admin.ai.memory.export', array_filter(['kunde' => request()->query('kunde')]))"
                     show-label>{{ __('Export (JSON)') }}</x-icon-btn>
-        <x-icon-btn icon="smart_toy" size="sm" :href="route('admin.ai.index')" show-label>{{ __('ai.title.connections') }}</x-icon-btn>
     </x-slot:actions>
+
+    @include('admin.ai._tabs')
 
     {{-- Transparenz-Hinweis: kein Fine-Tuning, nur Prompt-Kontext (Feature 025). --}}
     <div class="alert bg-info/10 border-info/30 text-sm text-base-content" role="note">

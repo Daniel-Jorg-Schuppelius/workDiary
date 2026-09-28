@@ -1743,4 +1743,11 @@ Your fee management',
         ],
         'overdue_count' => '{1}one overdue|[2,*]:count overdue',
     ],
+    // Reiter der Termin-Sichten (MVP-969).
+    'tab' => [
+        'event' => 'Event',
+        'match' => 'Match day',
+        'competition' => 'Competition',
+        'attendance' => 'Attendance',
+    ],
 ];

@@ -12,6 +12,10 @@
     'badge'    => null,
     'badgeTone' => 'primary',
     'badgeTitle' => null,
+    'back'      => null,
+    'backRoute' => null,
+    'backParams' => [],
+    'backLabel' => null,
     'gap'      => 4,
     'overflow' => 'auto',
     'height'   => 'standard',
@@ -31,6 +35,8 @@
       - subtitle  : kurze Seitenbeschreibung (Pflicht im Standard)
       - badge     : optionaler Status-/Kontext-Badge
       - badgeTone : Tone für Badge (primary|success|warning|error|info)
+      - back / backRoute / backParams / backLabel : Rückpfeil vor dem Titel
+        (siehe x-page-toolbar)
 
     Props (Shell, durchgereicht an x-page-shell):
       - gap       : Lücke zwischen Karten (Tailwind-Spacing, Default 4)
@@ -40,6 +46,7 @@
     Slots:
       - actions (named) : rechte Toolbar-Aktionen (z. B. x-icon-btn „Anlegen")
       - note (named)    : optionaler Beschreibungstext unter dem Subtitle in der Toolbar
+      - badges (named)  : Statusabzeichen neben dem Titel
       - default         : Karten/Inhalt (Filter-Card, Tabellen, Empty-States …)
 
     Beispiel (ohne Filter):
@@ -61,7 +68,11 @@
 
 <x-page-shell :gap="$gap" :overflow="$overflow" :height="$height">
     <x-slot:toolbar>
-        <x-page-toolbar :title="$title" :subtitle="$subtitle" :badge="$badge" :badgeTone="$badgeTone" :badgeTitle="$badgeTitle">
+        <x-page-toolbar :title="$title" :subtitle="$subtitle" :badge="$badge" :badgeTone="$badgeTone" :badgeTitle="$badgeTitle"
+                        :back="$back" :backRoute="$backRoute" :backParams="$backParams" :backLabel="$backLabel">
+            @isset($badges)
+                <x-slot:badges>{{ $badges }}</x-slot:badges>
+            @endisset
             @isset($actions)
                 <x-slot:actions>{{ $actions }}</x-slot:actions>
             @endisset

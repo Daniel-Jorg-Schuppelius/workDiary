@@ -51,6 +51,9 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
 
     Route::middleware(['auth:customer', 'two-factor.setup:customer'])->group(function (): void {
         Route::get('/', DashboardController::class)->name('dashboard');
+        // Hilfe (MVP-959): Themen je freigegebenem Bereich.
+        Route::get('/hilfe', [\App\Http\Controllers\CustomerPortal\HelpController::class, 'index'])->name('help.index');
+        Route::get('/hilfe/{topic}', [\App\Http\Controllers\CustomerPortal\HelpController::class, 'show'])->where('topic', 'customer-portal\.[a-z-]+')->name('help.show');
 
         // Bereichsfreigaben (MVP-511): jede Fachroute hängt hinter dem
         // zentralen Capability-Gate — nicht Freigegebenes antwortet 404,

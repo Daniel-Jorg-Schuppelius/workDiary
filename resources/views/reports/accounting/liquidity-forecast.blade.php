@@ -22,12 +22,25 @@
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('accounting.reports.forecast.subtitle', ['date' => $as_of->fdate(), 'weeks' => $weeks])">
         <x-slot:actions>
-            @foreach ($horizons as $horizon)
-                <x-icon-btn icon="date_range" size="sm" :tone="$horizon === $weeks ? 'primary' : 'ghost'" show-label
-                            :href="route('reports.accounting.liquidity-forecast', array_filter(['weeks' => $horizon, 'scenario' => $scenario?->sqid]))"
-                            :label="__('accounting.reports.forecast.horizon', ['weeks' => $horizon])" />
-            @endforeach
-            {{-- Szenario (MVP-954) --}}
+            <x-icon-btn icon="tune" size="sm" tone="ghost" show-label placement="menu" :href="route('reports.accounting.liquidity-scenarios.index')" :label="__('accounting.reports.scenario.manage')" />
+            <x-icon-btn icon="picture_as_pdf" size="sm" tone="ghost" show-label
+                        :href="route('reports.accounting.liquidity-forecast', ['weeks' => $weeks, 'export' => 'pdf'])" :label="__('PDF')" />
+            <x-action-menu icon="download" :label="__('Export')">
+                <x-icon-btn icon="download" size="sm" tone="ghost" show-label
+                            :href="route('reports.accounting.liquidity-forecast', ['weeks' => $weeks, 'export' => 'csv'])" :label="__('CSV')" />
+                <x-icon-btn icon="table_view" size="sm" tone="ghost" show-label
+                            :href="route('reports.accounting.liquidity-forecast', ['weeks' => $weeks, 'export' => 'xlsx'])" :label="__('Excel')" />
+            </x-action-menu>
+        </x-slot:actions>
+
+        {{-- Horizont als Reiter, Szenario als Filter (MVP-954/969) — beides keine Aktionen des Kopfs. --}}
+        <div class="flex flex-none flex-wrap items-center justify-between gap-3">
+            <x-tab-nav class="w-fit" :items="collect($horizons)->map(fn($horizon) => [
+                'href' => route('reports.accounting.liquidity-forecast', array_filter(['weeks' => $horizon, 'scenario' => $scenario?->sqid])),
+                'label' => __('accounting.reports.forecast.horizon', ['weeks' => $horizon]),
+                'icon' => 'date_range',
+                'active' => $horizon === $weeks,
+            ])->all()" />
             <form method="GET" action="{{ route('reports.accounting.liquidity-forecast') }}" class="flex items-center gap-1">
                 <input type="hidden" name="weeks" value="{{ $weeks }}">
                 <select name="scenario" class="select select-bordered select-sm" aria-label="{{ __('accounting.reports.scenario.select') }}" data-autosubmit>
@@ -36,16 +49,9 @@
                         <option value="{{ $option->sqid }}" @selected($scenario?->is($option))>{{ $option->name }}</option>
                     @endforeach
                 </select>
-                <x-icon-btn icon="play_arrow" size="sm" tone="ghost" type="submit" :title="__('accounting.reports.scenario.apply')" />
+                <x-icon-btn icon="play_arrow" size="sm" tone="ghost" type="submit" :label="__('accounting.reports.scenario.apply')" />
             </form>
-            <x-icon-btn icon="tune" size="sm" tone="ghost" show-label :href="route('reports.accounting.liquidity-scenarios.index')" :label="__('accounting.reports.scenario.manage')" />
-            <x-icon-btn icon="download" size="sm" tone="ghost" show-label
-                        :href="route('reports.accounting.liquidity-forecast', ['weeks' => $weeks, 'export' => 'csv'])" :label="__('CSV')" />
-            <x-icon-btn icon="table_view" size="sm" tone="ghost" show-label
-                        :href="route('reports.accounting.liquidity-forecast', ['weeks' => $weeks, 'export' => 'xlsx'])" :label="__('Excel')" />
-            <x-icon-btn icon="picture_as_pdf" size="sm" tone="ghost" show-label
-                        :href="route('reports.accounting.liquidity-forecast', ['weeks' => $weeks, 'export' => 'pdf'])" :label="__('PDF')" />
-        </x-slot:actions>
+        </div>
 
         <div class="alert bg-warning/10 border-warning/30 text-sm text-base-content" role="note">
             <x-icon name="info" />

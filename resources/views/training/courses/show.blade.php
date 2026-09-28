@@ -16,7 +16,8 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$course->legal_basis ?? __('training.subtitle.courses')"
                         :badge="$course->is_mandatory ? __('training.field.is_mandatory') : null"
-                        badgeTone="error">
+                        badgeTone="error"
+                        back-route="training.courses.index" :back-label="__('training.action.back')">
             <x-slot:actions>
                 @if ($canManage)
                     <x-icon-btn icon="add" tone="primary" size="sm"
@@ -28,9 +29,6 @@
                                 :href="route('training.courses.edit', $course)"
                                 show-label>{{ __('training.action.edit') }}</x-icon-btn>
                 @endif
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                            :href="route('training.courses.index')"
-                            show-label>{{ __('training.action.back') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

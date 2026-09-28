@@ -16,9 +16,11 @@
     <x-slot:actions>
         <form method="POST" action="{{ route('rental.reports.snapshot', ['from' => $from->toDateString(), 'to' => $to->toDateString()]) }}">
             @csrf
-            <button type="submit" class="btn btn-sm">{{ __('Snapshot einfrieren') }}</button>
+            <x-button type="submit" tone="ghost">{{ __('Snapshot einfrieren') }}</x-button>
         </form>
     </x-slot:actions>
+
+    @include('rental._tabs')
 
     <x-filter-bar :action="route('rental.reports.index')" :reset="route('rental.reports.index')">
         <x-date-range class="w-80 shrink-0" :label="false" from-name="from" to-name="to"

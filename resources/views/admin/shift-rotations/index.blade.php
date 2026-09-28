@@ -27,7 +27,7 @@
                     @csrf
                     <input type="number" name="weeks" min="1" max="26" value="4"
                            class="input input-sm input-bordered w-16" aria-label="{{ __('Wochen') }}">
-                    <button type="submit" class="btn btn-sm btn-outline">{{ __('Jetzt fortschreiben') }}</button>
+                    <x-button type="submit" tone="outline">{{ __('Jetzt fortschreiben') }}</x-button>
                 </form>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger

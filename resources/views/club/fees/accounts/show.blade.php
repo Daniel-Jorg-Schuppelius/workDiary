@@ -13,7 +13,8 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="$account->name . ($account->customer?->number ? ' · ' . $account->customer->number : '')">
+        <x-page-toolbar :subtitle="$account->name . ($account->customer?->number ? ' · ' . $account->customer->number : '')"
+                        back-route="club.fees.accounts.index" :back-label="__('club.action.back')">
             <x-slot:actions>
                 @if ($canManage)
                     <x-icon-btn icon="payments" tone="primary" size="sm" data-entry-modal-trigger :href="route('club.fees.payments.create', $account)" show-label>{{ __('club.fees.action.record_payment') }}</x-icon-btn>
@@ -21,7 +22,6 @@
                     <x-icon-btn icon="settings" tone="outline" size="sm" data-entry-modal-trigger :href="route('club.fees.accounts.settings.edit', $account)" show-label>{{ __('club.fees.action.account_settings') }}</x-icon-btn>
                     <x-icon-btn icon="edit" tone="outline" size="sm" data-entry-modal-trigger :href="route('club.fees.accounts.edit', $account)" show-label>{{ __('club.action.edit') }}</x-icon-btn>
                 @endif
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('club.fees.accounts.index')" show-label>{{ __('club.action.back') }}</x-icon-btn>
                 <x-help-button topic="club.fees" />
             </x-slot:actions>
         </x-page-toolbar>

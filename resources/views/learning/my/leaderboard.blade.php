@@ -16,7 +16,8 @@
 @section('wrapper-height-class', 'wd-page-fill')
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 @section('content')
-<x-index-page overflow="clip" :subtitle="__('learning.subtitle.leaderboard')">
+<x-index-page overflow="clip" :subtitle="__('learning.subtitle.leaderboard')"
+              back-route="learning.my.index" :back-label="__('learning.action.back')">
     <x-slot:actions>
         <form method="POST" action="{{ route('learning.my.leaderboard.opt-in') }}">
             @csrf
@@ -24,7 +25,6 @@
             <x-icon-btn :icon="$optedIn ? 'visibility_off' : 'visibility'" :tone="$optedIn ? 'outline' : 'primary'" size="sm" type="submit"
                         show-label>{{ __($optedIn ? 'learning.action.leaderboard_opt_out' : 'learning.action.leaderboard_opt_in') }}</x-icon-btn>
         </form>
-        <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('learning.my.index')" show-label>{{ __('learning.action.back') }}</x-icon-btn>
     </x-slot:actions>
 
     <div class="alert alert-info text-sm" role="status">

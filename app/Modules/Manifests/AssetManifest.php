@@ -89,6 +89,7 @@ final class AssetManifest extends Manifest {
             \App\Services\Import\EntitySpec::class => [
                 \App\Services\Asset\Import\AssetSpec::class,
                 \App\Plugins\RemoteSupport\Import\RemoteSessionSpec::class,
+                \App\Services\MeterReading\Import\MeterReadingSpec::class,
             ],
         ];
     }

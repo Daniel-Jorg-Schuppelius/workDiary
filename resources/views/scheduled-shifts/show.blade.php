@@ -13,14 +13,12 @@
 @section('content')
     <x-page-shell>
         <x-slot:toolbar>
-            <x-page-toolbar :badge="$shift->statusLabel()" :badge-tone="$shift->statusTone()">
+            <x-page-toolbar :badge="$shift->statusLabel()" :badge-tone="$shift->statusTone()"
+                            back-route="schedule.index" :back-label="__('Zurück')">
                 @if ($shift->user)
                     <span>{{ $shift->user->name }}</span>
                 @endif
                 <x-slot:actions>
-                    <x-icon-btn icon="arrow_back" size="sm"
-                                :href="route('schedule.index')"
-                                show-label>{{ __('Zurück') }}</x-icon-btn>
                     @can('update', $shift)
                         <x-icon-btn icon="edit" tone="primary" size="sm"
                                     data-entry-modal-trigger

@@ -22,9 +22,9 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Kontrollhistorie (Nachweis)')">
+        <x-page-toolbar :subtitle="__('Kontrollhistorie (Nachweis)')"
+                        back-route="driver-license-checks.index" :back-label="__('Übersicht')">
             <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('driver-license-checks.index')" show-label>{{ __('Übersicht') }}</x-icon-btn>
                 @can(\App\Enums\User\Permission::VehicleManage->value)
                     <x-icon-btn icon="add" tone="primary" size="sm"
                                 data-entry-modal-trigger

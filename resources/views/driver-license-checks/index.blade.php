@@ -20,9 +20,9 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Dokumentierte Sichtprüfungen je Fahrer (Halterhaftung); überfällige Kontrollen sperren die Fahrzeugreservierung.')">
+        <x-page-toolbar :subtitle="__('Dokumentierte Sichtprüfungen je Fahrer (Halterhaftung); überfällige Kontrollen sperren die Fahrzeugreservierung.')"
+                        back-route="vehicles.index" :back-label="__('Fuhrpark')">
             <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('vehicles.index')" show-label>{{ __('Fuhrpark') }}</x-icon-btn>
                 @can(\App\Enums\User\Permission::VehicleManage->value)
                     <x-icon-btn icon="add" tone="primary" size="sm"
                                 data-entry-modal-trigger

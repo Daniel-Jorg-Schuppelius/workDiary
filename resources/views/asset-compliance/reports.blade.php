@@ -15,17 +15,15 @@
 <x-index-page :subtitle="__('Fällige und überfällige Prüfungen, Sperren, Abweichungen und Prüfquote mit Drilldown.')">
     <x-slot:actions>
         {{-- CSV-Export (MVP-292; Vollaudit 2026-07, M33). --}}
-        <x-icon-btn icon="download" tone="ghost" size="sm"
-                    :href="route('asset-compliance.reports.index', ['export' => 'csv', 'from' => $from->toDateString(), 'to' => $to->toDateString()])"
-                    show-label>{{ __('CSV') }}</x-icon-btn>
-        <x-icon-btn icon="table_view" tone="ghost" size="sm"
-                    :href="route('asset-compliance.reports.index', ['export' => 'xlsx', 'from' => $from->toDateString(), 'to' => $to->toDateString()])"
-                    show-label>Excel</x-icon-btn>
+        <x-action-menu icon="download" :label="__('Export')">
+        </x-action-menu>
         <form method="POST" action="{{ route('asset-compliance.reports.snapshot', ['from' => $from->toDateString(), 'to' => $to->toDateString()]) }}">
             @csrf
-            <button type="submit" class="btn btn-sm">{{ __('Snapshot einfrieren') }}</button>
+            <x-button type="submit" tone="ghost">{{ __('Snapshot einfrieren') }}</x-button>
         </form>
     </x-slot:actions>
+
+    @include('asset-compliance._tabs')
 
     <x-filter-bar :action="route('asset-compliance.reports.index')" :reset="route('asset-compliance.reports.index')">
         <x-date-range class="w-80 shrink-0" :label="false" from-name="from" to-name="to"

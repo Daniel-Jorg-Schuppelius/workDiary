@@ -23,7 +23,8 @@
 @endphp
 
 @section('content')
-    <x-index-page :title="__('resale.reconcile.show_title', ['customer' => $customer->name])" :subtitle="__('resale.reconcile.show_subtitle')">
+    <x-index-page :title="__('resale.reconcile.show_title', ['customer' => $customer->name])" :subtitle="__('resale.reconcile.show_subtitle')"
+                  back-route="finance.resale.reconcile.index" :back-label="__('resale.action.back')">
         <x-slot:actions>
             @if ($canManage)
                 <form method="POST" action="{{ route('finance.resale.periods.propose') }}">
@@ -35,7 +36,6 @@
                 <x-icon-btn icon="receipt_long" tone="ghost" size="sm" data-entry-modal-trigger :href="route('finance.resale.periods.draft.create')" show-label>{{ __('resale.draft.action') }}</x-icon-btn>
             @endcan
             <x-icon-btn icon="person" tone="ghost" size="sm" :href="route('customers.show', $customer)" show-label>{{ __('resale.reconcile.action.customer') }}</x-icon-btn>
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('finance.resale.reconcile.index')" show-label>{{ __('resale.action.back') }}</x-icon-btn>
         </x-slot:actions>
 
         {{-- Zuordnung und Halterwechsel senden ohne Dialog: Feldfehler landen hier. --}}

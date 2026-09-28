@@ -14,9 +14,8 @@
 
 @section('content')
     <x-index-page :subtitle="__('contract.price_index.subtitle')">
-        <x-slot:actions>
-            <x-icon-btn icon="arrow_back" size="sm" :href="route('contracts.index')" show-label>{{ __('Verträge') }}</x-icon-btn>
-        </x-slot:actions>
+
+    @include('contracts._tabs')
         @if ($pending > 0)
             <div class="alert alert-warning mb-3 text-sm">{{ __('contract.price_index.pending', ['count' => $pending]) }}</div>
         @endif

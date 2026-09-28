@@ -19,11 +19,12 @@
                     <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger :href="route('club.fees.tariffs.create')" show-label>{{ __('club.fees.action.create_tariff') }}</x-icon-btn>
                     <x-icon-btn icon="add_circle" tone="outline" size="sm" data-entry-modal-trigger :href="route('club.fees.surcharges.create')" show-label>{{ __('club.fees.action.create_surcharge') }}</x-icon-btn>
                 @endif
-                <x-icon-btn icon="account_balance_wallet" tone="ghost" size="sm" :href="route('club.fees.accounts.index')" show-label>{{ __('club.fees.title.accounts') }}</x-icon-btn>
                 <x-help-button topic="club.fees" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    @include('club.fees._tabs')
 
     @if ($errors->any())
         <div class="alert alert-error text-sm" role="alert">

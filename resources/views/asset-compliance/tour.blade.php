@@ -13,10 +13,8 @@
 @section('nav-title', __('inspection_tour.title'))
 
 @section('content')
-    <x-index-page :subtitle="__('inspection_tour.subtitle')">
-        <x-slot:actions>
-            <x-icon-btn icon="arrow_back" size="sm" :href="route('asset-compliance.schedules.index')" :label="__('Prüfkalender')" />
-        </x-slot:actions>
+    <x-index-page :subtitle="__('inspection_tour.subtitle')"
+                  back-route="asset-compliance.schedules.index" :back-label="__('Prüfkalender')">
 
         <x-filter-bar :action="route('asset-compliance.tours.index')" :reset="route('asset-compliance.tours.index')">
             <select name="inspector" class="select select-sm select-bordered w-56 shrink-0" aria-label="{{ __('inspection_tour.inspector') }}">

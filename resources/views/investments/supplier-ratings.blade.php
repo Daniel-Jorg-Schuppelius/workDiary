@@ -18,9 +18,8 @@
 
 @section('content')
 <x-index-page :subtitle="__('investment.supplier_rating.subtitle')">
-    <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('investments.index')" :label="__('Investitionen')" />
-    </x-slot:actions>
+
+    @include('investments._tabs')
     <x-card padding="p-0">
         <x-table bare>
             <x-slot:head>

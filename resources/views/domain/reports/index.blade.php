@@ -12,9 +12,8 @@
 
 @section('content')
 <x-index-page :subtitle="__('domain.reports.subtitle')">
-    <x-slot:actions>
-        <x-icon-btn icon="dns" size="sm" :href="route('domains.index')" show-label>{{ __('domain.title.index') }}</x-icon-btn>
-    </x-slot:actions>
+
+    @include('domain._tabs')
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         @foreach ($corridors as $days => $count)

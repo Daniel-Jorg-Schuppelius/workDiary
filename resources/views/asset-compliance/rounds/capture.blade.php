@@ -15,10 +15,8 @@
 @section('content')
 <x-page-shell gap="3">
     <x-slot:toolbar>
-        <x-page-toolbar :title="$item->asset?->name" :subtitle="$item->assignment?->profile?->name">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('asset-compliance.rounds.show', $round)" :label="$round->name" />
-            </x-slot:actions>
+        <x-page-toolbar :title="$item->asset?->name" :subtitle="$item->assignment?->profile?->name"
+                        :back="route('asset-compliance.rounds.show', $round)" :back-label="$round->name">
         </x-page-toolbar>
     </x-slot:toolbar>
 

@@ -10,13 +10,11 @@
 @section('title', $measure->name)
 @section('nav-title', $measure->name)
 @section('content')
-    <x-index-page :subtitle="__('Maßnahme versionieren, zuordnen und auf Wirksamkeit prüfen.')">
-        <x-slot:actions>
+    <x-index-page :subtitle="__('Maßnahme versionieren, zuordnen und auf Wirksamkeit prüfen.')"
+                  back-route="dataprotection.tom.index" :back-label="__('Zurück')">
+        <x-slot:badges>
             <x-status-badge tone="ghost" size="sm">{{ $measure->category->label() }} · {{ $measure->implementation_status->label() }}</x-status-badge>
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                        :href="route('dataprotection.tom.index')"
-                        show-label>{{ __('Zurück') }}</x-icon-btn>
-        </x-slot:actions>
+        </x-slot:badges>
 
 
         @if ($measure->currentVersion)

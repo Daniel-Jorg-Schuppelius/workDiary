@@ -23,15 +23,17 @@
         <x-page-toolbar :subtitle="__('Stunden und Erlöse je Monat für ein einzelnes Projekt.')">
             <x-slot:actions>
                 @if ($project)
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.project-details', array_merge($standardFilters->toQueryParams(), ['export' => 'csv']))"
-                                show-label>CSV</x-icon-btn>
-                    <x-icon-btn icon="table_chart" tone="outline" size="sm"
-                                :href="route('reports.project-details', array_merge($standardFilters->toQueryParams(), ['export' => 'xlsx']))"
-                                show-label>XLSX</x-icon-btn>
                     <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
                                 :href="route('reports.project-details', array_merge($standardFilters->toQueryParams(), ['export' => 'pdf']))"
                                 show-label>PDF</x-icon-btn>
+                    <x-action-menu icon="download" tone="outline" :label="__('Export')">
+                        <x-icon-btn icon="download" tone="outline" size="sm"
+                                    :href="route('reports.project-details', array_merge($standardFilters->toQueryParams(), ['export' => 'csv']))"
+                                    show-label>CSV</x-icon-btn>
+                        <x-icon-btn icon="table_chart" tone="outline" size="sm"
+                                    :href="route('reports.project-details', array_merge($standardFilters->toQueryParams(), ['export' => 'xlsx']))"
+                                    show-label>XLSX</x-icon-btn>
+                    </x-action-menu>
                 @endif
             </x-slot:actions>
         </x-page-toolbar>

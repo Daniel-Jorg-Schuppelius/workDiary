@@ -13,12 +13,8 @@
 
 @section('content')
     <x-index-page :subtitle="__('Verarbeitungstätigkeit, Versionen und Datenschutz-Folgenabschätzung.')"
-                  :badge="$activity->status->label()" badge-tone="ghost">
-        <x-slot:actions>
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                        :href="route('dataprotection.activities.index')"
-                        show-label>{{ __('Zurück') }}</x-icon-btn>
-        </x-slot:actions>
+                  :badge="$activity->status->label()" badge-tone="ghost"
+                  back-route="dataprotection.activities.index" :back-label="__('Zurück')">
 
 
         <x-card>

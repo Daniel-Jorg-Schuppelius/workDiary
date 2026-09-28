@@ -14,9 +14,8 @@
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('procurement.ui.incoming_subtitle')">
-    <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('purchase-orders.index')" show-label>{{ __('procurement.title') }}</x-icon-btn>
-    </x-slot:actions>
+
+    @include('purchase-orders._tabs')
 
     @if ($lines->isEmpty())
         <x-empty-state framed icon="local_shipping"

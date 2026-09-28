@@ -12,9 +12,8 @@
 
 @section('content')
 <x-index-page :subtitle="$bill->name">
-    <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('bill-of-quantities.show', $bill)" show-label>{{ __('gaeb.show.back') }}</x-icon-btn>
-    </x-slot:actions>
+
+    @include('bill-of-quantities._tabs')
 
     @if ($comparison['bidders'] === [])
         <x-empty-state framed icon="table_chart"

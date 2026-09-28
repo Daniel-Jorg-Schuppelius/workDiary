@@ -14,23 +14,23 @@
 @php $isCancelled = $claim->status === \App\Enums\Club\ClubFeeClaimStatus::Cancelled; @endphp
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="$claim->number . ' · ' . ($claim->account?->name ?? '')" :badge="$claim->status->label()" :badgeTone="$claim->status->tone()">
+        <x-page-toolbar :subtitle="$claim->number . ' · ' . ($claim->account?->name ?? '')" :badge="$claim->status->label()" :badgeTone="$claim->status->tone()"
+                        back-route="club.fees.claims.index" :back-label="__('club.action.back')">
             <x-slot:actions>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm" :href="route('club.fees.claims.pdf', $claim)" show-label>{{ __('club.fees.action.pdf') }}</x-icon-btn>
                 @if ($canManage && ! $isCancelled)
                     @if ($claim->account && $claim->openAmount()->isPositive())
-                        <x-icon-btn icon="payments" tone="primary" size="sm" data-entry-modal-trigger :href="route('club.fees.payments.create', [$claim->account, $claim])" show-label>{{ __('club.fees.action.record_payment') }}</x-icon-btn>
+                        <x-icon-btn placement="bar" icon="payments" tone="primary" size="sm" data-entry-modal-trigger :href="route('club.fees.payments.create', [$claim->account, $claim])" show-label>{{ __('club.fees.action.record_payment') }}</x-icon-btn>
                     @endif
                     @if ($canDun)
                         <x-icon-btn icon="notification_important" tone="outline" size="sm" class="btn-warning" data-entry-modal-trigger :href="route('club.fees.claims.dun.edit', $claim)" show-label>{{ __('club.fees.action.dun', ['level' => $claim->dunning_level + 1]) }}</x-icon-btn>
                     @endif
                     <x-icon-btn icon="outgoing_mail" tone="primary" size="sm" data-entry-modal-trigger :href="route('club.fees.claims.send.edit', $claim)" show-label>{{ __('club.fees.action.send') }}</x-icon-btn>
-                    <x-icon-btn icon="difference" tone="outline" size="sm" data-entry-modal-trigger :href="route('club.fees.claims.correction.create', $claim)" show-label>{{ __('club.fees.action.correction') }}</x-icon-btn>
+                    <x-icon-btn placement="menu" icon="difference" tone="outline" size="sm" data-entry-modal-trigger :href="route('club.fees.claims.correction.create', $claim)" show-label>{{ __('club.fees.action.correction') }}</x-icon-btn>
                     @if ($claim->paid_amount->isZero())
-                        <x-icon-btn icon="block" tone="outline" size="sm" class="btn-warning" data-entry-modal-trigger :href="route('club.fees.claims.cancel.edit', $claim)" show-label>{{ __('club.fees.action.cancel_claim') }}</x-icon-btn>
+                        <x-icon-btn placement="danger" icon="block" tone="outline" size="sm" class="btn-warning" data-entry-modal-trigger :href="route('club.fees.claims.cancel.edit', $claim)" show-label>{{ __('club.fees.action.cancel_claim') }}</x-icon-btn>
                     @endif
                 @endif
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('club.fees.claims.index')" show-label>{{ __('club.action.back') }}</x-icon-btn>
                 <x-help-button topic="club.fees" />
             </x-slot:actions>
         </x-page-toolbar>

@@ -31,15 +31,10 @@
 
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('compliance.history.subtitle')">
-            <x-slot:actions>
-                <x-icon-btn icon="table_view" tone="outline" size="sm"
-                            :href="route('reports.arbzg-compliance')" show-label>{{ __('compliance.history.to_report') }}</x-icon-btn>
-                <x-icon-btn icon="insights" tone="outline" size="sm"
-                            :href="route('reports.compliance.dashboard')" show-label>{{ __('compliance.history.to_dashboard') }}</x-icon-btn>
-            </x-slot:actions>
-        </x-page-toolbar>
+        <x-page-toolbar :subtitle="__('compliance.history.subtitle')" />
     </x-slot:toolbar>
+
+    @include('reports._compliance_tabs')
 
     <x-filter-bar :action="route('reports.compliance.history')" :reset="route('reports.compliance.history')">
         @include('reports._standard_filters', [

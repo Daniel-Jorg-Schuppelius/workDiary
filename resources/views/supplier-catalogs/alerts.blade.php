@@ -11,10 +11,8 @@
 @section('nav-title', __('procurement.alert.title'))
 
 @section('content')
-<x-index-page :subtitle="__('procurement.alert.subtitle')">
-    <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('supplier-catalogs.index')" show-label>{{ __('procurement.catalog.title') }}</x-icon-btn>
-    </x-slot:actions>
+<x-index-page :subtitle="__('procurement.alert.subtitle')"
+              back-route="supplier-catalogs.index" :back-label="__('procurement.catalog.title')">
 
     @if ($alerts->total() === 0)
         <x-empty-state framed icon="check_circle"

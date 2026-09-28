@@ -30,23 +30,24 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$timeLabel . ' · ' . ($match->is_home ? __('club.matches.label.home') : __('club.matches.label.away')) . ($match->venue ? ' · ' . $match->venue : ($event->rooms->isNotEmpty() ? ' · ' . $event->rooms->pluck('name')->implode(', ') : ''))"
                         :badge="$isCancelled ? __('club.events.label.cancelled') : ($match->result_summary ?? $match->lineup_status->label())"
-                        :badgeTone="$isCancelled ? 'error' : ($match->result_summary ? 'primary' : $match->lineup_status->tone())">
+                        :badgeTone="$isCancelled ? 'error' : ($match->result_summary ? 'primary' : $match->lineup_status->tone())"
+                        back-route="club.matches.index" :back-label="__('club.action.back')">
             <x-slot:actions>
                 @if ($canManage && ! $isCancelled)
-                    <x-icon-btn icon="scoreboard" tone="primary" size="sm" data-entry-modal-trigger :href="route('club.matches.result.edit', $event)" show-label>{{ __('club.matches.action.record_result') }}</x-icon-btn>
+                    <x-icon-btn placement="bar" icon="scoreboard" tone="primary" size="sm" data-entry-modal-trigger :href="route('club.matches.result.edit', $event)" show-label>{{ __('club.matches.action.record_result') }}</x-icon-btn>
                     <x-icon-btn icon="sports" tone="outline" size="sm" data-entry-modal-trigger :href="route('club.matches.roles.create', $event)" show-label>{{ __('club.matches.action.add_role') }}</x-icon-btn>
-                    <x-icon-btn icon="fact_check" tone="outline" size="sm" :href="route('club.events.attendance.show', $event)" show-label>{{ __('club.attendance.action.open') }}</x-icon-btn>
                 @endif
                 @if ($canEdit)
                     <x-icon-btn icon="edit" tone="outline" size="sm" data-entry-modal-trigger :href="route('club.matches.edit', $event)" show-label>{{ __('club.action.edit') }}</x-icon-btn>
                     @unless ($isCancelled)
-                        <x-icon-btn icon="event_busy" tone="outline" size="sm" class="btn-warning" data-entry-modal-trigger :href="route('club.events.cancel.edit', $event)" show-label>{{ __('club.events.action.cancel_event') }}</x-icon-btn>
+                        <x-icon-btn placement="danger" icon="event_busy" tone="outline" size="sm" class="btn-warning" data-entry-modal-trigger :href="route('club.events.cancel.edit', $event)" show-label>{{ __('club.events.action.cancel_event') }}</x-icon-btn>
                     @endunless
                 @endif
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('club.matches.index')" show-label>{{ __('club.action.back') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    @include('club.events._tabs')
 
     <div class="grid gap-4 lg:grid-cols-3">
         <div class="space-y-4 lg:col-span-2">

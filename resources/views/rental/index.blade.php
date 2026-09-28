@@ -20,10 +20,9 @@
                         :href="route('rental.create')"
                         show-label>{{ __('Neue Verleihakte') }}</x-icon-btn>
         @endcan
-        <x-icon-btn icon="calendar_month" size="sm" :href="route('rental.calendar')" show-label>{{ __('Kalender') }}</x-icon-btn>
-        <x-icon-btn icon="mark_email_unread" size="sm" :href="route('rental.requests.index')" show-label>{{ __('Verleih-Anfragen') }}</x-icon-btn>
-        <x-icon-btn icon="query_stats" size="sm" :href="route('rental.reports.index')" show-label>{{ __('Verleihbericht') }}</x-icon-btn>
     </x-slot:actions>
+
+    @include('rental._tabs')
 
     <div class="grid gap-4 sm:grid-cols-2">
         <x-kpi-tile :label="__('Offene Verleihvorgänge')" :value="$openCount" />

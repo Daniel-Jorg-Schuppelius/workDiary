@@ -26,11 +26,11 @@
             <x-slot:actions>
                 <x-icon-btn icon="picture_as_pdf" tone="ghost" size="sm" :href="route('agile.reports.export.pdf', $project)" show-label>PDF</x-icon-btn>
                 <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('agile.reports.export.csv', [$project, 'velocity'])" show-label>{{ __('CSV Velocity') }}</x-icon-btn>
-                <x-icon-btn icon="view_kanban" tone="ghost" size="sm" :href="route('agile.board', $project)" show-label>{{ __('Zum Board') }}</x-icon-btn>
-                <x-icon-btn icon="sprint" tone="ghost" size="sm" :href="route('agile.sprints', $project)" show-label>{{ __('Sprints') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    @include('agile._tabs')
 
     @if ($sprints->isNotEmpty())
         <form method="GET" action="{{ route('agile.reports.sprint', $project) }}" class="flex items-center gap-2">

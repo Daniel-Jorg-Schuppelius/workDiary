@@ -19,9 +19,8 @@
 
 @section('content')
 <x-index-page :subtitle="$bill->name">
-    <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('bill-of-quantities.show', $bill)" show-label>{{ __('gaeb.show.back_to_boq') }}</x-icon-btn>
-    </x-slot:actions>
+
+    @include('bill-of-quantities._tabs')
 
     <x-card :title="__('gaeb.billing.proposal')">
         <div class="flex flex-wrap items-end gap-6">

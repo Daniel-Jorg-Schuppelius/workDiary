@@ -21,12 +21,14 @@
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('accounting.reports.period', ['from' => $from->fdate(), 'to' => $to->fdate()])">
         <x-slot:actions>
-            <x-icon-btn icon="download" size="sm" tone="ghost" show-label
-                        :href="route('reports.accounting.trial-balance', ['export' => 'csv'])" :label="__('CSV')" />
-            <x-icon-btn icon="table_view" size="sm" tone="ghost" show-label
-                        :href="route('reports.accounting.trial-balance', ['export' => 'xlsx'])" :label="__('Excel')" />
             <x-icon-btn icon="picture_as_pdf" size="sm" tone="ghost" show-label
                         :href="route('reports.accounting.trial-balance', ['export' => 'pdf'])" :label="__('PDF')" />
+            <x-action-menu icon="download" :label="__('Export')">
+                <x-icon-btn icon="download" size="sm" tone="ghost" show-label
+                            :href="route('reports.accounting.trial-balance', ['export' => 'csv'])" :label="__('CSV')" />
+                <x-icon-btn icon="table_view" size="sm" tone="ghost" show-label
+                            :href="route('reports.accounting.trial-balance', ['export' => 'xlsx'])" :label="__('Excel')" />
+            </x-action-menu>
         </x-slot:actions>
 
         <x-table scroll="flex" :zebra="true">

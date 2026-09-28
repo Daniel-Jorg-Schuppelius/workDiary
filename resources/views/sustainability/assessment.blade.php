@@ -14,7 +14,8 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :title="$assessment->subject_label . ' · V' . $assessment->version" :badge="__('values.' . $assessment->status)" badge-tone="outline">
+        <x-page-toolbar :title="$assessment->subject_label . ' · V' . $assessment->version" :badge="__('values.' . $assessment->status)" badge-tone="outline"
+                        back-route="sustainability.index" :back-label="__('Übersicht')">
         <div class="text-sm text-base-content/70">
             @if ($assessment->total_score !== null)
                 {{ __('Score :score / 5', ['score' => $assessment->total_score]) }} ·
@@ -23,7 +24,6 @@
             @if ($assessment->assessed_at) · {{ $assessment->assessed_at->fdatetime() }} @endif
         </div>
         <x-slot:actions>
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('sustainability.index')" show-label>{{ __('Übersicht') }}</x-icon-btn>
             @if ($canManage)
                 @unless ($assessment->isFinal())
                     <x-action-form :action="route('sustainability.assessments.finalize', $assessment)"

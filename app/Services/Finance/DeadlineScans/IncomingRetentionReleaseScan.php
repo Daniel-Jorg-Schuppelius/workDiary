@@ -48,7 +48,7 @@ class IncomingRetentionReleaseScan extends AbstractDeadlineScan {
         ]);
     }
 
-    /** @return array<string, mixed> */
+    /** @return array{title: string, message: string, url: string|null, due_at: \Illuminate\Support\Carbon|null} */
     private function payload(IncomingInvoiceRetention $retention, string $phase): array {
         $invoice = $retention->incomingEInvoice;
         $params = [

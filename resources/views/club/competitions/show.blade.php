@@ -25,23 +25,24 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$timeLabel . ' · ' . ($competition->profile?->name ?? '') . ($competition->venue ? ' · ' . $competition->venue : '')"
                         :badge="$isCancelled ? __('club.events.label.cancelled') : ($reviewCount > 0 ? __('club.competitions.label.review_count', ['count' => $reviewCount]) : $details->kind->label())"
-                        :badgeTone="$isCancelled ? 'error' : ($reviewCount > 0 ? 'warning' : 'primary')">
+                        :badgeTone="$isCancelled ? 'error' : ($reviewCount > 0 ? 'warning' : 'primary')"
+                        back-route="club.competitions.index" :back-label="__('club.action.back')">
             <x-slot:actions>
                 @if ($canManage && ! $isCancelled)
-                    <x-icon-btn icon="how_to_reg" tone="primary" size="sm" data-entry-modal-trigger :href="route('club.competitions.entries.create', $event)" show-label>{{ __('club.competitions.action.enter') }}</x-icon-btn>
+                    <x-icon-btn placement="bar" icon="how_to_reg" tone="primary" size="sm" data-entry-modal-trigger :href="route('club.competitions.entries.create', $event)" show-label>{{ __('club.competitions.action.enter') }}</x-icon-btn>
                     <x-icon-btn icon="sports" tone="outline" size="sm" data-entry-modal-trigger :href="route('club.matches.roles.create', $event)" show-label>{{ __('club.matches.action.add_role') }}</x-icon-btn>
-                    <x-icon-btn icon="fact_check" tone="outline" size="sm" :href="route('club.events.attendance.show', $event)" show-label>{{ __('club.attendance.action.open') }}</x-icon-btn>
                 @endif
                 @if ($canEdit)
                     <x-icon-btn icon="edit" tone="outline" size="sm" data-entry-modal-trigger :href="route('club.competitions.edit', $event)" show-label>{{ __('club.action.edit') }}</x-icon-btn>
                     @unless ($isCancelled)
-                        <x-icon-btn icon="event_busy" tone="outline" size="sm" class="btn-warning" data-entry-modal-trigger :href="route('club.events.cancel.edit', $event)" show-label>{{ __('club.events.action.cancel_event') }}</x-icon-btn>
+                        <x-icon-btn placement="danger" icon="event_busy" tone="outline" size="sm" class="btn-warning" data-entry-modal-trigger :href="route('club.events.cancel.edit', $event)" show-label>{{ __('club.events.action.cancel_event') }}</x-icon-btn>
                     @endunless
                 @endif
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('club.competitions.index')" show-label>{{ __('club.action.back') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    @include('club.events._tabs')
 
     @if ($missingRangeOfficer)
         <div class="alert alert-warning mb-3 text-sm" role="status"><x-icon name="security" /><span>{{ __('club.competitions.hint.range_officer_missing') }}</span></div>

@@ -22,9 +22,9 @@
                         :href="route('passenger-rides.create')"
                         show-label>{{ __('passenger.rides.action.create') }}</x-icon-btn>
         @endcan
-        <x-icon-btn icon="payments" size="sm" :href="route('passenger-settlements.index')" show-label>{{ __('passenger.settlements.title') }}</x-icon-btn>
-        <x-icon-btn icon="tune" size="sm" :href="route('passenger-masterdata.index')" show-label>{{ __('passenger.masterdata.title') }}</x-icon-btn>
     </x-slot:actions>
+
+    @include('passenger._tabs')
 
     <div class="grid gap-4 sm:grid-cols-2">
         <x-kpi-tile :label="__('passenger.rides.kpi.open')" :value="$openCount" />

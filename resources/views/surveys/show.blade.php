@@ -17,7 +17,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar back-route="surveys.index" :back-label="__('Zur Liste')">
             <div class="flex min-w-0 items-center gap-2">
                 <span class="truncate font-medium">{{ $survey->title }}</span>
                 @if ($survey->anonymous)<span class="badge badge-outline badge-sm">{{ __('anonym') }}</span>@endif
@@ -31,7 +31,6 @@
                         </x-icon-btn>
                     </x-action-form>
                 @endif
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('surveys.index')" show-label>{{ __('Zur Liste') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

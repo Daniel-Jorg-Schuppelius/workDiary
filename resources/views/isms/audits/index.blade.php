@@ -135,22 +135,14 @@
                                                                 :href="route('isms.audits.findings.edit', $finding)"
                                                                 :label="__('isms.action.edit_finding')" />
                                                     @if ($finding->status->allowedTransitions() !== [])
-                                                        <details class="dropdown dropdown-end">
-                                                            <summary class="btn btn-outline btn-xs gap-1" title="{{ __('isms.action.transition') }}">
-                                                                <x-icon name="swap_horiz" />
-                                                            </summary>
-                                                            <ul class="menu dropdown-content z-10 w-64 rounded-box bg-base-100 p-2 shadow">
-                                                                @foreach ($finding->status->allowedTransitions() as $target)
-                                                                    <li>
-                                                                        <form method="POST" action="{{ route('isms.audits.findings.transition', $finding) }}">
-                                                                            @csrf
-                                                                            <input type="hidden" name="status" value="{{ $target->value }}">
-                                                                            <button type="submit" class="w-full text-left">{{ $target->label() }}</button>
-                                                                        </form>
-                                                                    </li>
-                                                                @endforeach
-                                                            </ul>
-                                                        </details>
+                                                        <x-action-menu icon="swap_horiz" tone="outline" size="xs" icon-only :label="__('isms.action.transition')">
+                                                            @foreach ($finding->status->allowedTransitions() as $target)
+                                                            <x-action-form :action="route('isms.audits.findings.transition', $finding)">
+                                                                <input type="hidden" name="status" value="{{ $target->value }}">
+                                                                <x-button type="submit" tone="ghost" size="xs">{{ $target->label() }}</x-button>
+                                                            </x-action-form>
+                                                            @endforeach
+                                                        </x-action-menu>
                                                     @endif
                                                     <x-action-form :action="route('isms.audits.findings.destroy', $finding)" method="DELETE"
                                                           data-confirm-title="{{ __('isms.action.delete') }}"
@@ -195,28 +187,21 @@
                                                                                 :href="route('isms.audits.actions.edit', $action)"
                                                                                 :label="__('isms.action.edit_action')" />
                                                                     @if ($action->status->allowedTransitions() !== [])
-                                                                        <details class="dropdown dropdown-end">
-                                                                            <summary class="btn btn-outline btn-xs gap-1" title="{{ __('isms.action.transition') }}">
-                                                                                <x-icon name="swap_horiz" />
-                                                                            </summary>
-                                                                            <ul class="menu dropdown-content z-10 w-72 rounded-box bg-base-100 p-2 shadow">
-                                                                                @foreach ($action->status->allowedTransitions() as $target)
-                                                                                    <li>
-                                                                                        <form method="POST" action="{{ route('isms.audits.actions.transition', $action) }}" class="space-y-1">
-                                                                                            @csrf
-                                                                                            <input type="hidden" name="status" value="{{ $target->value }}">
-                                                                                            @if (in_array($target, [\App\Enums\Isms\CorrectiveActionStatus::Effective, \App\Enums\Isms\CorrectiveActionStatus::Ineffective], true))
-                                                                                                {{-- Wirksamkeitsprüfung: Pflicht-Notiz (serverseitig erzwungen). --}}
-                                                                                                <textarea aria-label="{{ __('isms.field.effectiveness_note') }}" name="effectiveness_note" rows="2" required maxlength="5000"
-                                                                                                          class="textarea textarea-bordered textarea-xs w-full"
-                                                                                                          placeholder="{{ __('isms.field.effectiveness_note') }} *"></textarea>
-                                                                                            @endif
-                                                                                            <button type="submit" class="w-full text-left">{{ $target->label() }}</button>
-                                                                                        </form>
-                                                                                    </li>
-                                                                                @endforeach
-                                                                            </ul>
-                                                                        </details>
+                                                                        <x-action-menu icon="swap_horiz" tone="outline" size="xs" icon-only :label="__('isms.action.transition')">
+                                                                            @foreach ($action->status->allowedTransitions() as $target)
+                                                                                <form method="POST" action="{{ route('isms.audits.actions.transition', $action) }}" class="space-y-1">
+                                                                                    @csrf
+                                                                                    <input type="hidden" name="status" value="{{ $target->value }}">
+                                                                                    @if (in_array($target, [\App\Enums\Isms\CorrectiveActionStatus::Effective, \App\Enums\Isms\CorrectiveActionStatus::Ineffective], true))
+                                                                                        {{-- Wirksamkeitsprüfung: Pflicht-Notiz (serverseitig erzwungen). --}}
+                                                                                        <textarea aria-label="{{ __('isms.field.effectiveness_note') }}" name="effectiveness_note" rows="2" required maxlength="5000"
+                                                                                                  class="textarea textarea-bordered textarea-xs w-full"
+                                                                                                  placeholder="{{ __('isms.field.effectiveness_note') }} *"></textarea>
+                                                                                    @endif
+                                                                                    <x-button type="submit" tone="ghost" size="xs">{{ $target->label() }}</x-button>
+                                                                                </form>
+                                                                            @endforeach
+                                                                        </x-action-menu>
                                                                     @endif
                                                                     <x-action-form :action="route('isms.audits.actions.destroy', $action)" method="DELETE"
                                                                           data-confirm-title="{{ __('isms.action.delete') }}"
@@ -297,22 +282,14 @@
                             @endcan
                             @can('transition', $audit)
                                 @if ($audit->status->allowedTransitions() !== [])
-                                    <details class="dropdown dropdown-end">
-                                        <summary class="btn btn-outline btn-xs gap-1" title="{{ __('isms.action.transition') }}">
-                                            <x-icon name="swap_horiz" />
-                                        </summary>
-                                        <ul class="menu dropdown-content z-10 w-64 rounded-box bg-base-100 p-2 shadow">
-                                            @foreach ($audit->status->allowedTransitions() as $target)
-                                                <li>
-                                                    <form method="POST" action="{{ route('isms.audits.transition', $audit) }}">
-                                                        @csrf
-                                                        <input type="hidden" name="status" value="{{ $target->value }}">
-                                                        <button type="submit" class="w-full text-left">{{ $target->label() }}</button>
-                                                    </form>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    </details>
+                                    <x-action-menu icon="swap_horiz" tone="outline" size="xs" icon-only :label="__('isms.action.transition')">
+                                        @foreach ($audit->status->allowedTransitions() as $target)
+                                        <x-action-form :action="route('isms.audits.transition', $audit)">
+                                            <input type="hidden" name="status" value="{{ $target->value }}">
+                                            <x-button type="submit" tone="ghost" size="xs">{{ $target->label() }}</x-button>
+                                        </x-action-form>
+                                        @endforeach
+                                    </x-action-menu>
                                 @endif
                             @endcan
                             @can('delete', $audit)

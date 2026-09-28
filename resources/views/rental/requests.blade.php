@@ -15,10 +15,8 @@
 
 @section('content')
 <x-index-page :subtitle="__('Portal-Anfragen entscheiden — erst die Annahme legt Verleihakte (Entwurf) und Vormerkung an.')">
-    <x-slot:actions>
-        <x-icon-btn icon="forklift" size="sm" :href="route('rental.index')" show-label>{{ __('Verleihakten') }}</x-icon-btn>
-        <x-icon-btn icon="calendar_month" size="sm" :href="route('rental.calendar')" show-label>{{ __('Kalender') }}</x-icon-btn>
-    </x-slot:actions>
+
+    @include('rental._tabs')
 
     <x-filter-bar :action="route('rental.requests.index')" :reset="route('rental.requests.index')">
         <select name="status" class="select select-sm select-bordered w-44 shrink-0" aria-label="{{ __('Status') }}">

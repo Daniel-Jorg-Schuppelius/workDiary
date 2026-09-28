@@ -19,10 +19,8 @@
 @section('content')
 <x-page-shell gap="4">
     <x-slot:toolbar>
-        <x-page-toolbar :title="$option->title" :subtitle="__('investment.financing.subtitle', ['price' => $fmt((string) $option->one_time_cost)])">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('investments.show', $case)" :label="$case->title" />
-            </x-slot:actions>
+        <x-page-toolbar :title="$option->title" :subtitle="__('investment.financing.subtitle', ['price' => $fmt((string) $option->one_time_cost)])"
+                        :back="route('investments.show', $case)" :back-label="$case->title">
         </x-page-toolbar>
     </x-slot:toolbar>
 

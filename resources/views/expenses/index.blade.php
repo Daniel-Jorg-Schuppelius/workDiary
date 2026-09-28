@@ -27,10 +27,7 @@
                 <input type="file" name="receipt" required accept="application/pdf,image/jpeg,image/png,image/tiff"
                        class="file-input file-input-bordered file-input-sm w-52"
                        aria-label="{{ __('Beleg scannen (PDF oder Foto)') }}">
-                <button type="submit" class="btn btn-ghost btn-sm gap-1">
-                    <x-icon name="document_scanner" class="text-base" />
-                    {{ __('Scannen') }}
-                </button>
+                <x-button type="submit" tone="ghost" icon="document_scanner">{{ __('Scannen') }}</x-button>
             </form>
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger

@@ -23,9 +23,8 @@
 
 @section('content')
     <x-index-page :title="__('resale.prices.title')" :subtitle="$catalogDate !== null ? __('resale.prices.subtitle', ['date' => $catalogDate->fdate()]) : __('resale.prices.subtitle_no_catalog')">
-        <x-slot:actions>
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('finance.resale.index')" show-label>{{ __('resale.action.back') }}</x-icon-btn>
-        </x-slot:actions>
+
+        @include('finance.resale._tabs')
 
         <p class="text-xs text-muted mb-2">{{ __('resale.prices.hint') }}</p>
         <x-table scroll="flex" :zebra="true" table-sort="client">

@@ -18,16 +18,15 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar :back="route('invoices.show', $invoice)" :back-label="__('Zur Rechnung')">
             <x-slot:title>{{ $invoice->number }}</x-slot:title>
-            <x-slot:actions>
+            <x-slot:badges>
                 @if ($report['valid'] && $report['preflight_errors'] === [])
                     <x-status-badge tone="success" size="sm">{{ __('Bereit zur Ausstellung') }}</x-status-badge>
                 @else
                     <x-status-badge tone="error" size="sm">{{ __('Nicht bestanden') }}</x-status-badge>
                 @endif
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('invoices.show', $invoice)" show-label>{{ __('Zur Rechnung') }}</x-icon-btn>
-            </x-slot:actions>
+            </x-slot:badges>
         </x-page-toolbar>
     </x-slot:toolbar>
 

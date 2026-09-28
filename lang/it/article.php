@@ -208,4 +208,42 @@ return [
         'variant_added' => 'Variante creata.',
         'variant_retired' => 'Variante disattivata.',
     ],
+    // CO₂-Fußabdruck (MVP-960).
+    'footprint' => [
+        'title' => 'Impronta di carbonio',
+        'subtitle' => 'Emissioni per unità dalla distinta base esplosa (cradle-to-gate).',
+        'factors' => 'Fattori di questo articolo',
+        'lines' => 'Distinta base',
+        'save' => 'Salva',
+        'incomplete' => 'Parti acquistate senza fattore: :count',
+        'no_bom' => 'Nessuna distinta base: il fattore dell’articolo vale per unità.',
+        'note' => 'Solo produzione fino al cancello di fabbrica, senza trasporto, uso e smaltimento. Mantenga i fattori con la fonte; quelli mancanti non vengono stimati.',
+        'kpi' => [
+            'total' => 'CO₂e per unità',
+            'material' => 'Materiale',
+            'process' => 'Processo',
+        ],
+        'field' => [
+            'factor' => 'Fattore di emissione (kg CO₂e per unità)',
+            'process' => 'Emissioni di processo per unità (kg CO₂e)',
+            'source' => 'Fonte',
+        ],
+        'hint' => [
+            'factor' => 'Per le parti acquistate, per :unit.',
+        ],
+        'col' => [
+            'article' => 'Articolo',
+            'kind' => 'Tipo',
+            'quantity' => 'Quantità per unità',
+            'factor' => 'Fattore',
+            'kg' => 'kg CO₂e',
+        ],
+        'kind' => [
+            'buy' => 'Acquisto',
+            'make' => 'Produzione interna',
+        ],
+        'flash' => [
+            'saved' => 'Fattori salvati.',
+        ],
+    ],
 ];

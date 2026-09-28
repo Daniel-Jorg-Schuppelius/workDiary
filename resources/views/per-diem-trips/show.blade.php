@@ -16,8 +16,10 @@
     <x-page-shell>
         <x-slot:toolbar>
             <x-page-toolbar :title="$trip->location . ' · ' . $trip->started_at->fdate()">
-                <x-slot:actions>
+                <x-slot:badges>
                     <x-status-badge :tone="$trip->status->tone()">{{ $trip->status->label() }}</x-status-badge>
+                </x-slot:badges>
+                <x-slot:actions>
                     <x-icon-btn icon="picture_as_pdf" tone="ghost" size="sm"
                                 :href="route('per-diem-trips.pdf', $trip)"
                                 show-label>{{ __('PDF') }}</x-icon-btn>

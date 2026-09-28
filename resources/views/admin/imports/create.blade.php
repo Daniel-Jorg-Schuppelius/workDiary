@@ -12,12 +12,8 @@
 @section('nav-title', __('Import starten'))
 
 @section('content')
-<x-index-page :subtitle="__('CSV- oder Excel-Datei für :org hochladen — Header werden geprüft und Daten als Vorschau angezeigt.', ['org' => $organization->name])">
-    <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('admin.imports.index')" show-label>
-            {{ __('Zurück') }}
-        </x-icon-btn>
-    </x-slot:actions>
+<x-index-page :subtitle="__('CSV- oder Excel-Datei für :org hochladen — Header werden geprüft und Daten als Vorschau angezeigt.', ['org' => $organization->name])"
+              back-route="admin.imports.index" :back-label="__('Zurück')">
 
     <x-card as="form" method="POST" action="{{ route('admin.imports.preflight') }}" enctype="multipart/form-data">
         @csrf

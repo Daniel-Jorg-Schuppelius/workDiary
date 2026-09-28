@@ -18,7 +18,8 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$course->subtitle ?? __('learning.subtitle.my')"
                         :badge="$enrollment->status->label()"
-                        :badgeTone="$enrollment->status->tone()">
+                        :badgeTone="$enrollment->status->tone()"
+                        back-route="learning.my.index" :back-label="__('learning.action.back')">
             <x-slot:actions>
                 @if ($enrollment->status === \App\Enums\Learning\LearningEnrollmentStatus::Completed && $enrollment->course?->certificate_enabled)
                     {{-- Der Ausdruck ist eine Kopie; maßgeblich bleibt der
@@ -40,9 +41,6 @@
                     <x-icon-btn :icon="$focusMode ? 'view_sidebar' : 'center_focus_strong'" tone="ghost" size="sm" type="submit"
                                 show-label>{{ $focusMode ? __('learning.action.focus_off') : __('learning.action.focus_on') }}</x-icon-btn>
                 </form>
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                            :href="route('learning.my.index')"
-                            show-label>{{ __('learning.action.back') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

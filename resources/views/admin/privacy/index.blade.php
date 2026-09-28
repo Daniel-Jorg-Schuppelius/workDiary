@@ -64,12 +64,14 @@
             <x-icon-btn icon="picture_as_pdf" tone="primary" size="sm"
                         :href="route('admin.privacy.report')"
                         show-label>{{ __('Bericht (PDF)') }}</x-icon-btn>
-            <x-icon-btn icon="download" tone="ghost" size="sm"
-                        :href="route('admin.privacy.export', ['format' => 'json'])"
-                        show-label>{{ __('Bericht (JSON)') }}</x-icon-btn>
-            <x-icon-btn icon="table_view" tone="ghost" size="sm"
-                        :href="route('admin.privacy.export', ['format' => 'csv'])"
-                        show-label>{{ __('Bericht (CSV)') }}</x-icon-btn>
+            <x-action-menu icon="download" :label="__('Export')">
+                <x-icon-btn icon="download" tone="ghost" size="sm"
+                            :href="route('admin.privacy.export', ['format' => 'json'])"
+                            show-label>{{ __('Bericht (JSON)') }}</x-icon-btn>
+                <x-icon-btn icon="table_view" tone="ghost" size="sm"
+                            :href="route('admin.privacy.export', ['format' => 'csv'])"
+                            show-label>{{ __('Bericht (CSV)') }}</x-icon-btn>
+            </x-action-menu>
         </x-slot:actions>
     @endif
     <x-slot:note>{{ __('Übersicht über Datenkategorien, Aufbewahrung, aktive Sessions und API-Tokens dieser Organisation.') }}</x-slot:note>

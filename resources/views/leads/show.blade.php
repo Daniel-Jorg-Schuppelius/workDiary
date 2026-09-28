@@ -20,7 +20,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar back-route="leads.index" :back-label="__('Zur Liste')">
             <div class="flex min-w-0 items-center gap-2">
                 <span class="truncate font-medium">{{ $lead->displayName() }}</span>
                 <x-status-badge :tone="$lead->status->tone()" size="sm">{{ $lead->status->label() }}</x-status-badge>
@@ -29,7 +29,6 @@
                 @if ($canManage && ! $lead->status->isFinal() && ! $lead->anonymized_at)
                     <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('leads.edit', $lead)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                 @endif
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('leads.index')" show-label>{{ __('Zur Liste') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

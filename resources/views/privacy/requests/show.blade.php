@@ -12,11 +12,9 @@
 @section('nav-title', $request->request_number . ' — ' . $request->type->label())
 
 @section('content')
-    <x-index-page :subtitle="__('Betroffenenanfrage bearbeiten, zuweisen und entscheiden.')">
+    <x-index-page :subtitle="__('Betroffenenanfrage bearbeiten, zuweisen und entscheiden.')"
+                  back-route="dataprotection.requests.index" :back-label="__('Zurück')">
         <x-slot:actions>
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                        :href="route('dataprotection.requests.index')"
-                        show-label>{{ __('Zurück') }}</x-icon-btn>
             <x-icon-btn icon="download" tone="ghost" size="sm"
                         :href="route('dataprotection.requests.export', $request)"
                         show-label>{{ __('Export (JSON)') }}</x-icon-btn>

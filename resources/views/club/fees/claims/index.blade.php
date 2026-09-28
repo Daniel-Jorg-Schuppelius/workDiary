@@ -15,11 +15,10 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('club.fees.subtitle.claims')">
     <x-slot:actions>
-        <x-icon-btn icon="account_balance" tone="outline" size="sm" :href="route('club.fees.collections.index')" show-label>{{ __('club.fees.title.collections') }}</x-icon-btn>
-        <x-icon-btn icon="play_circle" tone="outline" size="sm" :href="route('club.fees.runs.index')" show-label>{{ __('club.fees.title.runs') }}</x-icon-btn>
-        <x-icon-btn icon="account_balance_wallet" tone="ghost" size="sm" :href="route('club.fees.accounts.index')" show-label>{{ __('club.fees.title.accounts') }}</x-icon-btn>
         <x-help-button topic="club.fees" />
     </x-slot:actions>
+
+    @include('club.fees._tabs')
 
     <x-filter-bar :action="route('club.fees.claims.index')" :reset="route('club.fees.claims.index')">
         <input type="search" name="q" value="{{ $filters['q'] }}" class="input input-sm input-bordered w-48 shrink-0" placeholder="{{ __('club.filter.search') }}" aria-label="{{ __('club.filter.search') }}">

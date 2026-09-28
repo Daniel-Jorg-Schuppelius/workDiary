@@ -60,12 +60,8 @@
             );
     @endphp
 
-    <x-index-page overflow="clip" :badge="__('Archiv')" badge-tone="neutral">
-        <x-slot:actions>
-            <x-icon-btn icon="arrow_back" size="sm"
-                        :href="route('duties.index', ['tab' => match($tab) { 'diary' => 'diary', 'urlaub' => 'urlaub', default => $tab }])"
-                        show-label>{{ __('Aktive Arbeitsliste') }}</x-icon-btn>
-        </x-slot:actions>
+    <x-index-page overflow="clip" :badge="__('Archiv')" badge-tone="neutral"
+                  :back="route('duties.index', ['tab' => match($tab) { 'diary' => 'diary', 'urlaub' => 'urlaub', default => $tab }])" :back-label="__('Aktive Arbeitsliste')">
 
         {{-- Filter --}}
         <x-filter-bar :action="route('archive.index')" :reset="! empty($tabFilters) ? route('archive.index', ['tab' => $tab]) : null">

@@ -22,14 +22,12 @@ use App\Support\Tz;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\Data\CSV\StringHelper as CsvStringHelper;
-use CommonToolkit\Parsers\CSVDocumentParser;
+use CommonToolkit\Parsers\{CSVDocumentParser, ICalendarParser};
 use DateTimeZone;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use Sabre\VObject\Component\VEvent;
-use Sabre\VObject\{DateTimeParser, Reader};
 use Throwable;
 
 /**
@@ -691,7 +689,7 @@ class ClubMatchService {
      */
     private function rowsFromIcs(ClubGroup $team, string $content, string $tz): array {
         try {
-            $document = Reader::read($content, Reader::OPTION_FORGIVING | Reader::OPTION_IGNORE_INVALID_LINES);
+            $document = ICalendarParser::fromString($content);
         } catch (Throwable $e) {
             return ['rows' => [], 'errors' => [(string) __('import.error.format.parse', ['reason' => $e->getMessage()])]];
         }
@@ -699,24 +697,20 @@ class ClubMatchService {
         $teamName = mb_strtolower(trim($team->name));
         $rows = [];
         $errors = [];
-        foreach ($document->select('VEVENT') as $vevent) {
-            if (! $vevent instanceof VEvent) {
-                continue;
-            }
-            $summary = trim((string) ($vevent->SUMMARY ?? ''));
-            $dtstart = $vevent->DTSTART ?? null;
-            if ($dtstart === null || ! $dtstart->hasTime()) {
-                $errors[] = (string) __('import.error.ical.noTime', ['event' => $summary !== '' ? $summary : (string) ($vevent->UID ?? '')]);
+        foreach ($document->getEvents() as $vevent) {
+            $summary = $vevent->getSummary();
+            $dtstart = $vevent->getStart($zone);
+            if ($dtstart === null || $vevent->isAllDay()) {
+                $errors[] = (string) __('import.error.ical.noTime', ['event' => $summary !== '' ? $summary : $vevent->getUid()]);
 
                 continue;
             }
-            $start = CarbonImmutable::instance($dtstart->getDateTime($zone))->setTimezone($zone);
+            $start = CarbonImmutable::instance($dtstart)->setTimezone($zone);
             $end = null;
-            if (isset($vevent->DTEND) && $vevent->DTEND->hasTime()) {
-                $end = CarbonImmutable::instance($vevent->DTEND->getDateTime($zone))->setTimezone($zone);
-            } elseif (isset($vevent->DURATION)) {
-                $interval = DateTimeParser::parseDuration((string) $vevent->DURATION);
-                $end = $interval instanceof \DateInterval ? $start->add($interval) : null;
+            if ($vevent->endHasTime()) {
+                $end = CarbonImmutable::instance($vevent->getEnd($zone) ?? $dtstart)->setTimezone($zone);
+            } elseif ($vevent->getDuration() !== null) {
+                $end = $start->add($vevent->getDuration());
             }
             $isHome = true;
             $opponent = $summary;
@@ -731,7 +725,7 @@ class ClubMatchService {
                 }
             }
             if ($opponent === '') {
-                $errors[] = (string) __('club.matches.error.import_row_opponent', ['line' => (string) ($vevent->UID ?? '?')]);
+                $errors[] = (string) __('club.matches.error.import_row_opponent', ['line' => $vevent->getUid() !== '' ? $vevent->getUid() : '?']);
 
                 continue;
             }
@@ -741,8 +735,8 @@ class ClubMatchService {
                 'opponent_name' => $opponent,
                 'competition' => null,
                 'is_home' => $isHome,
-                'venue' => $this->nullableString((string) ($vevent->LOCATION ?? '')),
-                'raw' => ['uid' => (string) ($vevent->UID ?? ''), 'summary' => $summary, 'description' => trim((string) ($vevent->DESCRIPTION ?? ''))],
+                'venue' => $this->nullableString($vevent->getLocation() ?? ''),
+                'raw' => ['uid' => $vevent->getUid(), 'summary' => $summary, 'description' => $vevent->getDescription()],
             ];
         }
 

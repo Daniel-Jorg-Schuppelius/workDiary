@@ -31,6 +31,16 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
  *      zentriert vertikal, ein Label über der Gruppe hebt Von/Bis aus der
  *      Zeile der Nachbarfelder (2026-09-22, 12 Altfälle bereinigt).
  *
+ * Seitenkopf mit Überlaufmenü (MVP-966–970, ux-pattern-katalog §3.10), geprüft
+ * im Aktionsslot von <x-page-toolbar>/<x-index-page>, auch in Plugin-Views:
+ *
+ *  V8  Zurück-Button (arrow_back) — Rückpfeil über back/back-route
+ *  V9  zwei oder mehr Ausgabeformate direkt im Slot — <x-action-menu> „Export"
+ *  V10 Löschen bzw. tone="error" ohne placement="danger"
+ *  V11 Statusabzeichen im Slot — Slot `badges` neben dem Titel
+ *  V12 handgebautes dropdown-content (überall) — <x-action-menu>
+ *  V13 rohe class="btn"-Elemente im Slot — <x-button>/<x-icon-btn>
+ *
  * Altfälle stehen mit Welle-Verweis in den Allow-Listen; neue Views müssen die
  * Konvention erfüllen.
  */
@@ -120,6 +130,25 @@ class ViewConventionRuleTest extends TestCase {
      *      warum der Untertitel Markup tragen muss statt des Slots darunter.
      */
     private const SUBTITLE_ALLOW = [];
+
+    /** @var array<string, string> V10 — Rot als Alarmfarbe, nicht als Löschen */
+    private const DANGER_ALLOW = [
+        'resources/views/crisis/show.blade.php' => 'Krise ausrufen ist die Hauptaktion der Seite, keine Löschung.',
+        'resources/views/crisis/index.blade.php' => 'Krisenfall anlegen ist die Hauptaktion der Seite.',
+    ];
+
+    /** @var array<string, string> V12 — keine Aktionsmenüs, sondern Formulare im Popover */
+    private const DROPDOWN_ALLOW = [
+        'resources/views/admin/maintenance-windows/index.blade.php' => 'Verlängern mit Dauerfeld im Popover.',
+        'resources/views/admin/operations/index.blade.php' => 'Delegieren/Ignorieren mit Begründung im Popover.',
+        'resources/views/procedures/runs/show.blade.php' => 'Abbruch mit Pflichtbegründung im Popover.',
+    ];
+
+    /** @var array<string, string> V13 — Popover-Formulare im Kopf, ihr Auslöser ist ein <summary> */
+    private const RAW_BUTTON_ALLOW = [
+        'resources/views/contracts/show.blade.php' => 'Kündigen mit Pflichtbegründung im Popover.',
+        'resources/views/asset-finance/show.blade.php' => 'Popover-Formulare mit Pflichtfeldern.',
+    ];
 
     /** @var list<array{0: string, 1: string}> Von→Bis-Namenspaare (Teilstring-Ersetzung) */
     private const RANGE_PAIRS = [
@@ -214,6 +243,110 @@ class ViewConventionRuleTest extends TestCase {
         sort($violations);
 
         $this->assertSame([], $violations, "View-Konvention verletzt (ux-pattern-katalog / Memory-Konventionen):\n\n" . implode("\n", $violations));
+    }
+
+    public function test_page_toolbar_actions_follow_the_overflow_conventions(): void {
+        $violations = [];
+
+        foreach ([...$this->bladeFiles(), ...$this->bladeFiles('app/Plugins')] as $file) {
+            $relative = $this->relativePath($file);
+            if ($this->isAllowListed($relative, self::SKIP_PREFIXES)) {
+                continue;
+            }
+            $source = $this->stripBladeComments((string) file_get_contents($file));
+
+            // V12 — handgebaute Dropdowns, auch außerhalb des Seitenkopfs.
+            if (! $this->isAllowListed($relative, self::DROPDOWN_ALLOW)
+                && preg_match('/\bdropdown-content\b/', $source, $m, PREG_OFFSET_CAPTURE) === 1) {
+                $violations[] = sprintf('%s:%d  V12 handgebautes Dropdown — <x-action-menu> nutzen', $relative, $this->lineOf($source, (int) $m[0][1]));
+            }
+
+            foreach ($this->toolbarActionSlots($source) as [$slot, $offset]) {
+                $at = fn(int $inner): int => $this->lineOf($source, $offset + $inner);
+                // Nur die Ebene des Slots: Inhalte von Aktionsmenüs sind gebündelt.
+                $flat = preg_replace_callback('~<x-action-menu\b.*?</x-action-menu>~s', static fn(array $m): string => str_repeat(' ', strlen($m[0])), $slot) ?? $slot;
+
+                if (preg_match('/icon="arrow_back"/', $flat, $m, PREG_OFFSET_CAPTURE) === 1) {
+                    $violations[] = sprintf('%s:%d  V8 Zurück-Button im Seitenkopf — back-route/back an der Toolbar setzen', $relative, $at((int) $m[0][1]));
+                }
+
+                if (preg_match_all("~'(?:export|format)'\\s*=>\\s*'(?:csv|xlsx|json|xml)'~", $flat, $formats, PREG_OFFSET_CAPTURE) >= 2) {
+                    $violations[] = sprintf('%s:%d  V9 mehrere Ausgabeformate im Seitenkopf — <x-action-menu icon="download" :label="__(\'Export\')">', $relative, $at((int) $formats[0][0][1]));
+                }
+
+                if (! $this->isAllowListed($relative, self::DANGER_ALLOW)) {
+                    // Ein als danger markiertes Popover zählt als Ganzes, sein Submit-Knopf nicht einzeln.
+                    $withoutPopovers = preg_replace_callback('~<details\\b[^>]*data-toolbar-placement="danger".*?</details>~s', static fn(array $m): string => str_repeat(' ', strlen($m[0])), $slot) ?? $slot;
+                    foreach ($this->componentTags($withoutPopovers) as [$tag, $tagOffset]) {
+                        $destructive = preg_match('/\bicon="delete(?:_forever)?"|(?<![:\w-])tone="error"/', $tag) === 1;
+                        if ($destructive && ! str_contains($tag, 'placement="danger"')) {
+                            $violations[] = sprintf('%s:%d  V10 destruktive Aktion ohne placement="danger"', $relative, $at($tagOffset));
+                        }
+                    }
+                }
+
+                $withoutButtons = preg_replace_callback('~<(x-icon-btn|x-button)\b.*?</\1>~s', static fn(array $m): string => str_repeat(' ', strlen($m[0])), $flat) ?? $flat;
+                if (preg_match('/<x-status-badge\b|class="badge\b/', $withoutButtons, $m, PREG_OFFSET_CAPTURE) === 1) {
+                    $violations[] = sprintf('%s:%d  V11 Abzeichen im Aktionsslot — Slot badges neben dem Titel nutzen', $relative, $at((int) $m[0][1]));
+                }
+
+                if (! $this->isAllowListed($relative, self::RAW_BUTTON_ALLOW)
+                    && preg_match('/<(?:a|button|summary|label)\b(?:[^>"]|"[^"]*")*class="[^"]*\bbtn\b/', $flat, $m, PREG_OFFSET_CAPTURE) === 1) {
+                    $violations[] = sprintf('%s:%d  V13 roher Button im Seitenkopf — <x-button>/<x-icon-btn> nutzen', $relative, $at((int) $m[0][1]));
+                }
+            }
+        }
+
+        sort($violations);
+
+        $this->assertSame([], $violations, "Seitenkopf-Konvention verletzt (ux-pattern-katalog §3.10):\n\n" . implode("\n", $violations));
+    }
+
+    /**
+     * Aktionsslots der Seitenköpfe. Bei <x-index-page> zählt der erste Slot nur,
+     * wenn davor keine andere Komponente mit Aktionsslot öffnet (Karte,
+     * Sammelaktionsleiste, Dialog, Kopfkarte) — sonst gehört er ihr.
+     *
+     * @return list<array{0: string, 1: int}> Slot-Inhalt und Offset im Quelltext
+     */
+    private function toolbarActionSlots(string $source): array {
+        $slots = [];
+        if (preg_match_all('~<(x-page-toolbar|x-index-page)\b~', $source, $heads, PREG_OFFSET_CAPTURE | PREG_SET_ORDER) === 0) {
+            return $slots;
+        }
+        foreach ($heads as $head) {
+            $from = (int) $head[0][1];
+            $start = strpos($source, '<x-slot:actions>', $from);
+            if ($start === false) {
+                continue;
+            }
+            if ($head[1][0] === 'x-index-page') {
+                $foreign = preg_match('~<x-(?:card|bulk-toolbar|modal|entity-header)\\b~', substr($source, $from, $start - $from)) === 1;
+            } else {
+                $close = strpos($source, '</x-page-toolbar>', $from);
+                $foreign = $close !== false && $close < $start;
+            }
+            if ($foreign) {
+                continue;
+            }
+            $end = strpos($source, '</x-slot:actions>', $start);
+            if ($end !== false) {
+                $slots[] = [substr($source, $start, $end - $start), $start];
+            }
+        }
+
+        return $slots;
+    }
+
+    /**
+     * Öffnende Tags von <x-icon-btn>/<x-button>, Anführungszeichen beachtet.
+     *
+     * @return list<array{0: string, 1: int}>
+     */
+    private function componentTags(string $slot): array {
+        preg_match_all('~<x-(?:icon-btn|button)\b(?:[^>"]|"[^"]*")*>~', $slot, $tags, PREG_OFFSET_CAPTURE);
+
+        return array_map(static fn(array $t): array => [$t[0], (int) $t[1]], $tags[0]);
     }
 
     /**

@@ -38,12 +38,15 @@
                 <x-icon-btn icon="fact_check" size="sm" show-label
                             :href="route('bill-of-quantities.cost-estimate.export', [$bill, 'stage' => 'final'])"
                             :title="__('Kostenfeststellung als GAEB X51')">{{ __('Kostenfeststellung') }}</x-icon-btn>
-                <x-icon-btn icon="download" size="sm" :href="route('bill-of-quantities.cost-groups', [$bill, 'level' => $pivot !== null ? 'all' : $level, 'export' => 'csv'])" show-label>{{ __('CSV') }}</x-icon-btn>
-                <x-icon-btn icon="table_view" size="sm" :href="route('bill-of-quantities.cost-groups', [$bill, 'level' => $pivot !== null ? 'all' : $level, 'export' => 'xlsx'])" show-label>Excel</x-icon-btn>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('bill-of-quantities.show', $bill)" show-label>{{ __('Zum Leistungsverzeichnis') }}</x-icon-btn>
+                <x-action-menu icon="download" :label="__('Export')">
+                    <x-icon-btn icon="download" size="sm" :href="route('bill-of-quantities.cost-groups', [$bill, 'level' => $pivot !== null ? 'all' : $level, 'export' => 'csv'])" show-label>{{ __('CSV') }}</x-icon-btn>
+                    <x-icon-btn icon="table_view" size="sm" :href="route('bill-of-quantities.cost-groups', [$bill, 'level' => $pivot !== null ? 'all' : $level, 'export' => 'xlsx'])" show-label>Excel</x-icon-btn>
+                </x-action-menu>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    @include('bill-of-quantities._tabs')
 
     <x-filter-bar :action="route('bill-of-quantities.cost-groups', $bill)" :reset="route('bill-of-quantities.cost-groups', $bill)">
         <x-filter-field :label="__('Gliederungstiefe')" for="kg-level" class="shrink-0">

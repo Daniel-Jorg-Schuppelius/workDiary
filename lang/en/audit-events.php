@@ -247,6 +247,12 @@ return [
         'released' => 'Retention released',
         'removed' => 'Retention removed',
     ],
+    'tenantPlanRequest' => [
+        'created' => 'Plan change requested',
+        'withdrawn' => 'Plan request withdrawn',
+        'done' => 'Plan request completed',
+        'declined' => 'Plan request declined',
+    ],
     'contract' => [
         'indexationProposed' => 'Index adjustment proposed',
         'indexationApplied' => 'Index adjustment applied',
@@ -294,6 +300,8 @@ return [
     ],
     'created' => 'Created',
     'crisis' => [
+        'mapPointAdded' => 'Map point added',
+        'mapPointRemoved' => 'Map point removed',
         'activated' => 'Crisis case activated',
         'alert_acknowledged' => 'Crisis alert acknowledged',
         'alert_escalated' => 'Crisis alert escalated',
@@ -632,6 +640,7 @@ return [
     'orgamax_payment_requested' => 'orgaMAX payment requested',
     'orgamax_scopes_missing' => 'orgaMAX scopes missing',
     'organization' => [
+        'billingContactUpdated' => 'Billing details changed',
         'maintenance_toggled' => 'Maintenance mode toggled',
     ],
     'overtime' => [
@@ -734,6 +743,7 @@ return [
         'mailed' => 'Order confirmation sent by email',
     ],
     'purchase_order' => [
+        'confirmed' => 'Order confirmation imported',
         'mailed' => 'Purchase order sent by email',
     ],
     'delivery_note' => [
@@ -933,6 +943,8 @@ return [
         'test' => 'Support test',
     ],
     'sustainability' => [
+        'offsetRecorded' => 'Climate certificate recorded',
+        'offsetRemoved' => 'Climate certificate deleted',
         'assessment_drafted' => 'ESG assessment drafted',
         'assessment_finalized' => 'ESG assessment finalized',
         'assessment_versioned' => 'ESG assessment version created',

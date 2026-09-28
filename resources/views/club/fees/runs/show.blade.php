@@ -13,7 +13,8 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('club.fees.title.run', ['month' => $run->monthLabel()])" :badge="$run->status->label()" :badgeTone="$run->status->tone()">
+        <x-page-toolbar :subtitle="__('club.fees.title.run', ['month' => $run->monthLabel()])" :badge="$run->status->label()" :badgeTone="$run->status->tone()"
+                        back-route="club.fees.runs.index" :back-label="__('club.action.back')">
             <x-slot:actions>
                 @if ($canManage && $run->isDraft())
                     @unless ($external || $run->hasIssues())
@@ -29,7 +30,6 @@
                     </x-action-form>
                 @endif
                 <x-icon-btn icon="download" tone="outline" size="sm" :href="route('club.fees.runs.export', $run)" show-label>{{ __('club.fees.action.export') }}</x-icon-btn>
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('club.fees.runs.index')" show-label>{{ __('club.action.back') }}</x-icon-btn>
                 <x-help-button topic="club.fees" />
             </x-slot:actions>
         </x-page-toolbar>

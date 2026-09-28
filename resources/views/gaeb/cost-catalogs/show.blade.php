@@ -20,10 +20,10 @@
 @endphp
 
 @section('content')
-<x-index-page overflow="clip" :subtitle="__('Kennwerte je Kostenelement — von, Mittel und bis.')">
+<x-index-page overflow="clip" :subtitle="__('Kennwerte je Kostenelement — von, Mittel und bis.')"
+              back-route="cost-catalogs.index" :back-label="__('Alle Kataloge')">
     <x-slot:actions>
         <x-icon-btn icon="download" size="sm" :href="route('cost-catalogs.export', $catalog)" show-label>{{ __('GAEB X50') }}</x-icon-btn>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('cost-catalogs.index')" show-label>{{ __('Alle Kataloge') }}</x-icon-btn>
     </x-slot:actions>
 
     @if ($elements->total() === 0)

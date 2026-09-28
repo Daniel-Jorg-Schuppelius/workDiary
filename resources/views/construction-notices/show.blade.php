@@ -16,10 +16,9 @@
 @section('nav-title', $notice->displayNo() . ' — ' . $notice->kind->label())
 
 @section('content')
-    <x-index-page :subtitle="$notice->subject">
+    <x-index-page :subtitle="$notice->subject"
+                  back-route="construction-notices.index" :back-label="__('Zurück')">
         <x-slot:actions>
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                        :href="route('construction-notices.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
             <x-icon-btn icon="picture_as_pdf" tone="ghost" size="sm"
                         :href="route('construction-notices.pdf', $notice)" show-label>{{ __('construction.action.pdf') }}</x-icon-btn>
             @if ($notice->isEditable())

@@ -16,7 +16,8 @@
     <x-validation-errors />
 
     <x-slot:toolbar>
-        <x-page-toolbar :title="$claim->number . ' — ' . $claim->title">
+        <x-page-toolbar :title="$claim->number . ' — ' . $claim->title"
+                        back-route="claims.index" :back-label="__('Zur Liste')">
             <div class="flex flex-wrap items-center gap-2 text-sm">
                 <x-status-badge size="md" outline>{{ $claim->status->label() }}</x-status-badge>
                 <span class="badge badge-outline">{{ $claim->source->label() }}</span>
@@ -37,10 +38,9 @@
                                 <option value="{{ $target->value }}">{{ $target->label() }}</option>
                             @endforeach
                         </select>
-                        <button type="submit" class="btn btn-sm">{{ __('Status setzen') }}</button>
+                        <x-button type="submit" tone="ghost">{{ __('Status setzen') }}</x-button>
                     </form>
                 @endcan
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('claims.index')" show-label>{{ __('Zur Liste') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

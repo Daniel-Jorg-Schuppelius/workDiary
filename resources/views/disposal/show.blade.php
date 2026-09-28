@@ -25,7 +25,8 @@
     <x-validation-errors />
 
     <x-slot:toolbar>
-        <x-page-toolbar :title="__('disposal.show.title', ['number' => $job->number]) . ' — ' . ($job->customer->name ?? '')">
+        <x-page-toolbar :title="__('disposal.show.title', ['number' => $job->number]) . ' — ' . ($job->customer->name ?? '')"
+                        back-route="disposal.index" :back-label="__('Zur Liste')">
             <div class="flex flex-wrap items-center gap-2 text-sm">
                 <x-status-badge size="md" :tone="$job->status->tone()" outline>{{ $job->status->label() }}</x-status-badge>
                 @if ($job->isSigned())
@@ -36,17 +37,17 @@
                 @if ($canUpdate)
                     @if ($job->status === \App\Enums\Disposal\DisposalJobStatus::Draft)
                         <form method="POST" action="{{ route('disposal.collect', $job) }}">@csrf
-                            <button type="submit" class="btn btn-sm btn-primary">{{ __('disposal.action.collect') }}</button>
+                            <x-button placement="bar" type="submit" tone="primary">{{ __('disposal.action.collect') }}</x-button>
                         </form>
                     @endif
                     @if ($job->status === \App\Enums\Disposal\DisposalJobStatus::Collected)
                         <form method="POST" action="{{ route('disposal.treatment', $job) }}">@csrf
-                            <button type="submit" class="btn btn-sm">{{ __('disposal.action.start_treatment') }}</button>
+                            <x-button placement="bar" type="submit" tone="ghost">{{ __('disposal.action.start_treatment') }}</x-button>
                         </form>
                     @endif
                     @if (in_array($job->status, [\App\Enums\Disposal\DisposalJobStatus::Collected, \App\Enums\Disposal\DisposalJobStatus::InTreatment], true))
                         <form method="POST" action="{{ route('disposal.handed-over', $job) }}">@csrf
-                            <button type="submit" class="btn btn-sm btn-primary">{{ __('disposal.action.hand_over') }}</button>
+                            <x-button placement="bar" type="submit" tone="primary">{{ __('disposal.action.hand_over') }}</x-button>
                         </form>
                     @endif
                 @endif
@@ -54,12 +55,11 @@
                     @if ($job->status === \App\Enums\Disposal\DisposalJobStatus::HandedOver)
                         <form method="POST" action="{{ route('disposal.complete', $job) }}"
                               data-confirm-dialog data-confirm-message="{{ __('disposal.confirm.complete') }}">@csrf
-                            <button type="submit" class="btn btn-sm btn-primary">{{ __('Abschließen') }}</button>
+                            <x-button placement="bar" type="submit" tone="primary">{{ __('Abschließen') }}</x-button>
                         </form>
                     @endif
                     @if ($job->status->isOpen())
-                        <button type="button" class="btn btn-sm btn-ghost text-error"
-                                data-open-dialog="disposal-cancel-dialog">{{ __('Stornieren') }}</button>
+                        <x-button placement="danger" type="button" tone="ghost" class="text-error" data-open-dialog="disposal-cancel-dialog">{{ __('Stornieren') }}</x-button>
                     @endif
                 @endcan
                 @if ($canUpdate && $job->status->isEditable())
@@ -68,7 +68,6 @@
                 @endif
                 <x-icon-btn icon="picture_as_pdf" size="sm" :href="route('disposal.pdf', $job)"
                             target="_blank" show-label>{{ __('disposal.action.pdf_preview') }}</x-icon-btn>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('disposal.index')" show-label>{{ __('Zur Liste') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

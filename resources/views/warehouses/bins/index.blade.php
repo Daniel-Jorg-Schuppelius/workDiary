@@ -14,9 +14,9 @@
 
 @section('content')
 {{-- Erwartet: $warehouse (Warehouse), $bins (Collection<WarehouseBin> mit movements_count) --}}
-<x-index-page overflow="clip" :subtitle="__('inventory.subtitle.bins', ['warehouse' => $warehouse->name])" :badge="$warehouse->code" badge-tone="ghost">
+<x-index-page overflow="clip" :subtitle="__('inventory.subtitle.bins', ['warehouse' => $warehouse->name])" :badge="$warehouse->code" badge-tone="ghost"
+              back-route="warehouses.index" :back-label="__('inventory.warehouses')">
     <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('warehouses.index')" show-label>{{ __('inventory.warehouses') }}</x-icon-btn>
         @can('update', $warehouse)
             <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger
                         :href="route('warehouses.bins.create', $warehouse)" show-label>{{ __('inventory.action.create_bin') }}</x-icon-btn>

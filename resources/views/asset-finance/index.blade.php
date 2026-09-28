@@ -20,9 +20,9 @@
                         :href="route('asset-finance.create')"
                         show-label>{{ __('Neue Leasingakte') }}</x-icon-btn>
         @endcan
-        <x-icon-btn icon="event_upcoming" size="sm" :href="route('asset-finance.deadlines.index')" show-label>{{ __('Fristen') }}</x-icon-btn>
-        <x-icon-btn icon="query_stats" size="sm" :href="route('asset-finance.reports.index')" show-label>{{ __('Bericht') }}</x-icon-btn>
     </x-slot:actions>
+
+    @include('asset-finance._tabs')
 
     <div class="grid gap-4 sm:grid-cols-2">
         <x-kpi-tile :label="__('Laufende Verträge')" :value="$openCount" />

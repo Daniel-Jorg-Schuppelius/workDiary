@@ -17,12 +17,8 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$submission->assignment?->title"
                         :badge="$submission->status->label()"
-                        :badgeTone="$submission->status->tone()">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                            :href="route('learning.grading.index')"
-                            show-label>{{ __('learning.action.back') }}</x-icon-btn>
-            </x-slot:actions>
+                        :badgeTone="$submission->status->tone()"
+                        back-route="learning.grading.index" :back-label="__('learning.action.back')">
         </x-page-toolbar>
     </x-slot:toolbar>
 

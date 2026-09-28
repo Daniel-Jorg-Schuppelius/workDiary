@@ -41,12 +41,11 @@
                                     show-label>{{ __('club.attendance.action.reopen') }}</x-icon-btn>
                     @endif
                 @endif
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                            :href="route('club.events.show', $event)"
-                            show-label>{{ __('club.attendance.action.back_to_event') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    @include('club.events._tabs')
 
     @if ($errors->any())
         <div class="alert alert-error text-sm" role="alert">

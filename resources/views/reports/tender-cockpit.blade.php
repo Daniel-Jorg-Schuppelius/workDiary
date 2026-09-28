@@ -34,8 +34,10 @@
             </div>
             <x-slot:actions>
                 <x-icon-btn icon="radar" size="sm" :href="route('tender-radar.index')" show-label>{{ __('Radar') }}</x-icon-btn>
-                <x-icon-btn icon="download" size="sm" :href="route('tenders.cockpit', ['from' => $from, 'to' => $to, 'export' => 'csv'])" show-label>{{ __('CSV') }}</x-icon-btn>
-                <x-icon-btn icon="table_view" size="sm" :href="route('tenders.cockpit', ['from' => $from, 'to' => $to, 'export' => 'xlsx'])" show-label>Excel</x-icon-btn>
+                <x-action-menu icon="download" :label="__('Export')">
+                    <x-icon-btn icon="download" size="sm" :href="route('tenders.cockpit', ['from' => $from, 'to' => $to, 'export' => 'csv'])" show-label>{{ __('CSV') }}</x-icon-btn>
+                    <x-icon-btn icon="table_view" size="sm" :href="route('tenders.cockpit', ['from' => $from, 'to' => $to, 'export' => 'xlsx'])" show-label>Excel</x-icon-btn>
+                </x-action-menu>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

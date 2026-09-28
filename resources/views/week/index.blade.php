@@ -53,10 +53,8 @@
                 </label>
 
                 <div class="join">
-                    <a href="{{ route('week.index', ['scope' => 'mine']) }}"
-                       class="join-item btn btn-sm {{ $teamScope ? 'btn-ghost' : 'btn-primary' }}">{{ __('Meine Woche') }}</a>
-                    <a href="{{ route('week.index', ['scope' => 'team']) }}"
-                       class="join-item btn btn-sm {{ $teamScope ? 'btn-primary' : 'btn-ghost' }}">{{ __('Team-Woche') }}</a>
+                    <x-button tone="ghost" class="join-item {{ $teamScope ? 'btn-ghost' : 'btn-primary' }}" :href="route('week.index', ['scope' => 'mine'])">{{ __('Meine Woche') }}</x-button>
+                    <x-button tone="ghost" class="join-item {{ $teamScope ? 'btn-primary' : 'btn-ghost' }}" :href="route('week.index', ['scope' => 'team'])">{{ __('Team-Woche') }}</x-button>
                 </div>
             </x-slot:actions>
         </x-page-toolbar>

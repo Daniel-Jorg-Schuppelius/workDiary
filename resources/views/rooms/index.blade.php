@@ -24,14 +24,8 @@
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Räume und Standorte des Mandanten verwalten.')">
         <x-slot:actions>
-            <a href="{{ route('rooms.index', ['view' => 'list']) }}"
-               class="btn btn-sm {{ $view === 'list' ? 'btn-primary' : 'btn-ghost' }}">
-                <x-icon name="list" /> {{ __('Liste') }}
-            </a>
-            <a href="{{ route('rooms.index', ['view' => 'grid', 'day' => $day->format('Y-m-d')]) }}"
-               class="btn btn-sm {{ $view === 'grid' ? 'btn-primary' : 'btn-ghost' }}">
-                <x-icon name="grid_view" /> {{ __('Tages-Belegung') }}
-            </a>
+            <x-button tone="ghost" icon="list" class="{{ $view === 'list' ? 'btn-primary' : 'btn-ghost' }}" :href="route('rooms.index', ['view' => 'list'])">{{ __('Liste') }}</x-button>
+            <x-button tone="ghost" icon="grid_view" class="{{ $view === 'grid' ? 'btn-primary' : 'btn-ghost' }}" :href="route('rooms.index', ['view' => 'grid', 'day' => $day->format('Y-m-d')])">{{ __('Tages-Belegung') }}</x-button>
             @can('create', App\Models\Facility\Room::class)
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger

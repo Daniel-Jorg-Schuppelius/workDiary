@@ -24,13 +24,15 @@
             <x-slot:title>{{ $project->name }}</x-slot:title>
             <x-slot:subtitle>{{ __('Kennzahlen aus Ereignissen und Snapshots (Definition v:version).', ['version' => $cfd->metricVersion]) }}</x-slot:subtitle>
             <x-slot:actions>
-                <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('agile.reports.export.csv', [$project, 'throughput'])" show-label>{{ __('CSV Durchsatz') }}</x-icon-btn>
-                <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('agile.reports.export.csv', [$project, 'cfd'])" show-label>{{ __('CSV CFD') }}</x-icon-btn>
-                <x-icon-btn icon="monitoring" tone="ghost" size="sm" :href="route('agile.reports.sprint', $project)" show-label>{{ __('Sprint-Cockpit') }}</x-icon-btn>
-                <x-icon-btn icon="view_kanban" tone="ghost" size="sm" :href="route('agile.board', $project)" show-label>{{ __('Zum Board') }}</x-icon-btn>
+                <x-action-menu icon="download" :label="__('Export')">
+                    <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('agile.reports.export.csv', [$project, 'throughput'])" show-label>{{ __('CSV Durchsatz') }}</x-icon-btn>
+                    <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('agile.reports.export.csv', [$project, 'cfd'])" show-label>{{ __('CSV CFD') }}</x-icon-btn>
+                </x-action-menu>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    @include('agile._tabs')
 
     <x-filter-bar :action="route('agile.reports.flow', $project)" :reset="route('agile.reports.flow', $project)">
         <x-date-range class="w-80 shrink-0" :label="false" from-name="from" to-name="to"

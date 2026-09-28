@@ -149,6 +149,7 @@ return [
         'finance' => ['open_times_digest' => 'Digest dei tempi aperti per la contabilità'],
         'inventory' => ['cycle_counts' => 'Avvio inventario ciclico', 'expiring_lots' => 'Monitoraggio TMC (lotti in scadenza)'],
         'accounting' => ['recurring' => 'Attese di documenti e bozze di registrazione ricorrenti', 'filings' => 'Allinea le scadenze fiscali e invia promemoria'],
+        'platform' => ['usage_snapshot' => 'Registrare l’utilizzo per cliente'],
         'contracts' => ['price_index_sync' => 'Sincronizzare l’indice dei prezzi al consumo dalla Bundesbank'],
         'invoicing' => ['recurring' => 'Generare bozze di fatture ricorrenti', 'base_rate_sync' => 'Sincronizzare il tasso base dalla Bundesbank'],
         'jtl' => ['sync' => 'Sincronizzazione JTL Wawi'],

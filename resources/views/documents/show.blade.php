@@ -20,7 +20,7 @@
 @endphp
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar back-route="documents.index" :back-label="__('Zur Übersicht')">
             <x-slot:title>{{ $document->title }}</x-slot:title>
             <x-slot:subtitle>{{ $document->document_type->label() }}</x-slot:subtitle>
             {{-- Bezug als verlinkte Kette (MVP-818): vom Dokument zum Kunden, nicht nur
@@ -30,9 +30,10 @@
             @unless (app(\App\Services\Support\Content\ContentSubjectResolver::class)->resolve($document)->isEmpty())
                 <x-subject-link :for="$document" class="text-xs" />
             @endunless
-            <x-slot:actions>
+            <x-slot:badges>
                 <x-status-badge size="sm" :tone="$document->effectiveStatus()->tone()">{{ $document->effectiveStatus()->label() }}</x-status-badge>
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('documents.index')" show-label>{{ __('Zur Übersicht') }}</x-icon-btn>
+            </x-slot:badges>
+            <x-slot:actions>
                 <x-collection-add-button :item="$document" />
                 @if ($document->currentVersion)
                     <x-icon-btn icon="download" tone="outline" size="sm" :href="route('documents.download', $document)" show-label>{{ __('Herunterladen') }}</x-icon-btn>

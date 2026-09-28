@@ -20,7 +20,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar :back="route('patrols.show', $run->route)" :back-label="__('Zur Route')">
             <div class="flex min-w-0 items-center gap-2">
                 <span class="truncate font-medium">{{ $run->route?->name }}</span>
                 <span class="text-sm text-muted">{{ __('gestartet :time', ['time' => $run->started_at->orgTz()->format('H:i')]) }}</span>
@@ -31,7 +31,6 @@
                                 :href="route('patrols.runs.show', [$run, 'export' => 'pdf'])"
                                 show-label>{{ __('Bericht (PDF)') }}</x-icon-btn>
                 @endif
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('patrols.show', $run->route)" show-label>{{ __('Zur Route') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

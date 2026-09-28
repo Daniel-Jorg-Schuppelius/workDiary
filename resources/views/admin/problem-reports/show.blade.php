@@ -13,6 +13,11 @@
 
 @section('content')
 <x-index-page :subtitle="$report->summary">
+    <x-slot:badges>
+        @if (! $canConvert && $report->external_ref !== null)
+            <x-status-badge tone="info">{{ __('problemreport.field.ticket') }}: {{ $report->external_ref }}</x-status-badge>
+        @endif
+    </x-slot:badges>
     <x-slot:actions>
         <form method="POST" action="{{ route('admin.problem-reports.status', $report) }}" class="flex items-center gap-2">
             @csrf
@@ -28,14 +33,11 @@
             {{ __('problemreport.action.download') }}
         </x-button>
         @if ($canConvert)
-            <form method="POST" action="{{ route('admin.problem-reports.convert', $report) }}">
-                @csrf
+            <x-action-form :action="route('admin.problem-reports.convert', $report)">
                 <x-button type="submit" tone="warning" size="sm" icon="confirmation_number">
                     {{ __('problemreport.action.convert') }}
                 </x-button>
-            </form>
-        @elseif ($report->external_ref !== null)
-            <x-status-badge tone="info">{{ __('problemreport.field.ticket') }}: {{ $report->external_ref }}</x-status-badge>
+            </x-action-form>
         @endif
     </x-slot:actions>
 

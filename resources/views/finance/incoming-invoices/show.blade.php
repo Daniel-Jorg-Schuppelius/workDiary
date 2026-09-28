@@ -18,11 +18,10 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar back-route="finance.incoming-invoices.index" :back-label="__('Zur Liste')">
             <x-slot:title>{{ $document->title }}</x-slot:title>
             <x-slot:subtitle>{{ $document->description }}</x-slot:subtitle>
             <x-slot:actions>
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('finance.incoming-invoices.index')" show-label>{{ __('Zur Liste') }}</x-icon-btn>
                 <x-icon-btn icon="download" tone="outline" size="sm"
                             :href="route('documents.download', $document)"
                             show-label>{{ __('Original (XML/PDF)') }}</x-icon-btn>

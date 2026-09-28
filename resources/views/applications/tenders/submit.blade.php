@@ -21,14 +21,12 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :badge="__('values.' . $opportunity->status)" badge-tone="outline">
+        <x-page-toolbar :badge="__('values.' . $opportunity->status)" badge-tone="outline"
+                        :back="route('tenders.show', $opportunity)" :back-label="__('Zur Akte')">
             <div class="text-sm text-base-content/70">
                 {{ $opportunity->title }}
                 @if ($opportunity->submission_deadline) · {{ __('Abgabefrist: :date', ['date' => $opportunity->submission_deadline->fdate()]) }} @endif
             </div>
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('tenders.show', $opportunity)" show-label>{{ __('Zur Akte') }}</x-icon-btn>
-            </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 

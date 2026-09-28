@@ -171,7 +171,23 @@
     @endif
 
     <x-slot:toolbar>
+        @php
+            $isDraft = $invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT;
+            $billingInternal = ! app(\App\Services\Billing\BillingModeResolver::class)->effectiveFor($invoice->customer)->isExternal();
+            // E-Rechnung (Feature 045): XRechnung nur im Pfad „WorkDiary führt" und für gestellte/bezahlte Rechnungen.
+            $einvoiceVisible = in_array($invoice->status, [\App\Models\Invoicing\Invoice::STATUS_ISSUED, \App\Models\Invoicing\Invoice::STATUS_PAID], true) && $billingInternal;
+            // Lexware-Übergabe (Feature 158, MVP-833): Einzelexport, sobald eine lokale Ergänzung aktiv ist.
+            $lexwareExport = app(\App\Plugins\Lexoffice\Tariff\LexwareTariffService::class)->profile()->localFeatures !== [] && ! $isDraft && auth()->user()?->can(\App\Enums\User\Permission::InvoiceExport->value);
+            // Mahnsperre (Feature 127, MVP-691): nimmt die Rechnung aus Einzeldialog UND Mahnlauf; Umschalten wird auditiert.
+            $dunningBlockVisible = in_array($invoice->status, [\App\Models\Invoicing\Invoice::STATUS_ISSUED, \App\Models\Invoicing\Invoice::STATUS_PARTIALLY_PAID], true) && (auth()->user()?->canManageBilling() ?? false);
+        @endphp
         <x-page-toolbar :title="$invoice->documentLabel() . ' ' . $invoice->number" :badge="__('values.' . $invoice->status)" badge-tone="outline">
+            <x-slot:badges>
+                @include('lexoffice::handover._badge', ['invoice' => $invoice])
+                @if ($dunningBlockVisible && $invoice->isDunningBlocked())
+                    <x-status-badge tone="warning" outline :title="$invoice->dunning_block_reason">{{ __('finance.dunning.badge_blocked') }}</x-status-badge>
+                @endif
+            </x-slot:badges>
             <div class="text-sm text-base-content/70">{{ $invoice->customer->name }}</div>
             @if ($invoice->hasServicePeriod())
                 <div class="text-sm text-base-content/70">{{ $invoice->dateLabelPeriod() }}: {{ $invoice->serviceDateFrom()->fdate() }} – {{ $invoice->serviceDateTo()->fdate() }}</div>
@@ -180,22 +196,6 @@
             @endif
             <x-slot:actions>
                 <x-icon-btn icon="picture_as_pdf" size="sm" :href="route('invoices.pdf', $invoice)" show-label>{{ __('PDF') }}</x-icon-btn>
-                {{-- Lexware-Übergabe (Feature 158, MVP-833): Stand und Einzelexport, sobald eine lokale Ergänzung aktiv ist. --}}
-                @include('lexoffice::handover._badge', ['invoice' => $invoice])
-                @if (app(\App\Plugins\Lexoffice\Tariff\LexwareTariffService::class)->profile()->localFeatures !== [] && $invoice->status !== \App\Models\Invoicing\Invoice::STATUS_DRAFT && auth()->user()?->can(\App\Enums\User\Permission::InvoiceExport->value))
-                    <x-icon-btn icon="outbox" size="sm" :href="route('lexoffice.handover.export-one', $invoice)" show-label :title="__('lexware.action.export_one')">{{ __('lexware.action.export_one_short') }}</x-icon-btn>
-                @endif
-                {{-- E-Rechnung (Feature 045): XRechnung nur im Pfad „WorkDiary führt" und für gestellte/bezahlte Rechnungen. --}}
-                @php $einvoiceVisible = in_array($invoice->status, [\App\Models\Invoicing\Invoice::STATUS_ISSUED, \App\Models\Invoicing\Invoice::STATUS_PAID], true) && ! app(\App\Services\Billing\BillingModeResolver::class)->effectiveFor($invoice->customer)->isExternal(); @endphp
-                @if ($einvoiceVisible)
-                    <x-icon-btn icon="receipt" size="sm" :href="route('invoices.einvoice', $invoice)" show-label
-                                :title="__('invoicing.einvoice.button_title')">{{ __('invoicing.einvoice.button') }}</x-icon-btn>
-                    <x-icon-btn icon="receipt" size="sm" :href="route('invoices.zugferd', $invoice)" show-label
-                                :title="__('invoicing.einvoice.zugferd.button_title')">{{ __('invoicing.einvoice.zugferd.button') }}</x-icon-btn>
-                    {{-- GAEB X89: Ausgabeformat für Bau-Auftraggeber, kein zweiter Rechnungskreis (D8). --}}
-                    <x-icon-btn icon="receipt_long" size="sm" :href="route('invoices.gaeb', $invoice)" show-label
-                                :title="__('invoicing.einvoice.gaeb.button_title')">{{ __('invoicing.einvoice.gaeb.button') }}</x-icon-btn>
-                @endif
                 @can('send', $invoice)
                     <x-icon-btn icon="mail" tone="primary" size="sm"
                                 data-entry-modal-trigger
@@ -204,126 +204,42 @@
                     {{-- Peppol (Feature 066, MVP-734): nur sichtbar, wenn ein Access-Point-
                          Provider konfiguriert ist UND der Kunde eine Teilnehmer-ID hat. --}}
                     @if (app(\App\Services\Peppol\PeppolInvoiceDispatcher::class)->isOfferable($invoice))
-                        <form method="POST" action="{{ route('invoices.peppol.send', $invoice) }}" class="inline">
-                            @csrf
+                        <x-action-form :action="route('invoices.peppol.send', $invoice)">
                             <x-icon-btn icon="hub" tone="info" size="sm" type="submit" show-label
                                         :title="__('peppol.action.send_title')">{{ __('peppol.action.send') }}</x-icon-btn>
-                        </form>
+                        </x-action-form>
                     @endif
                 @endcan
-                @can('update', $invoice)
-                    @if ($invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT)
-                        <x-icon-btn icon="data_object" tone="info" size="sm"
-                                    data-entry-modal-trigger
-                                    :href="route('invoices.einvoice-options.edit', $invoice)"
-                                    show-label>{{ __('invoice-import.options_action') }}</x-icon-btn>
-                        <x-icon-btn icon="add" tone="primary" size="sm"
-                                    data-entry-modal-trigger
-                                    :href="route('invoices.items.create', $invoice)"
-                                    show-label>{{ __('Position hinzufügen') }}</x-icon-btn>
-                        {{-- Feature 160 (MVP-858): Fertigungsauslieferungen übernehmen — nur mit Lagermodul und Leserecht. --}}
-                        @feature('module.lager')
-                            @if (in_array($invoice->type, [\App\Models\Invoicing\Invoice::TYPE_INVOICE, \App\Models\Invoicing\Invoice::TYPE_PARTIAL, \App\Models\Invoicing\Invoice::TYPE_FINAL], true))
-                                @can('viewAny', \App\Models\Manufacturing\ManufacturingOrder::class)
-                                    <x-icon-btn icon="local_shipping" tone="info" size="sm"
-                                                data-entry-modal-trigger
-                                                :href="route('invoices.deliveries.form', $invoice)"
-                                                show-label>{{ __('invoicing.free.action.attach_deliveries') }}</x-icon-btn>
-                                @endcan
-                            @endif
-                        @endfeature
-                        <x-icon-btn icon="receipt_long" tone="info" size="sm"
-                                    data-entry-modal-trigger
-                                    :href="route('invoices.expenses.form', $invoice)"
-                                    show-label>{{ __('Spesen hinzufügen') }}</x-icon-btn>
-                        {{-- MVP-416: Belegrabatt + Skonto am Entwurf --}}
-                        <x-icon-btn icon="percent" size="sm"
-                                    data-entry-modal-trigger
-                                    :href="route('invoices.conditions.form', $invoice)"
-                                    show-label>{{ __('Konditionen') }}</x-icon-btn>
-                        {{-- MVP-602: Sicherheitseinbehalt § 17 VOB/B — nur am
-                             Entwurf, danach ist er Teil des eingefrorenen Stands. --}}
-                        <x-icon-btn icon="savings" size="sm"
-                                    data-entry-modal-trigger
-                                    :href="route('invoices.retentions.dialog', $invoice)"
-                                    show-label>{{ __('invoicing.retention.action') }}</x-icon-btn>
-                    @endif
-                @endcan
-                @if (! $invoice->isProforma() && ! app(\App\Services\Billing\BillingModeResolver::class)->effectiveFor($invoice->customer)->isExternal())
-                    <x-icon-btn icon="rule" size="sm" :href="route('invoices.einvoice-validation', $invoice)" show-label
-                                :title="__('Preflight, XSD und KoSIT vor der Ausstellung prüfen')">{{ __('E-Rechnungs-Prüfung') }}</x-icon-btn>
-                @endif
                 @can('issue', $invoice)
-                    @if (! $invoice->isProforma())
-                        @if ($invoice->approved_at === null)
-                            <x-action-form :action="route('invoices.approve', $invoice)">
-                                <x-icon-btn icon="verified" tone="info" size="sm" type="submit" show-label
-                                            :title="__('Fachliche Freigabe vor der Ausstellung (Vier-Augen-Option)')">{{ __('Freigeben') }}</x-icon-btn>
-                            </x-action-form>
-                        @endif
-                        <x-action-form :action="route('invoices.issue', $invoice)">
-                            <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Stellen') }}</x-icon-btn>
+                    @if (! $invoice->isProforma() && $invoice->approved_at === null)
+                        <x-action-form :action="route('invoices.approve', $invoice)">
+                            <x-icon-btn icon="verified" tone="info" size="sm" type="submit" show-label
+                                        :title="__('Fachliche Freigabe vor der Ausstellung (Vier-Augen-Option)')">{{ __('Freigeben') }}</x-icon-btn>
                         </x-action-form>
                     @endif
-                    {{-- Plugin-Slot: jedes aktive Plugin kann hier eigene Aktionen (z. B. "An Lexoffice senden") einklinken --}}
-                    {!! app(\App\Plugins\PluginManager::class)->renderSlot('invoice-show.actions', $invoice) !!}
                 @endcan
-                @if ($invoice->isProforma())
-                    @can('create', \App\Models\Invoicing\Invoice::class)
-                        <x-action-form :action="route('invoices.proforma-convert', $invoice)"
-                              :confirm="__('Pro-forma :nr in eine echte Rechnung mit neuer Rechnungsnummer umwandeln?', ['nr' => $invoice->number])"
-                              confirm-icon="swap_horiz"
-                              confirm-tone="primary"
-                              :confirm-label="__('Umwandeln')">
-                            <x-icon-btn icon="swap_horiz" tone="primary" size="sm" type="submit" show-label>{{ __('In Rechnung umwandeln') }}</x-icon-btn>
-                        </x-action-form>
-                    @endcan
-                @endif
                 @if ($invoice->isOverdue() && (int) $invoice->dunning_level < 3 && ! $invoice->isDunningBlocked() && (auth()->user()?->canManageBilling() ?? false))
                     <x-icon-btn icon="notification_important" tone="warning" size="sm"
                                 data-entry-modal-trigger
                                 :href="route('invoices.dun.form', $invoice)"
                                 show-label>{{ __('Mahnen') }}</x-icon-btn>
                 @endif
-                {{-- Mahnsperre (Feature 127, MVP-691): nimmt die Rechnung aus
-                     Einzeldialog UND Mahnlauf; Umschalten wird auditiert. --}}
-                @if (in_array($invoice->status, [\App\Models\Invoicing\Invoice::STATUS_ISSUED, \App\Models\Invoicing\Invoice::STATUS_PARTIALLY_PAID], true) && (auth()->user()?->canManageBilling() ?? false))
-                    @if ($invoice->isDunningBlocked())
-                        <x-status-badge tone="warning" outline :title="$invoice->dunning_block_reason">{{ __('finance.dunning.badge_blocked') }}</x-status-badge>
-                        <x-action-form :action="route('invoices.dunning-unblock', $invoice)">
-                            <x-icon-btn icon="notifications_active" tone="outline" size="sm" type="submit"
-                                        show-label>{{ __('finance.dunning.action_unblock') }}</x-icon-btn>
-                        </x-action-form>
-                    @else
-                        <x-icon-btn icon="notifications_off" tone="outline" size="sm"
-                                    data-entry-modal-trigger
-                                    :href="route('invoices.dunning-block.form', $invoice)"
-                                    show-label>{{ __('finance.dunning.action_block') }}</x-icon-btn>
-                    @endif
+                @if ($einvoiceVisible || $lexwareExport)
+                    <x-action-menu icon="download" :label="__('Export')">
+                        @if ($einvoiceVisible)
+                            <x-icon-btn icon="receipt" size="sm" :href="route('invoices.einvoice', $invoice)" show-label
+                                        :title="__('invoicing.einvoice.button_title')">{{ __('invoicing.einvoice.button') }}</x-icon-btn>
+                            <x-icon-btn icon="receipt" size="sm" :href="route('invoices.zugferd', $invoice)" show-label
+                                        :title="__('invoicing.einvoice.zugferd.button_title')">{{ __('invoicing.einvoice.zugferd.button') }}</x-icon-btn>
+                            {{-- GAEB X89: Ausgabeformat für Bau-Auftraggeber, kein zweiter Rechnungskreis (D8). --}}
+                            <x-icon-btn icon="receipt_long" size="sm" :href="route('invoices.gaeb', $invoice)" show-label
+                                        :title="__('invoicing.einvoice.gaeb.button_title')">{{ __('invoicing.einvoice.gaeb.button') }}</x-icon-btn>
+                        @endif
+                        @if ($lexwareExport)
+                            <x-icon-btn icon="outbox" size="sm" :href="route('lexoffice.handover.export-one', $invoice)" show-label :title="__('lexware.action.export_one')">{{ __('lexware.action.export_one_short') }}</x-icon-btn>
+                        @endif
+                    </x-action-menu>
                 @endif
-                @can('pay', $invoice)
-                    <x-action-form :action="route('invoices.pay', $invoice)">
-                        <x-icon-btn icon="check_circle" tone="success" size="sm" type="submit" show-label>{{ __('Bezahlt markieren') }}</x-icon-btn>
-                    </x-action-form>
-                @endcan
-                @can('cancel', $invoice)
-                    <x-action-form :action="route('invoices.cancel', $invoice)"
-                          :confirm="__('Rechnung wirklich stornieren?')"
-                          confirm-icon="block"
-                          confirm-tone="warning"
-                          :confirm-label="__('Stornieren')">
-                        <x-icon-btn icon="block" tone="warning" size="sm" type="submit" show-label>{{ __('Stornieren') }}</x-icon-btn>
-                    </x-action-form>
-                @endcan
-                @can('createCreditNote', $invoice)
-                    <x-action-form :action="route('invoices.credit-note', $invoice)"
-                          :confirm="__('Korrekturrechnung (Gutschrift) zu :nr erstellen?', ['nr' => $invoice->number])"
-                          confirm-icon="undo"
-                          confirm-tone="warning"
-                          :confirm-label="__('Korrekturrechnung erstellen')">
-                        <x-icon-btn icon="undo" tone="warning" size="sm" type="submit" show-label>{{ __('Korrekturrechnung') }}</x-icon-btn>
-                    </x-action-form>
-                @endcan
                 @can('update', $invoice)
                     @if (($openDownPaymentCount ?? 0) > 0 && $invoice->type === \App\Models\Invoicing\Invoice::TYPE_INVOICE)
                         <x-action-form :action="route('invoices.final', $invoice)"
@@ -335,13 +251,98 @@
                         </x-action-form>
                     @endif
                 @endcan
+                @can('issue', $invoice)
+                    @if (! $invoice->isProforma())
+                        <x-action-form :action="route('invoices.issue', $invoice)">
+                            <x-icon-btn icon="send" tone="primary" size="sm" type="submit" placement="bar" show-label>{{ __('Stellen') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                @endcan
+                @if ($invoice->isProforma())
+                    @can('create', \App\Models\Invoicing\Invoice::class)
+                        <x-action-form :action="route('invoices.proforma-convert', $invoice)"
+                              :confirm="__('Pro-forma :nr in eine echte Rechnung mit neuer Rechnungsnummer umwandeln?', ['nr' => $invoice->number])"
+                              confirm-icon="swap_horiz"
+                              confirm-tone="primary"
+                              :confirm-label="__('Umwandeln')">
+                            <x-icon-btn icon="swap_horiz" tone="primary" size="sm" type="submit" placement="bar" show-label>{{ __('In Rechnung umwandeln') }}</x-icon-btn>
+                        </x-action-form>
+                    @endcan
+                @endif
+                @can('pay', $invoice)
+                    <x-action-form :action="route('invoices.pay', $invoice)">
+                        <x-icon-btn icon="check_circle" tone="success" size="sm" type="submit" placement="bar" show-label>{{ __('Bezahlt markieren') }}</x-icon-btn>
+                    </x-action-form>
+                @endcan
+                @can('issue', $invoice)
+                    {{-- Plugin-Slot: jedes aktive Plugin kann hier eigene Aktionen (z. B. "An Lexoffice senden") einklinken --}}
+                    {!! app(\App\Plugins\PluginManager::class)->renderSlot('invoice-show.actions', $invoice) !!}
+                @endcan
+
+                {{-- Seltene Aktionen: immer im ⋯-Menü. --}}
+                @can('update', $invoice)
+                    @if ($isDraft)
+                        <x-icon-btn icon="data_object" size="sm" placement="menu"
+                                    data-entry-modal-trigger
+                                    :href="route('invoices.einvoice-options.edit', $invoice)"
+                                    show-label>{{ __('invoice-import.options_action') }}</x-icon-btn>
+                        {{-- MVP-416: Belegrabatt + Skonto am Entwurf --}}
+                        <x-icon-btn icon="percent" size="sm" placement="menu"
+                                    data-entry-modal-trigger
+                                    :href="route('invoices.conditions.form', $invoice)"
+                                    show-label>{{ __('Konditionen') }}</x-icon-btn>
+                        {{-- MVP-602: Sicherheitseinbehalt § 17 VOB/B — nur am
+                             Entwurf, danach ist er Teil des eingefrorenen Stands. --}}
+                        <x-icon-btn icon="savings" size="sm" placement="menu"
+                                    data-entry-modal-trigger
+                                    :href="route('invoices.retentions.dialog', $invoice)"
+                                    show-label>{{ __('invoicing.retention.action') }}</x-icon-btn>
+                    @endif
+                @endcan
+                @if (! $invoice->isProforma() && $billingInternal)
+                    <x-icon-btn icon="rule" size="sm" placement="menu" :href="route('invoices.einvoice-validation', $invoice)" show-label
+                                :title="__('Preflight, XSD und KoSIT vor der Ausstellung prüfen')">{{ __('E-Rechnungs-Prüfung') }}</x-icon-btn>
+                @endif
+                @if ($dunningBlockVisible)
+                    @if ($invoice->isDunningBlocked())
+                        <x-action-form :action="route('invoices.dunning-unblock', $invoice)">
+                            <x-icon-btn icon="notifications_active" size="sm" type="submit" placement="menu"
+                                        show-label>{{ __('finance.dunning.action_unblock') }}</x-icon-btn>
+                        </x-action-form>
+                    @else
+                        <x-icon-btn icon="notifications_off" size="sm" placement="menu"
+                                    data-entry-modal-trigger
+                                    :href="route('invoices.dunning-block.form', $invoice)"
+                                    show-label>{{ __('finance.dunning.action_block') }}</x-icon-btn>
+                    @endif
+                @endif
+
+                {{-- Destruktiv: immer im ⋯-Menü, abgesetzt am Ende. --}}
+                @can('cancel', $invoice)
+                    <x-action-form :action="route('invoices.cancel', $invoice)"
+                          :confirm="__('Rechnung wirklich stornieren?')"
+                          confirm-icon="block"
+                          confirm-tone="warning"
+                          :confirm-label="__('Stornieren')">
+                        <x-icon-btn icon="block" tone="warning" size="sm" type="submit" placement="danger" show-label>{{ __('Stornieren') }}</x-icon-btn>
+                    </x-action-form>
+                @endcan
+                @can('createCreditNote', $invoice)
+                    <x-action-form :action="route('invoices.credit-note', $invoice)"
+                          :confirm="__('Korrekturrechnung (Gutschrift) zu :nr erstellen?', ['nr' => $invoice->number])"
+                          confirm-icon="undo"
+                          confirm-tone="warning"
+                          :confirm-label="__('Korrekturrechnung erstellen')">
+                        <x-icon-btn icon="undo" tone="warning" size="sm" type="submit" placement="danger" show-label>{{ __('Korrekturrechnung') }}</x-icon-btn>
+                    </x-action-form>
+                @endcan
                 @can('delete', $invoice)
                     <x-action-form :action="route('invoices.destroy', $invoice)" method="DELETE"
                           :confirm="__('Wirklich löschen?')"
                           confirm-icon="delete"
                           confirm-tone="error"
                           :confirm-label="__('Löschen')">
-                        <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
+                        <x-icon-btn icon="delete" tone="error" size="sm" type="submit" placement="danger" show-label>{{ __('Löschen') }}</x-icon-btn>
                     </x-action-form>
                 @endcan
             </x-slot:actions>
@@ -368,167 +369,195 @@
     @endphp
     @include('ai._learn_prompt')
     @include('invoicing._text_correction_learn')
-    @if ($aiSuggestEnabled && $invoice->items->isNotEmpty())
-        <div class="flex justify-end">
-            <x-action-form :action="route('ai.suggestions.invoice-all', $invoice)">
-                <x-icon-btn icon="auto_awesome" tone="info" size="sm" type="submit" show-label
-                            :title="__('ai.suggestion.suggest_all_title')">{{ __('ai.suggestion.suggest_all') }}</x-icon-btn>
-            </x-action-form>
-        </div>
-    @endif
-
-    <x-table table-sort="client">
-        <x-slot:head>
-            <tr>
-                <th>#</th>
-                <x-table.th sort>{{ __('Beschreibung') }}</x-table.th>
-                @if ($showServiceDates)<x-table.th sort type="date">{{ $invoice->dateLabelSingle() }}</x-table.th>@endif
-                <x-table.th sort type="number" align="right">{{ __('Menge') }}</x-table.th>
-                <x-table.th sort type="number" align="right">{{ __('Einzelpreis') }}</x-table.th>
-                <x-table.th sort type="number" align="right">{{ __('Betrag') }}</x-table.th>
-                @can('update', $invoice)
-                    @if ($invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT)
-                        <th class="text-right">{{ __('Aktionen') }}</th>
-                    @endif
-                @endcan
-            </tr>
-        </x-slot:head>
-        <x-slot:foot>
-            @php $docDiscount = $invoice->documentDiscountTotal(); @endphp
-            @if (!$docDiscount->isZero())
-                {{-- MVP-416: Positionssumme, Belegrabatt, Netto getrennt ausweisen. --}}
-                <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('Zwischensumme') }}</td><td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($invoice->lineSubtotal()->toFloat(), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
-                <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('Rabatt') }}@if ($invoice->discount_percent !== null) ({{ rtrim(rtrim($invoice->discount_percent?->getNumericValue() ?? '0', '0'), '.') }}%)@endif</td><td class="text-right">−{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(abs($docDiscount->toFloat()), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
-                <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('Netto') }}</td><td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->subtotal?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
-            @else
-                <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('Zwischensumme') }}</td><td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->subtotal?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
-            @endif
-            <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('USt.') }} {{ rtrim(rtrim($invoice->tax_rate?->getNumericValue() ?? '0', '0'), '.') }}%</td><td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->tax_amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
-            @if ($invoice->is_reverse_charge)
-                <tr><td colspan="{{ $footColspan + 1 }}" class="text-right text-xs text-muted">{{ __('Steuerschuldnerschaft des Leistungsempfängers (Reverse Charge).') }}</td></tr>
-            @endif
-            <tr><td colspan="{{ $footColspan }}" class="text-right font-bold">{{ __('Gesamt') }}</td><td class="text-right font-bold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
-            @php
-                // Sicherheitseinbehalte (Feature 113, MVP-602).
-                $openRetentions = $invoice->retentions->where('status', \App\Enums\Invoicing\RetentionStatus::Open);
-            @endphp
-            @foreach ($openRetentions as $retention)
-                <tr>
-                    @php
-                        $retentionLabel = $retention->kind->label();
-                        if ($retention->percent !== null) {
-                            $retentionLabel .= ' (' . \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $retention->percent->getNumericValue(), 2) . ' %)';
-                        }
-                        if ($retention->due_on !== null) {
-                            $retentionLabel .= ' — ' . __('invoicing.retention.due_on') . ' ' . $retention->due_on->fdate();
-                        }
-                    @endphp
-                    <td colspan="{{ $footColspan }}" class="text-right text-xs text-base-content/70">{{ $retentionLabel }}</td>
-                    <td class="text-right text-xs">−{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($retention->amount->toFloat(), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
-                </tr>
-            @endforeach
-            @if ($openRetentions->isNotEmpty())
-                <tr><td colspan="{{ $footColspan }}" class="text-right font-bold">{{ __('invoicing.retention.payable') }}</td><td class="text-right font-bold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(app(\App\Services\Invoicing\RetentionService::class)->payableAmountOf($invoice), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
-            @endif
-            @if ($invoice->hasSkonto())
-                <tr><td colspan="{{ $footColspan + 1 }}" class="text-right text-xs text-muted">
-                    {{ __(':percent % Skonto bei Zahlung innerhalb von :days Tagen', ['percent' => rtrim(rtrim($invoice->skonto_percent?->getNumericValue() ?? '0', '0'), '.'), 'days' => (int) $invoice->skonto_days]) }}@if ($invoice->skontoDeadline() !== null) ({{ __('bis :date', ['date' => $invoice->skontoDeadline()->fdate()]) }} = {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0) - $invoice->skontoAmount()->toFloat(), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }})@endif
-                </td></tr>
-            @endif
-        </x-slot:foot>
-        @forelse ($invoice->items as $item)
-            <tr>
-                <td>{{ $item->position }}</td>
-                <td>{{ $item->description }}@if ($item->article_number_snapshot) <span class="badge badge-ghost badge-xs" title="{{ __('Artikel') }}">{{ $item->article_number_snapshot }}</span>@elseif ($item->article) <span class="badge badge-ghost badge-xs" title="{{ __('Artikel') }}">{{ $item->article->number ?: $item->article->name }}</span>@endif
-                    @if ($item->service_from !== null)<div class="text-xs text-muted">{{ __('invoicing.item.service_period') }}: {{ $item->servicePeriodLabel() }}</div>@endif</td>
-                @if ($showServiceDates)<td data-sort-value="{{ optional($item->service_date)->toDateString() }}">{{ optional($item->service_date)->fdate() ?: '—' }}</td>@endif
-                <td class="text-right" data-sort-value="{{ (float) $item->quantity }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, ((int) round((float) $item->quantity * 1000)) % 10 !== 0 ? 3 : 2, withThousandsSeparator: true) }} {{ $item->unit }}@if ($item->unit === __('invoicing.unit_hour')) <span class="whitespace-nowrap text-xs text-muted">({{ \App\Support\Formats::duration((int) round((float) $item->quantity * 60), 'clock') }})</span>@endif</td>
-                <td class="text-right" data-sort-value="{{ ($item->unit_price?->toFloat() ?? 0.0) }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->unit_price?->toFloat() ?? 0.0), ((int) round(($item->unit_price?->toFloat() ?? 0.0) * 10000)) % 100 !== 0 ? 4 : 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
-                <td class="text-right" data-sort-value="{{ ($item->amount?->toFloat() ?? 0.0) }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
-                @can('update', $invoice)
-                    @if ($invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT)
-                        <td class="text-right whitespace-nowrap">
-                            @if ($aiSuggestEnabled)
-                                <x-action-form :action="route('ai.suggestions.invoice-item', [$invoice, $item])">
-                                    <x-icon-btn icon="auto_awesome" size="xs" tone="info" type="submit" :title="__('ai.suggestion.suggest')" />
-                                </x-action-form>
+    {{-- Belegpositionen werden an der Tabelle angelegt, nicht im Seitenkopf (MVP-968). --}}
+    @php $canAddItems = $isDraft && auth()->user()?->can('update', $invoice); @endphp
+    <x-card :title="__('Positionen')" padding="p-0">
+        @if ($canAddItems || ($aiSuggestEnabled && $invoice->items->isNotEmpty()))
+            <x-slot:actions>
+                @if ($aiSuggestEnabled && $invoice->items->isNotEmpty())
+                    <x-action-form :action="route('ai.suggestions.invoice-all', $invoice)">
+                        <x-icon-btn icon="auto_awesome" tone="info" size="sm" type="submit" show-label
+                                    :title="__('ai.suggestion.suggest_all_title')">{{ __('ai.suggestion.suggest_all') }}</x-icon-btn>
+                    </x-action-form>
+                @endif
+                @if ($canAddItems)
+                    <x-action-menu icon="add" tone="primary" :label="__('Hinzufügen')">
+                        <x-icon-btn icon="add" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('invoices.items.create', $invoice)"
+                                    show-label>{{ __('Position hinzufügen') }}</x-icon-btn>
+                        {{-- Feature 160 (MVP-858): Fertigungsauslieferungen übernehmen — nur mit Lagermodul und Leserecht. --}}
+                        @feature('module.lager')
+                            @if (in_array($invoice->type, [\App\Models\Invoicing\Invoice::TYPE_INVOICE, \App\Models\Invoicing\Invoice::TYPE_PARTIAL, \App\Models\Invoicing\Invoice::TYPE_FINAL], true))
+                                @can('viewAny', \App\Models\Manufacturing\ManufacturingOrder::class)
+                                    <x-icon-btn icon="local_shipping" size="sm"
+                                                data-entry-modal-trigger
+                                                :href="route('invoices.deliveries.form', $invoice)"
+                                                show-label>{{ __('invoicing.free.action.attach_deliveries') }}</x-icon-btn>
+                                @endcan
                             @endif
-                            @if ($aiTranslateEnabled)
-                                <x-icon-btn icon="translate" size="xs" tone="ghost"
-                                            data-entry-modal-trigger
-                                            :href="route('ai.suggestions.invoice-item-translate-form', [$invoice, $item])"
-                                            :title="__('ai.suggestion.translate')" />
-                            @endif
-                            <x-icon-btn icon="edit" size="xs" tone="ghost"
-                                        data-entry-modal-trigger
-                                        :href="route('invoices.items.edit', [$invoice, $item])"
-                                        :title="__('Bearbeiten')" />
-                            <x-action-form :action="route('invoices.items.destroy', [$invoice, $item])" method="DELETE"
-                                  :confirm="__('Position wirklich entfernen?')"
-                                  confirm-icon="delete"
-                                  confirm-tone="error"
-                                  :confirm-label="__('Entfernen')">
-                                <x-icon-btn icon="delete" size="xs" tone="error" type="submit" :title="__('Entfernen')" />
-                            </x-action-form>
-                        </td>
-                    @endif
-                @endcan
-            </tr>
-            @if ($item->timeEntries->isNotEmpty())
-                {{-- Quell-Zeiten der Position (MVP-462): Herkunft je Block sichtbar machen. --}}
+                        @endfeature
+                        <x-icon-btn icon="receipt_long" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('invoices.expenses.form', $invoice)"
+                                    show-label>{{ __('Spesen hinzufügen') }}</x-icon-btn>
+                    </x-action-menu>
+                @endif
+            </x-slot:actions>
+        @endif
+        <x-table table-sort="client" bare>
+            <x-slot:head>
                 <tr>
-                    <td colspan="{{ $footColspan + 2 }}" class="py-1">
-                        <details>
-                            <summary class="cursor-pointer text-xs text-muted">
-                                {{ trans_choice('invoicing.source_times', $item->timeEntries->count(), ['count' => $item->timeEntries->count()]) }}
-                            </summary>
-                            <ul class="mt-1 space-y-0.5 pl-4">
-                                @foreach ($item->timeEntries as $sourceEntry)
-                                    <li class="flex flex-wrap items-center gap-2 text-xs text-base-content/70">
-                                        <span class="whitespace-nowrap">{{ $sourceEntry->date?->format(\App\Support\Formats::date()) ?? '—' }}</span>
-                                        <span>{{ $sourceEntry->user->name ?? '—' }}</span>
-                                        <span class="max-w-md truncate" title="{{ $sourceEntry->description }}">{{ $sourceEntry->description }}</span>
-                                        <x-duration :minutes="$sourceEntry->minutes" class="ml-auto" />
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </details>
-                    </td>
-                </tr>
-            @endif
-            @if ($item->stockDelivery !== null)
-                {{-- Feature 160 (MVP-858): Herkunft der Position — Menge quellengebunden, Preis aus der Auslieferung vorbelegt. --}}
-                <tr>
-                    <td colspan="{{ $footColspan + 2 }}" class="py-1 text-xs text-muted">
-                        <x-icon name="local_shipping" class="mr-1" />{{ __('invoicing.free.label.source_delivery', ['date' => $item->stockDelivery->delivered_at?->fdate() ?? '—', 'order' => $item->stockDelivery->order?->number ?? '—', 'quantity' => $item->stockDelivery->quantity?->getNumericValue() . ' ' . $item->stockDelivery->unit]) }}
-                        @if ($item->stockDelivery->order !== null)
-                            @can('view', $item->stockDelivery->order)
-                                · <a href="{{ route('manufacturing-orders.show', $item->stockDelivery->order) }}" class="link">{{ __('invoicing.free.action.open_order') }}</a>
-                            @endcan
+                    <th>#</th>
+                    <x-table.th sort>{{ __('Beschreibung') }}</x-table.th>
+                    @if ($showServiceDates)<x-table.th sort type="date">{{ $invoice->dateLabelSingle() }}</x-table.th>@endif
+                    <x-table.th sort type="number" align="right">{{ __('Menge') }}</x-table.th>
+                    <x-table.th sort type="number" align="right">{{ __('Einzelpreis') }}</x-table.th>
+                    <x-table.th sort type="number" align="right">{{ __('Betrag') }}</x-table.th>
+                    @can('update', $invoice)
+                        @if ($invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT)
+                            <th class="text-right">{{ __('Aktionen') }}</th>
                         @endif
-                    </td>
+                    @endcan
                 </tr>
-            @endif
-            @if ($aiDraft && ($aiSuggestions[$item->id] ?? null) !== null)
-                <tr data-ai-suggestion-row>
-                    <td colspan="{{ $footColspan + 2 }}">
-                        <x-ai-suggestion
-                            :original="$aiSuggestions[$item->id]->original"
-                            :suggestion="$aiSuggestions[$item->id]->suggestion"
-                            :provider="$aiSuggestions[$item->id]->provider"
-                            :fallback="$aiSuggestions[$item->id]->fallback_used"
-                            :cached="$aiSuggestions[$item->id]->from_cache"
-                            :accept-action="route('ai.suggestions.accept', $aiSuggestions[$item->id])"
-                            :reject-action="route('ai.suggestions.reject', $aiSuggestions[$item->id])"
-                            field-name="text"
-                        />
-                    </td>
+            </x-slot:head>
+            <x-slot:foot>
+                @php $docDiscount = $invoice->documentDiscountTotal(); @endphp
+                @if (!$docDiscount->isZero())
+                    {{-- MVP-416: Positionssumme, Belegrabatt, Netto getrennt ausweisen. --}}
+                    <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('Zwischensumme') }}</td><td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($invoice->lineSubtotal()->toFloat(), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+                    <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('Rabatt') }}@if ($invoice->discount_percent !== null) ({{ rtrim(rtrim($invoice->discount_percent?->getNumericValue() ?? '0', '0'), '.') }}%)@endif</td><td class="text-right">−{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(abs($docDiscount->toFloat()), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+                    <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('Netto') }}</td><td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->subtotal?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+                @else
+                    <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('Zwischensumme') }}</td><td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->subtotal?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+                @endif
+                <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('USt.') }} {{ rtrim(rtrim($invoice->tax_rate?->getNumericValue() ?? '0', '0'), '.') }}%</td><td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->tax_amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+                @if ($invoice->is_reverse_charge)
+                    <tr><td colspan="{{ $footColspan + 1 }}" class="text-right text-xs text-muted">{{ __('Steuerschuldnerschaft des Leistungsempfängers (Reverse Charge).') }}</td></tr>
+                @endif
+                <tr><td colspan="{{ $footColspan }}" class="text-right font-bold">{{ __('Gesamt') }}</td><td class="text-right font-bold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+                @php
+                    // Sicherheitseinbehalte (Feature 113, MVP-602).
+                    $openRetentions = $invoice->retentions->where('status', \App\Enums\Invoicing\RetentionStatus::Open);
+                @endphp
+                @foreach ($openRetentions as $retention)
+                    <tr>
+                        @php
+                            $retentionLabel = $retention->kind->label();
+                            if ($retention->percent !== null) {
+                                $retentionLabel .= ' (' . \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $retention->percent->getNumericValue(), 2) . ' %)';
+                            }
+                            if ($retention->due_on !== null) {
+                                $retentionLabel .= ' — ' . __('invoicing.retention.due_on') . ' ' . $retention->due_on->fdate();
+                            }
+                        @endphp
+                        <td colspan="{{ $footColspan }}" class="text-right text-xs text-base-content/70">{{ $retentionLabel }}</td>
+                        <td class="text-right text-xs">−{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($retention->amount->toFloat(), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
+                    </tr>
+                @endforeach
+                @if ($openRetentions->isNotEmpty())
+                    <tr><td colspan="{{ $footColspan }}" class="text-right font-bold">{{ __('invoicing.retention.payable') }}</td><td class="text-right font-bold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(app(\App\Services\Invoicing\RetentionService::class)->payableAmountOf($invoice), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+                @endif
+                @if ($invoice->hasSkonto())
+                    <tr><td colspan="{{ $footColspan + 1 }}" class="text-right text-xs text-muted">
+                        {{ __(':percent % Skonto bei Zahlung innerhalb von :days Tagen', ['percent' => rtrim(rtrim($invoice->skonto_percent?->getNumericValue() ?? '0', '0'), '.'), 'days' => (int) $invoice->skonto_days]) }}@if ($invoice->skontoDeadline() !== null) ({{ __('bis :date', ['date' => $invoice->skontoDeadline()->fdate()]) }} = {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0) - $invoice->skontoAmount()->toFloat(), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }})@endif
+                    </td></tr>
+                @endif
+            </x-slot:foot>
+            @forelse ($invoice->items as $item)
+                <tr>
+                    <td>{{ $item->position }}</td>
+                    <td>{{ $item->description }}@if ($item->article_number_snapshot) <span class="badge badge-ghost badge-xs" title="{{ __('Artikel') }}">{{ $item->article_number_snapshot }}</span>@elseif ($item->article) <span class="badge badge-ghost badge-xs" title="{{ __('Artikel') }}">{{ $item->article->number ?: $item->article->name }}</span>@endif
+                        @if ($item->service_from !== null)<div class="text-xs text-muted">{{ __('invoicing.item.service_period') }}: {{ $item->servicePeriodLabel() }}</div>@endif</td>
+                    @if ($showServiceDates)<td data-sort-value="{{ optional($item->service_date)->toDateString() }}">{{ optional($item->service_date)->fdate() ?: '—' }}</td>@endif
+                    <td class="text-right" data-sort-value="{{ (float) $item->quantity }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, ((int) round((float) $item->quantity * 1000)) % 10 !== 0 ? 3 : 2, withThousandsSeparator: true) }} {{ $item->unit }}@if ($item->unit === __('invoicing.unit_hour')) <span class="whitespace-nowrap text-xs text-muted">({{ \App\Support\Formats::duration((int) round((float) $item->quantity * 60), 'clock') }})</span>@endif</td>
+                    <td class="text-right" data-sort-value="{{ ($item->unit_price?->toFloat() ?? 0.0) }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->unit_price?->toFloat() ?? 0.0), ((int) round(($item->unit_price?->toFloat() ?? 0.0) * 10000)) % 100 !== 0 ? 4 : 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
+                    <td class="text-right" data-sort-value="{{ ($item->amount?->toFloat() ?? 0.0) }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
+                    @can('update', $invoice)
+                        @if ($invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT)
+                            <td class="text-right whitespace-nowrap">
+                                @if ($aiSuggestEnabled)
+                                    <x-action-form :action="route('ai.suggestions.invoice-item', [$invoice, $item])">
+                                        <x-icon-btn icon="auto_awesome" size="xs" tone="info" type="submit" :title="__('ai.suggestion.suggest')" />
+                                    </x-action-form>
+                                @endif
+                                @if ($aiTranslateEnabled)
+                                    <x-icon-btn icon="translate" size="xs" tone="ghost"
+                                                data-entry-modal-trigger
+                                                :href="route('ai.suggestions.invoice-item-translate-form', [$invoice, $item])"
+                                                :title="__('ai.suggestion.translate')" />
+                                @endif
+                                <x-icon-btn icon="edit" size="xs" tone="ghost"
+                                            data-entry-modal-trigger
+                                            :href="route('invoices.items.edit', [$invoice, $item])"
+                                            :title="__('Bearbeiten')" />
+                                <x-action-form :action="route('invoices.items.destroy', [$invoice, $item])" method="DELETE"
+                                      :confirm="__('Position wirklich entfernen?')"
+                                      confirm-icon="delete"
+                                      confirm-tone="error"
+                                      :confirm-label="__('Entfernen')">
+                                    <x-icon-btn icon="delete" size="xs" tone="error" type="submit" :title="__('Entfernen')" />
+                                </x-action-form>
+                            </td>
+                        @endif
+                    @endcan
                 </tr>
-            @endif
-        @empty
-            <x-table.empty icon="receipt_long" :colspan="5" :title="__('Keine Positionen.')" :message="$invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT ? __('invoicing.free.hint.empty_draft') : null" compact />
-        @endforelse
-    </x-table>
+                @if ($item->timeEntries->isNotEmpty())
+                    {{-- Quell-Zeiten der Position (MVP-462): Herkunft je Block sichtbar machen. --}}
+                    <tr>
+                        <td colspan="{{ $footColspan + 2 }}" class="py-1">
+                            <details>
+                                <summary class="cursor-pointer text-xs text-muted">
+                                    {{ trans_choice('invoicing.source_times', $item->timeEntries->count(), ['count' => $item->timeEntries->count()]) }}
+                                </summary>
+                                <ul class="mt-1 space-y-0.5 pl-4">
+                                    @foreach ($item->timeEntries as $sourceEntry)
+                                        <li class="flex flex-wrap items-center gap-2 text-xs text-base-content/70">
+                                            <span class="whitespace-nowrap">{{ $sourceEntry->date?->format(\App\Support\Formats::date()) ?? '—' }}</span>
+                                            <span>{{ $sourceEntry->user->name ?? '—' }}</span>
+                                            <span class="max-w-md truncate" title="{{ $sourceEntry->description }}">{{ $sourceEntry->description }}</span>
+                                            <x-duration :minutes="$sourceEntry->minutes" class="ml-auto" />
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </details>
+                        </td>
+                    </tr>
+                @endif
+                @if ($item->stockDelivery !== null)
+                    {{-- Feature 160 (MVP-858): Herkunft der Position — Menge quellengebunden, Preis aus der Auslieferung vorbelegt. --}}
+                    <tr>
+                        <td colspan="{{ $footColspan + 2 }}" class="py-1 text-xs text-muted">
+                            <x-icon name="local_shipping" class="mr-1" />{{ __('invoicing.free.label.source_delivery', ['date' => $item->stockDelivery->delivered_at?->fdate() ?? '—', 'order' => $item->stockDelivery->order?->number ?? '—', 'quantity' => $item->stockDelivery->quantity?->getNumericValue() . ' ' . $item->stockDelivery->unit]) }}
+                            @if ($item->stockDelivery->order !== null)
+                                @can('view', $item->stockDelivery->order)
+                                    · <a href="{{ route('manufacturing-orders.show', $item->stockDelivery->order) }}" class="link">{{ __('invoicing.free.action.open_order') }}</a>
+                                @endcan
+                            @endif
+                        </td>
+                    </tr>
+                @endif
+                @if ($aiDraft && ($aiSuggestions[$item->id] ?? null) !== null)
+                    <tr data-ai-suggestion-row>
+                        <td colspan="{{ $footColspan + 2 }}">
+                            <x-ai-suggestion
+                                :original="$aiSuggestions[$item->id]->original"
+                                :suggestion="$aiSuggestions[$item->id]->suggestion"
+                                :provider="$aiSuggestions[$item->id]->provider"
+                                :fallback="$aiSuggestions[$item->id]->fallback_used"
+                                :cached="$aiSuggestions[$item->id]->from_cache"
+                                :accept-action="route('ai.suggestions.accept', $aiSuggestions[$item->id])"
+                                :reject-action="route('ai.suggestions.reject', $aiSuggestions[$item->id])"
+                                field-name="text"
+                            />
+                        </td>
+                    </tr>
+                @endif
+            @empty
+                <x-table.empty icon="receipt_long" :colspan="5" :title="__('Keine Positionen.')" :message="$invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT ? __('invoicing.free.hint.empty_draft') : null" compact />
+            @endforelse
+        </x-table>
+    </x-card>
 
     <div class="grid gap-2 text-sm text-base-content/70 sm:grid-cols-3">
         <div>{{ __('Zahlungsziel: :days Tage', ['days' => (int) ($invoice->payment_terms_days ?? 14) ]) }}@if ($invoice->due_on) · {{ __('fällig am :date', ['date' => $invoice->due_on->fdate()]) }}@endif</div>

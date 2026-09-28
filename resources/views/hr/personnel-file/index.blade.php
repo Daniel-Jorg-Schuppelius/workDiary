@@ -17,13 +17,9 @@
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 @section('content')
 <x-index-page overflow="clip"
-              :subtitle="$selfView ? __('hr.personnel_file.subtitle_mine') : __('hr.personnel_file.subtitle', ['name' => $member->name])">
+              :subtitle="$selfView ? __('hr.personnel_file.subtitle_mine') : __('hr.personnel_file.subtitle', ['name' => $member->name])"
+              :back-route="$selfView ? null : 'org.members.index'" :back-label="__('hr.personnel_file.back')">
     <x-slot:actions>
-        @unless ($selfView)
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                        :href="route('org.members.index')"
-                        show-label>{{ __('hr.personnel_file.back') }}</x-icon-btn>
-        @endunless
         @if ($canCreate)
             <x-icon-btn icon="upload_file" tone="primary" size="sm"
                         data-entry-modal-trigger

@@ -22,11 +22,8 @@
 @endphp
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="$ticket->title">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('service-tickets.index')"
-                            show-label>{{ __('Zurück') }}</x-icon-btn>
-            </x-slot:actions>
+        <x-page-toolbar :subtitle="$ticket->title"
+                        back-route="service-tickets.index" :back-label="__('Zurück')">
         </x-page-toolbar>
     </x-slot:toolbar>
 

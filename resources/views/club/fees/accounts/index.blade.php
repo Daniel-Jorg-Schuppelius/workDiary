@@ -18,12 +18,10 @@
         @if ($canManage)
             <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger :href="route('club.fees.accounts.create')" show-label>{{ __('club.fees.action.create_account') }}</x-icon-btn>
         @endif
-        <x-icon-btn icon="play_circle" tone="outline" size="sm" :href="route('club.fees.runs.index')" show-label>{{ __('club.fees.title.runs') }}</x-icon-btn>
-        <x-icon-btn icon="receipt_long" tone="outline" size="sm" :href="route('club.fees.claims.index')" show-label>{{ __('club.fees.title.claims') }}</x-icon-btn>
-        <x-icon-btn icon="calculate" tone="ghost" size="sm" :href="route('club.fees.preview')" show-label>{{ __('club.fees.action.preview') }}</x-icon-btn>
-        <x-icon-btn icon="payments" tone="ghost" size="sm" :href="route('club.fees.tariffs.index')" show-label>{{ __('club.fees.title.tariffs') }}</x-icon-btn>
         <x-help-button topic="club.fees" />
     </x-slot:actions>
+
+    @include('club.fees._tabs')
 
     <x-filter-bar :action="route('club.fees.accounts.index')" :reset="route('club.fees.accounts.index')">
         <input type="search" name="q" value="{{ $filters['q'] }}" class="input input-sm input-bordered w-56 shrink-0" placeholder="{{ __('club.filter.search') }}" aria-label="{{ __('club.filter.search') }}">

@@ -1743,4 +1743,11 @@ La gestione quote',
         ],
         'overdue_count' => '{1}uno scaduto|[2,*]:count scaduti',
     ],
+    // Reiter der Termin-Sichten (MVP-969).
+    'tab' => [
+        'event' => 'Evento',
+        'match' => 'Giornata',
+        'competition' => 'Gara',
+        'attendance' => 'Presenze',
+    ],
 ];

@@ -149,6 +149,7 @@ return [
         'finance' => ['open_times_digest' => 'Digest des temps ouverts pour la comptabilité'],
         'inventory' => ['cycle_counts' => 'Lancer l\'inventaire tournant', 'expiring_lots' => 'Surveillance DLUO (lots expirants)'],
         "accounting" => ["recurring" => "Attentes de pièces et brouillons d'écriture récurrents", "filings" => "Synchroniser les échéances fiscales et rappeler"],
+        'platform' => ['usage_snapshot' => 'Enregistrer l’utilisation par client'],
         'contracts' => ['price_index_sync' => 'Synchroniser l’indice des prix à la consommation depuis la Bundesbank'],
         'invoicing' => ['recurring' => 'Générer les brouillons de factures récurrentes', 'base_rate_sync' => 'Synchroniser le taux de base de la Bundesbank'],
         'jtl' => ['sync' => 'Synchronisation JTL Wawi'],

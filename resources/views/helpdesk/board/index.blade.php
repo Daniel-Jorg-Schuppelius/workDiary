@@ -72,10 +72,7 @@
                             <option value="{{ $orgUser->sqid }}">{{ $orgUser->name }}</option>
                         @endforeach
                     </select>
-                    <button type="submit" formaction="{{ route('helpdesk.board.bulk-assign') }}"
-                            class="btn btn-primary btn-sm">
-                        <x-icon name="person_add" /> {{ __('Zuweisen') }}
-                    </button>
+                    <x-button type="submit" tone="primary" icon="person_add" formaction="{{ route('helpdesk.board.bulk-assign') }}">{{ __('Zuweisen') }}</x-button>
                     <select name="queue" class="select select-sm select-bordered w-44"
                             aria-label="{{ __('Queue wählen') }}">
                         <option value="">{{ __('Queue wählen…') }}</option>
@@ -83,10 +80,7 @@
                             <option value="{{ $queue->sqid }}">{{ $queue->name }}</option>
                         @endforeach
                     </select>
-                    <button type="submit" formaction="{{ route('helpdesk.board.bulk-queue') }}"
-                            class="btn btn-secondary btn-sm">
-                        <x-icon name="move_down" /> {{ __('Queue wechseln') }}
-                    </button>
+                    <x-button type="submit" tone="secondary" icon="move_down" formaction="{{ route('helpdesk.board.bulk-queue') }}">{{ __('Queue wechseln') }}</x-button>
                 </x-slot:actions>
             </x-bulk-toolbar>
             @error('assignee')<p class="text-error text-xs">{{ $message }}</p>@enderror

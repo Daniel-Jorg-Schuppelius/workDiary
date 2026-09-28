@@ -329,4 +329,11 @@ return [
     // Zeilen-/kommagetrennte HTTPS-Origins für die Iframe-Einbettung (frame-ancestors).
     'applications.portal.embed_origins' => ['type' => 'text', 'scopes' => ['organization'], 'rules' => 'nullable|max:2000'],
     'applications.portal.contact_email' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|email|max:190'],
+
+    // --- Nutzungsabrechnung je Mandant (MVP-956): Einheitspreise des Betreibers ---
+    'platform_billing.base_fee' => ['type' => 'decimal', 'scopes' => ['system'], 'rules' => 'nullable|min:0|max:100000', 'fallback' => 0],
+    'platform_billing.per_user' => ['type' => 'decimal', 'scopes' => ['system'], 'rules' => 'nullable|min:0|max:10000', 'fallback' => 0],
+    'platform_billing.per_active_user' => ['type' => 'decimal', 'scopes' => ['system'], 'rules' => 'nullable|min:0|max:10000', 'fallback' => 0],
+    'platform_billing.per_gb' => ['type' => 'decimal', 'scopes' => ['system'], 'rules' => 'nullable|min:0|max:10000', 'fallback' => 0],
+    'platform_billing.currency' => ['type' => 'string', 'scopes' => ['system'], 'rules' => 'nullable|size:3', 'fallback' => 'EUR'],
 ];

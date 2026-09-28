@@ -20,10 +20,7 @@
         <x-page-toolbar>
             <x-slot:subtitle>{{ __('cloud_intake.report.subtitle') }} · {{ $label }}</x-slot:subtitle>
             <x-slot:actions>
-                <a class="btn btn-sm btn-ghost" href="{{ route('reports.cloud-intake', ['export' => 'csv']) }}">
-                    <x-icon name="download" />
-                    <span>{{ __('CSV') }}</span>
-                </a>
+                <x-button tone="ghost" icon="download" :href="route('reports.cloud-intake', ['export' => 'csv'])">{{ __('CSV') }}</x-button>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

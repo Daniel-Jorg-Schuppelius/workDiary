@@ -15,7 +15,8 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$system->name . ' · ' . $system->discipline"
                         :badge="$system->is_active ? __('club.grading.label.active') : __('club.label.inactive')"
-                        :badgeTone="$system->is_active ? 'success' : 'ghost'">
+                        :badgeTone="$system->is_active ? 'success' : 'ghost'"
+                        back-route="club.grading.index" :back-label="__('club.action.back')">
             <x-slot:actions>
                 @if ($canManage)
                     <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger :href="route('club.grading.grades.create', $system)" show-label>{{ __('club.grading.action.create_grade') }}</x-icon-btn>
@@ -24,7 +25,6 @@
                     </x-action-form>
                     <x-icon-btn icon="edit" tone="outline" size="sm" data-entry-modal-trigger :href="route('club.grading.edit', $system)" show-label>{{ __('club.action.edit') }}</x-icon-btn>
                 @endif
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('club.grading.index')" show-label>{{ __('club.action.back') }}</x-icon-btn>
                 <x-help-button topic="club.grading" />
             </x-slot:actions>
         </x-page-toolbar>

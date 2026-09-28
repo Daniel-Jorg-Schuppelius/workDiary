@@ -13,12 +13,8 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="$article->name">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm"
-                            :href="route('lexoffice.articles.index')"
-                            show-label>{{ __('Zurück') }}</x-icon-btn>
-            </x-slot:actions>
+        <x-page-toolbar :subtitle="$article->name"
+                        back-route="lexoffice.articles.index" :back-label="__('Zurück')">
         </x-page-toolbar>
     </x-slot:toolbar>
 

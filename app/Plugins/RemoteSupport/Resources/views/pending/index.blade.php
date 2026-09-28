@@ -13,10 +13,7 @@
 @section('content')
 <x-index-page :subtitle="__('Diese AnyDesk-/TeamViewer-IDs tauchten in den Reports auf, sind aber keinem Gerät zugeordnet. Weisen Sie jede ID einem bestehenden Gerät zu oder legen Sie ein neues an — die gespeicherten Sitzungen werden dann sofort als Zeiteinträge gebucht. Bei Mehrkundengeräten bleiben sie offen und werden im Reiter „Sitzungen zuordnen“ je Kunde gebucht; Sitzungen eigener Geräte ohne Kunden buchen auf das interne Wartungsprojekt.')">
     <x-slot:actions>
-        <a href="{{ route('admin.imports.create', ['entity' => \App\Enums\Import\ImportEntity::RemoteSessions->value]) }}"
-           class="btn btn-sm btn-primary">
-            {{ __('Sitzungen importieren') }}
-        </a>
+        <x-button tone="primary" :href="route('admin.imports.create', ['entity' => \App\Enums\Import\ImportEntity::RemoteSessions->value])">{{ __('Sitzungen importieren') }}</x-button>
     </x-slot:actions>
 
     <x-slot:note>

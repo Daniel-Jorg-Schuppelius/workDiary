@@ -49,6 +49,7 @@ final class SustainabilityManifest extends Manifest {
     public function tables(): array {
         return [
             'sustainability_sites',
+            'sustainability_offsets',
             'sustainability_activity_records',
             'sustainability_assessment_items',
             'sustainability_assessments',

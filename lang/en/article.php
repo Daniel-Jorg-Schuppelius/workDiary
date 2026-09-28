@@ -208,4 +208,42 @@ return [
         'variant_added' => 'Variant created.',
         'variant_retired' => 'Variant retired.',
     ],
+    // CO₂-Fußabdruck (MVP-960).
+    'footprint' => [
+        'title' => 'Carbon footprint',
+        'subtitle' => 'Emissions per unit from the exploded bill of materials (cradle-to-gate).',
+        'factors' => 'Factors of this article',
+        'lines' => 'Bill of materials',
+        'save' => 'Save',
+        'incomplete' => 'Purchased parts without factor: :count',
+        'no_bom' => 'No bill of materials — the article’s factor applies per unit.',
+        'note' => 'Manufacturing up to the factory gate only, without transport, use and disposal. Maintain factors with their source; missing ones are not estimated.',
+        'kpi' => [
+            'total' => 'CO₂e per unit',
+            'material' => 'Material',
+            'process' => 'Process',
+        ],
+        'field' => [
+            'factor' => 'Emission factor (kg CO₂e per unit)',
+            'process' => 'Process emissions per unit (kg CO₂e)',
+            'source' => 'Source',
+        ],
+        'hint' => [
+            'factor' => 'For purchased parts, per :unit.',
+        ],
+        'col' => [
+            'article' => 'Article',
+            'kind' => 'Type',
+            'quantity' => 'Quantity per unit',
+            'factor' => 'Factor',
+            'kg' => 'kg CO₂e',
+        ],
+        'kind' => [
+            'buy' => 'Purchased',
+            'make' => 'In-house',
+        ],
+        'flash' => [
+            'saved' => 'Factors saved.',
+        ],
+    ],
 ];

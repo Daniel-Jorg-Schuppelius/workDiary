@@ -407,15 +407,7 @@ class AppServiceProvider extends ServiceProvider {
         // denselben Pfad — andere Routenparameter führen auf die nackte Route.
         \Illuminate\Routing\Redirector::macro('toList', function (string $route, array $parameters = []): \Illuminate\Http\RedirectResponse {
             /** @var \Illuminate\Routing\Redirector $this */
-            $target = route($route, $parameters);
-            $remembered = ((array) session()->get(\App\Http\Middleware\RememberListUrl::SESSION_KEY, []))[$route] ?? null;
-            if (is_string($remembered) && ! str_contains($target, '?')
-                && parse_url($remembered, PHP_URL_PATH) === parse_url($target, PHP_URL_PATH)) {
-                $query = parse_url($remembered, PHP_URL_QUERY);
-                $target .= is_string($query) && $query !== '' ? '?' . $query : '';
-            }
-
-            return $this->to($target);
+            return $this->to(\App\Http\Middleware\RememberListUrl::urlFor($route, $parameters));
         });
 
         // Mandanten-Hygiene im langlebigen Queue-Worker (Whitebox 2026-07-10,

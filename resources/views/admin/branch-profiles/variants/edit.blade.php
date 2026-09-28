@@ -13,10 +13,10 @@
 @section('nav-title', __('branch_profile.variant.title'))
 
 @section('content')
-<x-index-page :subtitle="__('branch_profile.variant.subtitle', ['base' => $variant->base_code, 'version' => $variant->version])">
+<x-index-page :subtitle="__('branch_profile.variant.subtitle', ['base' => $variant->base_code, 'version' => $variant->version])"
+              back-route="admin.branch-profiles.index" :back-label="__('Branchenprofile')">
     <x-slot:actions>
         <x-icon-btn icon="download" size="sm" :href="route('admin.branch-profile-variants.export', $variant)" show-label>{{ __('branch_profile.variant.export') }}</x-icon-btn>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('admin.branch-profiles.index')" show-label>{{ __('Branchenprofile') }}</x-icon-btn>
     </x-slot:actions>
 
     <x-card>

@@ -18,14 +18,16 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('learning.lti_registration.subtitle')">
             <x-slot:actions>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('learning.lti-registrations.tools.create')"
-                            show-label>{{ __('learning.lti_registration.create_tool') }}</x-icon-btn>
-                <x-icon-btn icon="add" tone="ghost" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('learning.lti-registrations.platforms.create')"
-                            show-label>{{ __('learning.lti_registration.create_platform') }}</x-icon-btn>
+                <x-action-menu icon="add" tone="primary" :label="__('Neu')">
+                    <x-icon-btn icon="add" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('learning.lti-registrations.tools.create')"
+                                show-label>{{ __('learning.lti_registration.create_tool') }}</x-icon-btn>
+                    <x-icon-btn icon="add" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('learning.lti-registrations.platforms.create')"
+                                show-label>{{ __('learning.lti_registration.create_platform') }}</x-icon-btn>
+                </x-action-menu>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

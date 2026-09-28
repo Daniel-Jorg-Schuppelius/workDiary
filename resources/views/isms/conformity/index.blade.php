@@ -216,30 +216,23 @@
                             @endcan
                             @can('transition', $status)
                                 @if ($status->status->allowedTransitions() !== [])
-                                    <details class="dropdown dropdown-end">
-                                        <summary class="btn btn-outline btn-xs gap-1" title="{{ __('isms.action.transition') }}">
-                                            <x-icon name="swap_horiz" />
-                                        </summary>
-                                        <ul class="menu dropdown-content z-10 w-64 rounded-box bg-base-100 p-2 shadow">
-                                            @foreach ($status->status->allowedTransitions() as $target)
-                                                <li>
-                                                    @if ($target === \App\Enums\Isms\NormConformityStatus::Certified && $activeCertificate === null)
-                                                        {{-- Hinweis statt Aktion: certified nur mit heute gültigem Zertifikat (serverseitig erzwungen). --}}
-                                                        <span class="cursor-not-allowed text-muted"
-                                                              title="{{ __('isms.conformity.certified_requires_certificate') }}">
-                                                            {{ $target->label() }} — {{ __('isms.conformity.certificate_missing_short') }}
-                                                        </span>
-                                                    @else
-                                                        <form method="POST" action="{{ route('isms.conformity.transition', $status) }}">
-                                                            @csrf
-                                                            <input type="hidden" name="status" value="{{ $target->value }}">
-                                                            <button type="submit" class="w-full text-left">{{ $target->label() }}</button>
-                                                        </form>
-                                                    @endif
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    </details>
+                                    <x-action-menu icon="swap_horiz" tone="outline" size="xs" icon-only :label="__('isms.action.transition')">
+                                        @foreach ($status->status->allowedTransitions() as $target)
+                                            @if ($target === \App\Enums\Isms\NormConformityStatus::Certified && $activeCertificate === null)
+                                                {{-- Hinweis statt Aktion: certified nur mit heute gültigem Zertifikat (serverseitig erzwungen). --}}
+                                                <span class="block cursor-not-allowed px-3 py-1 text-xs text-muted"
+                                                      title="{{ __('isms.conformity.certified_requires_certificate') }}">
+                                                    {{ $target->label() }} — {{ __('isms.conformity.certificate_missing_short') }}
+                                                </span>
+                                            @else
+                                                <form method="POST" action="{{ route('isms.conformity.transition', $status) }}">
+                                                    @csrf
+                                                    <input type="hidden" name="status" value="{{ $target->value }}">
+                                                    <x-button type="submit" tone="ghost" size="xs">{{ $target->label() }}</x-button>
+                                                </form>
+                                            @endif
+                                        @endforeach
+                                    </x-action-menu>
                                 @endif
                             @endcan
                         </div>

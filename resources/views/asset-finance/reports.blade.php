@@ -15,9 +15,11 @@
 <x-index-page :subtitle="__('Bestand, Restlaufzeiten, Fristen, Kosten und Limit-Überschreitungen — operative Referenzwerte ohne Bilanzierung (W11).')">
     <x-slot:actions>
         <form method="POST" action="{{ route('asset-finance.reports.snapshot') }}">@csrf
-            <button type="submit" class="btn btn-sm">{{ __('Snapshot einfrieren') }}</button>
+            <x-button type="submit" tone="ghost">{{ __('Snapshot einfrieren') }}</x-button>
         </form>
     </x-slot:actions>
+
+    @include('asset-finance._tabs')
 
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

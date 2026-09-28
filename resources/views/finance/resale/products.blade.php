@@ -22,9 +22,8 @@
 
 @section('content')
     <x-index-page overflow="clip" :title="__('resale.products.title')" :subtitle="__('resale.products.subtitle')">
-        <x-slot:actions>
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('finance.resale.index')" show-label>{{ __('resale.action.back') }}</x-icon-btn>
-        </x-slot:actions>
+
+        @include('finance.resale._tabs')
         {{-- Serienrechnung bei lokaler Rechnungshoheit (Feature 152): Org-Schalter + Vorlauf; der Lauf ist resale:draft-local. --}}
         <x-form-group :legend="__('resale.auto_draft.title')" icon="event_repeat" tone="info" cols="1" compact class="mb-3"
                       :description="__('resale.auto_draft.description')">

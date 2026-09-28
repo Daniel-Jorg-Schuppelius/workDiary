@@ -17,13 +17,13 @@
     <x-validation-errors />
 
     <x-slot:toolbar>
-        <x-page-toolbar :title="$recall->number . ' — ' . $recall->title">
+        <x-page-toolbar :title="$recall->number . ' — ' . $recall->title"
+                        back-route="recalls.index" :back-label="__('recall.title')">
             <div class="flex flex-wrap items-center gap-2 text-sm">
                 <x-status-badge size="md" outline :tone="$recall->status->tone()">{{ $recall->status->label() }}</x-status-badge>
                 <span class="badge badge-outline">{{ $recall->kind->label() }}</span>
             </div>
             <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('recalls.index')" :label="__('recall.title')" />
                 <x-icon-btn icon="picture_as_pdf" size="sm" :href="route('recalls.authority.pdf', $recall)" show-label>{{ __('recall.authority.pdf') }}</x-icon-btn>
                 @can('update', $recall)
                     <x-icon-btn icon="gavel" size="sm" data-entry-modal-trigger :href="route('recalls.authority.edit', $recall)" show-label>{{ __('recall.authority.title') }}</x-icon-btn>
@@ -40,7 +40,8 @@
                     @foreach ($recall->status->allowedTransitions() as $target)
                         <x-action-form :action="route('recalls.transition', $recall)" :confirm="__('recall.confirm.' . $target->value)" confirm-icon="campaign" :confirm-tone="$target === \App\Enums\Inventory\RecallStatus::Cancelled ? 'error' : 'warning'" :confirm-label="__('recall.transition.' . $target->value)">
                             <input type="hidden" name="status" value="{{ $target->value }}">
-                            <x-button type="submit" size="sm" :tone="$target === \App\Enums\Inventory\RecallStatus::Cancelled ? 'error' : 'primary'">{{ __('recall.transition.' . $target->value) }}</x-button>
+                            <x-button type="submit" size="sm" :tone="$target === \App\Enums\Inventory\RecallStatus::Cancelled ? 'error' : 'primary'"
+                                      :placement="$target === \App\Enums\Inventory\RecallStatus::Cancelled ? 'danger' : 'bar'">{{ __('recall.transition.' . $target->value) }}</x-button>
                         </x-action-form>
                     @endforeach
                 @endcan

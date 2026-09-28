@@ -24,7 +24,8 @@
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-index-page overflow="clip" :subtitle="__('Jahresansprüche, Übertrag und Restsalden je Mitarbeiter.')">
+<x-index-page overflow="clip" :subtitle="__('Jahresansprüche, Übertrag und Restsalden je Mitarbeiter.')"
+              :back="route('duties.index', ['tab' => 'urlaub'])" :back-label="__('Zur Urlaubsliste')">
 
     <x-filter-bar :action="route('vacation-entitlements.index')" :reset="route('vacation-entitlements.index')">
         <x-filter-field :label="__('Jahr')" for="ve-year-filter" inline>
@@ -32,9 +33,6 @@
                    class="input input-bordered input-sm w-28" value="{{ $year }}" data-autosubmit>
         </x-filter-field>
         <x-slot:extra>
-            <x-icon-btn icon="arrow_back" size="sm"
-                        :href="route('duties.index', ['tab' => 'urlaub'])"
-                        show-label>{{ __('Zur Urlaubsliste') }}</x-icon-btn>
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger
                         :href="route('vacation-entitlements.create', ['year' => $year, 'dialog' => 1])"

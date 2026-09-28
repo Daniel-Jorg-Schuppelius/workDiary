@@ -18,9 +18,8 @@
 
 @section('content')
 <x-index-page :subtitle="__('sustainability.site.subtitle')">
-    <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('sustainability.index')" :label="__('sustainability.site.back')" />
-    </x-slot:actions>
+
+    @include('sustainability._tabs')
 
     <x-filter-bar :action="route('sustainability.sites.benchmark')" :reset="route('sustainability.sites.benchmark')">
         <input type="number" name="year" min="2000" max="2100" value="{{ $year }}" class="input input-sm input-bordered w-28 shrink-0" aria-label="{{ __('sustainability.site.field.year') }}">

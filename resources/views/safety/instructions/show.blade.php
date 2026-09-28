@@ -21,7 +21,9 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$instruction->topic . ' · ' . $instruction->held_on->format('d.m.Y')"
                         :badge="__('safety.register.status_summary', ['signed' => $signed, 'total' => $total])"
-                        :badgeTone="$total > 0 && $signed === $total ? 'success' : 'warning'">
+                        :badgeTone="$total > 0 && $signed === $total ? 'success' : 'warning'"
+                        :back-route="auth()->user()?->can('viewAny', \App\Models\Safety\SafetyInstruction::class) ? 'safety.instructions.index' : null"
+                        :back-label="__('safety.register.action.back')">
             <x-slot:actions>
                 @if ($canManage)
                     <x-icon-btn icon="edit" tone="outline" size="sm"
@@ -29,11 +31,6 @@
                                 :href="route('safety.instructions.edit', $instruction)"
                                 show-label>{{ __('safety.register.action.edit') }}</x-icon-btn>
                 @endif
-                @can('viewAny', \App\Models\Safety\SafetyInstruction::class)
-                    <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                                :href="route('safety.instructions.index')"
-                                show-label>{{ __('safety.register.action.back') }}</x-icon-btn>
-                @endcan
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

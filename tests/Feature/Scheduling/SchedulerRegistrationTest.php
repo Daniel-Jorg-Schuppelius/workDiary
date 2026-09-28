@@ -170,6 +170,7 @@ class SchedulerRegistrationTest extends TestCase {
         'security:advisories-pull' => ['30 5 * * *', true, true],
         'invoicing:base-rate-sync' => ['10 6 2 * *', true, true],
         'contracts:price-index-sync' => ['20 6 20 * *', true, true],
+        'platform:usage-snapshot' => ['40 3 1 * *', true, true],
         'privacy:retention-scan' => ['30 4 * * 1', true, true],
         // Neu mit Feature 006 (Welle D): ArbZG-Verstoß-Persistenz.
         'compliance:scan-findings' => ['30 1 * * *', true, true],

@@ -49,6 +49,8 @@ class PurchaseOrder extends Model implements AuditsChanges {
         'freight_cost',
         'ordered_at',
         'expected_at',
+        'supplier_confirmed_at',
+        'supplier_order_ref',
         'note',
         'created_by',
     ];
@@ -59,6 +61,7 @@ class PurchaseOrder extends Model implements AuditsChanges {
         'freight_cost' => MoneyCast::class . ':currency,4',
         'ordered_at' => 'datetime',
         'expected_at' => 'date',
+        'supplier_confirmed_at' => 'datetime',
     ];
 
     /** @return BelongsTo<Supplier, $this> */

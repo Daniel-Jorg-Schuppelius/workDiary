@@ -31,7 +31,7 @@
 @section('content')
 <x-index-page :subtitle="__('Eingegangene Importe, die nicht automatisch zugeordnet werden konnten. Pro Eintrag entscheiden Sie: einem bestehenden Datensatz zuordnen, neu anlegen oder verwerfen — nichts wird blind angelegt.')">
     <x-slot:actions>
-        <a href="{{ route('admin.integration.mappings.index') }}" class="btn btn-sm btn-outline">{{ __('Zuordnungen verwalten') }}</a>
+        <x-button tone="outline" :href="route('admin.integration.mappings.index')">{{ __('Zuordnungen verwalten') }}</x-button>
         <form method="GET" action="{{ route('admin.integration.inbox') }}" class="flex flex-nowrap items-center gap-2">
             <select name="status" class="select select-sm select-bordered" data-autosubmit>
                 @foreach ($statusLabels as $value => $label)

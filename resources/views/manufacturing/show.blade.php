@@ -23,18 +23,18 @@
         <x-page-toolbar :title="$order->article?->name . ($order->variant ? ' — ' . ($order->variant->name ?? $order->variant->option_signature) : '')">
             <x-slot:actions>
                 @if ($order->procedureRun)
-                    <x-icon-btn icon="checklist" size="sm" :href="route('procedure-runs.show', $order->procedureRun)" show-label>{{ __('manufacturing.order.action.procedure_run') }}</x-icon-btn>
+                    <x-icon-btn placement="menu" icon="checklist" size="sm" :href="route('procedure-runs.show', $order->procedureRun)" show-label>{{ __('manufacturing.order.action.procedure_run') }}</x-icon-btn>
                 @endif
                 <x-icon-btn icon="picture_as_pdf" size="sm" :href="route('manufacturing-orders.record.pdf', $order)" target="_blank" show-label>{{ __('manufacturing.record.title') }}</x-icon-btn>
                 @if ($canManage)
                     @if ($status === 'draft')
                         <form method="POST" action="{{ route('manufacturing-orders.release', $order) }}">@csrf
-                            <x-icon-btn icon="check_circle" tone="primary" size="sm" type="submit" show-label>{{ __('manufacturing.order.action.release') }}</x-icon-btn>
+                            <x-icon-btn placement="bar" icon="check_circle" tone="primary" size="sm" type="submit" show-label>{{ __('manufacturing.order.action.release') }}</x-icon-btn>
                         </form>
                     @endif
                     @if (in_array($status, ['released', 'waiting', 'blocked'], true))
                         <form method="POST" action="{{ route('manufacturing-orders.start', $order) }}">@csrf
-                            <x-icon-btn icon="play_arrow" tone="primary" size="sm" type="submit" show-label>{{ __('manufacturing.order.action.start') }}</x-icon-btn>
+                            <x-icon-btn placement="bar" icon="play_arrow" tone="primary" size="sm" type="submit" show-label>{{ __('manufacturing.order.action.start') }}</x-icon-btn>
                         </form>
                     @endif
                     @if (in_array($status, ['released', 'in_progress'], true))
@@ -46,17 +46,17 @@
                     @endif
                     @if ($order->customer_id && $status === 'draft')
                         <form method="POST" action="{{ route('manufacturing-orders.quotation.lexoffice', $order) }}">@csrf
-                            <x-icon-btn icon="request_quote" size="sm" type="submit" show-label>{{ __('Angebot an Lexoffice') }}</x-icon-btn>
+                            <x-icon-btn icon="request_quote" size="sm" type="submit" placement="menu" show-label>{{ __('Angebot an Lexoffice') }}</x-icon-btn>
                         </form>
                     @endif
                     @if ($order->customer_id && ! in_array($status, ['draft', 'cancelled'], true))
                         <form method="POST" action="{{ route('manufacturing-orders.order-confirmation.lexoffice', $order) }}">@csrf
-                            <x-icon-btn icon="sync" size="sm" type="submit" show-label>{{ __('Auftragsbestätigung an Lexoffice') }}</x-icon-btn>
+                            <x-icon-btn icon="sync" size="sm" type="submit" placement="menu" show-label>{{ __('Auftragsbestätigung an Lexoffice') }}</x-icon-btn>
                         </form>
                     @endif
                     @if ($isOpen)
                         <x-action-form :action="route('manufacturing-orders.cancel', $order)" :confirm="__('manufacturing.order.action.cancel').'?'">
-                            <x-icon-btn icon="cancel" tone="error" size="sm" type="submit" :title="__('manufacturing.order.action.cancel')" />
+                            <x-icon-btn placement="danger" icon="cancel" tone="error" size="sm" type="submit" :label="__('manufacturing.order.action.cancel')" />
                         </x-action-form>
                     @endif
                 @endif

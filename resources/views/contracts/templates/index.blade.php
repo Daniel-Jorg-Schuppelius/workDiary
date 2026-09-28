@@ -17,6 +17,8 @@
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('contract.template.subtitle')">
+
+    @include('contracts._tabs')
         <x-table scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>

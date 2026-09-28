@@ -52,6 +52,8 @@ final class CrisisManifest extends Manifest {
             'crisis_actions',
             'crisis_case_links',
             'crisis_cases',
+            'crisis_map_points',
+            'crisis_room_presences',
             'crisis_communications',
             'crisis_continuity_impacts',
             'crisis_deadline_templates',

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 return [
     'entity' => [
+        'meter_readings' => 'Zählerstände',
         'customers' => 'Kunden',
         'suppliers' => 'Lieferanten',
         'articles' => 'Artikel',
@@ -92,6 +93,7 @@ return [
             'rowLimit' => 'Maximale Zeilenanzahl (:max) überschritten — Rest wurde ignoriert.',
             'contactPersons' => 'Mehr als :max Ansprechpartner je Kunde/Lieferant sind nicht vorgesehen.',
         ],
+        'meterReading' => ['decreasing' => 'Stand kleiner als der vorherige.'],
         'fkMissing' => [
             'customer' => 'Kein Kunde mit Nummer :number gefunden.',
             'supplier' => 'Kein Lieferant mit Nummer :number gefunden.',

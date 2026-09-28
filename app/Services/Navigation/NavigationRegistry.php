@@ -1853,6 +1853,9 @@ class NavigationRegistry {
                 if (Gate::allows('platform.license.view')) {
                     $adminNavItems[] = ['route' => 'admin.license.index', 'label' => __('Lizenz'), 'icon' => 'key', 'modal' => false];
                 }
+                if (Gate::allows(Permission::OrganizationBilling->value)) {
+                    $adminNavItems[] = ['route' => 'admin.billing-profile.show', 'label' => __('platform_usage.billing_profile.title'), 'icon' => 'receipt', 'modal' => false];
+                }
                 if (Gate::allows(Permission::MetricsView->value)) {
                     // Betriebsmetriken sind eine plattformweite Sicht ohne
                     // Mandanten-Kontext (Sicherheitsscan 2026-08-23, S-02) —
@@ -1873,6 +1876,7 @@ class NavigationRegistry {
                 // Quelltext-Integrität (095) + Angriffserkennung (096):
                 // installationsweit, daher nur für Plattform-Admins sichtbar.
                 if (Auth::user()?->isGlobalAdmin() === true) {
+                    $adminNavItems[] = ['route' => 'admin.ui-patterns.index', 'label' => __('ui_patterns.title'), 'icon' => 'widgets', 'modal' => false];
                     $adminNavItems[] = ['route' => 'admin.integrity.index', 'label' => __('Quelltext-Integrität'), 'icon' => 'verified_user', 'modal' => false];
                     $adminNavItems[] = ['route' => 'admin.security-events.index', 'label' => __('Angriffserkennung'), 'icon' => 'gpp_bad', 'modal' => false];
                 }

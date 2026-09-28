@@ -18,7 +18,8 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$resource->kind->label() . ' · ' . __('club.resources.label.capacity_of', ['count' => $resource->capacity]) . ($resource->room ? ' · ' . $resource->room->name : '') . ($resource->asset ? ' · ' . $resource->asset->name : '')"
                         :badge="$assetBlocked ? __('club.resources.label.asset_blocked') : ($resource->is_active ? __('club.grading.label.active') : __('club.label.inactive'))"
-                        :badgeTone="$assetBlocked ? 'error' : ($resource->is_active ? 'success' : 'ghost')">
+                        :badgeTone="$assetBlocked ? 'error' : ($resource->is_active ? 'success' : 'ghost')"
+                        back-route="club.resources.index" :back-label="__('club.action.back')">
             <x-slot:actions>
                 @if ($canClear)
                     <x-icon-btn icon="verified_user" tone="outline" size="sm" data-entry-modal-trigger :href="route('club.resources.clearances.create', $resource)" show-label>{{ __('club.resources.action.grant_clearance') }}</x-icon-btn>
@@ -27,7 +28,6 @@
                     <x-icon-btn icon="block" tone="outline" size="sm" class="btn-warning" data-entry-modal-trigger :href="route('club.resources.closures.create', $resource)" show-label>{{ __('club.resources.action.close') }}</x-icon-btn>
                     <x-icon-btn icon="edit" tone="outline" size="sm" data-entry-modal-trigger :href="route('club.resources.edit', $resource)" show-label>{{ __('club.action.edit') }}</x-icon-btn>
                 @endif
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('club.resources.index')" show-label>{{ __('club.action.back') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

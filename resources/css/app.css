@@ -2088,3 +2088,106 @@
         display: none !important;
     }
 }
+
+/* ── Seitenkopf mit Überlaufmenü (MVP-966) ───────────────────── */
+/* Unlayered: DaisyUI liegt in @layer utilities; die Menüdarstellung der
+   Knöpfe muss dagegen gewinnen. Ohne JS brechen die Aktionen um. */
+.wd-toolbar-js > [data-toolbar-actions] {
+    flex-wrap: nowrap;
+}
+.wd-toolbar-js > [data-toolbar-actions] > * {
+    flex-shrink: 0;
+}
+[data-toolbar-actions] .btn {
+    white-space: nowrap;
+}
+/* Einträge sind die direkten Kinder der Menüs (Knopf, Formular mit Knopf,
+   verschachteltes Menü) — Formulare mit eigenen Feldern behalten ihr Layout. */
+:is([data-toolbar-menu-main], [data-toolbar-menu-danger], .wd-action-menu) > :is(form, details) {
+    display: block;
+    width: 100%;
+}
+:is([data-toolbar-menu-main], [data-toolbar-menu-danger], .wd-action-menu) > .btn,
+:is([data-toolbar-menu-main], [data-toolbar-menu-danger], .wd-action-menu) > form > .btn,
+:is([data-toolbar-menu-main], [data-toolbar-menu-danger], .wd-action-menu) > details > summary.btn {
+    --btn-bg: #0000;
+    --btn-border: #0000;
+    --btn-shadow: 0 0 0 0 #0000;
+    --btn-inset: 0 0 0 0 #0000;
+    background-image: none;
+    border-color: #0000;
+    width: 100%;
+    justify-content: flex-start;
+    color: var(--wd-menu-fg, var(--color-base-content));
+}
+:is([data-toolbar-menu-main], [data-toolbar-menu-danger], .wd-action-menu) > .btn:is(:hover, :focus-visible),
+:is([data-toolbar-menu-main], [data-toolbar-menu-danger], .wd-action-menu) > form > .btn:is(:hover, :focus-visible),
+:is([data-toolbar-menu-main], [data-toolbar-menu-danger], .wd-action-menu) > details > summary.btn:is(:hover, :focus-visible) {
+    --btn-bg: var(--color-base-200);
+    color: var(--wd-menu-fg, var(--color-base-content));
+}
+:is(.wd-toolbar-menu, .wd-action-menu) .btn-primary {
+    --wd-menu-fg: var(--color-primary);
+}
+:is(.wd-toolbar-menu, .wd-action-menu) .btn-secondary {
+    --wd-menu-fg: var(--color-secondary);
+}
+:is(.wd-toolbar-menu, .wd-action-menu) .btn-info {
+    --wd-menu-fg: color-mix(in oklab, var(--color-info) 70%, var(--color-base-content));
+}
+:is(.wd-toolbar-menu, .wd-action-menu) .btn-success {
+    --wd-menu-fg: color-mix(in oklab, var(--color-success) 70%, var(--color-base-content));
+}
+:is(.wd-toolbar-menu, .wd-action-menu) .btn-warning {
+    --wd-menu-fg: color-mix(in oklab, var(--color-warning) 55%, var(--color-base-content));
+}
+:is(.wd-toolbar-menu, .wd-action-menu) :is(.btn-error, .text-error) {
+    --wd-menu-fg: var(--color-error);
+}
+/* Symbolknöpfe zeigen im Menü ihren Namen. */
+:is(:is([data-toolbar-menu-main], [data-toolbar-menu-danger], .wd-action-menu) > .btn, :is([data-toolbar-menu-main], [data-toolbar-menu-danger], .wd-action-menu) > form > .btn)[aria-label]:not(:has(> span:not([aria-hidden])))::after {
+    content: attr(aria-label);
+}
+.wd-toolbar-menu > [data-toolbar-menu-main]:empty + [data-toolbar-menu-danger] {
+    border-top-width: 0;
+    margin-top: 0;
+    padding-top: 0;
+}
+/* <x-action-menu> im ⋯-Menü: offener Abschnitt, Beschriftung als Überschrift. */
+.wd-toolbar-menu details[data-flattened] > summary {
+    pointer-events: none;
+    --btn-bg: #0000;
+    min-height: 0;
+    height: auto;
+    padding-block: 0.375rem 0.125rem;
+    font-size: 0.75rem;
+    color: var(--color-base-content);
+    opacity: 0.7;
+}
+.wd-toolbar-menu details[data-flattened] > summary > [data-icon="expand_more"] {
+    display: none;
+}
+.wd-toolbar-menu details[data-flattened] > .wd-action-menu {
+    position: static;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+    box-shadow: none;
+}
+.wd-action-menu .wd-menu-heading {
+    padding: 0.375rem 0.75rem 0.125rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+/* Letzte Stufe: Passen selbst die festen Aktionen nicht, bleibt nur ihr Symbol. */
+.wd-toolbar-compact > [data-toolbar-actions] > .btn:has(> [aria-hidden]) > span:not([aria-hidden]),
+.wd-toolbar-compact > [data-toolbar-actions] > :not([data-toolbar-more]) .btn:has(> [aria-hidden]) > span:not([aria-hidden]) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}

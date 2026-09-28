@@ -18,25 +18,10 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$course->subtitle ?? __('learning.subtitle.courses')"
                         :badge="$course->status->label()"
-                        :badgeTone="$course->status->tone()">
+                        :badgeTone="$course->status->tone()"
+                        back-route="learning.courses.index" :back-label="__('learning.action.back')">
             <x-slot:actions>
                 <x-collection-add-button :item="$course" />
-                @if ($aiOutline ?? false)
-                    <x-icon-btn icon="auto_awesome" tone="outline" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('learning.courses.ai-outline.create', $course)"
-                                show-label>{{ __('learning.action.ai_outline') }}</x-icon-btn>
-                @endif
-                @if ($canEditContent)
-                    <x-icon-btn icon="playlist_add" tone="primary" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('learning.courses.units.create', $course)"
-                                show-label>{{ __('learning.action.add_unit') }}</x-icon-btn>
-                    <x-icon-btn icon="segment" tone="outline" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('learning.courses.sections.create', $course)"
-                                show-label>{{ __('learning.action.add_section') }}</x-icon-btn>
-                @endif
                 @if ($canEditMeta)
                     <x-icon-btn icon="edit" tone="outline" size="sm"
                                 data-entry-modal-trigger
@@ -47,27 +32,40 @@
                     <form method="POST" action="{{ route('learning.courses.duplicate', $course) }}"
                           data-confirm-dialog data-confirm-message="{{ __('learning.confirm.duplicate') }}">
                         @csrf
-                        <x-icon-btn icon="content_copy" tone="outline" size="sm" type="submit" show-label>{{ __('learning.action.duplicate') }}</x-icon-btn>
+                        <x-icon-btn placement="menu" icon="content_copy" tone="outline" size="sm" type="submit" show-label>{{ __('learning.action.duplicate') }}</x-icon-btn>
                     </form>
                 @endcan
-                @can(\App\Enums\User\Permission::LearningGrade->value)
-                    <x-icon-btn icon="grading" tone="outline" size="sm"
-                                :href="route('learning.courses.gradebook.show', $course)"
-                                show-label>{{ __('learning.action.gradebook') }}</x-icon-btn>
-                @endcan
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                            :href="route('learning.courses.index')"
-                            show-label>{{ __('learning.action.back') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 
+    @include('learning.courses._tabs')
+
     <div class="grid gap-4 lg:grid-cols-3">
         <div class="space-y-4 lg:col-span-2">
-            <x-card>
-                <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold">
-                    <x-icon name="list" class="text-muted" /> {{ __('learning.field.structure') }}
-                </h3>
+            <x-card :title="__('learning.field.structure')" icon="list">
+                @if ($canEditContent || ($aiOutline ?? false))
+                    <x-slot:actions>
+                        <x-action-menu icon="add" tone="primary" :label="__('Hinzufügen')">
+                            @if ($canEditContent)
+                                <x-icon-btn icon="playlist_add" size="sm"
+                                            data-entry-modal-trigger
+                                            :href="route('learning.courses.units.create', $course)"
+                                            show-label>{{ __('learning.action.add_unit') }}</x-icon-btn>
+                                <x-icon-btn icon="segment" size="sm"
+                                            data-entry-modal-trigger
+                                            :href="route('learning.courses.sections.create', $course)"
+                                            show-label>{{ __('learning.action.add_section') }}</x-icon-btn>
+                            @endif
+                            @if ($aiOutline ?? false)
+                                <x-icon-btn icon="auto_awesome" size="sm"
+                                            data-entry-modal-trigger
+                                            :href="route('learning.courses.ai-outline.create', $course)"
+                                            show-label>{{ __('learning.action.ai_outline') }}</x-icon-btn>
+                            @endif
+                        </x-action-menu>
+                    </x-slot:actions>
+                @endif
                 <x-table :bare="true">
                     <x-slot:head>
                         <tr>

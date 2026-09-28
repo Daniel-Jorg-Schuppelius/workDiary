@@ -12,9 +12,8 @@
 
 @section('content')
 <x-index-page :subtitle="__('domain.title.reseller_subtitle')">
-    <x-slot:actions>
-        <x-icon-btn icon="dns" size="sm" :href="route('domains.index')" show-label>{{ __('domain.title.index') }}</x-icon-btn>
-    </x-slot:actions>
+
+    @include('domain._tabs')
 
     <x-table :caption="__('domain.title.reseller')">
         <x-slot:head>

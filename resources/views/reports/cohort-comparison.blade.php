@@ -30,12 +30,14 @@
         <x-page-toolbar :subtitle="__('reporting.cohort.subtitle')">
             <x-slot:actions>
                 @if($result !== null)
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.cohort-comparison', array_merge($standardFilters->toQueryParams(), array_filter(['qualification_id' => $qualSqid, 'metric' => $metric, 'window' => $window, 'export' => 'csv'])))"
-                                show-label>CSV</x-icon-btn>
-                    <x-icon-btn icon="table_view" tone="outline" size="sm"
-                                :href="route('reports.cohort-comparison', array_merge($standardFilters->toQueryParams(), array_filter(['qualification_id' => $qualSqid, 'metric' => $metric, 'window' => $window, 'export' => 'xlsx'])))"
-                                show-label>Excel</x-icon-btn>
+                    <x-action-menu icon="download" tone="outline" :label="__('Export')">
+                        <x-icon-btn icon="download" tone="outline" size="sm"
+                                    :href="route('reports.cohort-comparison', array_merge($standardFilters->toQueryParams(), array_filter(['qualification_id' => $qualSqid, 'metric' => $metric, 'window' => $window, 'export' => 'csv'])))"
+                                    show-label>CSV</x-icon-btn>
+                        <x-icon-btn icon="table_view" tone="outline" size="sm"
+                                    :href="route('reports.cohort-comparison', array_merge($standardFilters->toQueryParams(), array_filter(['qualification_id' => $qualSqid, 'metric' => $metric, 'window' => $window, 'export' => 'xlsx'])))"
+                                    show-label>Excel</x-icon-btn>
+                    </x-action-menu>
                 @endif
                 <x-help-button topic="reports.cohort-comparison" />
             </x-slot:actions>

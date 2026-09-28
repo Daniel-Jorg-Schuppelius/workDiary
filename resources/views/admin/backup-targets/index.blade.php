@@ -14,33 +14,35 @@
 @section('content')
 <x-index-page :subtitle="__('backup_targets.description')">
     <x-slot:actions>
-        <form method="POST" action="{{ route('admin.backup-targets.dropbox.oauth.start') }}" class="leading-none">
-            @csrf
-            <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>Dropbox</x-icon-btn>
-        </form>
-        <form method="POST" action="{{ route('admin.backup-targets.microsoft.oauth.start') }}" class="leading-none">
-            @csrf
-            <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>Microsoft</x-icon-btn>
-        </form>
-        <form method="POST" action="{{ route('admin.backup-targets.google.oauth.start') }}" class="leading-none">
-            @csrf
-            <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>Google Drive</x-icon-btn>
-        </form>
-        {{-- Nextcloud (MVP-383): Zugangsdaten-Dialog statt OAuth-Redirect. --}}
-        <x-icon-btn icon="add" tone="primary" size="sm"
-                    data-entry-modal-trigger
-                    :href="route('admin.backup-targets.nextcloud.connect-form')"
-                    show-label>Nextcloud</x-icon-btn>
-        {{-- Generisches WebDAV (MVP-612): eigener Server statt US-Anbieter. --}}
-        <x-icon-btn icon="add" tone="primary" size="sm"
-                    data-entry-modal-trigger
-                    :href="route('admin.backup-targets.webdav.connect-form')"
-                    show-label>WebDAV</x-icon-btn>
-        {{-- S3-kompatibel (MVP-726): AWS S3, MinIO, Wasabi, Hetzner. --}}
-        <x-icon-btn icon="add" tone="primary" size="sm"
-                    data-entry-modal-trigger
-                    :href="route('admin.backup-targets.s3.connect-form')"
-                    show-label>S3</x-icon-btn>
+        <x-action-menu icon="add" tone="primary" :label="__('Neu')">
+            <form method="POST" action="{{ route('admin.backup-targets.dropbox.oauth.start') }}" class="leading-none">
+                @csrf
+                <x-icon-btn icon="add" size="sm" type="submit" show-label>Dropbox</x-icon-btn>
+            </form>
+            <form method="POST" action="{{ route('admin.backup-targets.microsoft.oauth.start') }}" class="leading-none">
+                @csrf
+                <x-icon-btn icon="add" size="sm" type="submit" show-label>Microsoft</x-icon-btn>
+            </form>
+            <form method="POST" action="{{ route('admin.backup-targets.google.oauth.start') }}" class="leading-none">
+                @csrf
+                <x-icon-btn icon="add" size="sm" type="submit" show-label>Google Drive</x-icon-btn>
+            </form>
+            {{-- Nextcloud (MVP-383): Zugangsdaten-Dialog statt OAuth-Redirect. --}}
+            <x-icon-btn icon="add" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('admin.backup-targets.nextcloud.connect-form')"
+                        show-label>Nextcloud</x-icon-btn>
+            {{-- Generisches WebDAV (MVP-612): eigener Server statt US-Anbieter. --}}
+            <x-icon-btn icon="add" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('admin.backup-targets.webdav.connect-form')"
+                        show-label>WebDAV</x-icon-btn>
+            {{-- S3-kompatibel (MVP-726): AWS S3, MinIO, Wasabi, Hetzner. --}}
+            <x-icon-btn icon="add" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('admin.backup-targets.s3.connect-form')"
+                        show-label>S3</x-icon-btn>
+        </x-action-menu>
     </x-slot:actions>
 
     @unless ($hasMasterKey)

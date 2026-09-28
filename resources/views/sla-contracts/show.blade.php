@@ -23,7 +23,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar back-route="sla-contracts.index" :back-label="__('Zurück')">
             <x-slot:title>{{ $contract->label }}</x-slot:title>
             {{-- Der Vertragscode steht in Monospace, also Markup: Standard-Slot statt
                  :subtitle — den setzt die Toolbar zusätzlich als title-Attribut. --}}
@@ -31,15 +31,14 @@
                 <span class="font-mono">{{ $contract->code }}</span> ·
                 {{ $contract->customer?->name ?? __('Standard (alle Kunden)') }}
             </span>
-            <x-slot:actions>
+            <x-slot:badges>
                 @if ($contract->is_default)
                     <x-status-badge tone="info" size="sm">{{ __('Standard') }}</x-status-badge>
                 @endif
                 <x-status-badge :tone="$contract->is_active ? 'success' : 'ghost'" size="sm" outline>
                     {{ $contract->is_active ? __('Aktiv') : __('Inaktiv') }}
                 </x-status-badge>
-                <x-icon-btn icon="arrow_back" tone="outline" size="sm" :href="route('sla-contracts.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
-            </x-slot:actions>
+            </x-slot:badges>
         </x-page-toolbar>
     </x-slot:toolbar>
 

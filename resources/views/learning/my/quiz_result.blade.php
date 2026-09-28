@@ -17,12 +17,8 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$enrollment->course?->title"
                         :badge="$attempt->passed === null ? __('learning.field.pending_grading') : ($attempt->passed ? __('learning.field.passed') : __('learning.field.not_passed'))"
-                        :badgeTone="$attempt->passed === null ? 'warning' : ($attempt->passed ? 'success' : 'error')">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                            :href="route('learning.my.show', $enrollment)"
-                            show-label>{{ __('learning.action.back') }}</x-icon-btn>
-            </x-slot:actions>
+                        :badgeTone="$attempt->passed === null ? 'warning' : ($attempt->passed ? 'success' : 'error')"
+                        :back="route('learning.my.show', $enrollment)" :back-label="__('learning.action.back')">
         </x-page-toolbar>
     </x-slot:toolbar>
 

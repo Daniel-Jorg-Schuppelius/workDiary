@@ -19,9 +19,9 @@
 
 @section('content')
     <x-page-toolbar :subtitle="__('accounting.ledger.subtitle')">
-        <x-slot:actions>
+        <x-slot:badges>
             <x-status-badge :tone="$currentSovereignty->tone()">{{ $currentSovereignty->label() }}</x-status-badge>
-        </x-slot:actions>
+        </x-slot:badges>
     </x-page-toolbar>
 
     <div class="mt-4 grid gap-4 lg:grid-cols-2">

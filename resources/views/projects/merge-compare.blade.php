@@ -45,10 +45,8 @@
 @endphp
 
 @section('content')
-<x-index-page :subtitle="__('Wählen Sie pro Feld, ob der Wert des zu löschenden Projekts den Ziel-Wert ersetzen soll. Nicht angehakte, leere Ziel-Felder werden ohnehin aus der Quelle aufgefüllt; befüllte Ziel-Felder bleiben unangetastet.')">
-    <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('projects.duplicates.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
-    </x-slot:actions>
+<x-index-page :subtitle="__('Wählen Sie pro Feld, ob der Wert des zu löschenden Projekts den Ziel-Wert ersetzen soll. Nicht angehakte, leere Ziel-Felder werden ohnehin aus der Quelle aufgefüllt; befüllte Ziel-Felder bleiben unangetastet.')"
+              back-route="projects.duplicates.index" :back-label="__('Zurück')">
 
     <div class="mb-4 flex flex-wrap gap-x-6 gap-y-1 text-sm text-base-content/70">
         <span>{{ __('Kunde') }}: <span class="font-medium">{{ $target->customer?->name ?: __('Intern (ohne Kunde)') }}</span></span>

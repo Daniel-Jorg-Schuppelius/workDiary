@@ -13,6 +13,8 @@
 
 @section('content')
 <x-index-page :subtitle="__('Kündigungs-, Verlängerungs-, Kaufoptions-, Rückgabe- und Prüffristen aller Verträge.')">
+
+    @include('asset-finance._tabs')
     <x-filter-bar :action="route('asset-finance.deadlines.index')" :reset="route('asset-finance.deadlines.index')">
         <select name="status" class="select select-sm select-bordered w-44 shrink-0" aria-label="{{ __('Status') }}">
             <option value="">{{ __('Offen (Standard)') }}</option>

@@ -28,15 +28,17 @@
             <x-slot:actions>
                 <x-icon-btn icon="print" tone="outline" size="sm" data-print show-label
                             :label="__('reporting.presence_emergency.print')">{{ __('reporting.presence_emergency.print') }}</x-icon-btn>
-                <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.presence-emergency', array_merge($queryBase, ['export' => 'csv']))"
-                            show-label>CSV</x-icon-btn>
-                <x-icon-btn icon="table_view" tone="outline" size="sm"
-                            :href="route('reports.presence-emergency', array_merge($queryBase, ['export' => 'xlsx']))"
-                            show-label>Excel</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
                             :href="route('reports.presence-emergency', array_merge($queryBase, ['export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>
+                <x-action-menu icon="download" tone="outline" :label="__('Export')">
+                    <x-icon-btn icon="download" tone="outline" size="sm"
+                                :href="route('reports.presence-emergency', array_merge($queryBase, ['export' => 'csv']))"
+                                show-label>CSV</x-icon-btn>
+                    <x-icon-btn icon="table_view" tone="outline" size="sm"
+                                :href="route('reports.presence-emergency', array_merge($queryBase, ['export' => 'xlsx']))"
+                                show-label>Excel</x-icon-btn>
+                </x-action-menu>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

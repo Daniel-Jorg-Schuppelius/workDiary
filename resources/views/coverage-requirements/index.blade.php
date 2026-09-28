@@ -12,11 +12,9 @@
 @section('wrapper-height-class', 'wd-page-fill')
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 @section('content')
-<x-index-page overflow="clip" :subtitle="$dutyPlan->title . ' · ' . $dutyPlan->from_date->fdate() . ' – ' . $dutyPlan->to_date->fdate()">
+<x-index-page overflow="clip" :subtitle="$dutyPlan->title . ' · ' . $dutyPlan->from_date->fdate() . ' – ' . $dutyPlan->to_date->fdate()"
+              :back="route('duty-plans.show', $dutyPlan)" :back-label="__('Zurück')">
     <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm"
-                    :href="route('duty-plans.show', $dutyPlan)"
-                    show-label>{{ __('Zurück') }}</x-icon-btn>
         @can('create', \App\Models\Schedule\CoverageRequirement::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger

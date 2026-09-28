@@ -15,12 +15,8 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="$unit->title">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                            :href="route('learning.my.show', $enrollment->sqid)"
-                            show-label>{{ __('learning.action.back') }}</x-icon-btn>
-            </x-slot:actions>
+        <x-page-toolbar :subtitle="$unit->title"
+                        :back="route('learning.my.show', $enrollment->sqid)" :back-label="__('learning.action.back')">
         </x-page-toolbar>
     </x-slot:toolbar>
 

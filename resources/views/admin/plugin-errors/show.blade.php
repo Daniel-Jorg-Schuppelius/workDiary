@@ -12,11 +12,9 @@
 @section('nav-title', __('Plugin-Fehler'))
 
 @section('content')
-<x-index-page :subtitle="__(':plugin · :phase · :time', ['plugin' => $error->plugin_id, 'phase' => $error->phase, 'time' => $error->occurred_at->orgTz()->format('d.m.Y H:i')])">
+<x-index-page :subtitle="__(':plugin · :phase · :time', ['plugin' => $error->plugin_id, 'phase' => $error->phase, 'time' => $error->occurred_at->orgTz()->format('d.m.Y H:i')])"
+              back-route="admin.plugin-errors.index" :back-label="__('Zurück')">
     <x-slot:actions>
-        <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                    :href="route('admin.plugin-errors.index')"
-                    show-label>{{ __('Zurück') }}</x-icon-btn>
         @if ($newer)
             <x-icon-btn icon="chevron_left" tone="ghost" size="sm"
                         :href="route('admin.plugin-errors.show', $newer)" :label="__('Neuerer Fehler')" />
@@ -31,7 +29,7 @@
         <x-action-form :action="route('admin.plugins.reset-errors', $error->plugin_id)"
               :confirm="__('Failure-Counter zurücksetzen und offene Fehler dieses Plugins quittieren?')"
               confirm-tone="primary">
-            <x-icon-btn type="submit" tone="warning" size="sm" icon="restart_alt" show-label>{{ __('Reset') }}</x-icon-btn>
+            <x-icon-btn placement="menu" type="submit" tone="warning" size="sm" icon="restart_alt" show-label>{{ __('Reset') }}</x-icon-btn>
         </x-action-form>
         <form method="POST" action="{{ route('admin.plugin-errors.reopen', $error) }}">
             @csrf

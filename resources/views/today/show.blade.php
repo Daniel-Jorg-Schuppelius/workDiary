@@ -43,11 +43,9 @@
         x-data="todayCounters({{ $isLive ? 'true' : 'false' }}, {{ $attendanceMinutes }}, {{ $entriesMinutes }}, {{ $targetMinutes }}, '{{ $renderedAt }}')">
         <x-slot:toolbar>
             <x-page-toolbar :subtitle="$day->translatedFormat('l, d.m.Y')"
-                            :badge="$effectiveStatus->label()" :badgeTone="$effectiveStatus->tone()">
+                            :badge="$effectiveStatus->label()" :badgeTone="$effectiveStatus->tone()"
+                            :back="route('today.show', ['date' => $day->copy()->subDay()->toDateString()])" :back-label="__('Vortag')">
                 <x-slot:actions>
-                    <x-icon-btn icon="arrow_back" size="sm"
-                                :href="route('today.show', ['date' => $day->copy()->subDay()->toDateString()])"
-                                show-label>{{ __('Vortag') }}</x-icon-btn>
                     <x-icon-btn icon="today" size="sm"
                                 :href="route('today.show')"
                                 show-label>{{ __('Heute') }}</x-icon-btn>

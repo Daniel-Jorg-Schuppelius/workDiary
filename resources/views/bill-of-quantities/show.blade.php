@@ -11,23 +11,13 @@
 @section('nav-title', $bill->name)
 
 @section('content')
-<x-index-page :subtitle="$bill->project?->name ?: __('gaeb.title')">
+<x-index-page :subtitle="$bill->project?->name ?: __('gaeb.title')"
+              back-route="bill-of-quantities.index" :back-label="__('gaeb.show.back')">
     <x-slot:actions>
         <x-icon-btn icon="download" size="sm" :href="route('bill-of-quantities.export', $bill)" show-label>{{ __('gaeb.export.button') }}</x-icon-btn>
-        <x-icon-btn icon="table_chart" size="sm" :href="route('bill-of-quantities.price-comparison', $bill)" show-label>{{ __('gaeb.comparison.button') }}</x-icon-btn>
-        <x-icon-btn icon="category" size="sm" :href="route('bill-of-quantities.cost-groups', $bill)" show-label>{{ __('Kostengruppen') }}</x-icon-btn>
-        {{-- Nur zeigen, wo es etwas zu zeigen gibt: X52-Daten sind die Ausnahme,
-             nicht die Regel. --}}
-        @if ($bill->costTypes()->exists())
-            <x-icon-btn icon="calculate" size="sm" :href="route('bill-of-quantities.calculation-data', $bill)" show-label>{{ __('Kalkulationsdaten') }}</x-icon-btn>
-        @endif
-        <x-icon-btn icon="playlist_add_check" size="sm" :href="route('bill-of-quantities.catalog-assignment', $bill)" show-label>{{ __('Zuordnen') }}</x-icon-btn>
-        <x-icon-btn icon="assignment" size="sm" :href="route('bill-of-quantities.call-offs.index', $bill)" show-label>{{ __('gaeb.call_off.button') }}</x-icon-btn>
-        @can(\App\Enums\User\Permission::InvoiceViewAny->value)
-            <x-icon-btn icon="receipt_long" size="sm" :href="route('bill-of-quantities.billing', $bill)" show-label>{{ __('gaeb.billing.button') }}</x-icon-btn>
-        @endcan
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('bill-of-quantities.index')" show-label>{{ __('gaeb.show.back') }}</x-icon-btn>
     </x-slot:actions>
+
+    @include('bill-of-quantities._tabs')
 
     {{-- Nachkalkulation (MVP-083) --}}
     <x-card>

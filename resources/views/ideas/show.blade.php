@@ -13,15 +13,17 @@
 @section('content')
 <x-page-shell gap="4">
     <x-slot:toolbar>
-        <x-page-toolbar :title="$map->title">
+        <x-page-toolbar :title="$map->title"
+                        back-route="ideas.index" :back-label="__('Zurück')">
             <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('ideas.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
                 <x-collection-add-button :item="$map" />
                 @can('export', $map)
                     <x-icon-btn icon="picture_as_pdf" size="sm" :href="route('ideas.export.pdf', $map)" target="_blank" show-label>PDF</x-icon-btn>
-                    <x-icon-btn icon="account_tree" size="sm" :href="route('ideas.export.opml', $map)" show-label>OPML</x-icon-btn>
-                    <x-icon-btn icon="notes" size="sm" :href="route('ideas.export.md', $map)" show-label>Markdown</x-icon-btn>
-                    <x-icon-btn icon="data_object" size="sm" :href="route('ideas.export.json', $map)" show-label>JSON</x-icon-btn>
+                    <x-action-menu icon="download" :label="__('Export')">
+                        <x-icon-btn icon="account_tree" size="sm" :href="route('ideas.export.opml', $map)" show-label>OPML</x-icon-btn>
+                        <x-icon-btn icon="notes" size="sm" :href="route('ideas.export.md', $map)" show-label>Markdown</x-icon-btn>
+                        <x-icon-btn icon="data_object" size="sm" :href="route('ideas.export.json', $map)" show-label>JSON</x-icon-btn>
+                    </x-action-menu>
                 @endcan
                 @if ($canUpdate && ! $map->isArchived())
                     <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger

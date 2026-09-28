@@ -12,10 +12,8 @@
 
 @section('content')
 @if ($target === null)
-    <x-index-page :subtitle="__('Wählen Sie das Zielgerät, in das „:name“ überführt werden soll. Alle Verknüpfungen (Sitzungen, Wartungen, Anhänge, Geräte-IDs …) wandern aufs Ziel; das Duplikat wird gelöscht.', ['name' => $source->name ?: $source->asset_no])">
-        <x-slot:actions>
-            <x-icon-btn icon="arrow_back" size="sm" :href="route('assets.show', $source)" show-label>{{ __('Zurück') }}</x-icon-btn>
-        </x-slot:actions>
+    <x-index-page :subtitle="__('Wählen Sie das Zielgerät, in das „:name“ überführt werden soll. Alle Verknüpfungen (Sitzungen, Wartungen, Anhänge, Geräte-IDs …) wandern aufs Ziel; das Duplikat wird gelöscht.', ['name' => $source->name ?: $source->asset_no])"
+                  :back="route('assets.show', $source)" :back-label="__('Zurück')">
 
         <form method="GET" action="{{ route('assets.merge.compare') }}"
               class="max-w-xl rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
@@ -61,10 +59,8 @@
         ];
     @endphp
 
-    <x-index-page :subtitle="__('Wählen Sie pro Feld, ob der Wert des zu löschenden Geräts den Ziel-Wert ersetzen soll. Leere Ziel-Felder werden ohnehin aus der Quelle aufgefüllt; befüllte Ziel-Felder bleiben unangetastet.')">
-        <x-slot:actions>
-            <x-icon-btn icon="arrow_back" size="sm" :href="route('assets.show', $source)" show-label>{{ __('Zurück') }}</x-icon-btn>
-        </x-slot:actions>
+    <x-index-page :subtitle="__('Wählen Sie pro Feld, ob der Wert des zu löschenden Geräts den Ziel-Wert ersetzen soll. Leere Ziel-Felder werden ohnehin aus der Quelle aufgefüllt; befüllte Ziel-Felder bleiben unangetastet.')"
+                  :back="route('assets.show', $source)" :back-label="__('Zurück')">
 
         <form method="POST" action="{{ route('assets.merge') }}"
               data-confirm-dialog

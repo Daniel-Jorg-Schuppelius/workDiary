@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Öffentlicher Nachhaltigkeitsauszug (MVP-930). Erwartet: $orgName, $snapshot, $targets --}}
+{{-- Öffentlicher Nachhaltigkeitsauszug (MVP-930). Erwartet: $orgName, $snapshot, $targets, $statement, $offsets --}}
 @php
     $data = (array) $snapshot->data;
     $t = static fn (float $kg): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($kg / 1000, 1, withThousandsSeparator: true);
@@ -34,6 +34,20 @@
             @endforeach
         </ul>
     </x-card>
+    @if ($statement !== null)
+        <x-card><p class="whitespace-pre-line text-sm">{{ $statement }}</p></x-card>
+    @endif
+    {{-- Nachweise (MVP-961): getrennt ausgewiesen, nicht mit den Emissionen verrechnet. --}}
+    @if ($offsets !== [])
+        <x-card :title="__('sustainability.offset.public_title')">
+            <ul class="text-sm">
+                @foreach ($offsets as $offset)
+                    <li>{{ $offset->claim_year }} · {{ $offset->kind->label() }} · {{ $offset->provider }}@if ($offset->standard) ({{ $offset->standard }})@endif: <span class="tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $offset->quantity_t, 3, withThousandsSeparator: true, trimTrailingZeros: true) }} t</span></li>
+                @endforeach
+            </ul>
+            <p class="mt-1 text-xs opacity-70">{{ __('sustainability.offset.separate') }}</p>
+        </x-card>
+    @endif
     @if ($targets !== [])
         <x-card :title="__('sustainability.excerpt.targets')">
             <ul class="text-sm">

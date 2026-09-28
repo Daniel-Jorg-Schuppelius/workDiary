@@ -36,10 +36,8 @@
 @endphp
 
 @section('content')
-<x-index-page :subtitle="__('Wählen Sie pro Feld, ob der Wert des zu löschenden Artikels den Ziel-Wert ersetzen soll. Nicht angehakte, leere Ziel-Felder werden ohnehin aus der Quelle aufgefüllt; befüllte Ziel-Felder bleiben unangetastet.')">
-    <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('articles.duplicates.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
-    </x-slot:actions>
+<x-index-page :subtitle="__('Wählen Sie pro Feld, ob der Wert des zu löschenden Artikels den Ziel-Wert ersetzen soll. Nicht angehakte, leere Ziel-Felder werden ohnehin aus der Quelle aufgefüllt; befüllte Ziel-Felder bleiben unangetastet.')"
+              back-route="articles.duplicates.index" :back-label="__('Zurück')">
 
     <form method="POST" action="{{ route('articles.duplicates.merge') }}"
           data-confirm-dialog

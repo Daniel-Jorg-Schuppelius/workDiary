@@ -16,12 +16,14 @@
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Verarbeitungstätigkeiten dokumentieren, prüfen und freigeben.')">
         <x-slot:actions>
-            <x-icon-btn icon="download" tone="ghost" size="sm"
-                        :href="route('dataprotection.activities.export')"
-                        show-label>{{ __('JSON') }}</x-icon-btn>
-            <x-icon-btn icon="download" tone="ghost" size="sm"
-                        :href="route('dataprotection.activities.export', ['format' => 'csv'])"
-                        show-label>{{ __('CSV') }}</x-icon-btn>
+            <x-action-menu icon="download" :label="__('Export')">
+                <x-icon-btn icon="download" tone="ghost" size="sm"
+                            :href="route('dataprotection.activities.export')"
+                            show-label>{{ __('JSON') }}</x-icon-btn>
+                <x-icon-btn icon="download" tone="ghost" size="sm"
+                            :href="route('dataprotection.activities.export', ['format' => 'csv'])"
+                            show-label>{{ __('CSV') }}</x-icon-btn>
+            </x-action-menu>
             <x-icon-btn icon="print" tone="ghost" size="sm"
                         :href="route('dataprotection.activities.export', ['format' => 'print'])"
                         target="_blank"

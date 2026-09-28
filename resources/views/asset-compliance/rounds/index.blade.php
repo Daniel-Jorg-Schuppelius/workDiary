@@ -17,11 +17,12 @@
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('inspection_round.subtitle')">
         <x-slot:actions>
-            <x-icon-btn icon="arrow_back" size="sm" :href="route('asset-compliance.index')" :label="__('Prüfmittel')" />
             @if ($canInspect)
                 <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger :href="route('asset-compliance.rounds.create')" show-label>{{ __('inspection_round.open') }}</x-icon-btn>
             @endif
         </x-slot:actions>
+
+    @include('asset-compliance._tabs')
 
         <x-table scroll="flex" :pinRows="true">
             <x-slot:head>

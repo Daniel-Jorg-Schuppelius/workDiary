@@ -11,9 +11,9 @@
 namespace App\Services\Procurement;
 
 use App\Models\Procurement\{PurchaseOrder, PurchaseOrderAdvice, PurchaseOrderLine};
+use App\Services\Procurement\Concerns\ResolvesPurchaseOrderLines;
 use CommonToolkit\Helper\Data\NumberHelper;
-use ERechnungToolkit\Entities\DespatchLine;
-use ERechnungToolkit\Parsers\DespatchAdviceParser;
+use ERechnungToolkit\Parsers\{DespatchAdviceParser, OpenTransDispatchNotificationParser};
 use Illuminate\Support\Collection;
 use RuntimeException;
 
@@ -31,6 +31,8 @@ use RuntimeException;
  * Bestandsbuchung erfolgt unverändert über {@see AdviceService::receive()}.
  */
 class DespatchAdviceImportService {
+    use ResolvesPurchaseOrderLines;
+
     public function __construct(private readonly AdviceService $advices) {}
 
     /**
@@ -53,7 +55,10 @@ class DespatchAdviceImportService {
             throw new RuntimeException('Der Lieferschein-Parser des php-erechnung-toolkit ist nicht verfügbar.');
         }
 
-        $advice = (new DespatchAdviceParser)->parse($xml);
+        // openTRANS DISPATCHNOTIFICATION (MVP-964) landet auf derselben Entität wie der UBL-Lieferschein.
+        $advice = preg_match('/<(?:[\w-]+:)?DISPATCHNOTIFICATION[\s>]/', $xml) === 1
+            ? (new OpenTransDispatchNotificationParser)->parse($xml)
+            : (new DespatchAdviceParser)->parse($xml);
 
         $orderReference = trim((string) $advice->getOrderReference());
         if ($orderReference === '') {
@@ -77,7 +82,7 @@ class DespatchAdviceImportService {
 
         $lineData = [];
         foreach ($advice->getLines() as $despatchLine) {
-            $orderLine = $this->resolveLine($orderedLines, $despatchLine);
+            $orderLine = $this->resolveOrderLine($orderedLines, $despatchLine->getOrderLineId(), $despatchLine->getSellersItemId());
             if ($orderLine === null) {
                 continue;
             }
@@ -96,34 +101,4 @@ class DespatchAdviceImportService {
 
         return $this->advices->announce($order, $lineData, $options);
     }
-
-    /**
-     * Ordnet eine Lieferschein-Position einer Bestellzeile zu: zuerst über die
-     * 1-basierte Zeilennummer, ersatzweise über die Lieferanten-SKU.
-     *
-     * @param  Collection<int, PurchaseOrderLine>  $orderedLines
-     */
-    private function resolveLine(Collection $orderedLines, DespatchLine $despatchLine): ?PurchaseOrderLine {
-        $lineId = trim((string) $despatchLine->getOrderLineId());
-        if ($lineId !== '' && ctype_digit($lineId)) {
-            $position = (int) $lineId - 1;
-            $byPosition = $orderedLines->get($position);
-            if ($byPosition instanceof PurchaseOrderLine) {
-                return $byPosition;
-            }
-        }
-
-        $sku = trim((string) $despatchLine->getSellersItemId());
-        if ($sku !== '') {
-            $bySku = $orderedLines->first(
-                static fn (PurchaseOrderLine $line): bool => trim((string) $line->supplier_sku) === $sku,
-            );
-            if ($bySku instanceof PurchaseOrderLine) {
-                return $bySku;
-            }
-        }
-
-        return null;
-    }
-
 }

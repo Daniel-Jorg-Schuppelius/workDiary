@@ -14,12 +14,8 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :title="$template->exists ? __('Template bearbeiten') : __('Neues Template')">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm"
-                            :href="route('admin.invoice-mail-templates.index')"
-                            show-label>{{ __('Zurück') }}</x-icon-btn>
-            </x-slot:actions>
+        <x-page-toolbar :title="$template->exists ? __('Template bearbeiten') : __('Neues Template')"
+                        back-route="admin.invoice-mail-templates.index" :back-label="__('Zurück')">
         </x-page-toolbar>
     </x-slot:toolbar>
 

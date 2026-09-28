@@ -12,11 +12,8 @@
 @section('nav-title', __('Korrekturantrag #:id', ['id' => $request->id]))
 
 @section('content')
-    <x-index-page :subtitle="$request->user?->name . ' · ' . optional($request->scope_date)->fdate()">
-        <x-slot:actions>
-            <x-icon-btn icon="arrow_back" size="sm" tone="ghost"
-                        :href="route('admin.corrections.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
-        </x-slot:actions>
+    <x-index-page :subtitle="$request->user?->name . ' · ' . optional($request->scope_date)->fdate()"
+                  back-route="admin.corrections.index" :back-label="__('Zurück')">
 
         <div class="card bg-base-200">
             <div class="card-body space-y-2">

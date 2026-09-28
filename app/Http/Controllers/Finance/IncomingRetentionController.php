@@ -19,6 +19,7 @@ use App\Models\Invoicing\IncomingEInvoice;
 use App\Services\Billing\Sepa\IncomingRetentionService;
 use App\Support\ErrorText;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -39,8 +40,8 @@ class IncomingRetentionController extends Controller {
             $retentions->add(
                 $incoming,
                 RetentionKind::from($data['kind']),
-                isset($data['percent']) ? (string) $data['percent'] : null,
-                isset($data['amount']) ? (string) $data['amount'] : null,
+                isset($data['percent']) ? NumberHelper::normalizeDecimalString((string) $data['percent']) : null,
+                isset($data['amount']) ? NumberHelper::normalizeDecimalString((string) $data['amount']) : null,
                 isset($data['due_on']) ? CarbonImmutable::parse($data['due_on']) : null,
                 $data['note'] ?? null,
                 $this->authUser(),

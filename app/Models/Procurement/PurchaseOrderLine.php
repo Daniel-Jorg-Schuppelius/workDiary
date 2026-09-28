@@ -44,6 +44,9 @@ class PurchaseOrderLine extends Model {
         'article_id',
         'article_variant_id',
         'supplier_sku',
+        'confirmed_qty',
+        'confirmed_unit_price',
+        'confirmed_delivery_on',
         'description',
         'note',
         'ordered_qty',
@@ -58,6 +61,9 @@ class PurchaseOrderLine extends Model {
         'ordered_qty' => QuantityCast::class . ':unit,4',
         'received_qty' => QuantityCast::class . ':unit,4',
         'unit_price' => MoneyCast::class . ':currency,4',
+        'confirmed_qty' => 'decimal:4',
+        'confirmed_unit_price' => 'decimal:4',
+        'confirmed_delivery_on' => 'date',
     ];
 
     /** Noch offene Bestellmenge (>= 0). @return numeric-string */

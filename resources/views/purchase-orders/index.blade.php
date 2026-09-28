@@ -15,11 +15,11 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('procurement.subtitle')">
     <x-slot:actions>
-        <x-icon-btn icon="local_shipping" size="sm" :href="route('purchase-orders.incoming')" show-label>{{ __('procurement.action.incoming') }}</x-icon-btn>
-        <x-icon-btn icon="lightbulb" size="sm" :href="route('purchase-orders.suggestions')" show-label>{{ __('procurement.action.suggestions') }}</x-icon-btn>
         <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger
                     :href="route('purchase-orders.create')" show-label>{{ __('procurement.action.create') }}</x-icon-btn>
     </x-slot:actions>
+
+    @include('purchase-orders._tabs')
 
     {{-- Tab-Strip über die gemeinsame Komponente (D5; Vollaudit 2026-07, N44). --}}
     <x-tab-nav :items="collect([['label' => __('Alle'), 'route' => 'purchase-orders.index', 'active' => $status === 'all']])

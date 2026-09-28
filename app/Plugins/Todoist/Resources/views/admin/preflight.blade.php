@@ -13,10 +13,8 @@
 @section('content')
 <x-page-shell gap="4">
     <x-slot:toolbar>
-        <x-page-toolbar :title="__('todoist.preflight.title') . ': ' . ($link->todoist_project_name ?? $link->todoist_project_id)">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('admin.todoist.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
-            </x-slot:actions>
+        <x-page-toolbar :title="__('todoist.preflight.title') . ': ' . ($link->todoist_project_name ?? $link->todoist_project_id)"
+                        back-route="admin.todoist.index" :back-label="__('Zurück')">
         </x-page-toolbar>
     </x-slot:toolbar>
 

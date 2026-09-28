@@ -1743,4 +1743,11 @@ Ihre Beitragsverwaltung',
         ],
         'overdue_count' => '{1}eine überfällig|[2,*]:count überfällig',
     ],
+    // Reiter der Termin-Sichten (MVP-969).
+    'tab' => [
+        'event' => 'Termin',
+        'match' => 'Spieltag',
+        'competition' => 'Wettkampf',
+        'attendance' => 'Anwesenheit',
+    ],
 ];

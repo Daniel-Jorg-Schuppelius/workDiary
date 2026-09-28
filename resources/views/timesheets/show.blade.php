@@ -46,11 +46,11 @@
                     {{-- Magic-Link widerrufen (Feature 012 MVP; Vollaudit 2026-07, M6). --}}
                     @if ($timesheet->magic_token_hash !== null)
                         <x-action-form method="DELETE" :action="route('projects.timesheets.magic-link.revoke', [$project, $timesheet])">
-                            <x-icon-btn icon="link_off" tone="ghost" size="sm" type="submit" show-label>{{ __('Sign-Link widerrufen') }}</x-icon-btn>
+                            <x-icon-btn placement="menu" icon="link_off" tone="ghost" size="sm" type="submit" show-label>{{ __('Sign-Link widerrufen') }}</x-icon-btn>
                         </x-action-form>
                     @endif
                     <x-action-form :action="route('projects.timesheets.submit', [$project, $timesheet])">
-                        <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Einreichen') }}</x-icon-btn>
+                        <x-icon-btn placement="bar" icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Einreichen') }}</x-icon-btn>
                     </x-action-form>
                 @endif
                 {{-- Löschen bleibt möglich, solange nicht signiert/gesperrt ist
@@ -63,17 +63,17 @@
                           confirm-icon="delete"
                           confirm-tone="error"
                           :confirm-label="__('Löschen')">
-                        <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
+                        <x-icon-btn placement="danger" icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
                     </x-action-form>
                 @endcan
                 @can('lock', $timesheet)
                     @if(! $timesheet->isLocked())
                         <x-action-form :action="route('projects.timesheets.lock', [$project, $timesheet])">
-                            <x-icon-btn icon="lock" tone="warning" size="sm" type="submit" show-label>{{ __('Sperren') }}</x-icon-btn>
+                            <x-icon-btn placement="menu" icon="lock" tone="warning" size="sm" type="submit" show-label>{{ __('Sperren') }}</x-icon-btn>
                         </x-action-form>
                     @else
                         <x-action-form :action="route('projects.timesheets.unlock', [$project, $timesheet])">
-                            <x-icon-btn icon="lock_open" size="sm" type="submit" show-label>{{ __('Entsperren') }}</x-icon-btn>
+                            <x-icon-btn placement="menu" icon="lock_open" size="sm" type="submit" show-label>{{ __('Entsperren') }}</x-icon-btn>
                         </x-action-form>
                     @endif
                 @endcan

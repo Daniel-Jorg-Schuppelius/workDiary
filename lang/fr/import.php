@@ -10,6 +10,7 @@
 
 return [
     'entity' => [
+        'meter_readings' => 'Relevés de compteur',
         'customers' => 'Clients',
         'suppliers' => 'Fournisseurs',
         'articles' => 'Articles',
@@ -87,6 +88,7 @@ return [
             'rowLimit' => 'Limite de lignes (:max) dépassée — reste ignoré.',
             'contactPersons' => 'Plus de :max interlocuteurs par client/fournisseur ne sont pas prévus.',
         ],
+        'meterReading' => ['decreasing' => 'Relevé inférieur au précédent.'],
         'fkMissing' => [
             'customer' => 'Aucun client avec le numéro :number trouvé.',
             'supplier' => 'Aucun fournisseur avec le numéro :number trouvé.',

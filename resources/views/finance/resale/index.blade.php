@@ -18,27 +18,17 @@
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('resale.subtitle')">
         <x-slot:actions>
-            {{-- Unterseiten für reselling.view; Inbox, Import und Anlegen nur mit reselling.manage (C11). --}}
-            <x-icon-btn icon="insights" tone="ghost" size="sm" :href="route('finance.resale.report.index')" show-label>{{ __('resale.report.title') }}</x-icon-btn>
-            <x-icon-btn icon="price_check" tone="ghost" size="sm" :href="route('finance.resale.prices')" show-label>{{ __('resale.prices.title') }}</x-icon-btn>
-            <x-icon-btn icon="inventory_2" tone="ghost" size="sm" :href="route('finance.resale.products')" show-label>{{ __('resale.products.title') }}</x-icon-btn>
-            <x-icon-btn icon="shopping_cart" tone="ghost" size="sm" :href="route('finance.resale.purchases.index')" show-label>{{ __('resale.purchase.title') }}</x-icon-btn>
-            <x-icon-btn icon="compare_arrows" tone="ghost" size="sm" :href="route('finance.resale.reconcile.index')" show-label>{{ __('resale.reconcile.title') }}</x-icon-btn>
-            <x-icon-btn icon="fact_check" :tone="$summary['open_periods'] > 0 ? 'warning' : 'ghost'" size="sm"
-                        :href="route('finance.resale.periods.index')"
-                        show-label>{{ __('resale.periods.title') }}@if ($summary['open_periods'] > 0) ({{ $summary['open_periods'] }})@endif</x-icon-btn>
             @can(\App\Enums\User\Permission::ResellingManage->value)
-                <x-icon-btn icon="inbox" :tone="$summary['unassigned'] > 0 ? 'warning' : 'ghost'" size="sm"
-                            :href="route('finance.resale.inbox')"
-                            show-label>{{ __('resale.inbox.title') }}@if ($summary['unassigned'] > 0) ({{ $summary['unassigned'] }})@endif</x-icon-btn>
                 <x-icon-btn icon="upload" tone="ghost" size="sm" data-entry-modal-trigger
                             :href="route('finance.resale.import.create')"
                             show-label>{{ __('resale.import.action') }}</x-icon-btn>
-                <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger
+                <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger placement="bar"
                             :href="route('finance.resale.create', array_filter(['customer' => $filterCustomer?->sqid]))"
                             show-label>{{ __('resale.action.new') }}</x-icon-btn>
             @endcan
         </x-slot:actions>
+
+        @include('finance.resale._tabs')
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
             <x-kpi-tile :label="__('resale.summary.active')" :value="$summary['active']" />

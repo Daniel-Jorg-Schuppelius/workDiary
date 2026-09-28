@@ -11,10 +11,8 @@
 @section('nav-title', __('procurement.approval.title'))
 
 @section('content')
-<x-index-page :subtitle="__('procurement.approval.subtitle')">
-    <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('pricing-margin-rules.index')" show-label>{{ __('procurement.margin.title') }}</x-icon-btn>
-    </x-slot:actions>
+<x-index-page :subtitle="__('procurement.approval.subtitle')"
+              back-route="pricing-margin-rules.index" :back-label="__('procurement.margin.title')">
 
     @if ($requests->total() === 0)
         <x-empty-state framed icon="fact_check"

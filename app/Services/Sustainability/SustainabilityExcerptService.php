@@ -41,20 +41,20 @@ class SustainabilityExcerptService extends OrganizationAccessToken implements Po
 
     public function __construct(private readonly ModuleStatusResolver $modules) {}
 
-    public function publish(Organization $organization, ?SustainabilityReportSnapshot $snapshot, bool $withTargets): void {
+    public function publish(Organization $organization, ?SustainabilityReportSnapshot $snapshot, bool $withTargets, ?string $statement = null): void {
         $settings = (array) ($organization->settings ?? []);
-        $settings[self::PUBLISH_KEY] = ['snapshot_id' => $snapshot?->id, 'targets' => $withTargets];
+        $settings[self::PUBLISH_KEY] = ['snapshot_id' => $snapshot?->id, 'targets' => $withTargets, 'statement' => $statement];
         $organization->forceFill(['settings' => $settings])->save();
     }
 
-    /** @return array{snapshot_id: ?int, targets: bool} */
+    /** @return array{snapshot_id: ?int, targets: bool, statement: ?string} */
     public function publication(Organization $organization): array {
         $raw = (array) data_get($organization->settings, self::PUBLISH_KEY, []);
 
-        return ['snapshot_id' => isset($raw['snapshot_id']) ? (int) $raw['snapshot_id'] : null, 'targets' => (bool) ($raw['targets'] ?? false)];
+        return ['snapshot_id' => isset($raw['snapshot_id']) ? (int) $raw['snapshot_id'] : null, 'targets' => (bool) ($raw['targets'] ?? false), 'statement' => isset($raw['statement']) && $raw['statement'] !== '' ? (string) $raw['statement'] : null];
     }
 
-    /** @return array{snapshot: SustainabilityReportSnapshot, targets: list<SustainabilityTarget>}|null */
+    /** @return array{snapshot: SustainabilityReportSnapshot, targets: list<SustainabilityTarget>, statement: ?string, offsets: list<\App\Models\Sustainability\SustainabilityOffset>}|null */
     public function excerpt(Organization $organization): ?array {
         if (! $this->modules->isActiveFor($organization, 'module.sustainability')) {
             return null;
@@ -72,6 +72,10 @@ class SustainabilityExcerptService extends OrganizationAccessToken implements Po
             return [
                 'snapshot' => $snapshot,
                 'targets' => $publication['targets'] ? array_values(SustainabilityTarget::query()->where('organization_id', $organization->id)->orderBy('target_year')->get()->all()) : [],
+                'statement' => $publication['statement'],
+                // Nachweise (MVP-961) des Berichtszeitraums, getrennt ausgewiesen.
+                'offsets' => array_values(\App\Models\Sustainability\SustainabilityOffset::query()->where('organization_id', $organization->id)
+                    ->whereBetween('claim_year', [(int) $snapshot->period_start->year, (int) $snapshot->period_end->year])->orderBy('claim_year')->get()->all()),
             ];
         });
     }

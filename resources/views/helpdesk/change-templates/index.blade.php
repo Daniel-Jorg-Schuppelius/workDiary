@@ -16,10 +16,9 @@
 @section('nav-title', __('Change-Vorlagen'))
 
 @section('content')
-    <x-index-page :subtitle="__('Vorlagen für Standard-Changes — nur freigegebene Vorlagen sind nutzbar; Änderungen erhöhen die Version und ziehen die Freigabe zurück.')">
+    <x-index-page :subtitle="__('Vorlagen für Standard-Changes — nur freigegebene Vorlagen sind nutzbar; Änderungen erhöhen die Version und ziehen die Freigabe zurück.')"
+                  back-route="servicedesk.changes.index" :back-label="__('Changes')">
         <x-slot:actions>
-            <x-icon-btn icon="arrow_back" size="sm" :href="route('servicedesk.changes.index')"
-                        show-label>{{ __('Changes') }}</x-icon-btn>
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger
                         :href="route('servicedesk.change-templates.create')"

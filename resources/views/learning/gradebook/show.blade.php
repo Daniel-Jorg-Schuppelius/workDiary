@@ -24,12 +24,11 @@
                 <x-icon-btn icon="download" tone="outline" size="sm"
                             :href="route('learning.courses.gradebook.csv', $course)"
                             show-label>{{ __('learning.action.export_csv') }}</x-icon-btn>
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                            :href="route('learning.courses.show', $course)"
-                            show-label>{{ __('learning.action.back') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    @include('learning.courses._tabs')
 
     @if ($components->isEmpty())
         <div class="alert alert-info mb-4 text-sm" role="status">

@@ -19,12 +19,9 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar :back="route('agile.reports.flow', $project)" :back-label="__('Zum Fluss-Bericht')">
             <x-slot:title>{{ $title }}</x-slot:title>
             <x-slot:subtitle>{{ $project->name }}</x-slot:subtitle>
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('agile.reports.flow', $project)" show-label>{{ __('Zum Fluss-Bericht') }}</x-icon-btn>
-            </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 

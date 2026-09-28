@@ -247,6 +247,12 @@ return [
         'released' => 'Retenue libérée',
         'removed' => 'Retenue supprimée',
     ],
+    'tenantPlanRequest' => [
+        'created' => 'Changement d’offre demandé',
+        'withdrawn' => 'Demande d’offre retirée',
+        'done' => 'Demande d’offre traitée',
+        'declined' => 'Demande d’offre refusée',
+    ],
     'contract' => [
         'indexationProposed' => 'Indexation proposée',
         'indexationApplied' => 'Indexation appliquée',
@@ -294,6 +300,8 @@ return [
     ],
     'created' => 'Créé',
     'crisis' => [
+        'mapPointAdded' => 'Point ajouté',
+        'mapPointRemoved' => 'Point supprimé',
         'activated' => 'Cas de crise activé',
         'alert_acknowledged' => 'Alerte de crise acquittée',
         'alert_escalated' => 'Alerte de crise escaladée',
@@ -632,6 +640,7 @@ return [
     'orgamax_payment_requested' => 'Paiement orgaMAX demandé',
     'orgamax_scopes_missing' => 'Autorisations orgaMAX manquantes',
     'organization' => [
+        'billingContactUpdated' => 'Données de facturation modifiées',
         'maintenance_toggled' => 'Mode maintenance basculé',
     ],
     'overtime' => [
@@ -734,6 +743,7 @@ return [
         'mailed' => 'Confirmation de commande envoyée par e-mail',
     ],
     'purchase_order' => [
+        'confirmed' => 'Confirmation de commande importée',
         'mailed' => 'Bon de commande envoyé par e-mail',
     ],
     'delivery_note' => [
@@ -933,6 +943,8 @@ return [
         'test' => 'Test de support',
     ],
     'sustainability' => [
+        'offsetRecorded' => 'Justificatif climat saisi',
+        'offsetRemoved' => 'Justificatif climat supprimé',
         'assessment_drafted' => 'Brouillon d\'évaluation ESG créé',
         'assessment_finalized' => 'Évaluation ESG finalisée',
         'assessment_versioned' => 'Version d\'évaluation ESG créée',

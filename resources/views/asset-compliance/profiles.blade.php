@@ -13,6 +13,8 @@
 
 @section('content')
 <x-index-page :subtitle="__('Prüfprofile als Katalogdaten (P1): globale Vorlagen + Organisations-Overrides; Zuweisung erzeugt Prüfpflichten mit Fälligkeit und Sperrwirkung.')">
+
+    @include('asset-compliance._tabs')
     <x-validation-errors />
 
     @foreach ($profiles as $profile)

@@ -29,12 +29,8 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$unit->title"
                         :badge="$package->version"
-                        badgeTone="neutral">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                            :href="route('learning.my.show', $enrollment->sqid)"
-                            show-label>{{ __('learning.action.back') }}</x-icon-btn>
-            </x-slot:actions>
+                        badgeTone="neutral"
+                        :back="route('learning.my.show', $enrollment->sqid)" :back-label="__('learning.action.back')">
         </x-page-toolbar>
     </x-slot:toolbar>
 

@@ -54,21 +54,12 @@
             <span class="font-normal text-muted">({{ $panelSubmissions->count() }})</span>
         </h2>
         @if ($panelActiveTemplates->isNotEmpty())
-            <div class="dropdown dropdown-end">
-                <x-icon-btn icon="edit_note" tone="primary" size="sm" type="button" tabindex="0" show-label>
-                    {{ __('form.action.fill') }}
-                </x-icon-btn>
-                <ul tabindex="0" class="dropdown-content menu z-30 mt-1 w-64 rounded-box border border-base-300 bg-base-100 p-2 shadow">
-                    @foreach ($panelActiveTemplates as $panelTemplate)
-                        <li>
-                            <a data-entry-modal-trigger
-                               href="{{ route('form-submissions.create', ['template' => $panelTemplate->sqid, 'subject_kind' => $subjectKind, 'subject_id' => $panelSubjectSqid]) }}">
-                                {{ $panelTemplate->name }}
-                            </a>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
+            <x-action-menu icon="edit_note" tone="primary" :label="__('form.action.fill')">
+                @foreach ($panelActiveTemplates as $panelTemplate)
+                    <x-button tone="ghost" data-entry-modal-trigger
+                              :href="route('form-submissions.create', ['template' => $panelTemplate->sqid, 'subject_kind' => $subjectKind, 'subject_id' => $panelSubjectSqid])">{{ $panelTemplate->name }}</x-button>
+                @endforeach
+            </x-action-menu>
         @endif
     </div>
 

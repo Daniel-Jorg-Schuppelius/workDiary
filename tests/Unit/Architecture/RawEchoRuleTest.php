@@ -45,6 +45,7 @@ class RawEchoRuleTest extends TestCase {
         // Bewusst sanierte bzw. maschinell erzeugte Inhalte
         'resources/views/chat/_message.blade.php' => 'ChatText::render() saniert den Text (SafeHtml-Grenze).',
         'resources/views/help/center/show.blade.php' => 'Hilfetexte werden beim Speichern saniert.',
+        'resources/views/customer/help/show.blade.php' => 'Hilfetexte werden beim Speichern saniert (dieselben Topics wie das Hilfecenter).',
         'resources/views/mail/invoice.blade.php' => 'Vom Dokument-Renderer erzeugtes Mail-HTML.',
         'resources/views/mail/document.blade.php' => 'Vom Dokument-Renderer erzeugtes Mail-HTML.',
         'resources/views/account/two-factor.blade.php' => 'QR-SVG aus der eigenen TOTP-Bibliothek.',

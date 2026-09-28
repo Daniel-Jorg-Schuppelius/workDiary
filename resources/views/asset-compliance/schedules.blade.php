@@ -18,6 +18,8 @@
             <x-icon-btn icon="route" tone="ghost" size="sm" :href="route('asset-compliance.tours.index')" show-label>{{ __('inspection_tour.title') }}</x-icon-btn>
         @endcan
     </x-slot:actions>
+
+    @include('asset-compliance._tabs')
     <x-validation-errors />
 
     <x-filter-bar :action="route('asset-compliance.schedules.index')" :reset="route('asset-compliance.schedules.index')">

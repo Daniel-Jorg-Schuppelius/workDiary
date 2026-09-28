@@ -17,12 +17,8 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$enrollment->course?->title"
-                        :badge="__('learning.field.attempt') . ' ' . $attempt->attempt_no">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                            :href="route('learning.my.show', $enrollment)"
-                            show-label>{{ __('learning.action.back') }}</x-icon-btn>
-            </x-slot:actions>
+                        :badge="__('learning.field.attempt') . ' ' . $attempt->attempt_no"
+                        :back="route('learning.my.show', $enrollment)" :back-label="__('learning.action.back')">
         </x-page-toolbar>
     </x-slot:toolbar>
 

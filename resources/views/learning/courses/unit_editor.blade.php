@@ -17,12 +17,8 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="$course->title" :badge="$unit->kind->label()" badgeTone="info">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                            :href="route('learning.courses.show', $course)"
-                            show-label>{{ __('learning.action.back_to_course') }}</x-icon-btn>
-            </x-slot:actions>
+        <x-page-toolbar :subtitle="$course->title" :badge="$unit->kind->label()" badgeTone="info"
+                        :back="route('learning.courses.show', $course)" :back-label="__('learning.action.back_to_course')">
         </x-page-toolbar>
     </x-slot:toolbar>
 

@@ -17,7 +17,8 @@
         <x-slot:toolbar>
             <x-page-toolbar :subtitle="$building->site
                 ? __('Gebäude am Standort :site.', ['site' => $building->site->name])
-                : __('Gebäude ohne Standortbindung.')">
+                : __('Gebäude ohne Standortbindung.')"
+                            back-route="buildings.index" :back-label="__('Zurück')">
                 <x-slot:actions>
                     <x-icon-btn icon="edit" size="sm"
                                 data-entry-modal-trigger
@@ -28,9 +29,6 @@
                                     :href="route('sites.show', $building->site)"
                                     show-label>{{ __('Standort') }}</x-icon-btn>
                     @endif
-                    <x-icon-btn icon="arrow_back" size="sm"
-                                :href="route('buildings.index')"
-                                show-label>{{ __('Zurück') }}</x-icon-btn>
                 </x-slot:actions>
             </x-page-toolbar>
         </x-slot:toolbar>

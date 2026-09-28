@@ -19,7 +19,8 @@
     <x-page-shell>
         <x-slot:toolbar>
             <x-page-toolbar :subtitle="$fixedAsset->name"
-                            :badge="$fixedAsset->status->label()" :badgeTone="$fixedAsset->status->tone()">
+                            :badge="$fixedAsset->status->label()" :badgeTone="$fixedAsset->status->tone()"
+                            back-route="finance.accounting.fixed-assets.index" :back-label="__('Zurück')">
                 <x-slot:actions>
                     @if ($canConfigure && ! $fixedAsset->isDisposed())
                         <x-icon-btn icon="edit" tone="outline" size="sm"
@@ -31,9 +32,6 @@
                                     :href="route('finance.accounting.fixed-assets.dispose-form', $fixedAsset)"
                                     show-label>{{ __('accounting.fixed_assets.action.dispose') }}</x-icon-btn>
                     @endif
-                    <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                                :href="route('finance.accounting.fixed-assets.index')"
-                                show-label>{{ __('Zurück') }}</x-icon-btn>
                 </x-slot:actions>
             </x-page-toolbar>
         </x-slot:toolbar>

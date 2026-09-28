@@ -22,14 +22,14 @@
     <x-validation-errors />
 
     <x-slot:toolbar>
-        <x-page-toolbar :title="$program->name">
+        <x-page-toolbar :title="$program->name"
+                        back-route="investments.programs.index" :back-label="__('investment.program.title')">
             <div class="flex flex-wrap items-center gap-2 text-sm">
                 <x-status-badge size="md" outline>{{ $program->status->label() }}</x-status-badge>
                 <span class="badge badge-outline">{{ $program->starts_year }}–{{ $program->ends_year }}</span>
                 <span class="badge badge-outline">{{ $program->currency->value }}</span>
             </div>
             <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('investments.programs.index')" :label="__('investment.program.title')" />
                 @if ($canManage)
                     <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('investments.programs.edit', $program)" show-label>{{ __('investment.program.edit') }}</x-icon-btn>
                     @foreach ($program->status->allowedTransitions() as $target)

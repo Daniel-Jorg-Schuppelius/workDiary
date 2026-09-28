@@ -15,12 +15,13 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('club.fees.subtitle.collections')">
             <x-slot:actions>
-                <x-icon-btn icon="receipt_long" tone="outline" size="sm" :href="route('club.fees.claims.index')" show-label>{{ __('club.fees.title.claims') }}</x-icon-btn>
                 <x-icon-btn icon="account_balance" tone="ghost" size="sm" :href="route('finance.mandates.index')" show-label>{{ __('club.fees.action.manage_mandates') }}</x-icon-btn>
                 <x-help-button topic="club.fees" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    @include('club.fees._tabs')
 
     @if ($errors->any())
         <div class="alert alert-error text-sm" role="alert">

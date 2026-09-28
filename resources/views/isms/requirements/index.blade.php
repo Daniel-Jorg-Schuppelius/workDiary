@@ -29,12 +29,14 @@
             {{-- Direkt-Exporte (Feature 044, MVP 1): SoA-Stand des gewählten Scopes; „versioniert" leistet das Auditpaket.
                  Ohne Geltungsbereich gibt es nichts zu exportieren (Export antwortet 404). --}}
             @if ($scope !== null)
-                <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('isms.requirements.export', ['scope' => $scope->sqid, 'format' => 'json'])"
-                            show-label>{{ __('isms.action.export_json') }}</x-icon-btn>
-                <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('isms.requirements.export', ['scope' => $scope->sqid, 'format' => 'csv'])"
-                            show-label>{{ __('isms.action.export_csv') }}</x-icon-btn>
+                <x-action-menu icon="download" tone="outline" :label="__('Export')">
+                    <x-icon-btn icon="download" tone="outline" size="sm"
+                                :href="route('isms.requirements.export', ['scope' => $scope->sqid, 'format' => 'json'])"
+                                show-label>{{ __('isms.action.export_json') }}</x-icon-btn>
+                    <x-icon-btn icon="download" tone="outline" size="sm"
+                                :href="route('isms.requirements.export', ['scope' => $scope->sqid, 'format' => 'csv'])"
+                                show-label>{{ __('isms.action.export_csv') }}</x-icon-btn>
+                </x-action-menu>
             @endif
             <x-icon-btn icon="rule_folder" tone="outline" size="sm"
                         data-entry-modal-trigger
@@ -59,7 +61,7 @@
                             <option value="{{ $profile['key'] }}">{{ $profile['label'] }} ({{ $profile['requirements_count'] }})</option>
                         @endforeach
                     </select>
-                    <x-icon-btn icon="library_add" tone="outline" size="sm" type="submit"
+                    <x-icon-btn placement="menu" icon="library_add" tone="outline" size="sm" type="submit"
                                 show-label>{{ __('isms.action.import_catalog') }}</x-icon-btn>
                 </form>
                 {{-- OSCAL-Katalog-Upload (Nachtrag 044a): NIST/BSI-SdT-JSON mit Volltext. --}}
@@ -72,10 +74,10 @@
                     <input type="file" name="file" accept="application/json,.json"
                            class="file-input file-input-bordered file-input-sm max-w-56" required
                            aria-label="{{ __('OSCAL-Katalog (JSON)') }}">
-                    <x-icon-btn icon="upload_file" tone="outline" size="sm" type="submit"
+                    <x-icon-btn placement="menu" icon="upload_file" tone="outline" size="sm" type="submit"
                                 show-label>{{ __('OSCAL importieren') }}</x-icon-btn>
                 </form>
-                <x-icon-btn icon="add" tone="primary" size="sm"
+                <x-icon-btn placement="bar" icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
                             :href="route('isms.requirements.create')"
                             show-label>{{ __('isms.action.create_requirement') }}</x-icon-btn>

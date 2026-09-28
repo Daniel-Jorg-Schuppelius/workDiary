@@ -32,7 +32,7 @@
                   data-confirm-label="{{ __('notification.action.delete_read') }}">
                 @csrf
                 @method('DELETE')
-                <x-icon-btn icon="delete_sweep" tone="error" size="sm" type="submit" show-label>
+                <x-icon-btn placement="danger" icon="delete_sweep" tone="error" size="sm" type="submit" show-label>
                     {{ __('notification.action.delete_read') }}
                 </x-icon-btn>
             </form>

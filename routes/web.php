@@ -1061,6 +1061,11 @@ Route::middleware('auth')->group(function () {
 
         // Lizenz-Admin (MVP-047)
         Route::get('admin/license', [LicenseAdminController::class, 'index'])->name('admin.license.index');
+        // Rechnungsdaten und Tarifanfrage des Mandanten (MVP-957).
+        Route::get('admin/abrechnungsdaten', [\App\Http\Controllers\Admin\BillingProfileController::class, 'show'])->name('admin.billing-profile.show');
+        Route::put('admin/abrechnungsdaten', [\App\Http\Controllers\Admin\BillingProfileController::class, 'update'])->name('admin.billing-profile.update');
+        Route::post('admin/abrechnungsdaten/tarifanfrage', [\App\Http\Controllers\Admin\BillingProfileController::class, 'requestPlan'])->name('admin.billing-profile.plan-request');
+        Route::post('admin/abrechnungsdaten/tarifanfrage/{planRequest}/zurueckziehen', [\App\Http\Controllers\Admin\BillingProfileController::class, 'withdraw'])->name('admin.billing-profile.withdraw');
         Route::post('admin/license/flags/{flag}/toggle', [LicenseAdminController::class, 'toggleFlag'])
             ->where('flag', '[A-Za-z0-9._-]+')
             ->name('admin.license.flags.toggle');
@@ -1503,6 +1508,9 @@ Route::middleware('auth')->group(function () {
         Route::post('articles/{article}/retire', [\App\Http\Controllers\Article\ArticleController::class, 'retire'])->name('articles.retire');
         // Nachkalkulation je Artikel (Feature 047, MVP-715): Reiter der Detailseite, CSV via ?export=csv.
         Route::get('articles/{article}/nachkalkulation', [\App\Http\Controllers\Manufacturing\ArticleCostingController::class, 'index'])->name('articles.costing');
+        // CO₂-Fußabdruck je Stück (MVP-960).
+        Route::get('articles/{article}/co2-fussabdruck', [\App\Http\Controllers\Manufacturing\ArticleFootprintController::class, 'show'])->name('articles.footprint');
+        Route::put('articles/{article}/co2-fussabdruck', [\App\Http\Controllers\Manufacturing\ArticleFootprintController::class, 'update'])->name('articles.footprint.update');
         Route::post('articles/{article}/supplies/{supply}/prefer', [\App\Http\Controllers\Article\ArticleController::class, 'setPreferredSupply'])->name('articles.supplies.prefer'); // Feature 050 Lieferantenvergleich
         Route::post('articles/{article}/tiers', [\App\Http\Controllers\Article\ArticleController::class, 'storeTier'])->name('articles.tiers.store'); // Feature 107, MVP-605
         Route::delete('articles/{article}/tiers/{tier}', [\App\Http\Controllers\Article\ArticleController::class, 'destroyTier'])->name('articles.tiers.destroy');
@@ -1640,6 +1648,7 @@ Route::middleware('auth')->group(function () {
         Route::post('purchase-orders/{purchaseOrder}/receive', [\App\Http\Controllers\Procurement\PurchaseOrderController::class, 'receive'])->name('purchase-orders.receive');
         Route::post('purchase-orders/{purchaseOrder}/advices', [\App\Http\Controllers\Procurement\PurchaseOrderController::class, 'announceAdvice'])->name('purchase-orders.advices.announce'); // E4 Lieferavis
         Route::post('purchase-orders/{purchaseOrder}/advices/import', [\App\Http\Controllers\Procurement\PurchaseOrderController::class, 'importAdvice'])->name('purchase-orders.advices.import'); // E4 Lieferschein-Import (Despatch Advice)
+        Route::post('purchase-orders/{purchaseOrder}/confirmation/import', [\App\Http\Controllers\Procurement\PurchaseOrderController::class, 'importConfirmation'])->name('purchase-orders.confirmation.import'); // MVP-964 Auftragsbestätigung (openTRANS)
         Route::post('purchase-orders/{purchaseOrder}/reconcile-invoice', [\App\Http\Controllers\Procurement\PurchaseOrderController::class, 'reconcileInvoice'])->name('purchase-orders.reconcile-invoice'); // UGL-Rechnungsabgleich
         Route::post('purchase-orders/advices/{advice}/receive', [\App\Http\Controllers\Procurement\PurchaseOrderController::class, 'receiveAdvice'])->name('purchase-orders.advices.receive');
         Route::post('purchase-orders/advices/{advice}/cancel', [\App\Http\Controllers\Procurement\PurchaseOrderController::class, 'cancelAdvice'])->name('purchase-orders.advices.cancel');
@@ -2607,6 +2616,11 @@ Route::middleware('auth')->group(function () {
             Route::put('standorte/{site}', [\App\Http\Controllers\Sustainability\SustainabilitySiteController::class, 'update'])->name('sites.update');
             // Nachhaltigkeitsauszug (MVP-930)
             Route::get('auszug', [\App\Http\Controllers\Sustainability\SustainabilityExcerptController::class, 'edit'])->name('excerpt.edit');
+            // Klimanachweise und Prüfung von Umweltaussagen (MVP-961).
+            Route::get('nachweise', [\App\Http\Controllers\Sustainability\SustainabilityOffsetController::class, 'index'])->name('offsets.index');
+            Route::post('nachweise', [\App\Http\Controllers\Sustainability\SustainabilityOffsetController::class, 'store'])->name('offsets.store');
+            Route::delete('nachweise/{offset}', [\App\Http\Controllers\Sustainability\SustainabilityOffsetController::class, 'destroy'])->name('offsets.destroy');
+            Route::post('aussagen-pruefen', [\App\Http\Controllers\Sustainability\SustainabilityOffsetController::class, 'checkClaims'])->name('claims.check');
             Route::put('auszug', [\App\Http\Controllers\Sustainability\SustainabilityExcerptController::class, 'publish'])->name('excerpt.publish');
             Route::post('auszug/token', [\App\Http\Controllers\Sustainability\SustainabilityExcerptController::class, 'rotate'])->name('excerpt.rotate');
             Route::delete('auszug/token', [\App\Http\Controllers\Sustainability\SustainabilityExcerptController::class, 'revoke'])->name('excerpt.revoke');
@@ -2688,6 +2702,10 @@ Route::middleware('auth')->group(function () {
             Route::post('{case}/bcm/aus-bia', [\App\Http\Controllers\Crisis\CrisisBiaController::class, 'adopt'])->name('bcm.adopt'); // MVP-943
             Route::put('{case}/bcm/{impact}', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'updateContinuityImpact'])->name('bcm.update');
             Route::post('{case}/verknuepfungen', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'addLink'])->name('links.store');
+            // Krisenraum (MVP-963).
+            Route::post('{case}/raum/anwesenheit', [\App\Http\Controllers\Crisis\CrisisRoomController::class, 'heartbeat'])->name('room.heartbeat');
+            Route::post('{case}/raum/lagepunkte', [\App\Http\Controllers\Crisis\CrisisRoomController::class, 'storePoint'])->name('room.points.store');
+            Route::delete('raum/lagepunkte/{point}', [\App\Http\Controllers\Crisis\CrisisRoomController::class, 'destroyPoint'])->name('room.points.destroy');
             Route::post('{case}/nachbereitung', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'storeReview'])->name('review.store');
         });
 
@@ -4843,6 +4861,11 @@ Route::middleware('auth')->group(function () {
 
         // Nutzung je Mandant und Branchenvergleich (MVP-951/949), nur Plattformbetrieb — vor der Ressource.
         Route::get('admin/organizations/nutzung', [\App\Http\Controllers\Platform\TenantUsageController::class, 'index'])->name('admin.organizations.usage');
+        // Nutzungsabrechnung und Tarifanfragen (MVP-956/957), nur Plattformbetrieb.
+        Route::get('admin/organizations/abrechnung', [\App\Http\Controllers\Platform\TenantUsageController::class, 'billing'])->name('admin.organizations.billing');
+        Route::post('admin/organizations/tarifanfragen/{planRequest}', [\App\Http\Controllers\Platform\TenantUsageController::class, 'decidePlanRequest'])->name('admin.organizations.plan-requests.decide');
+        // UI-Bausteine (MVP-958).
+        Route::get('admin/ui-bausteine', [\App\Http\Controllers\Platform\UiPatternController::class, 'index'])->name('admin.ui-patterns.index');
         Route::get('admin/organizations/branchenvergleich', [\App\Http\Controllers\Sustainability\BranchBenchmarkController::class, 'index'])->name('admin.organizations.branch-benchmark');
         Route::resource('admin/organizations', OrganizationController::class)
             ->except(['show'])

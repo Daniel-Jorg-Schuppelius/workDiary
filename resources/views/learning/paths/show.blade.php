@@ -16,11 +16,9 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="$path->code">
+        <x-page-toolbar :subtitle="$path->code"
+                        back-route="learning.paths.index" :back-label="__('learning.action.back')">
             <x-slot:actions>
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                            :href="route('learning.paths.index')"
-                            show-label>{{ __('learning.action.back') }}</x-icon-btn>
                 <x-collection-add-button :item="$path" />
             </x-slot:actions>
         </x-page-toolbar>

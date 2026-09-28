@@ -13,13 +13,13 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="$member->fullName() . ' · ' . $member->displayNo()">
+        <x-page-toolbar :subtitle="$member->fullName() . ' · ' . $member->displayNo()"
+                        :back="route('club.members.show', $member)" :back-label="__('club.action.back')">
             <x-slot:actions>
                 @if ($canManage)
                     <x-icon-btn icon="workspace_premium" tone="primary" size="sm" data-entry-modal-trigger :href="route('club.members.grades.create', $member)" show-label>{{ __('club.grading.action.recognize') }}</x-icon-btn>
                     <x-icon-btn icon="task" tone="outline" size="sm" data-entry-modal-trigger :href="route('club.members.proofs.create', $member)" show-label>{{ __('club.grading.action.add_proof') }}</x-icon-btn>
                 @endif
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('club.members.show', $member)" show-label>{{ __('club.action.back') }}</x-icon-btn>
                 <x-help-button topic="club.grading" />
             </x-slot:actions>
         </x-page-toolbar>

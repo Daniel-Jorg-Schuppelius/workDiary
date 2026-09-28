@@ -11,10 +11,8 @@
 @section('nav-title', __('Schichtplan Import'))
 
 @section('content')
-<x-index-page :subtitle="__('Externe Schichtplan-Dateien importieren und Mitarbeiter zuordnen.')">
-    <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('schedule.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
-    </x-slot:actions>
+<x-index-page :subtitle="__('Externe Schichtplan-Dateien importieren und Mitarbeiter zuordnen.')"
+              back-route="schedule.index" :back-label="__('Zurück')">
 
     <x-card :title="__('CSV oder Excel-Datei hochladen')" :subtitle="__('Unterstützte Formate: .csv (Semikolon-getrennt), .xlsx, .xls') . ' · ' . __('Die erste Zeile muss Spaltenköpfe enthalten.')">
             <form method="POST" action="{{ route('schedule.import.preview') }}" enctype="multipart/form-data">

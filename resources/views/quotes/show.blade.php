@@ -50,20 +50,16 @@
                                 show-label>{{ __('Per E-Mail senden') }}</x-icon-btn>
                 @endif
                 @if (in_array($quote->status, ['accepted', 'partially_accepted'], true))
-                    <x-icon-btn icon="assignment_turned_in" tone="ghost" size="sm"
-                                :href="route('quotes.order-confirmation', $quote)"
-                                show-label>{{ __('Auftragsbestätigung (PDF)') }}</x-icon-btn>
-                    <x-icon-btn icon="forward_to_inbox" tone="ghost" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('quotes.order-confirmation.mail.form', $quote)"
-                                show-label>{{ __('AB per E-Mail') }}</x-icon-btn>
+                    <x-action-menu icon="assignment_turned_in" :label="__('Auftragsbestätigung')">
+                        <x-icon-btn icon="picture_as_pdf" size="sm"
+                                    :href="route('quotes.order-confirmation', $quote)"
+                                    show-label>{{ __('Auftragsbestätigung (PDF)') }}</x-icon-btn>
+                        <x-icon-btn icon="forward_to_inbox" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('quotes.order-confirmation.mail.form', $quote)"
+                                    show-label>{{ __('AB per E-Mail') }}</x-icon-btn>
+                    </x-action-menu>
                 @endif
-                @can('update', $quote)
-                    <x-icon-btn icon="add" tone="primary" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('quotes.items.create', $quote)"
-                                show-label>{{ __('Position hinzufügen') }}</x-icon-btn>
-                @endcan
                 @can('approve', $quote)
                     <x-action-form :action="route('quotes.approve', $quote)">
                         <x-icon-btn icon="verified" tone="info" size="sm" type="submit" show-label>{{ __('Freigeben') }}</x-icon-btn>
@@ -75,13 +71,13 @@
                           confirm-icon="send"
                           confirm-tone="primary"
                           :confirm-label="__('Versenden')">
-                        <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Versenden') }}</x-icon-btn>
+                        <x-icon-btn icon="send" tone="primary" size="sm" type="submit" placement="bar" show-label>{{ __('Versenden') }}</x-icon-btn>
                     </x-action-form>
                 @endcan
                 @if (in_array($quote->status, ['sent', 'rejected', 'expired'], true))
                     @can('decide', $quote)
                         <x-action-form :action="route('quotes.new-version', $quote)">
-                            <x-icon-btn icon="difference" tone="info" size="sm" type="submit" show-label>{{ __('Neue Version') }}</x-icon-btn>
+                            <x-icon-btn icon="difference" tone="info" size="sm" type="submit" placement="menu" show-label>{{ __('Neue Version') }}</x-icon-btn>
                         </x-action-form>
                     @endcan
                 @endif
@@ -91,7 +87,7 @@
                           confirm-icon="receipt_long"
                           confirm-tone="primary"
                           :confirm-label="__('Überführen')">
-                        <x-icon-btn icon="receipt_long" tone="primary" size="sm" type="submit" show-label>{{ __('In Rechnung überführen') }}</x-icon-btn>
+                        <x-icon-btn icon="receipt_long" tone="primary" size="sm" type="submit" placement="bar" show-label>{{ __('In Rechnung überführen') }}</x-icon-btn>
                     </x-action-form>
                 @endcan
                 @can('delete', $quote)
@@ -100,7 +96,7 @@
                           confirm-icon="delete"
                           confirm-tone="error"
                           :confirm-label="__('Löschen')">
-                        <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
+                        <x-icon-btn icon="delete" tone="error" size="sm" type="submit" placement="danger" show-label>{{ __('Löschen') }}</x-icon-btn>
                     </x-action-form>
                 @endcan
             </x-slot:actions>
@@ -144,97 +140,108 @@
     @endphp
     @include('ai._learn_prompt')
 
-    <x-table>
-        <x-slot:head>
-            <tr>
-                <th>#</th>
-                <th>{{ __('Beschreibung') }}</th>
-                <th class="text-right">{{ __('Menge') }}</th>
-                <th class="text-right">{{ __('Einzelpreis') }}</th>
-                <th class="text-right">{{ __('USt %') }}</th>
-                <th>{{ __('Art') }}</th>
-                @if ($quote->decided_at !== null)<th>{{ __('Annahme') }}</th>@endif
-                @can('update', $quote)<th class="text-right">{{ __('Aktionen') }}</th>@endcan
-            </tr>
-        </x-slot:head>
-        <x-slot:foot>
-            <tr><td colspan="4" class="text-right">{{ __('Zwischensumme') }}</td><td class="text-right" colspan="3">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($quote->subtotal?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} EUR</td></tr>
-            <tr><td colspan="4" class="text-right">{{ __('USt.') }}</td><td class="text-right" colspan="3">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($quote->tax_amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} EUR</td></tr>
-            <tr><td colspan="4" class="text-right font-bold">{{ __('Gesamt') }}</td><td class="text-right font-bold" colspan="3">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($quote->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} EUR</td></tr>
-        </x-slot:foot>
-        @forelse ($quote->items as $item)
-            <tr>
-                <td>{{ $item->position }}</td>
-                <td>{{ $item->description }}@if ($item->article) <span class="badge badge-ghost badge-xs" title="{{ __('Artikel') }}">{{ $item->article->number ?: $item->article->name }}</span>@endif</td>
-                <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, 2, withThousandsSeparator: true) }} {{ $item->unit }}</td>
-                <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->unit_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} EUR</td>
-                <td class="text-right">{{ $item->tax_rate !== null ? rtrim(rtrim($item->tax_rate?->getNumericValue() ?? '0', '0'), '.') : '—' }}</td>
-                <td>{{ $item->optional ? __('Option') : __('Pflicht') }}</td>
-                @if ($quote->decided_at !== null)
-                    <td>{{ $item->accepted === null ? '—' : ($item->accepted ? __('angenommen') : __('nicht angenommen')) }}</td>
+    {{-- Belegpositionen werden an der Tabelle angelegt, nicht im Seitenkopf (MVP-968). --}}
+    <x-card :title="__('Positionen')" padding="p-0">
+        @can('update', $quote)
+            <x-slot:actions>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('quotes.items.create', $quote)"
+                            show-label>{{ __('Position hinzufügen') }}</x-icon-btn>
+            </x-slot:actions>
+        @endcan
+        <x-table bare>
+            <x-slot:head>
+                <tr>
+                    <th>#</th>
+                    <th>{{ __('Beschreibung') }}</th>
+                    <th class="text-right">{{ __('Menge') }}</th>
+                    <th class="text-right">{{ __('Einzelpreis') }}</th>
+                    <th class="text-right">{{ __('USt %') }}</th>
+                    <th>{{ __('Art') }}</th>
+                    @if ($quote->decided_at !== null)<th>{{ __('Annahme') }}</th>@endif
+                    @can('update', $quote)<th class="text-right">{{ __('Aktionen') }}</th>@endcan
+                </tr>
+            </x-slot:head>
+            <x-slot:foot>
+                <tr><td colspan="4" class="text-right">{{ __('Zwischensumme') }}</td><td class="text-right" colspan="3">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($quote->subtotal?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} EUR</td></tr>
+                <tr><td colspan="4" class="text-right">{{ __('USt.') }}</td><td class="text-right" colspan="3">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($quote->tax_amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} EUR</td></tr>
+                <tr><td colspan="4" class="text-right font-bold">{{ __('Gesamt') }}</td><td class="text-right font-bold" colspan="3">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($quote->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} EUR</td></tr>
+            </x-slot:foot>
+            @forelse ($quote->items as $item)
+                <tr>
+                    <td>{{ $item->position }}</td>
+                    <td>{{ $item->description }}@if ($item->article) <span class="badge badge-ghost badge-xs" title="{{ __('Artikel') }}">{{ $item->article->number ?: $item->article->name }}</span>@endif</td>
+                    <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, 2, withThousandsSeparator: true) }} {{ $item->unit }}</td>
+                    <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->unit_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} EUR</td>
+                    <td class="text-right">{{ $item->tax_rate !== null ? rtrim(rtrim($item->tax_rate?->getNumericValue() ?? '0', '0'), '.') : '—' }}</td>
+                    <td>{{ $item->optional ? __('Option') : __('Pflicht') }}</td>
+                    @if ($quote->decided_at !== null)
+                        <td>{{ $item->accepted === null ? '—' : ($item->accepted ? __('angenommen') : __('nicht angenommen')) }}</td>
+                    @endif
+                    @can('update', $quote)
+                        <td class="text-right whitespace-nowrap">
+                            @if ($aiSuggestEnabled)
+                                <x-action-form :action="route('ai.suggestions.quote-item', [$quote, $item])">
+                                    <x-icon-btn icon="auto_awesome" size="xs" tone="info" type="submit" :title="__('ai.suggestion.suggest')" />
+                                </x-action-form>
+                            @endif
+                            @if ($aiTranslateEnabled)
+                                <x-action-form :action="route('ai.assist.quote-item-translate', [$quote, $item])">
+                                    <x-icon-btn icon="translate" size="xs" tone="info" type="submit" :title="__('ai.assist.translate_document')" />
+                                </x-action-form>
+                            @endif
+                            <x-icon-btn icon="edit" size="xs" tone="ghost"
+                                        data-entry-modal-trigger
+                                        :href="route('quotes.items.edit', [$quote, $item])"
+                                        :title="__('Bearbeiten')" />
+                            <x-action-form :action="route('quotes.items.destroy', [$quote, $item])" method="DELETE"
+                                  :confirm="__('Position wirklich entfernen?')"
+                                  confirm-icon="delete"
+                                  confirm-tone="error"
+                                  :confirm-label="__('Entfernen')">
+                                <x-icon-btn icon="delete" size="xs" tone="error" type="submit" :title="__('Entfernen')" />
+                            </x-action-form>
+                        </td>
+                    @endcan
+                </tr>
+                @if ($aiDraft && ($aiSuggestions[$item->id] ?? null) !== null)
+                    <tr data-ai-suggestion-row>
+                        <td colspan="{{ $aiColspan }}">
+                            <x-ai-suggestion
+                                :original="$aiSuggestions[$item->id]->original"
+                                :suggestion="$aiSuggestions[$item->id]->suggestion"
+                                :provider="$aiSuggestions[$item->id]->provider"
+                                :fallback="$aiSuggestions[$item->id]->fallback_used"
+                                :cached="$aiSuggestions[$item->id]->from_cache"
+                                :accept-action="route('ai.suggestions.accept', $aiSuggestions[$item->id])"
+                                :reject-action="route('ai.suggestions.reject', $aiSuggestions[$item->id])"
+                                field-name="text"
+                            />
+                        </td>
+                    </tr>
                 @endif
-                @can('update', $quote)
-                    <td class="text-right whitespace-nowrap">
-                        @if ($aiSuggestEnabled)
-                            <x-action-form :action="route('ai.suggestions.quote-item', [$quote, $item])">
-                                <x-icon-btn icon="auto_awesome" size="xs" tone="info" type="submit" :title="__('ai.suggestion.suggest')" />
-                            </x-action-form>
-                        @endif
-                        @if ($aiTranslateEnabled)
-                            <x-action-form :action="route('ai.assist.quote-item-translate', [$quote, $item])">
-                                <x-icon-btn icon="translate" size="xs" tone="info" type="submit" :title="__('ai.assist.translate_document')" />
-                            </x-action-form>
-                        @endif
-                        <x-icon-btn icon="edit" size="xs" tone="ghost"
-                                    data-entry-modal-trigger
-                                    :href="route('quotes.items.edit', [$quote, $item])"
-                                    :title="__('Bearbeiten')" />
-                        <x-action-form :action="route('quotes.items.destroy', [$quote, $item])" method="DELETE"
-                              :confirm="__('Position wirklich entfernen?')"
-                              confirm-icon="delete"
-                              confirm-tone="error"
-                              :confirm-label="__('Entfernen')">
-                            <x-icon-btn icon="delete" size="xs" tone="error" type="submit" :title="__('Entfernen')" />
-                        </x-action-form>
-                    </td>
-                @endcan
-            </tr>
-            @if ($aiDraft && ($aiSuggestions[$item->id] ?? null) !== null)
-                <tr data-ai-suggestion-row>
-                    <td colspan="{{ $aiColspan }}">
-                        <x-ai-suggestion
-                            :original="$aiSuggestions[$item->id]->original"
-                            :suggestion="$aiSuggestions[$item->id]->suggestion"
-                            :provider="$aiSuggestions[$item->id]->provider"
-                            :fallback="$aiSuggestions[$item->id]->fallback_used"
-                            :cached="$aiSuggestions[$item->id]->from_cache"
-                            :accept-action="route('ai.suggestions.accept', $aiSuggestions[$item->id])"
-                            :reject-action="route('ai.suggestions.reject', $aiSuggestions[$item->id])"
-                            field-name="text"
-                        />
-                    </td>
-                </tr>
-            @endif
-            @if ($aiDraft && ($aiTranslations[$item->id] ?? null) !== null)
-                <tr data-ai-translation-row>
-                    <td colspan="{{ $aiColspan }}">
-                        <x-ai-suggestion
-                            :original="$aiTranslations[$item->id]->original"
-                            :suggestion="$aiTranslations[$item->id]->suggestion"
-                            :provider="$aiTranslations[$item->id]->provider"
-                            :fallback="$aiTranslations[$item->id]->fallback_used"
-                            :cached="$aiTranslations[$item->id]->from_cache"
-                            :accept-action="route('ai.assist.accept', $aiTranslations[$item->id])"
-                            :reject-action="route('ai.assist.reject', $aiTranslations[$item->id])"
-                            field-name="text"
-                        />
-                    </td>
-                </tr>
-            @endif
-        @empty
-            <x-table.empty icon="request_quote" :colspan="6" :title="__('Keine Positionen.')" compact />
-        @endforelse
-    </x-table>
+                @if ($aiDraft && ($aiTranslations[$item->id] ?? null) !== null)
+                    <tr data-ai-translation-row>
+                        <td colspan="{{ $aiColspan }}">
+                            <x-ai-suggestion
+                                :original="$aiTranslations[$item->id]->original"
+                                :suggestion="$aiTranslations[$item->id]->suggestion"
+                                :provider="$aiTranslations[$item->id]->provider"
+                                :fallback="$aiTranslations[$item->id]->fallback_used"
+                                :cached="$aiTranslations[$item->id]->from_cache"
+                                :accept-action="route('ai.assist.accept', $aiTranslations[$item->id])"
+                                :reject-action="route('ai.assist.reject', $aiTranslations[$item->id])"
+                                field-name="text"
+                            />
+                        </td>
+                    </tr>
+                @endif
+            @empty
+                <x-table.empty icon="request_quote" :colspan="6" :title="__('Keine Positionen.')" compact />
+            @endforelse
+        </x-table>
+    </x-card>
 
     @if ($quote->terms)
         <x-card :title="__('Bedingungen / Leistungsumfang')">

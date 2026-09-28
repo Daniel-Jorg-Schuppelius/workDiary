@@ -106,16 +106,7 @@
                 <div class="px-3 pt-3 flex-none">
                     <x-bulk-toolbar :label="__('finance.dunning.bulk_selected')">
                         <x-slot:actions>
-                            <button type="submit"
-                                    formaction="{{ route('finance.dunning.run') }}"
-                                    class="btn btn-warning btn-sm"
-                                    data-confirm-dialog
-                                    data-confirm-message="{{ __('finance.dunning.bulk_confirm') }}"
-                                    data-confirm-icon="notification_important"
-                                    data-confirm-tone="warning"
-                                    data-confirm-label="{{ __('finance.dunning.bulk_action') }}">
-                                <x-icon name="notification_important" /> {{ __('finance.dunning.bulk_action') }}
-                            </button>
+                            <x-button type="submit" tone="warning" icon="notification_important" formaction="{{ route('finance.dunning.run') }}" data-confirm-dialog data-confirm-message="{{ __('finance.dunning.bulk_confirm') }}" data-confirm-icon="notification_important" data-confirm-tone="warning" data-confirm-label="{{ __('finance.dunning.bulk_action') }}">{{ __('finance.dunning.bulk_action') }}</x-button>
                         </x-slot:actions>
                     </x-bulk-toolbar>
                 </div>

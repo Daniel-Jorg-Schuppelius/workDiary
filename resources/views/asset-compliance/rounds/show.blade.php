@@ -21,9 +21,9 @@
 <x-page-shell gap="4">
     <x-slot:toolbar>
         <x-page-toolbar :title="$round->name" :badge="$round->status->label()" badgeTone="ghost"
-                        :subtitle="__('inspection_round.due_until') . ': ' . \App\Support\CarbonFmt::fdate($round->due_until)">
+                        :subtitle="__('inspection_round.due_until') . ': ' . \App\Support\CarbonFmt::fdate($round->due_until)"
+                        back-route="asset-compliance.rounds.index" :back-label="__('inspection_round.title')">
             <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('asset-compliance.rounds.index')" :label="__('inspection_round.title')" />
                 @if ($canInspect)
                     <x-action-form :action="route('asset-compliance.rounds.close', $round)" :confirm="__('inspection_round.confirm_close', ['missing' => $items->count() - $done])" confirm-icon="task_alt">
                         <x-icon-btn icon="task_alt" size="sm" type="submit" show-label>{{ __('inspection_round.close') }}</x-icon-btn>

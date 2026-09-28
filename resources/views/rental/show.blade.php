@@ -16,7 +16,8 @@
     <x-validation-errors />
 
     <x-slot:toolbar>
-        <x-page-toolbar :title="$case->number . ' — ' . ($case->customer->name ?? '')">
+        <x-page-toolbar :title="$case->number . ' — ' . ($case->customer->name ?? '')"
+                        back-route="rental.index" :back-label="__('Zur Liste')">
             <div class="flex flex-wrap items-center gap-2 text-sm">
                 <x-status-badge size="md" outline>{{ $case->status->label() }}</x-status-badge>
                 <span class="badge badge-outline">{{ $case->starts_at->fdatetime() }} – {{ $case->ends_at->fdatetime() }}</span>
@@ -31,21 +32,20 @@
                 @can('update', $case)
                     @if ($case->status === \App\Enums\Rental\RentalCaseStatus::Draft)
                         <form method="POST" action="{{ route('rental.reserve', $case) }}">@csrf
-                            <button type="submit" class="btn btn-sm btn-primary">{{ __('Reservieren') }}</button>
+                            <x-button type="submit" tone="primary">{{ __('Reservieren') }}</x-button>
                         </form>
                     @endif
                     @if ($case->status === \App\Enums\Rental\RentalCaseStatus::Returned)
                         <form method="POST" action="{{ route('rental.close', $case) }}">@csrf
-                            <button type="submit" class="btn btn-sm">{{ __('Abschließen') }}</button>
+                            <x-button type="submit" tone="ghost">{{ __('Abschließen') }}</x-button>
                         </form>
                     @endif
                     @if ($case->status->isOpen())
                         <form method="POST" action="{{ route('rental.cancel', $case) }}" data-confirm-dialog data-confirm-message="{{ __('Verleihakte wirklich stornieren?') }}" data-confirm-tone="error">@csrf
-                            <button type="submit" class="btn btn-sm btn-ghost text-error">{{ __('Stornieren') }}</button>
+                            <x-button type="submit" tone="ghost" class="text-error">{{ __('Stornieren') }}</x-button>
                         </form>
                     @endif
                 @endcan
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('rental.index')" show-label>{{ __('Zur Liste') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

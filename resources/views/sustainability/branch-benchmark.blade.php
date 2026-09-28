@@ -17,10 +17,8 @@
 @endphp
 
 @section('content')
-<x-index-page :subtitle="__('platform_usage.benchmark.subtitle')">
-    <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('admin.organizations.usage')" show-label>{{ __('platform_usage.title') }}</x-icon-btn>
-    </x-slot:actions>
+<x-index-page :subtitle="__('platform_usage.benchmark.subtitle')"
+              back-route="admin.organizations.usage" :back-label="__('platform_usage.title')">
     <x-card padding="p-0" :title="__('platform_usage.benchmark.title', ['year' => $year])">
         <x-table bare>
             <x-slot:head>

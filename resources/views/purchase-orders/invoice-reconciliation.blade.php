@@ -22,13 +22,8 @@
 @section('content')
 <x-page-shell gap="4">
     <x-slot:toolbar>
-        <x-page-toolbar :title="__('procurement.reconcile.title')" :subtitle="$order->number">
-            <x-slot:actions>
-                <a href="{{ route('purchase-orders.show', $order) }}" class="btn btn-sm btn-ghost gap-1">
-                    <span class="material-symbols-rounded text-base">arrow_back</span>{{ __('procurement.reconcile.back') }}
-                </a>
-            </x-slot:actions>
-        </x-page-toolbar>
+        <x-page-toolbar :title="__('procurement.reconcile.title')" :subtitle="$order->number"
+                        :back="route('purchase-orders.show', $order)" :back-label="__('procurement.reconcile.back')" />
     </x-slot:toolbar>
 
     {{-- Gesamtergebnis --}}

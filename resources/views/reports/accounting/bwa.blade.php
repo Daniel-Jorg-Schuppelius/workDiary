@@ -29,12 +29,14 @@
     @endphp
     <x-index-page overflow="clip" :subtitle="__('accounting.reports.period', ['from' => $from->fdate(), 'to' => $to->fdate()])">
         <x-slot:actions>
-            <x-icon-btn icon="download" size="sm" tone="ghost" show-label
-                        :href="route('reports.accounting.bwa', array_merge($query, ['export' => 'csv']))" :label="__('CSV')" />
-            <x-icon-btn icon="table_view" size="sm" tone="ghost" show-label
-                        :href="route('reports.accounting.bwa', array_merge($query, ['export' => 'xlsx']))" :label="__('Excel')" />
             <x-icon-btn icon="picture_as_pdf" size="sm" tone="ghost" show-label
                         :href="route('reports.accounting.bwa', array_merge($query, ['export' => 'pdf']))" :label="__('PDF')" />
+            <x-action-menu icon="download" :label="__('Export')">
+                <x-icon-btn icon="download" size="sm" tone="ghost" show-label
+                            :href="route('reports.accounting.bwa', array_merge($query, ['export' => 'csv']))" :label="__('CSV')" />
+                <x-icon-btn icon="table_view" size="sm" tone="ghost" show-label
+                            :href="route('reports.accounting.bwa', array_merge($query, ['export' => 'xlsx']))" :label="__('Excel')" />
+            </x-action-menu>
             <x-icon-btn icon="edit_calendar" size="sm" tone="ghost" show-label
                         :href="route('reports.accounting.budget.index')" :label="__('accounting.budget.title')" />
         </x-slot:actions>

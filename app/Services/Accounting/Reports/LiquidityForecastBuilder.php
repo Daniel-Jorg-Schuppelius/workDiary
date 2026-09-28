@@ -222,7 +222,7 @@ class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
             ];
         }
 
-        return [array_values($items), array_values(array_unique($sources))];
+        return [$items, array_values(array_unique($sources))];
     }
 
     /**

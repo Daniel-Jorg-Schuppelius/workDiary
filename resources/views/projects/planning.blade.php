@@ -14,12 +14,10 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :title="$project->name" :subtitle="__('Zeitstrahl der Aufgaben (Start – Deadline)')">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('projects.show', $project)" show-label>{{ __('Zum Auftrag') }}</x-icon-btn>
-            </x-slot:actions>
-        </x-page-toolbar>
+        <x-page-toolbar :title="$project->name" :subtitle="__('Zeitstrahl der Aufgaben (Start – Deadline)')" />
     </x-slot:toolbar>
+
+    @include('projects._tabs')
 
     @php($t = $timeline)
     <x-card class="flex flex-col gap-2">

@@ -16,10 +16,6 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Investitionsakten mit Varianten, Budgetantrag, Freigabe und Soll-Ist-Verfolgung.')">
     <x-slot:actions>
-        <x-icon-btn icon="analytics" size="sm" :href="route('investments.report')" show-label>{{ __('Bericht') }}</x-icon-btn>
-        <x-icon-btn icon="account_tree" size="sm" :href="route('investments.programs.index')" show-label>{{ __('investment.program.title') }}</x-icon-btn>
-        <x-icon-btn icon="flag" size="sm" :href="route('investments.objectives.index')" show-label>{{ __('investment.objective.title') }}</x-icon-btn>
-        <x-icon-btn icon="star_rate" size="sm" :href="route('investments.supplier-ratings.index')" show-label>{{ __('investment.supplier_rating.overview') }}</x-icon-btn>
         @can(\App\Enums\User\Permission::InvestmentManage->value)
             <x-icon-btn icon="link" size="sm" data-entry-modal-trigger :href="route('investments.proposals.link')" show-label>{{ __('investment.proposal.link') }}</x-icon-btn>
         @endcan
@@ -30,6 +26,8 @@
                         show-label>{{ __('Investition erfassen') }}</x-icon-btn>
         @endcan
     </x-slot:actions>
+
+    @include('investments._tabs')
 
     <x-filter-bar :action="route('investments.index')" :reset="route('investments.index')">
         <x-filter-field :label="__('Status')" for="inv-status" class="shrink-0">

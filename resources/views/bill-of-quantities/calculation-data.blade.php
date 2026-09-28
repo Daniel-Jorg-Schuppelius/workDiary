@@ -23,15 +23,17 @@
         <x-page-toolbar>
             <div class="text-sm text-base-content/70">{{ $bill->name }}</div>
             <x-slot:actions>
-                <x-icon-btn icon="download" size="sm" show-label
-                            :href="route('bill-of-quantities.calculation-data', [$bill, 'export' => 'csv'])">{{ __('CSV') }}</x-icon-btn>
-                <x-icon-btn icon="table_view" size="sm" show-label
-                            :href="route('bill-of-quantities.calculation-data', [$bill, 'export' => 'xlsx'])">Excel</x-icon-btn>
-                <x-icon-btn icon="arrow_back" size="sm" show-label
-                            :href="route('bill-of-quantities.show', $bill)">{{ __('Zum Leistungsverzeichnis') }}</x-icon-btn>
+                <x-action-menu icon="download" :label="__('Export')">
+                    <x-icon-btn icon="download" size="sm" show-label
+                                :href="route('bill-of-quantities.calculation-data', [$bill, 'export' => 'csv'])">{{ __('CSV') }}</x-icon-btn>
+                    <x-icon-btn icon="table_view" size="sm" show-label
+                                :href="route('bill-of-quantities.calculation-data', [$bill, 'export' => 'xlsx'])">Excel</x-icon-btn>
+                </x-action-menu>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    @include('bill-of-quantities._tabs')
 
     @if (empty($report['byCostType']))
         <x-empty-state framed icon="calculate"

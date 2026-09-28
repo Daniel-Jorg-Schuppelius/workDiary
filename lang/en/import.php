@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 return [
     'entity' => [
+        'meter_readings' => 'Meter readings',
         'customers' => 'Customers',
         'suppliers' => 'Suppliers',
         'articles' => 'Articles',
@@ -92,6 +93,7 @@ return [
             'rowLimit' => 'Row limit (:max) exceeded — remainder ignored.',
             'contactPersons' => 'More than :max contact persons per customer/supplier are not supported.',
         ],
+        'meterReading' => ['decreasing' => 'Reading lower than the previous one.'],
         'fkMissing' => [
             'customer' => 'No customer with number :number found.',
             'supplier' => 'No supplier with number :number found.',

@@ -17,7 +17,8 @@
         <x-slot:toolbar>
             <x-page-toolbar :subtitle="$floor->building
                 ? __('Geschoss :level im Gebäude :building.', ['level' => $floor->level, 'building' => $floor->building->name])
-                : __('Geschoss ohne Gebäudebindung.')">
+                : __('Geschoss ohne Gebäudebindung.')"
+                            back-route="floors.index" :back-label="__('Zurück')">
                 <x-slot:actions>
                     <x-icon-btn icon="edit" size="sm"
                                 data-entry-modal-trigger
@@ -28,9 +29,6 @@
                                     :href="route('buildings.show', $floor->building)"
                                     show-label>{{ __('Gebäude') }}</x-icon-btn>
                     @endif
-                    <x-icon-btn icon="arrow_back" size="sm"
-                                :href="route('floors.index')"
-                                show-label>{{ __('Zurück') }}</x-icon-btn>
                 </x-slot:actions>
             </x-page-toolbar>
         </x-slot:toolbar>

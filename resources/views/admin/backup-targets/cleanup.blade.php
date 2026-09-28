@@ -14,7 +14,7 @@
 @section('content')
 <x-index-page :subtitle="__('backup_targets.cleanup_page.description')">
     <x-slot:actions>
-        <a href="{{ route('admin.backup-targets.index') }}" class="btn btn-ghost btn-sm">{{ __('backup_targets.cleanup_page.back') }}</a>
+        <x-button tone="ghost" :href="route('admin.backup-targets.index')">{{ __('backup_targets.cleanup_page.back') }}</x-button>
     </x-slot:actions>
 
     @if ($error !== null)

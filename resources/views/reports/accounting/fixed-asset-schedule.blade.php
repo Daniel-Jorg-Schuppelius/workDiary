@@ -28,14 +28,16 @@
                         <option value="{{ $y }}" @selected($y === $year)>{{ $y }}</option>
                     @endfor
                 </select>
-                <x-icon-btn icon="search" tone="ghost" size="sm" type="submit" :aria-label="__('accounting.reports.fixed_asset_schedule.show')" />
+                <x-icon-btn icon="search" tone="ghost" size="sm" type="submit" :label="__('accounting.reports.fixed_asset_schedule.show')" />
             </form>
-            <x-icon-btn icon="download" size="sm" tone="ghost" show-label
-                        :href="route('reports.accounting.fixed-asset-schedule', ['year' => $year, 'export' => 'csv'])" :label="__('CSV')" />
-            <x-icon-btn icon="table_view" size="sm" tone="ghost" show-label
-                        :href="route('reports.accounting.fixed-asset-schedule', ['year' => $year, 'export' => 'xlsx'])" :label="__('Excel')" />
             <x-icon-btn icon="picture_as_pdf" size="sm" tone="ghost" show-label
                         :href="route('reports.accounting.fixed-asset-schedule', ['year' => $year, 'export' => 'pdf'])" :label="__('PDF')" />
+            <x-action-menu icon="download" :label="__('Export')">
+                <x-icon-btn icon="download" size="sm" tone="ghost" show-label
+                            :href="route('reports.accounting.fixed-asset-schedule', ['year' => $year, 'export' => 'csv'])" :label="__('CSV')" />
+                <x-icon-btn icon="table_view" size="sm" tone="ghost" show-label
+                            :href="route('reports.accounting.fixed-asset-schedule', ['year' => $year, 'export' => 'xlsx'])" :label="__('Excel')" />
+            </x-action-menu>
         </x-slot:actions>
 
         <p class="text-xs text-muted">{{ __('accounting.reports.fixed_asset_schedule.hint') }}</p>

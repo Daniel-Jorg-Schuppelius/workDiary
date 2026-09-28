@@ -1743,4 +1743,11 @@ La gestión de cuotas',
         ],
         'overdue_count' => '{1}una vencida|[2,*]:count vencidas',
     ],
+    // Reiter der Termin-Sichten (MVP-969).
+    'tab' => [
+        'event' => 'Evento',
+        'match' => 'Jornada',
+        'competition' => 'Competición',
+        'attendance' => 'Asistencia',
+    ],
 ];

@@ -38,6 +38,9 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property ArticleStatus $status
  * @property \App\Enums\Reselling\ResaleArticleRole|null $resale_role  Einstufung fürs Reselling-Register (null = automatisch)
  * @property \CommonToolkit\ValueObjects\Money|null $default_purchase_price
+ * @property numeric-string|null $pcf_factor_kg
+ * @property numeric-string|null $pcf_process_kg
+ * @property string|null $pcf_source
  * @property \CommonToolkit\ValueObjects\Money|null $default_sale_price
  */
 class Article extends Model implements CustomFieldSubject {
@@ -81,6 +84,9 @@ class Article extends Model implements CustomFieldSubject {
         'resale_role',
         'default_procedure_template_version_id',
         'default_purchase_price',
+        'pcf_factor_kg',
+        'pcf_process_kg',
+        'pcf_source',
         'default_sale_price',
         'currency',
         'created_by',
@@ -104,6 +110,8 @@ class Article extends Model implements CustomFieldSubject {
         'shelf_life_required' => 'boolean',
         'serial_scheme' => 'array',
         'default_purchase_price' => MoneyCast::class . ':currency,4',
+        'pcf_factor_kg' => 'decimal:4',
+        'pcf_process_kg' => 'decimal:4',
         'default_sale_price' => MoneyCast::class . ':currency,4',
     ];
 

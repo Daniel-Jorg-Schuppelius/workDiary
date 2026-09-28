@@ -13,11 +13,9 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('club.fees.subtitle.my')">
+        <x-page-toolbar :subtitle="__('club.fees.subtitle.my')"
+                        :back-route="$hasSubjects ? 'club.my.index' : null" :back-label="__('club.my.action.back')">
             <x-slot:actions>
-                @if ($hasSubjects)
-                    <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('club.my.index')" show-label>{{ __('club.my.action.back') }}</x-icon-btn>
-                @endif
                 <x-help-button topic="club.my" />
             </x-slot:actions>
         </x-page-toolbar>

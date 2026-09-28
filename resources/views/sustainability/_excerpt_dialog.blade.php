@@ -20,6 +20,7 @@
             @endforeach
         </x-select-field>
         <x-checkbox-field name="targets" :label="__('sustainability.excerpt.with_targets')" :checked="$publication['targets']" />
+        <x-textarea-field name="statement" rows="3" :label="__('sustainability.excerpt.statement')" :hint="__('sustainability.claim.hint')">{{ old('statement', $publication['statement']) }}</x-textarea-field>
         <div class="flex justify-end"><x-button type="submit" size="sm">{{ __('sustainability.excerpt.publish') }}</x-button></div>
     </form>
 

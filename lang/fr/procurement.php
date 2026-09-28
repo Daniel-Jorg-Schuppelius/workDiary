@@ -506,4 +506,19 @@ return [
             'note' => 'Note',
         ],
     ],
+    // Auftragsbestätigung des Lieferanten (MVP-964).
+    'confirmation' => [
+        'import' => 'Importer la confirmation de commande (openTRANS)',
+        'import_submit' => 'Importer la confirmation',
+        'received' => 'confirmée le :date, commande :ref',
+        'column' => 'Confirmé',
+        'error' => [
+            'other_order' => 'La confirmation concerne la commande :number.',
+            'no_lines' => 'Aucune ligne de la confirmation ne correspond à une ligne de commande.',
+        ],
+        'flash' => [
+            'imported' => 'Confirmation importée : :count lignes.',
+            'deviations' => ':count lignes diffèrent de la commande — veuillez vérifier.',
+        ],
+    ],
 ];

@@ -18,6 +18,8 @@
 @section('content')
     @php $fmt = static fn (float $v): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true); @endphp
     <x-index-page :subtitle="__('contract.cost_center.subtitle')">
+
+    @include('contracts._tabs')
         <x-table bare>
             <x-slot:head>
                 <tr>

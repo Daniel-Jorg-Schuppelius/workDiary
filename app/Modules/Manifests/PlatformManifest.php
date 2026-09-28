@@ -85,6 +85,8 @@ final class PlatformManifest extends Manifest {
             'system_settings',
             'team_user',
             'teams',
+            'tenant_plan_requests',
+            'tenant_usage_snapshots',
             'user_badges',
             'user_bookmarks',
             'user_dashboard_widgets',

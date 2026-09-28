@@ -17,4 +17,5 @@
 <x-tab-nav class="w-fit" :items="[
     ['label' => __('article.tabs.master'), 'route' => 'articles.show', 'params' => $article, 'routeIs' => 'articles.show', 'icon' => 'inventory_2'],
     ['label' => __('article.costing.title'), 'route' => 'articles.costing', 'params' => $article, 'routeIs' => 'articles.costing', 'icon' => 'calculate', 'when' => $costingVisible],
+    ['label' => __('article.footprint.title'), 'route' => 'articles.footprint', 'params' => $article, 'routeIs' => 'articles.footprint', 'icon' => 'eco', 'when' => \Illuminate\Support\Facades\Route::has('articles.footprint')],
 ]" />

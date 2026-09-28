@@ -16,30 +16,28 @@
     :badge="$connection && $connection->isActive() ? __('verbunden') : __('nicht verbunden')"
     :badge-tone="$connection && $connection->isActive() ? 'success' : 'ghost'">
 
+    <x-slot:badges>
+        @if ($connection && $connection->isActive() && $subscription)
+            <x-status-badge tone="success" size="sm">{{ __('Webhook aktiv') }}</x-status-badge>
+        @endif
+    </x-slot:badges>
     <x-slot:actions>
         @if ($connection && $connection->isActive())
             @unless ($subscription)
-                <form method="POST" action="{{ route('admin.calendly.subscribe') }}">
-                    @csrf
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Webhook anmelden') }}</button>
-                </form>
-            @else
-                <span class="badge badge-success badge-sm self-center">{{ __('Webhook aktiv') }}</span>
+                <x-action-form :action="route('admin.calendly.subscribe')">
+                    <x-button type="submit" placement="bar">{{ __('Webhook anmelden') }}</x-button>
+                </x-action-form>
             @endunless
-
-            <form method="POST" action="{{ route('admin.calendly.backfill') }}">
-                @csrf
-                <button type="submit" class="btn btn-sm">{{ __('Jetzt abgleichen') }}</button>
-            </form>
-
+            <x-action-form :action="route('admin.calendly.backfill')">
+                <x-button type="submit" tone="ghost">{{ __('Jetzt abgleichen') }}</x-button>
+            </x-action-form>
             <x-action-form :action="route('admin.calendly.disconnect')" :confirm="__('Verbindung wirklich trennen?')">
-                <button type="submit" class="btn btn-sm btn-ghost">{{ __('Trennen') }}</button>
+                <x-button type="submit" tone="ghost" placement="danger">{{ __('Trennen') }}</x-button>
             </x-action-form>
         @elseif ($configured)
-            <form method="POST" action="{{ route('admin.calendly.oauth.start') }}">
-                @csrf
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('Mit Calendly verbinden') }}</button>
-            </form>
+            <x-action-form :action="route('admin.calendly.oauth.start')">
+                <x-button type="submit" placement="bar">{{ __('Mit Calendly verbinden') }}</x-button>
+            </x-action-form>
         @endif
     </x-slot:actions>
 

@@ -87,4 +87,18 @@ class SqidEncoderTest extends TestCase {
 
         $this->assertNotSame($a, $b);
     }
+
+    /**
+     * Sqids fremder Modelle bestehen gelegentlich den Rundlauf-Check und
+     * dekodieren dann zu riesigen Zahlen; die Obergrenze fängt sie ab.
+     */
+    public function test_foreign_sqids_never_decode_even_if_the_roundtrip_matches(): void {
+        $enc = $this->encoder();
+        for ($id = 1; $id <= 5000; $id++) {
+            $sqid = $enc->encode('App\\Models\\Customer\\Customer', $id);
+            $this->assertNull($enc->decode('App\\Models\\Customer\\ForeignCustomer', $sqid), "Kunde {$id} ({$sqid}) dekodiert als Fremdkunde");
+        }
+        $this->assertNull($enc->decode('App\\Models\\Customer\\Customer', $enc->encode('App\\Models\\Customer\\Customer', SqidEncoder::MAX_ID + 1)));
+        $this->assertSame(SqidEncoder::MAX_ID, $enc->decode('App\\Models\\Customer\\Customer', $enc->encode('App\\Models\\Customer\\Customer', SqidEncoder::MAX_ID)));
+    }
 }

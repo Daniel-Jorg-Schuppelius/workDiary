@@ -4240,6 +4240,8 @@ CREATE TABLE IF NOT EXISTS "purchase_orders"(
   "created_at" datetime,
   "updated_at" datetime,
   "freight_cost" numeric,
+  "supplier_confirmed_at" datetime,
+  "supplier_order_ref" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("supplier_id") references "suppliers"("id") on delete cascade,
   foreign key("warehouse_id") references "warehouses"("id") on delete cascade,
@@ -4272,6 +4274,9 @@ CREATE TABLE IF NOT EXISTS "purchase_order_lines"(
   "created_at" datetime,
   "updated_at" datetime,
   "note" varchar,
+  "confirmed_qty" numeric,
+  "confirmed_unit_price" numeric,
+  "confirmed_delivery_on" date,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("purchase_order_id") references "purchase_orders"("id") on delete cascade,
   foreign key("article_id") references "articles"("id") on delete cascade,
@@ -14087,6 +14092,9 @@ CREATE TABLE IF NOT EXISTS "articles"(
   "copper_weight" numeric,
   "copper_base_price" numeric,
   "resale_role" varchar,
+  "pcf_factor_kg" numeric,
+  "pcf_process_kg" numeric,
+  "pcf_source" varchar,
   foreign key("product_id") references products("id") on delete set null on update no action,
   foreign key("organization_id") references organizations("id") on delete set null on update no action,
   foreign key("default_procedure_template_version_id") references procedure_template_versions("id") on delete set null on update no action,
@@ -22182,6 +22190,93 @@ CREATE TABLE IF NOT EXISTS "liquidity_scenario_items"(
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("liquidity_scenario_id") references "liquidity_scenarios"("id") on delete cascade
 );
+CREATE TABLE IF NOT EXISTS "tenant_usage_snapshots"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "period_on" date not null,
+  "plan" varchar not null,
+  "addons" text,
+  "users" integer not null,
+  "active_users" integer,
+  "storage_bytes" integer not null,
+  "modules" integer not null,
+  "amount" numeric not null,
+  "currency" varchar not null,
+  "computed_at" datetime not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "tenant_usage_org_period_unique" on "tenant_usage_snapshots"(
+  "organization_id",
+  "period_on"
+);
+CREATE TABLE IF NOT EXISTS "tenant_plan_requests"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "requested_plan" varchar not null,
+  "requested_addons" text,
+  "note" varchar,
+  "status" varchar not null,
+  "requester_user_id" integer,
+  "decider_user_id" integer,
+  "decided_at" datetime,
+  "decision_note" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("requester_user_id") references "users"("id") on delete set null,
+  foreign key("decider_user_id") references "users"("id") on delete set null
+);
+CREATE TABLE IF NOT EXISTS "sustainability_offsets"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "kind" varchar not null,
+  "provider" varchar not null,
+  "standard" varchar,
+  "project_name" varchar,
+  "quantity_t" numeric not null,
+  "vintage_year" integer,
+  "claim_year" integer not null,
+  "retired_on" date,
+  "registry_reference" varchar,
+  "note" varchar,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE TABLE IF NOT EXISTS "crisis_room_presences"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "crisis_case_id" integer not null,
+  "user_id" integer not null,
+  "last_seen_at" datetime not null,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("crisis_case_id") references "crisis_cases"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "crisis_presence_case_user_unique" on "crisis_room_presences"(
+  "crisis_case_id",
+  "user_id"
+);
+CREATE TABLE IF NOT EXISTS "crisis_map_points"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "crisis_case_id" integer not null,
+  "label" varchar not null,
+  "kind" varchar not null,
+  "lat" numeric not null,
+  "lng" numeric not null,
+  "note" varchar,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("crisis_case_id") references "crisis_cases"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -23071,3 +23166,8 @@ INSERT INTO migrations VALUES(890,'2027_02_27_320000_create_rental_rate_rules_ta
 INSERT INTO migrations VALUES(891,'2027_02_27_330000_create_price_index_tables',27);
 INSERT INTO migrations VALUES(892,'2027_02_27_340000_create_incoming_invoice_retentions_table',27);
 INSERT INTO migrations VALUES(893,'2027_02_27_350000_create_liquidity_scenarios_table',27);
+INSERT INTO migrations VALUES(894,'2027_02_27_360000_create_tenant_billing_tables',28);
+INSERT INTO migrations VALUES(895,'2027_02_27_370000_add_carbon_footprint_fields_to_articles',29);
+INSERT INTO migrations VALUES(896,'2027_02_27_380000_create_sustainability_offsets_table',29);
+INSERT INTO migrations VALUES(897,'2027_02_27_390000_create_crisis_room_tables',29);
+INSERT INTO migrations VALUES(898,'2027_02_27_400000_add_supplier_confirmation_to_purchase_orders',30);

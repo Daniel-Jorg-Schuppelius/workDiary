@@ -13,7 +13,7 @@
 @section('content')
 <x-index-page :subtitle="__('Alle gespeicherten Verknüpfungen zwischen lokalen Datensätzen und ihren Fremd-IDs in den angebundenen Systemen. Eine gelöste Verknüpfung führt beim nächsten Import zu einer erneuten Zuordnung über die Inbox.')">
     <x-slot:actions>
-        <a href="{{ route('admin.integration.inbox') }}" class="btn btn-sm btn-outline">{{ __('Zur Inbox') }}</a>
+        <x-button tone="outline" :href="route('admin.integration.inbox')">{{ __('Zur Inbox') }}</x-button>
         <form method="GET" action="{{ route('admin.integration.mappings.index') }}" class="flex items-center gap-2">
             <select name="plugin" class="select select-sm select-bordered" data-autosubmit>
                 <option value="all" @selected($filters['plugin'] === 'all')>{{ __('Alle Quellen') }}</option>

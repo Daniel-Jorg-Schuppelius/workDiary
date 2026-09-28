@@ -51,11 +51,18 @@ class SustainabilityExcerptController extends Controller {
         if ($request->filled('snapshot_id')) {
             $request->merge(['snapshot_id' => Sqid::decodeOrNumeric(SustainabilityReportSnapshot::class, $request->string('snapshot_id')->toString())]);
         }
-        $data = $request->validate(['snapshot_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('sustainability_report_snapshots')]]);
+        $data = $request->validate([
+            'snapshot_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('sustainability_report_snapshots')],
+            'statement' => ['nullable', 'string', 'max:2000'],
+        ]);
         $snapshot = isset($data['snapshot_id']) ? SustainabilityReportSnapshot::query()->find((int) $data['snapshot_id']) : null;
-        $this->excerpt->publish($this->currentOrganization(), $snapshot, $request->boolean('targets'));
+        $statement = isset($data['statement']) ? trim($data['statement']) : null;
+        $this->excerpt->publish($this->currentOrganization(), $snapshot, $request->boolean('targets'), $statement === '' ? null : $statement);
+        // Umweltaussagen prüfen (MVP-961): Hinweis, keine Sperre.
+        $findings = $statement !== null ? app(\App\Services\Sustainability\SustainabilityClaimChecker::class)->check($statement) : [];
+        $redirect = redirect()->route('sustainability.excerpt.edit')->with('success', __('sustainability.excerpt.flash.published'));
 
-        return redirect()->route('sustainability.excerpt.edit')->with('success', __('sustainability.excerpt.flash.published'));
+        return $findings === [] ? $redirect : $redirect->with('warning', __('sustainability.claim.warning', ['terms' => implode(', ', array_column($findings, 'term'))]));
     }
 
     public function rotate(): RedirectResponse {

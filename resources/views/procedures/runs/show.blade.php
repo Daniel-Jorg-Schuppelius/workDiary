@@ -31,12 +31,12 @@
         <x-page-toolbar :title="$tpl?->displayName() ?? '—'"
                         :badge="$run->status->label()"
                         :badge-tone="$statusTone"
-                        :subtitle="__('Version :v', ['v' => $version?->version])">
+                        :subtitle="__('Version :v', ['v' => $version?->version])"
+                        :back="$backUrl" :back-label="__('procedure.action.back')">
             <x-slot:actions>
                 <x-help-button topic="procedures.run" :label="__('Hilfe zu Prozedur')" />
                 <x-icon-btn icon="print" tone="outline" size="sm" :href="route('procedure-runs.print', $run)"
                             target="_blank" :label="__('procedure.action.print')" />
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="$backUrl" :label="__('procedure.action.back')" />
             </x-slot:actions>
         </x-page-toolbar>
 

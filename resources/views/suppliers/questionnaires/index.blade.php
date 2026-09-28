@@ -13,12 +13,12 @@
 @section('nav-title', __('supplier_questionnaire.title'))
 
 @section('content')
-<x-index-page :subtitle="__('supplier_questionnaire.subtitle')">
+<x-index-page :subtitle="__('supplier_questionnaire.subtitle')"
+              back-route="suppliers.index" :back-label="__('Lieferanten')">
     <x-slot:actions>
         @if ($canManage)
             <x-icon-btn icon="add" size="sm" tone="primary" data-entry-modal-trigger :href="route('supplier-questionnaires.create')" show-label>{{ __('supplier_questionnaire.create') }}</x-icon-btn>
         @endif
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('suppliers.index')" show-label>{{ __('Lieferanten') }}</x-icon-btn>
     </x-slot:actions>
 
     <x-card padding="p-0" :title="__('supplier_questionnaire.questionnaires')">

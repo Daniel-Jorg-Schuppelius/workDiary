@@ -45,26 +45,8 @@
                 <div class="px-3 pt-3 flex-none">
                     <x-bulk-toolbar :label="__(':n Spesen ausgewählt')">
                         <x-slot:actions>
-                            <button type="submit"
-                                    formaction="{{ route('expense-approvals.bulk-approve') }}"
-                                    class="btn btn-success btn-sm"
-                                    data-confirm-dialog
-                                    data-confirm-message="{{ __('Alle ausgewählten Spesen genehmigen?') }}"
-                                    data-confirm-icon="check_circle"
-                                    data-confirm-tone="success"
-                                    data-confirm-label="{{ __('Genehmigen') }}">
-                                <x-icon name="check_circle" /> {{ __('Genehmigen') }}
-                            </button>
-                            <button type="submit"
-                                    formaction="{{ route('expense-approvals.bulk-reject') }}"
-                                    class="btn btn-error btn-sm"
-                                    data-confirm-dialog
-                                    data-confirm-message="{{ __('Alle ausgewählten Spesen ablehnen?') }}"
-                                    data-confirm-icon="block"
-                                    data-confirm-tone="error"
-                                    data-confirm-label="{{ __('Ablehnen') }}">
-                                <x-icon name="block" /> {{ __('Ablehnen') }}
-                            </button>
+                            <x-button type="submit" tone="success" icon="check_circle" formaction="{{ route('expense-approvals.bulk-approve') }}" data-confirm-dialog data-confirm-message="{{ __('Alle ausgewählten Spesen genehmigen?') }}" data-confirm-icon="check_circle" data-confirm-tone="success" data-confirm-label="{{ __('Genehmigen') }}">{{ __('Genehmigen') }}</x-button>
+                            <x-button type="submit" tone="error" icon="block" formaction="{{ route('expense-approvals.bulk-reject') }}" data-confirm-dialog data-confirm-message="{{ __('Alle ausgewählten Spesen ablehnen?') }}" data-confirm-icon="block" data-confirm-tone="error" data-confirm-label="{{ __('Ablehnen') }}">{{ __('Ablehnen') }}</x-button>
                         </x-slot:actions>
                     </x-bulk-toolbar>
                 </div>

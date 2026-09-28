@@ -16,12 +16,8 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="$course->title" :badge="$quiz->title">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                            :href="route('learning.courses.units.quiz.edit', [$course, $unit])"
-                            show-label>{{ __('learning.action.back') }}</x-icon-btn>
-            </x-slot:actions>
+        <x-page-toolbar :subtitle="$course->title" :badge="$quiz->title"
+                        :back="route('learning.courses.units.quiz.edit', [$course, $unit])" :back-label="__('learning.action.back')">
         </x-page-toolbar>
     </x-slot:toolbar>
 

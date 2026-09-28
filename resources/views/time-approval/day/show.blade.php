@@ -51,13 +51,13 @@
             <div class="join">
                 <x-icon-btn icon="chevron_left" tone="ghost" size="sm" class="join-item"
                             :href="route('day-close.show', array_merge(['date' => $prevDay], $userParam))"
-                            :aria-label="__('day-close.action.prev_day')" />
+                            :label="__('day-close.action.prev_day')" />
                 <x-icon-btn icon="today" tone="ghost" size="sm" class="join-item"
                             :href="route('day-close.show', $userParam)"
                             show-label>{{ __('day-close.action.today') }}</x-icon-btn>
                 <x-icon-btn icon="chevron_right" tone="ghost" size="sm" class="join-item"
                             :href="route('day-close.show', array_merge(['date' => $nextDay], $userParam))"
-                            :aria-label="__('day-close.action.next_day')" />
+                            :label="__('day-close.action.next_day')" />
             </div>
             <form method="GET" action="{{ route('day-close.show') }}" class="flex items-center gap-1">
                 @foreach ($userParam as $k => $v)
@@ -66,7 +66,7 @@
                 <input type="date" name="date" value="{{ $day->toDateString() }}"
                        class="input input-sm input-bordered" aria-label="{{ __('day-close.action.pick_date') }}" />
                 <x-icon-btn icon="search" tone="ghost" size="sm" type="submit"
-                            :aria-label="__('day-close.action.show_day')" />
+                            :label="__('day-close.action.show_day')" />
             </form>
             @canany([\App\Enums\User\Permission::DayCloseViewTeam->value, \App\Enums\User\Permission::DayCloseViewOrganization->value])
                 <x-icon-btn icon="groups" size="sm" :href="route('day-close.team')" show-label>{{ __('day-close.team.title') }}</x-icon-btn>

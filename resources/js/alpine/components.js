@@ -1756,6 +1756,30 @@ export function registerAlpineComponents(Alpine) {
         },
     }));
 
+    // Krisenraum (MVP-963): Herzschlag alle 30 s, Liste der Anwesenden.
+    Alpine.data("crisisPresence", () => ({
+        people: [],
+        timer: null,
+        get isEmpty() {
+            return this.people.length === 0;
+        },
+        init() {
+            this.people = JSON.parse(this.$el.dataset.present || "[]");
+            this.beat();
+            this.timer = setInterval(() => this.beat(), 30000);
+        },
+        destroy() {
+            clearInterval(this.timer);
+        },
+        beat() {
+            postJson(this.$el.dataset.url)
+                .then((res) => {
+                    this.people = res.data?.present ?? this.people;
+                })
+                .catch(() => {});
+        },
+    }));
+
     // Plugin-Verbindungstest (Health-Check) im Admin-Dialog.
     // _csrf bleibt in der Signatur (Blade übergibt positional), Token kommt
     // inzwischen zentral aus lib/http.js.

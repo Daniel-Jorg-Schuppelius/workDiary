@@ -19,7 +19,8 @@
 @endphp
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :title="__('passenger.rides.detail_title') . ' — ' . $ride->operation_mode->label()">
+        <x-page-toolbar :title="__('passenger.rides.detail_title') . ' — ' . $ride->operation_mode->label()"
+                        back-route="passenger-rides.index" :back-label="__('Zur Liste')">
             <div class="flex flex-wrap items-center gap-2 text-sm">
                 <x-status-badge size="md" outline :tone="$status->tone()">{{ $status->label() }}</x-status-badge>
                 <x-status-badge size="md" outline>{{ $ride->order_channel->label() }}</x-status-badge>
@@ -30,9 +31,6 @@
                     <x-status-badge size="md" outline tone="warning">{{ __('passenger.badge.return_open') }}</x-status-badge>
                 @endif
             </div>
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('passenger-rides.index')" show-label>{{ __('Zur Liste') }}</x-icon-btn>
-            </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 

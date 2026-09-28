@@ -32,7 +32,7 @@
                 @can('delete', $case)
                     <x-action-form :action="route('investments.destroy', $case)" method="DELETE"
                           :confirm="__('Akte wirklich löschen?')" confirm-icon="delete" confirm-tone="error" :confirm-label="__('Löschen')">
-                        <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
+                        <x-icon-btn placement="danger" icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
                     </x-action-form>
                 @endcan
             </x-slot:actions>

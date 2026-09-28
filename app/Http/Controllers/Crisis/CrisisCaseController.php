@@ -99,6 +99,9 @@ class CrisisCaseController extends Controller {
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
             'deadlines' => $this->deadlines->deadlinesFor($case),
             'canManage' => Gate::allows('update', $case),
+            'roomMarkers' => app(\App\Services\Crisis\CrisisRoomService::class)->markers($case),
+            'roomPresent' => app(\App\Services\Crisis\CrisisRoomService::class)->present($case),
+            'roomPoints' => \App\Models\Crisis\CrisisMapPoint::query()->where('crisis_case_id', $case->id)->orderBy('id')->get(),
         ]);
     }
 
@@ -354,6 +357,9 @@ class CrisisCaseController extends Controller {
             'safety_event' => \App\Models\Safety\SafetyEvent::class,
             'procedure_run' => \App\Models\Procedure\ProcedureRun::class,
             'document' => \App\Models\Document\Document::class,
+            // Objekte mit Koordinaten für die Lagekarte (MVP-963).
+            'asset' => \App\Models\Asset\Asset::class,
+            'customer' => \App\Models\Customer\Customer::class,
         ];
         $class = $map[$data['linkable_type']];
         $id = \App\Support\Sqid::decodeOrNumeric($class, $data['linkable_sqid']);

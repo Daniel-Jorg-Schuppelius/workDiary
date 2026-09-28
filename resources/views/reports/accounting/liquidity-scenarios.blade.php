@@ -13,10 +13,8 @@
 @section('nav-title', __('accounting.reports.scenario.title'))
 
 @section('content')
-    <x-index-page :subtitle="__('accounting.reports.scenario.subtitle')">
-        <x-slot:actions>
-            <x-icon-btn icon="arrow_back" size="sm" :href="route('reports.accounting.liquidity-forecast')" show-label>{{ __('accounting.reports.card.liquidity_forecast.title') }}</x-icon-btn>
-        </x-slot:actions>
+    <x-index-page :subtitle="__('accounting.reports.scenario.subtitle')"
+                  back-route="reports.accounting.liquidity-forecast" :back-label="__('accounting.reports.card.liquidity_forecast.title')">
 
         <x-card :title="__('accounting.reports.scenario.new')">
             @include('reports.accounting._liquidity_scenario_form', ['scenario' => null])

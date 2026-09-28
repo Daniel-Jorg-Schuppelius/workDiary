@@ -16,8 +16,9 @@
 <x-index-page :subtitle="__('crisis.bcm_report.subtitle')">
     <x-slot:actions>
         <x-icon-btn icon="picture_as_pdf" size="sm" :href="route('crisis.bcm-report.pdf')" show-label>{{ __('PDF') }}</x-icon-btn>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('crisis.index')" show-label>{{ __('crisis.bcm_report.back') }}</x-icon-btn>
     </x-slot:actions>
+
+    @include('crisis._tabs')
     <x-card>
         <div class="[&_table]:w-full [&_th]:text-left [&_th]:font-medium [&_td]:text-right [&_td]:tabular-nums [&_tr]:border-b [&_tr]:border-base-200">
             @include('crisis._bcm_report_rows')

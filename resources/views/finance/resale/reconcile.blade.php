@@ -29,8 +29,9 @@
                 </form>
             @endcan
             <x-icon-btn icon="fact_check" tone="ghost" size="sm" :href="route('finance.resale.periods.index')" show-label>{{ __('resale.periods.title') }}</x-icon-btn>
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('finance.resale.index')" show-label>{{ __('resale.action.back') }}</x-icon-btn>
         </x-slot:actions>
+
+        @include('finance.resale._tabs')
 
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
             <x-kpi-tile :label="__('resale.reconcile.kpi.open')" :value="$totals['open']" :tone="$totals['open'] > 0 ? 'error' : 'success'" />

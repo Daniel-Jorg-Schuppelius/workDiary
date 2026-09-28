@@ -15,10 +15,8 @@
 @section('content')
 <x-page-shell gap="4">
     <x-slot:toolbar>
-        <x-page-toolbar :title="__('procedure.import.title')" :subtitle="$source ?? __('procedure.import.from_text')">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('procedures.index')" :label="__('procedure.title.templates')" />
-            </x-slot:actions>
+        <x-page-toolbar :title="__('procedure.import.title')" :subtitle="$source ?? __('procedure.import.from_text')"
+                        back-route="procedures.index" :back-label="__('procedure.title.templates')">
         </x-page-toolbar>
     </x-slot:toolbar>
 

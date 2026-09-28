@@ -13,11 +13,9 @@
 @section('nav-title', __('Import #:id', ['id' => $run->id]))
 
 @section('content')
-<x-index-page :subtitle="__(':entity — :file', ['entity' => $run->entity->label(), 'file' => $run->input_filename])">
+<x-index-page :subtitle="__(':entity — :file', ['entity' => $run->entity->label(), 'file' => $run->input_filename])"
+              back-route="admin.imports.index" :back-label="__('Zurück')">
     <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('admin.imports.index')" show-label>
-            {{ __('Zurück') }}
-        </x-icon-btn>
 
         @if ($run->state === \App\Enums\Import\ImportRunState::AwaitingApproval)
             <x-action-form :action="route('admin.imports.confirm', $run)">
@@ -31,7 +29,7 @@
                   confirm-icon="delete"
                   confirm-tone="error"
                   :confirm-label="__('Verwerfen')">
-                <x-button type="submit" tone="error" size="sm" class="btn-outline" icon="delete">{{ __('Verwerfen') }}</x-button>
+                <x-button placement="danger" type="submit" tone="error" size="sm" class="btn-outline" icon="delete">{{ __('Verwerfen') }}</x-button>
             </x-action-form>
         @endif
 

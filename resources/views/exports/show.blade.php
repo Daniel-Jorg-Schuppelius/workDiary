@@ -24,11 +24,9 @@
 @endphp
 
 @section('content')
-<x-index-page :subtitle="__('Profil :profile · Status :status', ['profile' => $export->profile, 'status' => $export->status->label()])">
+<x-index-page :subtitle="__('Profil :profile · Status :status', ['profile' => $export->profile, 'status' => $export->status->label()])"
+              back-route="exports.index" :back-label="__('Zurück')">
     <x-slot:actions>
-        <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                    :href="route('exports.index')"
-                    show-label>{{ __('Zurück') }}</x-icon-btn>
         @can('download', $export)
             <x-icon-btn icon="download" tone="primary" size="sm"
                         :href="route('exports.download', $export)"

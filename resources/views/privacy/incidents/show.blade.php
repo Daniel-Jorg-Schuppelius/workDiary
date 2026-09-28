@@ -10,13 +10,11 @@
 @section('title', $incident->incident_number)
 @section('nav-title', $incident->incident_number . ' — ' . $incident->type->label())
 @section('content')
-    <x-index-page :subtitle="__('Vorfall bewerten, melden, Maßnahmen verfolgen und dokumentieren.')">
-        <x-slot:actions>
+    <x-index-page :subtitle="__('Vorfall bewerten, melden, Maßnahmen verfolgen und dokumentieren.')"
+                  back-route="dataprotection.incidents.index" :back-label="__('Zurück')">
+        <x-slot:badges>
             <x-status-badge :tone="$incident->isDeadlineBreached() ? 'error' : 'ghost'" size="sm">{{ $incident->status->label() }}</x-status-badge>
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                        :href="route('dataprotection.incidents.index')"
-                        show-label>{{ __('Zurück') }}</x-icon-btn>
-        </x-slot:actions>
+        </x-slot:badges>
 
 
         @php $isProcessor = $incident->controller_role?->value === 'processor'; @endphp

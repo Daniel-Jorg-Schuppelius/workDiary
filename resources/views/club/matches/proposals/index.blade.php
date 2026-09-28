@@ -13,12 +13,12 @@
 @section('wrapper-height-class', 'wd-page-fill')
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 @section('content')
-<x-index-page overflow="clip" :subtitle="__('club.matches.subtitle.proposals')">
+<x-index-page overflow="clip" :subtitle="__('club.matches.subtitle.proposals')"
+              back-route="club.matches.index" :back-label="__('club.action.back')">
     <x-slot:actions>
         @if ($teams->isNotEmpty())
             <x-icon-btn icon="upload_file" tone="primary" size="sm" data-entry-modal-trigger :href="route('club.matches.proposals.import.create', ['team' => $filters['team'] ?: null])" show-label>{{ __('club.matches.action.import') }}</x-icon-btn>
         @endif
-        <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('club.matches.index')" show-label>{{ __('club.action.back') }}</x-icon-btn>
         <x-help-button topic="club.matches" />
     </x-slot:actions>
 

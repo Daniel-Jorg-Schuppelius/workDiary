@@ -19,6 +19,7 @@ use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\AssertsStatusTransition;
 use App\Services\Notification\NotificationDispatcher;
 use App\Support\OrganizationContext;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use RoundingMode;
@@ -62,14 +63,14 @@ class ContractIndexationService {
         if ($latest === null || ($contract->indexation_base_period_on !== null && ! $latest->period_on->greaterThan($contract->indexation_base_period_on))) {
             return null;
         }
-        $base = (string) $contract->indexation_base_value;
+        $base = $contract->indexation_base_value ?? '0';
         $change = bcmul(bcsub(bcdiv((string) $latest->value, $base, self::SCALE), '1', self::SCALE), '100', self::SCALE);
-        $passThrough = $contract->indexation_pass_through_percent !== null ? (string) $contract->indexation_pass_through_percent : '100';
+        $passThrough = $contract->indexation_pass_through_percent ?? '100';
         $effective = bcdiv(bcmul($change, $passThrough, self::SCALE), '100', self::SCALE);
-        $old = (string) $contract->value_amount;
+        $old = $contract->value_amount ?? '0';
         $new = bcround(bcmul($old, bcadd('1', bcdiv($effective, '100', self::SCALE), self::SCALE), self::SCALE), 2, RoundingMode::HalfAwayFromZero);
-        $threshold = $contract->indexation_threshold_percent !== null ? (string) $contract->indexation_threshold_percent : '0';
-        $absChange = str_starts_with($change, '-') ? substr($change, 1) : $change;
+        $threshold = $contract->indexation_threshold_percent ?? '0';
+        $absChange = bccomp($change, '0', self::SCALE) < 0 ? bcmul($change, '-1', self::SCALE) : $change;
 
         return [
             'index_period_on' => CarbonImmutable::parse($latest->period_on->toDateString()),
@@ -88,7 +89,7 @@ class ContractIndexationService {
             return null;
         }
         $exists = ContractIndexation::query()->where('contract_id', $contract->id)
-            ->where('index_period_on', $result['index_period_on']->toDateString())
+            ->whereBetween('index_period_on', DateRange::days($result['index_period_on'], $result['index_period_on']))
             ->exists();
         if ($exists) {
             return null;

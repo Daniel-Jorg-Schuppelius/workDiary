@@ -13,12 +13,8 @@
 
 @section('content')
 <x-index-page :subtitle="__('Fällige, überfällige, gesperrte und eingeschränkt freigegebene Assets — Sperren und Ausnahmen im gemeinsamen Modell (D12).')">
-    <x-slot:actions>
-        <x-icon-btn icon="checklist" size="sm" :href="route('asset-compliance.profiles.index')" show-label>{{ __('Prüfprofile') }}</x-icon-btn>
-        <x-icon-btn icon="event_available" size="sm" :href="route('asset-compliance.schedules.index')" show-label>{{ __('Prüfkalender') }}</x-icon-btn>
-        <x-icon-btn icon="qr_code_scanner" size="sm" :href="route('asset-compliance.rounds.index')" show-label>{{ __('inspection_round.nav') }}</x-icon-btn>
-        <x-icon-btn icon="query_stats" size="sm" :href="route('asset-compliance.reports.index')" show-label>{{ __('Auditbericht') }}</x-icon-btn>
-    </x-slot:actions>
+
+    @include('asset-compliance._tabs')
 
     <x-validation-errors />
 

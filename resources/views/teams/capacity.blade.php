@@ -17,10 +17,8 @@
 @endphp
 
 @section('content')
-<x-index-page :subtitle="__('hr.capacity.subtitle')">
-    <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('teams.index')" show-label>{{ __('Teams') }}</x-icon-btn>
-    </x-slot:actions>
+<x-index-page :subtitle="__('hr.capacity.subtitle')"
+              back-route="teams.index" :back-label="__('Teams')">
     <x-card padding="p-0">
         <x-table bare>
             <x-slot:head>

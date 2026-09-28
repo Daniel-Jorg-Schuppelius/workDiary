@@ -32,12 +32,12 @@
                     @elseif (! $serial->status->isTerminal())
                         <form method="POST" action="{{ route('serials.block', $serial) }}" class="flex items-center gap-1">@csrf
                             <input aria-label="{{ __('inventory.serial.field.reason') }}" name="reason" placeholder="{{ __('inventory.serial.field.reason') }}" class="input input-xs input-bordered w-32">
-                            <x-icon-btn icon="block" tone="warning" size="sm" type="submit" :title="__('inventory.serial.action.block')" />
+                            <x-icon-btn icon="block" tone="warning" size="sm" type="submit" :label="__('inventory.serial.action.block')" />
                         </form>
                     @endif
                     @unless ($serial->status->isTerminal())
                         <x-action-form :action="route('serials.scrap', $serial)" :confirm="__('inventory.serial.action.scrap').'?'">
-                            <x-icon-btn icon="delete_forever" tone="error" size="sm" type="submit" :title="__('inventory.serial.action.scrap')" />
+                            <x-icon-btn placement="danger" icon="delete_forever" tone="error" size="sm" type="submit" :label="__('inventory.serial.action.scrap')" />
                         </x-action-form>
                     @endunless
                 </x-slot:actions>

@@ -18,9 +18,8 @@
 @section('content')
     <x-page-shell>
         <x-slot:toolbar>
-            <x-page-toolbar>
+            <x-page-toolbar back-route="events.index" :back-label="__('Zurück')">
                 <x-slot:actions>
-                    <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('events.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
                     @can('update', $event)
                         <x-icon-btn icon="edit" tone="primary" size="sm" data-entry-modal-trigger :href="route('events.edit', $event).'?dialog=1'" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                     @endcan

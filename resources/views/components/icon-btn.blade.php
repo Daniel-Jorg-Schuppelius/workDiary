@@ -15,6 +15,7 @@
     'href'    => null,        // wenn gesetzt → <a>, sonst <button>
     'type'    => 'button',    // button | submit | reset
     'iconFilled' => false,
+    'placement' => null,     // Seitenkopf: bar | menu | danger (sonst auto, MVP-966)
 ])
 
 {{--
@@ -61,11 +62,14 @@
     // unbeschrifteter Button entsteht. Zeigt der Button sichtbaren Text, ist
     // dieser bereits der Name → kein zusätzliches aria-label nötig.
     $a11yLabel = $label ?: (! $showText ? $icon : null);
+
+    $placementAttr = in_array($placement, ['bar', 'menu', 'danger'], true) ? $placement : null;
 @endphp
 
 @if ($href)
     <a href="{{ $href }}"
        {{ $attributes->class([$btnClasses]) }}
+       @if ($placementAttr) data-toolbar-placement="{{ $placementAttr }}" @endif
        @if ($a11yLabel) title="{{ $a11yLabel }}" aria-label="{{ $a11yLabel }}" @endif>
         @if ($icon)
             <x-icon :name="$icon" :filled="$iconFilled" />
@@ -77,6 +81,7 @@
 @else
     <button type="{{ $type }}"
             {{ $attributes->class([$btnClasses]) }}
+            @if ($placementAttr) data-toolbar-placement="{{ $placementAttr }}" @endif
             @if ($a11yLabel) title="{{ $a11yLabel }}" aria-label="{{ $a11yLabel }}" @endif>
         @if ($icon)
             <x-icon :name="$icon" :filled="$iconFilled" />

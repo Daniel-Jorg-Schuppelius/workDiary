@@ -42,16 +42,18 @@
 @section('content')
     <x-index-page :title="__('resale.report.title')" :subtitle="$subtitle">
         <x-slot:actions>
-            <x-icon-btn icon="download" tone="ghost" size="sm" :href="route($exportRoute, $exportParams + ['format' => 'csv'])" show-label>{{ __('resale.margin.export_csv') }}</x-icon-btn>
-            <x-icon-btn icon="table_view" tone="ghost" size="sm" :href="route($exportRoute, $exportParams + ['format' => 'xlsx'])" show-label>{{ __('resale.margin.export_xlsx') }}</x-icon-btn>
             @if ($tab === 'margin')
                 <x-icon-btn icon="picture_as_pdf" tone="ghost" size="sm" :href="route($exportRoute, $exportParams + ['format' => 'pdf'])" show-label>{{ __('resale.margin.export_pdf') }}</x-icon-btn>
             @endif
-            <x-icon-btn icon="request_quote" tone="ghost" size="sm" :href="route('finance.resale.report.export')" show-label>{{ __('resale.export.action') }}</x-icon-btn>
-            <x-icon-btn icon="request_quote" tone="ghost" size="sm" :href="route('finance.resale.report.export.xlsx')" show-label>{{ __('resale.export_files.xlsx_action') }}</x-icon-btn>
-            <x-icon-btn icon="shopping_cart" tone="ghost" size="sm" :href="route('finance.resale.purchases.index')" show-label>{{ __('resale.purchase.title') }}</x-icon-btn>
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('finance.resale.index')" show-label>{{ __('resale.action.back') }}</x-icon-btn>
+            <x-action-menu icon="download" :label="__('Export')">
+                <x-icon-btn icon="download" tone="ghost" size="sm" :href="route($exportRoute, $exportParams + ['format' => 'csv'])" show-label>{{ __('resale.margin.export_csv') }}</x-icon-btn>
+                <x-icon-btn icon="table_view" tone="ghost" size="sm" :href="route($exportRoute, $exportParams + ['format' => 'xlsx'])" show-label>{{ __('resale.margin.export_xlsx') }}</x-icon-btn>
+                <x-icon-btn icon="request_quote" tone="ghost" size="sm" :href="route('finance.resale.report.export')" show-label>{{ __('resale.export.action') }}</x-icon-btn>
+                <x-icon-btn icon="request_quote" tone="ghost" size="sm" :href="route('finance.resale.report.export.xlsx')" show-label>{{ __('resale.export_files.xlsx_action') }}</x-icon-btn>
+            </x-action-menu>
         </x-slot:actions>
+
+        @include('finance.resale._tabs')
 
         <x-tab-nav :items="$tabs" class="w-fit mb-4" />
 

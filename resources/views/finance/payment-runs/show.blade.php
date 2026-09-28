@@ -32,7 +32,7 @@
             @endif
             @if (! $run->isExported())
                 <x-action-form :action="route('finance.payment-runs.cancel', $run)" :confirm="__('sepa.confirm_cancel')">
-                    <x-icon-btn icon="cancel" tone="ghost" size="sm" type="submit"
+                    <x-icon-btn placement="danger" icon="cancel" tone="ghost" size="sm" type="submit"
                                 show-label>{{ __('sepa.action.cancel') }}</x-icon-btn>
                 </x-action-form>
             @endif

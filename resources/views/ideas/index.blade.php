@@ -16,11 +16,7 @@
 <x-index-page overflow="clip" :subtitle="__('ideas.subtitle')">
     <x-slot:actions>
         @can('create', \App\Models\Ideas\IdeaMap::class)
-            <button type="button" class="btn btn-sm btn-ghost gap-1"
-                    data-open-dialog="ideas-import-dialog">
-                <x-icon name="upload_file" class="text-base" />
-                {{ __('ideas.import.action') }}
-            </button>
+            <x-button type="button" tone="ghost" icon="upload_file" data-open-dialog="ideas-import-dialog">{{ __('ideas.import.action') }}</x-button>
             <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger
                         :href="route('ideas.create')" show-label>{{ __('ideas.action.create') }}</x-icon-btn>
         @endcan

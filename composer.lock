@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a012388f10e2309984eaa42cfdc437b3",
+    "content-hash": "f4d050a328ac3200ce8f5939c1392c30",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -876,16 +876,16 @@
         },
         {
             "name": "daniel-jorg-schuppelius/php-erechnung-toolkit",
-            "version": "v0.15.1",
+            "version": "v0.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit.git",
-                "reference": "2fac64b06028130b1d29680da7fcc5bef754942d"
+                "reference": "9cd9e25c31cb304e41eb96e150572036c902d043"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/zipball/2fac64b06028130b1d29680da7fcc5bef754942d",
-                "reference": "2fac64b06028130b1d29680da7fcc5bef754942d",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/zipball/9cd9e25c31cb304e41eb96e150572036c902d043",
+                "reference": "9cd9e25c31cb304e41eb96e150572036c902d043",
                 "shasum": ""
             },
             "require": {
@@ -921,10 +921,13 @@
             "authors": [
                 {
                     "name": "Daniel Joerg Schuppelius",
-                    "email": "info@schuppelius.org"
+                    "email": "info@schuppelius.org",
+                    "homepage": "https://schuppelius.org",
+                    "role": "Developer"
                 }
             ],
             "description": "PHP library for creating, parsing and validating electronic invoices (XRechnung, ZUGFeRD/Factur-X) according to EN 16931.",
+            "homepage": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit",
             "keywords": [
                 "EN16931",
                 "ZUGFeRD",
@@ -943,9 +946,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/issues",
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/tree/v0.15.1"
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit"
             },
-            "time": "2026-09-19T10:52:33+00:00"
+            "time": "2026-09-27T22:45:48+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/php-pdf-toolkit",
@@ -1728,16 +1731,16 @@
         },
         {
             "name": "dschuppelius/php-common-toolkit",
-            "version": "v2.3.0",
+            "version": "v2.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DSchuppelius/php-common-toolkit.git",
-                "reference": "3284d1171a41ac9ca38791f72ce7a78fd3d227c3"
+                "reference": "75cfc7c42f91b0fa33af33e27ff1c89b40ab3cb6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/3284d1171a41ac9ca38791f72ce7a78fd3d227c3",
-                "reference": "3284d1171a41ac9ca38791f72ce7a78fd3d227c3",
+                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/75cfc7c42f91b0fa33af33e27ff1c89b40ab3cb6",
+                "reference": "75cfc7c42f91b0fa33af33e27ff1c89b40ab3cb6",
                 "shasum": ""
             },
             "require": {
@@ -1779,7 +1782,7 @@
                 "issues": "https://github.com/DSchuppelius/php-common-toolkit/issues",
                 "source": "https://github.com/DSchuppelius/php-common-toolkit"
             },
-            "time": "2026-09-26T21:01:25+00:00"
+            "time": "2026-09-27T22:45:48+00:00"
         },
         {
             "name": "dschuppelius/php-config-toolkit",

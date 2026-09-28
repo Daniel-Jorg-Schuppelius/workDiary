@@ -39,7 +39,7 @@
                         </x-action-form>
                     @endif
                     <x-action-form :action="route('articles.destroy', $article)" method="DELETE" :confirm="__('article.confirm.delete')">
-                        <x-icon-btn icon="delete" size="sm" type="submit" tone="error" :title="__('Löschen')" />
+                        <x-icon-btn placement="danger" icon="delete" size="sm" type="submit" tone="error" :label="__('Löschen')" />
                     </x-action-form>
                 @endif
             </x-slot:actions>
@@ -107,11 +107,11 @@
                         <div class="flex items-center justify-end gap-1">
                             <x-icon-btn icon="label" size="xs" tone="ghost"
                                         :href="route('inventory.labels.variant', $variant)"
-                                        target="_blank" :title="__('Etikett drucken')" />
+                                        target="_blank" :label="__('Etikett drucken')" />
                             @if ($canManage && $variant->status->value !== 'retired')
                                 <form method="POST" action="{{ route('articles.variants.retire', [$article, $variant]) }}">
                                     @csrf
-                                    <x-icon-btn icon="archive" size="xs" type="submit" :title="__('article.action.retire')" />
+                                    <x-icon-btn icon="archive" size="xs" type="submit" :label="__('article.action.retire')" />
                                 </form>
                             @endif
                         </div>
@@ -234,7 +234,7 @@
                         @if ($canManage)
                             <form method="POST" action="{{ route('articles.tiers.destroy', [$article, $tier]) }}">
                                 @csrf @method('DELETE')
-                                <x-icon-btn icon="delete" size="xs" tone="error" type="submit" :title="__('Löschen')" />
+                                <x-icon-btn icon="delete" size="xs" tone="error" type="submit" :label="__('Löschen')" />
                             </form>
                         @endif
                     </td>
@@ -301,7 +301,7 @@
                             @can('update', $article)
                                 @unless ($supply->is_preferred)
                                     <form method="POST" action="{{ route('articles.supplies.prefer', [$article, $supply]) }}">@csrf
-                                        <x-icon-btn icon="star" size="xs" type="submit" :title="__('article.supplies.set_preferred')" />
+                                        <x-icon-btn icon="star" size="xs" type="submit" :label="__('article.supplies.set_preferred')" />
                                     </form>
                                 @endunless
                             @endcan

@@ -18,12 +18,12 @@
 @endphp
 
 @section('content')
-<x-index-page :subtitle="$objective->description">
+<x-index-page :subtitle="$objective->description"
+              back-route="investments.objectives.index" :back-label="__('investment.objective.title')">
     <x-slot:actions>
         @if ($canManage)
             <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('investments.objectives.edit', $objective)" show-label>{{ __('investment.objective.edit') }}</x-icon-btn>
         @endif
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('investments.objectives.index')" show-label>{{ __('investment.objective.title') }}</x-icon-btn>
     </x-slot:actions>
 
     <x-card padding="p-0" :title="__('investment.objective.field.key_results')">

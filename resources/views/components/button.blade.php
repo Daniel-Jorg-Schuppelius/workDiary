@@ -17,6 +17,7 @@
     'block'   => false,       // volle Breite (btn-block)
     'loading' => false,       // statischer Lade-Spinner (z. B. Server-gerendert)
     'disabled' => false,
+    'placement' => null,     // Seitenkopf: bar | menu | danger (sonst auto, MVP-966)
 ])
 
 {{--
@@ -58,10 +59,13 @@
         ->implode(' ');
 
     $isDisabled = $disabled || $loading;
+
+    $placementAttr = in_array($placement, ['bar', 'menu', 'danger'], true) ? $placement : null;
 @endphp
 
 @if ($href && ! $isDisabled)
-    <a href="{{ $href }}" {{ $attributes->class([$btnClasses]) }}>
+    <a href="{{ $href }}" {{ $attributes->class([$btnClasses]) }}
+       @if ($placementAttr) data-toolbar-placement="{{ $placementAttr }}" @endif>
         @if ($loading)
             <span class="loading loading-spinner loading-xs" aria-hidden="true"></span>
         @elseif ($icon)
@@ -75,6 +79,7 @@
 @else
     <button type="{{ $type }}"
             {{ $attributes->class([$btnClasses]) }}
+            @if ($placementAttr) data-toolbar-placement="{{ $placementAttr }}" @endif
             @if ($isDisabled) disabled aria-disabled="true" @endif>
         @if ($loading)
             <span class="loading loading-spinner loading-xs" aria-hidden="true"></span>

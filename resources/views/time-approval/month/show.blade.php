@@ -20,11 +20,9 @@
 
 @section('content')
     <x-index-page :subtitle="__('Status: :status', ['status' => $closure->status->label()])"
-                  :badge="$closure->status->label()" :badgeTone="$closure->status->tone()">
+                  :badge="$closure->status->label()" :badgeTone="$closure->status->tone()"
+                  back-route="month-approval.index" :back-label="__('Übersicht')">
         <x-slot:actions>
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                        :href="route('month-approval.index')"
-                        show-label>{{ __('Übersicht') }}</x-icon-btn>
 
             @can('submit', $closure)
                 <form method="POST" action="{{ route('month-approval.submit', ['year' => $closure->period_year, 'month' => $closure->period_month]) }}">

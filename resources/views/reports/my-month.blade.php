@@ -27,15 +27,17 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Tagesweise Übersicht aller eigenen Zeiteinträge im Monat.')">
             <x-slot:actions>
-                <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.my-month', array_merge(['export' => 'csv', 'kind' => $kind], $standardFilters->toQueryParams()))"
-                            show-label>CSV</x-icon-btn>
-                <x-icon-btn icon="table_chart" tone="outline" size="sm"
-                            :href="route('reports.my-month', array_merge(['export' => 'xlsx', 'kind' => $kind], $standardFilters->toQueryParams()))"
-                            show-label>XLSX</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
                             :href="route('reports.my-month', array_merge(['export' => 'pdf', 'kind' => $kind], $standardFilters->toQueryParams()))"
                             show-label>PDF</x-icon-btn>
+                <x-action-menu icon="download" tone="outline" :label="__('Export')">
+                    <x-icon-btn icon="download" tone="outline" size="sm"
+                                :href="route('reports.my-month', array_merge(['export' => 'csv', 'kind' => $kind], $standardFilters->toQueryParams()))"
+                                show-label>CSV</x-icon-btn>
+                    <x-icon-btn icon="table_chart" tone="outline" size="sm"
+                                :href="route('reports.my-month', array_merge(['export' => 'xlsx', 'kind' => $kind], $standardFilters->toQueryParams()))"
+                                show-label>XLSX</x-icon-btn>
+                </x-action-menu>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

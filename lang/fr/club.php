@@ -1743,4 +1743,11 @@ Votre gestion des cotisations',
         ],
         'overdue_count' => '{1}une en retard|[2,*]:count en retard',
     ],
+    // Reiter der Termin-Sichten (MVP-969).
+    'tab' => [
+        'event' => 'Événement',
+        'match' => 'Journée de match',
+        'competition' => 'Compétition',
+        'attendance' => 'Présences',
+    ],
 ];

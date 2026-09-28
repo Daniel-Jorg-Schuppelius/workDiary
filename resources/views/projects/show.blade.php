@@ -27,7 +27,6 @@
                 @endif
             </div>
             <x-slot:actions>
-                <x-icon-btn icon="timeline" size="sm" :href="route('projects.planning', $project)" show-label>{{ __('Projektplanung') }}</x-icon-btn>
                 @can('create', \App\Models\Protocol\Protocol::class)
                     <x-icon-btn icon="note_add" size="sm" data-entry-modal-trigger :href="route('protocols.create', ['subject_kind' => 'project', 'subject' => $project->sqid])" show-label>{{ __('protocol.title.create') }}</x-icon-btn>
                 @endcan
@@ -49,12 +48,14 @@
                           :confirm="__('Verknüpfungen zu Einträgen werden gelöst.')"
                           :confirm-label="__('Löschen')"
                           data-confirm-title="{{ __('Projekt löschen') }}">
-                        <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
+                        <x-icon-btn placement="danger" icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
                     </x-action-form>
                 @endcan
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    @include('projects._tabs')
 
     <x-custom-fields-card :subject="$project" />
 

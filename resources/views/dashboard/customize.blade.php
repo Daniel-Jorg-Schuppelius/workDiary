@@ -40,7 +40,8 @@
 @section('content')
     <x-page-shell>
         <x-slot:toolbar>
-            <x-page-toolbar :subtitle="__('Kacheln ziehen oder mit den Pfeilen sortieren, Breite und Bereich wählen, ein- oder ausblenden.')">
+            <x-page-toolbar :subtitle="__('Kacheln ziehen oder mit den Pfeilen sortieren, Breite und Bereich wählen, ein- oder ausblenden.')"
+                            back="{{ route('dashboard') }}" :back-label="__('Zurück zum Dashboard')">
                 <x-slot:actions>
                     @if ($hasOwnLayout)
                         <form method="POST" action="{{ route('dashboard.customize.reset') }}" class="leading-none">
@@ -48,7 +49,6 @@
                             <x-button type="submit" tone="ghost" size="sm" icon="restart_alt">{{ __('Auf Vorgabe zurücksetzen') }}</x-button>
                         </form>
                     @endif
-                    <x-button href="{{ route('dashboard') }}" tone="ghost" size="sm" icon="arrow_back">{{ __('Zurück zum Dashboard') }}</x-button>
                 </x-slot:actions>
             </x-page-toolbar>
         </x-slot:toolbar>

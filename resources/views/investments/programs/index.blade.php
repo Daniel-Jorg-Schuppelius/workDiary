@@ -15,11 +15,12 @@
 @section('content')
 <x-index-page :subtitle="__('investment.program.subtitle')">
     <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('investments.index')" :label="__('Investitionen')" />
         @can(\App\Enums\User\Permission::InvestmentManage->value)
             <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger :href="route('investments.programs.create')" show-label>{{ __('investment.program.create') }}</x-icon-btn>
         @endcan
     </x-slot:actions>
+
+    @include('investments._tabs')
 
     <x-card padding="p-0">
         <x-table bare>

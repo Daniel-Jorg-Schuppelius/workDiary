@@ -247,6 +247,12 @@ return [
         'released' => 'Einbehalt freigegeben',
         'removed' => 'Einbehalt entfernt',
     ],
+    'tenantPlanRequest' => [
+        'created' => 'Tarifanfrage gestellt',
+        'withdrawn' => 'Tarifanfrage zurückgezogen',
+        'done' => 'Tarifanfrage erledigt',
+        'declined' => 'Tarifanfrage abgelehnt',
+    ],
     'contract' => [
         'indexationProposed' => 'Indexanpassung vorgeschlagen',
         'indexationApplied' => 'Indexanpassung übernommen',
@@ -294,6 +300,8 @@ return [
     ],
     'created' => 'Angelegt',
     'crisis' => [
+        'mapPointAdded' => 'Lagepunkt gesetzt',
+        'mapPointRemoved' => 'Lagepunkt entfernt',
         'activated' => 'Krisenfall aktiviert',
         'alert_acknowledged' => 'Krisenalarm quittiert',
         'alert_escalated' => 'Krisenalarm eskaliert',
@@ -632,6 +640,7 @@ return [
     'orgamax_payment_requested' => 'orgaMAX-Zahlung angefordert',
     'orgamax_scopes_missing' => 'orgaMAX-Berechtigungen fehlen',
     'organization' => [
+        'billingContactUpdated' => 'Abrechnungsdaten geändert',
         'maintenance_toggled' => 'Wartungsmodus umgeschaltet',
     ],
     'overtime' => [
@@ -734,6 +743,7 @@ return [
         'mailed' => 'Auftragsbestätigung per E-Mail versendet',
     ],
     'purchase_order' => [
+        'confirmed' => 'Auftragsbestätigung eingelesen',
         'mailed' => 'Bestellung per E-Mail versendet',
     ],
     'delivery_note' => [
@@ -933,6 +943,8 @@ return [
         'test' => 'Support-Test',
     ],
     'sustainability' => [
+        'offsetRecorded' => 'Klimanachweis erfasst',
+        'offsetRemoved' => 'Klimanachweis gelöscht',
         'assessment_drafted' => 'ESG-Bewertung entworfen',
         'assessment_finalized' => 'ESG-Bewertung finalisiert',
         'assessment_versioned' => 'ESG-Bewertungsversion erstellt',

@@ -24,15 +24,17 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Verbrauch und Netto-Erlöse je Material im Zeitraum.')">
             <x-slot:actions>
-                <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.materials', array_merge($linkParams, ['export' => 'csv']))"
-                            show-label>CSV</x-icon-btn>
-                <x-icon-btn icon="table_view" tone="outline" size="sm"
-                            :href="route('reports.materials', array_merge($linkParams, ['export' => 'xlsx']))"
-                            show-label>Excel</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
                             :href="route('reports.materials', array_merge($linkParams, ['export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>
+                <x-action-menu icon="download" tone="outline" :label="__('Export')">
+                    <x-icon-btn icon="download" tone="outline" size="sm"
+                                :href="route('reports.materials', array_merge($linkParams, ['export' => 'csv']))"
+                                show-label>CSV</x-icon-btn>
+                    <x-icon-btn icon="table_view" tone="outline" size="sm"
+                                :href="route('reports.materials', array_merge($linkParams, ['export' => 'xlsx']))"
+                                show-label>Excel</x-icon-btn>
+                </x-action-menu>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

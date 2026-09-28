@@ -14,14 +14,11 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar :back="route('bill-of-quantities.catalog-assignment', $bill)" :back-label="__('Zur Zuordnung')">
             <div class="text-sm text-base-content/70">
                 {{ $bill->name }}
                 @if ($from) · {{ $from->name }} {{ $from->edition }} @endif
             </div>
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('bill-of-quantities.catalog-assignment', $bill)" show-label>{{ __('Zur Zuordnung') }}</x-icon-btn>
-            </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 

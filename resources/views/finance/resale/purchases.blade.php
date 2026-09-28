@@ -30,8 +30,9 @@
                 <x-icon-btn icon="picture_as_pdf" tone="primary" size="sm" data-entry-modal-trigger :href="route('finance.resale.purchases.import.create')" show-label>{{ __('resale.purchase.import.action') }}</x-icon-btn>
                 <x-icon-btn icon="receipt" tone="ghost" size="sm" data-entry-modal-trigger :href="route('finance.resale.purchases.create')" show-label>{{ __('resale.purchase.action.allocate') }}</x-icon-btn>
             @endif
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('finance.resale.report.index')" show-label>{{ __('resale.action.back') }}</x-icon-btn>
         </x-slot:actions>
+
+        @include('finance.resale._tabs')
 
         @if ($issues !== [])
             {{-- Zeilenbefunde und Summenabweichungen des letzten PDF-Imports (Review 2026-09-10, B17). --}}

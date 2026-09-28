@@ -14,9 +14,8 @@
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('procurement.subtitle')">
-    <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('purchase-orders.index')" show-label>{{ __('procurement.title') }}</x-icon-btn>
-    </x-slot:actions>
+
+    @include('purchase-orders._tabs')
 
     <x-filter-bar :action="route('purchase-orders.suggestions')">
         <x-filter-field :label="__('procurement.ui.select_warehouse')" for="sug-wh">

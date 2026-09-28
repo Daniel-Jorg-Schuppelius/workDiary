@@ -22,13 +22,13 @@
     <x-validation-errors />
 
     <x-slot:toolbar>
-        <x-page-toolbar :title="$case->number . ' — ' . $case->title">
+        <x-page-toolbar :title="$case->number . ' — ' . $case->title"
+                        back-route="damage-cases.index" :back-label="__('damage.title')">
             <div class="flex flex-wrap items-center gap-2 text-sm">
                 <x-status-badge size="md" outline :tone="$case->status->tone()">{{ $case->status->label() }}</x-status-badge>
                 <span class="badge badge-outline">{{ $case->kind->label() }}</span>
             </div>
             <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('damage-cases.index')" :label="__('damage.title')" />
                 @can('update', $case)
                     <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('damage-cases.edit', $case)" show-label>{{ __('damage.action.edit') }}</x-icon-btn>
                 @endcan

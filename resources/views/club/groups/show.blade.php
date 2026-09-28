@@ -19,7 +19,8 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('club.subtitle.group_show', ['name' => $group->name]) . ($group->department ? ' · ' . $group->department->name : '')"
                         :badge="$group->is_active ? $group->admission_mode->label() : __('club.label.inactive')"
-                        :badgeTone="$group->is_active ? 'primary' : 'ghost'">
+                        :badgeTone="$group->is_active ? 'primary' : 'ghost'"
+                        back-route="club.groups.index" :back-label="__('club.action.back')">
             <x-slot:actions>
                 @if ($canDecide && $group->is_active)
                     <x-icon-btn icon="person_add" tone="primary" size="sm"
@@ -33,9 +34,6 @@
                                 :href="route('club.groups.edit', $group)"
                                 show-label>{{ __('club.action.edit') }}</x-icon-btn>
                 @endif
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                            :href="route('club.groups.index')"
-                            show-label>{{ __('club.action.back') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

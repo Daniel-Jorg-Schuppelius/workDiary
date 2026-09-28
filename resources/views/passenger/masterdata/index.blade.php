@@ -13,9 +13,8 @@
 
 @section('content')
 <x-index-page :subtitle="__('passenger.masterdata.subtitle')">
-    <x-slot:actions>
-        <x-icon-btn icon="local_taxi" size="sm" :href="route('passenger-rides.index')" show-label>{{ __('passenger.rides.title') }}</x-icon-btn>
-    </x-slot:actions>
+
+    @include('passenger._tabs')
 
     <x-validation-errors />
 

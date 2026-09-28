@@ -17,7 +17,7 @@ php artisan migrate:fresh --seed --force --no-interaction
 
 # Default-Org kommt mit Plan "free" aus dem Seeder — das Modul-Gate (423)
 # würde sonst fast jede Seite sperren. Für E2E: alles freischalten.
-php artisan tinker --execute='\App\Models\Organization::query()->update(["plan" => "enterprise"]);'
+php artisan tinker --execute='\App\Models\Platform\Organization::query()->update(["plan" => "enterprise"]);'
 
 # Hilfecenter (MVP-752): help_topics wird im Deploy per Reindex befüllt —
 # die frische E2E-DB braucht denselben Schritt, sonst ist /hilfe leer.

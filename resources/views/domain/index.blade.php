@@ -12,11 +12,8 @@
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('domain.title.index_subtitle')">
-    <x-slot:actions>
-        <x-icon-btn icon="settings_ethernet" size="sm" :href="route('admin.domain-provider.index')" show-label>{{ __('domain.title.connections') }}</x-icon-btn>
-        <x-icon-btn icon="account_tree" size="sm" :href="route('domain-reseller.index')" show-label>{{ __('domain.title.reseller') }}</x-icon-btn>
-        <x-icon-btn icon="analytics" size="sm" :href="route('domains.reports')" show-label>{{ __('domain.title.reports') }}</x-icon-btn>
-    </x-slot:actions>
+
+    @include('domain._tabs')
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <x-kpi-tile :label="__('domain.metric.expiring_90')" :value="$metrics['expiring_90']" />

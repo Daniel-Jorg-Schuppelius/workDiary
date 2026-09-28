@@ -20,7 +20,8 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$document->isPublished() ? __('procedure-documentation.generated.frozen_hint', ['date' => $document->published_at?->fdatetime()]) : __('procedure-documentation.generated.preview_hint')"
-                        :badge="$document->status->label()" :badgeTone="$document->status->tone()">
+                        :badge="$document->status->label()" :badgeTone="$document->status->tone()"
+                        back-route="finance.procedure-documentation.index" :back-label="__('procedure-documentation.action.back')">
             <x-slot:actions>
                 @if ($editable)
                     <x-icon-btn icon="edit" tone="outline" size="sm"
@@ -33,7 +34,7 @@
                     </x-action-form>
                     <x-action-form :action="route('finance.procedure-documentation.destroy', $document)" method="DELETE"
                                    :confirm="__('procedure-documentation.confirm.delete')" confirm-icon="delete" confirm-tone="error">
-                        <x-icon-btn type="submit" icon="delete" tone="ghost" size="sm" :label="__('procedure-documentation.action.delete')" />
+                        <x-icon-btn placement="danger" type="submit" icon="delete" tone="ghost" size="sm" :label="__('procedure-documentation.action.delete')" />
                     </x-action-form>
                 @endif
                 @if ($document->isPublished())
@@ -41,9 +42,6 @@
                                 :href="route('finance.procedure-documentation.download', $document)"
                                 show-label>{{ __('procedure-documentation.action.download') }}</x-icon-btn>
                 @endif
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                            :href="route('finance.procedure-documentation.index')"
-                            show-label>{{ __('procedure-documentation.action.back') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

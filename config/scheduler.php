@@ -323,6 +323,13 @@ return [
         ],
         // Verbraucherpreisindex (MVP-952): Destatis veröffentlicht monatlich,
         // neue Werte warten auf Freigabe.
+        // Nutzungsabrechnung je Mandant (MVP-956): Stand des Vormonats.
+        'platform.usage_snapshot' => [
+            'command' => 'platform:usage-snapshot',
+            'cadence' => ['type' => 'monthlyOn', 'time' => '03:40', 'day' => 1],
+            'allowed' => ['monthlyOn'],
+            'criticality' => 'core',
+        ],
         'contracts.price_index_sync' => [
             'command' => 'contracts:price-index-sync',
             'cadence' => ['type' => 'monthlyOn', 'time' => '06:20', 'day' => 20],

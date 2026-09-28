@@ -17,8 +17,10 @@
 
 @section('content')
     <x-page-toolbar :subtitle="$entry->memo">
-        <x-slot:actions>
+        <x-slot:badges>
             <x-status-badge :tone="$entry->status->tone()">{{ $entry->status->label() }}</x-status-badge>
+        </x-slot:badges>
+        <x-slot:actions>
             @if ($canPost && $entry->status->isMutable())
                 <x-action-form :action="route('finance.accounting.journal.post', $entry)" method="POST">
                     <x-button type="submit" tone="primary" size="sm">{{ __('accounting.ledger.action.post') }}</x-button>

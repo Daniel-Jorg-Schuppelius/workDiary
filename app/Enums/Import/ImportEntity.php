@@ -40,6 +40,8 @@ enum ImportEntity: string implements HasLabel {
     case Documents = 'documents';
     // Vereinsverwaltung (Feature 159, MVP-842): Erstimport des Mitgliederstamms.
     case ClubMembers = 'club_members';
+    // Zählerstände per Datei (MVP-962), z. B. Betriebsstunden aus Telematik-Exporten.
+    case MeterReadings = 'meter_readings';
 
     public function label(): string {
         return (string) __('import.entity.' . $this->value);
@@ -66,6 +68,7 @@ enum ImportEntity: string implements HasLabel {
             self::ContactPersons => 'customer.import',
             self::Documents => 'document.create',
             self::ClubMembers => 'club.manage',
+            self::MeterReadings => 'meterReading.record',
         };
     }
 
@@ -95,6 +98,7 @@ enum ImportEntity: string implements HasLabel {
             self::ContactPersons => null,
             self::Documents => \App\Models\Document\Document::class,
             self::ClubMembers => \App\Models\Club\ClubMember::class,
+            self::MeterReadings => \App\Models\Asset\MeterReading::class,
         };
     }
 

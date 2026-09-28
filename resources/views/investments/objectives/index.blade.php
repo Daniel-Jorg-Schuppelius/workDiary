@@ -18,8 +18,9 @@
         @if ($canManage)
             <x-icon-btn icon="add" size="sm" tone="primary" data-entry-modal-trigger :href="route('investments.objectives.create')" show-label>{{ __('investment.objective.create') }}</x-icon-btn>
         @endif
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('investments.index')" show-label>{{ __('Investitionen') }}</x-icon-btn>
     </x-slot:actions>
+
+    @include('investments._tabs')
     <x-card padding="p-0">
         <x-table bare>
             <x-slot:head>

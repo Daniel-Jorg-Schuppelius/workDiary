@@ -22,8 +22,9 @@
         @if ($canManage && $bill->is_framework)
             <x-icon-btn icon="add" size="sm" tone="primary" data-entry-modal-trigger :href="route('bill-of-quantities.call-offs.create', $bill)" show-label>{{ __('gaeb.call_off.create') }}</x-icon-btn>
         @endif
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('bill-of-quantities.show', $bill)" show-label>{{ __('gaeb.show.back_to_boq') }}</x-icon-btn>
     </x-slot:actions>
+
+    @include('bill-of-quantities._tabs')
 
     @if ($canManage)
         <x-card>

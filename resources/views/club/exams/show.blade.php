@@ -19,7 +19,8 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="($event?->title ?? '') . ($start ? ' · ' . $start->format('d.m.Y H:i') : '')"
                         :badge="$isCancelled ? __('club.events.label.cancelled') : $offer->system?->name . ' v' . $offer->version?->version_no"
-                        :badgeTone="$isCancelled ? 'error' : 'primary'">
+                        :badgeTone="$isCancelled ? 'error' : 'primary'"
+                        back-route="club.exams.index" :back-label="__('club.action.back')">
             <x-slot:actions>
                 @if ($canCandidates && ! $isCancelled)
                     <x-icon-btn icon="person_add" tone="primary" size="sm" data-entry-modal-trigger :href="route('club.exams.candidates.create', $offer)" show-label>{{ __('club.exams.action.add_candidate') }}</x-icon-btn>
@@ -33,7 +34,6 @@
                 @if ($event)
                     <x-icon-btn icon="event" tone="ghost" size="sm" :href="route('club.events.show', $event)" show-label>{{ __('club.exams.action.open_event') }}</x-icon-btn>
                 @endif
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('club.exams.index')" show-label>{{ __('club.action.back') }}</x-icon-btn>
                 <x-help-button topic="club.exams" />
             </x-slot:actions>
         </x-page-toolbar>

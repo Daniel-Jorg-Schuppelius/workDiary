@@ -217,6 +217,12 @@ class TenantTraitCoverageTest extends TestCase {
         // Basiszinssatz nach § 247 BGB (MVP-879): installationsweite
         // Referenzdaten der Bundesbank, für alle Organisationen gleich.
         \App\Models\Invoicing\BaseInterestRate::class,
+        // Verbraucherpreisindex (MVP-952): installationsweite Referenzdaten,
+        // Freigabe durch den Plattformbetreiber.
+        \App\Models\Contract\PriceIndexValue::class,
+        // Nutzungsstände je Mandant (MVP-956): Betreiberdaten über alle
+        // Organisationen, gelesen nur auf Plattformseiten.
+        \App\Models\Platform\TenantUsageSnapshot::class,
         // Chat: Child-Entitäten von Message/Poll — Mandantengrenze wird transitiv
         // über das tenant-gebundene Parent (Channel/Message, beide mit
         // BelongsToOrganization) durchgesetzt; eigene organization_id wäre redundant.

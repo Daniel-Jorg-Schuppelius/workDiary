@@ -22,7 +22,8 @@
 @endphp
 
 @section('content')
-    <x-index-page :title="$subscription->label" :subtitle="$subscription->kind->label() . ' · ' . $subscription->provider->label()">
+    <x-index-page :title="$subscription->label" :subtitle="$subscription->kind->label() . ' · ' . $subscription->provider->label()"
+                  back-route="finance.resale.index" :back-label="__('resale.action.back')">
         <x-slot:actions>
             @if ($canManage)
                 <x-icon-btn icon="edit" tone="primary" size="sm" data-entry-modal-trigger
@@ -31,7 +32,7 @@
                 <form method="POST" action="{{ route('finance.resale.destroy', $subscription->sqid) }}" data-confirm-dialog data-confirm-message="{{ __('resale.confirm.delete') }}" data-confirm-tone="error">
                     @csrf
                     @method('DELETE')
-                    <x-icon-btn icon="delete" tone="ghost" size="sm" type="submit" show-label>{{ __('resale.action.delete') }}</x-icon-btn>
+                    <x-icon-btn placement="danger" icon="delete" tone="ghost" size="sm" type="submit" show-label>{{ __('resale.action.delete') }}</x-icon-btn>
                 </form>
             @endif
             @if ($canManage && ! $subscription->isAssignment() && $subscription->quantity > 1)
@@ -45,7 +46,6 @@
                     <x-icon-btn icon="auto_awesome" tone="ghost" size="sm" type="submit" show-label>{{ __('resale.link.action.propose') }}</x-icon-btn>
                 </form>
             @endif
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('finance.resale.index')" show-label>{{ __('resale.action.back') }}</x-icon-btn>
         </x-slot:actions>
 
         {{-- Schnellzuordnung und Halterwechsel senden ohne Dialog: Feldfehler landen hier. --}}

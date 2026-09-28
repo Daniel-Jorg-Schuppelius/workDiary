@@ -20,12 +20,14 @@
     <x-index-page :subtitle="__('isms.subtitle.risks')">
         <x-slot:actions>
             {{-- Direkt-Exporte (Feature 044, MVP 1): Datenstand = jetzt; „versioniert" leistet das Auditpaket. --}}
-            <x-icon-btn icon="download" tone="outline" size="sm"
-                        :href="route('isms.risks.export', ['format' => 'json'])"
-                        show-label>{{ __('isms.action.export_json') }}</x-icon-btn>
-            <x-icon-btn icon="download" tone="outline" size="sm"
-                        :href="route('isms.risks.export', ['format' => 'csv'])"
-                        show-label>{{ __('isms.action.export_csv') }}</x-icon-btn>
+            <x-action-menu icon="download" tone="outline" :label="__('Export')">
+                <x-icon-btn icon="download" tone="outline" size="sm"
+                            :href="route('isms.risks.export', ['format' => 'json'])"
+                            show-label>{{ __('isms.action.export_json') }}</x-icon-btn>
+                <x-icon-btn icon="download" tone="outline" size="sm"
+                            :href="route('isms.risks.export', ['format' => 'csv'])"
+                            show-label>{{ __('isms.action.export_csv') }}</x-icon-btn>
+            </x-action-menu>
             <x-icon-btn icon="rule_folder" tone="outline" size="sm"
                         data-entry-modal-trigger
                         :href="route('isms.soa')"
@@ -272,22 +274,14 @@
                             @endcan
                             @can('transition', $risk)
                                 @if ($risk->status->allowedTransitions() !== [])
-                                    <details class="dropdown dropdown-end">
-                                        <summary class="btn btn-outline btn-xs gap-1" title="{{ __('isms.action.transition') }}">
-                                            <x-icon name="swap_horiz" />
-                                        </summary>
-                                        <ul class="menu dropdown-content z-10 w-56 rounded-box bg-base-100 p-2 shadow">
-                                            @foreach ($risk->status->allowedTransitions() as $target)
-                                                <li>
-                                                    <form method="POST" action="{{ route('isms.risks.transition', $risk) }}">
-                                                        @csrf
-                                                        <input type="hidden" name="status" value="{{ $target->value }}">
-                                                        <button type="submit" class="w-full text-left">{{ $target->label() }}</button>
-                                                    </form>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    </details>
+                                    <x-action-menu icon="swap_horiz" tone="outline" size="xs" icon-only :label="__('isms.action.transition')">
+                                        @foreach ($risk->status->allowedTransitions() as $target)
+                                            <x-action-form :action="route('isms.risks.transition', $risk)">
+                                                <input type="hidden" name="status" value="{{ $target->value }}">
+                                                <x-button type="submit" tone="ghost" size="xs">{{ $target->label() }}</x-button>
+                                            </x-action-form>
+                                        @endforeach
+                                    </x-action-menu>
                                 @endif
                             @endcan
                             @can('delete', $risk)

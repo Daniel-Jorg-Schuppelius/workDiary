@@ -17,14 +17,8 @@
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('commission.subtitle.index')">
-    <x-slot:actions>
-        <x-icon-btn icon="percent" tone="ghost" size="sm"
-                    :href="route('commission-rules.index')"
-                    show-label>{{ __('commission.action.to_rules') }}</x-icon-btn>
-        <x-icon-btn icon="event_repeat" tone="ghost" size="sm"
-                    :href="route('commission-runs.index')"
-                    show-label>{{ __('commission.action.to_runs') }}</x-icon-btn>
-    </x-slot:actions>
+
+    @include('sales._commission_tabs')
 
     <x-filter-bar :action="route('commissions.index')" :reset="route('commissions.index')">
         <x-filter-field :label="__('commission.field.status')" for="flt-status">

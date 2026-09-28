@@ -34,12 +34,9 @@
 @endphp
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar back-route="reports.economics" :back-label="__('Zum Report')">
             <x-slot:title>{{ $titles[$kind] ?? __('Nachkalkulation — Belege') }}</x-slot:title>
             <x-slot:subtitle>{{ $project->name }} · {{ $from }} – {{ $to }}</x-slot:subtitle>
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('reports.economics')" show-label>{{ __('Zum Report') }}</x-icon-btn>
-            </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 

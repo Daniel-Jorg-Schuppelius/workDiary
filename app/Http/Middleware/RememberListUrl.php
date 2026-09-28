@@ -18,14 +18,32 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Merkt sich je benannter Route die zuletzt geladene URL samt Filtern,
- * Sortierung und Seite. `redirect()->toList()` führt Aktionen dorthin zurück,
- * statt die Liste auf den Grundzustand zu setzen. Ohne Query-String wird die
- * Erinnerung verworfen — „Zurücksetzen" in der Filterleiste gilt also auch
- * für den nächsten Rücksprung.
+ * Sortierung und Seite. `redirect()->toList()` und der Rückpfeil im
+ * Seitenkopf führen über urlFor() dorthin zurück, statt die Liste auf den
+ * Grundzustand zu setzen. Ohne Query-String wird die Erinnerung verworfen —
+ * „Zurücksetzen" in der Filterleiste gilt also auch für den nächsten Rücksprung.
  */
 class RememberListUrl {
     /** Flache Map Routenname → URL; Punkt-Notation würde `a.b` und `a.b.c` ineinander schachteln. */
     public const SESSION_KEY = 'list_urls';
+
+    /**
+     * URL der Liste samt gemerkter Filter. Die Erinnerung zählt nur, wenn der
+     * Aufrufer keine eigene Query mitgibt und der Pfad übereinstimmt.
+     *
+     * @param array<array-key, mixed> $parameters
+     */
+    public static function urlFor(string $route, array $parameters = []): string {
+        $target = route($route, $parameters);
+        $remembered = ((array) session()->get(self::SESSION_KEY, []))[$route] ?? null;
+        if (is_string($remembered) && ! str_contains($target, '?')
+            && parse_url($remembered, PHP_URL_PATH) === parse_url($target, PHP_URL_PATH)) {
+            $query = parse_url($remembered, PHP_URL_QUERY);
+            $target .= is_string($query) && $query !== '' ? '?' . $query : '';
+        }
+
+        return $target;
+    }
 
     public function handle(Request $request, Closure $next): Response {
         $response = $next($request);

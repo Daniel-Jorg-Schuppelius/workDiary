@@ -18,10 +18,8 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$quiz?->title"
                         :badge="$attempt->passed === null ? __('learning.field.pending_grading') : ($attempt->passed ? __('learning.field.passed') : __('learning.field.failed'))"
-                        :badgeTone="$attempt->passed === null ? 'warning' : ($attempt->passed ? 'success' : 'error')">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('learning.grading.index')" show-label>{{ __('learning.action.back') }}</x-icon-btn>
-            </x-slot:actions>
+                        :badgeTone="$attempt->passed === null ? 'warning' : ($attempt->passed ? 'success' : 'error')"
+                        back-route="learning.grading.index" :back-label="__('learning.action.back')">
         </x-page-toolbar>
     </x-slot:toolbar>
 

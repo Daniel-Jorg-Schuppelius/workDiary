@@ -25,17 +25,17 @@
 
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Kunden mit Erstleistung im Jahr :year', ['year' => $cohort]) . ($year !== null ? ' · ' . __('Aktivität im Jahr :year', ['year' => $year]) : '') . ' · ' . $label">
+        <x-page-toolbar :subtitle="__('Kunden mit Erstleistung im Jahr :year', ['year' => $cohort]) . ($year !== null ? ' · ' . __('Aktivität im Jahr :year', ['year' => $year]) : '') . ' · ' . $label"
+                        :back="route('reports.customer-retention', $backParams)" :back-label="__('Zur Kundenbindung')">
             <x-slot:actions>
-                <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.customer-retention.drilldown', array_merge($selfParams, ['export' => 'csv']))"
-                            show-label>CSV</x-icon-btn>
-                <x-icon-btn icon="table_view" tone="outline" size="sm"
-                            :href="route('reports.customer-retention.drilldown', array_merge($selfParams, ['export' => 'xlsx']))"
-                            show-label>Excel</x-icon-btn>
-                <x-icon-btn icon="arrow_back" tone="outline" size="sm"
-                            :href="route('reports.customer-retention', $backParams)"
-                            show-label>{{ __('Zur Kundenbindung') }}</x-icon-btn>
+                <x-action-menu icon="download" tone="outline" :label="__('Export')">
+                    <x-icon-btn icon="download" tone="outline" size="sm"
+                                :href="route('reports.customer-retention.drilldown', array_merge($selfParams, ['export' => 'csv']))"
+                                show-label>CSV</x-icon-btn>
+                    <x-icon-btn icon="table_view" tone="outline" size="sm"
+                                :href="route('reports.customer-retention.drilldown', array_merge($selfParams, ['export' => 'xlsx']))"
+                                show-label>Excel</x-icon-btn>
+                </x-action-menu>
                 <x-help-button topic="reports.customer-retention" />
             </x-slot:actions>
         </x-page-toolbar>

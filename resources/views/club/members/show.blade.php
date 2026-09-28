@@ -24,7 +24,8 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('club.subtitle.member_show', ['no' => $member->displayNo(), 'joined' => $member->joined_on->format('d.m.Y')])"
                         :badge="$hasLeft ? __('club.label.left') : $member->kind->label()"
-                        :badgeTone="$hasLeft ? 'ghost' : $member->kind->tone()">
+                        :badgeTone="$hasLeft ? 'ghost' : $member->kind->tone()"
+                        back-route="club.members.index" :back-label="__('club.action.back')">
             <x-slot:actions>
                 @if ($canManage)
                     <x-icon-btn icon="edit" tone="outline" size="sm"
@@ -42,9 +43,6 @@
                                     show-label>{{ __('club.action.leave') }}</x-icon-btn>
                     @endunless
                 @endif
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                            :href="route('club.members.index')"
-                            show-label>{{ __('club.action.back') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

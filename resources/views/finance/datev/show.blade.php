@@ -29,7 +29,7 @@
             @if ($canReshape)
                 <x-action-form :action="route('finance.datev.destroy', $batch)" method="DELETE"
                                :confirm="__('finance.datev.action.discard') . '?'">
-                    <x-icon-btn type="submit" icon="delete" tone="error" size="sm"
+                    <x-icon-btn placement="danger" type="submit" icon="delete" tone="error" size="sm"
                                 show-label>{{ __('finance.datev.action.discard') }}</x-icon-btn>
                 </x-action-form>
             @endif

@@ -89,6 +89,8 @@
                     @if ($portalAllows(PortalCapability::Queries))
                         <a href="{{ route('customer.queries.index') }}" class="hover:underline">{{ __('Rückfragen') }}</a>
                     @endif
+                    @php($portalHelpTopic = app(\App\Services\Help\HelpContextResolver::class)->currentTopicFor(request()))
+                    <a href="{{ $portalHelpTopic !== null && str_starts_with($portalHelpTopic, 'customer-portal.') && app(\App\Http\Controllers\CustomerPortal\HelpController::class)->allowed($portalHelpTopic) ? route('customer.help.show', $portalHelpTopic) : route('customer.help.index') }}" class="hover:underline">{{ __('customer_help.nav') }}</a>
                     <a href="{{ route('customer.profile.show') }}" class="hover:underline">{{ __('Profil') }}</a>
                     <a href="{{ route('customer.2fa.show') }}" class="hover:underline" title="{{ __('Zwei-Faktor-Authentifizierung') }}">{{ __('Sicherheit') }}</a>
                     <form method="POST" action="{{ route('customer.logout') }}">

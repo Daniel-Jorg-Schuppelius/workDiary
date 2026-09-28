@@ -18,11 +18,9 @@
 @section('nav-title', __('Hilfecenter'))
 
 @section('content')
-<x-index-page :subtitle="__('Ausführliche Hilfe mit Hintergrund, Ablauf und nächsten Schritten.')">
+<x-index-page :subtitle="__('Ausführliche Hilfe mit Hintergrund, Ablauf und nächsten Schritten.')"
+              back-route="help.center.index" :back-label="__('Zur Übersicht')">
     <x-slot:actions>
-        <x-button tone="outline" size="sm" icon="arrow_back" :href="route('help.center.index')">
-            {{ __('Zur Übersicht') }}
-        </x-button>
         <x-button tone="outline" size="sm" icon="flag" class="btn-warning"
                   data-entry-modal-trigger
                   :href="route('problem-reports.create', ['route' => 'help.center.show', 'url' => url()->current(), 'topic' => $row->topic])">

@@ -195,9 +195,8 @@ class TogglUserMappingService {
             // sind modell-spezifisch, daher nacheinander dekodieren.
             $raw = (string) $rawTarget;
             $foreignId = Sqid::decode(ForeignCustomer::class, $raw);
-            $target = $foreignId !== null
-                ? ForeignCustomer::query()->whereKey($foreignId)->firstOrFail()
-                : Customer::query()->whereKey($this->options->decodeId(Customer::class, $raw))->firstOrFail();
+            $foreign = $foreignId !== null ? ForeignCustomer::query()->whereKey($foreignId)->first() : null;
+            $target = $foreign ?? Customer::query()->whereKey($this->options->decodeId(Customer::class, $raw))->firstOrFail();
         } else {
             $target = Project::query()->whereKey($this->options->decodeId(Project::class, $rawTarget))->firstOrFail();
         }

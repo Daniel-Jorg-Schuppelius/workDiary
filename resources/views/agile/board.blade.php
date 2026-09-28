@@ -18,19 +18,16 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar :back="route('projects.show', $project)" :back-label="__('Zum Projekt')">
             <x-slot:title>{{ $project->name }}</x-slot:title>
             <x-slot:subtitle>{{ $board?->description ?? __('Produkt-Backlog, Board und Sprints für dieses Projekt.') }}</x-slot:subtitle>
             <x-slot:actions>
                 {{-- Backlog/Sprints setzen ein aktiviertes Board voraus (sonst 404). --}}
-                @if ($board !== null)
-                    <x-icon-btn icon="low_priority" tone="ghost" size="sm" :href="route('agile.backlog', $project)" show-label>{{ __('Produkt-Backlog') }}</x-icon-btn>
-                    <x-icon-btn icon="sprint" tone="ghost" size="sm" :href="route('agile.sprints', $project)" show-label>{{ __('Sprints') }}</x-icon-btn>
-                @endif
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('projects.show', $project)" show-label>{{ __('Zum Projekt') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    @include('agile._tabs')
 
     @if ($board !== null && $sprints->isNotEmpty())
         {{-- Sprint-Kontext: Board zeigt dann nur die Items des Sprints. --}}

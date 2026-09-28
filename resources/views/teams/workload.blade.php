@@ -14,10 +14,8 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :title="$team->name" :subtitle="__('Auslastung im Zeitraum') . ' ' . ($range['label'] ?? '')">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('teams.show', $team)" show-label>{{ __('Zum Team') }}</x-icon-btn>
-            </x-slot:actions>
+        <x-page-toolbar :title="$team->name" :subtitle="__('Auslastung im Zeitraum') . ' ' . ($range['label'] ?? '')"
+                        :back="route('teams.show', $team)" :back-label="__('Zum Team')">
         </x-page-toolbar>
     </x-slot:toolbar>
 

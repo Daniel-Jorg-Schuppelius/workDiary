@@ -18,10 +18,9 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="$problem->title">
+        <x-page-toolbar :subtitle="$problem->title"
+                        back-route="servicedesk.problems.index" :back-label="__('Zurück')">
             <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('servicedesk.problems.index')"
-                            show-label>{{ __('Zurück') }}</x-icon-btn>
                 @if ($canManage)
                     <x-icon-btn icon="edit" size="sm"
                                 data-entry-modal-trigger

@@ -15,7 +15,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar back-route="patrols.index" :back-label="__('Zur Liste')">
             <div class="flex min-w-0 items-center gap-2">
                 <span class="truncate font-medium">{{ $route->name }}</span>
                 @if ($route->site)<span class="text-sm text-muted">· {{ $route->site->name }}</span>@endif
@@ -24,7 +24,6 @@
                 <x-action-form :action="route('patrols.start', $route)">
                     <x-icon-btn icon="play_arrow" tone="primary" size="sm" type="submit" show-label>{{ __('Rundgang starten') }}</x-icon-btn>
                 </x-action-form>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('patrols.index')" show-label>{{ __('Zur Liste') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

@@ -14,9 +14,8 @@
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('inventory.count_ui.title')">
-    <x-slot:actions>
-        <x-icon-btn icon="inventory" size="sm" :href="route('inventory.stock')" show-label>{{ __('inventory.stock') }}</x-icon-btn>
-    </x-slot:actions>
+
+    @include('inventory._tabs')
 
     @if ($warehouses->isEmpty())
         {{-- Prerequisite-Audit (MVP-181): geführter Setup-Schritt statt

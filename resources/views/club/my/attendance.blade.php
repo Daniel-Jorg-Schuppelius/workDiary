@@ -17,9 +17,9 @@
     $hours = intdiv($creditedMinutes, 60);
     $minutes = $creditedMinutes % 60;
 @endphp
-<x-index-page overflow="clip" :subtitle="$subject->member->fullName() . ' · ' . __('club.my.hint.attendance', ['from' => $range['from']->format('d.m.Y'), 'to' => $range['to']->format('d.m.Y')]) . ' · ' . $hours . ':' . str_pad((string) $minutes, 2, '0', STR_PAD_LEFT) . ' ' . __('club.my.label.hours')">
+<x-index-page overflow="clip" :subtitle="$subject->member->fullName() . ' · ' . __('club.my.hint.attendance', ['from' => $range['from']->format('d.m.Y'), 'to' => $range['to']->format('d.m.Y')]) . ' · ' . $hours . ':' . str_pad((string) $minutes, 2, '0', STR_PAD_LEFT) . ' ' . __('club.my.label.hours')"
+              back-route="club.my.index" :back-label="__('club.my.action.back')">
     <x-slot:actions>
-        <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('club.my.index')" show-label>{{ __('club.my.action.back') }}</x-icon-btn>
         <x-help-button topic="club.my" />
     </x-slot:actions>
 

@@ -17,7 +17,8 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$run->period_start->format('d.m.Y') . ' – ' . $run->period_end->format('d.m.Y') . ' · ' . $run->currency->value"
                         :badge="$run->status->label()"
-                        :badgeTone="$run->status->tone()">
+                        :badgeTone="$run->status->tone()"
+                        back-route="commission-runs.index" :back-label="__('commission.action.back')">
             <x-slot:actions>
                 @if ($canManage && ! $run->isClosed())
                     <x-action-form :action="route('commission-runs.close', $run)"
@@ -30,9 +31,6 @@
                 <x-icon-btn icon="download" tone="outline" size="sm"
                             :href="route('commission-runs.export', $run)"
                             show-label>{{ __('commission.action.export') }}</x-icon-btn>
-                <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                            :href="route('commission-runs.index')"
-                            show-label>{{ __('commission.action.back') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

@@ -22,8 +22,9 @@
                         :href="route('passenger-settlements.create')"
                         show-label>{{ __('passenger.settlements.action.create') }}</x-icon-btn>
         @endcan
-        <x-icon-btn icon="local_taxi" size="sm" :href="route('passenger-rides.index')" show-label>{{ __('passenger.rides.title') }}</x-icon-btn>
     </x-slot:actions>
+
+    @include('passenger._tabs')
 
     <div class="grid gap-4 sm:grid-cols-2">
         <x-kpi-tile :label="__('passenger.settlements.kpi.open')" :value="$openCount" />

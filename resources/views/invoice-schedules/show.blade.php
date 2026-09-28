@@ -21,18 +21,14 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Abrechnungsplan') . ' · ' . ($schedule->customer?->displayLabel() ?? '—')">
+        <x-page-toolbar :subtitle="__('Abrechnungsplan') . ' · ' . ($schedule->customer?->displayLabel() ?? '—')"
+                        back-route="invoice-schedules.index" :back-label="__('Alle Pläne')">
             <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('invoice-schedules.index')" show-label>{{ __('Alle Pläne') }}</x-icon-btn>
                 @can(\App\Enums\User\Permission::InvoiceUpdate->value)
                     <x-icon-btn icon="edit" size="sm"
                                 data-entry-modal-trigger
                                 :href="route('invoice-schedules.edit', $schedule) . '?dialog=1'"
                                 show-label>{{ __('Bearbeiten') }}</x-icon-btn>
-                    <x-icon-btn icon="add" tone="primary" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('invoice-schedules.items.create', $schedule) . '?dialog=1'"
-                                show-label>{{ __('Position hinzufügen') }}</x-icon-btn>
                     @if ($schedule->status === \App\Models\Invoicing\InvoiceSchedule::STATUS_ACTIVE)
                         <x-action-form :action="route('invoice-schedules.status', $schedule)" method="PATCH">
                             <input type="hidden" name="status" value="paused">
@@ -49,7 +45,7 @@
                               :confirm="__('Plan endgültig beenden? Ein beendeter Plan kann nicht reaktiviert werden.')"
                               :confirm-label="__('Beenden')">
                             <input type="hidden" name="status" value="ended">
-                            <x-icon-btn icon="stop" tone="error" size="sm" type="submit" show-label>{{ __('Beenden') }}</x-icon-btn>
+                            <x-icon-btn icon="stop" tone="error" size="sm" type="submit" placement="danger" show-label>{{ __('Beenden') }}</x-icon-btn>
                         </x-action-form>
                     @endif
                 @endcan
@@ -92,7 +88,16 @@
         </div>
     </x-card>
 
+    {{-- Belegpositionen werden an der Tabelle angelegt, nicht im Seitenkopf (MVP-968). --}}
     <x-card :title="__('Positionsvorlage')">
+        @can(\App\Enums\User\Permission::InvoiceUpdate->value)
+            <x-slot:actions>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('invoice-schedules.items.create', $schedule) . '?dialog=1'"
+                            show-label>{{ __('Position hinzufügen') }}</x-icon-btn>
+            </x-slot:actions>
+        @endcan
         <p class="text-xs text-muted">{{ __('Platzhalter :von und :bis werden je Lauf durch den Abrechnungszeitraum ersetzt.', ['von' => '{zeitraum_von}', 'bis' => '{zeitraum_bis}']) }}</p>
         <x-table size="sm" :zebra="true">
             <x-slot:head>

@@ -61,7 +61,7 @@ class PriceIndexService {
                 continue;
             }
             $value = NumberHelper::normalizeDecimalString($m[3]);
-            $row = PriceIndexValue::query()->firstOrNew(['series' => PriceIndexValue::SERIES_VPI, 'period_on' => $m[1] . '-' . $m[2] . '-01']);
+            $row = $this->find(PriceIndexValue::SERIES_VPI, $m[1] . '-' . $m[2] . '-01') ?? new PriceIndexValue(['series' => PriceIndexValue::SERIES_VPI, 'period_on' => $m[1] . '-' . $m[2] . '-01']);
             if ($row->exists && bccomp((string) $row->value, $value, 1) === 0) {
                 continue;
             }
@@ -86,10 +86,10 @@ class PriceIndexService {
         return $value;
     }
 
-    /** Freigegebener Wert für den Monat des Tages oder null. */
-    public function approvedFor(CarbonInterface $day, string $series = PriceIndexValue::SERIES_VPI): ?PriceIndexValue {
-        return PriceIndexValue::query()->approved()->where('series', $series)
-            ->where('period_on', $day->copy()->startOfMonth()->toDateString())
+    /** Wert einer Reihe für den Monatsersten, unabhängig vom Freigabestand. */
+    public function find(string $series, string $periodOn): ?PriceIndexValue {
+        return PriceIndexValue::query()->where('series', $series)
+            ->whereBetween('period_on', DateRange::days($periodOn, $periodOn))
             ->first();
     }
 

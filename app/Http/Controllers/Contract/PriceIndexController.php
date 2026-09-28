@@ -64,16 +64,16 @@ class PriceIndexController extends Controller {
     }
 
     /** Wert von Hand nachtragen (z. B. aus der Destatis-Pressemitteilung); gilt sofort als freigegeben. */
-    public function store(Request $request): RedirectResponse {
+    public function store(Request $request, PriceIndexService $index): RedirectResponse {
         $this->assertPlatformOperator();
         $data = $request->validate([
             'period' => ['required', 'date_format:Y-m'],
             'value' => ['required', 'numeric', 'min:1', 'max:9999'],
         ]);
-        PriceIndexValue::query()->updateOrCreate(
-            ['series' => PriceIndexValue::SERIES_VPI, 'period_on' => $data['period'] . '-01'],
-            ['value' => (string) $data['value'], 'source' => 'manual', 'status' => PriceIndexStatus::Approved, 'approver_user_id' => $this->authUser()->id, 'approved_at' => now()],
-        );
+        $periodOn = $data['period'] . '-01';
+        ($index->find(PriceIndexValue::SERIES_VPI, $periodOn) ?? new PriceIndexValue(['series' => PriceIndexValue::SERIES_VPI, 'period_on' => $periodOn]))
+            ->fill(['value' => (string) $data['value'], 'source' => 'manual', 'status' => PriceIndexStatus::Approved, 'approver_user_id' => $this->authUser()->id, 'approved_at' => now()])
+            ->save();
 
         return back()->with('success', __('contract.price_index.flash.saved'));
     }

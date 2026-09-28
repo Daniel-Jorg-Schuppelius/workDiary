@@ -208,4 +208,42 @@ return [
         'variant_added' => 'Variante angelegt.',
         'variant_retired' => 'Variante stillgelegt.',
     ],
+    // CO₂-Fußabdruck (MVP-960).
+    'footprint' => [
+        'title' => 'CO₂-Fußabdruck',
+        'subtitle' => 'Emissionen je Stück aus der aufgelösten Stückliste (cradle-to-gate).',
+        'factors' => 'Faktoren dieses Artikels',
+        'lines' => 'Stückliste',
+        'save' => 'Speichern',
+        'incomplete' => 'Zukaufteile ohne Faktor: :count',
+        'no_bom' => 'Keine Stückliste — der Faktor des Artikels gilt je Stück.',
+        'note' => 'Nur Herstellung bis Werkstor, ohne Transport, Nutzung und Entsorgung. Faktoren mit Quelle pflegen; fehlende werden nicht geschätzt.',
+        'kpi' => [
+            'total' => 'CO₂e je Stück',
+            'material' => 'Material',
+            'process' => 'Prozess',
+        ],
+        'field' => [
+            'factor' => 'Emissionsfaktor (kg CO₂e je Einheit)',
+            'process' => 'Prozessemissionen je Stück (kg CO₂e)',
+            'source' => 'Quelle',
+        ],
+        'hint' => [
+            'factor' => 'Für Zukaufteile, je :unit.',
+        ],
+        'col' => [
+            'article' => 'Artikel',
+            'kind' => 'Art',
+            'quantity' => 'Menge je Stück',
+            'factor' => 'Faktor',
+            'kg' => 'kg CO₂e',
+        ],
+        'kind' => [
+            'buy' => 'Zukauf',
+            'make' => 'Eigenfertigung',
+        ],
+        'flash' => [
+            'saved' => 'Faktoren gespeichert.',
+        ],
+    ],
 ];

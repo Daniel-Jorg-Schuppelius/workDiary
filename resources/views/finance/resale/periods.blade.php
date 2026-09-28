@@ -33,8 +33,9 @@
             @endcan
             <x-icon-btn icon="compare_arrows" tone="ghost" size="sm" :href="route('finance.resale.reconcile.index')" show-label>{{ __('resale.reconcile.title') }}</x-icon-btn>
             <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('finance.resale.report.export')" show-label>{{ __('resale.export.action') }}</x-icon-btn>
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('finance.resale.index')" show-label>{{ __('resale.action.back') }}</x-icon-btn>
         </x-slot:actions>
+
+        @include('finance.resale._tabs')
 
         <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4">
             @foreach ($statuses as $status)

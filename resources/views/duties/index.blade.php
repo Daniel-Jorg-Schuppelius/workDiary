@@ -133,15 +133,10 @@
             @endif
             @if ($tab === 'diary')
                 <x-slot:extra>
-                    <div class="dropdown dropdown-end">
-                        <label tabindex="0" class="btn btn-sm btn-outline gap-1">
-                            <x-icon name="download" /><span>{{ __('Export') }}</span>
-                        </label>
-                        <ul tabindex="0" class="dropdown-content menu z-50 mt-1 w-44 rounded-box border border-base-300 bg-base-100 p-2 shadow">
-                            <li><a href="{{ route('diary.export.csv', array_filter($filters)) }}">{{ __('CSV') }}</a></li>
-                            <li><a href="{{ route('diary.export.pdf', array_filter($filters)) }}" target="_blank">{{ __('PDF (Druckansicht)') }}</a></li>
-                        </ul>
-                    </div>
+                    <x-action-menu icon="download" tone="outline" :label="__('Export')">
+                        <x-button tone="ghost" :href="route('diary.export.csv', array_filter($filters))">{{ __('CSV') }}</x-button>
+                        <x-button tone="ghost" :href="route('diary.export.pdf', array_filter($filters))" target="_blank">{{ __('PDF (Druckansicht)') }}</x-button>
+                    </x-action-menu>
                 </x-slot:extra>
             @endif
         </x-filter-bar>
