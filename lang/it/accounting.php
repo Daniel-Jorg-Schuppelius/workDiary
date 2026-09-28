@@ -376,7 +376,7 @@ return [
             'empty' => 'Nessun piano — manca la base ammortizzabile o la vita utile.',
         ],
         'hint' => [
-            'declining_rate' => 'Solo con il metodo «decrescente»: aliquota sul valore contabile, al massimo il multiplo consentito dell\'aliquota lineare (attualmente fino al 30 % per acquisti da 07/2025). Si passa al lineare appena questo è più alto.',
+            'declining_rate' => 'Solo con il metodo «decrescente»: aliquota sul valore contabile, al massimo il multiplo consentito dell’aliquota lineare nel periodo di acquisto. Si passa al lineare appena questo è più alto.',
             'device' => 'Collegamento facoltativo al registro dispositivi; non ogni cespite è un dispositivo.',
             'residual_value' => 'Resta alla fine della vita utile; predefinito 0.',
             'useful_life' => 'Vita utile ordinaria secondo la tabella di ammortamento, in mesi. Per i beni di modesto valore e il fondo collettivo la durata deriva dal metodo.',
@@ -401,7 +401,10 @@ return [
             'disposed' => 'Dismissione registrata.',
         ],
         'error' => [
-            'declining_window' => 'L\'ammortamento decrescente è consentito solo per acquisti nei periodi di legge (2009–2010, 2020–2022, 04–12/2024, 07/2025–2027).',
+            'declining_window' => 'L’ammortamento decrescente non è consentito per questa data di acquisto — i periodi di acquisto sono gestiti dall’esercizio della piattaforma.',
+            'windows_shape' => 'I periodi di acquisto devono essere un elenco di voci con from, until, factor e cap.',
+            'windows_row' => 'Il periodo di acquisto :row non è valido: data da/a (AAAA-MM-GG), fattore superiore a 0 fino a 5 e aliquota massima superiore a 0 fino al 50 %.',
+            'windows_overlap' => 'Il periodo di acquisto :row si sovrappone a un altro periodo.',
             'declining_rate' => 'L\'aliquota decrescente deve essere maggiore di 0 e al massimo del :max %.',
             'special_period' => 'L\'ammortamento speciale ai sensi del § 7g è possibile solo nel periodo agevolato :from–:until.',
             'special_amount' => 'Indichi un importo maggiore di 0.',
@@ -791,72 +794,72 @@ return [
                 'text' => 'Conto economico a breve termine con anno precedente, mese precedente, griglia mensile e budget.',
             ],
             'liquidity_plan' => [
-        'title' => 'Voci pianificate',
-        'subtitle' => 'Incassi e pagamenti propri per la previsione a 13 settimane, una tantum o mensili.',
-        'actual_title' => 'Liquidità piano/consuntivo',
-        'actual_subtitle' => 'Stato settimanale registrato della previsione confrontato con i movimenti effettivi dei conti.',
-        'empty' => 'Ancora nessuna voce pianificata.',
-        'no_snapshot' => 'Ancora nessuno stato settimanale registrato: automaticamente ogni lunedì o con «Registra lo stato attuale».',
-        'action' => [
-            'add' => 'Aggiungi voce pianificata',
-            'snapshot' => 'Registra lo stato attuale',
-        ],
-        'field' => [
-            'label' => 'Descrizione',
-            'direction' => 'Direzione',
-            'planned_amount' => 'Importo',
-            'starts_on' => 'Scadenza (prima)',
-            'recurrence' => 'Ripetizione',
-            'ends_on' => 'Ultima scadenza',
-            'snapshot' => 'Registrato il',
-        ],
-        'hint' => [
-            'ends_on' => 'Solo con ripetizione mensile; vuoto = senza scadenza.',
-        ],
-        'column' => [
-            'planned_net' => 'Piano (netto)',
-            'actual_in' => 'Incassi effettivi',
-            'actual_out' => 'Pagamenti effettivi',
-            'actual_net' => 'Consuntivo (netto)',
-            'deviation' => 'Scostamento',
-        ],
-        'confirm' => [
-            'remove' => 'Rimuovere la voce pianificata?',
-        ],
-        'flash' => [
-            'saved' => 'Voce pianificata salvata.',
-            'removed' => 'Voce pianificata rimossa.',
-            'snapshot' => 'Stato settimanale registrato.',
-        ],
-    ],
-    'allocation' => [
-        'title' => 'Chiavi di ribaltamento',
-        'subtitle' => 'Ripartizione dei centri ausiliari nell\'esercizio :year',
-        'hint' => 'Un centro ausiliario cede quote dei suoi costi ai centri finali. Il report di un centro di costo mostra la ripartizione con «Dopo il ribaltamento»; le registrazioni restano invariate.',
-        'total' => 'Ripartito: :percent %',
-        'empty' => 'Ancora nessuna chiave di ribaltamento per quest\'anno.',
-        'action' => [
-            'add' => 'Aggiungi chiave di ribaltamento',
-        ],
-        'field' => [
-            'source' => 'Centro ausiliario',
-            'target' => 'Centro ricevente',
-            'share_percent' => 'Quota (%)',
-        ],
-        'confirm' => [
-            'remove' => 'Rimuovere la chiave di ribaltamento?',
-        ],
-        'flash' => [
-            'saved' => 'Chiave di ribaltamento salvata.',
-            'removed' => 'Chiave di ribaltamento rimossa.',
-        ],
-        'error' => [
-            'same' => 'Il centro ausiliario e il centro ricevente devono essere diversi.',
-            'share' => 'La quota deve essere maggiore di 0 e al massimo del 100 %.',
-            'total' => 'Le quote di un centro ausiliario non possono superare il 100 % in totale (libero: :rest %).',
-        ],
-    ],
-    'budget' => [
+                'title' => 'Voci pianificate',
+                'subtitle' => 'Incassi e pagamenti propri per la previsione a 13 settimane, una tantum o mensili.',
+                'actual_title' => 'Liquidità piano/consuntivo',
+                'actual_subtitle' => 'Stato settimanale registrato della previsione confrontato con i movimenti effettivi dei conti.',
+                'empty' => 'Ancora nessuna voce pianificata.',
+                'no_snapshot' => 'Ancora nessuno stato settimanale registrato: automaticamente ogni lunedì o con «Registra lo stato attuale».',
+                'action' => [
+                    'add' => 'Aggiungi voce pianificata',
+                    'snapshot' => 'Registra lo stato attuale',
+                ],
+                'field' => [
+                    'label' => 'Descrizione',
+                    'direction' => 'Direzione',
+                    'planned_amount' => 'Importo',
+                    'starts_on' => 'Scadenza (prima)',
+                    'recurrence' => 'Ripetizione',
+                    'ends_on' => 'Ultima scadenza',
+                    'snapshot' => 'Registrato il',
+                ],
+                'hint' => [
+                    'ends_on' => 'Solo con ripetizione mensile; vuoto = senza scadenza.',
+                ],
+                'column' => [
+                    'planned_net' => 'Piano (netto)',
+                    'actual_in' => 'Incassi effettivi',
+                    'actual_out' => 'Pagamenti effettivi',
+                    'actual_net' => 'Consuntivo (netto)',
+                    'deviation' => 'Scostamento',
+                ],
+                'confirm' => [
+                    'remove' => 'Rimuovere la voce pianificata?',
+                ],
+                'flash' => [
+                    'saved' => 'Voce pianificata salvata.',
+                    'removed' => 'Voce pianificata rimossa.',
+                    'snapshot' => 'Stato settimanale registrato.',
+                ],
+            ],
+            'allocation' => [
+                'title' => 'Chiavi di ribaltamento',
+                'subtitle' => 'Ripartizione dei centri ausiliari nell\'esercizio :year',
+                'hint' => 'Un centro ausiliario cede quote dei suoi costi ai centri finali. Il report di un centro di costo mostra la ripartizione con «Dopo il ribaltamento»; le registrazioni restano invariate.',
+                'total' => 'Ripartito: :percent %',
+                'empty' => 'Ancora nessuna chiave di ribaltamento per quest\'anno.',
+                'action' => [
+                    'add' => 'Aggiungi chiave di ribaltamento',
+                ],
+                'field' => [
+                    'source' => 'Centro ausiliario',
+                    'target' => 'Centro ricevente',
+                    'share_percent' => 'Quota (%)',
+                ],
+                'confirm' => [
+                    'remove' => 'Rimuovere la chiave di ribaltamento?',
+                ],
+                'flash' => [
+                    'saved' => 'Chiave di ribaltamento salvata.',
+                    'removed' => 'Chiave di ribaltamento rimossa.',
+                ],
+                'error' => [
+                    'same' => 'Il centro ausiliario e il centro ricevente devono essere diversi.',
+                    'share' => 'La quota deve essere maggiore di 0 e al massimo del 100 %.',
+                    'total' => 'Le quote di un centro ausiliario non possono superare il 100 % in totale (libero: :rest %).',
+                ],
+            ],
+            'budget' => [
                 'title' => 'Budget',
                 'text' => 'Valori pianificati per conto ed esercizio — valore annuo o valori mensili.',
             ],

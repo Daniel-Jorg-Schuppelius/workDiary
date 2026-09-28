@@ -99,6 +99,11 @@ return [
         'pool_years' => 'Sammelposten Jahre',
         'replacement_inflation_pct' => 'Preissteigerung für Ersatzprognose (% p. a.)',
     ],
+    'fleet' => [
+        'heading' => 'Fuhrpark',
+        'block_trips' => 'Keine neue Fahrt bei überfälliger Pflichtprüfung',
+        'block_trips_hint' => 'Ist die HU, UVV oder eine andere Pflichtprüfung des zugeordneten Assets überfällig oder gesperrt, lässt sich ab heute keine Fahrt mehr erfassen. Vergangene Fahrten bleiben dokumentierbar.',
+    ],
     'rental_terms' => [
         'heading' => 'Mietbedingungen im Geräteverleih',
         'description' => 'Die Mietbedingungen führen Sie als Kundenvereinbarung „Mietbedingungen (Geräteverleih)“ mit Fassung und Unterschrift.',

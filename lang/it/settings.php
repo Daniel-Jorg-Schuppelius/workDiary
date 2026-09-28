@@ -96,6 +96,11 @@ return [
         'pool_years' => 'Anni del fondo',
         'replacement_inflation_pct' => 'Aumento dei prezzi per la previsione di sostituzione (% annuo)',
     ],
+    'fleet' => [
+        'heading' => 'Parco veicoli',
+        'block_trips' => 'Nessun nuovo viaggio se un controllo obbligatorio è scaduto',
+        'block_trips_hint' => 'Se la revisione, il controllo antinfortunistico o un altro controllo obbligatorio del cespite associato è scaduto o bloccato, da oggi non si possono registrare viaggi. I viaggi passati restano documentabili.',
+    ],
     'rental_terms' => [
         'heading' => 'Condizioni di noleggio attrezzature',
         'description' => 'Le condizioni di noleggio si gestiscono come accordo cliente «Condizioni di noleggio (noleggio attrezzature)» con versione e firma.',

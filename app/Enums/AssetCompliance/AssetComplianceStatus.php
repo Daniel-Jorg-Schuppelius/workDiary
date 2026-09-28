@@ -39,4 +39,19 @@ enum AssetComplianceStatus: string implements HasLabel {
             self::NotApplicable => (string) __('Keine Prüfpflicht'),
         };
     }
+
+    /** Ampelfarbe (Feature 138, Reservierungsdialog seit MVP-994). */
+    public function tone(): string {
+        return match ($this) {
+            self::Valid => 'success',
+            self::DueSoon, self::Restricted => 'warning',
+            self::Overdue, self::Blocked => 'error',
+            self::NotApplicable => 'ghost',
+        };
+    }
+
+    /** Überfällig oder gesperrt — sperrt mit der Einstellung auch neue Fahrten (MVP-994). */
+    public function blocksTrips(): bool {
+        return $this === self::Overdue || $this === self::Blocked;
+    }
 }

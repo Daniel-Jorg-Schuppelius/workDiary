@@ -409,6 +409,8 @@ return [
         'measure' => 'Messlauf (Sperrkonkurrenz der Audit-Kette)',
     ],
     'procedure_documentation' => [
+        'submitted' => 'Verfahrensdokumentation zur Freigabe vorgelegt',
+        'rejected' => 'Verfahrensdokumentation zurückgewiesen',
         'published' => 'Verfahrensdokumentation veröffentlicht',
     ],
     'google_calendar' => [
@@ -1036,6 +1038,7 @@ return [
     ],
     'updated' => 'Geändert',
     'travelLog' => [
+        'signed' => 'Fahrt vom Fahrer unterschrieben',
         'locked' => 'Fahrt festgeschrieben',
         'corrected' => 'Fahrt per Stornofahrt korrigiert',
     ],

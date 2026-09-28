@@ -49,3 +49,7 @@ confirmation** for a document. The person concerned confirms reading under
 submissions are listed under “Submissions” in the member list: accepting adds
 them to the file as a document, rejecting requires a reason that the person can
 see. Nobody decides on their own submission.
+The person is notified when a read confirmation is requested or their
+submission has been decided, and the personnel file circle when a new
+submission arrives – that notice names neither the person nor the document.
+Recipients can be adjusted under “Notification rules”.

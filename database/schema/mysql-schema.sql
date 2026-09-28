@@ -6797,6 +6797,45 @@ CREATE TABLE `comments` (
   CONSTRAINT `comments_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `commission_agents`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `commission_agents` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `name` varchar(120) NOT NULL,
+  `company` varchar(120) DEFAULT NULL,
+  `email` varchar(190) DEFAULT NULL,
+  `note` varchar(255) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `comm_agent_creator_fk` (`created_by`),
+  KEY `comm_agent_org_active_idx` (`organization_id`,`is_active`),
+  CONSTRAINT `comm_agent_creator_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `comm_agent_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `commission_rule_tiers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `commission_rule_tiers` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `commission_rule_id` bigint(20) unsigned NOT NULL,
+  `threshold_amount` decimal(14,2) NOT NULL,
+  `rate_percent` decimal(5,2) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `comm_tier_rule_threshold_uq` (`commission_rule_id`,`threshold_amount`),
+  KEY `comm_tier_org_fk` (`organization_id`),
+  CONSTRAINT `comm_tier_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `comm_tier_rule_fk` FOREIGN KEY (`commission_rule_id`) REFERENCES `commission_rules` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `commission_rules`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -6807,7 +6846,13 @@ CREATE TABLE `commission_rules` (
   `scope` varchar(20) NOT NULL DEFAULT 'all',
   `scope_value` varchar(120) DEFAULT NULL,
   `user_id` bigint(20) unsigned DEFAULT NULL,
+  `commission_agent_id` bigint(20) unsigned DEFAULT NULL,
   `rate_percent` decimal(5,2) NOT NULL,
+  `currency` char(3) DEFAULT NULL,
+  `tier_period` varchar(10) DEFAULT NULL,
+  `annual_cap_amount` decimal(14,2) DEFAULT NULL,
+  `liability_days` smallint(5) unsigned DEFAULT NULL,
+  `is_partial_accrual` tinyint(1) NOT NULL DEFAULT 0,
   `valid_from` date DEFAULT NULL,
   `valid_to` date DEFAULT NULL,
   `priority` smallint(5) unsigned NOT NULL DEFAULT 100,
@@ -6821,6 +6866,8 @@ CREATE TABLE `commission_rules` (
   KEY `commission_rules_created_by_foreign` (`created_by`),
   KEY `comm_rule_org_active_idx` (`organization_id`,`is_active`,`priority`),
   KEY `comm_rule_org_scope_idx` (`organization_id`,`scope`,`scope_value`),
+  KEY `comm_rule_agent_fk` (`commission_agent_id`),
+  CONSTRAINT `comm_rule_agent_fk` FOREIGN KEY (`commission_agent_id`) REFERENCES `commission_agents` (`id`) ON DELETE SET NULL,
   CONSTRAINT `commission_rules_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `commission_rules_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `commission_rules_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
@@ -11571,7 +11618,8 @@ CREATE TABLE `invoice_commissions` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `organization_id` bigint(20) unsigned NOT NULL,
   `invoice_id` bigint(20) unsigned NOT NULL,
-  `user_id` bigint(20) unsigned NOT NULL,
+  `user_id` bigint(20) unsigned DEFAULT NULL,
+  `commission_agent_id` bigint(20) unsigned DEFAULT NULL,
   `commission_rule_id` bigint(20) unsigned DEFAULT NULL,
   `assignment_source` varchar(12) NOT NULL DEFAULT 'lead',
   `lead_id` bigint(20) unsigned DEFAULT NULL,
@@ -11580,9 +11628,11 @@ CREATE TABLE `invoice_commissions` (
   `rate_percent` decimal(5,2) NOT NULL DEFAULT 0.00,
   `commission_amount` decimal(14,2) NOT NULL DEFAULT 0.00,
   `earned_on` date NOT NULL,
+  `payable_on` date DEFAULT NULL,
   `status` varchar(12) NOT NULL DEFAULT 'pending',
   `settlement_run_id` bigint(20) unsigned DEFAULT NULL,
   `reversal_of_id` bigint(20) unsigned DEFAULT NULL,
+  `reversal_kind` varchar(20) DEFAULT NULL,
   `note` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -11595,6 +11645,8 @@ CREATE TABLE `invoice_commissions` (
   KEY `inv_comm_org_status_idx` (`organization_id`,`status`,`earned_on`),
   KEY `inv_comm_org_user_idx` (`organization_id`,`user_id`,`earned_on`),
   KEY `inv_comm_invoice_user_idx` (`invoice_id`,`user_id`),
+  KEY `inv_comm_agent_fk` (`commission_agent_id`),
+  CONSTRAINT `inv_comm_agent_fk` FOREIGN KEY (`commission_agent_id`) REFERENCES `commission_agents` (`id`) ON DELETE SET NULL,
   CONSTRAINT `invoice_commissions_commission_rule_id_foreign` FOREIGN KEY (`commission_rule_id`) REFERENCES `commission_rules` (`id`) ON DELETE SET NULL,
   CONSTRAINT `invoice_commissions_invoice_id_foreign` FOREIGN KEY (`invoice_id`) REFERENCES `invoices` (`id`) ON DELETE CASCADE,
   CONSTRAINT `invoice_commissions_lead_id_foreign` FOREIGN KEY (`lead_id`) REFERENCES `leads` (`id`) ON DELETE SET NULL,
@@ -11851,6 +11903,7 @@ CREATE TABLE `invoices` (
   `notes` text DEFAULT NULL,
   `created_by` bigint(20) unsigned DEFAULT NULL,
   `sales_user_id` bigint(20) unsigned DEFAULT NULL,
+  `sales_agent_id` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `party_snapshot` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`party_snapshot`)),
@@ -11884,6 +11937,7 @@ CREATE TABLE `invoices` (
   KEY `inv_quote_fk` (`quote_id`),
   KEY `invoices_sales_user_id_foreign` (`sales_user_id`),
   KEY `invoices_boq_fk` (`bill_of_quantity_id`),
+  KEY `invoices_sales_agent_fk` (`sales_agent_id`),
   CONSTRAINT `inv_approved_by_fk` FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `inv_quote_fk` FOREIGN KEY (`quote_id`) REFERENCES `quotes` (`id`) ON DELETE SET NULL,
   CONSTRAINT `invoices_boq_fk` FOREIGN KEY (`bill_of_quantity_id`) REFERENCES `bill_of_quantities` (`id`) ON DELETE SET NULL,
@@ -11894,6 +11948,7 @@ CREATE TABLE `invoices` (
   CONSTRAINT `invoices_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`),
   CONSTRAINT `invoices_parent_invoice_id_foreign` FOREIGN KEY (`parent_invoice_id`) REFERENCES `invoices` (`id`) ON DELETE SET NULL,
   CONSTRAINT `invoices_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `invoices_sales_agent_fk` FOREIGN KEY (`sales_agent_id`) REFERENCES `commission_agents` (`id`) ON DELETE SET NULL,
   CONSTRAINT `invoices_sales_user_id_foreign` FOREIGN KEY (`sales_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -15777,6 +15832,28 @@ CREATE TABLE `open_issue_events` (
   CONSTRAINT `open_issue_events_open_issue_id_foreign` FOREIGN KEY (`open_issue_id`) REFERENCES `open_issues` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `open_issue_follow_ups`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `open_issue_follow_ups` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `open_issue_id` bigint(20) unsigned NOT NULL,
+  `diary_entry_id` bigint(20) unsigned NOT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `oi_follow_issue_entry_uq` (`open_issue_id`,`diary_entry_id`),
+  KEY `oi_follow_org_fk` (`organization_id`),
+  KEY `oi_follow_entry_fk` (`diary_entry_id`),
+  KEY `oi_follow_creator_fk` (`created_by`),
+  CONSTRAINT `oi_follow_creator_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `oi_follow_entry_fk` FOREIGN KEY (`diary_entry_id`) REFERENCES `diary_entries` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `oi_follow_issue_fk` FOREIGN KEY (`open_issue_id`) REFERENCES `open_issues` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `oi_follow_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `open_issues`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -15798,7 +15875,6 @@ CREATE TABLE `open_issues` (
   `closed_at` timestamp NULL DEFAULT NULL,
   `closed_by_user_id` bigint(20) unsigned DEFAULT NULL,
   `closed_reason` text DEFAULT NULL,
-  `follow_up_diary_entry_id` bigint(20) unsigned DEFAULT NULL,
   `created_by_user_id` bigint(20) unsigned NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -15809,11 +15885,9 @@ CREATE TABLE `open_issues` (
   KEY `open_issues_subject_status_idx` (`subject_type`,`subject_id`,`status`),
   KEY `open_issues_assignee_idx` (`assignee_user_id`,`status`,`due_at`),
   KEY `open_issues_org_status_idx` (`organization_id`,`status`,`severity`),
-  KEY `open_issues_follow_up_fk` (`follow_up_diary_entry_id`),
   CONSTRAINT `open_issues_assignee_user_id_foreign` FOREIGN KEY (`assignee_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `open_issues_closed_by_user_id_foreign` FOREIGN KEY (`closed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `open_issues_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `open_issues_follow_up_fk` FOREIGN KEY (`follow_up_diary_entry_id`) REFERENCES `diary_entries` (`id`) ON DELETE SET NULL,
   CONSTRAINT `open_issues_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -17789,6 +17863,9 @@ CREATE TABLE `procedure_documentations` (
   `pdf_sha256` varchar(64) DEFAULT NULL,
   `published_at` timestamp NULL DEFAULT NULL,
   `published_by` bigint(20) unsigned DEFAULT NULL,
+  `submitter_user_id` bigint(20) unsigned DEFAULT NULL,
+  `submitted_at` timestamp NULL DEFAULT NULL,
+  `review_note` varchar(500) DEFAULT NULL,
   `created_by_user_id` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -17797,6 +17874,8 @@ CREATE TABLE `procedure_documentations` (
   KEY `procedure_documentations_published_by_foreign` (`published_by`),
   KEY `procedure_documentations_created_by_user_id_foreign` (`created_by_user_id`),
   KEY `procedure_docs_org_status_idx` (`organization_id`,`status`),
+  KEY `proc_doc_submitter_fk` (`submitter_user_id`),
+  CONSTRAINT `proc_doc_submitter_fk` FOREIGN KEY (`submitter_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `procedure_documentations_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `procedure_documentations_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `procedure_documentations_published_by_foreign` FOREIGN KEY (`published_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
@@ -23372,6 +23451,9 @@ CREATE TABLE `travel_logs` (
   `reimbursement_total` decimal(10,2) NOT NULL DEFAULT 0.00,
   `notes` text DEFAULT NULL,
   `locked_at` timestamp NULL DEFAULT NULL,
+  `driver_signed_at` timestamp NULL DEFAULT NULL,
+  `driver_signature_path` varchar(255) DEFAULT NULL,
+  `driver_signature_hash` varchar(128) DEFAULT NULL,
   `corrects_travel_log_id` bigint(20) unsigned DEFAULT NULL,
   `correction_reason` varchar(255) DEFAULT NULL,
   `created_by` bigint(20) unsigned DEFAULT NULL,
@@ -23781,6 +23863,29 @@ CREATE TABLE `vacations` (
   CONSTRAINT `vacations_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `vehicle_annual_costs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `vehicle_annual_costs` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `vehicle_id` bigint(20) unsigned NOT NULL,
+  `year` smallint(5) unsigned NOT NULL,
+  `cost_amount` decimal(12,2) NOT NULL,
+  `currency` char(3) NOT NULL,
+  `note` varchar(255) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `veh_cost_vehicle_year_uq` (`vehicle_id`,`year`),
+  KEY `veh_cost_org_fk` (`organization_id`),
+  KEY `veh_cost_creator_fk` (`created_by`),
+  CONSTRAINT `veh_cost_creator_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `veh_cost_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `veh_cost_vehicle_fk` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `vehicle_reservations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -23830,6 +23935,11 @@ CREATE TABLE `vehicles` (
   `tank_capacity_liters` decimal(8,2) DEFAULT NULL,
   `battery_capacity_kwh` decimal(8,2) DEFAULT NULL,
   `wltp_consumption` decimal(8,3) DEFAULT NULL,
+  `list_price_amount` decimal(12,2) DEFAULT NULL,
+  `currency` char(3) DEFAULT NULL,
+  `commute_distance_km` smallint(5) unsigned DEFAULT NULL,
+  `acquired_on` date DEFAULT NULL,
+  `is_externally_chargeable` tinyint(1) NOT NULL DEFAULT 0,
   `odometer_km` int(10) unsigned DEFAULT NULL,
   `logbook_mode` tinyint(1) NOT NULL DEFAULT 0,
   `subject_to_driving_time_rules` tinyint(1) NOT NULL DEFAULT 0,
@@ -25336,3 +25446,10 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (901,'2027_02_28_13
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (902,'2027_02_28_140000_create_liquidity_plan_tables',30);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (903,'2027_02_28_150000_create_medical_checkup_occasions',31);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (904,'2027_02_28_160000_create_personnel_file_acknowledgements_and_submissions',31);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (905,'2027_02_28_170000_extend_commissions_with_tiers_caps_and_agents',32);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (906,'2027_02_28_180000_create_open_issue_follow_ups',32);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (907,'2027_02_28_190000_add_driver_signature_to_travel_logs',33);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (908,'2027_02_28_191000_add_private_use_fields_to_vehicles',33);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (909,'2027_02_28_192000_add_review_to_procedure_documentations',33);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (910,'2027_02_28_193000_add_acquisition_and_charging_to_vehicles',34);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (911,'2027_02_28_194000_add_reversal_kind_to_invoice_commissions',34);

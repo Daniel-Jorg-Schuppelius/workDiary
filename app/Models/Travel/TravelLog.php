@@ -55,6 +55,9 @@ use Illuminate\Support\Carbon;
  * @property string $reimbursement_total
  * @property string|null $notes
  * @property Carbon|null $locked_at
+ * @property Carbon|null $driver_signed_at
+ * @property string|null $driver_signature_path
+ * @property string|null $driver_signature_hash
  * @property int|null $corrects_travel_log_id
  * @property string|null $correction_reason
  * @property int|null $created_by
@@ -79,6 +82,13 @@ class TravelLog extends Model {
     public const MUTABLE_AFTER_LOCK = [
         'updated_at',
         'updated_by',
+    ];
+
+    /** Fahrer-Signatur (MVP-992): darf eine festgeschriebene Fahrt genau einmal ergänzen, nie ändern. */
+    public const SIGNATURE_FIELDS = [
+        'driver_signed_at',
+        'driver_signature_path',
+        'driver_signature_hash',
     ];
 
     protected $fillable = [
@@ -133,6 +143,7 @@ class TravelLog extends Model {
         'odometer_end_km' => 'integer',
         'trip_kind' => TripKind::class,
         'locked_at' => 'datetime',
+        'driver_signed_at' => 'datetime',
         'rate_per_km' => 'decimal:4',
         'reimbursement_total' => 'decimal:2',
         'round_trip' => 'boolean',
@@ -147,7 +158,8 @@ class TravelLog extends Model {
             if ($t->getRawOriginal('locked_at') === null) {
                 return;
             }
-            $blocked = array_diff(array_keys($t->getDirty()), self::MUTABLE_AFTER_LOCK);
+            $allowed = $t->getRawOriginal('driver_signed_at') === null ? [...self::MUTABLE_AFTER_LOCK, ...self::SIGNATURE_FIELDS] : self::MUTABLE_AFTER_LOCK;
+            $blocked = array_diff(array_keys($t->getDirty()), $allowed);
             if ($blocked !== []) {
                 throw new \RuntimeException(
                     'Festgeschriebene Fahrten sind unveränderlich (Felder: ' . implode(', ', $blocked) . ') — Stornofahrt erfassen.',
@@ -221,6 +233,10 @@ class TravelLog extends Model {
     /** @return HasMany<TravelLog, $this> */
     public function corrections(): HasMany {
         return $this->hasMany(TravelLog::class, 'corrects_travel_log_id');
+    }
+
+    public function isSigned(): bool {
+        return $this->driver_signed_at !== null;
     }
 
     public function isLocked(): bool {

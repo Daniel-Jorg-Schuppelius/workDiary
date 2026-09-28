@@ -46,6 +46,13 @@
     <x-input-field name="tank_capacity_liters" type="number" :label="__('Tankvolumen (l)')" step="0.01" min="0" :value="old('tank_capacity_liters', $vehicle?->tank_capacity_liters)" />
     <x-input-field name="battery_capacity_kwh" type="number" :label="__('Akku-Kapazität (kWh)')" step="0.01" min="0" :value="old('battery_capacity_kwh', $vehicle?->battery_capacity_kwh)" />
     <x-input-field name="wltp_consumption" type="number" :label="__('WLTP-Verbrauch')" step="0.001" min="0" :value="old('wltp_consumption', $vehicle?->wltp_consumption)" :span="2" />
+    <x-input-field name="list_price_amount" type="number" :label="__('Bruttolistenpreis (€)')" step="0.01" min="0" inputmode="decimal"
+                   :hint="__('Grundlage der 1-%-Regel im Vergleich zur Fahrtenbuchmethode.')" :value="old('list_price_amount', $vehicle?->list_price_amount?->getAmount())" />
+    <x-input-field name="commute_distance_km" type="number" :label="__('Entfernung Wohnung–Arbeit (km)')" min="0" max="500" :value="old('commute_distance_km', $vehicle?->commute_distance_km)" />
+    <x-input-field name="acquired_on" type="date" :label="__('Anschaffungsdatum')" :hint="__('Bestimmt die Listenpreisgrenze der Minderung für Elektrofahrzeuge.')" :value="old('acquired_on', $vehicle?->acquired_on?->toDateString())" />
+    <x-checkbox-field name="is_externally_chargeable" :label="__('Extern aufladbarer Hybrid (begünstigt)')"
+                      :hint="__('Nur Plug-in-Hybride, die die gesetzlichen Voraussetzungen (Reichweite oder CO₂) erfüllen, werden mit halbem Listenpreis bemessen.')"
+                      :checked="(bool) old('is_externally_chargeable', $vehicle?->is_externally_chargeable ?? false)" />
 </x-form-group>
 
 <div x-show="is('rental')" x-cloak>

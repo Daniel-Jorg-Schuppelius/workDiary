@@ -41,12 +41,15 @@ enum CommissionScope: string implements HasLabel {
     /** Satz je Vertriebsperson. */
     case User = 'user';
 
+    case Agent = 'agent';
+
     public function label(): string {
         return match ($this) {
             self::All => __('commission.scope.all'),
             self::LeadSource => __('commission.scope.lead_source'),
             self::ProductGroup => __('commission.scope.product_group'),
             self::User => __('commission.scope.user'),
+            self::Agent => __('commission.scope.agent'),
         };
     }
 
@@ -56,7 +59,7 @@ enum CommissionScope: string implements HasLabel {
             self::All => 0,
             self::LeadSource => 1,
             self::ProductGroup => 2,
-            self::User => 3,
+            self::User, self::Agent => 3,
         };
     }
 

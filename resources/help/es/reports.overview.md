@@ -22,7 +22,7 @@ rige el principio de necesidad de conocer.
 
 **Qué análisis existen:** Además de los informes de tiempos y proyectos, están
 disponibles entre otros: **ingresos por producto** (de facturas locales y facturas
-de Lexoffice replicadas, también por categoría de artículo), la **comprobación del salario mínimo** y los **tiempos
+de Lexoffice replicadas, también por categoría de artículo; las notas de crédito y los documentos de anulación lo reducen), la **comprobación del salario mínimo** y los **tiempos
 de conducción y descanso** como prueba ante las autoridades, el **libro de
 ruta** y la **previsión de liquidez** a trece semanas. Los análisis financieros
 están en Contabilidad, no aquí: leen únicamente asientos en firme.

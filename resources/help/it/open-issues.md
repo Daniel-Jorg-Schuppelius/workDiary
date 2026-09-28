@@ -19,3 +19,7 @@ bloccare e sbloccare, chiudere, non lavorare, riaprire) tramite una
 finestra di dialogo; a seconda dell'azione serve un motivo o, alla
 chiusura, una descrizione della soluzione. Le transizioni non ammesse
 vengono rifiutate, così lo storico resta coerente.
+
+Da un punto aperto si possono creare **più ordini di seguito**. Ognuno riprende
+cliente, progetto e descrizione, oltre alla scadenza del punto e a una copia dei
+suoi allegati — per i difetti da un verbale anche le foto della voce del verbale.

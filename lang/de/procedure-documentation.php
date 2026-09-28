@@ -20,6 +20,10 @@ return [
     'yes' => 'Ja',
     'no' => 'Nein',
     'action' => [
+        'submit' => 'Zur Freigabe vorlegen',
+        'approve' => 'Freigeben und veröffentlichen',
+        'reject' => 'Zurückweisen',
+        'compare' => 'Vergleichen',
         'create_draft' => 'Entwurf anlegen',
         'show' => 'Anzeigen',
         'edit' => 'Freitexte bearbeiten',
@@ -30,16 +34,21 @@ return [
         'delete' => 'Entwurf verwerfen',
     ],
     'confirm' => [
+        'submit' => 'Fassung zur Freigabe vorlegen? Bis zur Entscheidung ist sie nicht mehr bearbeitbar.',
         'publish' => 'Diese Version veröffentlichen? Die Hash-Ketten werden nachgerechnet, der Systemteil wird eingefroren, das PDF erzeugt — die Version ist danach unveränderlich.',
         'delete' => 'Diesen Entwurf verwerfen?',
     ],
     'flash' => [
+        'submitted' => 'Fassung zur Freigabe vorgelegt.',
+        'rejected' => 'Fassung zurückgewiesen — sie ist wieder Entwurf.',
         'draft_created' => 'Entwurf :version angelegt.',
         'updated' => 'Freitexte gespeichert.',
         'published' => 'Version :version veröffentlicht — Snapshot und PDF-Hash sind hinterlegt.',
         'deleted' => 'Entwurf verworfen.',
     ],
     'error' => [
+        'review_required' => 'Mit Vier-Augen-Prinzip wird eine Fassung erst zur Freigabe vorgelegt.',
+        'four_eyes' => 'Freigeben muss eine andere Person als die, die vorgelegt hat.',
         'draft_exists' => 'Es gibt bereits einen Entwurf — bitte zuerst veröffentlichen oder verwerfen.',
         'frozen' => 'Veröffentlichte Versionen sind unveränderlich.',
         'not_published' => 'Diese Version ist noch nicht veröffentlicht.',
@@ -47,6 +56,8 @@ return [
         'pdf_mismatch' => 'Der Hash der PDF-Datei stimmt nicht mehr mit dem hinterlegten Nachweis überein.',
     ],
     'field' => [
+        'submitted' => 'Vorgelegt',
+        'review_note' => 'Grund der Zurückweisung',
         'version' => 'Version',
         'status' => 'Status',
         'created' => 'Erstellt',
@@ -279,5 +290,20 @@ return [
         'part_generated' => 'Teil B — Generierte Systemdokumentation',
         'proof' => 'Nachweis',
         'proof_hint' => 'Der Snapshot-Hash entspricht dem in WorkDiary hinterlegten Nachweis dieser Version; der Hash der PDF-Datei ist dort ebenfalls gespeichert und wird beim Download geprüft.',
+    ],
+    'compare' => [
+        'title' => 'Vergleich :old ↔ :new',
+        'subtitle' => 'Geänderte Abschnitte: :count',
+        'section' => 'Abschnitt',
+        'part' => [
+            'operator' => 'Teil A — Betreiber',
+            'generated' => 'Teil B — System',
+        ],
+        'status' => [
+            'unchanged' => 'unverändert',
+            'changed' => 'geändert',
+            'added' => 'neu',
+            'removed' => 'entfallen',
+        ],
     ],
 ];

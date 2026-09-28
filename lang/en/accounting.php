@@ -376,7 +376,7 @@ return [
             'empty' => 'No schedule — depreciable base or useful life is missing.',
         ],
         'hint' => [
-            'declining_rate' => 'Only with the “declining” method: rate on the book value, at most the permitted multiple of the straight-line rate (currently up to 30 % for acquisitions from 07/2025). Switches once straight-line depreciation is higher.',
+            'declining_rate' => 'Only with the “declining” method: rate on the book value, at most the permitted multiple of the straight-line rate in the acquisition period. Switches once straight-line depreciation is higher.',
             'device' => 'Optional link to the device register; not every fixed asset is a device.',
             'residual_value' => 'Remains at the end of the useful life; default 0.',
             'useful_life' => 'Ordinary useful life according to the depreciation table, in months. For low-value assets and the pool, the term follows from the method.',
@@ -401,7 +401,10 @@ return [
             'disposed' => 'Disposal recorded.',
         ],
         'error' => [
-            'declining_window' => 'Declining-balance depreciation is only permitted for acquisitions within the statutory periods (2009–2010, 2020–2022, 04–12/2024, 07/2025–2027).',
+            'declining_window' => 'Declining-balance depreciation is not permitted for this acquisition date — the acquisition periods are maintained by platform operations.',
+            'windows_shape' => 'The acquisition periods must be a list of entries with from, until, factor and cap.',
+            'windows_row' => 'Acquisition period :row is invalid: date from/until (YYYY-MM-DD), factor above 0 up to 5 and maximum rate above 0 up to 50 %.',
+            'windows_overlap' => 'Acquisition period :row overlaps another period.',
             'declining_rate' => 'The declining rate must be greater than 0 and at most :max %.',
             'special_period' => 'Special depreciation under § 7g is only possible in the qualifying period :from–:until.',
             'special_amount' => 'Please enter an amount greater than 0.',
@@ -791,72 +794,72 @@ return [
                 'text' => 'Short-term income statement with previous year, previous month, monthly grid and budget.',
             ],
             'liquidity_plan' => [
-        'title' => 'Plan items',
-        'subtitle' => 'Your own receipts and payments for the 13-week forecast, one-off or monthly.',
-        'actual_title' => 'Liquidity plan vs. actual',
-        'actual_subtitle' => 'Recorded weekly forecast compared with the actual account movements.',
-        'empty' => 'No plan items yet.',
-        'no_snapshot' => 'No weekly state recorded yet — automatically every Monday or via “Record current state”.',
-        'action' => [
-            'add' => 'Add plan item',
-            'snapshot' => 'Record current state',
-        ],
-        'field' => [
-            'label' => 'Description',
-            'direction' => 'Direction',
-            'planned_amount' => 'Amount',
-            'starts_on' => 'Due on (first due date)',
-            'recurrence' => 'Recurrence',
-            'ends_on' => 'Last due date',
-            'snapshot' => 'Recorded on',
-        ],
-        'hint' => [
-            'ends_on' => 'Only for monthly recurrence; empty = open-ended.',
-        ],
-        'column' => [
-            'planned_net' => 'Plan (net)',
-            'actual_in' => 'Actual receipts',
-            'actual_out' => 'Actual payments',
-            'actual_net' => 'Actual (net)',
-            'deviation' => 'Deviation',
-        ],
-        'confirm' => [
-            'remove' => 'Remove the plan item?',
-        ],
-        'flash' => [
-            'saved' => 'Plan item saved.',
-            'removed' => 'Plan item removed.',
-            'snapshot' => 'Weekly state recorded.',
-        ],
-    ],
-    'allocation' => [
-        'title' => 'Allocation keys',
-        'subtitle' => 'Distribution of the service cost centres in fiscal year :year',
-        'hint' => 'A service cost centre passes shares of its expenses on to final cost centres. The management report of a cost centre shows the distribution with “After allocation”; postings remain unchanged.',
-        'total' => 'Distributed: :percent %',
-        'empty' => 'No allocation keys for this year yet.',
-        'action' => [
-            'add' => 'Add allocation key',
-        ],
-        'field' => [
-            'source' => 'Service cost centre',
-            'target' => 'Receiving cost centre',
-            'share_percent' => 'Share (%)',
-        ],
-        'confirm' => [
-            'remove' => 'Remove the allocation key?',
-        ],
-        'flash' => [
-            'saved' => 'Allocation key saved.',
-            'removed' => 'Allocation key removed.',
-        ],
-        'error' => [
-            'same' => 'The service cost centre and the receiving cost centre must differ.',
-            'share' => 'The share must be greater than 0 and at most 100 %.',
-            'total' => 'The shares of a service cost centre must not exceed 100 % in total (free: :rest %).',
-        ],
-    ],
-    'budget' => [
+                'title' => 'Plan items',
+                'subtitle' => 'Your own receipts and payments for the 13-week forecast, one-off or monthly.',
+                'actual_title' => 'Liquidity plan vs. actual',
+                'actual_subtitle' => 'Recorded weekly forecast compared with the actual account movements.',
+                'empty' => 'No plan items yet.',
+                'no_snapshot' => 'No weekly state recorded yet — automatically every Monday or via “Record current state”.',
+                'action' => [
+                    'add' => 'Add plan item',
+                    'snapshot' => 'Record current state',
+                ],
+                'field' => [
+                    'label' => 'Description',
+                    'direction' => 'Direction',
+                    'planned_amount' => 'Amount',
+                    'starts_on' => 'Due on (first due date)',
+                    'recurrence' => 'Recurrence',
+                    'ends_on' => 'Last due date',
+                    'snapshot' => 'Recorded on',
+                ],
+                'hint' => [
+                    'ends_on' => 'Only for monthly recurrence; empty = open-ended.',
+                ],
+                'column' => [
+                    'planned_net' => 'Plan (net)',
+                    'actual_in' => 'Actual receipts',
+                    'actual_out' => 'Actual payments',
+                    'actual_net' => 'Actual (net)',
+                    'deviation' => 'Deviation',
+                ],
+                'confirm' => [
+                    'remove' => 'Remove the plan item?',
+                ],
+                'flash' => [
+                    'saved' => 'Plan item saved.',
+                    'removed' => 'Plan item removed.',
+                    'snapshot' => 'Weekly state recorded.',
+                ],
+            ],
+            'allocation' => [
+                'title' => 'Allocation keys',
+                'subtitle' => 'Distribution of the service cost centres in fiscal year :year',
+                'hint' => 'A service cost centre passes shares of its expenses on to final cost centres. The management report of a cost centre shows the distribution with “After allocation”; postings remain unchanged.',
+                'total' => 'Distributed: :percent %',
+                'empty' => 'No allocation keys for this year yet.',
+                'action' => [
+                    'add' => 'Add allocation key',
+                ],
+                'field' => [
+                    'source' => 'Service cost centre',
+                    'target' => 'Receiving cost centre',
+                    'share_percent' => 'Share (%)',
+                ],
+                'confirm' => [
+                    'remove' => 'Remove the allocation key?',
+                ],
+                'flash' => [
+                    'saved' => 'Allocation key saved.',
+                    'removed' => 'Allocation key removed.',
+                ],
+                'error' => [
+                    'same' => 'The service cost centre and the receiving cost centre must differ.',
+                    'share' => 'The share must be greater than 0 and at most 100 %.',
+                    'total' => 'The shares of a service cost centre must not exceed 100 % in total (free: :rest %).',
+                ],
+            ],
+            'budget' => [
                 'title' => 'Budget',
                 'text' => 'Planned values per account and fiscal year — as an annual value or monthly values.',
             ],

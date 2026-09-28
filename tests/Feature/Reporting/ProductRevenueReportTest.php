@@ -72,14 +72,14 @@ class ProductRevenueReportTest extends TestCase {
     }
 
     /** @param list<array{0: ?int, 1: string, 2: string}> $items [article_id, quantity, unit_price] */
-    private function invoice(string $status, string $issuedOn, array $items, ?int $organizationId = null): Invoice {
+    private function invoice(string $status, string $issuedOn, array $items, ?int $organizationId = null, string $type = Invoice::TYPE_INVOICE): Invoice {
         $orgId = $organizationId ?? (int) $this->organization->id;
         $invoice = Invoice::create([
             'organization_id' => $orgId,
             'customer_id' => $this->customer->id,
             'number' => 'RE-' . fake()->unique()->numerify('#####'),
             'status' => $status,
-            'type' => Invoice::TYPE_INVOICE,
+            'type' => $type,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'issued_on' => $issuedOn,
@@ -144,6 +144,21 @@ class ProductRevenueReportTest extends TestCase {
         $this->assertSame(71.4, $byName['Montage']['share']);
         // Umsatzstärkster zuerst, Sammelposten zuletzt.
         $this->assertSame(['Montage', 'Schraube M8', __('ohne Artikelbezug')], array_column($result['rows'], 'name'));
+    }
+
+    /** MVP-990: Gutschrift und Stornobeleg spiegeln die Positionen negativ und mindern. */
+    public function test_credit_notes_and_cancellation_documents_reduce_the_revenue(): void {
+        $this->invoice(Invoice::STATUS_ISSUED, '2030-06-25', [[$this->service->id, '-1', '100.00']], type: Invoice::TYPE_CREDIT_NOTE);
+        $this->invoice(Invoice::STATUS_ISSUED, '2030-06-26', [[$this->screw->id, '-5', '2.00']], type: Invoice::TYPE_CANCELLATION);
+        $this->invoice(Invoice::STATUS_DRAFT, '2030-06-27', [[$this->screw->id, '-10', '2.00']], type: Invoice::TYPE_CREDIT_NOTE);
+
+        $result = $this->build();
+        $byName = $this->byName($result['rows']);
+        $this->assertSame(100.0, $byName['Montage']['net']);
+        $this->assertSame(1.0, $byName['Montage']['quantity']);
+        $this->assertSame(10.0, $byName['Schraube M8']['quantity']);
+        $this->assertSame(20.0, $byName['Schraube M8']['net']);
+        $this->assertSame(170.0, $result['total']);
     }
 
     // ── Lexoffice-Belegzeilen und Kategorien (MVP-804) ─────────────────

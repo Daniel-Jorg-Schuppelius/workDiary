@@ -96,6 +96,11 @@ return [
         'pool_years' => 'Durée du pool (ans)',
         'replacement_inflation_pct' => 'Hausse des prix pour la prévision de remplacement (% par an)',
     ],
+    'fleet' => [
+        'heading' => 'Parc automobile',
+        'block_trips' => 'Aucun nouveau trajet si un contrôle obligatoire est en retard',
+        'block_trips_hint' => 'Si le contrôle technique, la vérification de sécurité ou un autre contrôle obligatoire de l’actif associé est en retard ou bloqué, aucun trajet ne peut être saisi à partir d’aujourd’hui. Les trajets passés restent enregistrables.',
+    ],
     'rental_terms' => [
         'heading' => 'Conditions de location du matériel',
         'description' => 'Les conditions de location sont gérées comme accord client « Conditions de location (location de matériel) » avec version et signature.',

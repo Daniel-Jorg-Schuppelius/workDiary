@@ -18,7 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Sales\AssignCommissionRequest;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
-use App\Models\Sales\{CommissionRule, InvoiceCommission};
+use App\Models\Sales\{CommissionAgent, CommissionRule, InvoiceCommission};
 use App\Services\Sales\{CommissionAccrualService, CommissionRuleResolver};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -46,7 +46,7 @@ class CommissionController extends Controller {
         $status = CommissionStatus::tryFrom((string) $request->query('status', ''));
 
         $commissions = InvoiceCommission::query()
-            ->with(['user:id,name', 'invoice:id,number,customer_id,status', 'invoice.customer:id,name,company', 'rule:id,name', 'settlementRun:id,period'])
+            ->with(['user:id,name', 'agent:id,name,company', 'invoice:id,number,customer_id,status', 'invoice.customer:id,name,company', 'rule:id,name', 'settlementRun:id,period'])
             ->when($status !== null, fn ($q) => $q->where('status', $status?->value))
             ->orderByDesc('earned_on')
             ->orderByDesc('id')
@@ -71,6 +71,7 @@ class CommissionController extends Controller {
                 ->where('organization_id', $this->currentOrganization()->id)
                 ->orderBy('name')
                 ->get(['id', 'name']),
+            'agents' => CommissionAgent::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'company']),
             'suggestion' => $this->resolver->assignmentFor($invoice),
         ]);
     }
@@ -83,8 +84,12 @@ class CommissionController extends Controller {
     public function assign(AssignCommissionRequest $request, Invoice $invoice): RedirectResponse {
         Gate::authorize('create', CommissionRule::class);
 
-        $userId = $request->validated()['user_id'] ?? null;
-        $this->accrual->assign($invoice, $userId === null ? null : User::query()->findOrFail((int) $userId));
+        $data = $request->validated();
+        $this->accrual->assign(
+            $invoice,
+            isset($data['user_id']) ? User::query()->findOrFail((int) $data['user_id']) : null,
+            isset($data['commission_agent_id']) ? CommissionAgent::query()->findOrFail((int) $data['commission_agent_id']) : null,
+        );
 
         return back()->with('success', __('commission.flash.assigned'));
     }

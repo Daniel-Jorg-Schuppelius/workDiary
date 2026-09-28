@@ -19,8 +19,10 @@ use App\Models\Customer\Customer;
 use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
+use App\Services\Attachments\FileAttacher;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -133,7 +135,7 @@ class OpenIssueFollowUpTest extends TestCase {
         $entry = DiaryEntry::query()->where('title', 'Fenster klemmt')->firstOrFail();
         $this->assertSame($this->customer->id, (int) $entry->customer_id);
         $this->assertSame($this->project->id, (int) $entry->project_id);
-        $this->assertSame((int) $entry->id, (int) $issue->fresh()?->follow_up_diary_entry_id);
+        $this->assertSame([(int) $entry->id], $issue->followUps()->pluck('diary_entries.id')->map(static fn ($id): int => (int) $id)->all());
 
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'openIssue.followUpCreated',
@@ -161,7 +163,7 @@ class OpenIssueFollowUpTest extends TestCase {
             ->post(route('diary.store'), $this->storePayload($foreign))
             ->assertSessionHasErrors('open_issue_id');
 
-        $this->assertNull($foreign->fresh()?->follow_up_diary_entry_id);
+        $this->assertSame(0, $foreign->followUps()->count());
     }
 
     public function test_requires_update_right_on_issue(): void {
@@ -177,7 +179,7 @@ class OpenIssueFollowUpTest extends TestCase {
             ->post(route('diary.store'), $this->storePayload($issue))
             ->assertForbidden();
 
-        $this->assertNull($issue->fresh()?->follow_up_diary_entry_id);
+        $this->assertSame(0, $issue->followUps()->count());
         $this->assertSame(0, DiaryEntry::query()->where('title', 'Fenster klemmt')->count());
     }
 
@@ -196,13 +198,35 @@ class OpenIssueFollowUpTest extends TestCase {
             'organization_id' => $this->organization->id,
             'title' => 'Nachbesserung Fenster',
         ]);
-        $issue->update(['follow_up_diary_entry_id' => $followUp->id]);
+        $issue->followUps()->attach($followUp->id, ['organization_id' => $this->organization->id, 'created_by' => $this->user->id]);
 
+        // Weitere Folgeaufträge bleiben möglich (MVP-991).
         $this->actingAs($this->user)
             ->get(route('diary.show', $subject))
             ->assertOk()
             ->assertSee(route('diary.show', $followUp), false)
             ->assertSee('Nachbesserung Fenster')
-            ->assertDontSee('open_issue=' . $issue->sqid, false);
+            ->assertSee('open_issue=' . $issue->sqid, false);
+    }
+
+    /** MVP-991: mehrere Folgeaufträge je Punkt, Fälligkeit und Anhänge werden übernommen. */
+    public function test_several_follow_ups_take_over_due_date_and_attachments(): void {
+        Storage::fake('local');
+        $issue = $this->issueOnDiary();
+        $issue->forceFill(['due_at' => '2030-04-15 12:00:00'])->save();
+        app(FileAttacher::class)->storeContent($issue, '%PDF-1.4 Skizze', 'skizze.pdf', 'application/pdf', (int) $this->user->id);
+
+        $this->actingAs($this->user)->get(route('diary.create', ['open_issue' => $issue->sqid]))
+            ->assertOk()->assertSee('value="2030-04-15"', false);
+
+        $this->actingAs($this->user)->post(route('diary.store'), $this->storePayload($issue) + ['due_date' => '2030-04-15'])->assertSessionHasNoErrors();
+        $this->actingAs($this->user)->post(route('diary.store'), ['title' => 'Zweiter Einsatz'] + $this->storePayload($issue))->assertSessionHasNoErrors();
+
+        $followUps = $issue->followUps()->get();
+        $this->assertCount(2, $followUps);
+        $this->assertSame('2030-04-15', $followUps[0]->due_date?->toDateString());
+        $this->assertSame('skizze.pdf', $followUps[0]->attachments()->sole()->original_name);
+        $this->assertSame(1, $followUps[1]->attachments()->count());
+        $this->assertNotSame($issue->attachments()->sole()->path, $followUps[0]->attachments()->sole()->path, 'Kopie, keine geteilte Datei');
     }
 }

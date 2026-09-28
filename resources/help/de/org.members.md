@@ -51,3 +51,7 @@ Unterlagen – etwa eine Bescheinigung – **reicht die Person dort ein**. Die
 Einreichungen stehen in der Mitarbeiterliste unter „Einreichungen“: übernehmen
 legt sie als Dokument in die Akte, ablehnen verlangt einen Grund, den die Person
 sieht. Über die eigene Einreichung entscheidet niemand selbst.
+Benachrichtigt werden die Person, sobald eine Lesebestätigung erbeten oder
+über ihre Einreichung entschieden ist, und der Personalakten-Kreis bei einer
+neuen Einreichung – dieser Hinweis nennt weder Namen noch Unterlage. Die
+Empfänger lassen sich unter „Benachrichtigungsregeln“ anpassen.

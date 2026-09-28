@@ -96,6 +96,11 @@ return [
         'pool_years' => 'Años del fondo',
         'replacement_inflation_pct' => 'Subida de precios para la previsión de reposición (% anual)',
     ],
+    'fleet' => [
+        'heading' => 'Flota',
+        'block_trips' => 'Ningún trayecto nuevo si una inspección obligatoria está vencida',
+        'block_trips_hint' => 'Si la ITV, la revisión de prevención u otra inspección obligatoria del activo asignado está vencida o bloqueada, no se puede registrar ningún trayecto a partir de hoy. Los trayectos pasados siguen pudiéndose documentar.',
+    ],
     'rental_terms' => [
         'heading' => 'Condiciones de alquiler de equipos',
         'description' => 'Las condiciones de alquiler se gestionan como acuerdo con el cliente «Condiciones de alquiler (alquiler de equipos)» con versión y firma.',

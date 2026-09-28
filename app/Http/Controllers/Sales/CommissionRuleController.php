@@ -12,13 +12,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Sales;
 
-use App\Enums\Sales\{CommissionScope, LeadSource};
+use App\Enums\Sales\{CommissionScope, CommissionTierPeriod, LeadSource};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Sales\SaveCommissionRuleRequest;
 use App\Models\Article\Article;
 use App\Models\Platform\User;
-use App\Models\Sales\CommissionRule;
+use App\Models\Sales\{CommissionAgent, CommissionRule};
+use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -56,10 +57,11 @@ class CommissionRuleController extends Controller {
     public function store(SaveCommissionRuleRequest $request): RedirectResponse {
         Gate::authorize('create', CommissionRule::class);
 
-        CommissionRule::create($this->attributes($request) + [
+        $rule = CommissionRule::create($this->attributes($request) + [
             'organization_id' => $this->currentOrganization()->id,
             'created_by' => Auth::id(),
         ]);
+        $this->syncTiers($rule, $request);
 
         return redirect()->route('commission-rules.index')->with('success', __('commission.flash.rule_created'));
     }
@@ -75,6 +77,7 @@ class CommissionRuleController extends Controller {
 
         $rule->fill($this->attributes($request));
         $rule->save();
+        $this->syncTiers($rule, $request);
 
         return redirect()->route('commission-rules.index')->with('success', __('commission.flash.rule_updated'));
     }
@@ -103,13 +106,38 @@ class CommissionRuleController extends Controller {
             'scope' => $scope,
             'scope_value' => $scope->needsValue() ? (string) $data['scope_value'] : null,
             'user_id' => $scope === CommissionScope::User ? (int) $data['user_id'] : null,
+            'commission_agent_id' => $scope === CommissionScope::Agent ? (int) $data['commission_agent_id'] : null,
             'rate_percent' => (string) $data['rate_percent'],
+            // Schwellen und Deckel gelten in der Standardwährung der Rechnungen.
+            'currency' => CurrencyCode::tryFrom(strtoupper((string) config('invoicing.default_currency', 'EUR'))) ?? CurrencyCode::Euro,
+            'tier_period' => isset($data['tier_period']) && $data['tier_period'] !== '' ? CommissionTierPeriod::from((string) $data['tier_period']) : null,
+            'annual_cap_amount' => isset($data['annual_cap_amount']) ? (string) $data['annual_cap_amount'] : null,
+            'liability_days' => isset($data['liability_days']) ? (int) $data['liability_days'] : null,
+            'is_partial_accrual' => (bool) ($data['is_partial_accrual'] ?? false),
             'valid_from' => $data['valid_from'] ?? null,
             'valid_to' => $data['valid_to'] ?? null,
             'priority' => (int) $data['priority'],
             'is_active' => (bool) ($data['is_active'] ?? false),
             'note' => $data['note'] ?? null,
         ];
+    }
+
+    /** Staffelstufen ersetzen: nur vollständige Zeilen, nur mit Staffelzeitraum. */
+    private function syncTiers(CommissionRule $rule, SaveCommissionRuleRequest $request): void {
+        $rule->tiers()->delete();
+        if ($rule->tier_period === null) {
+            return;
+        }
+        $seen = [];
+        foreach ((array) $request->validated('tiers', []) as $row) {
+            $threshold = is_array($row) ? ($row['threshold'] ?? null) : null;
+            $rate = is_array($row) ? ($row['rate'] ?? null) : null;
+            if ($threshold === null || $threshold === '' || $rate === null || $rate === '' || isset($seen[(string) $threshold])) {
+                continue;
+            }
+            $seen[(string) $threshold] = true;
+            $rule->tiers()->create(['organization_id' => $rule->organization_id, 'threshold_amount' => (string) $threshold, 'rate_percent' => (string) $rate]);
+        }
     }
 
     /**
@@ -126,6 +154,8 @@ class CommissionRuleController extends Controller {
                 ->where('organization_id', $this->currentOrganization()->id)
                 ->orderBy('name')
                 ->get(['id', 'name']),
+            'agents' => CommissionAgent::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'company']),
+            'tiers' => $rule?->orderedTiers() ?? collect(),
             'leadSources' => LeadSource::cases(),
             'productGroups' => Article::query()
                 ->whereNotNull('category')

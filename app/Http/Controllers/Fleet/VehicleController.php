@@ -10,7 +10,6 @@
 
 namespace App\Http\Controllers\Fleet;
 
-use App\Enums\AssetCompliance\AssetComplianceStatus;
 use App\Enums\Vehicle\{VehicleOwnership, VehiclePropulsion, VehicleType};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
@@ -27,16 +26,6 @@ use Illuminate\View\View;
 
 class VehicleController extends Controller {
     use ResolvesCurrentOrganization;
-    /** Ampel-Farben je Prüfstatus (Feature 138). */
-    private const INSPECTION_TONES = [
-        AssetComplianceStatus::Valid->value => 'success',
-        AssetComplianceStatus::DueSoon->value => 'warning',
-        AssetComplianceStatus::Overdue->value => 'error',
-        AssetComplianceStatus::Restricted->value => 'warning',
-        AssetComplianceStatus::Blocked->value => 'error',
-        AssetComplianceStatus::NotApplicable->value => 'ghost',
-    ];
-
     public function __construct(
         private readonly VehicleService $service,
         private readonly AssetComplianceStatusProvider $compliance,
@@ -81,7 +70,6 @@ class VehicleController extends Controller {
         return view('vehicles.index', [
             'vehicles' => $vehicles,
             'inspections' => $inspections,
-            'inspectionTones' => self::INSPECTION_TONES,
             'showArchived' => $showArchived,
             'sort' => $sort,
             'dir' => $dir,
@@ -109,7 +97,8 @@ class VehicleController extends Controller {
     public function store(SaveVehicleRequest $request): RedirectResponse {
         Gate::authorize('create', Vehicle::class);
 
-        $data = $request->validated();
+        // Währung vor dem Listenpreis setzen: der MoneyCast liest sie beim Füllen.
+        $data = array_merge(['currency' => (string) config('invoicing.default_currency', 'EUR')], $request->validated());
         /** @var User $auth */
         $auth = Auth::user();
         $data['organization_id'] = $this->currentOrganization()->id;
@@ -139,7 +128,7 @@ class VehicleController extends Controller {
     public function update(SaveVehicleRequest $request, Vehicle $vehicle): RedirectResponse {
         Gate::authorize('update', $vehicle);
 
-        $this->service->update($vehicle, $request->validated());
+        $this->service->update($vehicle, array_merge(['currency' => (string) ($vehicle->getRawOriginal('currency') ?: config('invoicing.default_currency', 'EUR'))], $request->validated()));
 
         return redirect()->toList('vehicles.index')
             ->with('success', __('Fahrzeug aktualisiert.'));

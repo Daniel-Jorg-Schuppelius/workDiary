@@ -20,6 +20,7 @@ return [
         'none' => 'No conflicts for this assignment.',
     ],
     'vehicle' => [
+        'inspection' => 'Inspection deadlines',
         'heading' => 'Vehicle reservation',
         'label' => 'Vehicle',
         'from' => 'From',

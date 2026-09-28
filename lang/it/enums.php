@@ -434,6 +434,11 @@ return [
                 'requested' => 'Richiesta di noleggio ricevuta dal portale',
                 'geofenceDeviation' => 'Attrezzatura noleggiata fuori dal luogo d\'impiego',
             ],
+            'hrFile' => [
+                'ackRequested' => 'Conferma di lettura richiesta per il fascicolo personale',
+                'submissionReceived' => 'Documento presentato per un fascicolo personale',
+                'submissionDecided' => 'Decisione sul documento presentato',
+            ],
             'assetFinance' => [
                 'deadline' => 'Scadenza leasing',
             ],
@@ -1535,6 +1540,7 @@ return [
             'skonto' => 'Sconto cassa (riduzione dei ricavi)',
         ],
         'procedure-documentation-status' => [
+            'in_review' => 'In verifica',
             'draft' => 'Bozza',
             'published' => 'Pubblicata',
         ],

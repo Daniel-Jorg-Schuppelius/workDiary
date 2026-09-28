@@ -80,6 +80,15 @@ return [
             'submission_decided' => 'Une décision a déjà été prise pour cette transmission.',
             'submission_file_missing' => 'Le fichier transmis n’existe plus.',
         ],
+        'notification' => [
+            'ack_requested_title' => 'Accusé de lecture demandé : :title',
+            'ack_requested_message' => 'Veuillez confirmer dans votre dossier du personnel que vous avez lu le document.',
+            'submission_received_title' => 'Nouveau document transmis pour un dossier du personnel',
+            'submission_received_message' => 'La transmission attend d’être acceptée ou refusée.',
+            'submission_accepted_title' => 'Repris dans le dossier du personnel : :title',
+            'submission_rejected_title' => 'Non repris dans le dossier du personnel : :title',
+            'submission_rejected_message' => 'Motif : :reason',
+        ],
     ],
     // Personal-Kapazität (MVP-940).
     'capacity' => [

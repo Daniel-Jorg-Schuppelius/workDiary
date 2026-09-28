@@ -50,6 +50,7 @@ final class DiaryManifest extends Manifest {
             'emergency_assignments',
             'on_call_shifts',
             'open_issue_events',
+            'open_issue_follow_ups',
             'open_issues',
             'recurrence_rules',
             'tours',

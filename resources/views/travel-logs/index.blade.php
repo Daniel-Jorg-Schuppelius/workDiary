@@ -84,6 +84,9 @@
                         @elseif ($log->isLocked())
                             <x-status-badge tone="success" size="xs" class="ml-1" :title="$log->locked_at?->fdatetime()">{{ __('festgeschrieben') }}</x-status-badge>
                         @endif
+                        @if ($log->isSigned())
+                            <x-status-badge tone="success" size="xs" class="ml-1" :title="$log->driver_signed_at?->fdatetime()">{{ __('unterschrieben') }}</x-status-badge>
+                        @endif
                         @if ($log->isCorrection())
                             <x-status-badge tone="warning" size="xs" class="ml-1" :title="$log->correction_reason">{{ __('Stornofahrt') }}</x-status-badge>
                         @endif
@@ -113,6 +116,9 @@
                                     <x-icon-btn icon="lock" tone="primary" type="submit" :label="__('Festschreiben')" />
                                 </x-action-form>
                             @endif
+                        @endif
+                        @if ($log->isLogbook() && ! $log->isSigned() && (int) $log->user_id === (int) auth()->id() && $log->corrections->isEmpty())
+                            <x-icon-btn icon="gesture" data-entry-modal-trigger :href="route('travel-logs.sign-form', $log)" :label="__('Mit Unterschrift abschließen')" />
                         @endif
                         <x-action-form :action="route('travel-logs.per-diem.generate', $log)"
                               :confirm="__('Verpflegungspauschale aus dieser Fahrt erzeugen?')"

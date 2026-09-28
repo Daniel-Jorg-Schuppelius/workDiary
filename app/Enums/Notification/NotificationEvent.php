@@ -174,6 +174,11 @@ enum NotificationEvent: string implements HasLabel {
     /** Synchron: Position eines verliehenen Geräts außerhalb des Einsatzorts (MVP-975). */
     case RentalGeofenceDeviation = 'rental.geofenceDeviation';
 
+    // Personalakte (Feature 141, MVP-987): Kreis und betroffene Person adressiert der PersonnelFileService selbst.
+    case HrFileAckRequested = 'hrFile.ackRequested';
+    case HrFileSubmissionReceived = 'hrFile.submissionReceived';
+    case HrFileSubmissionDecided = 'hrFile.submissionDecided';
+
     // Feature 074: Leasing-/Vertragsfrist wird fällig (MVP-273/278).
     case AssetFinanceDeadline = 'assetFinance.deadline';
 
@@ -580,6 +585,7 @@ enum NotificationEvent: string implements HasLabel {
             self::RentalReturnOverdue => 'forklift',
             self::RentalRequested => 'forklift',
             self::RentalGeofenceDeviation => 'wrong_location',
+            self::HrFileAckRequested, self::HrFileSubmissionReceived, self::HrFileSubmissionDecided => 'badge',
             self::AssetFinanceDeadline => 'request_quote',
             self::ContractDeadlineDue => 'contract',
             self::ContractSignatureReceived => 'draw',

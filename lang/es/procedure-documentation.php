@@ -20,6 +20,10 @@ return [
     'yes' => 'Sí',
     'no' => 'No',
     'action' => [
+        'submit' => 'Presentar para aprobación',
+        'approve' => 'Aprobar y publicar',
+        'reject' => 'Rechazar',
+        'compare' => 'Comparar',
         'create_draft' => 'Crear borrador',
         'show' => 'Mostrar',
         'edit' => 'Editar textos',
@@ -30,16 +34,21 @@ return [
         'delete' => 'Descartar borrador',
     ],
     'confirm' => [
+        'submit' => '¿Presentar esta versión para aprobación? Hasta la decisión ya no se podrá editar.',
         'publish' => '¿Publicar esta versión? Se recalculan las cadenas de hash, se congela la parte del sistema y se genera el PDF — después la versión es inmutable.',
         'delete' => '¿Descartar este borrador?',
     ],
     'flash' => [
+        'submitted' => 'Versión presentada para aprobación.',
+        'rejected' => 'Versión rechazada: vuelve a ser un borrador.',
         'draft_created' => 'Borrador :version creado.',
         'updated' => 'Textos guardados.',
         'published' => 'Versión :version publicada — la instantánea y el hash del PDF están guardados.',
         'deleted' => 'Borrador descartado.',
     ],
     'error' => [
+        'review_required' => 'Con el principio de los cuatro ojos, una versión se presenta primero para aprobación.',
+        'four_eyes' => 'La aprobación debe darla una persona distinta de la que la presentó.',
         'draft_exists' => 'Ya existe un borrador — publíquelo o descártelo primero.',
         'frozen' => 'Las versiones publicadas son inmutables.',
         'not_published' => 'Esta versión aún no está publicada.',
@@ -47,6 +56,8 @@ return [
         'pdf_mismatch' => 'El hash del archivo PDF ya no coincide con la prueba guardada.',
     ],
     'field' => [
+        'submitted' => 'Presentada',
+        'review_note' => 'Motivo del rechazo',
         'version' => 'Versión',
         'status' => 'Estado',
         'created' => 'Creada',
@@ -279,5 +290,20 @@ return [
         'part_generated' => 'Parte B — Documentación del sistema generada',
         'proof' => 'Prueba',
         'proof_hint' => 'El hash de la instantánea coincide con la prueba guardada para esta versión en WorkDiary; el hash del archivo PDF también está guardado allí y se verifica al descargar.',
+    ],
+    'compare' => [
+        'title' => 'Comparación :old ↔ :new',
+        'subtitle' => 'Secciones modificadas: :count',
+        'section' => 'Sección',
+        'part' => [
+            'operator' => 'Parte A — explotador',
+            'generated' => 'Parte B — sistema',
+        ],
+        'status' => [
+            'unchanged' => 'sin cambios',
+            'changed' => 'modificada',
+            'added' => 'nueva',
+            'removed' => 'eliminada',
+        ],
     ],
 ];

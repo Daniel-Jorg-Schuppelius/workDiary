@@ -17,10 +17,14 @@ use App\Models\Fleet\Vehicle;
 use App\Models\Platform\User;
 use App\Models\Time\TimeEntry;
 use App\Models\Travel\TravelLog;
+use App\Services\Asset\Contracts\AssetComplianceStatusProvider;
 use App\Services\Routing\Contracts\TravelLogRecorder;
-use App\Support\Tz;
+use App\Support\{Setting, Tz};
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\DB;
+use CommonToolkit\Helper\Data\{CryptoHelper, DataUrlHelper};
+use Illuminate\Support\Facades\{DB, Storage};
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Encapsulates persistence of {@see TravelLog} entries and, when configured,
@@ -39,6 +43,7 @@ class TravelLogService implements TravelLogRecorder {
     public function __construct(
         private readonly MileageRateResolver $rates,
         private readonly LogbookRules $logbook,
+        private readonly AssetComplianceStatusProvider $compliance,
     ) {}
 
     /**
@@ -47,9 +52,21 @@ class TravelLogService implements TravelLogRecorder {
      * @throws LogbookViolationException
      */
     public function create(array $attributes): TravelLog {
-        return DB::transaction(function () use ($attributes): TravelLog {
+        return $this->persist($attributes, false);
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     *
+     * @throws LogbookViolationException
+     */
+    private function persist(array $attributes, bool $chainRepair): TravelLog {
+        return DB::transaction(function () use ($attributes, $chainRepair): TravelLog {
             $attributes = $this->applyDefaults($attributes);
-            $this->assertLogbookRules($attributes, null);
+            $this->assertLogbookRules($attributes, null, $chainRepair);
+            if (! $chainRepair && ($attributes['corrects_travel_log_id'] ?? null) === null) {
+                $this->assertInspectionAllowsTrip($attributes);
+            }
             $log = TravelLog::create($attributes);
             $this->syncTimeEntry($log);
             $this->mirrorOdometer($log);
@@ -118,8 +135,89 @@ class TravelLogService implements TravelLogRecorder {
                 'correction_id' => $correction->id,
                 'reason' => $correction->correction_reason,
             ]);
+            $this->repairSuccessor($original, $correction, $actor);
 
             return $correction;
+        });
+    }
+
+    /**
+     * Neuberechnung nach einem Storno mitten in der Kette (MVP-992): Endet die
+     * Stornofahrt bei einem anderen Stand als das Original, beginnt die direkte
+     * Folgefahrt dort — festgeschrieben als Folgekorrektur, sonst direkt. Weiter
+     * reicht die Wirkung nicht, die übrigen Fahrten schließen an die Folgefahrt an.
+     */
+    private function repairSuccessor(TravelLog $original, TravelLog $correction, ?User $actor): void {
+        if ($original->vehicle_id === null || $original->odometer_end_km === null || $correction->odometer_end_km === null
+            || (int) $original->odometer_end_km === (int) $correction->odometer_end_km) {
+            return;
+        }
+        $successor = TravelLog::query()
+            ->where('vehicle_id', $original->vehicle_id)
+            ->effective()
+            ->whereKeyNot([$original->id, $correction->id])
+            ->where('odometer_start_km', $original->odometer_end_km)
+            ->orderBy('date')
+            ->orderBy('id')
+            ->first();
+        if (! $successor instanceof TravelLog || $successor->odometer_end_km === null || $successor->odometer_end_km < $correction->odometer_end_km) {
+            return;
+        }
+
+        if (! $successor->isLocked()) {
+            $successor->odometer_start_km = $correction->odometer_end_km;
+            $successor->save();
+
+            return;
+        }
+
+        $this->lock($successor, $actor);
+        $repair = $this->persist(array_merge(
+            array_intersect_key($successor->getAttributes(), array_flip([
+                'organization_id', 'user_id', 'project_id', 'task_id', 'customer_id', 'attendance_id', 'vehicle', 'vehicle_id', 'vehicle_label',
+                'date', 'started_at', 'ended_at', 'from_address', 'to_address', 'from_lat', 'from_lng', 'to_lat', 'to_lng', 'distance_km',
+                'round_trip', 'reimbursable', 'purpose', 'rate_per_km', 'trip_kind', 'notes', 'odometer_end_km',
+            ])),
+            [
+                'odometer_start_km' => $correction->odometer_end_km,
+                'corrects_travel_log_id' => $successor->id,
+                'correction_reason' => (string) __('Folgekorrektur zur Stornofahrt vom :date', ['date' => $correction->date?->format('d.m.Y') ?? '']),
+            ],
+        ), true);
+        $successor->audit('travelLog.corrected', ['correction_id' => $repair->id, 'reason' => $repair->correction_reason, 'chain_repair' => true]);
+    }
+
+    /**
+     * Fahrt mit Unterschrift abschließen (MVP-992): nur die fahrende Person,
+     * nur Fahrtenbuch-Fahrten, genau einmal; die Unterschrift schreibt fest.
+     */
+    public function sign(TravelLog $log, User $actor, string $base64Png): TravelLog {
+        if (! $log->isLogbook() || (int) $log->user_id !== (int) $actor->id || $log->isSigned()) {
+            throw ValidationException::withMessages(['signature' => (string) __('Diese Fahrt kann nicht (mehr) von Ihnen unterschrieben werden.')]);
+        }
+        $binary = DataUrlHelper::decode($base64Png, ['image/png'], 1_000_000);
+        if ($binary === false) {
+            throw ValidationException::withMessages(['signature' => (string) __('Die Unterschrift konnte nicht gelesen werden. Bitte erneut unterschreiben.')]);
+        }
+        $path = 'travel-logs/signatures/' . now()->format('Y/m') . '/' . Str::uuid()->toString() . '.png';
+        Storage::disk('local')->put($path, $binary);
+
+        return DB::transaction(function () use ($log, $actor, $path): TravelLog {
+            if (! $log->isLocked()) {
+                $this->lock($log, $actor);
+            }
+            $signedAt = now();
+            $log->forceFill([
+                'driver_signed_at' => $signedAt,
+                'driver_signature_path' => $path,
+                'driver_signature_hash' => CryptoHelper::hash(implode('|', [
+                    (string) $log->id, (string) $log->date?->toDateString(), (string) $log->odometer_start_km, (string) $log->odometer_end_km,
+                    (string) $log->distance_km, $log->trip_kind->value, (string) $log->purpose, (string) $actor->id, $signedAt->toIso8601String(),
+                ])),
+            ])->save();
+            $log->audit('travelLog.signed', ['by' => $actor->id]);
+
+            return $log->refresh();
         });
     }
 
@@ -186,11 +284,37 @@ class TravelLogService implements TravelLogRecorder {
     }
 
     /**
+     * Fahrtsperre (MVP-994, Einstellung `fleet.block_trips_on_overdue_inspection`):
+     * keine neue Fahrt ab heute mit einem Fahrzeug, dessen Pflichtprüfung überfällig
+     * oder gesperrt ist. Vergangene Fahrten bleiben dokumentierbar (Lückenlosigkeit).
+     *
      * @param  array<string, mixed>  $attributes
      *
      * @throws LogbookViolationException
      */
-    private function assertLogbookRules(array $attributes, ?TravelLog $existing): void {
+    private function assertInspectionAllowsTrip(array $attributes): void {
+        $vehicleId = $attributes['vehicle_id'] ?? null;
+        if ($vehicleId === null || $vehicleId === '' || ! (bool) Setting::get('fleet.block_trips_on_overdue_inspection', false)) {
+            return;
+        }
+        $vehicle = Vehicle::query()->with('asset')->find((int) $vehicleId);
+        $asset = $vehicle?->asset;
+        $date = isset($attributes['date']) ? CarbonImmutable::parse((string) $attributes['date']) : CarbonImmutable::today();
+        if ($asset === null || $date->lessThan(Tz::startOfDay())) {
+            return;
+        }
+        $status = $this->compliance->statusFor($asset);
+        if ($status->blocksTrips()) {
+            throw new LogbookViolationException(['vehicle_id' => (string) __('Keine neue Fahrt mit diesem Fahrzeug — Prüfstatus: :status.', ['status' => $status->label()])]);
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     *
+     * @throws LogbookViolationException
+     */
+    private function assertLogbookRules(array $attributes, ?TravelLog $existing, bool $chainRepair = false): void {
         $vehicleId = $attributes['vehicle_id'] ?? null;
         if ($vehicleId === null || $vehicleId === '') {
             return;
@@ -200,7 +324,7 @@ class TravelLogService implements TravelLogRecorder {
             return;
         }
 
-        $errors = $this->logbook->violations($attributes, $vehicle, $existing);
+        $errors = $this->logbook->violations($attributes, $vehicle, $existing, $chainRepair);
         if ($errors !== []) {
             throw new LogbookViolationException($errors);
         }

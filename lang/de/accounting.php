@@ -376,7 +376,7 @@ return [
             'empty' => 'Kein AfA-Plan — Bemessungsgrundlage oder Nutzungsdauer fehlt.',
         ],
         'hint' => [
-            'declining_rate' => 'Nur mit Methode „degressiv“: Satz auf den Buchwert, höchstens das zulässige Vielfache des linearen Satzes (derzeit bis 30 % für Anschaffungen ab 07/2025). Sobald die lineare AfA höher ist, wird gewechselt.',
+            'declining_rate' => 'Nur mit Methode „degressiv“: Satz auf den Buchwert, höchstens das zulässige Vielfache des linearen Satzes im Anschaffungsfenster. Sobald die lineare AfA höher ist, wird gewechselt.',
             'device' => 'Optionaler Bezug zum Geräte-Register; nicht jede Anlage ist ein Gerät.',
             'residual_value' => 'Bleibt am Ende der Nutzungsdauer stehen; Standard 0.',
             'useful_life' => 'Betriebsgewöhnliche Nutzungsdauer laut AfA-Tabelle, in Monaten. Bei GWG und Sammelposten ergibt sich die Laufzeit aus der Methode.',
@@ -401,7 +401,10 @@ return [
             'disposed' => 'Abgang erfasst.',
         ],
         'error' => [
-            'declining_window' => 'Degressive AfA ist nur für Anschaffungen in den gesetzlichen Zeiträumen zulässig (2009–2010, 2020–2022, 04–12/2024, 07/2025–2027).',
+            'declining_window' => 'Degressive AfA ist für dieses Anschaffungsdatum nicht zulässig — die Anschaffungsfenster pflegt der Plattformbetrieb.',
+            'windows_shape' => 'Die Anschaffungsfenster müssen eine Liste von Einträgen mit from, until, factor und cap sein.',
+            'windows_row' => 'Anschaffungsfenster :row ist ungültig: Datum von/bis (JJJJ-MM-TT), Faktor über 0 bis 5 und Höchstsatz über 0 bis 50 %.',
+            'windows_overlap' => 'Anschaffungsfenster :row überschneidet sich mit einem anderen Fenster.',
             'declining_rate' => 'Der degressive Satz muss größer als 0 und höchstens :max % sein.',
             'special_period' => 'Sonder-AfA nach § 7g ist nur im Begünstigungszeitraum :from–:until möglich.',
             'special_amount' => 'Bitte einen Betrag größer als 0 angeben.',
@@ -791,72 +794,72 @@ return [
                 'text' => 'Kurzfristige Erfolgsrechnung mit Vorjahr, Vormonat, Monatsraster und Budget.',
             ],
             'liquidity_plan' => [
-        'title' => 'Planpositionen',
-        'subtitle' => 'Eigene Ein- und Auszahlungen für die 13-Wochen-Vorschau, einmalig oder monatlich.',
-        'actual_title' => 'Liquidität Plan/Ist',
-        'actual_subtitle' => 'Festgehaltener Wochenstand der Vorschau gegen die tatsächlichen Kontobewegungen.',
-        'empty' => 'Noch keine Planpositionen.',
-        'no_snapshot' => 'Noch kein Wochenstand festgehalten — jeden Montag automatisch oder über „Stand jetzt festhalten“.',
-        'action' => [
-            'add' => 'Planposition anlegen',
-            'snapshot' => 'Stand jetzt festhalten',
-        ],
-        'field' => [
-            'label' => 'Bezeichnung',
-            'direction' => 'Richtung',
-            'planned_amount' => 'Betrag',
-            'starts_on' => 'Fällig am (erste Fälligkeit)',
-            'recurrence' => 'Wiederholung',
-            'ends_on' => 'Letzte Fälligkeit',
-            'snapshot' => 'Festgehalten am',
-        ],
-        'hint' => [
-            'ends_on' => 'Nur bei monatlicher Wiederholung; leer = unbefristet.',
-        ],
-        'column' => [
-            'planned_net' => 'Plan (netto)',
-            'actual_in' => 'Ist Einzahlungen',
-            'actual_out' => 'Ist Auszahlungen',
-            'actual_net' => 'Ist (netto)',
-            'deviation' => 'Abweichung',
-        ],
-        'confirm' => [
-            'remove' => 'Planposition entfernen?',
-        ],
-        'flash' => [
-            'saved' => 'Planposition gespeichert.',
-            'removed' => 'Planposition entfernt.',
-            'snapshot' => 'Wochenstand festgehalten.',
-        ],
-    ],
-    'allocation' => [
-        'title' => 'Umlageschlüssel',
-        'subtitle' => 'Verteilung der Vorkostenstellen im Geschäftsjahr :year',
-        'hint' => 'Eine Vorkostenstelle gibt Anteile ihrer Aufwendungen an Endkostenstellen ab. Die BWA einer Kostenstelle zeigt die Verteilung mit „Nach Umlage“; Buchungen bleiben unverändert.',
-        'total' => 'Verteilt: :percent %',
-        'empty' => 'Noch keine Umlageschlüssel für dieses Jahr.',
-        'action' => [
-            'add' => 'Umlageschlüssel anlegen',
-        ],
-        'field' => [
-            'source' => 'Vorkostenstelle',
-            'target' => 'Empfangende Kostenstelle',
-            'share_percent' => 'Anteil (%)',
-        ],
-        'confirm' => [
-            'remove' => 'Umlageschlüssel entfernen?',
-        ],
-        'flash' => [
-            'saved' => 'Umlageschlüssel gespeichert.',
-            'removed' => 'Umlageschlüssel entfernt.',
-        ],
-        'error' => [
-            'same' => 'Vorkostenstelle und empfangende Kostenstelle müssen verschieden sein.',
-            'share' => 'Der Anteil muss größer als 0 und höchstens 100 % sein.',
-            'total' => 'Die Anteile einer Vorkostenstelle dürfen zusammen 100 % nicht übersteigen (frei: :rest %).',
-        ],
-    ],
-    'budget' => [
+                'title' => 'Planpositionen',
+                'subtitle' => 'Eigene Ein- und Auszahlungen für die 13-Wochen-Vorschau, einmalig oder monatlich.',
+                'actual_title' => 'Liquidität Plan/Ist',
+                'actual_subtitle' => 'Festgehaltener Wochenstand der Vorschau gegen die tatsächlichen Kontobewegungen.',
+                'empty' => 'Noch keine Planpositionen.',
+                'no_snapshot' => 'Noch kein Wochenstand festgehalten — jeden Montag automatisch oder über „Stand jetzt festhalten“.',
+                'action' => [
+                    'add' => 'Planposition anlegen',
+                    'snapshot' => 'Stand jetzt festhalten',
+                ],
+                'field' => [
+                    'label' => 'Bezeichnung',
+                    'direction' => 'Richtung',
+                    'planned_amount' => 'Betrag',
+                    'starts_on' => 'Fällig am (erste Fälligkeit)',
+                    'recurrence' => 'Wiederholung',
+                    'ends_on' => 'Letzte Fälligkeit',
+                    'snapshot' => 'Festgehalten am',
+                ],
+                'hint' => [
+                    'ends_on' => 'Nur bei monatlicher Wiederholung; leer = unbefristet.',
+                ],
+                'column' => [
+                    'planned_net' => 'Plan (netto)',
+                    'actual_in' => 'Ist Einzahlungen',
+                    'actual_out' => 'Ist Auszahlungen',
+                    'actual_net' => 'Ist (netto)',
+                    'deviation' => 'Abweichung',
+                ],
+                'confirm' => [
+                    'remove' => 'Planposition entfernen?',
+                ],
+                'flash' => [
+                    'saved' => 'Planposition gespeichert.',
+                    'removed' => 'Planposition entfernt.',
+                    'snapshot' => 'Wochenstand festgehalten.',
+                ],
+            ],
+            'allocation' => [
+                'title' => 'Umlageschlüssel',
+                'subtitle' => 'Verteilung der Vorkostenstellen im Geschäftsjahr :year',
+                'hint' => 'Eine Vorkostenstelle gibt Anteile ihrer Aufwendungen an Endkostenstellen ab. Die BWA einer Kostenstelle zeigt die Verteilung mit „Nach Umlage“; Buchungen bleiben unverändert.',
+                'total' => 'Verteilt: :percent %',
+                'empty' => 'Noch keine Umlageschlüssel für dieses Jahr.',
+                'action' => [
+                    'add' => 'Umlageschlüssel anlegen',
+                ],
+                'field' => [
+                    'source' => 'Vorkostenstelle',
+                    'target' => 'Empfangende Kostenstelle',
+                    'share_percent' => 'Anteil (%)',
+                ],
+                'confirm' => [
+                    'remove' => 'Umlageschlüssel entfernen?',
+                ],
+                'flash' => [
+                    'saved' => 'Umlageschlüssel gespeichert.',
+                    'removed' => 'Umlageschlüssel entfernt.',
+                ],
+                'error' => [
+                    'same' => 'Vorkostenstelle und empfangende Kostenstelle müssen verschieden sein.',
+                    'share' => 'Der Anteil muss größer als 0 und höchstens 100 % sein.',
+                    'total' => 'Die Anteile einer Vorkostenstelle dürfen zusammen 100 % nicht übersteigen (frei: :rest %).',
+                ],
+            ],
+            'budget' => [
                 'title' => 'Budget',
                 'text' => 'Planwerte je Konto und Geschäftsjahr — als Jahreswert oder Monatswerte.',
             ],

@@ -434,6 +434,11 @@ return [
                 'requested' => 'Solicitud de alquiler recibida desde el portal',
                 'geofenceDeviation' => 'Equipo alquilado fuera del lugar de uso',
             ],
+            'hrFile' => [
+                'ackRequested' => 'Confirmación de lectura solicitada para el expediente personal',
+                'submissionReceived' => 'Documento presentado para un expediente personal',
+                'submissionDecided' => 'Decisión sobre el documento presentado',
+            ],
             'assetFinance' => [
                 'deadline' => 'Plazo de leasing vencido',
             ],
@@ -1535,6 +1540,7 @@ return [
             'skonto' => 'Descuento por pronto pago (reducción de ingresos)',
         ],
         'procedure-documentation-status' => [
+            'in_review' => 'En revisión',
             'draft' => 'Borrador',
             'published' => 'Publicada',
         ],

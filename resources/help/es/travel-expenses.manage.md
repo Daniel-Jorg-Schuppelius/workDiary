@@ -68,3 +68,18 @@ de lecturas erróneas.
 
 El comprobante original queda adjunto sin cambios: el reconocimiento no lo
 sustituye, solo le ahorra teclear.
+
+## Libro de ruta: firma, corrección y comparación del 1 %
+
+En modo libro de ruta, la persona que conduce cierra un trayecto **con su firma**;
+el trayecto queda bloqueado. Un trayecto ya bloqueado al final del día todavía se
+puede firmar. Si se corrige un trayecto en medio de la cadena mediante un trayecto
+de anulación y cambia su lectura final del cuentakilómetros, el siguiente trayecto
+empieza automáticamente allí, como corrección derivada; el original se mantiene.
+
+La **comparación del 1 %** bajo el justificante del libro de ruta contrasta por
+vehículo y año el método del libro de ruta con la regla del 1 %. El vehículo
+necesita el precio bruto de catálogo y la distancia domicilio–trabajo; allí usted
+introduce otros costes anuales (leasing, seguro, impuesto) y la energía procede de
+los justificantes de repostaje y carga. Opcionalmente, un ajuste bloquea nuevos
+trayectos mientras la inspección obligatoria de un vehículo esté vencida.

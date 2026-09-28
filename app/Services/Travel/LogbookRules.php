@@ -32,7 +32,7 @@ final class LogbookRules {
      * @param  array<string, mixed>  $attributes  bereits mit Defaults/Bestand gemischt
      * @return array<string, string>
      */
-    public function violations(array $attributes, Vehicle $vehicle, ?TravelLog $existing = null): array {
+    public function violations(array $attributes, Vehicle $vehicle, ?TravelLog $existing = null, bool $chainRepair = false): array {
         if (! $vehicle->logbook_mode) {
             return [];
         }
@@ -56,6 +56,11 @@ final class LogbookRules {
             return $errors;
         }
 
+        // Kettenreparatur (MVP-992): Start folgt der korrigierten Vorfahrt, die übrigen Werte sind schon geprüft.
+        if ($chainRepair) {
+            return $errors;
+        }
+
         $driven = $end - $start;
         $distance = (float) ($attributes['distance_km'] ?? 0);
         if (! empty($attributes['round_trip'])) {
@@ -70,7 +75,9 @@ final class LogbookRules {
         }
 
         $corrected = $attributes['corrects_travel_log_id'] ?? $existing?->corrects_travel_log_id;
-        $expectedStart = $this->lastOdometerEnd($vehicle, $existing, $corrected !== null ? (int) $corrected : null);
+        $expectedStart = $corrected !== null
+            ? $this->predecessorEnd($vehicle, (int) $corrected, $existing)
+            : $this->lastOdometerEnd($vehicle, $existing);
         if ($expectedStart !== null && $expectedStart !== $start) {
             $errors['odometer_start_km'] = (string) __('Lücke in der km-Kette: Die letzte Fahrt endete bei :expected km, diese beginnt bei :start km.', [
                 'expected' => $expectedStart,
@@ -95,6 +102,30 @@ final class LogbookRules {
             ->when($excludeCorrectedId !== null, fn ($q) => $q->whereKeyNot($excludeCorrectedId))
             ->orderByDesc('date')
             ->orderByDesc('odometer_end_km')
+            ->orderByDesc('id')
+            ->value('odometer_end_km');
+
+        return $value === null ? null : (int) $value;
+    }
+
+    /**
+     * Anker einer Stornofahrt (MVP-992): End-km der wirksamen Fahrt vor dem
+     * Original — so ist auch ein Storno mitten in der Kette prüfbar.
+     */
+    public function predecessorEnd(Vehicle $vehicle, int $originalId, ?TravelLog $exclude = null): ?int {
+        $original = TravelLog::query()->find($originalId);
+        if (! $original instanceof TravelLog || $original->odometer_start_km === null) {
+            return $this->lastOdometerEnd($vehicle, $exclude, $originalId);
+        }
+        $value = TravelLog::query()
+            ->where('vehicle_id', $vehicle->id)
+            ->whereNotNull('odometer_end_km')
+            ->effective()
+            ->whereKeyNot($originalId)
+            ->when($exclude !== null, fn ($q) => $q->whereKeyNot($exclude?->getKey()))
+            ->where('odometer_end_km', '<=', $original->odometer_start_km)
+            ->orderByDesc('odometer_end_km')
+            ->orderByDesc('date')
             ->orderByDesc('id')
             ->value('odometer_end_km');
 

@@ -391,6 +391,7 @@ return [
         'commissions.*' => 'commissions',
         'commission-rules.*' => 'commissions',
         'commission-runs.*' => 'commissions',
+        'commission-agents.*' => 'commissions',
         // VOB/B-Schreiben (H23, MVP-728).
         'construction-notices.*' => 'construction-notices',
         // Verfahrensdokumentation ist eine GoBD-Pflicht — gehört zu deren Topic.

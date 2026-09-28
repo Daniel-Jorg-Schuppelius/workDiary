@@ -409,6 +409,8 @@ return [
         'measure' => 'Mesure (contention de verrou de la chaîne d’audit)',
     ],
     'procedure_documentation' => [
+        'submitted' => 'Documentation de procédure soumise pour validation',
+        'rejected' => 'Documentation de procédure refusée',
         'published' => 'Documentation des procédures publiée',
     ],
     'google_calendar' => [
@@ -1036,6 +1038,7 @@ return [
     ],
     'updated' => 'Mis à jour',
     'travelLog' => [
+        'signed' => 'Trajet signé par le conducteur',
         'locked' => 'Trajet verrouillé',
         'corrected' => 'Trajet corrigé par un trajet d’annulation',
     ],

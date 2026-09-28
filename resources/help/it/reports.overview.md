@@ -22,7 +22,7 @@ personali o finanziarie vale il principio del need-to-know.
 
 **Quali analisi esistono:** Oltre ai rapporti su tempi e progetti sono
 disponibili tra l'altro: **ricavo per prodotto** (da fatture locali e fatture
-Lexoffice replicate, anche per categoria di articolo), la **verifica del salario minimo** e i **tempi di guida e riposo**
+Lexoffice replicate, anche per categoria di articolo; note di credito e documenti di storno lo riducono), la **verifica del salario minimo** e i **tempi di guida e riposo**
 come prova verso le autorità, il **libretto di viaggio** e la **previsione di
 liquidità** su tredici settimane. Le analisi finanziarie si trovano sotto
 Contabilità, non qui: leggono solo registrazioni definitive.

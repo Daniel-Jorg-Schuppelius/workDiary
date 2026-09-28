@@ -14,11 +14,13 @@ return [
     'title' => 'Commissions',
 
     'page' => [
+        'agents' => 'Intermédiaires',
         'rules' => 'Règles de commission',
         'runs' => 'Décomptes de commissions',
     ],
 
     'subtitle' => [
+        'agents' => 'Intermédiaires externes sans compte utilisateur comme bénéficiaires de commissions — le paiement se fait hors du système.',
         'index' => 'Lignes de commission par document. La base est la facture payée — jamais la facture émise.',
         'rules' => 'Taux par source de prospect, groupe de produits ou commercial. Une seule règle s’applique par document.',
         'runs' => 'Décompter une période : le brouillon est un aperçu, la clôture le fige. Ensuite, uniquement des reprises.',
@@ -31,12 +33,16 @@ return [
     ],
 
     'group' => [
+        'tiers' => 'Paliers, plafond, versement',
         'rule' => 'Règle',
         'validity' => 'Validité',
         'period' => 'Période',
     ],
 
     'action' => [
+        'to_agents' => 'Intermédiaires',
+        'create_agent' => 'Ajouter un intermédiaire',
+        'edit_agent' => 'Modifier l’intermédiaire',
         'create_rule' => 'Créer une règle',
         'edit_rule' => 'Modifier la règle',
         'edit' => 'Modifier',
@@ -54,6 +60,16 @@ return [
     ],
 
     'field' => [
+        'agent' => 'Intermédiaire',
+        'agent_name' => 'Nom',
+        'company' => 'Société',
+        'email' => 'E-mail',
+        'tier_period' => 'Période des paliers',
+        'annual_cap_amount' => 'Plafond annuel',
+        'tier_threshold' => 'Palier :n à partir du CA',
+        'tier_rate' => 'Palier :n taux (%)',
+        'liability_days' => 'Délai de garantie (jours)',
+        'is_partial_accrual' => 'Dès les paiements partiels',
         'name' => 'Désignation',
         'scope' => 'Portée',
         'scope_value' => 'Valeur de portée',
@@ -84,12 +100,19 @@ return [
     ],
 
     'scope' => [
+        'agent' => 'Intermédiaire',
         'all' => 'Tous les documents',
         'lead_source' => 'Source du prospect',
         'product_group' => 'Groupe de produits',
         'user' => 'Commercial',
     ],
 
+    'tier_period' => [
+        'none' => 'Sans paliers',
+        'month' => 'Mois',
+        'quarter' => 'Trimestre',
+        'year' => 'Année',
+    ],
     'status' => [
         'pending' => 'Ouverte',
         'settled' => 'Décomptée',
@@ -111,6 +134,7 @@ return [
     ],
 
     'empty' => [
+        'agents' => 'Aucun intermédiaire pour l’instant.',
         'rules' => 'Aucune règle de commission définie.',
         'commissions' => 'Aucune ligne de commission.',
         'runs' => 'Aucun décompte créé.',
@@ -118,6 +142,11 @@ return [
     ],
 
     'hint' => [
+        'agent' => 'Au lieu d’une personne : commission pour un intermédiaire externe.',
+        'rule_agent' => 'Uniquement avec le champ d’application « Intermédiaire ».',
+        'tiers' => 'Paliers : dès que le chiffre d’affaires de la période atteint un seuil, le taux du palier le plus élevé s’applique au nouveau montant ; le plafond annuel limite la commission par année civile.',
+        'liability_days' => 'Payable seulement après ce délai — la ligne entre dans le décompte de cette période.',
+        'partial_accrual' => 'Commission au prorata de chaque paiement reçu au lieu d’attendre le paiement complet.',
         'scope_value' => 'Uniquement pour la portée source de prospect ou groupe de produits ; la valeur doit correspondre à la portée choisie.',
         'user' => 'Uniquement pour la portée commercial.',
         'priority' => 'Le nombre le plus élevé l’emporte ; à égalité, la portée la plus étroite décide.',
@@ -138,6 +167,7 @@ return [
     ],
 
     'flash' => [
+        'agent_saved' => 'L’intermédiaire a été enregistré.',
         'rule_created' => 'Règle de commission créée.',
         'rule_updated' => 'Règle de commission enregistrée.',
         'rule_deleted' => 'Règle de commission supprimée.',
@@ -154,9 +184,17 @@ return [
     ],
 
     'note' => [
+        'capped' => 'Plafond annuel :cap atteint — commission réduite.',
         'credit_note' => 'Reprise en raison de l’avoir :number',
         'cancelled' => 'Reprise en raison de l’annulation',
         'reassigned' => 'Reprise en raison de la réaffectation du commercial',
+        'payment_reverted' => 'Reprise en raison d’un paiement annulé',
+    ],
+    'reversal_kind' => [
+        'credit_note' => 'Avoir',
+        'cancellation' => 'Annulation',
+        'reassignment' => 'Réaffectation',
+        'payment' => 'Paiement annulé',
     ],
 
     'export' => [

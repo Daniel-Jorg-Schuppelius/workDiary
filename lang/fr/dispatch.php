@@ -20,6 +20,7 @@ return [
         'none' => 'Aucun conflit pour cette affectation.',
     ],
     'vehicle' => [
+        'inspection' => 'Échéances de contrôle',
         'heading' => 'Réservation de véhicule',
         'label' => 'Véhicule',
         'from' => 'Du',

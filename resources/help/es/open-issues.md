@@ -19,3 +19,8 @@ fijas (iniciar, bloquear y desbloquear, completar, no tramitar,
 reabrir) mediante un diálogo; según la acción se exige un motivo o, al
 completar, una descripción de la solución, y las transiciones no
 permitidas se rechazan.
+
+A partir de un punto abierto se pueden crear **varias órdenes de seguimiento**.
+Cada una toma cliente, proyecto y descripción, además del vencimiento del punto y
+una copia de sus adjuntos; en los defectos de un protocolo, también las fotos del
+punto del protocolo.

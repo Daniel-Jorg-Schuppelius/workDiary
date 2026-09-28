@@ -14,6 +14,7 @@ namespace App\Services\Finance;
 
 use App\Enums\Billing\AccountPaymentSource;
 use App\Enums\Finance\{AllocationKind, MatchStatus};
+use App\Events\Invoicing\{InvoicePaymentReceived, InvoicePaymentReverted};
 use App\Models\Billing\{CustomerAccountPayment, CustomerBillingAgreement};
 use App\Models\Club\ClubFeeClaim;
 use App\Models\Finance\{BankTransaction, PaymentAllocation, PaymentReconciliationEvent};
@@ -338,7 +339,8 @@ class ReconciliationService implements PaymentStatusProvider {
         ) {
             $invoice->status = Invoice::STATUS_PAID;
             $invoice->paid_on = $transaction->booking_date;
-            $invoice->saveQuietly();
+            // Mit Ereignissen speichern: der Statuswechsel ist die Naht für invoice.paid und Provision (MVP-718/729).
+            $invoice->save();
 
             // Vollaudit 2026-07 (N12): akzeptierter Skontoabzug strukturiert als
             // Erlösschmälerung festhalten — eigener AllocationKind::Skonto-Satz,
@@ -368,8 +370,9 @@ class ReconciliationService implements PaymentStatusProvider {
             && $invoice->status === Invoice::STATUS_ISSUED
         ) {
             $invoice->status = Invoice::STATUS_PARTIALLY_PAID;
-            $invoice->saveQuietly();
+            $invoice->save();
         }
+        InvoicePaymentReceived::dispatch($invoice);
     }
 
     private function applyExpenseEffect(Expense $expense, BankTransaction $transaction): void {
@@ -410,6 +413,7 @@ class ReconciliationService implements PaymentStatusProvider {
         $invoice->status = $allocated > 0 ? Invoice::STATUS_PARTIALLY_PAID : Invoice::STATUS_ISSUED;
         $invoice->paid_on = null;
         $invoice->saveQuietly();
+        InvoicePaymentReverted::dispatch($invoice);
     }
 
     /**

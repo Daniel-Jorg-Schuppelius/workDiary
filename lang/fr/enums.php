@@ -434,6 +434,11 @@ return [
                 'requested' => 'Demande de location reçue via le portail',
                 'geofenceDeviation' => 'Appareil loué hors du lieu d\'intervention',
             ],
+            'hrFile' => [
+                'ackRequested' => 'Accusé de lecture demandé pour le dossier du personnel',
+                'submissionReceived' => 'Document soumis pour un dossier du personnel',
+                'submissionDecided' => 'Décision sur le document soumis',
+            ],
             'assetFinance' => [
                 'deadline' => 'Échéance de leasing',
             ],
@@ -1535,6 +1540,7 @@ return [
             'skonto' => 'Escompte (réduction de produit)',
         ],
         'procedure-documentation-status' => [
+            'in_review' => 'En validation',
             'draft' => 'Brouillon',
             'published' => 'Publiée',
         ],

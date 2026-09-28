@@ -49,6 +49,11 @@ class SaveVehicleRequest extends BaseFormRequest {
             'tank_capacity_liters' => ['nullable', 'numeric', 'min:0', 'max:9999'],
             'battery_capacity_kwh' => ['nullable', 'numeric', 'min:0', 'max:9999'],
             'wltp_consumption' => ['nullable', 'numeric', 'min:0', 'max:999'],
+            // MVP-993: Grundlage des 1-%-Vergleichs.
+            'list_price_amount' => ['nullable', 'numeric', 'min:0', 'max:9999999999.99'],
+            'commute_distance_km' => ['nullable', 'integer', 'min:0', 'max:500'],
+            'acquired_on' => ['nullable', 'date'],
+            'is_externally_chargeable' => ['sometimes', 'boolean'],
             'odometer_km' => ['nullable', 'integer', 'min:0', 'max:9999999'],
             // Feature 137/138: Fahrtenbuch-Modus + Asset-Zuordnung (Prüffristen).
             'logbook_mode' => ['sometimes', 'boolean'],
@@ -62,7 +67,7 @@ class SaveVehicleRequest extends BaseFormRequest {
     /** @return array<string, mixed> */
     public function validated($key = null, $default = null): array {
         $data = parent::validated();
-        foreach (['logbook_mode', 'subject_to_driving_time_rules'] as $flag) {
+        foreach (['logbook_mode', 'subject_to_driving_time_rules', 'is_externally_chargeable'] as $flag) {
             if (array_key_exists($flag, $data)) {
                 $data[$flag] = (bool) $data[$flag];
             }

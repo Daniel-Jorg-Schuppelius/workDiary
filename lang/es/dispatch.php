@@ -20,6 +20,7 @@ return [
         'none' => 'Sin conflictos para esta asignación.',
     ],
     'vehicle' => [
+        'inspection' => 'Plazos de inspección',
         'heading' => 'Reserva de vehículo',
         'label' => 'Vehículo',
         'from' => 'Desde',

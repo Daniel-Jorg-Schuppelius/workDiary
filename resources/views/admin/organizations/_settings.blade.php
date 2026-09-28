@@ -298,6 +298,15 @@
                            placeholder="500" />
         </x-form-group>
 
+        {{-- FUHRPARK (MVP-994): Fahrtsperre bei überfälliger Pflichtprüfung. --}}
+        <x-form-group :legend="__('settings.fleet.heading')" icon="directions_car" tone="info" cols="1" compact>
+            <x-checkbox-field name="settings[fleet][block_trips_on_overdue_inspection]" tone="info"
+                              :label="__('settings.fleet.block_trips')"
+                              :hint="__('settings.fleet.block_trips_hint')"
+                              error="settings.fleet.block_trips_on_overdue_inspection"
+                              :checked="(string) old('settings.fleet.block_trips_on_overdue_inspection', data_get($stored, 'fleet.block_trips_on_overdue_inspection') ? '1' : '0') === '1'" />
+        </x-form-group>
+
         {{-- REKLAMATIONSMUSTER (MVP-886): Schwelle und Zeitfenster für Bericht und Hinweis. --}}
         <x-form-group :legend="__('settings.claims_pattern.heading')" icon="troubleshoot" tone="warning" cols="2" compact
                       :description="__('settings.claims_pattern.description')">

@@ -155,6 +155,13 @@ return [
     'finance.fixed_assets.pool_lower' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:100000', 'fallback' => 250],
     'finance.fixed_assets.pool_upper' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:100000', 'fallback' => 1000],
     'finance.fixed_assets.pool_years' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:1|max:20', 'fallback' => 5],
+    // Degressive AfA (MVP-980): gesetzliche Anschaffungsfenster, plattformweit pflegbar.
+    'finance.fixed_assets.declining_windows' => ['type' => 'json', 'scopes' => ['system'], 'rule_class' => App\Rules\DecliningWindows::class, 'fallback' => [
+        ['from' => '2009-01-01', 'until' => '2010-12-31', 'factor' => '2.5', 'cap' => '25'],
+        ['from' => '2020-01-01', 'until' => '2022-12-31', 'factor' => '2.5', 'cap' => '25'],
+        ['from' => '2024-04-01', 'until' => '2024-12-31', 'factor' => '2', 'cap' => '20'],
+        ['from' => '2025-07-01', 'until' => '2027-12-31', 'factor' => '3', 'cap' => '30'],
+    ]],
     // Ersatzprognose (MVP-908): erwartete Preissteigerung je Jahr in Prozent.
     'finance.fixed_assets.replacement_inflation_pct' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:50', 'fallback' => 0],
     // Vier-Augen-Freigabe für Kundenrundschreiben (Feature 119). Default aus:
@@ -184,6 +191,8 @@ return [
     'rental.portal_direct_booking' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
     // Radius um den Einsatzort-Standort für die Geofence-Abweichung (MVP-975).
     'rental.geofence_radius_m' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:50|max:50000', 'fallback' => 500],
+    // MVP-994: keine neue Fahrt mit einem Fahrzeug, dessen Pflichtprüfung (HU/UVV) überfällig ist.
+    'fleet.block_trips_on_overdue_inspection' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
     // Reklamationsmuster (MVP-886): ab wie vielen gleichartigen Fällen in wie vielen Tagen.
     // Wiederkehrende Probleme (MVP-926): ab wie vielen Tickets je Kunde/Objekt in wie vielen Tagen.
     'reporting.recurring_tickets.threshold' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:2|max:50', 'fallback' => 3],

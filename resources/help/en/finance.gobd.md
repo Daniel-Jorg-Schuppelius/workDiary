@@ -54,3 +54,9 @@ actual system state: active modules, number ranges, retention periods, roles
 and logging. Whatever changes in operation therefore changes in the
 documentation too — unlike a text document written once. Review it before any
 tax audit and add the organisational parts no system can know.
+
+**Approval and comparison of the procedure documentation:** If the four-eyes
+principle is switched on in accounting, you submit a version for approval; it is
+only published once a second person approves it, or it goes back to draft with a
+reason. Two versions can be compared section by section — changed, new and
+removed sections are shown side by side.

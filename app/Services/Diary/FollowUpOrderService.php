@@ -12,6 +12,7 @@ namespace App\Services\Diary;
 
 use App\Enums\Classification\ClassificationRequirementPhase;
 use App\Enums\Diary\Status;
+use App\Enums\OpenIssue\OpenIssueSource;
 use App\Exceptions\ClassificationRequirementException;
 use App\Models\Asset\Asset;
 use App\Models\Customer\Customer;
@@ -19,10 +20,13 @@ use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Platform\User;
 use App\Models\Procedure\ProcedureDeviation;
 use App\Models\Project\Project;
+use App\Models\Protocol\ProtocolItem;
+use App\Services\Attachments\FileAttacher;
 use App\Services\Classification\ClassificationRequirementValidator;
 use App\Services\OpenIssue\OpenIssueService;
+use App\Support\Tz;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{DB, Storage};
 
 /**
  * Folgeauftrag aus offenem Punkt oder Prozedur-Abweichung (Feature 139,
@@ -30,12 +34,16 @@ use Illuminate\Support\Facades\DB;
  * Automationsregel und Abweichung denselben Auftrag erzeugen.
  */
 final class FollowUpOrderService {
+    /** Obergrenze kopierter Anhänge je Folgeauftrag. */
+    private const ATTACHMENT_LIMIT = 20;
+
     public function __construct(
         private readonly ClassificationRequirementValidator $requirements,
         private readonly OpenIssueService $openIssues,
+        private readonly FileAttacher $files,
     ) {}
 
-    /** @return array{customerId: ?int, projectId: ?int, title: string, content: string} */
+    /** @return array{customerId: ?int, projectId: ?int, title: string, content: string, dueDate: ?string} */
     public function prefillForOpenIssue(OpenIssue $issue): array {
         [$customerId, $projectId] = $this->anchor($issue->subject);
         $intro = (string) __('open-issue.follow_up.content_intro', ['id' => $issue->id, 'title' => $issue->title]);
@@ -45,7 +53,36 @@ final class FollowUpOrderService {
             'projectId' => $projectId,
             'title' => $issue->title,
             'content' => trim($intro . "\n\n" . (string) $issue->description),
+            // Fälligkeit des Punkts wird die des Auftrags (MVP-991).
+            'dueDate' => $issue->due_at !== null ? Tz::toLocal($issue->due_at)?->format('Y-m-d') : null,
         ];
+    }
+
+    /**
+     * Anhänge des Punkts und — bei Protokollmängeln — des Protokollpunkts
+     * (Fotos) als Kopie an den Folgeauftrag (MVP-991); die Kopie hängt nicht
+     * an der Löschung des Originals.
+     */
+    public function copyAttachments(OpenIssue $issue, DiaryEntry $entry, User $actor): int {
+        $sources = $issue->attachments()->get();
+        if ($issue->source_type === OpenIssueSource::ProtocolDefect && $issue->source_ref_id !== null) {
+            $item = ProtocolItem::query()->find((int) $issue->source_ref_id);
+            if ($item instanceof ProtocolItem) {
+                $sources = $sources->concat($item->attachments()->get());
+            }
+        }
+
+        $copied = 0;
+        foreach ($sources->take(self::ATTACHMENT_LIMIT) as $attachment) {
+            $disk = Storage::disk($attachment->disk);
+            if (! $disk->exists($attachment->path)) {
+                continue;
+            }
+            $this->files->storeContent($entry, (string) $disk->get($attachment->path), $attachment->original_name, $attachment->mime, (int) $actor->id);
+            $copied++;
+        }
+
+        return $copied;
     }
 
     /** @return array{customerId: ?int, projectId: ?int, title: string, content: string} */
@@ -64,13 +101,14 @@ final class FollowUpOrderService {
     }
 
     /**
-     * Genau ein Folgeauftrag je Punkt: ein bereits verknüpfter Auftrag wird
-     * zurückgegeben statt verdoppelt.
+     * Folgeauftrag der Automationsregel: je Punkt höchstens einer — ein bereits
+     * verknüpfter Auftrag wird zurückgegeben statt verdoppelt. Weitere legt der
+     * Bearbeiter im Dialog an (MVP-991).
      *
      * @throws ClassificationRequirementException
      */
     public function createForOpenIssue(OpenIssue $issue, User $owner, User $actor, bool $automated = false): DiaryEntry {
-        $existing = $issue->follow_up_diary_entry_id !== null ? DiaryEntry::query()->find($issue->follow_up_diary_entry_id) : null;
+        $existing = $issue->followUps()->first();
         if ($existing instanceof DiaryEntry) {
             return $existing;
         }
@@ -78,6 +116,7 @@ final class FollowUpOrderService {
         return DB::transaction(function () use ($issue, $owner, $actor, $automated): DiaryEntry {
             $entry = $this->create($owner, $this->prefillForOpenIssue($issue));
             $this->openIssues->linkFollowUp($issue, $entry, $actor, $automated);
+            $this->copyAttachments($issue, $entry, $actor);
 
             return $entry;
         });
@@ -99,7 +138,7 @@ final class FollowUpOrderService {
     /**
      * Pflichtklassifikationen blockieren wie im Dialog vor dem Speichern.
      *
-     * @param array{customerId: ?int, projectId: ?int, title: string, content: string} $prefill
+     * @param array{customerId: ?int, projectId: ?int, title: string, content: string, dueDate?: ?string} $prefill
      * @throws ClassificationRequirementException
      */
     private function create(User $owner, array $prefill): DiaryEntry {
@@ -112,6 +151,7 @@ final class FollowUpOrderService {
             'project_id' => $prefill['projectId'],
             'title' => $prefill['title'],
             'content' => $prefill['content'],
+            'due_date' => $prefill['dueDate'] ?? null,
             'status' => Status::Planned->value,
         ];
         $candidate = new DiaryEntry($data);

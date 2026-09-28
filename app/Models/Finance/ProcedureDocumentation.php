@@ -42,6 +42,9 @@ use RuntimeException;
  * @property string|null $pdf_sha256
  * @property Carbon|null $published_at
  * @property int|null $published_by
+ * @property int|null $submitter_user_id
+ * @property Carbon|null $submitted_at
+ * @property string|null $review_note
  * @property int|null $created_by_user_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -79,6 +82,9 @@ class ProcedureDocumentation extends Model {
         'pdf_sha256',
         'published_at',
         'published_by',
+        'submitter_user_id',
+        'submitted_at',
+        'review_note',
         'created_by_user_id',
     ];
 
@@ -88,6 +94,7 @@ class ProcedureDocumentation extends Model {
         'status' => ProcedureDocumentationStatus::class,
         'snapshot' => 'array',
         'published_at' => 'datetime',
+        'submitted_at' => 'datetime',
     ];
 
     /** Snapshot ist groß und über snapshot_sha256 belegt — nicht ins Audit-Log/toArray (Auditable merged getHidden()). */
@@ -117,6 +124,11 @@ class ProcedureDocumentation extends Model {
 
     public function isEditable(): bool {
         return $this->status === ProcedureDocumentationStatus::Draft;
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function submitter(): BelongsTo {
+        return $this->belongsTo(User::class, 'submitter_user_id');
     }
 
     /** @return BelongsTo<User, $this> */

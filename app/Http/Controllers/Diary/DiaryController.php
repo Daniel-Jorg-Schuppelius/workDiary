@@ -159,6 +159,7 @@ class DiaryController extends Controller {
             'prefillTitle' => $prefill['title'],
             'prefillContent' => $prefill['content'],
             'prefillOpenIssueSqid' => $prefill['openIssueSqid'],
+            'prefillDueDate' => $prefill['dueDate'] ?? null,
         ] + $this->entryTypeFormData());
     }
 
@@ -226,6 +227,7 @@ class DiaryController extends Controller {
 
         if ($issue !== null) {
             app(OpenIssueService::class)->linkFollowUp($issue, $entry, $auth);
+            app(FollowUpOrderService::class)->copyAttachments($issue, $entry, $auth);
         }
 
         return redirect()->route('diary.show', $entry)->with('success', __('Eintrag gespeichert.'));

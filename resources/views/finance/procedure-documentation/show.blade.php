@@ -28,14 +28,40 @@
                                 data-entry-modal-trigger
                                 :href="route('finance.procedure-documentation.edit', $document)"
                                 show-label>{{ __('procedure-documentation.action.edit') }}</x-icon-btn>
-                    <x-action-form :action="route('finance.procedure-documentation.publish', $document)"
-                                   :confirm="__('procedure-documentation.confirm.publish')" confirm-icon="verified" confirm-tone="primary">
-                        <x-icon-btn type="submit" icon="verified" tone="primary" size="sm" show-label>{{ __('procedure-documentation.action.publish') }}</x-icon-btn>
-                    </x-action-form>
+                    @if ($requiresReview)
+                        {{-- Vier-Augen-Prinzip (MVP-995): eine zweite Person gibt frei. --}}
+                        <x-action-form :action="route('finance.procedure-documentation.submit', $document)"
+                                       :confirm="__('procedure-documentation.confirm.submit')" confirm-icon="send" confirm-tone="primary">
+                            <x-icon-btn type="submit" icon="send" tone="primary" size="sm" show-label>{{ __('procedure-documentation.action.submit') }}</x-icon-btn>
+                        </x-action-form>
+                    @else
+                        <x-action-form :action="route('finance.procedure-documentation.publish', $document)"
+                                       :confirm="__('procedure-documentation.confirm.publish')" confirm-icon="verified" confirm-tone="primary">
+                            <x-icon-btn type="submit" icon="verified" tone="primary" size="sm" show-label>{{ __('procedure-documentation.action.publish') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
                     <x-action-form :action="route('finance.procedure-documentation.destroy', $document)" method="DELETE"
                                    :confirm="__('procedure-documentation.confirm.delete')" confirm-icon="delete" confirm-tone="error">
                         <x-icon-btn placement="danger" type="submit" icon="delete" tone="ghost" size="sm" :label="__('procedure-documentation.action.delete')" />
                     </x-action-form>
+                @endif
+                @if ($canPublish && $document->status === \App\Enums\Finance\ProcedureDocumentationStatus::InReview && (int) $document->submitter_user_id !== (int) auth()->id())
+                    <x-action-form :action="route('finance.procedure-documentation.publish', $document)"
+                                   :confirm="__('procedure-documentation.confirm.publish')" confirm-icon="verified" confirm-tone="primary">
+                        <x-icon-btn type="submit" icon="verified" tone="primary" size="sm" show-label>{{ __('procedure-documentation.action.approve') }}</x-icon-btn>
+                    </x-action-form>
+                    <x-icon-btn icon="undo" tone="outline" size="sm" data-entry-modal-trigger
+                                :href="route('finance.procedure-documentation.reject-form', $document)"
+                                show-label>{{ __('procedure-documentation.action.reject') }}</x-icon-btn>
+                @endif
+                @if ($others->isNotEmpty())
+                    <x-action-menu icon="compare_arrows" tone="outline" :label="__('procedure-documentation.action.compare')">
+                        @foreach ($others as $other)
+                            <x-icon-btn icon="compare_arrows" tone="outline" size="sm"
+                                        :href="route('finance.procedure-documentation.compare', ['document' => $document, 'with' => $other->sqid])"
+                                        show-label>{{ $other->displayVersion() }} · {{ $other->status->label() }}</x-icon-btn>
+                        @endforeach
+                    </x-action-menu>
                 @endif
                 @if ($document->isPublished())
                     <x-icon-btn icon="download" tone="primary" size="sm"
@@ -68,6 +94,12 @@
                     <x-detail-grid.row :label="__('procedure-documentation.field.version')" :value="$document->displayVersion()" />
                     <x-detail-grid.row :label="__('procedure-documentation.field.status')" :value="$document->status->label()" />
                     <x-detail-grid.row :label="__('procedure-documentation.field.created')" :value="($document->created_at?->fdatetime() ?? '–') . ($document->createdBy ? ' · ' . $document->createdBy->name : '')" />
+                    @if ($document->submitted_at)
+                        <x-detail-grid.row :label="__('procedure-documentation.field.submitted')" :value="$document->submitted_at->fdatetime() . ($document->submitter ? ' · ' . $document->submitter->name : '')" />
+                    @endif
+                    @if ($document->review_note)
+                        <x-detail-grid.row :label="__('procedure-documentation.field.review_note')" :value="$document->review_note" />
+                    @endif
                     <x-detail-grid.row :label="__('procedure-documentation.field.published')" :value="($document->published_at?->fdatetime() ?? '–') . ($document->publishedBy ? ' · ' . $document->publishedBy->name : '')" />
                     <x-detail-grid.row :label="__('procedure-documentation.field.generated_at')" :value="isset($payload['generated_at']) ? \Illuminate\Support\Carbon::parse($payload['generated_at'])->fdatetime() : '–'" />
                     <x-detail-grid.row :label="__('procedure-documentation.field.chains_verified')" :value="! empty($payload['chains_verified']) ? __('procedure-documentation.yes') : __('procedure-documentation.generated.chains_pending')" />

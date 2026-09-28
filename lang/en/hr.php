@@ -80,6 +80,15 @@ return [
             'submission_decided' => 'This submission has already been decided.',
             'submission_file_missing' => 'The submitted file no longer exists.',
         ],
+        'notification' => [
+            'ack_requested_title' => 'Read confirmation requested: :title',
+            'ack_requested_message' => 'Please confirm in your personnel file that you have read the document.',
+            'submission_received_title' => 'New document submitted for a personnel file',
+            'submission_received_message' => 'The submission is waiting to be accepted or rejected.',
+            'submission_accepted_title' => 'Added to the personnel file: :title',
+            'submission_rejected_title' => 'Not added to the personnel file: :title',
+            'submission_rejected_message' => 'Reason: :reason',
+        ],
     ],
     // Personal-Kapazität (MVP-940).
     'capacity' => [

@@ -45,3 +45,7 @@ documentos**, por ejemplo un certificado. Las presentaciones aparecen en la
 lista de empleados en «Presentaciones»: incorporarlas las añade al expediente;
 rechazarlas exige un motivo visible para la persona. Nadie decide sobre su
 propia presentación.
+Se avisa a la persona cuando se solicita una confirmación de lectura o se
+decide sobre su presentación, y al círculo del expediente personal cuando
+llega una nueva presentación; ese aviso no menciona ni a la persona ni el
+documento. Los destinatarios se ajustan en «Reglas de notificación».

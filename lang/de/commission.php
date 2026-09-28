@@ -16,11 +16,13 @@ return [
     'title' => 'Provisionen',
 
     'page' => [
+        'agents' => 'Vermittler',
         'rules' => 'Provisionsregeln',
         'runs' => 'Provisions-Abrechnungsläufe',
     ],
 
     'subtitle' => [
+        'agents' => 'Externe Vermittler ohne Benutzerkonto als Provisionsempfänger — ausgezahlt wird außerhalb.',
         'index' => 'Provisionszeilen je Beleg. Grundlage ist die bezahlte Rechnung — nie die ausgestellte.',
         'rules' => 'Satz je Lead-Quelle, Produktgruppe oder Vertriebsperson. Je Beleg gewinnt genau eine Regel.',
         'runs' => 'Periode abrechnen: Entwurf ist Vorschau, Schließen schreibt fest. Danach nur noch Rückrechnung.',
@@ -33,12 +35,16 @@ return [
     ],
 
     'group' => [
+        'tiers' => 'Staffel, Deckel, Auszahlung',
         'rule' => 'Regel',
         'validity' => 'Gültigkeit',
         'period' => 'Periode',
     ],
 
     'action' => [
+        'to_agents' => 'Vermittler',
+        'create_agent' => 'Vermittler anlegen',
+        'edit_agent' => 'Vermittler bearbeiten',
         'create_rule' => 'Regel anlegen',
         'edit_rule' => 'Regel bearbeiten',
         'edit' => 'Bearbeiten',
@@ -56,6 +62,16 @@ return [
     ],
 
     'field' => [
+        'agent' => 'Vermittler',
+        'agent_name' => 'Name',
+        'company' => 'Firma',
+        'email' => 'E-Mail',
+        'tier_period' => 'Staffelzeitraum',
+        'annual_cap_amount' => 'Jahresdeckel',
+        'tier_threshold' => ':n. Stufe ab Umsatz',
+        'tier_rate' => ':n. Stufe Satz (%)',
+        'liability_days' => 'Haftungsfrist (Tage)',
+        'is_partial_accrual' => 'Schon auf Teilzahlungen',
         'name' => 'Bezeichnung',
         'scope' => 'Geltungsbereich',
         'scope_value' => 'Bereichswert',
@@ -86,12 +102,19 @@ return [
     ],
 
     'scope' => [
+        'agent' => 'Vermittler',
         'all' => 'Alle Belege',
         'lead_source' => 'Lead-Quelle',
         'product_group' => 'Produktgruppe',
         'user' => 'Vertriebsperson',
     ],
 
+    'tier_period' => [
+        'none' => 'Keine Staffel',
+        'month' => 'Monat',
+        'quarter' => 'Quartal',
+        'year' => 'Jahr',
+    ],
     'status' => [
         'pending' => 'Offen',
         'settled' => 'Abgerechnet',
@@ -113,6 +136,7 @@ return [
     ],
 
     'empty' => [
+        'agents' => 'Noch keine Vermittler angelegt.',
         'rules' => 'Noch keine Provisionsregel angelegt.',
         'commissions' => 'Noch keine Provisionszeile vorhanden.',
         'runs' => 'Noch kein Abrechnungslauf angelegt.',
@@ -120,6 +144,11 @@ return [
     ],
 
     'hint' => [
+        'agent' => 'Statt einer Person: Provision an einen externen Vermittler.',
+        'rule_agent' => 'Nur mit Geltungsbereich „Vermittler“.',
+        'tiers' => 'Staffel: Ab dem erreichten Umsatz im Zeitraum gilt der Satz der höchsten Stufe für den neuen Betrag; der Jahresdeckel begrenzt die Provision je Kalenderjahr.',
+        'liability_days' => 'Erst nach Ablauf auszahlbar — die Zeile fällt in den Abrechnungslauf dieser Periode.',
+        'partial_accrual' => 'Provision anteilig je Zahlungseingang statt erst bei vollständiger Zahlung.',
         'scope_value' => 'Nur bei Geltungsbereich Lead-Quelle oder Produktgruppe; muss zum gewählten Bereich passen.',
         'user' => 'Nur bei Geltungsbereich Vertriebsperson.',
         'priority' => 'Höhere Zahl gewinnt; bei Gleichstand entscheidet der engere Geltungsbereich.',
@@ -140,6 +169,7 @@ return [
     ],
 
     'flash' => [
+        'agent_saved' => 'Vermittler wurde gespeichert.',
         'rule_created' => 'Provisionsregel angelegt.',
         'rule_updated' => 'Provisionsregel gespeichert.',
         'rule_deleted' => 'Provisionsregel gelöscht.',
@@ -156,9 +186,17 @@ return [
     ],
 
     'note' => [
+        'capped' => 'Jahresdeckel :cap erreicht — Provision gekürzt.',
         'credit_note' => 'Rückrechnung wegen Gutschrift :number',
         'cancelled' => 'Rückrechnung wegen Storno',
         'reassigned' => 'Rückrechnung wegen Neuzuordnung der Vertriebsperson',
+        'payment_reverted' => 'Rückrechnung wegen zurückgenommener Zahlung',
+    ],
+    'reversal_kind' => [
+        'credit_note' => 'Gutschrift',
+        'cancellation' => 'Storno',
+        'reassignment' => 'Neuzuordnung',
+        'payment' => 'Zahlung zurückgenommen',
     ],
 
     'export' => [

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Hr;
 
 use App\Enums\Hr\{HrDocumentCategory, PersonnelFileSubmissionStatus};
+use App\Enums\Notification\NotificationEvent;
 use App\Models\Document\Document;
 use App\Models\Hr\{PersonnelFileAcknowledgement, PersonnelFileSubmission};
 use App\Models\Platform\{Organization, User};
@@ -20,6 +21,7 @@ use App\Services\Document\DocumentService;
 use App\Services\Hr\{PersonnelFilePermissions, PersonnelFileService};
 use App\Services\Privacy\SubjectData\PersonnelFileSection;
 use App\Services\Privacy\UserAnonymizationService;
+use App\Support\NotificationText;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -126,6 +128,45 @@ final class PersonnelFileSelfServiceTest extends TestCase {
 
         $this->actingAs($this->hr)->get(route('personnel-file.submissions.index'))->assertOk()->assertDontSee('Eigene Bescheinigung');
         $this->actingAs($this->hr)->post(route('personnel-file.submissions.accept', $own), ['title' => 'Eigene', 'hr_category' => 'certificate'])->assertForbidden();
+    }
+
+    public function test_person_and_circle_are_notified_without_names_leaving_the_circle(): void {
+        $direct = User::factory()->user()->create(['organization_id' => $this->org->id]);
+        $direct->givePermissionTo(PersonnelFilePermissions::VIEW_ANY);
+        $admin = User::factory()->admin()->create(['organization_id' => $this->org->id]);
+
+        $this->actingAs($this->member)->post(route('account.personnel-file.submit'), [
+            'title' => 'Ersthelfer-Bescheinigung', 'hr_category' => HrDocumentCategory::Training->value,
+            'file' => UploadedFile::fake()->createWithContent('ersthelfer.pdf', '%PDF-1.4 Ersthelfer'),
+        ])->assertRedirect();
+        $this->assertSame([NotificationEvent::HrFileSubmissionReceived->value], $this->events($this->hr));
+        $this->assertSame([NotificationEvent::HrFileSubmissionReceived->value], $this->events($direct), 'Direktvergabe zählt zum Kreis');
+        $this->assertSame([], $this->events($admin), 'Admins gehören nicht automatisch zum Kreis');
+        $this->assertSame([], $this->events($this->member));
+        $data = (array) $this->hr->notifications()->firstOrFail()->data;
+        $this->assertStringNotContainsString('Erika', json_encode($data, JSON_THROW_ON_ERROR));
+        $this->assertStringNotContainsString('Ersthelfer', json_encode($data, JSON_THROW_ON_ERROR));
+
+        $submission = PersonnelFileSubmission::query()->sole();
+        $this->actingAs($this->hr)->post(route('personnel-file.submissions.accept', $submission), [
+            'title' => 'Ersthelfer 2026', 'hr_category' => HrDocumentCategory::Training->value, 'is_ack_required' => '1',
+        ])->assertRedirect();
+        $this->assertEqualsCanonicalizing([NotificationEvent::HrFileAckRequested->value, NotificationEvent::HrFileSubmissionDecided->value], $this->events($this->member));
+
+        $document = Document::query()->personnelFilesOf($this->member)->sole();
+        $this->actingAs($this->hr)->post(route('documents.versions.store', $document), ['file' => UploadedFile::fake()->create('v2.pdf', 20, 'application/pdf')])->assertRedirect();
+        $this->assertCount(2, array_keys($this->events($this->member), NotificationEvent::HrFileAckRequested->value), 'jede Fassung braucht eine eigene Bestätigung');
+
+        $rejected = app(PersonnelFileService::class)->submit($this->member, ['title' => 'Urlaubsfoto', 'hr_category' => HrDocumentCategory::Other->value], UploadedFile::fake()->createWithContent('foto.pdf', '%PDF-1.4 Foto'));
+        app(PersonnelFileService::class)->reject($rejected, $this->hr, 'Kein Personalbezug');
+        $decision = $this->member->notifications()->get()->map(fn ($n): array => (array) $n->data)
+            ->firstWhere('title_key', 'hr.personnel_file.notification.submission_rejected_title');
+        $this->assertSame(__('hr.personnel_file.notification.submission_rejected_message', ['reason' => 'Kein Personalbezug']), NotificationText::message((array) $decision));
+    }
+
+    /** @return list<string> */
+    private function events(User $user): array {
+        return array_values($user->notifications()->get()->map(fn ($n): string => (string) (((array) $n->data)['event'] ?? ''))->all());
     }
 
     public function test_submissions_appear_in_the_subject_access_and_go_with_anonymisation(): void {

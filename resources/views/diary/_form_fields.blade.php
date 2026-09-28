@@ -18,6 +18,7 @@
     $prefillTitle = $prefillTitle ?? '';
     $prefillContent = $prefillContent ?? '';
     $prefillOpenIssueSqid = $prefillOpenIssueSqid ?? null;
+    $prefillDueDate = $prefillDueDate ?? null;
     $defaultUserId = old('user_id', $entry?->user_id ?? ($prefillUserId ?: auth()->id()));
 
     // Phase 6: EntryType-gesteuerte Felder
@@ -188,7 +189,7 @@
             type="date"
             id="due_date"
             name="due_date"
-            value="{{ old('due_date', $entry?->due_date?->format('Y-m-d')) }}"
+            value="{{ old('due_date', $entry?->due_date?->format('Y-m-d') ?? $prefillDueDate) }}"
             class="input input-bordered w-full @error('due_date') input-error @enderror"
         >
         @error('due_date')<p class="text-error text-sm">{{ $message }}</p>@enderror

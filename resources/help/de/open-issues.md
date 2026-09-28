@@ -22,3 +22,8 @@ abschließen, nicht bearbeiten sowie wieder öffnen. Übergänge erfolgen über
 einen Dialog; je nach Aktion ist ein Grund oder beim Abschluss eine
 Lösungsbeschreibung erforderlich. Unzulässige Übergänge werden abgewiesen,
 sodass der Verlauf konsistent bleibt.
+
+Aus einem offenen Punkt lassen sich **mehrere Folgeaufträge** anlegen. Jeder
+übernimmt Kunde, Projekt und Beschreibung, dazu die Fälligkeit des Punkts und
+eine Kopie seiner Anhänge — bei Mängeln aus einem Protokoll auch die Fotos des
+Protokollpunkts.

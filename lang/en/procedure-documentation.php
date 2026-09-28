@@ -20,6 +20,10 @@ return [
     'yes' => 'Yes',
     'no' => 'No',
     'action' => [
+        'submit' => 'Submit for approval',
+        'approve' => 'Approve and publish',
+        'reject' => 'Reject',
+        'compare' => 'Compare',
         'create_draft' => 'Create draft',
         'show' => 'Show',
         'edit' => 'Edit texts',
@@ -30,16 +34,21 @@ return [
         'delete' => 'Discard draft',
     ],
     'confirm' => [
+        'submit' => 'Submit this version for approval? It can no longer be edited until a decision is made.',
         'publish' => 'Publish this version? The hash chains are recalculated, the system part is frozen and the PDF is generated — the version is immutable afterwards.',
         'delete' => 'Discard this draft?',
     ],
     'flash' => [
+        'submitted' => 'Version submitted for approval.',
+        'rejected' => 'Version rejected — it is a draft again.',
         'draft_created' => 'Draft :version created.',
         'updated' => 'Texts saved.',
         'published' => 'Version :version published — snapshot and PDF hash are stored.',
         'deleted' => 'Draft discarded.',
     ],
     'error' => [
+        'review_required' => 'Under the four-eyes principle a version is first submitted for approval.',
+        'four_eyes' => 'Approval must be given by a person other than the one who submitted.',
         'draft_exists' => 'A draft already exists — publish or discard it first.',
         'frozen' => 'Published versions are immutable.',
         'not_published' => 'This version is not published yet.',
@@ -47,6 +56,8 @@ return [
         'pdf_mismatch' => 'The hash of the PDF file no longer matches the stored proof.',
     ],
     'field' => [
+        'submitted' => 'Submitted',
+        'review_note' => 'Reason for rejection',
         'version' => 'Version',
         'status' => 'Status',
         'created' => 'Created',
@@ -279,5 +290,20 @@ return [
         'part_generated' => 'Part B — Generated system documentation',
         'proof' => 'Proof',
         'proof_hint' => 'The snapshot hash matches the proof stored for this version in WorkDiary; the hash of the PDF file is stored there as well and verified on download.',
+    ],
+    'compare' => [
+        'title' => 'Comparison :old ↔ :new',
+        'subtitle' => 'Changed sections: :count',
+        'section' => 'Section',
+        'part' => [
+            'operator' => 'Part A — operator',
+            'generated' => 'Part B — system',
+        ],
+        'status' => [
+            'unchanged' => 'unchanged',
+            'changed' => 'changed',
+            'added' => 'new',
+            'removed' => 'removed',
+        ],
     ],
 ];

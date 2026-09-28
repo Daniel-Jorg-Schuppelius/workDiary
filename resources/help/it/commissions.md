@@ -46,3 +46,26 @@ falsificare un documento che qualcun altro ha già elaborato.
 Una liquidazione raccoglie le righe aperte di un periodo. Una volta chiusa fa
 fede — le correzioni passano dalla liquidazione successiva, mai dalla
 rilavorazione della vecchia.
+
+## Scaglioni, tetto, periodo di garanzia, pagamenti parziali e intermediari
+
+Una regola può avere **scaglioni**: quando il fatturato di una persona nel
+mese, trimestre o anno raggiunge una soglia, al nuovo importo si applica
+l'aliquota dello scaglione più alto raggiunto. Le righe già create non vengono
+ricalcolate. Un **tetto annuo** limita la provvigione per anno solare; quanto
+eccede decade, con un'annotazione sulla riga.
+
+Con un **periodo di garanzia** una provvigione diventa pagabile solo dopo i
+giorni indicati e rientra nella liquidazione di quel periodo — se la fattura
+viene annullata prima, scompare prima di essere comunicata. Se è attivo **«Già
+sui pagamenti parziali»**, la provvigione nasce pro rata a ogni incasso invece
+che solo al pagamento completo.
+
+Se un pagamento viene annullato nella riconciliazione bancaria, WorkDiary storna
+la provvigione fino alla quota allora pagata (per intero senza «pagamenti
+parziali»), come riga negativa a sé; la riga precedente resta. Se il pagamento
+arriva di nuovo, la provvigione nasce di nuovo.
+
+Le provvigioni possono andare anche a **intermediari esterni** senza account
+utente. Si gestiscono in «Intermediari», si assegnano sulla fattura e compaiono
+nella liquidazione e nell'esportazione accanto ai dipendenti.

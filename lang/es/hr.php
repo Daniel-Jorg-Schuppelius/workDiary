@@ -80,6 +80,15 @@ return [
             'submission_decided' => 'Ya se ha decidido sobre esta presentación.',
             'submission_file_missing' => 'El archivo presentado ya no existe.',
         ],
+        'notification' => [
+            'ack_requested_title' => 'Confirmación de lectura solicitada: :title',
+            'ack_requested_message' => 'Confirme en su expediente personal que ha leído el documento.',
+            'submission_received_title' => 'Nuevo documento presentado para un expediente personal',
+            'submission_received_message' => 'La presentación está pendiente de aceptación o rechazo.',
+            'submission_accepted_title' => 'Incorporado al expediente personal: :title',
+            'submission_rejected_title' => 'No incorporado al expediente personal: :title',
+            'submission_rejected_message' => 'Motivo: :reason',
+        ],
     ],
     // Personal-Kapazität (MVP-940).
     'capacity' => [

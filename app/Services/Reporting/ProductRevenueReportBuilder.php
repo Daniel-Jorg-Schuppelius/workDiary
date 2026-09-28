@@ -24,7 +24,9 @@ use Carbon\CarbonImmutable;
  *
  * Zwei Quellen (MVP-804, Schnitt 2):
  *  - **lokal:** Positionen ausgestellter/bezahlter lokaler Rechnungen
- *    (`invoice_items.amount` = Zeilennetto nach Positionsrabatt);
+ *    (`invoice_items.amount` = Zeilennetto nach Positionsrabatt); Gutschriften
+ *    und Stornobelege tragen negative Mengen und mindern im Monat ihrer
+ *    Ausstellung (MVP-990);
  *  - **Lexoffice:** Positionen gespiegelter Rechnungen und Gutschriften
  *    (`lexoffice_voucher_lines`, MVP-760), über die Artikel-Zuordnung
  *    (`external_article_mappings`) auf den eigenen Artikelstamm gelegt.
@@ -38,8 +40,12 @@ class ProductRevenueReportBuilder {
     /** Ausgestellt/(teil)bezahlt — Entwürfe und Stornos zählen nicht. */
     public const STATUSES = [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID, Invoice::STATUS_PAID];
 
-    /** Umsatztragende Belegarten (wie CustomerValueReportBuilder::invoicedPerCustomer). */
-    public const TYPES = [Invoice::TYPE_INVOICE, Invoice::TYPE_PARTIAL, Invoice::TYPE_FINAL];
+    /**
+     * Umsatztragende Belegarten; Gutschrift und Stornobeleg spiegeln die
+     * Positionen mit negativer Menge und mindern (MVP-990) — sonst zählte eine
+     * stornierte Rechnung weiter voll, weil ihr Original ausgestellt bleibt.
+     */
+    public const TYPES = [Invoice::TYPE_INVOICE, Invoice::TYPE_PARTIAL, Invoice::TYPE_FINAL, Invoice::TYPE_CREDIT_NOTE, Invoice::TYPE_CANCELLATION];
 
     /** Gespiegelte Lexoffice-Belege mit Umsatzwirkung; Gutschriften mindern. */
     public const VOUCHER_TYPES = ['invoice', 'creditnote'];

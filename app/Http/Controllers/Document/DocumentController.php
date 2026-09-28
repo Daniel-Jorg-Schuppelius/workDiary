@@ -327,6 +327,8 @@ class DocumentController extends Controller {
         $this->service->assertAllowedFile($file);
 
         $version = $this->service->addVersion($document, $actor, $file, $data['note'] ?? null);
+        // Neue Fassung einer Akte: die Bestätigung gilt je Version.
+        $this->personnelFiles->requestAcknowledgement($document);
 
         return redirect()
             ->back()

@@ -12,14 +12,15 @@ declare(strict_types=1);
 
 namespace App\Models\Sales;
 
-use App\Casts\PercentageCast;
-use App\Enums\Sales\CommissionScope;
+use App\Casts\{MoneyCast, PercentageCast};
+use App\Enums\Sales\{CommissionScope, CommissionTierPeriod};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use App\Support\Query\DateRange;
-use CommonToolkit\ValueObjects\Percentage;
-use Illuminate\Database\Eloquent\{Builder, Model};
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\{Money, Percentage};
+use Illuminate\Database\Eloquent\{Builder, Collection, Model};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
 
 /**
@@ -39,6 +40,12 @@ use Illuminate\Support\Carbon;
  * @property CommissionScope $scope
  * @property string|null $scope_value
  * @property int|null $user_id
+ * @property int|null $commission_agent_id
+ * @property CurrencyCode|null $currency
+ * @property CommissionTierPeriod|null $tier_period
+ * @property Money|null $annual_cap_amount
+ * @property int|null $liability_days
+ * @property bool $is_partial_accrual
  * @property Percentage $rate_percent
  * @property Carbon|null $valid_from
  * @property Carbon|null $valid_to
@@ -60,7 +67,13 @@ class CommissionRule extends Model {
         'scope',
         'scope_value',
         'user_id',
+        'commission_agent_id',
         'rate_percent',
+        'currency',
+        'tier_period',
+        'annual_cap_amount',
+        'liability_days',
+        'is_partial_accrual',
         'valid_from',
         'valid_to',
         'priority',
@@ -73,6 +86,11 @@ class CommissionRule extends Model {
     protected $casts = [
         'scope' => CommissionScope::class,
         'rate_percent' => PercentageCast::class . ':2',
+        'currency' => CurrencyCode::class,
+        'tier_period' => CommissionTierPeriod::class,
+        'annual_cap_amount' => MoneyCast::class . ':currency,2',
+        'liability_days' => 'integer',
+        'is_partial_accrual' => 'boolean',
         'valid_from' => 'date',
         'valid_to' => 'date',
         'priority' => 'integer',
@@ -82,6 +100,28 @@ class CommissionRule extends Model {
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /** @return BelongsTo<CommissionAgent, $this> */
+    public function agent(): BelongsTo {
+        return $this->belongsTo(CommissionAgent::class, 'commission_agent_id');
+    }
+
+    /** @return HasMany<CommissionRuleTier, $this> */
+    public function tiers(): HasMany {
+        return $this->hasMany(CommissionRuleTier::class, 'commission_rule_id')->orderBy('threshold_amount');
+    }
+
+    /**
+     * Staffelstufen aufsteigend, mit der Regel als Währungsquelle der Schwellen.
+     *
+     * @return Collection<int, CommissionRuleTier>
+     */
+    public function orderedTiers(): Collection {
+        $tiers = $this->tiers()->get();
+        $tiers->each(fn (CommissionRuleTier $tier) => $tier->setRelation('rule', $this));
+
+        return $tiers;
     }
 
     /** @return BelongsTo<User, $this> */

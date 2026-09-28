@@ -87,6 +87,9 @@
                                     <input aria-label="{{ $definition->key }}" type="number" name="value" class="input input-bordered input-sm w-28"
                                            step="{{ $definition->type === \App\Settings\SettingType::Decimal ? '0.01' : '1' }}"
                                            value="{{ $displayValue !== null && is_scalar($displayValue) ? $displayValue : '' }}">
+                                @elseif ($definition->type === \App\Settings\SettingType::Json && ! $definition->sensitive)
+                                    {{-- Strukturierte Werte (z. B. AfA-Fenster, MVP-980) als formatiertes JSON. --}}
+                                    <textarea aria-label="{{ $definition->key }}" name="value" rows="8" class="textarea textarea-bordered textarea-sm w-96 font-mono text-xs">{{ $displayValue === null ? '' : json_encode($displayValue, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}</textarea>
                                 @elseif ($definition->type === \App\Settings\SettingType::Text)
                                     <textarea aria-label="{{ $definition->key }}" name="value" rows="6" class="textarea textarea-bordered textarea-sm w-96 font-mono text-xs"
                                               placeholder="{{ $definition->sensitive ? __('settingsregistry.field.sensitive_placeholder') : '' }}">{{ $definition->sensitive ? '' : (is_string($displayValue) ? $displayValue : '') }}</textarea>

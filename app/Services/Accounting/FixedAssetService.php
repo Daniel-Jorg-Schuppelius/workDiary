@@ -18,6 +18,7 @@ use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\Posting\Adapters\DepreciationAdapter;
 use App\Services\Accounting\Posting\PostingInboxService;
 use App\Services\Concerns\{AssertsStatusTransition, AssignsSequentialNo};
+use App\Settings\SettingsRegistry;
 use App\Support\{MorphMap, Setting};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\RoundingMode;
@@ -41,19 +42,6 @@ class FixedAssetService {
 
     /** Felder, die nach der ersten Festbuchung nicht mehr änderbar sind. */
     private const VALUE_FIELDS = ['acquired_on', 'acquisition_cost', 'residual_value', 'useful_life_months', 'depreciation_method', 'declining_rate', 'currency'];
-
-    /**
-     * Degressive AfA nach § 7 Abs. 2 EStG: Anschaffungsfenster mit Höchstfaktor
-     * auf den linearen Satz und absolutem Deckel in Prozent (MVP-980).
-     *
-     * @var list<array{0: string, 1: string, 2: string, 3: string}>
-     */
-    private const DECLINING_WINDOWS = [
-        ['2009-01-01', '2010-12-31', '2.5', '25'],
-        ['2020-01-01', '2022-12-31', '2.5', '25'],
-        ['2024-04-01', '2024-12-31', '2', '20'],
-        ['2025-07-01', '2027-12-31', '3', '30'],
-    ];
 
     /** Sonder-AfA § 7g: zusammen höchstens 40 % der Anschaffungskosten, in fünf Jahren (MVP-981). */
     private const SPECIAL_MAX_PERCENT = '40';
@@ -344,7 +332,12 @@ class FixedAssetService {
             return null;
         }
         $day = $acquiredOn->toDateString();
-        foreach (self::DECLINING_WINDOWS as [$from, $until, $factor, $cap]) {
+        // Fenster als Plattform-Einstellung; effective() liefert ohne Override die Registry-Vorgabe.
+        foreach ((array) app(SettingsRegistry::class)->effective('finance.fixed_assets.declining_windows')->value as $window) {
+            if (! is_array($window)) {
+                continue;
+            }
+            [$from, $until, $factor, $cap] = [(string) ($window['from'] ?? ''), (string) ($window['until'] ?? ''), (string) ($window['factor'] ?? '0'), (string) ($window['cap'] ?? '0')];
             if ($day >= $from && $day <= $until) {
                 // Abgeschnitten statt gerundet: aufgerundet läge der Satz über dem Vielfachen.
                 $byFactor = Decimal::of($factor)->times(Decimal::of(1200))->dividedBy(Decimal::of($usefulLifeMonths), 2, RoundingMode::Truncate);

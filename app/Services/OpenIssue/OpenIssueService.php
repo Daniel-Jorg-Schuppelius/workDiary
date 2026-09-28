@@ -126,12 +126,12 @@ class OpenIssueService {
     }
 
     /**
-     * Verknüpft den Folgeauftrag (Feature 139, automatisch über MVP-880). Bewusst
-     * kein Statuswechsel — ob der Punkt damit erledigt ist, entscheidet der
-     * Bearbeiter beim Abschluss des Auftrags.
+     * Verknüpft einen Folgeauftrag (Feature 139, automatisch über MVP-880; mehrere
+     * je Punkt seit MVP-991). Bewusst kein Statuswechsel — ob der Punkt damit
+     * erledigt ist, entscheidet der Bearbeiter beim Abschluss des Auftrags.
      */
     public function linkFollowUp(OpenIssue $issue, DiaryEntry $entry, User $actor, bool $automated = false): OpenIssue {
-        $issue->update(['follow_up_diary_entry_id' => $entry->id]);
+        $issue->followUps()->syncWithoutDetaching([$entry->id => ['organization_id' => $issue->organization_id, 'created_by' => $actor->id]]);
         $issue->audit('openIssue.followUpCreated', array_filter([
             'diary_entry_id' => (int) $entry->id,
             'actor_user_id' => (int) $actor->id,

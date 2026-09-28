@@ -409,6 +409,8 @@ return [
         'measure' => 'Medición (contención de bloqueo de la cadena de auditoría)',
     ],
     'procedure_documentation' => [
+        'submitted' => 'Documentación de procedimiento presentada para aprobación',
+        'rejected' => 'Documentación de procedimiento rechazada',
         'published' => 'Documentación de procedimientos publicada',
     ],
     'google_calendar' => [
@@ -1036,6 +1038,7 @@ return [
     ],
     'updated' => 'Actualizado',
     'travelLog' => [
+        'signed' => 'Trayecto firmado por el conductor',
         'locked' => 'Trayecto bloqueado',
         'corrected' => 'Trayecto corregido mediante trayecto de anulación',
     ],

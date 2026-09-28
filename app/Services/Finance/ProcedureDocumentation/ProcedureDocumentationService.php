@@ -16,8 +16,10 @@ use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Enums\Finance\ProcedureDocumentationStatus;
 use App\Models\Finance\ProcedureDocumentation;
 use App\Models\Platform\{Organization, User};
+use App\Services\Accounting\Posting\PostingInboxService;
 use App\Services\Concerns\{AssertsStatusTransition, AssignsSequentialNo};
 use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Support\Setting;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{DB, Storage};
@@ -51,7 +53,7 @@ final class ProcedureDocumentationService {
     public function createDraft(Organization $organization, ?User $actor, array $attributes = []): ProcedureDocumentation {
         $exists = ProcedureDocumentation::query()->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
-            ->where('status', ProcedureDocumentationStatus::Draft->value)
+            ->whereIn('status', [ProcedureDocumentationStatus::Draft->value, ProcedureDocumentationStatus::InReview->value])
             ->exists();
         if ($exists) {
             throw ValidationException::withMessages(['status' => (string) __('procedure-documentation.error.draft_exists')]);
@@ -112,6 +114,14 @@ final class ProcedureDocumentationService {
      */
     public function publish(ProcedureDocumentation $document, ?User $actor): ProcedureDocumentation {
         $this->assertStatusTransition($document->status, ProcedureDocumentationStatus::Published);
+        if ($this->requiresReview()) {
+            if ($document->status !== ProcedureDocumentationStatus::InReview) {
+                throw ValidationException::withMessages(['status' => (string) __('procedure-documentation.error.review_required')]);
+            }
+            if ($actor !== null && (int) $document->submitter_user_id === (int) $actor->id) {
+                throw ValidationException::withMessages(['status' => (string) __('procedure-documentation.error.four_eyes')]);
+            }
+        }
 
         /** @var Organization $organization */
         $organization = $document->organization()->withoutGlobalScopes()->firstOrFail();
@@ -142,6 +152,34 @@ final class ProcedureDocumentationService {
                 'pdf_sha256' => $pdfHash,
             ]);
         });
+
+        return $document->refresh();
+    }
+
+    /** Vier-Augen-Prinzip der Buchhaltung gilt auch für die Verfahrensdokumentation (MVP-995). */
+    public function requiresReview(): bool {
+        return (bool) Setting::get(PostingInboxService::FOUR_EYES_KEY, false);
+    }
+
+    /** Fassung zur Freigabe vorlegen (MVP-995); danach nur noch freigeben oder zurückweisen. */
+    public function submit(ProcedureDocumentation $document, User $actor): ProcedureDocumentation {
+        $this->assertStatusTransition($document->status, ProcedureDocumentationStatus::InReview);
+        $document->forceFill([
+            'status' => ProcedureDocumentationStatus::InReview->value,
+            'submitter_user_id' => $actor->id,
+            'submitted_at' => Carbon::now(),
+            'review_note' => null,
+        ])->save();
+        $document->audit('procedure_documentation.submitted', ['version' => $document->version]);
+
+        return $document->refresh();
+    }
+
+    /** Zurückweisen mit Grund: die Fassung wird wieder Entwurf. */
+    public function reject(ProcedureDocumentation $document, User $actor, string $reason): ProcedureDocumentation {
+        $this->assertStatusTransition($document->status, ProcedureDocumentationStatus::Draft);
+        $document->forceFill(['status' => ProcedureDocumentationStatus::Draft->value, 'review_note' => $reason])->save();
+        $document->audit('procedure_documentation.rejected', ['version' => $document->version, 'actor_user_id' => $actor->id]);
 
         return $document->refresh();
     }

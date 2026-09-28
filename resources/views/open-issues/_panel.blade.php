@@ -9,7 +9,7 @@
 {{-- Offene-Punkte-Panel. Erwartet: $subject (Model), $subjectKind ('diary'|'project'|'customer') --}}
 @php
     /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Diary\OpenIssue> $issues */
-    $issues = $subject->openIssues()->with(['assignee', 'creator', 'followUpEntry'])->get();
+    $issues = $subject->openIssues()->with(['assignee', 'creator', 'followUps'])->get();
     $canCreate = \Illuminate\Support\Facades\Gate::allows('create', \App\Models\Diary\OpenIssue::class);
     $canAssign = \Illuminate\Support\Facades\Gate::allows('assign', \App\Models\Diary\OpenIssue::class);
     $canPublishToCustomer = \Illuminate\Support\Facades\Gate::allows('publishToCustomer', \App\Models\Diary\OpenIssue::class);
@@ -80,12 +80,12 @@
                                     {{ __('open-issue.field.reason') }}: {{ $issue->closed_reason }}
                                 </p>
                             @endif
-                            @if ($issue->followUpEntry !== null)
+                            @foreach ($issue->followUps as $followUp)
                                 <p class="mt-1 text-xs text-base-content/70">
                                     {{ __('open-issue.field.follow_up') }}:
-                                    <a href="{{ route('diary.show', $issue->followUpEntry) }}" class="link link-primary">{{ $issue->followUpEntry->title ?: __('Auftrag') }} · {{ $issue->followUpEntry->start_at?->fdate() ?? '—' }}</a>
+                                    <a href="{{ route('diary.show', $followUp) }}" class="link link-primary">{{ $followUp->title ?: __('Auftrag') }} · {{ $followUp->start_at?->fdate() ?? '—' }}</a>
                                 </p>
-                            @endif
+                            @endforeach
                         </div>
 
                         @if ($canUpdate || $canDelete)
@@ -113,8 +113,8 @@
                                     @endif
                                 @endforeach
 
-                                {{-- Folgeauftrag (Feature 139): öffnet den Auftragsdialog vorbefüllt; Verknüpfung beim Speichern. --}}
-                                @if ($canUpdate && $issue->follow_up_diary_entry_id === null && ! $issue->closed_at)
+                                {{-- Folgeauftrag (Feature 139, mehrere seit MVP-991): öffnet den Auftragsdialog vorbefüllt; Verknüpfung beim Speichern. --}}
+                                @if ($canUpdate && ! $issue->closed_at)
                                     <x-icon-btn icon="add_task" size="xs" tone="outline"
                                                 data-entry-modal-trigger
                                                 :href="route('diary.create', ['open_issue' => $issue->sqid])"

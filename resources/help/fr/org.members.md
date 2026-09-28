@@ -45,3 +45,7 @@ documents**, par exemple une attestation. Les transmissions figurent dans la
 liste des collaborateurs sous « Documents transmis » : les intégrer les ajoute
 au dossier, les refuser exige un motif visible par la personne. Personne ne
 décide de sa propre transmission.
+La personne est avertie dès qu'une confirmation de lecture est demandée ou
+qu'une décision est prise sur sa transmission, et le cercle du dossier
+personnel lors d'une nouvelle transmission – cet avis ne cite ni la personne
+ni le document. Les destinataires se règlent sous « Règles de notification ».

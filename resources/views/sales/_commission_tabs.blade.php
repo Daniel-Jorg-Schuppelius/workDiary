@@ -11,4 +11,5 @@
     ['route' => 'commissions.index', 'routeIs' => 'commissions.index', 'icon' => 'receipt_long', 'label' => __('commission.action.to_commissions')],
     ['route' => 'commission-runs.index', 'routeIs' => 'commission-runs.index', 'icon' => 'event_repeat', 'label' => __('commission.action.to_runs')],
     ['route' => 'commission-rules.index', 'routeIs' => 'commission-rules.index', 'icon' => 'percent', 'label' => __('commission.action.to_rules')],
+    ['route' => 'commission-agents.index', 'routeIs' => 'commission-agents.index', 'icon' => 'handshake', 'label' => __('commission.action.to_agents')],
 ]" />

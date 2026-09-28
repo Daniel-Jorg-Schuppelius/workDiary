@@ -73,6 +73,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $notes
  * @property int|null $created_by
  * @property int|null $sales_user_id
+ * @property int|null $sales_agent_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Collection<int, InvoiceItem> $items
@@ -160,6 +161,7 @@ class Invoice extends Model implements HasDocumentLines {
         // Vertriebszuordnung (Feature 146) ist kein Beleginhalt: sie steht in
         // keiner Belegdarstellung und darf auch nachträglich korrigiert werden.
         'sales_user_id',
+        'sales_agent_id',
     ];
 
     protected $fillable = [
@@ -214,6 +216,7 @@ class Invoice extends Model implements HasDocumentLines {
         'quote_id',
         // Vertriebszuordnung fuer die Provisionsabrechnung (Feature 146).
         'sales_user_id',
+        'sales_agent_id',
     ];
 
     /** @var array<string, string> */
@@ -313,6 +316,11 @@ class Invoice extends Model implements HasDocumentLines {
      */
     public function salesUser(): BelongsTo {
         return $this->belongsTo(User::class, 'sales_user_id');
+    }
+
+    /** @return BelongsTo<\App\Models\Sales\CommissionAgent, $this> */
+    public function salesAgent(): BelongsTo {
+        return $this->belongsTo(\App\Models\Sales\CommissionAgent::class, 'sales_agent_id');
     }
 
     /** @return HasMany<\App\Models\Sales\InvoiceCommission, $this> */

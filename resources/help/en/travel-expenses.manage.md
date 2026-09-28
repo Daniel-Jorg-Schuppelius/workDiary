@@ -71,3 +71,17 @@ handwritten receipts are the most common sources of misreadings.
 
 The original receipt stays attached to the record unchanged — recognition does
 not replace it, it only saves you the typing.
+
+## Logbook: signature, correction and 1% comparison
+
+In logbook mode the driver completes a trip **with their signature**; the trip is
+locked afterwards. A trip already locked at the end of the day can still be
+signed. If a trip in the middle of the chain is corrected by a reversal trip and
+its end odometer reading changes, the next trip automatically starts there — as a
+follow-up correction, the original remains.
+
+The **1% comparison** below the logbook report compares the logbook method with
+the 1% rule per vehicle and year. The vehicle needs the gross list price and the
+home–work distance; you enter other annual costs (leasing, insurance, tax) there,
+energy comes from the fuel and charging receipts. Optionally, a setting blocks new
+trips while a vehicle's mandatory inspection is overdue.

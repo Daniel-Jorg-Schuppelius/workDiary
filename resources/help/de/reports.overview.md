@@ -26,7 +26,7 @@ Need-to-know-Prinzip.
 
 **Welche Auswertungen es gibt:** Neben den Zeit- und Projektberichten stehen
 unter anderem bereit: **Umsatz je Produkt** (aus lokalen Rechnungen und
-gespiegelten Lexoffice-Rechnungen, auch je Artikelkategorie), die **Mindestlohn-Prüfung** und die **Lenk- und Ruhezeiten** als
+gespiegelten Lexoffice-Rechnungen, auch je Artikelkategorie; Gutschriften und Stornobelege mindern), die **Mindestlohn-Prüfung** und die **Lenk- und Ruhezeiten** als
 Nachweis gegenüber Aufsichtsbehörden, das **Fahrtenbuch** sowie die
 **Liquiditätsvorschau** auf dreizehn Wochen. Die finanznahen Auswertungen
 finden Sie unter Buchhaltung, nicht hier — sie lesen ausschließlich

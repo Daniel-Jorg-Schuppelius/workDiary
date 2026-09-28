@@ -20,6 +20,10 @@ return [
     'yes' => 'Oui',
     'no' => 'Non',
     'action' => [
+        'submit' => 'Soumettre pour validation',
+        'approve' => 'Valider et publier',
+        'reject' => 'Refuser',
+        'compare' => 'Comparer',
         'create_draft' => 'Créer un brouillon',
         'show' => 'Afficher',
         'edit' => 'Modifier les textes',
@@ -30,16 +34,21 @@ return [
         'delete' => 'Abandonner le brouillon',
     ],
     'confirm' => [
+        'submit' => 'Soumettre cette version pour validation ? Elle ne sera plus modifiable jusqu’à la décision.',
         'publish' => 'Publier cette version ? Les chaînes de hachage sont recalculées, la partie système est figée et le PDF est généré — la version est ensuite immuable.',
         'delete' => 'Abandonner ce brouillon ?',
     ],
     'flash' => [
+        'submitted' => 'Version soumise pour validation.',
+        'rejected' => 'Version refusée — elle redevient un brouillon.',
         'draft_created' => 'Brouillon :version créé.',
         'updated' => 'Textes enregistrés.',
         'published' => 'Version :version publiée — l\'instantané et le hachage du PDF sont enregistrés.',
         'deleted' => 'Brouillon abandonné.',
     ],
     'error' => [
+        'review_required' => 'Avec le principe des quatre yeux, une version est d’abord soumise pour validation.',
+        'four_eyes' => 'La validation doit être donnée par une autre personne que celle qui a soumis.',
         'draft_exists' => 'Un brouillon existe déjà — publiez-le ou abandonnez-le d\'abord.',
         'frozen' => 'Les versions publiées sont immuables.',
         'not_published' => 'Cette version n\'est pas encore publiée.',
@@ -47,6 +56,8 @@ return [
         'pdf_mismatch' => 'Le hachage du fichier PDF ne correspond plus à la preuve enregistrée.',
     ],
     'field' => [
+        'submitted' => 'Soumise',
+        'review_note' => 'Motif du refus',
         'version' => 'Version',
         'status' => 'Statut',
         'created' => 'Créée',
@@ -279,5 +290,20 @@ return [
         'part_generated' => 'Partie B — Documentation système générée',
         'proof' => 'Preuve',
         'proof_hint' => 'Le hachage de l\'instantané correspond à la preuve enregistrée pour cette version dans WorkDiary ; le hachage du fichier PDF y est également stocké et vérifié au téléchargement.',
+    ],
+    'compare' => [
+        'title' => 'Comparaison :old ↔ :new',
+        'subtitle' => 'Sections modifiées : :count',
+        'section' => 'Section',
+        'part' => [
+            'operator' => 'Partie A — exploitant',
+            'generated' => 'Partie B — système',
+        ],
+        'status' => [
+            'unchanged' => 'inchangée',
+            'changed' => 'modifiée',
+            'added' => 'nouvelle',
+            'removed' => 'supprimée',
+        ],
     ],
 ];

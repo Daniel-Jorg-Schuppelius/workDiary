@@ -14,16 +14,19 @@ namespace App\Services\Hr;
 
 use App\Enums\Document\DocumentStatus;
 use App\Enums\Hr\{HrDocumentCategory, PersonnelFileSubmissionStatus};
+use App\Enums\Notification\NotificationEvent;
 use App\Models\Document\Document;
 use App\Models\Hr\{PersonnelFileAcknowledgement, PersonnelFileSubmission};
 use App\Models\Platform\User;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Concerns\AssertsValidatedTransition;
 use App\Services\Document\DocumentService;
+use App\Services\Notification\NotificationDispatcher;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\{Collection, Str};
 use Illuminate\Support\Facades\{DB, Storage};
-use Illuminate\Support\Str;
 use Illuminate\Validation\{Rule, ValidationException};
 
 /**
@@ -37,7 +40,7 @@ use Illuminate\Validation\{Rule, ValidationException};
 class PersonnelFileService {
     use AssertsValidatedTransition;
 
-    public function __construct(private readonly DocumentService $documents) {}
+    public function __construct(private readonly DocumentService $documents, private readonly NotificationDispatcher $notifier) {}
 
     /**
      * Validierungsregeln des Akten-Dialogs (Upload und Metadaten).
@@ -103,6 +106,7 @@ class PersonnelFileService {
         ]);
         if ((bool) ($attributes['is_ack_required'] ?? false)) {
             $document->forceFill(['is_ack_required' => true])->save();
+            $this->requestAcknowledgement($document);
         }
 
         $document->audit('hrFile.created', [
@@ -123,8 +127,9 @@ class PersonnelFileService {
     public function update(Document $document, User $actor, array $attributes): Document {
         $category = HrDocumentCategory::from((string) $attributes['hr_category']);
         $member = $document->documentable;
+        $wasAckRequired = (bool) $document->is_ack_required;
 
-        return DB::transaction(function () use ($document, $actor, $attributes, $category, $member): Document {
+        $document = DB::transaction(function () use ($document, $actor, $attributes, $category, $member): Document {
             $this->documents->update($document, $actor, [
                 'title' => $attributes['title'],
                 'document_type' => $category->documentType()->value,
@@ -149,6 +154,11 @@ class PersonnelFileService {
 
             return $document;
         });
+        if (! $wasAckRequired) {
+            $this->requestAcknowledgement($document);
+        }
+
+        return $document;
     }
 
     /** Aufbewahrungsende: users.left_at + Kategorie-Jahre; null solange kein Austritt. */
@@ -238,6 +248,16 @@ class PersonnelFileService {
         return $acknowledgement;
     }
 
+    /** Hinweis an die betroffene Person, solange für die aktuelle Version eine Lesebestätigung angefordert ist. */
+    public function requestAcknowledgement(Document $document): void {
+        $member = $document->documentable;
+        if (! $member instanceof User || ! $document->isPersonnelFile() || ! $document->is_ack_required) {
+            return;
+        }
+
+        $this->notify(NotificationEvent::HrFileAckRequested, $document, $member, 'ack_requested_title', ['title' => $document->title], 'ack_requested_message', []);
+    }
+
     /**
      * Bestätigte aktuelle Versionen der Dokumente, nach Dokument-ID.
      *
@@ -280,6 +300,12 @@ class PersonnelFileService {
             'status' => PersonnelFileSubmissionStatus::Submitted,
         ]);
         $submission->audit('hrFile.submitted', ['member_user_id' => $member->id, 'hr_category' => $data['hr_category']]);
+        // Ohne Namen und Titel: Empfänger einer Regel können Personen außerhalb des Kreises sein.
+        foreach ($this->circle((int) $member->organization_id) as $recipient) {
+            if ((int) $recipient->id !== (int) $member->id) {
+                $this->notify(NotificationEvent::HrFileSubmissionReceived, $submission, $recipient, 'submission_received_title', [], 'submission_received_message', [], route('personnel-file.submissions.index'));
+            }
+        }
 
         return $submission;
     }
@@ -311,6 +337,7 @@ class PersonnelFileService {
             return $document;
         });
         $this->discardFile($submission);
+        $this->notify(NotificationEvent::HrFileSubmissionDecided, $submission, $member, 'submission_accepted_title', ['title' => $submission->title]);
 
         return $document;
     }
@@ -325,8 +352,41 @@ class PersonnelFileService {
         ])->save();
         $submission->audit('hrFile.rejected', ['actor_user_id' => $actor->id]);
         $this->discardFile($submission);
+        $member = $submission->user()->first();
+        if ($member !== null) {
+            $this->notify(NotificationEvent::HrFileSubmissionDecided, $submission, $member, 'submission_rejected_title', ['title' => $submission->title], 'submission_rejected_message', ['reason' => $reason]);
+        }
 
         return $submission;
+    }
+
+    /**
+     * Kreis der Akte: wirksames `hrFile.viewAny` über Rolle, Direktvergabe oder Gruppe.
+     *
+     * @return Collection<int, User>
+     */
+    private function circle(int $organizationId): Collection {
+        return User::query()->where('organization_id', $organizationId)
+            ->with(['roles.permissions', 'permissions', 'userGroups.permissions', 'userGroups.roles.permissions'])
+            ->get()
+            ->filter(static fn (User $user): bool => $user->hasEffectivePermission(PersonnelFilePermissions::VIEW_ANY))
+            ->values();
+    }
+
+    /**
+     * @param  array<string, mixed>  $titleParams
+     * @param  array<string, mixed>  $messageParams
+     */
+    private function notify(NotificationEvent $event, Model $subject, User $recipient, string $title, array $titleParams, ?string $message = null, array $messageParams = [], ?string $url = null): void {
+        $this->notifier->notify($event, $subject, $recipient, [
+            'title' => (string) __('hr.personnel_file.notification.' . $title, $titleParams),
+            'title_key' => 'hr.personnel_file.notification.' . $title,
+            'title_params' => $titleParams,
+            'message' => $message === null ? null : (string) __('hr.personnel_file.notification.' . $message, $messageParams),
+            'message_key' => $message === null ? null : 'hr.personnel_file.notification.' . $message,
+            'message_params' => $messageParams,
+            'url' => $url ?? route('account.personnel-file'),
+        ]);
     }
 
     private function discardFile(PersonnelFileSubmission $submission): void {

@@ -53,6 +53,7 @@ final class PdfGeneratorInventory {
         // Leistung/Nachweis
         'app/Services/Protocol/ProtocolPdfRenderer.php' => ['protocol'],
         'app/Services/Disposal/DisposalRecordPdfRenderer.php' => ['protocol'],
+        'app/Services/Safety/SafetyEvidencePdfRenderer.php' => ['protocol'],
         'app/Services/Manufacturing/ManufacturingRecordPdfRenderer.php' => ['manufacturing_record'],
         // VOB/B-Schreiben (Feature 062, MVP-728): der Renderer bedient beide
         // Arten, die Belegart kommt aus dem Schreiben selbst.

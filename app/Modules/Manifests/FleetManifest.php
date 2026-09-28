@@ -57,6 +57,7 @@ final class FleetManifest extends Manifest {
             'passenger_shift_settlements',
             'passenger_vehicle_profiles',
             'vehicle_reservations',
+            'vehicle_annual_costs',
             'vehicles',
         ];
     }

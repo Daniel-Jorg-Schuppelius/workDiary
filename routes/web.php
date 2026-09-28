@@ -1388,6 +1388,11 @@ Route::middleware('auth')->group(function () {
             Route::get('regeln/{rule}/bearbeiten', [\App\Http\Controllers\Sales\CommissionRuleController::class, 'edit'])->name('commission-rules.edit');
             Route::put('regeln/{rule}', [\App\Http\Controllers\Sales\CommissionRuleController::class, 'update'])->name('commission-rules.update');
             Route::delete('regeln/{rule}', [\App\Http\Controllers\Sales\CommissionRuleController::class, 'destroy'])->name('commission-rules.destroy');
+            Route::get('vermittler', [\App\Http\Controllers\Sales\CommissionAgentController::class, 'index'])->name('commission-agents.index');
+            Route::get('vermittler/neu', [\App\Http\Controllers\Sales\CommissionAgentController::class, 'create'])->name('commission-agents.create');
+            Route::post('vermittler', [\App\Http\Controllers\Sales\CommissionAgentController::class, 'store'])->name('commission-agents.store');
+            Route::get('vermittler/{agent}/bearbeiten', [\App\Http\Controllers\Sales\CommissionAgentController::class, 'edit'])->name('commission-agents.edit');
+            Route::put('vermittler/{agent}', [\App\Http\Controllers\Sales\CommissionAgentController::class, 'update'])->name('commission-agents.update');
 
             Route::get('laeufe', [\App\Http\Controllers\Sales\CommissionRunController::class, 'index'])->name('commission-runs.index');
             Route::get('laeufe/neu', [\App\Http\Controllers\Sales\CommissionRunController::class, 'create'])->name('commission-runs.create');
@@ -3041,6 +3046,10 @@ Route::middleware('auth')->group(function () {
             Route::get('{document}/bearbeiten', [\App\Http\Controllers\Finance\ProcedureDocumentationController::class, 'edit'])->name('edit');
             Route::put('{document}', [\App\Http\Controllers\Finance\ProcedureDocumentationController::class, 'update'])->name('update');
             Route::post('{document}/veroeffentlichen', [\App\Http\Controllers\Finance\ProcedureDocumentationController::class, 'publish'])->name('publish');
+            Route::post('{document}/vorlegen', [\App\Http\Controllers\Finance\ProcedureDocumentationController::class, 'submit'])->name('submit');
+            Route::get('{document}/zurueckweisen', [\App\Http\Controllers\Finance\ProcedureDocumentationController::class, 'rejectForm'])->name('reject-form');
+            Route::post('{document}/zurueckweisen', [\App\Http\Controllers\Finance\ProcedureDocumentationController::class, 'reject'])->name('reject');
+            Route::get('{document}/vergleich', [\App\Http\Controllers\Finance\ProcedureDocumentationController::class, 'compare'])->name('compare');
             Route::get('{document}/pdf', [\App\Http\Controllers\Finance\ProcedureDocumentationController::class, 'download'])->name('download');
             Route::delete('{document}', [\App\Http\Controllers\Finance\ProcedureDocumentationController::class, 'destroy'])->name('destroy');
         });
@@ -3288,6 +3297,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('travel-logs/{travelLog}', [TravelLogController::class, 'destroy'])->name('travel-logs.destroy');
         // Feature 137: explizite Festschreibung (Fahrtenbuch-Modus).
         Route::post('travel-logs/{travelLog}/lock', [TravelLogController::class, 'lock'])->name('travel-logs.lock');
+        Route::get('travel-logs/{travelLog}/sign', [TravelLogController::class, 'signForm'])->name('travel-logs.sign-form');
+        Route::post('travel-logs/{travelLog}/sign', [TravelLogController::class, 'sign'])->name('travel-logs.sign');
         Route::post('travel-logs/{travelLog}/per-diem', [PerDiemTripController::class, 'fromTravelLog'])->name('travel-logs.per-diem.generate');
 
         // ── Spesen / Auslagen ──────────────────────────────────────────────
@@ -4764,6 +4775,9 @@ Route::middleware('auth')->group(function () {
         Route::get('reports/fleet', [FleetReportController::class, 'index'])->name('reports.fleet');
         // Feature 137: steuerliches Fahrtenbuch je Fahrzeug + Zeitraum.
         Route::get('reports/logbook', [\App\Http\Controllers\Reporting\LogbookReportController::class, 'index'])->name('reports.logbook');
+        Route::get('reports/logbook/vergleich', [\App\Http\Controllers\Fleet\LogbookComparisonController::class, 'index'])->name('reports.logbook-comparison');
+        Route::get('reports/logbook/vergleich/{vehicle}/kosten', [\App\Http\Controllers\Fleet\LogbookComparisonController::class, 'costsForm'])->name('reports.logbook-comparison.costs-form');
+        Route::post('reports/logbook/vergleich/{vehicle}/kosten', [\App\Http\Controllers\Fleet\LogbookComparisonController::class, 'storeCosts'])->name('reports.logbook-comparison.costs');
         Route::get('reports/on-call', [OnCallReportController::class, 'index'])->name('reports.on-call');
         Route::get('reports/coverage', [CoverageReportController::class, 'index'])->name('reports.coverage');
         Route::get('reports/absences', [AbsencesReportController::class, 'index'])->name('reports.absences');

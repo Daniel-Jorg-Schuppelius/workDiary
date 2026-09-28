@@ -47,3 +47,26 @@ einen Beleg zu fälschen, den jemand anders schon verarbeitet hat.
 Ein Lauf bündelt die offenen Zeilen eines Zeitraums. Nach dem Schließen ist
 er der Beleg — Korrekturen laufen über den nächsten Lauf, nie durch
 Nachbearbeiten des alten.
+
+## Staffeln, Deckel, Haftungsfrist, Teilzahlungen und Vermittler
+
+Eine Regel kann eine **Staffel** tragen: Erreicht der Umsatz einer Person im
+Monat, Quartal oder Jahr eine Schwelle, gilt für den neuen Betrag der Satz der
+höchsten erreichten Stufe. Bereits entstandene Zeilen werden nicht umgerechnet.
+Ein **Jahresdeckel** begrenzt die Provision je Kalenderjahr; was darüber liegt,
+verfällt mit einem Hinweis an der Zeile.
+
+Mit einer **Haftungsfrist** wird eine Provision erst nach Ablauf der Tage
+auszahlbar und fällt in den Lauf dieser Periode — wird die Rechnung vorher
+storniert, verschwindet sie, bevor sie gemeldet war. Ist **„Schon auf
+Teilzahlungen“** gesetzt, entsteht die Provision anteilig mit jedem
+Zahlungseingang statt erst bei vollständiger Zahlung.
+
+Wird eine Zahlung im Bankabgleich zurückgenommen, rechnet WorkDiary die
+Provision auf den dann bezahlten Anteil zurück (ohne „Schon auf Teilzahlungen“
+ganz) — als eigene Minuszeile, die bisherige Zeile bleibt. Geht die Zahlung
+erneut ein, entsteht die Provision wieder.
+
+Provisionen können auch an **externe Vermittler** ohne Benutzerkonto gehen.
+Sie werden unter „Vermittler“ gepflegt, an der Rechnung zugeordnet und
+erscheinen im Lauf und im Export neben den Beschäftigten.

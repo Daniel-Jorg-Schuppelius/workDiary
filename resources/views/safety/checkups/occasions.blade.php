@@ -14,9 +14,8 @@
 @section('wrapper-height-class', 'wd-page-fill')
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 @section('content')
-<x-index-page overflow="clip" :subtitle="__('safety.register.subtitle.occasions')">
+<x-index-page overflow="clip" :subtitle="__('safety.register.subtitle.occasions')" back-route="safety.checkups.index" :back-label="__('safety.register.title.checkups')">
     <x-slot:actions>
-        <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('safety.checkups.index')" show-label>{{ __('safety.register.title.checkups') }}</x-icon-btn>
         @if ($canManage)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger

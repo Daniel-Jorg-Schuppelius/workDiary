@@ -89,7 +89,7 @@
             @forelse ($rows as $row)
                 <tr class="hover">
                     <td class="text-sm">{{ $row->earned_on?->format('d.m.Y') ?? '–' }}</td>
-                    <td class="text-sm">{{ $row->user?->name ?? '–' }}</td>
+                    <td class="text-sm">{{ $row->recipientName() }}</td>
                     <td class="font-mono text-sm">
                         {{ $row->invoice?->number ?? '–' }}
                         @if ($row->isReversal())

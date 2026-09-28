@@ -14,11 +14,13 @@ return [
     'title' => 'Provvigioni',
 
     'page' => [
+        'agents' => 'Intermediari',
         'rules' => 'Regole di provvigione',
         'runs' => 'Liquidazioni provvigioni',
     ],
 
     'subtitle' => [
+        'agents' => 'Intermediari esterni senza account utente come beneficiari di provvigioni — il pagamento avviene fuori dal sistema.',
         'index' => 'Righe di provvigione per documento. La base è la fattura pagata — mai quella emessa.',
         'rules' => 'Aliquota per fonte del lead, gruppo di prodotti o venditore. Per documento vale una sola regola.',
         'runs' => 'Liquidare un periodo: la bozza è un’anteprima, la chiusura la congela. Poi solo storni.',
@@ -31,12 +33,16 @@ return [
     ],
 
     'group' => [
+        'tiers' => 'Scaglioni, tetto, pagamento',
         'rule' => 'Regola',
         'validity' => 'Validità',
         'period' => 'Periodo',
     ],
 
     'action' => [
+        'to_agents' => 'Intermediari',
+        'create_agent' => 'Aggiungi intermediario',
+        'edit_agent' => 'Modifica intermediario',
         'create_rule' => 'Crea regola',
         'edit_rule' => 'Modifica regola',
         'edit' => 'Modifica',
@@ -54,6 +60,16 @@ return [
     ],
 
     'field' => [
+        'agent' => 'Intermediario',
+        'agent_name' => 'Nome',
+        'company' => 'Azienda',
+        'email' => 'E-mail',
+        'tier_period' => 'Periodo degli scaglioni',
+        'annual_cap_amount' => 'Tetto annuo',
+        'tier_threshold' => 'Scaglione :n da fatturato',
+        'tier_rate' => 'Scaglione :n aliquota (%)',
+        'liability_days' => 'Periodo di garanzia (giorni)',
+        'is_partial_accrual' => 'Già sui pagamenti parziali',
         'name' => 'Denominazione',
         'scope' => 'Ambito',
         'scope_value' => 'Valore dell’ambito',
@@ -84,12 +100,19 @@ return [
     ],
 
     'scope' => [
+        'agent' => 'Intermediario',
         'all' => 'Tutti i documenti',
         'lead_source' => 'Fonte del lead',
         'product_group' => 'Gruppo di prodotti',
         'user' => 'Venditore',
     ],
 
+    'tier_period' => [
+        'none' => 'Nessuno scaglione',
+        'month' => 'Mese',
+        'quarter' => 'Trimestre',
+        'year' => 'Anno',
+    ],
     'status' => [
         'pending' => 'Aperta',
         'settled' => 'Liquidata',
@@ -111,6 +134,7 @@ return [
     ],
 
     'empty' => [
+        'agents' => 'Nessun intermediario ancora creato.',
         'rules' => 'Nessuna regola di provvigione definita.',
         'commissions' => 'Nessuna riga di provvigione presente.',
         'runs' => 'Nessuna liquidazione creata.',
@@ -118,6 +142,11 @@ return [
     ],
 
     'hint' => [
+        'agent' => 'Invece di una persona: provvigione a un intermediario esterno.',
+        'rule_agent' => 'Solo con ambito «Intermediario».',
+        'tiers' => 'Scaglioni: quando il fatturato del periodo raggiunge una soglia, al nuovo importo si applica l’aliquota dello scaglione più alto; il tetto annuo limita la provvigione per anno solare.',
+        'liability_days' => 'Pagabile solo dopo questo periodo — la riga rientra nella liquidazione di quel periodo.',
+        'partial_accrual' => 'Provvigione pro rata a ogni incasso invece che solo al pagamento completo.',
         'scope_value' => 'Solo per l’ambito fonte del lead o gruppo di prodotti; deve corrispondere all’ambito scelto.',
         'user' => 'Solo per l’ambito venditore.',
         'priority' => 'Vince il numero più alto; a parità decide l’ambito più ristretto.',
@@ -138,6 +167,7 @@ return [
     ],
 
     'flash' => [
+        'agent_saved' => 'L’intermediario è stato salvato.',
         'rule_created' => 'Regola di provvigione creata.',
         'rule_updated' => 'Regola di provvigione salvata.',
         'rule_deleted' => 'Regola di provvigione eliminata.',
@@ -154,9 +184,17 @@ return [
     ],
 
     'note' => [
+        'capped' => 'Tetto annuo :cap raggiunto — provvigione ridotta.',
         'credit_note' => 'Storno per nota di credito :number',
         'cancelled' => 'Storno per annullamento',
         'reassigned' => 'Storno per riassegnazione del venditore',
+        'payment_reverted' => 'Storno per pagamento annullato',
+    ],
+    'reversal_kind' => [
+        'credit_note' => 'Nota di credito',
+        'cancellation' => 'Annullamento',
+        'reassignment' => 'Riassegnazione',
+        'payment' => 'Pagamento annullato',
     ],
 
     'export' => [

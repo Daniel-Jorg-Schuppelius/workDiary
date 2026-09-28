@@ -154,7 +154,7 @@ class LogbookReportController extends Controller {
      */
     private function exportCsv(Vehicle $vehicle, array $rows, array $totals, CarbonImmutable $from, CarbonImmutable $to, Request $request, array $exportFilters): SymfonyResponse {
         $filename = sprintf('fahrtenbuch_%s_%s_%s.csv', preg_replace('/[^A-Za-z0-9]+/', '-', $vehicle->license_plate), $from->toDateString(), $to->toDateString());
-        $out = [['Datum', 'Start-km', 'End-km', 'km', 'Fahrtart', 'Von', 'Ziel', 'Zweck', 'Fahrer', 'Festgeschrieben', 'Storniert', 'Korrektur zu', 'Korrekturgrund']];
+        $out = [['Datum', 'Start-km', 'End-km', 'km', 'Fahrtart', 'Von', 'Ziel', 'Zweck', 'Fahrer', 'Festgeschrieben', 'Unterschrieben', 'Storniert', 'Korrektur zu', 'Korrekturgrund']];
         foreach ($rows as $r) {
             $log = $r['log'];
             $out[] = [
@@ -168,16 +168,17 @@ class LogbookReportController extends Controller {
                 (string) $log->purpose,
                 $log->user->name ?? '',
                 Tz::toLocal($log->locked_at)?->format('Y-m-d H:i') ?? '',
+                Tz::toLocal($log->driver_signed_at)?->format('Y-m-d H:i') ?? '',
                 $r['superseded'] ? 'ja' : '',
                 $log->corrects?->date?->toDateString() ?? '',
                 (string) $log->correction_reason,
             ];
         }
         foreach (TripKind::cases() as $kind) {
-            $out[] = ['Summe ' . $kind->label(), '', '', (string) $totals['by_kind'][$kind->value], $kind->label(), '', '', '', '', '', '', '', ''];
+            $out[] = ['Summe ' . $kind->label(), '', '', (string) $totals['by_kind'][$kind->value], $kind->label(), '', '', '', '', '', '', '', '', ''];
         }
-        $out[] = ['Gesamt', '', '', (string) $totals['km'], '', '', '', '', '', '', '', '', ''];
-        $out[] = ['Privater Anteil %', '', '', $totals['private_share'] !== null ? NumberHelper::toUSFormat($totals['private_share'], 1) : '', '', '', '', '', '', '', '', '', ''];
+        $out[] = ['Gesamt', '', '', (string) $totals['km'], '', '', '', '', '', '', '', '', '', ''];
+        $out[] = ['Privater Anteil %', '', '', $totals['private_share'] !== null ? NumberHelper::toUSFormat($totals['private_share'], 1) : '', '', '', '', '', '', '', '', '', '', ''];
 
         return $this->csvWithMetadata($out, $filename, 'logbook', $exportFilters, $request);
     }

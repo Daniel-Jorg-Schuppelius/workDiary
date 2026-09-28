@@ -16,7 +16,7 @@ use App\Models\Platform\User;
 use Database\Factories\Diary\OpenIssueFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, MorphTo};
 
 /**
  * @property int $id
@@ -37,7 +37,6 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
  * @property int|null $closed_by_user_id
  * @property string|null $closed_reason
  * @property int $created_by_user_id
- * @property int|null $follow_up_diary_entry_id
  */
 class OpenIssue extends Model {
     use Auditable;
@@ -72,7 +71,6 @@ class OpenIssue extends Model {
         'closed_by_user_id',
         'closed_reason',
         'created_by_user_id',
-        'follow_up_diary_entry_id',
     ];
 
     protected $casts = [
@@ -105,12 +103,12 @@ class OpenIssue extends Model {
     }
 
     /**
-     * Folgeauftrag (Feature 139): manuell aus dem Punkt angelegter Tagebuch-Eintrag.
+     * Folgeaufträge (Feature 139, beliebig viele seit MVP-991), älteste zuerst.
      *
-     * @return BelongsTo<DiaryEntry, $this>
+     * @return BelongsToMany<DiaryEntry, $this>
      */
-    public function followUpEntry(): BelongsTo {
-        return $this->belongsTo(DiaryEntry::class, 'follow_up_diary_entry_id');
+    public function followUps(): BelongsToMany {
+        return $this->belongsToMany(DiaryEntry::class, 'open_issue_follow_ups')->withPivot(['organization_id', 'created_by'])->withTimestamps()->orderBy('open_issue_follow_ups.id');
     }
 
 }

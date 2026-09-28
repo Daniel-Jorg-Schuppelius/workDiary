@@ -74,3 +74,19 @@ häufigsten falsch gelesen.
 
 Der Originalbeleg bleibt unverändert am Vorgang hängen — die Erkennung
 ersetzt ihn nicht, sie erspart nur das Abtippen.
+
+## Fahrtenbuch: Unterschrift, Korrektur und 1-%-Vergleich
+
+Im Fahrtenbuch-Modus schließt die fahrende Person eine Fahrt **mit ihrer
+Unterschrift** ab; die Fahrt ist danach festgeschrieben. Auch eine Fahrt, die
+schon zum Tagesende festgeschrieben wurde, lässt sich noch unterschreiben.
+Wird eine Fahrt mitten in der Kette per Stornofahrt korrigiert und ändert sich
+dabei der End-km-Stand, beginnt die nächste Fahrt automatisch dort — als
+Folgekorrektur, das Original bleibt stehen.
+
+Der **1-%-Vergleich** unter dem Fahrtenbuch-Nachweis stellt je Fahrzeug und Jahr
+die Fahrtenbuchmethode der 1-%-Regel gegenüber. Dafür braucht das Fahrzeug den
+Bruttolistenpreis und die Entfernung Wohnung–Arbeit; sonstige Jahreskosten
+(Leasing, Versicherung, Steuer) tragen Sie dort ein, Energie kommt aus den
+Tank- und Ladebelegen. Optional sperrt eine Einstellung neue Fahrten, solange
+die Pflichtprüfung eines Fahrzeugs überfällig ist.

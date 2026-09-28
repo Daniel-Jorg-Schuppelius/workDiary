@@ -23,7 +23,7 @@ aux rapports personnels ou financiers.
 
 **Quelles analyses existent :** Outre les rapports de temps et de projets, on
 trouve notamment : le **chiffre d'affaires par produit** (factures locales et
-factures Lexoffice répliquées, aussi par catégorie d'article), le **contrôle du salaire minimum** et les **temps de
+factures Lexoffice répliquées, aussi par catégorie d'article ; avoirs et documents d'annulation le réduisent), le **contrôle du salaire minimum** et les **temps de
 conduite et de repos** comme preuve vis-à-vis des autorités, le **carnet de
 route** ainsi que la **prévision de trésorerie** sur treize semaines. Les
 analyses financières se trouvent sous Comptabilité, pas ici : elles ne lisent

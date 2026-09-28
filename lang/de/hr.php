@@ -80,6 +80,15 @@ return [
             'submission_decided' => 'Über diese Einreichung wurde bereits entschieden.',
             'submission_file_missing' => 'Die eingereichte Datei ist nicht mehr vorhanden.',
         ],
+        'notification' => [
+            'ack_requested_title' => 'Lesebestätigung erbeten: :title',
+            'ack_requested_message' => 'Bitte bestätigen Sie in Ihrer Personalakte, dass Sie das Dokument gelesen haben.',
+            'submission_received_title' => 'Neue Unterlage für eine Personalakte eingereicht',
+            'submission_received_message' => 'Die Einreichung wartet auf Übernahme oder Ablehnung.',
+            'submission_accepted_title' => 'In die Personalakte übernommen: :title',
+            'submission_rejected_title' => 'Nicht in die Personalakte übernommen: :title',
+            'submission_rejected_message' => 'Begründung: :reason',
+        ],
     ],
     // Personal-Kapazität (MVP-940).
     'capacity' => [

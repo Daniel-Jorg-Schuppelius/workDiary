@@ -19,7 +19,9 @@
 @php($report = $checker->check($diary))
 @php($blocking = $checker->blockingConflicts($report))
 @php($warnings = $checker->warnings($report))
-@php($vehicles = \App\Models\Fleet\Vehicle::query()->whereNull('archived_at')->orderBy('label')->get())
+@php($vehicles = \App\Models\Fleet\Vehicle::query()->whereNull('archived_at')->with('asset')->orderBy('label')->get())
+{{-- Fristen-Ampel (MVP-994): Prüfstatus des zugeordneten Assets je Fahrzeug. --}}
+@php($inspectionStatus = $vehicles->mapWithKeys(fn ($v) => [$v->id => $v->asset !== null ? app(\App\Services\Asset\Contracts\AssetComplianceStatusProvider::class)->statusFor($v->asset) : null]))
 @php($reservations = \App\Models\Fleet\VehicleReservation::query()->where('diary_entry_id', $diary->id)->with(['vehicle', 'reservedBy'])->orderBy('reserved_from')->get())
 
 <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs space-y-5">
@@ -184,7 +186,7 @@
                     <span class="label-text text-xs">{{ __('dispatch.vehicle.label') }}</span>
                     <select name="vehicle_id" class="select select-bordered select-sm" required>
                         @foreach ($vehicles as $vehicle)
-                            <option value="{{ $vehicle->sqid }}">{{ $vehicle->displayName() }}</option>
+                            <option value="{{ $vehicle->sqid }}">{{ $vehicle->displayName() }}{{ $inspectionStatus[$vehicle->id] !== null ? ' · ' . $inspectionStatus[$vehicle->id]->label() : '' }}</option>
                         @endforeach
                     </select>
                 </label>
@@ -201,6 +203,15 @@
                               :to-error="$errors->first('reserved_to') ?: null" />
                 <x-button type="submit" tone="primary" size="sm">{{ __('dispatch.vehicle.reserve') }}</x-button>
             </form>
+            @php($flagged = $vehicles->filter(fn ($v) => $inspectionStatus[$v->id] !== null && $inspectionStatus[$v->id]->tone() !== 'success' && $inspectionStatus[$v->id]->tone() !== 'ghost'))
+            @if ($flagged->isNotEmpty())
+                <div class="flex flex-wrap items-center gap-1 text-xs" aria-label="{{ __('dispatch.vehicle.inspection') }}">
+                    <span class="text-muted">{{ __('dispatch.vehicle.inspection') }}:</span>
+                    @foreach ($flagged as $vehicle)
+                        <x-status-badge :tone="$inspectionStatus[$vehicle->id]->tone()" size="xs">{{ $vehicle->license_plate }} · {{ $inspectionStatus[$vehicle->id]->label() }}</x-status-badge>
+                    @endforeach
+                </div>
+            @endif
         @endif
     </div>
 </section>

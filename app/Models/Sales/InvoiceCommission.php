@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Sales;
 
 use App\Casts\{MoneyCast, PercentageCast};
-use App\Enums\Sales\{CommissionAssignmentSource, CommissionStatus};
+use App\Enums\Sales\{CommissionAssignmentSource, CommissionReversalKind, CommissionStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
@@ -38,7 +38,8 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $organization_id
  * @property int $invoice_id
- * @property int $user_id
+ * @property int|null $user_id
+ * @property int|null $commission_agent_id
  * @property int|null $commission_rule_id
  * @property CommissionAssignmentSource $assignment_source
  * @property int|null $lead_id
@@ -47,9 +48,11 @@ use Illuminate\Support\Carbon;
  * @property Percentage $rate_percent
  * @property Money $commission_amount
  * @property Carbon $earned_on
+ * @property Carbon|null $payable_on
  * @property CommissionStatus $status
  * @property int|null $settlement_run_id
  * @property int|null $reversal_of_id
+ * @property CommissionReversalKind|null $reversal_kind
  * @property string|null $note
  */
 class InvoiceCommission extends Model {
@@ -63,6 +66,7 @@ class InvoiceCommission extends Model {
         'organization_id',
         'invoice_id',
         'user_id',
+        'commission_agent_id',
         'commission_rule_id',
         'assignment_source',
         'lead_id',
@@ -71,9 +75,11 @@ class InvoiceCommission extends Model {
         'rate_percent',
         'commission_amount',
         'earned_on',
+        'payable_on',
         'status',
         'settlement_run_id',
         'reversal_of_id',
+        'reversal_kind',
         'note',
     ];
 
@@ -85,7 +91,9 @@ class InvoiceCommission extends Model {
         'rate_percent' => PercentageCast::class . ':2',
         'commission_amount' => MoneyCast::class,
         'earned_on' => 'date',
+        'payable_on' => 'date',
         'status' => CommissionStatus::class,
+        'reversal_kind' => CommissionReversalKind::class,
     ];
 
     /** @return BelongsTo<Invoice, $this> */
@@ -96,6 +104,22 @@ class InvoiceCommission extends Model {
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /** @return BelongsTo<CommissionAgent, $this> */
+    public function agent(): BelongsTo {
+        return $this->belongsTo(CommissionAgent::class, 'commission_agent_id');
+    }
+
+    /** Empfänger: Beschäftigte:r oder externer Vermittler (MVP-989). */
+    public function recipientName(): string {
+        $user = $this->user;
+        if ($user instanceof User) {
+            return $user->name;
+        }
+        $agent = $this->agent;
+
+        return $agent instanceof CommissionAgent ? $agent->displayName() : '—';
     }
 
     /** @return BelongsTo<CommissionRule, $this> */

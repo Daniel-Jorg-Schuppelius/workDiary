@@ -10,6 +10,7 @@
 
 namespace App\Models\Fleet;
 
+use App\Casts\MoneyCast;
 use App\Enums\Damage\DamageKind;
 use App\Enums\Vehicle\{VehicleOwnership, VehiclePropulsion, VehicleType};
 use App\Models\Asset\{Asset, EnergyLog};
@@ -18,6 +19,8 @@ use App\Models\Concerns\HasDamageCases;
 use App\Models\Contracts\DamageCaseSubject;
 use App\Models\Platform\User;
 use App\Models\Travel\TravelLog;
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
 use Database\Factories\Fleet\VehicleFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -44,6 +47,11 @@ use Illuminate\Support\Carbon;
  * @property string|null $tank_capacity_liters
  * @property string|null $battery_capacity_kwh
  * @property string|null $wltp_consumption
+ * @property Money|null $list_price_amount
+ * @property CurrencyCode|null $currency
+ * @property int|null $commute_distance_km
+ * @property Carbon|null $acquired_on
+ * @property bool $is_externally_chargeable
  * @property int|null $odometer_km
  * @property bool $logbook_mode
  * @property bool $subject_to_driving_time_rules
@@ -81,6 +89,11 @@ class Vehicle extends Model implements DamageCaseSubject {
         'tank_capacity_liters',
         'battery_capacity_kwh',
         'wltp_consumption',
+        'currency',
+        'list_price_amount',
+        'commute_distance_km',
+        'acquired_on',
+        'is_externally_chargeable',
         'odometer_km',
         'logbook_mode',
         'subject_to_driving_time_rules',
@@ -105,6 +118,11 @@ class Vehicle extends Model implements DamageCaseSubject {
         'tank_capacity_liters' => 'decimal:2',
         'battery_capacity_kwh' => 'decimal:2',
         'wltp_consumption' => 'decimal:3',
+        'currency' => CurrencyCode::class,
+        'list_price_amount' => MoneyCast::class . ':currency,2',
+        'commute_distance_km' => 'integer',
+        'acquired_on' => 'date',
+        'is_externally_chargeable' => 'boolean',
     ];
 
     /**
@@ -189,6 +207,11 @@ class Vehicle extends Model implements DamageCaseSubject {
     /** @return BelongsTo<User, $this> */
     public function defaultUser(): BelongsTo {
         return $this->belongsTo(User::class, 'default_user_id');
+    }
+
+    /** @return HasMany<VehicleAnnualCost, $this> */
+    public function annualCosts(): HasMany {
+        return $this->hasMany(VehicleAnnualCost::class);
     }
 
     /** @return HasMany<EnergyLog, $this> */

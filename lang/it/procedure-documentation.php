@@ -20,6 +20,10 @@ return [
     'yes' => 'Sì',
     'no' => 'No',
     'action' => [
+        'submit' => 'Sottoponi ad approvazione',
+        'approve' => 'Approva e pubblica',
+        'reject' => 'Respingi',
+        'compare' => 'Confronta',
         'create_draft' => 'Crea bozza',
         'show' => 'Mostra',
         'edit' => 'Modifica testi',
@@ -30,16 +34,21 @@ return [
         'delete' => 'Scarta bozza',
     ],
     'confirm' => [
+        'submit' => 'Sottoporre questa versione ad approvazione? Fino alla decisione non sarà più modificabile.',
         'publish' => 'Pubblicare questa versione? Le catene hash vengono ricalcolate, la parte di sistema viene congelata e il PDF generato — la versione è poi immutabile.',
         'delete' => 'Scartare questa bozza?',
     ],
     'flash' => [
+        'submitted' => 'Versione sottoposta ad approvazione.',
+        'rejected' => 'Versione respinta — torna a essere una bozza.',
         'draft_created' => 'Bozza :version creata.',
         'updated' => 'Testi salvati.',
         'published' => 'Versione :version pubblicata — istantanea e hash del PDF sono memorizzati.',
         'deleted' => 'Bozza scartata.',
     ],
     'error' => [
+        'review_required' => 'Con il principio dei quattro occhi una versione viene prima sottoposta ad approvazione.',
+        'four_eyes' => 'L’approvazione deve essere data da una persona diversa da chi l’ha sottoposta.',
         'draft_exists' => 'Esiste già una bozza — la pubblichi o la scarti prima.',
         'frozen' => 'Le versioni pubblicate sono immutabili.',
         'not_published' => 'Questa versione non è ancora pubblicata.',
@@ -47,6 +56,8 @@ return [
         'pdf_mismatch' => 'L\'hash del file PDF non corrisponde più alla prova memorizzata.',
     ],
     'field' => [
+        'submitted' => 'Sottoposta',
+        'review_note' => 'Motivo del rifiuto',
         'version' => 'Versione',
         'status' => 'Stato',
         'created' => 'Creata',
@@ -279,5 +290,20 @@ return [
         'part_generated' => 'Parte B — Documentazione di sistema generata',
         'proof' => 'Prova',
         'proof_hint' => 'L\'hash dell\'istantanea corrisponde alla prova memorizzata per questa versione in WorkDiary; anche l\'hash del file PDF è memorizzato lì e viene verificato al download.',
+    ],
+    'compare' => [
+        'title' => 'Confronto :old ↔ :new',
+        'subtitle' => 'Sezioni modificate: :count',
+        'section' => 'Sezione',
+        'part' => [
+            'operator' => 'Parte A — gestore',
+            'generated' => 'Parte B — sistema',
+        ],
+        'status' => [
+            'unchanged' => 'invariata',
+            'changed' => 'modificata',
+            'added' => 'nuova',
+            'removed' => 'eliminata',
+        ],
     ],
 ];

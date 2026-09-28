@@ -62,3 +62,9 @@ numerazione, termini di conservazione, ruoli e registrazione. Ciò che cambia
 nell'operatività cambia quindi anche nella documentazione, a differenza di un
 testo scritto una volta sola. La verifichi prima di ogni controllo e integri le
 parti organizzative che nessun sistema può conoscere.
+
+**Approvazione e confronto della documentazione procedurale:** Se in contabilità
+è attivo il principio dei quattro occhi, Lei sottopone una versione ad
+approvazione; viene pubblicata solo dopo l'approvazione di una seconda persona,
+oppure torna in bozza con una motivazione. Due versioni si possono confrontare per
+sezioni — quelle modificate, nuove ed eliminate compaiono affiancate.

@@ -57,3 +57,9 @@ Aufbewahrungsfristen, Rollen und Protokollierung. Was sich im Betrieb ändert,
 ändert sich damit auch in der Dokumentation — anders als bei einem einmal
 geschriebenen Textdokument. Prüfen Sie den Stand vor jeder Betriebsprüfung und
 ergänzen Sie die organisatorischen Teile, die kein System kennen kann.
+
+**Freigabe und Vergleich der Verfahrensdokumentation:** Ist in der Buchhaltung
+das Vier-Augen-Prinzip eingeschaltet, legen Sie eine Fassung zur Freigabe vor;
+veröffentlicht wird sie erst, wenn eine zweite Person sie freigibt, oder sie geht
+mit Begründung zurück in den Entwurf. Zwei Fassungen lassen sich abschnittsweise
+vergleichen — geänderte, neue und entfallene Abschnitte stehen nebeneinander.

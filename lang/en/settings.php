@@ -96,6 +96,11 @@ return [
         'pool_years' => 'Pool years',
         'replacement_inflation_pct' => 'Price increase for replacement forecast (% p.a.)',
     ],
+    'fleet' => [
+        'heading' => 'Fleet',
+        'block_trips' => 'No new trip if a mandatory inspection is overdue',
+        'block_trips_hint' => 'If the MOT, accident-prevention check or another mandatory inspection of the assigned asset is overdue or blocked, no trip can be recorded from today. Past trips remain recordable.',
+    ],
     'rental_terms' => [
         'heading' => 'Rental terms in equipment rental',
         'description' => 'Rental terms are kept as the customer agreement “Rental terms (equipment rental)” with version and signature.',

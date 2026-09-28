@@ -48,6 +48,8 @@ final class SalesManifest extends Manifest {
     public function tables(): array {
         return [
             'bookable_services',
+            'commission_agents',
+            'commission_rule_tiers',
             'commission_rules',
             'commission_settlement_runs',
             'leads',
@@ -108,6 +110,18 @@ final class SalesManifest extends Manifest {
             ],
             \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
                 \App\Services\Sales\Retention\SalesRetentionPolicies::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function listeners(): array {
+        return [
+            \App\Events\Invoicing\InvoicePaymentReceived::class => [
+                \App\Listeners\Sales\AccrueCommissionOnPayment::class,
+            ],
+            \App\Events\Invoicing\InvoicePaymentReverted::class => [
+                \App\Listeners\Sales\ReverseCommissionOnPaymentRevert::class,
             ],
         ];
     }

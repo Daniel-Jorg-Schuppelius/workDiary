@@ -45,3 +45,26 @@ that someone else has already processed.
 
 A run bundles the open lines of a period. Once closed it is the document of
 record — corrections go through the next run, never by editing the old one.
+
+## Tiers, cap, liability period, partial payments and agents
+
+A rule can carry **tiers**: once a person's revenue in the month, quarter or
+year reaches a threshold, the rate of the highest tier reached applies to the
+new amount. Rows already created are not recalculated. An **annual cap** limits
+the commission per calendar year; anything above it lapses with a note on the
+row.
+
+With a **liability period**, a commission becomes payable only after the days
+have passed and falls into the run of that period — if the invoice is cancelled
+before, it disappears before it was ever reported. If **“Accrue on partial
+payments”** is set, the commission arises pro rata with each payment received
+instead of only on full payment.
+
+If a payment is reverted in the bank reconciliation, WorkDiary reverses the
+commission down to the share then paid (without “Accrue on partial payments”
+entirely) — as a separate negative row; the earlier row stays. If the payment
+arrives again, the commission arises again.
+
+Commissions can also go to **external agents** without a user account. They
+are maintained under “Agents”, assigned on the invoice and appear in the run
+and in the export next to the employees.

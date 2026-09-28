@@ -20,6 +20,7 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Steuerliches Fahrtenbuch je Fahrzeug: km-Stände, Fahrtart, Ziel, Zweck, Fahrer — Summen je Fahrtart und privater Anteil.')">
             <x-slot:actions>
+                <x-icon-btn icon="compare_arrows" tone="outline" size="sm" :href="route('reports.logbook-comparison')" show-label>{{ __('1-%-Vergleich') }}</x-icon-btn>
                 @if ($vehicle)
                     <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
                                 :href="route('reports.logbook', array_merge($linkParams, ['export' => 'pdf']))"
@@ -115,6 +116,9 @@
                                     <x-status-badge tone="success" size="xs" :title="$log->locked_at?->fdatetime()">{{ __('festgeschrieben') }}</x-status-badge>
                                 @else
                                     <x-status-badge tone="warning" size="xs">{{ __('offen') }}</x-status-badge>
+                                @endif
+                                @if ($log->isSigned())
+                                    <x-status-badge tone="success" size="xs" :title="$log->driver_signed_at?->fdatetime()">{{ __('unterschrieben') }}</x-status-badge>
                                 @endif
                                 @if ($log->isCorrection())
                                     <x-status-badge tone="info" size="xs" :title="$log->correction_reason">{{ __('Stornofahrt') }}</x-status-badge>

@@ -68,6 +68,9 @@
                         @else
                             offen
                         @endif
+                        @if ($log->isSigned())
+                            <br><span class="small">unterschrieben {{ $log->driver_signed_at?->orgTz()->format('d.m.Y H:i') }} · {{ substr((string) $log->driver_signature_hash, 0, 12) }}</span>
+                        @endif
                         @if ($log->isCorrection())
                             <br><span class="small">Stornofahrt: {{ $log->correction_reason }}</span>
                         @endif

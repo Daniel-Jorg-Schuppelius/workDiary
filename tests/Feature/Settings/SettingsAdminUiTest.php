@@ -63,6 +63,22 @@ class SettingsAdminUiTest extends TestCase {
         $this->assertDatabaseCount('system_settings', 0);
     }
 
+    /** MVP-980: AfA-Fenster als JSON-Plattformeinstellung, geprüft von der Registry-Regel. */
+    public function test_json_setting_is_edited_as_text_and_validated(): void {
+        $this->actingAs($this->admin)->get(route('admin.settings.index', ['q' => 'declining_windows']))
+            ->assertOk()->assertSee('<textarea aria-label="finance.fixed_assets.declining_windows"', false)->assertSee('2025-07-01');
+
+        $overlap = '[{"from":"2023-01-01","until":"2023-12-31","factor":"2","cap":"20"},{"from":"2023-06-01","until":"2024-06-30","factor":"2","cap":"20"}]';
+        $this->actingAs($this->admin)->put(route('admin.settings.update', ['key' => 'finance.fixed_assets.declining_windows']), ['scope' => 'system', 'value' => $overlap])
+            ->assertSessionHas('error', __('accounting.fixed_assets.error.windows_overlap', ['row' => 2]));
+        $this->assertDatabaseCount('system_settings', 0);
+
+        $this->actingAs($this->admin)->put(route('admin.settings.update', ['key' => 'finance.fixed_assets.declining_windows']), [
+            'scope' => 'system', 'value' => '[{"from":"2023-01-01","until":"2023-12-31","factor":"2","cap":"20"}]',
+        ])->assertSessionHas('status');
+        $this->assertSame([['from' => '2023-01-01', 'until' => '2023-12-31', 'factor' => '2', 'cap' => '20']], Setting::get('finance.fixed_assets.declining_windows'));
+    }
+
     /** Vollaudit 2026-07 (N20): Konfigurationsstand-Export als JSON + Audit. */
     public function test_settings_export_returns_json_and_writes_audit(): void {
         $response = $this->actingAs($this->admin)

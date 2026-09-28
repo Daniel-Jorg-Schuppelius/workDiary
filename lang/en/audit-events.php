@@ -409,6 +409,8 @@ return [
         'measure' => 'Measurement run (audit chain lock contention)',
     ],
     'procedure_documentation' => [
+        'submitted' => 'Procedure documentation submitted for approval',
+        'rejected' => 'Procedure documentation rejected',
         'published' => 'Procedure documentation published',
     ],
     'google_calendar' => [
@@ -1036,6 +1038,7 @@ return [
     ],
     'updated' => 'Updated',
     'travelLog' => [
+        'signed' => 'Trip signed by the driver',
         'locked' => 'Trip locked',
         'corrected' => 'Trip corrected by cancellation trip',
     ],

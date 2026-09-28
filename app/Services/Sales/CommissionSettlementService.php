@@ -19,7 +19,7 @@ use App\Support\CsvExport;
 use App\Support\Query\DateRange;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\{Builder, Collection};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -48,8 +48,11 @@ class CommissionSettlementService {
             ->where('organization_id', $organizationId)
             ->where('currency', $currency->value)
             ->open()
-            ->whereBetween('earned_on', DateRange::days($start, $end))
-            ->with(['user:id,name', 'invoice:id,number,customer_id', 'invoice.customer:id,name,company', 'rule:id,name'])
+            // Mit Haftungsfrist (MVP-989) zählt die Zeile in der Periode, in der sie auszahlbar wird.
+            ->where(fn (Builder $q): Builder => $q
+                ->where(fn (Builder $inner): Builder => $inner->whereNull('payable_on')->whereBetween('earned_on', DateRange::days($start, $end)))
+                ->orWhereBetween('payable_on', DateRange::days($start, $end)))
+            ->with(['user:id,name', 'agent:id,name,company', 'invoice:id,number,customer_id', 'invoice.customer:id,name,company', 'rule:id,name'])
             ->orderBy('user_id')
             ->orderBy('earned_on')
             ->orderBy('id')
@@ -65,7 +68,7 @@ class CommissionSettlementService {
     public function rowsOf(CommissionSettlementRun $run): Collection {
         if ($run->isClosed()) {
             return $run->commissions()
-                ->with(['user:id,name', 'invoice:id,number,customer_id', 'invoice.customer:id,name,company', 'rule:id,name'])
+                ->with(['user:id,name', 'agent:id,name,company', 'invoice:id,number,customer_id', 'invoice.customer:id,name,company', 'rule:id,name'])
                 ->orderBy('user_id')->orderBy('earned_on')->orderBy('id')
                 ->get();
         }
@@ -95,21 +98,21 @@ class CommissionSettlementService {
      * Summen je Vertriebsperson — die Sicht, die in den Lohn-Export geht.
      *
      * @param  Collection<int, InvoiceCommission>  $rows
-     * @return list<array{user_id: int, user: string, count: int, base: Money, commission: Money}>
+     * @return list<array{user_id: int|null, user: string, count: int, base: Money, commission: Money}>
      */
     public function perUser(Collection $rows, CurrencyCode $currency): array {
         $groups = [];
         foreach ($rows as $row) {
-            $groups[(int) $row->user_id][] = $row;
+            $groups[$row->user_id !== null ? 'user:' . $row->user_id : 'agent:' . $row->commission_agent_id][] = $row;
         }
 
         $result = [];
-        foreach ($groups as $userId => $userRows) {
+        foreach ($groups as $userRows) {
             $bases = array_map(static fn (InvoiceCommission $r): Money => $r->base_amount ?? Money::zero($currency), $userRows);
             $amounts = array_map(static fn (InvoiceCommission $r): Money => $r->commission_amount ?? Money::zero($currency), $userRows);
             $result[] = [
-                'user_id' => $userId,
-                'user' => (string) ($userRows[0]->user->name ?? '#' . $userId),
+                'user_id' => $userRows[0]->user_id,
+                'user' => $userRows[0]->recipientName(),
                 'count' => count($userRows),
                 'base' => Money::sum($bases, $currency),
                 'commission' => Money::sum($amounts, $currency),
@@ -192,7 +195,7 @@ class CommissionSettlementService {
         foreach ($this->rowsOf($run) as $row) {
             $rows[] = [
                 $run->period,
-                (string) ($row->user->name ?? ''),
+                $row->recipientName(),
                 (string) ($row->invoice->number ?? ''),
                 (string) ($row->invoice->customer->name ?? ''),
                 $row->earned_on->toDateString(),

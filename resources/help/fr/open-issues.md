@@ -18,3 +18,8 @@ autorisation dédiée. Le statut suit des transitions fixes (démarrer,
 bloquer/débloquer, clôturer, ne pas traiter, rouvrir) via un dialogue ;
 selon l'action, un motif ou, à la clôture, une description de la solution
 est requis, et les transitions non autorisées sont rejetées.
+
+Un point ouvert peut donner lieu à **plusieurs ordres de suivi**. Chacun reprend
+client, projet et description, ainsi que l'échéance du point et une copie de ses
+pièces jointes — pour les défauts issus d'un procès-verbal, aussi les photos du
+point de contrôle.

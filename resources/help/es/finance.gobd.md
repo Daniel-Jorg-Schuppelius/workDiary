@@ -63,3 +63,9 @@ roles y registro de auditoría. Lo que cambia en la operación cambia también e
 la documentación, a diferencia de un texto redactado una sola vez. Revísela
 antes de cada inspección y añada las partes organizativas que ningún sistema
 puede conocer.
+
+**Aprobación y comparación de la documentación de procedimiento:** Si en la
+contabilidad está activado el principio de los cuatro ojos, usted presenta una
+versión para aprobación; solo se publica cuando una segunda persona la aprueba, o
+vuelve a borrador con un motivo. Dos versiones pueden compararse por secciones:
+las secciones modificadas, nuevas y eliminadas se muestran una junto a otra.

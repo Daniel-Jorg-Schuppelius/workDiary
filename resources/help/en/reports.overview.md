@@ -24,7 +24,7 @@ access to personal and financial reports.
 
 **Which reports exist:** Besides time and project reports, these are available
 among others: **revenue per product** (from local invoices and mirrored
-Lexoffice invoices, also per article category), the **minimum wage check** and **driving and rest times** as
+Lexoffice invoices, also per article category; credit notes and cancellation documents reduce it), the **minimum wage check** and **driving and rest times** as
 evidence towards authorities, the **logbook**, and the **liquidity forecast**
 over thirteen weeks. The finance-related reports live under Accounting, not
 here — they read posted entries only.

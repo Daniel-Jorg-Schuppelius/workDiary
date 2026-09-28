@@ -409,6 +409,8 @@ return [
         'measure' => 'Misurazione (contesa del lock della catena di audit)',
     ],
     'procedure_documentation' => [
+        'submitted' => 'Documentazione procedurale sottoposta ad approvazione',
+        'rejected' => 'Documentazione procedurale respinta',
         'published' => 'Documentazione delle procedure pubblicata',
     ],
     'google_calendar' => [
@@ -1036,6 +1038,7 @@ return [
     ],
     'updated' => 'Aggiornato',
     'travelLog' => [
+        'signed' => 'Viaggio firmato dal conducente',
         'locked' => 'Viaggio bloccato',
         'corrected' => 'Viaggio corretto tramite viaggio di storno',
     ],

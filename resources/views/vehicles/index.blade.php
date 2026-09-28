@@ -80,7 +80,7 @@
                         {{-- Feature 138: Fristen-Ampel aus dem zugeordneten Asset --}}
                         @if (isset($inspections[$vehicle->id]))
                             @php($insp = $inspections[$vehicle->id])
-                            <x-status-badge :tone="$inspectionTones[$insp['status']->value] ?? 'ghost'" size="xs">{{ $insp['status']->label() }}</x-status-badge>
+                            <x-status-badge :tone="$insp['status']->tone()" size="xs">{{ $insp['status']->label() }}</x-status-badge>
                             @if ($insp['next_due_on'])
                                 <span class="ml-1 text-xs">{{ $insp['next_profile'] }} · {{ $insp['next_due_on']->fdate() }}</span>
                             @endif

@@ -434,6 +434,11 @@ return [
                 'requested' => 'Verleih-Anfrage aus dem Portal eingegangen',
                 'geofenceDeviation' => 'Verliehenes Gerät außerhalb des Einsatzorts',
             ],
+            'hrFile' => [
+                'ackRequested' => 'Lesebestätigung für die Personalakte erbeten',
+                'submissionReceived' => 'Unterlage für eine Personalakte eingereicht',
+                'submissionDecided' => 'Eingereichte Unterlage entschieden',
+            ],
             'assetFinance' => [
                 'deadline' => 'Leasingfrist fällig',
             ],
@@ -1540,6 +1545,7 @@ return [
         ],
         // Verfahrensdokumentation (Feature 134, MVP-699)
         'procedure-documentation-status' => [
+            'in_review' => 'In Prüfung',
             'draft' => 'Entwurf',
             'published' => 'Veröffentlicht',
         ],

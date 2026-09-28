@@ -199,6 +199,24 @@ class TravelLogController extends Controller {
         return redirect()->toList('travel-logs.index')->with('success', __('Fahrt festgeschrieben.'));
     }
 
+    /** Unterschrift der fahrenden Person (MVP-992): Dialog mit Zeichenfläche. */
+    public function signForm(TravelLog $travelLog): View {
+        Gate::authorize('view', $travelLog);
+        abort_unless((int) $travelLog->user_id === (int) Auth::id() && $travelLog->isLogbook() && ! $travelLog->isSigned(), 403);
+
+        return view('travel-logs._sign_dialog', ['log' => $travelLog]);
+    }
+
+    public function sign(Request $request, TravelLog $travelLog): RedirectResponse {
+        Gate::authorize('view', $travelLog);
+        $data = $request->validate(['signature' => ['required', 'string', 'max:1400000']]);
+        /** @var User $user */
+        $user = Auth::user();
+        $this->service->sign($travelLog, $user, (string) $data['signature']);
+
+        return redirect()->toList('travel-logs.index')->with('success', __('Fahrt unterschrieben und festgeschrieben.'));
+    }
+
     public function export(Request $request): StreamedResponse {
         Gate::authorize('viewAny', TravelLog::class);
 

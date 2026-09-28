@@ -44,3 +44,7 @@ una nuova conferma. Lì **presenta anche i propri documenti**, ad esempio un
 attestato. Le presentazioni compaiono nell'elenco dei dipendenti sotto
 «Presentazioni»: acquisirle le aggiunge al fascicolo, rifiutarle richiede un
 motivo visibile alla persona. Nessuno decide sulla propria presentazione.
+La persona riceve un avviso quando viene richiesta una conferma di lettura o
+si decide sulla sua presentazione, il circolo del fascicolo personale quando
+arriva una nuova presentazione: questo avviso non nomina né la persona né il
+documento. I destinatari si regolano in «Regole di notifica».

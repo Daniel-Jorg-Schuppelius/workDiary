@@ -16,6 +16,8 @@ use App\Enums\Finance\{AccountType, AccountingEntryStatus, PostingAccountRole, P
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingFiscalYear, AccountingPostingRule, FixedAsset, FixedAssetSpecialDepreciation};
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, DepreciationCalculator, FiscalYearService, FixedAssetService};
+use App\Settings\SettingScope;
+use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -79,7 +81,7 @@ final class SpecialDepreciationTest extends TestCase {
         $this->actingAs($this->admin)->post(route('finance.accounting.fixed-assets.special.store', $asset), ['fiscal_year' => 2026, 'depreciation_amount' => '2000'])->assertSessionHas('status');
         app(FixedAssetService::class)->saveSpecialDepreciation($asset, 2027, '2000.00', null, $this->admin);
 
-        $rows = app(DepreciationCalculator::class)->scheduleFor($asset->fresh());
+        $rows = app(DepreciationCalculator::class)->scheduleFor($asset->refresh());
         $amounts = array_map(static fn ($row): string => $row->amount->getAmount(), $rows);
         $this->assertSame(['3000.00', '3000.00', '1000.00', '1000.00', '1000.00', '200.00', '200.00', '200.00', '200.00', '200.00'], $amounts);
         $this->assertSame('2000.00', $rows[0]->special?->getAmount());
@@ -108,5 +110,21 @@ final class SpecialDepreciationTest extends TestCase {
         $special = FixedAssetSpecialDepreciation::query()->sole();
         $this->actingAs($this->admin)->delete(route('finance.accounting.fixed-assets.special.destroy', [$asset, $special]))->assertSessionHasErrors('fiscal_year');
         $this->assertSame(1, FixedAssetSpecialDepreciation::query()->count());
+    }
+
+    public function test_windows_are_a_validated_platform_setting(): void {
+        $this->assertNull(FixedAssetService::maxDecliningRate(CarbonImmutable::parse('2023-03-01'), 120));
+
+        Setting::set('finance.fixed_assets.declining_windows', [
+            ['from' => '2023-01-01', 'until' => '2023-12-31', 'factor' => '2', 'cap' => '20'],
+        ], SettingScope::System);
+        $this->assertSame('20.00', FixedAssetService::maxDecliningRate(CarbonImmutable::parse('2023-06-01'), 120)?->getNumericValue());
+        $this->assertNull(FixedAssetService::maxDecliningRate(CarbonImmutable::parse('2026-03-01'), 120), 'eigene Liste ersetzt die Vorgabe');
+
+        $this->expectException(ValidationException::class);
+        Setting::set('finance.fixed_assets.declining_windows', [
+            ['from' => '2023-01-01', 'until' => '2023-12-31', 'factor' => '2', 'cap' => '20'],
+            ['from' => '2023-06-01', 'until' => '2024-06-30', 'factor' => '2', 'cap' => '20'],
+        ], SettingScope::System);
     }
 }

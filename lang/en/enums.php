@@ -434,6 +434,11 @@ return [
                 'requested' => 'Rental request received from the portal',
                 'geofenceDeviation' => 'Rented equipment outside the site',
             ],
+            'hrFile' => [
+                'ackRequested' => 'Read confirmation requested for the personnel file',
+                'submissionReceived' => 'Document submitted for a personnel file',
+                'submissionDecided' => 'Submitted document decided',
+            ],
             'assetFinance' => [
                 'deadline' => 'Leasing deadline due',
             ],
@@ -1535,6 +1540,7 @@ return [
             'skonto' => 'Cash discount (revenue reduction)',
         ],
         'procedure-documentation-status' => [
+            'in_review' => 'In review',
             'draft' => 'Draft',
             'published' => 'Published',
         ],

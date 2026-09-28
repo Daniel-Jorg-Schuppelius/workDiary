@@ -20,3 +20,7 @@ The status follows fixed transitions: start, block and unblock, complete,
 won't do, and reopen. Transitions happen via a dialog; depending on the
 action a reason is required, or a resolution description when completing.
 Invalid transitions are rejected so that the history stays consistent.
+
+**Several follow-up orders** can be created from an open issue. Each takes over
+customer, project and description, plus the issue's due date and a copy of its
+attachments — for defects from a protocol also the photos of the protocol item.

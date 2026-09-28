@@ -15,7 +15,7 @@ namespace App\Services\Sales;
 use App\Enums\Sales\{CommissionAssignmentSource, CommissionScope};
 use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Platform\User;
-use App\Models\Sales\{CommissionRule, Lead};
+use App\Models\Sales\{CommissionAgent, CommissionRule, Lead};
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Carbon;
 
@@ -48,6 +48,11 @@ class CommissionRuleResolver {
 
         if ($manual instanceof User) {
             return new CommissionAssignment($manual, CommissionAssignmentSource::Manual, $lead);
+        }
+
+        $agent = $invoice->sales_agent_id !== null ? CommissionAgent::query()->whereKey($invoice->sales_agent_id)->first() : null;
+        if ($agent instanceof CommissionAgent) {
+            return new CommissionAssignment(null, CommissionAssignmentSource::Manual, $lead, $agent);
         }
 
         if ($lead !== null && $lead->responsible_user_id !== null) {
@@ -114,7 +119,8 @@ class CommissionRuleResolver {
     private function applies(CommissionRule $rule, Invoice $invoice, CommissionAssignment $assignment): bool {
         return match ($rule->scope) {
             CommissionScope::All => true,
-            CommissionScope::User => $rule->user_id !== null && (int) $rule->user_id === (int) $assignment->user->id,
+            CommissionScope::User => $rule->user_id !== null && $assignment->user !== null && (int) $rule->user_id === (int) $assignment->user->id,
+            CommissionScope::Agent => $rule->commission_agent_id !== null && $assignment->agent !== null && (int) $rule->commission_agent_id === (int) $assignment->agent->id,
             CommissionScope::LeadSource => $assignment->lead !== null
                 && $rule->scope_value !== null
                 && $assignment->lead->source->value === $rule->scope_value,

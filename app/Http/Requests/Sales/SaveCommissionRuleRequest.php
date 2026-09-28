@@ -12,10 +12,11 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Sales;
 
-use App\Enums\Sales\{CommissionScope, LeadSource};
+use App\Enums\Sales\{CommissionScope, CommissionTierPeriod, LeadSource};
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Platform\User;
+use App\Models\Sales\CommissionAgent;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
 
@@ -30,6 +31,7 @@ class SaveCommissionRuleRequest extends BaseFormRequest {
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'user_id' => User::class,
+        'commission_agent_id' => CommissionAgent::class,
     ];
 
     /** @return array<string, mixed> */
@@ -53,7 +55,19 @@ class SaveCommissionRuleRequest extends BaseFormRequest {
             ],
             // Satz als Prozentwert; 0 ist erlaubt (bewusste Nullregel, die eine
             // allgemeinere Regel fuer einen Bereich aussetzt).
+            'commission_agent_id' => [
+                $scope === CommissionScope::Agent->value ? 'required' : 'nullable',
+                'integer', new ExistsInCurrentOrganization('commission_agents'),
+            ],
             'rate_percent' => ['required', 'numeric', 'min:0', 'max:100'],
+            // Staffel und Deckel (MVP-988), Haftungsfrist und Teilzahlung (MVP-989).
+            'tier_period' => ['nullable', Rule::enum(CommissionTierPeriod::class)],
+            'tiers' => ['nullable', 'array', 'max:4'],
+            'tiers.*.threshold' => ['nullable', 'numeric', 'gt:0', 'max:999999999999.99', 'required_with:tiers.*.rate'],
+            'tiers.*.rate' => ['nullable', 'numeric', 'min:0', 'max:100', 'required_with:tiers.*.threshold'],
+            'annual_cap_amount' => ['nullable', 'numeric', 'gt:0', 'max:999999999999.99'],
+            'liability_days' => ['nullable', 'integer', 'between:1,730'],
+            'is_partial_accrual' => ['nullable', 'boolean'],
             'valid_from' => ['nullable', 'date'],
             'valid_to' => ['nullable', 'date', 'after_or_equal:valid_from'],
             'priority' => ['required', 'integer', 'min:0', 'max:65535'],

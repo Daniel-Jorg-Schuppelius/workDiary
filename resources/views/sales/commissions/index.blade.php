@@ -85,7 +85,7 @@
         @forelse ($commissions as $commission)
             <tr class="hover">
                 <td class="text-sm">{{ $commission->earned_on?->format('d.m.Y') ?? '–' }}</td>
-                <td class="text-sm font-medium">{{ $commission->user?->name ?? '–' }}</td>
+                <td class="text-sm font-medium">{{ $commission->recipientName() }}</td>
                 <td class="font-mono text-sm">
                     {{ $commission->invoice?->number ?? '–' }}
                     @if ($commission->isReversal())

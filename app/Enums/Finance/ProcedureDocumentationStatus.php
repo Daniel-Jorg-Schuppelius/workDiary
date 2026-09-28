@@ -17,7 +17,8 @@ use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
  * Statusmaschine einer Verfahrensdokumentations-Version (Feature 134):
- * Entwurf → veröffentlicht. Die Veröffentlichung friert Freitext und den
+ * Entwurf → veröffentlicht; mit Vier-Augen-Prinzip Entwurf → in Prüfung →
+ * veröffentlicht bzw. zurück in den Entwurf (MVP-995). Die Veröffentlichung friert Freitext und den
  * generierten Systemteil (Snapshot + PDF-Hash) ein; Änderungen erzeugen
  * eine neue Version.
  */
@@ -25,6 +26,7 @@ enum ProcedureDocumentationStatus: string implements HasLabel, HasStatusTransiti
     use HasOptions;
 
     case Draft = 'draft';
+    case InReview = 'in_review';
     case Published = 'published';
 
     public function label(): string {
@@ -34,6 +36,7 @@ enum ProcedureDocumentationStatus: string implements HasLabel, HasStatusTransiti
     public function tone(): string {
         return match ($this) {
             self::Draft => 'warning',
+            self::InReview => 'info',
             self::Published => 'success',
         };
     }
@@ -43,7 +46,8 @@ enum ProcedureDocumentationStatus: string implements HasLabel, HasStatusTransiti
      */
     public function allowedTransitions(): array {
         return match ($this) {
-            self::Draft => [self::Published],
+            self::Draft => [self::InReview, self::Published],
+            self::InReview => [self::Published, self::Draft],
             self::Published => [],
         };
     }

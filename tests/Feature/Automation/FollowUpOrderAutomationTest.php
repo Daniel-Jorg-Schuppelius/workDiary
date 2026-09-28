@@ -62,8 +62,8 @@ class FollowUpOrderAutomationTest extends TestCase {
         $low = $service->create($entry, $creator, ['title' => 'Kratzer am Rahmen', 'severity' => 'low']);
         $high = $service->create($entry, $creator, ['title' => 'Heizung ausgefallen', 'severity' => 'high', 'assignee_user_id' => $assignee->id]);
 
-        $this->assertNull($low->fresh()->follow_up_diary_entry_id);
-        $followUpId = $high->fresh()->follow_up_diary_entry_id;
+        $this->assertSame(0, $low->followUps()->count());
+        $followUpId = $high->followUps()->value('diary_entries.id');
         $this->assertNotNull($followUpId);
         $followUp = DiaryEntry::query()->findOrFail($followUpId);
         $this->assertSame($assignee->id, (int) $followUp->user_id);

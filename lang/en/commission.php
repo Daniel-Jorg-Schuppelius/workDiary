@@ -14,11 +14,13 @@ return [
     'title' => 'Commissions',
 
     'page' => [
+        'agents' => 'Agents',
         'rules' => 'Commission rules',
         'runs' => 'Commission settlement runs',
     ],
 
     'subtitle' => [
+        'agents' => 'External agents without a user account as commission recipients — paid outside the system.',
         'index' => 'Commission entries per document. The basis is the paid invoice — never the issued one.',
         'rules' => 'Rate per lead source, product group or salesperson. Exactly one rule wins per document.',
         'runs' => 'Settle a period: the draft is a preview, closing freezes it. After that only reversals.',
@@ -31,12 +33,16 @@ return [
     ],
 
     'group' => [
+        'tiers' => 'Tiers, cap, payout',
         'rule' => 'Rule',
         'validity' => 'Validity',
         'period' => 'Period',
     ],
 
     'action' => [
+        'to_agents' => 'Agents',
+        'create_agent' => 'Add agent',
+        'edit_agent' => 'Edit agent',
         'create_rule' => 'Add rule',
         'edit_rule' => 'Edit rule',
         'edit' => 'Edit',
@@ -54,6 +60,16 @@ return [
     ],
 
     'field' => [
+        'agent' => 'Agent',
+        'agent_name' => 'Name',
+        'company' => 'Company',
+        'email' => 'Email',
+        'tier_period' => 'Tier period',
+        'annual_cap_amount' => 'Annual cap',
+        'tier_threshold' => 'Tier :n from revenue',
+        'tier_rate' => 'Tier :n rate (%)',
+        'liability_days' => 'Liability period (days)',
+        'is_partial_accrual' => 'Accrue on partial payments',
         'name' => 'Name',
         'scope' => 'Scope',
         'scope_value' => 'Scope value',
@@ -84,12 +100,19 @@ return [
     ],
 
     'scope' => [
+        'agent' => 'Agent',
         'all' => 'All documents',
         'lead_source' => 'Lead source',
         'product_group' => 'Product group',
         'user' => 'Salesperson',
     ],
 
+    'tier_period' => [
+        'none' => 'No tiers',
+        'month' => 'Month',
+        'quarter' => 'Quarter',
+        'year' => 'Year',
+    ],
     'status' => [
         'pending' => 'Open',
         'settled' => 'Settled',
@@ -111,6 +134,7 @@ return [
     ],
 
     'empty' => [
+        'agents' => 'No agents yet.',
         'rules' => 'No commission rule defined yet.',
         'commissions' => 'No commission entry yet.',
         'runs' => 'No settlement run created yet.',
@@ -118,6 +142,11 @@ return [
     ],
 
     'hint' => [
+        'agent' => 'Instead of a person: commission for an external agent.',
+        'rule_agent' => 'Only with scope “Agent”.',
+        'tiers' => 'Tiers: once the revenue in the period reaches a threshold, the rate of the highest tier applies to the new amount; the annual cap limits the commission per calendar year.',
+        'liability_days' => 'Payable only after this period — the row falls into the settlement run of that period.',
+        'partial_accrual' => 'Commission pro rata per payment received instead of only on full payment.',
         'scope_value' => 'Only for scope lead source or product group; it must match the selected scope.',
         'user' => 'Only for scope salesperson.',
         'priority' => 'The higher number wins; on a tie the narrower scope decides.',
@@ -138,6 +167,7 @@ return [
     ],
 
     'flash' => [
+        'agent_saved' => 'Agent saved.',
         'rule_created' => 'Commission rule created.',
         'rule_updated' => 'Commission rule saved.',
         'rule_deleted' => 'Commission rule deleted.',
@@ -154,9 +184,17 @@ return [
     ],
 
     'note' => [
+        'capped' => 'Annual cap :cap reached — commission reduced.',
         'credit_note' => 'Reversal due to credit note :number',
         'cancelled' => 'Reversal due to cancellation',
         'reassigned' => 'Reversal due to reassignment of the salesperson',
+        'payment_reverted' => 'Reversal due to a reverted payment',
+    ],
+    'reversal_kind' => [
+        'credit_note' => 'Credit note',
+        'cancellation' => 'Cancellation',
+        'reassignment' => 'Reassignment',
+        'payment' => 'Payment reverted',
     ],
 
     'export' => [

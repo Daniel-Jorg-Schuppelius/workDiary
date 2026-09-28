@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Settings;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use InvalidArgumentException;
 
 /**
@@ -32,6 +33,8 @@ final readonly class SettingDefinition {
      *        [HolidayRegions::class, 'providers']) — als reine Referenz
      *        config-cachebar, aufgelöst erst zur Validierungszeit
      * @param list<string> $affects Job-Keys/Module für Risiko-Hinweise
+     * @param class-string<ValidationRule>|null $ruleClass eigene Regel für
+     *        strukturierte Werte (JSON), als Klassenname config-cachebar
      */
     public function __construct(
         public string $key,
@@ -43,6 +46,7 @@ final readonly class SettingDefinition {
         public bool $sensitive = false,
         public mixed $fallback = null,
         public array $affects = [],
+        public ?string $ruleClass = null,
     ) {
         if ($scopes === []) {
             throw new InvalidArgumentException("Setting [{$key}] braucht mindestens einen Scope.");
@@ -80,6 +84,7 @@ final readonly class SettingDefinition {
             sensitive: (bool) ($data['sensitive'] ?? false),
             fallback: $data['fallback'] ?? null,
             affects: array_values((array) ($data['affects'] ?? [])),
+            ruleClass: isset($data['rule_class']) && is_string($data['rule_class']) && is_subclass_of($data['rule_class'], ValidationRule::class) ? $data['rule_class'] : null,
         );
     }
 
@@ -116,13 +121,16 @@ final readonly class SettingDefinition {
      * Vollständige Validierungsregeln inkl. Typ-Grundregel — für
      * KANONISCHE Werte (Setting::set, Registry-Adminseite).
      *
-     * @return list<string>
+     * @return list<string|ValidationRule>
      */
     public function validationRules(): array {
         $rules = [$this->type->baseRule(), ...$this->rules];
         $options = $this->resolvedOptions();
         if ($options !== null) {
             $rules[] = 'in:' . implode(',', array_map('strval', $options));
+        }
+        if ($this->ruleClass !== null) {
+            $rules[] = new ($this->ruleClass)();
         }
 
         return $rules;

@@ -16,7 +16,8 @@ use App\Enums\Finance\ProcedureDocumentationStatus;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Finance\ProcedureDocumentation;
-use App\Services\Finance\ProcedureDocumentation\ProcedureDocumentationService;
+use App\Services\Finance\ProcedureDocumentation\{ProcedureDocumentationComparison, ProcedureDocumentationService};
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -46,7 +47,7 @@ class ProcedureDocumentationController extends Controller {
 
         return view('finance.procedure-documentation.index', [
             'documents' => $documents,
-            'hasDraft' => ProcedureDocumentation::query()->where('organization_id', $organization->id)->where('status', ProcedureDocumentationStatus::Draft->value)->exists(),
+            'hasDraft' => ProcedureDocumentation::query()->where('organization_id', $organization->id)->whereIn('status', [ProcedureDocumentationStatus::Draft->value, ProcedureDocumentationStatus::InReview->value])->exists(),
             'canManage' => Gate::allows('create', ProcedureDocumentation::class),
         ]);
     }
@@ -70,10 +71,49 @@ class ProcedureDocumentationController extends Controller {
             : $this->service->preview($this->currentOrganization());
 
         return view('finance.procedure-documentation.show', [
-            'document' => $document,
+            'document' => $document->loadMissing('submitter:id,name'),
             'payload' => $payload,
             'canManage' => Gate::allows('update', $document),
+            'canPublish' => Gate::allows('publish', $document),
+            'requiresReview' => $this->service->requiresReview(),
+            'others' => ProcedureDocumentation::query()->where('organization_id', $document->organization_id)->whereKeyNot($document->id)->orderByDesc('version')->get(['id', 'version', 'status']),
         ]);
+    }
+
+    /** Zur Freigabe vorlegen (MVP-995). */
+    public function submit(ProcedureDocumentation $document): RedirectResponse {
+        Gate::authorize('update', $document);
+        /** @var \App\Models\Platform\User $user */
+        $user = Auth::user();
+        $this->service->submit($document, $user);
+
+        return redirect()->route('finance.procedure-documentation.show', $document)->with('status', __('procedure-documentation.flash.submitted'));
+    }
+
+    public function rejectForm(ProcedureDocumentation $document): View {
+        Gate::authorize('publish', $document);
+
+        return view('finance.procedure-documentation._reject_dialog', ['document' => $document]);
+    }
+
+    public function reject(Request $request, ProcedureDocumentation $document): RedirectResponse {
+        Gate::authorize('publish', $document);
+        $data = $request->validate(['review_note' => ['required', 'string', 'min:3', 'max:500']]);
+        /** @var \App\Models\Platform\User $user */
+        $user = Auth::user();
+        $this->service->reject($document, $user, (string) $data['review_note']);
+
+        return redirect()->route('finance.procedure-documentation.show', $document)->with('status', __('procedure-documentation.flash.rejected'));
+    }
+
+    /** Abschnittsvergleich mit einer anderen Fassung (MVP-995); die ältere steht links. */
+    public function compare(Request $request, ProcedureDocumentation $document, ProcedureDocumentationComparison $comparison): View {
+        Gate::authorize('view', $document);
+        $other = ProcedureDocumentation::query()->where('organization_id', $document->organization_id)
+            ->findOrFail(Sqid::decodeOrNumeric(ProcedureDocumentation::class, $request->string('with')->toString()));
+        [$old, $new] = $other->version < $document->version ? [$other, $document] : [$document, $other];
+
+        return view('finance.procedure-documentation.compare', ['old' => $old, 'new' => $new, 'rows' => $comparison->compare($old, $new), 'document' => $document]);
     }
 
     /** Freitext-Dialog; wird per data-entry-modal-trigger geladen. */

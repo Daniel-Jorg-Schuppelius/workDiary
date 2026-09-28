@@ -46,3 +46,26 @@ persona ya ha procesado.
 Una liquidación agrupa las líneas abiertas de un periodo. Una vez cerrada es
 el documento válido; las correcciones van por la siguiente liquidación, nunca
 retocando la anterior.
+
+## Tramos, tope, plazo de responsabilidad, pagos parciales e intermediarios
+
+Una regla puede tener **tramos**: cuando la facturación de una persona en el
+mes, trimestre o año alcanza un umbral, al nuevo importe se aplica la tasa del
+tramo más alto alcanzado. Las líneas ya generadas no se recalculan. Un **tope
+anual** limita la comisión por año natural; lo que lo supera se pierde, con una
+nota en la línea.
+
+Con un **plazo de responsabilidad**, una comisión solo es pagadera una vez
+transcurridos los días y entra en la liquidación de ese periodo: si la factura
+se anula antes, desaparece antes de haberse comunicado. Si está marcado **«Ya en
+pagos parciales»**, la comisión se genera proporcionalmente con cada cobro en
+lugar de esperar al pago completo.
+
+Si se revierte un pago en la conciliación bancaria, WorkDiary abona la comisión
+hasta la parte entonces pagada (por completo sin «pagos parciales»), como línea
+negativa propia; la línea anterior se mantiene. Si el pago vuelve a entrar, la
+comisión se genera de nuevo.
+
+Las comisiones también pueden ir a **intermediarios externos** sin cuenta de
+usuario. Se gestionan en «Intermediarios», se asignan en la factura y aparecen
+en la liquidación y la exportación junto a los empleados.

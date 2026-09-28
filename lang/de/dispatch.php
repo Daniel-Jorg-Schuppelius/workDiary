@@ -20,6 +20,7 @@ return [
         'none' => 'Keine Konflikte für diese Zuweisung.',
     ],
     'vehicle' => [
+        'inspection' => 'Prüffristen',
         'heading' => 'Fahrzeug-Reservierung',
         'label' => 'Fahrzeug',
         'from' => 'Von',

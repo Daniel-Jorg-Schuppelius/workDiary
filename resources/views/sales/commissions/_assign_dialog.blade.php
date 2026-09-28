@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
   Manuelle Zuordnung Beleg → Vertriebsperson (Feature 146).
-  Variablen: $invoice, $users, $suggestion (CommissionAssignment|null)
+  Variablen: $invoice, $users, $agents, $suggestion (CommissionAssignment|null)
 --}}
 <x-modal
     :title="__('commission.action.assign')"
@@ -28,9 +28,18 @@
             @endforeach
         </x-select-field>
 
+        @if ($agents->isNotEmpty())
+            <x-select-field name="commission_agent_id" :label="__('commission.field.agent')" :hint="__('commission.hint.agent')">
+                <option value="">—</option>
+                @foreach ($agents as $agent)
+                    <option value="{{ $agent->sqid }}" @selected((string) old('commission_agent_id', $invoice->salesAgent?->sqid) === $agent->sqid)>{{ $agent->displayName() }}</option>
+                @endforeach
+            </x-select-field>
+        @endif
+
         @if ($suggestion !== null)
             <p class="text-xs text-muted">
-                {{ __('commission.hint.current_assignment', ['user' => $suggestion->user->name, 'source' => $suggestion->source->label()]) }}
+                {{ __('commission.hint.current_assignment', ['user' => $suggestion->user?->name ?? $suggestion->agent?->displayName(), 'source' => $suggestion->source->label()]) }}
             </p>
         @else
             <p class="text-xs text-muted">{{ __('commission.hint.no_assignment') }}</p>

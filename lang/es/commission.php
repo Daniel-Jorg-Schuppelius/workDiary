@@ -14,11 +14,13 @@ return [
     'title' => 'Comisiones',
 
     'page' => [
+        'agents' => 'Intermediarios',
         'rules' => 'Reglas de comisión',
         'runs' => 'Liquidaciones de comisiones',
     ],
 
     'subtitle' => [
+        'agents' => 'Intermediarios externos sin cuenta de usuario como perceptores de comisiones; el pago se realiza fuera del sistema.',
         'index' => 'Líneas de comisión por documento. La base es la factura pagada — nunca la emitida.',
         'rules' => 'Tasa por origen del lead, grupo de productos o comercial. Por documento gana una sola regla.',
         'runs' => 'Liquidar un periodo: el borrador es una vista previa, el cierre lo congela. Después solo abonos.',
@@ -31,12 +33,16 @@ return [
     ],
 
     'group' => [
+        'tiers' => 'Tramos, tope, pago',
         'rule' => 'Regla',
         'validity' => 'Vigencia',
         'period' => 'Periodo',
     ],
 
     'action' => [
+        'to_agents' => 'Intermediarios',
+        'create_agent' => 'Crear intermediario',
+        'edit_agent' => 'Editar intermediario',
         'create_rule' => 'Crear regla',
         'edit_rule' => 'Editar regla',
         'edit' => 'Editar',
@@ -54,6 +60,16 @@ return [
     ],
 
     'field' => [
+        'agent' => 'Intermediario',
+        'agent_name' => 'Nombre',
+        'company' => 'Empresa',
+        'email' => 'Correo electrónico',
+        'tier_period' => 'Periodo de tramos',
+        'annual_cap_amount' => 'Tope anual',
+        'tier_threshold' => 'Tramo :n desde facturación',
+        'tier_rate' => 'Tramo :n tasa (%)',
+        'liability_days' => 'Plazo de responsabilidad (días)',
+        'is_partial_accrual' => 'Ya en pagos parciales',
         'name' => 'Denominación',
         'scope' => 'Ámbito',
         'scope_value' => 'Valor del ámbito',
@@ -84,12 +100,19 @@ return [
     ],
 
     'scope' => [
+        'agent' => 'Intermediario',
         'all' => 'Todos los documentos',
         'lead_source' => 'Origen del lead',
         'product_group' => 'Grupo de productos',
         'user' => 'Comercial',
     ],
 
+    'tier_period' => [
+        'none' => 'Sin tramos',
+        'month' => 'Mes',
+        'quarter' => 'Trimestre',
+        'year' => 'Año',
+    ],
     'status' => [
         'pending' => 'Abierta',
         'settled' => 'Liquidada',
@@ -111,6 +134,7 @@ return [
     ],
 
     'empty' => [
+        'agents' => 'Aún no hay intermediarios.',
         'rules' => 'Todavía no hay ninguna regla de comisión.',
         'commissions' => 'Todavía no hay ninguna línea de comisión.',
         'runs' => 'Todavía no se ha creado ninguna liquidación.',
@@ -118,6 +142,11 @@ return [
     ],
 
     'hint' => [
+        'agent' => 'En lugar de una persona: comisión para un intermediario externo.',
+        'rule_agent' => 'Solo con el ámbito «Intermediario».',
+        'tiers' => 'Tramos: cuando la facturación del periodo alcanza un umbral, se aplica al nuevo importe la tasa del tramo más alto; el tope anual limita la comisión por año natural.',
+        'liability_days' => 'Pagadera solo tras este plazo: la línea entra en la liquidación de ese periodo.',
+        'partial_accrual' => 'Comisión proporcional a cada cobro en lugar de esperar al pago completo.',
         'scope_value' => 'Solo para el ámbito origen del lead o grupo de productos; debe coincidir con el ámbito elegido.',
         'user' => 'Solo para el ámbito comercial.',
         'priority' => 'Gana el número más alto; en caso de empate decide el ámbito más estrecho.',
@@ -138,6 +167,7 @@ return [
     ],
 
     'flash' => [
+        'agent_saved' => 'Se ha guardado el intermediario.',
         'rule_created' => 'Regla de comisión creada.',
         'rule_updated' => 'Regla de comisión guardada.',
         'rule_deleted' => 'Regla de comisión eliminada.',
@@ -154,9 +184,17 @@ return [
     ],
 
     'note' => [
+        'capped' => 'Tope anual :cap alcanzado: comisión reducida.',
         'credit_note' => 'Abono por la nota de crédito :number',
         'cancelled' => 'Abono por anulación',
         'reassigned' => 'Abono por reasignación del comercial',
+        'payment_reverted' => 'Abono por un pago revertido',
+    ],
+    'reversal_kind' => [
+        'credit_note' => 'Nota de crédito',
+        'cancellation' => 'Anulación',
+        'reassignment' => 'Reasignación',
+        'payment' => 'Pago revertido',
     ],
 
     'export' => [

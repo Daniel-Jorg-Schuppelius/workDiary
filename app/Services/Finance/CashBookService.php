@@ -10,6 +10,7 @@
 
 namespace App\Services\Finance;
 
+use App\Events\Invoicing\InvoicePaymentReceived;
 use App\Models\Finance\{CashDailyClosing, CashEntry, CashRegister};
 use App\Models\Invoicing\Invoice;
 use Carbon\{Carbon, CarbonInterface};
@@ -224,5 +225,6 @@ class CashBookService implements \App\Services\Passenger\Contracts\CashBookPosti
             $invoice->status = Invoice::STATUS_PARTIALLY_PAID;
             $invoice->save();
         }
+        InvoicePaymentReceived::dispatch($invoice);
     }
 }

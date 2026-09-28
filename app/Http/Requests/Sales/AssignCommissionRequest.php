@@ -15,6 +15,7 @@ namespace App\Http\Requests\Sales;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Platform\User;
+use App\Models\Sales\CommissionAgent;
 use App\Rules\ExistsInCurrentOrganization;
 
 /**
@@ -28,12 +29,14 @@ class AssignCommissionRequest extends BaseFormRequest {
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'user_id' => User::class,
+        'commission_agent_id' => CommissionAgent::class,
     ];
 
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
             'user_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('users')],
+            'commission_agent_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('commission_agents')],
         ];
     }
 }

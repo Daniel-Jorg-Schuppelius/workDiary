@@ -63,3 +63,10 @@ durées de conservation, rôles et journalisation. Ce qui change en exploitation
 change donc aussi dans la documentation, contrairement à un texte rédigé une
 fois pour toutes. Relisez-la avant chaque contrôle et complétez les parties
 organisationnelles qu'aucun système ne peut connaître.
+
+**Validation et comparaison de la documentation de procédure :** Si le principe
+des quatre yeux est activé en comptabilité, vous soumettez une version pour
+validation ; elle n'est publiée qu'une fois validée par une seconde personne, ou
+elle retourne en brouillon avec un motif. Deux versions peuvent être comparées
+section par section — les sections modifiées, nouvelles et supprimées sont
+affichées côte à côte.
