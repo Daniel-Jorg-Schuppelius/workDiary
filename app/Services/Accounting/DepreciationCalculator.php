@@ -16,7 +16,7 @@ use App\Enums\Finance\DepreciationMethod;
 use App\Models\Accounting\FixedAsset;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\RoundingMode;
-use CommonToolkit\ValueObjects\Money;
+use CommonToolkit\ValueObjects\{Decimal, Money};
 
 /**
  * AfA-Plan (Feature 133, MVP-698). Linear wie unten, GWG und Sammelposten in
@@ -61,8 +61,8 @@ final class DepreciationCalculator {
         $specials = $this->specials($asset);
         // Begünstigungszeitraum § 7g Abs. 5: Anschaffungsjahr und die vier folgenden Jahre.
         $bonusLastYear = $yearStart->year + 4;
-        $rate = $asset->depreciation_method === DepreciationMethod::Declining && is_numeric($asset->declining_rate) && bccomp((string) $asset->declining_rate, '0', 2) > 0
-            ? (string) $asset->declining_rate
+        $rate = $asset->depreciation_method === DepreciationMethod::Declining && $asset->declining_rate?->isPositive() === true
+            ? $asset->declining_rate->getValue()
             : null;
         $switchedToLinear = false;
         $remainingMonths = $totalMonths;
@@ -97,7 +97,7 @@ final class DepreciationCalculator {
             $linearOnRest = $open->times($months)->dividedBy($remainingMonths, RoundingMode::HalfUp);
             if ($rate !== null) {
                 // Degressiv auf den Buchwert; Wechsel zur linearen AfA, sobald diese höher ist (§ 7 Abs. 3).
-                $declining = $cost->minus($allocated)->percentage(bcdiv(bcmul($rate, (string) $months, 6), '12', 6));
+                $declining = $cost->minus($allocated)->percentage($rate->times(Decimal::of($months))->dividedBy(Decimal::of(12), 6)->getValue());
                 $switchedToLinear = $switchedToLinear || $linearOnRest->greaterThanOrEqual($declining);
                 $regular = $switchedToLinear ? $linearOnRest : $declining;
             } elseif ($specials !== [] && $yearStart->year > $bonusLastYear) {

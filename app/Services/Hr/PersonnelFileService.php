@@ -13,15 +13,18 @@ declare(strict_types=1);
 namespace App\Services\Hr;
 
 use App\Enums\Document\DocumentStatus;
-use App\Enums\Hr\HrDocumentCategory;
+use App\Enums\Hr\{HrDocumentCategory, PersonnelFileSubmissionStatus};
 use App\Models\Document\Document;
+use App\Models\Hr\{PersonnelFileAcknowledgement, PersonnelFileSubmission};
 use App\Models\Platform\User;
 use App\Services\Attachments\FileAttacher;
+use App\Services\Concerns\AssertsValidatedTransition;
 use App\Services\Document\DocumentService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{DB, Storage};
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
+use Illuminate\Validation\{Rule, ValidationException};
 
 /**
  * Digitale Personalakte (Feature 141, MVP-708): Dokumente mit documentable =
@@ -32,6 +35,8 @@ use Illuminate\Validation\Rule;
  *  - Löschen ist Vernichtung (Dateien + Versionen), kein Papierkorb.
  */
 class PersonnelFileService {
+    use AssertsValidatedTransition;
+
     public function __construct(private readonly DocumentService $documents) {}
 
     /**
@@ -46,6 +51,7 @@ class PersonnelFileService {
             'valid_from' => ['nullable', 'date'],
             'valid_until' => ['nullable', 'date', 'after_or_equal:valid_from'],
             'description' => ['nullable', 'string', 'max:4000'],
+            'is_ack_required' => ['nullable', 'boolean'],
         ];
         if ($includeFile) {
             $rules['file'] = ['required', 'file', 'max:' . FileAttacher::maxKb()];
@@ -95,6 +101,9 @@ class PersonnelFileService {
             'hr_category' => $category->value,
             'retention_until' => $this->retentionUntilFor($member, $category)?->toDateString(),
         ]);
+        if ((bool) ($attributes['is_ack_required'] ?? false)) {
+            $document->forceFill(['is_ack_required' => true])->save();
+        }
 
         $document->audit('hrFile.created', [
             'member_user_id' => $member->id,
@@ -126,6 +135,7 @@ class PersonnelFileService {
             ]);
 
             $document->forceFill([
+                'is_ack_required' => (bool) ($attributes['is_ack_required'] ?? false),
                 'hr_category' => $category->value,
                 'retention_until' => $member instanceof User
                     ? $this->retentionUntilFor($member, $category)?->toDateString()
@@ -204,6 +214,125 @@ class PersonnelFileService {
 
         foreach ($files as [$disk, $path]) {
             Storage::disk($disk)->delete($path);
+        }
+    }
+
+    /**
+     * Lesebestätigung der betroffenen Person für die aktuelle Version (MVP-987);
+     * eine erneute Bestätigung derselben Version ändert nichts.
+     */
+    public function acknowledge(Document $document, User $member): PersonnelFileAcknowledgement {
+        $version = $document->currentVersion;
+        if (! $document->isPersonnelFile() || (int) $document->documentable_id !== (int) $member->id || ! $document->is_ack_required || $version === null) {
+            throw ValidationException::withMessages(['document' => (string) __('hr.personnel_file.error.ack_not_requested')]);
+        }
+
+        $acknowledgement = PersonnelFileAcknowledgement::query()->firstOrCreate(
+            ['document_id' => $document->id, 'document_version_id' => $version->id],
+            ['organization_id' => $document->organization_id, 'user_id' => $member->id, 'acknowledged_at' => now()],
+        );
+        if ($acknowledgement->wasRecentlyCreated) {
+            $document->audit('hrFile.acknowledged', ['member_user_id' => $member->id, 'version_no' => $version->version_no]);
+        }
+
+        return $acknowledgement;
+    }
+
+    /**
+     * Bestätigte aktuelle Versionen der Dokumente, nach Dokument-ID.
+     *
+     * @param  iterable<Document>  $documents
+     * @return array<int, PersonnelFileAcknowledgement>
+     */
+    public function acknowledgementsFor(iterable $documents): array {
+        $versionIds = [];
+        foreach ($documents as $document) {
+            if ($document->current_version_id !== null) {
+                $versionIds[] = (int) $document->current_version_id;
+            }
+        }
+
+        return PersonnelFileAcknowledgement::query()->whereIn('document_version_id', $versionIds)->get()
+            ->keyBy('document_id')->all();
+    }
+
+    /**
+     * Unterlage der betroffenen Person einreichen (MVP-987). Die Datei liegt bis
+     * zur Entscheidung außerhalb der Akte auf dem lokalen Laufwerk.
+     *
+     * @param  array{title: string, hr_category: string, note?: string|null}  $data
+     */
+    public function submit(User $member, array $data, UploadedFile $file): PersonnelFileSubmission {
+        $this->documents->assertAllowedFile($file);
+        $path = $file->storeAs('hr-submissions/' . $member->organization_id, Str::uuid()->toString(), 'local');
+
+        $submission = PersonnelFileSubmission::query()->create([
+            'organization_id' => $member->organization_id,
+            'user_id' => $member->id,
+            'title' => $data['title'],
+            'hr_category' => $data['hr_category'],
+            'note' => $data['note'] ?? null,
+            'disk' => 'local',
+            'path' => $path === false ? null : $path,
+            'original_name' => $file->getClientOriginalName(),
+            'mime' => $file->getMimeType(),
+            'size' => (int) $file->getSize(),
+            'status' => PersonnelFileSubmissionStatus::Submitted,
+        ]);
+        $submission->audit('hrFile.submitted', ['member_user_id' => $member->id, 'hr_category' => $data['hr_category']]);
+
+        return $submission;
+    }
+
+    /**
+     * Einreichung in die Akte übernehmen: Titel, Kategorie und Gültigkeit legt die
+     * Personalabteilung fest, die Datei wird ein Dokument der Akte.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function accept(PersonnelFileSubmission $submission, User $actor, array $attributes): Document {
+        $this->assertValidatedTransition($submission->status, PersonnelFileSubmissionStatus::Accepted, 'hr.personnel_file.error.submission_decided');
+        $member = $submission->user()->firstOrFail();
+        $contents = $submission->path === null ? null : Storage::disk($submission->disk)->get($submission->path);
+        if ($contents === null) {
+            throw ValidationException::withMessages(['submission' => (string) __('hr.personnel_file.error.submission_file_missing')]);
+        }
+
+        $document = DB::transaction(function () use ($submission, $actor, $attributes, $member, $contents): Document {
+            $document = $this->createFromContents($member, $actor, $attributes, $contents, $submission->original_name, $submission->mime);
+            $submission->forceFill([
+                'status' => PersonnelFileSubmissionStatus::Accepted,
+                'reviewer_user_id' => $actor->id,
+                'reviewed_at' => now(),
+                'document_id' => $document->id,
+            ])->save();
+            $submission->audit('hrFile.accepted', ['actor_user_id' => $actor->id, 'document_id' => $document->id]);
+
+            return $document;
+        });
+        $this->discardFile($submission);
+
+        return $document;
+    }
+
+    public function reject(PersonnelFileSubmission $submission, User $actor, string $reason): PersonnelFileSubmission {
+        $this->assertValidatedTransition($submission->status, PersonnelFileSubmissionStatus::Rejected, 'hr.personnel_file.error.submission_decided');
+        $submission->forceFill([
+            'status' => PersonnelFileSubmissionStatus::Rejected,
+            'reviewer_user_id' => $actor->id,
+            'reviewed_at' => now(),
+            'review_note' => $reason,
+        ])->save();
+        $submission->audit('hrFile.rejected', ['actor_user_id' => $actor->id]);
+        $this->discardFile($submission);
+
+        return $submission;
+    }
+
+    private function discardFile(PersonnelFileSubmission $submission): void {
+        if ($submission->path !== null) {
+            Storage::disk($submission->disk)->delete($submission->path);
+            $submission->forceFill(['path' => null])->save();
         }
     }
 }

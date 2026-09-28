@@ -50,6 +50,7 @@ use Illuminate\Support\Carbon;
  * @property bool $confidential
  * @property HrDocumentCategory|null $hr_category
  * @property Carbon|null $retention_until
+ * @property bool $is_ack_required
  */
 class Document extends Model {
     use Auditable;
@@ -87,6 +88,7 @@ class Document extends Model {
         'confidential',
         'hr_category',
         'retention_until',
+        'is_ack_required',
     ];
 
     protected $casts = [
@@ -101,6 +103,7 @@ class Document extends Model {
         'confidential' => 'boolean',
         'hr_category' => HrDocumentCategory::class,
         'retention_until' => 'date',
+        'is_ack_required' => 'boolean',
     ];
 
     /** @return MorphTo<Model, $this> */

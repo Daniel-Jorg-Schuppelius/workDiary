@@ -16,6 +16,7 @@ use App\Enums\Finance\{BudgetReleaseStatus, BwaGroup};
 use App\Services\Accounting\{AccountingBudgetService, CostAllocationService};
 use App\Services\Accounting\Reports\BwaBuilder;
 use Carbon\CarbonImmutable;
+use CommonToolkit\ValueObjects\Percentage;
 use Illuminate\Validation\ValidationException;
 
 /** MVP-982/983: Umlagen zwischen Kostenstellen in der BWA und Freigabe der Budgets. */
@@ -30,10 +31,10 @@ final class CostAllocationAndBudgetReleaseTest extends AccountingLedgerTestCase 
         $this->book('wages', '200.00', $jan->addDays(5), $shop->id);
 
         $service = app(CostAllocationService::class);
-        $service->save($this->org, 2026, $admin, $shop, '60', $this->admin);
-        $service->save($this->org, 2026, $admin, $site, '40', $this->admin);
+        $service->save($this->org, 2026, $admin, $shop, Percentage::of('60', 2), $this->admin);
+        $service->save($this->org, 2026, $admin, $site, Percentage::of('40', 2), $this->admin);
         try {
-            $service->save($this->org, 2026, $admin, $site, '50', $this->admin);
+            $service->save($this->org, 2026, $admin, $site, Percentage::of('50', 2), $this->admin);
             $this->fail('Mehr als 100 % Umlage wurden angenommen.');
         } catch (ValidationException $e) {
             $this->assertArrayHasKey('share_percent', $e->errors());
@@ -72,7 +73,8 @@ final class CostAllocationAndBudgetReleaseTest extends AccountingLedgerTestCase 
         $entry = $this->book('rent', '200.00', CarbonImmutable::create(2026, 1, 20));
         $overruns = $budgets->overrunsFor($entry);
         $this->assertCount(1, $overruns);
-        $this->assertSame('200.00', $overruns[0]['actual']);
+        $this->assertSame('200.00', $overruns[0]['actual']->getAmount());
+        $this->assertSame('150.00', $overruns[0]['budget']->getAmount());
         $this->actingAs($this->admin)->get(route('finance.accounting.journal.show', $entry))->assertOk()->assertSee('150,00');
 
         $this->actingAs($this->admin)->post(route('reports.accounting.budget.reopen', ['year' => 2026]), ['reopen_reason' => 'Mieterhöhung'])->assertRedirect();

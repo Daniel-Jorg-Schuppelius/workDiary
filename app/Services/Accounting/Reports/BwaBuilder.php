@@ -76,6 +76,7 @@ class BwaBuilder extends AbstractAccountingReportBuilder {
         // Umlage (MVP-982) nur mit Kostenstelle; Schlüssel des Geschäftsjahres von `$from`.
         $expenseIds = array_values($accounts->where('type', AccountType::Expense)->pluck('id')->map(static fn ($id): int => (int) $id)->all());
         $allocationYear = $this->calendar->fiscalYearOf($from, $this->calendar->startMonth($organization));
+        /** @return array<int, array{debit: numeric-string, credit: numeric-string}> */
         $sums = function (CarbonImmutable $rangeFrom, CarbonImmutable $rangeTo) use ($organization, $costCenterId, $allocated, $expenseIds, $allocationYear): array {
             $own = $this->sumsByAccount($organization, $rangeFrom, $rangeTo, null, $costCenterId);
             if (! $allocated || $costCenterId === null) {

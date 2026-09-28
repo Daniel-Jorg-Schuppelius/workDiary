@@ -36,3 +36,11 @@ Il motivo è semplice: un account cancellato subito porta con sé la
 tracciabilità — tempi registrati, verbali firmati e approvazioni devono restare
 attribuibili al loro autore. I dati personali restano comunque soggetti alle
 regole di conservazione e cancellazione dell'area protezione dati.
+
+**Fascicolo personale:** I membri del circolo del fascicolo personale possono
+**richiedere una conferma di lettura** per un documento. La persona interessata
+conferma la lettura in «Il mio fascicolo personale»; una nuova versione richiede
+una nuova conferma. Lì **presenta anche i propri documenti**, ad esempio un
+attestato. Le presentazioni compaiono nell'elenco dei dipendenti sotto
+«Presentazioni»: acquisirle le aggiunge al fascicolo, rifiutarle richiede un
+motivo visibile alla persona. Nessuno decide sulla propria presentazione.

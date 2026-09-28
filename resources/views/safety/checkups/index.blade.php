@@ -17,6 +17,7 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('safety.register.subtitle.checkups')">
     <x-slot:actions>
+        <x-icon-btn icon="event_repeat" tone="outline" size="sm" :href="route('safety.checkups.occasions.index')" show-label>{{ __('safety.register.action.occasions') }}</x-icon-btn>
         @if ($canManage)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger

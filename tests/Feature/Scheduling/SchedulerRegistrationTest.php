@@ -184,6 +184,8 @@ class SchedulerRegistrationTest extends TestCase {
         // der lokalen Buchhaltung — erzeugt nie Festbuchungen.
         'accounting:run-recurring' => ['35 5 * * *', true, true],
         'accounting:check-filings' => ['45 5 * * *', true, true],
+        // Neu mit MVP-984: Wochenstand der Liquiditätsvorschau für Plan/Ist.
+        'accounting:liquidity-snapshot' => ['10 6 * * 1', true, true],
         // Neu mit Phase 38 (MVP-415): wiederkehrende Rechnungsentwürfe.
         'invoices:generate-recurring' => ['15 5 * * *', true, true],
         // Neu mit Feature 095 (MVP-441): tägliche Quelltext-Integritätsprüfung.

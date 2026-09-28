@@ -470,6 +470,8 @@ return [
     'TrainingRequirement' => 'Obligación de formación',
     'TrainingAssignment' => 'Entrada del plan de formación',
     'MedicalCheckup' => 'Reconocimiento médico laboral',
+    'MedicalCheckupOccasion' => 'Motivo de vigilancia de la salud',
+    'PersonnelFileSubmission' => 'Presentación al expediente personal',
     'SavedReportView' => 'Vista de informe guardada',
     'ScheduledJobOverride' => 'Anulación del planificador',
     'ScheduledShift' => 'Turno planificado',

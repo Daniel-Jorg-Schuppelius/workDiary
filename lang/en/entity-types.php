@@ -470,6 +470,8 @@ return [
     'TrainingRequirement' => 'Training requirement',
     'TrainingAssignment' => 'Training plan entry',
     'MedicalCheckup' => 'Occupational medical checkup',
+    'MedicalCheckupOccasion' => 'Check-up occasion',
+    'PersonnelFileSubmission' => 'Personnel file submission',
     'SavedReportView' => 'Saved report view',
     'ScheduledJobOverride' => 'Scheduler override',
     'ScheduledShift' => 'Scheduled shift',

@@ -41,3 +41,11 @@ The reason is simple: an immediately deleted account takes traceability with it
 — recorded times, signed protocols and approvals must remain attributable to
 their author. Personal data remains subject to the retention and deletion rules
 of the data protection area regardless.
+
+**Personnel file:** Members of the personnel file circle can **request a read
+confirmation** for a document. The person concerned confirms reading under
+“My personnel file”; a new version requires a new confirmation. People
+**submit their own papers** there as well, for example a certificate. The
+submissions are listed under “Submissions” in the member list: accepting adds
+them to the file as a document, rejecting requires a reason that the person can
+see. Nobody decides on their own submission.

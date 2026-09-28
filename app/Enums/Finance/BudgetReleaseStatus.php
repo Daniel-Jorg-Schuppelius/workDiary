@@ -12,13 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Finance;
 
-use App\Enums\Concerns\HasOptions;
+use App\Enums\Concerns\{HasOptions, HasTransitions};
 use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /** Stand eines Budgets je Geschäftsjahr und Kostenstelle (MVP-983). */
 enum BudgetReleaseStatus: string implements HasLabel, HasStatusTransitions {
-    use \App\Enums\Concerns\HasTransitions;
     use HasOptions;
+    use HasTransitions;
 
     case Draft = 'draft';
     case Released = 'released';

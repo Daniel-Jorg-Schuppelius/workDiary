@@ -838,6 +838,11 @@ return [
         ],
     ],
     // Digitale Personalakte (Feature 141, MVP-708) — bewusst ohne Gesundheitskategorie.
+    'hr_submission_status' => [
+        'submitted' => 'Presentado',
+        'accepted' => 'Incorporado',
+        'rejected' => 'Rechazado',
+    ],
     'hr_document_category' => [
         'contract' => 'Contrato de trabajo',
         'amendment' => 'Modificación contractual / anexo',

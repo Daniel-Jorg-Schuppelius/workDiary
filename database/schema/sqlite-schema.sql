@@ -11343,6 +11343,7 @@ CREATE TABLE IF NOT EXISTS "documents"(
   "confidential" tinyint(1) not null default '0',
   "hr_category" varchar,
   "retention_until" date,
+  "is_ack_required" tinyint(1) not null default '0',
   foreign key("created_by_user_id") references users("id") on delete cascade on update no action,
   foreign key("organization_id") references organizations("id") on delete cascade on update no action,
   foreign key("customer_released_by") references "users"("id") on delete set null
@@ -16230,28 +16231,6 @@ CREATE INDEX "safety_instr_part_due_idx" on "safety_instruction_participants"(
   "user_id",
   "next_due_on"
 );
-CREATE TABLE IF NOT EXISTS "medical_checkups"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "user_id" integer not null,
-  "kind" varchar not null,
-  "occasion" varchar,
-  "performed_on" date not null,
-  "next_due_on" date,
-  "certificate_on_file" tinyint(1) not null default '0',
-  "created_by_user_id" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "deleted_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("user_id") references "users"("id") on delete cascade,
-  foreign key("created_by_user_id") references "users"("id") on delete set null
-);
-CREATE INDEX "medical_checkup_org_user_idx" on "medical_checkups"(
-  "organization_id",
-  "user_id",
-  "next_due_on"
-);
 CREATE TABLE IF NOT EXISTS "fixed_assets"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -16277,6 +16256,7 @@ CREATE TABLE IF NOT EXISTS "fixed_assets"(
   "deleted_at" datetime,
   "disposal_kind" varchar,
   "disposal_proceeds_amount" numeric,
+  "declining_rate" numeric,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("asset_id") references "assets"("id") on delete set null,
   foreign key("asset_account_id") references "accounting_accounts"("id") on delete restrict,
@@ -22314,6 +22294,186 @@ CREATE INDEX "sec_ipban_ip_until_idx" on "security_ip_bans"(
   "ip",
   "banned_until"
 );
+CREATE TABLE IF NOT EXISTS "fixed_asset_special_depreciations"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "fixed_asset_id" integer not null,
+  "fiscal_year" integer not null,
+  "depreciation_amount" numeric not null,
+  "currency" varchar not null,
+  "note" varchar,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("fixed_asset_id") references "fixed_assets"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "fa_special_asset_year_unique" on "fixed_asset_special_depreciations"(
+  "fixed_asset_id",
+  "fiscal_year"
+);
+CREATE TABLE IF NOT EXISTS "cost_allocation_keys"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "fiscal_year" integer not null,
+  "source_cost_center_id" integer not null,
+  "target_cost_center_id" integer not null,
+  "share_percent" numeric not null,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("source_cost_center_id") references "cost_centers"("id") on delete cascade,
+  foreign key("target_cost_center_id") references "cost_centers"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "cost_alloc_unique" on "cost_allocation_keys"(
+  "organization_id",
+  "fiscal_year",
+  "source_cost_center_id",
+  "target_cost_center_id"
+);
+CREATE TABLE IF NOT EXISTS "accounting_budget_releases"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "fiscal_year" integer not null,
+  "cost_center_id" integer,
+  "status" varchar not null,
+  "released_at" datetime,
+  "released_by" integer,
+  "reopened_at" datetime,
+  "reopened_by" integer,
+  "reopen_reason" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("cost_center_id") references "cost_centers"("id") on delete cascade,
+  foreign key("released_by") references "users"("id") on delete set null,
+  foreign key("reopened_by") references "users"("id") on delete set null
+);
+CREATE INDEX "budget_rel_org_year_idx" on "accounting_budget_releases"(
+  "organization_id",
+  "fiscal_year"
+);
+CREATE TABLE IF NOT EXISTS "liquidity_plan_items"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "label" varchar not null,
+  "direction" varchar not null,
+  "planned_amount" numeric not null,
+  "currency" varchar not null,
+  "starts_on" date not null,
+  "recurrence" varchar not null,
+  "ends_on" date,
+  "note" varchar,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE TABLE IF NOT EXISTS "liquidity_forecast_snapshots"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "taken_on" date not null,
+  "opening_balance" numeric not null,
+  "weeks" text not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "liq_snap_org_taken_unique" on "liquidity_forecast_snapshots"(
+  "organization_id",
+  "taken_on"
+);
+CREATE TABLE IF NOT EXISTS "medical_checkup_occasions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "label" varchar not null,
+  "kind" varchar not null,
+  "interval_months" integer,
+  "is_active" tinyint(1) not null default '1',
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "mc_occasion_org_label_unique" on "medical_checkup_occasions"(
+  "organization_id",
+  "label"
+);
+CREATE TABLE IF NOT EXISTS "medical_checkups"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "user_id" integer not null,
+  "kind" varchar not null,
+  "occasion" varchar,
+  "performed_on" date not null,
+  "next_due_on" date,
+  "certificate_on_file" tinyint(1) not null default('0'),
+  "created_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "deleted_at" datetime,
+  "medical_checkup_occasion_id" integer,
+  foreign key("created_by_user_id") references users("id") on delete set null on update no action,
+  foreign key("user_id") references users("id") on delete cascade on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("medical_checkup_occasion_id") references "medical_checkup_occasions"("id") on delete set null
+);
+CREATE INDEX "medical_checkup_org_user_idx" on "medical_checkups"(
+  "organization_id",
+  "user_id",
+  "next_due_on"
+);
+CREATE TABLE IF NOT EXISTS "personnel_file_acknowledgements"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "document_id" integer not null,
+  "document_version_id" integer not null,
+  "user_id" integer not null,
+  "acknowledged_at" datetime not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("document_id") references "documents"("id") on delete cascade,
+  foreign key("document_version_id") references "document_versions"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "pf_ack_document_version_unique" on "personnel_file_acknowledgements"(
+  "document_id",
+  "document_version_id"
+);
+CREATE TABLE IF NOT EXISTS "personnel_file_submissions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "user_id" integer not null,
+  "title" varchar not null,
+  "hr_category" varchar not null,
+  "note" varchar,
+  "disk" varchar not null,
+  "path" varchar,
+  "original_name" varchar not null,
+  "mime" varchar,
+  "size" integer not null,
+  "status" varchar not null,
+  "reviewer_user_id" integer,
+  "reviewed_at" datetime,
+  "review_note" varchar,
+  "document_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade,
+  foreign key("reviewer_user_id") references "users"("id") on delete set null,
+  foreign key("document_id") references "documents"("id") on delete set null
+);
+CREATE INDEX "pf_sub_org_status_idx" on "personnel_file_submissions"(
+  "organization_id",
+  "status"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -23210,3 +23370,8 @@ INSERT INTO migrations VALUES(897,'2027_02_27_390000_create_crisis_room_tables',
 INSERT INTO migrations VALUES(898,'2027_02_27_400000_add_supplier_confirmation_to_purchase_orders',30);
 INSERT INTO migrations VALUES(899,'2027_02_28_100000_create_asset_positions_table',31);
 INSERT INTO migrations VALUES(900,'2027_02_28_110000_create_security_ip_bans_table',32);
+INSERT INTO migrations VALUES(901,'2027_02_28_120000_add_declining_and_special_depreciation',33);
+INSERT INTO migrations VALUES(902,'2027_02_28_130000_create_cost_allocation_and_budget_releases',33);
+INSERT INTO migrations VALUES(903,'2027_02_28_140000_create_liquidity_plan_tables',33);
+INSERT INTO migrations VALUES(904,'2027_02_28_150000_create_medical_checkup_occasions',34);
+INSERT INTO migrations VALUES(905,'2027_02_28_160000_create_personnel_file_acknowledgements_and_submissions',34);

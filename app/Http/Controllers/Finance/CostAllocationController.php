@@ -18,7 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Finance\{CostAllocationKey, CostCenter};
 use App\Services\Accounting\{CostAllocationService, FiscalCalendar};
 use App\Support\{Sqid, Tz};
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\ValueObjects\Percentage;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -36,10 +36,12 @@ class CostAllocationController extends Controller {
         abort_unless(Gate::allows(Permission::AccountingLedgerView->value), 403);
         $organization = $this->currentOrganizationOrAbort();
         $year = $this->year($request);
+        $keys = $this->allocations->keysFor($organization, $year)->groupBy('source_cost_center_id');
 
         return view('reports.accounting.allocations', [
             'year' => $year,
-            'keys' => $this->allocations->keysFor($organization, $year)->groupBy('source_cost_center_id'),
+            'keys' => $keys,
+            'totals' => $keys->map(fn ($group) => $this->allocations->total($group)),
             'canEdit' => Gate::allows(Permission::AccountingLedgerPrepare->value),
         ]);
     }
@@ -67,7 +69,7 @@ class CostAllocationController extends Controller {
         $target = CostCenter::query()->where('organization_id', $organization->id)->findOrFail(Sqid::decodeOrNumeric(CostCenter::class, (string) $data['target']));
         /** @var \App\Models\Platform\User $user */
         $user = $request->user();
-        $this->allocations->save($organization, (int) $data['year'], $source, $target, NumberHelper::normalizeDecimalString((string) $data['share_percent']), $user);
+        $this->allocations->save($organization, (int) $data['year'], $source, $target, Percentage::of((string) $data['share_percent'], 2), $user);
 
         return redirect()->route('reports.accounting.allocations.index', ['year' => (int) $data['year']])->with('status', __('accounting.allocation.flash.saved'));
     }

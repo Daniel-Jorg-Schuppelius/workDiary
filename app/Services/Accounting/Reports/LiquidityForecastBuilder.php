@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Accounting\Reports;
 
-use App\Enums\Finance\{FilingObligationKind, LiquidityPlanRecurrence, FilingObligationStatus, OpenItemDirection, PaymentRunKind, PaymentRunStatus, RecurringRunStatus, RecurringTemplateKind, RecurringTemplateStatus, SettlementKind};
+use App\Enums\Finance\{FilingObligationKind, FilingObligationStatus, LiquidityPlanRecurrence, OpenItemDirection, PaymentRunKind, PaymentRunStatus, RecurringRunStatus, RecurringTemplateKind, RecurringTemplateStatus, SettlementKind};
 use App\Models\Accounting\{AccountingFilingObligation, AccountingOpenItem, AccountingRecurringRun, AccountingRecurringTemplate, AccountingVatExtension};
 use App\Models\AssetFinance\AssetFinanceRateSchedule;
 use App\Models\Customer\Customer;
@@ -24,7 +24,6 @@ use App\Services\Accounting\Contracts\LiquidityForecastSource;
 use App\Services\Accounting\Filing\{VatFilingPeriodService, VatReturnService};
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
-use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\{Decimal, Money};
 use Illuminate\Database\Eloquent\Model;
@@ -591,10 +590,6 @@ class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
     }
 
     /**
-     * @param  'in'|'out'  $direction
-     * @return ForecastItem
-     */
-    /**
      * Manuelle Planpositionen (MVP-984): einmalig am Stichtag oder monatlich am
      * selben Tag bis zum Ende; Vergangenes fällt heraus.
      *
@@ -607,7 +602,7 @@ class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
             ->where(fn ($q) => $q->whereNull('ends_on')->orWhere('ends_on', '>=', DateRange::day($from)))
             ->get();
         foreach ($plans as $plan) {
-            $amount = Money::of((string) $plan->planned_amount, CurrencyCode::from($plan->currency));
+            $amount = $plan->planned_amount;
             $date = CarbonImmutable::parse($plan->starts_on->toDateString());
             $end = $plan->ends_on !== null ? CarbonImmutable::parse($plan->ends_on->toDateString()) : $to;
             $step = 0;
@@ -626,6 +621,10 @@ class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
         return $items;
     }
 
+    /**
+     * @param  'in'|'out'  $direction
+     * @return ForecastItem
+     */
     private function item(string $source, string $direction, Money $amount, CarbonImmutable $expectedOn, string $label, ?string $note = null): array {
         return [
             'source' => $source,

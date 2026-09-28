@@ -34,6 +34,7 @@ use Illuminate\Support\Carbon;
  * @property int $organization_id
  * @property int $user_id
  * @property MedicalCheckupKind $kind
+ * @property int|null $medical_checkup_occasion_id
  * @property string|null $occasion
  * @property Carbon $performed_on
  * @property Carbon|null $next_due_on
@@ -54,6 +55,7 @@ class MedicalCheckup extends Model {
         'organization_id',
         'user_id',
         'kind',
+        'medical_checkup_occasion_id',
         'occasion',
         'performed_on',
         'next_due_on',
@@ -75,6 +77,11 @@ class MedicalCheckup extends Model {
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo {
         return $this->belongsTo(User::class);
+    }
+
+    /** @return BelongsTo<MedicalCheckupOccasion, $this> */
+    public function checkupOccasion(): BelongsTo {
+        return $this->belongsTo(MedicalCheckupOccasion::class, 'medical_checkup_occasion_id');
     }
 
     /** @return BelongsTo<User, $this> */

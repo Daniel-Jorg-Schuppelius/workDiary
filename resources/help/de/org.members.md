@@ -43,3 +43,11 @@ Der Grund ist einfach: Ein sofort gelöschtes Konto nimmt die Nachvollziehbarkei
 mit — erfasste Zeiten, unterschriebene Protokolle und Freigaben müssen ihrem
 Urheber zuordenbar bleiben. Personenbezogene Daten unterliegen davon unabhängig
 den Aufbewahrungs- und Löschregeln des Datenschutzbereichs.
+
+**Personalakte:** Wer zum Personalakten-Kreis gehört, kann für ein Dokument
+eine **Lesebestätigung anfordern**. Die betroffene Person bestätigt das Lesen in
+„Meine Personalakte“; eine neue Version verlangt eine neue Bestätigung. Eigene
+Unterlagen – etwa eine Bescheinigung – **reicht die Person dort ein**. Die
+Einreichungen stehen in der Mitarbeiterliste unter „Einreichungen“: übernehmen
+legt sie als Dokument in die Akte, ablehnen verlangt einen Grund, den die Person
+sieht. Über die eigene Einreichung entscheidet niemand selbst.

@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Models\Finance;
 
+use App\Casts\PercentageCast;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use CommonToolkit\ValueObjects\Percentage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -25,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $fiscal_year
  * @property int $source_cost_center_id
  * @property int $target_cost_center_id
- * @property numeric-string $share_percent
+ * @property Percentage $share_percent
  * @property int|null $created_by
  */
 class CostAllocationKey extends Model {
@@ -36,7 +38,7 @@ class CostAllocationKey extends Model {
     protected $fillable = ['organization_id', 'fiscal_year', 'source_cost_center_id', 'target_cost_center_id', 'share_percent', 'created_by'];
 
     /** @var array<string, string> */
-    protected $casts = ['fiscal_year' => 'integer', 'share_percent' => 'decimal:2'];
+    protected $casts = ['fiscal_year' => 'integer', 'share_percent' => PercentageCast::class . ':2'];
 
     /** @return BelongsTo<CostCenter, $this> */
     public function source(): BelongsTo {

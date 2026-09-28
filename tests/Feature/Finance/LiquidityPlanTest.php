@@ -94,10 +94,10 @@ final class LiquidityPlanTest extends TestCase {
         $this->bankTransaction('2026-03-11', '200.00', TransactionDirection::Debit);
         $rows = $service->compare($snapshot->fresh(), CarbonImmutable::create(2026, 3, 12));
 
-        $this->assertSame('500.00', $rows[0]['actual_in']);
-        $this->assertSame('-300.00', $rows[1]['planned_net']);
-        $this->assertSame('-200.00', $rows[1]['actual_net']);
-        $this->assertSame('100.00', $rows[1]['deviation']);
+        $this->assertSame('500.00', $rows[0]['actual_in']?->getAmount());
+        $this->assertSame('-300.00', $rows[1]['planned_net']->getAmount());
+        $this->assertSame('-200.00', $rows[1]['actual_net']?->getAmount());
+        $this->assertSame('100.00', $rows[1]['deviation']?->getAmount());
         $this->assertNull($rows[2]['actual_net'], 'Zukunftswoche ohne Ist');
     }
 
@@ -124,8 +124,8 @@ final class LiquidityPlanTest extends TestCase {
             'label' => 'USt-Vorauszahlung', 'direction' => 'out', 'planned_amount' => '1250.50', 'starts_on' => '2026-03-10', 'recurrence' => 'monthly',
         ])->assertRedirect(route('reports.accounting.liquidity-plan.index'));
         $item = LiquidityPlanItem::query()->sole();
-        $this->assertSame('1250.50', $item->planned_amount);
-        $this->assertSame('EUR', $item->currency);
+        $this->assertSame('1250.50', $item->planned_amount->getAmount());
+        $this->assertSame(CurrencyCode::Euro, $item->currency);
 
         $this->actingAs($this->admin)->get(route('reports.accounting.liquidity-plan.index'))->assertOk()->assertSee('USt-Vorauszahlung');
         $this->actingAs($this->admin)->get(route('reports.accounting.liquidity-plan.create'))->assertOk();

@@ -29,13 +29,13 @@
 
         <p class="text-sm text-muted">{{ __('accounting.allocation.hint') }}</p>
 
-        @forelse ($keys as $sourceKeys)
+        @forelse ($keys as $sourceId => $sourceKeys)
             @php($source = $sourceKeys->first()->source)
             <x-card :title="$source->code . ' · ' . $source->label" icon="call_split"
-                    :subtitle="__('accounting.allocation.total', ['percent' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $sourceKeys->sum(fn ($key) => (float) $key->share_percent), 2)])">
+                    :subtitle="__('accounting.allocation.total', ['percent' => $totals[$sourceId]->getValue()->format()])">
                 @foreach ($sourceKeys as $key)
                     <div class="flex items-center justify-between gap-2 py-1 text-sm">
-                        <span>→ {{ $key->target->code }} · {{ $key->target->label }} <span class="font-mono">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $key->share_percent, 2) }} %</span></span>
+                        <span>→ {{ $key->target->code }} · {{ $key->target->label }} <span class="font-mono">{{ $key->share_percent->format() }}</span></span>
                         @if ($canEdit)
                             <x-action-form :action="route('reports.accounting.allocations.destroy', $key)" method="DELETE"
                                            :confirm="__('accounting.allocation.confirm.remove')" :confirm-label="__('Entfernen')">

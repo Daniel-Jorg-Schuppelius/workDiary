@@ -12,8 +12,11 @@ declare(strict_types=1);
 
 namespace App\Models\Finance;
 
+use App\Casts\MoneyCast;
 use App\Enums\Finance\LiquidityPlanRecurrence;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -25,8 +28,8 @@ use Illuminate\Support\Carbon;
  * @property int $organization_id
  * @property string $label
  * @property string $direction
- * @property numeric-string $planned_amount
- * @property string $currency
+ * @property Money $planned_amount
+ * @property CurrencyCode $currency
  * @property Carbon $starts_on
  * @property LiquidityPlanRecurrence $recurrence
  * @property Carbon|null $ends_on
@@ -42,7 +45,8 @@ class LiquidityPlanItem extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
-        'planned_amount' => 'decimal:2',
+        'currency' => CurrencyCode::class,
+        'planned_amount' => MoneyCast::class . ':currency,2',
         'starts_on' => 'date',
         'ends_on' => 'date',
         'recurrence' => LiquidityPlanRecurrence::class,

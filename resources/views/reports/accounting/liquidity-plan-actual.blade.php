@@ -13,7 +13,7 @@
 @section('title', __('accounting.liquidity_plan.actual_title'))
 @section('nav-title', __('accounting.liquidity_plan.actual_title'))
 @section('content')
-    @php($fmt = static fn (?string $value): string => $value === null ? '—' : \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $value, 2, withThousandsSeparator: true))
+    @php($fmt = static fn (?\CommonToolkit\ValueObjects\Money $value): string => $value?->format(withSymbol: false) ?? '—')
     <x-index-page :subtitle="__('accounting.liquidity_plan.actual_subtitle')"
                   back-route="reports.accounting.liquidity-forecast" :back-label="__('accounting.reports.card.liquidity_forecast.title')">
         <x-slot:actions>
@@ -53,7 +53,7 @@
                     <td class="text-right font-mono">{{ $fmt($row['actual_in']) }}</td>
                     <td class="text-right font-mono">{{ $fmt($row['actual_out']) }}</td>
                     <td class="text-right font-mono">{{ $fmt($row['actual_net']) }}</td>
-                    <td class="text-right font-mono @if ($row['deviation'] !== null && (float) $row['deviation'] < 0) text-error @endif">{{ $fmt($row['deviation']) }}</td>
+                    <td class="text-right font-mono @if ($row['deviation']?->isNegative()) text-error @endif">{{ $fmt($row['deviation']) }}</td>
                 </tr>
             @empty
                 <x-table.empty :colspan="6" :title="__('accounting.liquidity_plan.no_snapshot')" compact />

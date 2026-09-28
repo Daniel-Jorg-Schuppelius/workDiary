@@ -12,14 +12,14 @@ declare(strict_types=1);
 
 namespace App\Models\Accounting;
 
-use App\Casts\MoneyCast;
+use App\Casts\{MoneyCast, PercentageCast};
 use App\Enums\Finance\{DepreciationMethod, FixedAssetDisposalKind, FixedAssetStatus};
 use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
-use CommonToolkit\ValueObjects\Money;
+use CommonToolkit\ValueObjects\{Money, Percentage};
 use Illuminate\Database\Eloquent\{Builder, Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
 use Illuminate\Support\Carbon;
@@ -44,7 +44,7 @@ use Illuminate\Support\Carbon;
  * @property Money|null $disposal_proceeds_amount
  * @property int $useful_life_months
  * @property DepreciationMethod $depreciation_method
- * @property numeric-string|null $declining_rate
+ * @property Percentage|null $declining_rate
  * @property int|null $asset_account_id
  * @property int|null $depreciation_account_id
  * @property FixedAssetStatus $status
@@ -103,7 +103,7 @@ class FixedAsset extends Model {
         'residual_value' => MoneyCast::class . ':currency,2',
         'useful_life_months' => 'integer',
         'depreciation_method' => DepreciationMethod::class,
-        'declining_rate' => 'decimal:2',
+        'declining_rate' => PercentageCast::class . ':2',
         'status' => FixedAssetStatus::class,
     ];
 

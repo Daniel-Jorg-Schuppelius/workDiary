@@ -43,6 +43,7 @@ final class SafetyManifest extends Manifest {
             'hazard_assessment_items',
             'hazard_assessments',
             'medical_checkups',
+            'medical_checkup_occasions',
             'safety_events',
             'safety_instruction_participants',
             'safety_instructions',

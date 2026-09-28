@@ -100,6 +100,33 @@ CREATE TABLE `accounting_accounts` (
   CONSTRAINT `accounting_accounts_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `accounting_budget_releases`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `accounting_budget_releases` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `fiscal_year` smallint(5) unsigned NOT NULL,
+  `cost_center_id` bigint(20) unsigned DEFAULT NULL,
+  `status` varchar(20) NOT NULL,
+  `released_at` timestamp NULL DEFAULT NULL,
+  `released_by` bigint(20) unsigned DEFAULT NULL,
+  `reopened_at` timestamp NULL DEFAULT NULL,
+  `reopened_by` bigint(20) unsigned DEFAULT NULL,
+  `reopen_reason` varchar(500) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `budget_rel_cc_fk` (`cost_center_id`),
+  KEY `budget_rel_releaser_fk` (`released_by`),
+  KEY `budget_rel_reopener_fk` (`reopened_by`),
+  KEY `budget_rel_org_year_idx` (`organization_id`,`fiscal_year`),
+  CONSTRAINT `budget_rel_cc_fk` FOREIGN KEY (`cost_center_id`) REFERENCES `cost_centers` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `budget_rel_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `budget_rel_releaser_fk` FOREIGN KEY (`released_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `budget_rel_reopener_fk` FOREIGN KEY (`reopened_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `accounting_budgets`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -7450,6 +7477,30 @@ CREATE TABLE `contracts` (
   CONSTRAINT `contracts_supplier_id_foreign` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `cost_allocation_keys`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `cost_allocation_keys` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `fiscal_year` smallint(5) unsigned NOT NULL,
+  `source_cost_center_id` bigint(20) unsigned NOT NULL,
+  `target_cost_center_id` bigint(20) unsigned NOT NULL,
+  `share_percent` decimal(5,2) NOT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `cost_alloc_unique` (`organization_id`,`fiscal_year`,`source_cost_center_id`,`target_cost_center_id`),
+  KEY `cost_alloc_source_fk` (`source_cost_center_id`),
+  KEY `cost_alloc_target_fk` (`target_cost_center_id`),
+  KEY `cost_alloc_creator_fk` (`created_by`),
+  CONSTRAINT `cost_alloc_creator_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `cost_alloc_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `cost_alloc_source_fk` FOREIGN KEY (`source_cost_center_id`) REFERENCES `cost_centers` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `cost_alloc_target_fk` FOREIGN KEY (`target_cost_center_id`) REFERENCES `cost_centers` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cost_center_rules`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -9113,6 +9164,7 @@ CREATE TABLE `documents` (
   `confidential` tinyint(1) NOT NULL DEFAULT 0,
   `hr_category` varchar(32) DEFAULT NULL,
   `retention_until` date DEFAULT NULL,
+  `is_ack_required` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `documents_org_status_idx` (`organization_id`,`status`),
   KEY `documents_org_type_idx` (`organization_id`,`document_type`),
@@ -10254,6 +10306,29 @@ CREATE TABLE `feature_usage_counters` (
   CONSTRAINT `feature_usage_counters_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `fixed_asset_special_depreciations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `fixed_asset_special_depreciations` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `fixed_asset_id` bigint(20) unsigned NOT NULL,
+  `fiscal_year` smallint(5) unsigned NOT NULL,
+  `depreciation_amount` decimal(15,2) NOT NULL,
+  `currency` char(3) NOT NULL,
+  `note` varchar(255) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `fa_special_asset_year_unique` (`fixed_asset_id`,`fiscal_year`),
+  KEY `fa_special_org_fk` (`organization_id`),
+  KEY `fa_special_creator_fk` (`created_by`),
+  CONSTRAINT `fa_special_asset_fk` FOREIGN KEY (`fixed_asset_id`) REFERENCES `fixed_assets` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fa_special_creator_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fa_special_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fixed_assets`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -10282,6 +10357,7 @@ CREATE TABLE `fixed_assets` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
+  `declining_rate` decimal(5,2) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `fixed_assets_org_no_uq` (`organization_id`,`asset_no`),
   KEY `fixed_assets_asset_id_foreign` (`asset_id`),
@@ -14458,6 +14534,46 @@ CREATE TABLE `license_flag_overrides` (
   CONSTRAINT `license_flag_overrides_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `liquidity_forecast_snapshots`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `liquidity_forecast_snapshots` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `taken_on` date NOT NULL,
+  `opening_balance` decimal(15,2) NOT NULL,
+  `weeks` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`weeks`)),
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `liq_snap_org_taken_unique` (`organization_id`,`taken_on`),
+  CONSTRAINT `liq_snap_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `liquidity_plan_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `liquidity_plan_items` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `label` varchar(200) NOT NULL,
+  `direction` varchar(3) NOT NULL,
+  `planned_amount` decimal(15,2) NOT NULL,
+  `currency` char(3) NOT NULL,
+  `starts_on` date NOT NULL,
+  `recurrence` varchar(10) NOT NULL,
+  `ends_on` date DEFAULT NULL,
+  `note` varchar(500) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `liq_plan_org_fk` (`organization_id`),
+  KEY `liq_plan_creator_fk` (`created_by`),
+  CONSTRAINT `liq_plan_creator_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `liq_plan_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `liquidity_scenario_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -14970,6 +15086,26 @@ CREATE TABLE `media_renditions` (
   CONSTRAINT `media_renditions_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `medical_checkup_occasions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `medical_checkup_occasions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `label` varchar(180) NOT NULL,
+  `kind` varchar(20) NOT NULL,
+  `interval_months` smallint(5) unsigned DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `mc_occasion_org_label_unique` (`organization_id`,`label`),
+  KEY `mc_occasion_creator_fk` (`created_by`),
+  CONSTRAINT `mc_occasion_creator_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `mc_occasion_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `medical_checkups`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -14978,6 +15114,7 @@ CREATE TABLE `medical_checkups` (
   `organization_id` bigint(20) unsigned NOT NULL,
   `user_id` bigint(20) unsigned NOT NULL,
   `kind` varchar(16) NOT NULL,
+  `medical_checkup_occasion_id` bigint(20) unsigned DEFAULT NULL,
   `occasion` varchar(180) DEFAULT NULL,
   `performed_on` date NOT NULL,
   `next_due_on` date DEFAULT NULL,
@@ -14990,6 +15127,8 @@ CREATE TABLE `medical_checkups` (
   KEY `medical_checkups_user_id_foreign` (`user_id`),
   KEY `medical_checkups_created_by_user_id_foreign` (`created_by_user_id`),
   KEY `medical_checkup_org_user_idx` (`organization_id`,`user_id`,`next_due_on`),
+  KEY `mc_checkup_occasion_fk` (`medical_checkup_occasion_id`),
+  CONSTRAINT `mc_checkup_occasion_fk` FOREIGN KEY (`medical_checkup_occasion_id`) REFERENCES `medical_checkup_occasions` (`id`) ON DELETE SET NULL,
   CONSTRAINT `medical_checkups_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `medical_checkups_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `medical_checkups_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
@@ -16554,6 +16693,62 @@ CREATE TABLE `personal_access_tokens` (
   UNIQUE KEY `personal_access_tokens_token_unique` (`token`),
   KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`),
   KEY `personal_access_tokens_expires_at_index` (`expires_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `personnel_file_acknowledgements`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `personnel_file_acknowledgements` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `document_id` bigint(20) unsigned NOT NULL,
+  `document_version_id` bigint(20) unsigned NOT NULL,
+  `user_id` bigint(20) unsigned NOT NULL,
+  `acknowledged_at` timestamp NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `pf_ack_document_version_unique` (`document_id`,`document_version_id`),
+  KEY `pf_ack_org_fk` (`organization_id`),
+  KEY `pf_ack_version_fk` (`document_version_id`),
+  KEY `pf_ack_user_fk` (`user_id`),
+  CONSTRAINT `pf_ack_document_fk` FOREIGN KEY (`document_id`) REFERENCES `documents` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `pf_ack_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `pf_ack_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `pf_ack_version_fk` FOREIGN KEY (`document_version_id`) REFERENCES `document_versions` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `personnel_file_submissions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `personnel_file_submissions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `user_id` bigint(20) unsigned NOT NULL,
+  `title` varchar(180) NOT NULL,
+  `hr_category` varchar(32) NOT NULL,
+  `note` varchar(500) DEFAULT NULL,
+  `disk` varchar(32) NOT NULL,
+  `path` varchar(255) DEFAULT NULL,
+  `original_name` varchar(255) NOT NULL,
+  `mime` varchar(100) DEFAULT NULL,
+  `size` int(10) unsigned NOT NULL,
+  `status` varchar(20) NOT NULL,
+  `reviewer_user_id` bigint(20) unsigned DEFAULT NULL,
+  `reviewed_at` timestamp NULL DEFAULT NULL,
+  `review_note` varchar(500) DEFAULT NULL,
+  `document_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `pf_sub_user_fk` (`user_id`),
+  KEY `pf_sub_reviewer_fk` (`reviewer_user_id`),
+  KEY `pf_sub_document_fk` (`document_id`),
+  KEY `pf_sub_org_status_idx` (`organization_id`,`status`),
+  CONSTRAINT `pf_sub_document_fk` FOREIGN KEY (`document_id`) REFERENCES `documents` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `pf_sub_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `pf_sub_reviewer_fk` FOREIGN KEY (`reviewer_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `pf_sub_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `plan_module_grace`;
@@ -25136,3 +25331,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (896,'2027_02_27_39
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (897,'2027_02_27_400000_add_supplier_confirmation_to_purchase_orders',27);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (898,'2027_02_28_100000_create_asset_positions_table',28);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (899,'2027_02_28_110000_create_security_ip_bans_table',29);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (900,'2027_02_28_120000_add_declining_and_special_depreciation',30);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (901,'2027_02_28_130000_create_cost_allocation_and_budget_releases',30);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (902,'2027_02_28_140000_create_liquidity_plan_tables',30);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (903,'2027_02_28_150000_create_medical_checkup_occasions',31);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (904,'2027_02_28_160000_create_personnel_file_acknowledgements_and_submissions',31);

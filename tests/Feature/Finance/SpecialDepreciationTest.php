@@ -69,7 +69,7 @@ final class SpecialDepreciationTest extends TestCase {
         $this->actingAs($this->admin)->post(route('finance.accounting.fixed-assets.store'), $payload + ['declining_rate' => '30'])->assertRedirect();
 
         $asset = FixedAsset::query()->sole();
-        $this->assertSame('30.00', (string) $asset->declining_rate);
+        $this->assertSame('30.00', $asset->declining_rate?->getNumericValue());
         $this->assertSame('3000.00', app(DepreciationCalculator::class)->amountForYear($asset, 2026)->getAmount());
         $this->actingAs($this->admin)->get(route('finance.accounting.fixed-assets.show', $asset))->assertOk()->assertSeeText('30,00 %');
     }

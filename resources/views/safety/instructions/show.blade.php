@@ -25,6 +25,9 @@
                         :back-route="auth()->user()?->can('viewAny', \App\Models\Safety\SafetyInstruction::class) ? 'safety.instructions.index' : null"
                         :back-label="__('safety.register.action.back')">
             <x-slot:actions>
+                @can('viewAny', \App\Models\Safety\SafetyInstruction::class)
+                    <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm" :href="route('safety.instructions.pdf', $instruction)" show-label>{{ __('safety.register.action.pdf') }}</x-icon-btn>
+                @endcan
                 @if ($canManage)
                     <x-icon-btn icon="edit" tone="outline" size="sm"
                                 data-entry-modal-trigger
@@ -135,7 +138,6 @@
                     @endif
                     <x-detail-grid.row :label="__('safety.register.field.notes')" :value="$instruction->notes ?? '–'" />
                 </x-detail-grid>
-                <p class="mt-3 text-xs text-muted">{{ __('safety.register.hint.pdf_not_in_mvp') }}</p>
             </x-card>
 
             @if ($canManage)

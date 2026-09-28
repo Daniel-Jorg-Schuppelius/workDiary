@@ -34,3 +34,13 @@ Vorjahreswerte lassen sich als Ausgangspunkt übernehmen — sowie die
 **Liquiditätsvorschau**. Alle drei sind Auswertungen, keine zweite
 Datenhaltung: Was Sie dort sehen, steht so im Journal. Korrekturen erfolgen
 deshalb immer an der Buchung, nie am Bericht.
+
+**Umlagen, Budgetfreigabe und Planpositionen:** Umlageschlüssel verteilen die
+Aufwendungen einer Vorkostenstelle anteilig auf andere Kostenstellen; die BWA
+zeigt das wahlweise „nach Umlage“, die Buchungen bleiben unverändert. Ein
+freigegebenes Budget ist gegen Änderungen gesperrt, bis ein Nachtrag mit
+Begründung es wieder öffnet; überschreitet eine Buchung das Monatsbudget, weist
+die Buchung darauf hin, gebucht wird trotzdem. In der Liquiditätsvorschau
+ergänzen Sie **Planpositionen** (etwa Steuervorauszahlungen oder Kreditraten);
+jeden Montag hält die App den Wochenstand fest, und „Plan/Ist“ vergleicht ihn
+später mit den tatsächlichen Kontobewegungen.

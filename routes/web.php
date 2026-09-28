@@ -3648,6 +3648,7 @@ Route::middleware('auth')->group(function () {
             Route::post('gefaehrdungsbeurteilungen', [\App\Http\Controllers\Safety\HazardAssessmentController::class, 'store'])->name('assessments.store');
             Route::get('gefaehrdungsbeurteilungen/{assessment}', [\App\Http\Controllers\Safety\HazardAssessmentController::class, 'show'])->name('assessments.show');
             Route::get('gefaehrdungsbeurteilungen/{assessment}/edit', [\App\Http\Controllers\Safety\HazardAssessmentController::class, 'edit'])->name('assessments.edit');
+            Route::get('gefaehrdungsbeurteilungen/{assessment}/pdf', [\App\Http\Controllers\Safety\HazardAssessmentController::class, 'pdf'])->name('assessments.pdf');
             Route::put('gefaehrdungsbeurteilungen/{assessment}', [\App\Http\Controllers\Safety\HazardAssessmentController::class, 'update'])->name('assessments.update');
             Route::post('gefaehrdungsbeurteilungen/{assessment}/transition', [\App\Http\Controllers\Safety\HazardAssessmentController::class, 'transition'])->name('assessments.transition');
             Route::post('gefaehrdungsbeurteilungen/{assessment}/version', [\App\Http\Controllers\Safety\HazardAssessmentController::class, 'newVersion'])->name('assessments.new-version');
@@ -3659,15 +3660,22 @@ Route::middleware('auth')->group(function () {
             Route::delete('gefaehrdungsbeurteilungen/{assessment}/positionen/{item}', [\App\Http\Controllers\Safety\HazardAssessmentController::class, 'destroyItem'])->name('assessments.items.destroy');
 
             Route::get('unterweisungen', [\App\Http\Controllers\Safety\SafetyInstructionController::class, 'index'])->name('instructions.index');
+            Route::get('meine-unterweisungen', [\App\Http\Controllers\Safety\SafetyInstructionController::class, 'mine'])->name('instructions.mine');
             Route::get('unterweisungen/create', [\App\Http\Controllers\Safety\SafetyInstructionController::class, 'create'])->name('instructions.create');
             Route::post('unterweisungen', [\App\Http\Controllers\Safety\SafetyInstructionController::class, 'store'])->name('instructions.store');
             Route::get('unterweisungen/{instruction}', [\App\Http\Controllers\Safety\SafetyInstructionController::class, 'show'])->name('instructions.show');
             Route::get('unterweisungen/{instruction}/edit', [\App\Http\Controllers\Safety\SafetyInstructionController::class, 'edit'])->name('instructions.edit');
+            Route::get('unterweisungen/{instruction}/pdf', [\App\Http\Controllers\Safety\SafetyInstructionController::class, 'pdf'])->name('instructions.pdf');
             Route::put('unterweisungen/{instruction}', [\App\Http\Controllers\Safety\SafetyInstructionController::class, 'update'])->name('instructions.update');
             Route::delete('unterweisungen/{instruction}', [\App\Http\Controllers\Safety\SafetyInstructionController::class, 'destroy'])->name('instructions.destroy');
             Route::post('unterweisungen/{instruction}/teilnehmer/{participant}/sign', [\App\Http\Controllers\Safety\SafetyInstructionController::class, 'sign'])->name('instructions.participants.sign');
 
             Route::get('vorsorge', [\App\Http\Controllers\Safety\MedicalCheckupController::class, 'index'])->name('checkups.index');
+            Route::get('vorsorge/anlaesse', [\App\Http\Controllers\Safety\MedicalCheckupOccasionController::class, 'index'])->name('checkups.occasions.index');
+            Route::get('vorsorge/anlaesse/create', [\App\Http\Controllers\Safety\MedicalCheckupOccasionController::class, 'create'])->name('checkups.occasions.create');
+            Route::post('vorsorge/anlaesse', [\App\Http\Controllers\Safety\MedicalCheckupOccasionController::class, 'store'])->name('checkups.occasions.store');
+            Route::get('vorsorge/anlaesse/{occasion}/edit', [\App\Http\Controllers\Safety\MedicalCheckupOccasionController::class, 'edit'])->name('checkups.occasions.edit');
+            Route::put('vorsorge/anlaesse/{occasion}', [\App\Http\Controllers\Safety\MedicalCheckupOccasionController::class, 'update'])->name('checkups.occasions.update');
             Route::get('vorsorge/create', [\App\Http\Controllers\Safety\MedicalCheckupController::class, 'create'])->name('checkups.create');
             Route::post('vorsorge', [\App\Http\Controllers\Safety\MedicalCheckupController::class, 'store'])->name('checkups.store');
             Route::get('vorsorge/{checkup}/edit', [\App\Http\Controllers\Safety\MedicalCheckupController::class, 'edit'])->name('checkups.edit');
@@ -5130,6 +5138,15 @@ Route::middleware('auth')->group(function () {
         Route::put('personalakte/{document}', [\App\Http\Controllers\Hr\PersonnelFileController::class, 'update'])->name('personnel-file.update');
         // Eigenauskunft („Mein Konto"): die betroffene Person liest ihre Akte.
         Route::get('account/personalakte', [\App\Http\Controllers\Hr\PersonnelFileController::class, 'mine'])->name('account.personnel-file');
+        Route::post('account/personalakte/{document}/gelesen', [\App\Http\Controllers\Hr\PersonnelFileController::class, 'acknowledge'])->name('account.personnel-file.acknowledge');
+        Route::get('account/personalakte/einreichen', [\App\Http\Controllers\Hr\PersonnelFileSubmissionController::class, 'form'])->name('account.personnel-file.submit-form');
+        Route::post('account/personalakte/einreichen', [\App\Http\Controllers\Hr\PersonnelFileSubmissionController::class, 'store'])->name('account.personnel-file.submit');
+        Route::get('personalakte/einreichungen', [\App\Http\Controllers\Hr\PersonnelFileSubmissionController::class, 'index'])->name('personnel-file.submissions.index');
+        Route::get('personalakte/einreichungen/{submission}/datei', [\App\Http\Controllers\Hr\PersonnelFileSubmissionController::class, 'download'])->name('personnel-file.submissions.download');
+        Route::get('personalakte/einreichungen/{submission}/annehmen', [\App\Http\Controllers\Hr\PersonnelFileSubmissionController::class, 'acceptForm'])->name('personnel-file.submissions.accept-form');
+        Route::post('personalakte/einreichungen/{submission}/annehmen', [\App\Http\Controllers\Hr\PersonnelFileSubmissionController::class, 'accept'])->name('personnel-file.submissions.accept');
+        Route::get('personalakte/einreichungen/{submission}/ablehnen', [\App\Http\Controllers\Hr\PersonnelFileSubmissionController::class, 'rejectForm'])->name('personnel-file.submissions.reject-form');
+        Route::post('personalakte/einreichungen/{submission}/ablehnen', [\App\Http\Controllers\Hr\PersonnelFileSubmissionController::class, 'reject'])->name('personnel-file.submissions.reject');
         Route::resource('org/members', OrgMemberController::class)
             ->names('org.members')
             ->parameters(['members' => 'member'])

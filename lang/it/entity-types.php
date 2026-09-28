@@ -470,6 +470,8 @@ return [
     'TrainingRequirement' => 'Obbligo formativo',
     'TrainingAssignment' => 'Voce del piano formativo',
     'MedicalCheckup' => 'Sorveglianza sanitaria',
+    'MedicalCheckupOccasion' => 'Motivo di sorveglianza sanitaria',
+    'PersonnelFileSubmission' => 'Presentazione al fascicolo personale',
     'SavedReportView' => 'Vista report salvata',
     'ScheduledJobOverride' => 'Override dello scheduler',
     'ScheduledShift' => 'Turno pianificato',

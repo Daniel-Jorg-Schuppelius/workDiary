@@ -83,8 +83,8 @@
                         'account' => $overrun['account']->number . ' ' . $overrun['account']->name,
                         'center' => $overrun['cost_center'] !== null ? $overrun['cost_center']->code : '—',
                         'month' => $overrun['month']->translatedFormat('M Y'),
-                        'actual' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $overrun['actual'], 2, withThousandsSeparator: true),
-                        'budget' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $overrun['budget'], 2, withThousandsSeparator: true),
+                        'actual' => $overrun['actual']->format(),
+                        'budget' => $overrun['budget']->format(),
                     ]) }}</span>
                 </div>
             @endforeach

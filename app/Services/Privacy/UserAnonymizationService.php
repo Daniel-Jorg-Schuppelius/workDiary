@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Privacy;
 
 use App\Models\Attachments\Attachment;
+use App\Models\Hr\PersonnelFileSubmission;
 use App\Models\Platform\User;
 use App\Services\Attachments\ImageMetaUploader;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -55,6 +57,14 @@ class UserAnonymizationService {
         $openFiles = app(\App\Services\Hr\PersonnelFileService::class)->openDocumentCount($member);
         if ($openFiles > 0) {
             throw new RuntimeException("Personalakte mit {$openFiles} Dokument(en) vorhanden — zuerst vernichten (Bereich Personalakten), dann anonymisieren.");
+        }
+
+        // Einreichungen zur Personalakte (MVP-987): Dateien und Ablehnungsgründe gehen mit dem Konto.
+        foreach (PersonnelFileSubmission::query()->withoutGlobalScopes()->where('user_id', $member->id)->get() as $submission) {
+            if ($submission->path !== null) {
+                Storage::disk($submission->disk)->delete($submission->path);
+            }
+            $submission->delete();
         }
 
         // Kontakt-Morphs (Adressen/Bankverbindungen) vollständig entfernen.

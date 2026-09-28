@@ -19,7 +19,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Finance\{LiquidityForecastSnapshot, LiquidityPlanItem};
 use App\Services\Accounting\{JournalService, LiquiditySnapshotService};
 use App\Support\{Sqid, Tz};
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -59,12 +59,13 @@ class LiquidityPlanController extends Controller {
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
             'note' => ['nullable', 'string', 'max:500'],
         ]);
+        $currency = app(JournalService::class)->baseCurrency($organization);
         LiquidityPlanItem::query()->create([
             'organization_id' => $organization->id,
             'label' => $data['label'],
             'direction' => $data['direction'],
-            'planned_amount' => NumberHelper::roundPrecise(NumberHelper::normalizeDecimalString((string) $data['planned_amount']), 2),
-            'currency' => app(JournalService::class)->baseCurrency($organization)->value,
+            'currency' => $currency,
+            'planned_amount' => Money::of((string) $data['planned_amount'], $currency),
             'starts_on' => $data['starts_on'],
             'recurrence' => $data['recurrence'],
             'ends_on' => $data['recurrence'] === LiquidityPlanRecurrence::Monthly->value ? ($data['ends_on'] ?? null) : null,

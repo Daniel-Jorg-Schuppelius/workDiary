@@ -44,6 +44,21 @@ bandeja de asientos.
 amortización es una decisión del cierre, no un efecto secundario del
 mantenimiento de datos maestros. Crear un activo no altera ningún saldo.
 
+## Amortización degresiva y amortización especial
+
+La **amortización degresiva** deduce cada año un porcentaje fijo del valor
+contable. Solo está permitida para adquisiciones dentro de los periodos
+legales; el diálogo indica el tipo máximo para su fecha de adquisición y vida
+útil. En cuanto el reparto lineal del valor restante resulta mayor, el plan
+pasa por sí solo a la amortización lineal.
+
+La **amortización especial según el § 7g** se registra en el activo como
+importe por ejercicio: en el año de adquisición y los cuatro siguientes, como
+máximo el 40 % del coste de adquisición en total. Después, el valor restante se
+reparte sobre la vida útil restante. La aplicación no comprueba si su empresa
+cumple los requisitos (límite de beneficio); aclárelo con su asesoría fiscal.
+Un año cuya amortización ya se ha contabilizado no puede modificarse.
+
 ## Baja
 
 Una baja (venta, desguace, robo) se anota con su fecha. El activo **no

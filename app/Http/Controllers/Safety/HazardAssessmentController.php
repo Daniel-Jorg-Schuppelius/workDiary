@@ -17,8 +17,8 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Models\Safety\{HazardAssessment, HazardAssessmentItem};
-use App\Services\Safety\HazardAssessmentService;
-use Illuminate\Http\{RedirectResponse, Request};
+use App\Services\Safety\{HazardAssessmentService, SafetyEvidencePdfRenderer};
+use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -89,6 +89,16 @@ class HazardAssessmentController extends Controller {
         return view('safety.assessments.show', [
             'assessment' => $assessment,
             'canManage' => Gate::allows('update', $assessment),
+        ]);
+    }
+
+    /** Gefährdungsbeurteilung als PDF (MVP-985). */
+    public function pdf(HazardAssessment $assessment, SafetyEvidencePdfRenderer $renderer): Response {
+        Gate::authorize('view', $assessment);
+
+        return response($renderer->assessment($assessment), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $renderer->filename('Gefaehrdungsbeurteilung', $assessment->displayNo()) . '"',
         ]);
     }
 

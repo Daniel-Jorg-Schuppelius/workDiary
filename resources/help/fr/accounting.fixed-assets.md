@@ -46,6 +46,23 @@ exclusivement par la boîte de réception des écritures.
 amortissement est une décision de clôture, pas un effet secondaire de la
 tenue des données de base. Créer une immobilisation ne modifie aucun solde.
 
+## Amortissement dégressif et amortissement exceptionnel
+
+L'**amortissement dégressif** déduit chaque année un pourcentage fixe de la
+valeur comptable. Il n'est autorisé que pour les acquisitions réalisées dans
+les périodes prévues par la loi ; la boîte de dialogue indique le taux maximal
+pour votre date d'acquisition et la durée d'utilisation. Dès que la répartition
+linéaire de la valeur résiduelle est plus élevée, le plan passe de lui-même à
+l'amortissement linéaire.
+
+L'**amortissement exceptionnel selon le § 7g** se saisit sur l'immobilisation
+sous forme de montant par exercice — l'année d'acquisition et les quatre
+suivantes, au total 40 % du coût d'acquisition au maximum. Ensuite, la valeur
+résiduelle est répartie sur la durée d'utilisation restante. L'application ne
+vérifie pas si votre entreprise remplit les conditions (plafond de bénéfice) ;
+veuillez le clarifier avec votre conseiller fiscal. Une année dont
+l'amortissement est déjà comptabilisé ne peut plus être modifiée.
+
 ## Sortie
 
 Une sortie (vente, mise au rebut, vol) est enregistrée avec sa date.

@@ -24,7 +24,7 @@ use Illuminate\Support\Carbon;
  * @property int $organization_id
  * @property Carbon $taken_on
  * @property numeric-string $opening_balance
- * @property list<array{from: string, to: string, label: string, inflow: string, outflow: string, net: string}> $weeks
+ * @property list<array{from: string, to: string, label: string, inflow: numeric-string, outflow: numeric-string, net: numeric-string}> $weeks
  */
 class LiquidityForecastSnapshot extends Model {
     use BelongsToOrganization;

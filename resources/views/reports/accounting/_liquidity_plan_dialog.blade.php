@@ -22,12 +22,20 @@
     </x-select-field>
     <x-input-field name="planned_amount" type="number" min="0.01" step="0.01" inputmode="decimal" required
                    :label="__('accounting.liquidity_plan.field.planned_amount')" :value="old('planned_amount')" />
-    <x-input-field name="starts_on" type="date" required :label="__('accounting.liquidity_plan.field.starts_on')" :value="old('starts_on', now()->toDateString())" />
     <x-select-field name="recurrence" :label="__('accounting.liquidity_plan.field.recurrence')" required>
         @foreach ($recurrences as $recurrence)
             <option value="{{ $recurrence->value }}" @selected(old('recurrence', 'once') === $recurrence->value)>{{ $recurrence->label() }}</option>
         @endforeach
     </x-select-field>
-    <x-input-field name="ends_on" type="date" :label="__('accounting.liquidity_plan.field.ends_on')" :hint="__('accounting.liquidity_plan.hint.ends_on')" :value="old('ends_on')" />
+    <x-date-range layout="split"
+                  from-name="starts_on"
+                  to-name="ends_on"
+                  :from="old('starts_on', now()->toDateString())"
+                  :to="old('ends_on')"
+                  :from-label="__('accounting.liquidity_plan.field.starts_on')"
+                  :to-label="__('accounting.liquidity_plan.field.ends_on')"
+                  from-required
+                  size="md" />
+    <p class="text-xs text-muted">{{ __('accounting.liquidity_plan.hint.ends_on') }}</p>
     <x-input-field name="note" maxlength="500" :label="__('accounting.ledger.field.note')" :value="old('note')" />
 </x-modal>

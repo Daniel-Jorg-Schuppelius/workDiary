@@ -54,7 +54,7 @@
                         <x-detail-grid.row :label="__('accounting.fixed_assets.column.cost')" :value="$fixedAsset->acquisition_cost?->format()" />
                         <x-detail-grid.row :label="__('accounting.fixed_assets.field.residual_value')" :value="$fixedAsset->residual_value?->format() ?? '—'" />
                         <x-detail-grid.row :label="__('accounting.fixed_assets.column.useful_life')" :value="__('accounting.fixed_assets.months', ['count' => $fixedAsset->useful_life_months])" />
-                        <x-detail-grid.row :label="__('accounting.fixed_assets.field.method')" :value="$fixedAsset->depreciation_method->label() . ($fixedAsset->declining_rate !== null ? ' · ' . \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $fixedAsset->declining_rate, 2) . ' %' : '')" />
+                        <x-detail-grid.row :label="__('accounting.fixed_assets.field.method')" :value="$fixedAsset->depreciation_method->label() . ($fixedAsset->declining_rate !== null ? ' · ' . $fixedAsset->declining_rate->format() : '')" />
                         <x-detail-grid.row :label="__('accounting.fixed_assets.field.asset_account')" :value="$fixedAsset->assetAccount?->displayLabel() ?? __('accounting.fixed_assets.account_from_rule')" />
                         <x-detail-grid.row :label="__('accounting.fixed_assets.field.depreciation_account')" :value="$fixedAsset->depreciationAccount?->displayLabel() ?? __('accounting.fixed_assets.account_from_rule')" />
                         @if ($fixedAsset->disposed_on)

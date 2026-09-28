@@ -31,3 +31,14 @@ dell'anno precedente possono essere ripresi come punto di partenza — e la
 **previsione di liquidità**. Tutte e tre sono analisi, non una seconda
 contabilità: ciò che vede lì è quanto risulta dal giornale. Le correzioni si
 fanno perciò sempre sulla registrazione, mai sul rapporto.
+
+**Ripartizioni, approvazione del budget e voci pianificate:** Le chiavi di
+ripartizione distribuiscono proporzionalmente i costi di un centro di costo
+ausiliario su altri centri; l'analisi di gestione può mostrarlo «dopo il
+ribaltamento», mentre le registrazioni restano invariate. Un budget approvato è
+bloccato contro modifiche finché un'integrazione motivata non lo riapre; se una
+registrazione supera il budget mensile, lo segnala ma viene comunque
+registrata. Nella previsione di liquidità Lei aggiunge **voci pianificate** (ad
+esempio acconti d'imposta o rate di finanziamento); ogni lunedì l'app registra
+lo stato della settimana e «piano/consuntivo» lo confronta poi con i
+movimenti bancari effettivi.

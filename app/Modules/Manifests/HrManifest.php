@@ -42,6 +42,8 @@ final class HrManifest extends Manifest {
             'competencies',
             'competency_requirements',
             'employee_drafts',
+            'personnel_file_acknowledgements',
+            'personnel_file_submissions',
             'qualifications',
             'user_competencies',
             'user_qualifications',

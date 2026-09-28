@@ -32,3 +32,13 @@ over as a starting point — and the **liquidity forecast**. All three are
 evaluations, not a second set of books: what you see there is what stands in
 the journal. Corrections are therefore always made to the entry, never to the
 report.
+
+**Allocations, budget release and plan items:** Allocation keys distribute
+the expenses of a service cost centre proportionally to other cost centres; the
+management report can show this "after allocation", while the entries stay
+unchanged. A released budget is locked against changes until a supplement with
+a reason reopens it; if an entry exceeds the monthly budget, the entry shows a
+notice but is still posted. In the liquidity forecast you add **plan items**
+(such as tax prepayments or loan instalments); every Monday the app records the
+weekly forecast, and "plan vs. actual" later compares it with the actual account
+movements.

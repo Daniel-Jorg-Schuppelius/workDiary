@@ -14,6 +14,10 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Mitarbeiter des Mandanten verwalten.')">
     <x-slot:actions>
+        @if (auth()->user()?->hasEffectivePermission(\App\Services\Hr\PersonnelFilePermissions::VIEW_ANY))
+            {{-- Einreichungen zur Personalakte (MVP-987) --}}
+            <x-icon-btn icon="outbox" tone="outline" size="sm" :href="route('personnel-file.submissions.index')" show-label>{{ __('hr.personnel_file.submission.title') }}</x-icon-btn>
+        @endif
         @if ($canManageMembers ?? true)
             {{-- Personalstamm-CSV-Import (Feature 103, MVP-537) --}}
             <x-icon-btn icon="upload_file" tone="outline" size="sm"

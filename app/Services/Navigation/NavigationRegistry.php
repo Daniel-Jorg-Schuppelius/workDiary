@@ -1999,6 +1999,8 @@ class NavigationRegistry {
             $userNavItems[] = ['route' => 'account.calendar.show', 'label' => __('Kalender-Abo'), 'modal' => false];
             // Eigenauskunft Personalakte (Feature 141): eigene Akte lesend.
             $userNavItems[] = ['route' => 'account.personnel-file', 'label' => __('hr.personnel_file.nav'), 'modal' => false];
+            // Eigene Unterweisungen mit Bestätigung und Vorsorgetermine (MVP-986).
+            $userNavItems[] = ['route' => 'safety.instructions.mine', 'label' => __('safety.register.nav.mine'), 'modal' => false];
             // Persönlicher Einstieg (MVP-911), auch nach dem Ausblenden der Kachel erreichbar.
             $userNavItems[] = ['route' => 'me.onboarding', 'label' => __('onboarding.personal.title'), 'modal' => false];
             // Investition vorschlagen (MVP-936), auch ohne Zugriff auf die Investitionsliste.

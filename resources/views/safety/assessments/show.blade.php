@@ -23,6 +23,7 @@
                         :badge="$assessment->status->label()" :badgeTone="$assessment->status->tone()"
                         back-route="safety.assessments.index" :back-label="__('safety.register.action.back')">
             <x-slot:actions>
+                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm" :href="route('safety.assessments.pdf', $assessment)" show-label>{{ __('safety.register.action.pdf') }}</x-icon-btn>
                 @if ($editable)
                     <x-icon-btn icon="edit" tone="outline" size="sm"
                                 data-entry-modal-trigger

@@ -32,6 +32,15 @@
                 <option value="{{ $user->sqid }}" @selected((string) old('user_id', $userSqid) === $user->sqid)>{{ $user->name }}</option>
             @endforeach
         </x-select-field>
+        @if ($occasions->isNotEmpty())
+            @php $occasionSqid = \App\Support\Sqid::encodeOrNull(\App\Models\Safety\MedicalCheckupOccasion::class, $checkup?->medical_checkup_occasion_id); @endphp
+            <x-select-field name="medical_checkup_occasion_id" :label="__('safety.register.field.occasion_template')" :hint="__('safety.register.hint.occasion_template')" span="2">
+                <option value="">—</option>
+                @foreach ($occasions as $template)
+                    <option value="{{ $template->sqid }}" @selected((string) old('medical_checkup_occasion_id', $occasionSqid) === $template->sqid)>{{ $template->label }}{{ $template->interval_months ? ' · ' . trans_choice('safety.register.interval', $template->interval_months, ['count' => $template->interval_months]) : '' }}</option>
+                @endforeach
+            </x-select-field>
+        @endif
         <x-select-field name="kind" :label="__('safety.register.field.kind')" required>
             @foreach (\App\Enums\Safety\MedicalCheckupKind::cases() as $k)
                 <option value="{{ $k->value }}" @selected(old('kind', $checkup?->kind?->value ?? 'offered') === $k->value)>{{ $k->label() }}</option>

@@ -390,6 +390,10 @@ return [
         ],
     ],
     'hrFile' => [
+        'acknowledged' => 'Lettura di un documento del fascicolo personale confermata',
+        'submitted' => 'Documento presentato al fascicolo personale',
+        'accepted' => 'Presentazione acquisita nel fascicolo personale',
+        'rejected' => 'Presentazione al fascicolo personale rifiutata',
         'created' => 'Documento del fascicolo personale aggiunto',
         'updated' => 'Documento del fascicolo personale modificato',
         'downloaded' => 'Documento del fascicolo personale scaricato',

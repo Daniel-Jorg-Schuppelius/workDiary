@@ -47,3 +47,18 @@ Nachweise und Vier-Augen-Prüfungen erzwingen.
 Die Sicherheits-Auswertung (Auswertungen → Arbeitsschutz) zeigt
 Ereignisse je Art und Schweregrad im Zeitraum sowie offen gegen
 geschlossen.
+
+## Nachweise, eigene Unterweisungen und Vorsorgeanlässe
+
+Unterweisungsnachweis und Gefährdungsbeurteilung lassen sich **als PDF**
+herunterladen – der Nachweis mit Teilnehmenden, Zeitpunkt, Nachweisform, Prüfwert
+und gezeichneter Unterschrift. Den Unterweisungsnachweis sieht nur, wer das
+Register führt, weil er alle Unterschriften enthält.
+
+Unter **„Meine Unterweisungen“** im Benutzermenü sieht jede Person ihre offenen
+und bestätigten Unterweisungen und kann direkt bestätigen; dort stehen auch die
+eigenen Vorsorgetermine (ohne Gesundheitsdaten).
+
+Im Vorsorge-Register pflegen Sie **Vorsorgeanlässe** mit Art und Intervall.
+Wird ein Anlass gewählt, legt er die Art fest und berechnet die nächste
+Fälligkeit, sofern Sie keine eigene eintragen.

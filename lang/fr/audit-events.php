@@ -390,6 +390,10 @@ return [
         ],
     ],
     'hrFile' => [
+        'acknowledged' => 'Lecture d’un document du dossier personnel confirmée',
+        'submitted' => 'Document transmis au dossier personnel',
+        'accepted' => 'Transmission intégrée au dossier personnel',
+        'rejected' => 'Transmission au dossier personnel refusée',
         'created' => 'Document du dossier personnel ajouté',
         'updated' => 'Document du dossier personnel modifié',
         'downloaded' => 'Document du dossier personnel téléchargé',

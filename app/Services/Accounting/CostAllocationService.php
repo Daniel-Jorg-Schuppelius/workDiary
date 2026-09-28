@@ -16,6 +16,7 @@ use App\Models\Finance\{CostAllocationKey, CostCenter};
 use App\Models\Platform\{Organization, User};
 use CommonToolkit\Enums\RoundingMode;
 use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\ValueObjects\Percentage;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;
 
@@ -31,22 +32,20 @@ final class CostAllocationService {
             ->with(['source', 'target'])->orderBy('source_cost_center_id')->orderBy('target_cost_center_id')->get();
     }
 
-    public function save(Organization $organization, int $fiscalYear, CostCenter $source, CostCenter $target, string $sharePercent, User $actor): CostAllocationKey {
+    public function save(Organization $organization, int $fiscalYear, CostCenter $source, CostCenter $target, Percentage $share, User $actor): CostAllocationKey {
         if ($source->organization_id !== $organization->id || $target->organization_id !== $organization->id) {
             abort(404);
         }
         if ($source->id === $target->id) {
             throw ValidationException::withMessages(['target' => (string) __('accounting.allocation.error.same')]);
         }
-        $share = NumberHelper::roundPrecise($sharePercent, 2);
-        if (bccomp($share, '0', 2) <= 0 || bccomp($share, '100', 2) > 0) {
+        if (! $share->isPositive() || ! $share->isWithinZeroAndHundred()) {
             throw ValidationException::withMessages(['share_percent' => (string) __('accounting.allocation.error.share')]);
         }
-        $others = CostAllocationKey::query()->where('organization_id', $organization->id)->where('fiscal_year', $fiscalYear)
-            ->where('source_cost_center_id', $source->id)->where('target_cost_center_id', '!=', $target->id)->pluck('share_percent')
-            ->reduce(static fn (string $sum, mixed $value): string => bcadd($sum, (string) $value, 2), '0');
-        if (bccomp(bcadd($others, $share, 2), '100', 2) > 0) {
-            throw ValidationException::withMessages(['share_percent' => (string) __('accounting.allocation.error.total', ['rest' => bcsub('100', $others, 2)])]);
+        $others = $this->total(CostAllocationKey::query()->where('organization_id', $organization->id)->where('fiscal_year', $fiscalYear)
+            ->where('source_cost_center_id', $source->id)->where('target_cost_center_id', '!=', $target->id)->get());
+        if (! $others->plus($share)->isWithinZeroAndHundred()) {
+            throw ValidationException::withMessages(['share_percent' => (string) __('accounting.allocation.error.total', ['rest' => Percentage::of(100, 2)->minus($others)->getNumericValue()])]);
         }
 
         return CostAllocationKey::query()->updateOrCreate(
@@ -60,19 +59,18 @@ final class CostAllocationService {
      * des abgegebenen Anteils, zuzüglich der Anteile aus den Vorkostenstellen.
      * Erlöse und Bestandskonten bleiben unberührt.
      *
-     * @param  array<int, array{debit: string, credit: string}>  $own
+     * @param  array<int, array{debit: numeric-string, credit: numeric-string}>  $own
      * @param  list<int>  $expenseAccountIds
-     * @param  callable(int): array<int, array{debit: string, credit: string}>  $sumsOf  Summen einer anderen Kostenstelle
-     * @return array<int, array{debit: string, credit: string}>
+     * @param  callable(int): array<int, array{debit: numeric-string, credit: numeric-string}>  $sumsOf  Summen einer anderen Kostenstelle
+     * @return array<int, array{debit: numeric-string, credit: numeric-string}>
      */
     public function allocate(Organization $organization, int $fiscalYear, int $costCenterId, array $own, array $expenseAccountIds, callable $sumsOf): array {
         $keys = $this->keysFor($organization, $fiscalYear);
-        $given = $keys->where('source_cost_center_id', $costCenterId)
-            ->reduce(static fn (string $sum, CostAllocationKey $key): string => bcadd($sum, (string) $key->share_percent, 2), '0');
-        $result = $this->scale($own, $expenseAccountIds, bcsub('100', $given, 2), true);
+        $given = $this->total($keys->where('source_cost_center_id', $costCenterId));
+        $result = $this->scale($own, $expenseAccountIds, Percentage::of(100, 2)->minus($given), true);
 
         foreach ($keys->where('target_cost_center_id', $costCenterId) as $key) {
-            foreach ($this->scale($sumsOf($key->source_cost_center_id), $expenseAccountIds, (string) $key->share_percent, false) as $accountId => $sums) {
+            foreach ($this->scale($sumsOf($key->source_cost_center_id), $expenseAccountIds, $key->share_percent, false) as $accountId => $sums) {
                 $result[$accountId] = [
                     'debit' => NumberHelper::addPrecise($result[$accountId]['debit'] ?? '0.00', $sums['debit'], 2),
                     'credit' => NumberHelper::addPrecise($result[$accountId]['credit'] ?? '0.00', $sums['credit'], 2),
@@ -84,12 +82,26 @@ final class CostAllocationService {
     }
 
     /**
-     * @param  array<int, array{debit: string, credit: string}>  $sums
-     * @param  list<int>  $expenseAccountIds
-     * @return array<int, array{debit: string, credit: string}>
+     * Summe der Anteile; leer ergibt 0 %.
+     *
+     * @param  iterable<CostAllocationKey>  $keys
      */
-    private function scale(array $sums, array $expenseAccountIds, string $percent, bool $keepOthers): array {
-        $factor = bcdiv($percent, '100', 6);
+    public function total(iterable $keys): Percentage {
+        $sum = Percentage::of(0, 2);
+        foreach ($keys as $key) {
+            $sum = $sum->plus($key->share_percent);
+        }
+
+        return $sum;
+    }
+
+    /**
+     * @param  array<int, array{debit: numeric-string, credit: numeric-string}>  $sums
+     * @param  list<int>  $expenseAccountIds
+     * @return array<int, array{debit: numeric-string, credit: numeric-string}>
+     */
+    private function scale(array $sums, array $expenseAccountIds, Percentage $share, bool $keepOthers): array {
+        $factor = $share->asFactor()->getValue();
         $result = [];
         foreach ($sums as $accountId => $values) {
             if (! in_array($accountId, $expenseAccountIds, true)) {

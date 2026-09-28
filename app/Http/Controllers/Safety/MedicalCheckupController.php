@@ -16,9 +16,10 @@ use App\Enums\Safety\MedicalCheckupKind;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
-use App\Models\Safety\MedicalCheckup;
+use App\Models\Safety\{MedicalCheckup, MedicalCheckupOccasion};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Support\Sqid;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
@@ -63,7 +64,7 @@ class MedicalCheckupController extends Controller {
     public function create(): View {
         Gate::authorize('create', MedicalCheckup::class);
 
-        return view('safety.checkups._form_dialog', ['checkup' => null, 'users' => $this->userOptions()]);
+        return view('safety.checkups._form_dialog', ['checkup' => null, 'users' => $this->userOptions(), 'occasions' => $this->occasionOptions(null)]);
     }
 
     public function store(Request $request): RedirectResponse {
@@ -85,7 +86,7 @@ class MedicalCheckupController extends Controller {
     public function edit(MedicalCheckup $checkup): View {
         Gate::authorize('update', $checkup);
 
-        return view('safety.checkups._form_dialog', ['checkup' => $checkup, 'users' => $this->userOptions()]);
+        return view('safety.checkups._form_dialog', ['checkup' => $checkup, 'users' => $this->userOptions(), 'occasions' => $this->occasionOptions($checkup)]);
     }
 
     public function update(Request $request, MedicalCheckup $checkup): RedirectResponse {
@@ -115,10 +116,14 @@ class MedicalCheckupController extends Controller {
         if ($request->filled('user_id')) {
             $request->merge(['user_id' => Sqid::decodeOrNumeric(User::class, $request->input('user_id'))]);
         }
+        if ($request->filled('medical_checkup_occasion_id')) {
+            $request->merge(['medical_checkup_occasion_id' => Sqid::decodeOrNumeric(MedicalCheckupOccasion::class, $request->input('medical_checkup_occasion_id'))]);
+        }
 
         $data = $request->validate([
             'user_id' => ['required', 'integer', new ExistsInCurrentOrganization('users')],
-            'kind' => ['required', 'string', Rule::enum(MedicalCheckupKind::class)],
+            'medical_checkup_occasion_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('medical_checkup_occasions')],
+            'kind' => ['required_without:medical_checkup_occasion_id', 'nullable', 'string', Rule::enum(MedicalCheckupKind::class)],
             'occasion' => ['nullable', 'string', 'max:180'],
             'performed_on' => ['required', 'date'],
             'next_due_on' => ['nullable', 'date', 'after:performed_on'],
@@ -126,7 +131,27 @@ class MedicalCheckupController extends Controller {
         ]);
         $data['certificate_on_file'] = (bool) ($data['certificate_on_file'] ?? false);
 
+        // Anlass aus dem Katalog (MVP-986) bestimmt die Art; Anlasstext und Fälligkeit nur, wo nichts eingetragen ist.
+        $template = isset($data['medical_checkup_occasion_id']) ? MedicalCheckupOccasion::query()->find($data['medical_checkup_occasion_id']) : null;
+        if ($template instanceof MedicalCheckupOccasion) {
+            $data['kind'] = $template->kind->value;
+            $data['occasion'] = ($data['occasion'] ?? null) ?: $template->label;
+            $data['next_due_on'] = ($data['next_due_on'] ?? null) ?: $template->nextDueFrom(CarbonImmutable::parse((string) $data['performed_on']))?->toDateString();
+        }
+
         return $data;
+    }
+
+    /**
+     * Aktive Anlässe, dazu der bereits gewählte, auch wenn er inzwischen deaktiviert ist.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, MedicalCheckupOccasion>
+     */
+    private function occasionOptions(?MedicalCheckup $checkup): \Illuminate\Database\Eloquent\Collection {
+        return MedicalCheckupOccasion::query()
+            ->where(fn ($q) => $q->where('is_active', true)->orWhere('id', $checkup?->medical_checkup_occasion_id))
+            ->orderBy('label')
+            ->get();
     }
 
     /** @return \Illuminate\Support\Collection<int, User> */

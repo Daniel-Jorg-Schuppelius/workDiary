@@ -36,3 +36,12 @@ temps saisis, les protocoles signés et les validations doivent rester
 attribuables à leur auteur. Les données personnelles restent par ailleurs
 soumises aux règles de conservation et d'effacement de l'espace protection des
 données.
+
+**Dossier personnel :** Les membres du cercle du dossier personnel peuvent
+**demander une confirmation de lecture** pour un document. La personne
+concernée confirme la lecture dans « Mon dossier personnel » ; une nouvelle
+version exige une nouvelle confirmation. Elle y **transmet aussi ses propres
+documents**, par exemple une attestation. Les transmissions figurent dans la
+liste des collaborateurs sous « Documents transmis » : les intégrer les ajoute
+au dossier, les refuser exige un motif visible par la personne. Personne ne
+décide de sa propre transmission.

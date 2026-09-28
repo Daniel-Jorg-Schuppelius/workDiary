@@ -44,6 +44,22 @@ tramite la casella delle scritture.
 decisione di chiusura, non un effetto collaterale della gestione anagrafica.
 Creare un cespite non modifica alcun saldo.
 
+## Ammortamento decrescente e ammortamento speciale
+
+L'**ammortamento decrescente** detrae ogni anno una percentuale fissa del
+valore contabile. È ammesso solo per acquisti nei periodi previsti dalla legge;
+la finestra di dialogo indica l'aliquota massima per la Sua data di acquisto e
+la durata di utilizzo. Non appena la ripartizione lineare del valore residuo
+risulta più alta, il piano passa da solo all'ammortamento lineare.
+
+L'**ammortamento speciale ai sensi del § 7g** si inserisce sul cespite come
+importo per esercizio — nell'anno di acquisto e nei quattro successivi, in
+totale al massimo il 40 % del costo di acquisto. Successivamente il valore
+residuo si ripartisce sulla durata di utilizzo residua. L'app non verifica se
+la Sua impresa soddisfa i requisiti (limite di utile); lo chiarisca con il Suo
+consulente fiscale. Un anno il cui ammortamento è già stato registrato non può
+più essere modificato.
+
 ## Dismissione
 
 Una dismissione (vendita, rottamazione, furto) viene annotata con la data. Il

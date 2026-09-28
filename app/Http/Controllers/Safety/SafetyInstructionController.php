@@ -16,12 +16,12 @@ use App\Enums\Safety\HazardAssessmentStatus;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
-use App\Models\Safety\{HazardAssessment, SafetyInstruction, SafetyInstructionParticipant};
+use App\Models\Safety\{HazardAssessment, MedicalCheckup, SafetyInstruction, SafetyInstructionParticipant};
 use App\Models\Training\{TrainingCourse, TrainingCourseVersion};
 use App\Rules\ExistsInCurrentOrganization;
-use App\Services\Safety\SafetyInstructionService;
+use App\Services\Safety\{SafetyEvidencePdfRenderer, SafetyInstructionService};
 use App\Support\Sqid;
-use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
@@ -108,6 +108,34 @@ class SafetyInstructionController extends Controller {
             'instruction' => $instruction,
             'canManage' => Gate::allows('update', $instruction),
             'ownParticipant' => $instruction->participants->first(fn(SafetyInstructionParticipant $p) => (int) $p->user_id === (int) $viewer->id),
+        ]);
+    }
+
+    /** Eigene Unterweisungen und Vorsorgetermine (MVP-986) — ohne Register-Recht, nur die eigenen Zeilen. */
+    public function mine(): View {
+        /** @var User $user */
+        $user = Auth::user();
+        $rows = SafetyInstructionParticipant::query()
+            ->where('user_id', $user->id)
+            ->with('instruction.instructor:id,name')
+            ->get()
+            ->sortByDesc(static fn (SafetyInstructionParticipant $row): int => $row->instruction?->held_on->getTimestamp() ?? 0);
+
+        return view('safety.instructions.mine', [
+            'open' => $rows->reject(static fn (SafetyInstructionParticipant $row): bool => $row->isSigned())->values(),
+            'done' => $rows->filter(static fn (SafetyInstructionParticipant $row): bool => $row->isSigned())->values(),
+            'checkups' => MedicalCheckup::query()->where('user_id', $user->id)->orderByDesc('performed_on')->limit(20)->get(),
+        ]);
+    }
+
+    /** Unterweisungsnachweis als PDF (MVP-985) — nur im Register-Kreis, weil er alle Unterschriften zeigt. */
+    public function pdf(SafetyInstruction $instruction, SafetyEvidencePdfRenderer $renderer): Response {
+        Gate::authorize('view', $instruction);
+        Gate::authorize('viewAny', SafetyInstruction::class);
+
+        return response($renderer->instruction($instruction), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $renderer->filename('Unterweisungsnachweis', $instruction->displayNo()) . '"',
         ]);
     }
 

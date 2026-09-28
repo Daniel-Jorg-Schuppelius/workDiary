@@ -390,6 +390,10 @@ return [
         ],
     ],
     'hrFile' => [
+        'acknowledged' => 'Personnel file document confirmed as read',
+        'submitted' => 'Document submitted to the personnel file',
+        'accepted' => 'Submission added to the personnel file',
+        'rejected' => 'Submission to the personnel file rejected',
         'created' => 'Personnel file document added',
         'updated' => 'Personnel file document updated',
         'downloaded' => 'Personnel file document downloaded',

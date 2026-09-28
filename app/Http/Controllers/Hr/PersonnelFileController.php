@@ -12,8 +12,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Hr;
 
+use App\Enums\Hr\PersonnelFileSubmissionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Document\Document;
+use App\Models\Hr\PersonnelFileSubmission;
 use App\Models\Platform\User;
 use App\Services\Document\DocumentService;
 use App\Services\Hr\PersonnelFileService;
@@ -99,18 +101,36 @@ class PersonnelFileController extends Controller {
             ->withFragment('document-' . $document->id);
     }
 
+    /** Lesebestätigung der betroffenen Person (MVP-987). */
+    public function acknowledge(Document $document): RedirectResponse {
+        /** @var User $user */
+        $user = Auth::user();
+        $this->service->acknowledge($document, $user);
+
+        return redirect()->route('account.personnel-file')->with('success', __('hr.personnel_file.flash.acknowledged'))->withFragment('document-' . $document->id);
+    }
+
     private function render(User $member, bool $selfView): View {
         $documents = Document::query()
             ->personnelFilesOf($member)
             ->with(['currentVersion', 'creator:id,name'])
             ->orderByDesc('updated_at')
             ->get();
+        $canCreate = ! $selfView && Gate::allows('createPersonnelFile', [Document::class, $member]);
+        $submissions = PersonnelFileSubmission::query()->where('user_id', $member->id)
+            ->when(! $selfView, fn ($query) => $query->where('status', PersonnelFileSubmissionStatus::Submitted->value))
+            ->when($selfView, fn ($query) => $query->where('status', '!=', PersonnelFileSubmissionStatus::Accepted->value))
+            ->orderByDesc('created_at')
+            ->get();
 
         return view('hr.personnel-file.index', [
             'member' => $member,
             'documents' => $documents,
+            'acknowledgements' => $this->service->acknowledgementsFor($documents),
+            // Über die eigene Einreichung entscheidet nie die eigene Person.
+            'submissions' => $selfView || ($canCreate && (int) $member->id !== (int) Auth::id()) ? $submissions : collect(),
             'selfView' => $selfView,
-            'canCreate' => ! $selfView && Gate::allows('createPersonnelFile', [Document::class, $member]),
+            'canCreate' => $canCreate,
         ]);
     }
 }

@@ -557,6 +557,8 @@ return [
 
         // Personal & operative Module
         'org.members.*' => 'org.members',
+        // Personalakte: Aktenansicht, Einreichungen (MVP-987).
+        'personnel-file.*' => 'org.members',
         'users.work-schedule.*' => 'org.members',
         'teams.*' => 'org.teams',
         'payroll.*' => 'payroll.overview',

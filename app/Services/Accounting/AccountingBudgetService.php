@@ -19,7 +19,8 @@ use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\Reports\MonthlyActualsBuilder;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
-use CommonToolkit\ValueObjects\Decimal;
+use CommonToolkit\ValueObjects\{Decimal, Money};
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -335,7 +336,7 @@ class AccountingBudgetService {
      * Überschreitungen freigegebener Monatsbudgets durch eine Buchung (Hinweis,
      * keine Sperre — ein realer Beleg bleibt buchbar).
      *
-     * @return list<array{account: AccountingAccount, cost_center: CostCenter|null, month: CarbonImmutable, budget: string, actual: string}>
+     * @return list<array{account: AccountingAccount, cost_center: CostCenter|null, month: CarbonImmutable, budget: Money, actual: Money}>
      */
     public function overrunsFor(AccountingEntry $entry): array {
         $organization = $entry->organization;
@@ -361,11 +362,10 @@ class AccountingBudgetService {
             if (! $row instanceof AccountingBudget) {
                 continue;
             }
-            $budget = $row->amount instanceof \CommonToolkit\ValueObjects\Money ? $row->amount->getAmount() : (string) $row->amount;
             $sums = $this->actuals->build($organization, [$month], $costCenterId)[$month->format('Y-m')][$account->id] ?? ['debit' => '0.00', 'credit' => '0.00'];
-            $actual = NumberHelper::subtractPrecise($sums['debit'], $sums['credit'], 2);
-            if (bccomp($actual, (string) $budget, 2) > 0) {
-                $result[] = ['account' => $account, 'cost_center' => $line->costCenter, 'month' => $month, 'budget' => $budget, 'actual' => $actual];
+            $actual = Money::of($sums['debit'], $row->amount->getCurrency())->minus(Money::of($sums['credit'], $row->amount->getCurrency()));
+            if ($actual->greaterThan($row->amount)) {
+                $result[] = ['account' => $account, 'cost_center' => $line->costCenter, 'month' => $month, 'budget' => $row->amount, 'actual' => $actual];
             }
         }
 
@@ -378,7 +378,8 @@ class AccountingBudgetService {
         }
     }
 
-    private function scope(Organization $organization, int $fiscalYear, ?int $costCenterId): \Illuminate\Database\Eloquent\Builder {
+    /** @return Builder<AccountingBudget> */
+    private function scope(Organization $organization, int $fiscalYear, ?int $costCenterId): Builder {
         return AccountingBudget::query()
             ->where('organization_id', $organization->id)
             ->where('fiscal_year', $fiscalYear)

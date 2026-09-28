@@ -18,7 +18,8 @@ use App\Models\Platform\Organization;
 use App\Services\Accounting\Reports\LiquidityForecastBuilder;
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
 
 /**
  * Plan/Ist der Liquiditätsvorschau (MVP-984): Der Wochenstand der Basis-
@@ -26,7 +27,10 @@ use CommonToolkit\Helper\Data\NumberHelper;
  * und später mit den tatsächlichen Kontobewegungen derselben Wochen verglichen.
  */
 final class LiquiditySnapshotService {
-    public function __construct(private readonly LiquidityForecastBuilder $forecasts) {}
+    public function __construct(
+        private readonly LiquidityForecastBuilder $forecasts,
+        private readonly JournalService $journal,
+    ) {}
 
     public function take(Organization $organization, CarbonImmutable $asOf): LiquidityForecastSnapshot {
         $data = $this->forecasts->build($organization, $asOf);
@@ -46,24 +50,26 @@ final class LiquiditySnapshotService {
     }
 
     /**
-     * Geplante gegen tatsächliche Zahlungsströme je Woche; Wochen in der Zukunft
-     * haben noch kein Ist.
+     * Geplante gegen tatsächliche Zahlungsströme je Woche in der Basiswährung
+     * (die Vorschau rechnet nur in ihr); Wochen in der Zukunft haben noch kein Ist.
      *
-     * @return list<array{label: string, from: string, to: string, planned_in: string, planned_out: string, planned_net: string, actual_in: string|null, actual_out: string|null, actual_net: string|null, deviation: string|null}>
+     * @return list<array{label: string, from: string, to: string, planned_in: Money, planned_out: Money, planned_net: Money, actual_in: Money|null, actual_out: Money|null, actual_net: Money|null, deviation: Money|null}>
      */
     public function compare(LiquidityForecastSnapshot $snapshot, CarbonImmutable $today): array {
+        $currency = $this->journal->baseCurrency($snapshot->organization()->firstOrFail());
         $rows = [];
         foreach ($snapshot->weeks as $week) {
+            $plannedNet = Money::of($week['net'], $currency);
             $row = [
                 'label' => $week['label'], 'from' => $week['from'], 'to' => $week['to'],
-                'planned_in' => $week['inflow'], 'planned_out' => $week['outflow'], 'planned_net' => $week['net'],
+                'planned_in' => Money::of($week['inflow'], $currency), 'planned_out' => Money::of($week['outflow'], $currency), 'planned_net' => $plannedNet,
                 'actual_in' => null, 'actual_out' => null, 'actual_net' => null, 'deviation' => null,
             ];
             if (CarbonImmutable::parse($week['from'])->lessThanOrEqualTo($today)) {
-                $in = $this->sum($snapshot->organization_id, $week['from'], $week['to'], TransactionDirection::Credit);
-                $out = $this->sum($snapshot->organization_id, $week['from'], $week['to'], TransactionDirection::Debit);
-                $net = NumberHelper::subtractPrecise($in, $out, 2);
-                $row = ['actual_in' => $in, 'actual_out' => $out, 'actual_net' => $net, 'deviation' => NumberHelper::subtractPrecise($net, $week['net'], 2)] + $row;
+                $in = $this->sum($snapshot->organization_id, $week, TransactionDirection::Credit, $currency);
+                $out = $this->sum($snapshot->organization_id, $week, TransactionDirection::Debit, $currency);
+                $net = $in->minus($out);
+                $row = ['actual_in' => $in, 'actual_out' => $out, 'actual_net' => $net, 'deviation' => $net->minus($plannedNet)] + $row;
             }
             $rows[] = $row;
         }
@@ -71,12 +77,14 @@ final class LiquiditySnapshotService {
         return $rows;
     }
 
-    private function sum(int $organizationId, string $from, string $to, TransactionDirection $direction): string {
+    /** @param array{from: string, to: string} $week */
+    private function sum(int $organizationId, array $week, TransactionDirection $direction, CurrencyCode $currency): Money {
         $sum = BankTransaction::query()->where('organization_id', $organizationId)
+            ->where('currency', $currency->value)
             ->where('direction', $direction->value)
-            ->whereBetween('booking_date', DateRange::days($from, $to))
+            ->whereBetween('booking_date', DateRange::days($week['from'], $week['to']))
             ->sum('amount');
 
-        return NumberHelper::roundPrecise((string) $sum, 2);
+        return Money::of((string) $sum, $currency);
     }
 }

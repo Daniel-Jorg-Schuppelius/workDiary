@@ -470,6 +470,8 @@ return [
     'TrainingRequirement' => 'Obligation de formation',
     'TrainingAssignment' => 'Entrée du plan de formation',
     'MedicalCheckup' => 'Visite médicale du travail',
+    'MedicalCheckupOccasion' => 'Motif de suivi médical',
+    'PersonnelFileSubmission' => 'Document transmis au dossier personnel',
     'SavedReportView' => 'Vue de rapport enregistrée',
     'ScheduledJobOverride' => 'Dérogation du planificateur',
     'ScheduledShift' => 'Service planifié',

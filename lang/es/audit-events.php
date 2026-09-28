@@ -390,6 +390,10 @@ return [
         ],
     ],
     'hrFile' => [
+        'acknowledged' => 'Lectura de documento del expediente personal confirmada',
+        'submitted' => 'Documento presentado al expediente personal',
+        'accepted' => 'Presentación incorporada al expediente personal',
+        'rejected' => 'Presentación al expediente personal rechazada',
         'created' => 'Documento del expediente personal añadido',
         'updated' => 'Documento del expediente personal editado',
         'downloaded' => 'Documento del expediente personal descargado',

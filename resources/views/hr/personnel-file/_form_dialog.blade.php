@@ -46,6 +46,8 @@
             <x-icon name="lock" class="text-muted" />
             {{ __('hr.personnel_file.confidential_fixed') }}
         </p>
+        <x-checkbox-field name="is_ack_required" :label="__('hr.personnel_file.field.is_ack_required')" :hint="__('hr.personnel_file.hint.ack')"
+                          :checked="(bool) old('is_ack_required', $document?->is_ack_required ?? false)" span="2" />
     </x-form-group>
 
     <x-form-group :legend="__('hr.personnel_file.field.validity')" icon="event_available" tone="info">

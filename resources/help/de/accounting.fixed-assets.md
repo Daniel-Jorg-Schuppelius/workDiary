@@ -47,6 +47,21 @@ ist eine Entscheidung im Jahresabschluss, kein Nebeneffekt einer
 Stammdatenpflege. Wer eine Anlage anlegt, verändert damit noch keinen
 Saldo.
 
+## Degressive AfA und Sonder-AfA
+
+Die **degressive AfA** schreibt jedes Jahr einen festen Prozentsatz vom
+Buchwert ab. Sie ist nur für Anschaffungen in den gesetzlichen Zeiträumen
+zulässig; der Dialog nennt den höchsten Satz für Ihr Anschaffungsdatum und
+die Nutzungsdauer. Sobald die lineare Verteilung des Restwerts höher ist,
+wechselt der Plan von selbst zur linearen AfA.
+
+Die **Sonderabschreibung nach § 7g** tragen Sie je Geschäftsjahr als Betrag
+auf der Anlage ein — im Anschaffungsjahr und den vier Folgejahren, zusammen
+höchstens 40 % der Anschaffungskosten. Danach verteilt sich der Restwert auf
+die restliche Nutzungsdauer. Ob Ihr Betrieb die Voraussetzungen erfüllt
+(Gewinngrenze), prüft die App nicht; klären Sie das mit Ihrer Steuerberatung.
+Ein Jahr, dessen AfA bereits gebucht ist, lässt sich nicht mehr ändern.
+
 ## Abgang
 
 Ein Abgang (Verkauf, Verschrottung, Diebstahl) wird mit Datum vermerkt. Die

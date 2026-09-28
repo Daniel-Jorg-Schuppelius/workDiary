@@ -470,6 +470,8 @@ return [
     'TrainingRequirement' => 'Schulungs-Pflichtzuordnung',
     'TrainingAssignment' => 'Schulungs-Soll',
     'MedicalCheckup' => 'Arbeitsmedizinische Vorsorge',
+    'MedicalCheckupOccasion' => 'Vorsorgeanlass',
+    'PersonnelFileSubmission' => 'Einreichung zur Personalakte',
     'SavedReportView' => 'Gespeicherte Report-Ansicht',
     'ScheduledJobOverride' => 'Scheduler-Übersteuerung',
     'ScheduledShift' => 'Geplante Schicht',

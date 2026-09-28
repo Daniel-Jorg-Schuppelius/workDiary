@@ -13,14 +13,15 @@ declare(strict_types=1);
 namespace App\Services\Accounting;
 
 use App\Enums\Finance\{AccountingEntryStatus, DepreciationMethod, FixedAssetDisposalKind, FixedAssetStatus};
-use App\Models\Accounting\{AccountingEntry, AccountingFiscalYear, FixedAsset, FixedAssetSpecialDepreciation};
+use App\Models\Accounting\{AccountingEntry, AccountingFiscalYear, AccountingProfile, FixedAsset, FixedAssetSpecialDepreciation};
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\Posting\Adapters\DepreciationAdapter;
 use App\Services\Accounting\Posting\PostingInboxService;
 use App\Services\Concerns\{AssertsStatusTransition, AssignsSequentialNo};
 use App\Support\{MorphMap, Setting};
 use Carbon\CarbonImmutable;
-use CommonToolkit\ValueObjects\Money;
+use CommonToolkit\Enums\RoundingMode;
+use CommonToolkit\ValueObjects\{Decimal, Money, Percentage};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -306,31 +307,27 @@ class FixedAssetService {
     private function withMethodRules(array $attributes): array {
         $method = $attributes['depreciation_method'] ?? DepreciationMethod::Linear;
         $method = $method instanceof DepreciationMethod ? $method : DepreciationMethod::tryFrom((string) $method) ?? DepreciationMethod::Linear;
-        $cost = (string) ($attributes['acquisition_cost'] ?? '0');
+        $cost = Decimal::ofNullable((string) ($attributes['acquisition_cost'] ?? ''), 2);
         if ($method === DepreciationMethod::Declining) {
             return $this->withDecliningRules($attributes);
         }
         $attributes['declining_rate'] = null;
-        if ($method === DepreciationMethod::Linear || ! is_numeric($cost)) {
+        if ($method === DepreciationMethod::Linear || $cost === null) {
             return $attributes;
         }
 
-        $amount = static function (string $key, int $fallback): string {
-            $raw = Setting::get($key, $fallback);
-
-            return is_numeric($raw) ? bcadd((string) $raw, '0', 2) : bcadd((string) $fallback, '0', 2);
-        };
+        $amount = static fn (string $key, int $fallback): Decimal => Decimal::ofNullable((string) Setting::get($key, $fallback), 2) ?? Decimal::of($fallback, 2);
         if ($method === DepreciationMethod::Immediate) {
             $limit = $amount('finance.fixed_assets.gwg_limit', 800);
-            if (bccomp($cost, $limit, 2) > 0) {
-                throw ValidationException::withMessages(['depreciation_method' => (string) __('accounting.fixed_assets.error.gwg_limit', ['limit' => $limit])]);
+            if ($cost->greaterThan($limit)) {
+                throw ValidationException::withMessages(['depreciation_method' => (string) __('accounting.fixed_assets.error.gwg_limit', ['limit' => $limit->getValue()])]);
             }
             $attributes['useful_life_months'] = 12;
         } else {
             $lower = $amount('finance.fixed_assets.pool_lower', 250);
             $upper = $amount('finance.fixed_assets.pool_upper', 1000);
-            if (bccomp($cost, $lower, 2) <= 0 || bccomp($cost, $upper, 2) > 0) {
-                throw ValidationException::withMessages(['depreciation_method' => (string) __('accounting.fixed_assets.error.pool_range', ['lower' => $lower, 'upper' => $upper])]);
+            if ($cost->lessThanOrEqual($lower) || $cost->greaterThan($upper)) {
+                throw ValidationException::withMessages(['depreciation_method' => (string) __('accounting.fixed_assets.error.pool_range', ['lower' => $lower->getValue(), 'upper' => $upper->getValue()])]);
             }
             $attributes['useful_life_months'] = 12 * max(1, (int) Setting::get('finance.fixed_assets.pool_years', 5));
         }
@@ -342,16 +339,17 @@ class FixedAssetService {
      * Höchster zulässiger Satz der degressiven AfA für Anschaffung und
      * Nutzungsdauer, null außerhalb der gesetzlichen Fenster (MVP-980).
      */
-    public static function maxDecliningRate(CarbonImmutable $acquiredOn, int $usefulLifeMonths): ?string {
+    public static function maxDecliningRate(CarbonImmutable $acquiredOn, int $usefulLifeMonths): ?Percentage {
         if ($usefulLifeMonths < 1) {
             return null;
         }
         $day = $acquiredOn->toDateString();
         foreach (self::DECLINING_WINDOWS as [$from, $until, $factor, $cap]) {
             if ($day >= $from && $day <= $until) {
-                $byFactor = bcmul($factor, bcdiv('1200', (string) $usefulLifeMonths, 6), 6);
+                // Abgeschnitten statt gerundet: aufgerundet läge der Satz über dem Vielfachen.
+                $byFactor = Decimal::of($factor)->times(Decimal::of(1200))->dividedBy(Decimal::of($usefulLifeMonths), 2, RoundingMode::Truncate);
 
-                return bcadd(bccomp($byFactor, $cap, 6) < 0 ? $byFactor : $cap, '0', 2);
+                return Percentage::of(Decimal::min($byFactor, Decimal::of($cap, 2))->getValue(), 2);
             }
         }
 
@@ -368,11 +366,12 @@ class FixedAssetService {
         if ($max === null) {
             throw ValidationException::withMessages(['depreciation_method' => (string) __('accounting.fixed_assets.error.declining_window')]);
         }
-        $rate = (string) ($attributes['declining_rate'] ?? '');
-        if (! is_numeric($rate) || bccomp($rate, '0', 2) <= 0 || bccomp($rate, $max, 2) > 0) {
-            throw ValidationException::withMessages(['declining_rate' => (string) __('accounting.fixed_assets.error.declining_rate', ['max' => $max])]);
+        $raw = $attributes['declining_rate'] ?? null;
+        $rate = $raw instanceof Percentage ? $raw : Percentage::tryFrom(is_scalar($raw) ? (string) $raw : null, 2);
+        if ($rate === null || ! $rate->isPositive() || $rate->compareTo($max) > 0) {
+            throw ValidationException::withMessages(['declining_rate' => (string) __('accounting.fixed_assets.error.declining_rate', ['max' => $max->getNumericValue()])]);
         }
-        $attributes['declining_rate'] = bcadd($rate, '0', 2);
+        $attributes['declining_rate'] = $rate;
 
         return $attributes;
     }
@@ -388,21 +387,22 @@ class FixedAssetService {
         if ($fiscalYear < $startYear || $fiscalYear >= $startYear + self::SPECIAL_YEARS) {
             throw ValidationException::withMessages(['fiscal_year' => (string) __('accounting.fixed_assets.error.special_period', ['from' => $startYear, 'until' => $startYear + self::SPECIAL_YEARS - 1])]);
         }
-        if (! is_numeric($amount) || bccomp($amount, '0', 2) <= 0) {
+        $special = Money::ofNullable($amount, $asset->currency, 2);
+        if ($special === null || ! $special->isPositive()) {
             throw ValidationException::withMessages(['depreciation_amount' => (string) __('accounting.fixed_assets.error.special_amount')]);
         }
-        $others = '0';
-        foreach ($asset->specialDepreciations()->where('fiscal_year', '!=', $fiscalYear)->get() as $special) {
-            $others = bcadd($others, $special->depreciation_amount->getAmount(), 2);
-        }
-        $limit = $asset->acquisition_cost?->percentage(self::SPECIAL_MAX_PERCENT)->getAmount() ?? '0.00';
-        if (bccomp(bcadd($others, $amount, 2), $limit, 2) > 0) {
-            throw ValidationException::withMessages(['depreciation_amount' => (string) __('accounting.fixed_assets.error.special_limit', ['limit' => $limit])]);
+        $others = Money::sum(
+            $asset->specialDepreciations()->where('fiscal_year', '!=', $fiscalYear)->get()->map(static fn (FixedAssetSpecialDepreciation $row): Money => $row->depreciation_amount),
+            $asset->currency,
+        );
+        $limit = Percentage::of(self::SPECIAL_MAX_PERCENT)->amountOf($asset->acquisition_cost ?? Money::zero($asset->currency));
+        if ($others->plus($special)->greaterThan($limit)) {
+            throw ValidationException::withMessages(['depreciation_amount' => (string) __('accounting.fixed_assets.error.special_limit', ['limit' => $limit->format()])]);
         }
 
         return FixedAssetSpecialDepreciation::query()->updateOrCreate(
             ['fixed_asset_id' => $asset->id, 'fiscal_year' => $fiscalYear],
-            ['organization_id' => $asset->organization_id, 'depreciation_amount' => bcadd($amount, '0', 2), 'currency' => $asset->currency, 'note' => $note, 'created_by' => $actor->id],
+            ['organization_id' => $asset->organization_id, 'depreciation_amount' => $special, 'currency' => $asset->currency, 'note' => $note, 'created_by' => $actor->id],
         );
     }
 
@@ -420,25 +420,25 @@ class FixedAssetService {
         }
         $year = AccountingFiscalYear::query()->where('organization_id', $asset->organization_id)->get()
             ->first(static fn (AccountingFiscalYear $candidate): bool => $candidate->starts_on->year === $fiscalYear);
-        if ($year instanceof AccountingFiscalYear && $this->journal->activeEntryForSource($asset->organization, $this->adapter->keyFor($asset, $year)) instanceof AccountingEntry) {
+        if ($year instanceof AccountingFiscalYear && $this->journal->activeEntryForSource($asset->organization()->firstOrFail(), $this->adapter->keyFor($asset, $year)) instanceof AccountingEntry) {
             throw ValidationException::withMessages(['fiscal_year' => (string) __('accounting.fixed_assets.error.special_posted', ['year' => $fiscalYear])]);
         }
     }
 
     /** Startjahr des Geschäftsjahres der Anschaffung. */
     public function acquisitionFiscalYear(FixedAsset $asset): int {
-        $profile = \App\Models\Accounting\AccountingProfile::query()->where('organization_id', $asset->organization_id)->first();
-        $startMonth = $profile instanceof \App\Models\Accounting\AccountingProfile ? max(1, (int) $profile->fiscal_year_start_month) : 1;
+        $profile = AccountingProfile::query()->where('organization_id', $asset->organization_id)->first();
+        $startMonth = $profile instanceof AccountingProfile ? max(1, (int) $profile->fiscal_year_start_month) : 1;
 
         return app(DepreciationCalculator::class)->fiscalYearStartFor($asset->acquiredOn(), $startMonth)->year;
     }
 
     /** @param array<string, mixed> $attributes */
     private function assertValues(array $attributes): void {
-        $cost = (string) ($attributes['acquisition_cost'] ?? '0');
-        $residual = (string) ($attributes['residual_value'] ?? '0');
+        $cost = Decimal::ofNullable((string) ($attributes['acquisition_cost'] ?? ''), 2);
+        $residual = Decimal::ofNullable((string) ($attributes['residual_value'] ?? '0'), 2);
 
-        if (! is_numeric($cost) || ! is_numeric($residual) || bccomp($residual, $cost, 2) >= 0) {
+        if ($cost === null || $residual === null || $residual->greaterThanOrEqual($cost)) {
             throw ValidationException::withMessages([
                 'residual_value' => (string) __('accounting.fixed_assets.error.residual_exceeds_cost'),
             ]);
@@ -452,8 +452,11 @@ class FixedAssetService {
     }
 
     private function normalized(string $field, mixed $value): string {
-        if ($value instanceof \CommonToolkit\ValueObjects\Money) {
+        if ($value instanceof Money) {
             return $value->getAmount();
+        }
+        if ($value instanceof Percentage) {
+            return $value->getNumericValue();
         }
         if ($value instanceof \BackedEnum) {
             return (string) $value->value;
@@ -461,8 +464,11 @@ class FixedAssetService {
         if ($value instanceof \DateTimeInterface) {
             return $value->format('Y-m-d');
         }
-        if (in_array($field, ['acquisition_cost', 'residual_value'], true) && is_numeric((string) $value)) {
-            return bcadd((string) $value, '0', 2);
+        if (in_array($field, ['acquisition_cost', 'residual_value'], true)) {
+            return Decimal::ofNullable((string) $value, 2)?->getValue() ?? (string) $value;
+        }
+        if ($field === 'declining_rate') {
+            return Percentage::tryFrom((string) $value, 2)?->getNumericValue() ?? (string) $value;
         }
 
         return (string) $value;

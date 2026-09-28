@@ -390,6 +390,10 @@ return [
         ],
     ],
     'hrFile' => [
+        'acknowledged' => 'Personalakten-Dokument als gelesen bestätigt',
+        'submitted' => 'Unterlage zur Personalakte eingereicht',
+        'accepted' => 'Einreichung in die Personalakte übernommen',
+        'rejected' => 'Einreichung zur Personalakte abgelehnt',
         'created' => 'Personalakten-Dokument aufgenommen',
         'updated' => 'Personalakten-Dokument bearbeitet',
         'downloaded' => 'Personalakten-Dokument abgerufen',

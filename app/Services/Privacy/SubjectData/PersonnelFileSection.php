@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Privacy\SubjectData;
 
 use App\Models\Document\Document;
+use App\Models\Hr\{PersonnelFileAcknowledgement, PersonnelFileSubmission};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 
@@ -43,7 +44,9 @@ class PersonnelFileSection extends AbstractSubjectSection {
         $query = Document::query()->withoutGlobalScopes()->whereNull('deleted_at')->personnelFilesOf($u);
 
         $rows = [];
-        foreach ((clone $query)->with('currentVersion')->orderBy('created_at')->get() as $document) {
+        $documents = (clone $query)->with('currentVersion')->orderBy('created_at')->get();
+        $acknowledgements = PersonnelFileAcknowledgement::query()->withoutGlobalScopes()->where('user_id', $u->id)->get()->keyBy('document_version_id');
+        foreach ($documents as $document) {
             $rows[] = [
                 'title' => $document->title,
                 'category' => $document->hr_category?->label(),
@@ -53,11 +56,26 @@ class PersonnelFileSection extends AbstractSubjectSection {
                 'version' => $document->currentVersion !== null ? 'v' . $document->currentVersion->version_no : null,
                 'file' => $document->currentVersion?->original_name,
                 'created_at' => $this->str($document->created_at),
+                'read_confirmed_at' => $this->str($acknowledgements->get($document->current_version_id)?->acknowledged_at),
+            ];
+        }
+
+        // Einreichungen (MVP-987) mit Entscheidung und Grund.
+        $submissions = [];
+        foreach (PersonnelFileSubmission::query()->withoutGlobalScopes()->where('user_id', $u->id)->orderBy('created_at')->get() as $submission) {
+            $submissions[] = [
+                'title' => $submission->title,
+                'category' => $submission->hr_category->label(),
+                'status' => $submission->status->label(),
+                'file' => $submission->original_name,
+                'created_at' => $this->str($submission->created_at),
+                'reviewed_at' => $this->str($submission->reviewed_at),
+                'review_note' => $submission->review_note,
             ];
         }
 
         return [
-            'lists' => [__('hr.personnel_file.field.documents') => $rows],
+            'lists' => [__('hr.personnel_file.field.documents') => $rows, __('hr.personnel_file.submission.title') => $submissions],
             'families' => [
                 $this->family(
                     'documents',

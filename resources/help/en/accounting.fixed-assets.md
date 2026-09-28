@@ -45,6 +45,22 @@ through the posting inbox.
 a decision taken at the year-end close, not a side effect of maintaining
 master data. Creating an asset does not change any balance.
 
+## Declining-balance and special depreciation
+
+**Declining-balance depreciation** writes off a fixed percentage of the book
+value each year. It is only permitted for acquisitions within the statutory
+periods; the dialog shows the highest rate for your acquisition date and
+useful life. As soon as spreading the remaining value evenly is higher, the
+schedule switches to straight-line depreciation by itself.
+
+**Special depreciation under § 7g** is entered on the asset as an amount per
+fiscal year — in the year of acquisition and the four following years, at most
+40 % of the acquisition cost in total. Afterwards the remaining value is spread
+over the remaining useful life. Whether your business meets the requirements
+(profit threshold) is not checked by the app; please clarify this with your tax
+adviser. A year whose depreciation has already been posted can no longer be
+changed.
+
 ## Disposal
 
 A disposal (sale, scrapping, theft) is recorded with a date. The asset does

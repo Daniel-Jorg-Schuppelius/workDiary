@@ -37,8 +37,8 @@
                     <td class="font-medium">{{ $item->label }}@if ($item->note) <span class="text-xs text-muted">· {{ $item->note }}</span>@endif</td>
                     <td>{{ $item->starts_on->fdate() }}@if ($item->ends_on) – {{ $item->ends_on->fdate() }}@endif</td>
                     <td>{{ $item->recurrence->label() }}</td>
-                    <td class="text-right font-mono">{{ $item->direction === 'in' ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->planned_amount, 2, withThousandsSeparator: true) : '' }}</td>
-                    <td class="text-right font-mono">{{ $item->direction === 'out' ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->planned_amount, 2, withThousandsSeparator: true) : '' }}</td>
+                    <td class="text-right font-mono">{{ $item->direction === 'in' ? $item->planned_amount->format() : '' }}</td>
+                    <td class="text-right font-mono">{{ $item->direction === 'out' ? $item->planned_amount->format() : '' }}</td>
                     <td class="text-right">
                         @if ($canEdit)
                             <x-action-form :action="route('reports.accounting.liquidity-plan.destroy', $item)" method="DELETE"

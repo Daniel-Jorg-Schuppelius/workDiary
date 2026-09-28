@@ -43,3 +43,18 @@ enforce step sequences, proofs and four-eyes checks.
 
 The safety analysis (Reports → Occupational Safety) shows events by kind
 and severity over the period as well as open versus closed.
+
+## Records, own safety instructions and check-up occasions
+
+Safety instruction records and risk assessments can be downloaded **as PDF** –
+the record with participants, time, form of evidence, check value and drawn
+signature. Only those who keep the register see the instruction record, because
+it contains all signatures.
+
+Under **“My safety instructions”** in the user menu, everyone sees their open
+and confirmed instructions and can confirm them directly; their own check-up
+dates are listed there too (without health data).
+
+In the check-up register you maintain **check-up occasions** with type and
+interval. When an occasion is selected, it sets the type and calculates the
+next due date unless you enter your own.

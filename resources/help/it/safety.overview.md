@@ -18,3 +18,18 @@ richiede un'analisi delle cause e può generare azioni di follow-up. Le
 qualifiche in scadenza vengono segnalate dallo scanner delle scadenze e le
 checklist di sicurezza obbligatorie si mappano tramite i modelli di
 procedura; l'analisi si trova in **Report → Sicurezza sul lavoro**.
+
+## Attestati, formazioni personali e motivi di sorveglianza
+
+L'attestato di formazione sulla sicurezza e la valutazione dei rischi si
+scaricano **in PDF**: l'attestato con partecipanti, data, forma di prova, valore
+di controllo e firma autografa. Solo chi tiene il registro vede l'attestato,
+perché contiene tutte le firme.
+
+In **«Le mie formazioni sulla sicurezza»** nel menu utente ognuno vede le proprie
+formazioni in sospeso e confermate e può confermarle direttamente; lì compaiono
+anche i propri appuntamenti di sorveglianza sanitaria (senza dati sanitari).
+
+Nel registro della sorveglianza Lei gestisce i **motivi** con tipo e intervallo.
+Se si sceglie un motivo, questo fissa il tipo e calcola la prossima scadenza,
+salvo che Lei ne indichi una propria.

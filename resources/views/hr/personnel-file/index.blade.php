@@ -8,7 +8,8 @@
 
   Digitale Personalakte (Feature 141): Akte eines Mitglieds (hrFile-Kreis)
   bzw. Eigenauskunft (selfView, read-only).
-  Variablen: $member (User), $documents (Collection<Document>), $selfView (bool), $canCreate (bool)
+  Variablen: $member (User), $documents (Collection<Document>), $acknowledgements (array<int, PersonnelFileAcknowledgement>),
+  $submissions (Collection<PersonnelFileSubmission>), $selfView (bool), $canCreate (bool)
 --}}
 @extends('layouts.app')
 @section('title', $selfView ? __('hr.personnel_file.title_mine') : __('hr.personnel_file.title'))
@@ -20,6 +21,12 @@
               :subtitle="$selfView ? __('hr.personnel_file.subtitle_mine') : __('hr.personnel_file.subtitle', ['name' => $member->name])"
               :back-route="$selfView ? null : 'org.members.index'" :back-label="__('hr.personnel_file.back')">
     <x-slot:actions>
+        @if ($selfView)
+            <x-icon-btn icon="outbox" tone="outline" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('account.personnel-file.submit-form')"
+                        show-label>{{ __('hr.personnel_file.action.submit') }}</x-icon-btn>
+        @endif
         @if ($canCreate)
             <x-icon-btn icon="upload_file" tone="primary" size="sm"
                         data-entry-modal-trigger
@@ -27,6 +34,33 @@
                         show-label>{{ __('hr.personnel_file.action.upload') }}</x-icon-btn>
         @endif
     </x-slot:actions>
+
+    @if ($submissions->isNotEmpty())
+        <div class="mb-3 space-y-2">
+            @foreach ($submissions as $submission)
+                <div class="flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-100 px-3 py-2 text-sm" id="submission-{{ $submission->id }}">
+                    <div class="min-w-0">
+                        <span class="font-medium">{{ $submission->title }}</span>
+                        <span class="text-muted">· {{ $submission->hr_category->label() }} · {{ $submission->created_at?->fdate() }}</span>
+                        <x-status-badge :tone="$submission->status->tone()" size="sm">{{ $submission->status->label() }}</x-status-badge>
+                        @if ($submission->note)
+                            <span class="block text-xs text-muted">{{ $submission->note }}</span>
+                        @endif
+                        @if ($submission->review_note)
+                            <span class="block text-xs text-error">{{ __('hr.personnel_file.submission.reason', ['reason' => $submission->review_note]) }}</span>
+                        @endif
+                    </div>
+                    @unless ($selfView)
+                        <div class="flex gap-1">
+                            <x-icon-btn icon="download" tone="outline" size="xs" :href="route('personnel-file.submissions.download', $submission)" :label="__('hr.personnel_file.action.download')" />
+                            <x-icon-btn icon="check" tone="primary" size="xs" data-entry-modal-trigger :href="route('personnel-file.submissions.accept-form', $submission)" show-label>{{ __('hr.personnel_file.action.accept') }}</x-icon-btn>
+                            <x-icon-btn icon="block" tone="error" size="xs" data-entry-modal-trigger :href="route('personnel-file.submissions.reject-form', $submission)" show-label>{{ __('hr.personnel_file.action.reject') }}</x-icon-btn>
+                        </div>
+                    @endunless
+                </div>
+            @endforeach
+        </div>
+    @endif
 
     <x-table scroll="flex" :pinRows="true" table-sort="client">
         <x-slot:head>
@@ -53,6 +87,13 @@
                         @if ($effective !== \App\Enums\Document\DocumentStatus::Active)
                             <x-status-badge :tone="$effective->tone()" size="sm">{{ $effective->label() }}</x-status-badge>
                         @endif
+                        @if ($document->is_ack_required)
+                            @if (isset($acknowledgements[$document->id]))
+                                <x-status-badge tone="success" size="sm">{{ __('hr.personnel_file.ack.done', ['date' => $acknowledgements[$document->id]->acknowledged_at->fdate()]) }}</x-status-badge>
+                            @else
+                                <x-status-badge tone="warning" size="sm">{{ __('hr.personnel_file.ack.open') }}</x-status-badge>
+                            @endif
+                        @endif
                     </span>
                     @if ($document->description)
                         <span class="block max-w-md truncate text-xs text-muted">{{ $document->description }}</span>
@@ -71,6 +112,13 @@
                 <td data-sort-value="{{ $document->updated_at?->toDateString() }}" class="text-sm text-base-content/70">{{ $document->updated_at?->fdate() }}</td>
                 <td class="text-right">
                     <div class="flex justify-end gap-1">
+                        @if ($selfView && $document->is_ack_required && ! isset($acknowledgements[$document->id]) && $document->currentVersion !== null)
+                            <x-action-form :action="route('account.personnel-file.acknowledge', $document)"
+                                           :confirm="__('hr.personnel_file.ack.confirm')" confirm-icon="done_all" confirm-tone="primary"
+                                           :confirm-label="__('hr.personnel_file.action.acknowledge')">
+                                <x-icon-btn icon="done_all" tone="primary" size="xs" type="submit" show-label>{{ __('hr.personnel_file.action.acknowledge') }}</x-icon-btn>
+                            </x-action-form>
+                        @endif
                         @if ($document->currentVersion !== null)
                             <x-icon-btn icon="download" tone="outline" size="xs"
                                         :href="route('documents.download', $document)"

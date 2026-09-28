@@ -24,7 +24,7 @@ use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;
-use CommonToolkit\ValueObjects\Money;
+use CommonToolkit\ValueObjects\{Money, Percentage};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -205,7 +205,7 @@ class FixedAssetController extends Controller {
             'residual_value' => NumberHelper::roundPrecise(NumberHelper::normalizeDecimalString((string) ($data['residual_value'] ?? '0')), 2),
             'useful_life_months' => (int) $data['useful_life_months'],
             'depreciation_method' => DepreciationMethod::from((string) $data['depreciation_method']),
-            'declining_rate' => isset($data['declining_rate']) ? NumberHelper::normalizeDecimalString((string) $data['declining_rate']) : null,
+            'declining_rate' => isset($data['declining_rate']) ? Percentage::of((string) $data['declining_rate'], 2) : null,
             'asset_account_id' => $this->ownAccountId($organization, $data['asset_account'] ?? null),
             'depreciation_account_id' => $this->ownAccountId($organization, $data['depreciation_account'] ?? null),
             'note' => $data['note'] ?? null,
@@ -277,7 +277,7 @@ class FixedAssetController extends Controller {
         ]);
         /** @var \App\Models\Platform\User $user */
         $user = $request->user();
-        $this->service->saveSpecialDepreciation($fixedAsset, (int) $data['fiscal_year'], NumberHelper::normalizeDecimalString((string) $data['depreciation_amount']), $data['note'] ?? null, $user);
+        $this->service->saveSpecialDepreciation($fixedAsset, (int) $data['fiscal_year'], (string) $data['depreciation_amount'], $data['note'] ?? null, $user);
 
         return back()->with('status', __('accounting.fixed_assets.flash.special_saved'));
     }

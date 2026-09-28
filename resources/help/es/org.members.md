@@ -36,3 +36,12 @@ trazabilidad; los tiempos registrados, los protocolos firmados y las
 aprobaciones deben seguir siendo atribuibles a su autor. Los datos personales
 siguen sujetos, con independencia de ello, a las reglas de conservación y
 supresión del área de protección de datos.
+
+**Expediente personal:** Los miembros del círculo del expediente personal
+pueden **solicitar una confirmación de lectura** para un documento. La persona
+afectada confirma la lectura en «Mi expediente personal»; una nueva versión
+requiere una nueva confirmación. Allí también **presenta sus propios
+documentos**, por ejemplo un certificado. Las presentaciones aparecen en la
+lista de empleados en «Presentaciones»: incorporarlas las añade al expediente;
+rechazarlas exige un motivo visible para la persona. Nadie decide sobre su
+propia presentación.
