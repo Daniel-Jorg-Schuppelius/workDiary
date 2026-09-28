@@ -319,6 +319,15 @@ return [
     ],
     // Anlagenregister und Jahres-AfA (Feature 133, MVP-698).
     'fixed_assets' => [
+        'special' => [
+            'title' => 'Amortissement exceptionnel § 7g',
+            'hint' => 'En plus de l\'amortissement ordinaire, l\'année d\'acquisition et les quatre années suivantes, au total 40 % au plus. Votre conseiller fiscal vérifie les conditions du § 7g EStG.',
+            'amount' => 'Montant',
+            'column' => 'dont § 7g',
+            'add' => 'Saisir un amortissement exceptionnel',
+            'none' => 'Aucun amortissement exceptionnel saisi.',
+            'confirm_remove' => 'Supprimer l\'amortissement exceptionnel de cette année ?',
+        ],
         'title' => 'Registre des immobilisations',
         'menu' => 'Immobilisations',
         'subtitle' => 'Biens avec coût d\'acquisition, durée d\'utilisation et plan d\'amortissement — l\'amortissement annuel est comptabilisé comme proposition via la boîte de réception.',
@@ -342,6 +351,7 @@ return [
             'book_value' => 'Valeur nette :year',
         ],
         'field' => [
+            'declining_rate' => 'Taux dégressif (%)',
             'device' => 'Équipement (asset)',
             'residual_value' => 'Valeur résiduelle',
             'method' => 'Méthode d\'amortissement',
@@ -366,6 +376,7 @@ return [
             'empty' => 'Aucun plan — base amortissable ou durée d\'utilisation manquante.',
         ],
         'hint' => [
+            'declining_rate' => 'Uniquement avec la méthode « dégressive » : taux appliqué à la valeur comptable, au plus le multiple autorisé du taux linéaire (actuellement jusqu\'à 30 % pour les acquisitions à partir de 07/2025). Bascule dès que l\'amortissement linéaire est plus élevé.',
             'device' => 'Lien facultatif vers le registre des équipements ; toute immobilisation n\'est pas un équipement.',
             'residual_value' => 'Reste à la fin de la durée d\'utilisation ; 0 par défaut.',
             'useful_life' => 'Durée d\'utilisation usuelle selon la table d\'amortissement, en mois. Pour les biens de faible valeur et le pool, la durée découle de la méthode.',
@@ -383,11 +394,20 @@ return [
             'dispose_submit' => 'Enregistrer la sortie',
         ],
         'flash' => [
+            'special_saved' => 'Amortissement exceptionnel enregistré.',
+            'special_removed' => 'Amortissement exceptionnel supprimé.',
             'created' => 'Immobilisation :no créée.',
             'updated' => 'Immobilisation enregistrée.',
             'disposed' => 'Sortie enregistrée.',
         ],
         'error' => [
+            'declining_window' => 'L\'amortissement dégressif n\'est autorisé que pour les acquisitions dans les périodes légales (2009–2010, 2020–2022, 04–12/2024, 07/2025–2027).',
+            'declining_rate' => 'Le taux dégressif doit être supérieur à 0 et au plus de :max %.',
+            'special_period' => 'L\'amortissement exceptionnel selon le § 7g n\'est possible que pendant la période de faveur :from–:until.',
+            'special_amount' => 'Veuillez indiquer un montant supérieur à 0.',
+            'special_limit' => 'L\'amortissement exceptionnel ne peut dépasser au total :limit (40 % du coût d\'acquisition).',
+            'special_not_allowed' => 'Aucun amortissement exceptionnel n\'est possible pour cette immobilisation (cédée, bien de faible valeur ou poste collectif).',
+            'special_posted' => 'L\'amortissement de :year est déjà préparé ou comptabilisé — l\'amortissement exceptionnel de cette année est verrouillé.',
             'gwg_limit' => 'Biens de faible valeur uniquement jusqu’à :limit € HT (paramètre de l’organisation).',
             'pool_range' => 'Pool uniquement au-delà de :lower € jusqu’à :upper € HT (paramètre de l’organisation).',
             'disposed_frozen' => 'Une immobilisation sortie n\'est plus modifiable.',
@@ -713,6 +733,7 @@ return [
                 'filings' => 'Impôts',
                 'investments' => 'Investissements',
                 'scenario' => 'Scénario',
+                'plan' => 'Postes planifiés',
             ],
             'note' => [
                 'overdue' => 'en retard — semaine en cours',
@@ -769,7 +790,73 @@ return [
                 'title' => 'Analyse de gestion (BWA)',
                 'text' => 'Compte de résultat à court terme avec année précédente, mois précédent, grille mensuelle et budget.',
             ],
-            'budget' => [
+            'liquidity_plan' => [
+        'title' => 'Postes planifiés',
+        'subtitle' => 'Vos propres encaissements et décaissements pour la prévision sur 13 semaines, ponctuels ou mensuels.',
+        'actual_title' => 'Trésorerie prévu/réel',
+        'actual_subtitle' => 'État hebdomadaire enregistré de la prévision comparé aux mouvements réels des comptes.',
+        'empty' => 'Aucun poste planifié pour l\'instant.',
+        'no_snapshot' => 'Aucun état hebdomadaire enregistré — automatiquement chaque lundi ou via « Enregistrer l\'état actuel ».',
+        'action' => [
+            'add' => 'Ajouter un poste planifié',
+            'snapshot' => 'Enregistrer l\'état actuel',
+        ],
+        'field' => [
+            'label' => 'Libellé',
+            'direction' => 'Sens',
+            'planned_amount' => 'Montant',
+            'starts_on' => 'Échéance (première)',
+            'recurrence' => 'Répétition',
+            'ends_on' => 'Dernière échéance',
+            'snapshot' => 'Enregistré le',
+        ],
+        'hint' => [
+            'ends_on' => 'Uniquement en répétition mensuelle ; vide = sans limite.',
+        ],
+        'column' => [
+            'planned_net' => 'Prévu (net)',
+            'actual_in' => 'Encaissements réels',
+            'actual_out' => 'Décaissements réels',
+            'actual_net' => 'Réel (net)',
+            'deviation' => 'Écart',
+        ],
+        'confirm' => [
+            'remove' => 'Supprimer le poste planifié ?',
+        ],
+        'flash' => [
+            'saved' => 'Poste planifié enregistré.',
+            'removed' => 'Poste planifié supprimé.',
+            'snapshot' => 'État hebdomadaire enregistré.',
+        ],
+    ],
+    'allocation' => [
+        'title' => 'Clés de répartition',
+        'subtitle' => 'Répartition des centres auxiliaires sur l\'exercice :year',
+        'hint' => 'Un centre auxiliaire transmet une part de ses charges aux centres principaux. Le tableau de bord d\'un centre de coûts affiche la répartition avec « Après répartition » ; les écritures restent inchangées.',
+        'total' => 'Réparti : :percent %',
+        'empty' => 'Aucune clé de répartition pour cette année.',
+        'action' => [
+            'add' => 'Ajouter une clé de répartition',
+        ],
+        'field' => [
+            'source' => 'Centre auxiliaire',
+            'target' => 'Centre bénéficiaire',
+            'share_percent' => 'Part (%)',
+        ],
+        'confirm' => [
+            'remove' => 'Supprimer la clé de répartition ?',
+        ],
+        'flash' => [
+            'saved' => 'Clé de répartition enregistrée.',
+            'removed' => 'Clé de répartition supprimée.',
+        ],
+        'error' => [
+            'same' => 'Le centre auxiliaire et le centre bénéficiaire doivent être différents.',
+            'share' => 'La part doit être supérieure à 0 et au plus de 100 %.',
+            'total' => 'Les parts d\'un centre auxiliaire ne doivent pas dépasser 100 % au total (disponible : :rest %).',
+        ],
+    ],
+    'budget' => [
                 'title' => 'Budget',
                 'text' => 'Valeurs planifiées par compte et exercice — valeur annuelle ou valeurs mensuelles.',
             ],
@@ -1134,6 +1221,7 @@ return [
             'budget' => 'Budget',
         ],
         'filter' => [
+            'allocated' => 'Après répartition',
             'compare' => 'Comparaison',
             'cost_center' => 'Centre de coûts',
             'all_cost_centers' => 'Tous les centres de coûts',
@@ -1159,6 +1247,13 @@ return [
     ],
 
     'budget' => [
+        'error' => [
+            'released' => 'Le budget est validé et verrouillé contre les modifications. Ouvrez un avenant pour le modifier.',
+        ],
+        'field' => [
+            'reopen_reason' => 'Motif de l\'avenant',
+        ],
+        'overrun' => 'Budget validé dépassé : :account (centre de coûts :center) en :month — réel :actual contre budget :budget.',
         'title' => 'Budget',
         'subtitle' => 'Valeurs planifiées par compte pour l\'exercice :year',
         'empty' => 'Aucun compte de résultat dans le plan comptable.',
@@ -1172,11 +1267,14 @@ return [
             'year' => 'Exercice',
         ],
         'action' => [
+            'release' => 'Valider le budget',
+            'reopen' => 'Avenant',
             'edit' => 'Modifier le budget',
             'copy_previous' => 'Réel de l\'année précédente comme budget',
             'save' => 'Enregistrer',
         ],
         'confirm' => [
+            'release' => 'Valider le budget :year ? Il sera ensuite verrouillé contre les modifications.',
             'copy_previous' => 'Reprendre le réel de l\'exercice :year comme budget ? Les budgets existants de l\'année choisie seront remplacés.',
         ],
         'mode' => [
@@ -1184,10 +1282,13 @@ return [
             'months' => 'Valeurs mensuelles',
         ],
         'hint' => [
+            'reopen' => 'L\'avenant rouvre le budget validé pour modification ; le motif est consigné.',
             'mode' => 'Une valeur annuelle est répartie uniformément sur douze mois pour les comparaisons mensuelles ; les valeurs mensuelles s\'appliquent par mois.',
             'sign' => 'Valeurs positives : produit attendu ou charge attendue.',
         ],
         'flash' => [
+            'released' => 'Budget validé.',
+            'reopened' => 'Budget rouvert pour un avenant.',
             'saved' => 'Budget de :account enregistré.',
             'copied' => ':count comptes avec réel de :year repris comme budget.',
         ],

@@ -52,7 +52,7 @@ use App\Http\Controllers\ServiceTicket\{ProblemReportController, ServiceTicketCo
 use App\Http\Controllers\Supplier\{SupplierController, SupplierMergeController};
 use App\Http\Controllers\Time\{AdminTimeEntryController, AttendanceController, FlexController, FlexEligibilityController, StopwatchController, TimeEntryBarController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, WeekController, WorkScheduleController};
 use App\Http\Controllers\Travel\{ExpenseApprovalController, ExpenseController, PerDiemTripController, TravelLogController};
-use App\Http\Controllers\UI\{BrandingController, DateRangeController};
+use App\Http\Controllers\UI\{BrandingController, BrandingLogoController, DateRangeController};
 use Illuminate\Support\Facades\Route;
 
 // Projekt-Bindung: erlaubt numerische ID (Backward-Compat) bzw. opake Sqid
@@ -193,6 +193,12 @@ Route::get('nachhaltigkeitsbericht/{token}', [\App\Http\Controllers\Sustainabili
 Route::get('status/{token}', [\App\Http\Controllers\Crisis\PublicCrisisStatusController::class, 'show'])
     ->middleware('throttle:120,1')
     ->name('crisis-status.public');
+
+// Org-Logo für Header und Portale: dauerhaft signiert und je Anhang stabil,
+// damit der Browser es über Seitenwechsel cacht; Portale laden es ohne Login.
+Route::get('branding/logo/{logo}', BrandingLogoController::class)
+    ->middleware(['signed', 'throttle:240,1'])
+    ->name('branding.logo');
 
 // OCI-Punchout-Rücksprung (Feature 050, MVP-096): Der Shop POSTet den Warenkorb
 // cross-site ohne Session-Cookie — Autorisierung über die beim Absprung erzeugte,
@@ -3147,6 +3153,10 @@ Route::middleware('auth')->group(function () {
                 Route::put('{fixedAsset}', [\App\Http\Controllers\Finance\FixedAssetController::class, 'update'])->name('update');
                 Route::get('{fixedAsset}/abgang', [\App\Http\Controllers\Finance\FixedAssetController::class, 'disposeForm'])->name('dispose-form');
                 Route::post('{fixedAsset}/abgang', [\App\Http\Controllers\Finance\FixedAssetController::class, 'dispose'])->name('dispose');
+                // Sonder-AfA § 7g (MVP-981).
+                Route::get('{fixedAsset}/sonder-afa', [\App\Http\Controllers\Finance\FixedAssetController::class, 'specialForm'])->name('special-form');
+                Route::post('{fixedAsset}/sonder-afa', [\App\Http\Controllers\Finance\FixedAssetController::class, 'storeSpecial'])->name('special.store');
+                Route::delete('{fixedAsset}/sonder-afa/{special}', [\App\Http\Controllers\Finance\FixedAssetController::class, 'destroySpecial'])->name('special.destroy');
             });
 
             Route::prefix('regeln')->name('rules.')->group(function (): void {
@@ -4775,15 +4785,31 @@ Route::middleware('auth')->group(function () {
             Route::get('ergebnis', [\App\Http\Controllers\Finance\AccountingReportController::class, 'profitAndLoss'])->name('profit-and-loss');
             // BWA und Budgetpflege (Feature 142, MVP-709).
             Route::get('bwa', [\App\Http\Controllers\Finance\AccountingReportController::class, 'bwa'])->name('bwa');
+            // Umlageschlüssel zwischen Kostenstellen (MVP-982).
+            Route::get('umlagen', [\App\Http\Controllers\Finance\CostAllocationController::class, 'index'])->name('allocations.index');
+            Route::get('umlagen/neu', [\App\Http\Controllers\Finance\CostAllocationController::class, 'form'])->name('allocations.create');
+            Route::post('umlagen', [\App\Http\Controllers\Finance\CostAllocationController::class, 'store'])->name('allocations.store');
+            Route::delete('umlagen/{allocation}', [\App\Http\Controllers\Finance\CostAllocationController::class, 'destroy'])->name('allocations.destroy');
             Route::prefix('budget')->name('budget.')->group(function (): void {
                 Route::get('/', [\App\Http\Controllers\Finance\AccountingBudgetController::class, 'index'])->name('index');
                 Route::post('vorjahr-uebernehmen', [\App\Http\Controllers\Finance\AccountingBudgetController::class, 'copyPreviousYear'])->name('copy-previous-year');
+                // Freigabe und Nachtrag (MVP-983).
+                Route::post('freigeben', [\App\Http\Controllers\Finance\AccountingBudgetController::class, 'release'])->name('release');
+                Route::get('nachtrag', [\App\Http\Controllers\Finance\AccountingBudgetController::class, 'reopenForm'])->name('reopen-form');
+                Route::post('nachtrag', [\App\Http\Controllers\Finance\AccountingBudgetController::class, 'reopen'])->name('reopen');
                 Route::get('{account}/bearbeiten', [\App\Http\Controllers\Finance\AccountingBudgetController::class, 'form'])->name('edit');
                 Route::put('{account}', [\App\Http\Controllers\Finance\AccountingBudgetController::class, 'update'])->name('update');
             });
             Route::get('liquiditaet', [\App\Http\Controllers\Finance\AccountingReportController::class, 'liquidity'])->name('liquidity');
             // 13-Wochen-Liquiditätsvorschau (Feature 136, MVP-701).
             Route::get('liquiditaet/vorschau', [\App\Http\Controllers\Finance\AccountingReportController::class, 'liquidityForecast'])->name('liquidity-forecast');
+            // Planpositionen und Plan/Ist der Liquiditätsvorschau (MVP-984).
+            Route::get('liquiditaet/planpositionen', [\App\Http\Controllers\Finance\LiquidityPlanController::class, 'index'])->name('liquidity-plan.index');
+            Route::get('liquiditaet/planpositionen/neu', [\App\Http\Controllers\Finance\LiquidityPlanController::class, 'form'])->name('liquidity-plan.create');
+            Route::post('liquiditaet/planpositionen', [\App\Http\Controllers\Finance\LiquidityPlanController::class, 'store'])->name('liquidity-plan.store');
+            Route::delete('liquiditaet/planpositionen/{item}', [\App\Http\Controllers\Finance\LiquidityPlanController::class, 'destroy'])->name('liquidity-plan.destroy');
+            Route::get('liquiditaet/plan-ist', [\App\Http\Controllers\Finance\LiquidityPlanController::class, 'actual'])->name('liquidity-plan.actual');
+            Route::post('liquiditaet/plan-ist', [\App\Http\Controllers\Finance\LiquidityPlanController::class, 'snapshot'])->name('liquidity-plan.snapshot');
             // Liquiditätsszenarien (MVP-954).
             Route::get('liquiditaet/szenarien', [\App\Http\Controllers\Finance\LiquidityScenarioController::class, 'index'])->name('liquidity-scenarios.index');
             Route::post('liquiditaet/szenarien', [\App\Http\Controllers\Finance\LiquidityScenarioController::class, 'store'])->name('liquidity-scenarios.store');

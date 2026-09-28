@@ -52,6 +52,7 @@ final class FinanceManifest extends Manifest {
     public function tables(): array {
         return [
             'accounting_accounts',
+            'accounting_budget_releases',
             'accounting_budgets',
             'accounting_entries',
             'accounting_entry_lines',
@@ -85,10 +86,14 @@ final class FinanceManifest extends Manifest {
             'cost_center_rules',
             'cost_centers',
             'datev_booking_batches',
+            'cost_allocation_keys',
             'datev_booking_events',
             'datev_booking_sources',
             'fixed_assets',
+            'fixed_asset_special_depreciations',
             'incoming_invoice_retentions',
+            'liquidity_forecast_snapshots',
+            'liquidity_plan_items',
             'liquidity_scenario_items',
             'liquidity_scenarios',
             'payment_allocations',

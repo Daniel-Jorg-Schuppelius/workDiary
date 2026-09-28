@@ -16,7 +16,7 @@ use App\Services\UI\BrandingService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\{Storage, URL};
 use Tests\TestCase;
 
 class BrandingTest extends TestCase {
@@ -252,6 +252,76 @@ class BrandingTest extends TestCase {
                 'meta_type' => Attachment::META_LOGO,
             ])
             ->assertSessionHasErrors();
+    }
+
+    private function uploadLogo(Organization $org): Attachment {
+        $admin = User::factory()->admin()->create(['organization_id' => $org->id]);
+        $this->actingAs($admin)
+            ->post(route('attachments.store', ['type' => 'organization', 'id' => $org->sqid]), [
+                'file' => UploadedFile::fake()->image('logo.png', 200, 80),
+                'meta_type' => Attachment::META_LOGO,
+            ])->assertRedirect();
+
+        return Attachment::query()->where('meta_type', Attachment::META_LOGO)->firstOrFail();
+    }
+
+    public function test_logo_url_stays_stable_across_requests(): void {
+        $org = $this->makeOrg();
+        $this->uploadLogo($org);
+        $this->actingAs(User::factory()->user()->create(['organization_id' => $org->id]));
+
+        $first = app(BrandingService::class)->logoUrl();
+        $this->travel(20)->minutes();
+        $this->app->forgetInstance(BrandingService::class);
+
+        // Eine je Aufruf neue URL ließe den Browser das Logo bei jedem Seitenwechsel neu laden.
+        $this->assertSame($first, app(BrandingService::class)->logoUrl());
+        $this->assertStringContainsString('/branding/logo/', (string) $first);
+    }
+
+    public function test_member_without_admin_role_loads_the_logo_with_browser_cache(): void {
+        $org = $this->makeOrg();
+        $this->uploadLogo($org);
+        $member = User::factory()->user()->create(['organization_id' => $org->id]);
+        $this->actingAs($member);
+
+        $response = $this->get((string) app(BrandingService::class)->logoUrl())->assertOk();
+
+        $cacheControl = (string) $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('max-age=31536000', $cacheControl);
+        $this->assertStringContainsString('immutable', $cacheControl);
+    }
+
+    public function test_logo_loads_without_login_and_foreign_org_context(): void {
+        $org = $this->makeOrg();
+        $this->uploadLogo($org);
+        $this->actingAs(User::factory()->user()->create(['organization_id' => $org->id]));
+        $url = (string) app(BrandingService::class)->logoUrl();
+
+        // Öffentliche Portale: Bildanfrage ohne Anmeldung und ohne gebundene Organisation.
+        auth()->logout();
+        $this->app->forgetInstance('currentOrganization');
+        $this->get($url)->assertOk();
+
+        $other = Organization::factory()->create();
+        $this->app->instance('currentOrganization', $other);
+        $this->actingAs(User::factory()->user()->create(['organization_id' => $other->id]));
+        $this->get($url)->assertOk();
+    }
+
+    public function test_logo_route_rejects_unsigned_urls_and_other_attachments(): void {
+        $org = $this->makeOrg();
+        $logo = $this->uploadLogo($org);
+
+        $this->get(route('branding.logo', ['logo' => $logo]))->assertForbidden();
+
+        $other = Attachment::factory()->create([
+            'organization_id' => $org->id,
+            'attachable_type' => MorphMap::alias(Organization::class),
+            'attachable_id' => $org->id,
+            'meta_type' => null,
+        ]);
+        $this->get(URL::signedRoute('branding.logo', ['logo' => $other]))->assertNotFound();
     }
 
     public function test_user_preferences_can_be_updated(): void {

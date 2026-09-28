@@ -319,6 +319,15 @@ return [
     ],
     // Anlagenregister und Jahres-AfA (Feature 133, MVP-698).
     'fixed_assets' => [
+        'special' => [
+            'title' => 'Sonder-AfA § 7g',
+            'hint' => 'Zusätzlich zur regulären AfA im Anschaffungsjahr und den vier folgenden Jahren, zusammen höchstens 40 %. Voraussetzungen des § 7g EStG prüft Ihre Steuerberatung.',
+            'amount' => 'Betrag',
+            'column' => 'davon § 7g',
+            'add' => 'Sonder-AfA erfassen',
+            'none' => 'Keine Sonder-AfA erfasst.',
+            'confirm_remove' => 'Sonder-AfA dieses Jahres entfernen?',
+        ],
         'title' => 'Anlagenregister',
         'menu' => 'Anlagen',
         'subtitle' => 'Wirtschaftsgüter mit AK/HK, Nutzungsdauer und AfA-Plan — die Jahres-AfA wird als Vorschlag über die Buchungs-Inbox gebucht.',
@@ -342,6 +351,7 @@ return [
             'book_value' => 'Restbuchwert :year',
         ],
         'field' => [
+            'declining_rate' => 'Degressiver Satz (%)',
             'device' => 'Gerät (Asset)',
             'residual_value' => 'Restwert',
             'method' => 'AfA-Methode',
@@ -366,6 +376,7 @@ return [
             'empty' => 'Kein AfA-Plan — Bemessungsgrundlage oder Nutzungsdauer fehlt.',
         ],
         'hint' => [
+            'declining_rate' => 'Nur mit Methode „degressiv“: Satz auf den Buchwert, höchstens das zulässige Vielfache des linearen Satzes (derzeit bis 30 % für Anschaffungen ab 07/2025). Sobald die lineare AfA höher ist, wird gewechselt.',
             'device' => 'Optionaler Bezug zum Geräte-Register; nicht jede Anlage ist ein Gerät.',
             'residual_value' => 'Bleibt am Ende der Nutzungsdauer stehen; Standard 0.',
             'useful_life' => 'Betriebsgewöhnliche Nutzungsdauer laut AfA-Tabelle, in Monaten. Bei GWG und Sammelposten ergibt sich die Laufzeit aus der Methode.',
@@ -383,11 +394,20 @@ return [
             'dispose_submit' => 'Abgang buchen',
         ],
         'flash' => [
+            'special_saved' => 'Sonder-AfA gespeichert.',
+            'special_removed' => 'Sonder-AfA entfernt.',
             'created' => 'Anlage :no angelegt.',
             'updated' => 'Anlage gespeichert.',
             'disposed' => 'Abgang erfasst.',
         ],
         'error' => [
+            'declining_window' => 'Degressive AfA ist nur für Anschaffungen in den gesetzlichen Zeiträumen zulässig (2009–2010, 2020–2022, 04–12/2024, 07/2025–2027).',
+            'declining_rate' => 'Der degressive Satz muss größer als 0 und höchstens :max % sein.',
+            'special_period' => 'Sonder-AfA nach § 7g ist nur im Begünstigungszeitraum :from–:until möglich.',
+            'special_amount' => 'Bitte einen Betrag größer als 0 angeben.',
+            'special_limit' => 'Die Sonder-AfA darf zusammen höchstens :limit (40 % der Anschaffungskosten) betragen.',
+            'special_not_allowed' => 'Für diese Anlage ist keine Sonder-AfA möglich (abgegangen, GWG oder Sammelposten).',
+            'special_posted' => 'Die AfA für :year ist bereits vorbereitet oder gebucht — die Sonder-AfA dieses Jahres ist gesperrt.',
             'gwg_limit' => 'GWG nur bis :limit € netto (Einstellung der Organisation).',
             'pool_range' => 'Sammelposten nur über :lower € bis :upper € netto (Einstellung der Organisation).',
             'disposed_frozen' => 'Eine abgegangene Anlage ist nicht mehr änderbar.',
@@ -713,6 +733,7 @@ return [
                 'filings' => 'Steuern',
                 'investments' => 'Investitionen',
                 'scenario' => 'Szenario',
+                'plan' => 'Planpositionen',
             ],
             'note' => [
                 'overdue' => 'überfällig — laufende Woche',
@@ -769,7 +790,73 @@ return [
                 'title' => 'BWA',
                 'text' => 'Kurzfristige Erfolgsrechnung mit Vorjahr, Vormonat, Monatsraster und Budget.',
             ],
-            'budget' => [
+            'liquidity_plan' => [
+        'title' => 'Planpositionen',
+        'subtitle' => 'Eigene Ein- und Auszahlungen für die 13-Wochen-Vorschau, einmalig oder monatlich.',
+        'actual_title' => 'Liquidität Plan/Ist',
+        'actual_subtitle' => 'Festgehaltener Wochenstand der Vorschau gegen die tatsächlichen Kontobewegungen.',
+        'empty' => 'Noch keine Planpositionen.',
+        'no_snapshot' => 'Noch kein Wochenstand festgehalten — jeden Montag automatisch oder über „Stand jetzt festhalten“.',
+        'action' => [
+            'add' => 'Planposition anlegen',
+            'snapshot' => 'Stand jetzt festhalten',
+        ],
+        'field' => [
+            'label' => 'Bezeichnung',
+            'direction' => 'Richtung',
+            'planned_amount' => 'Betrag',
+            'starts_on' => 'Fällig am (erste Fälligkeit)',
+            'recurrence' => 'Wiederholung',
+            'ends_on' => 'Letzte Fälligkeit',
+            'snapshot' => 'Festgehalten am',
+        ],
+        'hint' => [
+            'ends_on' => 'Nur bei monatlicher Wiederholung; leer = unbefristet.',
+        ],
+        'column' => [
+            'planned_net' => 'Plan (netto)',
+            'actual_in' => 'Ist Einzahlungen',
+            'actual_out' => 'Ist Auszahlungen',
+            'actual_net' => 'Ist (netto)',
+            'deviation' => 'Abweichung',
+        ],
+        'confirm' => [
+            'remove' => 'Planposition entfernen?',
+        ],
+        'flash' => [
+            'saved' => 'Planposition gespeichert.',
+            'removed' => 'Planposition entfernt.',
+            'snapshot' => 'Wochenstand festgehalten.',
+        ],
+    ],
+    'allocation' => [
+        'title' => 'Umlageschlüssel',
+        'subtitle' => 'Verteilung der Vorkostenstellen im Geschäftsjahr :year',
+        'hint' => 'Eine Vorkostenstelle gibt Anteile ihrer Aufwendungen an Endkostenstellen ab. Die BWA einer Kostenstelle zeigt die Verteilung mit „Nach Umlage“; Buchungen bleiben unverändert.',
+        'total' => 'Verteilt: :percent %',
+        'empty' => 'Noch keine Umlageschlüssel für dieses Jahr.',
+        'action' => [
+            'add' => 'Umlageschlüssel anlegen',
+        ],
+        'field' => [
+            'source' => 'Vorkostenstelle',
+            'target' => 'Empfangende Kostenstelle',
+            'share_percent' => 'Anteil (%)',
+        ],
+        'confirm' => [
+            'remove' => 'Umlageschlüssel entfernen?',
+        ],
+        'flash' => [
+            'saved' => 'Umlageschlüssel gespeichert.',
+            'removed' => 'Umlageschlüssel entfernt.',
+        ],
+        'error' => [
+            'same' => 'Vorkostenstelle und empfangende Kostenstelle müssen verschieden sein.',
+            'share' => 'Der Anteil muss größer als 0 und höchstens 100 % sein.',
+            'total' => 'Die Anteile einer Vorkostenstelle dürfen zusammen 100 % nicht übersteigen (frei: :rest %).',
+        ],
+    ],
+    'budget' => [
                 'title' => 'Budget',
                 'text' => 'Planwerte je Konto und Geschäftsjahr — als Jahreswert oder Monatswerte.',
             ],
@@ -1134,6 +1221,7 @@ return [
             'budget' => 'Budget',
         ],
         'filter' => [
+            'allocated' => 'Nach Umlage',
             'compare' => 'Vergleich',
             'cost_center' => 'Kostenstelle',
             'all_cost_centers' => 'Alle Kostenstellen',
@@ -1159,6 +1247,13 @@ return [
     ],
 
     'budget' => [
+        'error' => [
+            'released' => 'Das Budget ist freigegeben und gegen Änderungen gesperrt. Für Änderungen einen Nachtrag öffnen.',
+        ],
+        'field' => [
+            'reopen_reason' => 'Grund des Nachtrags',
+        ],
+        'overrun' => 'Freigegebenes Budget überschritten: :account (Kostenstelle :center) im :month — Ist :actual gegenüber Budget :budget.',
         'title' => 'Budget',
         'subtitle' => 'Planwerte je Konto für Geschäftsjahr :year',
         'empty' => 'Keine Erfolgskonten im Kontenplan.',
@@ -1172,11 +1267,14 @@ return [
             'year' => 'Geschäftsjahr',
         ],
         'action' => [
+            'release' => 'Budget freigeben',
+            'reopen' => 'Nachtrag',
             'edit' => 'Budget bearbeiten',
             'copy_previous' => 'Vorjahr-Ist als Budget',
             'save' => 'Speichern',
         ],
         'confirm' => [
+            'release' => 'Budget :year freigeben? Danach ist es gegen Änderungen gesperrt.',
             'copy_previous' => 'Ist-Werte des Geschäftsjahres :year als Budget übernehmen? Vorhandene Budgets des gewählten Jahres werden ersetzt.',
         ],
         'mode' => [
@@ -1184,10 +1282,13 @@ return [
             'months' => 'Monatswerte',
         ],
         'hint' => [
+            'reopen' => 'Der Nachtrag öffnet das freigegebene Budget wieder zur Bearbeitung; der Grund wird festgehalten.',
             'mode' => 'Ein Jahreswert wird für Monatsvergleiche gleichmäßig auf zwölf Monate verteilt; Monatswerte gelten je Monat.',
             'sign' => 'Positive Werte: erwarteter Ertrag bzw. erwarteter Aufwand.',
         ],
         'flash' => [
+            'released' => 'Budget freigegeben.',
+            'reopened' => 'Budget für einen Nachtrag geöffnet.',
             'saved' => 'Budget für :account gespeichert.',
             'copied' => ':count Konten mit Ist-Werten aus :year als Budget übernommen.',
         ],

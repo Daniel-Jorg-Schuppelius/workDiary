@@ -76,6 +76,18 @@
                     <span>{{ __('accounting.ledger.entry.reversed_by', ['no' => (string) $entry->reversedBy->journal_no, 'reason' => (string) $entry->reversal_reason]) }}</span>
                 </div>
             @endif
+            @foreach ($budgetOverruns ?? [] as $overrun)
+                <div class="alert bg-warning/10 border-warning/30 mt-3 text-sm" role="note">
+                    <x-icon name="savings" />
+                    <span>{{ __('accounting.budget.overrun', [
+                        'account' => $overrun['account']->number . ' ' . $overrun['account']->name,
+                        'center' => $overrun['cost_center'] !== null ? $overrun['cost_center']->code : '—',
+                        'month' => $overrun['month']->translatedFormat('M Y'),
+                        'actual' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $overrun['actual'], 2, withThousandsSeparator: true),
+                        'budget' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $overrun['budget'], 2, withThousandsSeparator: true),
+                    ]) }}</span>
+                </div>
+            @endforeach
         </x-card>
 
         <x-card :title="__('accounting.ledger.entry.lines')" icon="table_rows">

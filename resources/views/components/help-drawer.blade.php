@@ -230,6 +230,33 @@
      style="top: var(--app-header-h); bottom: var(--app-footer-h);"
      data-help-backdrop></div>
 
+{{-- Gemerkten Zustand vor dem ersten Rendern übernehmen, sonst gleitet die
+     Hilfe nach jedem Seitenwechsel zu und wieder auf. Offen/zu setzt das Layout
+     am Body-Anfang (body.help-sidebar-open); Schreiber und Inhalt: help-drawer.js. --}}
+<script @cspNonce>
+    (function () {
+        var drawer = document.getElementById('help-drawer');
+        if (drawer && document.body.classList.contains('help-sidebar-open')) {
+            drawer.classList.remove('translate-x-full');
+            if (!window.matchMedia('(min-width: 1024px)').matches) {
+                document.getElementById('help-drawer-backdrop').classList.remove('help-backdrop-hidden');
+            }
+        }
+        // Footer: gemerkte Wahl, sonst auf niedrigen Bildschirmen eingeklappt.
+        var collapsed = window.innerHeight < 760;
+        try {
+            var stored = localStorage.getItem('help.footer.collapsed');
+            if (stored === '1' || stored === '0') collapsed = stored === '1';
+        } catch (e) {}
+        var content = document.getElementById('help-footer-content');
+        var toggle = document.querySelector('[data-help-footer-toggle]');
+        var chevron = document.querySelector('[data-help-footer-chevron]');
+        if (content) content.classList.toggle('hidden', collapsed);
+        if (toggle) toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        if (chevron) chevron.classList.toggle('rotate-180', !collapsed);
+    })();
+</script>
+
 {{-- Fallback-Panel (Feature 039): erscheint, wenn die Seite keinen --}}
 {{-- Hilfe-Kontext hat oder ein Topic fehlt. Texte serverseitig übersetzt, --}}
 {{-- JS klont nur den Inhalt (kein Inline-JS, CSP-freundlich). --}}

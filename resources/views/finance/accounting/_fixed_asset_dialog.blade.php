@@ -66,6 +66,12 @@
                 <option value="{{ $method->value }}" @selected(old('depreciation_method', $fixedAsset?->depreciation_method?->value ?? 'linear') === $method->value)>{{ $method->label() }}</option>
             @endforeach
         </x-select-field>
+        {{-- Degressive AfA (MVP-980): Satz in Prozent, nur mit Methode „degressiv“. --}}
+        <x-input-field name="declining_rate" type="number" min="0.01" max="30" step="0.01" inputmode="decimal" span="2"
+                       :label="__('accounting.fixed_assets.field.declining_rate')"
+                       :hint="__('accounting.fixed_assets.hint.declining_rate')"
+                       :value="old('declining_rate', $fixedAsset?->declining_rate)"
+                       :readonly="$frozen" />
     </x-form-group>
 
     <x-form-group :legend="__('accounting.fixed_assets.section.accounts')" :description="__('accounting.fixed_assets.hint.accounts')" icon="account_tree" tone="ghost" cols="2">

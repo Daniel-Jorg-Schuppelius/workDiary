@@ -319,6 +319,15 @@ return [
     ],
     // Anlagenregister und Jahres-AfA (Feature 133, MVP-698).
     'fixed_assets' => [
+        'special' => [
+            'title' => 'Amortización especial § 7g',
+            'hint' => 'Además de la amortización ordinaria, en el año de adquisición y los cuatro siguientes, como máximo el 40 % en total. Su asesoría fiscal comprueba los requisitos del § 7g EStG.',
+            'amount' => 'Importe',
+            'column' => 'de ello § 7g',
+            'add' => 'Registrar amortización especial',
+            'none' => 'No hay amortización especial registrada.',
+            'confirm_remove' => '¿Eliminar la amortización especial de este año?',
+        ],
         'title' => 'Registro de activos fijos',
         'menu' => 'Activos fijos',
         'subtitle' => 'Bienes con coste de adquisición, vida útil y plan de amortización — la amortización anual se contabiliza como propuesta a través de la bandeja contable.',
@@ -342,6 +351,7 @@ return [
             'book_value' => 'Valor contable :year',
         ],
         'field' => [
+            'declining_rate' => 'Tipo degresivo (%)',
             'device' => 'Equipo (asset)',
             'residual_value' => 'Valor residual',
             'method' => 'Método de amortización',
@@ -366,6 +376,7 @@ return [
             'empty' => 'Sin plan — falta la base amortizable o la vida útil.',
         ],
         'hint' => [
+            'declining_rate' => 'Solo con el método «degresivo»: tipo sobre el valor contable, como máximo el múltiplo permitido del tipo lineal (actualmente hasta el 30 % para adquisiciones desde 07/2025). Cambia en cuanto la amortización lineal es mayor.',
             'device' => 'Enlace opcional al registro de equipos; no todo activo fijo es un equipo.',
             'residual_value' => 'Permanece al final de la vida útil; por defecto 0.',
             'useful_life' => 'Vida útil habitual según la tabla de amortización, en meses. Para bienes de escaso valor y el fondo colectivo, la duración resulta del método.',
@@ -383,11 +394,20 @@ return [
             'dispose_submit' => 'Registrar baja',
         ],
         'flash' => [
+            'special_saved' => 'Amortización especial guardada.',
+            'special_removed' => 'Amortización especial eliminada.',
             'created' => 'Activo fijo :no creado.',
             'updated' => 'Activo fijo guardado.',
             'disposed' => 'Baja registrada.',
         ],
         'error' => [
+            'declining_window' => 'La amortización degresiva solo está permitida para adquisiciones dentro de los periodos legales (2009–2010, 2020–2022, 04–12/2024, 07/2025–2027).',
+            'declining_rate' => 'El tipo degresivo debe ser mayor que 0 y como máximo del :max %.',
+            'special_period' => 'La amortización especial según el § 7g solo es posible en el periodo bonificado :from–:until.',
+            'special_amount' => 'Indique un importe mayor que 0.',
+            'special_limit' => 'La amortización especial puede sumar como máximo :limit (40 % del coste de adquisición).',
+            'special_not_allowed' => 'No es posible una amortización especial para este activo (dado de baja, bien de escaso valor o partida colectiva).',
+            'special_posted' => 'La amortización de :year ya está preparada o contabilizada; la amortización especial de ese año está bloqueada.',
             'gwg_limit' => 'Bienes de escaso valor solo hasta :limit € netos (ajuste de la organización).',
             'pool_range' => 'Fondo colectivo solo por encima de :lower € hasta :upper € netos (ajuste de la organización).',
             'disposed_frozen' => 'Un activo fijo dado de baja ya no se puede modificar.',
@@ -713,6 +733,7 @@ return [
                 'filings' => 'Impuestos',
                 'investments' => 'Inversiones',
                 'scenario' => 'Escenario',
+                'plan' => 'Partidas planificadas',
             ],
             'note' => [
                 'overdue' => 'vencido — semana en curso',
@@ -769,7 +790,73 @@ return [
                 'title' => 'Análisis de gestión (BWA)',
                 'text' => 'Cuenta de resultados a corto plazo con año anterior, mes anterior, cuadrícula mensual y presupuesto.',
             ],
-            'budget' => [
+            'liquidity_plan' => [
+        'title' => 'Partidas planificadas',
+        'subtitle' => 'Cobros y pagos propios para la previsión de 13 semanas, únicos o mensuales.',
+        'actual_title' => 'Liquidez plan/real',
+        'actual_subtitle' => 'Estado semanal guardado de la previsión frente a los movimientos reales de las cuentas.',
+        'empty' => 'Todavía no hay partidas planificadas.',
+        'no_snapshot' => 'Todavía no hay estados semanales — automáticamente cada lunes o mediante «Guardar estado actual».',
+        'action' => [
+            'add' => 'Añadir partida planificada',
+            'snapshot' => 'Guardar estado actual',
+        ],
+        'field' => [
+            'label' => 'Descripción',
+            'direction' => 'Sentido',
+            'planned_amount' => 'Importe',
+            'starts_on' => 'Vence el (primer vencimiento)',
+            'recurrence' => 'Repetición',
+            'ends_on' => 'Último vencimiento',
+            'snapshot' => 'Guardado el',
+        ],
+        'hint' => [
+            'ends_on' => 'Solo con repetición mensual; vacío = indefinido.',
+        ],
+        'column' => [
+            'planned_net' => 'Plan (neto)',
+            'actual_in' => 'Cobros reales',
+            'actual_out' => 'Pagos reales',
+            'actual_net' => 'Real (neto)',
+            'deviation' => 'Desviación',
+        ],
+        'confirm' => [
+            'remove' => '¿Eliminar la partida planificada?',
+        ],
+        'flash' => [
+            'saved' => 'Partida planificada guardada.',
+            'removed' => 'Partida planificada eliminada.',
+            'snapshot' => 'Estado semanal guardado.',
+        ],
+    ],
+    'allocation' => [
+        'title' => 'Claves de reparto',
+        'subtitle' => 'Reparto de los centros auxiliares en el ejercicio :year',
+        'hint' => 'Un centro auxiliar traslada partes de sus gastos a centros finales. El informe de un centro de coste muestra el reparto con «Tras el reparto»; los asientos no cambian.',
+        'total' => 'Repartido: :percent %',
+        'empty' => 'Todavía no hay claves de reparto para este año.',
+        'action' => [
+            'add' => 'Añadir clave de reparto',
+        ],
+        'field' => [
+            'source' => 'Centro auxiliar',
+            'target' => 'Centro receptor',
+            'share_percent' => 'Parte (%)',
+        ],
+        'confirm' => [
+            'remove' => '¿Eliminar la clave de reparto?',
+        ],
+        'flash' => [
+            'saved' => 'Clave de reparto guardada.',
+            'removed' => 'Clave de reparto eliminada.',
+        ],
+        'error' => [
+            'same' => 'El centro auxiliar y el centro receptor deben ser distintos.',
+            'share' => 'La parte debe ser mayor que 0 y como máximo del 100 %.',
+            'total' => 'Las partes de un centro auxiliar no pueden superar el 100 % en total (libre: :rest %).',
+        ],
+    ],
+    'budget' => [
                 'title' => 'Presupuesto',
                 'text' => 'Valores planificados por cuenta y ejercicio — valor anual o valores mensuales.',
             ],
@@ -1134,6 +1221,7 @@ return [
             'budget' => 'Presupuesto',
         ],
         'filter' => [
+            'allocated' => 'Tras el reparto',
             'compare' => 'Comparación',
             'cost_center' => 'Centro de coste',
             'all_cost_centers' => 'Todos los centros de coste',
@@ -1159,6 +1247,13 @@ return [
     ],
 
     'budget' => [
+        'error' => [
+            'released' => 'El presupuesto está aprobado y bloqueado frente a cambios. Abra una modificación para cambiarlo.',
+        ],
+        'field' => [
+            'reopen_reason' => 'Motivo de la modificación',
+        ],
+        'overrun' => 'Presupuesto aprobado superado: :account (centro de coste :center) en :month — real :actual frente a presupuesto :budget.',
         'title' => 'Presupuesto',
         'subtitle' => 'Valores planificados por cuenta para el ejercicio :year',
         'empty' => 'No hay cuentas de resultados en el plan contable.',
@@ -1172,11 +1267,14 @@ return [
             'year' => 'Ejercicio',
         ],
         'action' => [
+            'release' => 'Aprobar presupuesto',
+            'reopen' => 'Modificación',
             'edit' => 'Editar presupuesto',
             'copy_previous' => 'Real del año anterior como presupuesto',
             'save' => 'Guardar',
         ],
         'confirm' => [
+            'release' => '¿Aprobar el presupuesto :year? Después quedará bloqueado frente a cambios.',
             'copy_previous' => '¿Tomar el real del ejercicio :year como presupuesto? Los presupuestos existentes del año elegido se sustituirán.',
         ],
         'mode' => [
@@ -1184,10 +1282,13 @@ return [
             'months' => 'Valores mensuales',
         ],
         'hint' => [
+            'reopen' => 'La modificación vuelve a abrir el presupuesto aprobado para editarlo; se registra el motivo.',
             'mode' => 'Un valor anual se reparte uniformemente en doce meses para las comparaciones mensuales; los valores mensuales aplican por mes.',
             'sign' => 'Valores positivos: ingreso esperado o gasto esperado.',
         ],
         'flash' => [
+            'released' => 'Presupuesto aprobado.',
+            'reopened' => 'Presupuesto abierto para una modificación.',
             'saved' => 'Presupuesto de :account guardado.',
             'copied' => ':count cuentas con real de :year tomadas como presupuesto.',
         ],

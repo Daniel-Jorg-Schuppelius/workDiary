@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace App\Services\Accounting\Reports;
 
-use App\Enums\Finance\{FilingObligationKind, FilingObligationStatus, OpenItemDirection, PaymentRunKind, PaymentRunStatus, RecurringRunStatus, RecurringTemplateKind, RecurringTemplateStatus, SettlementKind};
+use App\Enums\Finance\{FilingObligationKind, LiquidityPlanRecurrence, FilingObligationStatus, OpenItemDirection, PaymentRunKind, PaymentRunStatus, RecurringRunStatus, RecurringTemplateKind, RecurringTemplateStatus, SettlementKind};
 use App\Models\Accounting\{AccountingFilingObligation, AccountingOpenItem, AccountingRecurringRun, AccountingRecurringTemplate, AccountingVatExtension};
 use App\Models\AssetFinance\AssetFinanceRateSchedule;
 use App\Models\Customer\Customer;
-use App\Models\Finance\{LiquidityScenario, PaymentRun};
+use App\Models\Finance\{LiquidityPlanItem, LiquidityScenario, PaymentRun};
 use App\Models\Invoicing\{IncomingEInvoice, InvoiceSchedule};
 use App\Models\Platform\Organization;
 use App\Modules\ModuleRegistry;
@@ -24,6 +24,7 @@ use App\Services\Accounting\Contracts\LiquidityForecastSource;
 use App\Services\Accounting\Filing\{VatFilingPeriodService, VatReturnService};
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\{Decimal, Money};
 use Illuminate\Database\Eloquent\Model;
@@ -52,7 +53,7 @@ use RoundingMode;
  */
 class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
     /** Quellen in Anzeigereihenfolge. */
-    public const SOURCES = ['receivables', 'payables', 'recurring', 'invoice_schedules', 'payment_runs', 'finance_rates', 'filings'];
+    public const SOURCES = ['receivables', 'payables', 'recurring', 'invoice_schedules', 'payment_runs', 'finance_rates', 'filings', 'plan'];
 
     /** Zulässige Horizonte in Wochen. */
     public const HORIZONS = [13, 26];
@@ -91,6 +92,7 @@ class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
             ...$this->paymentRuns($organization, $asOf),
             ...$this->financeRates($organization, $to),
             ...$this->filings($organization, $to),
+            ...$this->planItems($organization, $from, $to),
         ];
         $sources = self::SOURCES;
         if ($scenario !== null) {
@@ -592,6 +594,38 @@ class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
      * @param  'in'|'out'  $direction
      * @return ForecastItem
      */
+    /**
+     * Manuelle Planpositionen (MVP-984): einmalig am Stichtag oder monatlich am
+     * selben Tag bis zum Ende; Vergangenes fällt heraus.
+     *
+     * @return list<ForecastItem>
+     */
+    private function planItems(Organization $organization, CarbonImmutable $from, CarbonImmutable $to): array {
+        $items = [];
+        $plans = LiquidityPlanItem::query()->where('organization_id', $organization->id)
+            ->where('starts_on', '<', DateRange::dayAfter($to))
+            ->where(fn ($q) => $q->whereNull('ends_on')->orWhere('ends_on', '>=', DateRange::day($from)))
+            ->get();
+        foreach ($plans as $plan) {
+            $amount = Money::of((string) $plan->planned_amount, CurrencyCode::from($plan->currency));
+            $date = CarbonImmutable::parse($plan->starts_on->toDateString());
+            $end = $plan->ends_on !== null ? CarbonImmutable::parse($plan->ends_on->toDateString()) : $to;
+            $step = 0;
+            while ($date->lessThanOrEqualTo($to) && $date->lessThanOrEqualTo($end)) {
+                if ($date->greaterThanOrEqualTo($from)) {
+                    $items[] = $this->item('plan', $plan->direction === 'in' ? 'in' : 'out', $amount, $date, $plan->label, $plan->note);
+                }
+                if ($plan->recurrence !== LiquidityPlanRecurrence::Monthly) {
+                    break;
+                }
+                $step++;
+                $date = CarbonImmutable::parse($plan->starts_on->toDateString())->addMonthsNoOverflow($step);
+            }
+        }
+
+        return $items;
+    }
+
     private function item(string $source, string $direction, Money $amount, CarbonImmutable $expectedOn, string $label, ?string $note = null): array {
         return [
             'source' => $source,

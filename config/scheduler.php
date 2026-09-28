@@ -67,6 +67,13 @@ return [
             'criticality' => 'core',
             'expected_runtime_minutes' => 1,
         ],
+        // Wochenstand der Liquiditätsvorschau für Plan/Ist (MVP-984).
+        'accounting.liquidity_snapshot' => [
+            'command' => 'accounting:liquidity-snapshot',
+            'cadence' => ['type' => 'weeklyOn', 'time' => '06:10', 'day' => 1],
+            'allowed' => ['weeklyOn'],
+            'criticality' => 'core',
+        ],
 
         'invoicing.recurring' => [
             'command' => 'invoices:generate-recurring',

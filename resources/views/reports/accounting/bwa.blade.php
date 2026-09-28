@@ -62,6 +62,11 @@
                         @endforeach
                     </select>
                 </x-filter-field>
+                {{-- Umlage (MVP-982): Aufwendungen der Vorkostenstellen anteilig verteilt. --}}
+                <label class="label cursor-pointer gap-2 shrink-0">
+                    <input type="checkbox" name="allocated" value="1" class="checkbox checkbox-sm" @checked($allocated)>
+                    <span class="label-text">{{ __('accounting.bwa.filter.allocated') }}</span>
+                </label>
             @endif
         </x-filter-bar>
 

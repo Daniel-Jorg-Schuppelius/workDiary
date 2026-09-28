@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Accounting;
 
 use App\Enums\Finance\{AccountingEntryStatus, DepreciationMethod, FixedAssetDisposalKind, FixedAssetStatus};
-use App\Models\Accounting\{AccountingEntry, AccountingFiscalYear, FixedAsset};
+use App\Models\Accounting\{AccountingEntry, AccountingFiscalYear, FixedAsset, FixedAssetSpecialDepreciation};
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\Posting\Adapters\DepreciationAdapter;
 use App\Services\Accounting\Posting\PostingInboxService;
@@ -39,7 +39,25 @@ class FixedAssetService {
     use AssignsSequentialNo;
 
     /** Felder, die nach der ersten Festbuchung nicht mehr änderbar sind. */
-    private const VALUE_FIELDS = ['acquired_on', 'acquisition_cost', 'residual_value', 'useful_life_months', 'depreciation_method', 'currency'];
+    private const VALUE_FIELDS = ['acquired_on', 'acquisition_cost', 'residual_value', 'useful_life_months', 'depreciation_method', 'declining_rate', 'currency'];
+
+    /**
+     * Degressive AfA nach § 7 Abs. 2 EStG: Anschaffungsfenster mit Höchstfaktor
+     * auf den linearen Satz und absolutem Deckel in Prozent (MVP-980).
+     *
+     * @var list<array{0: string, 1: string, 2: string, 3: string}>
+     */
+    private const DECLINING_WINDOWS = [
+        ['2009-01-01', '2010-12-31', '2.5', '25'],
+        ['2020-01-01', '2022-12-31', '2.5', '25'],
+        ['2024-04-01', '2024-12-31', '2', '20'],
+        ['2025-07-01', '2027-12-31', '3', '30'],
+    ];
+
+    /** Sonder-AfA § 7g: zusammen höchstens 40 % der Anschaffungskosten, in fünf Jahren (MVP-981). */
+    private const SPECIAL_MAX_PERCENT = '40';
+
+    private const SPECIAL_YEARS = 5;
 
     public function __construct(
         private readonly DepreciationAdapter $adapter,
@@ -65,6 +83,7 @@ class FixedAssetService {
                 'residual_value' => $attributes['residual_value'] ?? '0.00',
                 'useful_life_months' => (int) $attributes['useful_life_months'],
                 'depreciation_method' => $attributes['depreciation_method'] ?? DepreciationMethod::Linear,
+                'declining_rate' => $attributes['declining_rate'] ?? null,
                 'asset_account_id' => $attributes['asset_account_id'] ?? null,
                 'depreciation_account_id' => $attributes['depreciation_account_id'] ?? null,
                 'status' => FixedAssetStatus::Active,
@@ -90,6 +109,7 @@ class FixedAssetService {
             'residual_value' => $asset->residual_value?->getAmount() ?? '0.00',
             'useful_life_months' => $asset->useful_life_months,
             'depreciation_method' => $asset->depreciation_method,
+            'declining_rate' => $asset->declining_rate,
         ];
         $merged = $this->withMethodRules($merged);
         if (array_key_exists('depreciation_method', $attributes)) {
@@ -112,7 +132,7 @@ class FixedAssetService {
 
         $asset->fill(array_intersect_key($attributes, array_flip([
             'name', 'asset_id', 'acquired_on', 'acquisition_cost', 'residual_value', 'useful_life_months',
-            'depreciation_method', 'asset_account_id', 'depreciation_account_id', 'note',
+            'depreciation_method', 'declining_rate', 'asset_account_id', 'depreciation_account_id', 'note',
         ])));
         $asset->save();
 
@@ -287,6 +307,10 @@ class FixedAssetService {
         $method = $attributes['depreciation_method'] ?? DepreciationMethod::Linear;
         $method = $method instanceof DepreciationMethod ? $method : DepreciationMethod::tryFrom((string) $method) ?? DepreciationMethod::Linear;
         $cost = (string) ($attributes['acquisition_cost'] ?? '0');
+        if ($method === DepreciationMethod::Declining) {
+            return $this->withDecliningRules($attributes);
+        }
+        $attributes['declining_rate'] = null;
         if ($method === DepreciationMethod::Linear || ! is_numeric($cost)) {
             return $attributes;
         }
@@ -312,6 +336,101 @@ class FixedAssetService {
         }
 
         return $attributes;
+    }
+
+    /**
+     * Höchster zulässiger Satz der degressiven AfA für Anschaffung und
+     * Nutzungsdauer, null außerhalb der gesetzlichen Fenster (MVP-980).
+     */
+    public static function maxDecliningRate(CarbonImmutable $acquiredOn, int $usefulLifeMonths): ?string {
+        if ($usefulLifeMonths < 1) {
+            return null;
+        }
+        $day = $acquiredOn->toDateString();
+        foreach (self::DECLINING_WINDOWS as [$from, $until, $factor, $cap]) {
+            if ($day >= $from && $day <= $until) {
+                $byFactor = bcmul($factor, bcdiv('1200', (string) $usefulLifeMonths, 6), 6);
+
+                return bcadd(bccomp($byFactor, $cap, 6) < 0 ? $byFactor : $cap, '0', 2);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @return array<string, mixed>
+     */
+    private function withDecliningRules(array $attributes): array {
+        $acquired = CarbonImmutable::parse((string) ($attributes['acquired_on'] ?? 'now'));
+        $max = self::maxDecliningRate($acquired, (int) ($attributes['useful_life_months'] ?? 0));
+        if ($max === null) {
+            throw ValidationException::withMessages(['depreciation_method' => (string) __('accounting.fixed_assets.error.declining_window')]);
+        }
+        $rate = (string) ($attributes['declining_rate'] ?? '');
+        if (! is_numeric($rate) || bccomp($rate, '0', 2) <= 0 || bccomp($rate, $max, 2) > 0) {
+            throw ValidationException::withMessages(['declining_rate' => (string) __('accounting.fixed_assets.error.declining_rate', ['max' => $max])]);
+        }
+        $attributes['declining_rate'] = bcadd($rate, '0', 2);
+
+        return $attributes;
+    }
+
+    /**
+     * Sonder-AfA § 7g für ein Geschäftsjahr anlegen oder ersetzen (MVP-981):
+     * nur im Begünstigungszeitraum, zusammen höchstens 40 % der AK/HK und nur,
+     * solange die AfA dieses Jahres nicht vorbereitet oder gebucht ist.
+     */
+    public function saveSpecialDepreciation(FixedAsset $asset, int $fiscalYear, string $amount, ?string $note, User $actor): FixedAssetSpecialDepreciation {
+        $this->assertSpecialEditable($asset, $fiscalYear);
+        $startYear = $this->acquisitionFiscalYear($asset);
+        if ($fiscalYear < $startYear || $fiscalYear >= $startYear + self::SPECIAL_YEARS) {
+            throw ValidationException::withMessages(['fiscal_year' => (string) __('accounting.fixed_assets.error.special_period', ['from' => $startYear, 'until' => $startYear + self::SPECIAL_YEARS - 1])]);
+        }
+        if (! is_numeric($amount) || bccomp($amount, '0', 2) <= 0) {
+            throw ValidationException::withMessages(['depreciation_amount' => (string) __('accounting.fixed_assets.error.special_amount')]);
+        }
+        $others = '0';
+        foreach ($asset->specialDepreciations()->where('fiscal_year', '!=', $fiscalYear)->get() as $special) {
+            $others = bcadd($others, $special->depreciation_amount->getAmount(), 2);
+        }
+        $limit = $asset->acquisition_cost?->percentage(self::SPECIAL_MAX_PERCENT)->getAmount() ?? '0.00';
+        if (bccomp(bcadd($others, $amount, 2), $limit, 2) > 0) {
+            throw ValidationException::withMessages(['depreciation_amount' => (string) __('accounting.fixed_assets.error.special_limit', ['limit' => $limit])]);
+        }
+
+        return FixedAssetSpecialDepreciation::query()->updateOrCreate(
+            ['fixed_asset_id' => $asset->id, 'fiscal_year' => $fiscalYear],
+            ['organization_id' => $asset->organization_id, 'depreciation_amount' => bcadd($amount, '0', 2), 'currency' => $asset->currency, 'note' => $note, 'created_by' => $actor->id],
+        );
+    }
+
+    public function removeSpecialDepreciation(FixedAssetSpecialDepreciation $special): void {
+        $asset = $special->fixedAsset;
+        if ($asset instanceof FixedAsset) {
+            $this->assertSpecialEditable($asset, $special->fiscal_year);
+        }
+        $special->delete();
+    }
+
+    private function assertSpecialEditable(FixedAsset $asset, int $fiscalYear): void {
+        if ($asset->isDisposed() || in_array($asset->depreciation_method, [DepreciationMethod::Immediate, DepreciationMethod::Pool], true)) {
+            throw ValidationException::withMessages(['fiscal_year' => (string) __('accounting.fixed_assets.error.special_not_allowed')]);
+        }
+        $year = AccountingFiscalYear::query()->where('organization_id', $asset->organization_id)->get()
+            ->first(static fn (AccountingFiscalYear $candidate): bool => $candidate->starts_on->year === $fiscalYear);
+        if ($year instanceof AccountingFiscalYear && $this->journal->activeEntryForSource($asset->organization, $this->adapter->keyFor($asset, $year)) instanceof AccountingEntry) {
+            throw ValidationException::withMessages(['fiscal_year' => (string) __('accounting.fixed_assets.error.special_posted', ['year' => $fiscalYear])]);
+        }
+    }
+
+    /** Startjahr des Geschäftsjahres der Anschaffung. */
+    public function acquisitionFiscalYear(FixedAsset $asset): int {
+        $profile = \App\Models\Accounting\AccountingProfile::query()->where('organization_id', $asset->organization_id)->first();
+        $startMonth = $profile instanceof \App\Models\Accounting\AccountingProfile ? max(1, (int) $profile->fiscal_year_start_month) : 1;
+
+        return app(DepreciationCalculator::class)->fiscalYearStartFor($asset->acquiredOn(), $startMonth)->year;
     }
 
     /** @param array<string, mixed> $attributes */

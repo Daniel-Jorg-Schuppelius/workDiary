@@ -410,7 +410,8 @@ class AccountingReportController extends Controller {
         $compare = $this->compareMode($request);
         $costCenters = $this->costCenters($organization);
         $costCenter = $this->costCenter($request, $costCenters);
-        $data = $this->bwas->build($organization, $from, $to, $compare, $costCenter?->id);
+        $allocated = $costCenter !== null && $request->boolean('allocated');
+        $data = $this->bwas->build($organization, $from, $to, $compare, $costCenter?->id, $allocated);
         $hasDelta = $compare !== AbstractAccountingReportBuilder::COMPARE_NONE && $compare !== AbstractAccountingReportBuilder::COMPARE_MONTHS;
 
         if ($this->wantsExport($request)) {
@@ -443,6 +444,7 @@ class AccountingReportController extends Controller {
             'to' => $to,
             'costCenters' => $costCenters,
             'costCenter' => $costCenter,
+            'allocated' => $allocated,
             'compareModes' => AbstractAccountingReportBuilder::COMPARE_MODES,
             'hasDelta' => $hasDelta,
             'chartSeries' => $this->bwaChartSeries($data, $compare),

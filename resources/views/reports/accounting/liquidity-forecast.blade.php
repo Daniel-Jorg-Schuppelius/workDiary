@@ -23,6 +23,8 @@
     <x-index-page overflow="clip" :subtitle="__('accounting.reports.forecast.subtitle', ['date' => $as_of->fdate(), 'weeks' => $weeks])">
         <x-slot:actions>
             <x-icon-btn icon="tune" size="sm" tone="ghost" show-label placement="menu" :href="route('reports.accounting.liquidity-scenarios.index')" :label="__('accounting.reports.scenario.manage')" />
+            <x-icon-btn icon="edit_calendar" size="sm" tone="ghost" show-label placement="menu" :href="route('reports.accounting.liquidity-plan.index')" :label="__('accounting.liquidity_plan.title')" />
+            <x-icon-btn icon="compare_arrows" size="sm" tone="ghost" show-label placement="menu" :href="route('reports.accounting.liquidity-plan.actual')" :label="__('accounting.liquidity_plan.actual_title')" />
             <x-icon-btn icon="picture_as_pdf" size="sm" tone="ghost" show-label
                         :href="route('reports.accounting.liquidity-forecast', ['weeks' => $weeks, 'export' => 'pdf'])" :label="__('PDF')" />
             <x-action-menu icon="download" :label="__('Export')">

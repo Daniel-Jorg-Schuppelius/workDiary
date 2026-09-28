@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Accounting;
 
-use App\Enums\Finance\AccountType;
-use App\Models\Accounting\{AccountingAccount, AccountingBudget, AccountingFiscalYear};
+use App\Enums\Finance\{AccountType, BudgetReleaseStatus};
+use App\Models\Accounting\{AccountingAccount, AccountingBudget, AccountingBudgetRelease, AccountingEntry, AccountingFiscalYear};
 use App\Models\Finance\CostCenter;
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\Reports\MonthlyActualsBuilder;
@@ -39,6 +39,8 @@ use Illuminate\Validation\ValidationException;
  * des Kontos — Kostenstellen-Budgets sind Teile des Ganzen, keine Kopie.
  */
 class AccountingBudgetService {
+    use \App\Services\Concerns\AssertsStatusTransition;
+
     public const MODE_YEAR = 'year';
 
     public const MODE_MONTHS = 'months';
@@ -142,6 +144,7 @@ class AccountingBudgetService {
      */
     public function save(Organization $organization, AccountingAccount $account, int $fiscalYear, ?int $costCenterId, array $data, User $actor): void {
         $this->assertOwn($organization, $account, $costCenterId);
+        $this->assertEditable($organization, $fiscalYear, $costCenterId);
         $currency = $this->journal->baseCurrency($organization);
 
         $rows = [];
@@ -199,6 +202,7 @@ class AccountingBudgetService {
         if ($costCenterId !== null) {
             $this->assertOwn($organization, null, $costCenterId);
         }
+        $this->assertEditable($organization, $fiscalYear, $costCenterId);
         $startMonth = $this->calendar->startMonth($organization);
         $previousMonths = $this->calendar->monthsOf($fiscalYear - 1, $startMonth);
         $actuals = $this->actuals->build($organization, $previousMonths, $costCenterId);
@@ -295,6 +299,85 @@ class AccountingBudgetService {
     }
 
     /** @return \Illuminate\Database\Eloquent\Builder<AccountingBudget> */
+    /** Freigabestand eines Budgets (MVP-983); null = nie freigegeben. */
+    public function releaseFor(Organization $organization, int $fiscalYear, ?int $costCenterId): ?AccountingBudgetRelease {
+        return AccountingBudgetRelease::query()->where('organization_id', $organization->id)->where('fiscal_year', $fiscalYear)
+            ->when($costCenterId === null, fn ($q) => $q->whereNull('cost_center_id'), fn ($q) => $q->where('cost_center_id', $costCenterId))
+            ->first();
+    }
+
+    public function isReleased(Organization $organization, int $fiscalYear, ?int $costCenterId): bool {
+        return $this->releaseFor($organization, $fiscalYear, $costCenterId)?->status === BudgetReleaseStatus::Released;
+    }
+
+    /** Budget freigeben: danach gegen Änderung gesperrt (MVP-983). */
+    public function release(Organization $organization, int $fiscalYear, ?int $costCenterId, User $actor): AccountingBudgetRelease {
+        if ($costCenterId !== null) {
+            $this->assertOwn($organization, null, $costCenterId);
+        }
+        $release = $this->releaseFor($organization, $fiscalYear, $costCenterId)
+            ?? new AccountingBudgetRelease(['organization_id' => $organization->id, 'fiscal_year' => $fiscalYear, 'cost_center_id' => $costCenterId, 'status' => BudgetReleaseStatus::Draft]);
+        $this->assertStatusTransition($release->status, BudgetReleaseStatus::Released);
+        $release->fill(['status' => BudgetReleaseStatus::Released, 'released_at' => now(), 'released_by' => $actor->id])->save();
+
+        return $release;
+    }
+
+    /** Nachtrag: freigegebenes Budget mit Begründung wieder öffnen. */
+    public function reopen(AccountingBudgetRelease $release, User $actor, string $reason): AccountingBudgetRelease {
+        $this->assertStatusTransition($release->status, BudgetReleaseStatus::Draft);
+        $release->fill(['status' => BudgetReleaseStatus::Draft, 'reopened_at' => now(), 'reopened_by' => $actor->id, 'reopen_reason' => $reason])->save();
+
+        return $release;
+    }
+
+    /**
+     * Überschreitungen freigegebener Monatsbudgets durch eine Buchung (Hinweis,
+     * keine Sperre — ein realer Beleg bleibt buchbar).
+     *
+     * @return list<array{account: AccountingAccount, cost_center: CostCenter|null, month: CarbonImmutable, budget: string, actual: string}>
+     */
+    public function overrunsFor(AccountingEntry $entry): array {
+        $organization = $entry->organization;
+        if (! $organization instanceof Organization) {
+            return [];
+        }
+        $month = CarbonImmutable::parse($entry->booked_on->toDateString())->startOfMonth();
+        $fiscalYear = $this->calendar->fiscalYearOf($month, $this->calendar->startMonth($organization));
+        $result = [];
+        $seen = [];
+        foreach ($entry->lines()->with(['account', 'costCenter'])->get() as $line) {
+            $account = $line->account;
+            if (! $account instanceof AccountingAccount || $account->type !== AccountType::Expense) {
+                continue;
+            }
+            $costCenterId = $line->cost_center_id !== null ? (int) $line->cost_center_id : null;
+            $key = $account->id . ':' . ($costCenterId ?? 0);
+            if (isset($seen[$key]) || ! $this->isReleased($organization, $fiscalYear, $costCenterId)) {
+                continue;
+            }
+            $seen[$key] = true;
+            $row = $this->scope($organization, $fiscalYear, $costCenterId)->where('accounting_account_id', $account->id)->where('month', $month->month)->first();
+            if (! $row instanceof AccountingBudget) {
+                continue;
+            }
+            $budget = $row->amount instanceof \CommonToolkit\ValueObjects\Money ? $row->amount->getAmount() : (string) $row->amount;
+            $sums = $this->actuals->build($organization, [$month], $costCenterId)[$month->format('Y-m')][$account->id] ?? ['debit' => '0.00', 'credit' => '0.00'];
+            $actual = NumberHelper::subtractPrecise($sums['debit'], $sums['credit'], 2);
+            if (bccomp($actual, (string) $budget, 2) > 0) {
+                $result[] = ['account' => $account, 'cost_center' => $line->costCenter, 'month' => $month, 'budget' => $budget, 'actual' => $actual];
+            }
+        }
+
+        return $result;
+    }
+
+    private function assertEditable(Organization $organization, int $fiscalYear, ?int $costCenterId): void {
+        if ($this->isReleased($organization, $fiscalYear, $costCenterId)) {
+            throw ValidationException::withMessages(['budget' => (string) __('accounting.budget.error.released')]);
+        }
+    }
+
     private function scope(Organization $organization, int $fiscalYear, ?int $costCenterId): \Illuminate\Database\Eloquent\Builder {
         return AccountingBudget::query()
             ->where('organization_id', $organization->id)

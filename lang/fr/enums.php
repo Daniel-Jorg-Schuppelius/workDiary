@@ -1436,6 +1436,7 @@ return [
             'linear' => 'Linéaire',
             'immediate' => 'Amortissement immédiat (bien de faible valeur)',
             'pool' => 'Pool collectif',
+            'declining' => 'Dégressif',
         ],
         'accounting-period-status' => [
             'open' => 'Ouverte',
@@ -1461,6 +1462,14 @@ return [
             'sevdesk' => 'sevDesk (brouillon de facture)',
             'easybill' => 'easybill (brouillon de facture)',
             'file' => 'Export de fichier',
+        ],
+        'budget-release-status' => [
+            'draft' => 'Brouillon',
+            'released' => 'Validé',
+        ],
+        'liquidity-plan-recurrence' => [
+            'once' => 'Ponctuel',
+            'monthly' => 'Mensuel',
         ],
         'transfer-status' => [
             'draft' => 'Brouillon',

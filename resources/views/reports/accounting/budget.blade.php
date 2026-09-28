@@ -25,7 +25,22 @@
         $columnCount = 4 + count($months) + ($canEdit ? 1 : 0);
     @endphp
     <x-index-page overflow="clip" :subtitle="__('accounting.budget.subtitle', ['year' => $year])">
+        <x-slot:badges>
+            {{-- Freigabestand (MVP-983): freigegeben = gegen Änderung gesperrt. --}}
+            <x-status-badge :tone="$released ? 'success' : 'ghost'" size="sm">{{ ($release?->status ?? \App\Enums\Finance\BudgetReleaseStatus::Draft)->label() }}</x-status-badge>
+        </x-slot:badges>
         <x-slot:actions>
+            @if ($canRelease && ! $released)
+                <x-action-form :action="route('reports.accounting.budget.release', $query)" method="POST"
+                               :confirm="__('accounting.budget.confirm.release', ['year' => $year])">
+                    <x-button type="submit" tone="primary" size="sm" icon="verified">{{ __('accounting.budget.action.release') }}</x-button>
+                </x-action-form>
+            @elseif ($canRelease)
+                <x-icon-btn icon="edit_note" size="sm" tone="outline" show-label data-entry-modal-trigger
+                            :href="route('reports.accounting.budget.reopen-form', $query)" :label="__('accounting.budget.action.reopen')" />
+            @endif
+            <x-icon-btn icon="call_split" size="sm" tone="ghost" show-label placement="menu"
+                        :href="route('reports.accounting.allocations.index', ['year' => $year])" :label="__('accounting.allocation.title')" />
             @if ($canEdit)
                 <x-action-form :action="route('reports.accounting.budget.copy-previous-year', $query)" method="POST"
                                :confirm="__('accounting.budget.confirm.copy_previous', ['year' => $year - 1])">

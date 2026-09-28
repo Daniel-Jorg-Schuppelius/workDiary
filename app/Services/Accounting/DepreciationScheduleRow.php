@@ -31,9 +31,11 @@ final class DepreciationScheduleRow {
         public readonly int $months,
         public readonly Money $amount,
         public readonly Money $bookValueEnd,
+        /** Davon Sonder-AfA § 7g (MVP-981). */
+        public readonly ?Money $special = null,
     ) {}
 
-    /** @return array{fiscal_year: int, label: string, months: int, amount: string, book_value_end: string} */
+    /** @return array{fiscal_year: int, label: string, months: int, amount: string, book_value_end: string, special: string|null} */
     public function toArray(): array {
         return [
             'fiscal_year' => $this->fiscalYear,
@@ -41,6 +43,7 @@ final class DepreciationScheduleRow {
             'months' => $this->months,
             'amount' => $this->amount->getAmount(),
             'book_value_end' => $this->bookValueEnd->getAmount(),
+            'special' => $this->special?->getAmount(),
         ];
     }
 }

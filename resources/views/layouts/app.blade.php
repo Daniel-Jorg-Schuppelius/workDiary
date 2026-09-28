@@ -239,6 +239,17 @@
         ));
     @endphp
     <body class="min-h-screen text-base-content {{ $_bodyMode === 'legacy' ? 'bg-base-200' : 'bg-linear-to-b from-base-200 to-base-300' }}" data-mode="{{ $_bodyMode }}"@if ($_helpContextTopic) data-help-context="{{ $_helpContextTopic }}"@endif{!! $_shortcutAttrs !!}>
+        {{-- Gemerkte Sidebar-Zustände vor dem ersten Rendern setzen: aus den
+             Modulskripten kämen sie zu spät, und die Breiten-Transition liefe bei
+             jedem Seitenwechsel sichtbar ab. Schreiber: layout.js, help-drawer.js. --}}
+        <script @cspNonce>
+            (function () {
+                try {
+                    document.body.classList.toggle('sidebar-collapsed', localStorage.getItem('workDiarySidebarCollapsed') === '1');
+                    document.body.classList.toggle('help-sidebar-open', localStorage.getItem('help.open') === '1');
+                } catch (e) {}
+            })();
+        </script>
         {{-- Barrierefreiheit (WCAG 2.4.1): Sprunglink zum Hauptinhalt. Visuell
              ausgeblendet (sr-only), wird beim Tab-Fokus sichtbar und springt an
              das <main id="main-content"> — Tastaturnutzer überspringen so die
@@ -1179,6 +1190,24 @@
                 </div>
             </div>
         </aside>
+        {{-- Auf-/Zugeklappte Bereiche direkt nach dem Markup übernehmen (sonst
+             springt die Sidebar nach dem Laden); Schreiber: layout.js. --}}
+        <script @cspNonce>
+            (function () {
+                function restore(storageKey, attr) {
+                    var store = {};
+                    try { store = JSON.parse(localStorage.getItem(storageKey) || '{}') || {}; } catch (e) {}
+                    document.querySelectorAll('#app-sidebar details[' + attr + ']').forEach(function (details) {
+                        var key = details.getAttribute(attr);
+                        if (key && Object.prototype.hasOwnProperty.call(store, key)) {
+                            details.open = store[key] === 1 || store[key] === '1' || store[key] === true;
+                        }
+                    });
+                }
+                restore('workDiarySidebarSections', 'data-sidebar-section-key');
+                restore('workDiarySidebarSubgroups', 'data-sidebar-subgroup-key');
+            })();
+        </script>
         <div id="app-sidebar-backdrop"
              class="fixed inset-x-0 z-30 hidden bg-black/40 backdrop-blur-[1px] lg:hidden"
              style="top: var(--app-header-h); bottom: var(--app-footer-h);"

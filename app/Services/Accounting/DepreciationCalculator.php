@@ -19,8 +19,9 @@ use CommonToolkit\Enums\RoundingMode;
 use CommonToolkit\ValueObjects\Money;
 
 /**
- * AfA-Plan (Feature 133, MVP-698) — rein, ohne Datenbank. Linear wie unten,
- * GWG und Sammelposten in vollen Geschäftsjahren (MVP-892, yearlySchedule()).
+ * AfA-Plan (Feature 133, MVP-698). Linear wie unten, GWG und Sammelposten in
+ * vollen Geschäftsjahren (MVP-892, yearlySchedule()), degressiv mit Wechsel zur
+ * linearen AfA (MVP-980) und Sonder-AfA § 7g aus der Anlage (MVP-981).
  *
  * Regeln:
  *  - Bemessungsgrundlage = AK/HK − Restwert, gleichmäßig über die
@@ -57,12 +58,23 @@ final class DepreciationCalculator {
         }
 
         $yearStart = $this->fiscalYearStartFor($acquired, $startMonth);
+        $specials = $this->specials($asset);
+        // Begünstigungszeitraum § 7g Abs. 5: Anschaffungsjahr und die vier folgenden Jahre.
+        $bonusLastYear = $yearStart->year + 4;
+        $rate = $asset->depreciation_method === DepreciationMethod::Declining && is_numeric($asset->declining_rate) && bccomp((string) $asset->declining_rate, '0', 2) > 0
+            ? (string) $asset->declining_rate
+            : null;
+        $switchedToLinear = false;
         $remainingMonths = $totalMonths;
         $allocated = Money::zero($currency);
         $rows = [];
 
         while ($remainingMonths > 0) {
             $yearEnd = $yearStart->addYear()->subDay();
+            $open = $base->minus($allocated);
+            if ($open->isZero() || $open->isNegative()) {
+                break;
+            }
 
             // Monate dieses Geschäftsjahres, in denen die Anlage im Bestand ist —
             // ab Anschaffungsmonat, bis Abgangsmonat (jeweils einschließlich).
@@ -82,13 +94,24 @@ final class DepreciationCalculator {
                 break;
             }
 
+            $linearOnRest = $open->times($months)->dividedBy($remainingMonths, RoundingMode::HalfUp);
+            if ($rate !== null) {
+                // Degressiv auf den Buchwert; Wechsel zur linearen AfA, sobald diese höher ist (§ 7 Abs. 3).
+                $declining = $cost->minus($allocated)->percentage(bcdiv(bcmul($rate, (string) $months, 6), '12', 6));
+                $switchedToLinear = $switchedToLinear || $linearOnRest->greaterThanOrEqual($declining);
+                $regular = $switchedToLinear ? $linearOnRest : $declining;
+            } elseif ($specials !== [] && $yearStart->year > $bonusLastYear) {
+                // Nach dem Begünstigungszeitraum: Restwert auf die Restnutzungsdauer (§ 7a Abs. 9).
+                $regular = $linearOnRest;
+            } else {
+                $regular = $base->times($months)->dividedBy($totalMonths, RoundingMode::HalfUp);
+            }
+
+            $special = $specials[$yearStart->year] ?? Money::zero($currency);
             $isLast = ! $endsWithDisposal && $months === $remainingMonths;
-            $amount = $isLast
-                ? $base->minus($allocated)
-                : $base->times($months)->dividedBy($totalMonths, RoundingMode::HalfUp);
+            $amount = $isLast ? $open : $regular->plus($special);
 
             // Rundung darf die Bemessungsgrundlage nie überschreiten.
-            $open = $base->minus($allocated);
             if ($amount->greaterThan($open)) {
                 $amount = $open;
             }
@@ -105,6 +128,7 @@ final class DepreciationCalculator {
                 months: $months,
                 amount: $amount,
                 bookValueEnd: $cost->minus($allocated),
+                special: $special->isZero() ? null : ($special->greaterThan($amount) ? $amount : $special),
             );
 
             if ($endsWithDisposal) {
@@ -116,6 +140,20 @@ final class DepreciationCalculator {
         }
 
         return $rows;
+    }
+
+    /**
+     * Sonder-AfA nach § 7g je Geschäftsjahr (MVP-981).
+     *
+     * @return array<int, Money> Startjahr → Betrag
+     */
+    private function specials(FixedAsset $asset): array {
+        $specials = [];
+        foreach ($asset->specialDepreciations as $special) {
+            $specials[$special->fiscal_year] = $special->depreciation_amount;
+        }
+
+        return $specials;
     }
 
     /**

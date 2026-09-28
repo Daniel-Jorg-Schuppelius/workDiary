@@ -54,7 +54,7 @@
                         <x-detail-grid.row :label="__('accounting.fixed_assets.column.cost')" :value="$fixedAsset->acquisition_cost?->format()" />
                         <x-detail-grid.row :label="__('accounting.fixed_assets.field.residual_value')" :value="$fixedAsset->residual_value?->format() ?? '—'" />
                         <x-detail-grid.row :label="__('accounting.fixed_assets.column.useful_life')" :value="__('accounting.fixed_assets.months', ['count' => $fixedAsset->useful_life_months])" />
-                        <x-detail-grid.row :label="__('accounting.fixed_assets.field.method')" :value="$fixedAsset->depreciation_method->label()" />
+                        <x-detail-grid.row :label="__('accounting.fixed_assets.field.method')" :value="$fixedAsset->depreciation_method->label() . ($fixedAsset->declining_rate !== null ? ' · ' . \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $fixedAsset->declining_rate, 2) . ' %' : '')" />
                         <x-detail-grid.row :label="__('accounting.fixed_assets.field.asset_account')" :value="$fixedAsset->assetAccount?->displayLabel() ?? __('accounting.fixed_assets.account_from_rule')" />
                         <x-detail-grid.row :label="__('accounting.fixed_assets.field.depreciation_account')" :value="$fixedAsset->depreciationAccount?->displayLabel() ?? __('accounting.fixed_assets.account_from_rule')" />
                         @if ($fixedAsset->disposed_on)
@@ -75,6 +75,9 @@
                                 <th>{{ __('accounting.fixed_assets.schedule.year') }}</th>
                                 <th class="text-center">{{ __('accounting.fixed_assets.schedule.months') }}</th>
                                 <th class="text-right">{{ __('accounting.fixed_assets.schedule.amount') }}</th>
+                                @if ($specials->isNotEmpty())
+                                    <th class="text-right">{{ __('accounting.fixed_assets.special.column') }}</th>
+                                @endif
                                 <th class="text-right">{{ __('accounting.fixed_assets.schedule.book_value_end') }}</th>
                                 <th>{{ __('accounting.ledger.column.status') }}</th>
                             </tr>
@@ -85,6 +88,9 @@
                                 <td class="font-medium">{{ $row->label }}</td>
                                 <td class="text-center">{{ $row->months }}</td>
                                 <td class="text-right font-mono">{{ $row->amount->format() }}</td>
+                                @if ($specials->isNotEmpty())
+                                    <td class="text-right font-mono">{{ $row->special?->format() ?? '—' }}</td>
+                                @endif
                                 <td class="text-right font-mono">{{ $row->bookValueEnd->format() }}</td>
                                 <td>
                                     @if ($entry)
@@ -97,10 +103,37 @@
                                 </td>
                             </tr>
                         @empty
-                            <x-table.empty :colspan="5" :title="__('accounting.fixed_assets.schedule.empty')" compact />
+                            <x-table.empty :colspan="$specials->isNotEmpty() ? 6 : 5" :title="__('accounting.fixed_assets.schedule.empty')" compact />
                         @endforelse
                     </x-table>
                 </x-card>
+
+                @if ($specialAllowed || $specials->isNotEmpty())
+                    {{-- Sonder-AfA § 7g (MVP-981): je Geschäftsjahr im Begünstigungszeitraum. --}}
+                    <x-card :title="__('accounting.fixed_assets.special.title')" icon="bolt" :count="$specials->count()"
+                            :subtitle="__('accounting.fixed_assets.special.hint')">
+                        @if ($canConfigure && $specialAllowed)
+                            <x-slot:actions>
+                                <x-icon-btn icon="add" size="sm" data-entry-modal-trigger
+                                            :href="route('finance.accounting.fixed-assets.special-form', $fixedAsset)"
+                                            show-label>{{ __('accounting.fixed_assets.special.add') }}</x-icon-btn>
+                            </x-slot:actions>
+                        @endif
+                        @forelse ($specials as $special)
+                            <div class="flex items-center justify-between gap-2 py-1 text-sm">
+                                <span>{{ $special->fiscal_year }} · <span class="font-mono">{{ $special->depreciation_amount->format() }}</span>@if ($special->note) <span class="text-muted">· {{ $special->note }}</span>@endif</span>
+                                @if ($canConfigure)
+                                    <x-action-form :action="route('finance.accounting.fixed-assets.special.destroy', [$fixedAsset, $special])" method="DELETE"
+                                                   :confirm="__('accounting.fixed_assets.special.confirm_remove')" :confirm-label="__('Entfernen')">
+                                        <x-icon-btn type="submit" icon="delete" size="sm" tone="error" :label="__('Entfernen')" />
+                                    </x-action-form>
+                                @endif
+                            </div>
+                        @empty
+                            <p class="text-sm text-muted">{{ __('accounting.fixed_assets.special.none') }}</p>
+                        @endforelse
+                    </x-card>
+                @endif
             </div>
 
             <div class="space-y-4">

@@ -585,6 +585,10 @@ return [
     'AccountingTaxationPeriod' => 'Periodo di regime IVA',
     'AccountingVatFilingPeriod' => 'Sezione periodo di liquidazione',
     'FixedAsset' => 'Cespite',
+    'LiquidityPlanItem' => 'Voce pianificata (liquidità)',
+    'CostAllocationKey' => 'Chiave di ribaltamento',
+    'AccountingBudgetRelease' => 'Approvazione del budget',
+    'FixedAssetSpecialDepreciation' => 'Ammortamento speciale',
     'AccountingVatExtension' => 'Proroga permanente',
     'AccountingFilingObligation' => 'Obbligo dichiarativo',
     // Registro rivendita (funzionalità 152, revisione 2026-09-10 A2).

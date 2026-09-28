@@ -1436,6 +1436,7 @@ return [
             'linear' => 'Straight-line',
             'immediate' => 'Immediate write-off (low-value asset)',
             'pool' => 'Collective pool',
+            'declining' => 'Declining balance',
         ],
         'accounting-period-status' => [
             'open' => 'Open',
@@ -1461,6 +1462,14 @@ return [
             'sevdesk' => 'sevDesk (invoice draft)',
             'easybill' => 'easybill (invoice draft)',
             'file' => 'File export',
+        ],
+        'budget-release-status' => [
+            'draft' => 'Draft',
+            'released' => 'Released',
+        ],
+        'liquidity-plan-recurrence' => [
+            'once' => 'One-off',
+            'monthly' => 'Monthly',
         ],
         'transfer-status' => [
             'draft' => 'Draft',

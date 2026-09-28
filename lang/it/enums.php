@@ -1436,6 +1436,7 @@ return [
             'linear' => 'Lineare',
             'immediate' => 'Ammortamento immediato (bene di modesto valore)',
             'pool' => 'Fondo collettivo',
+            'declining' => 'Decrescente',
         ],
         'accounting-period-status' => [
             'open' => 'Aperto',
@@ -1461,6 +1462,14 @@ return [
             'sevdesk' => 'sevDesk (bozza di fattura)',
             'easybill' => 'easybill (bozza di fattura)',
             'file' => 'Esportazione file',
+        ],
+        'budget-release-status' => [
+            'draft' => 'Bozza',
+            'released' => 'Approvato',
+        ],
+        'liquidity-plan-recurrence' => [
+            'once' => 'Una tantum',
+            'monthly' => 'Mensile',
         ],
         'transfer-status' => [
             'draft' => 'Bozza',

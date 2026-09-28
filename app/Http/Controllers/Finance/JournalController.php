@@ -76,6 +76,8 @@ class JournalController extends Controller {
         return view('finance.accounting.entry', [
             'entry' => $entry->load(['lines.account', 'lines.taxCode', 'postedBy', 'reversedBy', 'reverses']),
             'canPost' => Gate::allows(Permission::AccountingLedgerPost->value),
+            // Hinweis auf überschrittene freigegebene Monatsbudgets (MVP-983), keine Sperre.
+            'budgetOverruns' => app(\App\Services\Accounting\AccountingBudgetService::class)->overrunsFor($entry),
         ]);
     }
 

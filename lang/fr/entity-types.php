@@ -585,6 +585,10 @@ return [
     'AccountingTaxationPeriod' => 'Période de régime de TVA',
     'AccountingVatFilingPeriod' => 'Section de période de déclaration',
     'FixedAsset' => 'Immobilisation',
+    'LiquidityPlanItem' => 'Poste planifié (trésorerie)',
+    'CostAllocationKey' => 'Clé de répartition',
+    'AccountingBudgetRelease' => 'Validation du budget',
+    'FixedAssetSpecialDepreciation' => 'Amortissement exceptionnel',
     'AccountingVatExtension' => 'Prorogation permanente',
     'AccountingFilingObligation' => 'Obligation déclarative',
     // Registre de revente (fonctionnalité 152, revue 2026-09-10 A2).

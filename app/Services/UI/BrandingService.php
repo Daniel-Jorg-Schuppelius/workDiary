@@ -14,7 +14,7 @@ use App\Http\Controllers\Attachments\AttachmentController;
 use App\Models\Attachments\Attachment;
 use App\Models\Platform\Organization;
 use CommonToolkit\Helper\Data\{ColorHelper, DataUrlHelper};
-use Illuminate\Support\Facades\{Auth, Storage};
+use Illuminate\Support\Facades\{Auth, Storage, URL};
 
 /**
  * Zentrale Quelle für Branding-Informationen einer Organisation
@@ -115,16 +115,15 @@ class BrandingService {
     }
 
     /**
-     * Signed-URL für das passende Logo. Greift auf das App-Default-Logo
-     * unter `public/img/logo/workdiary-logo-512.png` zurück, wenn die
-     * Organisation kein eigenes Logo hochgeladen hat — so haben Layout
-     * und Login-Seite immer ein konsistentes Branding statt eines
-     * nackten Textfallbacks.
+     * URL des passenden Logos. Dauerhaft signiert und je Anhang stabil, damit
+     * der Browser das Bild über Seitenwechsel cacht — eine befristete URL wäre
+     * bei jedem Aufruf neu. Ohne eigenes Logo das App-Default-Logo, damit
+     * Layout und Login-Seite ein konsistentes Branding behalten.
      */
     public function logoUrl(string $variant = 'light'): ?string {
         $att = $this->logoAttachment($variant);
         if ($att !== null) {
-            return AttachmentController::downloadUrl($att);
+            return URL::signedRoute('branding.logo', ['logo' => $att]);
         }
 
         return asset('img/logo/workdiary-logo-512.png');

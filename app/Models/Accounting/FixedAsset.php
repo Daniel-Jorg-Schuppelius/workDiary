@@ -21,7 +21,7 @@ use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\{Builder, Model, SoftDeletes};
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
 use Illuminate\Support\Carbon;
 
 /**
@@ -44,6 +44,7 @@ use Illuminate\Support\Carbon;
  * @property Money|null $disposal_proceeds_amount
  * @property int $useful_life_months
  * @property DepreciationMethod $depreciation_method
+ * @property numeric-string|null $declining_rate
  * @property int|null $asset_account_id
  * @property int|null $depreciation_account_id
  * @property FixedAssetStatus $status
@@ -77,6 +78,7 @@ class FixedAsset extends Model {
         'residual_value',
         'useful_life_months',
         'depreciation_method',
+        'declining_rate',
         'asset_account_id',
         'depreciation_account_id',
         'status',
@@ -101,6 +103,7 @@ class FixedAsset extends Model {
         'residual_value' => MoneyCast::class . ':currency,2',
         'useful_life_months' => 'integer',
         'depreciation_method' => DepreciationMethod::class,
+        'declining_rate' => 'decimal:2',
         'status' => FixedAssetStatus::class,
     ];
 
@@ -117,6 +120,15 @@ class FixedAsset extends Model {
     /** @return BelongsTo<AccountingAccount, $this> */
     public function depreciationAccount(): BelongsTo {
         return $this->belongsTo(AccountingAccount::class, 'depreciation_account_id');
+    }
+
+    /**
+     * Sonder-AfA nach § 7g je Geschäftsjahr (MVP-981).
+     *
+     * @return HasMany<FixedAssetSpecialDepreciation, $this>
+     */
+    public function specialDepreciations(): HasMany {
+        return $this->hasMany(FixedAssetSpecialDepreciation::class)->orderBy('fiscal_year');
     }
 
     /** @return MorphTo<Model, $this> */

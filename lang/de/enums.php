@@ -1439,6 +1439,7 @@ return [
             'linear' => 'Linear',
             'immediate' => 'Sofortabschreibung (GWG)',
             'pool' => 'Sammelposten',
+            'declining' => 'Degressiv',
         ],
         'accounting-period-status' => [
             'open' => 'Offen',
@@ -1464,6 +1465,14 @@ return [
             'sevdesk' => 'sevDesk (Rechnungsentwurf)',
             'easybill' => 'easybill (Rechnungsentwurf)',
             'file' => 'Datei-Export',
+        ],
+        'budget-release-status' => [
+            'draft' => 'Entwurf',
+            'released' => 'Freigegeben',
+        ],
+        'liquidity-plan-recurrence' => [
+            'once' => 'Einmalig',
+            'monthly' => 'Monatlich',
         ],
         'transfer-status' => [
             'draft' => 'Entwurf',

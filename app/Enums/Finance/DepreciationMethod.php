@@ -33,6 +33,9 @@ enum DepreciationMethod: string implements HasLabel {
     /** Sammelposten: gleiche Jahresraten, Abgang beendet ihn nicht (MVP-892). */
     case Pool = 'pool';
 
+    /** Degressiv nach § 7 Abs. 2 EStG mit Wechsel zur linearen AfA (MVP-980). */
+    case Declining = 'declining';
+
     public function label(): string {
         return (string) __('enums.finance.depreciation-method.' . $this->value);
     }

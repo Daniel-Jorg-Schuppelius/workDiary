@@ -8,8 +8,8 @@
 //
 // Offen/zu wird in localStorage ("help.open" = "1") gemerkt — bewusst NUR der
 // Zustand, kein Topic und keine fachlichen/personenbezogenen Daten. Nach einem
-// Seitenwechsel (volle Page-Loads, kein SPA) öffnet die Sidebar dann mit dem
-// NEUEN Seitenkontext, nie mit veraltetem Inhalt.
+// Seitenwechsel setzen Inline-Skripte (Layout, help-drawer.blade.php) den
+// Zustand vor dem ersten Rendern; hier wird nur der NEUE Seitenkontext geladen.
 
 import { html, setHtml, clearHtml, trustedServerHtml, sameOriginPath } from "./lib/html.js";
 import { getJson, postJson } from "./lib/http.js";
@@ -23,10 +23,6 @@ const FOOTER_COLLAPSED_STORAGE_KEY = "help.footer.collapsed";
 const NEWS_PAUSED_STORAGE_KEY = "help.news.paused";
 const DESKTOP_QUERY = "(min-width: 1024px)";
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
-// Unterhalb dieser Viewport-Höhe klappt der Footer (Feedback/Aktionen) ohne
-// gespeicherte Präferenz standardmäßig ein — sonst bleibt für den Hilfetext
-// auf niedrigen Bildschirmen kaum Platz.
-const SHORT_VIEWPORT_HEIGHT = 760;
 
 let currentTopic = null;
 let currentLocale = null;
@@ -56,14 +52,6 @@ function rememberOpenState(open) {
     }
 }
 
-function wasOpen() {
-    try {
-        return window.localStorage.getItem(OPEN_STORAGE_KEY) === "1";
-    } catch (error) {
-        return false;
-    }
-}
-
 // Footer (Feedback/Aktionen) einklappen, um auf niedrigen Bildschirmen mehr
 // Platz für den Hilfetext zu schaffen. Zustand wird gemerkt — nur "collapsed",
 // keine fachlichen Daten (Datenschutz, analog zum Offen/Zu-Zustand).
@@ -77,21 +65,6 @@ function rememberFooterCollapsed(collapsed) {
     } catch (error) {
         // localStorage kann fehlen (Private Mode) — Toggle funktioniert trotzdem.
     }
-}
-
-// Gespeicherte Präferenz oder — ohne Präferenz — Auto-Einklappen bei niedriger
-// Viewport-Höhe.
-function footerShouldStartCollapsed() {
-    try {
-        const stored = window.localStorage.getItem(
-            FOOTER_COLLAPSED_STORAGE_KEY,
-        );
-        if (stored === "1") return true;
-        if (stored === "0") return false;
-    } catch (error) {
-        // Kein localStorage → auf Höhen-Heuristik zurückfallen.
-    }
-    return window.innerHeight < SHORT_VIEWPORT_HEIGHT;
 }
 
 function applyFooterCollapsed(collapsed) {
@@ -655,18 +628,11 @@ function bindHelpDrawer() {
         });
     }
 
-    // Initialzustand des Footers: gespeicherte Präferenz oder Auto-Einklappen
-    // bei niedriger Viewport-Höhe.
-    if (document.querySelector("[data-help-footer-content]")) {
-        applyFooterCollapsed(footerShouldStartCollapsed());
-    }
-
     bindNewsRail();
 
-    // War die Sidebar beim letzten Seitenaufruf offen, öffnet sie nach dem
-    // (vollen) Page-Load automatisch mit dem NEUEN Seitenkontext. Kein
-    // Fokus-Klau beim Laden (focus: false).
-    if (document.querySelector(DRAWER_SELECTOR) && wasOpen()) {
+    // Schon offen gerendert (gemerkter Zustand): Inhalt zum NEUEN
+    // Seitenkontext laden, ohne Fokus-Klau.
+    if (isOpen()) {
         openContextHelp({ focus: false });
     }
 }

@@ -464,6 +464,10 @@ body.sidebar-collapsed #app-sidebar .menu li {
 body.sidebar-collapsed #app-sidebar .sidebar-cta-text {
     display: none;
 }
+/* chevron_left gespiegelt = chevron_right, ohne dass JS das Icon nachträglich tauscht. */
+body.sidebar-collapsed #app-sidebar [data-sidebar-collapse-icon] {
+    transform: scaleX(-1);
+}
 
 /* Eingeklappte Sidebar (Icon-Rail): Sektions-Header und Untergruppen
                auf zentrierte Icons reduzieren, damit keine Lücken durch Chevron,

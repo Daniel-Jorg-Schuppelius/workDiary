@@ -585,6 +585,10 @@ return [
     'AccountingTaxationPeriod' => 'Tramo de régimen de IVA',
     'AccountingVatFilingPeriod' => 'Sección de periodo de liquidación',
     'FixedAsset' => 'Activo fijo',
+    'LiquidityPlanItem' => 'Partida planificada (liquidez)',
+    'CostAllocationKey' => 'Clave de reparto',
+    'AccountingBudgetRelease' => 'Aprobación del presupuesto',
+    'FixedAssetSpecialDepreciation' => 'Amortización especial',
     'AccountingVatExtension' => 'Prórroga permanente',
     'AccountingFilingObligation' => 'Obligación de declaración',
     // Registro de reventa (función 152, revisión 2026-09-10 A2).

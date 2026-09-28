@@ -411,31 +411,13 @@ import { putJson } from "./lib/http.js";
     var sidebarToggle = document.getElementById("app-sidebar-toggle");
     var sidebarBackdrop = document.getElementById("app-sidebar-backdrop");
     var sidebarCollapse = document.getElementById("app-sidebar-collapse");
-    var sidebarCollapseIcon = document.querySelector(
-        "[data-sidebar-collapse-icon]",
-    );
 
-    // Collapse-State auf lg+ aus localStorage anwenden
-    function applyCollapsed(collapsed) {
-        document.body.classList.toggle("sidebar-collapsed", collapsed);
-        if (sidebarCollapseIcon) {
-            sidebarCollapseIcon.textContent = collapsed
-                ? "chevron_right"
-                : "chevron_left";
-        }
-    }
-    try {
-        applyCollapsed(
-            localStorage.getItem("workDiarySidebarCollapsed") === "1",
-        );
-    } catch (e) {
-        /* ignore */
-    }
-
+    // Den gemerkten Zustand setzt das Inline-Skript am Body-Anfang
+    // (app.blade.php) vor dem ersten Rendern; das Icon spiegelt layout.css.
     if (sidebarCollapse) {
         sidebarCollapse.addEventListener("click", function () {
             var next = !document.body.classList.contains("sidebar-collapsed");
-            applyCollapsed(next);
+            document.body.classList.toggle("sidebar-collapsed", next);
             try {
                 localStorage.setItem(
                     "workDiarySidebarCollapsed",
@@ -447,7 +429,8 @@ import { putJson } from "./lib/http.js";
         });
     }
 
-    // Persistenz pro Sektion (<details data-sidebar-section-key="…">)
+    // Persistenz pro Sektion (<details data-sidebar-section-key="…">); den
+    // gemerkten Zustand übernimmt das Inline-Skript hinter der Sidebar.
     (function () {
         var STORAGE_KEY = "workDiarySidebarSections";
         var store = {};
@@ -466,12 +449,6 @@ import { putJson } from "./lib/http.js";
         );
         sections.forEach(function (details) {
             var key = details.getAttribute("data-sidebar-section-key");
-            if (key && Object.prototype.hasOwnProperty.call(store, key)) {
-                details.open =
-                    store[key] === 1 ||
-                    store[key] === "1" ||
-                    store[key] === true;
-            }
             details.addEventListener("toggle", function () {
                 store[key] = details.open ? 1 : 0;
                 try {
@@ -503,12 +480,6 @@ import { putJson } from "./lib/http.js";
         );
         groups.forEach(function (details) {
             var key = details.getAttribute("data-sidebar-subgroup-key");
-            if (key && Object.prototype.hasOwnProperty.call(store, key)) {
-                details.open =
-                    store[key] === 1 ||
-                    store[key] === "1" ||
-                    store[key] === true;
-            }
             details.addEventListener("toggle", function () {
                 store[key] = details.open ? 1 : 0;
                 try {

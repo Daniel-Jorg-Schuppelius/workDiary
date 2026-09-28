@@ -1436,6 +1436,7 @@ return [
             'linear' => 'Lineal',
             'immediate' => 'Amortización inmediata (bien de escaso valor)',
             'pool' => 'Fondo colectivo',
+            'declining' => 'Degresiva',
         ],
         'accounting-period-status' => [
             'open' => 'Abierto',
@@ -1461,6 +1462,14 @@ return [
             'sevdesk' => 'sevDesk (borrador de factura)',
             'easybill' => 'easybill (borrador de factura)',
             'file' => 'Exportación de archivo',
+        ],
+        'budget-release-status' => [
+            'draft' => 'Borrador',
+            'released' => 'Aprobado',
+        ],
+        'liquidity-plan-recurrence' => [
+            'once' => 'Única',
+            'monthly' => 'Mensual',
         ],
         'transfer-status' => [
             'draft' => 'Borrador',

@@ -76,12 +76,18 @@ class AccountingBudgetController extends Controller {
             ], $request);
         }
 
+        $release = $this->budgets->releaseFor($organization, $year, $costCenter?->id);
+        $released = $release?->status === \App\Enums\Finance\BudgetReleaseStatus::Released;
+
         return view('reports.accounting.budget', $data + [
             'year' => $year,
             'years' => $years,
             'costCenters' => $costCenters,
             'costCenter' => $costCenter,
-            'canEdit' => Gate::allows(Permission::AccountingLedgerPrepare->value),
+            'release' => $release,
+            'released' => $released,
+            'canRelease' => Gate::allows(Permission::AccountingLedgerPrepare->value),
+            'canEdit' => Gate::allows(Permission::AccountingLedgerPrepare->value) && ! $released,
         ]);
     }
 
@@ -143,6 +149,47 @@ class AccountingBudgetController extends Controller {
         return redirect()
             ->route('reports.accounting.budget.index', array_filter(['year' => $year, 'cost_center' => $costCenter?->sqid]))
             ->with('status', __('accounting.budget.flash.copied', ['count' => $count, 'year' => $year - 1]));
+    }
+
+    /** Budget des Jahres und der Kostenstelle freigeben (MVP-983). */
+    public function release(Request $request): RedirectResponse {
+        abort_unless(Gate::allows(Permission::AccountingLedgerPrepare->value), 403);
+        $organization = $this->currentOrganizationOrAbort();
+        $year = $this->year($request, $organization);
+        $costCenter = $this->costCenter($request, $this->costCenters($organization));
+        /** @var \App\Models\Platform\User $user */
+        $user = $request->user();
+        $this->budgets->release($organization, $year, $costCenter?->id, $user);
+
+        return redirect()->route('reports.accounting.budget.index', array_filter(['year' => $year, 'cost_center' => $costCenter?->sqid]))
+            ->with('status', __('accounting.budget.flash.released'));
+    }
+
+    public function reopenForm(Request $request): View {
+        abort_unless(Gate::allows(Permission::AccountingLedgerPrepare->value), 403);
+        $organization = $this->currentOrganizationOrAbort();
+
+        return view('reports.accounting._budget_reopen_dialog', [
+            'year' => $this->year($request, $organization),
+            'costCenter' => $this->costCenter($request, $this->costCenters($organization)),
+        ]);
+    }
+
+    /** Nachtrag: freigegebenes Budget mit Grund wieder öffnen. */
+    public function reopen(Request $request): RedirectResponse {
+        abort_unless(Gate::allows(Permission::AccountingLedgerPrepare->value), 403);
+        $organization = $this->currentOrganizationOrAbort();
+        $data = $request->validate(['reopen_reason' => ['required', 'string', 'min:3', 'max:500']]);
+        $year = $this->year($request, $organization);
+        $costCenter = $this->costCenter($request, $this->costCenters($organization));
+        $release = $this->budgets->releaseFor($organization, $year, $costCenter?->id);
+        abort_if($release === null, 404);
+        /** @var \App\Models\Platform\User $user */
+        $user = $request->user();
+        $this->budgets->reopen($release, $user, (string) $data['reopen_reason']);
+
+        return redirect()->route('reports.accounting.budget.index', array_filter(['year' => $year, 'cost_center' => $costCenter?->sqid]))
+            ->with('status', __('accounting.budget.flash.reopened'));
     }
 
     private function year(Request $request, Organization $organization): int {

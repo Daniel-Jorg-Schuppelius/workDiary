@@ -585,6 +585,10 @@ return [
     'AccountingTaxationPeriod' => 'Versteuerungsart-Abschnitt',
     'AccountingVatFilingPeriod' => 'Meldezeitraum-Abschnitt',
     'FixedAsset' => 'Anlage',
+    'LiquidityPlanItem' => 'Planposition (Liquidität)',
+    'CostAllocationKey' => 'Umlageschlüssel',
+    'AccountingBudgetRelease' => 'Budgetfreigabe',
+    'FixedAssetSpecialDepreciation' => 'Sonder-AfA',
     'AccountingVatExtension' => 'Dauerfristverlängerung',
     'AccountingFilingObligation' => 'Meldepflicht',
     // Reselling-Register (Feature 152, Review 2026-09-10 A2).

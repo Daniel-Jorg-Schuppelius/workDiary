@@ -15,7 +15,7 @@ namespace App\Services\Accounting\Reports;
 use App\Enums\Finance\{AccountType, BwaGroup};
 use App\Models\Accounting\AccountingAccount;
 use App\Models\Platform\Organization;
-use App\Services\Accounting\{AccountingBudgetService, FiscalCalendar};
+use App\Services\Accounting\{AccountingBudgetService, CostAllocationService, FiscalCalendar};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 
@@ -58,12 +58,13 @@ class BwaBuilder extends AbstractAccountingReportBuilder {
         private readonly BwaAccountMapper $mapper,
         private readonly AccountingBudgetService $budgets,
         private readonly FiscalCalendar $calendar,
+        private readonly CostAllocationService $allocations,
     ) {}
 
     /**
      * @return array{scheme: string|null, compare: string, compare_range: array{0: CarbonImmutable, 1: CarbonImmutable}|null, columns: list<array{key: string, label: string}>, rows: list<BwaRow>, groups: array<string, BwaValues>, subtotals: array<string, BwaValues>, unmapped_count: int}
      */
-    public function build(Organization $organization, CarbonImmutable $from, CarbonImmutable $to, string $compare = self::COMPARE_NONE, ?int $costCenterId = null): array {
+    public function build(Organization $organization, CarbonImmutable $from, CarbonImmutable $to, string $compare = self::COMPARE_NONE, ?int $costCenterId = null, bool $allocated = false): array {
         $compare = in_array($compare, self::COMPARE_MODES, true) ? $compare : self::COMPARE_NONE;
 
         $accounts = AccountingAccount::query()
@@ -72,6 +73,18 @@ class BwaBuilder extends AbstractAccountingReportBuilder {
             ->orderBy('number')
             ->get();
         $scheme = $this->mapper->detectScheme($accounts);
+        // Umlage (MVP-982) nur mit Kostenstelle; Schlüssel des Geschäftsjahres von `$from`.
+        $expenseIds = array_values($accounts->where('type', AccountType::Expense)->pluck('id')->map(static fn ($id): int => (int) $id)->all());
+        $allocationYear = $this->calendar->fiscalYearOf($from, $this->calendar->startMonth($organization));
+        $sums = function (CarbonImmutable $rangeFrom, CarbonImmutable $rangeTo) use ($organization, $costCenterId, $allocated, $expenseIds, $allocationYear): array {
+            $own = $this->sumsByAccount($organization, $rangeFrom, $rangeTo, null, $costCenterId);
+            if (! $allocated || $costCenterId === null) {
+                return $own;
+            }
+
+            return $this->allocations->allocate($organization, $allocationYear, $costCenterId, $own, $expenseIds,
+                fn (int $source): array => $this->sumsByAccount($organization, $rangeFrom, $rangeTo, null, $source));
+        };
 
         // Spalten und ihre Rohwerte je Konto.
         $columns = [];
@@ -84,16 +97,16 @@ class BwaBuilder extends AbstractAccountingReportBuilder {
             foreach ($months as $month) {
                 $key = $month->format('Y-m');
                 $columns[] = ['key' => $key, 'label' => $month->translatedFormat('M Y')];
-                $rawByColumn[$key] = $this->sumsByAccount($organization, $month, $month->endOfMonth()->startOfDay(), null, $costCenterId);
+                $rawByColumn[$key] = $sums($month, $month->endOfMonth()->startOfDay());
             }
             $columns[] = ['key' => self::COL_TOTAL, 'label' => (string) __('accounting.bwa.column.total')];
         } else {
             $columns[] = ['key' => self::COL_ACTUAL, 'label' => (string) __('accounting.bwa.column.actual')];
-            $rawByColumn[self::COL_ACTUAL] = $this->sumsByAccount($organization, $from, $to, null, $costCenterId);
+            $rawByColumn[self::COL_ACTUAL] = $sums($from, $to);
 
             if ($compareRange !== null) {
                 $columns[] = ['key' => self::COL_COMPARE, 'label' => (string) __('accounting.bwa.compare.' . $compare)];
-                $rawByColumn[self::COL_COMPARE] = $this->sumsByAccount($organization, $compareRange[0], $compareRange[1], null, $costCenterId);
+                $rawByColumn[self::COL_COMPARE] = $sums($compareRange[0], $compareRange[1]);
             } elseif ($compare === self::COMPARE_BUDGET) {
                 $columns[] = ['key' => self::COL_COMPARE, 'label' => (string) __('accounting.bwa.column.budget')];
             }

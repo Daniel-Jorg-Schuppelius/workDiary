@@ -90,6 +90,8 @@ class FixedAssetController extends Controller {
         return view('finance.accounting.fixed-asset', [
             'fixedAsset' => $fixedAsset,
             'rows' => $rows,
+            'specials' => $fixedAsset->specialDepreciations,
+            'specialAllowed' => ! $fixedAsset->isDisposed() && ! in_array($fixedAsset->depreciation_method, [DepreciationMethod::Immediate, DepreciationMethod::Pool], true),
             'entries' => $this->service->entriesForSchedule($organization, $fixedAsset, $rows),
             'frozen' => $this->service->hasPostedDepreciation($fixedAsset),
             'canConfigure' => Gate::allows(Permission::AccountingLedgerConfigure->value),
@@ -183,6 +185,7 @@ class FixedAssetController extends Controller {
             'residual_value' => ['nullable', 'numeric', 'gte:0'],
             'useful_life_months' => ['required', 'integer', 'between:1,1200'],
             'depreciation_method' => ['required', 'string', Rule::enum(DepreciationMethod::class)],
+            'declining_rate' => ['nullable', 'required_if:depreciation_method,declining', 'numeric', 'gt:0', 'max:100'],
             'asset_account' => ['nullable', 'string'],
             'depreciation_account' => ['nullable', 'string'],
             'note' => ['nullable', 'string', 'max:2000'],
@@ -202,6 +205,7 @@ class FixedAssetController extends Controller {
             'residual_value' => NumberHelper::roundPrecise(NumberHelper::normalizeDecimalString((string) ($data['residual_value'] ?? '0')), 2),
             'useful_life_months' => (int) $data['useful_life_months'],
             'depreciation_method' => DepreciationMethod::from((string) $data['depreciation_method']),
+            'declining_rate' => isset($data['declining_rate']) ? NumberHelper::normalizeDecimalString((string) $data['declining_rate']) : null,
             'asset_account_id' => $this->ownAccountId($organization, $data['asset_account'] ?? null),
             'depreciation_account_id' => $this->ownAccountId($organization, $data['depreciation_account'] ?? null),
             'note' => $data['note'] ?? null,
@@ -249,5 +253,41 @@ class FixedAssetController extends Controller {
         abort_unless((int) $asset->organization_id === (int) $organization->id, 404);
 
         return $organization;
+    }
+
+    /** Sonder-AfA § 7g erfassen (MVP-981). */
+    public function specialForm(FixedAsset $fixedAsset): View {
+        abort_unless(Gate::allows(Permission::AccountingLedgerConfigure->value), 403);
+        $this->assertSameOrganization($fixedAsset);
+        $start = $this->service->acquisitionFiscalYear($fixedAsset);
+
+        return view('finance.accounting._fixed_asset_special_dialog', [
+            'fixedAsset' => $fixedAsset,
+            'years' => range($start, $start + 4),
+        ]);
+    }
+
+    public function storeSpecial(Request $request, FixedAsset $fixedAsset): RedirectResponse {
+        abort_unless(Gate::allows(Permission::AccountingLedgerConfigure->value), 403);
+        $this->assertSameOrganization($fixedAsset);
+        $data = $request->validate([
+            'fiscal_year' => ['required', 'integer', 'between:1990,2100'],
+            'depreciation_amount' => ['required', 'numeric', 'gt:0'],
+            'note' => ['nullable', 'string', 'max:255'],
+        ]);
+        /** @var \App\Models\Platform\User $user */
+        $user = $request->user();
+        $this->service->saveSpecialDepreciation($fixedAsset, (int) $data['fiscal_year'], NumberHelper::normalizeDecimalString((string) $data['depreciation_amount']), $data['note'] ?? null, $user);
+
+        return back()->with('status', __('accounting.fixed_assets.flash.special_saved'));
+    }
+
+    public function destroySpecial(FixedAsset $fixedAsset, \App\Models\Accounting\FixedAssetSpecialDepreciation $special): RedirectResponse {
+        abort_unless(Gate::allows(Permission::AccountingLedgerConfigure->value), 403);
+        $this->assertSameOrganization($fixedAsset);
+        abort_unless($special->fixed_asset_id === $fixedAsset->id, 404);
+        $this->service->removeSpecialDepreciation($special);
+
+        return back()->with('status', __('accounting.fixed_assets.flash.special_removed'));
     }
 }

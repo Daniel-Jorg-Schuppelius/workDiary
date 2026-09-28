@@ -33,6 +33,7 @@ class PublicTokenRouteThrottleTest extends TestCase {
             // Sicherheitsaudit 2026-09-13 (surface-1): der VC-JWT-Weg des
             // Zertifikats lief ohne Drossel, waehrend der Zwillingsweg eine hat.
             'certificate credential jwt' => ['learning.certificates.credential-jwt'],
+            'branding logo' => ['branding.logo'],
         ];
     }
 

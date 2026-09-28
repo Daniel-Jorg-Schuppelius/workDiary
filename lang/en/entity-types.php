@@ -585,6 +585,10 @@ return [
     'AccountingTaxationPeriod' => 'Taxation method section',
     'AccountingVatFilingPeriod' => 'VAT return period section',
     'FixedAsset' => 'Fixed asset',
+    'LiquidityPlanItem' => 'Plan item (liquidity)',
+    'CostAllocationKey' => 'Allocation key',
+    'AccountingBudgetRelease' => 'Budget release',
+    'FixedAssetSpecialDepreciation' => 'Special depreciation',
     'AccountingVatExtension' => 'Deadline extension',
     'AccountingFilingObligation' => 'Filing obligation',
     // Resale register (feature 152, review 2026-09-10 A2).

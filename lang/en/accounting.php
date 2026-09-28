@@ -319,6 +319,15 @@ return [
     ],
     // Anlagenregister und Jahres-AfA (Feature 133, MVP-698).
     'fixed_assets' => [
+        'special' => [
+            'title' => 'Special depreciation § 7g',
+            'hint' => 'In addition to regular depreciation in the year of acquisition and the following four years, at most 40 % in total. Your tax advisor checks the requirements of § 7g EStG.',
+            'amount' => 'Amount',
+            'column' => 'thereof § 7g',
+            'add' => 'Add special depreciation',
+            'none' => 'No special depreciation recorded.',
+            'confirm_remove' => 'Remove the special depreciation for this year?',
+        ],
         'title' => 'Fixed asset register',
         'menu' => 'Fixed assets',
         'subtitle' => 'Assets with cost, useful life and depreciation schedule — annual depreciation is posted as a proposal through the posting inbox.',
@@ -342,6 +351,7 @@ return [
             'book_value' => 'Book value :year',
         ],
         'field' => [
+            'declining_rate' => 'Declining rate (%)',
             'device' => 'Device (asset)',
             'residual_value' => 'Residual value',
             'method' => 'Depreciation method',
@@ -366,6 +376,7 @@ return [
             'empty' => 'No schedule — depreciable base or useful life is missing.',
         ],
         'hint' => [
+            'declining_rate' => 'Only with the “declining” method: rate on the book value, at most the permitted multiple of the straight-line rate (currently up to 30 % for acquisitions from 07/2025). Switches once straight-line depreciation is higher.',
             'device' => 'Optional link to the device register; not every fixed asset is a device.',
             'residual_value' => 'Remains at the end of the useful life; default 0.',
             'useful_life' => 'Ordinary useful life according to the depreciation table, in months. For low-value assets and the pool, the term follows from the method.',
@@ -383,11 +394,20 @@ return [
             'dispose_submit' => 'Record disposal',
         ],
         'flash' => [
+            'special_saved' => 'Special depreciation saved.',
+            'special_removed' => 'Special depreciation removed.',
             'created' => 'Fixed asset :no created.',
             'updated' => 'Fixed asset saved.',
             'disposed' => 'Disposal recorded.',
         ],
         'error' => [
+            'declining_window' => 'Declining-balance depreciation is only permitted for acquisitions within the statutory periods (2009–2010, 2020–2022, 04–12/2024, 07/2025–2027).',
+            'declining_rate' => 'The declining rate must be greater than 0 and at most :max %.',
+            'special_period' => 'Special depreciation under § 7g is only possible in the qualifying period :from–:until.',
+            'special_amount' => 'Please enter an amount greater than 0.',
+            'special_limit' => 'Special depreciation may total at most :limit (40 % of the acquisition cost).',
+            'special_not_allowed' => 'No special depreciation is possible for this asset (disposed, low-value asset or pool).',
+            'special_posted' => 'Depreciation for :year has already been prepared or posted — special depreciation for that year is locked.',
             'gwg_limit' => 'Low-value assets only up to € :limit net (organisation setting).',
             'pool_range' => 'Collective pool only above € :lower up to € :upper net (organisation setting).',
             'disposed_frozen' => 'A disposed fixed asset can no longer be changed.',
@@ -713,6 +733,7 @@ return [
                 'filings' => 'Taxes',
                 'investments' => 'Investments',
                 'scenario' => 'Scenario',
+                'plan' => 'Plan items',
             ],
             'note' => [
                 'overdue' => 'overdue — current week',
@@ -769,7 +790,73 @@ return [
                 'title' => 'Management report (BWA)',
                 'text' => 'Short-term income statement with previous year, previous month, monthly grid and budget.',
             ],
-            'budget' => [
+            'liquidity_plan' => [
+        'title' => 'Plan items',
+        'subtitle' => 'Your own receipts and payments for the 13-week forecast, one-off or monthly.',
+        'actual_title' => 'Liquidity plan vs. actual',
+        'actual_subtitle' => 'Recorded weekly forecast compared with the actual account movements.',
+        'empty' => 'No plan items yet.',
+        'no_snapshot' => 'No weekly state recorded yet — automatically every Monday or via “Record current state”.',
+        'action' => [
+            'add' => 'Add plan item',
+            'snapshot' => 'Record current state',
+        ],
+        'field' => [
+            'label' => 'Description',
+            'direction' => 'Direction',
+            'planned_amount' => 'Amount',
+            'starts_on' => 'Due on (first due date)',
+            'recurrence' => 'Recurrence',
+            'ends_on' => 'Last due date',
+            'snapshot' => 'Recorded on',
+        ],
+        'hint' => [
+            'ends_on' => 'Only for monthly recurrence; empty = open-ended.',
+        ],
+        'column' => [
+            'planned_net' => 'Plan (net)',
+            'actual_in' => 'Actual receipts',
+            'actual_out' => 'Actual payments',
+            'actual_net' => 'Actual (net)',
+            'deviation' => 'Deviation',
+        ],
+        'confirm' => [
+            'remove' => 'Remove the plan item?',
+        ],
+        'flash' => [
+            'saved' => 'Plan item saved.',
+            'removed' => 'Plan item removed.',
+            'snapshot' => 'Weekly state recorded.',
+        ],
+    ],
+    'allocation' => [
+        'title' => 'Allocation keys',
+        'subtitle' => 'Distribution of the service cost centres in fiscal year :year',
+        'hint' => 'A service cost centre passes shares of its expenses on to final cost centres. The management report of a cost centre shows the distribution with “After allocation”; postings remain unchanged.',
+        'total' => 'Distributed: :percent %',
+        'empty' => 'No allocation keys for this year yet.',
+        'action' => [
+            'add' => 'Add allocation key',
+        ],
+        'field' => [
+            'source' => 'Service cost centre',
+            'target' => 'Receiving cost centre',
+            'share_percent' => 'Share (%)',
+        ],
+        'confirm' => [
+            'remove' => 'Remove the allocation key?',
+        ],
+        'flash' => [
+            'saved' => 'Allocation key saved.',
+            'removed' => 'Allocation key removed.',
+        ],
+        'error' => [
+            'same' => 'The service cost centre and the receiving cost centre must differ.',
+            'share' => 'The share must be greater than 0 and at most 100 %.',
+            'total' => 'The shares of a service cost centre must not exceed 100 % in total (free: :rest %).',
+        ],
+    ],
+    'budget' => [
                 'title' => 'Budget',
                 'text' => 'Planned values per account and fiscal year — as an annual value or monthly values.',
             ],
@@ -1134,6 +1221,7 @@ return [
             'budget' => 'Budget',
         ],
         'filter' => [
+            'allocated' => 'After allocation',
             'compare' => 'Comparison',
             'cost_center' => 'Cost center',
             'all_cost_centers' => 'All cost centers',
@@ -1159,6 +1247,13 @@ return [
     ],
 
     'budget' => [
+        'error' => [
+            'released' => 'The budget is released and locked against changes. Open an amendment to change it.',
+        ],
+        'field' => [
+            'reopen_reason' => 'Reason for the amendment',
+        ],
+        'overrun' => 'Released budget exceeded: :account (cost centre :center) in :month — actual :actual versus budget :budget.',
         'title' => 'Budget',
         'subtitle' => 'Planned values per account for fiscal year :year',
         'empty' => 'No income statement accounts in the chart of accounts.',
@@ -1172,11 +1267,14 @@ return [
             'year' => 'Fiscal year',
         ],
         'action' => [
+            'release' => 'Release budget',
+            'reopen' => 'Amendment',
             'edit' => 'Edit budget',
             'copy_previous' => 'Previous year actuals as budget',
             'save' => 'Save',
         ],
         'confirm' => [
+            'release' => 'Release budget :year? It is then locked against changes.',
             'copy_previous' => 'Take over the actuals of fiscal year :year as budget? Existing budgets of the selected year will be replaced.',
         ],
         'mode' => [
@@ -1184,10 +1282,13 @@ return [
             'months' => 'Monthly values',
         ],
         'hint' => [
+            'reopen' => 'The amendment reopens the released budget for editing; the reason is recorded.',
             'mode' => 'An annual value is spread evenly over twelve months for monthly comparisons; monthly values apply per month.',
             'sign' => 'Positive values: expected income or expected expense.',
         ],
         'flash' => [
+            'released' => 'Budget released.',
+            'reopened' => 'Budget reopened for an amendment.',
             'saved' => 'Budget for :account saved.',
             'copied' => ':count accounts with actuals from :year taken over as budget.',
         ],
